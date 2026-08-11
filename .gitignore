@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Supabase URL / anon key 등 로컬 환경변수
+.env
+.env.*
+!.env.example
+*.local
+
+# Claude Code 로컬 설정 (개인별로 달라서 공유하지 않음)
+.claude/settings.local.json

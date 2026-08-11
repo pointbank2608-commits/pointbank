@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클래스뱅크 · 포인트 통장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#132038;
+    --navy-800:#1b2c4c;
+    --navy-700:#233a63;
+    --navy-050:#eef1f7;
+    --paper:#faf8f1;
+    --paper-line:#e6dfcc;
+    --gold:#c69a3c;
+    --gold-deep:#a87f2c;
+    --gold-light:#f0dfae;
+    --sage:#3f7a5c;
+    --sage-light:#e4efe8;
+    --brick:#ad3d30;
+    --brick-light:#f6e4e1;
+    --ink:#1c1c1c;
+    --ink-soft:#6b6f7a;
+    --radius:14px;
+    --shadow:0 10px 30px -12px rgba(19,32,56,0.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--navy-050);
+    -webkit-font-smoothing:antialiased;
+  }
+  .brand-font{font-family:'Fraunces',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  #app{max-width:1080px;margin:0 auto;padding-bottom:60px;}
+
+  /* HEADER */
+  header.topbar{
+    background:linear-gradient(180deg,var(--navy-900),var(--navy-800));
+    color:#fff;
+    padding:22px 24px 26px;
+    border-radius:0 0 20px 20px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  header.topbar::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 26px);
+    pointer-events:none;
+  }
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;position:relative;z-index:1;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, var(--gold-deep));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,0.5);
+    font-family:'Fraunces',serif; font-weight:700; color:var(--navy-900); font-size:18px;
+  }
+  .brand-text .name{font-family:'Fraunces',serif;font-size:20px;font-weight:600;line-height:1.15;}
+  .brand-text .sub{font-size:12px;color:#b9c3d6;margin-top:2px;}
+  .role-switch{display:flex;background:rgba(255,255,255,0.08);border-radius:999px;padding:4px;gap:2px;}
+  .role-switch button{
+    border:none;background:transparent;color:#cfd8e8;padding:8px 16px;border-radius:999px;
+    font-size:13px;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .role-switch button.active{background:var(--gold);color:var(--navy-900);}
+
+  .subnav{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;position:relative;z-index:1;}
+  .subnav button{
+    border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);color:#e7ebf3;
+    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+  }
+  .subnav button.active{background:#fff;color:var(--navy-900);border-color:#fff;}
+
+  /* MAIN CONTAINER */
+  main{padding:22px 20px 0;}
+
+  .section-title{
+    font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin:0 0 12px;
+    display:flex;align-items:center;gap:8px;color:var(--navy-900);
+  }
+  .section-title .badge{
+    font-family:'Inter';font-size:11px;font-weight:700;background:var(--navy-050);color:var(--navy-700);
+    padding:3px 9px;border-radius:999px;
+  }
+
+  /* CLASS TABS */
+  .class-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .class-tab{
+    padding:9px 16px;border-radius:10px;border:1px solid var(--paper-line);background:#fff;
+    cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink-soft);
+  }
+  .class-tab.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+  .class-tab-add{
+    padding:9px 14px;border-radius:10px;border:1px dashed #b8c0cf;background:transparent;color:var(--ink-soft);
+    cursor:pointer;font-size:13px;font-weight:600;
+  }
+
+  /* STUDENT GRID */
+  .student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+  .passbook{
+    background:var(--paper);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--paper-line);
+  }
+  .passbook::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:8px;
+    background-image:radial-gradient(circle, var(--navy-050) 3px, transparent 3.2px);
+    background-size:14px 14px; background-position:6px -4px;
+  }
+  .passbook-head{
+    padding:16px 16px 10px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px;
+  }
+  .passbook-head .name{font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;}
+  .passbook-head .class-label{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .remove-student{border:none;background:none;color:#c2c7d1;cursor:pointer;font-size:15px;line-height:1;padding:2px;}
+  .remove-student:hover{color:var(--brick);}
+
+  .balance-row{padding:0 16px 12px;display:flex;align-items:baseline;gap:6px;}
+  .balance-row .num{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:30px;color:var(--navy-900);}
+  .balance-row .unit{font-size:13px;color:var(--ink-soft);font-weight:600;}
+
+  .preset-row{padding:0 16px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .chip{
+    border:1px solid var(--paper-line);background:#fff;border-radius:999px;padding:6px 11px;
+    font-size:12px;font-weight:600;cursor:pointer;color:var(--navy-800);
+  }
+  .chip.plus{color:var(--sage);border-color:#cfe3d7;}
+  .chip.minus{color:var(--brick);border-color:#ecd3ce;}
+  .chip:active{transform:scale(0.96);}
+
+  .custom-row{
+    padding:0 16px 14px; display:flex; gap:6px;
+  }
+  .custom-row input[type=number]{
+    width:64px;border:1px solid var(--paper-line);border-radius:8px;padding:6px 8px;font-family:'IBM Plex Mono';font-size:13px;
+  }
+  .custom-row select{
+    flex:1;border:1px solid var(--paper-line);border-radius:8px;padding:6px 8px;font-size:12px;color:var(--ink-soft);background:#fff;
+  }
+  .custom-row button{
+    border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;background:var(--navy-900);color:#fff;
+  }
+
+  .history-toggle{
+    border-top:1px dashed var(--paper-line); padding:9px 16px; font-size:12px; color:var(--ink-soft);
+    display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none;
+  }
+  .history-toggle:hover{color:var(--navy-800);}
+  .history-panel{padding:0 16px 14px; display:none;}
+  .history-panel.open{display:block;}
+  .history-line{
+    display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    padding:5px 0; border-bottom:1px dotted var(--paper-line); color:var(--ink-soft);
+  }
+  .history-line .delta.plus{color:var(--sage);font-weight:700;}
+  .history-line .delta.minus{color:var(--brick);font-weight:700;}
+  .history-empty{font-size:12px;color:#a7ac b8; padding:6px 0; color:#9aa0ad;}
+
+  .stamp-pop{
+    position:absolute; top:14px; right:14px; width:46px;height:46px;border-radius:50%;
+    border:2px dashed var(--gold-deep); color:var(--gold-deep); display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif; font-weight:700; font-size:11px; opacity:0; pointer-events:none;
+    background:rgba(255,255,255,0.9);
+  }
+  @keyframes stampIn{
+    0%{opacity:0; transform:scale(1.8) rotate(-14deg);}
+    35%{opacity:1; transform:scale(0.95) rotate(-14deg);}
+    55%{transform:scale(1.05) rotate(-14deg);}
+    100%{opacity:0; transform:scale(1) rotate(-14deg);}
+  }
+  .stamp-pop.play{animation:stampIn 0.85s ease-out;}
+
+  .add-student-card{
+    border:1.5px dashed #c3cad9; border-radius:var(--radius); display:flex; align-items:center; justify-content:center;
+    min-height:150px; color:var(--ink-soft); font-weight:600; font-size:13.5px; cursor:pointer; background:transparent;
+  }
+  .add-student-card:hover{border-color:var(--navy-700); color:var(--navy-700);}
+
+  /* RANKING */
+  .ranking-scope{display:flex;gap:8px;margin-bottom:16px;}
+  .scope-btn{padding:7px 14px;border-radius:999px;border:1px solid var(--paper-line);background:#fff;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-soft);}
+  .scope-btn.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+
+  .podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:10px 0 26px;}
+  .podium-slot{text-align:center;}
+  .podium-slot .medal{
+    width:56px;height:56px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#fff;box-shadow:var(--shadow);
+  }
+  .podium-slot.p1 .medal{background:radial-gradient(circle at 35% 30%,#f4dd8e,var(--gold) 65%,var(--gold-deep)); width:70px;height:70px;font-size:24px;}
+  .podium-slot.p2 .medal{background:linear-gradient(160deg,#e5e9ef,#adb6c4);}
+  .podium-slot.p3 .medal{background:linear-gradient(160deg,#e2b489,#a86a3d);}
+  .podium-slot .pname{font-weight:700;font-size:13px;margin-bottom:2px;}
+  .podium-slot .pscore{font-family:'IBM Plex Mono';font-size:13px;color:var(--ink-soft);}
+
+  .rank-list{background:var(--paper);border-radius:var(--radius);border:1px solid var(--paper-line);overflow:hidden;box-shadow:var(--shadow);}
+  .rank-row{
+    display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px dotted var(--paper-line);
+  }
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num{width:26px;text-align:center;font-family:'IBM Plex Mono';font-weight:700;color:var(--navy-700);}
+  .rank-row .rname{flex:1;font-weight:600;font-size:14px;}
+  .rank-row .rclass{font-size:11px;color:var(--ink-soft);}
+  .rank-row .rscore{font-family:'IBM Plex Mono';font-weight:700;color:var(--navy-900);}
+  .rank-row.me{background:var(--gold-light);}
+
+  /* SETTINGS */
+  .settings-block{
+    background:#fff;border:1px solid var(--paper-line);border-radius:var(--radius);padding:18px;margin-bottom:16px;
+  }
+  .settings-block h4{margin:0 0 12px;font-family:'Fraunces',serif;font-size:15px;color:var(--navy-900);}
+  .field-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .field-row input{flex:1;min-width:140px;border:1px solid var(--paper-line);border-radius:8px;padding:8px 10px;font-size:13px;}
+  .field-row button{border:none;background:var(--navy-900);color:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;}
+  .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .tag{display:flex;align-items:center;gap:6px;background:var(--navy-050);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;}
+  .tag button{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:13px;}
+  .preset-add-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .preset-add-row input[type=text]{flex:2;min-width:110px;border:1px solid var(--paper-line);border-radius:8px;padding:7px 9px;font-size:12.5px;}
+  .preset-add-row input[type=number]{width:64px;border:1px solid var(--paper-line);border-radius:8px;padding:7px 9px;font-size:12.5px;}
+  .preset-add-row button{border:none;background:var(--sage);color:#fff;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .class-manage-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dotted var(--paper-line);font-size:13px;}
+  .class-manage-row:last-child{border-bottom:none;}
+  .class-manage-row button{border:none;background:none;color:var(--brick);cursor:pointer;font-size:12px;font-weight:700;}
+
+  /* STUDENT VIEW */
+  .student-login{background:#fff;border:1px solid var(--paper-line);border-radius:var(--radius);padding:16px;margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .student-login select{flex:1;min-width:160px;border:1px solid var(--paper-line);border-radius:8px;padding:9px 10px;font-size:13.5px;}
+  .my-passbook{
+    background:linear-gradient(180deg,var(--navy-900),var(--navy-800));
+    color:#fff;border-radius:18px;padding:26px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden;margin-bottom:20px;
+  }
+  .my-passbook::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 26px);}
+  .my-passbook .label{font-size:12px;color:#b9c3d6;position:relative;z-index:1;}
+  .my-passbook .amount{font-family:'IBM Plex Mono';font-weight:700;font-size:44px;margin:6px 0 4px;position:relative;z-index:1;}
+  .my-passbook .rank-hint{font-size:13px;color:var(--gold-light);position:relative;z-index:1;font-weight:600;}
+
+  .empty-hint{color:var(--ink-soft);font-size:13px;padding:16px;text-align:center;}
+
+  @media (max-width:640px){
+    .topbar-row{flex-direction:column;align-items:flex-start;}
+    .student-grid{grid-template-columns:1fr;}
+    .my-passbook .amount{font-size:36px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ---------------- STATE ---------------- */
+const uid = (p) => p + '_' + Math.random().toString(36).slice(2,9);
+
+let state = {
+  academyName: '반짝반짝 공부방',
+  pointUnit: '별',
+  teacherName: '선생님',
+  role: 'teacher',            // 'teacher' | 'student'
+  teacherView: 'main',        // 'main' | 'ranking' | 'settings'
+  selectedClassId: 'c1',
+  selectedStudentLoginId: null,
+  rankingScope: 'class',      // 'class' | 'academy'
+  openHistoryFor: null,
+  stampPlayFor: null,
+  presets: [
+    {id:'p1', label:'숙제 완료', delta:2},
+    {id:'p2', label:'수업 태도 우수', delta:3},
+    {id:'p3', label:'발표 참여', delta:2},
+    {id:'p4', label:'미제출', delta:-2},
+    {id:'p5', label:'수업 방해', delta:-3},
+  ],
+  classes: [
+    {
+      id:'c1', name:'초등 3반',
+      students:[
+        {id:'s1', name:'김민준', history:[
+          {id:uid('t'), delta:2, reason:'숙제 완료', teacher:'선생님', ts: Date.now()-1000*60*60*30},
+          {id:uid('t'), delta:3, reason:'수업 태도 우수', teacher:'선생님', ts: Date.now()-1000*60*60*10},
+          {id:uid('t'), delta:2, reason:'발표 참여', teacher:'선생님', ts: Date.now()-1000*60*60*2},
+        ]},
+        {id:'s2', name:'이서연', history:[
+          {id:uid('t'), delta:3, reason:'수업 태도 우수', teacher:'선생님', ts: Date.now()-1000*60*60*40},
+          {id:uid('t'), delta:2, reason:'숙제 완료', teacher:'선생님', ts: Date.now()-1000*60*60*20},
+          {id:uid('t'), delta:2, reason:'숙제 완료', teacher:'선생님', ts: Date.now()-1000*60*60*3},
+        ]},
+        {id:'s3', name:'박도윤', history:[
+          {id:uid('t'), delta:2, reason:'숙제 완료', teacher:'선생님', ts: Date.now()-1000*60*60*50},
+          {id:uid('t'), delta:-2, reason:'미제출', teacher:'선생님', ts: Date.now()-1000*60*60*26},
+        ]},
+        {id:'s4', name:'최지우', history:[
+          {id:uid('t'), delta:3, reason:'수업 태도 우수', teacher:'선생님', ts: Date.now()-1000*60*60*15},
+        ]},
+      ]
+    },
+    {
+      id:'c2', name:'중등 1반',
+      students:[
+        {id:'s5', name:'정하은', history:[
+          {id:uid('t'), delta:2, reason:'발표 참여', teacher:'선생님', ts: Date.now()-1000*60*60*8},
+          {id:uid('t'), delta:2, reason:'숙제 완료', teacher:'선생님', ts: Date.now()-1000*60*60*4},
+        ]},
+        {id:'s6', name:'강시우', history:[
+          {id:uid('t'), delta:-3, reason:'수업 방해', teacher:'선생님', ts: Date.now()-1000*60*60*22},
+          {id:uid('t'), delta:3, reason:'수업 태도 우수', teacher:'선생님', ts: Date.now()-1000*60*60*5},
+        ]},
+        {id:'s7', name:'윤서준', history:[]},
+      ]
+    }
+  ]
+};
+
+/* ---------------- HELPERS ---------------- */
+function getClass(id){ return state.classes.find(c=>c.id===id); }
+function balanceOf(student){ return student.history.reduce((sum,h)=>sum+h.delta,0); }
+function fmtTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function allStudentsFlat(){
+  let arr=[];
+  state.classes.forEach(c=>c.students.forEach(s=>arr.push({...s, className:c.name, classId:c.id})));
+  return arr;
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------------- ACTIONS ---------------- */
+function giveDelta(classId, studentId, delta, reason){
+  const cls = getClass(classId);
+  const st = cls.students.find(s=>s.id===studentId);
+  st.history.push({id:uid('t'), delta, reason, teacher: state.teacherName, ts: Date.now()});
+  state.stampPlayFor = studentId + '_' + Date.now();
+  render();
+  setTimeout(()=>{ state.stampPlayFor=null; }, 900);
+}
+
+function addStudent(classId){
+  const name = prompt('학생 이름을 입력하세요');
+  if(!name || !name.trim()) return;
+  getClass(classId).students.push({id:uid('s'), name:name.trim(), history:[]});
+  render();
+}
+function removeStudent(classId, studentId){
+  if(!confirm('이 학생의 통장 기록을 삭제할까요?')) return;
+  const cls = getClass(classId);
+  cls.students = cls.students.filter(s=>s.id!==studentId);
+  render();
+}
+function addClass(){
+  const name = document.getElementById('new-class-name').value.trim();
+  if(!name) return;
+  state.classes.push({id:uid('c'), name, students:[]});
+  state.selectedClassId = state.classes[state.classes.length-1].id;
+  render();
+}
+function removeClass(classId){
+  if(!confirm('이 반과 소속 학생 기록을 모두 삭제할까요?')) return;
+  state.classes = state.classes.filter(c=>c.id!==classId);
+  if(state.selectedClassId===classId && state.classes[0]) state.selectedClassId = state.classes[0].id;
+  render();
+}
+function addPreset(){
+  const label = document.getElementById('new-preset-label').value.trim();
+  const delta = parseInt(document.getElementById('new-preset-delta').value,10);
+  if(!label || isNaN(delta) || delta===0) return;
+  state.presets.push({id:uid('p'), label, delta});
+  document.getElementById('new-preset-label').value='';
+  document.getElementById('new-preset-delta').value='';
+  render();
+}
+function removePreset(id){
+  state.presets = state.presets.filter(p=>p.id!==id);
+  render();
+}
+function saveAcademyName(){
+  const v = document.getElementById('academy-name-input').value.trim();
+  if(v) state.academyName = v;
+  render();
+}
+function savePointUnit(){
+  const v = document.getElementById('point-unit-input').value.trim();
+  if(v) state.pointUnit = v;
+  render();
+}
+function saveTeacherName(){
+  const v = document.getElementById('teacher-name-input').value.trim();
+  if(v) state.teacherName = v;
+  render();
+}
+function customGive(classId, studentId){
+  const amtInput = document.getElementById('amt_'+studentId);
+  const reasonSel = document.getElementById('reason_'+studentId);
+  const amt = parseInt(amtInput.value,10);
+  if(!amt) return;
+  giveDelta(classId, studentId, amt, reasonSel.value || '직접 입력');
+  amtInput.value='';
+}
+function toggleHistory(studentId){
+  state.openHistoryFor = state.openHistoryFor===studentId ? null : studentId;
+  render();
+}
+function setRole(r){ state.role=r; render(); }
+function setTeacherView(v){ state.teacherView=v; render(); }
+function setClass(id){ state.selectedClassId=id; render(); }
+function setRankingScope(s){ state.rankingScope=s; render(); }
+function setStudentLogin(id){ state.selectedStudentLoginId = id || null; render(); }
+
+/* ---------------- RENDER PIECES ---------------- */
+function presetOptionsHtml(){
+  return state.presets.map(p=>`<option value="${escapeHtml(p.label)}">${escapeHtml(p.label)} (${p.delta>0?'+':''}${p.delta})</option>`).join('');
+}
+
+function renderHeader(){
+  return `
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-mark">₩</div>
+        <div class="brand-text">
+          <div class="name">${escapeHtml(state.academyName)}</div>
+          <div class="sub">클래스뱅크 · 포인트 단위 &lsquo;${escapeHtml(state.pointUnit)}&rsquo;</div>
+        </div>
+      </div>
+      <div class="role-switch">
+        <button class="${state.role==='teacher'?'active':''}" onclick="setRole('teacher')">선생님 모드</button>
+        <button class="${state.role==='student'?'active':''}" onclick="setRole('student')">학생 모드</button>
+      </div>
+    </div>
+    ${state.role==='teacher' ? `
+    <div class="subnav">
+      <button class="${state.teacherView==='main'?'active':''}" onclick="setTeacherView('main')">반별 통장</button>
+      <button class="${state.teacherView==='ranking'?'active':''}" onclick="setTeacherView('ranking')">순위 보기</button>
+      <button class="${state.teacherView==='settings'?'active':''}" onclick="setTeacherView('settings')">설정</button>
+    </div>` : ``}
+  </header>`;
+}
+
+function renderStudentCard(cls, s){
+  const bal = balanceOf(s);
+  const openHist = state.openHistoryFor===s.id;
+  const stampPlay = state.stampPlayFor && state.stampPlayFor.startsWith(s.id+'_');
+  const historyRows = s.history.slice().reverse().slice(0,8).map(h=>`
+    <div class="history-line">
+      <span>${fmtTime(h.ts)} · ${escapeHtml(h.reason)}</span>
+      <span class="delta ${h.delta>0?'plus':'minus'}">${h.delta>0?'+':''}${h.delta}</span>
+    </div>`).join('') || `<div class="history-empty">아직 지급 내역이 없어요.</div>`;
+
+  return `
+  <div class="passbook">
+    <div class="stamp-pop ${stampPlay?'play':''}">지급!</div>
+    <div class="passbook-head">
+      <div>
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="class-label">${escapeHtml(cls.name)}</div>
+      </div>
+      <button class="remove-student" title="학생 삭제" onclick="removeStudent('${cls.id}','${s.id}')">✕</button>
+    </div>
+    <div class="balance-row"><span class="num">${bal}</span><span class="unit">${escapeHtml(state.pointUnit)}</span></div>
+    <div class="preset-row">
+      ${state.presets.map(p=>`<button class="chip ${p.delta>0?'plus':'minus'}" onclick="giveDelta('${cls.id}','${s.id}',${p.delta},'${escapeHtml(p.label).replace(/'/g,"\\'")}')">${p.delta>0?'+':''}${p.delta} ${escapeHtml(p.label)}</button>`).join('')}
+    </div>
+    <div class="custom-row">
+      <input type="number" id="amt_${s.id}" placeholder="±숫자">
+      <select id="reason_${s.id}">
+        <option value="">직접 입력</option>
+        ${presetOptionsHtml()}
+      </select>
+      <button onclick="customGive('${cls.id}','${s.id}')">지급/차감</button>
+    </div>
+    <div class="history-toggle" onclick="toggleHistory('${s.id}')">
+      <span>거래 내역</span><span>${openHist?'▲ 접기':'▼ 펼치기'}</span>
+    </div>
+    <div class="history-panel ${openHist?'open':''}">${historyRows}</div>
+  </div>`;
+}
+
+function renderTeacherMain(){
+  if(state.classes.length===0){
+    return `<div class="empty-hint">등록된 반이 없습니다. 설정에서 반을 추가해주세요.</div>`;
+  }
+  const cls = getClass(state.selectedClassId) || state.classes[0];
+  return `
+  <div class="class-tabs">
+    ${state.classes.map(c=>`<button class="class-tab ${c.id===cls.id?'active':''}" onclick="setClass('${c.id}')">${escapeHtml(c.name)}</button>`).join('')}
+  </div>
+  <div class="section-title">${escapeHtml(cls.name)} 학생 통장 <span class="badge">${cls.students.length}명</span></div>
+  <div class="student-grid">
+    ${cls.students.map(s=>renderStudentCard(cls,s)).join('')}
+    <div class="add-student-card" onclick="addStudent('${cls.id}')">+ 학생 추가</div>
+  </div>`;
+}
+
+function renderRanking(){
+  let list;
+  if(state.rankingScope==='class'){
+    const cls = getClass(state.selectedClassId) || state.classes[0];
+    list = (cls? cls.students : []).map(s=>({name:s.name, className:cls.name, score:balanceOf(s), id:s.id}));
+  } else {
+    list = allStudentsFlat().map(s=>({name:s.name, className:s.className, score:balanceOf(s), id:s.id}));
+  }
+  list.sort((a,b)=>b.score-a.score);
+  const top3 = list.slice(0,3);
+  const order = [1,0,2].filter(i=>top3[i]);
+
+  return `
+  <div class="ranking-scope">
+    <button class="scope-btn ${state.rankingScope==='class'?'active':''}" onclick="setRankingScope('class')">반별 순위</button>
+    <button class="scope-btn ${state.rankingScope==='academy'?'active':''}" onclick="setRankingScope('academy')">학원 전체 순위</button>
+  </div>
+  ${state.rankingScope==='class' ? `
+  <div class="class-tabs">
+    ${state.classes.map(c=>`<button class="class-tab ${c.id===state.selectedClassId?'active':''}" onclick="setClass('${c.id}')">${escapeHtml(c.name)}</button>`).join('')}
+  </div>` : ``}
+  <div class="section-title">🏆 총 포인트 순위</div>
+  ${list.length===0? `<div class="empty-hint">학생이 없습니다.</div>` : `
+  <div class="podium">
+    ${order.map(i=>{
+      const p = top3[i];
+      const rankClass = i===0?'p1':(i===1?'p2':'p3');
+      const medal = i===0?'1':(i===1?'2':'3');
+      return `<div class="podium-slot ${rankClass}"><div class="medal">${medal}</div><div class="pname">${escapeHtml(p.name)}</div><div class="pscore">${p.score}${escapeHtml(state.pointUnit)}</div></div>`;
+    }).join('')}
+  </div>
+  <div class="rank-list">
+    ${list.map((s,i)=>`
+      <div class="rank-row">
+        <div class="rank-num">${i+1}</div>
+        <div><div class="rname">${escapeHtml(s.name)}</div><div class="rclass">${escapeHtml(s.className)}</div></div>
+        <div class="rscore">${s.score}${escapeHtml(state.pointUnit)}</div>
+      </div>`).join('')}
+  </div>`}
+  `;
+}
+
+function renderSettings(){
+  return `
+  <div class="settings-block">
+    <h4>학원 · 포인트 기본 설정</h4>
+    <div class="field-row">
+      <input id="academy-name-input" value="${escapeHtml(state.academyName)}" placeholder="학원/공부방 이름">
+      <button onclick="saveAcademyName()">저장</button>
+    </div>
+    <div class="field-row">
+      <input id="point-unit-input" value="${escapeHtml(state.pointUnit)}" placeholder="포인트 단위 (예: 별, 달러)">
+      <button onclick="savePointUnit()">저장</button>
+    </div>
+    <div class="field-row">
+      <input id="teacher-name-input" value="${escapeHtml(state.teacherName)}" placeholder="지급 담당 선생님 이름">
+      <button onclick="saveTeacherName()">저장</button>
+    </div>
+  </div>
+
+  <div class="settings-block">
+    <h4>지급/차감 사유 프리셋</h4>
+    <div class="tag-list">
+      ${state.presets.map(p=>`<div class="tag">${escapeHtml(p.label)} (${p.delta>0?'+':''}${p.delta})<button onclick="removePreset('${p.id}')">✕</button></div>`).join('') || '<span style="color:var(--ink-soft);font-size:12px;">등록된 사유가 없습니다.</span>'}
+    </div>
+    <div class="preset-add-row">
+      <input type="text" id="new-preset-label" placeholder="사유 (예: 지각)">
+      <input type="number" id="new-preset-delta" placeholder="±숫자">
+      <button onclick="addPreset()">추가</button>
+    </div>
+  </div>
+
+  <div class="settings-block">
+    <h4>반 관리</h4>
+    ${state.classes.map(c=>`
+      <div class="class-manage-row">
+        <span>${escapeHtml(c.name)} · 학생 ${c.students.length}명</span>
+        <button onclick="removeClass('${c.id}')">삭제</button>
+      </div>`).join('') || `<div class="empty-hint">등록된 반이 없습니다.</div>`}
+    <div class="field-row" style="margin-top:12px;">
+      <input id="new-class-name" placeholder="새 반 이름 (예: 고등 2반)">
+      <button onclick="addClass()">반 추가</button>
+    </div>
+  </div>
+  `;
+}
+
+function renderStudentView(){
+  const flat = allStudentsFlat();
+  const me = flat.find(s=>s.id===state.selectedStudentLoginId);
+
+  const loginBlock = `
+  <div class="student-login">
+    <span style="font-weight:600;font-size:13.5px;">내 이름 선택 (모의 로그인)</span>
+    <select onchange="setStudentLogin(this.value)">
+      <option value="">— 선택하세요 —</option>
+      ${flat.map(s=>`<option value="${s.id}" ${s.id===state.selectedStudentLoginId?'selected':''}>${escapeHtml(s.className)} · ${escapeHtml(s.name)}</option>`).join('')}
+    </select>
+  </div>`;
+
+  if(!me){
+    return loginBlock + `<div class="empty-hint">본인 이름을 선택하면 내 포인트 통장을 볼 수 있어요.</div>`;
+  }
+
+  const bal = balanceOf(me);
+  const classList = getClass(me.classId).students.map(s=>({name:s.name,score:balanceOf(s),id:s.id}));
+  classList.sort((a,b)=>b.score-a.score);
+  const myRank = classList.findIndex(s=>s.id===me.id)+1;
+
+  const historyRows = me.history.slice().reverse().map(h=>`
+    <div class="history-line">
+      <span>${fmtTime(h.ts)} · ${escapeHtml(h.reason)}</span>
+      <span class="delta ${h.delta>0?'plus':'minus'}">${h.delta>0?'+':''}${h.delta}</span>
+    </div>`).join('') || `<div class="history-empty">아직 지급 내역이 없어요.</div>`;
+
+  return loginBlock + `
+  <div class="my-passbook">
+    <div class="label">${escapeHtml(me.className)} · ${escapeHtml(me.name)} 님의 통장</div>
+    <div class="amount">${bal}${escapeHtml(state.pointUnit)}</div>
+    <div class="rank-hint">우리 반에서 ${myRank}등 / ${classList.length}명 중</div>
+  </div>
+  <div class="section-title">거래 내역</div>
+  <div class="rank-list" style="padding:6px 16px;">${historyRows}</div>
+  `;
+}
+
+/* ---------------- ROOT RENDER ---------------- */
+function render(){
+  let body = '';
+  if(state.role==='teacher'){
+    if(state.teacherView==='main') body = renderTeacherMain();
+    else if(state.teacherView==='ranking') body = renderRanking();
+    else body = renderSettings();
+  } else {
+    body = renderStudentView();
+  }
+  document.getElementById('app').innerHTML = renderHeader() + `<main>${body}</main>`;
+}
+
+render();
+</script>
+</body>
+</html>
