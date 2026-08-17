@@ -7,6 +7,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
+import WheelPage from './pages/WheelPage';
 
 export default function App() {
   const { loading, session, profile, isStaff } = useAuth();
@@ -40,14 +41,16 @@ export default function App() {
         {isStaff ? (
           <>
             <Route path="/board" element={<ClassBoardPage />} />
+            <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/board" replace />} />
           </>
         ) : (
-          // 학생은 자기 통장만 본다. 순위/결과 화면은 노출하지 않는다.
+          // 학생은 자기 통장과 돌림판만 본다. 순위/결과 화면은 노출하지 않는다.
           <>
             <Route path="/me" element={<StudentPage />} />
+            <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

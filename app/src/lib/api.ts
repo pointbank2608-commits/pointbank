@@ -2,6 +2,8 @@ import { supabase } from './supabase';
 import type {
   Academy,
   ClassRow,
+  GameItem,
+  GameTemplate,
   Preset,
   RankRow,
   Settlement,
@@ -306,6 +308,73 @@ export async function claimStudent(claimCode: string) {
   const { data, error } = await supabase.rpc('claim_student', { p_claim_code: claimCode });
   if (error) throw new Error(error.message);
   return data as string;
+}
+
+/* ---------------- 미니게임 ---------------- */
+
+/**
+ * 특정 반에서 보이는 게임 템플릿 전부.
+ * class_id 가 이 반이거나(반 전용), null 이면(학원 공용) 함께 돌려준다.
+ */
+export async function fetchGameTemplates(
+  academyId: string,
+  classId: string,
+  gameType: string,
+): Promise<GameTemplate[]> {
+  return unwrap(
+    await supabase
+      .from('game_templates')
+      .select('*')
+      .eq('academy_id', academyId)
+      .eq('game_type', gameType)
+      .or(`class_id.eq.${classId},class_id.is.null`)
+      .order('created_at'),
+  );
+}
+
+export async function createGameTemplate(params: {
+  academyId: string;
+  classId: string | null;
+  gameType: string;
+  name: string;
+  items: GameItem[];
+  teacherId: string;
+}): Promise<GameTemplate> {
+  return unwrap(
+    await supabase
+      .from('game_templates')
+      .insert({
+        academy_id: params.academyId,
+        class_id: params.classId,
+        game_type: params.gameType,
+        name: params.name,
+        items: params.items,
+        created_by: params.teacherId,
+      })
+      .select()
+      .single(),
+  ) as GameTemplate;
+}
+
+export async function updateGameTemplateItems(id: string, items: GameItem[]) {
+  const { error } = await supabase
+    .from('game_templates')
+    .update({ items, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function renameGameTemplate(id: string, name: string) {
+  const { error } = await supabase
+    .from('game_templates')
+    .update({ name, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteGameTemplate(id: string) {
+  const { error } = await supabase.from('game_templates').delete().eq('id', id);
+  if (error) throw new Error(error.message);
 }
 
 /** 로그인한 학생 본인의 students 행 */

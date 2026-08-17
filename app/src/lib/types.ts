@@ -111,3 +111,25 @@ export interface BoardRow {
   /** 오늘 거래 내역 */
   todayTx: Transaction[];
 }
+
+/* ---------------- 미니게임 ---------------- */
+
+export type GameType = 'wheel';
+
+export interface GameItem {
+  id: string;
+  label: string;
+}
+
+export interface GameTemplate {
+  id: string;
+  academy_id: string;
+  /** null 이면 학원 전체 공용 (반 상관없이 어디서나 보임) */
+  class_id: string | null;
+  game_type: GameType;
+  name: string;
+  items: GameItem[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}

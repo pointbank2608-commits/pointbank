@@ -10,14 +10,17 @@ const ROLE_LABEL: Record<string, string> = {
 export default function AppLayout() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
 
-  // 학생은 화면이 하나뿐이라 네비게이션을 아예 띄우지 않는다.
   const links = isStaff
     ? [
         { to: '/board', label: '반별 통장' },
+        { to: '/games/wheel', label: '돌림판' },
         { to: '/results', label: '결과 보기' },
         { to: '/settings', label: '설정' },
       ]
-    : [];
+    : [
+        { to: '/me', label: '내 통장' },
+        { to: '/games/wheel', label: '돌림판' },
+      ];
 
   return (
     <div className="app-shell">
