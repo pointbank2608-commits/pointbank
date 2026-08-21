@@ -257,7 +257,8 @@ main {
 .passbook-head .name {
   font-family: 'Jua', sans-serif;
   font-weight: 600;
-  font-size: 24px;
+  font-size: 30px;
+  line-height: 1.2;
 }
 .passbook-head .class-label {
   font-size: 14px;
