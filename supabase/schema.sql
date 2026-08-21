@@ -607,3 +607,38 @@ create policy logos_delete on storage.objects
     and (storage.foldername(name))[1] = public.my_academy_id()::text
     and public.is_staff()
   );
+
+
+-- ============================================================
+--  11. 출석부 (등원 / 하원 체크)
+-- ============================================================
+
+create table if not exists public.attendance (
+  id             uuid primary key default gen_random_uuid(),
+  academy_id     uuid not null references public.academies(id) on delete cascade,
+  class_id       uuid not null references public.classes(id)   on delete cascade,
+  student_id     uuid not null references public.students(id)  on delete cascade,
+  attended_on    date not null,
+  checked_in_at  timestamptz,
+  checked_out_at timestamptz,
+  checked_in_by  uuid references auth.users(id) on delete set null,
+  checked_out_by uuid references auth.users(id) on delete set null,
+  created_at     timestamptz not null default now(),
+  unique (student_id, attended_on)
+);
+create index if not exists attendance_class_month_idx on public.attendance(class_id, attended_on);
+create index if not exists attendance_student_idx on public.attendance(student_id, attended_on desc);
+
+alter table public.attendance enable row level security;
+
+drop policy if exists attendance_select on public.attendance;
+create policy attendance_select on public.attendance
+  for select using (
+    academy_id = public.my_academy_id()
+    and (public.is_staff() or student_id = public.my_student_id())
+  );
+
+drop policy if exists attendance_write on public.attendance;
+create policy attendance_write on public.attendance
+  for all using (academy_id = public.my_academy_id() and public.is_staff())
+          with check (academy_id = public.my_academy_id() and public.is_staff());

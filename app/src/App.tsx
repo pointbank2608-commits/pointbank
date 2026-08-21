@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AppLayout from './pages/AppLayout';
+import AttendancePage from './pages/AttendancePage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import GamesPage from './pages/GamesPage';
@@ -42,6 +43,7 @@ export default function App() {
         {isStaff ? (
           <>
             <Route path="/board" element={<ClassBoardPage />} />
+            <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/games" element={<GamesPage />} />

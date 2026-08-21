@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type {
   Academy,
+  Attendance,
   ClassRow,
   GameItem,
   GameTemplate,
@@ -396,6 +397,125 @@ export async function renameGameTemplate(id: string, name: string) {
 
 export async function deleteGameTemplate(id: string) {
   const { error } = await supabase.from('game_templates').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/* ---------------- 출석부 ---------------- */
+
+/** 특정 반의 특정 기간(from~to, 둘 다 YYYY-MM-DD, inclusive) 출석 기록 전체. */
+export async function fetchAttendance(
+  classId: string,
+  from: string,
+  to: string,
+): Promise<Attendance[]> {
+  return unwrap(
+    await supabase
+      .from('attendance')
+      .select('*')
+      .eq('class_id', classId)
+      .gte('attended_on', from)
+      .lte('attended_on', to),
+  );
+}
+
+export async function checkIn(params: {
+  academyId: string;
+  classId: string;
+  studentId: string;
+  attendedOn: string;
+  teacherId: string;
+}): Promise<Attendance> {
+  return unwrap(
+    await supabase
+      .from('attendance')
+      .upsert(
+        {
+          academy_id: params.academyId,
+          class_id: params.classId,
+          student_id: params.studentId,
+          attended_on: params.attendedOn,
+          checked_in_at: new Date().toISOString(),
+          checked_in_by: params.teacherId,
+        },
+        { onConflict: 'student_id,attended_on' },
+      )
+      .select()
+      .single(),
+  ) as Attendance;
+}
+
+export async function checkOut(params: {
+  academyId: string;
+  classId: string;
+  studentId: string;
+  attendedOn: string;
+  teacherId: string;
+}): Promise<Attendance> {
+  return unwrap(
+    await supabase
+      .from('attendance')
+      .upsert(
+        {
+          academy_id: params.academyId,
+          class_id: params.classId,
+          student_id: params.studentId,
+          attended_on: params.attendedOn,
+          checked_out_at: new Date().toISOString(),
+          checked_out_by: params.teacherId,
+        },
+        { onConflict: 'student_id,attended_on' },
+      )
+      .select()
+      .single(),
+  ) as Attendance;
+}
+
+/** 등원/하원 기록을 지운다 (해당 필드만 null 처리). */
+export async function clearCheckIn(id: string) {
+  const { error } = await supabase
+    .from('attendance')
+    .update({ checked_in_at: null, checked_in_by: null })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function clearCheckOut(id: string) {
+  const { error } = await supabase
+    .from('attendance')
+    .update({ checked_out_at: null, checked_out_by: null })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/** 출석부 그리드에서 빈 칸을 눌러 "출석"으로 표시할 때 사용 (시간은 정오로 고정). */
+export async function markPresent(params: {
+  academyId: string;
+  classId: string;
+  studentId: string;
+  attendedOn: string;
+  teacherId: string;
+}): Promise<Attendance> {
+  return unwrap(
+    await supabase
+      .from('attendance')
+      .upsert(
+        {
+          academy_id: params.academyId,
+          class_id: params.classId,
+          student_id: params.studentId,
+          attended_on: params.attendedOn,
+          checked_in_at: `${params.attendedOn}T12:00:00`,
+          checked_in_by: params.teacherId,
+        },
+        { onConflict: 'student_id,attended_on' },
+      )
+      .select()
+      .single(),
+  ) as Attendance;
+}
+
+export async function deleteAttendance(id: string) {
+  const { error } = await supabase.from('attendance').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }
 

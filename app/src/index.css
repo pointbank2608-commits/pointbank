@@ -260,6 +260,39 @@ main {
   align-items: flex-start;
   gap: 8px;
 }
+.attendance-row {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 10px;
+}
+.att-btn {
+  flex: 1;
+  border: 1.5px solid var(--paper-line);
+  background: #fff;
+  border-radius: 10px;
+  padding: 7px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+.att-btn.in.done {
+  background: var(--sage-light);
+  border-color: var(--sage);
+  color: var(--sage);
+}
+.att-btn.out.done {
+  background: var(--brick-light);
+  border-color: var(--brick);
+  color: var(--brick);
+}
+.att-btn:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.att-btn.out:disabled:not(.done) {
+  opacity: 0.45;
+}
 .passbook-head .name {
   font-family: 'Jua', sans-serif;
   font-weight: 600;
@@ -1231,6 +1264,60 @@ main {
 
 .rank-list.plain {
   padding: 4px 16px;
+}
+
+/* ---------------- 출석부 ---------------- */
+.att-grid-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 4px;
+}
+.att-grid {
+  border-collapse: collapse;
+  width: 100%;
+}
+.att-grid th,
+.att-grid td {
+  text-align: center;
+  padding: 4px 2px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.att-grid-name {
+  text-align: left !important;
+  position: sticky;
+  left: 0;
+  background: #fff;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 6px 10px !important;
+  min-width: 84px;
+}
+.att-grid-count {
+  font-weight: 700;
+  color: var(--navy-900);
+}
+.att-cell {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--paper-line);
+  background: var(--navy-050);
+  cursor: pointer;
+  color: var(--sage);
+  font-size: 13px;
+}
+.att-cell.present {
+  background: var(--sage-light);
+  border-color: var(--sage);
+}
+.att-cell:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* ---------------- 게임 목록 ---------------- */

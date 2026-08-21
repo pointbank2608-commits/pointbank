@@ -101,6 +101,19 @@ export interface SummaryRow {
   tx_count: number;
 }
 
+export interface Attendance {
+  id: string;
+  academy_id: string;
+  class_id: string;
+  student_id: string;
+  attended_on: string; // YYYY-MM-DD
+  checked_in_at: string | null;
+  checked_out_at: string | null;
+  checked_in_by: string | null;
+  checked_out_by: string | null;
+  created_at: string;
+}
+
 /** 반별 통장 화면에서 카드 한 장이 쓰는 데이터 */
 export interface BoardRow {
   studentId: string;

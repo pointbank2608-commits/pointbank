@@ -16,6 +16,7 @@ export default function AppLayout() {
   const links = isStaff
     ? [
         { to: '/board', label: '반별 통장' },
+        { to: '/attendance', label: '출석부' },
         { to: '/results', label: '결과 보기' },
         { to: '/settings', label: '설정' },
         { to: '/games', label: '게임' },

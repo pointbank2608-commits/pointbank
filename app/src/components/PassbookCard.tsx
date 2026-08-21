@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { fmtTime, signed } from '../lib/format';
-import type { Preset, Transaction } from '../lib/types';
+import type { Attendance, Preset, Transaction } from '../lib/types';
 
 interface Props {
   studentId: string;
@@ -16,9 +16,13 @@ interface Props {
   pointUnit: string;
   presets: Preset[];
   todayTx: Transaction[];
+  /** 오늘 출석 기록 (없으면 아직 등원 전) */
+  attendance: Attendance | null;
   onGive: (studentId: string, delta: number, reason: string) => Promise<Transaction | null>;
   onUndo: (tx: Transaction) => Promise<boolean>;
   onRemove: (studentId: string, name: string) => void;
+  onCheckIn: (studentId: string) => Promise<void>;
+  onCheckOut: (studentId: string) => Promise<void>;
 }
 
 export default function PassbookCard({
@@ -32,10 +36,27 @@ export default function PassbookCard({
   pointUnit,
   presets,
   todayTx,
+  attendance,
   onGive,
   onUndo,
   onRemove,
+  onCheckIn,
+  onCheckOut,
 }: Props) {
+  const [attBusy, setAttBusy] = useState(false);
+
+  async function handleCheckIn() {
+    if (attBusy) return;
+    setAttBusy(true);
+    await onCheckIn(studentId);
+    setAttBusy(false);
+  }
+  async function handleCheckOut() {
+    if (attBusy) return;
+    setAttBusy(true);
+    await onCheckOut(studentId);
+    setAttBusy(false);
+  }
   const [busy, setBusy] = useState(false);
   const [stampKey, setStampKey] = useState(0);
   const [amount, setAmount] = useState('');
@@ -76,6 +97,23 @@ export default function PassbookCard({
             ✕
           </button>
         )}
+      </div>
+
+      <div className="attendance-row">
+        <button
+          className={`att-btn in ${attendance?.checked_in_at ? 'done' : ''}`}
+          disabled={attBusy || !!attendance?.checked_in_at}
+          onClick={() => void handleCheckIn()}
+        >
+          {attendance?.checked_in_at ? `등원 ${fmtTime(attendance.checked_in_at)}` : '등원'}
+        </button>
+        <button
+          className={`att-btn out ${attendance?.checked_out_at ? 'done' : ''}`}
+          disabled={attBusy || !attendance?.checked_in_at || !!attendance?.checked_out_at}
+          onClick={() => void handleCheckOut()}
+        >
+          {attendance?.checked_out_at ? `하원 ${fmtTime(attendance.checked_out_at)}` : '하원'}
+        </button>
       </div>
 
       <div className="today-row">

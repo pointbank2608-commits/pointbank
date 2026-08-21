@@ -5,11 +5,14 @@ import SettleModal from '../components/SettleModal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
+  checkIn,
+  checkOut,
   createSettlement,
   createStudent,
   deleteSettlement,
   deleteStudent,
   deleteTransaction,
+  fetchAttendance,
   fetchBalancesOfClass,
   fetchPresets,
   fetchSettlement,
@@ -18,7 +21,7 @@ import {
 } from '../lib/api';
 import { dateKey, fmtDay, todayStart } from '../lib/format';
 import { useClasses } from '../lib/useClasses';
-import type { Preset, Settlement, StudentBalance, Transaction } from '../lib/types';
+import type { Attendance, Preset, Settlement, StudentBalance, Transaction } from '../lib/types';
 
 export default function ClassBoardPage() {
   const { academy, profile, pointUnit } = useAuth();
@@ -27,6 +30,7 @@ export default function ClassBoardPage() {
 
   const [students, setStudents] = useState<StudentBalance[]>([]);
   const [todayTx, setTodayTx] = useState<Transaction[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [settlement, setSettlement] = useState<Settlement | null>(null);
   const [showTotal, setShowTotal] = useState(false);
@@ -55,14 +59,16 @@ export default function ClassBoardPage() {
     }
     setLoading(true);
     try {
-      const [balances, txs, settled] = await Promise.all([
+      const [balances, txs, settled, att] = await Promise.all([
         fetchBalancesOfClass(selectedId),
         fetchTransactionsSince(selectedId, todayStart()),
         fetchSettlement(selectedId, today),
+        fetchAttendance(selectedId, today, today),
       ]);
       setStudents(balances);
       setTodayTx(txs);
       setSettlement(settled);
+      setAttendance(att);
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -143,6 +149,41 @@ export default function ClassBoardPage() {
     [run],
   );
 
+  const attendanceByStudent = useMemo(() => {
+    const m = new Map<string, Attendance>();
+    for (const a of attendance) m.set(a.student_id, a);
+    return m;
+  }, [attendance]);
+
+  async function handleCheckIn(studentId: string) {
+    if (!academy?.id || !selectedId || !profile) return;
+    const ok = await run(async () => {
+      const row = await checkIn({
+        academyId: academy.id,
+        classId: selectedId,
+        studentId,
+        attendedOn: today,
+        teacherId: profile.id,
+      });
+      setAttendance((prev) => [...prev.filter((a) => a.student_id !== studentId), row]);
+    }, '등원 체크했습니다.');
+    if (!ok) return;
+  }
+
+  async function handleCheckOut(studentId: string) {
+    if (!academy?.id || !selectedId || !profile) return;
+    await run(async () => {
+      const row = await checkOut({
+        academyId: academy.id,
+        classId: selectedId,
+        studentId,
+        attendedOn: today,
+        teacherId: profile.id,
+      });
+      setAttendance((prev) => [...prev.filter((a) => a.student_id !== studentId), row]);
+    }, '하원 체크했습니다.');
+  }
+
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
     const name = prompt('학생 이름을 입력하세요');
@@ -217,6 +258,9 @@ export default function ClassBoardPage() {
           {selected?.name} 학생 통장 <span className="badge">{rows.length}명</span>
         </div>
         <div className="board-actions">
+          <Link to="/attendance" className="toggle-btn" style={{ textDecoration: 'none' }}>
+            출석부
+          </Link>
           <button
             className={`toggle-btn ${showTotal ? 'on' : ''}`}
             onClick={() => setShowTotal((v) => !v)}
@@ -266,9 +310,12 @@ export default function ClassBoardPage() {
               pointUnit={pointUnit}
               presets={presets}
               todayTx={r.todayTx}
+              attendance={attendanceByStudent.get(r.studentId) ?? null}
               onGive={handleGive}
               onUndo={handleUndo}
               onRemove={handleRemoveStudent}
+              onCheckIn={handleCheckIn}
+              onCheckOut={handleCheckOut}
             />
           ))}
           {!locked && (
