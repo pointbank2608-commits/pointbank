@@ -1,29 +1,32 @@
 /* ============================================================
-   클래스뱅크 디자인 시스템
-   프로토타입의 "은행 통장" 컨셉을 그대로 옮겨왔습니다.
-   남색(통장 커버) + 골드(도장) + 세이지(적립) / 브릭(차감)
+   클래스뱅크 디자인 시스템 — 알록달록 & 귀여운 버전
+   초등 선생님·학생이 매일 보는 화면이라, "은행" 은유는 유지하되
+   무겁고 격식 있는 톤 대신 동화책 같은 밝은 색과 둥근 모양으로 표현합니다.
+   하늘(주 브랜드) + 해바라기 옐로우(포인트/CTA) + 민트(적립) / 코랄(차감)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --navy-900: #132038;
-  --navy-800: #1b2c4c;
-  --navy-700: #233a63;
-  --navy-050: #eef1f7;
-  --paper: #faf8f1;
-  --paper-line: #e6dfcc;
-  --gold: #c69a3c;
-  --gold-deep: #a87f2c;
-  --gold-light: #f0dfae;
-  --sage: #3f7a5c;
-  --sage-light: #e4efe8;
-  --brick: #ad3d30;
-  --brick-light: #f6e4e1;
-  --ink: #1c1c1c;
-  --ink-soft: #6b6f7a;
-  --radius: 14px;
-  --shadow: 0 10px 30px -12px rgba(19, 32, 56, 0.25);
+  /* 예전 --navy-* 이름은 그대로 두되(코드 곳곳에서 참조), 값만 하늘색 계열로 교체 */
+  --navy-900: #2765a8;
+  --navy-800: #3f8fd6;
+  --navy-700: #5aa8e8;
+  --navy-050: #eaf5ff;
+  --paper: #fffdf6;
+  --paper-line: #f0e6c8;
+  --gold: #ffc93c;
+  --gold-deep: #d98a12;
+  --gold-light: #fff1c2;
+  --sage: #2bc9a8;
+  --sage-light: #e0faf3;
+  --brick: #ff6b6b;
+  --brick-light: #ffe3e1;
+  --ink: #3a3358;
+  --ink-soft: #6f6889;
+  --purple: #9b8cf0;
+  --radius: 22px;
+  --shadow: 0 12px 28px -10px rgba(63, 143, 214, 0.28);
 }
 
 * {
@@ -32,7 +35,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Gowun Dodum', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--ink);
   background: var(--navy-050);
   -webkit-font-smoothing: antialiased;
@@ -46,10 +49,10 @@ textarea {
 }
 
 .brand-font {
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
 }
 .mono {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
 }
 
 .app-shell {
@@ -60,10 +63,10 @@ textarea {
 
 /* ---------------- HEADER ---------------- */
 header.topbar {
-  background: linear-gradient(180deg, var(--navy-900), var(--navy-800));
+  background: linear-gradient(160deg, var(--navy-900), var(--navy-800) 85%);
   color: #fff;
   padding: 22px 24px 26px;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 28px 28px;
   box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
@@ -72,11 +75,9 @@ header.topbar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0.035) 0 2px,
-    transparent 2px 26px
-  );
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 3px, transparent 3.5px);
+  background-size: 26px 26px;
+  background-position: -4px -6px;
   pointer-events: none;
 }
 .topbar-row {
@@ -102,20 +103,17 @@ header.topbar::after {
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-  font-family: 'Fraunces', serif;
-  font-weight: 700;
-  color: var(--navy-900);
-  font-size: 18px;
+  font-size: 24px;
   flex-shrink: 0;
 }
 .brand-text .name {
-  font-family: 'Fraunces', serif;
-  font-size: 20px;
+  font-family: 'Jua', sans-serif;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1.15;
 }
 .brand-text .sub {
-  font-size: 12px;
+  font-size: 14px;
   color: #b9c3d6;
   margin-top: 2px;
 }
@@ -124,7 +122,7 @@ header.topbar::after {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 15px;
   color: #cfd8e8;
 }
 .topbar-user .who {
@@ -135,7 +133,7 @@ header.topbar::after {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 3px 10px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--gold-light);
 }
@@ -144,7 +142,7 @@ header.topbar::after {
   background: none;
   color: #b9c3d6;
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: 14.5px;
   text-decoration: underline;
   padding: 4px;
 }
@@ -166,7 +164,7 @@ header.topbar::after {
   color: #e7ebf3;
   padding: 7px 14px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -182,8 +180,8 @@ main {
 }
 
 .section-title {
-  font-family: 'Fraunces', serif;
-  font-size: 17px;
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
   font-weight: 600;
   margin: 0 0 12px;
   display: flex;
@@ -192,8 +190,8 @@ main {
   color: var(--navy-900);
 }
 .section-title .badge {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
+  font-size: 13px;
   font-weight: 700;
   background: var(--navy-050);
   color: var(--navy-700);
@@ -215,7 +213,7 @@ main {
   background: #fff;
   cursor: pointer;
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: 15.5px;
   color: var(--ink-soft);
 }
 .class-tab.active {
@@ -257,12 +255,12 @@ main {
   gap: 8px;
 }
 .passbook-head .name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 600;
-  font-size: 16.5px;
+  font-size: 18.5px;
 }
 .passbook-head .class-label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-soft);
   margin-top: 2px;
 }
@@ -271,7 +269,7 @@ main {
   background: none;
   color: #c2c7d1;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1;
   padding: 2px 4px;
 }
@@ -284,7 +282,7 @@ main {
   padding: 4px 16px 14px;
 }
 .today-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--ink-soft);
@@ -292,9 +290,9 @@ main {
   margin-bottom: 2px;
 }
 .today-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 52px;
+  font-size: 56px;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--navy-900);
@@ -312,14 +310,14 @@ main {
   color: #b9bec9;
 }
 .today-unit {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--ink-soft);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
 }
 .total-line {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   background: var(--navy-050);
   border-radius: 6px;
@@ -327,7 +325,7 @@ main {
   display: inline-block;
 }
 .total-line strong {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   color: var(--navy-800);
 }
 
@@ -342,7 +340,7 @@ main {
   background: repeating-linear-gradient(
     -45deg,
     transparent 0 12px,
-    rgba(198, 154, 60, 0.05) 12px 24px
+    rgba(245, 166, 35, 0.07) 12px 24px
   );
   pointer-events: none;
 }
@@ -353,7 +351,7 @@ main {
   padding: 10px 16px 14px;
 }
 .today-log-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink-soft);
   margin-bottom: 4px;
@@ -371,7 +369,7 @@ main {
   background: #fff;
   border-radius: 999px;
   padding: 6px 11px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   color: var(--navy-800);
@@ -402,8 +400,8 @@ main {
   border: 1px solid var(--paper-line);
   border-radius: 8px;
   padding: 6px 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
 }
 .custom-row select {
   flex: 1;
@@ -411,7 +409,7 @@ main {
   border: 1px solid var(--paper-line);
   border-radius: 8px;
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   background: #fff;
 }
@@ -419,7 +417,7 @@ main {
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   background: var(--navy-900);
@@ -430,7 +428,7 @@ main {
 .history-toggle {
   border-top: 1px dashed var(--paper-line);
   padding: 9px 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   display: flex;
   justify-content: space-between;
@@ -449,8 +447,8 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11.5px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13.5px;
   padding: 5px 0;
   border-bottom: 1px dotted var(--paper-line);
   color: var(--ink-soft);
@@ -464,7 +462,7 @@ main {
   font-weight: 700;
 }
 .history-empty {
-  font-size: 12px;
+  font-size: 14px;
   padding: 6px 0;
   color: #9aa0ad;
 }
@@ -473,7 +471,7 @@ main {
   background: none;
   color: #c2c7d1;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   padding: 0 2px;
 }
 .undo-btn:hover {
@@ -483,43 +481,47 @@ main {
 /* 지급 도장 애니메이션 */
 .stamp-pop {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 46px;
-  height: 46px;
+  top: 12px;
+  right: 12px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 2px dashed var(--gold-deep);
-  color: var(--gold-deep);
+  border: 3px solid #fff;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 13px;
   opacity: 0;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: radial-gradient(circle at 35% 30%, var(--sage), #1f9f84);
+  box-shadow: 0 6px 14px -4px rgba(43, 201, 168, 0.6);
   z-index: 2;
 }
 @keyframes stampIn {
   0% {
     opacity: 0;
-    transform: scale(1.8) rotate(-14deg);
+    transform: scale(0.3) rotate(-18deg);
   }
-  35% {
+  45% {
     opacity: 1;
-    transform: scale(0.95) rotate(-14deg);
+    transform: scale(1.15) rotate(8deg);
   }
-  55% {
-    transform: scale(1.05) rotate(-14deg);
+  65% {
+    transform: scale(0.95) rotate(-4deg);
+  }
+  80% {
+    transform: scale(1.03) rotate(2deg);
   }
   100% {
     opacity: 0;
-    transform: scale(1) rotate(-14deg);
+    transform: scale(1) rotate(0deg);
   }
 }
 .stamp-pop.play {
-  animation: stampIn 0.85s ease-out;
+  animation: stampIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .add-student-card {
@@ -531,7 +533,7 @@ main {
   min-height: 150px;
   color: var(--ink-soft);
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: 15.5px;
   cursor: pointer;
   background: transparent;
 }
@@ -560,7 +562,7 @@ main {
   color: var(--ink-soft);
   border-radius: 999px;
   padding: 7px 13px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -575,7 +577,7 @@ main {
   color: var(--navy-900);
   border-radius: 999px;
   padding: 8px 18px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 12px -4px rgba(198, 154, 60, 0.7);
@@ -592,23 +594,23 @@ main {
   color: var(--sage);
   border-radius: 999px;
   padding: 7px 14px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 700;
 }
 .linkish.dark {
   color: var(--ink-soft);
-  font-size: 11.5px;
+  font-size: 13.5px;
 }
 .linkish.dark:hover {
   color: var(--brick);
 }
 .today-summary {
-  font-size: 12.5px;
+  font-size: 14.5px;
   color: var(--ink-soft);
   margin-bottom: 16px;
 }
 .today-summary strong {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   color: var(--navy-800);
 }
 
@@ -616,7 +618,7 @@ main {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(19, 32, 56, 0.55);
+  background: rgba(58, 51, 88, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -625,7 +627,7 @@ main {
 }
 .modal-card {
   background: var(--paper);
-  border-radius: 18px;
+  border-radius: 24px;
   width: 100%;
   max-width: 420px;
   max-height: 86vh;
@@ -652,13 +654,13 @@ main {
   margin-bottom: 16px;
 }
 .modal-title {
-  font-family: 'Fraunces', serif;
-  font-size: 19px;
+  font-family: 'Jua', sans-serif;
+  font-size: 21px;
   font-weight: 600;
   color: var(--navy-900);
 }
 .modal-sub {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   margin-top: 3px;
 }
@@ -675,12 +677,12 @@ main {
 }
 .settle-line .sname {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 .settle-line .sdelta {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 17px;
 }
 .sdelta.plus,
 .settle-total .plus {
@@ -696,15 +698,15 @@ main {
   align-items: center;
   padding: 12px 0 4px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--navy-900);
 }
 .settle-total span:last-child {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 17px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 19px;
 }
 .modal-note {
-  font-size: 11.5px;
+  font-size: 13.5px;
   color: var(--ink-soft);
   line-height: 1.6;
   margin: 14px 0 12px;
@@ -727,7 +729,7 @@ main {
   color: var(--ink-soft);
   border-radius: 999px;
   padding: 7px 15px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -748,15 +750,15 @@ main {
   padding: 13px 15px;
 }
 .stat-label {
-  font-size: 11.5px;
+  font-size: 13.5px;
   color: var(--ink-soft);
   font-weight: 600;
   margin-bottom: 3px;
 }
 .stat-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--navy-900);
 }
 .stat-num.plus {
@@ -766,8 +768,8 @@ main {
   color: var(--brick);
 }
 .stat-num span {
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink-soft);
   margin-left: 2px;
@@ -784,7 +786,7 @@ main {
   border-radius: 999px;
   border: 1px solid var(--paper-line);
   background: #fff;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   color: var(--ink-soft);
@@ -813,9 +815,9 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 700;
-  font-size: 20px;
+  font-size: 22px;
   color: #fff;
   box-shadow: var(--shadow);
 }
@@ -823,7 +825,7 @@ main {
   background: radial-gradient(circle at 35% 30%, #f4dd8e, var(--gold) 65%, var(--gold-deep));
   width: 70px;
   height: 70px;
-  font-size: 24px;
+  font-size: 26px;
 }
 .podium-slot.p2 .medal {
   background: linear-gradient(160deg, #e5e9ef, #adb6c4);
@@ -833,12 +835,12 @@ main {
 }
 .podium-slot .pname {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   margin-bottom: 2px;
 }
 .podium-slot .pscore {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
   color: var(--ink-soft);
 }
 
@@ -862,7 +864,7 @@ main {
 }
 .rank-row.head {
   background: var(--navy-050);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink-soft);
   padding: 8px 16px;
@@ -870,27 +872,27 @@ main {
 .rank-row.head .rcol,
 .rank-row.head .rscore,
 .rank-row.head .rank-num {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
+  font-size: 13px;
   color: var(--ink-soft);
 }
 .rank-num {
   text-align: center;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
   color: var(--navy-700);
 }
 .rank-row .rname {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 }
 .rank-row .rclass {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-soft);
 }
 .rank-row .rcol {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12.5px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14.5px;
   font-weight: 600;
   text-align: right;
   color: var(--ink-soft);
@@ -902,9 +904,9 @@ main {
   color: var(--brick);
 }
 .rank-row .rscore {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--navy-900);
   text-align: right;
 }
@@ -925,12 +927,12 @@ main {
 }
 .settings-block h4 {
   margin: 0 0 12px;
-  font-family: 'Fraunces', serif;
-  font-size: 15px;
+  font-family: 'Jua', sans-serif;
+  font-size: 17px;
   color: var(--navy-900);
 }
 .settings-block .hint {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   margin: -6px 0 12px;
   line-height: 1.5;
@@ -943,7 +945,7 @@ main {
   align-items: center;
 }
 .field-row label {
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--ink-soft);
   min-width: 96px;
@@ -954,7 +956,7 @@ main {
   border: 1px solid var(--paper-line);
   border-radius: 8px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 15px;
 }
 .field-row button {
   border: none;
@@ -962,7 +964,7 @@ main {
   color: #fff;
   border-radius: 8px;
   padding: 8px 14px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -984,7 +986,7 @@ main {
   background: var(--navy-050);
   border-radius: 999px;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 .tag button {
@@ -992,7 +994,7 @@ main {
   background: none;
   color: var(--ink-soft);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
   padding: 0;
 }
 .preset-add-row {
@@ -1006,14 +1008,14 @@ main {
   border: 1px solid var(--paper-line);
   border-radius: 8px;
   padding: 7px 9px;
-  font-size: 12.5px;
+  font-size: 14.5px;
 }
 .preset-add-row input[type='number'] {
   width: 74px;
   border: 1px solid var(--paper-line);
   border-radius: 8px;
   padding: 7px 9px;
-  font-size: 12.5px;
+  font-size: 14.5px;
 }
 .preset-add-row button {
   border: none;
@@ -1021,7 +1023,7 @@ main {
   color: #fff;
   border-radius: 8px;
   padding: 7px 12px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -1032,7 +1034,7 @@ main {
   gap: 10px;
   padding: 9px 0;
   border-bottom: 1px dotted var(--paper-line);
-  font-size: 13px;
+  font-size: 15px;
 }
 .manage-row:last-of-type {
   border-bottom: none;
@@ -1042,24 +1044,24 @@ main {
   background: none;
   color: var(--brick);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 .code-badge {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
   letter-spacing: 1px;
   background: var(--gold-light);
   color: var(--navy-900);
   border-radius: 6px;
   padding: 4px 9px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 /* ---------------- 학생 화면 ---------------- */
 /* 학생 통장 — 남색 커버 + 종이 속지 */
 .my-passbook {
-  border-radius: 18px;
+  border-radius: 24px;
   box-shadow: var(--shadow);
   overflow: hidden;
   margin-bottom: 24px;
@@ -1080,11 +1082,9 @@ main {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0.035) 0 2px,
-    transparent 2px 26px
-  );
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 3px, transparent 3.5px);
+  background-size: 26px 26px;
+  background-position: -4px -6px;
   pointer-events: none;
 }
 .mp-owner {
@@ -1092,12 +1092,12 @@ main {
   z-index: 1;
 }
 .mp-name {
-  font-family: 'Fraunces', serif;
-  font-size: 21px;
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
   font-weight: 600;
 }
 .mp-academy {
-  font-size: 12px;
+  font-size: 14px;
   color: #b9c3d6;
   margin-top: 3px;
 }
@@ -1112,9 +1112,9 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   transform: rotate(-12deg);
   flex-shrink: 0;
 }
@@ -1154,16 +1154,16 @@ main {
   background-repeat: repeat-y;
 }
 .mp-label {
-  font-size: 11.5px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--ink-soft);
   letter-spacing: 0.04em;
   margin-bottom: 4px;
 }
 .mp-today-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 46px;
+  font-size: 50px;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--navy-900);
@@ -1181,9 +1181,9 @@ main {
   color: #b9bec9;
 }
 .mp-total-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   font-weight: 700;
-  font-size: 46px;
+  font-size: 50px;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: var(--navy-900);
@@ -1192,8 +1192,8 @@ main {
   gap: 5px;
 }
 .mp-unit {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
+  font-size: 16px;
   font-weight: 600;
   color: var(--ink-soft);
 }
@@ -1222,28 +1222,28 @@ main {
 }
 .game-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 32px -14px rgba(19, 32, 56, 0.35);
+  box-shadow: 0 14px 32px -14px rgba(58, 51, 88, 0.35);
 }
 .game-card-emoji {
-  font-size: 40px;
+  font-size: 42px;
   margin-bottom: 10px;
 }
 .game-card-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px;
   color: var(--navy-900);
   margin-bottom: 6px;
 }
 .game-card-desc {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   line-height: 1.5;
 }
 
 .back-link {
   display: inline-block;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--ink-soft);
   text-decoration: none;
@@ -1267,7 +1267,7 @@ main {
   color: var(--navy-800);
   border-radius: 999px;
   padding: 9px 16px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -1280,7 +1280,7 @@ main {
   border-color: var(--navy-900);
 }
 .wheel-chip-scope {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   opacity: 0.65;
   background: rgba(0, 0, 0, 0.08);
@@ -1316,7 +1316,7 @@ main {
   color: var(--ink-soft);
   padding: 7px 13px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1338,7 +1338,7 @@ main {
   border-left: 13px solid transparent;
   border-right: 13px solid transparent;
   border-top: 22px solid var(--gold-deep);
-  filter: drop-shadow(0 2px 3px rgba(19, 32, 56, 0.35));
+  filter: drop-shadow(0 2px 3px rgba(58, 51, 88, 0.35));
   position: relative;
   z-index: 2;
   margin-bottom: -6px;
@@ -1352,17 +1352,17 @@ main {
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(0 16px 34px rgba(19, 32, 56, 0.28));
+  filter: drop-shadow(0 16px 34px rgba(58, 51, 88, 0.28));
 }
 .wheel-rim {
   fill: var(--gold);
 }
 .wheel-label {
   fill: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Gowun Dodum', 'Inter', sans-serif;
   font-weight: 700;
   paint-order: stroke;
-  stroke: rgba(19, 32, 56, 0.4);
+  stroke: rgba(58, 51, 88, 0.4);
   stroke-width: 3px;
   stroke-linejoin: round;
   pointer-events: none;
@@ -1377,14 +1377,14 @@ main {
   border-radius: 50%;
   border: 3px solid #fff;
   background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, var(--gold-deep));
-  box-shadow: 0 6px 16px -4px rgba(19, 32, 56, 0.5);
+  box-shadow: 0 6px 16px -4px rgba(58, 51, 88, 0.5);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Jua', sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--navy-900);
 }
 .wheel-hub:disabled {
@@ -1423,15 +1423,15 @@ main {
   }
 }
 .wheel-result-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--gold-deep);
   text-transform: uppercase;
 }
 .wheel-result-name {
-  font-family: 'Fraunces', serif;
-  font-size: 26px;
+  font-family: 'Jua', sans-serif;
+  font-size: 28px;
   font-weight: 700;
   color: var(--navy-900);
   margin-top: 2px;
@@ -1443,10 +1443,10 @@ main {
   padding: 46px 20px;
   text-align: center;
   color: var(--ink-soft);
-  font-size: 13.5px;
+  font-size: 15.5px;
 }
 .wheel-empty-icon {
-  font-size: 34px;
+  font-size: 36px;
   margin-bottom: 10px;
 }
 
@@ -1462,7 +1462,7 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--ink-soft);
   cursor: pointer;
 }
@@ -1477,7 +1477,7 @@ main {
   text-align: center;
 }
 .wheel-recent-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink-soft);
   letter-spacing: 0.06em;
@@ -1494,7 +1494,7 @@ main {
   color: var(--navy-800);
   border-radius: 999px;
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1514,13 +1514,13 @@ main {
   align-items: center;
   justify-content: center;
   padding: 24px 18px;
-  background: linear-gradient(170deg, var(--navy-900), var(--navy-800) 55%, #24395f);
+  background: linear-gradient(170deg, var(--navy-700), var(--navy-900) 55%, var(--purple));
 }
 .auth-card {
   width: 100%;
   max-width: 420px;
   background: var(--paper);
-  border-radius: 18px;
+  border-radius: 24px;
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
   padding: 30px 26px 26px;
   position: relative;
@@ -1544,13 +1544,13 @@ main {
   margin-bottom: 20px;
 }
 .auth-brand .title {
-  font-family: 'Fraunces', serif;
-  font-size: 21px;
+  font-family: 'Jua', sans-serif;
+  font-size: 23px;
   font-weight: 600;
   color: var(--navy-900);
 }
 .auth-brand .sub {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-soft);
   margin-top: 2px;
 }
@@ -1569,7 +1569,7 @@ main {
   color: var(--ink-soft);
   padding: 8px 12px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1582,7 +1582,7 @@ main {
 }
 .form-field label {
   display: block;
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--ink-soft);
   margin-bottom: 5px;
@@ -1593,7 +1593,7 @@ main {
   border: 1px solid var(--paper-line);
   border-radius: 9px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 16px;
   background: #fff;
 }
 .form-field input:focus,
@@ -1602,7 +1602,7 @@ main {
   outline-offset: -1px;
 }
 .form-field input.code {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Fredoka', sans-serif;
   letter-spacing: 3px;
   text-transform: uppercase;
   font-weight: 700;
@@ -1614,7 +1614,7 @@ main {
   color: #fff;
   border-radius: 10px;
   padding: 12px;
-  font-size: 14.5px;
+  font-size: 16.5px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 4px;
@@ -1630,7 +1630,7 @@ main {
 .alert {
   border-radius: 9px;
   padding: 10px 12px;
-  font-size: 12.5px;
+  font-size: 14.5px;
   margin-bottom: 13px;
   line-height: 1.5;
 }
@@ -1669,16 +1669,16 @@ main {
   background: var(--navy-050);
 }
 .role-option .emoji {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.2;
 }
 .role-option .rt {
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 15.5px;
   color: var(--navy-900);
 }
 .role-option .rd {
-  font-size: 11.5px;
+  font-size: 13.5px;
   color: var(--ink-soft);
   margin-top: 2px;
   line-height: 1.45;
@@ -1687,7 +1687,7 @@ main {
 /* ---------------- 공통 ---------------- */
 .empty-hint {
   color: var(--ink-soft);
-  font-size: 13px;
+  font-size: 15px;
   padding: 24px 16px;
   text-align: center;
 }
@@ -1697,7 +1697,7 @@ main {
   justify-content: center;
   min-height: 100vh;
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 16px;
 }
 .toast {
   position: fixed;
@@ -1708,7 +1708,7 @@ main {
   color: #fff;
   padding: 11px 18px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   box-shadow: var(--shadow);
   z-index: 50;
@@ -1732,7 +1732,7 @@ main {
   .wheel-hub {
     width: 60px;
     height: 60px;
-    font-size: 17px;
+    font-size: 19px;
   }
   .wheel-spin-btn {
     width: 100%;
@@ -1760,7 +1760,7 @@ main {
   }
   .mp-today-num,
   .mp-total-num {
-    font-size: 38px;
+    font-size: 40px;
   }
   .field-row label {
     min-width: 100%;

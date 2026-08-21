@@ -66,7 +66,7 @@ export default function OnboardingPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="brand-mark">₩</div>
+          <div className="brand-mark">🐷</div>
           <div>
             <div className="title">시작하기</div>
             <div className="sub">{session?.user.email}</div>

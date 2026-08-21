@@ -49,7 +49,7 @@ export default function AuthPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="brand-mark">₩</div>
+          <div className="brand-mark">🐷</div>
           <div>
             <div className="title">클래스뱅크</div>
             <div className="sub">학원용 포인트 통장</div>

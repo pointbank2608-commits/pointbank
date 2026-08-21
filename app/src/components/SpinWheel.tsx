@@ -84,7 +84,7 @@ export default function SpinWheel({ items, onResult }: Props) {
         >
           <circle cx={CX} cy={CY} r={R + 4} className="wheel-rim" />
           {slices.map((s) => (
-            <path key={s.id} d={s.path} fill={s.color} stroke="#faf8f1" strokeWidth={2} />
+            <path key={s.id} d={s.path} fill={s.color} stroke="#fffdf6" strokeWidth={3} />
           ))}
           {slices.map((s) => (
             <text
@@ -109,7 +109,7 @@ export default function SpinWheel({ items, onResult }: Props) {
           aria-label="돌리기"
           title="돌리기"
         >
-          <span>{spinning ? '···' : '₩'}</span>
+          <span>{spinning ? '···' : '🐷'}</span>
         </button>
       </div>
 
