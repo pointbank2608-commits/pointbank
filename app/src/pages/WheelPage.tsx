@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import SpinWheel from '../components/SpinWheel';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -180,6 +181,10 @@ export default function WheelPage() {
 
   return (
     <>
+      <Link to="/games" className="back-link">
+        ← 게임 목록
+      </Link>
+
       {isStaff ? (
         <div className="class-tabs">
           {classes.map((c) => (

@@ -10,16 +10,19 @@ const ROLE_LABEL: Record<string, string> = {
 export default function AppLayout() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
 
+  // "게임"은 설정(또는 학생의 경우 내 통장) 오른쪽 끝에 둔다.
+  // 앞으로 추가되는 미니게임은 전부 /games 목록 안에 카드로 들어가고,
+  // 네비게이션에는 이 "게임" 버튼 하나만 남는다.
   const links = isStaff
     ? [
         { to: '/board', label: '반별 통장' },
-        { to: '/games/wheel', label: '돌림판' },
         { to: '/results', label: '결과 보기' },
         { to: '/settings', label: '설정' },
+        { to: '/games', label: '게임' },
       ]
     : [
         { to: '/me', label: '내 통장' },
-        { to: '/games/wheel', label: '돌림판' },
+        { to: '/games', label: '게임' },
       ];
 
   return (

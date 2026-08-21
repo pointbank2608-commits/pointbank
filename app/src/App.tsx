@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import AppLayout from './pages/AppLayout';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
+import GamesPage from './pages/GamesPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -41,15 +42,17 @@ export default function App() {
         {isStaff ? (
           <>
             <Route path="/board" element={<ClassBoardPage />} />
-            <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/games" element={<GamesPage />} />
+            <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="*" element={<Navigate to="/board" replace />} />
           </>
         ) : (
-          // 학생은 자기 통장과 돌림판만 본다. 순위/결과 화면은 노출하지 않는다.
+          // 학생은 자기 통장과 게임만 본다. 순위/결과 화면은 노출하지 않는다.
           <>
             <Route path="/me" element={<StudentPage />} />
+            <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
