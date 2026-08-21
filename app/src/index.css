@@ -257,12 +257,12 @@ main {
 .passbook-head .name {
   font-family: 'Jua', sans-serif;
   font-weight: 600;
-  font-size: 18.5px;
+  font-size: 24px;
 }
 .passbook-head .class-label {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink-soft);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .icon-btn {
   border: none;
