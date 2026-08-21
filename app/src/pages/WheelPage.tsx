@@ -50,7 +50,8 @@ export default function WheelPage() {
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
   const [editorOpen, setEditorOpen] = useState(false);
   const [newItemLabel, setNewItemLabel] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
 
@@ -141,7 +142,7 @@ export default function WheelPage() {
       notify('돌림판 이름을 입력해 주세요.', 'error');
       return;
     }
-    setCreating(true);
+    setSubmitting(true);
     const ok = await run(async () => {
       const t = await createGameTemplate({
         academyId: academy.id,
@@ -155,10 +156,11 @@ export default function WheelPage() {
       setSelectedId(t.id);
       setEditorOpen(true);
     }, '돌림판을 만들었습니다.');
-    setCreating(false);
+    setSubmitting(false);
     if (ok) {
       setNewName('');
       setNewScope('class');
+      setShowCreateForm(false);
     }
   }
 
@@ -212,14 +214,14 @@ export default function WheelPage() {
             {isStaff && (
               <button
                 className="wheel-chip add"
-                onClick={() => setCreating((v) => !v)}
+                onClick={() => setShowCreateForm((v) => !v)}
               >
                 + 새 돌림판
               </button>
             )}
           </div>
 
-          {isStaff && creating && (
+          {isStaff && showCreateForm && (
             <div className="settings-block wheel-create-form">
               <div className="field-row">
                 <label htmlFor="wname">이름</label>
@@ -253,10 +255,10 @@ export default function WheelPage() {
                 </div>
               </div>
               <div className="field-row">
-                <button onClick={() => void handleCreate()} disabled={creating}>
-                  만들기
+                <button onClick={() => void handleCreate()} disabled={submitting}>
+                  {submitting ? '만드는 중…' : '만들기'}
                 </button>
-                <button className="ghost" onClick={() => setCreating(false)}>
+                <button className="ghost" onClick={() => setShowCreateForm(false)}>
                   취소
                 </button>
               </div>
