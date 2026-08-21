@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -8,13 +8,18 @@ import {
   deletePreset,
   fetchPresets,
   fetchStudentsOfClass,
+  removeAcademyLogo,
   renameClass,
   rotateInviteCode,
   updateAcademy,
+  uploadAcademyLogo,
 } from '../lib/api';
 import { signed } from '../lib/format';
+import { resizeImageToPng } from '../lib/image';
 import { useClasses } from '../lib/useClasses';
 import type { Preset, Student } from '../lib/types';
+
+const MAX_LOGO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function SettingsPage() {
   const { academy, profile, refresh } = useAuth();
@@ -29,6 +34,8 @@ export default function SettingsPage() {
   const [newClassName, setNewClassName] = useState('');
   const [students, setStudents] = useState<Student[]>([]);
   const [inviteCode, setInviteCode] = useState(academy?.invite_code ?? '');
+  const [logoBusy, setLogoBusy] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setName(academy?.name ?? '');
@@ -131,6 +138,36 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleLogoSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // 같은 파일을 다시 선택해도 change 가 발생하도록
+    if (!file || !academy?.id) return;
+
+    if (!file.type.startsWith('image/')) {
+      notify('이미지 파일만 업로드할 수 있어요.', 'error');
+      return;
+    }
+    if (file.size > MAX_LOGO_FILE_SIZE) {
+      notify('이미지 용량은 5MB 이하로 올려주세요.', 'error');
+      return;
+    }
+
+    setLogoBusy(true);
+    const ok = await run(async () => {
+      const resized = await resizeImageToPng(file);
+      await uploadAcademyLogo(academy.id, resized);
+    }, '로고를 업로드했습니다.');
+    setLogoBusy(false);
+    if (ok) await refresh();
+  }
+
+  async function handleLogoRemove() {
+    if (!academy?.id) return;
+    if (!confirm('로고를 삭제하고 기본 이미지로 되돌릴까요?')) return;
+    const ok = await run(() => removeAcademyLogo(academy.id), '로고를 삭제했습니다.');
+    if (ok) await refresh();
+  }
+
   function copy(text: string, what: string) {
     navigator.clipboard
       .writeText(text)
@@ -142,6 +179,40 @@ export default function SettingsPage() {
 
   return (
     <>
+      <div className="settings-block">
+        <h4>학원 로고</h4>
+        <p className="hint">
+          업로드하면 화면 위쪽 브랜드 마크(기본은 🐷)가 학원 로고로 바뀝니다. 정사각형에 가까운
+          이미지가 가장 예쁘게 나옵니다.
+        </p>
+        <div className="logo-upload-row">
+          <div className="logo-preview">
+            {academy?.logo_url ? (
+              <img src={academy.logo_url} alt="학원 로고" />
+            ) : (
+              <span>🐷</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => logoInputRef.current?.click()} disabled={logoBusy}>
+              {logoBusy ? '업로드 중…' : academy?.logo_url ? '로고 바꾸기' : '로고 업로드'}
+            </button>
+            {academy?.logo_url && (
+              <button className="ghost" onClick={() => void handleLogoRemove()} disabled={logoBusy}>
+                기본 이미지로
+              </button>
+            )}
+          </div>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => void handleLogoSelect(e)}
+          />
+        </div>
+      </div>
+
       <div className="settings-block">
         <h4>학원 · 포인트 기본 설정</h4>
         <div className="field-row">

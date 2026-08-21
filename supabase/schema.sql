@@ -313,6 +313,7 @@ as $$
   left join public.transactions t on t.student_id = s.id
   where s.class_id = p_class_id
     and s.academy_id = public.my_academy_id()   -- 테넌트 경계 강제
+    and public.is_staff()                       -- 학생은 남의 순위를 볼 수 없음 (003 마이그레이션)
   group by s.id, s.name, c.name
   order by balance desc, s.name asc;
 $$;
@@ -326,6 +327,7 @@ as $$
   join public.classes c on c.id = s.class_id
   left join public.transactions t on t.student_id = s.id
   where s.academy_id = public.my_academy_id()
+    and public.is_staff()
   group by s.id, s.name, c.name
   order by balance desc, s.name asc;
 $$;
@@ -550,8 +552,58 @@ as $$
         and (p_since is null or t.created_at >= p_since)
   where s.academy_id = public.my_academy_id()
     and (p_class_id is null or s.class_id = p_class_id)
+    and public.is_staff()
   group by s.id, s.name, c.name
   order by balance desc, s.name asc;
 $$;
 
 grant execute on function public.ranking_summary(uuid, timestamptz) to authenticated;
+
+
+-- ============================================================
+--  10. 학원 로고
+--     학원마다 헤더의 브랜드 마크(기본은 🐷)를 자기 로고로 바꿀 수 있다.
+-- ============================================================
+
+alter table public.academies
+  add column if not exists logo_url text;
+
+-- 로고 이미지를 담을 공개 버킷
+insert into storage.buckets (id, name, public)
+values ('logos', 'logos', true)
+on conflict (id) do nothing;
+
+-- 업로드 경로 규칙: "<academy_id>/logo.<확장자>"
+-- 폴더 이름(첫 세그먼트)이 자신의 academy_id 와 같을 때만, 그리고 선생님/원장일 때만 쓰기 허용.
+-- 읽기는 버킷이 public 이라 누구나 가능 (RLS 정책 불필요).
+drop policy if exists logos_insert on storage.objects;
+create policy logos_insert on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'logos'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  );
+
+drop policy if exists logos_update on storage.objects;
+create policy logos_update on storage.objects
+  for update to authenticated
+  using (
+    bucket_id = 'logos'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  )
+  with check (
+    bucket_id = 'logos'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  );
+
+drop policy if exists logos_delete on storage.objects;
+create policy logos_delete on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'logos'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  );

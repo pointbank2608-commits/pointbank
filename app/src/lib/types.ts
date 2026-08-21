@@ -5,6 +5,7 @@ export interface Academy {
   name: string;
   point_unit: string;
   invite_code: string;
+  logo_url: string | null;
   created_at: string;
 }
 

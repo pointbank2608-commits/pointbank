@@ -30,7 +30,13 @@ export default function AppLayout() {
       <header className="topbar">
         <div className="topbar-row">
           <div className="brand">
-            <div className="brand-mark">🐷</div>
+            <div className="brand-mark">
+              {academy?.logo_url ? (
+                <img src={academy.logo_url} alt="" className="brand-mark-img" />
+              ) : (
+                '🐷'
+              )}
+            </div>
             <div className="brand-text">
               <div className="name">{academy?.name ?? '클래스뱅크'}</div>
               <div className="sub">클래스뱅크 · 포인트 단위 ‘{pointUnit}’</div>

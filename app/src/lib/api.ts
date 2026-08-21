@@ -241,7 +241,7 @@ export async function deletePreset(presetId: string) {
 
 export async function updateAcademy(
   academyId: string,
-  patch: Partial<Pick<Academy, 'name' | 'point_unit'>>,
+  patch: Partial<Pick<Academy, 'name' | 'point_unit' | 'logo_url'>>,
 ) {
   const { error } = await supabase.from('academies').update(patch).eq('id', academyId);
   if (error) throw new Error(error.message);
@@ -251,6 +251,28 @@ export async function rotateInviteCode(): Promise<string> {
   const { data, error } = await supabase.rpc('rotate_invite_code');
   if (error) throw new Error(error.message);
   return data as string;
+}
+
+/** 학원 로고를 올리고 academies.logo_url 을 갱신한 뒤 새 URL을 돌려준다. */
+export async function uploadAcademyLogo(academyId: string, image: Blob): Promise<string> {
+  const path = `${academyId}/logo.png`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('logos')
+    .upload(path, image, { upsert: true, contentType: 'image/png', cacheControl: '3600' });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage.from('logos').getPublicUrl(path);
+  // 같은 경로를 덮어쓰므로, 캐시 무효화를 위해 버전 쿼리를 붙여서 저장한다.
+  const url = `${data.publicUrl}?v=${Date.now()}`;
+
+  await updateAcademy(academyId, { logo_url: url });
+  return url;
+}
+
+export async function removeAcademyLogo(academyId: string): Promise<void> {
+  await supabase.storage.from('logos').remove([`${academyId}/logo.png`]);
+  await updateAcademy(academyId, { logo_url: null });
 }
 
 /* ---------------- 순위 ---------------- */
