@@ -1288,8 +1288,8 @@ main {
   border: 2px solid var(--navy-900);
   color: var(--navy-900);
   border-radius: 999px;
-  padding: 9px 22px;
-  font-size: 16px;
+  padding: 10px 26px;
+  font-size: 18px;
   font-weight: 700;
   text-decoration: none;
 }
@@ -1320,29 +1320,29 @@ main {
 }
 .landing-hero h1 {
   font-family: 'Jua', sans-serif;
-  font-size: 46px;
+  font-size: 54px;
   line-height: 1.3;
   color: var(--navy-900);
-  margin: 0 0 18px;
+  margin: 0 0 22px;
   font-weight: 400;
 }
 .landing-hero h1 span {
   color: var(--gold-deep);
 }
 .landing-hero p {
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1.75;
   color: var(--ink);
-  margin: 0 0 28px;
+  margin: 0 0 30px;
 }
 .landing-cta {
   display: inline-block;
   background: var(--navy-900);
   color: #fff;
   border-radius: 999px;
-  padding: 15px 46px;
+  padding: 17px 50px;
   font-family: 'Jua', sans-serif;
-  font-size: 20px;
+  font-size: 23px;
   text-decoration: none;
   box-shadow: 0 10px 24px -8px rgba(39, 101, 168, 0.6);
 }
@@ -1355,8 +1355,8 @@ main {
   box-shadow: 0 10px 24px -8px rgba(255, 201, 60, 0.8);
 }
 .landing-beta-note {
-  margin-top: 14px;
-  font-size: 15px;
+  margin-top: 16px;
+  font-size: 17px;
   color: var(--ink-soft);
 }
 
@@ -1383,7 +1383,7 @@ main {
 }
 .landing-band-title {
   font-family: 'Jua', sans-serif;
-  font-size: 30px;
+  font-size: 36px;
   font-weight: 400;
   color: var(--navy-900);
   text-align: center;
@@ -1405,17 +1405,17 @@ main {
   box-shadow: var(--shadow);
 }
 .landing-summary-emoji {
-  font-size: 38px;
+  font-size: 44px;
   margin-bottom: 10px;
 }
 .landing-summary-title {
   font-family: 'Jua', sans-serif;
-  font-size: 19px;
+  font-size: 22px;
   color: var(--navy-900);
   margin-bottom: 6px;
 }
 .landing-summary-desc {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink-soft);
   line-height: 1.5;
 }
@@ -1456,7 +1456,7 @@ main {
 .landing-frame-caption {
   background: #fff;
   padding: 18px 22px;
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.7;
   color: var(--ink-soft);
 }
@@ -1495,21 +1495,21 @@ main {
   background: var(--gold-light);
   color: var(--gold-deep);
   border-radius: 999px;
-  padding: 5px 14px;
-  font-size: 14px;
+  padding: 6px 16px;
+  font-size: 16px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .landing-feature-text h2 {
   font-family: 'Jua', sans-serif;
-  font-size: 32px;
+  font-size: 38px;
   color: var(--navy-900);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-weight: 400;
   line-height: 1.35;
 }
 .landing-feature-text p {
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.85;
   color: var(--ink-soft);
   margin: 0;
@@ -1527,12 +1527,12 @@ main {
 }
 .landing-final h2 {
   font-family: 'Jua', sans-serif;
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 400;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 .landing-final p {
-  font-size: 17px;
+  font-size: 19px;
   color: #d5e6f7;
   margin: 0 0 26px;
 }
@@ -1541,7 +1541,7 @@ main {
   color: #cfe1f2;
   text-align: center;
   padding: 20px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 @media (max-width: 860px) {
@@ -1551,13 +1551,16 @@ main {
 }
 @media (max-width: 780px) {
   .landing-hero h1 {
-    font-size: 34px;
+    font-size: 38px;
+  }
+  .landing-hero p {
+    font-size: 18px;
   }
   .landing-band {
     padding: 44px 0;
   }
   .landing-band-title {
-    font-size: 25px;
+    font-size: 28px;
   }
   .landing-feature {
     grid-template-columns: 1fr;
@@ -1567,7 +1570,13 @@ main {
     order: 0;
   }
   .landing-feature-text h2 {
-    font-size: 25px;
+    font-size: 28px;
+  }
+  .landing-feature-text p {
+    font-size: 17px;
+  }
+  .landing-final h2 {
+    font-size: 28px;
   }
 }
 /* ---------------- 출석부 ---------------- */
