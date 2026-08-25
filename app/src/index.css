@@ -1268,7 +1268,7 @@ main {
 
 /* ---------------- 랜딩 페이지 ---------------- */
 .landing {
-  background: var(--navy-050);
+  background: #fff;
   min-height: 100vh;
 }
 .landing-nav {
@@ -1298,6 +1298,16 @@ main {
   color: #fff;
 }
 
+/* 히어로 — 알록달록한 배경 띠 */
+.landing-hero-band {
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255, 201, 60, 0.35), transparent 45%),
+    radial-gradient(circle at 88% 25%, rgba(155, 140, 240, 0.32), transparent 45%),
+    radial-gradient(circle at 70% 85%, rgba(43, 201, 168, 0.28), transparent 45%),
+    radial-gradient(circle at 25% 90%, rgba(255, 107, 107, 0.22), transparent 45%),
+    var(--navy-050);
+  padding: 20px 0 10px;
+}
 .landing-hero {
   max-width: 720px;
   margin: 0 auto;
@@ -1322,7 +1332,7 @@ main {
 .landing-hero p {
   font-size: 18px;
   line-height: 1.75;
-  color: var(--ink-soft);
+  color: var(--ink);
   margin: 0 0 28px;
 }
 .landing-cta {
@@ -1350,18 +1360,136 @@ main {
   color: var(--ink-soft);
 }
 
-.landing-feature {
+/* 섹션 띠 — 배경색을 번갈아 깔아 구간을 구분한다 */
+.landing-band {
+  padding: 64px 0;
+}
+.landing-band.band-white {
+  background: #fff;
+}
+.landing-band.band-blue {
+  background: var(--navy-050);
+}
+.landing-band.band-pink {
+  background: #fff2f5;
+}
+.landing-band.band-mint {
+  background: #eafaf5;
+}
+.landing-inner {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 0 20px;
+}
+.landing-band-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--navy-900);
+  text-align: center;
+  margin: 0 0 34px;
+}
+
+/* 한눈에 보기 카드 */
+.landing-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.landing-summary-card {
+  background: #fff;
+  border: 2px solid var(--paper-line);
+  border-radius: 22px;
+  padding: 26px 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.landing-summary-emoji {
+  font-size: 38px;
+  margin-bottom: 10px;
+}
+.landing-summary-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 19px;
+  color: var(--navy-900);
+  margin-bottom: 6px;
+}
+.landing-summary-desc {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+/* 기능 소개 — 좌: 프레임(목업), 우: 설명 */
+.landing-feature {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 46px;
   align-items: center;
 }
-.landing-feature.reverse .landing-feature-text {
+.landing-feature.reverse .landing-frame {
   order: 2;
 }
+
+/* class5 처럼 목업을 색이 들어간 둥근 카드 안에 넣고, 아래에 흰 캡션을 붙인다 */
+.landing-frame {
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px -14px rgba(58, 51, 88, 0.28);
+}
+.landing-frame-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 20px;
+  min-height: 260px;
+}
+.frame-lavender .landing-frame-stage {
+  background: #f1ecff;
+}
+.frame-pink .landing-frame-stage {
+  background: #ffe9f1;
+}
+.frame-mint .landing-frame-stage {
+  background: #e2f7ef;
+}
+.landing-frame-caption {
+  background: #fff;
+  padding: 18px 22px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.landing-frame-caption strong {
+  color: var(--navy-900);
+}
+/* transform: scale 은 레이아웃 박스를 줄이지 않아 높이가 어긋난다.
+   랜딩에서는 돌림판 자체의 크기를 직접 지정한다. */
+.landing-wheel-scale {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.landing-wheel-scale .wheel-frame {
+  width: 270px;
+}
+.landing-wheel-scale .wheel-spin-btn {
+  padding: 10px 32px;
+  font-size: 17px;
+  margin-top: 14px;
+}
+.landing-wheel-scale .wheel-hub {
+  width: 58px;
+  height: 58px;
+  font-size: 17px;
+}
+/* 랜딩의 목업은 보여주기용이라 클릭되지 않게 한다 (돌림판은 예외) */
+.landing-mock .chip,
+.landing-frame .chip,
+.landing-frame .att-cell {
+  cursor: default;
+}
+
 .landing-feature-eyebrow {
   display: inline-block;
   background: var(--gold-light);
@@ -1374,7 +1502,7 @@ main {
 }
 .landing-feature-text h2 {
   font-family: 'Jua', sans-serif;
-  font-size: 30px;
+  font-size: 32px;
   color: var(--navy-900);
   margin: 0 0 14px;
   font-weight: 400;
@@ -1382,27 +1510,17 @@ main {
 }
 .landing-feature-text p {
   font-size: 17px;
-  line-height: 1.8;
+  line-height: 1.85;
   color: var(--ink-soft);
   margin: 0;
 }
 .landing-feature-text strong {
   color: var(--navy-900);
 }
-.landing-mock {
-  display: flex;
-  justify-content: center;
-}
-/* 랜딩의 목업은 보여주기용이라 클릭되지 않게 한다 (돌림판은 예외) */
-.landing-mock .chip,
-.landing-mock .att-cell {
-  cursor: default;
-}
 
 .landing-final {
   text-align: center;
   padding: 70px 20px 80px;
-  margin-top: 30px;
   background: linear-gradient(160deg, var(--navy-900), var(--navy-800) 85%);
   color: #fff;
   border-radius: 40px 40px 0 0;
@@ -1426,22 +1544,32 @@ main {
   font-size: 14px;
 }
 
+@media (max-width: 860px) {
+  .landing-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 @media (max-width: 780px) {
   .landing-hero h1 {
     font-size: 34px;
+  }
+  .landing-band {
+    padding: 44px 0;
+  }
+  .landing-band-title {
+    font-size: 25px;
   }
   .landing-feature {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  .landing-feature.reverse .landing-feature-text {
+  .landing-feature.reverse .landing-frame {
     order: 0;
   }
   .landing-feature-text h2 {
     font-size: 25px;
   }
 }
-
 /* ---------------- 출석부 ---------------- */
 .att-grid-wrap {
   overflow-x: auto;
