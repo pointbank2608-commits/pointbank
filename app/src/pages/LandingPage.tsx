@@ -78,7 +78,7 @@ export default function LandingPage() {
               <div className="passbook" style={{ maxWidth: 250 }}>
                 <div className="passbook-head">
                   <div>
-                    <div className="name">김사랑</div>
+                    <div className="name">홍길동</div>
                     <div className="class-label">1반</div>
                   </div>
                 </div>
@@ -176,9 +176,9 @@ export default function LandingPage() {
                   </thead>
                   <tbody>
                     {[
-                      { name: '김사랑', marks: [1, 1, 0, 1, 1, 0, 1] },
-                      { name: '이에스더', marks: [1, 0, 1, 1, 0, 0, 1] },
-                      { name: '박도윤', marks: [1, 1, 1, 0, 1, 0, 1] },
+                      { name: '홍길동', marks: [1, 1, 0, 1, 1, 0, 1] },
+                      { name: '김철수', marks: [1, 0, 1, 1, 0, 0, 1] },
+                      { name: '이영희', marks: [1, 1, 1, 0, 1, 0, 1] },
                     ].map((row) => (
                       <tr key={row.name}>
                         <td className="att-grid-name">{row.name}</td>
