@@ -5,6 +5,7 @@ import AttendancePage from './pages/AttendancePage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import GamesPage from './pages/GamesPage';
+import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -18,11 +19,13 @@ export default function App() {
     return <div className="page-loading">불러오는 중…</div>;
   }
 
-  // 1) 로그인 전
+  // 1) 로그인 전 — 첫 화면은 서비스 소개(랜딩), 로그인/가입은 /login
   if (!session) {
     return (
       <Routes>
-        <Route path="*" element={<AuthPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }

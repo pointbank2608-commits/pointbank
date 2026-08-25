@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { friendlyError, supabase } from '../lib/supabase';
 
 type Mode = 'login' | 'signup';
@@ -107,11 +108,24 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <p style={{ fontSize: 11.5, color: 'var(--ink-soft)', marginTop: 16, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13.5, color: 'var(--ink-soft)', marginTop: 16, lineHeight: 1.6 }}>
           선생님·원장님은 회원가입 후 학원을 만들거나 초대 코드로 합류할 수 있어요.
           <br />
           학생은 선생님에게 받은 <strong>학생 코드</strong>로 통장을 연결합니다.
         </p>
+
+        <Link
+          to="/"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            marginTop: 14,
+            fontSize: 13.5,
+            color: 'var(--ink-soft)',
+          }}
+        >
+          ← 서비스 소개로 돌아가기
+        </Link>
       </div>
     </div>
   );

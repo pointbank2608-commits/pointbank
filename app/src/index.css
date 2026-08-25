@@ -1266,6 +1266,182 @@ main {
   padding: 4px 16px;
 }
 
+/* ---------------- 랜딩 페이지 ---------------- */
+.landing {
+  background: var(--navy-050);
+  min-height: 100vh;
+}
+.landing-nav {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.landing-nav .brand-text .name {
+  color: var(--navy-900);
+  font-size: 24px;
+}
+.landing-nav-btn {
+  background: #fff;
+  border: 2px solid var(--navy-900);
+  color: var(--navy-900);
+  border-radius: 999px;
+  padding: 9px 22px;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.landing-nav-btn:hover {
+  background: var(--navy-900);
+  color: #fff;
+}
+
+.landing-hero {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  text-align: center;
+}
+.landing-hero-emoji {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+.landing-hero h1 {
+  font-family: 'Jua', sans-serif;
+  font-size: 46px;
+  line-height: 1.3;
+  color: var(--navy-900);
+  margin: 0 0 18px;
+  font-weight: 400;
+}
+.landing-hero h1 span {
+  color: var(--gold-deep);
+}
+.landing-hero p {
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  margin: 0 0 28px;
+}
+.landing-cta {
+  display: inline-block;
+  background: var(--navy-900);
+  color: #fff;
+  border-radius: 999px;
+  padding: 15px 46px;
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  text-decoration: none;
+  box-shadow: 0 10px 24px -8px rgba(39, 101, 168, 0.6);
+}
+.landing-cta:hover {
+  filter: brightness(1.08);
+}
+.landing-cta.gold {
+  background: var(--gold);
+  color: var(--navy-900);
+  box-shadow: 0 10px 24px -8px rgba(255, 201, 60, 0.8);
+}
+.landing-beta-note {
+  margin-top: 14px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.landing-feature {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.landing-feature.reverse .landing-feature-text {
+  order: 2;
+}
+.landing-feature-eyebrow {
+  display: inline-block;
+  background: var(--gold-light);
+  color: var(--gold-deep);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.landing-feature-text h2 {
+  font-family: 'Jua', sans-serif;
+  font-size: 30px;
+  color: var(--navy-900);
+  margin: 0 0 14px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+.landing-feature-text p {
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.landing-feature-text strong {
+  color: var(--navy-900);
+}
+.landing-mock {
+  display: flex;
+  justify-content: center;
+}
+/* 랜딩의 목업은 보여주기용이라 클릭되지 않게 한다 (돌림판은 예외) */
+.landing-mock .chip,
+.landing-mock .att-cell {
+  cursor: default;
+}
+
+.landing-final {
+  text-align: center;
+  padding: 70px 20px 80px;
+  margin-top: 30px;
+  background: linear-gradient(160deg, var(--navy-900), var(--navy-800) 85%);
+  color: #fff;
+  border-radius: 40px 40px 0 0;
+}
+.landing-final h2 {
+  font-family: 'Jua', sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  margin: 0 0 12px;
+}
+.landing-final p {
+  font-size: 17px;
+  color: #d5e6f7;
+  margin: 0 0 26px;
+}
+.landing-footer {
+  background: var(--navy-800);
+  color: #cfe1f2;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}
+
+@media (max-width: 780px) {
+  .landing-hero h1 {
+    font-size: 34px;
+  }
+  .landing-feature {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .landing-feature.reverse .landing-feature-text {
+    order: 0;
+  }
+  .landing-feature-text h2 {
+    font-size: 25px;
+  }
+}
+
 /* ---------------- 출석부 ---------------- */
 .att-grid-wrap {
   overflow-x: auto;
