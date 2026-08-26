@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
+  clearCheckIn,
+  clearCheckOut,
   deleteAttendance,
   fetchAttendance,
   fetchStudentsOfClass,
@@ -12,6 +14,11 @@ import type { Attendance, Student } from '../lib/types';
 
 function pad(n: number): string {
   return String(n).padStart(2, '0');
+}
+
+/** 시:분만 뽑는다 (날짜는 모달 제목에 이미 있으므로). */
+function timeOnly(iso: string): string {
+  return new Date(iso).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function AttendancePage() {
@@ -27,6 +34,10 @@ export default function AttendancePage() {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  /** 상세 팝업 대상: 셀을 눌렀을 때 등원/하원 시각을 보여주는 용도 */
+  const [detail, setDetail] = useState<{ studentId: string; studentName: string; day: number } | null>(
+    null,
+  );
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -59,6 +70,11 @@ export default function AttendancePage() {
     void load();
   }, [load]);
 
+  // 반이나 월이 바뀌면 열려 있던 상세 팝업은 닫는다.
+  useEffect(() => {
+    setDetail(null);
+  }, [selectedId, year, month]);
+
   const map = useMemo(() => {
     const m = new Map<string, Attendance>(); // `${studentId}_${day}`
     for (const a of attendance) {
@@ -82,30 +98,72 @@ export default function AttendancePage() {
     setMonth(m);
   }
 
-  async function handleCellClick(studentId: string, day: number) {
-    if (!academy?.id || !selectedId || !profile) return;
+  function cellTooltip(a: Attendance | undefined): string {
+    if (!a) return '클릭하면 출석 처리됩니다.';
+    const parts: string[] = [];
+    parts.push(a.checked_in_at ? `등원 ${timeOnly(a.checked_in_at)}` : '등원 기록 없음');
+    parts.push(a.checked_out_at ? `하원 ${timeOnly(a.checked_out_at)}` : '하원 기록 없음');
+    return parts.join(' · ');
+  }
+
+  async function handleCellClick(studentId: string, studentName: string, day: number) {
     const key = `${studentId}_${day}`;
     const existing = map.get(key);
-    setBusyKey(key);
     if (existing) {
-      const ok = await run(() => deleteAttendance(existing.id));
-      if (ok) setAttendance((prev) => prev.filter((a) => a.id !== existing.id));
-    } else {
-      const attendedOn = `${year}-${pad(month)}-${pad(day)}`;
-      try {
-        const row = await markPresent({
-          academyId: academy.id,
-          classId: selectedId,
-          studentId,
-          attendedOn,
-          teacherId: profile.id,
-        });
-        setAttendance((prev) => [...prev, row]);
-      } catch (err) {
-        notify(err instanceof Error ? err.message : String(err), 'error');
-      }
+      // 이미 기록이 있으면 바로 지우지 않고, 시각을 보여주는 상세 팝업을 연다.
+      setDetail({ studentId, studentName, day });
+      return;
+    }
+    if (!academy?.id || !selectedId || !profile) return;
+    setBusyKey(key);
+    const attendedOn = `${year}-${pad(month)}-${pad(day)}`;
+    try {
+      const row = await markPresent({
+        academyId: academy.id,
+        classId: selectedId,
+        studentId,
+        attendedOn,
+        teacherId: profile.id,
+      });
+      setAttendance((prev) => [...prev, row]);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
     }
     setBusyKey(null);
+  }
+
+  const detailRow = detail ? map.get(`${detail.studentId}_${detail.day}`) : null;
+
+  async function handleClearCheckIn() {
+    if (!detailRow) return;
+    const ok = await run(() => clearCheckIn(detailRow.id), '등원 기록을 지웠습니다.');
+    if (ok) {
+      setAttendance((prev) =>
+        prev.map((a) => (a.id === detailRow.id ? { ...a, checked_in_at: null, checked_in_by: null } : a)),
+      );
+    }
+  }
+
+  async function handleClearCheckOut() {
+    if (!detailRow) return;
+    const ok = await run(() => clearCheckOut(detailRow.id), '하원 기록을 지웠습니다.');
+    if (ok) {
+      setAttendance((prev) =>
+        prev.map((a) =>
+          a.id === detailRow.id ? { ...a, checked_out_at: null, checked_out_by: null } : a,
+        ),
+      );
+    }
+  }
+
+  async function handleDeleteDay() {
+    if (!detailRow) return;
+    if (!confirm('이 날짜의 출석 기록을 완전히 삭제할까요?')) return;
+    const ok = await run(() => deleteAttendance(detailRow.id), '출석 기록을 삭제했습니다.');
+    if (ok) {
+      setAttendance((prev) => prev.filter((a) => a.id !== detailRow.id));
+      setDetail(null);
+    }
   }
 
   return (
@@ -140,8 +198,7 @@ export default function AttendancePage() {
       </div>
 
       <p className="hint" style={{ margin: '0 0 14px' }}>
-        빈 칸을 누르면 출석 처리, 표시된 칸을 다시 누르면 취소됩니다. 실시간 등원/하원 시각은
-        반별 통장 카드에서 확인하세요.
+        빈 칸을 누르면 출석 처리됩니다. 이미 표시된 칸을 누르면 등원·하원 시각을 볼 수 있어요.
       </p>
 
       {loading ? (
@@ -168,15 +225,16 @@ export default function AttendancePage() {
                     <td className="att-grid-name">{s.name}</td>
                     {days.map((d) => {
                       const key = `${s.id}_${d}`;
-                      const present = map.has(key);
+                      const rec = map.get(key);
                       return (
                         <td key={d}>
                           <button
-                            className={`att-cell ${present ? 'present' : ''}`}
+                            className={`att-cell ${rec ? 'present' : ''}`}
                             disabled={busyKey === key}
-                            onClick={() => void handleCellClick(s.id, d)}
+                            title={cellTooltip(rec)}
+                            onClick={() => void handleCellClick(s.id, s.name, d)}
                           >
-                            {present ? '●' : ''}
+                            {rec ? '●' : ''}
                           </button>
                         </td>
                       );
@@ -187,6 +245,59 @@ export default function AttendancePage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {detail && (
+        <div className="modal-backdrop" onClick={() => setDetail(null)}>
+          <div className="modal-card" style={{ maxWidth: 340 }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <div className="modal-title">{detail.studentName}</div>
+                <div className="modal-sub">
+                  {year}년 {month}월 {detail.day}일
+                </div>
+              </div>
+              <button className="icon-btn" onClick={() => setDetail(null)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="settle-list">
+              <div className="settle-line">
+                <span className="sname">등원</span>
+                <span className="sdelta plus">
+                  {detailRow?.checked_in_at ? timeOnly(detailRow.checked_in_at) : '기록 없음'}
+                </span>
+              </div>
+              <div className="settle-line">
+                <span className="sname">하원</span>
+                <span className="sdelta minus">
+                  {detailRow?.checked_out_at ? timeOnly(detailRow.checked_out_at) : '기록 없음'}
+                </span>
+              </div>
+            </div>
+
+            <div className="field-row" style={{ marginTop: 16 }}>
+              {detailRow?.checked_in_at && (
+                <button className="ghost" onClick={() => void handleClearCheckIn()}>
+                  등원 지우기
+                </button>
+              )}
+              {detailRow?.checked_out_at && (
+                <button className="ghost" onClick={() => void handleClearCheckOut()}>
+                  하원 지우기
+                </button>
+              )}
+            </div>
+            <button
+              className="btn-primary"
+              style={{ marginTop: 8, background: 'var(--brick)' }}
+              onClick={() => void handleDeleteDay()}
+            >
+              이 날짜 기록 전체 삭제
+            </button>
+          </div>
         </div>
       )}
     </>
