@@ -13,7 +13,7 @@ const SUMMARY = [
   { emoji: '🐷', title: '포인트 통장', desc: '지급 · 차감 · 오늘 마감' },
   { emoji: '📗', title: '출석부', desc: '등원 · 하원 · 월별 기록' },
   { emoji: '🎡', title: '미니게임', desc: '돌림판 (사다리 · 빙고 예정)' },
-  { emoji: '🏫', title: '반 · 학원 관리', desc: '선생님 초대 · 학생 코드' },
+  { emoji: '🏫', title: '반 · 학원 관리', desc: '선생님 초대 · 반 관리' },
 ];
 
 export default function LandingPage() {

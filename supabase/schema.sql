@@ -477,7 +477,9 @@ $$;
 -- ============================================================
 grant execute on function public.create_academy(text, text, text)        to authenticated;
 grant execute on function public.join_academy_as_teacher(text, text)     to authenticated;
-grant execute on function public.claim_student(text)                     to authenticated;
+-- claim_student() 는 베타 기간 동안 실행 권한을 주지 않는다 (12번 섹션 참고).
+-- 학생 로그인을 다시 열 때 아래 줄의 주석만 풀면 된다.
+-- grant execute on function public.claim_student(text) to authenticated;
 grant execute on function public.rotate_invite_code()                    to authenticated;
 grant execute on function public.class_ranking(uuid)                     to authenticated;
 grant execute on function public.academy_ranking()                       to authenticated;
@@ -642,3 +644,20 @@ drop policy if exists attendance_write on public.attendance;
 create policy attendance_write on public.attendance
   for all using (academy_id = public.my_academy_id() and public.is_staff())
           with check (academy_id = public.my_academy_id() and public.is_staff());
+
+
+-- ============================================================
+--  12. 학생 로그인 잠금 (베타 오픈 전 보안 조치)
+--
+--  academies.invite_code / students.claim_code 는 같은 학원 구성원이면
+--  누구나 select 로 읽을 수 있는 구조다. 학생 계정이 존재하면 학생이
+--  invite_code 를 읽어 선생님으로 재가입하거나, 다른 학생의 claim_code 를
+--  읽어 그 학생 계정을 가로챌 수 있다. 학생 로그인 경로 자체를 막으면
+--  넘을 권한 경계가 없어져 문제가 해소된다.
+--
+--  claim_student() 는 지우지 않고 실행 권한만 회수한다. 나중에 학생
+--  로그인을 다시 열 때는 8번 섹션의 grant 주석만 풀면 된다.
+-- ============================================================
+
+revoke execute on function public.claim_student(text) from authenticated;
+revoke execute on function public.claim_student(text) from public;

@@ -1,9 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { claimStudent, createAcademy, joinAsTeacher } from '../lib/api';
+import { createAcademy, joinAsTeacher } from '../lib/api';
 import { supabase } from '../lib/supabase';
 
-type Choice = 'owner' | 'teacher' | 'student';
+// 베타 기간 동안은 학생 로그인을 잠가둔다 (원장/선생님만 로그인 가능).
+// DB 쪽도 claim_student() 실행 권한을 회수해뒀다 — 여기서 폼만 없앤다고
+// 막히는 게 아니라 API 자체가 거부된다. 다시 열 때는:
+//   1) supabase/schema.sql 8번 섹션의 grant 주석 해제
+//   2) 아래 Choice 타입/OPTIONS 에 'student' 옵션과 claimCode 처리 복구
+type Choice = 'owner' | 'teacher';
 
 const OPTIONS: { key: Choice; emoji: string; title: string; desc: string }[] = [
   {
@@ -17,12 +22,6 @@ const OPTIONS: { key: Choice; emoji: string; title: string; desc: string }[] = [
     emoji: '🧑‍🏫',
     title: '선생님으로 합류하기',
     desc: '원장님께 받은 6자리 초대 코드를 입력하세요.',
-  },
-  {
-    key: 'student',
-    emoji: '🎒',
-    title: '학생으로 내 통장 연결하기',
-    desc: '선생님께 받은 8자리 학생 코드를 입력하세요.',
   },
 ];
 
@@ -39,8 +38,6 @@ export default function OnboardingPage() {
   // 선생님
   const [inviteCode, setInviteCode] = useState('');
   const [teacherName, setTeacherName] = useState('');
-  // 학생
-  const [claimCode, setClaimCode] = useState('');
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -51,8 +48,6 @@ export default function OnboardingPage() {
         await createAcademy(academyName, pointUnit, ownerName);
       } else if (choice === 'teacher') {
         await joinAsTeacher(inviteCode, teacherName);
-      } else if (choice === 'student') {
-        await claimStudent(claimCode);
       }
       await refresh();
     } catch (err) {
@@ -159,21 +154,6 @@ export default function OnboardingPage() {
                   />
                 </div>
               </>
-            )}
-
-            {choice === 'student' && (
-              <div className="form-field">
-                <label htmlFor="ccode">학생 코드</label>
-                <input
-                  id="ccode"
-                  className="code"
-                  required
-                  maxLength={8}
-                  value={claimCode}
-                  onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
-                  placeholder="AB23CD45"
-                />
-              </div>
             )}
 
             <button className="btn-primary" type="submit" disabled={busy}>

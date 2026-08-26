@@ -7,7 +7,6 @@ import {
   deleteClass,
   deletePreset,
   fetchPresets,
-  fetchStudentsOfClass,
   removeAcademyLogo,
   renameClass,
   rotateInviteCode,
@@ -17,14 +16,14 @@ import {
 import { signed } from '../lib/format';
 import { resizeImageToPng } from '../lib/image';
 import { useClasses } from '../lib/useClasses';
-import type { Preset, Student } from '../lib/types';
+import type { Preset } from '../lib/types';
 
 const MAX_LOGO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function SettingsPage() {
   const { academy, profile, refresh } = useAuth();
   const { notify, run } = useToast();
-  const { classes, selectedId, select, reload: reloadClasses } = useClasses(academy?.id);
+  const { classes, reload: reloadClasses } = useClasses(academy?.id);
 
   const [name, setName] = useState(academy?.name ?? '');
   const [unit, setUnit] = useState(academy?.point_unit ?? '');
@@ -32,7 +31,6 @@ export default function SettingsPage() {
   const [newPresetLabel, setNewPresetLabel] = useState('');
   const [newPresetDelta, setNewPresetDelta] = useState('');
   const [newClassName, setNewClassName] = useState('');
-  const [students, setStudents] = useState<Student[]>([]);
   const [inviteCode, setInviteCode] = useState(academy?.invite_code ?? '');
   const [logoBusy, setLogoBusy] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -55,16 +53,6 @@ export default function SettingsPage() {
   useEffect(() => {
     void loadPresets();
   }, [loadPresets]);
-
-  useEffect(() => {
-    if (!selectedId) {
-      setStudents([]);
-      return;
-    }
-    fetchStudentsOfClass(selectedId)
-      .then(setStudents)
-      .catch((err) => notify(String(err.message ?? err), 'error'));
-  }, [selectedId, notify]);
 
   const isOwner = profile?.role === 'owner';
 
@@ -300,41 +288,9 @@ export default function SettingsPage() {
       <div className="settings-block">
         <h4>학생 로그인 코드</h4>
         <p className="hint">
-          학생이 직접 자기 통장을 보려면 회원가입 후 아래 코드를 입력해야 합니다. 코드는 한 번만
-          연결되며, 이미 연결된 학생은 ‘연결됨’으로 표시됩니다.
+          베타 기간 동안은 원장·선생님만 로그인할 수 있어 학생 로그인을 잠시 꺼두었습니다. 학생은
+          아직 직접 접속할 수 없고, 반별 통장은 선생님 화면에서 관리합니다.
         </p>
-        <div className="class-tabs">
-          {classes.map((c) => (
-            <button
-              key={c.id}
-              className={`class-tab ${c.id === selectedId ? 'active' : ''}`}
-              onClick={() => select(c.id)}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-        {students.length === 0 ? (
-          <div className="empty-hint">이 반에 학생이 없습니다.</div>
-        ) : (
-          students.map((s) => (
-            <div className="manage-row" key={s.id}>
-              <span>{s.name}</span>
-              {s.user_id ? (
-                <span style={{ fontSize: 12, color: 'var(--sage)', fontWeight: 700 }}>연결됨</span>
-              ) : (
-                <span
-                  className="code-badge"
-                  style={{ cursor: 'pointer' }}
-                  title="클릭하면 복사됩니다"
-                  onClick={() => copy(s.claim_code, '학생 코드')}
-                >
-                  {s.claim_code}
-                </span>
-              )}
-            </div>
-          ))
-        )}
       </div>
 
       <div className="settings-block">

@@ -111,7 +111,7 @@ export default function AuthPage() {
         <p style={{ fontSize: 13.5, color: 'var(--ink-soft)', marginTop: 16, lineHeight: 1.6 }}>
           선생님·원장님은 회원가입 후 학원을 만들거나 초대 코드로 합류할 수 있어요.
           <br />
-          학생은 선생님에게 받은 <strong>학생 코드</strong>로 통장을 연결합니다.
+          (베타 기간 동안은 원장·선생님만 로그인할 수 있습니다.)
         </p>
 
         <Link
