@@ -17,6 +17,7 @@ export const BUILTIN_SOUNDS: BuiltinSound[] = [
   { id: 'drumroll', label: '두구두구', emoji: '🥁' },
   { id: 'heartbeat', label: '심장박동', emoji: '💓' },
   { id: 'clock', label: '시계 초침', emoji: '⏰' },
+  { id: 'applause', label: '박수 갈채', emoji: '👏' },
   { id: 'tada', label: '짜잔', emoji: '🎉' },
   { id: 'countdown', label: '카운트다운', emoji: '⏱️' },
   { id: 'ding', label: '딩동', emoji: '🔔' },
@@ -86,6 +87,15 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
         noiseBurst(startAt, 0.045, 0.5);
         noiseBurst(startAt + 0.5, 0.045, 0.42);
         return 1.0;
+      }
+      case 'applause': {
+        // 짧은 노이즈 조각을 무작위 타이밍으로 잔뜩 겹쳐서 박수 소리의 질감을 흉내낸다.
+        const hits = 40;
+        const span = 1.6;
+        for (let i = 0; i < hits; i++) {
+          noiseBurst(startAt + Math.random() * span, 0.06, 0.22 + Math.random() * 0.16);
+        }
+        return span + 0.2;
       }
       case 'tada': {
         [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(startAt + i * 0.11, f, 0.4, 0.3, 'triangle'));

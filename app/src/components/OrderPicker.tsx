@@ -7,6 +7,7 @@ interface Props {
   participants: GameItem[];
   ranks: GameItem[];
   music?: MusicSelection | null;
+  resultSound?: MusicSelection | null;
 }
 
 type Phase = 'idle' | 'mixing' | 'revealing' | 'done';
@@ -23,7 +24,7 @@ function shuffle<T>(arr: T[]): T[] {
 const MIX_MS = 1100;
 const REVEAL_STEP_MS = 550;
 
-export default function OrderPicker({ participants, ranks, music }: Props) {
+export default function OrderPicker({ participants, ranks, music, resultSound }: Props) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<GameItem[] | null>(null);
   const [revealCount, setRevealCount] = useState(0);
@@ -53,6 +54,7 @@ export default function OrderPicker({ participants, ranks, music }: Props) {
             if (i === shuffled.length - 1) {
               setPhase('done');
               stopMusicRef.current();
+              playMusic(resultSound);
             }
           },
           (i + 1) * REVEAL_STEP_MS,

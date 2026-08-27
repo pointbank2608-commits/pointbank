@@ -4,6 +4,7 @@ import GameMusicPicker from '../components/GameMusicPicker';
 import OrderPicker from '../components/OrderPicker';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
+import { resolveResultSound } from '../lib/gameMusic';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -137,6 +138,17 @@ export default function OrderPage() {
     }
   }
 
+  async function handleResultSoundChange(resultSound: MusicSelection | null) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, resultSound };
+    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch {
+      await reload();
+    }
+  }
+
   if (isStaff && classes.length === 0) {
     return <div className="empty-hint">등록된 반이 없습니다. 설정에서 반을 추가해 주세요.</div>;
   }
@@ -235,16 +247,30 @@ export default function OrderPage() {
           ) : (
             <>
               {academy && (
-                <GameMusicPicker
-                  academyId={academy.id}
-                  isStaff={isStaff}
-                  value={selected.config.music}
-                  onChange={(m) => void handleMusicChange(m)}
-                />
+                <>
+                  <GameMusicPicker
+                    academyId={academy.id}
+                    isStaff={isStaff}
+                    value={selected.config.music}
+                    onChange={(m) => void handleMusicChange(m)}
+                  />
+                  <GameMusicPicker
+                    academyId={academy.id}
+                    isStaff={isStaff}
+                    label="결과 사운드"
+                    value={resolveResultSound(selected.config.resultSound)}
+                    onChange={(m) => void handleResultSoundChange(m)}
+                  />
+                </>
               )}
 
               <div className="game-title-big">{selected.name}</div>
-              <OrderPicker participants={selected.items} ranks={ranks} music={selected.config.music} />
+              <OrderPicker
+                participants={selected.items}
+                ranks={ranks}
+                music={selected.config.music}
+                resultSound={resolveResultSound(selected.config.resultSound)}
+              />
 
               {isStaff && (
                 <div className="settings-block" style={{ marginTop: 22 }}>
