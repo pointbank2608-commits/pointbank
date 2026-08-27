@@ -1,9 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
+import { playBuiltin, playMusic } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
-import type { GameItem } from '../lib/types';
+import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
   items: GameItem[];
+  music?: MusicSelection | null;
   /** 항목 하나를 선택할 때마다 화면 밖으로 알려준다 (최근 결과 기록 등에 사용). */
   onResult?: (item: GameItem) => void;
 }
@@ -20,11 +22,12 @@ function pointOnCircle(angleDeg: number, radius: number) {
   return { x: CX + radius * Math.sin(rad), y: CY - radius * Math.cos(rad) };
 }
 
-export default function SpinWheel({ items, onResult }: Props) {
+export default function SpinWheel({ items, music, onResult }: Props) {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stopMusicRef = useRef<() => void>(() => {});
 
   const count = items.length;
   const slice = count > 0 ? 360 / count : 0;
@@ -46,6 +49,7 @@ export default function SpinWheel({ items, onResult }: Props) {
   function spin() {
     if (spinning || count === 0) return;
     if (timerRef.current) clearTimeout(timerRef.current);
+    stopMusicRef.current();
 
     setResult(null);
     setSpinning(true);
@@ -53,11 +57,15 @@ export default function SpinWheel({ items, onResult }: Props) {
     const next = computeSpinRotation({ targetIndex, itemCount: count, currentRotation: rotation });
     setRotation(next);
 
+    stopMusicRef.current = playMusic(music, { loop: true });
+
     timerRef.current = setTimeout(() => {
       setSpinning(false);
       const picked = items[targetIndex];
       setResult(picked);
       onResult?.(picked);
+      stopMusicRef.current();
+      playBuiltin('tada');
     }, SPIN_MS);
   }
 

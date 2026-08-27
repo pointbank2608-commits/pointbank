@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import GameMusicPicker from '../components/GameMusicPicker';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem } from '../lib/types';
+import type { GameItem, MusicSelection } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -19,6 +20,7 @@ export default function WheelPage() {
   const g = useGameTemplates({ gameType: 'wheel', defaultItems });
   const {
     isStaff,
+    academy,
     classes,
     staffClassId,
     selectClass,
@@ -106,6 +108,18 @@ export default function WheelPage() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm('등록된 항목을 전부 삭제할까요?')) return;
     await persistItems([]);
+  }
+
+  async function handleMusicChange(music: MusicSelection | null) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, music };
+    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      await reload();
+    }
   }
 
   /* ---------------- 렌더 ---------------- */
@@ -216,7 +230,16 @@ export default function WheelPage() {
             </div>
           ) : (
             <>
-              <SpinWheel items={playItems} onResult={handleResult} />
+              {academy && (
+                <GameMusicPicker
+                  academyId={academy.id}
+                  isStaff={isStaff}
+                  value={selected.config.music}
+                  onChange={(m) => void handleMusicChange(m)}
+                />
+              )}
+
+              <SpinWheel items={playItems} music={selected.config.music} onResult={handleResult} />
 
               <div className="wheel-controls">
                 <label className="wheel-eliminate">
