@@ -175,14 +175,13 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
             {showTimer || phase === 'stopped' ? fmt(elapsedMs) : phase === 'running' ? '??:??.??' : fmt(0)}
           </div>
 
-          {phase === 'idle' && (
-            <button className="btn-primary wheel-spin-btn" onClick={start}>
-              시작
-            </button>
-          )}
-          {phase === 'running' && (
-            <button className="btn-primary gold wheel-spin-btn" onClick={stop}>
-              멈춤
+          {(phase === 'idle' || phase === 'running') && (
+            <button
+              type="button"
+              className={`timer-round-btn ${phase === 'running' ? 'running' : ''}`}
+              onClick={phase === 'running' ? stop : start}
+            >
+              {phase === 'running' ? 'STOP' : 'START'}
             </button>
           )}
 

@@ -2588,21 +2588,54 @@ main {
 }
 .timer-match-display {
   font-family: 'Fredoka', sans-serif;
-  font-size: 64px;
+  font-size: 96px;
   font-weight: 600;
   color: var(--navy-900);
   background: var(--navy-050);
-  border: 3px solid var(--navy-700);
-  border-radius: 24px;
-  padding: 20px 48px;
-  margin-bottom: 24px;
+  border: 4px solid var(--navy-700);
+  border-radius: 28px;
+  padding: 26px 56px;
+  margin-bottom: 30px;
   letter-spacing: 0.02em;
-  min-width: 280px;
+  min-width: 360px;
   text-align: center;
 }
 .timer-match-display.running {
   border-color: var(--gold);
   background: var(--gold-light);
+}
+.timer-round-btn {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 35% 30%, #ff8a8a, var(--brick) 65%, #e14b4b);
+  color: #fff;
+  font-family: 'Jua', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -6px rgba(255, 107, 107, 0.6), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.timer-round-btn:hover {
+  transform: translateY(-2px);
+}
+.timer-round-btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 4px 12px -4px rgba(255, 107, 107, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+}
+.timer-round-btn.running {
+  background: radial-gradient(circle at 35% 30%, #ff5a5a, #e03e3e 65%, #b82c2c);
+  animation: timerBtnPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes timerBtnPulse {
+  from {
+    box-shadow: 0 10px 22px -6px rgba(255, 107, 107, 0.6), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  }
+  to {
+    box-shadow: 0 10px 30px -4px rgba(255, 107, 107, 0.9), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  }
 }
 .timer-match-result {
   text-align: center;
