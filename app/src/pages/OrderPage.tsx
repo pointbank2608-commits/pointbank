@@ -79,6 +79,12 @@ export default function OrderPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  async function clearAllParticipants() {
+    if (!selected || selected.items.length === 0) return;
+    if (!confirm('등록된 참가자를 전부 삭제할까요?')) return;
+    await persistItems([]);
+  }
+
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
@@ -237,6 +243,11 @@ export default function OrderPage() {
                           ))
                         )}
                       </div>
+                      {selected.items.length > 0 && (
+                        <button type="button" className="link-danger" onClick={() => void clearAllParticipants()}>
+                          전체 삭제
+                        </button>
+                      )}
                       <div className="preset-add-row">
                         <input
                           type="text"

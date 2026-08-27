@@ -102,6 +102,12 @@ export default function WheelPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  async function clearAllItems() {
+    if (!selected || selected.items.length === 0) return;
+    if (!confirm('등록된 항목을 전부 삭제할까요?')) return;
+    await persistItems([]);
+  }
+
   /* ---------------- 렌더 ---------------- */
 
   if (isStaff && classes.length === 0) {
@@ -284,6 +290,11 @@ export default function WheelPage() {
                           ))
                         )}
                       </div>
+                      {selected.items.length > 0 && (
+                        <button type="button" className="link-danger" onClick={() => void clearAllItems()}>
+                          전체 삭제
+                        </button>
+                      )}
                       <div className="preset-add-row">
                         <input
                           type="text"

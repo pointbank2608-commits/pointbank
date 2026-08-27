@@ -96,6 +96,12 @@ export default function LadderPage() {
     );
   }
 
+  async function clearAllParticipants() {
+    if (!selected || selected.items.length === 0) return;
+    if (!confirm('참가자와 결과를 전부 삭제할까요?')) return;
+    await persist([], []);
+  }
+
   async function renameResult(index: number) {
     if (!selected) return;
     const next = prompt('결과 라벨을 입력하세요', results[index]?.label ?? '');
@@ -270,6 +276,11 @@ export default function LadderPage() {
                             </div>
                           ))}
                         </div>
+                        {selected.items.length > 0 && (
+                          <button type="button" className="link-danger" onClick={() => void clearAllParticipants()}>
+                            전체 삭제
+                          </button>
+                        )}
                         <div className="preset-add-row">
                           <input
                             type="text"
