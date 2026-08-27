@@ -2378,37 +2378,51 @@ main {
 }
 .lottery-box {
   position: relative;
-  width: min(320px, 90vw);
-  height: 120px;
+  width: min(360px, 92vw);
+  height: 190px;
   background: linear-gradient(180deg, var(--navy-050), #fff);
-  border: 3px solid var(--navy-700);
-  border-radius: 26px;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  padding: 14px;
-  box-shadow: inset 0 6px 14px rgba(58, 51, 88, 0.12);
+  border: 4px solid var(--navy-700);
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: inset 0 8px 18px rgba(58, 51, 88, 0.16);
   margin-bottom: 8px;
 }
+.lottery-box.active {
+  animation: lotteryBoxShake 0.35s ease-in-out infinite;
+}
+@keyframes lotteryBoxShake {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-1.4deg) translateX(-2px);
+  }
+  75% {
+    transform: rotate(1.4deg) translateX(2px);
+  }
+}
 .lottery-ball {
-  width: 26px;
-  height: 26px;
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  margin-left: -21px;
+  margin-top: -21px;
   border-radius: 50%;
-  box-shadow: 0 3px 6px rgba(58, 51, 88, 0.3), inset -3px -3px 0 rgba(0, 0, 0, 0.12);
-  animation: lotteryJiggle 0.5s ease-in-out infinite alternate;
+  box-shadow: 0 5px 10px rgba(58, 51, 88, 0.38), inset -4px -4px 0 rgba(0, 0, 0, 0.15);
+  transition: left 0.32s cubic-bezier(0.34, 1.7, 0.64, 1), top 0.32s cubic-bezier(0.34, 1.7, 0.64, 1);
+  animation: lotteryBallPulse 0.4s ease-in-out infinite alternate;
 }
 .lottery-box:not(.active) .lottery-ball {
   animation-play-state: paused;
+  transition: none;
 }
-@keyframes lotteryJiggle {
+@keyframes lotteryBallPulse {
   from {
-    transform: translate(-3px, 2px) rotate(-8deg);
+    transform: scale(0.92) rotate(-10deg);
   }
   to {
-    transform: translate(3px, -3px) rotate(8deg);
+    transform: scale(1.15) rotate(10deg);
   }
 }
 .lottery-slots {
@@ -2459,25 +2473,33 @@ main {
 }
 .lottery-pop-ball {
   position: absolute;
-  top: -86px;
-  width: 24px;
-  height: 24px;
+  top: -150px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  box-shadow: 0 3px 6px rgba(58, 51, 88, 0.3);
-  animation: lotteryDrop 0.48s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+  box-shadow: 0 5px 10px rgba(58, 51, 88, 0.4);
+  animation: lotteryDrop 0.52s cubic-bezier(0.32, 0.1, 0.4, 1) forwards;
   pointer-events: none;
+  z-index: 3;
 }
 @keyframes lotteryDrop {
-  from {
-    top: -86px;
+  0% {
+    top: -150px;
     opacity: 1;
+    transform: scale(1);
   }
-  70% {
+  65% {
+    top: 4px;
     opacity: 1;
+    transform: scale(1.3);
   }
-  to {
+  82% {
+    transform: scale(0.85);
+  }
+  100% {
     top: 6px;
     opacity: 0;
+    transform: scale(1);
   }
 }
 
