@@ -50,6 +50,9 @@ export function traceAll(grid: LadderGrid): number[] {
 /**
  * startCol 경로를 (row, col) 좌표 목록으로 반환한다 (0=맨 위, grid.rows=맨 아래).
  * 렌더링 쪽에서 이 점들을 x,y 픽셀로 변환해 선을 그린다.
+ *
+ * 가로줄(rung) 그림은 항상 그 행의 "중간"(row + 0.5)에 그려지므로, 경로도 그 지점에서
+ * 꺾여야 실제 가로줄과 겹쳐 보인다 — row 경계(정수)에서 꺾으면 그림이 어긋난다.
  */
 export function tracePath(grid: LadderGrid, startCol: number): { row: number; col: number }[] {
   const path: { row: number; col: number }[] = [{ row: 0, col: startCol }];
@@ -60,9 +63,10 @@ export function tracePath(grid: LadderGrid, startCol: number): { row: number; co
     if (col > 0 && row[col - 1]) next = col - 1;
     else if (col < grid.cols - 1 && row[col]) next = col + 1;
     if (next !== col) {
-      path.push({ row: r, col: next });
+      path.push({ row: r + 0.5, col }); // 가로줄 위치까지 세로로 내려온다
+      path.push({ row: r + 0.5, col: next }); // 가로줄을 타고 옆 칸으로 건너간다
     }
-    path.push({ row: r + 1, col: next });
+    path.push({ row: r + 1, col: next }); // 다음 행 경계까지 계속 내려간다
     col = next;
   }
   return path;
