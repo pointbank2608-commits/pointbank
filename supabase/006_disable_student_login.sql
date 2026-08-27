@@ -9,13 +9,23 @@
 --  이 문제가 해소됩니다.
 --
 --  claim_student() 함수/데이터는 지우지 않고 "실행 권한만" 회수합니다.
---  나중에 학생 로그인을 다시 열 때는 맨 아래 GRANT 문만 다시 실행하면 됩니다.
+--
+--  ⚠️ Supabase 는 public 스키마에 함수를 만들면 anon / authenticated
+--  두 role 에 기본적으로 실행 권한을 자동 부여합니다(ALTER DEFAULT
+--  PRIVILEGES). "authenticated" 와 "public" 에서만 revoke 하면 anon 쪽이
+--  그대로 남아서, 로그인조차 하지 않은 사람도(브라우저 콘솔에서 anon key
+--  로 직접 fetch) 함수를 호출할 수 있었습니다. 세 role 전부에서 revoke
+--  해야 실제로 막힙니다.
 --
 --  Supabase 대시보드 > SQL Editor 에 붙여넣고 Run 하세요.
+--  (이전 006 버전을 이미 실행하셨어도, 이 파일을 한 번 더 실행하면
+--   빠졌던 anon 권한까지 마저 회수되니 다시 실행하시면 됩니다.)
 -- ============================================================
 
 revoke execute on function public.claim_student(text) from authenticated;
+revoke execute on function public.claim_student(text) from anon;
 revoke execute on function public.claim_student(text) from public;
 
--- 다시 열 때:
--- grant execute on function public.claim_student(text) to authenticated;
+-- 다시 열 때 (세 role 모두 원상복구):
+-- grant execute on function public.claim_student(text) to authenticated, anon, public;
+-- (anon 에게는 원래도 줄 필요 없음 — authenticated 만 있으면 로그인한 사용자만 호출 가능)
