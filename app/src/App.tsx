@@ -1,5 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import AdminLayout from './pages/AdminLayout';
+import AdminAcademiesPage from './pages/AdminAcademiesPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
 import AuthPage from './pages/AuthPage';
@@ -13,7 +15,7 @@ import StudentPage from './pages/StudentPage';
 import WheelPage from './pages/WheelPage';
 
 export default function App() {
-  const { loading, session, profile, isStaff } = useAuth();
+  const { loading, session, profile, isStaff, isAdmin } = useAuth();
 
   if (loading) {
     return <div className="page-loading">불러오는 중…</div>;
@@ -39,7 +41,19 @@ export default function App() {
     );
   }
 
-  // 3) 정상 이용
+  // 3) 플랫폼 관리자 — 학원 소속과 무관한 별도 화면
+  if (isAdmin) {
+    return (
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminAcademiesPage />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Route>
+      </Routes>
+    );
+  }
+
+  // 4) 정상 이용
   return (
     <Routes>
       <Route element={<AppLayout />}>

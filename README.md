@@ -39,6 +39,7 @@ pointbank/
 | `004_academy_logo.sql` | 학원 로고 업로드 (`academies.logo_url` + `logos` 스토리지 버킷) |
 | `005_attendance.sql` | 출석부 (`attendance` 테이블 — 등원/하원 체크 + 월별 기록) |
 | `006_disable_student_login.sql` | **보안** — 학생 로그인 잠금 (베타 기간 동안 원장·선생님만) |
+| `007_platform_admin.sql` | 플랫폼 관리자 (`likesea85@naver.com` 전용 — 가입 학원 목록/삭제) |
 
 새 프로젝트를 처음부터 세팅할 때는 `schema.sql` 하나만 실행하면 됩니다 (마이그레이션 내용이 이미 포함돼 있음).
 
@@ -108,7 +109,7 @@ http://localhost:5173
 | `academies` | 학원 (테넌트 최상위). 포인트 단위, 선생님 초대 코드 보유 |
 | `classes` | 반 |
 | `students` | 학생 계좌. `claim_code`로 학생 계정과 연결 |
-| `profiles` | 로그인 사용자 (owner / teacher / student) |
+| `profiles` | 로그인 사용자 (owner / teacher / student / admin) |
 | `transactions` | **거래 원장**. 잔액은 저장하지 않고 이 합으로 계산 |
 | `presets` | 지급/차감 사유 버튼 |
 | `redemptions` | 포인트 상품 교환 내역 (추후 기능용, 테이블만 준비) |
@@ -143,7 +144,24 @@ http://localhost:5173
   - 쓰기: 원장/선생님만
   - 학생: 자기 거래 내역만. 순위는 이름+합계만 돌려주는 함수로 별도 제공
 - **service_role key는 절대 프론트엔드에 넣지 마세요.** RLS를 전부 무시합니다.
-- 프로필 생성은 `create_academy` / `join_academy_as_teacher` / `claim_student` 세 함수로만 가능합니다. 아무나 임의 학원에 owner로 끼어드는 걸 막기 위해서입니다.
+- 프로필 생성은 `create_academy` / `join_academy_as_teacher` / `claim_student` / `claim_admin` 네 함수로만 가능합니다. 아무나 임의 학원에 owner로 끼어드는 걸 막기 위해서입니다.
+
+---
+
+## 플랫폼 관리자
+
+`supabase/007_platform_admin.sql` 실행 후, **`likesea85@naver.com`으로 정상 회원가입**만 하면 됩니다
+(비밀번호는 Supabase 최소 자리수인 6자 이상이어야 합니다). 이 이메일로 로그인하면 온보딩 화면에
+"관리자로 시작하기" 버튼이 뜨고, 누르면 학원 소속 없이 `/admin`으로 들어갑니다.
+
+- 가입한 학원 목록(선생님/학생 수 포함), 학원 삭제(이름을 정확히 입력해야 삭제됨), 관리자 비밀번호
+  변경을 제공합니다.
+- 권한 부여는 `claim_admin()` RPC가 서버에서 `auth.users.email`을 다시 확인하는 방식이라, 클라이언트가
+  임의로 admin을 자칭할 수 없습니다. `admin_list_academies()`/`claim_admin()` 둘 다 `anon` 롤의 실행
+  권한을 명시적으로 회수해뒀습니다 (Supabase는 함수 생성 시 `anon`에게도 기본 EXECUTE 권한을 자동
+  부여하므로, `authenticated`/`public`만 revoke하면 구멍이 남습니다 — `006_disable_student_login.sql`
+  작업 때 발견한 것과 같은 함정).
+- 사용량 통계(학원별/계정별)는 아직 없습니다 — 무료 테스트 기간이라 필요해지면 나중에 추가합니다.
 
 ---
 

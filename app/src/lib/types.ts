@@ -1,4 +1,4 @@
-export type Role = 'owner' | 'teacher' | 'student';
+export type Role = 'owner' | 'teacher' | 'student' | 'admin';
 
 export interface Academy {
   id: string;
@@ -99,6 +99,18 @@ export interface SummaryRow {
   earned: number;
   spent: number;
   tx_count: number;
+}
+
+/** admin_list_academies() RPC 결과 */
+export interface AdminAcademyRow {
+  academy_id: string;
+  name: string;
+  point_unit: string;
+  invite_code: string;
+  created_at: string;
+  owner_count: number;
+  teacher_count: number;
+  student_count: number;
 }
 
 export interface Attendance {

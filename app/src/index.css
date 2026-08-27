@@ -1617,6 +1617,46 @@ main {
     font-size: 28px;
   }
 }
+/* ---------------- 관리자 페이지 ---------------- */
+.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px dotted var(--paper-line);
+  white-space: nowrap;
+}
+.admin-table th {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.admin-table-name {
+  font-family: 'Jua', sans-serif;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+.link-danger {
+  border: none;
+  background: none;
+  color: var(--brick);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+.link-danger:hover {
+  text-decoration: underline;
+}
+.link-danger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ---------------- 출석부 ---------------- */
 .att-grid-wrap {
   overflow-x: auto;

@@ -62,7 +62,7 @@ create index if not exists students_class_idx   on public.students(class_id);
 create table if not exists public.profiles (
   id           uuid primary key references auth.users(id) on delete cascade,
   academy_id   uuid references public.academies(id) on delete cascade,
-  role         text not null check (role in ('owner', 'teacher', 'student')),
+  role         text not null check (role in ('owner', 'teacher', 'student', 'admin')),
   display_name text not null,
   created_at   timestamptz not null default now()
 );
@@ -660,4 +660,86 @@ create policy attendance_write on public.attendance
 -- ============================================================
 
 revoke execute on function public.claim_student(text) from authenticated;
+revoke execute on function public.claim_student(text) from anon;
 revoke execute on function public.claim_student(text) from public;
+
+
+-- ============================================================
+--  13. 플랫폼 관리자 (회원/서비스 관리 페이지)
+--
+--  가입한 학원 목록, 학원별 학생/선생님 수, 학원 삭제를 볼 수 있는 화면을
+--  특정 계정 한 명(운영자 본인)에게만 열어준다. 이메일은 서버에서
+--  auth.users 로 직접 확인하므로 클라이언트가 값을 조작해도 소용없다.
+-- ============================================================
+
+create or replace function public.is_platform_admin()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select coalesce((select role = 'admin' from public.profiles where id = auth.uid()), false)
+$$;
+
+create or replace function public.claim_admin()
+returns void
+language plpgsql volatile security definer set search_path = public
+as $$
+declare
+  v_uid   uuid := auth.uid();
+  v_email text;
+begin
+  if v_uid is null then
+    raise exception '로그인이 필요합니다.';
+  end if;
+  if exists (select 1 from public.profiles where id = v_uid) then
+    raise exception '이미 프로필이 있습니다.';
+  end if;
+
+  select email into v_email from auth.users where id = v_uid;
+
+  if v_email is null or lower(trim(v_email)) <> 'likesea85@naver.com' then
+    raise exception '관리자 계정이 아닙니다.';
+  end if;
+
+  insert into public.profiles (id, academy_id, role, display_name)
+  values (v_uid, null, 'admin', '관리자');
+end;
+$$;
+
+revoke execute on function public.claim_admin() from anon;
+revoke execute on function public.claim_admin() from public;
+grant  execute on function public.claim_admin() to authenticated;
+
+create or replace function public.admin_list_academies()
+returns table (
+  academy_id    uuid,
+  name          text,
+  point_unit    text,
+  invite_code   text,
+  created_at    timestamptz,
+  owner_count   int,
+  teacher_count int,
+  student_count int
+)
+language sql stable security definer set search_path = public
+as $$
+  select
+    a.id, a.name, a.point_unit, a.invite_code, a.created_at,
+    (select count(*) from public.profiles p where p.academy_id = a.id and p.role = 'owner')::int,
+    (select count(*) from public.profiles p where p.academy_id = a.id and p.role = 'teacher')::int,
+    (select count(*) from public.students s where s.academy_id = a.id)::int
+  from public.academies a
+  where public.is_platform_admin()
+  order by a.created_at desc;
+$$;
+
+revoke execute on function public.admin_list_academies() from anon;
+revoke execute on function public.admin_list_academies() from public;
+grant  execute on function public.admin_list_academies() to authenticated;
+
+drop policy if exists academies_admin_select on public.academies;
+create policy academies_admin_select on public.academies
+  for select using (public.is_platform_admin());
+
+drop policy if exists academies_admin_delete on public.academies;
+create policy academies_admin_delete on public.academies
+  for delete using (public.is_platform_admin());

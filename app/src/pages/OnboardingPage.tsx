@@ -1,7 +1,12 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { createAcademy, joinAsTeacher } from '../lib/api';
+import { claimAdmin, createAcademy, joinAsTeacher } from '../lib/api';
 import { supabase } from '../lib/supabase';
+
+// 이 이메일로 로그인한 사람에게는 일반 온보딩 대신 "관리자로 시작하기"를 보여준다.
+// 실제 권한 부여는 claim_admin() RPC 가 서버에서 auth.users.email 로 다시 확인하므로,
+// 여기서 이메일을 비교하는 건 화면 분기용일 뿐 보안 경계가 아니다.
+const ADMIN_EMAIL = 'likesea85@naver.com';
 
 // 베타 기간 동안은 학생 로그인을 잠가둔다 (원장/선생님만 로그인 가능).
 // DB 쪽도 claim_student() 실행 권한을 회수해뒀다 — 여기서 폼만 없앤다고
@@ -30,6 +35,21 @@ export default function OnboardingPage() {
   const [choice, setChoice] = useState<Choice | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isAdminEmail = session?.user.email?.toLowerCase() === ADMIN_EMAIL;
+
+  async function handleClaimAdmin() {
+    setBusy(true);
+    setError(null);
+    try {
+      await claimAdmin();
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // 원장
   const [academyName, setAcademyName] = useState('');
@@ -70,6 +90,18 @@ export default function OnboardingPage() {
 
         {error && <div className="alert error">{error}</div>}
 
+        {isAdminEmail ? (
+          <>
+            <p className="hint" style={{ marginBottom: 16 }}>
+              관리자 계정으로 로그인하셨습니다. 학원 소속 없이 회원/서비스 관리 화면으로
+              들어갑니다.
+            </p>
+            <button className="btn-primary gold" disabled={busy} onClick={() => void handleClaimAdmin()}>
+              {busy ? '처리 중…' : '관리자로 시작하기'}
+            </button>
+          </>
+        ) : (
+        <>
         <div className="role-choice">
           {OPTIONS.map((o) => (
             <button
@@ -160,6 +192,8 @@ export default function OnboardingPage() {
               {busy ? '처리 중…' : '완료'}
             </button>
           </form>
+        )}
+        </>
         )}
 
         <button

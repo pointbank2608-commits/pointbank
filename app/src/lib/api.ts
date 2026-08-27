@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type {
   Academy,
+  AdminAcademyRow,
   Attendance,
   ClassRow,
   GameItem,
@@ -528,4 +529,29 @@ export async function fetchMyStudentRow(userId: string): Promise<Student | null>
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data as Student | null;
+}
+
+/* ---------------- 플랫폼 관리자 ---------------- */
+
+export async function claimAdmin(): Promise<void> {
+  const { error } = await supabase.rpc('claim_admin');
+  if (error) throw new Error(error.message);
+}
+
+export async function fetchAdminAcademies(): Promise<AdminAcademyRow[]> {
+  const { data, error } = await supabase.rpc('admin_list_academies');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as AdminAcademyRow[];
+}
+
+export async function deleteAcademyAsAdmin(academyId: string) {
+  const { error } = await supabase.from('academies').delete().eq('id', academyId);
+  if (error) throw new Error(error.message);
+}
+
+/** 로그인한 본인의 비밀번호를 바꾼다. 현재 비밀번호는 필요 없다 —
+ * 이미 유효한 세션으로 로그인돼 있어야 호출 가능한 API. */
+export async function changeMyPassword(newPassword: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(error.message);
 }
