@@ -6,6 +6,7 @@ import type {
   ClassRow,
   GameItem,
   GameTemplate,
+  GameTemplateConfig,
   Preset,
   RankRow,
   Settlement,
@@ -363,6 +364,7 @@ export async function createGameTemplate(params: {
   name: string;
   items: GameItem[];
   teacherId: string;
+  config?: GameTemplateConfig;
 }): Promise<GameTemplate> {
   return unwrap(
     await supabase
@@ -373,6 +375,7 @@ export async function createGameTemplate(params: {
         game_type: params.gameType,
         name: params.name,
         items: params.items,
+        config: params.config ?? {},
         created_by: params.teacherId,
       })
       .select()
@@ -388,6 +391,17 @@ export async function updateGameTemplateItems(id: string, items: GameItem[]) {
   if (error) throw new Error(error.message);
 }
 
+export async function updateGameTemplate(
+  id: string,
+  patch: { items?: GameItem[]; config?: GameTemplateConfig },
+) {
+  const { error } = await supabase
+    .from('game_templates')
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 export async function renameGameTemplate(id: string, name: string) {
   const { error } = await supabase
     .from('game_templates')
@@ -398,6 +412,42 @@ export async function renameGameTemplate(id: string, name: string) {
 
 export async function deleteGameTemplate(id: string) {
   const { error } = await supabase.from('game_templates').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/* ---------------- 게임 배경음악 업로드 (학원별 보관함) ---------------- */
+
+export interface GameAudioFile {
+  path: string;
+  name: string;
+  url: string;
+}
+
+export async function listGameAudio(academyId: string): Promise<GameAudioFile[]> {
+  const { data, error } = await supabase.storage.from('game-audio').list(academyId, {
+    sortBy: { column: 'created_at', order: 'desc' },
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? [])
+    .filter((f) => f.name !== '.emptyFolderPlaceholder')
+    .map((f) => {
+      const path = `${academyId}/${f.name}`;
+      const { data: pub } = supabase.storage.from('game-audio').getPublicUrl(path);
+      return { path, name: f.name, url: pub.publicUrl };
+    });
+}
+
+export async function uploadGameAudio(academyId: string, file: File): Promise<GameAudioFile> {
+  const ext = file.name.split('.').pop() ?? 'mp3';
+  const path = `${academyId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('game-audio').upload(path, file);
+  if (error) throw new Error(error.message);
+  const { data: pub } = supabase.storage.from('game-audio').getPublicUrl(path);
+  return { path, name: file.name, url: pub.publicUrl };
+}
+
+export async function deleteGameAudio(path: string) {
+  const { error } = await supabase.storage.from('game-audio').remove([path]);
   if (error) throw new Error(error.message);
 }
 

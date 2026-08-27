@@ -12,6 +12,20 @@ const GAMES = [
     desc: '항목을 등록해 두고 돌려서 하나를 무작위로 뽑아요.',
     path: '/games/wheel',
   },
+  {
+    key: 'ladder',
+    emoji: '🪜',
+    name: '사다리타기',
+    desc: '참가자와 결과를 등록하고 사다리를 타서 짝을 지어요.',
+    path: '/games/ladder',
+  },
+  {
+    key: 'order',
+    emoji: '🔀',
+    name: '순서정하기',
+    desc: '이름을 등록해 두고 무작위 순서를 뽑아요.',
+    path: '/games/order',
+  },
 ];
 
 export default function GamesPage() {

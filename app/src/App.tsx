@@ -7,8 +7,10 @@ import AttendancePage from './pages/AttendancePage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import GamesPage from './pages/GamesPage';
+import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
+import OrderPage from './pages/OrderPage';
 import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
@@ -65,6 +67,8 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
+            <Route path="/games/ladder" element={<LadderPage />} />
+            <Route path="/games/order" element={<OrderPage />} />
             <Route path="*" element={<Navigate to="/board" replace />} />
           </>
         ) : (
@@ -73,6 +77,8 @@ export default function App() {
             <Route path="/me" element={<StudentPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
+            <Route path="/games/ladder" element={<LadderPage />} />
+            <Route path="/games/order" element={<OrderPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

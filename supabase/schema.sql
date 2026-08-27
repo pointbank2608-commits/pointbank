@@ -743,3 +743,45 @@ create policy academies_admin_select on public.academies
 drop policy if exists academies_admin_delete on public.academies;
 create policy academies_admin_delete on public.academies
   for delete using (public.is_platform_admin());
+
+
+-- ============================================================
+--  14. 사다리 / 순서정하기 게임 + 게임 배경음악
+-- ============================================================
+
+-- config: 게임별 추가 설정(jsonb). 사다리는 결과 라벨을, 모든 게임은 선택한
+-- 배경음악(기본 제공 효과음 또는 업로드 파일)을 여기 담는다. 새 게임이 추가돼도
+-- 스키마 변경 없이 이 컬럼 하나로 확장한다.
+alter table public.game_templates
+  add column if not exists config jsonb not null default '{}'::jsonb;
+
+-- 배경음악 파일을 담을 공개 버킷. 경로 규칙: "<academy_id>/<uuid>.<확장자>"
+insert into storage.buckets (id, name, public)
+values ('game-audio', 'game-audio', true)
+on conflict (id) do nothing;
+
+drop policy if exists game_audio_insert on storage.objects;
+create policy game_audio_insert on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'game-audio'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  );
+
+drop policy if exists game_audio_select on storage.objects;
+create policy game_audio_select on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'game-audio'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+  );
+
+drop policy if exists game_audio_delete on storage.objects;
+create policy game_audio_delete on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'game-audio'
+    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and public.is_staff()
+  );

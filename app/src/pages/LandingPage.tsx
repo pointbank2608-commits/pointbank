@@ -12,7 +12,7 @@ const WHEEL_ITEMS = [
 const SUMMARY = [
   { emoji: '🐷', title: '포인트 통장', desc: '지급 · 차감 · 오늘 마감' },
   { emoji: '📗', title: '출석부', desc: '등원 · 하원 · 월별 기록' },
-  { emoji: '🎡', title: '미니게임', desc: '돌림판 (사다리 · 빙고 예정)' },
+  { emoji: '🎡', title: '미니게임', desc: '돌림판 · 사다리타기 · 순서정하기' },
   { emoji: '🏫', title: '반 · 학원 관리', desc: '선생님 초대 · 반 관리' },
 ];
 
@@ -143,16 +143,16 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-feature-text">
-            <div className="landing-feature-eyebrow">미니게임 · 돌림판</div>
+            <div className="landing-feature-eyebrow">미니게임 · 돌림판 · 사다리 · 순서정하기</div>
             <h2>
               발표자 뽑기,
               <br />
-              이제 돌림판으로
+              이제 게임으로 한 번에
             </h2>
             <p>
-              사유 버튼처럼 항목을 자유롭게 등록하고 돌리면 끝. 반 전용으로 만들 수도, 학원 전체가
-              같이 쓰는 공용 돌림판으로 만들 수도 있어요. 앞으로 사다리·빙고 게임도 이 안에
-              추가됩니다.
+              사유 버튼처럼 항목을 자유롭게 등록하고 돌리거나, 사다리를 타거나, 순서를 뽑으면 끝.
+              반 전용으로 만들 수도, 학원 전체가 같이 쓰는 공용 게임으로 만들 수도 있어요.
+              게임마다 배경음악도 골라 넣을 수 있어요.
             </p>
           </div>
         </div>

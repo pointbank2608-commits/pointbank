@@ -140,11 +140,23 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel';
+export type GameType = 'wheel' | 'ladder' | 'order';
 
 export interface GameItem {
   id: string;
   label: string;
+}
+
+/** 배경음악 선택. 기본 제공 효과음이거나, 학원이 직접 올린 음원. */
+export type MusicSelection =
+  | { kind: 'builtin'; id: string }
+  | { kind: 'upload'; path: string; name: string; url: string };
+
+export interface GameTemplateConfig {
+  /** 사다리 전용: 맨 아래 결과 라벨 (items 와 개수가 같아야 함). 없으면 items 를 그대로 재사용. */
+  results?: GameItem[];
+  /** 재생할 배경음악. 없으면 무음. */
+  music?: MusicSelection | null;
 }
 
 export interface GameTemplate {
@@ -155,6 +167,7 @@ export interface GameTemplate {
   game_type: GameType;
   name: string;
   items: GameItem[];
+  config: GameTemplateConfig;
   created_by: string | null;
   created_at: string;
   updated_at: string;
