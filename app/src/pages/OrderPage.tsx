@@ -163,7 +163,7 @@ export default function OrderPage() {
           ))}
         </div>
       ) : (
-        <div className="section-title">{studentClassName} 순서정하기</div>
+        <div className="section-title">{studentClassName} 랜덤 공 뽑기</div>
       )}
 
       {loading ? (

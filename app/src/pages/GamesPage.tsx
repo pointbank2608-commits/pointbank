@@ -21,8 +21,8 @@ const GAMES = [
   },
   {
     key: 'order',
-    emoji: '🔀',
-    name: '순서정하기',
+    emoji: '🎱',
+    name: '랜덤 공 뽑기',
     desc: '이름을 등록해 두고 무작위 순서를 뽑아요.',
     path: '/games/order',
   },

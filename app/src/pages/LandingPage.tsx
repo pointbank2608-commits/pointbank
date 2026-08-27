@@ -12,7 +12,7 @@ const WHEEL_ITEMS = [
 const SUMMARY = [
   { emoji: '🐷', title: '포인트 통장', desc: '지급 · 차감 · 오늘 마감' },
   { emoji: '📗', title: '출석부', desc: '등원 · 하원 · 월별 기록' },
-  { emoji: '🎡', title: '미니게임', desc: '돌림판 · 사다리타기 · 순서정하기' },
+  { emoji: '🎡', title: '미니게임', desc: '돌림판 · 사다리타기 · 랜덤 공 뽑기' },
   { emoji: '🏫', title: '반 · 학원 관리', desc: '선생님 초대 · 반 관리' },
 ];
 
@@ -143,7 +143,7 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-feature-text">
-            <div className="landing-feature-eyebrow">미니게임 · 돌림판 · 사다리 · 순서정하기</div>
+            <div className="landing-feature-eyebrow">미니게임 · 돌림판 · 사다리 · 랜덤 공 뽑기</div>
             <h2>
               발표자 뽑기,
               <br />
