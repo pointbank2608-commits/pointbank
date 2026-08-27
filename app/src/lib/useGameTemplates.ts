@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { createGameTemplate, deleteGameTemplate, fetchGameTemplates, fetchMyStudentRow, renameGameTemplate } from './api';
+import {
+  createGameTemplate,
+  deleteGameTemplate,
+  fetchGameTemplates,
+  fetchMyStudentRow,
+  fetchStudentsOfAcademy,
+  fetchStudentsOfClass,
+  renameGameTemplate,
+} from './api';
 import { useClasses } from './useClasses';
 import type { GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
+
+export type RosterScope = 'class' | 'academy';
 
 /**
  * 게임 템플릿(반/학원 공용 목록 + 만들기/이름변경/삭제) 공통 로직.
@@ -37,6 +47,24 @@ export function useGameTemplates(params: {
   }, [isStaff, classes, studentClassId]);
 
   const classId = isStaff ? staffClassId : studentClassId;
+
+  // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
+  const [rosterScope, setRosterScope] = useState<RosterScope>('class');
+  const [roster, setRoster] = useState<GameItem[]>([]);
+  const [rosterLoading, setRosterLoading] = useState(false);
+
+  useEffect(() => {
+    if (!academy?.id || !classId) {
+      setRoster([]);
+      return;
+    }
+    setRosterLoading(true);
+    const fetcher = rosterScope === 'academy' ? fetchStudentsOfAcademy(academy.id) : fetchStudentsOfClass(classId);
+    fetcher
+      .then((students) => setRoster(students.map((s) => ({ id: s.id, label: s.name }))))
+      .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'))
+      .finally(() => setRosterLoading(false));
+  }, [academy?.id, classId, rosterScope, notify]);
 
   const [templates, setTemplates] = useState<GameTemplate[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -128,6 +156,10 @@ export function useGameTemplates(params: {
     selectClass,
     studentClassName,
     classId,
+    roster,
+    rosterScope,
+    setRosterScope,
+    rosterLoading,
     templates,
     setTemplates,
     selected,

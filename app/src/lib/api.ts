@@ -63,6 +63,12 @@ export async function fetchStudentsOfClass(classId: string): Promise<Student[]> 
   );
 }
 
+export async function fetchStudentsOfAcademy(academyId: string): Promise<Student[]> {
+  return unwrap(
+    await supabase.from('students').select('*').eq('academy_id', academyId).order('name'),
+  );
+}
+
 export async function createStudent(academyId: string, classId: string, name: string) {
   return unwrap(
     await supabase

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
 import OrderPicker from '../components/OrderPicker';
+import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -24,6 +25,10 @@ export default function OrderPage() {
     selectClass,
     studentClassName,
     classId,
+    roster,
+    rosterScope,
+    setRosterScope,
+    rosterLoading,
     templates,
     setTemplates,
     selected,
@@ -62,6 +67,11 @@ export default function OrderPage() {
     if (!label || !selected) return;
     await persistItems([...selected.items, { id: uid(), label }]);
     setNewParticipant('');
+  }
+
+  async function addParticipantsBulk(labels: string[]) {
+    if (!selected || labels.length === 0) return;
+    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
   }
 
   async function removeParticipant(itemId: string) {
@@ -207,6 +217,14 @@ export default function OrderPage() {
 
                   {editorOpen && (
                     <>
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addParticipantsBulk(labels)}
+                      />
                       <div className="tag-list">
                         {selected.items.length === 0 ? (
                           <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>등록된 참가자가 없습니다.</span>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
 import LadderBoard from '../components/LadderBoard';
+import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -30,6 +31,10 @@ export default function LadderPage() {
     selectClass,
     studentClassName,
     classId,
+    roster,
+    rosterScope,
+    setRosterScope,
+    rosterLoading,
     templates,
     setTemplates,
     selected,
@@ -74,6 +79,13 @@ export default function LadderPage() {
       [...results, { id: uid(), label: `결과 ${results.length + 1}` }],
     );
     setNewParticipant('');
+  }
+
+  async function addParticipantsBulk(labels: string[]) {
+    if (!selected || labels.length === 0) return;
+    const newItems = labels.map((label) => ({ id: uid(), label }));
+    const newResults = labels.map((_, i) => ({ id: uid(), label: `결과 ${results.length + i + 1}` }));
+    await persist([...selected.items, ...newItems], [...results, ...newResults]);
   }
 
   async function removeParticipant(index: number) {
@@ -242,6 +254,14 @@ export default function LadderPage() {
                     <div className="ladder-editor-cols">
                       <div>
                         <div className="hint">참가자 (위)</div>
+                        <StudentRosterPicker
+                          roster={roster}
+                          existingLabels={selected.items.map((i) => i.label)}
+                          scope={rosterScope}
+                          onScopeChange={setRosterScope}
+                          loading={rosterLoading}
+                          onAdd={(labels) => void addParticipantsBulk(labels)}
+                        />
                         <div className="tag-list">
                           {selected.items.map((item, i) => (
                             <div className="tag" key={item.id}>

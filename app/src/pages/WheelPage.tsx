@@ -1,84 +1,59 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SpinWheel from '../components/SpinWheel';
-import { useAuth } from '../context/AuthContext';
+import StudentRosterPicker from '../components/StudentRosterPicker';
 import { useToast } from '../context/ToastContext';
-import {
-  createGameTemplate,
-  deleteGameTemplate,
-  fetchGameTemplates,
-  fetchMyStudentRow,
-  renameGameTemplate,
-  updateGameTemplateItems,
-} from '../lib/api';
-import { useClasses } from '../lib/useClasses';
-import type { GameItem, GameTemplate } from '../lib/types';
+import { updateGameTemplate } from '../lib/api';
+import { useGameTemplates } from '../lib/useGameTemplates';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
 }
 
+function defaultItems(): GameItem[] {
+  return ['항목 1', '항목 2', '항목 3'].map((label) => ({ id: uid(), label }));
+}
+
 export default function WheelPage() {
-  const { academy, profile, isStaff, session } = useAuth();
-  const { notify, run } = useToast();
+  const g = useGameTemplates({ gameType: 'wheel', defaultItems });
+  const {
+    isStaff,
+    classes,
+    staffClassId,
+    selectClass,
+    studentClassName,
+    classId,
+    roster,
+    rosterScope,
+    setRosterScope,
+    rosterLoading,
+    templates,
+    setTemplates,
+    selected,
+    selectedId,
+    setSelectedId,
+    loading,
+    showCreateForm,
+    setShowCreateForm,
+    submitting,
+    newName,
+    setNewName,
+    newScope,
+    setNewScope,
+    handleCreate,
+    handleRename,
+    handleDeleteTemplate,
+    scopeLabel,
+    reload,
+  } = g;
+  const { notify } = useToast();
 
-  // 선생님: 반 탭으로 직접 선택. 학생: 자기 반 고정(아래에서 studentClassId 로 찾음).
-  // classes 목록 자체는 반 이름 표시에 학생도 필요해서 역할 상관없이 불러온다.
-  const { classes, selectedId: staffClassId, select: selectClass } = useClasses(academy?.id);
-  const [studentClassId, setStudentClassId] = useState<string | null>(null);
-  const [studentClassName, setStudentClassName] = useState('');
-
-  useEffect(() => {
-    if (isStaff || !session?.user.id) return;
-    fetchMyStudentRow(session.user.id)
-      .then((s) => setStudentClassId(s?.class_id ?? null))
-      .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'));
-  }, [isStaff, session?.user.id, notify]);
-
-  useEffect(() => {
-    if (isStaff) return;
-    const cls = classes.find((c) => c.id === studentClassId);
-    setStudentClassName(cls?.name ?? '');
-  }, [isStaff, classes, studentClassId]);
-
-  const classId = isStaff ? staffClassId : studentClassId;
-
-  const [templates, setTemplates] = useState<GameTemplate[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [playItems, setPlayItems] = useState<GameItem[]>([]);
   const [eliminateMode, setEliminateMode] = useState(false);
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
   const [editorOpen, setEditorOpen] = useState(false);
   const [newItemLabel, setNewItemLabel] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
-
-  const load = useCallback(async () => {
-    if (!academy?.id || !classId) {
-      setTemplates([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const rows = await fetchGameTemplates(academy.id, classId, 'wheel');
-      setTemplates(rows);
-      setSelectedId((prev) => (prev && rows.some((r) => r.id === prev) ? prev : (rows[0]?.id ?? null)));
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [academy?.id, classId, notify]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const selected = templates.find((t) => t.id === selectedId) ?? null;
 
   // 선택된 돌림판이 바뀌면 플레이용 사본을 새로 받고, 결과 기록을 비운다.
   useEffect(() => {
@@ -102,8 +77,12 @@ export default function WheelPage() {
   async function persistItems(next: GameItem[]) {
     if (!selected) return;
     setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, items: next } : t)));
-    const ok = await run(() => updateGameTemplateItems(selected.id, next));
-    if (!ok) await load();
+    try {
+      await updateGameTemplate(selected.id, { items: next });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      await reload();
+    }
   }
 
   async function addItem() {
@@ -113,62 +92,15 @@ export default function WheelPage() {
     setNewItemLabel('');
   }
 
+  async function addItemsBulk(labels: string[]) {
+    if (!selected || labels.length === 0) return;
+    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
+  }
+
   async function removeItem(itemId: string) {
     if (!selected) return;
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
-
-  async function handleRename() {
-    if (!selected) return;
-    const next = prompt('돌림판 이름을 입력하세요', selected.name);
-    if (!next?.trim() || next.trim() === selected.name) return;
-    const ok = await run(() => renameGameTemplate(selected.id, next.trim()), '이름을 변경했습니다.');
-    if (ok) setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, name: next.trim() } : t)));
-  }
-
-  async function handleDeleteTemplate() {
-    if (!selected) return;
-    if (!confirm(`"${selected.name}" 돌림판을 삭제할까요?`)) return;
-    const ok = await run(() => deleteGameTemplate(selected.id), '삭제했습니다.');
-    if (ok) {
-      setSelectedId(null);
-      await load();
-    }
-  }
-
-  async function handleCreate() {
-    if (!academy?.id || !profile || !classId) return;
-    const name = newName.trim();
-    if (!name) {
-      notify('돌림판 이름을 입력해 주세요.', 'error');
-      return;
-    }
-    setSubmitting(true);
-    const ok = await run(async () => {
-      const t = await createGameTemplate({
-        academyId: academy.id,
-        classId: newScope === 'class' ? classId : null,
-        gameType: 'wheel',
-        name,
-        items: ['항목 1', '항목 2', '항목 3'].map((label) => ({ id: uid(), label })),
-        teacherId: profile.id,
-      });
-      setTemplates((prev) => [...prev, t]);
-      setSelectedId(t.id);
-      setEditorOpen(true);
-    }, '돌림판을 만들었습니다.');
-    setSubmitting(false);
-    if (ok) {
-      setNewName('');
-      setNewScope('class');
-      setShowCreateForm(false);
-    }
-  }
-
-  const scopeLabel = useMemo(
-    () => (t: GameTemplate) => (t.class_id ? '이 반' : '학원 공용'),
-    [],
-  );
 
   /* ---------------- 렌더 ---------------- */
 
@@ -329,6 +261,15 @@ export default function WheelPage() {
 
                   {editorOpen && (
                     <>
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
+                      />
+
                       <div className="tag-list">
                         {selected.items.length === 0 ? (
                           <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>

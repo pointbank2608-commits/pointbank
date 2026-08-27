@@ -177,6 +177,9 @@ http://localhost:5173
   `app/src/lib/ladder.ts` — 같은 행에서 인접한 가로줄이 겹치지 않게만 배치하면 항상 1:1 대응이
   된다는 성질을 이용했고, 2~10명 기준 2만 회 시뮬레이션으로 검증했습니다.
 - **순서정하기**: 이름을 등록해 두고 뽑으면 카드가 한 장씩 뒤집히며 순서가 공개됩니다.
+- **참가자를 학생 명단에서 추가**: 세 게임 모두 "학생 명단에서 추가" 패널에서 이 반/학원 전체
+  학생을 클릭하거나 "전체 추가"로 한 번에 넣을 수 있습니다. 매번 이름을 직접 입력할 필요가
+  없습니다 (`app/src/components/StudentRosterPicker.tsx`, `app/src/lib/useGameTemplates.ts`).
 - **게임 배경음악**: `game_templates.config` (jsonb)에 선택한 음악을 저장합니다.
   - 기본 제공 효과음(두구두구/짜잔/카운트다운/딩동)은 실제 음원 파일 없이 Web Audio API로
     그 자리에서 합성합니다(`app/src/lib/gameMusic.ts`) — 어느 학원에서 써도 저작권 문제가 없도록.

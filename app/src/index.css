@@ -2056,6 +2056,48 @@ main {
   cursor: pointer;
 }
 
+/* ---------------- 게임 참가자 · 학생 명단에서 추가 ---------------- */
+
+.roster-picker {
+  margin-bottom: 18px;
+}
+.roster-picker-panel {
+  margin-top: 10px;
+  background: var(--navy-050);
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 14px;
+}
+.roster-picker-panel .scope-toggle {
+  margin-bottom: 10px;
+  display: inline-flex;
+}
+.roster-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.roster-chip {
+  border: 1.5px dashed var(--navy-700);
+  background: #fff;
+  color: var(--navy-800);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.roster-chip:hover {
+  background: var(--navy-050);
+  border-style: solid;
+}
+.roster-empty {
+  color: var(--ink-soft);
+  font-size: 14px;
+  padding: 8px 2px;
+}
+
 /* ---------------- 미니게임 · 사다리타기 ---------------- */
 
 .ladder-stage {
