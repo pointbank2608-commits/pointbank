@@ -16,6 +16,7 @@ export interface BuiltinSound {
 export const BUILTIN_SOUNDS: BuiltinSound[] = [
   { id: 'drumroll', label: '두구두구', emoji: '🥁' },
   { id: 'heartbeat', label: '심장박동', emoji: '💓' },
+  { id: 'clock', label: '시계 초침', emoji: '⏰' },
   { id: 'tada', label: '짜잔', emoji: '🎉' },
   { id: 'countdown', label: '카운트다운', emoji: '⏱️' },
   { id: 'ding', label: '딩동', emoji: '🔔' },
@@ -79,6 +80,12 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
         tone(startAt, 68, 0.16, 0.55, 'sine');
         tone(startAt + 0.22, 54, 0.2, 0.45, 'sine');
         return 0.9;
+      }
+      case 'clock': {
+        // 똑딱 두 번(초침 두 칸)을 한 세트로, 1초마다 반복되게 한다.
+        noiseBurst(startAt, 0.045, 0.5);
+        noiseBurst(startAt + 0.5, 0.045, 0.42);
+        return 1.0;
       }
       case 'tada': {
         [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(startAt + i * 0.11, f, 0.4, 0.3, 'triangle'));
