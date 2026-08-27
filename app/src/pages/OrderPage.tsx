@@ -15,8 +15,22 @@ function defaultParticipants(): GameItem[] {
   return ['참가자 1', '참가자 2', '참가자 3'].map((label) => ({ id: uid(), label }));
 }
 
+function rankLabels(count: number, style: '등' | '번'): GameItem[] {
+  return Array.from({ length: count }, (_, i) => ({ id: uid(), label: `${i + 1}${style}` }));
+}
+
+/** 저장된 순위 이름이 없거나(예전 템플릿) 참가자 수와 안 맞으면 "N등"으로 새로 채운다. */
+function ranksFor(items: GameItem[], stored?: GameItem[]): GameItem[] {
+  if (stored && stored.length === items.length) return stored;
+  return rankLabels(items.length, '등');
+}
+
 export default function OrderPage() {
-  const g = useGameTemplates({ gameType: 'order', defaultItems: defaultParticipants });
+  const g = useGameTemplates({
+    gameType: 'order',
+    defaultItems: defaultParticipants,
+    defaultConfig: () => ({ ranks: rankLabels(3, '등') }),
+  });
   const {
     isStaff,
     academy,
@@ -52,11 +66,14 @@ export default function OrderPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [newParticipant, setNewParticipant] = useState('');
 
-  async function persistItems(nextItems: GameItem[]) {
+  const ranks = selected ? ranksFor(selected.items, selected.config.ranks) : [];
+
+  async function persist(nextItems: GameItem[], nextRanks: GameItem[]) {
     if (!selected) return;
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, items: nextItems } : t)));
+    const nextConfig = { ...selected.config, ranks: nextRanks };
+    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, items: nextItems, config: nextConfig } : t)));
     try {
-      await updateGameTemplate(selected.id, { items: nextItems });
+      await updateGameTemplate(selected.id, { items: nextItems, config: nextConfig });
     } catch {
       await reload();
     }
@@ -65,24 +82,48 @@ export default function OrderPage() {
   async function addParticipant() {
     const label = newParticipant.trim();
     if (!label || !selected) return;
-    await persistItems([...selected.items, { id: uid(), label }]);
+    await persist(
+      [...selected.items, { id: uid(), label }],
+      [...ranks, { id: uid(), label: `${ranks.length + 1}등` }],
+    );
     setNewParticipant('');
   }
 
   async function addParticipantsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
-    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
+    await persist(
+      [...selected.items, ...labels.map((label) => ({ id: uid(), label }))],
+      [...ranks, ...labels.map((_, i) => ({ id: uid(), label: `${ranks.length + i + 1}등` }))],
+    );
   }
 
-  async function removeParticipant(itemId: string) {
+  async function removeParticipant(index: number) {
     if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
+    await persist(
+      selected.items.filter((_, i) => i !== index),
+      ranks.filter((_, i) => i !== index),
+    );
   }
 
   async function clearAllParticipants() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm('등록된 참가자를 전부 삭제할까요?')) return;
-    await persistItems([]);
+    await persist([], []);
+  }
+
+  async function renameRank(index: number) {
+    if (!selected) return;
+    const next = prompt('순위 이름을 입력하세요', ranks[index]?.label ?? '');
+    if (next == null || !next.trim()) return;
+    await persist(
+      selected.items,
+      ranks.map((r, i) => (i === index ? { ...r, label: next.trim() } : r)),
+    );
+  }
+
+  async function applyRankStyle(style: '등' | '번') {
+    if (!selected) return;
+    await persist(selected.items, rankLabels(ranks.length, style));
   }
 
   async function handleMusicChange(music: MusicSelection | null) {
@@ -202,12 +243,13 @@ export default function OrderPage() {
                 />
               )}
 
-              <OrderPicker participants={selected.items} music={selected.config.music} />
+              <div className="game-title-big">{selected.name}</div>
+              <OrderPicker participants={selected.items} ranks={ranks} music={selected.config.music} />
 
               {isStaff && (
                 <div className="settings-block" style={{ marginTop: 22 }}>
                   <div className="wheel-editor-head">
-                    <h4 style={{ margin: 0 }}>참가자 편집</h4>
+                    <h4 style={{ margin: 0 }}>참가자 · 순위 이름 편집</h4>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button className="linkish dark" onClick={() => void handleRename()}>
                         이름 변경
@@ -222,45 +264,66 @@ export default function OrderPage() {
                   </div>
 
                   {editorOpen && (
-                    <>
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addParticipantsBulk(labels)}
-                      />
-                      <div className="tag-list">
-                        {selected.items.length === 0 ? (
-                          <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>등록된 참가자가 없습니다.</span>
-                        ) : (
-                          selected.items.map((item) => (
-                            <div className="tag" key={item.id}>
-                              {item.label}
-                              <button onClick={() => void removeParticipant(item.id)}>✕</button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button type="button" className="link-danger" onClick={() => void clearAllParticipants()}>
-                          전체 삭제
-                        </button>
-                      )}
-                      <div className="preset-add-row">
-                        <input
-                          type="text"
-                          placeholder="새 참가자"
-                          value={newParticipant}
-                          onChange={(e) => setNewParticipant(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addParticipant();
-                          }}
+                    <div className="ladder-editor-cols">
+                      <div>
+                        <div className="hint">참가자</div>
+                        <StudentRosterPicker
+                          roster={roster}
+                          existingLabels={selected.items.map((i) => i.label)}
+                          scope={rosterScope}
+                          onScopeChange={setRosterScope}
+                          loading={rosterLoading}
+                          onAdd={(labels) => void addParticipantsBulk(labels)}
                         />
-                        <button onClick={() => void addParticipant()}>추가</button>
+                        <div className="tag-list">
+                          {selected.items.length === 0 ? (
+                            <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>등록된 참가자가 없습니다.</span>
+                          ) : (
+                            selected.items.map((item, i) => (
+                              <div className="tag" key={item.id}>
+                                {item.label}
+                                <button onClick={() => void removeParticipant(i)}>✕</button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {selected.items.length > 0 && (
+                          <button type="button" className="link-danger" onClick={() => void clearAllParticipants()}>
+                            전체 삭제
+                          </button>
+                        )}
+                        <div className="preset-add-row">
+                          <input
+                            type="text"
+                            placeholder="새 참가자"
+                            value={newParticipant}
+                            onChange={(e) => setNewParticipant(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') void addParticipant();
+                            }}
+                          />
+                          <button onClick={() => void addParticipant()}>추가</button>
+                        </div>
                       </div>
-                    </>
+                      <div>
+                        <div className="hint">순위 이름 — 눌러서 수정</div>
+                        <div className="tag-list">
+                          {ranks.map((r, i) => (
+                            <button key={r.id} type="button" className="tag tag-editable" onClick={() => void renameRank(i)}>
+                              {r.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="linkish dark" onClick={() => void applyRankStyle('등')}>
+                            1등 스타일로
+                          </button>
+                          <button className="linkish dark" onClick={() => void applyRankStyle('번')}>
+                            1번 스타일로
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}

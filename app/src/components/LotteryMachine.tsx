@@ -4,6 +4,7 @@ import type { GameItem } from '../lib/types';
 
 interface Props {
   participants: GameItem[];
+  ranks: GameItem[];
   order: GameItem[] | null;
   active: boolean;
   revealCount: number;
@@ -23,7 +24,7 @@ function randomPos(): Pos {
  * 슬롯에 자리를 잡는 뽑기 기계 애니메이션. 공 위치는 JS로 짧은 간격마다 무작위로
  * 다시 정하고, CSS transition의 통통 튀는 easing으로 실제로 튕겨 다니는 것처럼 보이게 한다.
  */
-export default function LotteryMachine({ participants, order, active, revealCount }: Props) {
+export default function LotteryMachine({ participants, ranks, order, active, revealCount }: Props) {
   const n = participants.length;
   const shown = order ?? participants;
   const ballsLeft = Math.max(n - revealCount, 0);
@@ -87,7 +88,7 @@ export default function LotteryMachine({ participants, order, active, revealCoun
           const revealed = order != null && i < revealCount;
           return (
             <div key={order ? p.id : `slot-${i}`} className={`lottery-slot ${revealed ? 'revealed' : ''}`}>
-              <span className="lottery-slot-rank">{i + 1}등</span>
+              <span className="lottery-slot-rank">{ranks[i]?.label ?? `${i + 1}등`}</span>
               <span className="lottery-slot-name">{revealed ? p.label : '?'}</span>
             </div>
           );

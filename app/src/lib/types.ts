@@ -155,6 +155,8 @@ export type MusicSelection =
 export interface GameTemplateConfig {
   /** 사다리 전용: 맨 아래 결과 라벨 (items 와 개수가 같아야 함). 없으면 items 를 그대로 재사용. */
   results?: GameItem[];
+  /** 순서정하기 전용: 순위 이름표 (items 와 개수가 같아야 함, 예: "1등"/"1번"). */
+  ranks?: GameItem[];
   /** 재생할 배경음악. 없으면 무음. */
   music?: MusicSelection | null;
 }

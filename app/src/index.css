@@ -2146,7 +2146,7 @@ main {
   align-items: center;
   padding: 6px 0 8px;
 }
-.ladder-game-title {
+.game-title-big {
   font-family: 'Jua', sans-serif;
   font-size: 34px;
   font-weight: 700;
@@ -2306,68 +2306,6 @@ main {
   align-items: center;
   padding: 6px 0 8px;
 }
-.order-style-toggle {
-  margin-bottom: 18px;
-}
-.order-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 22px;
-}
-.order-card {
-  width: 108px;
-  min-height: 92px;
-  background: #fff;
-  border: 2px solid var(--paper-line);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3), border-color 0.35s ease, background 0.35s ease;
-}
-.order-card-rank {
-  font-family: 'Jua', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-  letter-spacing: 0.04em;
-}
-.order-card-name {
-  font-family: 'Jua', sans-serif;
-  font-size: 18px;
-  color: var(--navy-900);
-  text-align: center;
-  word-break: keep-all;
-}
-.order-card.revealed {
-  border-color: var(--gold);
-  background: linear-gradient(180deg, #fff, var(--gold-light));
-  transform: scale(1.06) translateY(-4px);
-}
-.order-card.revealed .order-card-name {
-  color: var(--gold-deep);
-}
-.order-card.mixing {
-  border-color: var(--navy-700);
-  animation: orderCardShuffle 0.3s ease-in-out infinite alternate;
-}
-.order-card.mixing .order-card-name {
-  color: var(--navy-800);
-}
-@keyframes orderCardShuffle {
-  from {
-    transform: rotate(-2deg) translateY(0);
-  }
-  to {
-    transform: rotate(2deg) translateY(-3px);
-  }
-}
-
 /* ---------------- 미니게임 · 순서정하기(뽑기 기계) ---------------- */
 
 .lottery-stage {
