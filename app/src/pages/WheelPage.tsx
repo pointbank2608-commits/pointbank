@@ -5,6 +5,7 @@ import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
+import { resolveResultSound } from '../lib/gameMusic';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -113,6 +114,18 @@ export default function WheelPage() {
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
+    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      await reload();
+    }
+  }
+
+  async function handleResultSoundChange(resultSound: MusicSelection | null) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, resultSound };
     setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
@@ -231,15 +244,29 @@ export default function WheelPage() {
           ) : (
             <>
               {academy && (
-                <GameMusicPicker
-                  academyId={academy.id}
-                  isStaff={isStaff}
-                  value={selected.config.music}
-                  onChange={(m) => void handleMusicChange(m)}
-                />
+                <>
+                  <GameMusicPicker
+                    academyId={academy.id}
+                    isStaff={isStaff}
+                    value={selected.config.music}
+                    onChange={(m) => void handleMusicChange(m)}
+                  />
+                  <GameMusicPicker
+                    academyId={academy.id}
+                    isStaff={isStaff}
+                    label="결과 사운드"
+                    value={resolveResultSound(selected.config.resultSound)}
+                    onChange={(m) => void handleResultSoundChange(m)}
+                  />
+                </>
               )}
 
-              <SpinWheel items={playItems} music={selected.config.music} onResult={handleResult} />
+              <SpinWheel
+                items={playItems}
+                music={selected.config.music}
+                resultSound={resolveResultSound(selected.config.resultSound)}
+                onResult={handleResult}
+              />
 
               <div className="wheel-controls">
                 <label className="wheel-eliminate">

@@ -1,11 +1,12 @@
 import { useMemo, useRef, useState } from 'react';
-import { playBuiltin, playMusic } from '../lib/gameMusic';
+import { playMusic } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
   items: GameItem[];
   music?: MusicSelection | null;
+  resultSound?: MusicSelection | null;
   /** 항목 하나를 선택할 때마다 화면 밖으로 알려준다 (최근 결과 기록 등에 사용). */
   onResult?: (item: GameItem) => void;
 }
@@ -22,7 +23,7 @@ function pointOnCircle(angleDeg: number, radius: number) {
   return { x: CX + radius * Math.sin(rad), y: CY - radius * Math.cos(rad) };
 }
 
-export default function SpinWheel({ items, music, onResult }: Props) {
+export default function SpinWheel({ items, music, resultSound, onResult }: Props) {
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
@@ -65,7 +66,7 @@ export default function SpinWheel({ items, music, onResult }: Props) {
       setResult(picked);
       onResult?.(picked);
       stopMusicRef.current();
-      playBuiltin('tada');
+      playMusic(resultSound);
     }, SPIN_MS);
   }
 

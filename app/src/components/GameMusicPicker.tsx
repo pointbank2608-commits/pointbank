@@ -9,9 +9,11 @@ interface Props {
   isStaff: boolean;
   value: MusicSelection | null | undefined;
   onChange: (music: MusicSelection | null) => void;
+  /** 픽커 앞에 붙는 이름. 배경음악/결과 사운드처럼 한 화면에 여러 개 둘 때 구분용. */
+  label?: string;
 }
 
-export default function GameMusicPicker({ academyId, isStaff, value, onChange }: Props) {
+export default function GameMusicPicker({ academyId, isStaff, value, onChange, label = '배경음악' }: Props) {
   const { notify } = useToast();
   const [uploads, setUploads] = useState<GameAudioFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -85,7 +87,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange }:
 
   return (
     <div className="game-music-picker">
-      <span className="gmp-label">배경음악</span>
+      <span className="gmp-label">{label}</span>
 
       {isStaff ? (
         <select className="gmp-select" value={selectValue} onChange={(e) => handleSelect(e.target.value)}>

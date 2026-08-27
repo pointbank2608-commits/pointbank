@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
-import { playBuiltin, playMusic } from '../lib/gameMusic';
+import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -8,6 +8,7 @@ interface Props {
   participants: GameItem[];
   results: GameItem[];
   music?: MusicSelection | null;
+  resultSound?: MusicSelection | null;
 }
 
 type Mode = 'all' | 'one';
@@ -19,7 +20,7 @@ const TOP_PAD = 10;
 const BOTTOM_PAD = 10;
 const RUN_MS = 1700;
 
-export default function LadderBoard({ participants, results, music }: Props) {
+export default function LadderBoard({ participants, results, music, resultSound }: Props) {
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('all');
   const [grid, setGrid] = useState<LadderGrid | null>(null);
@@ -120,7 +121,7 @@ export default function LadderBoard({ participants, results, music }: Props) {
       setRevealed(new Set(all));
       setRunningSet(new Set());
       stopMusicRef.current();
-      playBuiltin('tada');
+      playMusic(resultSound);
     });
   }
 
@@ -143,7 +144,7 @@ export default function LadderBoard({ participants, results, music }: Props) {
         return next;
       });
       stopMusic();
-      playBuiltin('tada');
+      playMusic(resultSound);
     });
   }
 

@@ -121,6 +121,17 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
   };
 }
 
+/** 결과 사운드를 한 번도 설정하지 않았을 때 쓰는 기본값. */
+export const DEFAULT_RESULT_SOUND: MusicSelection = { kind: 'builtin', id: 'tada' };
+
+/**
+ * 저장된 결과 사운드 설정을 실제 재생값으로 바꾼다.
+ * undefined(한 번도 설정 안 함) → 기본 "짜잔". null(선생님이 "없음"을 직접 고름) → 무음 유지.
+ */
+export function resolveResultSound(stored: MusicSelection | null | undefined): MusicSelection | null {
+  return stored !== undefined ? stored : DEFAULT_RESULT_SOUND;
+}
+
 /**
  * 선택된 배경음악을 재생한다. 기본 제공 효과음이면 합성음을, 업로드 파일이면
  * <audio> 로 재생한다. 반환된 함수를 부르면 멈춘다. music 이 없으면 아무 일도 안 한다.
