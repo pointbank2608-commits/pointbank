@@ -1266,6 +1266,44 @@ main {
   padding: 4px 16px;
 }
 
+/* ---------------- 홈 화면 추가 안내 배너 ---------------- */
+.install-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gold-light);
+  color: var(--navy-900);
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--gold);
+}
+.install-banner-emoji {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.install-banner-text {
+  flex: 1;
+}
+.install-banner-text strong {
+  color: var(--navy-900);
+}
+.install-banner-close {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+.install-banner-close:hover {
+  color: var(--brick);
+}
+
 /* ---------------- 랜딩 페이지 ---------------- */
 .landing {
   background: #fff;
