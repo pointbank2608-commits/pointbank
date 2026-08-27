@@ -33,6 +33,13 @@ const GAMES = [
     desc: '무작위 시각에 터지는 폭탄을 서로 돌려요.',
     path: '/games/bomb',
   },
+  {
+    key: 'timer',
+    emoji: '⏱️',
+    name: '타이머 맞추기',
+    desc: '목표 시간에 맞춰 시작·멈춤 버튼을 눌러요.',
+    path: '/games/timer',
+  },
 ];
 
 export default function GamesPage() {
