@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
-import { playMusic } from '../lib/gameMusic';
+import { playBuiltin, playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -120,6 +120,7 @@ export default function LadderBoard({ participants, results, music }: Props) {
       setRevealed(new Set(all));
       setRunningSet(new Set());
       stopMusicRef.current();
+      playBuiltin('tada');
     });
   }
 
@@ -142,6 +143,7 @@ export default function LadderBoard({ participants, results, music }: Props) {
         return next;
       });
       stopMusic();
+      playBuiltin('tada');
     });
   }
 
