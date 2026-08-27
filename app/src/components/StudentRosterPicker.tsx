@@ -22,8 +22,13 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
 
   return (
     <div className="roster-picker">
-      <button type="button" className="linkish dark" onClick={() => setOpen((v) => !v)}>
-        {open ? '학생 명단 닫기' : '👦👧 학생 명단에서 추가'}
+      <button
+        type="button"
+        className={`roster-toggle-btn ${open ? 'open' : ''}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="roster-toggle-emoji">👦👧</span>
+        {open ? '학생 명단 닫기' : '학생 명단에서 추가'}
       </button>
 
       {open && (
@@ -52,8 +57,12 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
                   </button>
                 ))}
               </div>
-              <button type="button" className="linkish dark" onClick={() => onAdd(remaining.map((s) => s.label))}>
-                전체 추가 ({remaining.length}명)
+              <button
+                type="button"
+                className="roster-addall-btn"
+                onClick={() => onAdd(remaining.map((s) => s.label))}
+              >
+                + 전체 추가 ({remaining.length}명)
               </button>
             </>
           )}

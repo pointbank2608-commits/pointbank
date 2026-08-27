@@ -2061,6 +2061,46 @@ main {
 .roster-picker {
   margin-bottom: 18px;
 }
+.roster-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: var(--sage-light);
+  color: var(--sage);
+  font-weight: 700;
+  font-size: 14.5px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.roster-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 26px -12px rgba(58, 51, 88, 0.35);
+}
+.roster-toggle-btn.open {
+  background: var(--sage);
+  color: #fff;
+}
+.roster-toggle-emoji {
+  font-size: 16px;
+}
+.roster-addall-btn {
+  border: none;
+  background: var(--navy-900);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.roster-addall-btn:hover {
+  background: var(--navy-800);
+}
 .roster-picker-panel {
   margin-top: 10px;
   background: var(--navy-050);
