@@ -2115,11 +2115,13 @@ main {
 }
 .ladder-mode-buttons .wheel-spin-btn {
   margin-top: 0;
+  padding: 16px 44px;
+  font-size: 19px;
 }
 .ladder-hint {
   color: var(--ink-soft);
-  font-size: 13.5px;
-  margin-top: 10px;
+  font-size: 17px;
+  margin-top: 14px;
   text-align: center;
 }
 .ladder-scroll {
@@ -2134,16 +2136,16 @@ main {
   flex: none;
   text-align: center;
   font-family: 'Jua', sans-serif;
-  font-size: 14px;
+  font-size: 22px;
   color: var(--navy-900);
-  padding: 0 4px;
+  padding: 4px 6px;
   word-break: keep-all;
 }
 .ladder-labels.top {
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 .ladder-labels.bottom {
-  margin-top: 8px;
+  margin-top: 14px;
 }
 .ladder-label.result {
   color: var(--ink-soft);
@@ -2152,14 +2154,14 @@ main {
 .ladder-label.result.landed {
   color: var(--gold-deep);
   font-weight: 700;
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
 .ladder-label.clickable {
   cursor: pointer;
   background: #fff;
-  border: 1.5px solid var(--navy-700);
+  border: 2px solid var(--navy-700);
   border-radius: 999px;
-  padding: 5px 2px;
+  padding: 10px 8px;
   color: var(--navy-900);
 }
 .ladder-label.clickable:hover:not(:disabled) {
@@ -2191,36 +2193,37 @@ main {
 }
 .ladder-rail {
   stroke: var(--paper-line);
-  stroke-width: 3;
+  stroke-width: 5;
 }
 .ladder-rung {
   stroke: #d7cdb8;
-  stroke-width: 3;
+  stroke-width: 5;
 }
 .ladder-path {
   fill: none;
-  stroke-width: 4;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .ladder-result-list {
-  margin-top: 20px;
+  margin-top: 26px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  max-width: 360px;
+  max-width: 460px;
 }
 .ladder-result-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   background: linear-gradient(180deg, #fff, var(--gold-light));
   border: 1px solid var(--gold);
-  border-radius: 14px;
-  padding: 9px 16px;
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-size: 20px;
   font-weight: 700;
   animation: resultPop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3);
 }

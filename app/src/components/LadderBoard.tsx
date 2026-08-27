@@ -12,11 +12,12 @@ interface Props {
 
 type Mode = 'all' | 'one';
 
-const COL_W = 62;
-const ROW_H = 22;
-const TOP_PAD = 6;
-const BOTTOM_PAD = 6;
-const RUN_MS = 1500;
+// 50인치대 전자칠판/태블릿에서 뒤에서도 잘 보이도록 큼직하게 잡은 값.
+const COL_W = 128;
+const ROW_H = 34;
+const TOP_PAD = 10;
+const BOTTOM_PAD = 10;
+const RUN_MS = 1700;
 
 export default function LadderBoard({ participants, results, music }: Props) {
   const n = participants.length;
