@@ -165,10 +165,10 @@ export default function LadderBoard({ participants, results, music }: Props) {
   return (
     <div className="ladder-stage">
       <div className="ladder-mode-buttons">
-        <button className="btn-primary wheel-spin-btn" onClick={startRevealAll} disabled={busy}>
+        <button className="btn-primary ladder-mode-btn" onClick={startRevealAll} disabled={busy}>
           {busy && mode === 'all' ? '내려가는 중…' : '한 번에 결과 보기'}
         </button>
-        <button className="btn-primary gold wheel-spin-btn" onClick={startOneByOne} disabled={busy}>
+        <button className="btn-primary gold ladder-mode-btn" onClick={startOneByOne} disabled={busy}>
           한 명씩 결과 보기
         </button>
       </div>

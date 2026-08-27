@@ -237,6 +237,7 @@ export default function LadderPage() {
                 />
               )}
 
+              <div className="ladder-game-title">{selected.name}</div>
               <LadderBoard participants={selected.items} results={results} music={selected.config.music} />
 
               {isStaff && (

@@ -2106,17 +2106,27 @@ main {
   align-items: center;
   padding: 6px 0 8px;
 }
+.ladder-game-title {
+  font-family: 'Jua', sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--navy-900);
+  text-align: center;
+  margin-bottom: 10px;
+}
 .ladder-mode-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 22px;
 }
-.ladder-mode-buttons .wheel-spin-btn {
+.ladder-mode-btn {
+  width: auto;
   margin-top: 0;
-  padding: 16px 44px;
-  font-size: 19px;
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 999px;
 }
 .ladder-hint {
   color: var(--ink-soft);
