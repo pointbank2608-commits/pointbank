@@ -18,6 +18,7 @@ export const BUILTIN_SOUNDS: BuiltinSound[] = [
   { id: 'heartbeat', label: '심장박동', emoji: '💓' },
   { id: 'clock', label: '시계 초침', emoji: '⏰' },
   { id: 'applause', label: '박수 갈채', emoji: '👏' },
+  { id: 'boom', label: '펑!(폭발)', emoji: '💥' },
   { id: 'tada', label: '짜잔', emoji: '🎉' },
   { id: 'countdown', label: '카운트다운', emoji: '⏱️' },
   { id: 'ding', label: '딩동', emoji: '🔔' },
@@ -96,6 +97,23 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
           noiseBurst(startAt + Math.random() * span, 0.06, 0.22 + Math.random() * 0.16);
         }
         return span + 0.2;
+      }
+      case 'boom': {
+        // 저음이 빠르게 뚝 떨어지는 사인파(쿵) + 노이즈(파편 소리)를 겹쳐 폭발음을 만든다.
+        const osc = c.createOscillator();
+        const g = c.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(160, startAt);
+        osc.frequency.exponentialRampToValueAtTime(35, startAt + 0.5);
+        g.gain.setValueAtTime(0.001, startAt);
+        g.gain.linearRampToValueAtTime(0.9, startAt + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, startAt + 0.6);
+        osc.connect(g).connect(c.destination);
+        osc.start(startAt);
+        osc.stop(startAt + 0.65);
+        noiseBurst(startAt, 0.35, 0.6);
+        noiseBurst(startAt + 0.05, 0.2, 0.3);
+        return 0.7;
       }
       case 'tada': {
         [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(startAt + i * 0.11, f, 0.4, 0.3, 'triangle'));

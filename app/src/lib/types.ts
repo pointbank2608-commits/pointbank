@@ -140,7 +140,7 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel' | 'ladder' | 'order';
+export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb';
 
 export interface GameItem {
   id: string;
@@ -157,6 +157,8 @@ export interface GameTemplateConfig {
   results?: GameItem[];
   /** 순서정하기 전용: 순위 이름표 (items 와 개수가 같아야 함, 예: "1등"/"1번"). */
   ranks?: GameItem[];
+  /** 시한폭탄 전용: 폭발까지 걸리는 시간(초)의 무작위 범위. */
+  bombRange?: { min: number; max: number };
   /** 재생할 배경음악. 없으면 무음. */
   music?: MusicSelection | null;
   /** 결과가 확정되는 순간 울리는 사운드. 한 번도 설정 안 했으면(undefined) "짜잔"을 기본으로 쓴다. */

@@ -4,6 +4,7 @@ import AdminLayout from './pages/AdminLayout';
 import AdminAcademiesPage from './pages/AdminAcademiesPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
+import BombPage from './pages/BombPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import GamesPage from './pages/GamesPage';
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
             <Route path="/games/order" element={<OrderPage />} />
+            <Route path="/games/bomb" element={<BombPage />} />
             <Route path="*" element={<Navigate to="/board" replace />} />
           </>
         ) : (
@@ -79,6 +81,7 @@ export default function App() {
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
             <Route path="/games/order" element={<OrderPage />} />
+            <Route path="/games/bomb" element={<BombPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

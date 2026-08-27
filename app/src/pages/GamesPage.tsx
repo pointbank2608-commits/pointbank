@@ -26,6 +26,13 @@ const GAMES = [
     desc: '이름을 등록해 두고 무작위 순서를 뽑아요.',
     path: '/games/order',
   },
+  {
+    key: 'bomb',
+    emoji: '💣',
+    name: '시한폭탄',
+    desc: '무작위 시각에 터지는 폭탄을 서로 돌려요.',
+    path: '/games/bomb',
+  },
 ];
 
 export default function GamesPage() {
