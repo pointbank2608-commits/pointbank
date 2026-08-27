@@ -2106,6 +2106,22 @@ main {
   align-items: center;
   padding: 6px 0 8px;
 }
+.ladder-mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ladder-mode-buttons .wheel-spin-btn {
+  margin-top: 0;
+}
+.ladder-hint {
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  margin-top: 10px;
+  text-align: center;
+}
 .ladder-scroll {
   max-width: 100%;
   overflow-x: auto;
@@ -2137,6 +2153,37 @@ main {
   color: var(--gold-deep);
   font-weight: 700;
   transform: scale(1.08);
+}
+.ladder-label.clickable {
+  cursor: pointer;
+  background: #fff;
+  border: 1.5px solid var(--navy-700);
+  border-radius: 999px;
+  padding: 5px 2px;
+  color: var(--navy-900);
+}
+.ladder-label.clickable:hover:not(:disabled) {
+  background: var(--navy-050);
+}
+.ladder-label.clickable:disabled {
+  cursor: default;
+}
+.ladder-label.clickable.running {
+  animation: ladderPulse 0.55s ease-in-out infinite alternate;
+}
+.ladder-label.clickable.landed {
+  border-color: var(--gold);
+  background: var(--gold-light);
+  color: var(--gold-deep);
+  font-weight: 700;
+}
+@keyframes ladderPulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
 }
 .ladder-svg {
   display: block;
