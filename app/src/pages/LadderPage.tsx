@@ -241,8 +241,11 @@ export default function LadderPage() {
       ) : !selected ? (
         <>
           {classPicker}
-          <div className="empty-hint">
-            {isStaff ? '아직 사다리가 없습니다. "+ 새 사다리"로 만들어 주세요.' : '아직 선생님이 만든 사다리가 없습니다.'}
+          <div className="game-empty-hero">
+            <div className="game-empty-hero-icon">🪜</div>
+            <div className="game-empty-hero-text">
+              {isStaff ? '아직 사다리가 없어요. 아래 "+ 새 사다리"로 첫 사다리를 만들어보세요!' : '아직 선생님이 만든 사다리가 없어요.'}
+            </div>
           </div>
           {templateRow}
           {createForm}

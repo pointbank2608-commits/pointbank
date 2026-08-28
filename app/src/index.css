@@ -1852,6 +1852,26 @@ main {
   color: var(--brick);
 }
 
+.game-empty-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 44px 20px 30px;
+  text-align: center;
+}
+.game-empty-hero-icon {
+  font-size: 128px;
+  line-height: 1;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 14px 22px rgba(58, 51, 88, 0.24));
+}
+.game-empty-hero-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--navy-800);
+  max-width: 380px;
+}
+
 .game-admin-area {
   margin-top: 32px;
   padding-top: 22px;

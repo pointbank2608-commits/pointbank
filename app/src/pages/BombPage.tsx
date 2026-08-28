@@ -233,8 +233,11 @@ export default function BombPage() {
       ) : !selected ? (
         <>
           {classPicker}
-          <div className="empty-hint">
-            {isStaff ? '아직 목록이 없습니다. "+ 새 목록"으로 만들어 주세요.' : '아직 선생님이 만든 목록이 없습니다.'}
+          <div className="game-empty-hero">
+            <div className="game-empty-hero-icon">💣</div>
+            <div className="game-empty-hero-text">
+              {isStaff ? '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 시한폭탄을 만들어보세요!' : '아직 선생님이 만든 목록이 없어요.'}
+            </div>
           </div>
           {templateRow}
           {createForm}

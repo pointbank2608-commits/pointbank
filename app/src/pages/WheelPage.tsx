@@ -235,8 +235,11 @@ export default function WheelPage() {
       ) : !selected ? (
         <>
           {classPicker}
-          <div className="empty-hint">
-            {isStaff ? '아직 돌림판이 없습니다. "+ 새 돌림판"으로 만들어 주세요.' : '아직 선생님이 만든 돌림판이 없습니다.'}
+          <div className="game-empty-hero">
+            <div className="game-empty-hero-icon">🎡</div>
+            <div className="game-empty-hero-text">
+              {isStaff ? '아직 돌림판이 없어요. 아래 "+ 새 돌림판"으로 첫 돌림판을 만들어보세요!' : '아직 선생님이 만든 돌림판이 없어요.'}
+            </div>
           </div>
           {templateRow}
           {createForm}
