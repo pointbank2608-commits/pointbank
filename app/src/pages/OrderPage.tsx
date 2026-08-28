@@ -156,140 +156,152 @@ export default function OrderPage() {
     return <div className="empty-hint">불러오는 중…</div>;
   }
 
+  const classPicker = isStaff ? (
+    <div className="class-tabs">
+      {classes.map((c) => (
+        <button
+          key={c.id}
+          className={`class-tab ${c.id === staffClassId ? 'active' : ''}`}
+          onClick={() => selectClass(c.id)}
+        >
+          {c.name}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <div className="section-title">{studentClassName} 랜덤 공 뽑기</div>
+  );
+
+  const templateRow = (
+    <div className="wheel-template-row">
+      {templates.map((t) => (
+        <div key={t.id} className={`wheel-chip-wrap ${t.id === selectedId ? 'active' : ''}`}>
+          <button className="wheel-chip-select" onClick={() => setSelectedId(t.id)}>
+            {t.name}
+            <span className="wheel-chip-scope">{scopeLabel(t)}</span>
+          </button>
+          {isStaff && (
+            <button
+              type="button"
+              className="wheel-chip-delete"
+              title="삭제"
+              onClick={() => void handleDeleteTemplate(t.id)}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      ))}
+      {isStaff && (
+        <button className="wheel-chip add" onClick={() => setShowCreateForm((v) => !v)}>
+          + 새 목록
+        </button>
+      )}
+    </div>
+  );
+
+  const createForm = isStaff && showCreateForm && (
+    <div className="settings-block wheel-create-form">
+      <div className="field-row">
+        <label htmlFor="oname">이름</label>
+        <input
+          id="oname"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="예: 발표 순서 정하기"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') void handleCreate();
+          }}
+        />
+      </div>
+      <div className="field-row">
+        <label>공개 범위</label>
+        <div className="scope-toggle">
+          <button type="button" className={newScope === 'class' ? 'active' : ''} onClick={() => setNewScope('class')}>
+            이 반에서만
+          </button>
+          <button type="button" className={newScope === 'academy' ? 'active' : ''} onClick={() => setNewScope('academy')}>
+            학원 전체 공용
+          </button>
+        </div>
+      </div>
+      <div className="field-row">
+        <button onClick={() => void handleCreate()} disabled={submitting}>
+          {submitting ? '만드는 중…' : '만들기'}
+        </button>
+        <button className="ghost" onClick={() => setShowCreateForm(false)}>
+          취소
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Link to="/games" className="back-link">
         ← 게임 목록
       </Link>
 
-      {isStaff ? (
-        <div className="class-tabs">
-          {classes.map((c) => (
-            <button
-              key={c.id}
-              className={`class-tab ${c.id === staffClassId ? 'active' : ''}`}
-              onClick={() => selectClass(c.id)}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="section-title">{studentClassName} 랜덤 공 뽑기</div>
-      )}
-
       {loading ? (
         <div className="empty-hint">불러오는 중…</div>
+      ) : !selected ? (
+        <>
+          {classPicker}
+          <div className="empty-hint">
+            {isStaff ? '아직 목록이 없습니다. "+ 새 목록"으로 만들어 주세요.' : '아직 선생님이 만든 목록이 없습니다.'}
+          </div>
+          {templateRow}
+          {createForm}
+        </>
       ) : (
         <>
-          <div className="wheel-template-row">
-            {templates.map((t) => (
-              <button
-                key={t.id}
-                className={`wheel-chip ${t.id === selectedId ? 'active' : ''}`}
-                onClick={() => setSelectedId(t.id)}
-              >
-                {t.name}
-                <span className="wheel-chip-scope">{scopeLabel(t)}</span>
-              </button>
-            ))}
+          <div className="game-title-big">{selected.name}</div>
+          <OrderPicker
+            participants={selected.items}
+            ranks={ranks}
+            music={selected.config.music}
+            resultSound={resolveResultSound(selected.config.resultSound)}
+          />
+
+          <div className="game-admin-area">
+            {classPicker}
+            {templateRow}
+            {createForm}
+
             {isStaff && (
-              <button className="wheel-chip add" onClick={() => setShowCreateForm((v) => !v)}>
-                + 새 목록
-              </button>
-            )}
-          </div>
-
-          {isStaff && showCreateForm && (
-            <div className="settings-block wheel-create-form">
-              <div className="field-row">
-                <label htmlFor="oname">이름</label>
-                <input
-                  id="oname"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="예: 발표 순서 정하기"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') void handleCreate();
-                  }}
-                />
-              </div>
-              <div className="field-row">
-                <label>공개 범위</label>
-                <div className="scope-toggle">
-                  <button type="button" className={newScope === 'class' ? 'active' : ''} onClick={() => setNewScope('class')}>
-                    이 반에서만
-                  </button>
-                  <button
-                    type="button"
-                    className={newScope === 'academy' ? 'active' : ''}
-                    onClick={() => setNewScope('academy')}
-                  >
-                    학원 전체 공용
-                  </button>
-                </div>
-              </div>
-              <div className="field-row">
-                <button onClick={() => void handleCreate()} disabled={submitting}>
-                  {submitting ? '만드는 중…' : '만들기'}
-                </button>
-                <button className="ghost" onClick={() => setShowCreateForm(false)}>
-                  취소
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!selected ? (
-            <div className="empty-hint">
-              {isStaff ? '아직 목록이 없습니다. "+ 새 목록"으로 만들어 주세요.' : '아직 선생님이 만든 목록이 없습니다.'}
-            </div>
-          ) : (
-            <>
-              {academy && (
-                <>
-                  <GameMusicPicker
-                    academyId={academy.id}
-                    isStaff={isStaff}
-                    value={selected.config.music}
-                    onChange={(m) => void handleMusicChange(m)}
-                  />
-                  <GameMusicPicker
-                    academyId={academy.id}
-                    isStaff={isStaff}
-                    label="결과 사운드"
-                    value={resolveResultSound(selected.config.resultSound)}
-                    onChange={(m) => void handleResultSoundChange(m)}
-                  />
-                </>
-              )}
-
-              <div className="game-title-big">{selected.name}</div>
-              <OrderPicker
-                participants={selected.items}
-                ranks={ranks}
-                music={selected.config.music}
-                resultSound={resolveResultSound(selected.config.resultSound)}
-              />
-
-              {isStaff && (
-                <div className="settings-block" style={{ marginTop: 22 }}>
-                  <div className="wheel-editor-head">
-                    <h4 style={{ margin: 0 }}>참가자 · 순위 이름 편집</h4>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="linkish dark" onClick={() => void handleRename()}>
-                        이름 변경
-                      </button>
-                      <button className="linkish dark" onClick={() => void handleDeleteTemplate()}>
-                        삭제
-                      </button>
-                      <button className="linkish dark" onClick={() => setEditorOpen((v) => !v)}>
-                        {editorOpen ? '접기' : '펼치기'}
-                      </button>
-                    </div>
+              <div className="settings-block" style={{ marginTop: 22 }}>
+                <div className="wheel-editor-head">
+                  <h4 style={{ margin: 0 }}>랜덤 공 뽑기 설정</h4>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="linkish dark" onClick={() => void handleRename()}>
+                      이름 변경
+                    </button>
+                    <button className="linkish dark" onClick={() => setEditorOpen((v) => !v)}>
+                      {editorOpen ? '접기' : '펼치기'}
+                    </button>
                   </div>
+                </div>
 
-                  {editorOpen && (
+                {editorOpen && (
+                  <>
+                    {academy && (
+                      <>
+                        <GameMusicPicker
+                          academyId={academy.id}
+                          isStaff={isStaff}
+                          value={selected.config.music}
+                          onChange={(m) => void handleMusicChange(m)}
+                        />
+                        <GameMusicPicker
+                          academyId={academy.id}
+                          isStaff={isStaff}
+                          label="결과 사운드"
+                          value={resolveResultSound(selected.config.resultSound)}
+                          onChange={(m) => void handleResultSoundChange(m)}
+                        />
+                      </>
+                    )}
+
                     <div className="ladder-editor-cols">
                       <div>
                         <div className="hint">참가자</div>
@@ -350,11 +362,11 @@ export default function OrderPage() {
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
     </>

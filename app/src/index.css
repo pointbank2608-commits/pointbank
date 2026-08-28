@@ -1809,6 +1809,55 @@ main {
   color: var(--navy-700);
 }
 
+.wheel-chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--paper-line);
+  background: #fff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.wheel-chip-wrap.active {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+}
+.wheel-chip-select {
+  border: none;
+  background: none;
+  color: var(--navy-800);
+  padding: 9px 4px 9px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.wheel-chip-wrap.active .wheel-chip-select {
+  color: #fff;
+}
+.wheel-chip-delete {
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  padding: 9px 14px 9px 8px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.wheel-chip-wrap.active .wheel-chip-delete {
+  color: rgba(255, 255, 255, 0.75);
+}
+.wheel-chip-delete:hover {
+  color: var(--brick);
+}
+
+.game-admin-area {
+  margin-top: 32px;
+  padding-top: 22px;
+  border-top: 1.5px dashed var(--paper-line);
+}
+
 .wheel-create-form {
   max-width: 460px;
 }

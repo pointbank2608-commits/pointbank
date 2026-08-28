@@ -106,12 +106,14 @@ export function useGameTemplates(params: {
     if (ok) setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, name: next.trim() } : t)));
   }
 
-  async function handleDeleteTemplate() {
-    if (!selected) return;
-    if (!confirm(`"${selected.name}"을(를) 삭제할까요?`)) return;
-    const ok = await run(() => deleteGameTemplate(selected.id), '삭제했습니다.');
+  /** id 를 안 주면 현재 선택된 템플릿을 지운다 — 목록 칩의 개별 삭제 버튼은 id 를 직접 넘긴다. */
+  async function handleDeleteTemplate(id?: string) {
+    const target = id ? templates.find((t) => t.id === id) : selected;
+    if (!target) return;
+    if (!confirm(`"${target.name}"을(를) 삭제할까요?`)) return;
+    const ok = await run(() => deleteGameTemplate(target.id), '삭제했습니다.');
     if (ok) {
-      setSelectedId(null);
+      setSelectedId((prev) => (prev === target.id ? null : prev));
       await load();
     }
   }
