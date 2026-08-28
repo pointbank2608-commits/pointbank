@@ -31,6 +31,15 @@ export function generateLadder(cols: number, rows?: number): LadderGrid {
   return { rungs, rows: rowCount, cols };
 }
 
+/** 가로줄이 하나도 없는 빈 사다리 틀. 게임 시작 전 세로줄 + 이름 칸만 미리 보여줄 때 쓴다. */
+export function emptyLadder(cols: number, rows: number): LadderGrid {
+  return {
+    rungs: Array.from({ length: rows }, () => new Array(Math.max(cols - 1, 0)).fill(false)),
+    rows,
+    cols,
+  };
+}
+
 /** startCol 에서 출발해 사다리를 타고 내려갔을 때 도착하는 열 번호. */
 export function traceColumn(grid: LadderGrid, startCol: number): number {
   let col = startCol;

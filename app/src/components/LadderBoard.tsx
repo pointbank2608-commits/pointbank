@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -19,11 +19,12 @@ const ROW_H = 34;
 const TOP_PAD = 10;
 const BOTTOM_PAD = 10;
 const RUN_MS = 1700;
+const DEFAULT_ROWS = 10;
 
 export default function LadderBoard({ participants, results, music, resultSound }: Props) {
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('all');
-  const [grid, setGrid] = useState<LadderGrid | null>(null);
+  const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
   const [mapping, setMapping] = useState<number[] | null>(null);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
   const [runningSet, setRunningSet] = useState<Set<number>>(new Set());
@@ -32,11 +33,18 @@ export default function LadderBoard({ participants, results, music, resultSound 
   const oneStopsRef = useRef<(() => void)[]>([]);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  // 게임을 시작하기 전(참가자만 편집 중)에는 세로줄 + 이름 칸만 미리 보여준다.
+  // 실제로 사다리를 탄 적이 없는 동안은(mapping === null) 참가자 수가 바뀔 때마다 빈 틀을 다시 맞춘다.
+  useEffect(() => {
+    if (mapping) return;
+    setGrid(emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [n]);
+
   const width = Math.max(n, 2) * COL_W;
-  const height = TOP_PAD + (grid?.rows ?? 10) * ROW_H + BOTTOM_PAD;
+  const height = TOP_PAD + grid.rows * ROW_H + BOTTOM_PAD;
 
   const paths = useMemo(() => {
-    if (!grid) return [];
     return participants.map((_, i) => {
       const pts = tracePath(grid, i).map((p) => ({
         x: COL_W / 2 + p.col * COL_W,
@@ -48,7 +56,6 @@ export default function LadderBoard({ participants, results, music, resultSound 
   }, [grid, participants]);
 
   const rungLines = useMemo(() => {
-    if (!grid) return [];
     const lines: { key: string; x1: number; x2: number; y: number }[] = [];
     grid.rungs.forEach((row, r) => {
       row.forEach((has, gap) => {
@@ -68,7 +75,6 @@ export default function LadderBoard({ participants, results, music, resultSound 
   // 경로 길이만큼 stroke-dasharray 를 잡아둔 뒤(안 보이게), 다음 프레임에 dashoffset 을 0 으로
   // 애니메이션하면 위→아래로 선이 그려지는 것처럼 보인다. 새 사다리가 만들어질 때마다 전부 다시 숨긴다.
   useLayoutEffect(() => {
-    if (!grid) return;
     pathRefs.current.forEach((el) => {
       if (!el) return;
       const len = el.getTotalLength();
@@ -132,7 +138,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
   }
 
   function revealOne(i: number) {
-    if (!grid || revealed.has(i) || runningSet.has(i)) return;
+    if (!mapping || revealed.has(i) || runningSet.has(i)) return;
     setRunningSet((prev) => new Set(prev).add(i));
     const stopMusic = playMusic(music, { loop: false });
     oneStopsRef.current.push(stopMusic);
@@ -176,89 +182,83 @@ export default function LadderBoard({ participants, results, music, resultSound 
         </button>
       </div>
 
-      {grid && (
-        <>
-          <div className="ladder-scroll">
-            <div className="ladder-labels top" style={{ width }}>
-              {participants.map((p, i) =>
-                mode === 'one' ? (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`ladder-label clickable ${revealed.has(i) ? 'landed' : ''} ${runningSet.has(i) ? 'running' : ''}`}
-                    style={{ width: COL_W }}
-                    disabled={revealed.has(i) || runningSet.has(i)}
-                    onClick={() => revealOne(i)}
-                  >
-                    {p.label}
-                  </button>
-                ) : (
-                  <div key={p.id} className="ladder-label" style={{ width: COL_W }}>
-                    {p.label}
-                  </div>
-                ),
-              )}
+      <div className="ladder-scroll">
+        <div className="ladder-labels top" style={{ width }}>
+          {participants.map((p, i) =>
+            mode === 'one' ? (
+              <button
+                key={p.id}
+                type="button"
+                className={`ladder-label clickable ${revealed.has(i) ? 'landed' : ''} ${runningSet.has(i) ? 'running' : ''}`}
+                style={{ width: COL_W }}
+                disabled={revealed.has(i) || runningSet.has(i)}
+                onClick={() => revealOne(i)}
+              >
+                {p.label}
+              </button>
+            ) : (
+              <div key={p.id} className="ladder-label" style={{ width: COL_W }}>
+                {p.label}
+              </div>
+            ),
+          )}
+        </div>
+
+        <svg className="ladder-svg" viewBox={`0 0 ${width} ${height}`} style={{ width, height }}>
+          {Array.from({ length: n }, (_, i) => (
+            <line
+              key={`col-${i}`}
+              x1={COL_W / 2 + i * COL_W}
+              y1={TOP_PAD}
+              x2={COL_W / 2 + i * COL_W}
+              y2={height - BOTTOM_PAD}
+              className="ladder-rail"
+            />
+          ))}
+          {rungLines.map((l) => (
+            <line key={l.key} x1={l.x1} y1={l.y} x2={l.x2} y2={l.y} className="ladder-rung" />
+          ))}
+          {paths.map((p, i) => (
+            <path
+              key={p.id}
+              ref={(el) => {
+                pathRefs.current[i] = el;
+              }}
+              d={p.d}
+              className="ladder-path"
+              style={{ stroke: p.color }}
+            />
+          ))}
+        </svg>
+
+        <div className="ladder-labels bottom" style={{ width }}>
+          {results.map((r, i) => (
+            <div
+              key={r.id}
+              className={`ladder-label result ${landedResultIndex(i) ? 'landed' : ''}`}
+              style={{ width: COL_W }}
+            >
+              {r.label}
             </div>
+          ))}
+        </div>
+      </div>
 
-            <svg className="ladder-svg" viewBox={`0 0 ${width} ${height}`} style={{ width, height }}>
-              {Array.from({ length: n }, (_, i) => (
-                <line
-                  key={`col-${i}`}
-                  x1={COL_W / 2 + i * COL_W}
-                  y1={TOP_PAD}
-                  x2={COL_W / 2 + i * COL_W}
-                  y2={height - BOTTOM_PAD}
-                  className="ladder-rail"
-                />
-              ))}
-              {rungLines.map((l) => (
-                <line key={l.key} x1={l.x1} y1={l.y} x2={l.x2} y2={l.y} className="ladder-rung" />
-              ))}
-              {paths.map((p, i) => (
-                <path
-                  key={p.id}
-                  ref={(el) => {
-                    pathRefs.current[i] = el;
-                  }}
-                  d={p.d}
-                  className="ladder-path"
-                  style={{ stroke: p.color }}
-                />
-              ))}
-            </svg>
+      {mode === 'one' && <div className="ladder-hint">이름을 누르면 그 사람 결과만 확인할 수 있어요.</div>}
 
-            <div className="ladder-labels bottom" style={{ width }}>
-              {results.map((r, i) => (
-                <div
-                  key={r.id}
-                  className={`ladder-label result ${landedResultIndex(i) ? 'landed' : ''}`}
-                  style={{ width: COL_W }}
-                >
-                  {r.label}
+      {mapping && revealed.size > 0 && (
+        <div className="ladder-result-list">
+          {participants.map(
+            (p, i) =>
+              revealed.has(i) && (
+                <div key={p.id} className="ladder-result-row">
+                  <span className="ladder-result-name">{p.label}</span>
+                  <span className="ladder-result-arrow">→</span>
+                  <span className="ladder-result-target">{results[mapping[i]].label}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {mode === 'one' && (
-            <div className="ladder-hint">이름을 누르면 그 사람 결과만 확인할 수 있어요.</div>
+              ),
           )}
-
-          {mapping && revealed.size > 0 && (
-            <div className="ladder-result-list">
-              {participants.map(
-                (p, i) =>
-                  revealed.has(i) && (
-                    <div key={p.id} className="ladder-result-row">
-                      <span className="ladder-result-name">{p.label}</span>
-                      <span className="ladder-result-arrow">→</span>
-                      <span className="ladder-result-target">{results[mapping[i]].label}</span>
-                    </div>
-                  ),
-              )}
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
