@@ -30,53 +30,76 @@ export default function SettleModal({
   const totalDelta = active.reduce((sum, r) => sum + r.today, 0);
 
   return (
-    <div className="modal-backdrop" onClick={onCancel}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
+    <div
+      className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-surface-container-lowest w-full max-w-[400px] rounded-xl shadow-xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-5 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
           <div>
-            <div className="modal-title">오늘 통장 정리</div>
-            <div className="modal-sub">
+            <div className="font-title-md text-title-md text-deep-navy">오늘 통장 정리</div>
+            <div className="font-caption text-caption text-on-surface-variant">
               {className} · {dayLabel}
             </div>
           </div>
-          <button className="icon-btn" onClick={onCancel}>
-            ✕
+          <button
+            onClick={onCancel}
+            className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition-colors"
+          >
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        {active.length === 0 ? (
-          <div className="empty-hint">오늘 적립된 포인트가 없습니다.</div>
-        ) : (
-          <div className="settle-list">
-            {active.map((r) => (
-              <div className="settle-line" key={r.studentId}>
-                <span className="sname">{r.name}</span>
-                <span className={`sdelta ${r.today > 0 ? 'plus' : 'minus'}`}>
-                  {signed(r.today)}
+        <div className="p-5">
+          {active.length === 0 ? (
+            <div className="text-center py-6 font-body-md text-on-surface-variant">
+              오늘 적립된 포인트가 없습니다.
+            </div>
+          ) : (
+            <div className="mb-4">
+              <div className="max-h-64 overflow-y-auto space-y-1">
+                {active.map((r) => (
+                  <div key={r.studentId} className="flex justify-between items-center py-1.5">
+                    <span className="font-body-md text-body-md text-on-surface">{r.name}</span>
+                    <span
+                      className={`font-title-md text-title-md ${r.today > 0 ? 'text-secondary' : 'text-error'}`}
+                    >
+                      {signed(r.today)}
+                      {pointUnit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between items-center pt-3 mt-2 border-t border-surface-container">
+                <span className="font-label-md text-label-md text-on-surface-variant">
+                  합계 · {active.length}명
+                </span>
+                <span
+                  className={`font-title-md text-title-md ${totalDelta >= 0 ? 'text-secondary' : 'text-error'}`}
+                >
+                  {signed(totalDelta)}
                   {pointUnit}
                 </span>
               </div>
-            ))}
-            <div className="settle-total">
-              <span>
-                합계 · {active.length}명
-              </span>
-              <span className={totalDelta >= 0 ? 'plus' : 'minus'}>
-                {signed(totalDelta)}
-                {pointUnit}
-              </span>
             </div>
-          </div>
-        )}
+          )}
 
-        <p className="modal-note">
-          마감하면 오늘 내역이 확정되고 더 이상 수정할 수 없습니다. 마감 후에도 필요하면 취소할 수
-          있어요.
-        </p>
+          <p className="font-caption text-caption text-on-surface-variant mb-4 leading-relaxed">
+            마감하면 오늘 내역이 확정되고 더 이상 수정할 수 없습니다. 마감 후에도 필요하면 취소할 수
+            있어요.
+          </p>
 
-        <button className="btn-primary gold" disabled={busy} onClick={onConfirm}>
-          {busy ? '적립 중…' : '통장에 적립하기'}
-        </button>
+          <button
+            disabled={busy}
+            onClick={onConfirm}
+            className="w-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md py-3 rounded-lg shadow-sm transition-colors"
+          >
+            {busy ? '적립 중…' : '통장에 적립하기'}
+          </button>
+        </div>
       </div>
     </div>
   );

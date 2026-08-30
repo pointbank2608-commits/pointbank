@@ -229,63 +229,84 @@ export default function ClassBoardPage() {
     if (ok) setSettlement(null);
   }
 
-  if (classesLoading) return <div className="empty-hint">불러오는 중…</div>;
+  if (classesLoading) return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
 
   if (classes.length === 0) {
     return (
-      <div className="empty-hint">
-        등록된 반이 없습니다. <Link to="/settings">설정</Link>에서 반을 추가해 주세요.
+      <div className="text-center py-16 font-body-md text-on-surface-variant">
+        등록된 반이 없습니다.{' '}
+        <Link to="/settings" className="text-primary underline">
+          설정
+        </Link>
+        에서 반을 추가해 주세요.
       </div>
     );
   }
 
   return (
-    <>
-      <div className="class-tabs">
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
         {classes.map((c) => (
           <button
             key={c.id}
-            className={`class-tab ${c.id === selectedId ? 'active' : ''}`}
             onClick={() => select(c.id)}
+            className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+              c.id === selectedId
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
+            }`}
           >
             {c.name}
           </button>
         ))}
       </div>
 
-      <div className="board-header">
-        <div className="section-title" style={{ margin: 0 }}>
-          {selected?.name} 학생 통장 <span className="badge">{rows.length}명</span>
-        </div>
-        <div className="board-actions">
-          <Link to="/attendance" className="toggle-btn" style={{ textDecoration: 'none' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+          {selected?.name} 학생 통장{' '}
+          <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
+            {rows.length}명
+          </span>
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/attendance"
+            className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low transition-colors"
+          >
             출석부
           </Link>
           <button
-            className={`toggle-btn ${showTotal ? 'on' : ''}`}
             onClick={() => setShowTotal((v) => !v)}
             title="학생들 앞에서는 꺼두세요"
+            className={`px-4 py-2 rounded-lg font-label-md text-label-md border transition-colors ${
+              showTotal
+                ? 'bg-secondary-container text-on-secondary-container border-transparent'
+                : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-low'
+            }`}
           >
             {showTotal ? '누적 숨기기' : '누적 보기'}
           </button>
           {locked ? (
-            <span className="settled-badge">
+            <span className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-label-md text-label-md">
               오늘 마감 완료
-              <button className="linkish dark" onClick={() => void handleUnsettle()}>
+              <button onClick={() => void handleUnsettle()} className="underline hover:opacity-80">
                 취소
               </button>
             </span>
           ) : (
-            <button className="settle-btn" onClick={() => setModalOpen(true)}>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="px-4 py-2 rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
+            >
               오늘 마감
             </button>
           )}
         </div>
       </div>
 
-      <div className="today-summary">
+      <div className="font-body-md text-body-md text-on-surface-variant">
         {fmtDay(today)} · 오늘 {activeCount}명에게{' '}
-        <strong>
+        <strong className="text-on-surface">
           {todayTotal > 0 ? '+' : ''}
           {todayTotal}
           {pointUnit}
@@ -294,9 +315,9 @@ export default function ClassBoardPage() {
       </div>
 
       {loading ? (
-        <div className="empty-hint">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
       ) : (
-        <div className="student-grid">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rows.map((r) => (
             <PassbookCard
               key={r.studentId}
@@ -319,9 +340,12 @@ export default function ClassBoardPage() {
             />
           ))}
           {!locked && (
-            <div className="add-student-card" onClick={() => void handleAddStudent()}>
+            <button
+              onClick={() => void handleAddStudent()}
+              className="border-2 border-dashed border-outline-variant rounded-xl min-h-[150px] flex items-center justify-center font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:border-primary transition-colors"
+            >
               + 학생 추가
-            </div>
+            </button>
           )}
         </div>
       )}
@@ -337,6 +361,6 @@ export default function ClassBoardPage() {
           onCancel={() => setModalOpen(false)}
         />
       )}
-    </>
+    </div>
   );
 }

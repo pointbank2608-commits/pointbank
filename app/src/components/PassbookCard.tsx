@@ -77,55 +77,76 @@ export default function PassbookCard({
     setAmount('');
   }
 
-  const tone = today > 0 ? 'plus' : today < 0 ? 'minus' : 'zero';
+  const toneClass = today > 0 ? 'text-secondary' : today < 0 ? 'text-error' : 'text-on-surface-variant';
 
   return (
-    <div className={`passbook ${locked ? 'locked' : ''}`}>
+    <div
+      className={`relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-5 ${
+        locked ? 'opacity-70' : ''
+      }`}
+    >
       {stampKey > 0 && (
-        <div key={stampKey} className="stamp-pop play">
+        <div
+          key={stampKey}
+          className="stamp-pop-badge absolute top-3 right-3 w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-on-secondary font-title-md text-xs bg-secondary shadow-lg pointer-events-none z-10"
+        >
           지급!
         </div>
       )}
 
-      <div className="passbook-head">
+      <div className="flex justify-between items-start mb-3">
         <div>
-          <div className="name">{name}</div>
-          <div className="class-label">{className}</div>
+          <div className="font-title-md text-title-md text-on-surface">{name}</div>
+          <div className="font-caption text-caption text-on-surface-variant">{className}</div>
         </div>
         {!locked && (
-          <button className="icon-btn" title="학생 삭제" onClick={() => onRemove(studentId, name)}>
-            ✕
+          <button
+            title="학생 삭제"
+            onClick={() => onRemove(studentId, name)}
+            className="text-on-surface-variant hover:bg-error-container hover:text-on-error-container w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0"
+          >
+            <span className="material-symbols-outlined text-base">close</span>
           </button>
         )}
       </div>
 
-      <div className="attendance-row">
+      <div className="flex gap-2 mb-4">
         <button
-          className={`att-btn in ${attendance?.checked_in_at ? 'done' : ''}`}
           disabled={attBusy || !!attendance?.checked_in_at}
           onClick={() => void handleCheckIn()}
+          className={`flex-1 py-1.5 rounded-lg font-label-md text-label-md transition-colors ${
+            attendance?.checked_in_at
+              ? 'bg-secondary-container text-on-secondary-container'
+              : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+          } disabled:cursor-default`}
         >
           {attendance?.checked_in_at ? `등원 ${fmtTime(attendance.checked_in_at)}` : '등원'}
         </button>
         <button
-          className={`att-btn out ${attendance?.checked_out_at ? 'done' : ''}`}
           disabled={attBusy || !attendance?.checked_in_at || !!attendance?.checked_out_at}
           onClick={() => void handleCheckOut()}
+          className={`flex-1 py-1.5 rounded-lg font-label-md text-label-md transition-colors ${
+            attendance?.checked_out_at
+              ? 'bg-surface-container text-on-surface-variant'
+              : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+          } disabled:opacity-50 disabled:cursor-default`}
         >
           {attendance?.checked_out_at ? `하원 ${fmtTime(attendance.checked_out_at)}` : '하원'}
         </button>
       </div>
 
-      <div className="today-row">
-        <div className="today-label">오늘 적립</div>
-        <div className={`today-num ${tone}`}>
-          {today > 0 ? '+' : ''}
-          {today}
-          <span className="today-unit">{pointUnit}</span>
+      <div className="flex items-end justify-between mb-4 pb-4 border-b border-surface-container">
+        <div>
+          <div className="font-caption text-caption text-on-surface-variant mb-0.5">오늘 적립</div>
+          <div className={`font-display-lg text-[28px] leading-none ${toneClass}`}>
+            {today > 0 ? '+' : ''}
+            {today}
+            <span className="font-caption text-caption ml-1">{pointUnit}</span>
+          </div>
         </div>
         {showTotal && (
-          <div className="total-line">
-            누적 <strong>{total}</strong>
+          <div className="font-body-md text-body-md text-on-surface-variant">
+            누적 <strong className="text-on-surface">{total}</strong>
             {pointUnit}
           </div>
         )}
@@ -133,20 +154,24 @@ export default function PassbookCard({
 
       {!locked && (
         <>
-          <div className="preset-row">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {presets.map((p) => (
               <button
                 key={p.id}
-                className={`chip ${p.delta > 0 ? 'plus' : 'minus'}`}
                 disabled={busy}
                 onClick={() => void give(p.delta, p.label)}
+                className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 ${
+                  p.delta > 0
+                    ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
+                    : 'bg-error-container text-on-error-container hover:opacity-80'
+                }`}
               >
                 {signed(p.delta)} {p.label}
               </button>
             ))}
           </div>
 
-          <div className="custom-row">
+          <div className="flex gap-1.5 mb-4">
             <input
               type="number"
               placeholder="±숫자"
@@ -155,8 +180,13 @@ export default function PassbookCard({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') void handleCustom();
               }}
+              className="w-20 bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
-            <select value={reason} onChange={(e) => setReason(e.target.value)}>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            >
               <option value="">직접 입력</option>
               {presets.map((p) => (
                 <option key={p.id} value={p.label}>
@@ -164,37 +194,45 @@ export default function PassbookCard({
                 </option>
               ))}
             </select>
-            <button disabled={busy} onClick={() => void handleCustom()}>
+            <button
+              disabled={busy}
+              onClick={() => void handleCustom()}
+              className="bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-label-md text-label-md px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+            >
               지급/차감
             </button>
           </div>
         </>
       )}
 
-      <div className="today-log">
-        <div className="today-log-title">오늘 내역</div>
+      <div>
+        <div className="font-caption text-caption text-on-surface-variant mb-1.5">오늘 내역</div>
         {todayTx.length === 0 ? (
-          <div className="history-empty">아직 오늘 적립이 없어요.</div>
+          <div className="font-caption text-caption text-on-surface-variant/70 py-2">
+            아직 오늘 적립이 없어요.
+          </div>
         ) : (
-          todayTx.map((t) => (
-            <div className="history-line" key={t.id}>
-              <span>
-                {fmtTime(t.created_at)} · {t.reason}
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span className={`delta ${t.delta > 0 ? 'plus' : 'minus'}`}>{signed(t.delta)}</span>
-                {!locked && (
-                  <button
-                    className="undo-btn"
-                    title="이 기록 취소"
-                    onClick={() => void onUndo(t)}
-                  >
-                    ✕
-                  </button>
-                )}
-              </span>
-            </div>
-          ))
+          <div className="space-y-1 max-h-40 overflow-y-auto">
+            {todayTx.map((t) => (
+              <div key={t.id} className="flex justify-between items-center py-1 font-caption text-caption">
+                <span className="text-on-surface-variant truncate mr-2">
+                  {fmtTime(t.created_at)} · {t.reason}
+                </span>
+                <span className="flex items-center gap-1.5 shrink-0">
+                  <span className={t.delta > 0 ? 'text-secondary' : 'text-error'}>{signed(t.delta)}</span>
+                  {!locked && (
+                    <button
+                      title="이 기록 취소"
+                      onClick={() => void onUndo(t)}
+                      className="text-on-surface-variant hover:text-error w-4 h-4 flex items-center justify-center"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
