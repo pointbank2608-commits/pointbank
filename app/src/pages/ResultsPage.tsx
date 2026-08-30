@@ -16,6 +16,12 @@ const PERIODS: { key: Period; label: string; since: () => Date | null }[] = [
   { key: 'all', label: '전체', since: () => null },
 ];
 
+const PODIUM_STYLE: Record<number, { bg: string; text: string; order: string; height: string }> = {
+  0: { bg: 'bg-warm-yellow/30', text: 'text-tertiary-container', order: 'order-2', height: 'pt-0' },
+  1: { bg: 'bg-surface-container-low', text: 'text-on-surface-variant', order: 'order-1', height: 'pt-6' },
+  2: { bg: 'bg-soft-mint/30', text: 'text-deep-navy', order: 'order-3', height: 'pt-8' },
+};
+
 export default function ResultsPage() {
   const { academy, session, pointUnit, isStaff } = useAuth();
   const { notify } = useToast();
@@ -65,31 +71,45 @@ export default function ResultsPage() {
 
   const totalEarned = rows.reduce((s, r) => s + r.earned, 0);
   const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+  const maxBalance = Math.max(1, ...ranked.map((r) => r.balance));
 
   return (
-    <>
-      <div className="ranking-scope">
-        <button
-          className={`scope-btn ${scope === 'class' ? 'active' : ''}`}
-          onClick={() => setScope('class')}
-        >
-          반별
-        </button>
-        <button
-          className={`scope-btn ${scope === 'academy' ? 'active' : ''}`}
-          onClick={() => setScope('academy')}
-        >
-          학원 전체
-        </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+          리포트
+        </h2>
+        <div className="flex bg-surface-container-low rounded-lg p-1">
+          <button
+            onClick={() => setScope('class')}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              scope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
+            반별
+          </button>
+          <button
+            onClick={() => setScope('academy')}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              scope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
+            학원 전체
+          </button>
+        </div>
       </div>
 
       {scope === 'class' && (
-        <div className="class-tabs">
+        <div className="flex flex-wrap gap-2">
           {classes.map((c) => (
             <button
               key={c.id}
-              className={`class-tab ${c.id === selectedId ? 'active' : ''}`}
               onClick={() => select(c.id)}
+              className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+                c.id === selectedId
+                  ? 'bg-primary text-on-primary shadow-sm'
+                  : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
+              }`}
             >
               {c.name}
             </button>
@@ -97,12 +117,16 @@ export default function ResultsPage() {
         </div>
       )}
 
-      <div className="period-tabs">
+      <div className="flex flex-wrap gap-2">
         {PERIODS.map((p) => (
           <button
             key={p.key}
-            className={`period-btn ${period === p.key ? 'active' : ''}`}
             onClick={() => setPeriod(p.key)}
+            className={`px-3.5 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+              period === p.key
+                ? 'bg-secondary-container text-on-secondary-container'
+                : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
+            }`}
           >
             {p.label}
           </button>
@@ -110,92 +134,121 @@ export default function ResultsPage() {
       </div>
 
       {loading ? (
-        <div className="empty-hint">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
       ) : rows.length === 0 ? (
-        <div className="empty-hint">학생이 없습니다.</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">학생이 없습니다.</div>
       ) : (
         <>
-          <div className="stat-strip">
-            <div className="stat">
-              <div className="stat-label">총 적립</div>
-              <div className="stat-num plus">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <div className="font-caption text-caption text-on-surface-variant mb-1">총 적립</div>
+              <div className="font-display-lg text-[28px] text-secondary">
                 +{totalEarned}
-                <span>{pointUnit}</span>
+                <span className="font-caption text-caption text-on-surface-variant ml-1">{pointUnit}</span>
               </div>
             </div>
-            <div className="stat">
-              <div className="stat-label">총 차감</div>
-              <div className="stat-num minus">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <div className="font-caption text-caption text-on-surface-variant mb-1">총 차감</div>
+              <div className="font-display-lg text-[28px] text-error">
                 −{totalSpent}
-                <span>{pointUnit}</span>
+                <span className="font-caption text-caption text-on-surface-variant ml-1">{pointUnit}</span>
               </div>
             </div>
-            <div className="stat">
-              <div className="stat-label">참여 학생</div>
-              <div className="stat-num">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <div className="font-caption text-caption text-on-surface-variant mb-1">참여 학생</div>
+              <div className="font-display-lg text-[28px] text-on-surface">
                 {ranked.length}
-                <span>명</span>
+                <span className="font-caption text-caption text-on-surface-variant ml-1">명</span>
               </div>
             </div>
           </div>
 
           {ranked.length === 0 ? (
-            <div className="empty-hint">이 기간에는 적립 기록이 없습니다.</div>
+            <div className="text-center py-16 font-body-md text-on-surface-variant">
+              이 기간에는 적립 기록이 없습니다.
+            </div>
           ) : (
             <>
-              <div className="podium">
-                {podiumOrder.map((i) => {
-                  const p = top3[i];
-                  return (
-                    <div key={p.student_id} className={`podium-slot p${i + 1}`}>
-                      <div className="medal">{i + 1}</div>
-                      <div className="pname">{p.name}</div>
-                      <div className="pscore">
-                        {p.balance}
-                        {pointUnit}
+              <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+                <h3 className="font-title-md text-title-md text-on-surface mb-6">우수 학생</h3>
+                <div className="flex items-end justify-center gap-3">
+                  {podiumOrder.map((i) => {
+                    const p = top3[i];
+                    const style = PODIUM_STYLE[i];
+                    return (
+                      <div
+                        key={p.student_id}
+                        className={`flex flex-col items-center gap-2 w-28 ${style.order} ${style.height}`}
+                      >
+                        <div
+                          className={`w-14 h-14 rounded-full ${style.bg} ${style.text} flex items-center justify-center font-title-md text-title-md shrink-0`}
+                        >
+                          {i + 1}
+                        </div>
+                        <div className="font-label-md text-label-md text-on-surface truncate max-w-full">
+                          {p.name}
+                        </div>
+                        <div className="font-title-md text-title-md text-primary">
+                          {p.balance}
+                          {pointUnit}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="rank-list">
-                <div className="rank-row head">
-                  <div className="rank-num">#</div>
-                  <div className="rgrow">이름</div>
-                  <div className="rcol">적립</div>
-                  <div className="rcol">차감</div>
-                  <div className="rscore">합계</div>
+              <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
+                <div className="grid grid-cols-[32px_1fr_70px_70px_90px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
+                  <div>#</div>
+                  <div>이름</div>
+                  <div className="text-right">적립</div>
+                  <div className="text-right">차감</div>
+                  <div className="text-right">합계</div>
                 </div>
                 {ranked.map((r, i) => (
                   <div
                     key={r.student_id}
-                    className={`rank-row ${r.student_id === myStudentId ? 'me' : ''}`}
+                    className={`relative grid grid-cols-[32px_1fr_70px_70px_90px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 ${
+                      r.student_id === myStudentId ? 'bg-secondary-container/30' : ''
+                    }`}
                   >
-                    <div className="rank-num">{i + 1}</div>
-                    <div className="rgrow">
-                      <div className="rname">{r.name}</div>
-                      <div className="rclass">{r.class_name}</div>
+                    <div
+                      className="absolute inset-y-0 left-0 bg-primary/5 pointer-events-none"
+                      style={{ width: `${(r.balance / maxBalance) * 100}%` }}
+                    />
+                    <div className="relative font-body-md text-body-md text-on-surface-variant">{i + 1}</div>
+                    <div className="relative min-w-0">
+                      <div className="font-label-md text-label-md text-on-surface truncate">{r.name}</div>
+                      <div className="font-caption text-caption text-on-surface-variant truncate">
+                        {r.class_name}
+                      </div>
                     </div>
-                    <div className="rcol plus">+{r.earned}</div>
-                    <div className="rcol minus">{r.spent > 0 ? `−${r.spent}` : '–'}</div>
-                    <div className="rscore">
+                    <div className="relative text-right font-body-md text-body-md text-secondary">
+                      +{r.earned}
+                    </div>
+                    <div className="relative text-right font-body-md text-body-md text-error">
+                      {r.spent > 0 ? `−${r.spent}` : '–'}
+                    </div>
+                    <div className="relative text-right font-title-md text-title-md text-on-surface">
                       {r.balance}
                       {pointUnit}
                     </div>
                   </div>
                 ))}
                 {idle.map((r) => (
-                  <div key={r.student_id} className="rank-row idle">
-                    <div className="rank-num">–</div>
-                    <div className="rgrow">
-                      <div className="rname">{r.name}</div>
-                      <div className="rclass">{r.class_name}</div>
+                  <div
+                    key={r.student_id}
+                    className="grid grid-cols-[32px_1fr_90px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 opacity-60"
+                  >
+                    <div className="font-body-md text-body-md text-on-surface-variant">–</div>
+                    <div className="min-w-0">
+                      <div className="font-label-md text-label-md text-on-surface truncate">{r.name}</div>
+                      <div className="font-caption text-caption text-on-surface-variant truncate">
+                        {r.class_name} · 기록 없음
+                      </div>
                     </div>
-                    <div className="rcol" style={{ gridColumn: 'span 2' }}>
-                      기록 없음
-                    </div>
-                    <div className="rscore">–</div>
+                    <div className="text-right font-body-md text-body-md text-on-surface-variant">–</div>
                   </div>
                 ))}
               </div>
@@ -203,6 +256,6 @@ export default function ResultsPage() {
           )}
         </>
       )}
-    </>
+    </div>
   );
 }
