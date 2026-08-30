@@ -1,0 +1,131 @@
+/* 클래스뱅크 신규 디자인 — 스티치(Stitch) 목업 원본 tailwind.config 값을 그대로 옮김.
+   preflight(전역 리셋)는 아직 켜지 않는다 — 페이지를 하나씩 마이그레이션하는 동안
+   손 안 댄 기존 화면(index.css)이 깨지는 걸 막기 위함. 전 페이지 이전 끝나면 켠다. */
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@theme {
+  /* ---- 색상 (스티치 원본 그대로) ---- */
+  --color-inverse-surface: #2a3137;
+  --color-on-primary-container: #d0e2ff;
+  --color-surface-bright: #f6faff;
+  --color-primary-fixed-dim: #a4c9ff;
+  --color-secondary-fixed: #93f4e0;
+  --color-surface-tint: #2060a2;
+  --color-surface-container-highest: #dce3eb;
+  --color-background: #f6faff;
+  --color-surface-container: #e8eff7;
+  --color-on-tertiary-fixed: #251a00;
+  --color-on-surface-variant: #424750;
+  --color-on-secondary-fixed-variant: #005046;
+  --color-tertiary-fixed: #ffdf99;
+  --color-inverse-on-surface: #eaf1f9;
+  --color-surface-container-low: #edf4fc;
+  --color-deep-navy: #1e4b7a;
+  --color-soft-mint: #b2ebf2;
+  --color-error-container: #ffdad6;
+  --color-warm-yellow: #ffd54f;
+  --color-sky-blue: #87ceeb;
+  --color-tertiary: #604800;
+  --color-on-primary-fixed: #001c39;
+  --color-outline-variant: #c2c6d2;
+  --color-secondary-fixed-dim: #76d7c4;
+  --color-on-tertiary-fixed-variant: #5a4300;
+  --color-on-error: #ffffff;
+  --color-surface-container-high: #e2e9f1;
+  --color-surface-dim: #d4dbe3;
+  --color-on-surface: #151c22;
+  --color-on-secondary: #ffffff;
+  --color-on-background: #151c22;
+  --color-primary-container: #2765a8;
+  --color-on-secondary-container: #006f61;
+  --color-surface-variant: #dce3eb;
+  --color-tertiary-container: #7e5f00;
+  --color-inverse-primary: #a4c9ff;
+  --color-primary: #004d8b;
+  --color-secondary: #006b5d;
+  --color-secondary-container: #90f1dd;
+  --color-on-error-container: #93000a;
+  --color-surface: #f6faff;
+  --color-primary-fixed: #d4e3ff;
+  --color-on-secondary-fixed: #00201b;
+  --color-on-tertiary: #ffffff;
+  --color-outline: #727782;
+  --color-on-primary-fixed-variant: #004883;
+  --color-tertiary-fixed-dim: #f6bf22;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-on-tertiary-container: #ffdd93;
+  --color-error: #ba1a1a;
+
+  /* ---- 모서리 반경 ---- */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+
+  /* ---- 간격(스티치 커스텀 네이밍) ---- */
+  --spacing-base: 8px;
+  --spacing-margin-desktop: 40px;
+  --spacing-container-max: 1280px;
+  --spacing-margin-mobile: 16px;
+  --spacing-gutter: 24px;
+
+  /* ---- 폰트 패밀리 (Hanken Grotesk 본문 / Quicksand 제목) ---- */
+  --font-body-md: 'Hanken Grotesk', sans-serif;
+  --font-title-md: 'Quicksand', sans-serif;
+  --font-display-lg: 'Quicksand', sans-serif;
+  --font-caption: 'Hanken Grotesk', sans-serif;
+  --font-headline-lg-mobile: 'Quicksand', sans-serif;
+  --font-headline-lg: 'Quicksand', sans-serif;
+  --font-label-md: 'Hanken Grotesk', sans-serif;
+  --font-body-lg: 'Hanken Grotesk', sans-serif;
+
+  /* ---- 폰트 크기(줄간격/자간/굵기 포함) ---- */
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-title-md: 20px;
+  --text-title-md--line-height: 28px;
+  --text-title-md--font-weight: 600;
+
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--font-weight: 500;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 600;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--font-weight: 600;
+
+  --text-label-md: 14px;
+  --text-label-md--line-height: 20px;
+  --text-label-md--letter-spacing: 0.01em;
+  --text-label-md--font-weight: 600;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--font-weight: 400;
+}
+
+/* Material Symbols 아이콘 폰트 기본 세팅 (스티치 원본과 동일) */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
