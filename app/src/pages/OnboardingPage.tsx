@@ -177,7 +177,7 @@ export default function OnboardingPage() {
                         required
                         value={ownerName}
                         onChange={(e) => setOwnerName(e.target.value)}
-                        placeholder="김선생"
+                        placeholder="김 선생님"
                         className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                       />
                     </div>
@@ -209,7 +209,7 @@ export default function OnboardingPage() {
                         required
                         value={teacherName}
                         onChange={(e) => setTeacherName(e.target.value)}
-                        placeholder="이선생"
+                        placeholder="이 선생님"
                         className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                       />
                     </div>

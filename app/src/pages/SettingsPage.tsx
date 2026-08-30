@@ -11,6 +11,7 @@ import {
   renameClass,
   rotateInviteCode,
   updateAcademy,
+  updateMyDisplayName,
   uploadAcademyLogo,
 } from '../lib/api';
 import { signed } from '../lib/format';
@@ -27,6 +28,8 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(academy?.name ?? '');
   const [unit, setUnit] = useState(academy?.point_unit ?? '');
+  const [myName, setMyName] = useState(profile?.display_name ?? '');
+  const [myNameBusy, setMyNameBusy] = useState(false);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [newPresetLabel, setNewPresetLabel] = useState('');
   const [newPresetDelta, setNewPresetDelta] = useState('');
@@ -40,6 +43,10 @@ export default function SettingsPage() {
     setUnit(academy?.point_unit ?? '');
     setInviteCode(academy?.invite_code ?? '');
   }, [academy]);
+
+  useEffect(() => {
+    setMyName(profile?.display_name ?? '');
+  }, [profile?.display_name]);
 
   const loadPresets = useCallback(async () => {
     if (!academy?.id) return;
@@ -64,6 +71,14 @@ export default function SettingsPage() {
       () => updateAcademy(academy.id, { name: name.trim(), point_unit: unit.trim() }),
       '저장했습니다.',
     );
+    if (ok) await refresh();
+  }
+
+  async function saveMyName() {
+    if (!myName.trim()) return;
+    setMyNameBusy(true);
+    const ok = await run(() => updateMyDisplayName(myName.trim()), '이름을 변경했습니다.');
+    setMyNameBusy(false);
     if (ok) await refresh();
   }
 
@@ -170,6 +185,34 @@ export default function SettingsPage() {
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         설정
       </h2>
+
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+        <h4 className="font-title-md text-title-md text-on-surface">내 이름</h4>
+        <div>
+          <label htmlFor="myname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+            대시보드 환영 문구 등에 표시되는 이름입니다.
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="myname"
+              value={myName}
+              onChange={(e) => setMyName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void saveMyName();
+              }}
+              placeholder="이 선생님"
+              className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            />
+            <button
+              onClick={() => void saveMyName()}
+              disabled={myNameBusy}
+              className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors whitespace-nowrap"
+            >
+              {myNameBusy ? '저장 중…' : '저장'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">학원 로고</h4>

@@ -261,6 +261,19 @@ export async function deletePreset(presetId: string) {
   if (error) throw new Error(error.message);
 }
 
+/* ---------------- 내 프로필 ---------------- */
+
+export async function updateMyDisplayName(displayName: string) {
+  const { data: auth } = await supabase.auth.getUser();
+  const userId = auth.user?.id;
+  if (!userId) throw new Error('로그인이 필요합니다.');
+  const { error } = await supabase
+    .from('profiles')
+    .update({ display_name: displayName })
+    .eq('id', userId);
+  if (error) throw new Error(error.message);
+}
+
 /* ---------------- 학원 설정 ---------------- */
 
 export async function updateAcademy(
