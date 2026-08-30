@@ -73,60 +73,97 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
   const blockedForPassMode = mode === 'pass' && n < 2;
 
   return (
-    <div className="bomb-stage">
-      <div className="scope-toggle bomb-mode-toggle">
-        <button type="button" className={mode === 'pass' ? 'active' : ''} onClick={() => switchMode('pass')}>
+    <div className="flex flex-col items-center pt-3 pb-2">
+      <div className="flex bg-surface-container-low rounded-lg p-1 mb-5">
+        <button
+          type="button"
+          onClick={() => switchMode('pass')}
+          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+            mode === 'pass' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+          }`}
+        >
           참가자 순서대로
         </button>
-        <button type="button" className={mode === 'timer' ? 'active' : ''} onClick={() => switchMode('timer')}>
+        <button
+          type="button"
+          onClick={() => switchMode('timer')}
+          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+            mode === 'timer' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+          }`}
+        >
           타이머만
         </button>
       </div>
 
       {blockedForPassMode ? (
-        <div className="wheel-empty">
-          <div className="wheel-empty-icon">💣</div>
-          <div>참가자를 2명 이상 등록해야 순서대로 돌릴 수 있어요.</div>
+        <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
+          <div className="text-4xl mb-2">💣</div>
+          <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 순서대로 돌릴 수 있어요.</div>
         </div>
       ) : (
         <>
-          <div className={`bomb-visual ${phase}`}>
-            <div className="bomb-emoji">{phase === 'exploded' ? '💥' : '💣'}</div>
-            {phase === 'active' && <div className="bomb-spark">✨</div>}
+          <div className="relative w-[300px] h-[300px] flex items-center justify-center mb-6">
+            <div
+              className={`text-[200px] leading-none drop-shadow-[0_16px_26px_rgba(39,101,168,0.32)] ${
+                phase === 'active' ? 'bomb-shake' : phase === 'exploded' ? 'bomb-burst' : ''
+              }`}
+            >
+              {phase === 'exploded' ? '💥' : '💣'}
+            </div>
+            {phase === 'active' && (
+              <div className="bomb-spark-flicker absolute top-3.5 right-11 text-5xl">✨</div>
+            )}
           </div>
 
           {phase === 'idle' && (
-            <button className="btn-primary wheel-spin-btn" onClick={start}>
+            <button
+              onClick={start}
+              className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+            >
               폭탄 돌리기 시작
             </button>
           )}
 
           {phase === 'active' && mode === 'pass' && (
             <>
-              <div className="bomb-holder">{participants[holderIndex]?.label} 차례!</div>
-              <button className="btn-primary wheel-spin-btn" onClick={pass}>
+              <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+                {participants[holderIndex]?.label} 차례!
+              </div>
+              <button
+                onClick={pass}
+                className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+              >
                 다음 사람에게 넘기기 →
               </button>
             </>
           )}
 
           {phase === 'active' && mode === 'timer' && (
-            <div className="bomb-holder">째깍째깍… 언제 터질까요?</div>
+            <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+              째깍째깍… 언제 터질까요?
+            </div>
           )}
 
           {phase === 'exploded' && (
             <>
-              <div className="bomb-result">
+              <div className="result-pop text-center bg-secondary-container/30 border border-secondary-container rounded-2xl px-9 py-4.5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] mb-5">
                 {mode === 'pass' ? (
                   <>
-                    <div className="bomb-result-label">펑! 걸린 사람</div>
-                    <div className="bomb-result-name">{participants[holderIndex]?.label}</div>
+                    <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">
+                      펑! 걸린 사람
+                    </div>
+                    <div className="font-display-lg text-[38px] text-deep-navy mt-0.5">
+                      {participants[holderIndex]?.label}
+                    </div>
                   </>
                 ) : (
-                  <div className="bomb-result-name">펑! 💥</div>
+                  <div className="font-display-lg text-[38px] text-deep-navy">펑! 💥</div>
                 )}
               </div>
-              <button className="btn-primary wheel-spin-btn" onClick={reset}>
+              <button
+                onClick={reset}
+                className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+              >
                 다시 하기
               </button>
             </>
