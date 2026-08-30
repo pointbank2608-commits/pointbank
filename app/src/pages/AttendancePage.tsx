@@ -167,79 +167,99 @@ export default function AttendancePage() {
   }
 
   return (
-    <>
-      <div className="class-tabs">
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-2">
         {classes.map((c) => (
           <button
             key={c.id}
-            className={`class-tab ${c.id === selectedId ? 'active' : ''}`}
             onClick={() => select(c.id)}
+            className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+              c.id === selectedId
+                ? 'bg-primary text-on-primary shadow-sm'
+                : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
+            }`}
           >
             {c.name}
           </button>
         ))}
       </div>
 
-      <div className="board-header">
-        <div className="section-title" style={{ margin: 0 }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
           출석부
-        </div>
-        <div className="board-actions">
-          <button className="toggle-btn" onClick={() => shiftMonth(-1)}>
-            ◀
+        </h2>
+        <div className="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-sm px-2 py-1.5">
+          <button
+            onClick={() => shiftMonth(-1)}
+            className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
+            aria-label="이전 달"
+          >
+            <span className="material-symbols-outlined">chevron_left</span>
           </button>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>
+          <span className="font-title-md text-title-md text-on-surface px-3">
             {year}년 {month}월
           </span>
-          <button className="toggle-btn" onClick={() => shiftMonth(1)}>
-            ▶
+          <button
+            onClick={() => shiftMonth(1)}
+            className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
+            aria-label="다음 달"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>
 
-      <p className="hint" style={{ margin: '0 0 14px' }}>
+      <p className="font-caption text-caption text-on-surface-variant">
         빈 칸을 누르면 출석 처리됩니다. 이미 표시된 칸을 누르면 등원·하원 시각을 볼 수 있어요.
       </p>
 
       {loading ? (
-        <div className="empty-hint">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
       ) : students.length === 0 ? (
-        <div className="empty-hint">이 반에 학생이 없습니다.</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">이 반에 학생이 없습니다.</div>
       ) : (
-        <div className="att-grid-wrap">
-          <table className="att-grid">
+        <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-4 md:p-6 overflow-x-auto">
+          <table className="w-full text-center border-collapse">
             <thead>
-              <tr>
-                <th className="att-grid-name">이름</th>
+              <tr className="font-caption text-caption text-on-surface-variant">
+                <th className="text-left pb-3 pr-3 sticky left-0 bg-surface-container-lowest">이름</th>
                 {days.map((d) => (
-                  <th key={d}>{d}</th>
+                  <th key={d} className="pb-3 px-1 min-w-[28px]">
+                    {d}
+                  </th>
                 ))}
-                <th>출석</th>
+                <th className="pb-3 pl-2">출석</th>
               </tr>
             </thead>
             <tbody>
               {students.map((s) => {
                 const count = days.filter((d) => map.has(`${s.id}_${d}`)).length;
                 return (
-                  <tr key={s.id}>
-                    <td className="att-grid-name">{s.name}</td>
+                  <tr key={s.id} className="border-t border-surface-container">
+                    <td className="text-left py-2 pr-3 font-label-md text-label-md text-on-surface whitespace-nowrap sticky left-0 bg-surface-container-lowest">
+                      {s.name}
+                    </td>
                     {days.map((d) => {
                       const key = `${s.id}_${d}`;
                       const rec = map.get(key);
                       return (
-                        <td key={d}>
+                        <td key={d} className="py-1 px-0.5">
                           <button
-                            className={`att-cell ${rec ? 'present' : ''}`}
                             disabled={busyKey === key}
                             title={cellTooltip(rec)}
                             onClick={() => void handleCellClick(s.id, s.name, d)}
+                            className={`w-6 h-6 rounded-full text-xs transition-colors ${
+                              rec
+                                ? 'bg-secondary text-on-secondary'
+                                : 'bg-surface-container-low hover:bg-surface-container text-transparent'
+                            } disabled:opacity-50`}
                           >
                             {rec ? '●' : ''}
                           </button>
                         </td>
                       );
                     })}
-                    <td className="att-grid-count">{count}</td>
+                    <td className="py-2 pl-2 font-title-md text-title-md text-primary">{count}</td>
                   </tr>
                 );
               })}
@@ -249,57 +269,71 @@ export default function AttendancePage() {
       )}
 
       {detail && (
-        <div className="modal-backdrop" onClick={() => setDetail(null)}>
-          <div className="modal-card" style={{ maxWidth: 340 }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
+        <div
+          className="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setDetail(null)}
+        >
+          <div
+            className="bg-surface-container-lowest w-full max-w-[360px] rounded-xl shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
               <div>
-                <div className="modal-title">{detail.studentName}</div>
-                <div className="modal-sub">
+                <div className="font-title-md text-title-md text-deep-navy">{detail.studentName}</div>
+                <div className="font-caption text-caption text-on-surface-variant">
                   {year}년 {month}월 {detail.day}일
                 </div>
               </div>
-              <button className="icon-btn" onClick={() => setDetail(null)}>
-                ✕
+              <button
+                onClick={() => setDetail(null)}
+                className="text-on-surface-variant hover:bg-surface-container p-2 rounded-full transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
-            <div className="settle-list">
-              <div className="settle-line">
-                <span className="sname">등원</span>
-                <span className="sdelta plus">
+            <div className="p-5 space-y-3">
+              <div className="flex justify-between items-center py-2 border-b border-surface-container">
+                <span className="font-label-md text-label-md text-on-surface-variant">등원</span>
+                <span className="font-title-md text-title-md text-secondary">
                   {detailRow?.checked_in_at ? timeOnly(detailRow.checked_in_at) : '기록 없음'}
                 </span>
               </div>
-              <div className="settle-line">
-                <span className="sname">하원</span>
-                <span className="sdelta minus">
+              <div className="flex justify-between items-center py-2">
+                <span className="font-label-md text-label-md text-on-surface-variant">하원</span>
+                <span className="font-title-md text-title-md text-error">
                   {detailRow?.checked_out_at ? timeOnly(detailRow.checked_out_at) : '기록 없음'}
                 </span>
               </div>
-            </div>
 
-            <div className="field-row" style={{ marginTop: 16 }}>
-              {detailRow?.checked_in_at && (
-                <button className="ghost" onClick={() => void handleClearCheckIn()}>
-                  등원 지우기
-                </button>
-              )}
-              {detailRow?.checked_out_at && (
-                <button className="ghost" onClick={() => void handleClearCheckOut()}>
-                  하원 지우기
-                </button>
-              )}
+              <div className="flex gap-2 pt-2">
+                {detailRow?.checked_in_at && (
+                  <button
+                    onClick={() => void handleClearCheckIn()}
+                    className="flex-1 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
+                  >
+                    등원 지우기
+                  </button>
+                )}
+                {detailRow?.checked_out_at && (
+                  <button
+                    onClick={() => void handleClearCheckOut()}
+                    className="flex-1 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
+                  >
+                    하원 지우기
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={() => void handleDeleteDay()}
+                className="w-full py-2.5 rounded-lg bg-error text-on-error font-label-md text-label-md hover:opacity-90 transition-opacity"
+              >
+                이 날짜 기록 전체 삭제
+              </button>
             </div>
-            <button
-              className="btn-primary"
-              style={{ marginTop: 8, background: 'var(--brick)' }}
-              onClick={() => void handleDeleteDay()}
-            >
-              이 날짜 기록 전체 삭제
-            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
