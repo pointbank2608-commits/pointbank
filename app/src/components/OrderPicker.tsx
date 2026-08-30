@@ -67,18 +67,22 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
 
   if (participants.length < 2) {
     return (
-      <div className="wheel-empty">
-        <div className="wheel-empty-icon">🔀</div>
-        <div>참가자를 2명 이상 등록해야 순서를 뽑을 수 있어요.</div>
+      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
+        <div className="text-4xl mb-2">🔀</div>
+        <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 순서를 뽑을 수 있어요.</div>
       </div>
     );
   }
 
   return (
-    <div className="order-stage">
+    <div className="flex flex-col items-center pt-1.5 pb-2">
       <LotteryMachine participants={participants} ranks={ranks} order={order} active={busy} revealCount={revealCount} />
 
-      <button className="btn-primary wheel-spin-btn" onClick={start} disabled={busy}>
+      <button
+        onClick={start}
+        disabled={busy}
+        className="mt-2 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+      >
         {phase === 'mixing' ? '섞는 중…' : phase === 'revealing' ? '순서 뽑는 중…' : order ? '다시 뽑기' : '순서 뽑기 시작'}
       </button>
     </div>
