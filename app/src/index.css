@@ -2,31 +2,31 @@
    클래스뱅크 디자인 시스템 — 알록달록 & 귀여운 버전
    초등 선생님·학생이 매일 보는 화면이라, "은행" 은유는 유지하되
    무겁고 격식 있는 톤 대신 동화책 같은 밝은 색과 둥근 모양으로 표현합니다.
-   하늘(주 브랜드) + 해바라기 옐로우(포인트/CTA) + 민트(적립) / 코랄(차감)
+   스티치 Playful Academic — 청록(주 브랜드) + 해바라기 옐로우(포인트/CTA) + 민트(적립) / 코랄(차감)
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Jua&family=Gowun+Dodum&family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* 예전 --navy-* 이름은 그대로 두되(코드 곳곳에서 참조), 값만 하늘색 계열로 교체 */
-  --navy-900: #2765a8;
-  --navy-800: #3f8fd6;
-  --navy-700: #5aa8e8;
-  --navy-050: #eaf5ff;
-  --paper: #fffdf6;
-  --paper-line: #f0e6c8;
-  --gold: #ffc93c;
-  --gold-deep: #d98a12;
-  --gold-light: #fff1c2;
-  --sage: #2bc9a8;
-  --sage-light: #e0faf3;
-  --brick: #ff6b6b;
-  --brick-light: #ffe3e1;
-  --ink: #3a3358;
-  --ink-soft: #6f6889;
-  --purple: #9b8cf0;
+  /* 예전 --navy-* 이름은 그대로 두되(코드 곳곳에서 참조), 값만 스티치 청록/민트 계열로 교체 */
+  --navy-900: #006b5d;
+  --navy-800: #158574;
+  --navy-700: #3dbea8;
+  --navy-050: #f3faf8;
+  --paper: #fffdf8;
+  --paper-line: #dce8e5;
+  --gold: #dfc55b;
+  --gold-deep: #8a7308;
+  --gold-light: #fff6c8;
+  --sage: #2bb89a;
+  --sage-light: #d8f5ee;
+  --brick: #ff7b8f;
+  --brick-light: #ffe4e8;
+  --ink: #243330;
+  --ink-soft: #5a6b67;
+  --purple: #7eb8e8;
   --radius: 22px;
-  --shadow: 0 12px 28px -10px rgba(63, 143, 214, 0.28);
+  --shadow: 0 12px 28px -10px rgba(0, 107, 93, 0.22);
 }
 
 * {
@@ -63,22 +63,18 @@ textarea {
 
 /* ---------------- HEADER ---------------- */
 header.topbar {
-  background: linear-gradient(160deg, var(--navy-900), var(--navy-800) 85%);
-  color: #fff;
-  padding: 22px 24px 26px;
-  border-radius: 0 0 28px 28px;
-  box-shadow: var(--shadow);
+  background: #fff;
+  color: var(--ink);
+  padding: 16px 24px 14px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(189, 201, 197, 0.28);
   position: relative;
   overflow: hidden;
 }
+header.topbar::before,
 header.topbar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 3px, transparent 3.5px);
-  background-size: 26px 26px;
-  background-position: -4px -6px;
-  pointer-events: none;
+  content: none;
 }
 .topbar-row {
   display: flex;
@@ -93,6 +89,8 @@ header.topbar::after {
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+  color: inherit;
 }
 .brand-mark {
   width: 42px;
@@ -113,72 +111,124 @@ header.topbar::after {
   object-fit: cover;
 }
 .brand-text .name {
-  font-family: 'Jua', sans-serif;
+  font-family: 'Fraunces', 'Jua', Georgia, serif;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.15;
+  color: var(--navy-900);
 }
 .brand-text .sub {
-  font-size: 14px;
-  color: #b9c3d6;
+  font-size: 13px;
+  color: var(--ink-soft);
   margin-top: 2px;
 }
 
 .topbar-user {
   display: flex;
   align-items: center;
+  gap: 12px;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+}
+.topbar-profile {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  font-size: 15px;
-  color: #cfd8e8;
+  padding: 4px 6px 4px 10px;
+  border: 1.5px solid rgba(189, 201, 197, 0.55);
+  border-radius: 999px;
+  background: #fff;
+}
+.topbar-profile-text {
+  text-align: right;
+  line-height: 1.25;
 }
 .topbar-user .who {
+  font-family: 'Fraunces', 'Jua', Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy-900);
+}
+.topbar-user .role-line {
+  font-size: 12px;
   font-weight: 600;
-  color: #fff;
+  color: var(--ink-soft);
+}
+.topbar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #dfc55b;
+  color: #615100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', 'Jua', Georgia, serif;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.topbar-out {
+  border: 1.5px solid var(--navy-900);
+  background: #fff;
+  color: var(--navy-900);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.topbar-out:hover {
+  background: var(--navy-050);
 }
 .role-pill {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--navy-050);
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 4px 10px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--gold-light);
+  color: var(--navy-900);
 }
 .linkish {
   border: none;
   background: none;
-  color: #b9c3d6;
+  color: var(--ink-soft);
   cursor: pointer;
   font-size: 14.5px;
-  text-decoration: underline;
+  text-decoration: none;
   padding: 4px;
 }
 .linkish:hover {
-  color: #fff;
+  color: var(--navy-900);
 }
 
 .subnav {
   display: flex;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 14px;
   flex-wrap: wrap;
   position: relative;
   z-index: 1;
 }
 .subnav a {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.04);
-  color: #e7ebf3;
-  padding: 7px 14px;
+  border: 1.5px solid rgba(189, 201, 197, 0.7);
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 8px 16px;
   border-radius: 999px;
   font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
 }
+.subnav a:hover {
+  border-color: var(--navy-900);
+  color: var(--navy-900);
+}
 .subnav a.active {
   background: #fff;
   color: var(--navy-900);
-  border-color: #fff;
+  border-color: var(--navy-900);
 }
 
 main {
@@ -186,7 +236,7 @@ main {
 }
 
 .section-title {
-  font-family: 'Jua', sans-serif;
+  font-family: 'Fraunces', 'Jua', Georgia, serif;
   font-size: 19px;
   font-weight: 600;
   margin: 0 0 12px;

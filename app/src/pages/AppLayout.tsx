@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -10,27 +10,26 @@ const ROLE_LABEL: Record<string, string> = {
 export default function AppLayout() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
 
-  // "게임"은 설정(또는 학생의 경우 내 통장) 오른쪽 끝에 둔다.
-  // 앞으로 추가되는 미니게임은 전부 /games 목록 안에 카드로 들어가고,
-  // 네비게이션에는 이 "게임" 버튼 하나만 남는다.
+  // 선생님은 홈(대시보드)에서 출석·통장·게임으로 들어간다.
+  // 헤더에는 홈과, 가끔 쓰는 결과/설정만 남긴다.
   const links = isStaff
     ? [
-        { to: '/board', label: '반별 통장' },
-        { to: '/attendance', label: '출석부' },
+        { to: '/dashboard', label: '홈' },
         { to: '/results', label: '결과 보기' },
         { to: '/settings', label: '설정' },
-        { to: '/games', label: '게임' },
       ]
     : [
         { to: '/me', label: '내 통장' },
         { to: '/games', label: '게임' },
       ];
 
+  const homeTo = isStaff ? '/dashboard' : '/me';
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-row">
-          <div className="brand">
+          <Link to={homeTo} className="brand">
             <div className="brand-mark">
               {academy?.logo_url ? (
                 <img src={academy.logo_url} alt="" className="brand-mark-img" />
@@ -42,13 +41,20 @@ export default function AppLayout() {
               <div className="name">{academy?.name ?? '클래스뱅크'}</div>
               <div className="sub">클래스뱅크 · 포인트 단위 ‘{pointUnit}’</div>
             </div>
-          </div>
+          </Link>
           <div className="topbar-user">
-            <span className="who">{profile?.display_name}</span>
-            <span className="role-pill">{ROLE_LABEL[profile?.role ?? ''] ?? ''}</span>
-            <button className="linkish" onClick={() => void signOut()}>
+            <button type="button" className="topbar-out" onClick={() => void signOut()}>
               로그아웃
             </button>
+            <div className="topbar-profile">
+              <div className="topbar-profile-text">
+                <div className="who">{profile?.display_name}</div>
+                <div className="role-line">{ROLE_LABEL[profile?.role ?? ''] ?? ''}</div>
+              </div>
+              <div className="topbar-avatar" aria-hidden>
+                {(profile?.display_name ?? '선').slice(0, 1)}
+              </div>
+            </div>
           </div>
         </div>
         {links.length > 0 && (

@@ -7,6 +7,7 @@ import AttendancePage from './pages/AttendancePage';
 import BombPage from './pages/BombPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
+import DashboardPage from './pages/DashboardPage';
 import GamesPage from './pages/GamesPage';
 import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
@@ -16,6 +17,7 @@ import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
 import TimerMatchPage from './pages/TimerMatchPage';
+import UiPreviewPage from './pages/UiPreviewPage';
 import WheelPage from './pages/WheelPage';
 
 export default function App() {
@@ -63,17 +65,20 @@ export default function App() {
       <Route element={<AppLayout />}>
         {isStaff ? (
           <>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/board" element={<ClassBoardPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/preview" element={<UiPreviewPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
             <Route path="/games/order" element={<OrderPage />} />
             <Route path="/games/bomb" element={<BombPage />} />
             <Route path="/games/timer" element={<TimerMatchPage />} />
-            <Route path="*" element={<Navigate to="/board" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
           // 학생은 자기 통장과 게임만 본다. 순위/결과 화면은 노출하지 않는다.

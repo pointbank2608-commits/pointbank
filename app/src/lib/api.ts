@@ -166,6 +166,21 @@ export async function fetchTransactionsSince(
   );
 }
 
+/** 학원 전체의 특정 시각 이후 거래. 선생님 대시보드 오늘 요약용. */
+export async function fetchAcademyTransactionsSince(
+  academyId: string,
+  since: Date,
+): Promise<Transaction[]> {
+  return unwrap(
+    await supabase
+      .from('transactions')
+      .select('*')
+      .eq('academy_id', academyId)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false }),
+  );
+}
+
 /* ---------------- 일일 마감 ---------------- */
 
 export async function fetchSettlement(
@@ -265,11 +280,15 @@ export async function rotateInviteCode(): Promise<string> {
 /** 학원 로고를 올리고 academies.logo_url 을 갱신한 뒤 새 URL을 돌려준다. */
 export async function uploadAcademyLogo(academyId: string, image: Blob): Promise<string> {
   const path = `${academyId}/logo.png`;
+  const options = { contentType: 'image/png', cacheControl: '3600' } as const;
 
-  const { error: uploadError } = await supabase.storage
-    .from('logos')
-    .upload(path, image, { upsert: true, contentType: 'image/png', cacheControl: '3600' });
-  if (uploadError) throw new Error(uploadError.message);
+  // upsert 는 SELECT+INSERT 를 한 번에 써서, SELECT 정책이 없으면 RLS 에 걸린다.
+  // 먼저 올리고, 이미 있으면 교체한다.
+  const uploaded = await supabase.storage.from('logos').upload(path, image, options);
+  if (uploaded.error) {
+    const replaced = await supabase.storage.from('logos').update(path, image, options);
+    if (replaced.error) throw new Error(replaced.error.message);
+  }
 
   const { data } = supabase.storage.from('logos').getPublicUrl(path);
   // 같은 경로를 덮어쓰므로, 캐시 무효화를 위해 버전 쿼리를 붙여서 저장한다.
@@ -472,6 +491,20 @@ export async function fetchAttendance(
       .eq('class_id', classId)
       .gte('attended_on', from)
       .lte('attended_on', to),
+  );
+}
+
+/** 학원 전체의 하루 출석. 선생님 대시보드 등원 수 요약용. */
+export async function fetchAcademyAttendanceOn(
+  academyId: string,
+  day: string,
+): Promise<Attendance[]> {
+  return unwrap(
+    await supabase
+      .from('attendance')
+      .select('*')
+      .eq('academy_id', academyId)
+      .eq('attended_on', day),
   );
 }
 

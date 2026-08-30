@@ -577,13 +577,18 @@ on conflict (id) do nothing;
 
 -- 업로드 경로 규칙: "<academy_id>/logo.<확장자>"
 -- 폴더 이름(첫 세그먼트)이 자신의 academy_id 와 같을 때만, 그리고 선생님/원장일 때만 쓰기 허용.
--- 읽기는 버킷이 public 이라 누구나 가능 (RLS 정책 불필요).
+-- 공개 버킷이라도 객체 조회/덮어쓰기에 SELECT 정책이 필요하다.
+drop policy if exists logos_select on storage.objects;
+create policy logos_select on storage.objects
+  for select
+  using (bucket_id = 'logos');
+
 drop policy if exists logos_insert on storage.objects;
 create policy logos_insert on storage.objects
   for insert to authenticated
   with check (
     bucket_id = 'logos'
-    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and split_part(name, '/', 1) = public.my_academy_id()::text
     and public.is_staff()
   );
 
@@ -592,12 +597,12 @@ create policy logos_update on storage.objects
   for update to authenticated
   using (
     bucket_id = 'logos'
-    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and split_part(name, '/', 1) = public.my_academy_id()::text
     and public.is_staff()
   )
   with check (
     bucket_id = 'logos'
-    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and split_part(name, '/', 1) = public.my_academy_id()::text
     and public.is_staff()
   );
 
@@ -606,7 +611,7 @@ create policy logos_delete on storage.objects
   for delete to authenticated
   using (
     bucket_id = 'logos'
-    and (storage.foldername(name))[1] = public.my_academy_id()::text
+    and split_part(name, '/', 1) = public.my_academy_id()::text
     and public.is_staff()
   );
 
