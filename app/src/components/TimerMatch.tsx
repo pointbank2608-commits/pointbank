@@ -123,63 +123,109 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
   const leaderboard = [...attempts].sort((a, b) => a.diffMs - b.diffMs);
 
   return (
-    <div className="timer-match-stage">
-      <div className="timer-match-toggles">
-        <div className="scope-toggle">
-          <button type="button" className={mode === 'practice' ? 'active' : ''} onClick={() => switchMode('practice')}>
+    <div className="flex flex-col items-center pt-3 pb-2">
+      <div className="flex flex-wrap justify-center gap-2.5 mb-4">
+        <div className="flex bg-surface-container-low rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => switchMode('practice')}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              mode === 'practice' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             공용 도전판
           </button>
-          <button type="button" className={mode === 'ranked' ? 'active' : ''} onClick={() => switchMode('ranked')}>
+          <button
+            type="button"
+            onClick={() => switchMode('ranked')}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              mode === 'ranked' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             참가자별 순위
           </button>
         </div>
-        <div className="scope-toggle">
-          <button type="button" className={showTimer ? 'active' : ''} onClick={() => setShowTimer(true)}>
+        <div className="flex bg-surface-container-low rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setShowTimer(true)}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             숫자 보임
           </button>
-          <button type="button" className={!showTimer ? 'active' : ''} onClick={() => setShowTimer(false)}>
+          <button
+            type="button"
+            onClick={() => setShowTimer(false)}
+            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              !showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             숫자 숨김
           </button>
         </div>
       </div>
 
-      <div className="timer-match-target">목표 {fmt(targetMs)}</div>
+      <div className="font-label-md text-label-md font-bold text-on-surface-variant mb-3.5">
+        목표 {fmt(targetMs)}
+      </div>
 
       {blockedForRanked ? (
-        <div className="wheel-empty">
-          <div className="wheel-empty-icon">⏱️</div>
-          <div>참가자별 순위를 쓰려면 참가자를 1명 이상 등록해 주세요.</div>
+        <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
+          <div className="text-4xl mb-2">⏱️</div>
+          <div className="font-body-md text-body-md">참가자별 순위를 쓰려면 참가자를 1명 이상 등록해 주세요.</div>
         </div>
       ) : allDone ? (
-        <div className="timer-leaderboard">
-          <div className="timer-leaderboard-title">🏆 오차 순위</div>
+        <div className="w-full max-w-[420px] flex flex-col items-center">
+          <div className="font-title-md text-title-md text-deep-navy mb-3.5">🏆 오차 순위</div>
           {leaderboard.map((a, i) => (
-            <div key={a.participantId + i} className="timer-leaderboard-row">
-              <span className="timer-leaderboard-rank">{i + 1}</span>
-              <span className="timer-leaderboard-name">{a.label}</span>
-              <span className="timer-leaderboard-time">{fmt(a.elapsedMs)}</span>
-              <span className="timer-leaderboard-diff">±{fmt(a.diffMs)}</span>
+            <div
+              key={a.participantId + i}
+              className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3 w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2.5 mb-2 shadow-sm"
+            >
+              <span className="font-title-md text-title-md text-tertiary-container">{i + 1}</span>
+              <span className="font-label-md text-label-md text-on-surface font-semibold">{a.label}</span>
+              <span className="font-body-md text-sm text-on-surface-variant">{fmt(a.elapsedMs)}</span>
+              <span className="font-body-md text-sm text-tertiary-container font-bold">±{fmt(a.diffMs)}</span>
             </div>
           ))}
-          <button className="btn-primary wheel-spin-btn" onClick={restartAll}>
+          <button
+            onClick={restartAll}
+            className="mt-3 px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+          >
             처음부터 다시
           </button>
         </div>
       ) : (
         <>
           {mode === 'ranked' && phase !== 'stopped' && (
-            <div className="bomb-holder">{participants[turnIndex]?.label} 차례!</div>
+            <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+              {participants[turnIndex]?.label} 차례!
+            </div>
           )}
 
-          <div className={`timer-match-display ${phase}`}>
+          <div
+            className={`font-title-md text-[42px] sm:text-[64px] md:text-[96px] font-semibold text-on-surface border-4 rounded-[28px] px-5 sm:px-9 md:px-14 py-4 sm:py-5 md:py-6 mb-6 tracking-wide ${
+              phase === 'running' ? 'border-warm-yellow bg-warm-yellow/15' : 'border-primary bg-surface-container-low'
+            }`}
+          >
             {showTimer || phase === 'stopped' ? fmt(elapsedMs) : phase === 'running' ? '??:??.??' : fmt(0)}
           </div>
 
           {(phase === 'idle' || phase === 'running') && (
             <button
               type="button"
-              className={`timer-round-btn ${phase === 'running' ? 'running' : ''}`}
               onClick={phase === 'running' ? stop : start}
+              className={`w-[118px] h-[118px] rounded-full text-white font-title-md text-xl tracking-wide shadow-[0_10px_22px_-6px_rgba(186,26,26,0.6),inset_0_-4px_0_rgba(0,0,0,0.15)] transition-transform hover:-translate-y-0.5 active:translate-y-px active:scale-[0.97] ${
+                phase === 'running' ? 'timer-btn-pulse' : ''
+              }`}
+              style={{
+                background:
+                  phase === 'running'
+                    ? 'radial-gradient(circle at 35% 30%, #ff5a5a, #e03e3e 65%, #b82c2c)'
+                    : 'radial-gradient(circle at 35% 30%, #ff8a8a, #ba1a1a 65%, #e14b4b)',
+              }}
             >
               {phase === 'running' ? 'STOP' : 'START'}
             </button>
@@ -187,16 +233,22 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
 
           {phase === 'stopped' && diffMs != null && (
             <>
-              <div className="timer-match-result">
-                <div className="timer-match-diff">오차 ±{fmt(diffMs)}</div>
-                <div className="timer-match-message">{resultMessage(diffMs)}</div>
+              <div className="text-center mb-4">
+                <div className="font-title-md text-[26px] text-tertiary-container">오차 ±{fmt(diffMs)}</div>
+                <div className="font-body-md text-body-md text-on-surface-variant mt-1">{resultMessage(diffMs)}</div>
               </div>
               {mode === 'practice' ? (
-                <button className="btn-primary wheel-spin-btn" onClick={tryAgain}>
+                <button
+                  onClick={tryAgain}
+                  className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+                >
                   다시 도전
                 </button>
               ) : (
-                <button className="btn-primary wheel-spin-btn" onClick={nextTurn}>
+                <button
+                  onClick={nextTurn}
+                  className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+                >
                   {turnIndex + 1 >= n ? '결과 보기' : '다음 사람'}
                 </button>
               )}

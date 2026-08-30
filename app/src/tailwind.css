@@ -285,3 +285,16 @@ a {
 .result-pop {
   animation: result-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3);
 }
+
+/* 타이머 맞추기: STOP 버튼이 뛰는 심장처럼 두근거리는 효과 */
+@keyframes timer-btn-pulse {
+  from {
+    box-shadow: 0 10px 22px -6px rgba(186, 26, 26, 0.6), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  }
+  to {
+    box-shadow: 0 10px 30px -4px rgba(186, 26, 26, 0.9), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  }
+}
+.timer-btn-pulse {
+  animation: timer-btn-pulse 0.8s ease-in-out infinite alternate;
+}
