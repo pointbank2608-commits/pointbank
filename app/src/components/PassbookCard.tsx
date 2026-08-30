@@ -52,6 +52,7 @@ export default function PassbookCard({
   onCheckOut,
 }: Props) {
   const [attBusy, setAttBusy] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   async function handleCheckIn() {
     if (attBusy) return;
@@ -123,9 +124,6 @@ export default function PassbookCard({
       </div>
 
       <div className="flex flex-col items-center text-center mb-3 -mt-2">
-        <div className="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-title-md mb-2">
-          {name.slice(0, 1)}
-        </div>
         <div className="font-title-md text-title-md text-on-surface">{name}</div>
         <div className="font-caption text-caption text-on-surface-variant">
           {className} · No. {number}
@@ -160,9 +158,9 @@ export default function PassbookCard({
       <div className="flex flex-col items-center mb-4 pb-4 border-b border-surface-container">
         <div className="font-caption text-caption text-on-surface-variant mb-1">오늘 적립</div>
         <div
-          className={`inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-warm-yellow/20 font-display-lg text-[24px] ${toneClass}`}
+          className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-warm-yellow/20 font-display-lg text-[40px] ${toneClass}`}
         >
-          <span className="material-symbols-outlined text-[20px]">monetization_on</span>
+          <span className="material-symbols-outlined text-[32px]">monetization_on</span>
           {today > 0 ? '+' : ''}
           {today}
           <span className="font-caption text-caption">{pointUnit}</span>
@@ -229,8 +227,20 @@ export default function PassbookCard({
       )}
 
       <div>
-        <div className="font-caption text-caption text-on-surface-variant mb-1.5">오늘 내역</div>
-        {todayTx.length === 0 ? (
+        <button
+          type="button"
+          onClick={() => setHistoryOpen((v) => !v)}
+          className="w-full flex items-center justify-between font-caption text-caption text-on-surface-variant mb-1.5 hover:text-on-surface transition-colors"
+        >
+          <span>오늘 내역{todayTx.length > 0 ? ` (${todayTx.length})` : ''}</span>
+          <span className="flex items-center gap-0.5">
+            {historyOpen ? '숨기기' : '펼치기'}
+            <span className="material-symbols-outlined text-base">
+              {historyOpen ? 'expand_less' : 'expand_more'}
+            </span>
+          </span>
+        </button>
+        {historyOpen && (todayTx.length === 0 ? (
           <div className="font-caption text-caption text-on-surface-variant/70 py-2">
             아직 오늘 적립이 없어요.
           </div>
@@ -256,7 +266,7 @@ export default function PassbookCard({
               </div>
             ))}
           </div>
-        )}
+        ))}
       </div>
     </div>
   );
