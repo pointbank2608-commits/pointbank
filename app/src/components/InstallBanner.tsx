@@ -65,10 +65,14 @@ export default function InstallBanner() {
     );
 
   return (
-    <div className="install-banner">
-      <span className="install-banner-emoji">🐷</span>
-      <span className="install-banner-text">{content}</span>
-      <button className="install-banner-close" onClick={dismiss} aria-label="닫기">
+    <div className="sticky top-0 z-40 flex items-center gap-2.5 bg-warm-yellow/30 text-deep-navy px-3.5 py-2.5 font-body-md text-sm">
+      <span className="text-lg shrink-0">🐷</span>
+      <span className="flex-1 [&_strong]:text-deep-navy [&_strong]:font-bold">{content}</span>
+      <button
+        onClick={dismiss}
+        aria-label="닫기"
+        className="text-on-surface-variant hover:text-error text-base px-1.5 py-0.5 shrink-0"
+      >
         ✕
       </button>
     </div>

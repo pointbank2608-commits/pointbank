@@ -1,10 +1,7 @@
-/* 클래스뱅크 신규 디자인 — 스티치(Stitch) 목업 원본 tailwind.config 값을 그대로 옮김.
-   preflight(전역 리셋)는 아직 켜지 않는다 — 페이지를 하나씩 마이그레이션하는 동안
-   손 안 댄 기존 화면(index.css)이 깨지는 걸 막기 위함. 전 페이지 이전 끝나면 켠다. */
+/* 클래스뱅크 신규 디자인 — 스티치(Stitch) 목업 원본 tailwind.config 값을 그대로 옮김. */
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-@import "tailwindcss/theme" layer(theme);
-@import "tailwindcss/utilities" layer(utilities);
+@import "tailwindcss";
 
 @theme {
   /* ---- 색상 (스티치 원본 그대로) ---- */

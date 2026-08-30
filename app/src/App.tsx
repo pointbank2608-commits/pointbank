@@ -23,7 +23,11 @@ export default function App() {
   const { loading, session, profile, isStaff, isAdmin } = useAuth();
 
   if (loading) {
-    return <div className="page-loading">불러오는 중…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background font-body-md text-on-surface-variant">
+        불러오는 중…
+      </div>
+    );
   }
 
   // 1) 로그인 전 — 첫 화면은 서비스 소개(랜딩), 로그인/가입은 /login
