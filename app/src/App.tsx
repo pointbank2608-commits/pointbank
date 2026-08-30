@@ -17,7 +17,6 @@ import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
 import TimerMatchPage from './pages/TimerMatchPage';
-import UiPreviewPage from './pages/UiPreviewPage';
 import WheelPage from './pages/WheelPage';
 
 export default function App() {
@@ -71,7 +70,6 @@ export default function App() {
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/preview" element={<UiPreviewPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
