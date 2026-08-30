@@ -86,11 +86,15 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
       : `🎵 ${value.name}`;
 
   return (
-    <div className="game-music-picker">
-      <span className="gmp-label">{label}</span>
+    <div className="flex flex-wrap items-center gap-2 py-2">
+      <span className="font-label-md text-label-md text-on-surface-variant shrink-0">{label}</span>
 
       {isStaff ? (
-        <select className="gmp-select" value={selectValue} onChange={(e) => handleSelect(e.target.value)}>
+        <select
+          value={selectValue}
+          onChange={(e) => handleSelect(e.target.value)}
+          className="min-w-0 max-w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+        >
           <option value="none">없음</option>
           <optgroup label="기본 제공 효과음">
             {BUILTIN_SOUNDS.map((s) => (
@@ -110,18 +114,22 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
           )}
         </select>
       ) : (
-        <span className="gmp-current">{currentLabel}</span>
+        <span className="font-body-md text-body-md text-on-surface">{currentLabel}</span>
       )}
 
       {value && (
-        <button type="button" className="linkish dark" onClick={preview}>
+        <button
+          type="button"
+          onClick={preview}
+          className="font-label-md text-label-md text-primary hover:underline"
+        >
           미리듣기
         </button>
       )}
 
       {isStaff && (
         <>
-          <label className="linkish dark gmp-upload-label">
+          <label className="font-label-md text-label-md text-primary hover:underline cursor-pointer">
             {uploading ? '업로드 중…' : '+ 내 음악 업로드'}
             <input
               ref={fileInputRef}
@@ -133,7 +141,11 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
             />
           </label>
           {value?.kind === 'upload' && (
-            <button type="button" className="link-danger" onClick={() => void handleDeleteUpload()}>
+            <button
+              type="button"
+              onClick={() => void handleDeleteUpload()}
+              className="font-label-md text-label-md text-error hover:underline"
+            >
               업로드 삭제
             </button>
           )}

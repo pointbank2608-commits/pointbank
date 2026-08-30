@@ -144,7 +144,7 @@ export default function AppLayout() {
         {sidebarContent}
       </nav>
 
-      <main className="flex-1 md:ml-64 pt-16 md:pt-0 min-h-screen">
+      <main className="flex-1 min-w-0 md:ml-64 pt-16 md:pt-0 min-h-screen">
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">
           <Outlet />
         </div>

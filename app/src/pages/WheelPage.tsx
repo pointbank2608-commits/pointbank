@@ -138,42 +138,60 @@ export default function WheelPage() {
   /* ---------------- 렌더 ---------------- */
 
   if (isStaff && classes.length === 0) {
-    return <div className="empty-hint">등록된 반이 없습니다. 설정에서 반을 추가해 주세요.</div>;
+    return (
+      <div className="text-center py-16 font-body-md text-on-surface-variant">
+        등록된 반이 없습니다. 설정에서 반을 추가해 주세요.
+      </div>
+    );
   }
   if (!isStaff && !classId) {
-    return <div className="empty-hint">불러오는 중…</div>;
+    return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
   }
 
   const classPicker = isStaff ? (
-    <div className="class-tabs">
+    <div className="flex flex-wrap gap-2">
       {classes.map((c) => (
         <button
           key={c.id}
-          className={`class-tab ${c.id === staffClassId ? 'active' : ''}`}
           onClick={() => selectClass(c.id)}
+          className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+            c.id === staffClassId
+              ? 'bg-primary text-on-primary shadow-sm'
+              : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
+          }`}
         >
           {c.name}
         </button>
       ))}
     </div>
   ) : (
-    <div className="section-title">{studentClassName} 돌림판</div>
+    <h2 className="font-title-md text-title-md text-on-surface">{studentClassName} 돌림판</h2>
   );
 
   const templateRow = (
-    <div className="wheel-template-row">
+    <div className="flex flex-wrap gap-2">
       {templates.map((t) => (
-        <div key={t.id} className={`wheel-chip-wrap ${t.id === selectedId ? 'active' : ''}`}>
-          <button className="wheel-chip-select" onClick={() => setSelectedId(t.id)}>
+        <div
+          key={t.id}
+          className={`flex items-center rounded-full overflow-hidden ${
+            t.id === selectedId
+              ? 'bg-primary text-on-primary'
+              : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40'
+          }`}
+        >
+          <button
+            onClick={() => setSelectedId(t.id)}
+            className="pl-4 pr-2 py-2 font-label-md text-label-md flex items-center gap-1.5"
+          >
             {t.name}
-            <span className="wheel-chip-scope">{scopeLabel(t)}</span>
+            <span className="font-caption text-caption opacity-70">{scopeLabel(t)}</span>
           </button>
           {isStaff && (
             <button
               type="button"
-              className="wheel-chip-delete"
               title="삭제"
               onClick={() => void handleDeleteTemplate(t.id)}
+              className="pr-3 pl-1 py-2 opacity-70 hover:opacity-100"
             >
               ✕
             </button>
@@ -181,7 +199,10 @@ export default function WheelPage() {
         </div>
       ))}
       {isStaff && (
-        <button className="wheel-chip add" onClick={() => setShowCreateForm((v) => !v)}>
+        <button
+          onClick={() => setShowCreateForm((v) => !v)}
+          className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+        >
           + 새 돌림판
         </button>
       )}
@@ -189,9 +210,11 @@ export default function WheelPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <div className="settings-block wheel-create-form">
-      <div className="field-row">
-        <label htmlFor="wname">이름</label>
+    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div>
+        <label htmlFor="wname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+          이름
+        </label>
         <input
           id="wname"
           value={newName}
@@ -200,24 +223,44 @@ export default function WheelPage() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') void handleCreate();
           }}
+          className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
         />
       </div>
-      <div className="field-row">
-        <label>공개 범위</label>
-        <div className="scope-toggle">
-          <button type="button" className={newScope === 'class' ? 'active' : ''} onClick={() => setNewScope('class')}>
+      <div>
+        <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">공개 범위</label>
+        <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
+          <button
+            type="button"
+            onClick={() => setNewScope('class')}
+            className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              newScope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             이 반에서만
           </button>
-          <button type="button" className={newScope === 'academy' ? 'active' : ''} onClick={() => setNewScope('academy')}>
+          <button
+            type="button"
+            onClick={() => setNewScope('academy')}
+            className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+              newScope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
+          >
             학원 전체 공용
           </button>
         </div>
       </div>
-      <div className="field-row">
-        <button onClick={() => void handleCreate()} disabled={submitting}>
+      <div className="flex gap-2">
+        <button
+          onClick={() => void handleCreate()}
+          disabled={submitting}
+          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
+        >
           {submitting ? '만드는 중…' : '만들기'}
         </button>
-        <button className="ghost" onClick={() => setShowCreateForm(false)}>
+        <button
+          onClick={() => setShowCreateForm(false)}
+          className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
+        >
           취소
         </button>
       </div>
@@ -225,82 +268,106 @@ export default function WheelPage() {
   );
 
   return (
-    <>
-      <Link to="/games" className="back-link">
+    <div className="space-y-6">
+      <Link
+        to="/games"
+        className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
+      >
         ← 게임 목록
       </Link>
 
       {loading ? (
-        <div className="empty-hint">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
       ) : !selected ? (
-        <>
+        <div className="space-y-6">
           {classPicker}
-          <div className="game-empty-hero">
-            <div className="game-empty-hero-icon">🎡</div>
-            <div className="game-empty-hero-text">
-              {isStaff ? '아직 돌림판이 없어요. 아래 "+ 새 돌림판"으로 첫 돌림판을 만들어보세요!' : '아직 선생님이 만든 돌림판이 없어요.'}
+          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="text-5xl mb-3">🎡</div>
+            <div className="font-body-md text-body-md text-on-surface-variant">
+              {isStaff
+                ? '아직 돌림판이 없어요. 아래 "+ 새 돌림판"으로 첫 돌림판을 만들어보세요!'
+                : '아직 선생님이 만든 돌림판이 없어요.'}
             </div>
           </div>
           {templateRow}
           {createForm}
-        </>
+        </div>
       ) : (
-        <>
-          <div className="game-title-big">{selected.name}</div>
-          <SpinWheel
-            items={playItems}
-            music={selected.config.music}
-            resultSound={resolveResultSound(selected.config.resultSound)}
-            onResult={handleResult}
-          />
+        <div className="space-y-6">
+          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+            {selected.name}
+          </h2>
 
-          <div className="wheel-controls">
-            <label className="wheel-eliminate">
-              <input type="checkbox" checked={eliminateMode} onChange={(e) => setEliminateMode(e.target.checked)} />
-              당첨된 항목 제거하며 진행
-            </label>
-            {playItems.length !== selected.items.length && (
-              <button className="linkish dark" onClick={resetPlayItems}>
-                항목 초기화
-              </button>
+          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <SpinWheel
+              items={playItems}
+              music={selected.config.music}
+              resultSound={resolveResultSound(selected.config.resultSound)}
+              onResult={handleResult}
+            />
+
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+              <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={eliminateMode}
+                  onChange={(e) => setEliminateMode(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                당첨된 항목 제거하며 진행
+              </label>
+              {playItems.length !== selected.items.length && (
+                <button onClick={resetPlayItems} className="font-label-md text-label-md text-primary hover:underline">
+                  항목 초기화
+                </button>
+              )}
+            </div>
+
+            {recent.length > 0 && (
+              <div className="mt-5 pt-5 border-t border-surface-container">
+                <div className="font-caption text-caption text-on-surface-variant mb-2">최근 결과</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {recent.map((r, i) => (
+                    <span
+                      key={r.at}
+                      className="px-3 py-1 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface"
+                    >
+                      {i === 0 && '🎉 '}
+                      {r.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
-          {recent.length > 0 && (
-            <div className="wheel-recent">
-              <div className="wheel-recent-title">최근 결과</div>
-              <div className="wheel-recent-list">
-                {recent.map((r, i) => (
-                  <span key={r.at} className="wheel-recent-tag">
-                    {i === 0 && '🎉 '}
-                    {r.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="game-admin-area">
+          <div className="space-y-4">
             {classPicker}
             {templateRow}
             {createForm}
 
             {isStaff && (
-              <div className="settings-block" style={{ marginTop: 22 }}>
-                <div className="wheel-editor-head">
-                  <h4 style={{ margin: 0 }}>돌림판 설정</h4>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="linkish dark" onClick={() => void handleRename()}>
+              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-title-md text-title-md text-on-surface">돌림판 설정</h4>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => void handleRename()}
+                      className="font-label-md text-label-md text-primary hover:underline"
+                    >
                       이름 변경
                     </button>
-                    <button className="linkish dark" onClick={() => setEditorOpen((v) => !v)}>
+                    <button
+                      onClick={() => setEditorOpen((v) => !v)}
+                      className="font-label-md text-label-md text-primary hover:underline"
+                    >
                       {editorOpen ? '접기' : '펼치기'}
                     </button>
                   </div>
                 </div>
 
                 {editorOpen && (
-                  <>
+                  <div className="space-y-1 divide-y divide-surface-container">
                     {academy && (
                       <>
                         <GameMusicPicker
@@ -319,51 +386,73 @@ export default function WheelPage() {
                       </>
                     )}
 
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-
-                    <div className="tag-list">
-                      {selected.items.length === 0 ? (
-                        <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>등록된 항목이 없습니다.</span>
-                      ) : (
-                        selected.items.map((item) => (
-                          <div className="tag" key={item.id}>
-                            {item.label}
-                            <button onClick={() => void removeItem(item.id)}>✕</button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {selected.items.length > 0 && (
-                      <button type="button" className="link-danger" onClick={() => void clearAllItems()}>
-                        전체 삭제
-                      </button>
-                    )}
-                    <div className="preset-add-row">
-                      <input
-                        type="text"
-                        placeholder="새 항목 (예: 1모둠)"
-                        value={newItemLabel}
-                        onChange={(e) => setNewItemLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addItem();
-                        }}
+                    <div className="pt-3">
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
                       />
-                      <button onClick={() => void addItem()}>추가</button>
+
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {selected.items.length === 0 ? (
+                          <span className="font-caption text-caption text-on-surface-variant">
+                            등록된 항목이 없습니다.
+                          </span>
+                        ) : (
+                          selected.items.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+                            >
+                              {item.label}
+                              <button
+                                onClick={() => void removeItem(item.id)}
+                                className="text-on-surface-variant hover:text-error"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      {selected.items.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => void clearAllItems()}
+                          className="mt-2 font-label-md text-label-md text-error hover:underline"
+                        >
+                          전체 삭제
+                        </button>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <input
+                          type="text"
+                          placeholder="새 항목 (예: 1모둠)"
+                          value={newItemLabel}
+                          onChange={(e) => setNewItemLabel(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void addItem();
+                          }}
+                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <button
+                          onClick={() => void addItem()}
+                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                        >
+                          추가
+                        </button>
+                      </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
-    </>
+    </div>
   );
 }

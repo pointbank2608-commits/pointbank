@@ -21,46 +21,67 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
   const remaining = roster.filter((s) => !existingSet.has(s.label));
 
   return (
-    <div className="roster-picker">
+    <div className="my-3">
       <button
         type="button"
-        className={`roster-toggle-btn ${open ? 'open' : ''}`}
         onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md transition-colors ${
+          open
+            ? 'bg-secondary-container text-on-secondary-container'
+            : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+        }`}
       >
-        <span className="roster-toggle-emoji">👦👧</span>
+        <span className="material-symbols-outlined text-base">groups</span>
         {open ? '학생 명단 닫기' : '학생 명단에서 추가'}
       </button>
 
       {open && (
-        <div className="roster-picker-panel">
-          <div className="scope-toggle">
-            <button type="button" className={scope === 'class' ? 'active' : ''} onClick={() => onScopeChange('class')}>
+        <div className="mt-3 p-4 bg-surface-container-low rounded-lg">
+          <div className="flex bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
+            <button
+              type="button"
+              onClick={() => onScopeChange('class')}
+              className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                scope === 'class' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
               이 반
             </button>
-            <button type="button" className={scope === 'academy' ? 'active' : ''} onClick={() => onScopeChange('academy')}>
+            <button
+              type="button"
+              onClick={() => onScopeChange('academy')}
+              className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                scope === 'academy' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
               학원 전체
             </button>
           </div>
 
           {loading ? (
-            <div className="roster-empty">불러오는 중…</div>
+            <div className="font-caption text-caption text-on-surface-variant py-2">불러오는 중…</div>
           ) : remaining.length === 0 ? (
-            <div className="roster-empty">
+            <div className="font-caption text-caption text-on-surface-variant py-2">
               {roster.length === 0 ? '등록된 학생이 없습니다.' : '학생을 모두 추가했습니다.'}
             </div>
           ) : (
             <>
-              <div className="roster-chip-list">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {remaining.map((s) => (
-                  <button key={s.id} type="button" className="roster-chip" onClick={() => onAdd([s.label])}>
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onAdd([s.label])}
+                    className="px-3 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-lowest text-on-surface border border-outline-variant/40 hover:bg-secondary-container hover:text-on-secondary-container transition-colors"
+                  >
                     + {s.label}
                   </button>
                 ))}
               </div>
               <button
                 type="button"
-                className="roster-addall-btn"
                 onClick={() => onAdd(remaining.map((s) => s.label))}
+                className="px-3 py-1.5 rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container transition-colors"
               >
                 + 전체 추가 ({remaining.length}명)
               </button>

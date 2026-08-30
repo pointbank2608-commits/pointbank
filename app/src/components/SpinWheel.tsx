@@ -72,26 +72,29 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
 
   if (count === 0) {
     return (
-      <div className="wheel-empty">
-        <div className="wheel-empty-icon">🎡</div>
-        <div>돌림판에 항목이 없습니다. 아래에서 항목을 추가해 주세요.</div>
+      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
+        <div className="text-4xl mb-2">🎡</div>
+        <div className="font-body-md text-body-md">돌림판에 항목이 없습니다. 아래에서 항목을 추가해 주세요.</div>
       </div>
     );
   }
 
   return (
-    <div className="wheel-stage">
-      <div className="wheel-pointer" aria-hidden="true" />
-      <div className="wheel-frame">
+    <div className="flex flex-col items-center py-2.5 pb-2">
+      <div
+        aria-hidden="true"
+        className="w-0 h-0 border-l-[13px] border-r-[13px] border-l-transparent border-r-transparent border-t-[22px] border-t-warm-yellow drop-shadow-md"
+      />
+      <div className="relative w-full max-w-[420px] aspect-square">
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className="wheel-svg"
+          className="w-full h-full block drop-shadow-[0_16px_34px_rgba(39,101,168,0.28)]"
           style={{
             transform: `rotate(${rotation}deg)`,
             transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
           }}
         >
-          <circle cx={CX} cy={CY} r={R + 4} className="wheel-rim" />
+          <circle cx={CX} cy={CY} r={R + 4} className="fill-warm-yellow" />
           {slices.map((s) => (
             <path key={s.id} d={s.path} fill={s.color} stroke="#fffdf6" strokeWidth={3} />
           ))}
@@ -103,8 +106,13 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
               transform={`rotate(${s.mid} ${CX} ${CY})`}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="wheel-label"
-              style={{ fontSize }}
+              className="fill-white font-title-md font-bold"
+              style={{
+                fontSize,
+                paintOrder: 'stroke',
+                stroke: 'rgba(21,28,34,0.4)',
+                strokeWidth: 3,
+              }}
             >
               {s.label}
             </text>
@@ -112,24 +120,31 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
         </svg>
 
         <button
-          className="wheel-hub"
           onClick={spin}
           disabled={spinning}
           aria-label="돌리기"
           title="돌리기"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[76px] h-[76px] rounded-full bg-primary text-on-primary text-2xl shadow-lg border-4 border-surface-container-lowest flex items-center justify-center disabled:saturate-[0.7] disabled:cursor-default hover:not-disabled:brightness-105 transition-all"
         >
           <span>{spinning ? '···' : '🐷'}</span>
         </button>
       </div>
 
-      <button className="btn-primary wheel-spin-btn" onClick={spin} disabled={spinning}>
+      <button
+        onClick={spin}
+        disabled={spinning}
+        className="mt-4 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+      >
         {spinning ? '돌아가는 중…' : '돌리기'}
       </button>
 
       {result && !spinning && (
-        <div className="wheel-result" key={result.id + result.label}>
-          <div className="wheel-result-label">당첨</div>
-          <div className="wheel-result-name">{result.label}</div>
+        <div
+          key={result.id + result.label}
+          className="mt-4 text-center bg-secondary-container/40 border border-secondary-container rounded-xl px-8 py-3.5"
+        >
+          <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">당첨</div>
+          <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
         </div>
       )}
     </div>
