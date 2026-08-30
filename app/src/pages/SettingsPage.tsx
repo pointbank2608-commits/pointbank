@@ -12,6 +12,7 @@ import {
   rotateInviteCode,
   updateAcademy,
   updateMyDisplayName,
+  updatePresetHomeworkFlag,
   uploadAcademyLogo,
 } from '../lib/api';
 import { signed } from '../lib/format';
@@ -33,6 +34,7 @@ export default function SettingsPage() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [newPresetLabel, setNewPresetLabel] = useState('');
   const [newPresetDelta, setNewPresetDelta] = useState('');
+  const [newPresetHomework, setNewPresetHomework] = useState(false);
   const [newClassName, setNewClassName] = useState('');
   const [inviteCode, setInviteCode] = useState(academy?.invite_code ?? '');
   const [logoBusy, setLogoBusy] = useState(false);
@@ -90,11 +92,12 @@ export default function SettingsPage() {
       return;
     }
     const ok = await run(async () => {
-      await createPreset(academy.id, newPresetLabel.trim(), delta, presets.length);
+      await createPreset(academy.id, newPresetLabel.trim(), delta, presets.length, newPresetHomework);
     }, '프리셋을 추가했습니다.');
     if (ok) {
       setNewPresetLabel('');
       setNewPresetDelta('');
+      setNewPresetHomework(false);
       await loadPresets();
     }
   }
@@ -102,6 +105,16 @@ export default function SettingsPage() {
   async function removePreset(id: string) {
     const ok = await run(() => deletePreset(id), '프리셋을 삭제했습니다.');
     if (ok) setPresets((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  async function toggleHomeworkFlag(id: string, next: boolean) {
+    setPresets((prev) => prev.map((p) => (p.id === id ? { ...p, is_homework: next } : p)));
+    try {
+      await updatePresetHomeworkFlag(id, next);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      await loadPresets();
+    }
   }
 
   async function addClass() {
@@ -292,7 +305,8 @@ export default function SettingsPage() {
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">지급 / 차감 사유 프리셋</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-3">
-          통장 카드에 버튼으로 표시됩니다. 자주 쓰는 사유를 등록해 두세요.
+          통장 카드에 버튼으로 표시됩니다. <span className="material-symbols-outlined text-[14px] align-middle">calendar_month</span>{' '}
+          표시가 있으면 지급할 때마다 숙제 캘린더에도 자동으로 기록돼요.
         </p>
         <div className="flex flex-wrap gap-1.5 mb-4">
           {presets.length === 0 ? (
@@ -301,9 +315,22 @@ export default function SettingsPage() {
             presets.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+                className={`flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full font-label-md text-label-md ${
+                  p.is_homework
+                    ? 'bg-secondary-container/40 text-on-secondary-container'
+                    : 'bg-surface-container-low text-on-surface'
+                }`}
               >
-                {p.label} ({signed(p.delta)})
+                <button
+                  onClick={() => void toggleHomeworkFlag(p.id, !p.is_homework)}
+                  title="숙제 캘린더 반영 여부"
+                  className="flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {p.is_homework ? 'calendar_month' : 'calendar_add_on'}
+                  </span>
+                  {p.label} ({signed(p.delta)})
+                </button>
                 <button onClick={() => void removePreset(p.id)} className="text-on-surface-variant hover:text-error">
                   ✕
                 </button>
@@ -311,7 +338,7 @@ export default function SettingsPage() {
             ))
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
             type="text"
             placeholder="사유 (예: 지각)"
@@ -326,6 +353,15 @@ export default function SettingsPage() {
             onChange={(e) => setNewPresetDelta(e.target.value)}
             className="w-24 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
+          <label className="flex items-center gap-1.5 font-caption text-caption text-on-surface-variant whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={newPresetHomework}
+              onChange={(e) => setNewPresetHomework(e.target.checked)}
+              className="w-4 h-4 accent-primary"
+            />
+            숙제 캘린더 반영
+          </label>
           <button
             onClick={() => void addPreset()}
             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"

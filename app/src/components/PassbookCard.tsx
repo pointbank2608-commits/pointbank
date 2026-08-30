@@ -23,7 +23,7 @@ interface Props {
   /** 일괄 지급용 체크박스 선택 상태 */
   selected: boolean;
   onToggleSelect: (studentId: string) => void;
-  onGive: (studentId: string, delta: number, reason: string) => Promise<Transaction | null>;
+  onGive: (studentId: string, delta: number, reason: string, isHomework?: boolean) => Promise<Transaction | null>;
   onUndo: (tx: Transaction) => Promise<boolean>;
   onRemove: (studentId: string, name: string) => void;
   onCheckIn: (studentId: string) => Promise<void>;
@@ -71,10 +71,10 @@ export default function PassbookCard({
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
 
-  async function give(delta: number, why: string) {
+  async function give(delta: number, why: string, isHomework?: boolean) {
     if (busy || locked) return;
     setBusy(true);
-    const tx = await onGive(studentId, delta, why);
+    const tx = await onGive(studentId, delta, why, isHomework);
     if (tx) setStampKey((k) => k + 1);
     setBusy(false);
   }
@@ -82,7 +82,9 @@ export default function PassbookCard({
   async function handleCustom() {
     const amt = parseInt(amount, 10);
     if (!amt) return;
-    await give(amt, reason || '직접 입력');
+    // 사유를 프리셋 이름으로 골랐으면, 그 프리셋의 숙제 표시도 그대로 따라간다.
+    const matched = presets.find((p) => p.label === reason);
+    await give(amt, reason || '직접 입력', matched?.is_homework);
     setAmount('');
   }
 
@@ -180,13 +182,15 @@ export default function PassbookCard({
               <button
                 key={p.id}
                 disabled={busy}
-                onClick={() => void give(p.delta, p.label)}
-                className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 ${
+                onClick={() => void give(p.delta, p.label, p.is_homework)}
+                title={p.is_homework ? '숙제 캘린더에 기록됩니다' : undefined}
+                className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 flex items-center gap-1 ${
                   p.delta > 0
                     ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
                     : 'bg-error-container text-on-error-container hover:opacity-80'
                 }`}
               >
+                {p.is_homework && <span className="material-symbols-outlined text-[14px]">calendar_month</span>}
                 {signed(p.delta)} {p.label}
               </button>
             ))}

@@ -127,7 +127,12 @@ export default function ClassBoardPage() {
   const totalEconomy = rows.reduce((sum, r) => sum + r.total, 0);
 
   const handleGive = useCallback(
-    async (studentId: string, delta: number, reason: string): Promise<Transaction | null> => {
+    async (
+      studentId: string,
+      delta: number,
+      reason: string,
+      isHomework?: boolean,
+    ): Promise<Transaction | null> => {
       if (!academy?.id || !selectedId || !profile) return null;
       try {
         const tx = await givePoints({
@@ -138,6 +143,7 @@ export default function ClassBoardPage() {
           reason,
           teacherId: profile.id,
           teacherName: profile.display_name,
+          isHomework,
         });
         // 지급 즉시 DB 에 저장된다. 화면은 낙관적으로 갱신.
         setTodayTx((prev) => [tx, ...prev]);
@@ -169,10 +175,12 @@ export default function ClassBoardPage() {
   }
 
   /** 체크박스로 선택된 학생 전원에게 같은 사유/점수를 한 번에 지급한다. */
-  async function handleBulkGive(delta: number, reason: string) {
+  async function handleBulkGive(delta: number, reason: string, isHomework?: boolean) {
     if (selectedIds.size === 0 || bulkBusy) return;
     setBulkBusy(true);
-    const results = await Promise.all([...selectedIds].map((id) => handleGive(id, delta, reason)));
+    const results = await Promise.all(
+      [...selectedIds].map((id) => handleGive(id, delta, reason, isHomework)),
+    );
     setBulkBusy(false);
     const okCount = results.filter(Boolean).length;
     if (okCount > 0) {
@@ -184,7 +192,8 @@ export default function ClassBoardPage() {
   async function handleBulkCustom() {
     const amt = parseInt(bulkAmount, 10);
     if (!amt) return;
-    await handleBulkGive(amt, bulkReason || '직접 입력');
+    const matched = presets.find((p) => p.label === bulkReason);
+    await handleBulkGive(amt, bulkReason || '직접 입력', matched?.is_homework);
     setBulkAmount('');
   }
 
@@ -409,13 +418,15 @@ export default function ClassBoardPage() {
             <button
               key={p.id}
               disabled={bulkBusy}
-              onClick={() => void handleBulkGive(p.delta, p.label)}
-              className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 ${
+              onClick={() => void handleBulkGive(p.delta, p.label, p.is_homework)}
+              title={p.is_homework ? '숙제 캘린더에 기록됩니다' : undefined}
+              className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 flex items-center gap-1 ${
                 p.delta > 0
                   ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
                   : 'bg-error-container text-on-error-container hover:opacity-80'
               }`}
             >
+              {p.is_homework && <span className="material-symbols-outlined text-[14px]">calendar_month</span>}
               {signed(p.delta)} {p.label}
             </button>
           ))}

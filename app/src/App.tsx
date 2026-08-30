@@ -9,6 +9,7 @@ import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
 import GamesPage from './pages/GamesPage';
+import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
 import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/board" element={<ClassBoardPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
+            <Route path="/results/homework/:studentId" element={<HomeworkCalendarPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />

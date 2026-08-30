@@ -89,6 +89,16 @@ export async function deleteStudent(studentId: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function fetchStudentById(studentId: string): Promise<Student | null> {
+  const { data, error } = await supabase
+    .from('students')
+    .select('*')
+    .eq('id', studentId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as Student | null;
+}
+
 /* ---------------- 잔액 ---------------- */
 
 export async function fetchBalancesOfClass(classId: string): Promise<StudentBalance[]> {
@@ -128,6 +138,7 @@ export async function givePoints(params: {
   reason: string;
   teacherId: string;
   teacherName: string;
+  isHomework?: boolean;
 }): Promise<Transaction> {
   return unwrap(
     await supabase
@@ -140,6 +151,7 @@ export async function givePoints(params: {
         reason: params.reason,
         created_by: params.teacherId,
         created_by_name: params.teacherName,
+        is_homework: params.isHomework ?? false,
       })
       .select()
       .single(),
@@ -149,6 +161,24 @@ export async function givePoints(params: {
 export async function deleteTransaction(txId: string) {
   const { error } = await supabase.from('transactions').delete().eq('id', txId);
   if (error) throw new Error(error.message);
+}
+
+/** 숙제 캘린더용: 특정 학생의 특정 기간(from~to, 둘 다 YYYY-MM-DD, inclusive) 숙제 관련 거래만. */
+export async function fetchHomeworkTransactions(
+  studentId: string,
+  from: string,
+  to: string,
+): Promise<Transaction[]> {
+  return unwrap(
+    await supabase
+      .from('transactions')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('is_homework', true)
+      .gte('created_at', `${from}T00:00:00`)
+      .lte('created_at', `${to}T23:59:59`)
+      .order('created_at'),
+  );
 }
 
 /** 특정 반의 "오늘" 거래 전부. 카드별 오늘 적립액과 오늘 내역을 한 번에 채운다. */
@@ -246,14 +276,23 @@ export async function createPreset(
   label: string,
   delta: number,
   sortOrder: number,
+  isHomework = false,
 ) {
   return unwrap(
     await supabase
       .from('presets')
-      .insert({ academy_id: academyId, label, delta, sort_order: sortOrder })
+      .insert({ academy_id: academyId, label, delta, sort_order: sortOrder, is_homework: isHomework })
       .select()
       .single(),
   ) as Preset;
+}
+
+export async function updatePresetHomeworkFlag(presetId: string, isHomework: boolean) {
+  const { error } = await supabase
+    .from('presets')
+    .update({ is_homework: isHomework })
+    .eq('id', presetId);
+  if (error) throw new Error(error.message);
 }
 
 export async function deletePreset(presetId: string) {

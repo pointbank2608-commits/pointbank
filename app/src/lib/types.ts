@@ -41,6 +41,8 @@ export interface Preset {
   label: string;
   delta: number;
   sort_order: number;
+  /** 숙제 캘린더에 반영할 프리셋인지 (양수=완료, 음수=미제출) */
+  is_homework: boolean;
   created_at: string;
 }
 
@@ -53,6 +55,8 @@ export interface Transaction {
   reason: string;
   created_by: string | null;
   created_by_name: string;
+  /** 지급 당시 사용한 프리셋이 숙제 관련으로 표시돼 있었는지 (프리셋이 나중에 바뀌어도 유지) */
+  is_homework: boolean;
   created_at: string;
 }
 

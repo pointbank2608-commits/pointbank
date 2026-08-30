@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchMyStudentRow, fetchRankingSummary } from '../lib/api';
@@ -199,17 +200,18 @@ export default function ResultsPage() {
               </div>
 
               <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
-                <div className="grid grid-cols-[32px_1fr_70px_70px_90px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
+                <div className="grid grid-cols-[32px_1fr_70px_70px_90px_36px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
                   <div>#</div>
                   <div>이름</div>
                   <div className="text-right">적립</div>
                   <div className="text-right">차감</div>
                   <div className="text-right">합계</div>
+                  <div />
                 </div>
                 {ranked.map((r, i) => (
                   <div
                     key={r.student_id}
-                    className={`relative grid grid-cols-[32px_1fr_70px_70px_90px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 ${
+                    className={`relative grid grid-cols-[32px_1fr_70px_70px_90px_36px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 ${
                       r.student_id === myStudentId ? 'bg-secondary-container/30' : ''
                     }`}
                   >
@@ -234,12 +236,19 @@ export default function ResultsPage() {
                       {r.balance}
                       {pointUnit}
                     </div>
+                    <Link
+                      to={`/results/homework/${r.student_id}`}
+                      title="숙제 캘린더"
+                      className="relative text-on-surface-variant hover:text-primary flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                    </Link>
                   </div>
                 ))}
                 {idle.map((r) => (
                   <div
                     key={r.student_id}
-                    className="grid grid-cols-[32px_1fr_90px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 opacity-60"
+                    className="grid grid-cols-[32px_1fr_90px_36px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 opacity-60"
                   >
                     <div className="font-body-md text-body-md text-on-surface-variant">–</div>
                     <div className="min-w-0">
@@ -249,6 +258,13 @@ export default function ResultsPage() {
                       </div>
                     </div>
                     <div className="text-right font-body-md text-body-md text-on-surface-variant">–</div>
+                    <Link
+                      to={`/results/homework/${r.student_id}`}
+                      title="숙제 캘린더"
+                      className="text-on-surface-variant hover:text-primary flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                    </Link>
                   </div>
                 ))}
               </div>
