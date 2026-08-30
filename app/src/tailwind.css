@@ -115,11 +115,15 @@
   --text-body-lg--font-weight: 400;
 }
 
-/* 새 디자인 페이지의 링크는 기본적으로 밑줄 없이, 부모 글자색을 그대로 따른다
-   (Preflight 를 아직 켜지 않았으므로 브라우저 기본 링크 스타일이 그대로 남아있음). */
-a {
-  color: inherit;
-  text-decoration: none;
+/* 링크는 기본적으로 밑줄 없이, 부모 글자색을 그대로 따른다.
+   반드시 @layer base 안에 둬야 한다 — layer 밖에 두면 CSS 캐스케이드 레이어 규칙상
+   text-on-primary 같은 유틸리티 클래스보다 항상 우선해버려서, 버튼처럼 쓰는 <Link>에
+   흰 글씨 유틸리티를 줘도 무시되고 어두운 기본 글자색이 그대로 나오는 버그가 있었다. */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
 /* Material Symbols 아이콘 폰트 기본 세팅 (스티치 원본과 동일) */
