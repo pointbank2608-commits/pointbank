@@ -27,9 +27,7 @@ export default function AuthPage() {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         if (!data.session) {
-          setInfo(
-            '가입 확인 메일을 보냈습니다. 메일의 링크를 눌러 인증한 뒤 로그인해 주세요.',
-          );
+          setInfo('가입 확인 메일을 보냈습니다. 메일의 링크를 눌러 인증한 뒤 로그인해 주세요.');
           setMode('login');
         }
       }
@@ -47,39 +45,53 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <div className="brand-mark">🐷</div>
+    <div className="min-h-screen flex items-center justify-center px-margin-mobile bg-background">
+      <div className="w-full max-w-[420px] bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgba(39,101,168,0.12)] border border-surface-container-highest p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-3xl">🐷</span>
           <div>
-            <div className="title">클래스뱅크</div>
-            <div className="sub">학원용 포인트 통장</div>
+            <div className="font-title-md text-title-md text-deep-navy">클래스뱅크</div>
+            <div className="font-caption text-caption text-on-surface-variant">학원용 포인트 통장</div>
           </div>
         </div>
 
-        <div className="auth-tabs">
+        <div className="flex bg-surface-container-low rounded-lg p-1 mb-6">
           <button
             type="button"
-            className={mode === 'login' ? 'active' : ''}
             onClick={() => switchMode('login')}
+            className={`flex-1 py-2 rounded-md font-label-md text-label-md transition-all ${
+              mode === 'login' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
           >
             로그인
           </button>
           <button
             type="button"
-            className={mode === 'signup' ? 'active' : ''}
             onClick={() => switchMode('signup')}
+            className={`flex-1 py-2 rounded-md font-label-md text-label-md transition-all ${
+              mode === 'signup' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+            }`}
           >
             회원가입
           </button>
         </div>
 
-        {error && <div className="alert error">{error}</div>}
-        {info && <div className="alert info">{info}</div>}
+        {error && (
+          <div className="bg-error-container text-on-error-container rounded-lg px-4 py-3 mb-4 font-body-md text-sm">
+            {error}
+          </div>
+        )}
+        {info && (
+          <div className="bg-secondary-container text-on-secondary-container rounded-lg px-4 py-3 mb-4 font-body-md text-sm">
+            {info}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-field">
-            <label htmlFor="email">이메일</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+              이메일
+            </label>
             <input
               id="email"
               type="email"
@@ -88,10 +100,13 @@ export default function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="teacher@example.com"
+              className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
-          <div className="form-field">
-            <label htmlFor="password">비밀번호</label>
+          <div>
+            <label htmlFor="password" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+              비밀번호
+            </label>
             <input
               id="password"
               type="password"
@@ -101,14 +116,19 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="6자 이상"
+              className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
           </div>
-          <button className="btn-primary" type="submit" disabled={busy}>
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md py-3 rounded-lg shadow-sm transition-colors"
+          >
             {busy ? '처리 중…' : mode === 'login' ? '로그인' : '가입하기'}
           </button>
         </form>
 
-        <p style={{ fontSize: 13.5, color: 'var(--ink-soft)', marginTop: 16, lineHeight: 1.6 }}>
+        <p className="font-caption text-caption text-on-surface-variant mt-4 leading-relaxed">
           선생님·원장님은 회원가입 후 학원을 만들거나 초대 코드로 합류할 수 있어요.
           <br />
           (베타 기간 동안은 원장·선생님만 로그인할 수 있습니다.)
@@ -116,13 +136,7 @@ export default function AuthPage() {
 
         <Link
           to="/"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            marginTop: 14,
-            fontSize: 13.5,
-            color: 'var(--ink-soft)',
-          }}
+          className="block text-center mt-4 font-caption text-caption text-on-surface-variant hover:text-primary transition-colors"
         >
           ← 서비스 소개로 돌아가기
         </Link>
