@@ -6,6 +6,8 @@ interface Props {
   studentId: string;
   name: string;
   className: string;
+  /** 학급 안에서 이 학생의 순번 (1부터 시작하는 표시용) */
+  number: number;
   /** 오늘 적립분 — 화면의 주인공 */
   today: number;
   /** 누적 잔액. showTotal 이 켜졌을 때만 보인다. */
@@ -18,6 +20,9 @@ interface Props {
   todayTx: Transaction[];
   /** 오늘 출석 기록 (없으면 아직 등원 전) */
   attendance: Attendance | null;
+  /** 일괄 지급용 체크박스 선택 상태 */
+  selected: boolean;
+  onToggleSelect: (studentId: string) => void;
   onGive: (studentId: string, delta: number, reason: string) => Promise<Transaction | null>;
   onUndo: (tx: Transaction) => Promise<boolean>;
   onRemove: (studentId: string, name: string) => void;
@@ -29,6 +34,7 @@ export default function PassbookCard({
   studentId,
   name,
   className,
+  number,
   today,
   total,
   showTotal,
@@ -37,6 +43,8 @@ export default function PassbookCard({
   presets,
   todayTx,
   attendance,
+  selected,
+  onToggleSelect,
   onGive,
   onUndo,
   onRemove,
@@ -95,10 +103,14 @@ export default function PassbookCard({
       )}
 
       <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="font-title-md text-title-md text-on-surface">{name}</div>
-          <div className="font-caption text-caption text-on-surface-variant">{className}</div>
-        </div>
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect(studentId)}
+            className="w-4 h-4 rounded accent-primary"
+          />
+        </label>
         {!locked && (
           <button
             title="학생 삭제"
@@ -108,6 +120,16 @@ export default function PassbookCard({
             <span className="material-symbols-outlined text-base">close</span>
           </button>
         )}
+      </div>
+
+      <div className="flex flex-col items-center text-center mb-3 -mt-2">
+        <div className="w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-title-md mb-2">
+          {name.slice(0, 1)}
+        </div>
+        <div className="font-title-md text-title-md text-on-surface">{name}</div>
+        <div className="font-caption text-caption text-on-surface-variant">
+          {className} · No. {number}
+        </div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -135,17 +157,18 @@ export default function PassbookCard({
         </button>
       </div>
 
-      <div className="flex items-end justify-between mb-4 pb-4 border-b border-surface-container">
-        <div>
-          <div className="font-caption text-caption text-on-surface-variant mb-0.5">오늘 적립</div>
-          <div className={`font-display-lg text-[28px] leading-none ${toneClass}`}>
-            {today > 0 ? '+' : ''}
-            {today}
-            <span className="font-caption text-caption ml-1">{pointUnit}</span>
-          </div>
+      <div className="flex flex-col items-center mb-4 pb-4 border-b border-surface-container">
+        <div className="font-caption text-caption text-on-surface-variant mb-1">오늘 적립</div>
+        <div
+          className={`inline-flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-warm-yellow/20 font-display-lg text-[24px] ${toneClass}`}
+        >
+          <span className="material-symbols-outlined text-[20px]">monetization_on</span>
+          {today > 0 ? '+' : ''}
+          {today}
+          <span className="font-caption text-caption">{pointUnit}</span>
         </div>
         {showTotal && (
-          <div className="font-body-md text-body-md text-on-surface-variant">
+          <div className="font-body-md text-body-md text-on-surface-variant mt-2">
             누적 <strong className="text-on-surface">{total}</strong>
             {pointUnit}
           </div>
@@ -154,7 +177,7 @@ export default function PassbookCard({
 
       {!locked && (
         <>
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap justify-center gap-1.5 mb-3">
             {presets.map((p) => (
               <button
                 key={p.id}

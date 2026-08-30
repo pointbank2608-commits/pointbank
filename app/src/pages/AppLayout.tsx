@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const ROLE_LABEL: Record<string, string> = {
   owner: '원장',
@@ -16,6 +17,7 @@ interface NavItem {
 
 export default function AppLayout() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
+  const { notify } = useToast();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // 선생님은 대시보드에서 출석부·포인트 뱅크·게임·리포트로 들어간다. 학생은 자기 통장과 게임만.
@@ -145,6 +147,31 @@ export default function AppLayout() {
       </nav>
 
       <main className="flex-1 min-w-0 md:ml-64 pt-16 md:pt-0 min-h-screen">
+        {/* 데스크톱 상단바 */}
+        <header className="hidden md:flex items-center justify-end gap-2 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+          <button
+            type="button"
+            onClick={() => notify('알림 기능은 아직 준비 중이에요.')}
+            className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
+            aria-label="알림"
+          >
+            <span className="material-symbols-outlined">notifications</span>
+          </button>
+          <Link
+            to={isStaff ? '/settings' : homeTo}
+            className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
+            aria-label="설정"
+          >
+            <span className="material-symbols-outlined">settings</span>
+          </Link>
+          <Link
+            to={isStaff ? '/settings' : homeTo}
+            className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm border border-outline-variant/30 shrink-0"
+            aria-label="내 프로필"
+          >
+            {(profile?.display_name ?? '선').slice(0, 1)}
+          </Link>
+        </header>
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">
           <Outlet />
         </div>

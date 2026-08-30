@@ -19,7 +19,7 @@ import {
   fetchTransactionsSince,
   givePoints,
 } from '../lib/api';
-import { dateKey, fmtDay, todayStart } from '../lib/format';
+import { dateKey, fmtDay, signed, todayStart } from '../lib/format';
 import { useClasses } from '../lib/useClasses';
 import type { Attendance, Preset, Settlement, StudentBalance, Transaction } from '../lib/types';
 
@@ -34,6 +34,11 @@ export default function ClassBoardPage() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [settlement, setSettlement] = useState<Settlement | null>(null);
   const [showTotal, setShowTotal] = useState(false);
+  const [sortByName, setSortByName] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAmount, setBulkAmount] = useState('');
+  const [bulkReason, setBulkReason] = useState('');
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [settling, setSettling] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -80,6 +85,11 @@ export default function ClassBoardPage() {
     void loadBoard();
   }, [loadBoard]);
 
+  // 반이 바뀌면 이전 반에서 선택했던 체크박스는 의미가 없으니 비운다.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [selectedId]);
+
   /** 학생별로 오늘 거래를 묶어 카드가 쓸 형태로 만든다. */
   const rows = useMemo(() => {
     const byStudent = new Map<string, Transaction[]>();
@@ -100,8 +110,21 @@ export default function ClassBoardPage() {
     });
   }, [students, todayTx]);
 
+  // "No." 는 정렬과 무관하게 원래 순서를 그대로 따르는 고정 출석 번호처럼 쓴다.
+  const numberByStudentId = useMemo(() => {
+    const m = new Map<string, number>();
+    rows.forEach((r, i) => m.set(r.studentId, i + 1));
+    return m;
+  }, [rows]);
+
+  const displayRows = useMemo(() => {
+    if (!sortByName) return rows;
+    return [...rows].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  }, [rows, sortByName]);
+
   const todayTotal = rows.reduce((sum, r) => sum + r.today, 0);
   const activeCount = rows.filter((r) => r.today !== 0).length;
+  const totalEconomy = rows.reduce((sum, r) => sum + r.total, 0);
 
   const handleGive = useCallback(
     async (studentId: string, delta: number, reason: string): Promise<Transaction | null> => {
@@ -131,6 +154,39 @@ export default function ClassBoardPage() {
     },
     [academy?.id, selectedId, profile, notify],
   );
+
+  function toggleSelect(studentId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(studentId)) next.delete(studentId);
+      else next.add(studentId);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => (prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.studentId))));
+  }
+
+  /** 체크박스로 선택된 학생 전원에게 같은 사유/점수를 한 번에 지급한다. */
+  async function handleBulkGive(delta: number, reason: string) {
+    if (selectedIds.size === 0 || bulkBusy) return;
+    setBulkBusy(true);
+    const results = await Promise.all([...selectedIds].map((id) => handleGive(id, delta, reason)));
+    setBulkBusy(false);
+    const okCount = results.filter(Boolean).length;
+    if (okCount > 0) {
+      notify(`${okCount}명에게 ${signed(delta)}${pointUnit}를 지급했습니다.`);
+      setSelectedIds(new Set());
+    }
+  }
+
+  async function handleBulkCustom() {
+    const amt = parseInt(bulkAmount, 10);
+    if (!amt) return;
+    await handleBulkGive(amt, bulkReason || '직접 입력');
+    setBulkAmount('');
+  }
 
   const handleUndo = useCallback(
     async (tx: Transaction): Promise<boolean> => {
@@ -200,6 +256,11 @@ export default function ClassBoardPage() {
     if (ok) {
       setStudents((prev) => prev.filter((s) => s.student_id !== studentId));
       setTodayTx((prev) => prev.filter((t) => t.student_id !== studentId));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(studentId);
+        return next;
+      });
     }
   }
 
@@ -262,12 +323,17 @@ export default function ClassBoardPage() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-          {selected?.name} 학생 통장{' '}
-          <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
-            {rows.length}명
-          </span>
-        </h2>
+        <div>
+          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+            {selected?.name} 학생 통장{' '}
+            <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
+              {rows.length}명
+            </span>
+          </h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+            총 반 경제 <strong className="text-primary">{totalEconomy}{pointUnit}</strong>
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
             to="/attendance"
@@ -286,6 +352,26 @@ export default function ClassBoardPage() {
           >
             {showTotal ? '누적 숨기기' : '누적 보기'}
           </button>
+          <button
+            onClick={() => setSortByName((v) => !v)}
+            className={`px-4 py-2 rounded-lg font-label-md text-label-md border transition-colors flex items-center gap-1.5 ${
+              sortByName
+                ? 'bg-secondary-container text-on-secondary-container border-transparent'
+                : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-low'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">filter_list</span>
+            이름순 정렬
+          </button>
+          {!locked && rows.length > 0 && (
+            <button
+              onClick={toggleSelectAll}
+              className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low transition-colors flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[18px]">select_all</span>
+              {selectedIds.size === rows.length ? '선택 해제' : '전체 선택'}
+            </button>
+          )}
           {locked ? (
             <span className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-label-md text-label-md">
               오늘 마감 완료
@@ -314,16 +400,68 @@ export default function ClassBoardPage() {
         적립
       </div>
 
+      {!locked && selectedIds.size > 0 && (
+        <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-3">
+          <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+            선택된 {selectedIds.size}명에게 일괄 지급:
+          </span>
+          {presets.map((p) => (
+            <button
+              key={p.id}
+              disabled={bulkBusy}
+              onClick={() => void handleBulkGive(p.delta, p.label)}
+              className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 ${
+                p.delta > 0
+                  ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
+                  : 'bg-error-container text-on-error-container hover:opacity-80'
+              }`}
+            >
+              {signed(p.delta)} {p.label}
+            </button>
+          ))}
+          <div className="flex gap-1.5 ml-auto">
+            <input
+              type="number"
+              placeholder="±숫자"
+              value={bulkAmount}
+              onChange={(e) => setBulkAmount(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleBulkCustom();
+              }}
+              className="w-20 bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            />
+            <input
+              type="text"
+              placeholder="사유"
+              value={bulkReason}
+              onChange={(e) => setBulkReason(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleBulkCustom();
+              }}
+              className="w-28 bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            />
+            <button
+              disabled={bulkBusy}
+              onClick={() => void handleBulkCustom()}
+              className="px-3 py-1.5 rounded-lg border-2 border-primary text-primary font-label-md text-label-md hover:bg-primary/10 transition-colors whitespace-nowrap disabled:opacity-50"
+            >
+              적용
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rows.map((r) => (
+          {displayRows.map((r) => (
             <PassbookCard
               key={r.studentId}
               studentId={r.studentId}
               name={r.name}
               className={selected?.name ?? ''}
+              number={numberByStudentId.get(r.studentId) ?? 0}
               today={r.today}
               total={r.total}
               showTotal={showTotal}
@@ -332,6 +470,8 @@ export default function ClassBoardPage() {
               presets={presets}
               todayTx={r.todayTx}
               attendance={attendanceByStudent.get(r.studentId) ?? null}
+              selected={selectedIds.has(r.studentId)}
+              onToggleSelect={toggleSelect}
               onGive={handleGive}
               onUndo={handleUndo}
               onRemove={handleRemoveStudent}
