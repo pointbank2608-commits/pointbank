@@ -162,9 +162,9 @@ export default function LadderBoard({ participants, results, music, resultSound 
 
   if (n < 2) {
     return (
-      <div className="wheel-empty">
-        <div className="wheel-empty-icon">🪜</div>
-        <div>참가자를 2명 이상 등록해야 사다리를 만들 수 있어요.</div>
+      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
+        <div className="text-4xl mb-2">🪜</div>
+        <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 사다리를 만들 수 있어요.</div>
       </div>
     );
   }
@@ -172,39 +172,57 @@ export default function LadderBoard({ participants, results, music, resultSound 
   const busy = runningSet.size > 0;
 
   return (
-    <div className="ladder-stage">
-      <div className="ladder-mode-buttons">
-        <button className="btn-primary ladder-mode-btn" onClick={startRevealAll} disabled={busy}>
+    <div className="flex flex-col items-center pt-1.5 pb-2">
+      <div className="flex flex-wrap justify-center gap-2.5 mb-6">
+        <button
+          onClick={startRevealAll}
+          disabled={busy}
+          className="px-5 py-2 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-label-md text-label-md shadow-sm transition-colors"
+        >
           {busy && mode === 'all' ? '내려가는 중…' : '한 번에 결과 보기'}
         </button>
-        <button className="btn-primary gold ladder-mode-btn" onClick={startOneByOne} disabled={busy}>
+        <button
+          onClick={startOneByOne}
+          disabled={busy}
+          className="px-5 py-2 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-label-md text-label-md shadow-sm transition-all"
+        >
           한 명씩 결과 보기
         </button>
       </div>
 
-      <div className="ladder-scroll">
-        <div className="ladder-labels top" style={{ width }}>
+      <div className="max-w-full overflow-x-auto pb-1">
+        <div className="flex mb-3.5" style={{ width }}>
           {participants.map((p, i) =>
             mode === 'one' ? (
               <button
                 key={p.id}
                 type="button"
-                className={`ladder-label clickable ${revealed.has(i) ? 'landed' : ''} ${runningSet.has(i) ? 'running' : ''}`}
-                style={{ width: COL_W }}
                 disabled={revealed.has(i) || runningSet.has(i)}
                 onClick={() => revealOne(i)}
+                style={{ width: COL_W }}
+                className={`flex-none text-center font-title-md text-title-md px-2 py-2.5 rounded-full border-2 transition-colors disabled:cursor-default ${
+                  revealed.has(i)
+                    ? 'border-warm-yellow bg-warm-yellow/20 text-tertiary-container font-bold'
+                    : runningSet.has(i)
+                      ? 'border-primary bg-surface-container-lowest text-on-surface ladder-pulse'
+                      : 'border-primary bg-surface-container-lowest text-on-surface cursor-pointer hover:bg-surface-container-low'
+                }`}
               >
                 {p.label}
               </button>
             ) : (
-              <div key={p.id} className="ladder-label" style={{ width: COL_W }}>
+              <div
+                key={p.id}
+                style={{ width: COL_W }}
+                className="flex-none text-center font-title-md text-title-md text-on-surface px-1.5 py-1 [word-break:keep-all]"
+              >
                 {p.label}
               </div>
             ),
           )}
         </div>
 
-        <svg className="ladder-svg" viewBox={`0 0 ${width} ${height}`} style={{ width, height }}>
+        <svg className="block drop-shadow-[0_10px_22px_rgba(39,101,168,0.16)]" viewBox={`0 0 ${width} ${height}`} style={{ width, height }}>
           {Array.from({ length: n }, (_, i) => (
             <line
               key={`col-${i}`}
@@ -212,11 +230,12 @@ export default function LadderBoard({ participants, results, music, resultSound 
               y1={TOP_PAD}
               x2={COL_W / 2 + i * COL_W}
               y2={height - BOTTOM_PAD}
-              className="ladder-rail"
+              className="stroke-surface-container-high"
+              strokeWidth={5}
             />
           ))}
           {rungLines.map((l) => (
-            <line key={l.key} x1={l.x1} y1={l.y} x2={l.x2} y2={l.y} className="ladder-rung" />
+            <line key={l.key} x1={l.x1} y1={l.y} x2={l.x2} y2={l.y} className="stroke-outline-variant" strokeWidth={5} />
           ))}
           {paths.map((p, i) => (
             <path
@@ -225,18 +244,23 @@ export default function LadderBoard({ participants, results, music, resultSound 
                 pathRefs.current[i] = el;
               }}
               d={p.d}
-              className="ladder-path"
+              fill="none"
+              strokeWidth={8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
               style={{ stroke: p.color }}
             />
           ))}
         </svg>
 
-        <div className="ladder-labels bottom" style={{ width }}>
+        <div className="flex mt-3.5" style={{ width }}>
           {results.map((r, i) => (
             <div
               key={r.id}
-              className={`ladder-label result ${landedResultIndex(i) ? 'landed' : ''}`}
               style={{ width: COL_W }}
+              className={`flex-none text-center font-title-md text-title-md px-1.5 py-1 [word-break:keep-all] transition-all ${
+                landedResultIndex(i) ? 'text-secondary font-bold scale-110' : 'text-on-surface-variant'
+              }`}
             >
               {r.label}
             </div>
@@ -244,17 +268,24 @@ export default function LadderBoard({ participants, results, music, resultSound 
         </div>
       </div>
 
-      {mode === 'one' && <div className="ladder-hint">이름을 누르면 그 사람 결과만 확인할 수 있어요.</div>}
+      {mode === 'one' && (
+        <div className="font-body-lg text-body-lg text-on-surface-variant mt-3.5 text-center">
+          이름을 누르면 그 사람 결과만 확인할 수 있어요.
+        </div>
+      )}
 
       {mapping && revealed.size > 0 && (
-        <div className="ladder-result-list">
+        <div className="flex flex-col gap-2.5 mt-6 w-full max-w-[460px]">
           {participants.map(
             (p, i) =>
               revealed.has(i) && (
-                <div key={p.id} className="ladder-result-row">
-                  <span className="ladder-result-name">{p.label}</span>
-                  <span className="ladder-result-arrow">→</span>
-                  <span className="ladder-result-target">{results[mapping[i]].label}</span>
+                <div
+                  key={p.id}
+                  className="flex items-center justify-center gap-3 bg-secondary-container/20 border border-secondary-container rounded-2xl px-5 py-3.5 font-title-md text-title-md"
+                >
+                  <span className="text-on-surface">{p.label}</span>
+                  <span className="text-on-surface-variant">→</span>
+                  <span className="text-secondary">{results[mapping[i]].label}</span>
                 </div>
               ),
           )}
