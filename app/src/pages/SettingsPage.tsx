@@ -166,27 +166,39 @@ export default function SettingsPage() {
   /* ---------- 렌더 ---------- */
 
   return (
-    <>
-      <div className="settings-block">
-        <h4>학원 로고</h4>
-        <p className="hint">
+    <div className="space-y-6">
+      <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+        설정
+      </h2>
+
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">학원 로고</h4>
+        <p className="font-caption text-caption text-on-surface-variant mb-4">
           업로드하면 화면 위쪽 브랜드 마크(기본은 🐷)가 학원 로고로 바뀝니다. 정사각형에 가까운
           이미지가 가장 예쁘게 나옵니다.
         </p>
-        <div className="logo-upload-row">
-          <div className="logo-preview">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-xl bg-surface-container-low flex items-center justify-center text-3xl overflow-hidden shrink-0">
             {academy?.logo_url ? (
-              <img src={academy.logo_url} alt="학원 로고" />
+              <img src={academy.logo_url} alt="학원 로고" className="w-full h-full object-cover" />
             ) : (
               <span>🐷</span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => logoInputRef.current?.click()} disabled={logoBusy}>
+          <div className="flex gap-2">
+            <button
+              onClick={() => logoInputRef.current?.click()}
+              disabled={logoBusy}
+              className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
+            >
               {logoBusy ? '업로드 중…' : academy?.logo_url ? '로고 바꾸기' : '로고 업로드'}
             </button>
             {academy?.logo_url && (
-              <button className="ghost" onClick={() => void handleLogoRemove()} disabled={logoBusy}>
+              <button
+                onClick={() => void handleLogoRemove()}
+                disabled={logoBusy}
+                className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-60"
+              >
                 기본 이미지로
               </button>
             )}
@@ -195,84 +207,122 @@ export default function SettingsPage() {
             ref={logoInputRef}
             type="file"
             accept="image/*"
-            style={{ display: 'none' }}
+            hidden
             onChange={(e) => void handleLogoSelect(e)}
           />
         </div>
       </div>
 
-      <div className="settings-block">
-        <h4>학원 · 포인트 기본 설정</h4>
-        <div className="field-row">
-          <label htmlFor="aname">학원 이름</label>
-          <input id="aname" value={name} onChange={(e) => setName(e.target.value)} />
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+        <h4 className="font-title-md text-title-md text-on-surface">학원 · 포인트 기본 설정</h4>
+        <div>
+          <label htmlFor="aname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+            학원 이름
+          </label>
+          <input
+            id="aname"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+          />
         </div>
-        <div className="field-row">
-          <label htmlFor="aunit">포인트 단위</label>
+        <div>
+          <label htmlFor="aunit" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+            포인트 단위
+          </label>
           <input
             id="aunit"
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             placeholder="별, 달러, 포인트 …"
+            className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
-        <div className="field-row">
-          <button onClick={() => void saveAcademy()}>저장</button>
-        </div>
+        <button
+          onClick={() => void saveAcademy()}
+          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
+        >
+          저장
+        </button>
       </div>
 
-      <div className="settings-block">
-        <h4>지급 / 차감 사유 프리셋</h4>
-        <p className="hint">통장 카드에 버튼으로 표시됩니다. 자주 쓰는 사유를 등록해 두세요.</p>
-        <div className="tag-list">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">지급 / 차감 사유 프리셋</h4>
+        <p className="font-caption text-caption text-on-surface-variant mb-3">
+          통장 카드에 버튼으로 표시됩니다. 자주 쓰는 사유를 등록해 두세요.
+        </p>
+        <div className="flex flex-wrap gap-1.5 mb-4">
           {presets.length === 0 ? (
-            <span style={{ color: 'var(--ink-soft)', fontSize: 12 }}>등록된 사유가 없습니다.</span>
+            <span className="font-caption text-caption text-on-surface-variant">등록된 사유가 없습니다.</span>
           ) : (
             presets.map((p) => (
-              <div className="tag" key={p.id}>
+              <div
+                key={p.id}
+                className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+              >
                 {p.label} ({signed(p.delta)})
-                <button onClick={() => void removePreset(p.id)}>✕</button>
+                <button onClick={() => void removePreset(p.id)} className="text-on-surface-variant hover:text-error">
+                  ✕
+                </button>
               </div>
             ))
           )}
         </div>
-        <div className="preset-add-row">
+        <div className="flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="사유 (예: 지각)"
             value={newPresetLabel}
             onChange={(e) => setNewPresetLabel(e.target.value)}
+            className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
           <input
             type="number"
             placeholder="±숫자"
             value={newPresetDelta}
             onChange={(e) => setNewPresetDelta(e.target.value)}
+            className="w-24 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
-          <button onClick={() => void addPreset()}>추가</button>
+          <button
+            onClick={() => void addPreset()}
+            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+          >
+            추가
+          </button>
         </div>
       </div>
 
-      <div className="settings-block">
-        <h4>반 관리</h4>
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-3">반 관리</h4>
         {classes.length === 0 ? (
-          <div className="empty-hint">등록된 반이 없습니다.</div>
+          <div className="font-body-md text-body-md text-on-surface-variant mb-3">등록된 반이 없습니다.</div>
         ) : (
-          classes.map((c) => (
-            <div className="manage-row" key={c.id}>
-              <span>{c.name}</span>
-              <span style={{ display: 'flex', gap: 12 }}>
-                <button className="danger" style={{ color: 'var(--navy-700)' }} onClick={() => void handleRenameClass(c.id, c.name)}>
-                  이름 변경
-                </button>
-                <button className="danger" onClick={() => void handleDeleteClass(c.id, c.name)}>
-                  삭제
-                </button>
-              </span>
-            </div>
-          ))
+          <div className="space-y-1 mb-4">
+            {classes.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between py-2.5 border-b border-surface-container last:border-0"
+              >
+                <span className="font-label-md text-label-md text-on-surface">{c.name}</span>
+                <span className="flex gap-4">
+                  <button
+                    onClick={() => void handleRenameClass(c.id, c.name)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    이름 변경
+                  </button>
+                  <button
+                    onClick={() => void handleDeleteClass(c.id, c.name)}
+                    className="font-label-md text-label-md text-error hover:underline"
+                  >
+                    삭제
+                  </button>
+                </span>
+              </div>
+            ))}
+          </div>
         )}
-        <div className="field-row" style={{ marginTop: 12 }}>
+        <div className="flex gap-2">
           <input
             placeholder="새 반 이름 (예: 고등 2반)"
             value={newClassName}
@@ -280,41 +330,49 @@ export default function SettingsPage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') void addClass();
             }}
+            className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
-          <button onClick={() => void addClass()}>반 추가</button>
+          <button
+            onClick={() => void addClass()}
+            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+          >
+            반 추가
+          </button>
         </div>
       </div>
 
-      <div className="settings-block">
-        <h4>학생 로그인 코드</h4>
-        <p className="hint">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">학생 로그인 코드</h4>
+        <p className="font-caption text-caption text-on-surface-variant">
           베타 기간 동안은 원장·선생님만 로그인할 수 있어 학생 로그인을 잠시 꺼두었습니다. 학생은
           아직 직접 접속할 수 없고, 반별 통장은 선생님 화면에서 관리합니다.
         </p>
       </div>
 
-      <div className="settings-block">
-        <h4>선생님 초대 코드</h4>
-        <p className="hint">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">선생님 초대 코드</h4>
+        <p className="font-caption text-caption text-on-surface-variant mb-3">
           다른 선생님이 회원가입 후 이 코드를 입력하면 같은 학원에 합류합니다.
           {isOwner ? '' : ' (재발급은 원장만 가능합니다)'}
         </p>
-        <div className="field-row">
+        <div className="flex items-center gap-3 flex-wrap">
           <span
-            className="code-badge"
-            style={{ cursor: 'pointer', fontSize: 16 }}
             title="클릭하면 복사됩니다"
             onClick={() => copy(inviteCode, '초대 코드')}
+            className="cursor-pointer px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-title-md text-title-md tracking-wider"
           >
             {inviteCode}
           </span>
           {isOwner && (
-            <button className="ghost" onClick={() => void handleRotate()}>
+            <button
+              onClick={() => void handleRotate()}
+              className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
+            >
               새 코드 발급
             </button>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -15,16 +15,16 @@ const ADMIN_EMAIL = 'likesea85@naver.com';
 //   2) 아래 Choice 타입/OPTIONS 에 'student' 옵션과 claimCode 처리 복구
 type Choice = 'owner' | 'teacher';
 
-const OPTIONS: { key: Choice; emoji: string; title: string; desc: string }[] = [
+const OPTIONS: { key: Choice; icon: string; title: string; desc: string }[] = [
   {
     key: 'owner',
-    emoji: '🏫',
+    icon: 'school',
     title: '학원을 새로 만들기',
     desc: '원장님이라면 여기서 시작하세요. 학원과 첫 번째 반이 함께 만들어집니다.',
   },
   {
     key: 'teacher',
-    emoji: '🧑‍🏫',
+    icon: 'person_add',
     title: '선생님으로 합류하기',
     desc: '원장님께 받은 6자리 초대 코드를 입력하세요.',
   },
@@ -78,128 +78,159 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <div className="brand-mark">🐷</div>
+    <div className="min-h-screen flex items-center justify-center px-margin-mobile bg-background py-10">
+      <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgba(39,101,168,0.12)] border border-surface-container-highest p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-3xl">🐷</span>
           <div>
-            <div className="title">시작하기</div>
-            <div className="sub">{session?.user.email}</div>
+            <div className="font-title-md text-title-md text-deep-navy">시작하기</div>
+            <div className="font-caption text-caption text-on-surface-variant">{session?.user.email}</div>
           </div>
         </div>
 
-        {error && <div className="alert error">{error}</div>}
+        {error && (
+          <div className="bg-error-container text-on-error-container rounded-lg px-4 py-3 mb-4 font-body-md text-sm">
+            {error}
+          </div>
+        )}
 
         {isAdminEmail ? (
           <>
-            <p className="hint" style={{ marginBottom: 16 }}>
+            <p className="font-body-md text-body-md text-on-surface-variant mb-4">
               관리자 계정으로 로그인하셨습니다. 학원 소속 없이 회원/서비스 관리 화면으로
               들어갑니다.
             </p>
-            <button className="btn-primary gold" disabled={busy} onClick={() => void handleClaimAdmin()}>
+            <button
+              disabled={busy}
+              onClick={() => void handleClaimAdmin()}
+              className="w-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-title-md text-title-md py-3 rounded-lg shadow-sm transition-all"
+            >
               {busy ? '처리 중…' : '관리자로 시작하기'}
             </button>
           </>
         ) : (
-        <>
-        <div className="role-choice">
-          {OPTIONS.map((o) => (
-            <button
-              key={o.key}
-              type="button"
-              className={`role-option ${choice === o.key ? 'selected' : ''}`}
-              onClick={() => {
-                setChoice(o.key);
-                setError(null);
-              }}
-            >
-              <span className="emoji">{o.emoji}</span>
-              <span>
-                <span className="rt">{o.title}</span>
-                <span className="rd" style={{ display: 'block' }}>
-                  {o.desc}
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
+          <>
+            <div className="grid grid-cols-1 gap-3">
+              {OPTIONS.map((o) => (
+                <button
+                  key={o.key}
+                  type="button"
+                  onClick={() => {
+                    setChoice(o.key);
+                    setError(null);
+                  }}
+                  className={`flex items-start gap-3 text-left p-4 rounded-xl border-2 transition-all ${
+                    choice === o.key
+                      ? 'border-primary bg-primary-container/10'
+                      : 'border-outline-variant/40 hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined">{o.icon}</span>
+                  </span>
+                  <span>
+                    <span className="block font-title-md text-title-md text-on-surface">{o.title}</span>
+                    <span className="block font-caption text-caption text-on-surface-variant mt-0.5">
+                      {o.desc}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
 
-        {choice && (
-          <form onSubmit={handleSubmit} style={{ marginTop: 18 }}>
-            {choice === 'owner' && (
-              <>
-                <div className="form-field">
-                  <label htmlFor="aname">학원 / 공부방 이름</label>
-                  <input
-                    id="aname"
-                    required
-                    value={academyName}
-                    onChange={(e) => setAcademyName(e.target.value)}
-                    placeholder="반짝반짝 공부방"
-                  />
-                </div>
-                <div className="form-field">
-                  <label htmlFor="punit">포인트 단위</label>
-                  <input
-                    id="punit"
-                    required
-                    value={pointUnit}
-                    onChange={(e) => setPointUnit(e.target.value)}
-                    placeholder="별, 달러, 포인트 …"
-                  />
-                </div>
-                <div className="form-field">
-                  <label htmlFor="oname">내 이름</label>
-                  <input
-                    id="oname"
-                    required
-                    value={ownerName}
-                    onChange={(e) => setOwnerName(e.target.value)}
-                    placeholder="김선생"
-                  />
-                </div>
-              </>
+            {choice && (
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                {choice === 'owner' && (
+                  <>
+                    <div>
+                      <label htmlFor="aname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+                        학원 / 공부방 이름
+                      </label>
+                      <input
+                        id="aname"
+                        required
+                        value={academyName}
+                        onChange={(e) => setAcademyName(e.target.value)}
+                        placeholder="반짝반짝 공부방"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="punit" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+                        포인트 단위
+                      </label>
+                      <input
+                        id="punit"
+                        required
+                        value={pointUnit}
+                        onChange={(e) => setPointUnit(e.target.value)}
+                        placeholder="별, 달러, 포인트 …"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="oname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+                        내 이름
+                      </label>
+                      <input
+                        id="oname"
+                        required
+                        value={ownerName}
+                        onChange={(e) => setOwnerName(e.target.value)}
+                        placeholder="김선생"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {choice === 'teacher' && (
+                  <>
+                    <div>
+                      <label htmlFor="icode" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+                        초대 코드
+                      </label>
+                      <input
+                        id="icode"
+                        required
+                        maxLength={6}
+                        value={inviteCode}
+                        onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                        placeholder="ABC234"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-title-md text-title-md tracking-widest text-center text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="tname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+                        내 이름
+                      </label>
+                      <input
+                        id="tname"
+                        required
+                        value={teacherName}
+                        onChange={(e) => setTeacherName(e.target.value)}
+                        placeholder="이선생"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md py-3 rounded-lg shadow-sm transition-colors"
+                >
+                  {busy ? '처리 중…' : '완료'}
+                </button>
+              </form>
             )}
-
-            {choice === 'teacher' && (
-              <>
-                <div className="form-field">
-                  <label htmlFor="icode">초대 코드</label>
-                  <input
-                    id="icode"
-                    className="code"
-                    required
-                    maxLength={6}
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="ABC234"
-                  />
-                </div>
-                <div className="form-field">
-                  <label htmlFor="tname">내 이름</label>
-                  <input
-                    id="tname"
-                    required
-                    value={teacherName}
-                    onChange={(e) => setTeacherName(e.target.value)}
-                    placeholder="이선생"
-                  />
-                </div>
-              </>
-            )}
-
-            <button className="btn-primary" type="submit" disabled={busy}>
-              {busy ? '처리 중…' : '완료'}
-            </button>
-          </form>
-        )}
-        </>
+          </>
         )}
 
         <button
-          className="linkish"
-          style={{ color: 'var(--ink-soft)', marginTop: 14, width: '100%' }}
           onClick={() => void supabase.auth.signOut()}
+          className="w-full mt-4 font-caption text-caption text-on-surface-variant hover:text-primary transition-colors"
         >
           다른 계정으로 로그인
         </button>
