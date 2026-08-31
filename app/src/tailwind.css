@@ -1,5 +1,5 @@
 /* 클래스뱅크 신규 디자인 — 스티치(Stitch) 목업 원본 tailwind.config 값을 그대로 옮김. */
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
@@ -298,4 +298,15 @@
 }
 .timer-btn-pulse {
   animation: timer-btn-pulse 0.8s ease-in-out infinite alternate;
+}
+
+/* 랜딩: 큰 한글 타이포 */
+.landing {
+  font-family: 'Noto Sans KR', 'Hanken Grotesk', sans-serif;
+}
+.landing-display {
+  font-family: 'Noto Sans KR', 'Quicksand', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.18;
 }
