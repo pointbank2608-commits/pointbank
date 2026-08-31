@@ -399,6 +399,27 @@ const en: Ko = {
     restartButton: 'Play again',
   },
 
+  gameFlashcards: {
+    studentClassTitle: "{{className}}'s Flashcards",
+    newButton: '+ New flashcards',
+    namePlaceholder: 'e.g. 3rd grade animal words flashcards',
+    emptyStaff: 'No flashcards yet. Tap "+ New flashcards" below to make your first set!',
+    emptyStudent: "Your teacher hasn't made flashcards yet.",
+    settingsTitle: 'Edit flashcards',
+    cardLabel: 'Card {{n}}',
+    frontPlaceholder: 'Front (word)',
+    backPlaceholder: 'Back (meaning)',
+    addCardButton: '+ Add card',
+    removeCardButton: 'Remove card',
+    needCards: 'Add at least 1 card to start.',
+    frontHint: 'Tap the card to see the meaning',
+    backHint: 'Tap the card to flip it back',
+    prevButton: 'Previous',
+    nextButton: 'Next',
+    finishedTitle: "You've gone through all the cards!",
+    restartButton: 'Review again',
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -447,6 +468,8 @@ const en: Ko = {
     matchupDesc: 'Find and connect each word with its meaning.',
     whackamoleName: 'Whack-a-mole',
     whackamoleDesc: 'Click each word as it pops up before it disappears.',
+    flashcardsName: 'Flashcards',
+    flashcardsDesc: 'Flip cards to memorize words and their meanings.',
   },
 
   gameSound: {

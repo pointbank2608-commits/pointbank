@@ -235,6 +235,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.whackamoleName',
     descKey: 'gamesList.whackamoleDesc',
   },
+  {
+    type: 'flashcards',
+    number: 19,
+    category: 'vocabulary',
+    // 앞/뒤 카드 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'flip',
+    path: '/games/flashcards',
+    cover: null,
+    nameKey: 'gamesList.flashcardsName',
+    descKey: 'gamesList.flashcardsDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

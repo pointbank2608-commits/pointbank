@@ -162,7 +162,8 @@ export type GameType =
   | 'hangman'
   | 'truefalse'
   | 'matchup'
-  | 'whackamole';
+  | 'whackamole'
+  | 'flashcards';
 
 export interface GameItem {
   id: string;
@@ -215,6 +216,8 @@ export interface GameTemplateConfig {
    * 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
    */
   pairs?: MatchPair[];
+  /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
+  flashcards?: MatchPair[];
 }
 
 export interface QuizQuestion {

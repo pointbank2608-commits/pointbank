@@ -12,6 +12,7 @@ import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
 import FindMissingPage from './pages/FindMissingPage';
+import FlashcardsPage from './pages/FlashcardsPage';
 import GamesPage from './pages/GamesPage';
 import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
@@ -110,6 +111,7 @@ export default function App() {
             <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="/games/matchup" element={<MatchupPage />} />
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
+            <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -135,6 +137,7 @@ export default function App() {
             <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="/games/matchup" element={<MatchupPage />} />
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
+            <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

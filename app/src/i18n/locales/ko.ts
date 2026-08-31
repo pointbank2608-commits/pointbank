@@ -397,6 +397,27 @@ const ko = {
     restartButton: '다시 하기',
   },
 
+  gameFlashcards: {
+    studentClassTitle: '{{className}} 플래시카드',
+    newButton: '+ 새 플래시카드',
+    namePlaceholder: '예: 3학년 동물 영단어 플래시카드',
+    emptyStaff: '아직 플래시카드가 없어요. 아래 "+ 새 플래시카드"로 첫 카드를 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 플래시카드가 없어요.',
+    settingsTitle: '플래시카드 편집',
+    cardLabel: '카드 {{n}}',
+    frontPlaceholder: '앞면 (단어)',
+    backPlaceholder: '뒷면 (뜻)',
+    addCardButton: '+ 카드 추가',
+    removeCardButton: '카드 삭제',
+    needCards: '카드를 1개 이상 추가해야 시작할 수 있어요.',
+    frontHint: '카드를 눌러 뜻을 확인하세요',
+    backHint: '카드를 눌러 다시 뒤집으세요',
+    prevButton: '이전',
+    nextButton: '다음',
+    finishedTitle: '카드를 모두 살펴봤어요!',
+    restartButton: '다시 보기',
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -445,6 +466,8 @@ const ko = {
     matchupDesc: '단어와 뜻 짝을 찾아 연결해요.',
     whackamoleName: '두더지잡기',
     whackamoleDesc: '구멍에서 튀어나온 단어를 재빨리 클릭해서 잡아요.',
+    flashcardsName: '플래시카드',
+    flashcardsDesc: '카드를 눌러 뒤집으며 단어와 뜻을 암기해요.',
   },
 
   gameSound: {
