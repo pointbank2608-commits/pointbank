@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -25,6 +26,7 @@ const MAX_LOGO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 export default function SettingsPage() {
   const { academy, profile, refresh } = useAuth();
   const { notify, run } = useToast();
+  const { t } = useTranslation();
   const { classes, reload: reloadClasses } = useClasses(academy?.id);
 
   const [name, setName] = useState(academy?.name ?? '');
@@ -71,7 +73,7 @@ export default function SettingsPage() {
     if (!academy?.id) return;
     const ok = await run(
       () => updateAcademy(academy.id, { name: name.trim(), point_unit: unit.trim() }),
-      '저장했습니다.',
+      t('settings.academySaveToast'),
     );
     if (ok) await refresh();
   }
@@ -79,7 +81,7 @@ export default function SettingsPage() {
   async function saveMyName() {
     if (!myName.trim()) return;
     setMyNameBusy(true);
-    const ok = await run(() => updateMyDisplayName(myName.trim()), '이름을 변경했습니다.');
+    const ok = await run(() => updateMyDisplayName(myName.trim()), t('settings.myNameToast'));
     setMyNameBusy(false);
     if (ok) await refresh();
   }
@@ -88,12 +90,12 @@ export default function SettingsPage() {
     if (!academy?.id) return;
     const delta = parseInt(newPresetDelta, 10);
     if (!newPresetLabel.trim() || !delta) {
-      notify('사유와 0이 아닌 점수를 입력해 주세요.', 'error');
+      notify(t('settings.presetInputError'), 'error');
       return;
     }
     const ok = await run(async () => {
       await createPreset(academy.id, newPresetLabel.trim(), delta, presets.length, newPresetHomework);
-    }, '프리셋을 추가했습니다.');
+    }, t('settings.presetAddedToast'));
     if (ok) {
       setNewPresetLabel('');
       setNewPresetDelta('');
@@ -103,7 +105,7 @@ export default function SettingsPage() {
   }
 
   async function removePreset(id: string) {
-    const ok = await run(() => deletePreset(id), '프리셋을 삭제했습니다.');
+    const ok = await run(() => deletePreset(id), t('settings.presetRemovedToast'));
     if (ok) setPresets((prev) => prev.filter((p) => p.id !== id));
   }
 
@@ -121,7 +123,7 @@ export default function SettingsPage() {
     if (!academy?.id || !newClassName.trim()) return;
     const ok = await run(async () => {
       await createClass(academy.id, newClassName.trim(), classes.length);
-    }, '반을 추가했습니다.');
+    }, t('settings.classAddedToast'));
     if (ok) {
       setNewClassName('');
       await reloadClasses();
@@ -129,25 +131,24 @@ export default function SettingsPage() {
   }
 
   async function handleRenameClass(id: string, current: string) {
-    const next = prompt('반 이름을 입력하세요', current);
+    const next = prompt(t('settings.classRenamePrompt'), current);
     if (!next?.trim() || next.trim() === current) return;
-    const ok = await run(() => renameClass(id, next.trim()), '이름을 변경했습니다.');
+    const ok = await run(() => renameClass(id, next.trim()), t('settings.classRenamedToast'));
     if (ok) await reloadClasses();
   }
 
   async function handleDeleteClass(id: string, className: string) {
-    if (!confirm(`"${className}" 반과 소속 학생·거래 기록을 모두 삭제할까요?\n되돌릴 수 없습니다.`))
-      return;
-    const ok = await run(() => deleteClass(id), '반을 삭제했습니다.');
+    if (!confirm(t('settings.classDeleteConfirm', { name: className }))) return;
+    const ok = await run(() => deleteClass(id), t('settings.classDeletedToast'));
     if (ok) await reloadClasses();
   }
 
   async function handleRotate() {
-    if (!confirm('초대 코드를 새로 발급하면 기존 코드는 사용할 수 없게 됩니다. 계속할까요?')) return;
+    if (!confirm(t('settings.rotateConfirm'))) return;
     try {
       const code = await rotateInviteCode();
       setInviteCode(code);
-      notify('새 초대 코드를 발급했습니다.');
+      notify(t('settings.rotateToast'));
       await refresh();
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
@@ -160,11 +161,11 @@ export default function SettingsPage() {
     if (!file || !academy?.id) return;
 
     if (!file.type.startsWith('image/')) {
-      notify('이미지 파일만 업로드할 수 있어요.', 'error');
+      notify(t('settings.logoImageOnlyError'), 'error');
       return;
     }
     if (file.size > MAX_LOGO_FILE_SIZE) {
-      notify('이미지 용량은 5MB 이하로 올려주세요.', 'error');
+      notify(t('settings.logoTooLargeError'), 'error');
       return;
     }
 
@@ -172,23 +173,23 @@ export default function SettingsPage() {
     const ok = await run(async () => {
       const resized = await resizeImageToPng(file);
       await uploadAcademyLogo(academy.id, resized);
-    }, '로고를 업로드했습니다.');
+    }, t('settings.logoUploadedToast'));
     setLogoBusy(false);
     if (ok) await refresh();
   }
 
   async function handleLogoRemove() {
     if (!academy?.id) return;
-    if (!confirm('로고를 삭제하고 기본 이미지로 되돌릴까요?')) return;
-    const ok = await run(() => removeAcademyLogo(academy.id), '로고를 삭제했습니다.');
+    if (!confirm(t('settings.logoRemoveConfirm'))) return;
+    const ok = await run(() => removeAcademyLogo(academy.id), t('settings.logoRemovedToast'));
     if (ok) await refresh();
   }
 
   function copy(text: string, what: string) {
     navigator.clipboard
       .writeText(text)
-      .then(() => notify(`${what}를 복사했습니다.`))
-      .catch(() => notify('복사에 실패했습니다.', 'error'));
+      .then(() => notify(t('settings.copiedToast', { what })))
+      .catch(() => notify(t('settings.copyFailedToast'), 'error'));
   }
 
   /* ---------- 렌더 ---------- */
@@ -196,14 +197,14 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-        설정
+        {t('settings.title')}
       </h2>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
-        <h4 className="font-title-md text-title-md text-on-surface">내 이름</h4>
+        <h4 className="font-title-md text-title-md text-on-surface">{t('settings.myNameTitle')}</h4>
         <div>
           <label htmlFor="myname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-            대시보드 환영 문구 등에 표시되는 이름입니다.
+            {t('settings.myNameHint')}
           </label>
           <div className="flex gap-2">
             <input
@@ -213,7 +214,7 @@ export default function SettingsPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') void saveMyName();
               }}
-              placeholder="이 선생님"
+              placeholder={t('settings.myNamePlaceholder')}
               className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             />
             <button
@@ -221,22 +222,19 @@ export default function SettingsPage() {
               disabled={myNameBusy}
               className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors whitespace-nowrap"
             >
-              {myNameBusy ? '저장 중…' : '저장'}
+              {myNameBusy ? t('settings.saving') : t('settings.save')}
             </button>
           </div>
         </div>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">학원 로고</h4>
-        <p className="font-caption text-caption text-on-surface-variant mb-4">
-          업로드하면 화면 위쪽 브랜드 마크(기본은 🐷)가 학원 로고로 바뀝니다. 정사각형에 가까운
-          이미지가 가장 예쁘게 나옵니다.
-        </p>
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.logoTitle')}</h4>
+        <p className="font-caption text-caption text-on-surface-variant mb-4">{t('settings.logoHint')}</p>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-surface-container-low flex items-center justify-center text-3xl overflow-hidden shrink-0">
             {academy?.logo_url ? (
-              <img src={academy.logo_url} alt="학원 로고" className="w-full h-full object-cover" />
+              <img src={academy.logo_url} alt={t('settings.logoAlt')} className="w-full h-full object-cover" />
             ) : (
               <span>🐷</span>
             )}
@@ -247,7 +245,7 @@ export default function SettingsPage() {
               disabled={logoBusy}
               className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
             >
-              {logoBusy ? '업로드 중…' : academy?.logo_url ? '로고 바꾸기' : '로고 업로드'}
+              {logoBusy ? t('settings.logoUploading') : academy?.logo_url ? t('settings.logoChange') : t('settings.logoUpload')}
             </button>
             {academy?.logo_url && (
               <button
@@ -255,7 +253,7 @@ export default function SettingsPage() {
                 disabled={logoBusy}
                 className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors disabled:opacity-60"
               >
-                기본 이미지로
+                {t('settings.logoResetDefault')}
               </button>
             )}
           </div>
@@ -270,10 +268,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
-        <h4 className="font-title-md text-title-md text-on-surface">학원 · 포인트 기본 설정</h4>
+        <h4 className="font-title-md text-title-md text-on-surface">{t('settings.academyTitle')}</h4>
         <div>
           <label htmlFor="aname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-            학원 이름
+            {t('settings.academyName')}
           </label>
           <input
             id="aname"
@@ -284,13 +282,13 @@ export default function SettingsPage() {
         </div>
         <div>
           <label htmlFor="aunit" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-            포인트 단위
+            {t('settings.pointUnit')}
           </label>
           <input
             id="aunit"
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
-            placeholder="별, 달러, 포인트 …"
+            placeholder={t('settings.pointUnitPlaceholder')}
             className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
@@ -298,19 +296,20 @@ export default function SettingsPage() {
           onClick={() => void saveAcademy()}
           className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
         >
-          저장
+          {t('settings.save')}
         </button>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">지급 / 차감 사유 프리셋</h4>
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.presetsTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-3">
-          통장 카드에 버튼으로 표시됩니다. <span className="material-symbols-outlined text-[14px] align-middle">calendar_month</span>{' '}
-          표시가 있으면 지급할 때마다 숙제 캘린더에도 자동으로 기록돼요.
+          {t('settings.presetsHintBefore')}
+          <span className="material-symbols-outlined text-[14px] align-middle">calendar_month</span>
+          {t('settings.presetsHintAfter')}
         </p>
         <div className="flex flex-wrap gap-1.5 mb-4">
           {presets.length === 0 ? (
-            <span className="font-caption text-caption text-on-surface-variant">등록된 사유가 없습니다.</span>
+            <span className="font-caption text-caption text-on-surface-variant">{t('settings.noPresets')}</span>
           ) : (
             presets.map((p) => (
               <div
@@ -323,7 +322,7 @@ export default function SettingsPage() {
               >
                 <button
                   onClick={() => void toggleHomeworkFlag(p.id, !p.is_homework)}
-                  title="숙제 캘린더 반영 여부"
+                  title={t('settings.homeworkToggleTitle')}
                   className="flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">
@@ -341,14 +340,14 @@ export default function SettingsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="text"
-            placeholder="사유 (예: 지각)"
+            placeholder={t('settings.presetLabelPlaceholder')}
             value={newPresetLabel}
             onChange={(e) => setNewPresetLabel(e.target.value)}
             className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
           <input
             type="number"
-            placeholder="±숫자"
+            placeholder={t('settings.amountPlaceholder')}
             value={newPresetDelta}
             onChange={(e) => setNewPresetDelta(e.target.value)}
             className="w-24 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
@@ -360,21 +359,21 @@ export default function SettingsPage() {
               onChange={(e) => setNewPresetHomework(e.target.checked)}
               className="w-4 h-4 accent-primary"
             />
-            숙제 캘린더 반영
+            {t('settings.homeworkCheckbox')}
           </label>
           <button
             onClick={() => void addPreset()}
             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
           >
-            추가
+            {t('settings.add')}
           </button>
         </div>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <h4 className="font-title-md text-title-md text-on-surface mb-3">반 관리</h4>
+        <h4 className="font-title-md text-title-md text-on-surface mb-3">{t('settings.classManageTitle')}</h4>
         {classes.length === 0 ? (
-          <div className="font-body-md text-body-md text-on-surface-variant mb-3">등록된 반이 없습니다.</div>
+          <div className="font-body-md text-body-md text-on-surface-variant mb-3">{t('settings.noClasses')}</div>
         ) : (
           <div className="space-y-1 mb-4">
             {classes.map((c) => (
@@ -388,13 +387,13 @@ export default function SettingsPage() {
                     onClick={() => void handleRenameClass(c.id, c.name)}
                     className="font-label-md text-label-md text-primary hover:underline"
                   >
-                    이름 변경
+                    {t('settings.renameClass')}
                   </button>
                   <button
                     onClick={() => void handleDeleteClass(c.id, c.name)}
                     className="font-label-md text-label-md text-error hover:underline"
                   >
-                    삭제
+                    {t('settings.deleteClass')}
                   </button>
                 </span>
               </div>
@@ -403,7 +402,7 @@ export default function SettingsPage() {
         )}
         <div className="flex gap-2">
           <input
-            placeholder="새 반 이름 (예: 고등 2반)"
+            placeholder={t('settings.newClassPlaceholder')}
             value={newClassName}
             onChange={(e) => setNewClassName(e.target.value)}
             onKeyDown={(e) => {
@@ -415,29 +414,26 @@ export default function SettingsPage() {
             onClick={() => void addClass()}
             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
           >
-            반 추가
+            {t('settings.addClass')}
           </button>
         </div>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">학생 로그인 코드</h4>
-        <p className="font-caption text-caption text-on-surface-variant">
-          베타 기간 동안은 원장·선생님만 로그인할 수 있어 학생 로그인을 잠시 꺼두었습니다. 학생은
-          아직 직접 접속할 수 없고, 반별 통장은 선생님 화면에서 관리합니다.
-        </p>
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.studentLoginTitle')}</h4>
+        <p className="font-caption text-caption text-on-surface-variant">{t('settings.studentLoginHint')}</p>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">선생님 초대 코드</h4>
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.inviteTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-3">
-          다른 선생님이 회원가입 후 이 코드를 입력하면 같은 학원에 합류합니다.
-          {isOwner ? '' : ' (재발급은 원장만 가능합니다)'}
+          {t('settings.inviteHint')}
+          {isOwner ? '' : t('settings.inviteHintOwnerOnly')}
         </p>
         <div className="flex items-center gap-3 flex-wrap">
           <span
-            title="클릭하면 복사됩니다"
-            onClick={() => copy(inviteCode, '초대 코드')}
+            title={t('settings.inviteCopyHint')}
+            onClick={() => copy(inviteCode, t('settings.inviteCodeLabel'))}
             className="cursor-pointer px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-title-md text-title-md tracking-wider"
           >
             {inviteCode}
@@ -447,7 +443,7 @@ export default function SettingsPage() {
               onClick={() => void handleRotate()}
               className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
             >
-              새 코드 발급
+              {t('settings.rotateInvite')}
             </button>
           )}
         </div>
