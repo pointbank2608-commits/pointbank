@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -20,6 +21,7 @@ type Mode = 'pass' | 'timer';
  * - "타이머만": 참가자 없이 카운트다운(숨김)과 폭발 연출만 — 실제 물건(인형/공 등)을 돌릴 때 씀.
  */
 export default function TimeBomb({ participants, minSec, maxSec, music, resultSound }: Props) {
+  const { t } = useTranslation();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('pass');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -82,7 +84,7 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
             mode === 'pass' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
           }`}
         >
-          참가자 순서대로
+          {t('gameBomb.modePass')}
         </button>
         <button
           type="button"
@@ -91,14 +93,14 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
             mode === 'timer' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
           }`}
         >
-          타이머만
+          {t('gameBomb.modeTimer')}
         </button>
       </div>
 
       {blockedForPassMode ? (
         <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
           <div className="text-4xl mb-2">💣</div>
-          <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 순서대로 돌릴 수 있어요.</div>
+          <div className="font-body-md text-body-md">{t('gameBomb.needTwoParticipants')}</div>
         </div>
       ) : (
         <>
@@ -120,27 +122,27 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
               onClick={start}
               className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
             >
-              폭탄 돌리기 시작
+              {t('gameBomb.startButton')}
             </button>
           )}
 
           {phase === 'active' && mode === 'pass' && (
             <>
               <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
-                {participants[holderIndex]?.label} 차례!
+                {t('gameBomb.holderTurn', { name: participants[holderIndex]?.label })}
               </div>
               <button
                 onClick={pass}
                 className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
               >
-                다음 사람에게 넘기기 →
+                {t('gameBomb.passButton')}
               </button>
             </>
           )}
 
           {phase === 'active' && mode === 'timer' && (
             <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
-              째깍째깍… 언제 터질까요?
+              {t('gameBomb.timerModeHint')}
             </div>
           )}
 
@@ -150,21 +152,21 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
                 {mode === 'pass' ? (
                   <>
                     <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">
-                      펑! 걸린 사람
+                      {t('gameBomb.explodedCaught')}
                     </div>
                     <div className="font-display-lg text-[38px] text-deep-navy mt-0.5">
                       {participants[holderIndex]?.label}
                     </div>
                   </>
                 ) : (
-                  <div className="font-display-lg text-[38px] text-deep-navy">펑! 💥</div>
+                  <div className="font-display-lg text-[38px] text-deep-navy">{t('gameBomb.explodedTimerOnly')}</div>
                 )}
               </div>
               <button
                 onClick={reset}
                 className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
               >
-                다시 하기
+                {t('gameBomb.resetButton')}
               </button>
             </>
           )}
