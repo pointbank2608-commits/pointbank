@@ -154,7 +154,8 @@ export type GameType =
   | 'saveorgive'
   | 'findmissing'
   | 'baskin31'
-  | 'connect4';
+  | 'connect4'
+  | 'popcorn';
 
 export interface GameItem {
   id: string;

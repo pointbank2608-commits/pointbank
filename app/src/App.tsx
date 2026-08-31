@@ -18,6 +18,7 @@ import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
+import PopcornPage from './pages/PopcornPage';
 import ResultsPage from './pages/ResultsPage';
 import SaveOrGivePage from './pages/SaveOrGivePage';
 import SettingsPage from './pages/SettingsPage';
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="/games/baskin31" element={<Baskin31Page />} />
             <Route path="/games/connect4" element={<Connect4Page />} />
+            <Route path="/games/popcorn" element={<PopcornPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -111,6 +113,7 @@ export default function App() {
             <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="/games/baskin31" element={<Baskin31Page />} />
             <Route path="/games/connect4" element={<Connect4Page />} />
+            <Route path="/games/popcorn" element={<PopcornPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

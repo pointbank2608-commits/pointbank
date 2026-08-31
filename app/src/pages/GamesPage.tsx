@@ -89,6 +89,14 @@ export default function GamesPage() {
       desc: t('gamesList.connect4Desc'),
       path: '/games/connect4',
     },
+    {
+      key: 'popcorn',
+      cover: null,
+      icon: 'casino',
+      name: t('gamesList.popcornName'),
+      desc: t('gamesList.popcornDesc'),
+      path: '/games/popcorn',
+    },
   ];
 
   return (

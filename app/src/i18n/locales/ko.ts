@@ -240,6 +240,25 @@ const ko = {
     columnHint: '아래 화살표를 눌러 그 줄에 표시를 떨어뜨리세요.',
   },
 
+  gamePopcorn: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 팝콘 게임',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 팝콘 게임',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '팝콘 게임 설정',
+    teamBlue: '파랑 팀',
+    teamRed: '빨강 팀',
+    turnLabel: '{{team}} 차례예요',
+    drawButton: '팝콘 뽑기',
+    popMessage: 'POP! {{team}} 점수가 초기화됐어요!',
+    scoreLabel: '점수',
+    resetButton: '처음부터 다시',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -262,6 +281,8 @@ const ko = {
     baskin31Desc: '1~3개씩 번갈아 세다가 31을 말하는 팀이 져요.',
     connect4Name: '4 in a row',
     connect4Desc: '단어 칸을 아래부터 쌓아서 4개를 먼저 연결해요.',
+    popcornName: '팝콘 게임',
+    popcornDesc: '팝콘을 뽑아 단어를 읽어요. POP! 카드가 나오면 점수가 초기화돼요.',
   },
 
   gameSound: {

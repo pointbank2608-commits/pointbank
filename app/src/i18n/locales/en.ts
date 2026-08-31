@@ -242,6 +242,25 @@ const en: Ko = {
     columnHint: 'Tap an arrow to drop a marker into that column.',
   },
 
+  gamePopcorn: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Popcorn Game",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary popcorn game',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Popcorn Game settings',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    drawButton: 'Pop the popcorn',
+    popMessage: "POP! {{team}}'s score was reset!",
+    scoreLabel: 'Score',
+    resetButton: 'Restart from scratch',
+    needParticipants: 'Register at least 1 item to get started.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -264,6 +283,8 @@ const en: Ko = {
     baskin31Desc: 'Take turns counting up by 1-3 — whoever says 31 loses.',
     connect4Name: '4 in a Row',
     connect4Desc: 'Drop markers to connect four word tiles in a row.',
+    popcornName: 'Popcorn Game',
+    popcornDesc: 'Pop the popcorn and read the word — watch out for the POP! card that resets your score.',
   },
 
   gameSound: {
