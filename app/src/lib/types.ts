@@ -144,7 +144,7 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer';
+export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe';
 
 export interface GameItem {
   id: string;

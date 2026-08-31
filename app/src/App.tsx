@@ -18,6 +18,7 @@ import OrderPage from './pages/OrderPage';
 import ResultsPage from './pages/ResultsPage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
+import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
 import WheelPage from './pages/WheelPage';
 
@@ -84,6 +85,7 @@ export default function App() {
             <Route path="/games/order" element={<OrderPage />} />
             <Route path="/games/bomb" element={<BombPage />} />
             <Route path="/games/timer" element={<TimerMatchPage />} />
+            <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -96,6 +98,7 @@ export default function App() {
             <Route path="/games/order" element={<OrderPage />} />
             <Route path="/games/bomb" element={<BombPage />} />
             <Route path="/games/timer" element={<TimerMatchPage />} />
+            <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

@@ -139,6 +139,25 @@ const en: Ko = {
     seeResultsButton: 'See results',
   },
 
+  gameTicTacToe: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Tic-Tac-Toe",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary review tic-tac-toe',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first tic-tac-toe!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Tic-Tac-Toe settings',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    winMessage: '{{team}} wins!',
+    drawMessage: "It's a draw!",
+    playAgainButton: 'Play again',
+    needParticipants: 'Register at least 1 item to start a tic-tac-toe game.',
+    boardHint: "Tap a cell to mark it for that team.",
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -151,6 +170,8 @@ const en: Ko = {
     bombDesc: 'Pass around a bomb that goes off at a random time.',
     timerName: 'Timer Match',
     timerDesc: 'Hit start and stop to match the target time.',
+    tictactoeName: 'Tic-Tac-Toe',
+    tictactoeDesc: 'Register items, then take turns filling the board as two teams.',
   },
 
   gameSound: {

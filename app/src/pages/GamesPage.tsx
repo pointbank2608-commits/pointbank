@@ -49,6 +49,14 @@ export default function GamesPage() {
       desc: t('gamesList.timerDesc'),
       path: '/games/timer',
     },
+    {
+      key: 'tictactoe',
+      cover: null,
+      icon: 'grid_3x3',
+      name: t('gamesList.tictactoeName'),
+      desc: t('gamesList.tictactoeDesc'),
+      path: '/games/tictactoe',
+    },
   ];
 
   return (
@@ -65,11 +73,17 @@ export default function GamesPage() {
             className="group bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
           >
             <div className="relative h-36 overflow-hidden">
-              <img
-                src={g.cover}
-                alt=""
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+              {g.cover ? (
+                <img
+                  src={g.cover}
+                  alt=""
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{g.icon}</span>
+                </div>
+              )}
               <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
                 <span className="material-symbols-outlined">{g.icon}</span>
               </div>

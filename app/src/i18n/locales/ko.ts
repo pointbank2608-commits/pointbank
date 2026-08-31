@@ -137,6 +137,25 @@ const ko = {
     seeResultsButton: '결과 보기',
   },
 
+  gameTicTacToe: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 틱택토',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 복습 틱택토',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 틱택토를 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '틱택토 설정',
+    teamBlue: '파랑 팀',
+    teamRed: '빨강 팀',
+    turnLabel: '{{team}} 차례예요',
+    winMessage: '{{team}} 승리!',
+    drawMessage: '무승부예요!',
+    playAgainButton: '다시 하기',
+    needParticipants: '항목을 1개 이상 등록해야 틱택토를 시작할 수 있어요.',
+    boardHint: '칸을 눌러 그 팀의 표시를 남기세요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -149,6 +168,8 @@ const ko = {
     bombDesc: '무작위 시각에 터지는 폭탄을 서로 돌려요.',
     timerName: '타이머 맞추기',
     timerDesc: '목표 시간에 맞춰 시작·멈춤 버튼을 눌러요.',
+    tictactoeName: '틱택토',
+    tictactoeDesc: '항목을 등록해 두고 두 팀이 번갈아 칸을 채워요.',
   },
 
   gameSound: {
