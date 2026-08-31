@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import LotteryMachine from './LotteryMachine';
+import LotteryMachine, { LOTTERY_FLY_MS } from './LotteryMachine';
 import { playMusic } from '../lib/gameMusic';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -23,7 +23,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const MIX_MS = 1100;
-const REVEAL_STEP_MS = 550;
+const REVEAL_STEP_MS = 880;
 
 export default function OrderPicker({ participants, ranks, music, resultSound }: Props) {
   const { t } = useTranslation();
@@ -54,9 +54,12 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
           () => {
             setRevealCount((c) => c + 1);
             if (i === shuffled.length - 1) {
-              setPhase('done');
-              stopMusicRef.current();
-              playMusic(resultSound);
+              const doneTimer = setTimeout(() => {
+                setPhase('done');
+                stopMusicRef.current();
+                playMusic(resultSound);
+              }, LOTTERY_FLY_MS);
+              timersRef.current.push(doneTimer);
             }
           },
           (i + 1) * REVEAL_STEP_MS,
@@ -83,7 +86,7 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
       <button
         onClick={start}
         disabled={busy}
-        className="mt-2 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+        className="mt-2 px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
       >
         {phase === 'mixing'
           ? t('gameOrder.mixing')

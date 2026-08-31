@@ -63,6 +63,7 @@ const en: Ko = {
     revealingAll: 'Climbing down…',
     revealAllButton: 'Reveal all at once',
     revealOneButton: 'Reveal one by one',
+    retryButton: 'Play again',
     oneByOneHint: 'Tap a name to reveal just that person’s result.',
     infoDescription: 'Register participants and results, then run the ladder to randomly pair them up.',
     infoSteps: [

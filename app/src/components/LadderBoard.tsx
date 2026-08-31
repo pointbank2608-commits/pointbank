@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
 import { playMusic } from '../lib/gameMusic';
@@ -16,11 +16,25 @@ type Mode = 'all' | 'one';
 
 // 50인치대 전자칠판/태블릿에서 뒤에서도 잘 보이도록 큼직하게 잡은 값.
 const COL_W = 128;
-const ROW_H = 34;
-const TOP_PAD = 10;
-const BOTTOM_PAD = 10;
+const ROW_H = 38;
+const TOP_PAD = 18;
+const BOTTOM_PAD = 18;
+const RAIL_W = 24;
+const RUNG_H = 16;
 const RUN_MS = 1700;
 const DEFAULT_ROWS = 10;
+const RAIL_SRC = '/skins/ladder-rail.png';
+const RUNG_SRC = '/skins/ladder-rung.png';
+
+function plaqueStyle(index: number, emphasized = false): CSSProperties {
+  return {
+    backgroundColor: colorFor(index),
+    border: '3px solid #f0d7a8',
+    boxShadow: emphasized
+      ? '0 0 0 3px #fff8ea, 0 4px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.2)'
+      : '0 3px 0 #c4925c, 0 7px 12px rgba(110,62,18,0.16)',
+  };
+}
 
 export default function LadderBoard({ participants, results, music, resultSound }: Props) {
   const { t } = useTranslation();
@@ -45,6 +59,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
 
   const width = Math.max(n, 2) * COL_W;
   const height = TOP_PAD + grid.rows * ROW_H + BOTTOM_PAD;
+  const railH = height - TOP_PAD - BOTTOM_PAD;
 
   const paths = useMemo(() => {
     return participants.map((_, i) => {
@@ -156,6 +171,14 @@ export default function LadderBoard({ participants, results, music, resultSound 
     });
   }
 
+  function retry() {
+    if (runningSet.size > 0) return;
+    resetRunState();
+    setMapping(null);
+    setGrid(emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
+    setMode('all');
+  }
+
   function landedResultIndex(colIndex: number): boolean {
     if (!mapping) return false;
     const p = mapping.findIndex((dest) => dest === colIndex);
@@ -179,65 +202,87 @@ export default function LadderBoard({ participants, results, music, resultSound 
         <button
           onClick={startRevealAll}
           disabled={busy}
-          className="px-5 py-2 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-label-md text-label-md shadow-sm transition-colors"
+          className="px-5 py-2.5 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-label-md text-label-md shadow-sm transition-colors"
         >
           {busy && mode === 'all' ? t('gameLadder.revealingAll') : t('gameLadder.revealAllButton')}
         </button>
         <button
           onClick={startOneByOne}
           disabled={busy}
-          className="px-5 py-2 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-label-md text-label-md shadow-sm transition-all"
+          className="px-5 py-2.5 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-label-md text-label-md shadow-sm transition-all"
         >
           {t('gameLadder.revealOneButton')}
         </button>
+        {revealed.size > 0 && (
+          <button
+            type="button"
+            onClick={retry}
+            disabled={busy}
+            className="px-5 py-2.5 rounded-full border-2 border-secondary text-secondary hover:bg-secondary-container/40 disabled:opacity-60 font-label-md text-label-md transition-colors"
+          >
+            {t('gameLadder.retryButton')}
+          </button>
+        )}
       </div>
 
       <div className="max-w-full overflow-x-auto pb-1">
-        <div className="flex mb-3.5" style={{ width }}>
-          {participants.map((p, i) =>
-            mode === 'one' ? (
+        <div className="flex mb-3 items-stretch" style={{ width }}>
+          {participants.map((p, i) => {
+            const plaque = (
+              <span
+                className="inline-block max-w-[112px] truncate rounded-full px-3 py-2 font-title-md text-sm font-bold text-white"
+                style={plaqueStyle(i, revealed.has(i))}
+              >
+                {p.label}
+              </span>
+            );
+            return mode === 'one' ? (
               <button
                 key={p.id}
                 type="button"
                 disabled={revealed.has(i) || runningSet.has(i)}
                 onClick={() => revealOne(i)}
                 style={{ width: COL_W }}
-                className={`flex-none text-center font-title-md text-title-md px-2 py-2.5 rounded-full border-2 transition-colors disabled:cursor-default ${
-                  revealed.has(i)
-                    ? 'border-warm-yellow bg-warm-yellow/20 text-tertiary-container font-bold'
-                    : runningSet.has(i)
-                      ? 'border-primary bg-surface-container-lowest text-on-surface ladder-pulse'
-                      : 'border-primary bg-surface-container-lowest text-on-surface cursor-pointer hover:bg-surface-container-low'
+                className={`flex-none flex items-center justify-center px-1 py-0.5 rounded-full bg-transparent disabled:cursor-default ${
+                  runningSet.has(i) ? 'ladder-pulse' : 'cursor-pointer hover:brightness-105'
                 }`}
               >
-                {p.label}
+                {plaque}
               </button>
             ) : (
-              <div
-                key={p.id}
-                style={{ width: COL_W }}
-                className="flex-none text-center font-title-md text-title-md text-on-surface px-1.5 py-1 [word-break:keep-all]"
-              >
-                {p.label}
+              <div key={p.id} style={{ width: COL_W }} className="flex-none flex items-center justify-center px-1">
+                {plaque}
               </div>
-            ),
-          )}
+            );
+          })}
         </div>
 
-        <svg className="block drop-shadow-[0_10px_22px_rgba(39,101,168,0.16)]" viewBox={`0 0 ${width} ${height}`} style={{ width, height }}>
+        <svg
+          className="block"
+          viewBox={`0 0 ${width} ${height}`}
+          style={{ width, height, filter: 'drop-shadow(0 10px 18px rgba(110, 62, 18, 0.18))' }}
+        >
           {Array.from({ length: n }, (_, i) => (
-            <line
+            <image
               key={`col-${i}`}
-              x1={COL_W / 2 + i * COL_W}
-              y1={TOP_PAD}
-              x2={COL_W / 2 + i * COL_W}
-              y2={height - BOTTOM_PAD}
-              className="stroke-surface-container-high"
-              strokeWidth={5}
+              href={RAIL_SRC}
+              x={COL_W / 2 + i * COL_W - RAIL_W / 2}
+              y={TOP_PAD}
+              width={RAIL_W}
+              height={railH}
+              preserveAspectRatio="none"
             />
           ))}
           {rungLines.map((l) => (
-            <line key={l.key} x1={l.x1} y1={l.y} x2={l.x2} y2={l.y} className="stroke-outline-variant" strokeWidth={5} />
+            <image
+              key={l.key}
+              href={RUNG_SRC}
+              x={l.x1}
+              y={l.y - RUNG_H / 2}
+              width={l.x2 - l.x1}
+              height={RUNG_H}
+              preserveAspectRatio="none"
+            />
           ))}
           {paths.map((p, i) => (
             <path
@@ -247,7 +292,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
               }}
               d={p.d}
               fill="none"
-              strokeWidth={8}
+              strokeWidth={10}
               strokeLinecap="round"
               strokeLinejoin="round"
               style={{ stroke: p.color }}
@@ -255,16 +300,17 @@ export default function LadderBoard({ participants, results, music, resultSound 
           ))}
         </svg>
 
-        <div className="flex mt-3.5" style={{ width }}>
+        <div className="flex mt-4 items-stretch" style={{ width }}>
           {results.map((r, i) => (
-            <div
-              key={r.id}
-              style={{ width: COL_W }}
-              className={`flex-none text-center font-title-md text-title-md px-1.5 py-1 [word-break:keep-all] transition-all ${
-                landedResultIndex(i) ? 'text-secondary font-bold scale-110' : 'text-on-surface-variant'
-              }`}
-            >
-              {r.label}
+            <div key={r.id} style={{ width: COL_W }} className="flex-none flex items-center justify-center px-1.5">
+              <div
+                className={`w-full rounded-2xl px-1.5 py-2.5 text-center font-title-md text-sm font-bold text-white [word-break:keep-all] transition-transform ${
+                  landedResultIndex(i) ? 'scale-110' : ''
+                }`}
+                style={plaqueStyle(i, landedResultIndex(i))}
+              >
+                {r.label}
+              </div>
             </div>
           ))}
         </div>
@@ -283,7 +329,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
               revealed.has(i) && (
                 <div
                   key={p.id}
-                  className="flex items-center justify-center gap-3 bg-secondary-container/20 border border-secondary-container rounded-2xl px-5 py-3.5 font-title-md text-title-md"
+                  className="flex items-center justify-center gap-3 bg-secondary-container/50 border border-secondary-container rounded-2xl px-5 py-3.5 font-title-md text-title-md"
                 >
                   <span className="text-on-surface">{p.label}</span>
                   <span className="text-on-surface-variant">→</span>
@@ -291,6 +337,14 @@ export default function LadderBoard({ participants, results, music, resultSound 
                 </div>
               ),
           )}
+          <button
+            type="button"
+            onClick={retry}
+            disabled={busy}
+            className="mt-1 px-8 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
+          >
+            {t('gameLadder.retryButton')}
+          </button>
         </div>
       )}
     </div>

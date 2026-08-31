@@ -61,6 +61,7 @@ const ko = {
     revealingAll: '내려가는 중…',
     revealAllButton: '한 번에 결과 보기',
     revealOneButton: '한 명씩 결과 보기',
+    retryButton: '다시하기',
     oneByOneHint: '이름을 누르면 그 사람 결과만 확인할 수 있어요.',
     infoDescription: '참가자와 결과를 각각 등록하고 사다리를 타서 무작위로 짝을 지어주는 게임이에요.',
     infoSteps: [

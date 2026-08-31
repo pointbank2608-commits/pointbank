@@ -15,8 +15,13 @@ interface Props {
 const SIZE = 420;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
-const R = SIZE / 2 - 10;
+/** 스킨 구멍 안쪽. 테두리 이미지가 위에 덮이므로 회전 계산과 무관하다. */
+const R = 164;
 const SPIN_MS = 4600;
+
+const RIM_SRC = '/skins/wheel-rim.png';
+const HUB_SRC = '/skins/wheel-hub-spin.png';
+const POINTER_SRC = '/skins/wheel-pointer.png';
 
 /** 화면 12시를 0도, 시계 방향으로 도는 각도 A 에서의 좌표. */
 function pointOnCircle(angleDeg: number, radius: number) {
@@ -81,61 +86,69 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
     );
   }
 
+  const spinStyle = {
+    transform: `rotate(${rotation}deg)`,
+    transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
+  };
+
   return (
-    <div className="flex flex-col items-center py-2.5 pb-2">
-      <div
-        aria-hidden="true"
-        className="w-0 h-0 border-l-[13px] border-r-[13px] border-l-transparent border-r-transparent border-t-[22px] border-t-warm-yellow drop-shadow-md"
-      />
+    <div className="flex flex-col items-center py-4 pb-2">
       <div className="relative w-full max-w-[420px] aspect-square">
-        <svg
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          className="w-full h-full block drop-shadow-[0_16px_34px_rgba(39,101,168,0.28)]"
-          style={{
-            transform: `rotate(${rotation}deg)`,
-            transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
-          }}
+        <div
+          className="absolute inset-0"
+          style={{ ...spinStyle, filter: 'drop-shadow(0 14px 24px rgba(110, 62, 18, 0.28))' }}
         >
-          <circle cx={CX} cy={CY} r={R + 4} className="fill-warm-yellow" />
-          {slices.map((s) => (
-            <path key={s.id} d={s.path} fill={s.color} stroke="#fffdf6" strokeWidth={3} />
-          ))}
-          {slices.map((s) => (
-            <text
-              key={s.id + '-label'}
-              x={CX}
-              y={CY - R * 0.62}
-              transform={`rotate(${s.mid} ${CX} ${CY})`}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="fill-white font-title-md font-bold"
-              style={{
-                fontSize,
-                paintOrder: 'stroke',
-                stroke: 'rgba(21,28,34,0.4)',
-                strokeWidth: 3,
-              }}
-            >
-              {s.label}
-            </text>
-          ))}
-        </svg>
+          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full">
+            {slices.map((s) => (
+              <path key={s.id} d={s.path} fill={s.color} stroke="#fff8ea" strokeWidth={3} />
+            ))}
+            {slices.map((s) => (
+              <text
+                key={s.id + '-label'}
+                x={CX}
+                y={CY - R * 0.58}
+                transform={`rotate(${s.mid} ${CX} ${CY})`}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-white font-title-md font-bold"
+                style={{
+                  fontSize,
+                  paintOrder: 'stroke',
+                  stroke: 'rgba(21,28,34,0.35)',
+                  strokeWidth: 3,
+                }}
+              >
+                {s.label}
+              </text>
+            ))}
+          </svg>
+          <img src={RIM_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none" />
+        </div>
+
+        <img
+          src={POINTER_SRC}
+          alt=""
+          draggable={false}
+          className="pointer-events-none absolute left-1/2 z-20 w-12 -translate-x-1/2 select-none"
+          style={{ top: -14, filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
+        />
 
         <button
           onClick={spin}
           disabled={spinning}
           aria-label={t('gameWheel.spinAriaLabel')}
           title={t('gameWheel.spinButton')}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[76px] h-[76px] rounded-full bg-primary text-on-primary text-2xl shadow-lg border-4 border-surface-container-lowest flex items-center justify-center disabled:saturate-[0.7] disabled:cursor-default hover:not-disabled:brightness-105 transition-all"
+          className="absolute top-1/2 left-1/2 z-10 h-[140px] w-[140px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
+          style={{ filter: 'drop-shadow(0 6px 10px rgba(90, 40, 10, 0.28))' }}
         >
-          <span>{spinning ? '···' : '🐷'}</span>
+          <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
         </button>
       </div>
 
       <button
         onClick={spin}
         disabled={spinning}
-        className="mt-4 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+        className="mt-5 px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
       >
         {spinning ? t('gameWheel.spinning') : t('gameWheel.spinButton')}
       </button>
@@ -143,7 +156,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
       {result && !spinning && (
         <div
           key={result.id + result.label}
-          className="mt-4 text-center bg-secondary-container/40 border border-secondary-container rounded-xl px-8 py-3.5"
+          className="mt-4 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
         >
           <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
           <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
