@@ -164,7 +164,8 @@ export type GameType =
   | 'matchup'
   | 'whackamole'
   | 'flashcards'
-  | 'anagram';
+  | 'anagram'
+  | 'groupsort';
 
 export interface GameItem {
   id: string;
@@ -217,6 +218,8 @@ export interface GameTemplateConfig {
    * 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
    */
   pairs?: MatchPair[];
+  /** 그룹 정렬 전용: 그룹(이름+소속 항목) 목록. 항목이 어느 그룹인지가 곧 정답이라 공용 items 모델로는 표현이 안 돼 별도로 둔다. */
+  groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
   flashcards?: MatchPair[];
 }
@@ -238,6 +241,17 @@ export interface MatchPair {
   id: string;
   left: string;
   right: string;
+}
+
+export interface GroupSortItem {
+  id: string;
+  text: string;
+}
+
+export interface GroupSortGroup {
+  id: string;
+  name: string;
+  items: GroupSortItem[];
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

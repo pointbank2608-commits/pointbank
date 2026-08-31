@@ -577,6 +577,34 @@ const ko = {
     ],
   },
 
+  gameGroupSort: {
+    studentClassTitle: '{{className}} 그룹 정렬',
+    newButton: '+ 새 그룹 정렬',
+    namePlaceholder: '예: 동물·과일 분류하기',
+    emptyStaff: '아직 그룹 정렬이 없어요. 아래 "+ 새 그룹 정렬"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 그룹 정렬이 없어요.',
+    settingsTitle: '그룹 정렬 편집',
+    groupLabel: '그룹 {{n}}',
+    groupNamePlaceholder: '그룹 이름 (예: 동물)',
+    itemPlaceholder: '항목',
+    addItemButton: '+ 항목 추가',
+    removeItemButton: '항목 삭제',
+    addGroupButton: '+ 그룹 추가',
+    removeGroupButton: '그룹 삭제',
+    needGroups: '그룹을 2개 이상 만들고 각 그룹에 항목을 추가해야 시작할 수 있어요.',
+    wrongCountLabel: '오답 {{count}}번',
+    finishedTitle: '모두 정리했어요!',
+    restartButton: '다시 섞기',
+    infoDescription: '항목을 보고 올바른 그룹 상자에 넣어 분류하는 게임이에요.',
+    infoSteps: [
+      '설정에서 그룹을 2개 이상 만들고, 각 그룹에 속하는 항목을 등록하세요.',
+      '아래쪽 항목 중 하나를 눌러 선택하세요.',
+      '그 항목이 속한다고 생각하는 그룹 상자를 눌러 넣으세요.',
+      '맞으면 그 상자 안에 쌓이고, 틀리면 잠깐 빨간색으로 표시된 뒤 다시 고를 수 있어요.',
+      '모든 항목을 다 분류하면 완료예요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -629,6 +657,8 @@ const ko = {
     flashcardsDesc: '카드를 눌러 뒤집으며 단어와 뜻을 암기해요.',
     anagramName: '애너그램',
     anagramDesc: '뒤섞인 글자를 눌러 순서대로 배치해서 단어를 완성해요.',
+    groupsortName: '그룹 정렬',
+    groupsortDesc: '항목을 보고 올바른 그룹 상자에 넣어 분류해요.',
   },
 
   gameSound: {

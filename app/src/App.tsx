@@ -15,6 +15,7 @@ import DashboardPage from './pages/DashboardPage';
 import FindMissingPage from './pages/FindMissingPage';
 import FlashcardsPage from './pages/FlashcardsPage';
 import GamesPage from './pages/GamesPage';
+import GroupSortPage from './pages/GroupSortPage';
 import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
 import LadderPage from './pages/LadderPage';
@@ -114,6 +115,7 @@ export default function App() {
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
+            <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -141,6 +143,7 @@ export default function App() {
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
+            <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

@@ -258,6 +258,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.anagramName',
     descKey: 'gamesList.anagramDesc',
   },
+  {
+    type: 'groupsort',
+    number: 21,
+    category: 'vocabulary',
+    // 그룹(이름+소속 항목) 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'category',
+    path: '/games/groupsort',
+    cover: null,
+    nameKey: 'gamesList.groupsortName',
+    descKey: 'gamesList.groupsortDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

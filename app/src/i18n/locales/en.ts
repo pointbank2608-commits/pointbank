@@ -579,6 +579,34 @@ const en: Ko = {
     ],
   },
 
+  gameGroupSort: {
+    studentClassTitle: "{{className}}'s Group Sort",
+    newButton: '+ New group sort',
+    namePlaceholder: 'e.g. Sort animals & fruits',
+    emptyStaff: 'No group sorts yet. Tap "+ New group sort" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a group sort yet.",
+    settingsTitle: 'Edit group sort',
+    groupLabel: 'Group {{n}}',
+    groupNamePlaceholder: 'Group name (e.g. Animals)',
+    itemPlaceholder: 'Item',
+    addItemButton: '+ Add item',
+    removeItemButton: 'Remove item',
+    addGroupButton: '+ Add group',
+    removeGroupButton: 'Remove group',
+    needGroups: 'Create at least 2 groups and add items to each to start.',
+    wrongCountLabel: '{{count}} misses',
+    finishedTitle: 'Everything sorted!',
+    restartButton: 'Shuffle & try again',
+    infoDescription: 'Sort each item into the group box it belongs to.',
+    infoSteps: [
+      'In settings, create at least 2 groups and add the items that belong to each.',
+      'Tap one of the items below to select it.',
+      'Tap the group box you think it belongs to.',
+      "Get it right and it stacks in that box; get it wrong and the box flashes red for a moment before you try again.",
+      'Sort every item to finish.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -631,6 +659,8 @@ const en: Ko = {
     flashcardsDesc: 'Flip cards to memorize words and their meanings.',
     anagramName: 'Anagram',
     anagramDesc: 'Tap scrambled letters in order to spell out each word.',
+    groupsortName: 'Group Sort',
+    groupsortDesc: 'Sort each item into the group box it belongs to.',
   },
 
   gameSound: {
