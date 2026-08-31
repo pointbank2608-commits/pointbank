@@ -124,7 +124,14 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen flex bg-background font-body-md text-on-background">
       {/* 모바일 상단바 */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-sm flex items-center justify-between px-margin-mobile z-40">
+      {/* iOS PWA(홈 화면 추가, viewport-fit=cover + black-translucent 상태 바)에서는 상태 바 영역이
+          웹뷰 위에 겹쳐 그려지고 그 영역의 터치는 시스템이 가로채 버려서, 헤더가 화면 맨 위(y=0)에서
+          시작하면 왼쪽 메뉴 버튼이 그 영역에 걸려 눌리지 않는다. safe-area-inset-top 만큼 아래로
+          밀어서 실제 탭 영역이 상태 바 밖으로 나오게 한다. */}
+      <header
+        className="md:hidden fixed top-0 left-0 right-0 bg-surface-container-lowest shadow-sm flex items-center justify-between px-margin-mobile z-40 pt-[env(safe-area-inset-top,0px)]"
+        style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
+      >
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -143,7 +150,7 @@ export default function AppLayout() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 bg-inverse-surface/40 z-50" onClick={() => setMobileOpen(false)}>
           <nav
-            className="h-full w-72 max-w-[80vw] bg-surface-container-low flex flex-col py-6"
+            className="h-full w-72 max-w-[80vw] bg-surface-container-low flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}
@@ -156,7 +163,7 @@ export default function AppLayout() {
         {sidebarContent}
       </nav>
 
-      <main className="flex-1 min-w-0 md:ml-64 pt-16 md:pt-0 min-h-screen">
+      <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen">
         {/* 데스크톱 상단바 */}
         <header className="hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
           <LanguageToggle />
