@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import PassbookCard from '../components/PassbookCard';
 import SettleModal from '../components/SettleModal';
@@ -26,6 +27,7 @@ import type { Attendance, Preset, Settlement, StudentBalance, Transaction } from
 export default function ClassBoardPage() {
   const { academy, profile, pointUnit } = useAuth();
   const { notify, run } = useToast();
+  const { t, i18n } = useTranslation();
   const { classes, selectedId, selected, loading: classesLoading, select } = useClasses(academy?.id);
 
   const [students, setStudents] = useState<StudentBalance[]>([]);
@@ -119,8 +121,8 @@ export default function ClassBoardPage() {
 
   const displayRows = useMemo(() => {
     if (!sortByName) return rows;
-    return [...rows].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-  }, [rows, sortByName]);
+    return [...rows].sort((a, b) => a.name.localeCompare(b.name, i18n.language));
+  }, [rows, sortByName, i18n.language]);
 
   const todayTotal = rows.reduce((sum, r) => sum + r.today, 0);
   const activeCount = rows.filter((r) => r.today !== 0).length;
@@ -184,7 +186,7 @@ export default function ClassBoardPage() {
     setBulkBusy(false);
     const okCount = results.filter(Boolean).length;
     if (okCount > 0) {
-      notify(`${okCount}명에게 ${signed(delta)}${pointUnit}를 지급했습니다.`);
+      notify(t('board.bulkGiveToast', { count: okCount, amount: `${signed(delta)}${pointUnit}` }));
       setSelectedIds(new Set());
     }
   }
@@ -193,16 +195,16 @@ export default function ClassBoardPage() {
     const amt = parseInt(bulkAmount, 10);
     if (!amt) return;
     const matched = presets.find((p) => p.label === bulkReason);
-    await handleBulkGive(amt, bulkReason || '직접 입력', matched?.is_homework);
+    await handleBulkGive(amt, bulkReason || t('board.customReasonDefault'), matched?.is_homework);
     setBulkAmount('');
   }
 
   const handleUndo = useCallback(
     async (tx: Transaction): Promise<boolean> => {
-      if (!confirm(`"${tx.reason}" 기록을 취소할까요?`)) return false;
-      const ok = await run(() => deleteTransaction(tx.id), '기록을 취소했습니다.');
+      if (!confirm(t('board.undoConfirm', { reason: tx.reason }))) return false;
+      const ok = await run(() => deleteTransaction(tx.id), t('board.undoToast'));
       if (ok) {
-        setTodayTx((prev) => prev.filter((t) => t.id !== tx.id));
+        setTodayTx((prev) => prev.filter((x) => x.id !== tx.id));
         setStudents((prev) =>
           prev.map((s) =>
             s.student_id === tx.student_id ? { ...s, balance: s.balance - tx.delta } : s,
@@ -211,7 +213,7 @@ export default function ClassBoardPage() {
       }
       return ok;
     },
-    [run],
+    [run, t],
   );
 
   const attendanceByStudent = useMemo(() => {
@@ -231,7 +233,7 @@ export default function ClassBoardPage() {
         teacherId: profile.id,
       });
       setAttendance((prev) => [...prev.filter((a) => a.student_id !== studentId), row]);
-    }, '등원 체크했습니다.');
+    }, t('board.checkInToast'));
     if (!ok) return;
   }
 
@@ -246,22 +248,22 @@ export default function ClassBoardPage() {
         teacherId: profile.id,
       });
       setAttendance((prev) => [...prev.filter((a) => a.student_id !== studentId), row]);
-    }, '하원 체크했습니다.');
+    }, t('board.checkOutToast'));
   }
 
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
-    const name = prompt('학생 이름을 입력하세요');
+    const name = prompt(t('board.addStudentPrompt'));
     if (!name?.trim()) return;
     const ok = await run(async () => {
       await createStudent(academy.id, selectedId, name.trim());
-    }, `${name.trim()} 학생을 추가했습니다.`);
+    }, t('board.addStudentToast', { name: name.trim() }));
     if (ok) await loadBoard();
   }
 
   async function handleRemoveStudent(studentId: string, name: string) {
-    if (!confirm(`${name} 학생의 통장과 모든 거래 기록을 삭제할까요?\n되돌릴 수 없습니다.`)) return;
-    const ok = await run(() => deleteStudent(studentId), '학생을 삭제했습니다.');
+    if (!confirm(t('board.removeStudentConfirm', { name }))) return;
+    const ok = await run(() => deleteStudent(studentId), t('board.removeStudentToast'));
     if (ok) {
       setStudents((prev) => prev.filter((s) => s.student_id !== studentId));
       setTodayTx((prev) => prev.filter((t) => t.student_id !== studentId));
@@ -287,28 +289,29 @@ export default function ClassBoardPage() {
         studentCount: activeCount,
       });
       setSettlement(s);
-    }, '오늘 내역을 통장에 적립했습니다.');
+    }, t('board.settleToast'));
     setSettling(false);
     if (ok) setModalOpen(false);
   }
 
   async function handleUnsettle() {
     if (!settlement) return;
-    if (!confirm('오늘 마감을 취소하고 다시 지급할 수 있게 할까요?')) return;
-    const ok = await run(() => deleteSettlement(settlement.id), '마감을 취소했습니다.');
+    if (!confirm(t('board.unsettleConfirm'))) return;
+    const ok = await run(() => deleteSettlement(settlement.id), t('board.unsettleToast'));
     if (ok) setSettlement(null);
   }
 
-  if (classesLoading) return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
+  if (classesLoading) return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>;
 
   if (classes.length === 0) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
-        등록된 반이 없습니다.{' '}
+        {t('board.noClasses')}{' '}
+        {t('board.noClassesBefore')}
         <Link to="/settings" className="text-primary underline">
-          설정
+          {t('nav.settings')}
         </Link>
-        에서 반을 추가해 주세요.
+        {t('board.noClassesAfter')}
       </div>
     );
   }
@@ -334,13 +337,13 @@ export default function ClassBoardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected?.name} 학생 통장{' '}
+            {t('board.title', { name: selected?.name })}{' '}
             <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
-              {rows.length}명
+              {t('board.countBadge', { count: rows.length })}
             </span>
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            총 반 경제 <strong className="text-primary">{totalEconomy}{pointUnit}</strong>
+            {t('board.totalEconomy')} <strong className="text-primary">{totalEconomy}{pointUnit}</strong>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -348,18 +351,18 @@ export default function ClassBoardPage() {
             to="/attendance"
             className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low transition-colors"
           >
-            출석부
+            {t('board.attendanceLink')}
           </Link>
           <button
             onClick={() => setShowTotal((v) => !v)}
-            title="학생들 앞에서는 꺼두세요"
+            title={t('board.showTotalHint')}
             className={`px-4 py-2 rounded-lg font-label-md text-label-md border transition-colors ${
               showTotal
                 ? 'bg-secondary-container text-on-secondary-container border-transparent'
                 : 'bg-surface-container-lowest text-on-surface-variant border-outline-variant/40 hover:bg-surface-container-low'
             }`}
           >
-            {showTotal ? '누적 숨기기' : '누적 보기'}
+            {showTotal ? t('board.hideTotal') : t('board.showTotal')}
           </button>
           <button
             onClick={() => setSortByName((v) => !v)}
@@ -370,7 +373,7 @@ export default function ClassBoardPage() {
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">filter_list</span>
-            이름순 정렬
+            {t('board.sortByName')}
           </button>
           {!locked && rows.length > 0 && (
             <button
@@ -378,14 +381,14 @@ export default function ClassBoardPage() {
               className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low transition-colors flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-[18px]">select_all</span>
-              {selectedIds.size === rows.length ? '선택 해제' : '전체 선택'}
+              {selectedIds.size === rows.length ? t('board.deselectAll') : t('board.selectAll')}
             </button>
           )}
           {locked ? (
             <span className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-label-md text-label-md">
-              오늘 마감 완료
+              {t('board.settleDone')}
               <button onClick={() => void handleUnsettle()} className="underline hover:opacity-80">
-                취소
+                {t('board.settleCancel')}
               </button>
             </span>
           ) : (
@@ -393,33 +396,31 @@ export default function ClassBoardPage() {
               onClick={() => setModalOpen(true)}
               className="px-4 py-2 rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
             >
-              오늘 마감
+              {t('board.settleButton')}
             </button>
           )}
         </div>
       </div>
 
       <div className="font-body-md text-body-md text-on-surface-variant">
-        {fmtDay(today)} · 오늘 {activeCount}명에게{' '}
-        <strong className="text-on-surface">
-          {todayTotal > 0 ? '+' : ''}
-          {todayTotal}
-          {pointUnit}
-        </strong>{' '}
-        적립
+        {t('board.todaySummary', {
+          day: fmtDay(today),
+          count: activeCount,
+          amount: `${todayTotal > 0 ? '+' : ''}${todayTotal}${pointUnit}`,
+        })}
       </div>
 
       {!locked && selectedIds.size > 0 && (
         <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-3">
           <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
-            선택된 {selectedIds.size}명에게 일괄 지급:
+            {t('board.bulkGiveLabel', { count: selectedIds.size })}
           </span>
           {presets.map((p) => (
             <button
               key={p.id}
               disabled={bulkBusy}
               onClick={() => void handleBulkGive(p.delta, p.label, p.is_homework)}
-              title={p.is_homework ? '숙제 캘린더에 기록됩니다' : undefined}
+              title={p.is_homework ? t('board.bulkHomeworkTitle') : undefined}
               className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 flex items-center gap-1 ${
                 p.delta > 0
                   ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
@@ -433,7 +434,7 @@ export default function ClassBoardPage() {
           <div className="flex gap-1.5 ml-auto">
             <input
               type="number"
-              placeholder="±숫자"
+              placeholder={t('board.amountPlaceholder')}
               value={bulkAmount}
               onChange={(e) => setBulkAmount(e.target.value)}
               onKeyDown={(e) => {
@@ -443,7 +444,7 @@ export default function ClassBoardPage() {
             />
             <input
               type="text"
-              placeholder="사유"
+              placeholder={t('board.reasonPlaceholder')}
               value={bulkReason}
               onChange={(e) => setBulkReason(e.target.value)}
               onKeyDown={(e) => {
@@ -456,14 +457,14 @@ export default function ClassBoardPage() {
               onClick={() => void handleBulkCustom()}
               className="px-3 py-1.5 rounded-lg border-2 border-primary text-primary font-label-md text-label-md hover:bg-primary/10 transition-colors whitespace-nowrap disabled:opacity-50"
             >
-              적용
+              {t('board.apply')}
             </button>
           </div>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {displayRows.map((r) => (
@@ -495,7 +496,7 @@ export default function ClassBoardPage() {
               onClick={() => void handleAddStudent()}
               className="border-2 border-dashed border-outline-variant rounded-xl min-h-[150px] flex items-center justify-center font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:border-primary transition-colors"
             >
-              + 학생 추가
+              {t('board.addStudent')}
             </button>
           )}
         </div>

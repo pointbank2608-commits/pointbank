@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { signed } from '../lib/format';
 
 interface Row {
@@ -26,6 +27,7 @@ export default function SettleModal({
   onConfirm,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
   const active = rows.filter((r) => r.today !== 0).sort((a, b) => b.today - a.today);
   const totalDelta = active.reduce((sum, r) => sum + r.today, 0);
 
@@ -40,7 +42,7 @@ export default function SettleModal({
       >
         <div className="p-5 border-b border-surface-variant flex justify-between items-center bg-surface-bright">
           <div>
-            <div className="font-title-md text-title-md text-deep-navy">오늘 통장 정리</div>
+            <div className="font-title-md text-title-md text-deep-navy">{t('settleModal.title')}</div>
             <div className="font-caption text-caption text-on-surface-variant">
               {className} · {dayLabel}
             </div>
@@ -55,9 +57,7 @@ export default function SettleModal({
 
         <div className="p-5">
           {active.length === 0 ? (
-            <div className="text-center py-6 font-body-md text-on-surface-variant">
-              오늘 적립된 포인트가 없습니다.
-            </div>
+            <div className="text-center py-6 font-body-md text-on-surface-variant">{t('settleModal.noEntries')}</div>
           ) : (
             <div className="mb-4">
               <div className="max-h-64 overflow-y-auto space-y-1">
@@ -75,7 +75,7 @@ export default function SettleModal({
               </div>
               <div className="flex justify-between items-center pt-3 mt-2 border-t border-surface-container">
                 <span className="font-label-md text-label-md text-on-surface-variant">
-                  합계 · {active.length}명
+                  {t('settleModal.totalLabel', { count: active.length })}
                 </span>
                 <span
                   className={`font-title-md text-title-md ${totalDelta >= 0 ? 'text-secondary' : 'text-error'}`}
@@ -88,8 +88,7 @@ export default function SettleModal({
           )}
 
           <p className="font-caption text-caption text-on-surface-variant mb-4 leading-relaxed">
-            마감하면 오늘 내역이 확정되고 더 이상 수정할 수 없습니다. 마감 후에도 필요하면 취소할 수
-            있어요.
+            {t('settleModal.note')}
           </p>
 
           <button
@@ -97,7 +96,7 @@ export default function SettleModal({
             onClick={onConfirm}
             className="w-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md py-3 rounded-lg shadow-sm transition-colors"
           >
-            {busy ? '적립 중…' : '통장에 적립하기'}
+            {busy ? t('settleModal.confirming') : t('settleModal.confirm')}
           </button>
         </div>
       </div>

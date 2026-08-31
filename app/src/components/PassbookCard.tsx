@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fmtTime, signed } from '../lib/format';
 import type { Attendance, Preset, Transaction } from '../lib/types';
 
@@ -51,6 +52,7 @@ export default function PassbookCard({
   onCheckIn,
   onCheckOut,
 }: Props) {
+  const { t } = useTranslation();
   const [attBusy, setAttBusy] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -84,7 +86,7 @@ export default function PassbookCard({
     if (!amt) return;
     // 사유를 프리셋 이름으로 골랐으면, 그 프리셋의 숙제 표시도 그대로 따라간다.
     const matched = presets.find((p) => p.label === reason);
-    await give(amt, reason || '직접 입력', matched?.is_homework);
+    await give(amt, reason || t('passbook.customReasonDefault'), matched?.is_homework);
     setAmount('');
   }
 
@@ -101,7 +103,7 @@ export default function PassbookCard({
           key={stampKey}
           className="stamp-pop-badge absolute top-3 right-3 w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-on-secondary font-title-md text-xs bg-secondary shadow-lg pointer-events-none z-10"
         >
-          지급!
+          {t('passbook.givenBadge')}
         </div>
       )}
 
@@ -116,7 +118,7 @@ export default function PassbookCard({
         </label>
         {!locked && (
           <button
-            title="학생 삭제"
+            title={t('passbook.removeStudent')}
             onClick={() => onRemove(studentId, name)}
             className="text-on-surface-variant hover:bg-error-container hover:text-on-error-container w-7 h-7 rounded-full flex items-center justify-center transition-colors shrink-0"
           >
@@ -128,7 +130,7 @@ export default function PassbookCard({
       <div className="flex flex-col items-center text-center mb-3 -mt-2">
         <div className="font-title-md text-title-md text-on-surface">{name}</div>
         <div className="font-caption text-caption text-on-surface-variant">
-          {className} · No. {number}
+          {className} · {t('passbook.number', { number })}
         </div>
       </div>
 
@@ -142,7 +144,7 @@ export default function PassbookCard({
               : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
           } disabled:cursor-default`}
         >
-          {attendance?.checked_in_at ? `등원 ${fmtTime(attendance.checked_in_at)}` : '등원'}
+          {attendance?.checked_in_at ? t('passbook.checkInAt', { time: fmtTime(attendance.checked_in_at) }) : t('passbook.checkIn')}
         </button>
         <button
           disabled={attBusy || !attendance?.checked_in_at || !!attendance?.checked_out_at}
@@ -153,12 +155,12 @@ export default function PassbookCard({
               : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
           } disabled:opacity-50 disabled:cursor-default`}
         >
-          {attendance?.checked_out_at ? `하원 ${fmtTime(attendance.checked_out_at)}` : '하원'}
+          {attendance?.checked_out_at ? t('passbook.checkOutAt', { time: fmtTime(attendance.checked_out_at) }) : t('passbook.checkOut')}
         </button>
       </div>
 
       <div className="flex flex-col items-center mb-4 pb-4 border-b border-surface-container">
-        <div className="font-caption text-caption text-on-surface-variant mb-1">오늘 적립</div>
+        <div className="font-caption text-caption text-on-surface-variant mb-1">{t('passbook.todayEarned')}</div>
         <div
           className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-warm-yellow/20 font-display-lg text-[40px] ${toneClass}`}
         >
@@ -169,7 +171,7 @@ export default function PassbookCard({
         </div>
         {showTotal && (
           <div className="font-body-md text-body-md text-on-surface-variant mt-2">
-            누적 <strong className="text-on-surface">{total}</strong>
+            {t('passbook.total')} <strong className="text-on-surface">{total}</strong>
             {pointUnit}
           </div>
         )}
@@ -183,7 +185,7 @@ export default function PassbookCard({
                 key={p.id}
                 disabled={busy}
                 onClick={() => void give(p.delta, p.label, p.is_homework)}
-                title={p.is_homework ? '숙제 캘린더에 기록됩니다' : undefined}
+                title={p.is_homework ? t('passbook.homeworkTitle') : undefined}
                 className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors disabled:opacity-50 flex items-center gap-1 ${
                   p.delta > 0
                     ? 'bg-secondary-container text-on-secondary-container hover:opacity-80'
@@ -199,7 +201,7 @@ export default function PassbookCard({
           <div className="flex gap-1.5 mb-4">
             <input
               type="number"
-              placeholder="±숫자"
+              placeholder={t('passbook.amountPlaceholder')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               onKeyDown={(e) => {
@@ -212,7 +214,7 @@ export default function PassbookCard({
               onChange={(e) => setReason(e.target.value)}
               className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
             >
-              <option value="">직접 입력</option>
+              <option value="">{t('passbook.customReasonOption')}</option>
               {presets.map((p) => (
                 <option key={p.id} value={p.label}>
                   {p.label} ({signed(p.delta)})
@@ -224,7 +226,7 @@ export default function PassbookCard({
               onClick={() => void handleCustom()}
               className="bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-label-md text-label-md px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
             >
-              지급/차감
+              {t('passbook.giveButton')}
             </button>
           </div>
         </>
@@ -236,31 +238,32 @@ export default function PassbookCard({
           onClick={() => setHistoryOpen((v) => !v)}
           className="w-full flex items-center justify-between font-caption text-caption text-on-surface-variant mb-1.5 hover:text-on-surface transition-colors"
         >
-          <span>오늘 내역{todayTx.length > 0 ? ` (${todayTx.length})` : ''}</span>
+          <span>
+            {t('passbook.todayHistory')}
+            {todayTx.length > 0 ? ` (${todayTx.length})` : ''}
+          </span>
           <span className="flex items-center gap-0.5">
-            {historyOpen ? '숨기기' : '펼치기'}
+            {historyOpen ? t('passbook.hide') : t('passbook.show')}
             <span className="material-symbols-outlined text-base">
               {historyOpen ? 'expand_less' : 'expand_more'}
             </span>
           </span>
         </button>
         {historyOpen && (todayTx.length === 0 ? (
-          <div className="font-caption text-caption text-on-surface-variant/70 py-2">
-            아직 오늘 적립이 없어요.
-          </div>
+          <div className="font-caption text-caption text-on-surface-variant/70 py-2">{t('passbook.noHistory')}</div>
         ) : (
           <div className="space-y-1 max-h-40 overflow-y-auto">
-            {todayTx.map((t) => (
-              <div key={t.id} className="flex justify-between items-center py-1 font-caption text-caption">
+            {todayTx.map((tx) => (
+              <div key={tx.id} className="flex justify-between items-center py-1 font-caption text-caption">
                 <span className="text-on-surface-variant truncate mr-2">
-                  {fmtTime(t.created_at)} · {t.reason}
+                  {fmtTime(tx.created_at)} · {tx.reason}
                 </span>
                 <span className="flex items-center gap-1.5 shrink-0">
-                  <span className={t.delta > 0 ? 'text-secondary' : 'text-error'}>{signed(t.delta)}</span>
+                  <span className={tx.delta > 0 ? 'text-secondary' : 'text-error'}>{signed(tx.delta)}</span>
                   {!locked && (
                     <button
-                      title="이 기록 취소"
-                      onClick={() => void onUndo(t)}
+                      title={t('passbook.undoEntry')}
+                      onClick={() => void onUndo(tx)}
                       className="text-on-surface-variant hover:text-error w-4 h-4 flex items-center justify-center"
                     >
                       ✕
