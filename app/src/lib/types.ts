@@ -165,7 +165,8 @@ export type GameType =
   | 'whackamole'
   | 'flashcards'
   | 'anagram'
-  | 'groupsort';
+  | 'groupsort'
+  | 'unscramble';
 
 export interface GameItem {
   id: string;

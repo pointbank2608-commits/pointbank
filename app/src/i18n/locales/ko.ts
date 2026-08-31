@@ -605,6 +605,33 @@ const ko = {
     ],
   },
 
+  gameUnscramble: {
+    studentClassTitle: '{{className}} 문장 배열하기',
+    newButton: '+ 새 문장 배열하기',
+    namePlaceholder: '예: 3학년 교과서 핵심 문장',
+    emptyStaff: '아직 문장이 없어요. 아래 "+ 새 문장 배열하기"로 첫 문장을 등록해보세요!',
+    emptyStudent: '아직 선생님이 만든 문장 배열하기가 없어요.',
+    settingsTitle: '문장 배열하기 편집',
+    editorHint: '단어가 2개 이상인 문장만 게임에 나와요.',
+    newSentencePlaceholder: '예: I like apples.',
+    clearAllConfirm: '등록된 문장을 전부 삭제할까요?',
+    needParticipants: '단어가 2개 이상인 문장을 1개 이상 등록해야 시작할 수 있어요.',
+    answerAreaHint: '아래 단어를 눌러 순서대로 여기에 채우세요',
+    wrongHint: '순서가 맞지 않아요. 단어를 눌러 다시 배치해보세요.',
+    reshuffleButton: '단어 다시 섞기',
+    nextButton: '다음 문장',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    finishedTitle: '문장 배열하기 완료!',
+    restartButton: '다시 하기',
+    infoDescription: '뒤섞인 단어를 순서대로 눌러서 올바른 문장을 완성하는 게임이에요.',
+    infoSteps: [
+      '설정에서 단어가 2개 이상인 문장을 등록하세요.',
+      '아래쪽 단어 보관함에서 단어를 순서대로 눌러 위쪽 정답 칸에 채우세요.',
+      '잘못 눌렀으면 정답 칸의 단어를 다시 눌러 보관함으로 되돌릴 수 있어요.',
+      '단어를 다 채우면 자동으로 문장을 확인하고, 맞으면 "다음 문장"으로 넘어가요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -659,6 +686,8 @@ const ko = {
     anagramDesc: '뒤섞인 글자를 눌러 순서대로 배치해서 단어를 완성해요.',
     groupsortName: '그룹 정렬',
     groupsortDesc: '항목을 보고 올바른 그룹 상자에 넣어 분류해요.',
+    unscrambleName: '문장 배열하기',
+    unscrambleDesc: '뒤섞인 단어를 순서대로 눌러 올바른 문장을 완성해요.',
   },
 
   gameSound: {

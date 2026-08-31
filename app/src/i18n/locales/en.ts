@@ -607,6 +607,33 @@ const en: Ko = {
     ],
   },
 
+  gameUnscramble: {
+    studentClassTitle: "{{className}}'s Sentence Unscramble",
+    newButton: '+ New sentence unscramble',
+    namePlaceholder: 'e.g. 3rd grade textbook key sentences',
+    emptyStaff: 'No sentences yet. Tap "+ New sentence unscramble" below to add your first one!',
+    emptyStudent: "Your teacher hasn't made a sentence unscramble yet.",
+    settingsTitle: 'Edit sentence unscramble',
+    editorHint: 'Only sentences with 2 or more words show up in the game.',
+    newSentencePlaceholder: 'e.g. I like apples.',
+    clearAllConfirm: 'Delete all the sentences?',
+    needParticipants: 'Add at least 1 sentence with 2 or more words to start.',
+    answerAreaHint: 'Tap the words below, in order, to fill this area',
+    wrongHint: "That's not quite right yet. Tap a word to move it back and try again.",
+    reshuffleButton: 'Reshuffle words',
+    nextButton: 'Next sentence',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'Sentence Unscramble complete!',
+    restartButton: 'Play again',
+    infoDescription: 'Tap the scrambled words in order to build the correct sentence.',
+    infoSteps: [
+      'In settings, add sentences with 2 or more words.',
+      'Tap words from the tray below, in order, to fill the answer area above.',
+      'Tapped the wrong word? Tap it again in the answer row to send it back to the tray.',
+      'Once every word is placed it checks automatically — get it right and tap "Next sentence" to continue.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -661,6 +688,8 @@ const en: Ko = {
     anagramDesc: 'Tap scrambled letters in order to spell out each word.',
     groupsortName: 'Group Sort',
     groupsortDesc: 'Sort each item into the group box it belongs to.',
+    unscrambleName: 'Sentence Unscramble',
+    unscrambleDesc: 'Tap scrambled words in order to build the correct sentence.',
   },
 
   gameSound: {

@@ -270,6 +270,19 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.groupsortName',
     descKey: 'gamesList.groupsortDesc',
   },
+  {
+    type: 'unscramble',
+    number: 22,
+    category: 'sentence',
+    // 문장(여러 단어)이 통째로 하나의 항목이라 다른 게임(칸에 짧은 단어를 넣는 식)과는
+    // 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'reorder',
+    path: '/games/unscramble',
+    cover: null,
+    nameKey: 'gamesList.unscrambleName',
+    descKey: 'gamesList.unscrambleDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

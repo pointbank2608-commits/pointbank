@@ -28,6 +28,7 @@ import PopcornPage from './pages/PopcornPage';
 import QuizPage from './pages/QuizPage';
 import ResultsPage from './pages/ResultsPage';
 import SaveOrGivePage from './pages/SaveOrGivePage';
+import SentenceUnscramblePage from './pages/SentenceUnscramblePage';
 import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
 import TicTacToePage from './pages/TicTacToePage';
@@ -116,6 +117,7 @@ export default function App() {
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
+            <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -144,6 +146,7 @@ export default function App() {
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
+            <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}
