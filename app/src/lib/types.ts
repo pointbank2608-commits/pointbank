@@ -144,7 +144,7 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe' | 'saveorgive';
+export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe' | 'saveorgive' | 'findmissing';
 
 export interface GameItem {
   id: string;
@@ -171,6 +171,8 @@ export interface GameTemplateConfig {
   resultSound?: MusicSelection | null;
   /** Save it or Give it 전용: 상자를 열었을 때 나올 수 있는 반전 결과 목록. */
   rewardPool?: SaveOrGiveReward[];
+  /** 사라진 항목 찾기 전용: 한 판에서 몇 개를 숨길지 (기본 1). */
+  revealCount?: number;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

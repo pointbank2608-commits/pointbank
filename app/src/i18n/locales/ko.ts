@@ -183,6 +183,24 @@ const ko = {
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
   },
 
+  gameFindMissing: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 사라진 항목 찾기',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 기억력 게임',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '사라진 항목 찾기 설정',
+    needParticipants: '항목을 2개 이상 등록해야 시작할 수 있어요.',
+    startButton: '시작하기',
+    memorizeHint: '카드를 잘 기억해 두세요!',
+    missingPrompt: '무엇이 사라졌을까요?',
+    tapToRevealHint: '학생이 답을 말하면, 그 칸을 눌러 정답을 확인하세요.',
+    allFoundMessage: '모두 찾았어요!',
+    playAgainButton: '다시 하기',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -199,6 +217,8 @@ const ko = {
     tictactoeDesc: '항목을 등록해 두고 두 팀이 번갈아 칸을 채워요.',
     saveorgiveName: 'Save it or Give it',
     saveorgiveDesc: '정답을 맞히고 상자를 열어 점수를 우리 팀이 가질지 상대에게 줄지 골라요.',
+    findmissingName: '사라진 항목 찾기',
+    findmissingDesc: '항목을 잘 기억해 뒀다가 사라진 걸 맞혀요.',
   },
 
   gameSound: {

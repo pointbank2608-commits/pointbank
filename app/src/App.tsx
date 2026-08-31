@@ -9,6 +9,7 @@ import BombPage from './pages/BombPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
+import FindMissingPage from './pages/FindMissingPage';
 import GamesPage from './pages/GamesPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
 import LadderPage from './pages/LadderPage';
@@ -88,6 +89,7 @@ export default function App() {
             <Route path="/games/timer" element={<TimerMatchPage />} />
             <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
+            <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -102,6 +104,7 @@ export default function App() {
             <Route path="/games/timer" element={<TimerMatchPage />} />
             <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
+            <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

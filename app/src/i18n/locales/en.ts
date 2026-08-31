@@ -185,6 +185,24 @@ const en: Ko = {
     needParticipants: 'Register at least 1 item to get started.',
   },
 
+  gameFindMissing: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s What's Missing?",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Memory review game',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: "What's Missing? settings",
+    needParticipants: 'Register at least 2 items to get started.',
+    startButton: 'Start',
+    memorizeHint: 'Take a good look and remember the cards!',
+    missingPrompt: "What's missing?",
+    tapToRevealHint: "When a student answers, tap that card to reveal it.",
+    allFoundMessage: 'Found them all!',
+    playAgainButton: 'Play again',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -201,6 +219,8 @@ const en: Ko = {
     tictactoeDesc: 'Register items, then take turns filling the board as two teams.',
     saveorgiveName: 'Save it or Give it',
     saveorgiveDesc: 'Answer correctly, open the box, and choose whether your team keeps the points or hands them over.',
+    findmissingName: "What's Missing?",
+    findmissingDesc: 'Memorize the cards, then spot which ones disappeared.',
   },
 
   gameSound: {

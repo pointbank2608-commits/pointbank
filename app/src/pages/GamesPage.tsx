@@ -65,6 +65,14 @@ export default function GamesPage() {
       desc: t('gamesList.saveorgiveDesc'),
       path: '/games/saveorgive',
     },
+    {
+      key: 'findmissing',
+      cover: null,
+      icon: 'search',
+      name: t('gamesList.findmissingName'),
+      desc: t('gamesList.findmissingDesc'),
+      path: '/games/findmissing',
+    },
   ];
 
   return (
