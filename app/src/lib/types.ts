@@ -160,7 +160,8 @@ export type GameType =
   | 'twodice'
   | 'quiz'
   | 'hangman'
-  | 'truefalse';
+  | 'truefalse'
+  | 'matchup';
 
 export interface GameItem {
   id: string;
@@ -208,6 +209,11 @@ export interface GameTemplateConfig {
    * 모양이 달라 여기 별도로 둔다 — "다른 게임으로 열기" 대상에서 자연히 제외된다.
    */
   statements?: TrueFalseStatement[];
+  /**
+   * 매치업 전용: 단어+뜻 짝 목록. 역시 공용 items 모델(단일 라벨)로는 "짝"을 표현할 수
+   * 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
+   */
+  pairs?: MatchPair[];
 }
 
 export interface QuizQuestion {
@@ -221,6 +227,12 @@ export interface TrueFalseStatement {
   id: string;
   text: string;
   isTrue: boolean;
+}
+
+export interface MatchPair {
+  id: string;
+  left: string;
+  right: string;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

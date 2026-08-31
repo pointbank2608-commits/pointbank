@@ -364,6 +364,24 @@ const ko = {
     wrongFeedback: '아쉬워요!',
   },
 
+  gameMatchup: {
+    studentClassTitle: '{{className}} 매치업',
+    newButton: '+ 새 매치업',
+    namePlaceholder: '예: 3학년 동물 영단어 매치업',
+    emptyStaff: '아직 매치업이 없어요. 아래 "+ 새 매치업"으로 첫 매치업을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 매치업이 없어요.',
+    settingsTitle: '매치업 편집',
+    pairLabel: '짝 {{n}}',
+    leftPlaceholder: '단어',
+    rightPlaceholder: '뜻',
+    addPairButton: '+ 짝 추가',
+    removePairButton: '짝 삭제',
+    needPairs: '짝을 2개 이상 추가해야 시작할 수 있어요.',
+    wrongCountLabel: '오답 {{count}}번',
+    finishedTitle: '짝을 모두 찾았어요!',
+    restartButton: '다시 섞기',
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -408,6 +426,8 @@ const ko = {
     hangmanDesc: '한 글자씩 맞혀서 숨겨진 단어를 완성해요.',
     truefalseName: '참 또는 거짓',
     truefalseDesc: '문장을 보고 참인지 거짓인지 맞혀요.',
+    matchupName: '매치업',
+    matchupDesc: '단어와 뜻 짝을 찾아 연결해요.',
   },
 
   gameSound: {

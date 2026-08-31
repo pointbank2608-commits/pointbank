@@ -366,6 +366,24 @@ const en: Ko = {
     wrongFeedback: 'Not quite!',
   },
 
+  gameMatchup: {
+    studentClassTitle: "{{className}}'s Matchup",
+    newButton: '+ New matchup',
+    namePlaceholder: 'e.g. 3rd grade animal words matchup',
+    emptyStaff: 'No matchups yet. Tap "+ New matchup" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a matchup yet.",
+    settingsTitle: 'Edit matchup',
+    pairLabel: 'Pair {{n}}',
+    leftPlaceholder: 'Word',
+    rightPlaceholder: 'Meaning',
+    addPairButton: '+ Add pair',
+    removePairButton: 'Remove pair',
+    needPairs: 'Add at least 2 pairs to start.',
+    wrongCountLabel: '{{count}} misses',
+    finishedTitle: 'All pairs matched!',
+    restartButton: 'Shuffle & try again',
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -410,6 +428,8 @@ const en: Ko = {
     hangmanDesc: 'Guess letters one at a time to reveal the hidden word.',
     truefalseName: 'True or False',
     truefalseDesc: 'Read a statement and decide if it is true or false.',
+    matchupName: 'Matchup',
+    matchupDesc: 'Find and connect each word with its meaning.',
   },
 
   gameSound: {

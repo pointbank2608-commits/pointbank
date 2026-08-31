@@ -212,6 +212,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.truefalseName',
     descKey: 'gamesList.truefalseDesc',
   },
+  {
+    type: 'matchup',
+    number: 17,
+    category: 'vocabulary',
+    // 단어+뜻 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'link',
+    path: '/games/matchup',
+    cover: null,
+    nameKey: 'gamesList.matchupName',
+    descKey: 'gamesList.matchupDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
