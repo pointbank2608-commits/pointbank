@@ -725,6 +725,30 @@ const en: Ko = {
     ],
   },
 
+  gameWordSearch: {
+    studentClassTitle: "{{className}}'s Word Search",
+    newButton: '+ New word search',
+    namePlaceholder: 'e.g. 3rd grade animal words word search',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No word searches yet. Tap "+ New word search" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a word search yet.",
+    settingsTitle: 'Edit word search',
+    editorHint: 'Only words with 2+ letters get hidden in the grid. Grid size is set automatically based on word length.',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word with 2 or more letters to start.',
+    foundLabel: '{{found}} / {{total}} found',
+    finishedTitle: 'Found every word!',
+    restartButton: 'Shuffle & try again',
+    infoDescription: 'Find the words hidden inside a grid of letters.',
+    infoSteps: [
+      'In settings, add the words to hide in the grid (2+ letters each).',
+      'Words are hidden randomly across the grid — horizontally, vertically, or diagonally.',
+      "Tap a word's first letter, then its last letter, to select the line between them.",
+      'A match turns green and gets crossed off the word list below.',
+      'Find every word to finish.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -787,6 +811,8 @@ const en: Ko = {
     spellwordDesc: 'See a word briefly, then type its spelling from memory.',
     rankorderName: 'Rank Order',
     rankorderDesc: 'Move items into their correct, pre-set order.',
+    wordsearchName: 'Word Search',
+    wordsearchDesc: 'Find the words hidden inside a grid of letters.',
   },
 
   gameSound: {

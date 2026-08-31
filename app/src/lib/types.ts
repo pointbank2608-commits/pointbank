@@ -169,7 +169,8 @@ export type GameType =
   | 'unscramble'
   | 'typeanswer'
   | 'spellword'
-  | 'rankorder';
+  | 'rankorder'
+  | 'wordsearch';
 
 export interface GameItem {
   id: string;

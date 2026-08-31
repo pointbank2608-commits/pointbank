@@ -723,6 +723,30 @@ const ko = {
     ],
   },
 
+  gameWordSearch: {
+    studentClassTitle: '{{className}} 워드서치',
+    newButton: '+ 새 워드서치',
+    namePlaceholder: '예: 3학년 동물 단어 워드서치',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 워드서치가 없어요. 아래 "+ 새 워드서치"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 워드서치가 없어요.',
+    settingsTitle: '워드서치 편집',
+    editorHint: '2글자 이상인 단어만 격자에 숨겨져요. 격자 크기는 단어 길이에 맞춰 자동으로 정해져요.',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '2글자 이상인 단어를 1개 이상 등록해야 시작할 수 있어요.',
+    foundLabel: '{{found}} / {{total}} 찾음',
+    finishedTitle: '단어를 모두 찾았어요!',
+    restartButton: '다시 섞기',
+    infoDescription: '글자 격자 안에 숨어있는 단어를 찾아 표시하는 게임이에요.',
+    infoSteps: [
+      '설정에서 격자에 숨길 단어를 등록하세요(2글자 이상).',
+      '단어는 가로·세로·대각선 방향으로 격자 안에 무작위로 숨겨져요.',
+      '단어의 첫 글자를 누르고, 이어서 마지막 글자를 누르면 그 사이가 한 줄로 선택돼요.',
+      '숨은 단어와 일치하면 초록색으로 표시되고, 아래 단어 목록에 줄이 그어져요.',
+      '모든 단어를 다 찾으면 완료돼요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -785,6 +809,8 @@ const ko = {
     spellwordDesc: '단어를 잠깐 보고 기억해서 철자를 직접 입력해요.',
     rankorderName: '순위',
     rankorderDesc: '항목을 움직여서 미리 정해둔 올바른 순서로 정렬해요.',
+    wordsearchName: '워드서치',
+    wordsearchDesc: '글자 격자 안에 숨어있는 단어를 찾아요.',
   },
 
   gameSound: {

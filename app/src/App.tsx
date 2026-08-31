@@ -40,6 +40,7 @@ import TwoDicePage from './pages/TwoDicePage';
 import TypeAnswerPage from './pages/TypeAnswerPage';
 import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
+import WordSearchPage from './pages/WordSearchPage';
 
 export default function App() {
   const { t } = useTranslation();
@@ -124,6 +125,7 @@ export default function App() {
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
+            <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -156,6 +158,7 @@ export default function App() {
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
+            <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}
