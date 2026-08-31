@@ -156,7 +156,8 @@ export type GameType =
   | 'baskin31'
   | 'connect4'
   | 'popcorn'
-  | 'passball';
+  | 'passball'
+  | 'twodice';
 
 export interface GameItem {
   id: string;

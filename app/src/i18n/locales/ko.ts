@@ -278,6 +278,22 @@ const ko = {
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
   },
 
+  gameTwoDice: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 두 주사위 읽기',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 주사위 게임',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '두 주사위 읽기 설정',
+    rollButton: '주사위 굴리기',
+    rolling: '굴리는 중…',
+    reshuffleButton: '판 새로 섞기',
+    recentResults: '최근 결과',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -304,6 +320,8 @@ const ko = {
     popcornDesc: '팝콘을 뽑아 단어를 읽어요. POP! 카드가 나오면 점수가 초기화돼요.',
     passballName: '공 돌리기',
     passballDesc: '음악이 멈추면 공을 든 사람이 미션 단어를 읽어요.',
+    twodiceName: '두 주사위 읽기',
+    twodiceDesc: '주사위 2개를 굴려 나온 칸의 단어를 읽어요.',
   },
 
   gameSound: {

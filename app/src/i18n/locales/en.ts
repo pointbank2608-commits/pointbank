@@ -280,6 +280,22 @@ const en: Ko = {
     needParticipants: 'Register at least 1 item to get started.',
   },
 
+  gameTwoDice: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Two Dice",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary dice game',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Two Dice settings',
+    rollButton: 'Roll the dice',
+    rolling: 'Rolling…',
+    reshuffleButton: 'Reshuffle the board',
+    recentResults: 'Recent results',
+    needParticipants: 'Register at least 1 item to get started.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -306,6 +322,8 @@ const en: Ko = {
     popcornDesc: 'Pop the popcorn and read the word — watch out for the POP! card that resets your score.',
     passballName: 'Pass the Ball',
     passballDesc: 'When the music stops, whoever has the ball reads the mission word.',
+    twodiceName: 'Two Dice',
+    twodiceDesc: 'Roll two dice and read the word at that grid spot.',
   },
 
   gameSound: {

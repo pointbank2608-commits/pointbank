@@ -105,6 +105,14 @@ export default function GamesPage() {
       desc: t('gamesList.passballDesc'),
       path: '/games/passball',
     },
+    {
+      key: 'twodice',
+      cover: null,
+      icon: 'casino',
+      name: t('gamesList.twodiceName'),
+      desc: t('gamesList.twodiceDesc'),
+      path: '/games/twodice',
+    },
   ];
 
   return (
