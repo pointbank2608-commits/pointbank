@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Baskin31 from '../components/Baskin31';
+import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
@@ -265,6 +266,11 @@ export default function Baskin31Page() {
       >
         {t('gameAdmin.backToList')}
       </Link>
+
+      <GameInfoPanel
+        description={t('gameBaskin31.infoDescription')}
+        steps={t('gameBaskin31.infoSteps', { returnObjects: true }) as string[]}
+      />
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import TrueFalse from '../components/TrueFalse';
@@ -252,6 +253,11 @@ export default function TrueFalsePage() {
       >
         {t('gameAdmin.backToList')}
       </Link>
+
+      <GameInfoPanel
+        description={t('gameTrueFalse.infoDescription')}
+        steps={t('gameTrueFalse.infoSteps', { returnObjects: true }) as string[]}
+      />
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>

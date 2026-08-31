@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import TicTacToe from '../components/TicTacToe';
+import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
@@ -241,6 +242,11 @@ export default function TicTacToePage() {
       >
         {t('gameAdmin.backToList')}
       </Link>
+
+      <GameInfoPanel
+        description={t('gameTicTacToe.infoDescription')}
+        steps={t('gameTicTacToe.infoSteps', { returnObjects: true }) as string[]}
+      />
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>

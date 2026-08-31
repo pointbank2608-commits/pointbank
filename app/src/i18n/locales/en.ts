@@ -35,6 +35,13 @@ const en: Ko = {
     spinning: 'Spinning…',
     spinButton: 'Spin',
     winnerLabel: 'Winner',
+    infoDescription: 'Register items and spin the wheel to randomly pick one.',
+    infoSteps: [
+      'In settings, add the items you want to pick from (student names, words, etc.).',
+      'Tap "Spin" to spin the wheel.',
+      'When the wheel stops, whatever the arrow points to is the result.',
+      'Tap the button again to spin another round.',
+    ],
   },
 
   gameLadder: {
@@ -57,6 +64,13 @@ const en: Ko = {
     revealAllButton: 'Reveal all at once',
     revealOneButton: 'Reveal one by one',
     oneByOneHint: 'Tap a name to reveal just that person’s result.',
+    infoDescription: 'Register participants and results, then run the ladder to randomly pair them up.',
+    infoSteps: [
+      'In settings, add participants and results (prizes, teams, etc.) — both lists need the same count.',
+      'Tap "Reveal all at once" to watch the animation trace each path down.',
+      'Whatever result each participant lands on becomes their match.',
+      'Tap the button again to reshuffle.',
+    ],
   },
 
   gameOrder: {
@@ -81,6 +95,13 @@ const en: Ko = {
     revealing: 'Drawing order…',
     drawAgain: 'Draw again',
     startDraw: 'Start the draw',
+    infoDescription: 'Register names and randomly draw an order (1st, 2nd, ...).',
+    infoSteps: [
+      'In settings, add at least 2 participant names.',
+      'Tap "Start the draw" to mix everyone up.',
+      'Results are revealed one by one in order.',
+      'Tap "Draw again" to run it again.',
+    ],
   },
 
   gameBomb: {
@@ -105,6 +126,14 @@ const en: Ko = {
     explodedCaught: 'Boom! Caught holding it',
     explodedTimerOnly: 'Boom! 💥',
     resetButton: 'Play again',
+    infoDescription: 'Pass a bomb around that explodes at a random time.',
+    infoSteps: [
+      'In settings, add at least 2 participants and choose Pass mode or Timer mode.',
+      'Tap "Start passing the bomb" to hand it to the first participant.',
+      'Tap "Pass to next person" to hand the bomb along.',
+      'Whoever is holding it when it explodes is caught.',
+      'Tap "Play again" to start over.',
+    ],
   },
 
   gameTimer: {
@@ -137,6 +166,13 @@ const en: Ko = {
     tryAgainButton: 'Try again',
     nextPersonButton: 'Next person',
     seeResultsButton: 'See results',
+    infoDescription: 'Hit start and stop as close to the target time as you can.',
+    infoSteps: [
+      'In settings, add participants and set the target time and mode (practice or ranked).',
+      'Tap "Start", then tap "Stop" when you think the target time has passed.',
+      'The smaller the difference from the target time, the better the score.',
+      'In ranked mode, each participant takes a turn and a leaderboard appears at the end.',
+    ],
   },
 
   gameTicTacToe: {
@@ -156,6 +192,13 @@ const en: Ko = {
     playAgainButton: 'Play again',
     needParticipants: 'Register at least 1 item to start a tic-tac-toe game.',
     boardHint: "Tap a cell to mark it for that team.",
+    infoDescription: 'Fill a 3x3 board with 9 words and take turns as two teams.',
+    infoSteps: [
+      'In settings, add 9 words (if you add more, 9 are picked at random).',
+      'Tap a square to show that word large on screen.',
+      "When a student answers correctly, mark that team's symbol in the square.",
+      'The first team to connect 3 in a row (across, down, or diagonal) wins.',
+    ],
   },
 
   gameSaveOrGive: {
@@ -183,6 +226,13 @@ const en: Ko = {
     nextRoundButton: 'Next round',
     resetButton: 'Restart from scratch',
     needParticipants: 'Register at least 1 item to get started.',
+    infoDescription: 'Answer correctly, open a box, and choose whether your team keeps the points or gives them away.',
+    infoSteps: [
+      'In settings, add words.',
+      'Show a word, and once a student answers correctly, tap "Mark correct".',
+      'Choose "Save it" (keep) or "Give it" (hand to the other team) to open the box.',
+      "The box opens with a random point effect, and each team's running score stays on screen.",
+    ],
   },
 
   gameFindMissing: {
@@ -201,6 +251,13 @@ const en: Ko = {
     tapToRevealHint: "When a student answers, tap that card to reveal it.",
     allFoundMessage: 'Found them all!',
     playAgainButton: 'Play again',
+    infoDescription: 'Items flash on screen briefly, then a few disappear — guess what went missing.',
+    infoSteps: [
+      'In settings, add around 5-8 items.',
+      'Tap "Start" — the item cards appear for a moment, then a few turn into question marks.',
+      'Once a student guesses what\'s missing, tap that card to reveal it.',
+      'Tap "Play again" to hide a different random set.',
+    ],
   },
 
   gameBaskin31: {
@@ -221,6 +278,13 @@ const en: Ko = {
     loseMessage: '{{team}} said {{target}}! They lose!',
     playAgainButton: 'Play again',
     needParticipants: 'Register at least 1 item to get started.',
+    infoDescription: 'Count 1-3 numbers at a time — whoever is forced to say the target number (default 31) loses.',
+    infoSteps: [
+      'In settings, add the words to read aloud while counting, and set the target number.',
+      'Blue and red teams take turns choosing to count 1, 2, or 3 numbers.',
+      'Read the registered words aloud in order as you count.',
+      'Whichever team is forced to say the target number loses.',
+    ],
   },
 
   gameConnect4: {
@@ -240,6 +304,13 @@ const en: Ko = {
     playAgainButton: 'Play again',
     needParticipants: 'Register at least 1 item to get started.',
     columnHint: 'Tap an arrow to drop a marker into that column.',
+    infoDescription: 'Stack word tiles from the bottom and be the first to connect 4 in a row.',
+    infoSteps: [
+      'In settings, add words.',
+      "Tap a column to drop your team's tile into the lowest open spot.",
+      'Teams take turns tapping columns.',
+      'The first team to connect 4 — across, down, or diagonal — wins.',
+    ],
   },
 
   gamePopcorn: {
@@ -259,6 +330,13 @@ const en: Ko = {
     scoreLabel: 'Score',
     resetButton: 'Restart from scratch',
     needParticipants: 'Register at least 1 item to get started.',
+    infoDescription: 'Draw a popcorn card and read the word — but a POP! card resets your accumulated score.',
+    infoSteps: [
+      'In settings, add words.',
+      'The student whose turn it is taps "Pop the popcorn" and reads the word.',
+      "Correct answers add points, but a POP! card resets that team's score.",
+      'The round ends once all popcorn cards are drawn.',
+    ],
   },
 
   gamePassBall: {
@@ -278,6 +356,13 @@ const en: Ko = {
     missionLabel: "Today's mission word",
     resetButton: 'Play again',
     needParticipants: 'Register at least 1 item to get started.',
+    infoDescription: "Pass the ball while the music plays — whoever's holding it when it stops reads the mission word.",
+    infoSteps: [
+      'In settings, add mission words and pick background music.',
+      'Tap "Start passing the ball" — the music plays and stops after a random amount of time.',
+      'Whoever is holding the ball when it stops reads the word on screen.',
+      'Tap "Play again" to begin the next round.',
+    ],
   },
 
   gameTwoDice: {
@@ -294,6 +379,13 @@ const en: Ko = {
     reshuffleButton: 'Reshuffle the board',
     recentResults: 'Recent results',
     needParticipants: 'Register at least 1 item to get started.',
+    infoDescription: 'Roll two dice and read the word in the matching square.',
+    infoSteps: [
+      'In settings, add words to fill the 6x6 grid.',
+      'Tap "Roll the dice" to roll two dice at random.',
+      'Read the word in the square the two numbers point to.',
+      'Tap the button again to roll another round.',
+    ],
   },
 
   gameQuiz: {
@@ -318,6 +410,13 @@ const en: Ko = {
     restartButton: 'Try again',
     correctFeedback: 'Correct!',
     wrongFeedback: 'Not quite!',
+    infoDescription: 'Answer multiple-choice questions and track how many you get right.',
+    infoSteps: [
+      'In settings, add questions and choices, and mark which choice is correct.',
+      'When a question appears, tap one of the choices to answer.',
+      'Correct or incorrect shows immediately on screen.',
+      'Tap "Next question" to continue — your final score appears at the end.',
+    ],
   },
 
   gameHangman: {
@@ -341,6 +440,13 @@ const en: Ko = {
     restartButton: 'Play again',
     wonFeedback: 'You got it!',
     lostFeedback: 'So close! The word was "{{word}}".',
+    infoDescription: 'Guess letters one at a time to reveal the hidden word.',
+    infoSteps: [
+      'In settings, add words and set how many wrong guesses are allowed.',
+      'Look at the blanks and type one letter at a time to guess.',
+      'Each wrong guess removes a heart — run out and that round is a miss.',
+      'Guess the word correctly, then tap "Next word" to continue.',
+    ],
   },
 
   gameTrueFalse: {
@@ -364,6 +470,13 @@ const en: Ko = {
     restartButton: 'Try again',
     correctFeedback: 'Correct!',
     wrongFeedback: 'Not quite!',
+    infoDescription: "Read a statement and decide whether it's true or false.",
+    infoSteps: [
+      'In settings, add statements and mark each one true or false.',
+      'When a statement appears, tap "⭕ True" or "❌ False".',
+      'Correct or incorrect shows immediately on screen.',
+      'Tap "Next statement" to continue — your final score appears at the end.',
+    ],
   },
 
   gameMatchup: {
@@ -382,6 +495,13 @@ const en: Ko = {
     wrongCountLabel: '{{count}} misses',
     finishedTitle: 'All pairs matched!',
     restartButton: 'Shuffle & try again',
+    infoDescription: 'Find and connect each word with its meaning.',
+    infoSteps: [
+      'In settings, add word-meaning pairs.',
+      'Tap a word on the left and its meaning on the right to try to match them.',
+      'A correct match turns green; a wrong one flashes red for a moment.',
+      'Match every pair to finish.',
+    ],
   },
 
   gameWhackamole: {
@@ -397,6 +517,13 @@ const en: Ko = {
     resultLabel: '{{hits}} hits · {{misses}} misses',
     finishedTitle: 'Whack-a-mole complete!',
     restartButton: 'Play again',
+    infoDescription: 'Click each word as it pops up, before it disappears.',
+    infoSteps: [
+      'In settings, add words.',
+      'A word randomly pops up in one of 9 holes.',
+      'Click that hole before the word disappears to catch it.',
+      'Once every word has had a turn, your hits and misses are shown.',
+    ],
   },
 
   gameFlashcards: {
@@ -418,6 +545,13 @@ const en: Ko = {
     nextButton: 'Next',
     finishedTitle: "You've gone through all the cards!",
     restartButton: 'Review again',
+    infoDescription: 'Flip cards to memorize words and their meanings.',
+    infoSteps: [
+      'In settings, add the front (word) and back (meaning) of each card.',
+      'Tap a card to flip between its front and back.',
+      'Use "Previous"/"Next" to move through the cards as you study.',
+      'Once you\'ve gone through every card, tap "Review again" to reshuffle.',
+    ],
   },
 
   gameCategory: {
@@ -539,6 +673,7 @@ const en: Ko = {
     noParticipants: 'No participants yet.',
     nameFieldLabel: 'Name',
     openInOtherGameLabel: 'Open with another game',
+    howToPlayTitle: 'About this game & how to play',
   },
 
   onboarding: {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import Matchup from '../components/Matchup';
@@ -250,6 +251,11 @@ export default function MatchupPage() {
       >
         {t('gameAdmin.backToList')}
       </Link>
+
+      <GameInfoPanel
+        description={t('gameMatchup.infoDescription')}
+        steps={t('gameMatchup.infoSteps', { returnObjects: true }) as string[]}
+      />
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>

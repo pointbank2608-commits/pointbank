@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Flashcards from '../components/Flashcards';
+import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import { updateGameTemplate } from '../lib/api';
@@ -250,6 +251,11 @@ export default function FlashcardsPage() {
       >
         {t('gameAdmin.backToList')}
       </Link>
+
+      <GameInfoPanel
+        description={t('gameFlashcards.infoDescription')}
+        steps={t('gameFlashcards.infoSteps', { returnObjects: true }) as string[]}
+      />
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
