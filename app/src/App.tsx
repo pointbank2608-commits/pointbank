@@ -26,6 +26,7 @@ import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
 import PopcornPage from './pages/PopcornPage';
 import QuizPage from './pages/QuizPage';
+import RankOrderPage from './pages/RankOrderPage';
 import ResultsPage from './pages/ResultsPage';
 import SaveOrGivePage from './pages/SaveOrGivePage';
 import SentenceUnscramblePage from './pages/SentenceUnscramblePage';
@@ -122,6 +123,7 @@ export default function App() {
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
+            <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -153,6 +155,7 @@ export default function App() {
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
+            <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

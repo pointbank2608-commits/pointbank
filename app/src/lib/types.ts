@@ -168,7 +168,8 @@ export type GameType =
   | 'groupsort'
   | 'unscramble'
   | 'typeanswer'
-  | 'spellword';
+  | 'spellword'
+  | 'rankorder';
 
 export interface GameItem {
   id: string;

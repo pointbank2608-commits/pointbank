@@ -699,6 +699,32 @@ const en: Ko = {
     ],
   },
 
+  gameRankOrder: {
+    studentClassTitle: "{{className}}'s Rank Order",
+    newButton: '+ New rank order',
+    namePlaceholder: 'e.g. Order of historical events',
+    defaultItem: 'Item {{n}}',
+    emptyStaff: 'No rank orders yet. Tap "+ New rank order" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a rank order yet.",
+    settingsTitle: 'Edit rank order',
+    orderHint: 'The order you add items in is the answer. Use ▲▼ to fix the order.',
+    clearAllConfirm: 'Delete all the registered items?',
+    needParticipants: 'Register at least 2 items to start.',
+    hint: 'Use the ▲▼ buttons to move items into the correct order.',
+    moveUpLabel: 'Move up',
+    moveDownLabel: 'Move down',
+    moveCountLabel: 'Sorted it in {{count}} moves!',
+    finishedTitle: 'You got the order right!',
+    restartButton: 'Shuffle & try again',
+    infoDescription: 'Move items with the ▲▼ buttons to sort them into the correct, pre-set order.',
+    infoSteps: [
+      'In settings, add items in their correct order — the order you add them in becomes the answer.',
+      'The items appear shuffled on the play screen.',
+      'Use each item\'s ▲▼ buttons to move it up or down until the order is right.',
+      'A correctly placed item turns green — get every item green to finish.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -759,6 +785,8 @@ const en: Ko = {
     typeanswerDesc: 'Type the answer to a question or fill in the blank.',
     spellwordName: 'Spell the Word',
     spellwordDesc: 'See a word briefly, then type its spelling from memory.',
+    rankorderName: 'Rank Order',
+    rankorderDesc: 'Move items into their correct, pre-set order.',
   },
 
   gameSound: {

@@ -306,6 +306,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.spellwordName',
     descKey: 'gamesList.spellwordDesc',
   },
+  {
+    type: 'rankorder',
+    number: 25,
+    category: 'vocabulary',
+    minItems: 2,
+    icon: 'sort',
+    path: '/games/rankorder',
+    cover: null,
+    nameKey: 'gamesList.rankorderName',
+    descKey: 'gamesList.rankorderDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -697,6 +697,32 @@ const ko = {
     ],
   },
 
+  gameRankOrder: {
+    studentClassTitle: '{{className}} 순위',
+    newButton: '+ 새 순위',
+    namePlaceholder: '예: 사건이 일어난 순서',
+    defaultItem: '항목 {{n}}',
+    emptyStaff: '아직 순위가 없어요. 아래 "+ 새 순위"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 순위가 없어요.',
+    settingsTitle: '순위 편집',
+    orderHint: '등록한 순서가 곧 정답이에요. ▲▼ 버튼으로 순서를 바로잡으세요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    needParticipants: '항목을 2개 이상 등록해야 시작할 수 있어요.',
+    hint: '▲▼ 버튼으로 항목을 움직여서 올바른 순서로 정렬하세요.',
+    moveUpLabel: '위로 이동',
+    moveDownLabel: '아래로 이동',
+    moveCountLabel: '이동 {{count}}번 만에 정렬했어요!',
+    finishedTitle: '순서를 맞췄어요!',
+    restartButton: '다시 섞기',
+    infoDescription: '항목을 ▲▼ 버튼으로 움직여서 미리 정해둔 올바른 순서로 정렬하는 게임이에요.',
+    infoSteps: [
+      '설정에서 항목을 정답 순서 그대로 등록하세요 — 등록한 순서가 곧 정답이에요.',
+      '게임 화면에서 항목이 무작위로 섞여 나와요.',
+      '각 항목의 ▲▼ 버튼을 눌러 위아래로 옮기면서 올바른 순서를 맞춰보세요.',
+      '위치가 맞으면 초록색으로 바뀌고, 모두 맞으면 완료돼요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -757,6 +783,8 @@ const ko = {
     typeanswerDesc: '질문에 답하거나 빈칸을 채워서 정답을 직접 타이핑해요.',
     spellwordName: '단어 철자',
     spellwordDesc: '단어를 잠깐 보고 기억해서 철자를 직접 입력해요.',
+    rankorderName: '순위',
+    rankorderDesc: '항목을 움직여서 미리 정해둔 올바른 순서로 정렬해요.',
   },
 
   gameSound: {
