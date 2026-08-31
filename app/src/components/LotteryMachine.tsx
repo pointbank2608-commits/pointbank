@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 
@@ -25,6 +26,7 @@ function randomPos(): Pos {
  * 다시 정하고, CSS transition의 통통 튀는 easing으로 실제로 튕겨 다니는 것처럼 보이게 한다.
  */
 export default function LotteryMachine({ participants, ranks, order, active, revealCount }: Props) {
+  const { t } = useTranslation();
   const n = participants.length;
   const shown = order ?? participants;
   const ballsLeft = Math.max(n - revealCount, 0);
@@ -102,7 +104,7 @@ export default function LotteryMachine({ participants, ranks, order, active, rev
               }`}
             >
               <span className="font-caption text-caption text-on-surface-variant tracking-wide">
-                {ranks[i]?.label ?? `${i + 1}등`}
+                {ranks[i]?.label ?? t('gameOrder.ordinalStyle', { n: i + 1 })}
               </span>
               <span
                 className={`font-title-md text-title-md text-center [word-break:keep-all] ${

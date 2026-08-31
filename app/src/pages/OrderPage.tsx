@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
 import OrderPicker from '../components/OrderPicker';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
+import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -12,25 +14,32 @@ function uid(): string {
   return crypto.randomUUID();
 }
 
+type RankStyle = 'ordinal' | 'number';
+
 function defaultParticipants(): GameItem[] {
-  return ['참가자 1', '참가자 2', '참가자 3'].map((label) => ({ id: uid(), label }));
+  return [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameOrder.defaultParticipant', { n }) }));
 }
 
-function rankLabels(count: number, style: '등' | '번'): GameItem[] {
-  return Array.from({ length: count }, (_, i) => ({ id: uid(), label: `${i + 1}${style}` }));
+function rankLabel(n: number, style: RankStyle): string {
+  return style === 'number' ? i18n.t('gameOrder.numberStyle', { n }) : i18n.t('gameOrder.ordinalStyle', { n });
 }
 
-/** 저장된 순위 이름이 없거나(예전 템플릿) 참가자 수와 안 맞으면 "N등"으로 새로 채운다. */
+function rankLabels(count: number, style: RankStyle): GameItem[] {
+  return Array.from({ length: count }, (_, i) => ({ id: uid(), label: rankLabel(i + 1, style) }));
+}
+
+/** 저장된 순위 이름이 없거나(예전 템플릿) 참가자 수와 안 맞으면 기본 순위 이름으로 새로 채운다. */
 function ranksFor(items: GameItem[], stored?: GameItem[]): GameItem[] {
   if (stored && stored.length === items.length) return stored;
-  return rankLabels(items.length, '등');
+  return rankLabels(items.length, 'ordinal');
 }
 
 export default function OrderPage() {
+  const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'order',
     defaultItems: defaultParticipants,
-    defaultConfig: () => ({ ranks: rankLabels(3, '등') }),
+    defaultConfig: () => ({ ranks: rankLabels(3, 'ordinal') }),
   });
   const {
     isStaff,
@@ -72,7 +81,7 @@ export default function OrderPage() {
   async function persist(nextItems: GameItem[], nextRanks: GameItem[]) {
     if (!selected) return;
     const nextConfig = { ...selected.config, ranks: nextRanks };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, items: nextItems, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: nextItems, config: nextConfig });
     } catch {
@@ -85,7 +94,7 @@ export default function OrderPage() {
     if (!label || !selected) return;
     await persist(
       [...selected.items, { id: uid(), label }],
-      [...ranks, { id: uid(), label: `${ranks.length + 1}등` }],
+      [...ranks, { id: uid(), label: rankLabel(ranks.length + 1, 'ordinal') }],
     );
     setNewParticipant('');
   }
@@ -94,7 +103,7 @@ export default function OrderPage() {
     if (!selected || labels.length === 0) return;
     await persist(
       [...selected.items, ...labels.map((label) => ({ id: uid(), label }))],
-      [...ranks, ...labels.map((_, i) => ({ id: uid(), label: `${ranks.length + i + 1}등` }))],
+      [...ranks, ...labels.map((_, i) => ({ id: uid(), label: rankLabel(ranks.length + i + 1, 'ordinal') }))],
     );
   }
 
@@ -108,13 +117,13 @@ export default function OrderPage() {
 
   async function clearAllParticipants() {
     if (!selected || selected.items.length === 0) return;
-    if (!confirm('등록된 참가자를 전부 삭제할까요?')) return;
+    if (!confirm(t('gameOrder.clearAllConfirm'))) return;
     await persist([], []);
   }
 
   async function renameRank(index: number) {
     if (!selected) return;
-    const next = prompt('순위 이름을 입력하세요', ranks[index]?.label ?? '');
+    const next = prompt(t('gameOrder.renameRankPrompt'), ranks[index]?.label ?? '');
     if (next == null || !next.trim()) return;
     await persist(
       selected.items,
@@ -122,7 +131,7 @@ export default function OrderPage() {
     );
   }
 
-  async function applyRankStyle(style: '등' | '번') {
+  async function applyRankStyle(style: RankStyle) {
     if (!selected) return;
     await persist(selected.items, rankLabels(ranks.length, style));
   }
@@ -130,7 +139,7 @@ export default function OrderPage() {
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
@@ -141,7 +150,7 @@ export default function OrderPage() {
   async function handleResultSoundChange(resultSound: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
@@ -152,12 +161,12 @@ export default function OrderPage() {
   if (isStaff && classes.length === 0) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
-        등록된 반이 없습니다. 설정에서 반을 추가해 주세요.
+        {t('gameAdmin.noClasses')}
       </div>
     );
   }
   if (!isStaff && !classId) {
-    return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
+    return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
 
   const classPicker = isStaff ? (
@@ -177,32 +186,34 @@ export default function OrderPage() {
       ))}
     </div>
   ) : (
-    <h2 className="font-title-md text-title-md text-on-surface">{studentClassName} 랜덤 공 뽑기</h2>
+    <h2 className="font-title-md text-title-md text-on-surface">
+      {t('gameOrder.studentClassTitle', { className: studentClassName })}
+    </h2>
   );
 
   const templateRow = (
     <div className="flex flex-wrap gap-2">
-      {templates.map((t) => (
+      {templates.map((tpl) => (
         <div
-          key={t.id}
+          key={tpl.id}
           className={`flex items-center rounded-full overflow-hidden ${
-            t.id === selectedId
+            tpl.id === selectedId
               ? 'bg-primary text-on-primary'
               : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40'
           }`}
         >
           <button
-            onClick={() => setSelectedId(t.id)}
+            onClick={() => setSelectedId(tpl.id)}
             className="pl-4 pr-2 py-2 font-label-md text-label-md flex items-center gap-1.5"
           >
-            {t.name}
-            <span className="font-caption text-caption opacity-70">{scopeLabel(t)}</span>
+            {tpl.name}
+            <span className="font-caption text-caption opacity-70">{scopeLabel(tpl)}</span>
           </button>
           {isStaff && (
             <button
               type="button"
-              title="삭제"
-              onClick={() => void handleDeleteTemplate(t.id)}
+              title={t('gameAdmin.delete')}
+              onClick={() => void handleDeleteTemplate(tpl.id)}
               className="pr-3 pl-1 py-2 opacity-70 hover:opacity-100"
             >
               ✕
@@ -215,7 +226,7 @@ export default function OrderPage() {
           onClick={() => setShowCreateForm((v) => !v)}
           className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
         >
-          + 새 목록
+          {t('gameOrder.newButton')}
         </button>
       )}
     </div>
@@ -225,13 +236,13 @@ export default function OrderPage() {
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
       <div>
         <label htmlFor="oname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-          이름
+          {t('gameAdmin.nameFieldLabel')}
         </label>
         <input
           id="oname"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="예: 발표 순서 정하기"
+          placeholder={t('gameOrder.namePlaceholder')}
           onKeyDown={(e) => {
             if (e.key === 'Enter') void handleCreate();
           }}
@@ -239,7 +250,7 @@ export default function OrderPage() {
         />
       </div>
       <div>
-        <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">공개 범위</label>
+        <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">{t('gameAdmin.visibilityLabel')}</label>
         <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
           <button
             type="button"
@@ -248,7 +259,7 @@ export default function OrderPage() {
               newScope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            이 반에서만
+            {t('gameAdmin.scopeInClassOnly')}
           </button>
           <button
             type="button"
@@ -257,7 +268,7 @@ export default function OrderPage() {
               newScope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            학원 전체 공용
+            {t('gameAdmin.scopeAcademyWide')}
           </button>
         </div>
       </div>
@@ -267,13 +278,13 @@ export default function OrderPage() {
           disabled={submitting}
           className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
         >
-          {submitting ? '만드는 중…' : '만들기'}
+          {submitting ? t('gameAdmin.creating') : t('gameAdmin.create')}
         </button>
         <button
           onClick={() => setShowCreateForm(false)}
           className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
         >
-          취소
+          {t('gameAdmin.cancel')}
         </button>
       </div>
     </div>
@@ -285,20 +296,18 @@ export default function OrderPage() {
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
-        ← 게임 목록
+        {t('gameAdmin.backToList')}
       </Link>
 
       {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
           <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
             <div className="text-5xl mb-3">🎱</div>
             <div className="font-body-md text-body-md text-on-surface-variant">
-              {isStaff
-                ? '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 목록을 만들어보세요!'
-                : '아직 선생님이 만든 목록이 없어요.'}
+              {isStaff ? t('gameOrder.emptyStaff') : t('gameOrder.emptyStudent')}
             </div>
           </div>
           {templateRow}
@@ -327,19 +336,19 @@ export default function OrderPage() {
             {isStaff && (
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">랜덤 공 뽑기 설정</h4>
+                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameOrder.settingsTitle')}</h4>
                   <div className="flex gap-3">
                     <button
                       onClick={() => void handleRename()}
                       className="font-label-md text-label-md text-primary hover:underline"
                     >
-                      이름 변경
+                      {t('gameAdmin.rename')}
                     </button>
                     <button
                       onClick={() => setEditorOpen((v) => !v)}
                       className="font-label-md text-label-md text-primary hover:underline"
                     >
-                      {editorOpen ? '접기' : '펼치기'}
+                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
                 </div>
@@ -357,7 +366,7 @@ export default function OrderPage() {
                         <GameMusicPicker
                           academyId={academy.id}
                           isStaff={isStaff}
-                          label="결과 사운드"
+                          label={t('gameOrder.resultSoundLabel')}
                           value={resolveResultSound(selected.config.resultSound)}
                           onChange={(m) => void handleResultSoundChange(m)}
                         />
@@ -366,7 +375,7 @@ export default function OrderPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">참가자</div>
+                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameOrder.participantsLabel')}</div>
                         <StudentRosterPicker
                           roster={roster}
                           existingLabels={selected.items.map((i) => i.label)}
@@ -378,7 +387,7 @@ export default function OrderPage() {
                         <div className="flex flex-wrap gap-1.5 mt-3">
                           {selected.items.length === 0 ? (
                             <span className="font-caption text-caption text-on-surface-variant">
-                              등록된 참가자가 없습니다.
+                              {t('gameAdmin.noParticipants')}
                             </span>
                           ) : (
                             selected.items.map((item, i) => (
@@ -403,13 +412,13 @@ export default function OrderPage() {
                             onClick={() => void clearAllParticipants()}
                             className="mt-2 font-label-md text-label-md text-error hover:underline"
                           >
-                            전체 삭제
+                            {t('gameAdmin.clearAll')}
                           </button>
                         )}
                         <div className="flex gap-2 mt-3">
                           <input
                             type="text"
-                            placeholder="새 참가자"
+                            placeholder={t('gameAdmin.newParticipantPlaceholder')}
                             value={newParticipant}
                             onChange={(e) => setNewParticipant(e.target.value)}
                             onKeyDown={(e) => {
@@ -421,13 +430,13 @@ export default function OrderPage() {
                             onClick={() => void addParticipant()}
                             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
                           >
-                            추가
+                            {t('gameAdmin.addParticipant')}
                           </button>
                         </div>
                       </div>
                       <div>
                         <div className="font-caption text-caption text-on-surface-variant mb-2">
-                          순위 이름 — 눌러서 수정
+                          {t('gameOrder.ranksLabel')}
                         </div>
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {ranks.map((r, i) => (
@@ -443,16 +452,16 @@ export default function OrderPage() {
                         </div>
                         <div className="flex gap-3">
                           <button
-                            onClick={() => void applyRankStyle('등')}
+                            onClick={() => void applyRankStyle('ordinal')}
                             className="font-label-md text-label-md text-primary hover:underline"
                           >
-                            1등 스타일로
+                            {t('gameOrder.applyOrdinalStyle')}
                           </button>
                           <button
-                            onClick={() => void applyRankStyle('번')}
+                            onClick={() => void applyRankStyle('number')}
                             className="font-label-md text-label-md text-primary hover:underline"
                           >
-                            1번 스타일로
+                            {t('gameOrder.applyNumberStyle')}
                           </button>
                         </div>
                       </div>

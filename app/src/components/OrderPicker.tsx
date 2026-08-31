@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import LotteryMachine from './LotteryMachine';
 import { playMusic } from '../lib/gameMusic';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -25,6 +26,7 @@ const MIX_MS = 1100;
 const REVEAL_STEP_MS = 550;
 
 export default function OrderPicker({ participants, ranks, music, resultSound }: Props) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<GameItem[] | null>(null);
   const [revealCount, setRevealCount] = useState(0);
@@ -48,7 +50,7 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
     const mixTimer = setTimeout(() => {
       setPhase('revealing');
       shuffled.forEach((_, i) => {
-        const t = setTimeout(
+        const timer = setTimeout(
           () => {
             setRevealCount((c) => c + 1);
             if (i === shuffled.length - 1) {
@@ -59,7 +61,7 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
           },
           (i + 1) * REVEAL_STEP_MS,
         );
-        timersRef.current.push(t);
+        timersRef.current.push(timer);
       });
     }, MIX_MS);
     timersRef.current.push(mixTimer);
@@ -69,7 +71,7 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
     return (
       <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
         <div className="text-4xl mb-2">🔀</div>
-        <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 순서를 뽑을 수 있어요.</div>
+        <div className="font-body-md text-body-md">{t('gameOrder.needTwoParticipants')}</div>
       </div>
     );
   }
@@ -83,7 +85,13 @@ export default function OrderPicker({ participants, ranks, music, resultSound }:
         disabled={busy}
         className="mt-2 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
       >
-        {phase === 'mixing' ? '섞는 중…' : phase === 'revealing' ? '순서 뽑는 중…' : order ? '다시 뽑기' : '순서 뽑기 시작'}
+        {phase === 'mixing'
+          ? t('gameOrder.mixing')
+          : phase === 'revealing'
+            ? t('gameOrder.revealing')
+            : order
+              ? t('gameOrder.drawAgain')
+              : t('gameOrder.startDraw')}
       </button>
     </div>
   );
