@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchMyBalance, fetchMyStudentRow, fetchTransactions } from '../lib/api';
@@ -6,6 +7,7 @@ import { fmtDay, fmtTime, dateKey, signed, todayStart } from '../lib/format';
 import type { Student, Transaction } from '../lib/types';
 
 export default function StudentPage() {
+  const { t } = useTranslation();
   const { session, profile, pointUnit, academy } = useAuth();
   const { notify } = useToast();
 
@@ -41,23 +43,23 @@ export default function StudentPage() {
   const today = useMemo(() => {
     const start = todayStart().getTime();
     return history
-      .filter((t) => new Date(t.created_at).getTime() >= start)
-      .reduce((sum, t) => sum + t.delta, 0);
+      .filter((tx) => new Date(tx.created_at).getTime() >= start)
+      .reduce((sum, tx) => sum + tx.delta, 0);
   }, [history]);
 
   const todayTx = useMemo(() => {
     const start = todayStart().getTime();
-    return history.filter((t) => new Date(t.created_at).getTime() >= start);
+    return history.filter((tx) => new Date(tx.created_at).getTime() >= start);
   }, [history]);
 
   if (loading) {
-    return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
+    return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
 
   if (!me) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
-        연결된 학생 통장을 찾을 수 없습니다. 선생님께 학생 코드를 다시 확인해 주세요.
+        {t('student.notFound')}
       </div>
     );
   }
@@ -73,12 +75,12 @@ export default function StudentPage() {
               <div className="font-title-md text-title-md">{profile?.display_name ?? me.name}</div>
               <div className="font-caption text-caption opacity-80">{academy?.name}</div>
             </div>
-            <div className="font-caption text-caption bg-white/15 rounded-full px-3 py-1">통장</div>
+            <div className="font-caption text-caption bg-white/15 rounded-full px-3 py-1">{t('student.passbookBadge')}</div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-1">
-              <div className="font-caption text-caption opacity-80 mb-1">오늘 적립</div>
+              <div className="font-caption text-caption opacity-80 mb-1">{t('student.todayEarned')}</div>
               <div className={`font-display-lg text-[40px] ${toneClass}`}>
                 {today > 0 ? '+' : ''}
                 {today}
@@ -87,7 +89,7 @@ export default function StudentPage() {
             </div>
             <div className="hidden sm:block w-px bg-white/20" />
             <div className="flex-1">
-              <div className="font-caption text-caption opacity-80 mb-1">지금까지 모은 {pointUnit}</div>
+              <div className="font-caption text-caption opacity-80 mb-1">{t('student.totalEarned', { unit: pointUnit })}</div>
               <div className="font-display-lg text-[40px]">
                 {total}
                 <span className="font-caption text-caption ml-1">{pointUnit}</span>
@@ -103,7 +105,7 @@ export default function StudentPage() {
 
       <div>
         <h3 className="font-title-md text-title-md text-on-surface mb-3">
-          오늘 내역{' '}
+          {t('student.todayHistory')}{' '}
           <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
             {fmtDay(dateKey())}
           </span>
@@ -111,21 +113,21 @@ export default function StudentPage() {
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
           {todayTx.length === 0 ? (
             <div className="text-center py-8 font-body-md text-on-surface-variant">
-              오늘은 아직 적립된 {pointUnit}이 없어요.
+              {t('student.noTodayHistory', { unit: pointUnit })}
             </div>
           ) : (
-            todayTx.map((t) => (
+            todayTx.map((tx) => (
               <div
-                key={t.id}
+                key={tx.id}
                 className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-surface-container last:border-0"
               >
                 <span className="font-body-md text-body-md text-on-surface-variant truncate mr-2">
-                  {fmtTime(t.created_at)} · {t.reason}
+                  {fmtTime(tx.created_at)} · {tx.reason}
                 </span>
                 <span
-                  className={`font-title-md text-title-md shrink-0 ${t.delta > 0 ? 'text-secondary' : 'text-error'}`}
+                  className={`font-title-md text-title-md shrink-0 ${tx.delta > 0 ? 'text-secondary' : 'text-error'}`}
                 >
-                  {signed(t.delta)}
+                  {signed(tx.delta)}
                 </span>
               </div>
             ))
@@ -135,28 +137,28 @@ export default function StudentPage() {
 
       <div>
         <h3 className="font-title-md text-title-md text-on-surface mb-3">
-          전체 거래 내역{' '}
+          {t('student.allHistory')}{' '}
           <span className="font-caption text-caption bg-surface-container-low text-on-surface-variant rounded-full px-2.5 py-1 align-middle ml-1">
-            {history.length}건
+            {t('student.countSuffix', { count: history.length })}
           </span>
         </h3>
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
           {history.length === 0 ? (
-            <div className="text-center py-8 font-body-md text-on-surface-variant">아직 지급 내역이 없어요.</div>
+            <div className="text-center py-8 font-body-md text-on-surface-variant">{t('student.noHistory')}</div>
           ) : (
-            history.map((t) => (
+            history.map((tx) => (
               <div
-                key={t.id}
+                key={tx.id}
                 className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-surface-container last:border-0"
               >
                 <span className="font-body-md text-body-md text-on-surface-variant truncate mr-2">
-                  {fmtTime(t.created_at)} · {t.reason}
-                  {t.created_by_name ? ` · ${t.created_by_name}` : ''}
+                  {fmtTime(tx.created_at)} · {tx.reason}
+                  {tx.created_by_name ? ` · ${tx.created_by_name}` : ''}
                 </span>
                 <span
-                  className={`font-title-md text-title-md shrink-0 ${t.delta > 0 ? 'text-secondary' : 'text-error'}`}
+                  className={`font-title-md text-title-md shrink-0 ${tx.delta > 0 ? 'text-secondary' : 'text-error'}`}
                 >
-                  {signed(t.delta)}
+                  {signed(tx.delta)}
                 </span>
               </div>
             ))

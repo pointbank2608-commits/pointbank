@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AdminLayout from './pages/AdminLayout';
@@ -21,12 +22,13 @@ import TimerMatchPage from './pages/TimerMatchPage';
 import WheelPage from './pages/WheelPage';
 
 export default function App() {
+  const { t } = useTranslation();
   const { loading, session, profile, isStaff, isAdmin } = useAuth();
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background font-body-md text-on-surface-variant">
-        불러오는 중…
+        {t('common.loading')}
       </div>
     );
   }

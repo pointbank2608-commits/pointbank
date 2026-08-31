@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 
 const DISMISS_KEY = 'classbank.installBannerDismissed.v1';
 
@@ -33,6 +34,7 @@ function detectKind(): Kind {
  *   있어 보조적으로 안내한다.
  */
 export default function InstallBanner() {
+  const { t } = useTranslation();
   const [kind, setKind] = useState<Kind>(null);
 
   useEffect(() => {
@@ -49,19 +51,11 @@ export default function InstallBanner() {
 
   const content =
     kind === 'kakao' ? (
-      <>
-        <strong>카카오톡</strong>에서는 홈 화면 추가가 안 돼요. 오른쪽 위{' '}
-        <strong>‥ 메뉴 → 다른 브라우저로 열기</strong>를 눌러주세요.
-      </>
+      <Trans i18nKey="installBanner.kakaoMessage" components={[<strong key="0" />, <strong key="1" />]} />
     ) : kind === 'ios' ? (
-      <>
-        하단 <strong>공유 아이콘</strong> → <strong>홈 화면에 추가</strong>를 누르면 앱처럼 쓸 수
-        있어요.
-      </>
+      <Trans i18nKey="installBanner.iosMessage" components={[<strong key="0" />, <strong key="1" />]} />
     ) : (
-      <>
-        오른쪽 위 <strong>⋮ 메뉴 → 홈 화면에 추가</strong>를 누르면 앱처럼 쓸 수 있어요.
-      </>
+      <Trans i18nKey="installBanner.androidMessage" components={[<strong key="0" />]} />
     );
 
   return (
@@ -70,7 +64,7 @@ export default function InstallBanner() {
       <span className="flex-1 [&_strong]:text-deep-navy [&_strong]:font-bold">{content}</span>
       <button
         onClick={dismiss}
-        aria-label="닫기"
+        aria-label={t('installBanner.closeAriaLabel')}
         className="text-on-surface-variant hover:text-error text-base px-1.5 py-0.5 shrink-0"
       >
         ✕

@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout() {
+  const { t } = useTranslation();
   const { session, signOut } = useAuth();
 
   return (
@@ -11,7 +13,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">🐷</span>
             <div>
-              <div className="font-title-md text-title-md text-deep-navy">클래스뱅크 관리자</div>
+              <div className="font-title-md text-title-md text-deep-navy">{t('admin.brandTitle')}</div>
               <div className="font-caption text-caption text-on-surface-variant">{session?.user.email}</div>
             </div>
           </div>
@@ -23,7 +25,7 @@ export default function AdminLayout() {
               onClick={() => void signOut()}
               className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
             >
-              로그아웃
+              {t('admin.logout')}
             </button>
           </div>
         </div>

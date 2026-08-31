@@ -97,7 +97,7 @@ export default function AppLayout() {
         )}
         <div className="px-4 py-2 flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
-            {(profile?.display_name ?? '선').slice(0, 1)}
+            {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
           </div>
           <div className="min-w-0">
             <p className="font-label-md text-label-md text-on-surface truncate">{profile?.display_name}</p>
@@ -180,7 +180,7 @@ export default function AppLayout() {
             className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm border border-outline-variant/30 shrink-0"
             aria-label={t('nav.myProfile')}
           >
-            {(profile?.display_name ?? '선').slice(0, 1)}
+            {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
           </Link>
         </header>
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">

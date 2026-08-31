@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import type { Academy, Profile } from '../lib/types';
 
@@ -27,6 +28,7 @@ interface AuthValue {
 const AuthContext = createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [academy, setAcademy] = useState<Academy | null>(null);
@@ -106,11 +108,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       academy,
       isStaff: profile?.role === 'owner' || profile?.role === 'teacher',
       isAdmin: profile?.role === 'admin',
-      pointUnit: academy?.point_unit ?? '포인트',
+      pointUnit: academy?.point_unit ?? t('common.pointsFallback'),
       refresh: loadProfile,
       signOut,
     }),
-    [sessionReady, profileReady, session, profile, academy, loadProfile, signOut],
+    [sessionReady, profileReady, session, profile, academy, loadProfile, signOut, t],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
