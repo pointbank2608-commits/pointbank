@@ -554,6 +554,31 @@ const en: Ko = {
     ],
   },
 
+  gameAnagram: {
+    studentClassTitle: "{{className}}'s Anagram",
+    newButton: '+ New anagram',
+    namePlaceholder: 'e.g. 3rd grade animal words anagram',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No anagrams yet. Tap "+ New anagram" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made an anagram game yet.",
+    settingsTitle: 'Edit anagram',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word to start.',
+    wrongHint: "That's not quite right yet. Tap a letter to move it back and try again.",
+    reshuffleButton: 'Reshuffle letters',
+    nextButton: 'Next word',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'Anagram complete!',
+    restartButton: 'Play again',
+    infoDescription: 'Tap the scrambled letters in order to spell out the original word.',
+    infoSteps: [
+      'In settings, add words.',
+      'Tap letters from the tray below, in order, to fill the answer slots above.',
+      "Tapped the wrong letter? Tap it again in the answer row to send it back to the tray.",
+      "Once every slot is filled it checks automatically — get it right and tap \"Next word\" to continue.",
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -604,6 +629,8 @@ const en: Ko = {
     whackamoleDesc: 'Click each word as it pops up before it disappears.',
     flashcardsName: 'Flashcards',
     flashcardsDesc: 'Flip cards to memorize words and their meanings.',
+    anagramName: 'Anagram',
+    anagramDesc: 'Tap scrambled letters in order to spell out each word.',
   },
 
   gameSound: {

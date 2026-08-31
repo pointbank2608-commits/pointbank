@@ -247,6 +247,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.flashcardsName',
     descKey: 'gamesList.flashcardsDesc',
   },
+  {
+    type: 'anagram',
+    number: 20,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'shuffle',
+    path: '/games/anagram',
+    cover: null,
+    nameKey: 'gamesList.anagramName',
+    descKey: 'gamesList.anagramDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

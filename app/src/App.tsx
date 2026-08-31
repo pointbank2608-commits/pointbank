@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AdminLayout from './pages/AdminLayout';
 import AdminAcademiesPage from './pages/AdminAcademiesPage';
+import AnagramPage from './pages/AnagramPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
 import Baskin31Page from './pages/Baskin31Page';
@@ -112,6 +113,7 @@ export default function App() {
             <Route path="/games/matchup" element={<MatchupPage />} />
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
+            <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -138,6 +140,7 @@ export default function App() {
             <Route path="/games/matchup" element={<MatchupPage />} />
             <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
+            <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

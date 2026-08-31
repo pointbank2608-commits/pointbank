@@ -552,6 +552,31 @@ const ko = {
     ],
   },
 
+  gameAnagram: {
+    studentClassTitle: '{{className}} 애너그램',
+    newButton: '+ 새 애너그램',
+    namePlaceholder: '예: 3학년 동물 단어 애너그램',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 애너그램이 없어요. 아래 "+ 새 애너그램"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 애너그램이 없어요.',
+    settingsTitle: '애너그램 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 1개 이상 추가하면 시작할 수 있어요.',
+    wrongHint: '순서가 맞지 않아요. 글자를 눌러 다시 배치해보세요.',
+    reshuffleButton: '글자 다시 섞기',
+    nextButton: '다음 단어',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    finishedTitle: '애너그램 완료!',
+    restartButton: '다시 하기',
+    infoDescription: '뒤섞인 글자를 순서대로 눌러서 원래 단어를 완성하는 게임이에요.',
+    infoSteps: [
+      '설정에서 단어를 등록하세요.',
+      '아래쪽 글자 보관함에서 글자를 순서대로 눌러 위쪽 정답 칸에 채우세요.',
+      '잘못 눌렀으면 정답 칸의 글자를 다시 눌러 보관함으로 되돌릴 수 있어요.',
+      '글자를 다 채우면 자동으로 정답을 확인하고, 맞으면 "다음 단어"로 넘어가요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -602,6 +627,8 @@ const ko = {
     whackamoleDesc: '구멍에서 튀어나온 단어를 재빨리 클릭해서 잡아요.',
     flashcardsName: '플래시카드',
     flashcardsDesc: '카드를 눌러 뒤집으며 단어와 뜻을 암기해요.',
+    anagramName: '애너그램',
+    anagramDesc: '뒤섞인 글자를 눌러 순서대로 배치해서 단어를 완성해요.',
   },
 
   gameSound: {

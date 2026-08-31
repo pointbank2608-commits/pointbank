@@ -163,7 +163,8 @@ export type GameType =
   | 'truefalse'
   | 'matchup'
   | 'whackamole'
-  | 'flashcards';
+  | 'flashcards'
+  | 'anagram';
 
 export interface GameItem {
   id: string;
