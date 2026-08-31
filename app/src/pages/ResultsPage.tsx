@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,11 +11,11 @@ import type { SummaryRow } from '../lib/types';
 type Period = 'today' | 'week' | 'month' | 'all';
 type Scope = 'class' | 'academy';
 
-const PERIODS: { key: Period; label: string; since: () => Date | null }[] = [
-  { key: 'today', label: '오늘', since: todayStart },
-  { key: 'week', label: '이번 주', since: weekStart },
-  { key: 'month', label: '이번 달', since: monthStart },
-  { key: 'all', label: '전체', since: () => null },
+const PERIODS: { key: Period; labelKey: string; since: () => Date | null }[] = [
+  { key: 'today', labelKey: 'results.periodToday', since: todayStart },
+  { key: 'week', labelKey: 'results.periodWeek', since: weekStart },
+  { key: 'month', labelKey: 'results.periodMonth', since: monthStart },
+  { key: 'all', labelKey: 'results.periodAll', since: () => null },
 ];
 
 const PODIUM_STYLE: Record<number, { bg: string; text: string; order: string; height: string }> = {
@@ -26,6 +27,7 @@ const PODIUM_STYLE: Record<number, { bg: string; text: string; order: string; he
 export default function ResultsPage() {
   const { academy, session, pointUnit, isStaff } = useAuth();
   const { notify } = useToast();
+  const { t } = useTranslation();
   const { classes, selectedId, select } = useClasses(academy?.id);
 
   const [period, setPeriod] = useState<Period>('all');
@@ -78,7 +80,7 @@ export default function ResultsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-          리포트
+          {t('results.title')}
         </h2>
         <div className="flex bg-surface-container-low rounded-lg p-1">
           <button
@@ -87,7 +89,7 @@ export default function ResultsPage() {
               scope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            반별
+            {t('results.scopeClass')}
           </button>
           <button
             onClick={() => setScope('academy')}
@@ -95,7 +97,7 @@ export default function ResultsPage() {
               scope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            학원 전체
+            {t('results.scopeAcademy')}
           </button>
         </div>
       </div>
@@ -129,49 +131,49 @@ export default function ResultsPage() {
                 : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
             }`}
           >
-            {p.label}
+            {t(p.labelKey)}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : rows.length === 0 ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">학생이 없습니다.</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('results.noStudents')}</div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">총 적립</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('results.totalEarned')}</div>
               <div className="font-display-lg text-[28px] text-secondary">
                 +{totalEarned}
                 <span className="font-caption text-caption text-on-surface-variant ml-1">{pointUnit}</span>
               </div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">총 차감</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('results.totalSpent')}</div>
               <div className="font-display-lg text-[28px] text-error">
                 −{totalSpent}
                 <span className="font-caption text-caption text-on-surface-variant ml-1">{pointUnit}</span>
               </div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">참여 학생</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('results.participants')}</div>
               <div className="font-display-lg text-[28px] text-on-surface">
                 {ranked.length}
-                <span className="font-caption text-caption text-on-surface-variant ml-1">명</span>
+                <span className="font-caption text-caption text-on-surface-variant ml-1">{t('results.peopleSuffix')}</span>
               </div>
             </div>
           </div>
 
           {ranked.length === 0 ? (
             <div className="text-center py-16 font-body-md text-on-surface-variant">
-              이 기간에는 적립 기록이 없습니다.
+              {t('results.noEntriesThisPeriod')}
             </div>
           ) : (
             <>
               <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-                <h3 className="font-title-md text-title-md text-on-surface mb-6">우수 학생</h3>
+                <h3 className="font-title-md text-title-md text-on-surface mb-6">{t('results.topStudents')}</h3>
                 <div className="flex items-end justify-center gap-3">
                   {podiumOrder.map((i) => {
                     const p = top3[i];
@@ -201,11 +203,11 @@ export default function ResultsPage() {
 
               <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
                 <div className="grid grid-cols-[32px_1fr_70px_70px_90px_36px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
-                  <div>#</div>
-                  <div>이름</div>
-                  <div className="text-right">적립</div>
-                  <div className="text-right">차감</div>
-                  <div className="text-right">합계</div>
+                  <div>{t('results.rank')}</div>
+                  <div>{t('results.name')}</div>
+                  <div className="text-right">{t('results.earned')}</div>
+                  <div className="text-right">{t('results.spent')}</div>
+                  <div className="text-right">{t('results.total')}</div>
                   <div />
                 </div>
                 {ranked.map((r, i) => (
@@ -238,7 +240,7 @@ export default function ResultsPage() {
                     </div>
                     <Link
                       to={`/results/homework/${r.student_id}`}
-                      title="숙제 캘린더"
+                      title={t('results.homeworkCalendar')}
                       className="relative text-on-surface-variant hover:text-primary flex items-center justify-center"
                     >
                       <span className="material-symbols-outlined text-[20px]">calendar_month</span>
@@ -254,13 +256,13 @@ export default function ResultsPage() {
                     <div className="min-w-0">
                       <div className="font-label-md text-label-md text-on-surface truncate">{r.name}</div>
                       <div className="font-caption text-caption text-on-surface-variant truncate">
-                        {r.class_name} · 기록 없음
+                        {r.class_name} · {t('results.noRecord')}
                       </div>
                     </div>
                     <div className="text-right font-body-md text-body-md text-on-surface-variant">–</div>
                     <Link
                       to={`/results/homework/${r.student_id}`}
-                      title="숙제 캘린더"
+                      title={t('results.homeworkCalendar')}
                       className="text-on-surface-variant hover:text-primary flex items-center justify-center"
                     >
                       <span className="material-symbols-outlined text-[20px]">calendar_month</span>

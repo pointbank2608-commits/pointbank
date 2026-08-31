@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -6,7 +7,15 @@ import { fetchClasses, fetchHomeworkTransactions, fetchStudentById } from '../li
 import { dateKey } from '../lib/format';
 import type { ClassRow, Student, Transaction } from '../lib/types';
 
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const WEEKDAY_KEYS = [
+  'homework.weekdaySun',
+  'homework.weekdayMon',
+  'homework.weekdayTue',
+  'homework.weekdayWed',
+  'homework.weekdayThu',
+  'homework.weekdayFri',
+  'homework.weekdaySat',
+];
 
 type DayStatus = 'done' | 'missing' | 'none';
 
@@ -18,6 +27,7 @@ export default function HomeworkCalendarPage() {
   const { studentId } = useParams<{ studentId: string }>();
   const { academy } = useAuth();
   const { notify } = useToast();
+  const { t } = useTranslation();
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -101,17 +111,17 @@ export default function HomeworkCalendarPage() {
         to="/results"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
-        ← 리포트
+        {t('homework.backToResults')}
       </Link>
 
       {!student ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : (
         <>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-                {student.name} 숙제 캘린더
+                {t('homework.title', { name: student.name })}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant mt-1">{className}</p>
             </div>
@@ -119,17 +129,17 @@ export default function HomeworkCalendarPage() {
               <button
                 onClick={() => shiftMonth(-1)}
                 className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-                aria-label="이전 달"
+                aria-label={t('homework.prevMonth')}
               >
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
               <span className="font-title-md text-title-md text-on-surface px-3">
-                {year}년 {month}월
+                {t('homework.monthLabel', { year, month })}
               </span>
               <button
                 onClick={() => shiftMonth(1)}
                 className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-                aria-label="다음 달"
+                aria-label={t('homework.nextMonth')}
               >
                 <span className="material-symbols-outlined">chevron_right</span>
               </button>
@@ -138,18 +148,24 @@ export default function HomeworkCalendarPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">이번 달 완료율</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.completionRate')}</div>
               <div className="font-display-lg text-[28px] text-secondary">
                 {completionRate == null ? '–' : `${completionRate}%`}
               </div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">완료</div>
-              <div className="font-display-lg text-[28px] text-on-surface">{doneDays}일</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.done')}</div>
+              <div className="font-display-lg text-[28px] text-on-surface">
+                {doneDays}
+                {t('homework.daySuffix')}
+              </div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-              <div className="font-caption text-caption text-on-surface-variant mb-1">미제출</div>
-              <div className="font-display-lg text-[28px] text-error">{missingDays}일</div>
+              <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.missing')}</div>
+              <div className="font-display-lg text-[28px] text-error">
+                {missingDays}
+                {t('homework.daySuffix')}
+              </div>
             </div>
           </div>
 
@@ -159,28 +175,28 @@ export default function HomeworkCalendarPage() {
                 <span className="w-5 h-5 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
                   <span className="material-symbols-outlined text-[14px]">check</span>
                 </span>
-                완료
+                {t('homework.done')}
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
                   <span className="material-symbols-outlined text-[14px]">close</span>
                 </span>
-                미제출
+                {t('homework.missing')}
               </span>
             </div>
 
             {loading ? (
-              <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+              <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
             ) : (
               <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-                {WEEKDAYS.map((w, i) => (
+                {WEEKDAY_KEYS.map((key, i) => (
                   <div
-                    key={w}
+                    key={key}
                     className={`text-center font-label-md text-label-md py-1.5 ${
                       i === 0 ? 'text-error' : i === 6 ? 'text-primary' : 'text-on-surface-variant'
                     }`}
                   >
-                    {w}
+                    {t(key)}
                   </div>
                 ))}
                 {cells.map((day, i) => {
