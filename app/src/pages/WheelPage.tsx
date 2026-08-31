@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
@@ -316,8 +317,8 @@ export default function WheelPage() {
             {selected.name}
           </h2>
 
-          <div
-            data-game-theme={selected.config.theme}
+          <GameThemeFrame
+            themeId={selected.config.theme}
             className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
           >
             <SpinWheel
@@ -360,7 +361,7 @@ export default function WheelPage() {
                 </div>
               </div>
             )}
-          </div>
+          </GameThemeFrame>
 
           <div className="space-y-4">
             {classPicker}

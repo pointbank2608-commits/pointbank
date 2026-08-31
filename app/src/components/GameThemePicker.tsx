@@ -1,20 +1,17 @@
 import { useTranslation } from 'react-i18next';
-import type { GameTemplateConfig } from '../lib/types';
-
-type ThemeValue = NonNullable<GameTemplateConfig['theme']>;
+import { GAME_THEMES } from '../lib/gameThemes';
 
 interface Props {
-  value: ThemeValue | null | undefined;
-  onChange: (theme: ThemeValue | null) => void;
+  value: string | null | undefined;
+  onChange: (theme: string | null) => void;
 }
 
-const THEMES: ThemeValue[] = ['space', 'jungle', 'candy'];
-
+/** 새 테마를 추가하면 gameThemes.ts 의 GAME_THEMES 배열에만 넣으면 이 선택기에도 자동으로 뜬다. */
 export default function GameThemePicker({ value, onChange }: Props) {
   const { t } = useTranslation();
 
   function handleSelect(v: string) {
-    onChange(v === 'default' ? null : (v as ThemeValue));
+    onChange(v === 'default' ? null : v);
   }
 
   return (
@@ -26,9 +23,9 @@ export default function GameThemePicker({ value, onChange }: Props) {
         className="min-w-0 max-w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
       >
         <option value="default">{t('gameTheme.default')}</option>
-        {THEMES.map((theme) => (
-          <option key={theme} value={theme}>
-            {t(`gameTheme.${theme}`)}
+        {GAME_THEMES.map((theme) => (
+          <option key={theme.id} value={theme.id}>
+            {t(theme.nameKey)}
           </option>
         ))}
       </select>
