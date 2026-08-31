@@ -353,6 +353,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.mathgenName',
     descKey: 'gamesList.mathgenDesc',
   },
+  {
+    type: 'mazechase',
+    number: 29,
+    category: 'vocabulary',
+    minItems: 2,
+    icon: 'directions_run',
+    path: '/games/mazechase',
+    cover: null,
+    nameKey: 'gamesList.mazechaseName',
+    descKey: 'gamesList.mazechaseDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -810,6 +810,31 @@ const en: Ko = {
     ],
   },
 
+  gameMazeChase: {
+    studentClassTitle: "{{className}}'s Maze Chase",
+    newButton: '+ New maze chase',
+    namePlaceholder: 'e.g. 3rd grade animal words maze chase',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No maze chases yet. Tap "+ New maze chase" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a maze chase yet.",
+    settingsTitle: 'Edit maze chase',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 2 words to start.',
+    targetLabel: 'Find: {{word}}',
+    controlsHint: 'Move with arrow keys (WASD) or the direction buttons below',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'You made it through the maze!',
+    restartButton: 'Play again',
+    infoDescription: 'Move your character toward the bubble showing the target word. Dodge the ghost, and watch out for the wrong bubbles.',
+    infoSteps: [
+      'In settings, add at least 2 words.',
+      'A target word appears at the top, and several word bubbles are scattered across the maze.',
+      'Use the arrow keys (WASD) or the on-screen direction buttons to steer your character to the matching bubble.',
+      "Get caught by the ghost and you're sent back to the start; bump a wrong bubble and you just bounce off — no penalty either way.",
+      'Reach the right bubble to move to the next word — finish them all to win.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -878,6 +903,8 @@ const en: Ko = {
     crosswordDesc: 'Fill the crossing grid with the words that fit.',
     mathgenName: 'Math Generator',
     mathgenDesc: 'Set the operations and number range — new problems every round.',
+    mazechaseName: 'Maze Chase',
+    mazechaseDesc: 'Dodge the ghost and steer to the bubble with the target word.',
   },
 
   gameSound: {

@@ -23,6 +23,7 @@ import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import MatchupPage from './pages/MatchupPage';
 import MathGeneratorPage from './pages/MathGeneratorPage';
+import MazeChasePage from './pages/MazeChasePage';
 import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />
             <Route path="/games/mathgen" element={<MathGeneratorPage />} />
+            <Route path="/games/mazechase" element={<MazeChasePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -165,6 +167,7 @@ export default function App() {
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />
             <Route path="/games/mathgen" element={<MathGeneratorPage />} />
+            <Route path="/games/mazechase" element={<MazeChasePage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

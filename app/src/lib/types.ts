@@ -172,7 +172,9 @@ export type GameType =
   | 'rankorder'
   | 'wordsearch'
   | 'crossword'
-  | 'mathgen';
+  | 'mathgen'
+  | 'mazechase'
+  | 'airplane';
 
 export interface GameItem {
   id: string;

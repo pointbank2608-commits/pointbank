@@ -808,6 +808,31 @@ const ko = {
     ],
   },
 
+  gameMazeChase: {
+    studentClassTitle: '{{className}} 미로 찾기',
+    newButton: '+ 새 미로 찾기',
+    namePlaceholder: '예: 3학년 동물 단어 미로 찾기',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 미로 찾기가 없어요. 아래 "+ 새 미로 찾기"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 미로 찾기가 없어요.',
+    settingsTitle: '미로 찾기 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 2개 이상 등록해야 시작할 수 있어요.',
+    targetLabel: '찾아야 할 단어: {{word}}',
+    controlsHint: '화살표 키(WASD) 또는 아래 방향 버튼으로 이동하세요',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    finishedTitle: '미로를 다 통과했어요!',
+    restartButton: '다시 하기',
+    infoDescription: '화면 위에 뜬 목표 단어 풍선을 향해 캐릭터를 움직이는 게임이에요. 유령을 피하고, 다른 단어 풍선은 조심하세요.',
+    infoSteps: [
+      '설정에서 단어를 2개 이상 등록하세요.',
+      '화면 위에 목표 단어가 나오고, 화면 안에 그 단어를 포함한 풍선 여러 개가 흩어져 있어요.',
+      '화살표 키(WASD)나 화면 아래 방향 버튼으로 캐릭터를 목표 단어 풍선으로 이동하세요.',
+      '유령에게 잡히면 처음 자리로 돌아가고, 틀린 풍선을 건드리면 살짝 튕겨나요 — 감점은 없어요.',
+      '목표 풍선에 닿으면 다음 단어로 넘어가고, 전부 성공하면 완료돼요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -876,6 +901,8 @@ const ko = {
     crosswordDesc: '단어끼리 겹쳐진 격자에 알맞은 단어를 채워요.',
     mathgenName: '수학 문제 생성기',
     mathgenDesc: '연산과 숫자 범위를 정하면 매번 새 수학 문제가 만들어져요.',
+    mazechaseName: '미로 찾기',
+    mazechaseDesc: '유령을 피해 목표 단어 풍선으로 캐릭터를 움직여요.',
   },
 
   gameSound: {
