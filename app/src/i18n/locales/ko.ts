@@ -156,6 +156,33 @@ const ko = {
     boardHint: '칸을 눌러 그 팀의 표시를 남기세요.',
   },
 
+  gameSaveOrGive: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} Save it or Give it',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 복습 반전 퀴즈',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: 'Save it or Give it 설정',
+    teamBlue: '파랑 팀',
+    teamRed: '빨강 팀',
+    turnLabel: '{{team}} 차례예요',
+    correctButton: '정답 처리',
+    skipButton: '다음 항목',
+    chooseSavePrompt: '상자를 열기 전에 먼저 선택하세요',
+    saveButton: 'Save it — 우리 팀이 갖기',
+    giveButton: 'Give it — 상대 팀에게 주기',
+    openingBox: '상자를 여는 중…',
+    rewardResultLabel: '{{team}}: {{reward}}',
+    swapMessage: '두 팀의 점수를 서로 교환했어요!',
+    swapReward: '점수 교환',
+    scoreLabel: '점수',
+    nextRoundButton: '다음 라운드',
+    resetButton: '처음부터 다시',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -170,6 +197,8 @@ const ko = {
     timerDesc: '목표 시간에 맞춰 시작·멈춤 버튼을 눌러요.',
     tictactoeName: '틱택토',
     tictactoeDesc: '항목을 등록해 두고 두 팀이 번갈아 칸을 채워요.',
+    saveorgiveName: 'Save it or Give it',
+    saveorgiveDesc: '정답을 맞히고 상자를 열어 점수를 우리 팀이 가질지 상대에게 줄지 골라요.',
   },
 
   gameSound: {

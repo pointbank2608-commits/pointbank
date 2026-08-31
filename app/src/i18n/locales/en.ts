@@ -158,6 +158,33 @@ const en: Ko = {
     boardHint: "Tap a cell to mark it for that team.",
   },
 
+  gameSaveOrGive: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Save it or Give it",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary review twist quiz',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Save it or Give it settings',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    correctButton: 'Mark correct',
+    skipButton: 'Next item',
+    chooseSavePrompt: 'Choose before opening the box',
+    saveButton: 'Save it — keep it for our team',
+    giveButton: 'Give it — hand it to the other team',
+    openingBox: 'Opening the box…',
+    rewardResultLabel: '{{team}}: {{reward}}',
+    swapMessage: 'The two teams swapped scores!',
+    swapReward: 'Swap scores',
+    scoreLabel: 'Score',
+    nextRoundButton: 'Next round',
+    resetButton: 'Restart from scratch',
+    needParticipants: 'Register at least 1 item to get started.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -172,6 +199,8 @@ const en: Ko = {
     timerDesc: 'Hit start and stop to match the target time.',
     tictactoeName: 'Tic-Tac-Toe',
     tictactoeDesc: 'Register items, then take turns filling the board as two teams.',
+    saveorgiveName: 'Save it or Give it',
+    saveorgiveDesc: 'Answer correctly, open the box, and choose whether your team keeps the points or hands them over.',
   },
 
   gameSound: {

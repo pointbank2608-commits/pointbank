@@ -144,7 +144,7 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe';
+export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe' | 'saveorgive';
 
 export interface GameItem {
   id: string;
@@ -169,6 +169,14 @@ export interface GameTemplateConfig {
   music?: MusicSelection | null;
   /** 결과가 확정되는 순간 울리는 사운드. 한 번도 설정 안 했으면(undefined) "짜잔"을 기본으로 쓴다. */
   resultSound?: MusicSelection | null;
+  /** Save it or Give it 전용: 상자를 열었을 때 나올 수 있는 반전 결과 목록. */
+  rewardPool?: SaveOrGiveReward[];
+}
+
+/** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */
+export interface SaveOrGiveReward {
+  kind: 'points' | 'swap';
+  value?: number;
 }
 
 export interface GameTemplate {

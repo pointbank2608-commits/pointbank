@@ -101,8 +101,10 @@
 
 ```bash
 cd app
-npx vercel --prod
+npx vercel --prod --scope businessgym11-8014s-projects
 ```
+
+`--scope` 없이 `npx vercel --prod`만 실행하면 `"Not authorized"` (`deploy_failed`)로 실패할 수 있다(2026-09-01 확인, `vercel whoami`/`vercel project ls`에는 정상적으로 뜨는데도 배포만 막힘) — 스코프를 명시하면 됨.
 
 빌드에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 필요 (로컬은 `app/.env.local`, git에 올리지 않음).
 

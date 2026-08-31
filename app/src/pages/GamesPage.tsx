@@ -57,6 +57,14 @@ export default function GamesPage() {
       desc: t('gamesList.tictactoeDesc'),
       path: '/games/tictactoe',
     },
+    {
+      key: 'saveorgive',
+      cover: null,
+      icon: 'redeem',
+      name: t('gamesList.saveorgiveName'),
+      desc: t('gamesList.saveorgiveDesc'),
+      path: '/games/saveorgive',
+    },
   ];
 
   return (
