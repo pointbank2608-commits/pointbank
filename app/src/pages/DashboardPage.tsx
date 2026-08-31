@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -10,15 +11,10 @@ import {
 } from '../lib/api';
 import { dateKey, fmtDay, signed, todayStart } from '../lib/format';
 
-function hello(hour: number): string {
-  if (hour < 12) return '좋은 아침입니다';
-  if (hour < 18) return '좋은 오후입니다';
-  return '좋은 저녁입니다';
-}
-
 export default function DashboardPage() {
   const { academy, profile, pointUnit } = useAuth();
   const { notify } = useToast();
+  const { t } = useTranslation();
 
   const [classCount, setClassCount] = useState(0);
   const [studentCount, setStudentCount] = useState(0);
@@ -64,10 +60,12 @@ export default function DashboardPage() {
     };
   }, [academy?.id, today, notify]);
 
-  const name = profile?.display_name ?? '선생님';
+  const name = profile?.display_name ?? t('dashboard.defaultName');
   const hour = new Date().getHours();
   const sun = hour < 18 ? '☀️' : '🌙';
   const attendanceRate = studentCount > 0 ? Math.round((presentCount / studentCount) * 100) : 0;
+  const hello = hour < 12 ? t('dashboard.helloMorning') : hour < 18 ? t('dashboard.helloAfternoon') : t('dashboard.helloEvening');
+  const amountGiven = `${signed(todayTotal)}${pointUnit}`;
 
   return (
     <div className="space-y-gutter">
@@ -75,10 +73,12 @@ export default function DashboardPage() {
       <div className="bg-primary text-on-primary rounded-xl p-6 md:p-8 relative overflow-hidden shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
         <div className="relative z-10">
           <h2 className="font-headline-lg-mobile md:font-headline-lg">
-            {hello(hour)}, {name}! {sun}
+            {t('dashboard.greeting', { hello, name, emoji: sun })}
           </h2>
           <p className="font-body-lg text-primary-fixed opacity-90 mt-1">
-            {loading ? '오늘 현황을 불러오는 중…' : `${fmtDay(today)} · 반 ${classCount}개 · 학생 ${studentCount}명`}
+            {loading
+              ? t('dashboard.loadingToday')
+              : t('dashboard.summaryLine', { day: fmtDay(today), classCount, studentCount })}
           </p>
         </div>
         <div
@@ -92,9 +92,9 @@ export default function DashboardPage() {
         {/* 오늘 할 일 */}
         <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-title-md text-title-md text-on-surface">오늘 할 일</h3>
+            <h3 className="font-title-md text-title-md text-on-surface">{t('dashboard.todo')}</h3>
             <Link to="/results" className="text-primary font-label-md text-label-md hover:bg-surface-container-low px-3 py-1 rounded-full transition-colors">
-              결과 보기
+              {t('dashboard.viewResults')}
             </Link>
           </div>
 
@@ -102,17 +102,20 @@ export default function DashboardPage() {
             <div className="flex items-center p-4 rounded-lg bg-surface-container-low border border-surface-variant">
               <div className="w-16 h-16 rounded-lg bg-soft-mint/30 flex flex-col items-center justify-center text-secondary mr-4 shrink-0">
                 <span className="font-title-md text-title-md">{presentCount}</span>
-                <span className="font-caption text-caption">등원</span>
+                <span className="font-caption text-caption">{t('dashboard.attendanceLabel')}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-title-md text-title-md text-on-surface">출석 체크</h4>
+                <h4 className="font-title-md text-title-md text-on-surface">{t('dashboard.attendanceCheck')}</h4>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  오늘 {presentCount}명이 등원했고, 전체 {studentCount}명 중 아직{' '}
-                  {Math.max(studentCount - presentCount, 0)}명이 남아 있습니다.
+                  {t('dashboard.attendanceDesc', {
+                    present: presentCount,
+                    total: studentCount,
+                    remaining: Math.max(studentCount - presentCount, 0),
+                  })}
                 </p>
               </div>
               <Link to="/attendance" className="text-primary font-label-md text-label-md whitespace-nowrap ml-2">
-                출석부 열기
+                {t('dashboard.openAttendance')}
               </Link>
             </div>
 
@@ -122,14 +125,13 @@ export default function DashboardPage() {
                 <span className="font-caption text-caption">{pointUnit}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-title-md text-title-md text-on-surface">반별 통장</h4>
+                <h4 className="font-title-md text-title-md text-on-surface">{t('dashboard.classBoard')}</h4>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  오늘 {rewardedCount}명에게 {signed(todayTotal)}
-                  {pointUnit}를 지급했습니다.
+                  {t('dashboard.classBoardDesc', { count: rewardedCount, amount: amountGiven })}
                 </p>
               </div>
               <Link to="/board" className="text-primary font-label-md text-label-md whitespace-nowrap ml-2">
-                통장 열기
+                {t('dashboard.openBoard')}
               </Link>
             </div>
           </div>
@@ -137,7 +139,7 @@ export default function DashboardPage() {
 
         {/* 학급 통계 */}
         <div className="md:col-span-4 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col">
-          <h3 className="font-title-md text-title-md text-on-surface mb-6">학급 통계</h3>
+          <h3 className="font-title-md text-title-md text-on-surface mb-6">{t('dashboard.classStats')}</h3>
           <div className="flex-1 flex flex-col justify-center items-center py-4">
             <div
               className="relative w-32 h-32 rounded-full mb-6 flex items-center justify-center"
@@ -148,22 +150,28 @@ export default function DashboardPage() {
               <div className="absolute inset-[10px] rounded-full bg-surface-container-lowest flex items-center justify-center">
                 <div className="text-center">
                   <span className="block font-display-lg text-[28px] text-on-surface">{attendanceRate}%</span>
-                  <span className="font-caption text-caption text-on-surface-variant">출석률</span>
+                  <span className="font-caption text-caption text-on-surface-variant">{t('dashboard.attendanceRate')}</span>
                 </div>
               </div>
             </div>
             <div className="w-full space-y-3">
               <div className="flex justify-between items-center text-body-md">
                 <span className="text-on-surface-variant flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-secondary-container inline-block" /> 출석
+                  <span className="w-3 h-3 rounded-full bg-secondary-container inline-block" /> {t('dashboard.present')}
                 </span>
-                <span className="font-bold text-on-surface">{presentCount}명</span>
+                <span className="font-bold text-on-surface">
+                  {presentCount}
+                  {t('dashboard.peopleSuffix')}
+                </span>
               </div>
               <div className="flex justify-between items-center text-body-md">
                 <span className="text-on-surface-variant flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-error-container inline-block" /> 미등원
+                  <span className="w-3 h-3 rounded-full bg-error-container inline-block" /> {t('dashboard.absent')}
                 </span>
-                <span className="font-bold text-on-surface">{Math.max(studentCount - presentCount, 0)}명</span>
+                <span className="font-bold text-on-surface">
+                  {Math.max(studentCount - presentCount, 0)}
+                  {t('dashboard.peopleSuffix')}
+                </span>
               </div>
             </div>
           </div>
@@ -171,23 +179,23 @@ export default function DashboardPage() {
 
         {/* 알림 */}
         <div className="md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-          <h3 className="font-title-md text-title-md text-on-surface mb-4">알림</h3>
+          <h3 className="font-title-md text-title-md text-on-surface mb-4">{t('dashboard.notifications')}</h3>
           {classCount === 0 ? (
             <div className="bg-error-container text-on-error-container rounded-lg p-4">
-              <strong className="font-title-md text-title-md block mb-1">반이 아직 없어요</strong>
+              <strong className="font-title-md text-title-md block mb-1">{t('dashboard.noClassTitle')}</strong>
               <p className="font-body-md text-body-md">
+                {t('dashboard.noClassDescBefore')}
                 <Link to="/settings" className="underline">
-                  설정
+                  {t('nav.settings')}
                 </Link>
-                에서 반을 추가하면 출석부와 통장을 쓸 수 있습니다.
+                {t('dashboard.noClassDescAfter')}
               </p>
             </div>
           ) : (
             <div className="bg-secondary-container text-on-secondary-container rounded-lg p-4">
-              <strong className="font-title-md text-title-md block mb-1">오늘 지급 현황</strong>
+              <strong className="font-title-md text-title-md block mb-1">{t('dashboard.todayGivenTitle')}</strong>
               <p className="font-body-md text-body-md">
-                {rewardedCount}명에게 {signed(todayTotal)}
-                {pointUnit}를 지급했습니다. 수업이 끝나면 통장에서 오늘을 마감해 주세요.
+                {t('dashboard.todayGivenDesc', { count: rewardedCount, amount: amountGiven })}
               </p>
             </div>
           )}
@@ -202,7 +210,7 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-full bg-soft-mint text-deep-navy flex items-center justify-center">
               <span className="material-symbols-outlined">calendar_today</span>
             </div>
-            <span className="font-title-md text-title-md text-on-surface text-center">출석부 열기</span>
+            <span className="font-title-md text-title-md text-on-surface text-center">{t('dashboard.quickOpenAttendance')}</span>
           </Link>
           <Link
             to="/games"
@@ -211,7 +219,7 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-full bg-warm-yellow/30 text-tertiary-container flex items-center justify-center">
               <span className="material-symbols-outlined">sports_esports</span>
             </div>
-            <span className="font-title-md text-title-md text-on-surface text-center">게임 시작</span>
+            <span className="font-title-md text-title-md text-on-surface text-center">{t('dashboard.quickStartGame')}</span>
           </Link>
           <Link
             to="/board"
@@ -220,7 +228,7 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
               <span className="material-symbols-outlined">payments</span>
             </div>
-            <span className="font-title-md text-title-md text-on-surface text-center">포인트 지급</span>
+            <span className="font-title-md text-title-md text-on-surface text-center">{t('dashboard.quickGivePoints')}</span>
           </Link>
           <Link
             to="/settings"
@@ -229,7 +237,7 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
               <span className="material-symbols-outlined">settings</span>
             </div>
-            <span className="font-title-md text-title-md text-on-surface text-center">설정</span>
+            <span className="font-title-md text-title-md text-on-surface text-center">{t('dashboard.quickSettings')}</span>
           </Link>
         </div>
       </div>

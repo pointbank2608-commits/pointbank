@@ -1,5 +1,12 @@
+import i18n from '../i18n';
+
+/** 현재 UI 언어에 맞는 날짜 로케일. 영어면 영어식 표기로 바뀐다. */
+function locale(): string {
+  return i18n.language?.startsWith('en') ? 'en-US' : 'ko-KR';
+}
+
 export function fmtTime(iso: string): string {
-  return new Date(iso).toLocaleString('ko-KR', {
+  return new Date(iso).toLocaleString(locale(), {
     month: 'numeric',
     day: 'numeric',
     hour: '2-digit',
@@ -26,7 +33,7 @@ export function dateKey(d: Date = new Date()): string {
 
 export function fmtDay(key: string): string {
   const [y, m, d] = key.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('ko-KR', {
+  return new Date(y, m - 1, d).toLocaleDateString(locale(), {
     month: 'long',
     day: 'numeric',
     weekday: 'short',

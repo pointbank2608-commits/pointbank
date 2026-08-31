@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -18,12 +20,14 @@ function pad(n: number): string {
 
 /** 시:분만 뽑는다 (날짜는 모달 제목에 이미 있으므로). */
 function timeOnly(iso: string): string {
-  return new Date(iso).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'ko-KR';
+  return new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function AttendancePage() {
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
+  const { t } = useTranslation();
   const { classes, selectedId, select } = useClasses(academy?.id);
 
   const now = new Date();
@@ -99,10 +103,14 @@ export default function AttendancePage() {
   }
 
   function cellTooltip(a: Attendance | undefined): string {
-    if (!a) return '클릭하면 출석 처리됩니다.';
+    if (!a) return t('attendance.tooltipEmpty');
     const parts: string[] = [];
-    parts.push(a.checked_in_at ? `등원 ${timeOnly(a.checked_in_at)}` : '등원 기록 없음');
-    parts.push(a.checked_out_at ? `하원 ${timeOnly(a.checked_out_at)}` : '하원 기록 없음');
+    parts.push(
+      a.checked_in_at ? t('attendance.tooltipCheckedIn', { time: timeOnly(a.checked_in_at) }) : t('attendance.tooltipNoCheckIn'),
+    );
+    parts.push(
+      a.checked_out_at ? t('attendance.tooltipCheckedOut', { time: timeOnly(a.checked_out_at) }) : t('attendance.tooltipNoCheckOut'),
+    );
     return parts.join(' · ');
   }
 
@@ -136,7 +144,7 @@ export default function AttendancePage() {
 
   async function handleClearCheckIn() {
     if (!detailRow) return;
-    const ok = await run(() => clearCheckIn(detailRow.id), '등원 기록을 지웠습니다.');
+    const ok = await run(() => clearCheckIn(detailRow.id), t('attendance.toastClearedCheckIn'));
     if (ok) {
       setAttendance((prev) =>
         prev.map((a) => (a.id === detailRow.id ? { ...a, checked_in_at: null, checked_in_by: null } : a)),
@@ -146,7 +154,7 @@ export default function AttendancePage() {
 
   async function handleClearCheckOut() {
     if (!detailRow) return;
-    const ok = await run(() => clearCheckOut(detailRow.id), '하원 기록을 지웠습니다.');
+    const ok = await run(() => clearCheckOut(detailRow.id), t('attendance.toastClearedCheckOut'));
     if (ok) {
       setAttendance((prev) =>
         prev.map((a) =>
@@ -158,8 +166,8 @@ export default function AttendancePage() {
 
   async function handleDeleteDay() {
     if (!detailRow) return;
-    if (!confirm('이 날짜의 출석 기록을 완전히 삭제할까요?')) return;
-    const ok = await run(() => deleteAttendance(detailRow.id), '출석 기록을 삭제했습니다.');
+    if (!confirm(t('attendance.confirmDeleteDay'))) return;
+    const ok = await run(() => deleteAttendance(detailRow.id), t('attendance.toastDeletedDay'));
     if (ok) {
       setAttendance((prev) => prev.filter((a) => a.id !== detailRow.id));
       setDetail(null);
@@ -186,49 +194,47 @@ export default function AttendancePage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-          출석부
+          {t('attendance.title')}
         </h2>
         <div className="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-sm px-2 py-1.5">
           <button
             onClick={() => shiftMonth(-1)}
             className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-            aria-label="이전 달"
+            aria-label={t('attendance.prevMonth')}
           >
             <span className="material-symbols-outlined">chevron_left</span>
           </button>
           <span className="font-title-md text-title-md text-on-surface px-3">
-            {year}년 {month}월
+            {t('attendance.monthLabel', { year, month })}
           </span>
           <button
             onClick={() => shiftMonth(1)}
             className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-            aria-label="다음 달"
+            aria-label={t('attendance.nextMonth')}
           >
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
       </div>
 
-      <p className="font-caption text-caption text-on-surface-variant">
-        빈 칸을 누르면 출석 처리됩니다. 이미 표시된 칸을 누르면 등원·하원 시각을 볼 수 있어요.
-      </p>
+      <p className="font-caption text-caption text-on-surface-variant">{t('attendance.hint')}</p>
 
       {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : students.length === 0 ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">이 반에 학생이 없습니다.</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('attendance.noStudents')}</div>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-4 md:p-6 overflow-x-auto">
           <table className="w-full text-center border-collapse">
             <thead>
               <tr className="font-caption text-caption text-on-surface-variant">
-                <th className="text-left pb-3 pr-3 sticky left-0 bg-surface-container-lowest">이름</th>
+                <th className="text-left pb-3 pr-3 sticky left-0 bg-surface-container-lowest">{t('attendance.name')}</th>
                 {days.map((d) => (
                   <th key={d} className="pb-3 px-1 min-w-[28px]">
                     {d}
                   </th>
                 ))}
-                <th className="pb-3 pl-2">출석</th>
+                <th className="pb-3 pl-2">{t('attendance.total')}</th>
               </tr>
             </thead>
             <tbody>
@@ -281,7 +287,7 @@ export default function AttendancePage() {
               <div>
                 <div className="font-title-md text-title-md text-deep-navy">{detail.studentName}</div>
                 <div className="font-caption text-caption text-on-surface-variant">
-                  {year}년 {month}월 {detail.day}일
+                  {t('attendance.dateLabel', { year, month, day: detail.day })}
                 </div>
               </div>
               <button
@@ -294,15 +300,15 @@ export default function AttendancePage() {
 
             <div className="p-5 space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-surface-container">
-                <span className="font-label-md text-label-md text-on-surface-variant">등원</span>
+                <span className="font-label-md text-label-md text-on-surface-variant">{t('attendance.checkIn')}</span>
                 <span className="font-title-md text-title-md text-secondary">
-                  {detailRow?.checked_in_at ? timeOnly(detailRow.checked_in_at) : '기록 없음'}
+                  {detailRow?.checked_in_at ? timeOnly(detailRow.checked_in_at) : t('attendance.noRecord')}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="font-label-md text-label-md text-on-surface-variant">하원</span>
+                <span className="font-label-md text-label-md text-on-surface-variant">{t('attendance.checkOut')}</span>
                 <span className="font-title-md text-title-md text-error">
-                  {detailRow?.checked_out_at ? timeOnly(detailRow.checked_out_at) : '기록 없음'}
+                  {detailRow?.checked_out_at ? timeOnly(detailRow.checked_out_at) : t('attendance.noRecord')}
                 </span>
               </div>
 
@@ -312,7 +318,7 @@ export default function AttendancePage() {
                     onClick={() => void handleClearCheckIn()}
                     className="flex-1 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
                   >
-                    등원 지우기
+                    {t('attendance.clearCheckIn')}
                   </button>
                 )}
                 {detailRow?.checked_out_at && (
@@ -320,7 +326,7 @@ export default function AttendancePage() {
                     onClick={() => void handleClearCheckOut()}
                     className="flex-1 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
                   >
-                    하원 지우기
+                    {t('attendance.clearCheckOut')}
                   </button>
                 )}
               </div>
@@ -328,7 +334,7 @@ export default function AttendancePage() {
                 onClick={() => void handleDeleteDay()}
                 className="w-full py-2.5 rounded-lg bg-error text-on-error font-label-md text-label-md hover:opacity-90 transition-opacity"
               >
-                이 날짜 기록 전체 삭제
+                {t('attendance.deleteDay')}
               </button>
             </div>
           </div>
