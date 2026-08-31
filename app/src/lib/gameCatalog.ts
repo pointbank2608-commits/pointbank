@@ -224,6 +224,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.matchupName',
     descKey: 'gamesList.matchupDesc',
   },
+  {
+    type: 'whackamole',
+    number: 18,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'touch_app',
+    path: '/games/whackamole',
+    cover: null,
+    nameKey: 'gamesList.whackamoleName',
+    descKey: 'gamesList.whackamoleDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

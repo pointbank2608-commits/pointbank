@@ -382,6 +382,21 @@ const ko = {
     restartButton: '다시 섞기',
   },
 
+  gameWhackamole: {
+    studentClassTitle: '{{className}} 두더지잡기',
+    newButton: '+ 새 두더지잡기',
+    namePlaceholder: '예: 3학년 동물 단어 두더지잡기',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 두더지잡기가 없어요. 아래 "+ 새 두더지잡기"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 두더지잡기가 없어요.',
+    settingsTitle: '두더지잡기 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 1개 이상 추가하면 시작할 수 있어요.',
+    resultLabel: '적중 {{hits}} · 놓침 {{misses}}',
+    finishedTitle: '두더지잡기 완료!',
+    restartButton: '다시 하기',
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -428,6 +443,8 @@ const ko = {
     truefalseDesc: '문장을 보고 참인지 거짓인지 맞혀요.',
     matchupName: '매치업',
     matchupDesc: '단어와 뜻 짝을 찾아 연결해요.',
+    whackamoleName: '두더지잡기',
+    whackamoleDesc: '구멍에서 튀어나온 단어를 재빨리 클릭해서 잡아요.',
   },
 
   gameSound: {

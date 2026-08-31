@@ -31,6 +31,7 @@ import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
 import TrueFalsePage from './pages/TrueFalsePage';
 import TwoDicePage from './pages/TwoDicePage';
+import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 
 export default function App() {
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="/games/hangman" element={<HangmanPage />} />
             <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="/games/matchup" element={<MatchupPage />} />
+            <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -132,6 +134,7 @@ export default function App() {
             <Route path="/games/hangman" element={<HangmanPage />} />
             <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="/games/matchup" element={<MatchupPage />} />
+            <Route path="/games/whackamole" element={<WhackAMolePage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

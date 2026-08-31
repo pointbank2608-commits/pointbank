@@ -384,6 +384,21 @@ const en: Ko = {
     restartButton: 'Shuffle & try again',
   },
 
+  gameWhackamole: {
+    studentClassTitle: "{{className}}'s Whack-a-mole",
+    newButton: '+ New whack-a-mole',
+    namePlaceholder: 'e.g. 3rd grade animal words whack-a-mole',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No whack-a-mole games yet. Tap "+ New whack-a-mole" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a whack-a-mole game yet.",
+    settingsTitle: 'Edit whack-a-mole',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word to start.',
+    resultLabel: '{{hits}} hits · {{misses}} misses',
+    finishedTitle: 'Whack-a-mole complete!',
+    restartButton: 'Play again',
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -430,6 +445,8 @@ const en: Ko = {
     truefalseDesc: 'Read a statement and decide if it is true or false.',
     matchupName: 'Matchup',
     matchupDesc: 'Find and connect each word with its meaning.',
+    whackamoleName: 'Whack-a-mole',
+    whackamoleDesc: 'Click each word as it pops up before it disappears.',
   },
 
   gameSound: {

@@ -161,7 +161,8 @@ export type GameType =
   | 'quiz'
   | 'hangman'
   | 'truefalse'
-  | 'matchup';
+  | 'matchup'
+  | 'whackamole';
 
 export interface GameItem {
   id: string;
