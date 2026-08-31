@@ -173,6 +173,8 @@ export interface GameTemplateConfig {
   rewardPool?: SaveOrGiveReward[];
   /** 사라진 항목 찾기 전용: 한 판에서 몇 개를 숨길지 (기본 1). */
   revealCount?: number;
+  /** 게임 플레이 영역 비주얼 테마. 없으면 기본 색상 그대로. */
+  theme?: 'space' | 'jungle' | 'candy';
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import GameThemePicker from '../components/GameThemePicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import TimeBomb from '../components/TimeBomb';
@@ -9,7 +10,7 @@ import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, MusicSelection } from '../lib/types';
+import type { GameItem, GameTemplateConfig, MusicSelection } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -121,6 +122,17 @@ export default function BombPage() {
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch {
+      await reload();
+    }
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
@@ -301,7 +313,10 @@ export default function BombPage() {
             {selected.name}
           </h2>
 
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+          <div
+            data-game-theme={selected.config.theme}
+            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+          >
             <TimeBomb
               participants={selected.items}
               minSec={range.min}
@@ -339,6 +354,7 @@ export default function BombPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     {academy && (
                       <div className="divide-y divide-surface-container">
                         <GameMusicPicker

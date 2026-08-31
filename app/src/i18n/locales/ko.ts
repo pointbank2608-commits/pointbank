@@ -232,6 +232,14 @@ const ko = {
     ding: '딩동',
   },
 
+  gameTheme: {
+    label: '테마',
+    default: '기본',
+    space: '우주',
+    jungle: '정글',
+    candy: '캔디',
+  },
+
   musicPicker: {
     backgroundMusic: '배경음악',
     none: '없음',

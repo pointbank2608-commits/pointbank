@@ -310,3 +310,72 @@
   letter-spacing: -0.035em;
   line-height: 1.18;
 }
+
+/*
+ * 게임 비주얼 테마 — 게임 플레이 영역(data-game-theme 속성을 준 래퍼)에만 스코프해서
+ * 색상 토큰을 다시 선언한다. Tailwind 유틸리티(bg-primary 등)는 이미 var(--color-*)를
+ * 참조하고 있어서, 이 안에 있는 컴포넌트는 코드를 고치지 않아도 새 색을 그대로 받는다.
+ * error 계열(오답 표시)은 의미가 고정돼 있어 테마와 무관하게 항상 그대로 둔다.
+ */
+[data-game-theme='space'] {
+  --color-primary: #4c3fd6;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e3e0ff;
+  --color-on-primary-container: #241a66;
+  --color-secondary: #7c4dff;
+  --color-secondary-container: #ede7ff;
+  --color-on-secondary-container: #4527a0;
+  --color-tertiary-container: #2a2065;
+  --color-on-tertiary-container: #d6cfff;
+  --color-deep-navy: #14103a;
+  --color-warm-yellow: #ffd54f;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f1eeff;
+  --color-surface-container-high: #dad2ff;
+  --color-on-surface: #1c1840;
+  --color-on-surface-variant: #4a4570;
+  --color-outline-variant: #c7c0ec;
+  --color-background: #f4f2ff;
+}
+
+[data-game-theme='jungle'] {
+  --color-primary: #2e7d32;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #dcf0dc;
+  --color-on-primary-container: #0d3a11;
+  --color-secondary: #ef6c00;
+  --color-secondary-container: #ffe4cc;
+  --color-on-secondary-container: #8a4200;
+  --color-tertiary-container: #7a5b00;
+  --color-on-tertiary-container: #ffe9a6;
+  --color-deep-navy: #14301a;
+  --color-warm-yellow: #f4d35e;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eaf4e7;
+  --color-surface-container-high: #c9e2c3;
+  --color-on-surface: #17281a;
+  --color-on-surface-variant: #3f5241;
+  --color-outline-variant: #bbd3b5;
+  --color-background: #f0f8ee;
+}
+
+[data-game-theme='candy'] {
+  --color-primary: #e91e8c;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ffe1f0;
+  --color-on-primary-container: #6b0d42;
+  --color-secondary: #7c4dff;
+  --color-secondary-container: #ede3ff;
+  --color-on-secondary-container: #4527a0;
+  --color-tertiary-container: #7e2f5f;
+  --color-on-tertiary-container: #ffd3ec;
+  --color-deep-navy: #4a1942;
+  --color-warm-yellow: #ffd54f;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #ffecf5;
+  --color-surface-container-high: #ffc9e4;
+  --color-on-surface: #3a0f2c;
+  --color-on-surface-variant: #6b4059;
+  --color-outline-variant: #f2b9d9;
+  --color-background: #fff3fa;
+}

@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import TicTacToe from '../components/TicTacToe';
+import GameThemePicker from '../components/GameThemePicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem } from '../lib/types';
+import type { GameItem, GameTemplateConfig } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -86,6 +87,17 @@ export default function TicTacToePage() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameTicTacToe.clearAllConfirm'))) return;
     await persistItems([]);
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, theme: theme ?? undefined };
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch {
+      await reload();
+    }
   }
 
   if (isStaff && classes.length === 0) {
@@ -249,7 +261,10 @@ export default function TicTacToePage() {
             {selected.name}
           </h2>
 
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+          <div
+            data-game-theme={selected.config.theme}
+            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+          >
             <TicTacToe items={selected.items} />
           </div>
 
@@ -281,6 +296,7 @@ export default function TicTacToePage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="tictactoe" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}
                       existingLabels={selected.items.map((i) => i.label)}
