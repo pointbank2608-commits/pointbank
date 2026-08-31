@@ -33,6 +33,28 @@ const ko = {
     winnerLabel: '당첨',
   },
 
+  gameLadder: {
+    defaultParticipant: '참가자 {{n}}',
+    defaultResult: '결과 {{n}}',
+    studentClassTitle: '{{className}} 사다리타기',
+    newButton: '+ 새 사다리',
+    namePlaceholder: '예: 청소 당번 뽑기',
+    emptyStaff: '아직 사다리가 없어요. 아래 "+ 새 사다리"로 첫 사다리를 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 사다리가 없어요.',
+    clearAllConfirm: '참가자와 결과를 전부 삭제할까요?',
+    renameResultPrompt: '결과 라벨을 입력하세요',
+    settingsTitle: '사다리 설정',
+    resultSoundLabel: '결과 사운드',
+    participantsLabel: '참가자 (위)',
+    resultsLabel: '결과 (아래) — 눌러서 수정',
+    resetResultsButton: '결과를 참가자 이름과 동일하게',
+    needTwoParticipants: '참가자를 2명 이상 등록해야 사다리를 만들 수 있어요.',
+    revealingAll: '내려가는 중…',
+    revealAllButton: '한 번에 결과 보기',
+    revealOneButton: '한 명씩 결과 보기',
+    oneByOneHint: '이름을 누르면 그 사람 결과만 확인할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',

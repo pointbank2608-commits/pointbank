@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
@@ -22,6 +23,7 @@ const RUN_MS = 1700;
 const DEFAULT_ROWS = 10;
 
 export default function LadderBoard({ participants, results, music, resultSound }: Props) {
+  const { t } = useTranslation();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('all');
   const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
@@ -112,8 +114,8 @@ export default function LadderBoard({ participants, results, music, resultSound 
         });
       });
     });
-    const t = setTimeout(onDone, RUN_MS + 150);
-    timersRef.current.push(t);
+    const timer = setTimeout(onDone, RUN_MS + 150);
+    timersRef.current.push(timer);
   }
 
   function startRevealAll() {
@@ -164,7 +166,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
     return (
       <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
         <div className="text-4xl mb-2">🪜</div>
-        <div className="font-body-md text-body-md">참가자를 2명 이상 등록해야 사다리를 만들 수 있어요.</div>
+        <div className="font-body-md text-body-md">{t('gameLadder.needTwoParticipants')}</div>
       </div>
     );
   }
@@ -179,14 +181,14 @@ export default function LadderBoard({ participants, results, music, resultSound 
           disabled={busy}
           className="px-5 py-2 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-label-md text-label-md shadow-sm transition-colors"
         >
-          {busy && mode === 'all' ? '내려가는 중…' : '한 번에 결과 보기'}
+          {busy && mode === 'all' ? t('gameLadder.revealingAll') : t('gameLadder.revealAllButton')}
         </button>
         <button
           onClick={startOneByOne}
           disabled={busy}
           className="px-5 py-2 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-label-md text-label-md shadow-sm transition-all"
         >
-          한 명씩 결과 보기
+          {t('gameLadder.revealOneButton')}
         </button>
       </div>
 
@@ -270,7 +272,7 @@ export default function LadderBoard({ participants, results, music, resultSound 
 
       {mode === 'one' && (
         <div className="font-body-lg text-body-lg text-on-surface-variant mt-3.5 text-center">
-          이름을 누르면 그 사람 결과만 확인할 수 있어요.
+          {t('gameLadder.oneByOneHint')}
         </div>
       )}
 

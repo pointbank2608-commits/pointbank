@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
 import LadderBoard from '../components/LadderBoard';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
+import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -13,15 +15,16 @@ function uid(): string {
 }
 
 function defaultParticipants(): GameItem[] {
-  return ['참가자 1', '참가자 2', '참가자 3'].map((label) => ({ id: uid(), label }));
+  return [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameLadder.defaultParticipant', { n }) }));
 }
 
 export default function LadderPage() {
+  const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'ladder',
     defaultItems: defaultParticipants,
     defaultConfig: () => ({
-      results: ['결과 1', '결과 2', '결과 3'].map((label) => ({ id: uid(), label })),
+      results: [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameLadder.defaultResult', { n }) })),
     }),
   });
   const {
@@ -64,7 +67,7 @@ export default function LadderPage() {
   async function persist(nextItems: GameItem[], nextResults: GameItem[]) {
     if (!selected) return;
     const nextConfig = { ...selected.config, results: nextResults };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, items: nextItems, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: nextItems, config: nextConfig });
     } catch {
@@ -77,7 +80,7 @@ export default function LadderPage() {
     if (!label || !selected) return;
     await persist(
       [...selected.items, { id: uid(), label }],
-      [...results, { id: uid(), label: `결과 ${results.length + 1}` }],
+      [...results, { id: uid(), label: t('gameLadder.defaultResult', { n: results.length + 1 }) }],
     );
     setNewParticipant('');
   }
@@ -85,7 +88,7 @@ export default function LadderPage() {
   async function addParticipantsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
     const newItems = labels.map((label) => ({ id: uid(), label }));
-    const newResults = labels.map((_, i) => ({ id: uid(), label: `결과 ${results.length + i + 1}` }));
+    const newResults = labels.map((_, i) => ({ id: uid(), label: t('gameLadder.defaultResult', { n: results.length + i + 1 }) }));
     await persist([...selected.items, ...newItems], [...results, ...newResults]);
   }
 
@@ -99,13 +102,13 @@ export default function LadderPage() {
 
   async function clearAllParticipants() {
     if (!selected || selected.items.length === 0) return;
-    if (!confirm('참가자와 결과를 전부 삭제할까요?')) return;
+    if (!confirm(t('gameLadder.clearAllConfirm'))) return;
     await persist([], []);
   }
 
   async function renameResult(index: number) {
     if (!selected) return;
-    const next = prompt('결과 라벨을 입력하세요', results[index]?.label ?? '');
+    const next = prompt(t('gameLadder.renameResultPrompt'), results[index]?.label ?? '');
     if (next == null || !next.trim()) return;
     await persist(
       selected.items,
@@ -124,7 +127,7 @@ export default function LadderPage() {
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
@@ -135,7 +138,7 @@ export default function LadderPage() {
   async function handleResultSoundChange(resultSound: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, config: nextConfig } : t)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
@@ -146,12 +149,12 @@ export default function LadderPage() {
   if (isStaff && classes.length === 0) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
-        등록된 반이 없습니다. 설정에서 반을 추가해 주세요.
+        {t('gameAdmin.noClasses')}
       </div>
     );
   }
   if (!isStaff && !classId) {
-    return <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>;
+    return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
 
   const classPicker = isStaff ? (
@@ -171,32 +174,34 @@ export default function LadderPage() {
       ))}
     </div>
   ) : (
-    <h2 className="font-title-md text-title-md text-on-surface">{studentClassName} 사다리타기</h2>
+    <h2 className="font-title-md text-title-md text-on-surface">
+      {t('gameLadder.studentClassTitle', { className: studentClassName })}
+    </h2>
   );
 
   const templateRow = (
     <div className="flex flex-wrap gap-2">
-      {templates.map((t) => (
+      {templates.map((tpl) => (
         <div
-          key={t.id}
+          key={tpl.id}
           className={`flex items-center rounded-full overflow-hidden ${
-            t.id === selectedId
+            tpl.id === selectedId
               ? 'bg-primary text-on-primary'
               : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40'
           }`}
         >
           <button
-            onClick={() => setSelectedId(t.id)}
+            onClick={() => setSelectedId(tpl.id)}
             className="pl-4 pr-2 py-2 font-label-md text-label-md flex items-center gap-1.5"
           >
-            {t.name}
-            <span className="font-caption text-caption opacity-70">{scopeLabel(t)}</span>
+            {tpl.name}
+            <span className="font-caption text-caption opacity-70">{scopeLabel(tpl)}</span>
           </button>
           {isStaff && (
             <button
               type="button"
-              title="삭제"
-              onClick={() => void handleDeleteTemplate(t.id)}
+              title={t('gameAdmin.delete')}
+              onClick={() => void handleDeleteTemplate(tpl.id)}
               className="pr-3 pl-1 py-2 opacity-70 hover:opacity-100"
             >
               ✕
@@ -209,7 +214,7 @@ export default function LadderPage() {
           onClick={() => setShowCreateForm((v) => !v)}
           className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
         >
-          + 새 사다리
+          {t('gameLadder.newButton')}
         </button>
       )}
     </div>
@@ -219,13 +224,13 @@ export default function LadderPage() {
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
       <div>
         <label htmlFor="lname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-          이름
+          {t('gameAdmin.nameFieldLabel')}
         </label>
         <input
           id="lname"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="예: 청소 당번 뽑기"
+          placeholder={t('gameLadder.namePlaceholder')}
           onKeyDown={(e) => {
             if (e.key === 'Enter') void handleCreate();
           }}
@@ -233,7 +238,7 @@ export default function LadderPage() {
         />
       </div>
       <div>
-        <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">공개 범위</label>
+        <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">{t('gameAdmin.visibilityLabel')}</label>
         <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
           <button
             type="button"
@@ -242,7 +247,7 @@ export default function LadderPage() {
               newScope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            이 반에서만
+            {t('gameAdmin.scopeInClassOnly')}
           </button>
           <button
             type="button"
@@ -251,7 +256,7 @@ export default function LadderPage() {
               newScope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            학원 전체 공용
+            {t('gameAdmin.scopeAcademyWide')}
           </button>
         </div>
       </div>
@@ -261,13 +266,13 @@ export default function LadderPage() {
           disabled={submitting}
           className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
         >
-          {submitting ? '만드는 중…' : '만들기'}
+          {submitting ? t('gameAdmin.creating') : t('gameAdmin.create')}
         </button>
         <button
           onClick={() => setShowCreateForm(false)}
           className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
         >
-          취소
+          {t('gameAdmin.cancel')}
         </button>
       </div>
     </div>
@@ -279,20 +284,18 @@ export default function LadderPage() {
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
-        ← 게임 목록
+        {t('gameAdmin.backToList')}
       </Link>
 
       {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">불러오는 중…</div>
+        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
           <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
             <div className="text-5xl mb-3">🪜</div>
             <div className="font-body-md text-body-md text-on-surface-variant">
-              {isStaff
-                ? '아직 사다리가 없어요. 아래 "+ 새 사다리"로 첫 사다리를 만들어보세요!'
-                : '아직 선생님이 만든 사다리가 없어요.'}
+              {isStaff ? t('gameLadder.emptyStaff') : t('gameLadder.emptyStudent')}
             </div>
           </div>
           {templateRow}
@@ -321,19 +324,19 @@ export default function LadderPage() {
             {isStaff && (
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">사다리 설정</h4>
+                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameLadder.settingsTitle')}</h4>
                   <div className="flex gap-3">
                     <button
                       onClick={() => void handleRename()}
                       className="font-label-md text-label-md text-primary hover:underline"
                     >
-                      이름 변경
+                      {t('gameAdmin.rename')}
                     </button>
                     <button
                       onClick={() => setEditorOpen((v) => !v)}
                       className="font-label-md text-label-md text-primary hover:underline"
                     >
-                      {editorOpen ? '접기' : '펼치기'}
+                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
                 </div>
@@ -351,7 +354,7 @@ export default function LadderPage() {
                         <GameMusicPicker
                           academyId={academy.id}
                           isStaff={isStaff}
-                          label="결과 사운드"
+                          label={t('gameLadder.resultSoundLabel')}
                           value={resolveResultSound(selected.config.resultSound)}
                           onChange={(m) => void handleResultSoundChange(m)}
                         />
@@ -360,7 +363,7 @@ export default function LadderPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">참가자 (위)</div>
+                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameLadder.participantsLabel')}</div>
                         <StudentRosterPicker
                           roster={roster}
                           existingLabels={selected.items.map((i) => i.label)}
@@ -391,13 +394,13 @@ export default function LadderPage() {
                             onClick={() => void clearAllParticipants()}
                             className="mt-2 font-label-md text-label-md text-error hover:underline"
                           >
-                            전체 삭제
+                            {t('gameAdmin.clearAll')}
                           </button>
                         )}
                         <div className="flex gap-2 mt-3">
                           <input
                             type="text"
-                            placeholder="새 참가자"
+                            placeholder={t('gameAdmin.newParticipantPlaceholder')}
                             value={newParticipant}
                             onChange={(e) => setNewParticipant(e.target.value)}
                             onKeyDown={(e) => {
@@ -409,13 +412,13 @@ export default function LadderPage() {
                             onClick={() => void addParticipant()}
                             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
                           >
-                            추가
+                            {t('gameAdmin.addParticipant')}
                           </button>
                         </div>
                       </div>
                       <div>
                         <div className="font-caption text-caption text-on-surface-variant mb-2">
-                          결과 (아래) — 눌러서 수정
+                          {t('gameLadder.resultsLabel')}
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {results.map((r, i) => (
@@ -433,7 +436,7 @@ export default function LadderPage() {
                           onClick={() => void resetResultsToParticipants()}
                           className="mt-3 font-label-md text-label-md text-primary hover:underline"
                         >
-                          결과를 참가자 이름과 동일하게
+                          {t('gameLadder.resetResultsButton')}
                         </button>
                       </div>
                     </div>

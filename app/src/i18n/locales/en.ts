@@ -35,6 +35,28 @@ const en: Ko = {
     winnerLabel: 'Winner',
   },
 
+  gameLadder: {
+    defaultParticipant: 'Participant {{n}}',
+    defaultResult: 'Result {{n}}',
+    studentClassTitle: "{{className}}'s Ladder Game",
+    newButton: '+ New ladder',
+    namePlaceholder: 'e.g. Pick cleaning duty',
+    emptyStaff: 'No ladders yet. Tap "+ New ladder" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a ladder yet.",
+    clearAllConfirm: 'Delete all participants and results?',
+    renameResultPrompt: 'Enter a result label',
+    settingsTitle: 'Ladder settings',
+    resultSoundLabel: 'Result sound',
+    participantsLabel: 'Participants (top)',
+    resultsLabel: 'Results (bottom) — tap to edit',
+    resetResultsButton: 'Match results to participant names',
+    needTwoParticipants: 'Register at least 2 participants to build a ladder.',
+    revealingAll: 'Climbing down…',
+    revealAllButton: 'Reveal all at once',
+    revealOneButton: 'Reveal one by one',
+    oneByOneHint: 'Tap a name to reveal just that person’s result.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
