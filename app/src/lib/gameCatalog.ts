@@ -364,6 +364,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.mazechaseName',
     descKey: 'gamesList.mazechaseDesc',
   },
+  {
+    type: 'airplane',
+    number: 30,
+    category: 'vocabulary',
+    minItems: 2,
+    icon: 'flight',
+    path: '/games/airplane',
+    cover: null,
+    nameKey: 'gamesList.airplaneName',
+    descKey: 'gamesList.airplaneDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -835,6 +835,31 @@ const en: Ko = {
     ],
   },
 
+  gameAirplane: {
+    studentClassTitle: "{{className}}'s Airplane",
+    newButton: '+ New airplane',
+    namePlaceholder: 'e.g. 3rd grade animal words airplane',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No airplane games yet. Tap "+ New airplane" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made an airplane game yet.",
+    settingsTitle: 'Edit airplane',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 2 words to start.',
+    targetLabel: 'Find: {{word}}',
+    controlsHint: 'Steer with the up/down arrow keys (WS) or the buttons beside the screen',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'Flight complete!',
+    restartButton: 'Play again',
+    infoDescription: 'Steer the plane toward the bubble with the target word as bubbles fly in from the right.',
+    infoSteps: [
+      'In settings, add at least 2 words.',
+      'A target word appears at the top, and word bubbles keep flying in from the right.',
+      'Use the up/down arrow keys (WS) or the buttons beside the screen to steer the plane up and down.',
+      "Hit the target bubble to score — hitting a wrong one costs nothing, just keep going.",
+      'Match every target word to finish.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -905,6 +930,8 @@ const en: Ko = {
     mathgenDesc: 'Set the operations and number range — new problems every round.',
     mazechaseName: 'Maze Chase',
     mazechaseDesc: 'Dodge the ghost and steer to the bubble with the target word.',
+    airplaneName: 'Airplane',
+    airplaneDesc: 'Steer the plane to the bubble with the target word.',
   },
 
   gameSound: {

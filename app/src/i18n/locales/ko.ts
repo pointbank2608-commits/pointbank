@@ -833,6 +833,31 @@ const ko = {
     ],
   },
 
+  gameAirplane: {
+    studentClassTitle: '{{className}} 비행기',
+    newButton: '+ 새 비행기',
+    namePlaceholder: '예: 3학년 동물 단어 비행기',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 비행기 게임이 없어요. 아래 "+ 새 비행기"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 비행기 게임이 없어요.',
+    settingsTitle: '비행기 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 2개 이상 등록해야 시작할 수 있어요.',
+    targetLabel: '찾아야 할 단어: {{word}}',
+    controlsHint: '위/아래 화살표 키(WS) 또는 옆 버튼으로 비행기를 조종하세요',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    finishedTitle: '비행 완료!',
+    restartButton: '다시 하기',
+    infoDescription: '오른쪽에서 날아오는 단어 풍선 중 목표 단어를 향해 비행기를 조종하는 게임이에요.',
+    infoSteps: [
+      '설정에서 단어를 2개 이상 등록하세요.',
+      '화면 위에 목표 단어가 나오고, 오른쪽에서 단어 풍선들이 계속 날아와요.',
+      '위/아래 화살표 키(WS)나 옆의 방향 버튼으로 비행기를 위아래로 움직이세요.',
+      '목표 단어 풍선에 닿으면 성공, 다른 풍선에 닿아도 감점 없이 계속할 수 있어요.',
+      '목표 단어를 다 맞히면 완료돼요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -903,6 +928,8 @@ const ko = {
     mathgenDesc: '연산과 숫자 범위를 정하면 매번 새 수학 문제가 만들어져요.',
     mazechaseName: '미로 찾기',
     mazechaseDesc: '유령을 피해 목표 단어 풍선으로 캐릭터를 움직여요.',
+    airplaneName: '비행기',
+    airplaneDesc: '날아오는 풍선 중 목표 단어를 향해 비행기를 조종해요.',
   },
 
   gameSound: {
