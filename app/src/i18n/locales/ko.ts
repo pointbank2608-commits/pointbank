@@ -294,6 +294,40 @@ const ko = {
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
   },
 
+  gameQuiz: {
+    studentClassTitle: '{{className}} 퀴즈',
+    newButton: '+ 새 퀴즈',
+    namePlaceholder: '예: 3학년 동물 단어 퀴즈',
+    emptyStaff: '아직 퀴즈가 없어요. 아래 "+ 새 퀴즈"로 첫 퀴즈를 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 퀴즈가 없어요.',
+    settingsTitle: '퀴즈 편집',
+    questionLabel: '질문 {{n}}',
+    questionPlaceholder: '질문을 입력하세요',
+    choicePlaceholder: '보기 {{n}}',
+    markCorrectHint: '정답 보기를 눌러 표시하세요',
+    addChoiceButton: '+ 보기 추가',
+    removeChoiceButton: '보기 삭제',
+    addQuestionButton: '+ 질문 추가',
+    removeQuestionButton: '질문 삭제',
+    needQuestions: '질문을 1개 이상 추가하고, 각 질문에 정답을 표시해야 시작할 수 있어요.',
+    scoreLabel: '{{score}} / {{total}} 정답',
+    nextButton: '다음 문제',
+    finishedTitle: '퀴즈 완료!',
+    restartButton: '다시 풀기',
+    correctFeedback: '정답이에요!',
+    wrongFeedback: '아쉬워요!',
+  },
+
+  gameCategory: {
+    all: '전체',
+    simple: '간단게임',
+    vocabulary: '단어게임',
+    sentence: '문장 만들기',
+    listening: '리스닝',
+    reading: '리딩',
+    speaking: '스피킹',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -322,6 +356,8 @@ const ko = {
     passballDesc: '음악이 멈추면 공을 든 사람이 미션 단어를 읽어요.',
     twodiceName: '두 주사위 읽기',
     twodiceDesc: '주사위 2개를 굴려 나온 칸의 단어를 읽어요.',
+    quizName: '퀴즈',
+    quizDesc: '객관식 질문에 답하며 정답 개수를 확인해요.',
   },
 
   gameSound: {

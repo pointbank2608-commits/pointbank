@@ -296,6 +296,40 @@ const en: Ko = {
     needParticipants: 'Register at least 1 item to get started.',
   },
 
+  gameQuiz: {
+    studentClassTitle: "{{className}}'s Quiz",
+    newButton: '+ New quiz',
+    namePlaceholder: 'e.g. 3rd grade animal words quiz',
+    emptyStaff: 'No quizzes yet. Tap "+ New quiz" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a quiz yet.",
+    settingsTitle: 'Edit quiz',
+    questionLabel: 'Question {{n}}',
+    questionPlaceholder: 'Enter a question',
+    choicePlaceholder: 'Choice {{n}}',
+    markCorrectHint: 'Tap the correct choice to mark it',
+    addChoiceButton: '+ Add choice',
+    removeChoiceButton: 'Remove choice',
+    addQuestionButton: '+ Add question',
+    removeQuestionButton: 'Remove question',
+    needQuestions: 'Add at least 1 question and mark a correct answer for each to start.',
+    scoreLabel: '{{score}} / {{total}} correct',
+    nextButton: 'Next question',
+    finishedTitle: 'Quiz complete!',
+    restartButton: 'Try again',
+    correctFeedback: 'Correct!',
+    wrongFeedback: 'Not quite!',
+  },
+
+  gameCategory: {
+    all: 'All',
+    simple: 'Simple games',
+    vocabulary: 'Vocabulary',
+    sentence: 'Sentence building',
+    listening: 'Listening',
+    reading: 'Reading',
+    speaking: 'Speaking',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -324,6 +358,8 @@ const en: Ko = {
     passballDesc: 'When the music stops, whoever has the ball reads the mission word.',
     twodiceName: 'Two Dice',
     twodiceDesc: 'Roll two dice and read the word at that grid spot.',
+    quizName: 'Quiz',
+    quizDesc: 'Answer multiple-choice questions and see your score.',
   },
 
   gameSound: {

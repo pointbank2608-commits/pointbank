@@ -42,7 +42,7 @@ export default function OpenInOtherGame({ currentType, itemCount, onOpen }: Prop
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container disabled:opacity-60 text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">{g.icon}</span>
-            {t(`gamesList.${g.type}Name`)}
+            {t(g.nameKey)}
           </button>
         ))}
       </div>

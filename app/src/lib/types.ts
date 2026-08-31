@@ -157,7 +157,8 @@ export type GameType =
   | 'connect4'
   | 'popcorn'
   | 'passball'
-  | 'twodice';
+  | 'twodice'
+  | 'quiz';
 
 export interface GameItem {
   id: string;
@@ -192,6 +193,19 @@ export interface GameTemplateConfig {
   targetCount?: number;
   /** 공 돌리기 전용: 음악이 멈추기까지 걸리는 시간(초)의 무작위 범위. */
   ballRange?: { min: number; max: number };
+  /**
+   * 퀴즈 전용: 질문+보기 목록. 퀴즈는 항목이 "단어 하나"가 아니라 "질문+정답 보기 여러 개"라
+   * 공용 items 로 표현이 안 돼서 여기 별도로 둔다 — 그래서 퀴즈는 "다른 게임으로 열기"
+   * 대상에서 자연히 빠진다(콘텐츠 모양이 다른 게임들과 안 맞음).
+   */
+  questions?: QuizQuestion[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  choices: string[];
+  correctIndex: number;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

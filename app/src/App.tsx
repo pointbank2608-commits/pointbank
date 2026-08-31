@@ -20,6 +20,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
 import PopcornPage from './pages/PopcornPage';
+import QuizPage from './pages/QuizPage';
 import ResultsPage from './pages/ResultsPage';
 import SaveOrGivePage from './pages/SaveOrGivePage';
 import SettingsPage from './pages/SettingsPage';
@@ -100,6 +101,7 @@ export default function App() {
             <Route path="/games/popcorn" element={<PopcornPage />} />
             <Route path="/games/passball" element={<PassBallPage />} />
             <Route path="/games/twodice" element={<TwoDicePage />} />
+            <Route path="/games/quiz" element={<QuizPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -120,6 +122,7 @@ export default function App() {
             <Route path="/games/popcorn" element={<PopcornPage />} />
             <Route path="/games/passball" element={<PassBallPage />} />
             <Route path="/games/twodice" element={<TwoDicePage />} />
+            <Route path="/games/quiz" element={<QuizPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

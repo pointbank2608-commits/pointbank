@@ -1,29 +1,196 @@
 import type { GameType } from './types';
 
+/**
+ * 게임 용도 구분. GamesPage.tsx 필터 탭과 커뮤니케이션(카테고리별로 무엇이 몇 개인지)에 쓴다.
+ * - simple: 어떤 단어 리스트든 넣을 수 있는 범용 교실 게임(팀 대결·랜덤 뽑기 등)
+ * - vocabulary: 단어 뜻/철자 암기에 특화된 게임(워드월 스타일 템플릿)
+ * - sentence: 문장 만들기/어순 연습
+ * - listening / reading / speaking: 각 언어 영역 특화
+ */
+export type GameCategory = 'simple' | 'vocabulary' | 'sentence' | 'listening' | 'reading' | 'speaking';
+
 export interface GameCatalogEntry {
   type: GameType;
+  /**
+   * 참고용 번호. "3번 게임 고쳐줘" 식으로 대화에서 가리키기 위한 용도일 뿐, game_type
+   * 문자열이 실제 식별자다 — DB에는 번호가 저장되지 않으니 순서를 바꿔도 데이터는 안 깨진다.
+   */
+  number: number;
+  category: GameCategory;
   /** 이 게임이 필요로 하는 최소 항목 개수. 모자라면 각 게임이 반복/샘플링으로 자동 보정한다. */
   minItems: number;
   icon: string;
+  path: string;
+  /** GamesPage 카드 커버 사진 경로. 없으면 그라데이션+아이콘으로 대체 표시. */
+  cover: string | null;
+  nameKey: string;
+  descKey: string;
 }
 
 /**
- * 게임 메타데이터. "다른 게임으로 열기" 기능이 여기서 호환 후보를 고른다.
- * 아이콘 값은 GamesPage.tsx 카드 아이콘과 동일하게 맞춰뒀다(중복이지만 그쪽은 건드리지 않음).
- * 새 게임을 추가하면 여기에도 한 줄 추가해야 "다른 게임으로 열기" 후보에 뜬다.
+ * 전체 게임 메타데이터 — 단일 소스. GamesPage.tsx(카드 목록), OpenInOtherGame.tsx(다른
+ * 게임으로 열기 후보)가 전부 여기서 읽는다. 새 게임을 추가하면 여기에 한 줄만 추가하면
+ * 두 화면 모두에 자동 반영된다.
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
-  { type: 'wheel', minItems: 1, icon: 'target' },
-  { type: 'ladder', minItems: 2, icon: 'alt_route' },
-  { type: 'order', minItems: 2, icon: 'sports_baseball' },
-  { type: 'bomb', minItems: 1, icon: 'bolt' },
-  { type: 'timer', minItems: 1, icon: 'timer' },
-  { type: 'tictactoe', minItems: 1, icon: 'grid_3x3' },
-  { type: 'saveorgive', minItems: 1, icon: 'redeem' },
-  { type: 'findmissing', minItems: 2, icon: 'search' },
-  { type: 'baskin31', minItems: 1, icon: 'icecream' },
-  { type: 'connect4', minItems: 1, icon: 'grid_on' },
-  { type: 'popcorn', minItems: 1, icon: 'casino' },
-  { type: 'passball', minItems: 1, icon: 'sports_volleyball' },
-  { type: 'twodice', minItems: 1, icon: 'casino' },
+  {
+    type: 'wheel',
+    number: 1,
+    category: 'simple',
+    minItems: 1,
+    icon: 'target',
+    path: '/games/wheel',
+    cover: '/covers/game-wheel.jpg',
+    nameKey: 'gamesList.wheelName',
+    descKey: 'gamesList.wheelDesc',
+  },
+  {
+    type: 'ladder',
+    number: 2,
+    category: 'simple',
+    minItems: 2,
+    icon: 'alt_route',
+    path: '/games/ladder',
+    cover: '/covers/game-ladder.jpg',
+    nameKey: 'gamesList.ladderName',
+    descKey: 'gamesList.ladderDesc',
+  },
+  {
+    type: 'order',
+    number: 3,
+    category: 'simple',
+    minItems: 2,
+    icon: 'sports_baseball',
+    path: '/games/order',
+    cover: '/covers/game-balls.jpg',
+    nameKey: 'gamesList.orderName',
+    descKey: 'gamesList.orderDesc',
+  },
+  {
+    type: 'bomb',
+    number: 4,
+    category: 'simple',
+    minItems: 1,
+    icon: 'bolt',
+    path: '/games/bomb',
+    cover: '/covers/game-bomb.jpg',
+    nameKey: 'gamesList.bombName',
+    descKey: 'gamesList.bombDesc',
+  },
+  {
+    type: 'timer',
+    number: 5,
+    category: 'simple',
+    minItems: 1,
+    icon: 'timer',
+    path: '/games/timer',
+    cover: '/covers/game-timer.jpg',
+    nameKey: 'gamesList.timerName',
+    descKey: 'gamesList.timerDesc',
+  },
+  {
+    type: 'tictactoe',
+    number: 6,
+    category: 'simple',
+    minItems: 1,
+    icon: 'grid_3x3',
+    path: '/games/tictactoe',
+    cover: null,
+    nameKey: 'gamesList.tictactoeName',
+    descKey: 'gamesList.tictactoeDesc',
+  },
+  {
+    type: 'saveorgive',
+    number: 7,
+    category: 'simple',
+    minItems: 1,
+    icon: 'redeem',
+    path: '/games/saveorgive',
+    cover: null,
+    nameKey: 'gamesList.saveorgiveName',
+    descKey: 'gamesList.saveorgiveDesc',
+  },
+  {
+    type: 'findmissing',
+    number: 8,
+    category: 'simple',
+    minItems: 2,
+    icon: 'search',
+    path: '/games/findmissing',
+    cover: null,
+    nameKey: 'gamesList.findmissingName',
+    descKey: 'gamesList.findmissingDesc',
+  },
+  {
+    type: 'baskin31',
+    number: 9,
+    category: 'simple',
+    minItems: 1,
+    icon: 'icecream',
+    path: '/games/baskin31',
+    cover: null,
+    nameKey: 'gamesList.baskin31Name',
+    descKey: 'gamesList.baskin31Desc',
+  },
+  {
+    type: 'connect4',
+    number: 10,
+    category: 'simple',
+    minItems: 1,
+    icon: 'grid_on',
+    path: '/games/connect4',
+    cover: null,
+    nameKey: 'gamesList.connect4Name',
+    descKey: 'gamesList.connect4Desc',
+  },
+  {
+    type: 'popcorn',
+    number: 11,
+    category: 'simple',
+    minItems: 1,
+    icon: 'casino',
+    path: '/games/popcorn',
+    cover: null,
+    nameKey: 'gamesList.popcornName',
+    descKey: 'gamesList.popcornDesc',
+  },
+  {
+    type: 'passball',
+    number: 12,
+    category: 'simple',
+    minItems: 1,
+    icon: 'sports_volleyball',
+    path: '/games/passball',
+    cover: null,
+    nameKey: 'gamesList.passballName',
+    descKey: 'gamesList.passballDesc',
+  },
+  {
+    type: 'twodice',
+    number: 13,
+    category: 'simple',
+    minItems: 1,
+    icon: 'casino',
+    path: '/games/twodice',
+    cover: null,
+    nameKey: 'gamesList.twodiceName',
+    descKey: 'gamesList.twodiceDesc',
+  },
+  {
+    type: 'quiz',
+    number: 14,
+    category: 'vocabulary',
+    // 퀴즈는 항목(단어) 리스트가 아니라 질문+보기 구조라 다른 게임에서 "퀴즈로 열기"가
+    // 성립하지 않는다 — 실제 항목 개수로는 절대 못 채울 값을 넣어 후보에서 자연히 빠지게 한다.
+    minItems: 999,
+    icon: 'quiz',
+    path: '/games/quiz',
+    cover: null,
+    nameKey: 'gamesList.quizName',
+    descKey: 'gamesList.quizDesc',
+  },
 ];
+
+export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
+  return GAME_CATALOG.find((g) => g.type === type);
+}
