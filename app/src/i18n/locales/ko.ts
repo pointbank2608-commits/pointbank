@@ -318,6 +318,29 @@ const ko = {
     wrongFeedback: '아쉬워요!',
   },
 
+  gameHangman: {
+    studentClassTitle: '{{className}} 행맨',
+    newButton: '+ 새 행맨',
+    namePlaceholder: '예: 3학년 동물 단어 행맨',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 행맨이 없어요. 아래 "+ 새 행맨"으로 첫 행맨을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 행맨이 없어요.',
+    settingsTitle: '행맨 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 1개 이상 추가하면 시작할 수 있어요.',
+    livesLabel: '남은 기회',
+    wrongLettersLabel: '틀린 글자',
+    guessPlaceholder: '한 글자',
+    guessButton: '확인',
+    maxAttemptsLabel: '기회 횟수 (오답 허용)',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    nextButton: '다음 단어',
+    finishedTitle: '행맨 완료!',
+    restartButton: '다시 하기',
+    wonFeedback: '정답이에요!',
+    lostFeedback: '아쉬워요! 정답은 "{{word}}" 였어요.',
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -358,6 +381,8 @@ const ko = {
     twodiceDesc: '주사위 2개를 굴려 나온 칸의 단어를 읽어요.',
     quizName: '퀴즈',
     quizDesc: '객관식 질문에 답하며 정답 개수를 확인해요.',
+    hangmanName: '행맨',
+    hangmanDesc: '한 글자씩 맞혀서 숨겨진 단어를 완성해요.',
   },
 
   gameSound: {

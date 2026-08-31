@@ -320,6 +320,29 @@ const en: Ko = {
     wrongFeedback: 'Not quite!',
   },
 
+  gameHangman: {
+    studentClassTitle: "{{className}}'s Hangman",
+    newButton: '+ New hangman',
+    namePlaceholder: 'e.g. 3rd grade animal words hangman',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No hangman games yet. Tap "+ New hangman" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a hangman game yet.",
+    settingsTitle: 'Edit hangman',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word to start.',
+    livesLabel: 'Lives left',
+    wrongLettersLabel: 'Wrong letters',
+    guessPlaceholder: 'One letter',
+    guessButton: 'Guess',
+    maxAttemptsLabel: 'Attempts allowed',
+    scoreLabel: '{{score}} / {{total}} correct',
+    nextButton: 'Next word',
+    finishedTitle: 'Hangman complete!',
+    restartButton: 'Play again',
+    wonFeedback: 'You got it!',
+    lostFeedback: 'So close! The word was "{{word}}".',
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -360,6 +383,8 @@ const en: Ko = {
     twodiceDesc: 'Roll two dice and read the word at that grid spot.',
     quizName: 'Quiz',
     quizDesc: 'Answer multiple-choice questions and see your score.',
+    hangmanName: 'Hangman',
+    hangmanDesc: 'Guess letters one at a time to reveal the hidden word.',
   },
 
   gameSound: {

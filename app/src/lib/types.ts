@@ -158,7 +158,8 @@ export type GameType =
   | 'popcorn'
   | 'passball'
   | 'twodice'
-  | 'quiz';
+  | 'quiz'
+  | 'hangman';
 
 export interface GameItem {
   id: string;
@@ -199,6 +200,8 @@ export interface GameTemplateConfig {
    * 대상에서 자연히 빠진다(콘텐츠 모양이 다른 게임들과 안 맞음).
    */
   questions?: QuizQuestion[];
+  /** 행맨 전용: 한 단어당 허용되는 오답 횟수 (기본 6). */
+  maxAttempts?: number;
 }
 
 export interface QuizQuestion {

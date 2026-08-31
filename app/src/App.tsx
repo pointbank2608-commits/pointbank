@@ -13,6 +13,7 @@ import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
 import FindMissingPage from './pages/FindMissingPage';
 import GamesPage from './pages/GamesPage';
+import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
 import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
@@ -102,6 +103,7 @@ export default function App() {
             <Route path="/games/passball" element={<PassBallPage />} />
             <Route path="/games/twodice" element={<TwoDicePage />} />
             <Route path="/games/quiz" element={<QuizPage />} />
+            <Route path="/games/hangman" element={<HangmanPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -123,6 +125,7 @@ export default function App() {
             <Route path="/games/passball" element={<PassBallPage />} />
             <Route path="/games/twodice" element={<TwoDicePage />} />
             <Route path="/games/quiz" element={<QuizPage />} />
+            <Route path="/games/hangman" element={<HangmanPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

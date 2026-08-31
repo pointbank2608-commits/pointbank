@@ -189,6 +189,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.quizName',
     descKey: 'gamesList.quizDesc',
   },
+  {
+    type: 'hangman',
+    number: 15,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'abc',
+    path: '/games/hangman',
+    cover: null,
+    nameKey: 'gamesList.hangmanName',
+    descKey: 'gamesList.hangmanDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
