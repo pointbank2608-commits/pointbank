@@ -749,6 +749,35 @@ const en: Ko = {
     ],
   },
 
+  gameCrossword: {
+    studentClassTitle: "{{className}}'s Crossword",
+    newButton: '+ New crossword',
+    namePlaceholder: 'e.g. 3rd grade animal words crossword',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No crosswords yet. Tap "+ New crossword" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a crossword yet.",
+    settingsTitle: 'Edit crossword',
+    editorHint: 'Only words with 2+ letters are used. Words that share a letter get crossed together automatically; a word with no matching letters may be left out of that round.',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word with 2 or more letters to start.',
+    foundLabel: '{{found}} / {{total}} filled',
+    wordBankLabel: 'Word bank — tap to select',
+    slotListLabel: 'Slots — tap the one your selected word fits',
+    acrossLabel: 'Across',
+    downLabel: 'Down',
+    lettersUnit: ' letters',
+    finishedTitle: 'Crossword complete!',
+    restartButton: 'Shuffle & try again',
+    infoDescription: 'Words are arranged in a crossing grid — fill each slot with the word from the word bank that fits it.',
+    infoSteps: [
+      'In settings, add words (2+ letters each) — words that share a letter are automatically crossed together.',
+      'Tap a word in the word bank to select it.',
+      "Below the grid, tap the slot (across/down number and letter count) you think it fits.",
+      'Get it right and the grid fills in; get it wrong and that slot flashes red for a moment.',
+      'Fill every slot to finish.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -813,6 +842,8 @@ const en: Ko = {
     rankorderDesc: 'Move items into their correct, pre-set order.',
     wordsearchName: 'Word Search',
     wordsearchDesc: 'Find the words hidden inside a grid of letters.',
+    crosswordName: 'Crossword',
+    crosswordDesc: 'Fill the crossing grid with the words that fit.',
   },
 
   gameSound: {

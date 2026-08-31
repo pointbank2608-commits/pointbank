@@ -170,7 +170,8 @@ export type GameType =
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
-  | 'wordsearch';
+  | 'wordsearch'
+  | 'crossword';
 
 export interface GameItem {
   id: string;

@@ -9,6 +9,7 @@ import AttendancePage from './pages/AttendancePage';
 import Baskin31Page from './pages/Baskin31Page';
 import BombPage from './pages/BombPage';
 import Connect4Page from './pages/Connect4Page';
+import CrosswordPage from './pages/CrosswordPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
@@ -126,6 +127,7 @@ export default function App() {
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
+            <Route path="/games/crossword" element={<CrosswordPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -159,6 +161,7 @@ export default function App() {
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
+            <Route path="/games/crossword" element={<CrosswordPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

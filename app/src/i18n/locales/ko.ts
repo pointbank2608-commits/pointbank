@@ -747,6 +747,35 @@ const ko = {
     ],
   },
 
+  gameCrossword: {
+    studentClassTitle: '{{className}} 크로스워드',
+    newButton: '+ 새 크로스워드',
+    namePlaceholder: '예: 3학년 동물 단어 크로스워드',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 크로스워드가 없어요. 아래 "+ 새 크로스워드"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 크로스워드가 없어요.',
+    settingsTitle: '크로스워드 편집',
+    editorHint: '2글자 이상인 단어만 사용돼요. 겹치는 글자가 있는 단어끼리 교차 배치되고, 겹칠 자리를 못 찾은 단어는 이번 판에서 빠질 수 있어요.',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '2글자 이상인 단어를 1개 이상 등록해야 시작할 수 있어요.',
+    foundLabel: '{{found}} / {{total}} 채움',
+    wordBankLabel: '단어 목록 — 눌러서 선택하세요',
+    slotListLabel: '칸 목록 — 선택한 단어가 들어갈 칸을 누르세요',
+    acrossLabel: '가로',
+    downLabel: '세로',
+    lettersUnit: '글자',
+    finishedTitle: '크로스워드를 완성했어요!',
+    restartButton: '다시 섞기',
+    infoDescription: '단어끼리 글자가 겹치도록 배치된 격자에 단어 목록의 단어를 알맞은 칸에 채우는 게임이에요.',
+    infoSteps: [
+      '설정에서 단어를 등록하세요(2글자 이상). 겹치는 글자가 있는 단어끼리 자동으로 교차 배치돼요.',
+      '단어 목록에서 단어를 하나 눌러 선택하세요.',
+      '격자 아래 칸 목록에서 그 단어가 들어갈 것 같은 칸(가로/세로 번호와 글자 수)을 눌러보세요.',
+      '맞으면 격자에 글자가 채워지고, 틀리면 그 칸이 잠깐 빨갛게 표시돼요.',
+      '모든 단어를 다 채우면 완료돼요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -811,6 +840,8 @@ const ko = {
     rankorderDesc: '항목을 움직여서 미리 정해둔 올바른 순서로 정렬해요.',
     wordsearchName: '워드서치',
     wordsearchDesc: '글자 격자 안에 숨어있는 단어를 찾아요.',
+    crosswordName: '크로스워드',
+    crosswordDesc: '단어끼리 겹쳐진 격자에 알맞은 단어를 채워요.',
   },
 
   gameSound: {

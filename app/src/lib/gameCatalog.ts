@@ -328,6 +328,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.wordsearchName',
     descKey: 'gamesList.wordsearchDesc',
   },
+  {
+    type: 'crossword',
+    number: 27,
+    category: 'vocabulary',
+    minItems: 2,
+    icon: 'border_all',
+    path: '/games/crossword',
+    cover: null,
+    nameKey: 'gamesList.crosswordName',
+    descKey: 'gamesList.crosswordDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
