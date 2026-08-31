@@ -670,6 +670,35 @@ const en: Ko = {
     ],
   },
 
+  gameSpellWord: {
+    studentClassTitle: "{{className}}'s Spell the Word",
+    newButton: '+ New spell the word',
+    namePlaceholder: 'e.g. 3rd grade animal words spelling',
+    defaultItem: 'Word {{n}}',
+    emptyStaff: 'No spelling games yet. Tap "+ New spell the word" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a spelling game yet.",
+    settingsTitle: 'Edit spell the word',
+    clearAllConfirm: 'Delete all the words?',
+    needParticipants: 'Add at least 1 word to start.',
+    previewSecondsLabel: 'Word preview time (seconds)',
+    previewHint: 'Look closely and remember it!',
+    answerPlaceholder: 'Type the spelling',
+    submitButton: 'Check',
+    correctFeedback: 'Correct!',
+    wrongFeedback: 'Not quite! The word was "{{word}}".',
+    nextButton: 'Next word',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'Spell the Word complete!',
+    restartButton: 'Play again',
+    infoDescription: 'A word flashes briefly, then hides — type its spelling from memory.',
+    infoSteps: [
+      'In settings, add words and set how long each word is shown (default 3 seconds).',
+      'The word appears briefly — take a good look and remember it.',
+      'Once it disappears, type the spelling into the box and tap "Check".',
+      'See right away if you got it, then tap "Next word" to continue.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -728,6 +757,8 @@ const en: Ko = {
     unscrambleDesc: 'Tap scrambled words in order to build the correct sentence.',
     typeanswerName: 'Type the Answer',
     typeanswerDesc: 'Type the answer to a question or fill in the blank.',
+    spellwordName: 'Spell the Word',
+    spellwordDesc: 'See a word briefly, then type its spelling from memory.',
   },
 
   gameSound: {

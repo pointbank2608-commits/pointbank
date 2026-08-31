@@ -295,6 +295,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.typeanswerName',
     descKey: 'gamesList.typeanswerDesc',
   },
+  {
+    type: 'spellword',
+    number: 24,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'edit',
+    path: '/games/spellword',
+    cover: null,
+    nameKey: 'gamesList.spellwordName',
+    descKey: 'gamesList.spellwordDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

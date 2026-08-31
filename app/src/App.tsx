@@ -30,6 +30,7 @@ import ResultsPage from './pages/ResultsPage';
 import SaveOrGivePage from './pages/SaveOrGivePage';
 import SentenceUnscramblePage from './pages/SentenceUnscramblePage';
 import SettingsPage from './pages/SettingsPage';
+import SpellTheWordPage from './pages/SpellTheWordPage';
 import StudentPage from './pages/StudentPage';
 import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
@@ -120,6 +121,7 @@ export default function App() {
             <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
+            <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -150,6 +152,7 @@ export default function App() {
             <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
+            <Route path="/games/spellword" element={<SpellTheWordPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

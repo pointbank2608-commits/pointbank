@@ -167,7 +167,8 @@ export type GameType =
   | 'anagram'
   | 'groupsort'
   | 'unscramble'
-  | 'typeanswer';
+  | 'typeanswer'
+  | 'spellword';
 
 export interface GameItem {
   id: string;
@@ -228,6 +229,8 @@ export interface GameTemplateConfig {
   typeAnswerEntries?: TypeAnswerEntry[];
   /** 답 입력하기 전용: 'question'(질문에 답하기) 또는 'cloze'(빈칸 채우기 — 프롬프트에 ___ 포함). 기본 'question'. */
   typeAnswerMode?: 'question' | 'cloze';
+  /** 단어 철자 전용: 단어를 보여주는 시간(초). 기본 3. */
+  spellPreviewSeconds?: number;
   /** 그룹 정렬 전용: 그룹(이름+소속 항목) 목록. 항목이 어느 그룹인지가 곧 정답이라 공용 items 모델로는 표현이 안 돼 별도로 둔다. */
   groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */

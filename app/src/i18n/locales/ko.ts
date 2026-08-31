@@ -668,6 +668,35 @@ const ko = {
     ],
   },
 
+  gameSpellWord: {
+    studentClassTitle: '{{className}} 단어 철자',
+    newButton: '+ 새 단어 철자',
+    namePlaceholder: '예: 3학년 동물 단어 철자',
+    defaultItem: '단어 {{n}}',
+    emptyStaff: '아직 단어 철자가 없어요. 아래 "+ 새 단어 철자"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 단어 철자가 없어요.',
+    settingsTitle: '단어 철자 편집',
+    clearAllConfirm: '등록된 단어를 전부 삭제할까요?',
+    needParticipants: '단어를 1개 이상 추가하면 시작할 수 있어요.',
+    previewSecondsLabel: '단어를 보여주는 시간(초)',
+    previewHint: '잘 보고 기억하세요!',
+    answerPlaceholder: '철자를 입력하세요',
+    submitButton: '확인',
+    correctFeedback: '정답이에요!',
+    wrongFeedback: '아쉬워요! 정답은 "{{word}}" 였어요.',
+    nextButton: '다음 단어',
+    scoreLabel: '{{score}} / {{total}} 성공',
+    finishedTitle: '단어 철자 완료!',
+    restartButton: '다시 하기',
+    infoDescription: '단어를 잠깐 보여준 뒤 숨기고, 기억해서 철자를 직접 입력하는 게임이에요.',
+    infoSteps: [
+      '설정에서 단어를 등록하고, 단어를 보여줄 시간(기본 3초)을 정하세요.',
+      '단어가 잠깐 보이면 잘 기억해 두세요.',
+      '단어가 사라지면 입력창에 철자를 직접 타이핑하고 "확인"을 누르세요.',
+      '정답 여부가 바로 나오고, "다음 단어"를 눌러 계속 진행해요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -726,6 +755,8 @@ const ko = {
     unscrambleDesc: '뒤섞인 단어를 순서대로 눌러 올바른 문장을 완성해요.',
     typeanswerName: '답 입력하기',
     typeanswerDesc: '질문에 답하거나 빈칸을 채워서 정답을 직접 타이핑해요.',
+    spellwordName: '단어 철자',
+    spellwordDesc: '단어를 잠깐 보고 기억해서 철자를 직접 입력해요.',
   },
 
   gameSound: {
