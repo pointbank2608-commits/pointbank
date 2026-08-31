@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-08-31** (Cursor 세션: 랜딩 개편·숙제 캘린더 소개·커밋/배포)
+마지막 갱신: **2026-09-01** (Claude 세션: 미니게임 14종 신규 추가 + 번호/카테고리 체계 + 게임별 소개 패널)
 
 ---
 
@@ -19,7 +19,7 @@
 3. **칭찬모아(ccmoa.imweb.me)를 기능으로 따라가지 않는다.** 그쪽은 1포인트=1원, 기프티콘, 마켓데이 물류다. 우리는 수업 중 운영 도구다. 기프티콘 카탈로그·선충전 현금 포인트·여러 학원 포인트 합산은 하지 않는다.
 4. **랜딩에서 “스티커”라고 쓰지 않는다. “쿠폰”이다.**
 5. **숙제 기록은 별도 입력이 아니다.** 통장의 숙제 완료 지급 버튼 → 캘린더 완료, 미제출 차감 버튼 → 캘린더 미제출. (`presets.is_homework`, `PassbookCard` / `ClassBoardPage`)
-6. **새 미니게임**은 네비에 메뉴를 늘리지 않는다. `/games` 목록(`GamesPage.tsx`의 배열)에 카드 + 라우트만 추가. `game_templates` + `config jsonb`. `game_type`에 CHECK 없음 → 스키마 없이 종류 추가 가능.
+6. **새 미니게임**은 네비에 메뉴를 늘리지 않는다. `app/src/lib/gameCatalog.ts`의 `GAME_CATALOG` 배열에 항목 하나만 추가하면 `/games` 카드 목록에 자동 반영된다(`GamesPage.tsx`는 이 배열을 그대로 매핑). `App.tsx`에 스태프·학생 라우트 두 줄 추가는 별도로 필요. `game_templates` + `config jsonb`. `game_type`에 CHECK 없음 → 스키마 없이 종류 추가 가능. 게임마다 `number`(참고용, DB에 저장 안 됨)와 `category`(`simple`/`vocabulary`/`sentence`/`listening`/`reading`/`speaking`)를 붙인다.
 7. **오늘 통장 화면은 오늘 적립만 크게.** 누적은 기본 숨김. 마감은 저장이 아니라 확정(`settlements`).
 8. **커밋은 사용자가 요청할 때만.** 배포는 `app/`에서 `npx vercel --prod` (아래 배포 참고).
 
@@ -32,12 +32,10 @@
 - `/dashboard` — 오늘 할 일, 실데이터
 - `/attendance` — 등원·하원, 월별
 - `/board` — 반 통장. 프리셋 버튼으로 지급/차감
-- `/games` — 간단게임 5종 카드 (커버 이미지 `app/public/covers/game-*.jpg`)
-  - `/games/wheel` 돌림판
-  - `/games/ladder` 사다리
-  - `/games/order` 랜덤 공 뽑기
-  - `/games/bomb` 시한폭탄
-  - `/games/timer` 타이머 맞추기
+- `/games` — 게임 19종 카드, 카테고리 필터 탭 + 번호 배지. 전체 목록은 `app/src/lib/gameCatalog.ts`가 단일 소스.
+  - 1~13번 (`category: simple`, 커버 이미지 있는 5개는 `app/public/covers/game-*.jpg`): `/games/wheel` 돌림판, `/games/ladder` 사다리, `/games/order` 랜덤 공 뽑기, `/games/bomb` 시한폭탄, `/games/timer` 타이머 맞추기, `/games/tictactoe` 틱택토, `/games/saveorgive` Save it or Give it, `/games/findmissing` 사라진 항목 찾기, `/games/baskin31` 베스킨라빈스31, `/games/connect4` 4 in a row, `/games/popcorn` 팝콘 게임, `/games/passball` 공 돌리기, `/games/twodice` 두 주사위 읽기
+  - 14~19번 (`category: vocabulary`, 워드월 스타일 — 이미지 없이 만든 것): `/games/quiz` 퀴즈, `/games/hangman` 행맨, `/games/truefalse` 참 또는 거짓, `/games/matchup` 매치업, `/games/whackamole` 두더지잡기, `/games/flashcards` 플래시카드
+  - 각 게임 페이지 상단에 `GameInfoPanel`(접이식 "게임 소개 및 방법") — `gameXxx.infoDescription`/`infoSteps` i18n 키, 19개 전부 적용됨
 - `/results` — 기간별 적립/차감. 학생별 `/results/homework/:studentId` 숙제 캘린더
 - `/settings` — 학원·반·프리셋·로고. 게임 센터를 여기 넣지 말 것
 
@@ -116,7 +114,7 @@ npx vercel --prod --scope businessgym11-8014s-projects
 
 ## 하지 말 것 / 나중에
 
-- 단어 게임·문법 게임: 요청은 있었으나 설계 전. 지금 있는 것은 간단게임 5종.
+- 이미지가 필요한 워드월 스타일 템플릿(크로스워드, 워드서치, 이미지 퀴즈 등): 이미지 업로드·생성 기능이 없어 보류. `GameItem.imageUrl?` 필드 + 업로드 UI(기존 `GameMusicPicker` 업로드 패턴 재사용 가능) 나오면 재검토.
 - 학생 앱, 학부모 알림, 유료화 통계: 보류.
 - 선생님별 담당 반 제한: 소규모 학원에선 전체 접근이 편해서 보류.
 - `handoff.md`의 “schema.sql 아직 안 돌림” “배포 예정” “게임 내비 맨 끝”은 **구버전**일 수 있음. 의심되면 코드와 이 파일을 우선.
@@ -129,7 +127,9 @@ npx vercel --prod --scope businessgym11-8014s-projects
 |---|---|
 | 랜딩 문구 | `app/src/i18n/locales/ko.ts` `landing` |
 | 랜딩 레이아웃 | `app/src/pages/LandingPage.tsx` |
-| 게임 목록에 게임 추가 | `app/src/pages/GamesPage.tsx` + `App.tsx` 라우트 |
+| 게임 목록에 게임 추가 | `app/src/lib/gameCatalog.ts`(카드 자동 반영) + `App.tsx` 라우트(스태프·학생 둘 다) |
+| 게임 소개/방법 문구 수정 | 각 게임의 `gameXxx.infoDescription`/`infoSteps` (`ko.ts`/`en.ts`) |
+| 게임 비주얼 테마 추가 | `app/src/lib/gameThemes.ts` (`GameThemeFrame.tsx`가 자동 반영) |
 | 숙제 연동 | `PassbookCard.tsx`, `ClassBoardPage.tsx`, 프리셋 `is_homework` |
 | 숙제 캘린더 UI | `HomeworkCalendarPage.tsx` |
 | 내비 | `AppLayout.tsx` |
