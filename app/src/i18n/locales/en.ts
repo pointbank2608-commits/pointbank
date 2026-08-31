@@ -343,6 +343,29 @@ const en: Ko = {
     lostFeedback: 'So close! The word was "{{word}}".',
   },
 
+  gameTrueFalse: {
+    studentClassTitle: "{{className}}'s True or False",
+    newButton: '+ New true or false',
+    namePlaceholder: 'e.g. 3rd grade animal facts',
+    emptyStaff: 'No statements yet. Tap "+ New true or false" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a true or false game yet.",
+    settingsTitle: 'Edit true or false',
+    statementLabel: 'Statement {{n}}',
+    statementPlaceholder: 'Enter a statement',
+    answerLabel: 'Answer:',
+    trueLabel: 'True',
+    falseLabel: 'False',
+    addStatementButton: '+ Add statement',
+    removeStatementButton: 'Remove statement',
+    needStatements: 'Add at least 1 statement to start.',
+    scoreLabel: '{{score}} / {{total}} correct',
+    nextButton: 'Next statement',
+    finishedTitle: 'True or False complete!',
+    restartButton: 'Try again',
+    correctFeedback: 'Correct!',
+    wrongFeedback: 'Not quite!',
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -385,6 +408,8 @@ const en: Ko = {
     quizDesc: 'Answer multiple-choice questions and see your score.',
     hangmanName: 'Hangman',
     hangmanDesc: 'Guess letters one at a time to reveal the hidden word.',
+    truefalseName: 'True or False',
+    truefalseDesc: 'Read a statement and decide if it is true or false.',
   },
 
   gameSound: {

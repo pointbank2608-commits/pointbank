@@ -28,6 +28,7 @@ import SettingsPage from './pages/SettingsPage';
 import StudentPage from './pages/StudentPage';
 import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
+import TrueFalsePage from './pages/TrueFalsePage';
 import TwoDicePage from './pages/TwoDicePage';
 import WheelPage from './pages/WheelPage';
 
@@ -104,6 +105,7 @@ export default function App() {
             <Route path="/games/twodice" element={<TwoDicePage />} />
             <Route path="/games/quiz" element={<QuizPage />} />
             <Route path="/games/hangman" element={<HangmanPage />} />
+            <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -126,6 +128,7 @@ export default function App() {
             <Route path="/games/twodice" element={<TwoDicePage />} />
             <Route path="/games/quiz" element={<QuizPage />} />
             <Route path="/games/hangman" element={<HangmanPage />} />
+            <Route path="/games/truefalse" element={<TrueFalsePage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

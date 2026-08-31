@@ -341,6 +341,29 @@ const ko = {
     lostFeedback: '아쉬워요! 정답은 "{{word}}" 였어요.',
   },
 
+  gameTrueFalse: {
+    studentClassTitle: '{{className}} 참 또는 거짓',
+    newButton: '+ 새 참 또는 거짓',
+    namePlaceholder: '예: 3학년 동물 상식 참거짓',
+    emptyStaff: '아직 문제가 없어요. 아래 "+ 새 참 또는 거짓"으로 첫 문제를 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 문제가 없어요.',
+    settingsTitle: '참 또는 거짓 편집',
+    statementLabel: '문장 {{n}}',
+    statementPlaceholder: '문장을 입력하세요',
+    answerLabel: '정답:',
+    trueLabel: '참',
+    falseLabel: '거짓',
+    addStatementButton: '+ 문장 추가',
+    removeStatementButton: '문장 삭제',
+    needStatements: '문장을 1개 이상 추가해야 시작할 수 있어요.',
+    scoreLabel: '{{score}} / {{total}} 정답',
+    nextButton: '다음 문장',
+    finishedTitle: '참 또는 거짓 완료!',
+    restartButton: '다시 풀기',
+    correctFeedback: '정답이에요!',
+    wrongFeedback: '아쉬워요!',
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -383,6 +406,8 @@ const ko = {
     quizDesc: '객관식 질문에 답하며 정답 개수를 확인해요.',
     hangmanName: '행맨',
     hangmanDesc: '한 글자씩 맞혀서 숨겨진 단어를 완성해요.',
+    truefalseName: '참 또는 거짓',
+    truefalseDesc: '문장을 보고 참인지 거짓인지 맞혀요.',
   },
 
   gameSound: {

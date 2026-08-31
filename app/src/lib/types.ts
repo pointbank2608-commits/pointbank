@@ -159,7 +159,8 @@ export type GameType =
   | 'passball'
   | 'twodice'
   | 'quiz'
-  | 'hangman';
+  | 'hangman'
+  | 'truefalse';
 
 export interface GameItem {
   id: string;
@@ -202,6 +203,11 @@ export interface GameTemplateConfig {
   questions?: QuizQuestion[];
   /** 행맨 전용: 한 단어당 허용되는 오답 횟수 (기본 6). */
   maxAttempts?: number;
+  /**
+   * 참 또는 거짓 전용: 문장+정답(참/거짓) 목록. 퀴즈와 마찬가지로 공용 items 모델과
+   * 모양이 달라 여기 별도로 둔다 — "다른 게임으로 열기" 대상에서 자연히 제외된다.
+   */
+  statements?: TrueFalseStatement[];
 }
 
 export interface QuizQuestion {
@@ -209,6 +215,12 @@ export interface QuizQuestion {
   question: string;
   choices: string[];
   correctIndex: number;
+}
+
+export interface TrueFalseStatement {
+  id: string;
+  text: string;
+  isTrue: boolean;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

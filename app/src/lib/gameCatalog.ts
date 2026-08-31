@@ -200,6 +200,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.hangmanName',
     descKey: 'gamesList.hangmanDesc',
   },
+  {
+    type: 'truefalse',
+    number: 16,
+    category: 'vocabulary',
+    // 퀴즈와 마찬가지로 문장+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'fact_check',
+    path: '/games/truefalse',
+    cover: null,
+    nameKey: 'gamesList.truefalseName',
+    descKey: 'gamesList.truefalseDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
