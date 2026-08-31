@@ -1,13 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import LanguageToggle from '../components/LanguageToggle';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-
-const ROLE_LABEL: Record<string, string> = {
-  owner: '원장',
-  teacher: '선생님',
-  student: '학생',
-};
 
 interface NavItem {
   to: string;
@@ -18,20 +14,27 @@ interface NavItem {
 export default function AppLayout() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
   const { notify } = useToast();
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const ROLE_LABEL: Record<string, string> = {
+    owner: t('nav.roleOwner'),
+    teacher: t('nav.roleTeacher'),
+    student: t('nav.roleStudent'),
+  };
 
   // 선생님은 대시보드에서 출석부·포인트 뱅크·게임·리포트로 들어간다. 학생은 자기 통장과 게임만.
   const navItems: NavItem[] = isStaff
     ? [
-        { to: '/dashboard', label: '대시보드', icon: 'dashboard' },
-        { to: '/attendance', label: '출석부', icon: 'calendar_today' },
-        { to: '/board', label: '포인트 뱅크', icon: 'payments' },
-        { to: '/games', label: '게임 센터', icon: 'sports_esports' },
-        { to: '/results', label: '리포트', icon: 'assessment' },
+        { to: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
+        { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
+        { to: '/board', label: t('nav.board'), icon: 'payments' },
+        { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
+        { to: '/results', label: t('nav.reports'), icon: 'assessment' },
       ]
     : [
-        { to: '/me', label: '내 통장', icon: 'account_balance_wallet' },
-        { to: '/games', label: '게임', icon: 'sports_esports' },
+        { to: '/me', label: t('nav.myBoard'), icon: 'account_balance_wallet' },
+        { to: '/games', label: t('nav.games'), icon: 'sports_esports' },
       ];
 
   const homeTo = isStaff ? '/dashboard' : '/me';
@@ -55,9 +58,11 @@ export default function AppLayout() {
         </div>
         <div className="min-w-0">
           <h1 className="font-title-md text-title-md text-deep-navy leading-tight truncate">
-            {academy?.name ?? '클래스뱅크'}
+            {academy?.name ?? t('common.brand')}
           </h1>
-          <p className="font-caption text-caption text-on-surface-variant">포인트 단위 '{pointUnit}'</p>
+          <p className="font-caption text-caption text-on-surface-variant">
+            {t('nav.pointUnitLabel', { unit: pointUnit })}
+          </p>
         </div>
       </Link>
 
@@ -68,7 +73,7 @@ export default function AppLayout() {
           className="mb-6 mx-4 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors"
         >
           <span className="material-symbols-outlined">add</span>
-          포인트 지급
+          {t('nav.addPoints')}
         </Link>
       )}
 
@@ -83,11 +88,11 @@ export default function AppLayout() {
         ))}
       </ul>
 
-      <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-1">
+      <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
         {isStaff && (
           <NavLink to="/settings" onClick={() => setMobileOpen(false)} className={navLinkClass}>
             <span className="material-symbols-outlined">settings</span>
-            설정
+            {t('nav.settings')}
           </NavLink>
         )}
         <div className="px-4 py-2 flex items-center gap-2">
@@ -101,13 +106,16 @@ export default function AppLayout() {
             </p>
           </div>
         </div>
+        <div className="px-4">
+          <LanguageToggle />
+        </div>
         <button
           type="button"
           onClick={() => void signOut()}
           className="flex items-center gap-3 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-soft-mint/20 transition-all text-left"
         >
           <span className="material-symbols-outlined">logout</span>
-          로그아웃
+          {t('nav.signOut')}
         </button>
       </div>
     </>
@@ -121,11 +129,13 @@ export default function AppLayout() {
           type="button"
           onClick={() => setMobileOpen(true)}
           className="p-2 text-on-surface-variant"
-          aria-label="메뉴 열기"
+          aria-label={t('nav.openMenu')}
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <span className="font-title-md text-title-md text-primary truncate">{academy?.name ?? '클래스뱅크'}</span>
+        <span className="font-title-md text-title-md text-primary truncate">
+          {academy?.name ?? t('common.brand')}
+        </span>
         <div className="w-9" aria-hidden />
       </header>
 
@@ -148,26 +158,27 @@ export default function AppLayout() {
 
       <main className="flex-1 min-w-0 md:ml-64 pt-16 md:pt-0 min-h-screen">
         {/* 데스크톱 상단바 */}
-        <header className="hidden md:flex items-center justify-end gap-2 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+        <header className="hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+          <LanguageToggle />
           <button
             type="button"
-            onClick={() => notify('알림 기능은 아직 준비 중이에요.')}
+            onClick={() => notify(t('nav.notificationsComingSoon'))}
             className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
-            aria-label="알림"
+            aria-label={t('nav.notifications')}
           >
             <span className="material-symbols-outlined">notifications</span>
           </button>
           <Link
             to={isStaff ? '/settings' : homeTo}
             className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
-            aria-label="설정"
+            aria-label={t('nav.settings')}
           >
             <span className="material-symbols-outlined">settings</span>
           </Link>
           <Link
             to={isStaff ? '/settings' : homeTo}
             className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm border border-outline-variant/30 shrink-0"
-            aria-label="내 프로필"
+            aria-label={t('nav.myProfile')}
           >
             {(profile?.display_name ?? '선').slice(0, 1)}
           </Link>

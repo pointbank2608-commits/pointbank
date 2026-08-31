@@ -16,19 +16,19 @@ export const supabase = createClient(url, anonKey, {
   },
 });
 
-/** Supabase 에러를 사용자에게 보여줄 한국어 메시지로 바꾼다. */
-export function friendlyError(err: unknown): string {
+/** Supabase 에러를 사용자에게 보여줄 메시지로 바꾼다. t 는 useTranslation() 의 t 함수. */
+export function friendlyError(err: unknown, t: (key: string) => string): string {
   const raw = err instanceof Error ? err.message : String(err);
   const map: Record<string, string> = {
-    'Invalid login credentials': '이메일 또는 비밀번호가 올바르지 않습니다.',
-    'User already registered': '이미 가입된 이메일입니다. 로그인해 주세요.',
-    'Email not confirmed': '이메일 인증이 완료되지 않았습니다. 받은 편지함을 확인해 주세요.',
+    'Invalid login credentials': 'auth.errorInvalidCredentials',
+    'User already registered': 'auth.errorAlreadyRegistered',
+    'Email not confirmed': 'auth.errorEmailNotConfirmed',
   };
-  for (const [needle, ko] of Object.entries(map)) {
-    if (raw.includes(needle)) return ko;
+  for (const [needle, key] of Object.entries(map)) {
+    if (raw.includes(needle)) return t(key);
   }
   if (raw.includes('Password should be at least')) {
-    return '비밀번호는 6자 이상이어야 합니다.';
+    return t('auth.errorPasswordTooShort');
   }
   return raw;
 }
