@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { useToast } from '../context/ToastContext';
@@ -51,6 +52,7 @@ export default function WheelPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
   const { notify } = useToast();
@@ -371,6 +373,7 @@ export default function WheelPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     {academy && (
                       <>
                         <GameMusicPicker

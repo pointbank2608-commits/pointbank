@@ -279,6 +279,7 @@ const ko = {
     clearAll: '전체 삭제',
     noParticipants: '등록된 참가자가 없습니다.',
     nameFieldLabel: '이름',
+    openInOtherGameLabel: '다른 게임으로 열기',
   },
 
   onboarding: {

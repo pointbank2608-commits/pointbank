@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import TimeBomb from '../components/TimeBomb';
 import { updateGameTemplate } from '../lib/api';
@@ -56,6 +57,7 @@ export default function BombPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
 
@@ -336,6 +338,7 @@ export default function BombPage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
+                    <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     {academy && (
                       <div className="divide-y divide-surface-container">
                         <GameMusicPicker

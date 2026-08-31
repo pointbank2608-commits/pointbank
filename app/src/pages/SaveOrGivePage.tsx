@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import SaveOrGiveIt from '../components/SaveOrGiveIt';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
@@ -58,6 +59,7 @@ export default function SaveOrGivePage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
 
@@ -290,6 +292,7 @@ export default function SaveOrGivePage() {
 
                 {editorOpen && (
                   <div>
+                    <OpenInOtherGame currentType="saveorgive" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <StudentRosterPicker
                       roster={roster}
                       existingLabels={selected.items.map((i) => i.label)}

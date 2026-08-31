@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -30,6 +31,10 @@ export function useGameTemplates(params: {
   const { academy, profile, isStaff, session } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  /** "다른 게임으로 열기"로 넘어온 경우, 그 새 템플릿을 최초 1회만 자동 선택하기 위한 값. */
+  const openTemplateIdRef = useRef((location.state as { openTemplateId?: string } | null)?.openTemplateId);
 
   const { classes, selectedId: staffClassId, select: selectClass } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
@@ -86,7 +91,12 @@ export function useGameTemplates(params: {
     try {
       const rows = await fetchGameTemplates(academy.id, classId, gameType);
       setTemplates(rows);
-      setSelectedId((prev) => (prev && rows.some((r) => r.id === prev) ? prev : (rows[0]?.id ?? null)));
+      setSelectedId((prev) => {
+        if (prev && rows.some((r) => r.id === prev)) return prev;
+        const openId = openTemplateIdRef.current;
+        if (openId && rows.some((r) => r.id === openId)) return openId;
+        return rows[0]?.id ?? null;
+      });
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -152,6 +162,28 @@ export function useGameTemplates(params: {
 
   const scopeLabel = (tpl: GameTemplate) => (tpl.class_id ? t('gameAdmin.scopeClass') : t('gameAdmin.scopeAcademy'));
 
+  /** 지금 선택된 템플릿의 항목 리스트를 그대로, 다른 게임 종류의 새 템플릿으로 만들고 그 페이지로 이동한다. */
+  async function openInOtherGame(targetType: GameType) {
+    if (!academy?.id || !profile || !selected) return;
+    const carried: GameTemplateConfig = {};
+    if (selected.config.music) carried.music = selected.config.music;
+    if (selected.config.resultSound) carried.resultSound = selected.config.resultSound;
+    try {
+      const tpl = await createGameTemplate({
+        academyId: academy.id,
+        classId: selected.class_id,
+        gameType: targetType,
+        name: selected.name,
+        items: selected.items,
+        config: carried,
+        teacherId: profile.id,
+      });
+      navigate(`/games/${targetType}`, { state: { openTemplateId: tpl.id } });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    }
+  }
+
   return {
     isStaff,
     academy,
@@ -181,6 +213,7 @@ export function useGameTemplates(params: {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload: load,
   };
 }

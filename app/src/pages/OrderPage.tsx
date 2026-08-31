@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import OrderPicker from '../components/OrderPicker';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -70,6 +71,7 @@ export default function OrderPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
 
@@ -355,6 +357,7 @@ export default function OrderPage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
+                    <OpenInOtherGame currentType="order" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     {academy && (
                       <div className="divide-y divide-surface-container">
                         <GameMusicPicker

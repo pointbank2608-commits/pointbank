@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameMusicPicker from '../components/GameMusicPicker';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import TimerMatch from '../components/TimerMatch';
 import { updateGameTemplate } from '../lib/api';
@@ -56,6 +57,7 @@ export default function TimerMatchPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
 
@@ -332,6 +334,7 @@ export default function TimerMatchPage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
+                    <OpenInOtherGame currentType="timer" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     {academy && (
                       <div className="divide-y divide-surface-container">
                         <GameMusicPicker

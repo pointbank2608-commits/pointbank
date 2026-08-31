@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import TicTacToe from '../components/TicTacToe';
+import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
@@ -47,6 +48,7 @@ export default function TicTacToePage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    openInOtherGame,
     reload,
   } = g;
 
@@ -278,6 +280,7 @@ export default function TicTacToePage() {
 
                 {editorOpen && (
                   <div>
+                    <OpenInOtherGame currentType="tictactoe" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <StudentRosterPicker
                       roster={roster}
                       existingLabels={selected.items.map((i) => i.label)}

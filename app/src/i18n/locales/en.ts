@@ -281,6 +281,7 @@ const en: Ko = {
     clearAll: 'Clear all',
     noParticipants: 'No participants yet.',
     nameFieldLabel: 'Name',
+    openInOtherGameLabel: 'Open with another game',
   },
 
   onboarding: {
