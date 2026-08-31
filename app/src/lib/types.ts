@@ -166,7 +166,8 @@ export type GameType =
   | 'flashcards'
   | 'anagram'
   | 'groupsort'
-  | 'unscramble';
+  | 'unscramble'
+  | 'typeanswer';
 
 export interface GameItem {
   id: string;
@@ -219,6 +220,14 @@ export interface GameTemplateConfig {
    * 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
    */
   pairs?: MatchPair[];
+  /**
+   * 답 입력하기 전용: 질문(또는 빈칸 있는 문장)+정답 목록. 워드월의 "답을 입력합니다"와
+   * "문장 완성"은 둘 다 "프롬프트 보여주고 텍스트로 답 입력받기"라는 같은 상호작용이라
+   * 하나의 게임에 모드 옵션(typeAnswerMode)으로 합쳤다.
+   */
+  typeAnswerEntries?: TypeAnswerEntry[];
+  /** 답 입력하기 전용: 'question'(질문에 답하기) 또는 'cloze'(빈칸 채우기 — 프롬프트에 ___ 포함). 기본 'question'. */
+  typeAnswerMode?: 'question' | 'cloze';
   /** 그룹 정렬 전용: 그룹(이름+소속 항목) 목록. 항목이 어느 그룹인지가 곧 정답이라 공용 items 모델로는 표현이 안 돼 별도로 둔다. */
   groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
@@ -253,6 +262,12 @@ export interface GroupSortGroup {
   id: string;
   name: string;
   items: GroupSortItem[];
+}
+
+export interface TypeAnswerEntry {
+  id: string;
+  prompt: string;
+  answer: string;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

@@ -35,6 +35,7 @@ import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
 import TrueFalsePage from './pages/TrueFalsePage';
 import TwoDicePage from './pages/TwoDicePage';
+import TypeAnswerPage from './pages/TypeAnswerPage';
 import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
+            <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -147,6 +149,7 @@ export default function App() {
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
+            <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

@@ -283,6 +283,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.unscrambleName',
     descKey: 'gamesList.unscrambleDesc',
   },
+  {
+    type: 'typeanswer',
+    number: 23,
+    category: 'vocabulary',
+    // 질문/빈칸+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'keyboard',
+    path: '/games/typeanswer',
+    cover: null,
+    nameKey: 'gamesList.typeanswerName',
+    descKey: 'gamesList.typeanswerDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
