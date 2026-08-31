@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { deleteGameAudio, listGameAudio, uploadGameAudio, type GameAudioFile } from '../lib/api';
 import { BUILTIN_SOUNDS, playMusic } from '../lib/gameMusic';
@@ -13,8 +14,10 @@ interface Props {
   label?: string;
 }
 
-export default function GameMusicPicker({ academyId, isStaff, value, onChange, label = '배경음악' }: Props) {
+export default function GameMusicPicker({ academyId, isStaff, value, onChange, label }: Props) {
   const { notify } = useToast();
+  const { t } = useTranslation();
+  const pickerLabel = label ?? t('musicPicker.backgroundMusic');
   const [uploads, setUploads] = useState<GameAudioFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,7 +55,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
       const f = await uploadGameAudio(academyId, file);
       setUploads((prev) => [f, ...prev]);
       onChange({ kind: 'upload', path: f.path, name: f.name, url: f.url });
-      notify('음악을 업로드했습니다.');
+      notify(t('musicPicker.uploadedToast'));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -62,7 +65,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
 
   async function handleDeleteUpload() {
     if (!value || value.kind !== 'upload') return;
-    if (!confirm(`"${value.name}" 음악을 삭제할까요?`)) return;
+    if (!confirm(t('musicPicker.deleteUploadConfirm', { name: value.name }))) return;
     try {
       await deleteGameAudio(value.path);
       setUploads((prev) => prev.filter((u) => u.path !== value.path));
@@ -78,16 +81,14 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
   }
 
   const currentLabel = !value
-    ? '없음'
+    ? t('musicPicker.none')
     : value.kind === 'builtin'
-      ? `${BUILTIN_SOUNDS.find((s) => s.id === value.id)?.emoji ?? '🎵'} ${
-          BUILTIN_SOUNDS.find((s) => s.id === value.id)?.label ?? value.id
-        }`
+      ? `${BUILTIN_SOUNDS.find((s) => s.id === value.id)?.emoji ?? '🎵'} ${t(`gameSound.${value.id}`)}`
       : `🎵 ${value.name}`;
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2">
-      <span className="font-label-md text-label-md text-on-surface-variant shrink-0">{label}</span>
+      <span className="font-label-md text-label-md text-on-surface-variant shrink-0">{pickerLabel}</span>
 
       {isStaff ? (
         <select
@@ -95,16 +96,16 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
           onChange={(e) => handleSelect(e.target.value)}
           className="min-w-0 max-w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
         >
-          <option value="none">없음</option>
-          <optgroup label="기본 제공 효과음">
+          <option value="none">{t('musicPicker.none')}</option>
+          <optgroup label={t('musicPicker.builtinGroup')}>
             {BUILTIN_SOUNDS.map((s) => (
               <option key={s.id} value={`builtin:${s.id}`}>
-                {s.emoji} {s.label}
+                {s.emoji} {t(`gameSound.${s.id}`)}
               </option>
             ))}
           </optgroup>
           {uploads.length > 0 && (
-            <optgroup label="내가 올린 음악">
+            <optgroup label={t('musicPicker.uploadedGroup')}>
               {uploads.map((u) => (
                 <option key={u.path} value={`upload:${u.path}`}>
                   {u.name}
@@ -123,14 +124,14 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
           onClick={preview}
           className="font-label-md text-label-md text-primary hover:underline"
         >
-          미리듣기
+          {t('musicPicker.preview')}
         </button>
       )}
 
       {isStaff && (
         <>
           <label className="font-label-md text-label-md text-primary hover:underline cursor-pointer">
-            {uploading ? '업로드 중…' : '+ 내 음악 업로드'}
+            {uploading ? t('musicPicker.uploading') : t('musicPicker.uploadMy')}
             <input
               ref={fileInputRef}
               type="file"
@@ -146,7 +147,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
               onClick={() => void handleDeleteUpload()}
               className="font-label-md text-label-md text-error hover:underline"
             >
-              업로드 삭제
+              {t('musicPicker.deleteUpload')}
             </button>
           )}
         </>

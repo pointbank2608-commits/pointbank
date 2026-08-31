@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
 import type { RosterScope } from '../lib/useGameTemplates';
 
@@ -16,6 +17,7 @@ interface Props {
  * 추가할 수 있게 해주는 공통 패널. 돌림판·사다리·순서정하기가 모두 같이 쓴다.
  */
 export default function StudentRosterPicker({ roster, existingLabels, scope, onScopeChange, loading, onAdd }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const existingSet = new Set(existingLabels);
   const remaining = roster.filter((s) => !existingSet.has(s.label));
@@ -32,7 +34,7 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
         }`}
       >
         <span className="material-symbols-outlined text-base">groups</span>
-        {open ? '학생 명단 닫기' : '학생 명단에서 추가'}
+        {open ? t('musicPicker.homeworkRosterClose') : t('musicPicker.homeworkRosterOpen')}
       </button>
 
       {open && (
@@ -45,7 +47,7 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
                 scope === 'class' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
               }`}
             >
-              이 반
+              {t('musicPicker.rosterThisClass')}
             </button>
             <button
               type="button"
@@ -54,15 +56,15 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
                 scope === 'academy' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
               }`}
             >
-              학원 전체
+              {t('musicPicker.rosterAcademy')}
             </button>
           </div>
 
           {loading ? (
-            <div className="font-caption text-caption text-on-surface-variant py-2">불러오는 중…</div>
+            <div className="font-caption text-caption text-on-surface-variant py-2">{t('musicPicker.rosterLoading')}</div>
           ) : remaining.length === 0 ? (
             <div className="font-caption text-caption text-on-surface-variant py-2">
-              {roster.length === 0 ? '등록된 학생이 없습니다.' : '학생을 모두 추가했습니다.'}
+              {roster.length === 0 ? t('musicPicker.rosterEmptyNone') : t('musicPicker.rosterEmptyAllAdded')}
             </div>
           ) : (
             <>
@@ -83,7 +85,7 @@ export default function StudentRosterPicker({ roster, existingLabels, scope, onS
                 onClick={() => onAdd(remaining.map((s) => s.label))}
                 className="px-3 py-1.5 rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container transition-colors"
               >
-                + 전체 추가 ({remaining.length}명)
+                {t('musicPicker.rosterAddAll', { count: remaining.length })}
               </button>
             </>
           )}

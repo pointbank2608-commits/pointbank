@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -28,6 +29,7 @@ export function useGameTemplates(params: {
   const { gameType, defaultItems, defaultConfig } = params;
   const { academy, profile, isStaff, session } = useAuth();
   const { notify, run } = useToast();
+  const { t } = useTranslation();
 
   const { classes, selectedId: staffClassId, select: selectClass } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
@@ -100,18 +102,18 @@ export function useGameTemplates(params: {
 
   async function handleRename() {
     if (!selected) return;
-    const next = prompt('이름을 입력하세요', selected.name);
+    const next = prompt(t('gameAdmin.renamePrompt'), selected.name);
     if (!next?.trim() || next.trim() === selected.name) return;
-    const ok = await run(() => renameGameTemplate(selected.id, next.trim()), '이름을 변경했습니다.');
-    if (ok) setTemplates((prev) => prev.map((t) => (t.id === selected.id ? { ...t, name: next.trim() } : t)));
+    const ok = await run(() => renameGameTemplate(selected.id, next.trim()), t('gameAdmin.renamedToast'));
+    if (ok) setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, name: next.trim() } : tpl)));
   }
 
   /** id 를 안 주면 현재 선택된 템플릿을 지운다 — 목록 칩의 개별 삭제 버튼은 id 를 직접 넘긴다. */
   async function handleDeleteTemplate(id?: string) {
-    const target = id ? templates.find((t) => t.id === id) : selected;
+    const target = id ? templates.find((tpl) => tpl.id === id) : selected;
     if (!target) return;
-    if (!confirm(`"${target.name}"을(를) 삭제할까요?`)) return;
-    const ok = await run(() => deleteGameTemplate(target.id), '삭제했습니다.');
+    if (!confirm(t('gameAdmin.deleteConfirm', { name: target.name }))) return;
+    const ok = await run(() => deleteGameTemplate(target.id), t('gameAdmin.deletedToast'));
     if (ok) {
       setSelectedId((prev) => (prev === target.id ? null : prev));
       await load();
@@ -122,12 +124,12 @@ export function useGameTemplates(params: {
     if (!academy?.id || !profile || !classId) return false;
     const name = newName.trim();
     if (!name) {
-      notify('이름을 입력해 주세요.', 'error');
+      notify(t('gameAdmin.nameRequiredError'), 'error');
       return false;
     }
     setSubmitting(true);
     const ok = await run(async () => {
-      const t = await createGameTemplate({
+      const tpl = await createGameTemplate({
         academyId: academy.id,
         classId: newScope === 'class' ? classId : null,
         gameType,
@@ -136,9 +138,9 @@ export function useGameTemplates(params: {
         config: defaultConfig?.() ?? {},
         teacherId: profile.id,
       });
-      setTemplates((prev) => [...prev, t]);
-      setSelectedId(t.id);
-    }, '만들었습니다.');
+      setTemplates((prev) => [...prev, tpl]);
+      setSelectedId(tpl.id);
+    }, t('gameAdmin.createdToast'));
     setSubmitting(false);
     if (ok) {
       setNewName('');
@@ -148,7 +150,7 @@ export function useGameTemplates(params: {
     return ok;
   }
 
-  const scopeLabel = (t: GameTemplate) => (t.class_id ? '이 반' : '학원 공용');
+  const scopeLabel = (tpl: GameTemplate) => (tpl.class_id ? t('gameAdmin.scopeClass') : t('gameAdmin.scopeAcademy'));
 
   return {
     isStaff,
