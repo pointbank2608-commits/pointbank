@@ -8,8 +8,9 @@ export interface GameCatalogEntry {
 }
 
 /**
- * 8개 게임의 메타데이터. "다른 게임으로 열기" 기능이 여기서 호환 후보를 고른다.
+ * 게임 메타데이터. "다른 게임으로 열기" 기능이 여기서 호환 후보를 고른다.
  * 아이콘 값은 GamesPage.tsx 카드 아이콘과 동일하게 맞춰뒀다(중복이지만 그쪽은 건드리지 않음).
+ * 새 게임을 추가하면 여기에도 한 줄 추가해야 "다른 게임으로 열기" 후보에 뜬다.
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
   { type: 'wheel', minItems: 1, icon: 'target' },
@@ -20,4 +21,5 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   { type: 'tictactoe', minItems: 1, icon: 'grid_3x3' },
   { type: 'saveorgive', minItems: 1, icon: 'redeem' },
   { type: 'findmissing', minItems: 2, icon: 'search' },
+  { type: 'baskin31', minItems: 1, icon: 'icecream' },
 ];

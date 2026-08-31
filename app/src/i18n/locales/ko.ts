@@ -201,6 +201,26 @@ const ko = {
     playAgainButton: '다시 하기',
   },
 
+  gameBaskin31: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 베스킨라빈스31',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 카운트업 게임',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '베스킨라빈스31 설정',
+    targetLabel: '목표 숫자',
+    teamBlue: '파랑 팀',
+    teamRed: '빨강 팀',
+    turnLabel: '{{team}} 차례예요',
+    countLabel: '지금까지 {{count}} / {{target}}',
+    pickButton: '{{n}}개 읽기',
+    loseMessage: '{{team}}이 {{target}}을(를) 말했어요! 패배!',
+    playAgainButton: '다시 하기',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -219,6 +239,8 @@ const ko = {
     saveorgiveDesc: '정답을 맞히고 상자를 열어 점수를 우리 팀이 가질지 상대에게 줄지 골라요.',
     findmissingName: '사라진 항목 찾기',
     findmissingDesc: '항목을 잘 기억해 뒀다가 사라진 걸 맞혀요.',
+    baskin31Name: '베스킨라빈스31',
+    baskin31Desc: '1~3개씩 번갈아 세다가 31을 말하는 팀이 져요.',
   },
 
   gameSound: {

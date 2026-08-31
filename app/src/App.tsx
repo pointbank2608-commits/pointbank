@@ -5,6 +5,7 @@ import AdminLayout from './pages/AdminLayout';
 import AdminAcademiesPage from './pages/AdminAcademiesPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
+import Baskin31Page from './pages/Baskin31Page';
 import BombPage from './pages/BombPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
@@ -90,6 +91,7 @@ export default function App() {
             <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
             <Route path="/games/findmissing" element={<FindMissingPage />} />
+            <Route path="/games/baskin31" element={<Baskin31Page />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -105,6 +107,7 @@ export default function App() {
             <Route path="/games/tictactoe" element={<TicTacToePage />} />
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
             <Route path="/games/findmissing" element={<FindMissingPage />} />
+            <Route path="/games/baskin31" element={<Baskin31Page />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

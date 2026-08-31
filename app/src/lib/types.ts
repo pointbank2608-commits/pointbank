@@ -144,7 +144,16 @@ export interface BoardRow {
 
 /* ---------------- 미니게임 ---------------- */
 
-export type GameType = 'wheel' | 'ladder' | 'order' | 'bomb' | 'timer' | 'tictactoe' | 'saveorgive' | 'findmissing';
+export type GameType =
+  | 'wheel'
+  | 'ladder'
+  | 'order'
+  | 'bomb'
+  | 'timer'
+  | 'tictactoe'
+  | 'saveorgive'
+  | 'findmissing'
+  | 'baskin31';
 
 export interface GameItem {
   id: string;
@@ -175,6 +184,8 @@ export interface GameTemplateConfig {
   revealCount?: number;
   /** 게임 플레이 영역 비주얼 테마 id (app/src/lib/gameThemes.ts 참고). 없으면 기본 색상 그대로. */
   theme?: string;
+  /** 베스킨라빈스31 전용: 이 숫자에 도달하면 지는 목표 숫자 (기본 31). */
+  targetCount?: number;
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

@@ -73,6 +73,14 @@ export default function GamesPage() {
       desc: t('gamesList.findmissingDesc'),
       path: '/games/findmissing',
     },
+    {
+      key: 'baskin31',
+      cover: null,
+      icon: 'icecream',
+      name: t('gamesList.baskin31Name'),
+      desc: t('gamesList.baskin31Desc'),
+      path: '/games/baskin31',
+    },
   ];
 
   return (

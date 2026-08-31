@@ -203,6 +203,26 @@ const en: Ko = {
     playAgainButton: 'Play again',
   },
 
+  gameBaskin31: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Count to 31",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary count-up game',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Count to 31 settings',
+    targetLabel: 'Target number',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    countLabel: '{{count}} / {{target}} so far',
+    pickButton: 'Read {{n}}',
+    loseMessage: '{{team}} said {{target}}! They lose!',
+    playAgainButton: 'Play again',
+    needParticipants: 'Register at least 1 item to get started.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -221,6 +241,8 @@ const en: Ko = {
     saveorgiveDesc: 'Answer correctly, open the box, and choose whether your team keeps the points or hands them over.',
     findmissingName: "What's Missing?",
     findmissingDesc: 'Memorize the cards, then spot which ones disappeared.',
+    baskin31Name: 'Count to 31',
+    baskin31Desc: 'Take turns counting up by 1-3 — whoever says 31 loses.',
   },
 
   gameSound: {
