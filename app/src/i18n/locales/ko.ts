@@ -221,6 +221,25 @@ const ko = {
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
   },
 
+  gameConnect4: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 4 in a row',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 단어 연결 게임',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '4 in a row 설정',
+    teamBlue: '파랑 팀',
+    teamRed: '빨강 팀',
+    turnLabel: '{{team}} 차례예요',
+    winMessage: '{{team}} 승리!',
+    drawMessage: '무승부예요!',
+    playAgainButton: '다시 하기',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+    columnHint: '아래 화살표를 눌러 그 줄에 표시를 떨어뜨리세요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -241,6 +260,8 @@ const ko = {
     findmissingDesc: '항목을 잘 기억해 뒀다가 사라진 걸 맞혀요.',
     baskin31Name: '베스킨라빈스31',
     baskin31Desc: '1~3개씩 번갈아 세다가 31을 말하는 팀이 져요.',
+    connect4Name: '4 in a row',
+    connect4Desc: '단어 칸을 아래부터 쌓아서 4개를 먼저 연결해요.',
   },
 
   gameSound: {

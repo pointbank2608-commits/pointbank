@@ -7,6 +7,7 @@ import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
 import Baskin31Page from './pages/Baskin31Page';
 import BombPage from './pages/BombPage';
+import Connect4Page from './pages/Connect4Page';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
@@ -92,6 +93,7 @@ export default function App() {
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
             <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="/games/baskin31" element={<Baskin31Page />} />
+            <Route path="/games/connect4" element={<Connect4Page />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -108,6 +110,7 @@ export default function App() {
             <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
             <Route path="/games/findmissing" element={<FindMissingPage />} />
             <Route path="/games/baskin31" element={<Baskin31Page />} />
+            <Route path="/games/connect4" element={<Connect4Page />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

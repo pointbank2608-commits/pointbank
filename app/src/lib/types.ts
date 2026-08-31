@@ -153,7 +153,8 @@ export type GameType =
   | 'tictactoe'
   | 'saveorgive'
   | 'findmissing'
-  | 'baskin31';
+  | 'baskin31'
+  | 'connect4';
 
 export interface GameItem {
   id: string;

@@ -22,4 +22,5 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   { type: 'saveorgive', minItems: 1, icon: 'redeem' },
   { type: 'findmissing', minItems: 2, icon: 'search' },
   { type: 'baskin31', minItems: 1, icon: 'icecream' },
+  { type: 'connect4', minItems: 1, icon: 'grid_on' },
 ];

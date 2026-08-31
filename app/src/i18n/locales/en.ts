@@ -223,6 +223,25 @@ const en: Ko = {
     needParticipants: 'Register at least 1 item to get started.',
   },
 
+  gameConnect4: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s 4 in a Row",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Vocabulary connect game',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: '4 in a Row settings',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    winMessage: '{{team}} wins!',
+    drawMessage: "It's a draw!",
+    playAgainButton: 'Play again',
+    needParticipants: 'Register at least 1 item to get started.',
+    columnHint: 'Tap an arrow to drop a marker into that column.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -243,6 +262,8 @@ const en: Ko = {
     findmissingDesc: 'Memorize the cards, then spot which ones disappeared.',
     baskin31Name: 'Count to 31',
     baskin31Desc: 'Take turns counting up by 1-3 — whoever says 31 loses.',
+    connect4Name: '4 in a Row',
+    connect4Desc: 'Drop markers to connect four word tiles in a row.',
   },
 
   gameSound: {

@@ -81,6 +81,14 @@ export default function GamesPage() {
       desc: t('gamesList.baskin31Desc'),
       path: '/games/baskin31',
     },
+    {
+      key: 'connect4',
+      cover: null,
+      icon: 'grid_on',
+      name: t('gamesList.connect4Name'),
+      desc: t('gamesList.connect4Desc'),
+      path: '/games/connect4',
+    },
   ];
 
   return (
