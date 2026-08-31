@@ -339,6 +339,20 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.crosswordName',
     descKey: 'gamesList.crosswordDesc',
   },
+  {
+    type: 'mathgen',
+    number: 28,
+    // 단어 리스트가 아니라 설정값으로 문제를 매번 새로 만들어내는 유일한 게임이라
+    // 다른 카테고리에 안 맞는다 — 특정 콘텐츠 없이도 쓸 수 있는 범용 도구라는 점에서 simple로 분류.
+    category: 'simple',
+    // items 를 아예 안 써서(설정값만으로 문제 생성) 다른 게임으로 열기 대상/후보 양쪽에서 자연히 제외된다.
+    minItems: 999,
+    icon: 'calculate',
+    path: '/games/mathgen',
+    cover: null,
+    nameKey: 'gamesList.mathgenName',
+    descKey: 'gamesList.mathgenDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

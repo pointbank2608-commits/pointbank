@@ -776,6 +776,38 @@ const ko = {
     ],
   },
 
+  gameMathGen: {
+    studentClassTitle: '{{className}} 수학 문제 생성기',
+    newButton: '+ 새 수학 문제',
+    namePlaceholder: '예: 3학년 덧셈뺄셈 연습',
+    emptyStaff: '아직 수학 문제가 없어요. 아래 "+ 새 수학 문제"로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 수학 문제가 없어요.',
+    settingsTitle: '수학 문제 생성기 편집',
+    needOperation: '연산을 1개 이상 선택해야 시작할 수 있어요.',
+    operationsLabel: '연산 종류 (여러 개 선택 가능)',
+    opadd: '덧셈 +',
+    opsub: '뺄셈 −',
+    opmul: '곱셈 ×',
+    opdiv: '나눗셈 ÷',
+    rangeLabel: '숫자 범위',
+    countLabel: '문제 개수',
+    answerPlaceholder: '답',
+    submitButton: '확인',
+    correctFeedback: '정답이에요!',
+    wrongFeedback: '아쉬워요! 정답은 {{answer}} 였어요.',
+    nextButton: '다음 문제',
+    scoreLabel: '{{score}} / {{total}} 정답',
+    finishedTitle: '수학 문제 완료!',
+    restartButton: '다시 풀기',
+    infoDescription: '단어 리스트 없이, 설정한 연산과 숫자 범위로 매번 새로운 수학 문제를 만들어 풀어보는 게임이에요.',
+    infoSteps: [
+      '설정에서 연산 종류(덧셈·뺄셈·곱셈·나눗셈), 숫자 범위, 문제 개수를 정하세요.',
+      '문제가 나오면 입력창에 답을 입력하고 "확인"을 누르세요.',
+      '정답 여부가 바로 나오고, "다음 문제"를 눌러 계속 진행해요.',
+      '설정한 개수만큼 다 풀면 최종 점수가 나와요.',
+    ],
+  },
+
   gameCategory: {
     all: '전체',
     simple: '간단게임',
@@ -842,6 +874,8 @@ const ko = {
     wordsearchDesc: '글자 격자 안에 숨어있는 단어를 찾아요.',
     crosswordName: '크로스워드',
     crosswordDesc: '단어끼리 겹쳐진 격자에 알맞은 단어를 채워요.',
+    mathgenName: '수학 문제 생성기',
+    mathgenDesc: '연산과 숫자 범위를 정하면 매번 새 수학 문제가 만들어져요.',
   },
 
   gameSound: {

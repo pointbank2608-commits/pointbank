@@ -171,7 +171,8 @@ export type GameType =
   | 'spellword'
   | 'rankorder'
   | 'wordsearch'
-  | 'crossword';
+  | 'crossword'
+  | 'mathgen';
 
 export interface GameItem {
   id: string;
@@ -234,6 +235,14 @@ export interface GameTemplateConfig {
   typeAnswerMode?: 'question' | 'cloze';
   /** 단어 철자 전용: 단어를 보여주는 시간(초). 기본 3. */
   spellPreviewSeconds?: number;
+  /**
+   * 수학 문제 생성기 전용: 단어 리스트 대신 설정값(연산 종류·숫자 범위·문제 개수)으로
+   * 매번 새 문제를 만들어낸다. 그래서 items 를 아예 쓰지 않는 유일한 게임이다.
+   */
+  mathOperations?: MathOperation[];
+  mathMin?: number;
+  mathMax?: number;
+  mathQuestionCount?: number;
   /** 그룹 정렬 전용: 그룹(이름+소속 항목) 목록. 항목이 어느 그룹인지가 곧 정답이라 공용 items 모델로는 표현이 안 돼 별도로 둔다. */
   groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
@@ -275,6 +284,8 @@ export interface TypeAnswerEntry {
   prompt: string;
   answer: string;
 }
+
+export type MathOperation = 'add' | 'sub' | 'mul' | 'div';
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */
 export interface SaveOrGiveReward {

@@ -22,6 +22,7 @@ import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
 import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import MatchupPage from './pages/MatchupPage';
+import MathGeneratorPage from './pages/MathGeneratorPage';
 import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />
+            <Route path="/games/mathgen" element={<MathGeneratorPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -162,6 +164,7 @@ export default function App() {
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />
+            <Route path="/games/mathgen" element={<MathGeneratorPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

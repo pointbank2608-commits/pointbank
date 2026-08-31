@@ -778,6 +778,38 @@ const en: Ko = {
     ],
   },
 
+  gameMathGen: {
+    studentClassTitle: "{{className}}'s Math Generator",
+    newButton: '+ New math practice',
+    namePlaceholder: 'e.g. 3rd grade addition & subtraction practice',
+    emptyStaff: 'No math practice sets yet. Tap "+ New math practice" below to make your first one!',
+    emptyStudent: "Your teacher hasn't made a math practice set yet.",
+    settingsTitle: 'Edit math generator',
+    needOperation: 'Select at least 1 operation to start.',
+    operationsLabel: 'Operations (pick any number)',
+    opadd: 'Addition +',
+    opsub: 'Subtraction −',
+    opmul: 'Multiplication ×',
+    opdiv: 'Division ÷',
+    rangeLabel: 'Number range',
+    countLabel: 'Number of questions',
+    answerPlaceholder: 'Answer',
+    submitButton: 'Check',
+    correctFeedback: 'Correct!',
+    wrongFeedback: 'Not quite! The answer was {{answer}}.',
+    nextButton: 'Next question',
+    scoreLabel: '{{score}} / {{total}} correct',
+    finishedTitle: 'Math practice complete!',
+    restartButton: 'Try again',
+    infoDescription: "No word list needed — new math problems are generated on the spot from the operations and number range you set.",
+    infoSteps: [
+      'In settings, choose the operations (addition, subtraction, multiplication, division), number range, and question count.',
+      'When a problem appears, type the answer into the box and tap "Check".',
+      'See right away if you got it, then tap "Next question" to continue.',
+      'Your final score appears once you finish all the questions.',
+    ],
+  },
+
   gameCategory: {
     all: 'All',
     simple: 'Simple games',
@@ -844,6 +876,8 @@ const en: Ko = {
     wordsearchDesc: 'Find the words hidden inside a grid of letters.',
     crosswordName: 'Crossword',
     crosswordDesc: 'Fill the crossing grid with the words that fit.',
+    mathgenName: 'Math Generator',
+    mathgenDesc: 'Set the operations and number range — new problems every round.',
   },
 
   gameSound: {
