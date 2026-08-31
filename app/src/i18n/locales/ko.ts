@@ -259,6 +259,25 @@ const ko = {
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
   },
 
+  gamePassBall: {
+    defaultItem: '항목 {{n}}',
+    studentClassTitle: '{{className}} 공 돌리기',
+    newButton: '+ 새 목록',
+    namePlaceholder: '예: 미션 단어 뽑기',
+    emptyStaff: '아직 목록이 없어요. 아래 "+ 새 목록"으로 첫 게임을 만들어보세요!',
+    emptyStudent: '아직 선생님이 만든 목록이 없어요.',
+    clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
+    settingsTitle: '공 돌리기 설정',
+    resultSoundLabel: '결과 사운드',
+    rangeLabel: '음악 재생 시간 범위(초) — 이 사이 무작위 시각에 멈춰요',
+    seconds: '초',
+    startButton: '공 돌리기 시작',
+    playingHint: '음악이 흐르는 동안 공을 돌리세요… 언제 멈출지 몰라요!',
+    missionLabel: '오늘의 미션 단어',
+    resetButton: '다시 하기',
+    needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
+  },
+
   gamesList: {
     title: '게임 센터',
     wheelName: '돌림판',
@@ -283,6 +302,8 @@ const ko = {
     connect4Desc: '단어 칸을 아래부터 쌓아서 4개를 먼저 연결해요.',
     popcornName: '팝콘 게임',
     popcornDesc: '팝콘을 뽑아 단어를 읽어요. POP! 카드가 나오면 점수가 초기화돼요.',
+    passballName: '공 돌리기',
+    passballDesc: '음악이 멈추면 공을 든 사람이 미션 단어를 읽어요.',
   },
 
   gameSound: {

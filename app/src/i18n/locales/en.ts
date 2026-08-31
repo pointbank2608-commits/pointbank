@@ -261,6 +261,25 @@ const en: Ko = {
     needParticipants: 'Register at least 1 item to get started.',
   },
 
+  gamePassBall: {
+    defaultItem: 'Item {{n}}',
+    studentClassTitle: "{{className}}'s Pass the Ball",
+    newButton: '+ New list',
+    namePlaceholder: 'e.g. Mission word draw',
+    emptyStaff: 'No lists yet. Tap "+ New list" below to make your first game!',
+    emptyStudent: "Your teacher hasn't made a list yet.",
+    clearAllConfirm: 'Delete all the registered items?',
+    settingsTitle: 'Pass the Ball settings',
+    resultSoundLabel: 'Result sound',
+    rangeLabel: 'Music duration range (seconds) — it stops at a random moment in this range',
+    seconds: 'sec',
+    startButton: 'Start passing the ball',
+    playingHint: 'Pass the ball while the music plays… no one knows when it stops!',
+    missionLabel: "Today's mission word",
+    resetButton: 'Play again',
+    needParticipants: 'Register at least 1 item to get started.',
+  },
+
   gamesList: {
     title: 'Game Center',
     wheelName: 'Spin Wheel',
@@ -285,6 +304,8 @@ const en: Ko = {
     connect4Desc: 'Drop markers to connect four word tiles in a row.',
     popcornName: 'Popcorn Game',
     popcornDesc: 'Pop the popcorn and read the word — watch out for the POP! card that resets your score.',
+    passballName: 'Pass the Ball',
+    passballDesc: 'When the music stops, whoever has the ball reads the mission word.',
   },
 
   gameSound: {

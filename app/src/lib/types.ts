@@ -155,7 +155,8 @@ export type GameType =
   | 'findmissing'
   | 'baskin31'
   | 'connect4'
-  | 'popcorn';
+  | 'popcorn'
+  | 'passball';
 
 export interface GameItem {
   id: string;
@@ -188,6 +189,8 @@ export interface GameTemplateConfig {
   theme?: string;
   /** 베스킨라빈스31 전용: 이 숫자에 도달하면 지는 목표 숫자 (기본 31). */
   targetCount?: number;
+  /** 공 돌리기 전용: 음악이 멈추기까지 걸리는 시간(초)의 무작위 범위. */
+  ballRange?: { min: number; max: number };
 }
 
 /** Save it or Give it 상자 결과 하나. kind:'points' 면 value 만큼 점수 증감, kind:'swap' 이면 두 팀 점수를 서로 바꾼다. */

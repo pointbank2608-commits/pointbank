@@ -97,6 +97,14 @@ export default function GamesPage() {
       desc: t('gamesList.popcornDesc'),
       path: '/games/popcorn',
     },
+    {
+      key: 'passball',
+      cover: null,
+      icon: 'sports_volleyball',
+      name: t('gamesList.passballName'),
+      desc: t('gamesList.passballDesc'),
+      path: '/games/passball',
+    },
   ];
 
   return (
