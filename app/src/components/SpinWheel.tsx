@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -24,6 +25,7 @@ function pointOnCircle(angleDeg: number, radius: number) {
 }
 
 export default function SpinWheel({ items, music, resultSound, onResult }: Props) {
+  const { t } = useTranslation();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
@@ -74,7 +76,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
     return (
       <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
         <div className="text-4xl mb-2">🎡</div>
-        <div className="font-body-md text-body-md">돌림판에 항목이 없습니다. 아래에서 항목을 추가해 주세요.</div>
+        <div className="font-body-md text-body-md">{t('gameWheel.noItemsCard')}</div>
       </div>
     );
   }
@@ -122,8 +124,8 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
         <button
           onClick={spin}
           disabled={spinning}
-          aria-label="돌리기"
-          title="돌리기"
+          aria-label={t('gameWheel.spinAriaLabel')}
+          title={t('gameWheel.spinButton')}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[76px] h-[76px] rounded-full bg-primary text-on-primary text-2xl shadow-lg border-4 border-surface-container-lowest flex items-center justify-center disabled:saturate-[0.7] disabled:cursor-default hover:not-disabled:brightness-105 transition-all"
         >
           <span>{spinning ? '···' : '🐷'}</span>
@@ -135,7 +137,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
         disabled={spinning}
         className="mt-4 px-10 py-3 rounded-full bg-primary hover:bg-primary-container disabled:opacity-60 text-on-primary font-title-md text-title-md shadow-sm transition-colors"
       >
-        {spinning ? '돌아가는 중…' : '돌리기'}
+        {spinning ? t('gameWheel.spinning') : t('gameWheel.spinButton')}
       </button>
 
       {result && !spinning && (
@@ -143,7 +145,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
           key={result.id + result.label}
           className="mt-4 text-center bg-secondary-container/40 border border-secondary-container rounded-xl px-8 py-3.5"
         >
-          <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">당첨</div>
+          <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
           <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
         </div>
       )}

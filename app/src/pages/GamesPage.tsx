@@ -1,61 +1,64 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-/**
- * 게임 카테고리 목록.
- * 새 미니게임(사다리, 빙고 …)을 추가할 때는 이 배열에 카드 하나만 더하면 된다.
- */
-const GAMES = [
-  {
-    key: 'wheel',
-    cover: '/covers/game-wheel.jpg',
-    icon: 'target',
-    name: '돌림판',
-    desc: '항목을 등록해 두고 돌려서 하나를 무작위로 뽑아요.',
-    path: '/games/wheel',
-  },
-  {
-    key: 'ladder',
-    cover: '/covers/game-ladder.jpg',
-    icon: 'alt_route',
-    name: '사다리타기',
-    desc: '참가자와 결과를 등록하고 사다리를 타서 짝을 지어요.',
-    path: '/games/ladder',
-  },
-  {
-    key: 'order',
-    cover: '/covers/game-balls.jpg',
-    icon: 'sports_baseball',
-    name: '랜덤 공 뽑기',
-    desc: '이름을 등록해 두고 무작위 순서를 뽑아요.',
-    path: '/games/order',
-  },
-  {
-    key: 'bomb',
-    cover: '/covers/game-bomb.jpg',
-    icon: 'bolt',
-    name: '시한폭탄',
-    desc: '무작위 시각에 터지는 폭탄을 서로 돌려요.',
-    path: '/games/bomb',
-  },
-  {
-    key: 'timer',
-    cover: '/covers/game-timer.jpg',
-    icon: 'timer',
-    name: '타이머 맞추기',
-    desc: '목표 시간에 맞춰 시작·멈춤 버튼을 눌러요.',
-    path: '/games/timer',
-  },
-];
-
 export default function GamesPage() {
+  const { t } = useTranslation();
+
+  /**
+   * 게임 카테고리 목록.
+   * 새 미니게임(사다리, 빙고 …)을 추가할 때는 이 배열에 카드 하나만 더하면 된다.
+   */
+  const games = [
+    {
+      key: 'wheel',
+      cover: '/covers/game-wheel.jpg',
+      icon: 'target',
+      name: t('gamesList.wheelName'),
+      desc: t('gamesList.wheelDesc'),
+      path: '/games/wheel',
+    },
+    {
+      key: 'ladder',
+      cover: '/covers/game-ladder.jpg',
+      icon: 'alt_route',
+      name: t('gamesList.ladderName'),
+      desc: t('gamesList.ladderDesc'),
+      path: '/games/ladder',
+    },
+    {
+      key: 'order',
+      cover: '/covers/game-balls.jpg',
+      icon: 'sports_baseball',
+      name: t('gamesList.orderName'),
+      desc: t('gamesList.orderDesc'),
+      path: '/games/order',
+    },
+    {
+      key: 'bomb',
+      cover: '/covers/game-bomb.jpg',
+      icon: 'bolt',
+      name: t('gamesList.bombName'),
+      desc: t('gamesList.bombDesc'),
+      path: '/games/bomb',
+    },
+    {
+      key: 'timer',
+      cover: '/covers/game-timer.jpg',
+      icon: 'timer',
+      name: t('gamesList.timerName'),
+      desc: t('gamesList.timerDesc'),
+      path: '/games/timer',
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-        게임 센터
+        {t('gamesList.title')}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {GAMES.map((g) => (
+        {games.map((g) => (
           <Link
             key={g.key}
             to={g.path}
