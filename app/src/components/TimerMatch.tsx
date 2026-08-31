@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
+import i18n from '../i18n';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
@@ -29,11 +31,11 @@ function fmt(ms: number): string {
 }
 
 function resultMessage(diffMs: number): string {
-  if (diffMs <= 50) return '완벽해요! 놀라운 감각!';
-  if (diffMs <= 200) return '거의 정확해요!';
-  if (diffMs <= 500) return '훌륭해요!';
-  if (diffMs <= 1000) return '아깝다!';
-  return '다음엔 더 잘할 수 있어요!';
+  if (diffMs <= 50) return i18n.t('gameTimer.resultPerfect');
+  if (diffMs <= 200) return i18n.t('gameTimer.resultAlmost');
+  if (diffMs <= 500) return i18n.t('gameTimer.resultGreat');
+  if (diffMs <= 1000) return i18n.t('gameTimer.resultClose');
+  return i18n.t('gameTimer.resultTryAgain');
 }
 
 /**
@@ -42,6 +44,7 @@ function resultMessage(diffMs: number): string {
  * ranked 모드에서는 참가자가 한 명씩 돌아가며 도전하고, 끝나면 오차 순으로 순위를 보여준다.
  */
 export default function TimerMatch({ participants, targetMs, music, resultSound }: Props) {
+  const { t } = useTranslation();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('practice');
   const [showTimer, setShowTimer] = useState(false);
@@ -133,7 +136,7 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
               mode === 'practice' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            공용 도전판
+            {t('gameTimer.modePractice')}
           </button>
           <button
             type="button"
@@ -142,7 +145,7 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
               mode === 'ranked' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            참가자별 순위
+            {t('gameTimer.modeRanked')}
           </button>
         </div>
         <div className="flex bg-surface-container-low rounded-lg p-1">
@@ -153,7 +156,7 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
               showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            숫자 보임
+            {t('gameTimer.showTimerOn')}
           </button>
           <button
             type="button"
@@ -162,23 +165,23 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
               !showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
             }`}
           >
-            숫자 숨김
+            {t('gameTimer.showTimerOff')}
           </button>
         </div>
       </div>
 
       <div className="font-label-md text-label-md font-bold text-on-surface-variant mb-3.5">
-        목표 {fmt(targetMs)}
+        {t('gameTimer.targetPrefix', { time: fmt(targetMs) })}
       </div>
 
       {blockedForRanked ? (
         <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
           <div className="text-4xl mb-2">⏱️</div>
-          <div className="font-body-md text-body-md">참가자별 순위를 쓰려면 참가자를 1명 이상 등록해 주세요.</div>
+          <div className="font-body-md text-body-md">{t('gameTimer.needOneParticipant')}</div>
         </div>
       ) : allDone ? (
         <div className="w-full max-w-[420px] flex flex-col items-center">
-          <div className="font-title-md text-title-md text-deep-navy mb-3.5">🏆 오차 순위</div>
+          <div className="font-title-md text-title-md text-deep-navy mb-3.5">{t('gameTimer.leaderboardTitle')}</div>
           {leaderboard.map((a, i) => (
             <div
               key={a.participantId + i}
@@ -194,14 +197,14 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
             onClick={restartAll}
             className="mt-3 px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
           >
-            처음부터 다시
+            {t('gameTimer.restartAll')}
           </button>
         </div>
       ) : (
         <>
           {mode === 'ranked' && phase !== 'stopped' && (
             <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
-              {participants[turnIndex]?.label} 차례!
+              {t('gameTimer.holderTurn', { name: participants[turnIndex]?.label })}
             </div>
           )}
 
@@ -234,7 +237,7 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
           {phase === 'stopped' && diffMs != null && (
             <>
               <div className="text-center mb-4">
-                <div className="font-title-md text-[26px] text-tertiary-container">오차 ±{fmt(diffMs)}</div>
+                <div className="font-title-md text-[26px] text-tertiary-container">{t('gameTimer.diffPrefix', { diff: fmt(diffMs) })}</div>
                 <div className="font-body-md text-body-md text-on-surface-variant mt-1">{resultMessage(diffMs)}</div>
               </div>
               {mode === 'practice' ? (
@@ -242,14 +245,14 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
                   onClick={tryAgain}
                   className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
                 >
-                  다시 도전
+                  {t('gameTimer.tryAgainButton')}
                 </button>
               ) : (
                 <button
                   onClick={nextTurn}
                   className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
                 >
-                  {turnIndex + 1 >= n ? '결과 보기' : '다음 사람'}
+                  {turnIndex + 1 >= n ? t('gameTimer.seeResultsButton') : t('gameTimer.nextPersonButton')}
                 </button>
               )}
             </>
