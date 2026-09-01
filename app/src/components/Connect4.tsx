@@ -131,13 +131,14 @@ export default function Connect4({ items }: Props) {
       )}
 
       <div className="w-full max-w-[600px] overflow-x-auto">
-        <div className="inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, minmax(56px, 1fr))`, width: '100%' }}>
+        <div data-skin-stage="board" className="inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, minmax(56px, 1fr))`, width: '100%' }}>
           {Array.from({ length: COLS }, (_, c) => (
             <button
               key={`col-${c}`}
               type="button"
               disabled={!!winner || isDraw || columnFull(c)}
               onClick={() => dropInColumn(c)}
+              data-skin-object="drop-button"
               className="py-1.5 rounded-t-lg bg-surface-container-low hover:bg-surface-container disabled:opacity-30 text-primary flex items-center justify-center"
             >
               <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
@@ -149,6 +150,7 @@ export default function Connect4({ items }: Props) {
             return (
               <div
                 key={i}
+                data-skin-object="cell"
                 className={`aspect-square rounded-md flex items-center justify-center text-center px-0.5 font-label-md text-[10px] sm:text-[12px] leading-tight [word-break:keep-all] border ${
                   mark === 'blue'
                     ? 'bg-primary/15 border-primary text-primary'

@@ -91,6 +91,7 @@ export default function TypeAnswer({ entries, mode }: Props) {
         if (e.key === 'Enter') submit();
       }}
       placeholder={t('gameTypeAnswer.answerPlaceholder')}
+      data-skin-object="answer-input"
       className={`bg-surface-container-lowest border-b-2 px-2 py-1 font-body-md text-body-md text-on-surface text-center focus:outline-none ${
         revealed
           ? status === 'correct'

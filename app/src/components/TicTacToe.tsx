@@ -104,7 +104,7 @@ export default function TicTacToe({ items }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-2.5 w-full max-w-[420px]">
+      <div data-skin-stage="board" className="grid grid-cols-3 gap-2.5 w-full max-w-[420px]">
         {board.map((item, i) => {
           const mark = marks[i];
           return (
@@ -113,6 +113,7 @@ export default function TicTacToe({ items }: Props) {
               type="button"
               onClick={() => claim(i)}
               disabled={!!mark || !!winner || isDraw}
+              data-skin-object="cell"
               className={`aspect-square rounded-2xl flex items-center justify-center text-center px-2 font-title-md text-title-md [word-break:keep-all] transition-all border-2 ${
                 mark === 'blue'
                   ? 'bg-primary/15 border-primary text-primary'

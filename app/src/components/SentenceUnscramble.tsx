@@ -146,7 +146,7 @@ export default function SentenceUnscramble({ items }: Props) {
         {pos + 1} / {order.length}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 mb-6 max-w-[600px] min-h-[52px]">
+      <div data-skin-stage="tile-tray" className="flex flex-wrap justify-center gap-2 mb-6 max-w-[600px] min-h-[52px]">
         {placed.length === 0 && (
           <div className="w-full text-center font-caption text-caption text-on-surface-variant/60 py-3">
             {t('gameUnscramble.answerAreaHint')}
@@ -158,6 +158,7 @@ export default function SentenceUnscramble({ items }: Props) {
             type="button"
             onClick={() => returnFromPlaced(tile.id)}
             disabled={status === 'correct'}
+            data-skin-object="tile-placed"
             className={`px-4 py-2.5 rounded-lg font-body-md text-body-md border-b-4 transition-colors ${
               status === 'correct'
                 ? 'bg-secondary-container/40 border-secondary text-on-surface'
@@ -171,12 +172,13 @@ export default function SentenceUnscramble({ items }: Props) {
         ))}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 mb-6 max-w-[600px]">
+      <div data-skin-stage="tile-pool" className="flex flex-wrap justify-center gap-2 mb-6 max-w-[600px]">
         {pool.map((tile) => (
           <button
             key={tile.id}
             type="button"
             onClick={() => pickFromPool(tile.id)}
+            data-skin-object="tile-pool"
             className="px-4 py-2.5 rounded-lg font-body-md text-body-md bg-surface-container-lowest border-2 border-outline-variant/40 text-on-surface hover:bg-surface-container-low hover:-translate-y-0.5 transition-all"
           >
             {tile.word}

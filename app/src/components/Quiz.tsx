@@ -82,7 +82,7 @@ export default function Quiz({ questions }: Props) {
         {current.question}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-[560px] mb-5">
+      <div data-skin-stage="board" className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-[560px] mb-5">
         {current.choices.map((choice, i) => {
           const isCorrect = i === current.correctIndex;
           const isSelected = i === selectedChoice;
@@ -93,6 +93,7 @@ export default function Quiz({ questions }: Props) {
               type="button"
               disabled={revealed}
               onClick={() => selectChoice(i)}
+              data-skin-object="choice"
               className={`px-5 py-3.5 rounded-xl font-label-md text-label-md text-left transition-all border-2 ${
                 revealed && isCorrect
                   ? 'bg-secondary-container/40 border-secondary text-on-surface'

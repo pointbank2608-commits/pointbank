@@ -110,13 +110,13 @@ export default function Hangman({ items, maxAttempts }: Props) {
 
       <div className="flex items-center gap-1 mb-5" aria-label={t('gameHangman.livesLabel')}>
         {Array.from({ length: maxAttempts }, (_, i) => (
-          <span key={i} className="text-xl">
+          <span key={i} data-skin-object="life-icon" className="text-xl">
             {i < livesLeft ? '❤️' : '🤍'}
           </span>
         ))}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 mb-6 max-w-[560px]">
+      <div data-skin-stage="board" className="flex flex-wrap justify-center gap-2 mb-6 max-w-[560px]">
         {[...word].map((ch, i) => {
           if (ch === ' ') return <div key={i} className="w-4" />;
           const isGuessedChar = guessed.has(ch.toLowerCase());
@@ -128,6 +128,7 @@ export default function Hangman({ items, maxAttempts }: Props) {
           return (
             <div
               key={i}
+              data-skin-object="letter-box"
               className={`w-10 h-12 flex items-center justify-center rounded-lg border-b-4 font-display-lg text-[24px] transition-colors ${boxClass}`}
             >
               {shown ? ch : ''}

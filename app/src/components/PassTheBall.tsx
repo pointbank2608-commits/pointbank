@@ -69,7 +69,7 @@ export default function PassTheBall({ items, minSec, maxSec, music, resultSound 
 
   return (
     <div className="flex flex-col items-center pt-3 pb-2">
-      <div className={`text-[140px] leading-none drop-shadow-[0_16px_26px_rgba(39,101,168,0.32)] mb-6 ${phase === 'active' ? 'animate-bounce' : ''}`}>
+      <div data-skin-object="ball" className={`text-[140px] leading-none drop-shadow-[0_16px_26px_rgba(39,101,168,0.32)] mb-6 ${phase === 'active' ? 'animate-bounce' : ''}`}>
         ⚽
       </div>
 

@@ -130,6 +130,7 @@ export default function SpellTheWord({ items, previewSeconds }: Props) {
               if (e.key === 'Enter') submit();
             }}
             placeholder={t('gameSpellWord.answerPlaceholder')}
+            data-skin-object="answer-input"
             className={`w-full max-w-[320px] text-center bg-surface-container-lowest border-b-2 px-3 py-2.5 font-display-lg text-[22px] text-on-surface focus:outline-none mb-6 ${
               revealed ? (status === 'correct' ? 'border-secondary text-secondary' : 'border-error text-error') : 'border-primary'
             }`}

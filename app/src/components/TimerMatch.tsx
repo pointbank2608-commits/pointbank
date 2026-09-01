@@ -21,6 +21,17 @@ interface Attempt {
   diffMs: number;
 }
 
+const CLOCK_SRC = '/skins/timer-clock.png?v=6';
+const START_SRC = '/skins/timer-start.png';
+const STOP_SRC = '/skins/timer-stop.png';
+/** 스킨 이미지에서 측정한 화면 구멍. 값은 이미지 너비/높이 대비 비율. */
+const SCREEN = { left: 0.104, top: 0.274, width: 0.765, height: 0.485 };
+/**
+ * 나무 프레임 *뒤*에 깔리는 검정 화면.
+ * 구멍보다 살짝 커서 안쪽 턱 아래로 들어가고, 바깥 투명 모서리에는 안 닿는다.
+ */
+const SCREEN_FILL = { left: 0.075, top: 0.215, width: 0.835, height: 0.575 };
+
 function fmt(ms: number): string {
   const totalCs = Math.round(ms / 10);
   const cs = totalCs % 100;
@@ -36,6 +47,19 @@ function resultMessage(diffMs: number): string {
   if (diffMs <= 500) return i18n.t('gameTimer.resultGreat');
   if (diffMs <= 1000) return i18n.t('gameTimer.resultClose');
   return i18n.t('gameTimer.resultTryAgain');
+}
+
+function DigitalReadout({ value, masked }: { value: string; masked: boolean }) {
+  if (masked) {
+    return <span className="text-[#5eead4]">{value}</span>;
+  }
+  const [main, frac] = value.split('.');
+  return (
+    <>
+      <span className="text-[#e8fbf6]">{main}</span>
+      <span className="text-[#5eead4]">.{frac}</span>
+    </>
+  );
 }
 
 /**
@@ -124,134 +148,147 @@ export default function TimerMatch({ participants, targetMs, music, resultSound 
   const blockedForRanked = mode === 'ranked' && n === 0;
   const diffMs = phase === 'stopped' ? Math.abs(elapsedMs - targetMs) : null;
   const leaderboard = [...attempts].sort((a, b) => a.diffMs - b.diffMs);
+  const masked = !showTimer && phase !== 'stopped';
+  const readout = masked ? (phase === 'running' ? '??:??.??' : fmt(0)) : fmt(elapsedMs);
+  const pill =
+    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+  const tabOn = 'rounded-full bg-white px-4 py-1.5 font-label-md text-label-md text-secondary shadow-sm';
+  const tabOff = 'rounded-full px-4 py-1.5 font-label-md text-label-md text-on-surface-variant';
 
   return (
     <div className="flex flex-col items-center pt-3 pb-2">
-      <div className="flex flex-wrap justify-center gap-2.5 mb-4">
-        <div className="flex bg-surface-container-low rounded-lg p-1">
-          <button
-            type="button"
-            onClick={() => switchMode('practice')}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              mode === 'practice' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
+      <div className="mb-4 flex flex-wrap justify-center gap-2.5">
+        <div className="flex rounded-full bg-[#f3eee4] p-1">
+          <button type="button" onClick={() => switchMode('practice')} className={mode === 'practice' ? tabOn : tabOff}>
             {t('gameTimer.modePractice')}
           </button>
-          <button
-            type="button"
-            onClick={() => switchMode('ranked')}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              mode === 'ranked' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
+          <button type="button" onClick={() => switchMode('ranked')} className={mode === 'ranked' ? tabOn : tabOff}>
             {t('gameTimer.modeRanked')}
           </button>
         </div>
-        <div className="flex bg-surface-container-low rounded-lg p-1">
-          <button
-            type="button"
-            onClick={() => setShowTimer(true)}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
+        <div className="flex rounded-full bg-[#f3eee4] p-1">
+          <button type="button" onClick={() => setShowTimer(true)} className={showTimer ? tabOn : tabOff}>
             {t('gameTimer.showTimerOn')}
           </button>
-          <button
-            type="button"
-            onClick={() => setShowTimer(false)}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              !showTimer ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
+          <button type="button" onClick={() => setShowTimer(false)} className={!showTimer ? tabOn : tabOff}>
             {t('gameTimer.showTimerOff')}
           </button>
         </div>
       </div>
 
-      <div className="font-label-md text-label-md font-bold text-on-surface-variant mb-3.5">
+      <div className="mb-3.5 font-label-md text-label-md font-bold text-on-surface-variant">
         {t('gameTimer.targetPrefix', { time: fmt(targetMs) })}
       </div>
 
       {blockedForRanked ? (
-        <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-          <div className="text-4xl mb-2">⏱️</div>
+        <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+          <img src={CLOCK_SRC} alt="" className="mx-auto mb-3 h-16 w-auto" />
           <div className="font-body-md text-body-md">{t('gameTimer.needOneParticipant')}</div>
         </div>
       ) : allDone ? (
-        <div className="w-full max-w-[420px] flex flex-col items-center">
-          <div className="font-title-md text-title-md text-deep-navy mb-3.5">{t('gameTimer.leaderboardTitle')}</div>
+        <div className="flex w-full max-w-[420px] flex-col items-center">
+          <div className="mb-3.5 font-title-md text-title-md text-deep-navy">{t('gameTimer.leaderboardTitle')}</div>
           {leaderboard.map((a, i) => (
             <div
               key={a.participantId + i}
-              className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3 w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-2.5 mb-2 shadow-sm"
+              className="mb-2 grid w-full grid-cols-[28px_1fr_auto_auto] items-center gap-3 rounded-xl px-4 py-2.5"
+              style={{
+                backgroundColor: i === 0 ? '#f28b73' : '#fffdf8',
+                border: '3px solid #f0d7a8',
+                boxShadow: '0 3px 0 #c4925c, 0 6px 12px rgba(110,62,18,0.12)',
+              }}
             >
-              <span className="font-title-md text-title-md text-tertiary-container">{i + 1}</span>
-              <span className="font-label-md text-label-md text-on-surface font-semibold">{a.label}</span>
-              <span className="font-body-md text-sm text-on-surface-variant">{fmt(a.elapsedMs)}</span>
-              <span className="font-body-md text-sm text-tertiary-container font-bold">±{fmt(a.diffMs)}</span>
+              <span className={`font-title-md text-title-md ${i === 0 ? 'text-white' : 'text-secondary'}`}>{i + 1}</span>
+              <span className={`font-label-md text-label-md font-semibold ${i === 0 ? 'text-white' : 'text-on-surface'}`}>
+                {a.label}
+              </span>
+              <span className={`font-body-md text-sm ${i === 0 ? 'text-white/90' : 'text-on-surface-variant'}`}>
+                {fmt(a.elapsedMs)}
+              </span>
+              <span className={`font-body-md text-sm font-bold ${i === 0 ? 'text-white' : 'text-secondary'}`}>
+                ±{fmt(a.diffMs)}
+              </span>
             </div>
           ))}
-          <button
-            onClick={restartAll}
-            className="mt-3 px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-          >
+          <button onClick={restartAll} className={`${pill} mt-3`}>
             {t('gameTimer.restartAll')}
           </button>
         </div>
       ) : (
         <>
           {mode === 'ranked' && phase !== 'stopped' && (
-            <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+            <div className="mb-4 text-center font-display-lg text-[34px] text-deep-navy">
               {t('gameTimer.holderTurn', { name: participants[turnIndex]?.label })}
             </div>
           )}
 
           <div
-            className={`font-title-md text-[42px] sm:text-[64px] md:text-[96px] font-semibold text-on-surface border-4 rounded-[28px] px-5 sm:px-9 md:px-14 py-4 sm:py-5 md:py-6 mb-6 tracking-wide ${
-              phase === 'running' ? 'border-warm-yellow bg-warm-yellow/15' : 'border-primary bg-surface-container-low'
-            }`}
+            className={`relative mb-6 w-[min(340px,92vw)] ${phase === 'running' ? 'timer-clock-pulse' : ''}`}
+            style={{ filter: 'drop-shadow(0 10px 14px rgba(90, 50, 18, 0.35))' }}
           >
-            {showTimer || phase === 'stopped' ? fmt(elapsedMs) : phase === 'running' ? '??:??.??' : fmt(0)}
+            <div
+              className="absolute z-0 bg-[#1a2430]"
+              style={{
+                left: `${SCREEN_FILL.left * 100}%`,
+                top: `${SCREEN_FILL.top * 100}%`,
+                width: `${SCREEN_FILL.width * 100}%`,
+                height: `${SCREEN_FILL.height * 100}%`,
+              }}
+            />
+            <img src={CLOCK_SRC} alt="" draggable={false} className="pointer-events-none relative z-10 w-full select-none" />
+            <div
+              className="absolute z-20 flex items-center justify-center"
+              style={{
+                left: `${SCREEN.left * 100}%`,
+                top: `${SCREEN.top * 100}%`,
+                width: `${SCREEN.width * 100}%`,
+                height: `${SCREEN.height * 100}%`,
+              }}
+            >
+              <span className="font-mono text-[clamp(22px,7.2vw,44px)] font-bold tabular-nums tracking-[0.06em]">
+                <DigitalReadout value={readout} masked={masked && phase === 'running'} />
+              </span>
+            </div>
           </div>
 
           {(phase === 'idle' || phase === 'running') && (
             <button
               type="button"
               onClick={phase === 'running' ? stop : start}
-              className={`w-[118px] h-[118px] rounded-full text-white font-title-md text-xl tracking-wide shadow-[0_10px_22px_-6px_rgba(186,26,26,0.6),inset_0_-4px_0_rgba(0,0,0,0.15)] transition-transform hover:-translate-y-0.5 active:translate-y-px active:scale-[0.97] ${
+              aria-label={phase === 'running' ? 'STOP' : 'START'}
+              className={`h-[110px] w-[110px] rounded-full bg-transparent p-0 transition-[filter] hover:not-disabled:brightness-105 active:not-disabled:brightness-95 ${
                 phase === 'running' ? 'timer-btn-pulse' : ''
               }`}
-              style={{
-                background:
-                  phase === 'running'
-                    ? 'radial-gradient(circle at 35% 30%, #ff5a5a, #e03e3e 65%, #b82c2c)'
-                    : 'radial-gradient(circle at 35% 30%, #ff8a8a, #ba1a1a 65%, #e14b4b)',
-              }}
+              style={phase === 'running' ? undefined : { filter: 'drop-shadow(0 8px 12px rgba(90, 40, 10, 0.28))' }}
             >
-              {phase === 'running' ? 'STOP' : 'START'}
+              <img
+                src={phase === 'running' ? STOP_SRC : START_SRC}
+                alt=""
+                draggable={false}
+                className="pointer-events-none h-full w-full select-none object-contain"
+              />
             </button>
           )}
 
           {phase === 'stopped' && diffMs != null && (
             <>
-              <div className="text-center mb-4">
-                <div className="font-title-md text-[26px] text-tertiary-container">{t('gameTimer.diffPrefix', { diff: fmt(diffMs) })}</div>
-                <div className="font-body-md text-body-md text-on-surface-variant mt-1">{resultMessage(diffMs)}</div>
+              <div
+                className="result-pop mb-5 rounded-2xl px-9 py-4 text-center"
+                style={{
+                  backgroundColor: '#f28b73',
+                  border: '3px solid #f0d7a8',
+                  boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+                }}
+              >
+                <div className="font-title-md text-[22px] font-bold text-white">{t('gameTimer.diffPrefix', { diff: fmt(diffMs) })}</div>
+                <div className="mt-1 font-body-md text-body-md text-white/90">{resultMessage(diffMs)}</div>
               </div>
               {mode === 'practice' ? (
-                <button
-                  onClick={tryAgain}
-                  className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-                >
+                <button onClick={tryAgain} className={pill}>
                   {t('gameTimer.tryAgainButton')}
                 </button>
               ) : (
-                <button
-                  onClick={nextTurn}
-                  className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-                >
+                <button onClick={nextTurn} className={pill}>
                   {turnIndex + 1 >= n ? t('gameTimer.seeResultsButton') : t('gameTimer.nextPersonButton')}
                 </button>
               )}

@@ -101,7 +101,7 @@ export default function FindMissing({ items, revealCount }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-[520px]">
+      <div data-skin-stage="board" className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-[520px]">
         {board.map((item, i) => {
           const isMissing = missingIndices.has(i);
           const isFound = foundIndices.has(i);
@@ -112,6 +112,7 @@ export default function FindMissing({ items, revealCount }: Props) {
               type="button"
               disabled={phase === 'showing' || !isMissing || isFound}
               onClick={() => reveal(i)}
+              data-skin-object="card"
               className={`aspect-[4/3] rounded-2xl flex items-center justify-center text-center px-2 font-title-md text-title-md [word-break:keep-all] transition-all border-2 ${
                 showQuestion
                   ? 'bg-warm-yellow/20 border-warm-yellow text-tertiary-container cursor-pointer hover:bg-warm-yellow/30'

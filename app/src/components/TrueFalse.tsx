@@ -94,11 +94,12 @@ export default function TrueFalse({ statements }: Props) {
         {current.text}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[420px] mb-5">
+      <div data-skin-stage="board" className="grid grid-cols-2 gap-4 w-full max-w-[420px] mb-5">
         <button
           type="button"
           disabled={revealed}
           onClick={() => selectAnswer(true)}
+          data-skin-object="choice"
           className={`px-5 py-5 rounded-xl font-title-md text-title-md text-center transition-all border-2 ${btnClass(true)}`}
         >
           ⭕ {t('gameTrueFalse.trueLabel')}
@@ -107,6 +108,7 @@ export default function TrueFalse({ statements }: Props) {
           type="button"
           disabled={revealed}
           onClick={() => selectAnswer(false)}
+          data-skin-object="choice"
           className={`px-5 py-5 rounded-xl font-title-md text-title-md text-center transition-all border-2 ${btnClass(false)}`}
         >
           ❌ {t('gameTrueFalse.falseLabel')}

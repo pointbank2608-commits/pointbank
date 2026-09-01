@@ -118,7 +118,7 @@ export default function Matchup({ pairs }: Props) {
         {t('gameMatchup.wrongCountLabel', { count: wrongCount })}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 w-full max-w-[560px]">
+      <div data-skin-stage="board" className="grid grid-cols-2 gap-4 w-full max-w-[560px]">
         <div className="flex flex-col gap-2">
           {leftOrder.map((p) => (
             <button
@@ -126,6 +126,7 @@ export default function Matchup({ pairs }: Props) {
               type="button"
               disabled={matchedIds.has(p.id)}
               onClick={() => clickLeft(p.id)}
+              data-skin-object="chip"
               className={`px-4 py-3 rounded-xl font-label-md text-label-md text-left transition-all border-2 ${chipClass(p.id, 'left')}`}
             >
               {p.left}
@@ -139,6 +140,7 @@ export default function Matchup({ pairs }: Props) {
               type="button"
               disabled={matchedIds.has(p.id)}
               onClick={() => clickRight(p.id)}
+              data-skin-object="chip"
               className={`px-4 py-3 rounded-xl font-label-md text-label-md text-left transition-all border-2 ${chipClass(p.id, 'right')}`}
             >
               {p.right}

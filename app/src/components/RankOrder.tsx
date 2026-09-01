@@ -88,12 +88,13 @@ export default function RankOrder({ items }: Props) {
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2 w-full">
       <div className="font-caption text-caption text-on-surface-variant mb-4">{t('gameRankOrder.hint')}</div>
-      <div className="w-full max-w-[420px] space-y-2">
+      <div data-skin-stage="board" className="w-full max-w-[420px] space-y-2">
         {order.map((item, i) => {
           const correct = item.id === items[i].id;
           return (
             <div
               key={item.id}
+              data-skin-object="row"
               className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 transition-colors ${
                 correct ? 'bg-secondary-container/40 border-secondary' : 'bg-surface-container-lowest border-outline-variant/40'
               }`}

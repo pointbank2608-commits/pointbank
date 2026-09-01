@@ -190,6 +190,7 @@ export default function WordSearch({ items }: Props) {
       </div>
 
       <div
+        data-skin-stage="board"
         className="grid gap-[2px] mb-6 w-full max-w-[460px]"
         style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))` }}
       >
@@ -204,6 +205,7 @@ export default function WordSearch({ items }: Props) {
                 key={key}
                 type="button"
                 onClick={() => clickCell(r, c)}
+                data-skin-object="cell"
                 className={`aspect-square flex items-center justify-center rounded font-label-md text-[12px] sm:text-sm font-bold transition-colors ${
                   isFound
                     ? 'bg-secondary-container text-on-surface'
@@ -225,6 +227,7 @@ export default function WordSearch({ items }: Props) {
         {placements.map((p) => (
           <span
             key={p.id}
+            data-skin-object="word-chip"
             className={`px-3 py-1.5 rounded-full font-label-md text-label-md ${
               foundIds.has(p.id)
                 ? 'bg-secondary-container/50 text-on-surface line-through opacity-60'

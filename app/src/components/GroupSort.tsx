@@ -109,13 +109,14 @@ export default function GroupSort({ groups }: Props) {
         {t('gameGroupSort.wrongCountLabel', { count: wrongCount })}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-3 mb-6 w-full max-w-[640px]">
+      <div data-skin-stage="board" className="flex flex-wrap justify-center gap-3 mb-6 w-full max-w-[640px]">
         {groups.map((g) => (
           <button
             key={g.id}
             type="button"
             onClick={() => dropOnGroup(g.id)}
             disabled={!selectedId}
+            data-skin-object="bucket"
             className={`flex-1 min-w-[140px] rounded-xl border-2 p-3 text-left transition-colors ${
               wrongGroupId === g.id
                 ? 'bg-error-container border-error'
@@ -139,12 +140,13 @@ export default function GroupSort({ groups }: Props) {
         ))}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 max-w-[560px]">
+      <div data-skin-stage="tile-pool" className="flex flex-wrap justify-center gap-2 max-w-[560px]">
         {pool.map((it) => (
           <button
             key={it.id}
             type="button"
             onClick={() => selectItem(it.id)}
+            data-skin-object="chip"
             className={`px-4 py-2 rounded-full font-label-md text-label-md border-2 transition-all ${
               selectedId === it.id
                 ? 'bg-primary text-on-primary border-primary'

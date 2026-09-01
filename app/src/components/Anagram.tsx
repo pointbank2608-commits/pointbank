@@ -144,13 +144,14 @@ export default function Anagram({ items }: Props) {
         {pos + 1} / {order.length}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-1.5 mb-6 max-w-[560px]">
+      <div data-skin-stage="tile-tray" className="flex flex-wrap justify-center gap-1.5 mb-6 max-w-[560px]">
         {placed.map((tile) => (
           <button
             key={tile.id}
             type="button"
             onClick={() => returnFromPlaced(tile.id)}
             disabled={status === 'correct'}
+            data-skin-object="tile-placed"
             className={`w-10 h-11 rounded-lg flex items-center justify-center font-display-lg text-[20px] border-b-4 transition-colors ${
               status === 'correct'
                 ? 'bg-secondary-container/40 border-secondary text-on-surface'
@@ -165,17 +166,19 @@ export default function Anagram({ items }: Props) {
         {Array.from({ length: emptySlots }, (_, i) => (
           <div
             key={`empty-${i}`}
+            data-skin-object="tile-slot"
             className="w-10 h-11 rounded-lg border-b-4 border-dashed border-outline-variant/50 bg-surface-container-low"
           />
         ))}
       </div>
 
-      <div className="flex flex-wrap justify-center gap-1.5 mb-6 max-w-[560px]">
+      <div data-skin-stage="tile-pool" className="flex flex-wrap justify-center gap-1.5 mb-6 max-w-[560px]">
         {pool.map((tile) => (
           <button
             key={tile.id}
             type="button"
             onClick={() => pickFromPool(tile.id)}
+            data-skin-object="tile-pool"
             className="w-10 h-11 rounded-lg flex items-center justify-center font-display-lg text-[20px] bg-surface-container-lowest border-2 border-outline-variant/40 text-on-surface hover:bg-surface-container-low hover:-translate-y-0.5 transition-all"
           >
             {tile.char === ' ' ? '␣' : tile.char}

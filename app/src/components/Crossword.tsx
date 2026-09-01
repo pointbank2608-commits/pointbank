@@ -225,6 +225,7 @@ export default function Crossword({ items }: Props) {
       </div>
 
       <div
+        data-skin-stage="board"
         className="grid gap-[2px] mb-6 w-full max-w-[420px]"
         style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
       >
@@ -237,6 +238,7 @@ export default function Crossword({ items }: Props) {
             return (
               <div
                 key={key}
+                data-skin-object="cell"
                 className="relative aspect-square flex items-center justify-center border border-outline-variant/50 bg-surface-container-lowest rounded-[3px]"
               >
                 {num !== undefined && (
@@ -260,6 +262,7 @@ export default function Crossword({ items }: Props) {
               key={p.id}
               type="button"
               onClick={() => selectWord(p.id)}
+              data-skin-object="word-chip"
               className={`px-4 py-2 rounded-full font-label-md text-label-md border-2 transition-colors ${
                 selectedWordId === p.id
                   ? 'bg-primary text-on-primary border-primary'

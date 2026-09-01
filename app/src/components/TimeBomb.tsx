@@ -14,6 +14,9 @@ interface Props {
 type Phase = 'idle' | 'active' | 'exploded';
 type Mode = 'pass' | 'timer';
 
+const IDLE_SRC = '/skins/bomb-idle.png';
+const EXPLODED_SRC = '/skins/bomb-exploded.png';
+
 /**
  * 시한폭탄. min~maxSec 사이의 무작위 시각에 터지도록 숨겨진 타이머를 걸어둔다.
  * - "참가자 순서대로": 화면에서 "다음 사람에게 넘기기"를 누를 때마다 폭탄을 든 사람이 바뀌고,
@@ -73,15 +76,17 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
   }
 
   const blockedForPassMode = mode === 'pass' && n < 2;
+  const pill =
+    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
   return (
     <div className="flex flex-col items-center pt-3 pb-2">
-      <div className="flex bg-surface-container-low rounded-lg p-1 mb-5">
+      <div className="mb-5 flex rounded-full bg-[#f3eee4] p-1">
         <button
           type="button"
           onClick={() => switchMode('pass')}
-          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-            mode === 'pass' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+          className={`rounded-full px-4 py-1.5 font-label-md text-label-md transition-all ${
+            mode === 'pass' ? 'bg-white text-secondary shadow-sm' : 'text-on-surface-variant'
           }`}
         >
           {t('gameBomb.modePass')}
@@ -89,8 +94,8 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
         <button
           type="button"
           onClick={() => switchMode('timer')}
-          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-            mode === 'timer' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+          className={`rounded-full px-4 py-1.5 font-label-md text-label-md transition-all ${
+            mode === 'timer' ? 'bg-white text-secondary shadow-sm' : 'text-on-surface-variant'
           }`}
         >
           {t('gameBomb.modeTimer')}
@@ -99,29 +104,29 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
 
       {blockedForPassMode ? (
         <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-          <div className="text-4xl mb-2">💣</div>
+          <img src={IDLE_SRC} alt="" className="mx-auto mb-3 h-24 w-auto" />
           <div className="font-body-md text-body-md">{t('gameBomb.needTwoParticipants')}</div>
         </div>
       ) : (
         <>
-          <div className="relative w-[300px] h-[300px] flex items-center justify-center mb-6">
-            <div
-              className={`text-[200px] leading-none drop-shadow-[0_16px_26px_rgba(39,101,168,0.32)] ${
-                phase === 'active' ? 'bomb-shake' : phase === 'exploded' ? 'bomb-burst' : ''
+          <div className="relative mb-5 flex h-[280px] w-[min(320px,88vw)] items-center justify-center">
+            <img
+              src={phase === 'exploded' ? EXPLODED_SRC : IDLE_SRC}
+              alt=""
+              draggable={false}
+              className={`pointer-events-none max-h-full max-w-full select-none object-contain ${
+                phase === 'active' ? 'bomb-wobble' : phase === 'exploded' ? 'bomb-burst' : ''
               }`}
-            >
-              {phase === 'exploded' ? '💥' : '💣'}
-            </div>
-            {phase === 'active' && (
-              <div className="bomb-spark-flicker absolute top-3.5 right-11 text-5xl">✨</div>
-            )}
+              style={
+                phase === 'active'
+                  ? undefined
+                  : { filter: 'drop-shadow(0 12px 16px rgba(110, 62, 18, 0.22))' }
+              }
+            />
           </div>
 
           {phase === 'idle' && (
-            <button
-              onClick={start}
-              className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-            >
+            <button onClick={start} className={pill}>
               {t('gameBomb.startButton')}
             </button>
           )}
@@ -131,10 +136,7 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
               <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
                 {t('gameBomb.holderTurn', { name: participants[holderIndex]?.label })}
               </div>
-              <button
-                onClick={pass}
-                className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-              >
+              <button onClick={pass} className={pill}>
                 {t('gameBomb.passButton')}
               </button>
             </>
@@ -148,24 +150,28 @@ export default function TimeBomb({ participants, minSec, maxSec, music, resultSo
 
           {phase === 'exploded' && (
             <>
-              <div className="result-pop text-center bg-secondary-container/30 border border-secondary-container rounded-2xl px-9 py-4.5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] mb-5">
+              <div
+                className="result-pop mb-5 rounded-2xl px-9 py-4 text-center"
+                style={{
+                  backgroundColor: '#f28b73',
+                  border: '3px solid #f0d7a8',
+                  boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+                }}
+              >
                 {mode === 'pass' ? (
                   <>
-                    <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">
+                    <div className="font-caption text-caption font-bold tracking-wider text-white/90 uppercase">
                       {t('gameBomb.explodedCaught')}
                     </div>
-                    <div className="font-display-lg text-[38px] text-deep-navy mt-0.5">
+                    <div className="font-display-lg mt-0.5 text-[38px] text-[#1e3a5f]">
                       {participants[holderIndex]?.label}
                     </div>
                   </>
                 ) : (
-                  <div className="font-display-lg text-[38px] text-deep-navy">{t('gameBomb.explodedTimerOnly')}</div>
+                  <div className="font-display-lg text-[38px] text-[#1e3a5f]">{t('gameBomb.explodedTimerOnly')}</div>
                 )}
               </div>
-              <button
-                onClick={reset}
-                className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-              >
+              <button onClick={reset} className={pill}>
                 {t('gameBomb.resetButton')}
               </button>
             </>

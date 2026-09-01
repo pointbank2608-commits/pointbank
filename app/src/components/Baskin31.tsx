@@ -55,7 +55,7 @@ export default function Baskin31({ items, targetCount }: Props) {
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div className={`text-7xl mb-3 transition-all ${loser ? 'grayscale opacity-40 scale-90' : ''}`}>🍦</div>
+      <div data-skin-object="scoop" className={`text-7xl mb-3 transition-all ${loser ? 'grayscale opacity-40 scale-90' : ''}`}>🍦</div>
 
       <div className="font-display-lg text-[40px] text-deep-navy mb-1 tabular-nums">
         {count} <span className="text-on-surface-variant text-[22px]">/ {targetCount}</span>

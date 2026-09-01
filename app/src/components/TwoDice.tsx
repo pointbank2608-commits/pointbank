@@ -88,8 +88,8 @@ export default function TwoDice({ items }: Props) {
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
       <div className="flex items-center gap-4 mb-5">
-        <span className="text-7xl">{die1 ? DICE_FACES[die1] : '⚀'}</span>
-        <span className="text-7xl">{die2 ? DICE_FACES[die2] : '⚀'}</span>
+        <span data-skin-object="die" className="text-7xl">{die1 ? DICE_FACES[die1] : '⚀'}</span>
+        <span data-skin-object="die" className="text-7xl">{die2 ? DICE_FACES[die2] : '⚀'}</span>
       </div>
 
       <button
@@ -101,10 +101,11 @@ export default function TwoDice({ items }: Props) {
       </button>
 
       <div className="w-full max-w-[520px] overflow-x-auto mb-4">
-        <div className="inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(48px, 1fr))`, width: '100%' }}>
+        <div data-skin-stage="board" className="inline-grid gap-1" style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(48px, 1fr))`, width: '100%' }}>
           {board.map((item, i) => (
             <div
               key={i}
+              data-skin-object="cell"
               className={`aspect-square rounded-md flex items-center justify-center text-center px-0.5 font-label-md text-[10px] sm:text-[12px] leading-tight [word-break:keep-all] border transition-all ${
                 i === highlightIndex
                   ? 'bg-warm-yellow/30 border-warm-yellow text-tertiary-container scale-105 font-bold'

@@ -74,6 +74,7 @@ export default function Flashcards({ cards }: Props) {
       <button
         type="button"
         onClick={() => setFlipped((f) => !f)}
+        data-skin-object="card"
         className="w-full max-w-[420px] h-56 rounded-2xl border-2 border-outline-variant/40 bg-surface-container-lowest shadow-md flex items-center justify-center px-6 mb-4 transition-colors hover:bg-surface-container-low"
       >
         <div className="font-display-lg text-[28px] text-deep-navy text-center [word-break:keep-all]">

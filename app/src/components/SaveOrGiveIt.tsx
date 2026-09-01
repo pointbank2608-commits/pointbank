@@ -90,11 +90,11 @@ export default function SaveOrGiveIt({ items, rewardPool }: Props) {
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
       <div className="flex gap-3 mb-5">
-        <div className="px-5 py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-center">
+        <div data-skin-object="score-card" className="px-5 py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-center">
           <div className="font-caption text-caption text-primary">{teamLabel('blue')}</div>
           <div className="font-title-md text-title-md text-primary tabular-nums">{scores.blue}</div>
         </div>
-        <div className="px-5 py-2.5 rounded-xl bg-error/10 border border-error/30 text-center">
+        <div data-skin-object="score-card" className="px-5 py-2.5 rounded-xl bg-error/10 border border-error/30 text-center">
           <div className="font-caption text-caption text-error">{teamLabel('red')}</div>
           <div className="font-title-md text-title-md text-error tabular-nums">{scores.red}</div>
         </div>
@@ -154,7 +154,7 @@ export default function SaveOrGiveIt({ items, rewardPool }: Props) {
 
       {phase === 'mixing' && (
         <div className="flex flex-col items-center gap-3 py-4">
-          <div className="text-6xl lottery-box-shake">🎁</div>
+          <div data-skin-object="gift-box" className="text-6xl lottery-box-shake">🎁</div>
           <div className="font-body-md text-body-md text-on-surface-variant">{t('gameSaveOrGive.openingBox')}</div>
         </div>
       )}

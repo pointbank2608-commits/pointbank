@@ -198,6 +198,7 @@ export default function Airplane({ items }: Props) {
       </div>
 
       <div
+        data-skin-stage="sky"
         className={`relative w-full max-w-[460px] aspect-[4/3] rounded-2xl overflow-hidden border-2 mb-4 transition-colors ${
           wrongFlash ? 'border-error/60 bg-error-container/20' : 'border-outline-variant/40 bg-gradient-to-r from-sky-100 to-surface-container-low'
         }`}
@@ -205,6 +206,7 @@ export default function Airplane({ items }: Props) {
         {bubblesRef.current.map((b) => (
           <div
             key={b.id}
+            data-skin-object="bubble"
             className="absolute flex items-center justify-center rounded-full bg-surface-container-lowest border-2 border-primary/50 shadow-sm font-label-md text-[10px] sm:text-xs text-on-surface text-center px-1"
             style={{
               left: `${b.x - BUBBLE_R}%`,
@@ -218,6 +220,7 @@ export default function Airplane({ items }: Props) {
         ))}
 
         <div
+          data-skin-object="player"
           className="absolute flex items-center justify-center rounded-full bg-primary text-on-primary text-lg shadow-md transition-none"
           style={{
             left: `${PLAYER_X - PLAYER_R}%`,

@@ -97,7 +97,7 @@ export default function WhackAMole({ items }: Props) {
         {t('gameWhackamole.resultLabel', { hits, misses })}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 w-full max-w-[420px]">
+      <div data-skin-stage="board" className="grid grid-cols-3 gap-3 w-full max-w-[420px]">
         {Array.from({ length: HOLE_COUNT }, (_, i) => {
           const isActive = i === activeHole;
           return (
@@ -105,6 +105,7 @@ export default function WhackAMole({ items }: Props) {
               key={i}
               type="button"
               onClick={() => whack(i)}
+              data-skin-object="hole"
               className={`h-20 sm:h-24 rounded-full flex items-center justify-center px-2 text-center font-label-md text-label-md transition-all border-2 ${
                 isActive
                   ? 'bg-warm-yellow text-deep-navy border-primary shadow-md scale-105'
