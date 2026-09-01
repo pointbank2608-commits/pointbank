@@ -303,6 +303,78 @@
   animation: result-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3);
 }
 
+/* 팝콘: 솥을 눌러 뽑을 때 살짝 통통 */
+@keyframes pc-hop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  28% {
+    transform: scale(1.05) rotate(-2.4deg);
+  }
+  58% {
+    transform: scale(1.02) rotate(1.8deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+.pc-hop {
+  animation: pc-hop 0.42s cubic-bezier(0.22, 0.9, 0.28, 1.12);
+}
+
+/* 팝콘: 솥에서 알 하나가 튀어 오른다 */
+@keyframes pc-kernel {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 10px) scale(0.4) rotate(-16deg);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--pc-x, 72px)), -156px) scale(1.14) rotate(12deg);
+  }
+  48% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.12), -148px) scale(1.06) rotate(-8deg);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.2), 36px) scale(0.98) rotate(10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.28), 168px) scale(0.74) rotate(22deg);
+  }
+}
+.pc-kernel {
+  position: absolute;
+  z-index: 5;
+  left: 52%;
+  top: 28%;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 8px rgba(90, 50, 18, 0.28));
+  animation: pc-kernel 1.15s cubic-bezier(0.18, 0.88, 0.28, 1.08) both;
+}
+
+/* 공 돌리기: 음악이 나오는 동안 공이 통통 */
+@keyframes pb-pass {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  40% {
+    transform: translateY(-26px) rotate(7deg);
+  }
+  68% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+.pb-pass {
+  animation: pb-pass 0.72s ease-in-out infinite;
+}
+
 /* 타이머 맞추기: 시계 상자 살짝 숨 + STOP 버튼 울렁임 */
 @keyframes timer-clock-pulse {
   0%,
@@ -365,6 +437,379 @@
 }
 .c4-win {
   animation: c4-win 0.9s ease-in-out infinite;
+}
+
+/* 두 주사위: 점토 정육면체가 모서리를 타고 구르다 착지한다 */
+.td-dice-row {
+  padding-top: 36px;
+}
+.td-die-scene {
+  --td-size: 108px;
+  position: relative;
+  width: var(--td-size);
+  height: var(--td-size);
+  perspective: none;
+}
+.td-die-scene.is-rolling {
+  perspective: 360px;
+  perspective-origin: 50% 42%;
+}
+@media (min-width: 640px) {
+  .td-die-scene {
+    --td-size: 132px;
+  }
+}
+.td-toss {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+@keyframes td-toss {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  14% {
+    transform: translateY(-42px);
+  }
+  28% {
+    transform: translateY(-6px);
+  }
+  46% {
+    transform: translateY(-52px);
+  }
+  62% {
+    transform: translateY(-4px);
+  }
+  78% {
+    transform: translateY(-26px);
+  }
+  90% {
+    transform: translateY(4px);
+  }
+}
+.td-tossing {
+  animation: td-toss 0.98s cubic-bezier(0.22, 0.7, 0.28, 1) both;
+}
+.td-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--td-rx, 0deg)) rotateY(var(--td-ry, 0deg));
+}
+@keyframes td-tumble {
+  0% {
+    transform: rotateX(-28deg) rotateY(36deg);
+  }
+  16% {
+    transform: rotateX(90deg) rotateY(70deg) rotateZ(18deg);
+  }
+  32% {
+    transform: rotateX(180deg) rotateY(-20deg) rotateZ(-24deg);
+  }
+  48% {
+    transform: rotateX(270deg) rotateY(140deg) rotateZ(12deg);
+  }
+  64% {
+    transform: rotateX(400deg) rotateY(-80deg) rotateZ(-16deg);
+  }
+  80% {
+    transform: rotateX(490deg) rotateY(200deg) rotateZ(8deg);
+  }
+  92% {
+    transform: rotateX(calc(var(--td-rx) - 12deg)) rotateY(calc(var(--td-ry) + 10deg));
+  }
+  100% {
+    transform: rotateX(var(--td-rx)) rotateY(var(--td-ry));
+  }
+}
+@keyframes td-tumble-b {
+  0% {
+    transform: rotateX(-28deg) rotateY(-36deg);
+  }
+  16% {
+    transform: rotateX(-80deg) rotateY(-100deg) rotateZ(-16deg);
+  }
+  32% {
+    transform: rotateX(-170deg) rotateY(40deg) rotateZ(22deg);
+  }
+  48% {
+    transform: rotateX(-260deg) rotateY(-150deg) rotateZ(-10deg);
+  }
+  64% {
+    transform: rotateX(-390deg) rotateY(90deg) rotateZ(18deg);
+  }
+  80% {
+    transform: rotateX(-500deg) rotateY(-210deg) rotateZ(-8deg);
+  }
+  92% {
+    transform: rotateX(calc(var(--td-rx) + 12deg)) rotateY(calc(var(--td-ry) - 10deg));
+  }
+  100% {
+    transform: rotateX(var(--td-rx)) rotateY(var(--td-ry));
+  }
+}
+.td-tumble {
+  animation: td-tumble 0.98s cubic-bezier(0.18, 0.62, 0.22, 1) both;
+}
+.td-tumble-b {
+  animation: td-tumble-b 0.98s cubic-bezier(0.18, 0.62, 0.22, 1) both;
+}
+.td-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-image: var(--td-skin);
+  background-size: cover;
+  background-position: center;
+  backface-visibility: hidden;
+  border-radius: 28%;
+}
+.td-face-teal {
+  background-color: #3dbea8;
+}
+.td-face-coral {
+  background-color: #f28b73;
+}
+.td-face-front {
+  transform: rotateY(0deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+.td-face-back {
+  transform: rotateY(180deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+.td-face-right {
+  transform: rotateY(90deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+.td-face-left {
+  transform: rotateY(-90deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+.td-face-top {
+  transform: rotateX(90deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+.td-face-bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--td-size) / 2 - 1px));
+}
+/* 구르는 동안: 둥근 PNG 대신 각진 점토 큐브. 면마다 다른 밝기로 모서리가 보이게. */
+.td-die-scene.is-rolling .td-face {
+  background-image: none;
+  border-radius: 14px;
+  box-shadow:
+    inset 5px 6px 10px rgba(255, 255, 255, 0.42),
+    inset -6px -8px 12px rgba(40, 22, 12, 0.3);
+}
+.td-die-scene.is-rolling .td-face-teal {
+  background: linear-gradient(145deg, #6ed4c2 0%, #3dbea8 46%, #2a9d8c 100%);
+}
+.td-die-scene.is-rolling .td-face-coral {
+  background: linear-gradient(145deg, #f7b09d 0%, #f28b73 46%, #de6a54 100%);
+}
+.td-die-scene.is-rolling .td-face-top {
+  filter: brightness(1.16);
+}
+.td-die-scene.is-rolling .td-face-bottom {
+  filter: brightness(0.74);
+}
+.td-die-scene.is-rolling .td-face-right {
+  filter: brightness(0.9);
+}
+.td-die-scene.is-rolling .td-face-left {
+  filter: brightness(0.84);
+}
+.td-die-scene.is-rolling .td-face-back {
+  filter: brightness(0.78);
+}
+.td-die-scene.is-rolling .td-pips {
+  inset: 16%;
+}
+.td-die-shadow {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -16px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(90, 50, 18, 0.38) 0%, transparent 70%);
+  pointer-events: none;
+}
+@keyframes td-shadow-toss {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  14% {
+    transform: scaleX(0.62);
+    opacity: 0.45;
+  }
+  28% {
+    transform: scaleX(0.92);
+    opacity: 0.85;
+  }
+  46% {
+    transform: scaleX(0.55);
+    opacity: 0.35;
+  }
+  62% {
+    transform: scaleX(0.94);
+    opacity: 0.9;
+  }
+  78% {
+    transform: scaleX(0.72);
+    opacity: 0.55;
+  }
+}
+.td-die-shadow-toss {
+  animation: td-shadow-toss 0.98s cubic-bezier(0.22, 0.7, 0.28, 1) both;
+}
+.td-pips {
+  position: absolute;
+  inset: 18%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  pointer-events: none;
+}
+.td-pip {
+  width: 74%;
+  aspect-ratio: 1;
+  background: url('/skins/twodice-pip.png') center / contain no-repeat;
+  filter: drop-shadow(0 2px 2px rgba(90, 50, 18, 0.28));
+}
+.td-board {
+  position: relative;
+  width: min(540px, 100%);
+}
+.td-board-img {
+  display: block;
+  width: 100%;
+  user-select: none;
+  filter: drop-shadow(0 10px 14px rgba(90, 50, 18, 0.22));
+}
+.td-board-grid {
+  position: absolute;
+  inset: 11.2% 10.4% 10.6% 11%;
+  display: grid;
+  grid-template-columns: 0.92fr repeat(6, 1fr);
+  grid-template-rows: 0.92fr repeat(6, 1fr);
+  gap: 3px;
+}
+@media (min-width: 640px) {
+  .td-board-grid {
+    gap: 5px;
+  }
+}
+.td-bead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8e8 0%, #f3e0b8 100%);
+  color: #1a2744;
+  font-weight: 800;
+  font-size: 11px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(110, 62, 18, 0.18);
+}
+@media (min-width: 640px) {
+  .td-bead {
+    font-size: 13px;
+  }
+}
+.td-bead-col {
+  background: linear-gradient(180deg, #6ed4c2 0%, #3dbea8 100%);
+  color: #fff;
+}
+.td-bead-row {
+  background: linear-gradient(180deg, #f7b09d 0%, #f28b73 100%);
+  color: #fff;
+}
+.td-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1px 2px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffef9 0%, #fff4e0 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 3px rgba(166, 112, 48, 0.16);
+  color: #1a2744;
+  font-weight: 700;
+  font-size: 9px;
+  line-height: 1.15;
+  word-break: keep-all;
+  overflow: hidden;
+}
+@media (min-width: 640px) {
+  .td-cell {
+    border-radius: 10px;
+    font-size: 12px;
+  }
+}
+@keyframes td-hit {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+.td-hit {
+  z-index: 1;
+  background: linear-gradient(180deg, #ffe9a8 0%, #ffd56a 100%);
+  box-shadow:
+    0 0 0 3px #f28b73,
+    inset 0 2px 0 rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+  animation: td-hit 0.45s cubic-bezier(0.22, 0.9, 0.28, 1.12) both;
+}
+
+/* 구멍 안에 보이는 점토 원판: 가장자리 하이라이트·그늘로 두께를 살린다 */
+.c4-disc {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow:
+    inset 4px 5px 8px rgba(255, 255, 255, 0.5),
+    inset -5px -6px 9px rgba(20, 28, 50, 0.3);
+}
+.c4-disc img {
+  filter: saturate(1.06) contrast(1.06);
+}
+.c4-disc::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: 18%;
+  top: 12%;
+  width: 38%;
+  height: 26%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.18) 46%, transparent 72%);
+}
+.c4-disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 2px 3px 3px rgba(255, 255, 255, 0.28),
+    inset -3px -4px 5px rgba(0, 0, 0, 0.18);
 }
 
 /* 랜딩: 큰 한글 타이포 */

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
 
@@ -10,6 +10,8 @@ type Team = 'blue' | 'red';
 type Card = GameItem | 'pop';
 
 const POP_RATIO = 0.25;
+const KETTLE_SRC = '/skins/popcorn-kettle.png?v=2';
+const KERNEL_SRC = '/skins/popcorn-kernel.png';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -27,6 +29,8 @@ function buildDeck(items: GameItem[]): Card[] {
   return shuffle(deck);
 }
 
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+
 export default function Popcorn({ items }: Props) {
   const { t } = useTranslation();
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items));
@@ -35,6 +39,7 @@ export default function Popcorn({ items }: Props) {
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [lastCard, setLastCard] = useState<Card | null>(null);
   const [poppedTeam, setPoppedTeam] = useState<Team | null>(null);
+  const [hop, setHop] = useState(0);
 
   function draw() {
     if (items.length === 0) return;
@@ -48,6 +53,7 @@ export default function Popcorn({ items }: Props) {
     const card = currentDeck[index];
     setDeckIndex(index + 1);
     setLastCard(card);
+    setHop((n) => n + 1);
 
     if (card === 'pop') {
       setPoppedTeam(turn);
@@ -66,74 +72,129 @@ export default function Popcorn({ items }: Props) {
     setScores({ blue: 0, red: 0 });
     setLastCard(null);
     setPoppedTeam(null);
+    setHop(0);
   }
+
+  const teamLabel = (team: Team) => (team === 'blue' ? t('gamePopcorn.teamBlue') : t('gamePopcorn.teamRed'));
+  const pill =
+    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
   if (items.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🍿</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <img src={KETTLE_SRC} alt="" className="mx-auto mb-3 h-16 w-auto" />
         <div className="font-body-md text-body-md">{t('gamePopcorn.needParticipants')}</div>
       </div>
     );
   }
 
-  const teamLabel = (team: Team) => (team === 'blue' ? t('gamePopcorn.teamBlue') : t('gamePopcorn.teamRed'));
-
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div className="flex gap-3 mb-5">
-        <div data-skin-object="score-card" className="px-5 py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-center">
-          <div className="font-caption text-caption text-primary">{teamLabel('blue')}</div>
-          <div className="font-title-md text-title-md text-primary tabular-nums">{scores.blue}</div>
+      <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
+        <div
+          data-skin-object="score-card"
+          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-on-secondary"
+          style={{ backgroundColor: '#3dbea8', boxShadow: woodShadow }}
+        >
+          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('blue')}</div>
+          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.blue}</div>
         </div>
-        <div data-skin-object="score-card" className="px-5 py-2.5 rounded-xl bg-error/10 border border-error/30 text-center">
-          <div className="font-caption text-caption text-error">{teamLabel('red')}</div>
-          <div className="font-title-md text-title-md text-error tabular-nums">{scores.red}</div>
+        <div
+          className={`rounded-full px-7 py-2.5 font-title-md text-[18px] font-bold shadow-sm ${
+            turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
+          }`}
+          style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
+        >
+          {t('gamePopcorn.turnLabel', { team: teamLabel(turn) })}
         </div>
-      </div>
-
-      <div
-        className={`mb-4 px-6 py-2 rounded-full font-label-md text-label-md ${
-          turn === 'blue' ? 'bg-primary text-on-primary' : 'bg-error text-on-error'
-        }`}
-      >
-        {t('gamePopcorn.turnLabel', { team: teamLabel(turn) })}
+        <div
+          data-skin-object="score-card"
+          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-white"
+          style={{ backgroundColor: '#f28b73', boxShadow: woodShadow }}
+        >
+          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('red')}</div>
+          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.red}</div>
+        </div>
       </div>
 
       <button
         type="button"
         onClick={draw}
         data-skin-object="popcorn"
-        className={`text-8xl mb-5 transition-transform hover:scale-105 active:scale-95 ${
-          poppedTeam ? 'result-pop' : ''
-        }`}
         aria-label={t('gamePopcorn.drawButton')}
+        className="relative mb-4 max-w-[min(440px,92%)] overflow-visible transition-transform hover:scale-[1.03] active:scale-[0.98]"
       >
-        🍿
+        <img
+          key={`kettle-${hop}`}
+          src={KETTLE_SRC}
+          alt=""
+          draggable={false}
+          className={`w-full select-none ${hop > 0 ? 'pc-hop' : ''}`}
+          style={{ filter: 'drop-shadow(0 10px 14px rgba(90, 50, 18, 0.26))' }}
+        />
+        {hop > 0 && (
+          <img
+            key={`kernel-${hop}`}
+            src={KERNEL_SRC}
+            alt=""
+            draggable={false}
+            className="pc-kernel select-none"
+            style={
+              {
+                ['--pc-x']: `${hop % 3 === 0 ? 78 : hop % 3 === 1 ? -72 : 58}px`,
+              } as CSSProperties
+            }
+          />
+        )}
       </button>
 
       {lastCard && (
-        <div className="result-pop mb-5 text-center">
+        <div key={hop} className="result-pop mb-5 w-[min(420px,92%)] text-center">
           {lastCard === 'pop' ? (
-            <div className="bg-error-container text-on-error-container rounded-2xl px-8 py-4 font-display-lg text-[34px]">
-              {t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}
+            <div
+              className="rounded-[22px] px-7 py-4"
+              style={{
+                backgroundColor: '#f28b73',
+                border: '3px solid #f0d7a8',
+                boxShadow: woodShadow,
+              }}
+            >
+              <div className="font-title-md text-[22px] font-bold leading-snug text-white">
+                {t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}
+              </div>
             </div>
           ) : (
-            <div className="bg-secondary-container/30 border border-secondary-container rounded-2xl px-9 py-4 font-display-lg text-[34px] text-deep-navy">
-              {lastCard.label}
+            <div
+              className="flex items-center justify-center px-2 py-2"
+              style={{
+                borderRadius: 22,
+                background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+                boxShadow: woodShadow,
+              }}
+            >
+              <span
+                className="flex min-h-[64px] w-full items-center justify-center px-4 py-2"
+                style={{
+                  borderRadius: 16,
+                  background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+                  boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+                }}
+              >
+                <span className="text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(22px,4.2vw,34px)]">
+                  {lastCard.label}
+                </span>
+              </span>
             </div>
           )}
         </div>
       )}
 
-      <button
-        onClick={draw}
-        className="px-10 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-      >
+      <button type="button" onClick={draw} className={pill}>
         {t('gamePopcorn.drawButton')}
       </button>
 
       <button
+        type="button"
         onClick={resetAll}
         className="mt-6 font-caption text-caption text-on-surface-variant hover:text-error transition-colors"
       >

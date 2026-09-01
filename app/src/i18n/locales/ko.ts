@@ -384,6 +384,8 @@ const ko = {
     settingsTitle: '두 주사위 읽기 설정',
     rollButton: '주사위 굴리기',
     rolling: '굴리는 중…',
+    colLabel: '열 {{n}}',
+    rowLabel: '행 {{n}}',
     reshuffleButton: '판 새로 섞기',
     recentResults: '최근 결과',
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',

@@ -12,20 +12,18 @@ type Mark = Team | null;
 const ROWS = 6;
 const COLS = 7;
 const BOARD_SRC = '/skins/c4-board.png?v=5';
-const LABELS_SRC = '/skins/c4-labels.png?v=1';
 const BLUE_SRC = '/skins/c4-blue.png';
 const RED_SRC = '/skins/c4-red.png';
 
 /** 정면 7×6 동일 원 구멍. 값은 이미지 너비/높이 대비 비율. */
 const COL_CENTER = [0.15072, 0.26693, 0.38314, 0.49935, 0.61556, 0.73177, 0.84798];
-const ROW_CENTER = [0.14355, 0.28223, 0.42188, 0.56055, 0.69922, 0.83887];
+const ROW_CENTER = [0.15088, 0.29004, 0.4292, 0.56787, 0.70703, 0.84619];
 const HOLE_W = 0.08557;
-const HOLE_H = 0.12835;
+const HOLE_H = 0.128355;
 /** 열 전체 클릭 영역(구멍 사이 나무 포함). */
 const COL_SPAN = 0.11621;
-/** 원판은 구멍보다 커서 나무 테두리가 가장자리를 가린다. */
-const DISC_SCALE = 1.22;
-const LABEL_WELL = { top: 0.21, width: 0.13152, height: 0.58 };
+/** 점토 원판이 구멍 가장자리까지 차도록. 클립은 구멍 원. */
+const DISC_FILL = 1.2;
 
 function well(r: number, c: number) {
   return {
@@ -33,18 +31,6 @@ function well(r: number, c: number) {
     top: ROW_CENTER[r] - HOLE_H / 2,
     width: HOLE_W,
     height: HOLE_H,
-  };
-}
-
-function discBox(r: number, c: number) {
-  const cell = well(r, c);
-  const width = cell.width * DISC_SCALE;
-  const height = cell.height * DISC_SCALE;
-  return {
-    left: cell.left - (width - cell.width) / 2,
-    top: cell.top - (height - cell.height) / 2,
-    width,
-    height,
   };
 }
 
@@ -263,41 +249,61 @@ export default function Connect4({ items }: Props) {
           const r = Math.floor(i / COLS);
           const c = i % COLS;
           const winning = win?.cells.includes(i);
-          const box = discBox(r, c);
+          const cell = well(r, c);
           return (
-            <img
+            <div
               key={`disc-${i}`}
-              src={discSrc(mark)}
-              alt=""
-              draggable={false}
-              className={`pointer-events-none absolute z-[1] select-none object-contain ${winning ? 'c4-win' : ''}`}
+              className="pointer-events-none absolute z-[1]"
               style={{
-                left: `${box.left * 100}%`,
-                top: `${box.top * 100}%`,
-                width: `${box.width * 100}%`,
-                height: `${box.height * 100}%`,
+                left: `${(cell.left + cell.width / 2) * 100}%`,
+                top: `${(cell.top + cell.height / 2) * 100}%`,
+                width: `${cell.width * 100}%`,
+                aspectRatio: '1',
+                transform: 'translate(-50%, -50%)',
               }}
-            />
+            >
+              <div className="c4-disc">
+                <img
+                  src={discSrc(mark)}
+                  alt=""
+                  draggable={false}
+                  className={`h-full w-full select-none object-cover ${winning ? 'c4-win' : ''}`}
+                  style={{ transform: `scale(${DISC_FILL})` }}
+                />
+              </div>
+            </div>
           );
         })}
 
         {dropping && (
-          <img
-            src={discSrc(dropping.team)}
-            alt=""
-            draggable={false}
-            className="c4-drop pointer-events-none absolute z-[1] select-none object-contain"
-            style={
-              {
-                left: `${discBox(dropping.row, dropping.col).left * 100}%`,
-                top: `${discBox(dropping.row, dropping.col).top * 100}%`,
-                width: `${discBox(dropping.row, dropping.col).width * 100}%`,
-                height: `${discBox(dropping.row, dropping.col).height * 100}%`,
-                ['--c4-from']: `-${(well(dropping.row, dropping.col).top / discBox(dropping.row, dropping.col).height + 1.2) * 100}%`,
-                ['--c4-ms']: `${dropMs(dropping.row)}ms`,
-              } as CSSProperties
-            }
-          />
+          <div
+            className="pointer-events-none absolute z-[1]"
+            style={{
+              left: `${(well(dropping.row, dropping.col).left + well(dropping.row, dropping.col).width / 2) * 100}%`,
+              top: `${(well(dropping.row, dropping.col).top + well(dropping.row, dropping.col).height / 2) * 100}%`,
+              width: `${well(dropping.row, dropping.col).width * 100}%`,
+              aspectRatio: '1',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <div
+              className="c4-disc c4-drop"
+              style={
+                {
+                  ['--c4-from']: `-${(well(dropping.row, dropping.col).top / well(dropping.row, dropping.col).height + 1.2) * 100}%`,
+                  ['--c4-ms']: `${dropMs(dropping.row)}ms`,
+                } as CSSProperties
+              }
+            >
+              <img
+                src={discSrc(dropping.team)}
+                alt=""
+                draggable={false}
+                className="h-full w-full select-none object-cover"
+                style={{ transform: `scale(${DISC_FILL})` }}
+              />
+            </div>
+          </div>
         )}
 
         <img
@@ -329,23 +335,45 @@ export default function Connect4({ items }: Props) {
         })}
       </div>
 
-      <div
-        className="relative mt-3 w-[min(760px,100%)]"
-        style={{ filter: 'drop-shadow(0 6px 10px rgba(90, 50, 18, 0.22))' }}
-      >
-        <img src={LABELS_SRC} alt="" draggable={false} className="pointer-events-none w-full select-none" />
+      <div className="relative mt-3 mb-1 h-[78px] w-[min(760px,100%)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute rounded-full"
+          style={{
+            left: `${(COL_CENTER[0] - COL_SPAN * 0.48) * 100}%`,
+            width: `${(COL_CENTER[6] - COL_CENTER[0] + COL_SPAN * 0.96) * 100}%`,
+            bottom: 6,
+            height: 22,
+            background: 'linear-gradient(180deg, #f6dfb0 0%, #e8c48a 38%, #d4a056 72%, #c4925c 100%)',
+            boxShadow: '0 5px 0 #a06b38, 0 10px 16px rgba(110,62,18,0.18)',
+          }}
+        />
         {columns.map((item, c) => (
           <div
             key={item.id + String(c)}
-            className="absolute flex items-center justify-center px-1 text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(15px,2.3vw,20px)]"
+            className="absolute bottom-[16px] flex -translate-x-1/2 items-center justify-center"
             style={{
-              left: `${(COL_CENTER[c] - LABEL_WELL.width / 2) * 100}%`,
-              top: `${LABEL_WELL.top * 100}%`,
-              width: `${LABEL_WELL.width * 100}%`,
-              height: `${LABEL_WELL.height * 100}%`,
+              left: `${COL_CENTER[c] * 100}%`,
+              width: `${COL_SPAN * 86}%`,
+              height: 58,
+              padding: '8px 7px',
+              borderRadius: 20,
+              background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+              boxShadow: '0 5px 0 #b07d3c, 0 10px 16px rgba(110,62,18,0.16)',
             }}
           >
-            {item.label}
+            <span
+              className="flex h-full w-full items-center justify-center px-1"
+              style={{
+                borderRadius: 13,
+                background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+                boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.18)',
+              }}
+            >
+              <span className="text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(13px,1.9vw,17px)]">
+                {item.label}
+              </span>
+            </span>
           </div>
         ))}
       </div>

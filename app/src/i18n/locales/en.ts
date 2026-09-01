@@ -386,6 +386,8 @@ const en: Ko = {
     settingsTitle: 'Two Dice settings',
     rollButton: 'Roll the dice',
     rolling: 'Rolling…',
+    colLabel: 'Col {{n}}',
+    rowLabel: 'Row {{n}}',
     reshuffleButton: 'Reshuffle the board',
     recentResults: 'Recent results',
     needParticipants: 'Register at least 1 item to get started.',
