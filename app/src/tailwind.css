@@ -339,6 +339,34 @@
   transition: none;
 }
 
+/* 4 in a row: 원판이 위에서 아래로 떨어져 아래부터 쌓인다 */
+@keyframes c4-drop {
+  0% {
+    transform: translateY(var(--c4-from, -400%));
+  }
+  82% {
+    transform: translateY(5%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.c4-drop {
+  animation: c4-drop var(--c4-ms, 0.5s) cubic-bezier(0.22, 0.9, 0.28, 1.12) both;
+}
+@keyframes c4-win {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.18);
+  }
+}
+.c4-win {
+  animation: c4-win 0.9s ease-in-out infinite;
+}
+
 /* 랜딩: 큰 한글 타이포 */
 .landing {
   font-family: 'Noto Sans KR', 'Hanken Grotesk', sans-serif;

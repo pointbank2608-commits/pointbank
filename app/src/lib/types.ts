@@ -176,7 +176,9 @@ export type GameType =
   | 'mazechase'
   | 'airplane'
   | 'labeleddiagram'
-  | 'imagequiz';
+  | 'imagequiz'
+  | 'gameshowquiz'
+  | 'winlosequiz';
 
 export interface GameItem {
   id: string;
@@ -261,6 +263,14 @@ export interface GameTemplateConfig {
   imageQuizItems?: ImageQuizItem[];
   /** 이미지 퀴즈 전용: 사진이 흐림에서 선명해지기까지 걸리는 시간(초). 기본 6. */
   imageQuizRevealSeconds?: number;
+  /** 게임쇼 퀴즈 전용: 몇 번째 문제마다 보너스(2배 점수)로 만들지 (기본 5). */
+  gameShowBonusEvery?: number;
+  /** 게임쇼 퀴즈 전용: 팀마다 쓸 수 있는 "반반(50:50)" 라이프라인 개수 (기본 2). */
+  gameShowLifelines?: number;
+  /** 퀴즈를 이기거나 잃기 전용: 팀 시작 점수 (기본 100). */
+  winLoseStartScore?: number;
+  /** 퀴즈를 이기거나 잃기 전용: 베팅 금액 선택지 (기본 [10, 20, 50]). */
+  winLoseBetOptions?: number[];
 }
 
 export interface QuizQuestion {

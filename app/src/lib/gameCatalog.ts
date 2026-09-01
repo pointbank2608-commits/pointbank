@@ -399,6 +399,30 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.imagequizName',
     descKey: 'gamesList.imagequizDesc',
   },
+  {
+    type: 'gameshowquiz',
+    number: 33,
+    category: 'vocabulary',
+    // 퀴즈와 마찬가지로 질문+보기 구조라 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'stadia_controller',
+    path: '/games/gameshowquiz',
+    cover: null,
+    nameKey: 'gamesList.gameshowquizName',
+    descKey: 'gamesList.gameshowquizDesc',
+  },
+  {
+    type: 'winlosequiz',
+    number: 34,
+    category: 'vocabulary',
+    // 퀴즈와 마찬가지로 질문+보기 구조라 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'casino',
+    path: '/games/winlosequiz',
+    cover: null,
+    nameKey: 'gamesList.winlosequizName',
+    descKey: 'gamesList.winlosequizDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-01** (Claude 세션: 게임 30~32종 + 반별 라이브러리/다른 반에서 가져오기 + 게임 이미지 업로드 도입)
+마지막 갱신: **2026-09-01** (Claude 세션: 게임 30~34종 + 반별 라이브러리/다른 반에서 가져오기 + 게임 이미지 업로드 도입)
 
 ---
 
@@ -32,9 +32,10 @@
 - `/dashboard` — 오늘 할 일, 실데이터
 - `/attendance` — 등원·하원, 월별
 - `/board` — 반 통장. 프리셋 버튼으로 지급/차감
-- `/games` — 게임 32종 카드. 선생님은 "내 라이브러리"(현재 반에 템플릿이 있는 게임만)/"전체 보기" 탭, 카테고리 필터 탭 + 번호 배지. 전체 목록은 `app/src/lib/gameCatalog.ts`가 단일 소스 — 새 게임은 여기 한 줄 + `App.tsx` 라우트(스태프·학생) 두 줄이면 끝.
-  - 1~30번: 돌림판·사다리·랜덤공뽑기부터 미로 찾기·비행기까지(순서/설명은 `gameCatalog.ts` 참고). 1~3·4·5번은 커서가 나무 질감 이미지 스킨(`app/public/skins/*.png`) 적용, 나머지는 `data-skin-stage`/`data-skin-object` 속성만 마킹돼 있어(시각 변화 없음) 나중에 이미지 스킨을 씌우기 쉽게 준비만 된 상태.
+- `/games` — 게임 34종 카드. 선생님은 "내 라이브러리"(현재 반에 템플릿이 있는 게임만)/"전체 보기" 탭, 카테고리 필터 탭 + 번호 배지. 전체 목록은 `app/src/lib/gameCatalog.ts`가 단일 소스 — 새 게임은 여기 한 줄 + `App.tsx` 라우트(스태프·학생) 두 줄이면 끝.
+  - 1~30번: 돌림판·사다리·랜덤공뽑기부터 미로 찾기·비행기까지(순서/설명은 `gameCatalog.ts` 참고). 1~10번(돌림판·사다리·랜덤공뽑기·시한폭탄·타이머·틱택토·Save or Give it·사라진 항목 찾기·4 in a row)은 커서가 나무 질감 이미지 스킨(`app/public/skins/*.png`) 적용, 나머지는 `data-skin-stage`/`data-skin-object` 속성만 마킹돼 있어(시각 변화 없음) 나중에 이미지 스킨을 씌우기 쉽게 준비만 된 상태.
   - **31~32번 (`category: vocabulary`, 사진 업로드 필요)**: `/games/labeleddiagram` 명칭이 있는 다이어그램(사진 위 핀에 정답 이름 매칭), `/games/imagequiz` 이미지 퀴즈(흐린 사진이 점점 선명해지며 정답 맞히기). 둘 다 선생님이 직접 사진을 올린다 — `GameImagePicker.tsx` + `game-images` 스토리지 버킷(`supabase/011_game_images.sql`, `game-audio`와 동일한 RLS 패턴). **AI 이미지 생성이 아니라 파일 업로드**이므로 별도 이미지 생성 도구 불필요.
+  - **33~34번 (`category: vocabulary`, 기존 퀴즈 변형)**: `/games/gameshowquiz` 게임쇼 퀴즈(청/홍팀 대결, 보너스 문제 2배 점수, 팀당 반반(50:50) 라이프라인), `/games/winlosequiz` 퀴즈를 이기거나 잃기(문제마다 점수 베팅, 맞으면 획득·틀리면 손실). 둘 다 `Quiz.tsx`의 `QuizQuestion`(질문+보기+정답) 구조를 그대로 재사용 — `config.questions`만 공유하고 나머지(팀 점수·베팅·라이프라인)는 컴포넌트 자체 상태.
   - 각 게임 페이지 상단에 `GameInfoPanel`(접이식 "게임 소개 및 방법") — `gameXxx.infoDescription`/`infoSteps` i18n 키, 전부 적용됨
 - `/results` — 기간별 적립/차감. 학생별 `/results/homework/:studentId` 숙제 캘린더
 - `/settings` — 학원·반·프리셋·로고. 게임 센터를 여기 넣지 말 것

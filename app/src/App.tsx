@@ -17,6 +17,7 @@ import DashboardPage from './pages/DashboardPage';
 import FindMissingPage from './pages/FindMissingPage';
 import FlashcardsPage from './pages/FlashcardsPage';
 import GamesPage from './pages/GamesPage';
+import GameShowQuizPage from './pages/GameShowQuizPage';
 import GroupSortPage from './pages/GroupSortPage';
 import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
@@ -46,6 +47,7 @@ import TwoDicePage from './pages/TwoDicePage';
 import TypeAnswerPage from './pages/TypeAnswerPage';
 import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
+import WinLoseQuizPage from './pages/WinLoseQuizPage';
 import WordSearchPage from './pages/WordSearchPage';
 
 export default function App() {
@@ -138,6 +140,8 @@ export default function App() {
             <Route path="/games/airplane" element={<AirplanePage />} />
             <Route path="/games/labeleddiagram" element={<LabeledDiagramPage />} />
             <Route path="/games/imagequiz" element={<ImageQuizPage />} />
+            <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
+            <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -177,6 +181,8 @@ export default function App() {
             <Route path="/games/airplane" element={<AirplanePage />} />
             <Route path="/games/labeleddiagram" element={<LabeledDiagramPage />} />
             <Route path="/games/imagequiz" element={<ImageQuizPage />} />
+            <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
+            <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}
