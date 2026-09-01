@@ -10,6 +10,13 @@ interface Props {
 type Team = 'blue' | 'red';
 
 const PICK_OPTIONS = [1, 2, 3];
+const CONE_SRC = '/skins/baskin-cone.png';
+const COUNTER_SRC = '/skins/baskin-counter.png';
+const CARD_SRC = '/skins/miss-card.png';
+
+/** 스킨 이미지에서 측정한 화면 구멍. 값은 이미지 너비/높이 대비 비율. */
+const SCREEN = { left: 0.12, top: 0.25, width: 0.75, height: 0.5 };
+const SCREEN_FILL = { left: 0.095, top: 0.195, width: 0.805, height: 0.615 };
 
 export default function Baskin31({ items, targetCount }: Props) {
   const { t } = useTranslation();
@@ -42,10 +49,13 @@ export default function Baskin31({ items, targetCount }: Props) {
     setLoser(null);
   }
 
+  const pill =
+    'px-6 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+
   if (items.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🍦</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <img src={CONE_SRC} alt="" className="mx-auto mb-3 h-16 w-auto" />
         <div className="font-body-md text-body-md">{t('gameBaskin31.needParticipants')}</div>
       </div>
     );
@@ -55,43 +65,84 @@ export default function Baskin31({ items, targetCount }: Props) {
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div data-skin-object="scoop" className={`text-7xl mb-3 transition-all ${loser ? 'grayscale opacity-40 scale-90' : ''}`}>🍦</div>
+      <img
+        src={CONE_SRC}
+        alt=""
+        data-skin-object="scoop"
+        draggable={false}
+        className={`mb-4 h-[min(168px,38vw)] w-auto select-none transition-all ${
+          loser ? 'scale-90 grayscale opacity-40' : ''
+        }`}
+        style={{ filter: loser ? undefined : 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.22))' }}
+      />
 
-      <div className="font-display-lg text-[40px] text-deep-navy mb-1 tabular-nums">
-        {count} <span className="text-on-surface-variant text-[22px]">/ {targetCount}</span>
+      <div
+        className="relative mb-4 w-[min(280px,86vw)]"
+        style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.28))' }}
+      >
+        <div
+          className="absolute z-0 bg-[#1a2430]"
+          style={{
+            left: `${SCREEN_FILL.left * 100}%`,
+            top: `${SCREEN_FILL.top * 100}%`,
+            width: `${SCREEN_FILL.width * 100}%`,
+            height: `${SCREEN_FILL.height * 100}%`,
+          }}
+        />
+        <img src={COUNTER_SRC} alt="" draggable={false} className="pointer-events-none relative z-10 w-full select-none" />
+        <div
+          className="absolute z-20 flex items-center justify-center"
+          style={{
+            left: `${SCREEN.left * 100}%`,
+            top: `${SCREEN.top * 100}%`,
+            width: `${SCREEN.width * 100}%`,
+            height: `${SCREEN.height * 100}%`,
+          }}
+        >
+          <span className="font-mono text-[clamp(22px,7vw,36px)] font-bold tabular-nums tracking-wide text-[#e8fbf6]">
+            {count}
+            <span className="text-[0.62em] text-[#9adfd4]"> / {targetCount}</span>
+          </span>
+        </div>
       </div>
 
       {!loser && (
         <div
-          className={`mb-4 px-6 py-2 rounded-full font-label-md text-label-md ${
-            turn === 'blue' ? 'bg-primary text-on-primary' : 'bg-error text-on-error'
+          className={`mb-4 rounded-full px-6 py-2 font-label-md text-label-md shadow-sm ${
+            turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
           }`}
+          style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
         >
           {t('gameBaskin31.turnLabel', { team: teamLabel(turn) })}
         </div>
       )}
 
       {lastWords.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 mb-5">
+        <div className="mb-5 flex flex-wrap justify-center gap-2">
           {lastWords.map((w, i) => (
-            <span
-              key={i}
-              className="px-3 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+            <div
+              key={`${w}-${i}`}
+              className="relative w-[min(118px,30vw)]"
+              style={{ filter: 'drop-shadow(0 5px 7px rgba(90, 50, 18, 0.16))' }}
             >
-              {w}
-            </span>
+              <img src={CARD_SRC} alt="" draggable={false} className="pointer-events-none w-full select-none" />
+              <div
+                className="absolute flex items-center justify-center px-1"
+                style={{ left: '10%', top: '13%', width: '81%', height: '75%' }}
+              >
+                <span className="max-w-full text-center font-title-md text-[clamp(12px,2.6vw,16px)] leading-tight text-deep-navy [word-break:keep-all]">
+                  {w}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
       {!loser ? (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-2.5">
           {PICK_OPTIONS.map((n) => (
-            <button
-              key={n}
-              onClick={() => pick(n)}
-              className="px-6 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-            >
+            <button key={n} onClick={() => pick(n)} className={pill}>
               {t('gameBaskin31.pickButton', { n })}
             </button>
           ))}
@@ -99,16 +150,18 @@ export default function Baskin31({ items, targetCount }: Props) {
       ) : (
         <div className="flex flex-col items-center gap-4">
           <div
-            className={`px-6 py-3 rounded-full font-title-md text-title-md shadow-sm ${
-              loser === 'blue' ? 'bg-primary text-on-primary' : 'bg-error text-on-error'
-            }`}
+            className="result-pop rounded-2xl px-8 py-4 text-center"
+            style={{
+              backgroundColor: '#f28b73',
+              border: '3px solid #f0d7a8',
+              boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+            }}
           >
-            {t('gameBaskin31.loseMessage', { team: teamLabel(loser), target: targetCount })}
+            <div className="font-title-md text-[20px] font-bold text-white">
+              {t('gameBaskin31.loseMessage', { team: teamLabel(loser), target: targetCount })}
+            </div>
           </div>
-          <button
-            onClick={resetAll}
-            className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-colors"
-          >
+          <button onClick={resetAll} className={`${pill} px-10`}>
             {t('gameBaskin31.playAgainButton')}
           </button>
         </div>
