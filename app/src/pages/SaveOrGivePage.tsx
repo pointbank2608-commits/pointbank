@@ -5,6 +5,7 @@ import SaveOrGiveIt from '../components/SaveOrGiveIt';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -63,6 +64,8 @@ export default function SaveOrGivePage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -315,6 +318,7 @@ export default function SaveOrGivePage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="saveorgive" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}

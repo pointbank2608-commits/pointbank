@@ -5,6 +5,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import WordSearch from '../components/WordSearch';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -52,6 +53,8 @@ export default function WordSearchPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -303,6 +306,7 @@ export default function WordSearchPage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="wordsearch" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <div className="font-caption text-caption text-on-surface-variant mb-2">
                       {t('gameWordSearch.editorHint')}

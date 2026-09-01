@@ -5,6 +5,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import RankOrder from '../components/RankOrder';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -52,6 +53,8 @@ export default function RankOrderPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -317,6 +320,7 @@ export default function RankOrderPage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="rankorder" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}

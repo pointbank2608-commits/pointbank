@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import TrueFalse from '../components/TrueFalse';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -52,6 +53,8 @@ export default function TrueFalsePage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -314,6 +317,7 @@ export default function TrueFalsePage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     {draftStatements.map((s, si) => (
                       <div key={s.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

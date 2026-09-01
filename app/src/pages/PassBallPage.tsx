@@ -5,6 +5,7 @@ import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import PassTheBall from '../components/PassTheBall';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -61,6 +62,8 @@ export default function PassBallPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -361,6 +364,7 @@ export default function PassBallPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <OpenInOtherGame currentType="passball" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
 
                     {academy && (

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import Popcorn from '../components/Popcorn';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -52,6 +53,8 @@ export default function PopcornPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -303,6 +306,7 @@ export default function PopcornPage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="popcorn" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}

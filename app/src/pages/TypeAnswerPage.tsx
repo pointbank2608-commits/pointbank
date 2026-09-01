@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import TypeAnswer from '../components/TypeAnswer';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -52,6 +53,8 @@ export default function TypeAnswerPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -324,6 +327,7 @@ export default function TypeAnswerPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     <div>
                       <div className="font-caption text-caption text-on-surface-variant mb-2">

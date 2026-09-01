@@ -492,6 +492,66 @@ export async function deleteGameTemplate(id: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function fetchGameTemplateById(id: string): Promise<GameTemplate> {
+  return unwrap(await supabase.from('game_templates').select('*').eq('id', id).single()) as GameTemplate;
+}
+
+/**
+ * 이 반의 "라이브러리" — 이 반(또는 학원 공용)에 실제 템플릿이 있는 게임 종류 목록.
+ * 별도 설정 없이 "템플릿이 있으면 라이브러리에 있는 것"으로 자동 도출한다.
+ */
+export async function fetchClassLibraryTypes(academyId: string, classId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('game_templates')
+    .select('game_type')
+    .eq('academy_id', academyId)
+    .or(`class_id.eq.${classId},class_id.is.null`);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as { game_type: string }[];
+  return Array.from(new Set(rows.map((r) => r.game_type)));
+}
+
+export interface ImportCandidate {
+  templateId: string;
+  templateName: string;
+  classId: string;
+  className: string;
+  itemCount: number;
+}
+
+/** 다른 반(현재 반 제외)에 있는, 같은 게임 종류의 반 전용 템플릿 목록 — "다른 반에서 가져오기" 후보. */
+export async function fetchImportCandidates(
+  academyId: string,
+  gameType: string,
+  excludeClassId: string,
+): Promise<ImportCandidate[]> {
+  const [templatesRes, classesRes] = await Promise.all([
+    supabase
+      .from('game_templates')
+      .select('id, name, items, class_id')
+      .eq('academy_id', academyId)
+      .eq('game_type', gameType)
+      .not('class_id', 'is', null)
+      .neq('class_id', excludeClassId)
+      .order('created_at'),
+    supabase.from('classes').select('id, name').eq('academy_id', academyId),
+  ]);
+  if (templatesRes.error) throw new Error(templatesRes.error.message);
+  if (classesRes.error) throw new Error(classesRes.error.message);
+  const classNameById = new Map(
+    ((classesRes.data ?? []) as { id: string; name: string }[]).map((c) => [c.id, c.name]),
+  );
+  return (
+    (templatesRes.data ?? []) as { id: string; name: string; items: GameItem[] | null; class_id: string }[]
+  ).map((row) => ({
+    templateId: row.id,
+    templateName: row.name,
+    classId: row.class_id,
+    className: classNameById.get(row.class_id) ?? '',
+    itemCount: Array.isArray(row.items) ? row.items.length : 0,
+  }));
+}
+
 /* ---------------- 게임 배경음악 업로드 (학원별 보관함) ---------------- */
 
 export interface GameAudioFile {

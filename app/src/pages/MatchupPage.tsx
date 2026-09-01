@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import Matchup from '../components/Matchup';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -52,6 +53,8 @@ export default function MatchupPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -312,6 +315,7 @@ export default function MatchupPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     {draftPairs.map((p, pi) => (
                       <div key={p.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

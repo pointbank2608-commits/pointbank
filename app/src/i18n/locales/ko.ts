@@ -871,6 +871,10 @@ const ko = {
 
   gamesList: {
     title: '게임 센터',
+    libraryTab: '내 라이브러리',
+    allTab: '전체 보기',
+    libraryEmpty: '아직 이 반에 등록된 게임이 없어요. 전체 게임에서 골라 만들어보세요!',
+    libraryEmptyCta: '전체 게임 보기',
     wheelName: '돌림판',
     wheelDesc: '항목을 등록해 두고 돌려서 하나를 무작위로 뽑아요.',
     ladderName: '사다리타기',
@@ -1001,6 +1005,9 @@ const ko = {
     nameFieldLabel: '이름',
     openInOtherGameLabel: '다른 게임으로 열기',
     howToPlayTitle: '게임 소개 및 방법',
+    importFromClassLabel: '다른 반에서 가져오기',
+    importKeepItems: '내용 그대로 가져오기',
+    importUseRoster: '이 반 학생 명단으로 가져오기',
   },
 
   onboarding: {

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import TwoDice from '../components/TwoDice';
@@ -55,6 +56,8 @@ export default function TwoDicePage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -306,6 +309,7 @@ export default function TwoDicePage() {
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="twodice" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}

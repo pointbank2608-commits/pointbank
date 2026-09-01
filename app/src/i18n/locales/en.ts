@@ -873,6 +873,10 @@ const en: Ko = {
 
   gamesList: {
     title: 'Game Center',
+    libraryTab: 'My Library',
+    allTab: 'Browse All',
+    libraryEmpty: 'No games in this class yet. Browse all games to add your first one!',
+    libraryEmptyCta: 'Browse all games',
     wheelName: 'Spin Wheel',
     wheelDesc: 'Register items, then spin to pick one at random.',
     ladderName: 'Ladder Game',
@@ -1003,6 +1007,9 @@ const en: Ko = {
     nameFieldLabel: 'Name',
     openInOtherGameLabel: 'Open with another game',
     howToPlayTitle: 'About this game & how to play',
+    importFromClassLabel: 'Import from another class',
+    importKeepItems: 'Keep the content as-is',
+    importUseRoster: "Use this class's roster",
   },
 
   onboarding: {

@@ -5,6 +5,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameMusicPicker from '../components/GameMusicPicker';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -56,6 +57,8 @@ export default function WheelPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
   const { notify } = useToast();
@@ -397,6 +400,7 @@ export default function WheelPage() {
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
                     <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     {academy && (
                       <>

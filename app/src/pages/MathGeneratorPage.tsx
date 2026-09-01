@@ -5,6 +5,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import MathGenerator from '../components/MathGenerator';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, MathOperation } from '../lib/types';
@@ -56,6 +57,8 @@ export default function MathGeneratorPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -320,6 +323,7 @@ export default function MathGeneratorPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     <div>
                       <div className="font-caption text-caption text-on-surface-variant mb-2">

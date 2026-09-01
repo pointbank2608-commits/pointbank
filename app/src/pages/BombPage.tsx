@@ -5,6 +5,7 @@ import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import TimeBomb from '../components/TimeBomb';
@@ -61,6 +62,8 @@ export default function BombPage() {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -361,6 +364,7 @@ export default function BombPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     {academy && (
                       <div className="divide-y divide-surface-container">

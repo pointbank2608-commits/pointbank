@@ -5,6 +5,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import GroupSort from '../components/GroupSort';
+import ImportFromClass from '../components/ImportFromClass';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, GroupSortGroup } from '../lib/types';
@@ -56,6 +57,8 @@ export default function GroupSortPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
+    importCandidates,
+    importFromClass,
     reload,
   } = g;
 
@@ -338,6 +341,7 @@ export default function GroupSortPage() {
                 {editorOpen && (
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     {draftGroups.map((grp, gi) => (
                       <div key={grp.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

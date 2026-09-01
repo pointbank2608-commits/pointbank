@@ -6,11 +6,14 @@ import { useToast } from '../context/ToastContext';
 import {
   createGameTemplate,
   deleteGameTemplate,
+  fetchGameTemplateById,
   fetchGameTemplates,
+  fetchImportCandidates,
   fetchMyStudentRow,
   fetchStudentsOfAcademy,
   fetchStudentsOfClass,
   renameGameTemplate,
+  type ImportCandidate,
 } from './api';
 import { useClasses } from './useClasses';
 import type { GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
@@ -162,6 +165,48 @@ export function useGameTemplates(params: {
 
   const scopeLabel = (tpl: GameTemplate) => (tpl.class_id ? t('gameAdmin.scopeClass') : t('gameAdmin.scopeAcademy'));
 
+  // "다른 반에서 가져오기" 후보 — 같은 게임 종류를 쓰는 다른 반의 템플릿 목록.
+  const [importCandidates, setImportCandidates] = useState<ImportCandidate[]>([]);
+
+  useEffect(() => {
+    if (!academy?.id || !classId) {
+      setImportCandidates([]);
+      return;
+    }
+    fetchImportCandidates(academy.id, gameType, classId)
+      .then(setImportCandidates)
+      .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'));
+  }, [academy?.id, classId, gameType, notify]);
+
+  /**
+   * 다른 반의 템플릿을 지금 반으로 복사해서 새 템플릿을 만든다.
+   * mode: 'keep' 이면 항목을 그대로, 'roster' 면 지금 반의 실제 학생 명단으로 바꿔치기한다.
+   */
+  async function importFromClass(sourceTemplateId: string, mode: 'keep' | 'roster') {
+    if (!academy?.id || !profile || !classId) return;
+    try {
+      const source = await fetchGameTemplateById(sourceTemplateId);
+      let items = source.items;
+      if (mode === 'roster') {
+        const students = await fetchStudentsOfClass(classId);
+        items = students.map((s) => ({ id: crypto.randomUUID(), label: s.name }));
+      }
+      const tpl = await createGameTemplate({
+        academyId: academy.id,
+        classId,
+        gameType,
+        name: source.name,
+        items,
+        config: source.config,
+        teacherId: profile.id,
+      });
+      setTemplates((prev) => [...prev, tpl]);
+      setSelectedId(tpl.id);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    }
+  }
+
   /** 지금 선택된 템플릿의 항목 리스트를 그대로, 다른 게임 종류의 새 템플릿으로 만들고 그 페이지로 이동한다. */
   async function openInOtherGame(targetType: GameType) {
     if (!academy?.id || !profile || !selected) return;
@@ -214,6 +259,8 @@ export function useGameTemplates(params: {
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
+    importCandidates,
+    importFromClass,
     reload: load,
   };
 }
