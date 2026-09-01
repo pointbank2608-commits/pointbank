@@ -1,51 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import SaveOrGiveIt from '../components/SaveOrGiveIt';
+import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
+import ImageQuiz from '../components/ImageQuiz';
 import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
 import { updateGameTemplate } from '../lib/api';
-import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, SaveOrGiveReward } from '../lib/types';
+import type { GameItem, GameTemplateConfig, ImageQuizItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
 }
 
 function defaultItems(): GameItem[] {
-  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: i18n.t('gameSaveOrGive.defaultItem', { n }) }));
+  return [];
 }
 
-const DEFAULT_REWARD_POOL: SaveOrGiveReward[] = [
-  { kind: 'points', value: 100 },
-  { kind: 'points', value: -50 },
-  { kind: 'swap' },
-  { kind: 'points', value: 0 },
-];
+const DEFAULT_REVEAL_SECONDS = 6;
 
-export default function SaveOrGivePage() {
+export default function ImageQuizPage() {
   const { t } = useTranslation();
   const g = useGameTemplates({
-    gameType: 'saveorgive',
+    gameType: 'imagequiz',
     defaultItems,
-    defaultConfig: () => ({ rewardPool: DEFAULT_REWARD_POOL }),
+    defaultConfig: () => ({ imageQuizItems: [] }),
   });
   const {
     isStaff,
+    academy,
     classes,
     staffClassId,
     selectClass,
     studentClassName,
     classId,
-    roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
     templates,
     setTemplates,
     selected,
@@ -63,52 +53,24 @@ export default function SaveOrGivePage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
     importCandidates,
     importFromClass,
     reload,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
-  const [newItemLabel, setNewItemLabel] = useState('');
-  const rewardPool = selected?.config.rewardPool ?? DEFAULT_REWARD_POOL;
+  const [draftItems, setDraftItems] = useState<ImageQuizItem[]>(selected?.config.imageQuizItems ?? []);
 
-  async function persistItems(next: GameItem[]) {
+  useEffect(() => {
+    setDraftItems(selected?.config.imageQuizItems ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
+
+  const playableItems = draftItems.filter((it) => it.imageUrl && it.answer.trim());
+  const revealSeconds = selected?.config.imageQuizRevealSeconds ?? DEFAULT_REVEAL_SECONDS;
+
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: next });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function addItem() {
-    const label = newItemLabel.trim();
-    if (!label || !selected) return;
-    await persistItems([...selected.items, { id: uid(), label }]);
-    setNewItemLabel('');
-  }
-
-  async function addItemsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
-  }
-
-  async function removeItem(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
-  }
-
-  async function clearAllItems() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameSaveOrGive.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
@@ -117,12 +79,42 @@ export default function SaveOrGivePage() {
     }
   }
 
+  function addItem() {
+    const next = [...draftItems, { id: uid(), imageUrl: '', answer: '' }];
+    setDraftItems(next);
+    void persistConfig({ ...selected?.config, imageQuizItems: next });
+  }
+
+  function removeItem(itemId: string) {
+    const next = draftItems.filter((it) => it.id !== itemId);
+    setDraftItems(next);
+    void persistConfig({ ...selected?.config, imageQuizItems: next });
+  }
+
+  function setItemImage(itemId: string, url: string | null) {
+    const next = draftItems.map((it) => (it.id === itemId ? { ...it, imageUrl: url ?? '' } : it));
+    setDraftItems(next);
+    void persistConfig({ ...selected?.config, imageQuizItems: next });
+  }
+
+  function setItemAnswerLocal(itemId: string, answer: string) {
+    setDraftItems((prev) => prev.map((it) => (it.id === itemId ? { ...it, answer } : it)));
+  }
+
+  function commitOnBlur() {
+    void persistConfig({ ...selected?.config, imageQuizItems: draftItems });
+  }
+
+  function setRevealSeconds(seconds: number) {
+    void persistConfig({ ...selected?.config, imageQuizRevealSeconds: seconds });
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    void persistConfig({ ...selected?.config, theme: theme ?? undefined });
+  }
+
   if (isStaff && classes.length === 0) {
-    return (
-      <div className="text-center py-16 font-body-md text-on-surface-variant">
-        {t('gameAdmin.noClasses')}
-      </div>
-    );
+    return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('gameAdmin.noClasses')}</div>;
   }
   if (!isStaff && !classId) {
     return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>;
@@ -146,7 +138,7 @@ export default function SaveOrGivePage() {
     </div>
   ) : (
     <h2 className="font-title-md text-title-md text-on-surface">
-      {t('gameSaveOrGive.studentClassTitle', { className: studentClassName })}
+      {t('gameImageQuiz.studentClassTitle', { className: studentClassName })}
     </h2>
   );
 
@@ -161,10 +153,7 @@ export default function SaveOrGivePage() {
               : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40'
           }`}
         >
-          <button
-            onClick={() => setSelectedId(tpl.id)}
-            className="pl-4 pr-2 py-2 font-label-md text-label-md flex items-center gap-1.5"
-          >
+          <button onClick={() => setSelectedId(tpl.id)} className="pl-4 pr-2 py-2 font-label-md text-label-md flex items-center gap-1.5">
             {tpl.name}
             <span className="font-caption text-caption opacity-70">{scopeLabel(tpl)}</span>
           </button>
@@ -185,7 +174,7 @@ export default function SaveOrGivePage() {
           onClick={() => setShowCreateForm((v) => !v)}
           className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
         >
-          {t('gameSaveOrGive.newButton')}
+          {t('gameImageQuiz.newButton')}
         </button>
       )}
     </div>
@@ -194,14 +183,14 @@ export default function SaveOrGivePage() {
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
       <div>
-        <label htmlFor="sgname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
+        <label htmlFor="iqname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
           {t('gameAdmin.nameFieldLabel')}
         </label>
         <input
-          id="sgname"
+          id="iqname"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder={t('gameSaveOrGive.namePlaceholder')}
+          placeholder={t('gameImageQuiz.namePlaceholder')}
           onKeyDown={(e) => {
             if (e.key === 'Enter') void handleCreate();
           }}
@@ -251,16 +240,13 @@ export default function SaveOrGivePage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/games"
-        className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
-      >
+      <Link to="/games" className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
         {t('gameAdmin.backToList')}
       </Link>
 
       <GameInfoPanel
-        description={t('gameSaveOrGive.infoDescription')}
-        steps={t('gameSaveOrGive.infoSteps', { returnObjects: true }) as string[]}
+        description={t('gameImageQuiz.infoDescription')}
+        steps={t('gameImageQuiz.infoSteps', { returnObjects: true }) as string[]}
       />
 
       {loading ? (
@@ -269,9 +255,9 @@ export default function SaveOrGivePage() {
         <div className="space-y-6">
           {classPicker}
           <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🎁</div>
+            <div className="text-5xl mb-3">🖼️</div>
             <div className="font-body-md text-body-md text-on-surface-variant">
-              {isStaff ? t('gameSaveOrGive.emptyStaff') : t('gameSaveOrGive.emptyStudent')}
+              {isStaff ? t('gameImageQuiz.emptyStaff') : t('gameImageQuiz.emptyStudent')}
             </div>
           </div>
           {templateRow}
@@ -285,9 +271,9 @@ export default function SaveOrGivePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
+            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
           >
-            <SaveOrGiveIt items={selected.items} rewardPool={rewardPool} />
+            <ImageQuiz items={playableItems} revealSeconds={revealSeconds} />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -298,86 +284,69 @@ export default function SaveOrGivePage() {
             {isStaff && (
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameSaveOrGive.settingsTitle')}</h4>
+                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameImageQuiz.settingsTitle')}</h4>
                   <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
+                    <button onClick={() => void handleRename()} className="font-label-md text-label-md text-primary hover:underline">
                       {t('gameAdmin.rename')}
                     </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
+                    <button onClick={() => setEditorOpen((v) => !v)} className="font-label-md text-label-md text-primary hover:underline">
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
                 </div>
 
-                {editorOpen && (
-                  <div>
-                    <OpenInOtherGame currentType="saveorgive" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
+                {editorOpen && academy && (
+                  <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {selected.items.length === 0 ? (
-                        <span className="font-caption text-caption text-on-surface-variant">
-                          {t('gameAdmin.noParticipants')}
-                        </span>
-                      ) : (
-                        selected.items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                          >
-                            {item.label}
-                            <button
-                              onClick={() => void removeItem(item.id)}
-                              className="text-on-surface-variant hover:text-error"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {selected.items.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => void clearAllItems()}
-                        className="mt-2 font-label-md text-label-md text-error hover:underline"
-                      >
-                        {t('gameAdmin.clearAll')}
-                      </button>
-                    )}
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="iqreveal" className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                        {t('gameImageQuiz.revealSecondsLabel')}
+                      </label>
                       <input
-                        type="text"
-                        placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                        value={newItemLabel}
-                        onChange={(e) => setNewItemLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addItem();
-                        }}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        id="iqreveal"
+                        type="number"
+                        min={1}
+                        max={30}
+                        value={revealSeconds}
+                        onChange={(e) => setRevealSeconds(Number(e.target.value) || DEFAULT_REVEAL_SECONDS)}
+                        className="w-20 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                       />
-                      <button
-                        onClick={() => void addItem()}
-                        className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                      >
-                        {t('gameAdmin.addParticipant')}
-                      </button>
                     </div>
+
+                    {draftItems.map((item, i) => (
+                      <div key={item.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="font-label-md text-label-md text-on-surface-variant">
+                            {t('gameImageQuiz.itemLabel', { n: i + 1 })}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            className="font-caption text-caption text-error hover:underline"
+                          >
+                            {t('gameImageQuiz.removeItemButton')}
+                          </button>
+                        </div>
+                        <GameImagePicker academyId={academy.id} value={item.imageUrl || null} onChange={(url) => setItemImage(item.id, url)} />
+                        <input
+                          value={item.answer}
+                          onChange={(e) => setItemAnswerLocal(item.id, e.target.value)}
+                          onBlur={commitOnBlur}
+                          placeholder={t('gameImageQuiz.answerPlaceholder')}
+                          className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addItem}
+                      className="w-full px-4 py-2.5 rounded-lg font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+                    >
+                      {t('gameImageQuiz.addItemButton')}
+                    </button>
                   </div>
                 )}
               </div>

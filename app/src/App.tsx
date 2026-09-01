@@ -20,6 +20,8 @@ import GamesPage from './pages/GamesPage';
 import GroupSortPage from './pages/GroupSortPage';
 import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
+import ImageQuizPage from './pages/ImageQuizPage';
+import LabeledDiagramPage from './pages/LabeledDiagramPage';
 import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import MatchupPage from './pages/MatchupPage';
@@ -134,6 +136,8 @@ export default function App() {
             <Route path="/games/mathgen" element={<MathGeneratorPage />} />
             <Route path="/games/mazechase" element={<MazeChasePage />} />
             <Route path="/games/airplane" element={<AirplanePage />} />
+            <Route path="/games/labeleddiagram" element={<LabeledDiagramPage />} />
+            <Route path="/games/imagequiz" element={<ImageQuizPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -171,6 +175,8 @@ export default function App() {
             <Route path="/games/mathgen" element={<MathGeneratorPage />} />
             <Route path="/games/mazechase" element={<MazeChasePage />} />
             <Route path="/games/airplane" element={<AirplanePage />} />
+            <Route path="/games/labeleddiagram" element={<LabeledDiagramPage />} />
+            <Route path="/games/imagequiz" element={<ImageQuizPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

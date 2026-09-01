@@ -273,7 +273,7 @@ export default function TicTacToePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <TicTacToe items={selected.items} />
           </GameThemeFrame>

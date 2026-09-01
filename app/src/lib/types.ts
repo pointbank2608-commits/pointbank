@@ -174,7 +174,9 @@ export type GameType =
   | 'crossword'
   | 'mathgen'
   | 'mazechase'
-  | 'airplane';
+  | 'airplane'
+  | 'labeleddiagram'
+  | 'imagequiz';
 
 export interface GameItem {
   id: string;
@@ -203,6 +205,8 @@ export interface GameTemplateConfig {
   rewardPool?: SaveOrGiveReward[];
   /** 사라진 항목 찾기 전용: 한 판에서 몇 개를 숨길지 (기본 1). */
   revealCount?: number;
+  /** 사라진 항목 찾기 전용: 숨긴 뒤 카드 자리를 섞을지 (기본 끔). */
+  shuffleCards?: boolean;
   /** 게임 플레이 영역 비주얼 테마 id (app/src/lib/gameThemes.ts 참고). 없으면 기본 색상 그대로. */
   theme?: string;
   /** 베스킨라빈스31 전용: 이 숫자에 도달하면 지는 목표 숫자 (기본 31). */
@@ -249,6 +253,14 @@ export interface GameTemplateConfig {
   groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
   flashcards?: MatchPair[];
+  /** 명칭이 있는 다이어그램 전용: 배경으로 쓸 업로드 이미지 URL. */
+  diagramImageUrl?: string;
+  /** 명칭이 있는 다이어그램 전용: 이미지 위에 찍은 핀(정답 라벨+좌표) 목록. */
+  diagramPins?: DiagramPin[];
+  /** 이미지 퀴즈 전용: 사진+정답 목록. */
+  imageQuizItems?: ImageQuizItem[];
+  /** 이미지 퀴즈 전용: 사진이 흐림에서 선명해지기까지 걸리는 시간(초). 기본 6. */
+  imageQuizRevealSeconds?: number;
 }
 
 export interface QuizQuestion {
@@ -293,6 +305,21 @@ export type MathOperation = 'add' | 'sub' | 'mul' | 'div';
 export interface SaveOrGiveReward {
   kind: 'points' | 'swap';
   value?: number;
+}
+
+/** 명칭이 있는 다이어그램 전용: 이미지 위 핀 하나. x/y 는 이미지 너비/높이 대비 0~1 비율. */
+export interface DiagramPin {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+}
+
+/** 이미지 퀴즈 전용: 사진 한 장 + 정답. */
+export interface ImageQuizItem {
+  id: string;
+  imageUrl: string;
+  answer: string;
 }
 
 export interface GameTemplate {

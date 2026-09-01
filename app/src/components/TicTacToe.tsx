@@ -9,6 +9,23 @@ interface Props {
 type Team = 'blue' | 'red';
 type Mark = Team | null;
 
+const BOARD_SRC = '/skins/tic-board.png';
+const O_SRC = '/skins/tic-o.png';
+const X_SRC = '/skins/tic-x.png';
+
+/** 스킨 이미지에서 측정한 9칸. 값은 이미지 너비/높이 대비 비율. */
+const CELLS = [
+  { left: 0.091, top: 0.093, width: 0.255, height: 0.248 },
+  { left: 0.38, top: 0.093, width: 0.246, height: 0.248 },
+  { left: 0.661, top: 0.093, width: 0.256, height: 0.248 },
+  { left: 0.091, top: 0.38, width: 0.255, height: 0.244 },
+  { left: 0.381, top: 0.38, width: 0.245, height: 0.244 },
+  { left: 0.662, top: 0.38, width: 0.255, height: 0.244 },
+  { left: 0.092, top: 0.664, width: 0.254, height: 0.248 },
+  { left: 0.381, top: 0.664, width: 0.245, height: 0.248 },
+  { left: 0.662, top: 0.664, width: 0.255, height: 0.248 },
+] as const;
+
 const LINES = [
   [0, 1, 2],
   [3, 4, 5],
@@ -22,6 +39,7 @@ const LINES = [
 
 /** 항목이 9개보다 많으면 무작위 9개만, 적으면 부족한 만큼 반복해서 판을 채운다. */
 function pickBoardItems(items: GameItem[]): GameItem[] {
+  if (items.length === 0) return [];
   const pool = [...items];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -37,6 +55,9 @@ function checkWinner(marks: Mark[]): Team | null {
   return null;
 }
 
+/**
+ * 틱택토. 등록한 단어를 3×3 나무 판에 올려 두고, 두 팀이 번갈아 칸을 차지한다.
+ */
 export default function TicTacToe({ items }: Props) {
   const { t } = useTranslation();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
@@ -59,24 +80,27 @@ export default function TicTacToe({ items }: Props) {
     setTurn(turn === 'blue' ? 'red' : 'blue');
   }
 
+  const teamLabel = (team: Team) => (team === 'blue' ? t('gameTicTacToe.teamBlue') : t('gameTicTacToe.teamRed'));
+  const pill =
+    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+
   if (items.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">⭕</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <img src={BOARD_SRC} alt="" className="mx-auto mb-3 h-20 w-auto" />
         <div className="font-body-md text-body-md">{t('gameTicTacToe.needParticipants')}</div>
       </div>
     );
   }
 
-  const teamLabel = (team: Team) => (team === 'blue' ? t('gameTicTacToe.teamBlue') : t('gameTicTacToe.teamRed'));
-
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
       {!winner && !isDraw && (
         <div
-          className={`mb-4 px-6 py-2.5 rounded-full font-title-md text-title-md shadow-sm transition-colors ${
-            turn === 'blue' ? 'bg-primary text-on-primary' : 'bg-error text-on-error'
+          className={`mb-4 rounded-full px-6 py-2.5 font-title-md text-title-md shadow-sm transition-colors ${
+            turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
           }`}
+          style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
         >
           {t('gameTicTacToe.turnLabel', { team: teamLabel(turn) })}
         </div>
@@ -84,52 +108,80 @@ export default function TicTacToe({ items }: Props) {
 
       {(winner || isDraw) && (
         <div className="mb-4 flex flex-col items-center gap-3">
-          <div
-            className={`px-6 py-2.5 rounded-full font-title-md text-title-md shadow-sm ${
-              winner === 'blue'
-                ? 'bg-primary text-on-primary'
-                : winner === 'red'
-                  ? 'bg-error text-on-error'
-                  : 'bg-surface-container-low text-on-surface'
-            }`}
-          >
-            {winner ? t('gameTicTacToe.winMessage', { team: teamLabel(winner) }) : t('gameTicTacToe.drawMessage')}
-          </div>
-          <button
-            onClick={newRound}
-            className="px-8 py-2.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-colors"
-          >
+          {winner ? (
+            <div
+              className="result-pop rounded-2xl px-9 py-4 text-center"
+              style={{
+                backgroundColor: winner === 'blue' ? '#3dbea8' : '#f28b73',
+                border: '3px solid #f0d7a8',
+                boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+              }}
+            >
+              <div className="font-title-md text-[22px] font-bold text-white">
+                {t('gameTicTacToe.winMessage', { team: teamLabel(winner) })}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-full bg-[#f3eee4] px-6 py-2.5 font-title-md text-title-md text-on-surface">
+              {t('gameTicTacToe.drawMessage')}
+            </div>
+          )}
+          <button onClick={newRound} className={pill}>
             {t('gameTicTacToe.playAgainButton')}
           </button>
         </div>
       )}
 
-      <div data-skin-stage="board" className="grid grid-cols-3 gap-2.5 w-full max-w-[420px]">
+      <div
+        data-skin-stage="board"
+        className="relative mb-3 w-[min(420px,92vw)]"
+        style={{ filter: 'drop-shadow(0 10px 14px rgba(90, 50, 18, 0.28))' }}
+      >
+        <img src={BOARD_SRC} alt="" draggable={false} className="pointer-events-none w-full select-none" />
         {board.map((item, i) => {
           const mark = marks[i];
+          const cell = CELLS[i];
           return (
             <button
-              key={i}
+              key={item.id + String(i)}
               type="button"
               onClick={() => claim(i)}
               disabled={!!mark || !!winner || isDraw}
               data-skin-object="cell"
-              className={`aspect-square rounded-2xl flex items-center justify-center text-center px-2 font-title-md text-title-md [word-break:keep-all] transition-all border-2 ${
-                mark === 'blue'
-                  ? 'bg-primary/15 border-primary text-primary'
-                  : mark === 'red'
-                    ? 'bg-error/15 border-error text-error'
-                    : 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low cursor-pointer'
+              className={`absolute flex flex-col items-center justify-center px-1.5 text-center transition-transform ${
+                mark || winner || isDraw ? 'cursor-default' : 'cursor-pointer hover:scale-[1.03]'
               }`}
+              style={{
+                left: `${cell.left * 100}%`,
+                top: `${cell.top * 100}%`,
+                width: `${cell.width * 100}%`,
+                height: `${cell.height * 100}%`,
+              }}
             >
-              {item.label}
+              {mark ? (
+                <>
+                  <img
+                    src={mark === 'blue' ? O_SRC : X_SRC}
+                    alt=""
+                    draggable={false}
+                    className="pointer-events-none h-[58%] w-[58%] select-none object-contain"
+                  />
+                  <span className="mt-0.5 max-w-full truncate font-label-md text-[11px] leading-tight text-deep-navy [word-break:keep-all]">
+                    {item.label}
+                  </span>
+                </>
+              ) : (
+                <span className="max-w-full font-title-md text-[clamp(13px,3.4vw,18px)] leading-tight text-deep-navy [word-break:keep-all]">
+                  {item.label}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
       {!winner && !isDraw && (
-        <div className="mt-4 font-caption text-caption text-on-surface-variant">{t('gameTicTacToe.boardHint')}</div>
+        <div className="mt-1 font-caption text-caption text-on-surface-variant">{t('gameTicTacToe.boardHint')}</div>
       )}
     </div>
   );

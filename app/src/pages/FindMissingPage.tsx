@@ -22,13 +22,14 @@ function defaultItems(): GameItem[] {
 }
 
 const DEFAULT_REVEAL_COUNT = 1;
+const DEFAULT_SHUFFLE_CARDS = false;
 
 export default function FindMissingPage() {
   const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'findmissing',
     defaultItems,
-    defaultConfig: () => ({ revealCount: DEFAULT_REVEAL_COUNT }),
+    defaultConfig: () => ({ revealCount: DEFAULT_REVEAL_COUNT, shuffleCards: DEFAULT_SHUFFLE_CARDS }),
   });
   const {
     isStaff,
@@ -67,6 +68,7 @@ export default function FindMissingPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [newItemLabel, setNewItemLabel] = useState('');
   const revealCount = selected?.config.revealCount ?? DEFAULT_REVEAL_COUNT;
+  const shuffleCards = selected?.config.shuffleCards ?? DEFAULT_SHUFFLE_CARDS;
 
   async function persistItems(next: GameItem[]) {
     if (!selected) return;
@@ -101,15 +103,19 @@ export default function FindMissingPage() {
     await persistItems([]);
   }
 
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+  async function persistConfig(patch: Partial<GameTemplateConfig>) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
+    const nextConfig = { ...selected.config, ...patch };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    await persistConfig({ theme: theme ?? undefined });
   }
 
   if (isStaff && classes.length === 0) {
@@ -263,8 +269,8 @@ export default function FindMissingPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🔍</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <img src="/skins/miss-card.png" alt="" className="mx-auto mb-3 h-16 w-auto" />
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameFindMissing.emptyStaff') : t('gameFindMissing.emptyStudent')}
             </div>
@@ -280,9 +286,9 @@ export default function FindMissingPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <FindMissing items={selected.items} revealCount={revealCount} />
+            <FindMissing items={selected.items} revealCount={revealCount} shuffleCards={shuffleCards} />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -307,6 +313,58 @@ export default function FindMissingPage() {
                     >
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <div className="font-label-md text-label-md text-on-surface">{t('gameFindMissing.difficultyTitle')}</div>
+                  <div>
+                    <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                      {t('gameFindMissing.hideCountLabel')}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[1, 2, 3]
+                        .filter((n) => n <= Math.max(selected.items.length - 1, 1))
+                        .map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => void persistConfig({ revealCount: n })}
+                            className={`rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-colors ${
+                              revealCount === n
+                                ? 'bg-primary text-on-primary shadow-sm'
+                                : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                            }`}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                      {t('gameFindMissing.shuffleLabel')}
+                    </div>
+                    <div className="flex w-fit rounded-lg bg-surface-container-low p-1">
+                      <button
+                        type="button"
+                        onClick={() => void persistConfig({ shuffleCards: false })}
+                        className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
+                          !shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                        }`}
+                      >
+                        {t('gameFindMissing.shuffleOff')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void persistConfig({ shuffleCards: true })}
+                        className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
+                          shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                        }`}
+                      >
+                        {t('gameFindMissing.shuffleOn')}
+                      </button>
+                    </div>
                   </div>
                 </div>
 

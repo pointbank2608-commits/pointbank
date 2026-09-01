@@ -375,6 +375,30 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.airplaneName',
     descKey: 'gamesList.airplaneDesc',
   },
+  {
+    type: 'labeleddiagram',
+    number: 31,
+    category: 'vocabulary',
+    // 배경 이미지 위 핀 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'pin_drop',
+    path: '/games/labeleddiagram',
+    cover: null,
+    nameKey: 'gamesList.labeleddiagramName',
+    descKey: 'gamesList.labeleddiagramDesc',
+  },
+  {
+    type: 'imagequiz',
+    number: 32,
+    category: 'vocabulary',
+    // 사진+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
+    icon: 'photo_camera',
+    path: '/games/imagequiz',
+    cover: null,
+    nameKey: 'gamesList.imagequizName',
+    descKey: 'gamesList.imagequizDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -41,6 +41,9 @@ pointbank/
 | `006_disable_student_login.sql` | **보안** — 학생 로그인 잠금 (베타 기간 동안 원장·선생님만) |
 | `007_platform_admin.sql` | 플랫폼 관리자 (`likesea85@naver.com` 전용 — 가입 학원 목록/삭제) |
 | `008_ladder_order_games.sql` | 사다리타기 · 랜덤 공 뽑기 게임 + 게임 배경음악 업로드 |
+| `009_fix_logo_storage.sql` | 학원 로고 업로드 RLS 수정 (upsert 시 SELECT 정책 누락 문제) |
+| `010_homework_tracking.sql` | 프리셋·거래 내역에 "숙제 관련" 표시(`is_homework`) 추가 |
+| `011_game_images.sql` | 명칭이 있는 다이어그램 · 이미지 퀴즈용 사진 업로드 (`game-images` 스토리지 버킷) |
 
 새 프로젝트를 처음부터 세팅할 때는 `schema.sql` 하나만 실행하면 됩니다 (마이그레이션 내용이 이미 포함돼 있음).
 

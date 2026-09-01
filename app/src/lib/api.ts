@@ -588,6 +588,28 @@ export async function deleteGameAudio(path: string) {
   if (error) throw new Error(error.message);
 }
 
+/* ---------------- 게임 이미지 업로드 (다이어그램 배경·이미지 퀴즈 사진) ---------------- */
+
+export interface GameImageFile {
+  path: string;
+  name: string;
+  url: string;
+}
+
+export async function uploadGameImage(academyId: string, file: File): Promise<GameImageFile> {
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const path = `${academyId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('game-images').upload(path, file);
+  if (error) throw new Error(error.message);
+  const { data: pub } = supabase.storage.from('game-images').getPublicUrl(path);
+  return { path, name: file.name, url: pub.publicUrl };
+}
+
+export async function deleteGameImage(path: string) {
+  const { error } = await supabase.storage.from('game-images').remove([path]);
+  if (error) throw new Error(error.message);
+}
+
 /* ---------------- 출석부 ---------------- */
 
 /** 특정 반의 특정 기간(from~to, 둘 다 YYYY-MM-DD, inclusive) 출석 기록 전체. */
