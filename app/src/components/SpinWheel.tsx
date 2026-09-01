@@ -138,8 +138,8 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
           disabled={spinning}
           aria-label={t('gameWheel.spinAriaLabel')}
           title={t('gameWheel.spinButton')}
-          className="absolute top-1/2 left-1/2 z-10 h-[140px] w-[140px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
-          style={{ filter: 'drop-shadow(0 6px 10px rgba(90, 40, 10, 0.28))' }}
+          className="absolute top-1/2 left-1/2 z-10 h-[93px] w-[93px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
+          style={{ filter: 'drop-shadow(0 4px 7px rgba(90, 40, 10, 0.28))' }}
         >
           <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
         </button>
