@@ -9,6 +9,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import TimerMatch from '../components/TimerMatch';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -46,6 +47,8 @@ export default function TimerMatchPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -392,6 +395,12 @@ export default function TimerMatchPage() {
                         onScopeChange={setRosterScope}
                         loading={rosterLoading}
                         onAdd={(labels) => void addParticipantsBulk(labels)}
+                      />
+                      <WordListPicker
+                        variant="label"
+                        wordLists={wordLists}
+                        loading={wordListsLoading}
+                        onImportLabels={(labels) => void addParticipantsBulk(labels)}
                       />
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (

@@ -16,6 +16,7 @@ import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
 import DictionaryPage from './pages/DictionaryPage';
 import PhonicsPage from './pages/PhonicsPage';
+import WordListsPage from './pages/WordListsPage';
 import FindMissingPage from './pages/FindMissingPage';
 import FlashcardsPage from './pages/FlashcardsPage';
 import GamesPage from './pages/GamesPage';
@@ -111,6 +112,7 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
+            <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />

@@ -8,6 +8,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import TwoDice from '../components/TwoDice';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
@@ -40,6 +41,8 @@ export default function TwoDicePage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -306,6 +309,12 @@ export default function TwoDicePage() {
                       onScopeChange={setRosterScope}
                       loading={rosterLoading}
                       onAdd={(labels) => void addItemsBulk(labels)}
+                    />
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
 
                     <div className="flex flex-wrap gap-1.5 mt-3">

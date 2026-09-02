@@ -257,10 +257,16 @@ export interface GameTemplateConfig {
   mathQuestionCount?: number;
   /** 그룹 정렬 전용: 그룹(이름+소속 항목) 목록. 항목이 어느 그룹인지가 곧 정답이라 공용 items 모델로는 표현이 안 돼 별도로 둔다. */
   groups?: GroupSortGroup[];
+  /** 그룹 정렬 전용: 나무 상자(A, 기본) 또는 점토 바구니(B). */
+  groupSortStyle?: 'crates' | 'baskets';
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
   flashcards?: MatchPair[];
   /** 플래시카드 전용: 나무 액자(A, 기본) 또는 점토 카드(B). */
   flashcardsStyle?: 'wood' | 'clay';
+  /** 애너그램 전용: 나무 글자판+점토 타일(A, 기본) 또는 매달린 이름표(B). */
+  anagramStyle?: 'rack' | 'tags';
+  /** 문장 배열하기 전용: 나무 글자판+점토 타일(A, 기본) 또는 매달린 이름표(B). */
+  unscrambleStyle?: 'rack' | 'tags';
   /** 명칭이 있는 다이어그램 전용: 배경으로 쓸 업로드 이미지 URL. */
   diagramImageUrl?: string;
   /** 명칭이 있는 다이어그램 전용: 이미지 위에 찍은 핀(정답 라벨+좌표) 목록. */
@@ -377,6 +383,28 @@ export interface GameTemplate {
   name: string;
   items: GameItem[];
   config: GameTemplateConfig;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/* ---------------- 단어장(선생님이 반/수업별로 만드는 것 — word_bank 와 다름) ---------------- */
+
+export interface WordListItem {
+  id: string;
+  word: string;
+  meaning: string;
+  /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.image_url 복사). 직접 입력이면 null. */
+  image_url: string | null;
+}
+
+export interface WordList {
+  id: string;
+  academy_id: string;
+  /** null 이면 학원 전체 공용 */
+  class_id: string | null;
+  name: string;
+  items: WordListItem[];
   created_by: string | null;
   created_at: string;
   updated_at: string;

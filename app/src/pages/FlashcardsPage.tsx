@@ -7,6 +7,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, MatchPair } from '../lib/types';
@@ -58,6 +59,8 @@ export default function FlashcardsPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -87,6 +90,12 @@ export default function FlashcardsPage() {
 
   function addCard() {
     const next = [...draftCards, newCard()];
+    setDraftCards(next);
+    void persistCards(next);
+  }
+
+  function addCardsBulk(cards: MatchPair[]) {
+    const next = [...draftCards, ...cards];
     setDraftCards(next);
     void persistCards(next);
   }
@@ -338,6 +347,12 @@ export default function FlashcardsPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="pairs"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportPairs={(cards) => addCardsBulk(cards)}
+                    />
 
                     {draftCards.map((c, ci) => (
                       <div key={c.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

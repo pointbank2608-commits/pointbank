@@ -8,6 +8,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImageQuiz from '../components/ImageQuiz';
 import ImportFromClass from '../components/ImportFromClass';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, ImageQuizItem } from '../lib/types';
@@ -58,6 +59,8 @@ export default function ImageQuizPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -89,6 +92,12 @@ export default function ImageQuizPage() {
 
   function removeItem(itemId: string) {
     const next = draftItems.filter((it) => it.id !== itemId);
+    setDraftItems(next);
+    void persistConfig({ ...selected?.config, imageQuizItems: next });
+  }
+
+  function addItemsBulk(items: ImageQuizItem[]) {
+    const next = [...draftItems, ...items];
     setDraftItems(next);
     void persistConfig({ ...selected?.config, imageQuizItems: next });
   }
@@ -287,6 +296,12 @@ export default function ImageQuizPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="image"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportImage={(items) => addItemsBulk(items)}
+                    />
 
                     <div className="flex items-center gap-2">
                       <label htmlFor="iqreveal" className="font-label-md text-label-md text-on-surface-variant shrink-0">

@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GroupSortGroup } from '../lib/types';
 
+export type GroupSortStyle = 'crates' | 'baskets';
+
 interface Props {
   groups: GroupSortGroup[];
+  boardStyle?: GroupSortStyle;
 }
 
 interface FlatItem {
   id: string;
   text: string;
   groupId: string;
+  tone: number;
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -22,28 +30,57 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function flatten(groups: GroupSortGroup[]): FlatItem[] {
-  return groups.flatMap((g) => g.items.map((it) => ({ id: it.id, text: it.text, groupId: g.id })));
+  return groups.flatMap((g, gi) =>
+    g.items.map((it, ii) => ({
+      id: it.id,
+      text: it.text,
+      groupId: g.id,
+      tone: (gi + ii) % 4,
+    })),
+  );
 }
 
 function emptyBuckets(groups: GroupSortGroup[]): Record<string, FlatItem[]> {
   return Object.fromEntries(groups.map((g) => [g.id, [] as FlatItem[]]));
 }
 
-export default function GroupSort({ groups }: Props) {
+export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   const { t } = useTranslation();
+  const baskets = boardStyle === 'baskets';
   const [pool, setPool] = useState<FlatItem[]>(() => shuffle(flatten(groups)));
   const [placed, setPlaced] = useState<Record<string, FlatItem[]>>(() => emptyBuckets(groups));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wrongGroupId, setWrongGroupId] = useState<string | null>(null);
   const [wrongCount, setWrongCount] = useState(0);
   const [locked, setLocked] = useState(false);
+  const flashTimer = useRef<number | null>(null);
+  const groupKey = groups.map((g) => `${g.id}:${g.items.map((it) => it.id).join(',')}`).join('|');
+
+  useEffect(() => {
+    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    setPool(shuffle(flatten(groups)));
+    setPlaced(emptyBuckets(groups));
+    setSelectedId(null);
+    setWrongGroupId(null);
+    setWrongCount(0);
+    setLocked(false);
+  }, [groupKey]);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    };
+  }, []);
 
   const allItems = flatten(groups);
 
   if (groups.length < 2 || allItems.length < 2) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🗂️</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <div className="mx-auto mb-3 flex justify-center gap-2">
+          <span className="gs-clay gs-clay-0 pointer-events-none min-w-[64px]">A</span>
+          <span className="gs-clay gs-clay-2 pointer-events-none min-w-[64px]">가</span>
+        </div>
         <div className="font-body-md text-body-md">{t('gameGroupSort.needGroups')}</div>
       </div>
     );
@@ -52,6 +89,7 @@ export default function GroupSort({ groups }: Props) {
   const finished = pool.length === 0;
 
   function restart() {
+    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
     setPool(shuffle(flatten(groups)));
     setPlaced(emptyBuckets(groups));
     setSelectedId(null);
@@ -78,85 +116,136 @@ export default function GroupSort({ groups }: Props) {
     setWrongCount((c) => c + 1);
     setWrongGroupId(groupId);
     setLocked(true);
-    setTimeout(() => {
+    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => {
       setWrongGroupId(null);
       setSelectedId(null);
       setLocked(false);
+      flashTimer.current = null;
     }, 500);
   }
 
   if (finished) {
     return (
       <div className="flex flex-col items-center pt-3 pb-2">
-        <div className="text-5xl mb-3">🎉</div>
-        <div className="font-title-md text-title-md text-on-surface mb-2">{t('gameGroupSort.finishedTitle')}</div>
-        <div className="font-display-lg text-[32px] text-deep-navy mb-6 tabular-nums">
-          {t('gameGroupSort.wrongCountLabel', { count: wrongCount })}
-        </div>
-        <button
-          onClick={restart}
-          className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
         >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameGroupSort.finishedTitle')}</div>
+            <div className="font-display-lg text-[32px] tabular-nums text-deep-navy">
+              {t('gameGroupSort.wrongCountLabel', { count: wrongCount })}
+            </div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
           {t('gameGroupSort.restartButton')}
         </button>
       </div>
     );
   }
 
+  function placedChips(groupId: string) {
+    return (placed[groupId] ?? []).map((it) =>
+      baskets ? (
+        <span key={it.id} className="gs-placed-tag">
+          {it.text}
+        </span>
+      ) : (
+        <span key={it.id} className={`gs-chip gs-clay-${it.tone}`}>
+          {it.text}
+        </span>
+      ),
+    );
+  }
+
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2 w-full">
-      <div className="font-caption text-caption text-on-surface-variant mb-4 tabular-nums">
+      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {t('gameGroupSort.wrongCountLabel', { count: wrongCount })}
       </div>
 
       <div data-skin-stage="board" className="flex flex-wrap justify-center gap-3 mb-6 w-full max-w-[640px]">
-        {groups.map((g) => (
-          <button
-            key={g.id}
-            type="button"
-            onClick={() => dropOnGroup(g.id)}
-            disabled={!selectedId}
-            data-skin-object="bucket"
-            className={`flex-1 min-w-[140px] rounded-xl border-2 p-3 text-left transition-colors ${
-              wrongGroupId === g.id
-                ? 'bg-error-container border-error'
-                : selectedId
-                  ? 'bg-primary-container/30 border-primary/60 hover:bg-primary-container/50'
-                  : 'bg-surface-container-low border-outline-variant/40'
-            }`}
-          >
-            <div className="font-label-md text-label-md text-on-surface mb-2">{g.name}</div>
-            <div className="flex flex-wrap gap-1.5">
-              {(placed[g.id] ?? []).map((it) => (
-                <span
-                  key={it.id}
-                  className="px-2.5 py-1 rounded-full bg-secondary-container/50 font-caption text-caption text-on-surface"
-                >
-                  {it.text}
-                </span>
-              ))}
-            </div>
-          </button>
-        ))}
+        {groups.map((g, i) => {
+          const mark =
+            wrongGroupId === g.id ? 'is-no' : selectedId ? 'is-ready' : '';
+          if (baskets) {
+            return (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => dropOnGroup(g.id)}
+                disabled={!selectedId}
+                data-skin-object="bucket"
+                className={`gs-basket-wrap ${mark}`}
+              >
+                <span className="gs-basket-tag">{g.name}</span>
+                <span className={`gs-basket gs-basket-${i % 4}`}>{placedChips(g.id)}</span>
+              </button>
+            );
+          }
+          return (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => dropOnGroup(g.id)}
+              disabled={!selectedId}
+              data-skin-object="bucket"
+              className={`gs-crate ${mark}`}
+            >
+              <div className="gs-crate-name">{g.name}</div>
+              <div className="gs-crate-well">{placedChips(g.id)}</div>
+            </button>
+          );
+        })}
       </div>
 
-      <div data-skin-stage="tile-pool" className="flex flex-wrap justify-center gap-2 max-w-[560px]">
-        {pool.map((it) => (
-          <button
-            key={it.id}
-            type="button"
-            onClick={() => selectItem(it.id)}
-            data-skin-object="chip"
-            className={`px-4 py-2 rounded-full font-label-md text-label-md border-2 transition-all ${
-              selectedId === it.id
-                ? 'bg-primary text-on-primary border-primary'
-                : 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low'
-            }`}
-          >
-            {it.text}
-          </button>
-        ))}
-      </div>
+      {baskets ? (
+        pool.length > 0 && (
+          <div data-skin-stage="tile-pool" className="gs-hang">
+            <div className="gs-hang-bar" aria-hidden />
+            <div className="gs-hang-row">
+              {pool.map((it) => (
+                <button
+                  key={it.id}
+                  type="button"
+                  onClick={() => selectItem(it.id)}
+                  data-skin-object="chip"
+                  className={`gs-tag ${selectedId === it.id ? 'is-sel' : ''}`}
+                >
+                  {it.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      ) : (
+        <div data-skin-stage="tile-pool" className="flex flex-wrap justify-center gap-2 max-w-[560px]">
+          {pool.map((it) => (
+            <button
+              key={it.id}
+              type="button"
+              onClick={() => selectItem(it.id)}
+              data-skin-object="chip"
+              className={`gs-clay gs-clay-${it.tone} ${selectedId === it.id ? 'is-sel' : ''}`}
+            >
+              {it.text}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

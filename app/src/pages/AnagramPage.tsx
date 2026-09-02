@@ -9,6 +9,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -37,6 +38,8 @@ export default function AnagramPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -96,15 +99,24 @@ export default function AnagramPage() {
     await persistItems([]);
   }
 
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'rack' | 'tags') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, anagramStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -244,8 +256,11 @@ export default function AnagramPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🔤</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center gap-1.5">
+              <span className="ag-clay ag-clay-0 pointer-events-none">A</span>
+              <span className="ag-clay ag-clay-2 pointer-events-none">N</span>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameAnagram.emptyStaff') : t('gameAnagram.emptyStudent')}
             </div>
@@ -261,9 +276,12 @@ export default function AnagramPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Anagram items={selected.items} />
+            <Anagram
+              items={selected.items}
+              boardStyle={selected.config.anagramStyle === 'tags' ? 'tags' : 'rack'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -291,6 +309,29 @@ export default function AnagramPage() {
                   </div>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameAnagram.styleLabel')}
+                  </span>
+                  {(['rack', 'tags'] as const).map((style) => {
+                    const on = (selected.config.anagramStyle ?? 'rack') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'rack' ? t('gameAnagram.styleRack') : t('gameAnagram.styleTags')}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 {editorOpen && (
                   <div>
                     <OpenInOtherGame currentType="anagram" itemCount={selected.items.length} onOpen={openInOtherGame} />
@@ -303,6 +344,12 @@ export default function AnagramPage() {
                       onScopeChange={setRosterScope}
                       loading={rosterLoading}
                       onAdd={(labels) => void addItemsBulk(labels)}
+                    />
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
 
                     <div className="flex flex-wrap gap-1.5 mt-3">

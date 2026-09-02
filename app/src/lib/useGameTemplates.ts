@@ -12,11 +12,12 @@ import {
   fetchMyStudentRow,
   fetchStudentsOfAcademy,
   fetchStudentsOfClass,
+  fetchWordLists,
   renameGameTemplate,
   type ImportCandidate,
 } from './api';
 import { useClasses } from './useClasses';
-import type { GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
+import type { GameItem, GameTemplate, GameTemplateConfig, GameType, WordList } from './types';
 
 export type RosterScope = 'class' | 'academy';
 
@@ -75,6 +76,29 @@ export function useGameTemplates(params: {
       .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'))
       .finally(() => setRosterLoading(false));
   }, [academy?.id, classId, rosterScope, notify]);
+
+  // 선생님이 이 반/학원에 만들어둔 단어장 목록 — WordListPicker 가 그대로 보여준다.
+  const [wordLists, setWordLists] = useState<WordList[]>([]);
+  const [wordListsLoading, setWordListsLoading] = useState(false);
+
+  const reloadWordLists = useCallback(async () => {
+    if (!academy?.id || !classId) {
+      setWordLists([]);
+      return;
+    }
+    setWordListsLoading(true);
+    try {
+      setWordLists(await fetchWordLists(academy.id, classId));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setWordListsLoading(false);
+    }
+  }, [academy?.id, classId, notify]);
+
+  useEffect(() => {
+    void reloadWordLists();
+  }, [reloadWordLists]);
 
   const [templates, setTemplates] = useState<GameTemplate[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -242,6 +266,8 @@ export function useGameTemplates(params: {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,

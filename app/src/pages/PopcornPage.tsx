@@ -9,6 +9,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import Popcorn from '../components/Popcorn';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -37,6 +38,8 @@ export default function PopcornPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -303,6 +306,12 @@ export default function PopcornPage() {
                       onScopeChange={setRosterScope}
                       loading={rosterLoading}
                       onAdd={(labels) => void addItemsBulk(labels)}
+                    />
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
 
                     <div className="flex flex-wrap gap-1.5 mt-3">

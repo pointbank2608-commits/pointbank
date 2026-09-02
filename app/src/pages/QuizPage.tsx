@@ -7,6 +7,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import Quiz from '../components/Quiz';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, QuizQuestion } from '../lib/types';
@@ -58,6 +59,8 @@ export default function QuizPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -85,6 +88,12 @@ export default function QuizPage() {
 
   function addQuestion() {
     const next = [...draftQuestions, newQuestion()];
+    setDraftQuestions(next);
+    void persistQuestions(next);
+  }
+
+  function addQuestionsBulk(questions: QuizQuestion[]) {
+    const next = [...draftQuestions, ...questions];
     setDraftQuestions(next);
     void persistQuestions(next);
   }
@@ -342,6 +351,12 @@ export default function QuizPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="quiz"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportQuestions={(questions) => addQuestionsBulk(questions)}
+                    />
 
                     {draftQuestions.map((q, qi) => (
                       <div key={q.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

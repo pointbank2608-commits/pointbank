@@ -56,8 +56,9 @@ export default function Quiz({ questions }: Props) {
 
   function selectChoice(choiceIndex: number) {
     if (selectedChoice !== null || finished) return;
-    setSelectedChoice(choiceIndex);
     const current = questions[order[pos]];
+    if (!current) return;
+    setSelectedChoice(choiceIndex);
     if (choiceIndex === current.correctIndex) setScore((s) => s + 1);
   }
 
@@ -99,6 +100,9 @@ export default function Quiz({ questions }: Props) {
   }
 
   const current = questions[order[pos]];
+  // 편집 화면에서 질문을 지운 직후 한 프레임 동안은 order 가 아직 옛 길이 기준이라
+  // 범위를 벗어날 수 있다 — 위 useEffect 가 재동기화하기 전까지 이 프레임만 건너뛴다.
+  if (!current) return null;
   const revealed = selectedChoice !== null;
   const gotItRight = selectedChoice === current.correctIndex;
 

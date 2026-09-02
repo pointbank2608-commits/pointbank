@@ -10,6 +10,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -41,6 +42,8 @@ export default function WheelPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -417,6 +420,12 @@ export default function WheelPage() {
                         loading={rosterLoading}
                         onAdd={(labels) => void addItemsBulk(labels)}
                       />
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
+                    />
 
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (

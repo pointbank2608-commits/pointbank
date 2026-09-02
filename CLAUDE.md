@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-02** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용)
+마지막 갱신: **2026-09-02** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 26종 적용)
 
 ---
 
@@ -39,6 +39,27 @@
   - **31~32번 (`category: vocabulary`, 사진 업로드 필요)**: `/games/labeleddiagram` 명칭이 있는 다이어그램(사진 위 핀에 정답 이름 매칭), `/games/imagequiz` 이미지 퀴즈(흐린 사진이 점점 선명해지며 정답 맞히기). 둘 다 선생님이 직접 사진을 올린다 — `GameImagePicker.tsx` + `game-images` 스토리지 버킷(`supabase/011_game_images.sql`, `game-audio`와 동일한 RLS 패턴). **AI 이미지 생성이 아니라 파일 업로드**이므로 별도 이미지 생성 도구 불필요.
   - **33~34번 (`category: vocabulary`, 기존 퀴즈 변형)**: `/games/gameshowquiz` 게임쇼 퀴즈(청/홍팀 대결, 보너스 문제 2배 점수, 팀당 반반(50:50) 라이프라인), `/games/winlosequiz` 퀴즈를 이기거나 잃기(문제마다 점수 베팅, 맞으면 획득·틀리면 손실). 둘 다 `Quiz.tsx`의 `QuizQuestion`(질문+보기+정답) 구조를 그대로 재사용 — `config.questions`만 공유하고 나머지(팀 점수·베팅·라이프라인)는 컴포넌트 자체 상태.
   - 각 게임 페이지 상단에 `GameInfoPanel`(접이식 "게임 소개 및 방법") — `gameXxx.infoDescription`/`infoSteps` i18n 키, 전부 적용됨
+  - **단어장 불러오기(`WordListPicker.tsx`)**: 34개 중 27개(라벨 하나짜리 `GameItem[]` 게임
+    21개 + 단어+뜻 짝 게임 4개[매치업·두더지잡기·플래시카드·답 입력하기] + 이미지 퀴즈 +
+    퀴즈)에 적용됨 — `/wordlists`에서 만든 단어장을 게임 항목으로 그대로 불러온다. 퀴즈는
+    `variant="quiz"`로 오답 보기까지 AI 없이 자동 생성(`quizFromWordList.ts` — 같은 단어장의
+    다른 단어 뜻/단어를 무작위로 오답 후보에 씀). **참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기**
+    (퀴즈와 같은 오답 자동생성 로직을 얹으면 됨, 다음 차례)와 **그룹정렬·다이어그램·문장
+    만들기·수학 문제**(구조 자체가 단어 리스트가 아님, "나중에 같이 생각")는 아직 대상 밖 —
+    새 게임을 추가할 때 콘텐츠가 `GameItem[]`이나 `MatchPair[]` 모양이면 `useGameTemplates`가
+    이미 돌려주는 `wordLists`/`wordListsLoading`으로 `<WordListPicker variant="label|pairs|image|quiz" .../>`
+    한 줄만 추가하면 된다(`WheelPage.tsx`/`MatchupPage.tsx`/`QuizPage.tsx`의 기존 적용 예 참고).
+  - **오지선다 게임(퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기) 공통 버그 패턴**: `Quiz.tsx`/
+    `TrueFalse.tsx`/`GameShowQuiz.tsx`/`WinLoseQuiz.tsx`/`ImageQuiz.tsx` 전부 `order`(인덱스
+    셔플)+`pos`를 `questions.map(...).join('|')` 키의 `useEffect`로 재동기화하는데, 항목을
+    지운 그 순간의 렌더 한 번은 `useEffect`가 아직 안 돌아서 `order[pos]`가 새로 짧아진
+    배열 범위를 벗어나 `undefined`가 나올 수 있다(`current.correctIndex` 등에서 크래시,
+    2026-09-02에 실제로 재현·수정함) — `const current = questions[order[pos]]; if (!current) return null;`
+    가드가 5개 파일 전부에 있어야 한다. 새 오지선다류 게임을 이 패턴으로 만들 때 잊지 말 것.
+- `/wordlists` (네비 라벨 "내 단어장") — 선생님이 반/학원별로 만드는 단어장(`word_lists` 테이블,
+  `word_bank`/`phonics_bank`와 달리 **쓰기 가능**, `game_templates`와 같은 academy/class 스코프
+  패턴). 단어를 "직접 입력"하거나 "사전(`word_bank`)에서 선택"으로 담는다 — 사전에서 담으면
+  `image_url`이 같이 복사돼서 이미지 필요한 게임(이미지 퀴즈)에도 쓸 수 있다. `WordListsPage.tsx`.
 - `/results` — 기간별 적립/차감. 학생별 `/results/homework/:studentId` 숙제 캘린더
 - `/settings` — 학원·반·프리셋·로고. 게임 센터를 여기 넣지 말 것
 
@@ -140,3 +161,4 @@ npx vercel --prod --scope businessgym11-8014s-projects
 | 디자인 토큰 | `app/src/tailwind.css` `@theme` |
 | 반 선택 칩(선택+드래그 순서변경) | `ClassChipRow.tsx` — 모든 페이지(게임 34종 포함)가 이 컴포넌트 하나를 공유. 새 페이지에 반 칩이 필요하면 `classes.map(...)`으로 새로 만들지 말고 이걸 재사용(`onReorder`는 `useClasses`/`useGameTemplates`의 `reorder`/`reorderClasses`) |
 | 단어 사전/파닉스 데이터 추가 | `word_bank`/`phonics_bank` 테이블에 SQL Editor로 직접 insert. 앱에 쓰기 UI 없음(의도적) |
+| 새 게임에 단어장 불러오기 추가 | `WordListPicker.tsx` — `useGameTemplates`가 주는 `wordLists`/`wordListsLoading`을 그대로 넘기고 `variant`(`label`/`pairs`/`image`)만 게임 콘텐츠 모양에 맞게 고르면 끝 |

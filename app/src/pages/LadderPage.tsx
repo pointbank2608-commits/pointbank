@@ -10,6 +10,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import LadderBoard from '../components/LadderBoard';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
@@ -46,6 +47,8 @@ export default function LadderPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -389,6 +392,12 @@ export default function LadderPage() {
                           onScopeChange={setRosterScope}
                           loading={rosterLoading}
                           onAdd={(labels) => void addParticipantsBulk(labels)}
+                        />
+                        <WordListPicker
+                          variant="label"
+                          wordLists={wordLists}
+                          loading={wordListsLoading}
+                          onImportLabels={(labels) => void addParticipantsBulk(labels)}
                         />
                         <div className="flex flex-wrap gap-1.5 mt-3">
                           {selected.items.map((item, i) => (

@@ -9,6 +9,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -37,6 +38,8 @@ export default function RankOrderPage() {
     rosterScope,
     setRosterScope,
     rosterLoading,
+    wordLists,
+    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -317,6 +320,12 @@ export default function RankOrderPage() {
                       onScopeChange={setRosterScope}
                       loading={rosterLoading}
                       onAdd={(labels) => void addItemsBulk(labels)}
+                    />
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
 
                     <div className="font-caption text-caption text-on-surface-variant mt-3 mb-1.5">

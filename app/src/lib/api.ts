@@ -16,6 +16,8 @@ import type {
   SummaryRow,
   Transaction,
   WordBankEntry,
+  WordList,
+  WordListItem,
 } from './types';
 
 /** Supabase 응답에서 에러를 던지고 데이터만 돌려준다. */
@@ -803,4 +805,61 @@ export async function fetchWordBank(): Promise<WordBankEntry[]> {
 /** 파닉스 단어 347개(학원 구분 없는 공용 데이터) 전체를 한 번에 불러온다. */
 export async function fetchPhonicsBank(): Promise<PhonicsBankEntry[]> {
   return unwrap(await supabase.from('phonics_bank').select('*').order('sort_order'));
+}
+
+/* ---------------- 선생님이 만드는 단어장(word_lists) ---------------- */
+
+/** 이 반(또는 학원 공용) 단어장 목록. game_templates 의 반/학원 스코프 조회와 같은 패턴. */
+export async function fetchWordLists(academyId: string, classId: string): Promise<WordList[]> {
+  return unwrap(
+    await supabase
+      .from('word_lists')
+      .select('*')
+      .eq('academy_id', academyId)
+      .or(`class_id.eq.${classId},class_id.is.null`)
+      .order('created_at'),
+  );
+}
+
+export async function createWordList(params: {
+  academyId: string;
+  classId: string | null;
+  name: string;
+  items: WordListItem[];
+  teacherId: string;
+}): Promise<WordList> {
+  return unwrap(
+    await supabase
+      .from('word_lists')
+      .insert({
+        academy_id: params.academyId,
+        class_id: params.classId,
+        name: params.name,
+        items: params.items,
+        created_by: params.teacherId,
+      })
+      .select()
+      .single(),
+  ) as WordList;
+}
+
+export async function updateWordListItems(id: string, items: WordListItem[]) {
+  const { error } = await supabase
+    .from('word_lists')
+    .update({ items, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function renameWordList(id: string, name: string) {
+  const { error } = await supabase
+    .from('word_lists')
+    .update({ name, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteWordList(id: string) {
+  const { error } = await supabase.from('word_lists').delete().eq('id', id);
+  if (error) throw new Error(error.message);
 }

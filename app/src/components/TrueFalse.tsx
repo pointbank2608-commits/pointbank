@@ -58,8 +58,9 @@ export default function TrueFalse({ statements }: Props) {
 
   function selectAnswer(answer: boolean) {
     if (selected !== null || finished) return;
-    setSelected(answer);
     const current = statements[order[pos]];
+    if (!current) return;
+    setSelected(answer);
     if (answer === current.isTrue) setScore((s) => s + 1);
   }
 
@@ -101,6 +102,9 @@ export default function TrueFalse({ statements }: Props) {
   }
 
   const current = statements[order[pos]];
+  // 편집 화면에서 문장을 지운 직후 한 프레임 동안은 order 가 아직 옛 길이 기준이라
+  // 범위를 벗어날 수 있다 — 위 useEffect 가 재동기화하기 전까지 이 프레임만 건너뛴다.
+  if (!current) return null;
   const revealed = selected !== null;
   const gotItRight = selected === current.isTrue;
 

@@ -89,6 +89,9 @@ export default function GameShowQuiz({ questions, bonusEvery, lifelines }: Props
   }
 
   const current = questions[order[pos]];
+  // 편집 화면에서 질문을 지운 직후 한 프레임 동안은 order 가 아직 옛 길이 기준이라
+  // 범위를 벗어날 수 있다 — 위 useEffect 가 재동기화하기 전까지 이 프레임만 건너뛴다.
+  if (!current) return null;
   const isBonus = (pos + 1) % bonusEvery === 0;
   const points = isBonus ? 2 : 1;
   const revealed = selectedChoice !== null;

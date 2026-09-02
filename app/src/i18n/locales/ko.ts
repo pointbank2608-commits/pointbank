@@ -599,6 +599,9 @@ const ko = {
     scoreLabel: '{{score}} / {{total}} 성공',
     finishedTitle: '애너그램 완료!',
     restartButton: '다시 하기',
+    styleLabel: '모양',
+    styleRack: '나무 글자판',
+    styleTags: '나무 이름표',
     infoDescription: '뒤섞인 글자를 순서대로 눌러서 원래 단어를 완성하는 게임이에요.',
     infoSteps: [
       '설정에서 단어를 등록하세요.',
@@ -626,6 +629,9 @@ const ko = {
     wrongCountLabel: '오답 {{count}}번',
     finishedTitle: '모두 정리했어요!',
     restartButton: '다시 섞기',
+    styleLabel: '모양',
+    styleCrates: '나무 상자',
+    styleBaskets: '점토 바구니',
     infoDescription: '항목을 보고 올바른 그룹 상자에 넣어 분류하는 게임이에요.',
     infoSteps: [
       '설정에서 그룹을 2개 이상 만들고, 각 그룹에 속하는 항목을 등록하세요.',
@@ -654,6 +660,9 @@ const ko = {
     scoreLabel: '{{score}} / {{total}} 성공',
     finishedTitle: '문장 배열하기 완료!',
     restartButton: '다시 하기',
+    styleLabel: '모양',
+    styleRack: '나무 글자판',
+    styleTags: '나무 이름표',
     infoDescription: '뒤섞인 단어를 순서대로 눌러서 올바른 문장을 완성하는 게임이에요.',
     infoSteps: [
       '설정에서 단어가 2개 이상인 문장을 등록하세요.',
@@ -1146,6 +1155,20 @@ const ko = {
     rosterAddAll: '+ 전체 추가 ({{count}}명)',
   },
 
+  wordListPicker: {
+    open: '단어장에서 불러오기',
+    close: '단어장 닫기',
+    fieldWord: '단어로',
+    fieldMeaning: '뜻으로',
+    loading: '불러오는 중…',
+    emptyNone: '만들어둔 단어장이 없습니다. "내 단어장"에서 먼저 만들어보세요.',
+    emptyNoImages: '이미지가 있는 단어장이 없습니다. 사전에서 단어를 담아 만든 단어장만 쓸 수 있어요.',
+    emptyTooFewForQuiz: '단어가 2개 이상인 단어장만 퀴즈로 만들 수 있어요. 오답 보기를 다른 단어에서 뽑아야 하거든요.',
+    quizWordToMeaning: '단어 보고 뜻 맞히기',
+    quizMeaningToWord: '뜻 보고 단어 맞히기',
+    quizAutoChoicesHint: '오답 보기는 같은 단어장의 다른 단어에서 자동으로 만들어져요.',
+  },
+
   imagePicker: {
     upload: '+ 사진 올리기',
     replace: '사진 바꾸기',
@@ -1173,6 +1196,28 @@ const ko = {
     allRule: '전체',
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
+  },
+
+  wordLists: {
+    title: '내 단어장',
+    hint: '수업별로 필요한 단어를 모아두면, 게임 만들 때 "단어장에서 불러오기"로 바로 채울 수 있어요.',
+    empty: '아직 만든 단어장이 없습니다.',
+    academyWide: '학원 전체',
+    createButton: '새 단어장 만들기',
+    createdToast: '단어장을 만들었습니다.',
+    namePlaceholder: '단어장 이름 (예: 9월 3주차 리딩)',
+    rename: '이름 변경',
+    renamePrompt: '단어장 이름을 입력하세요',
+    renamedToast: '이름을 변경했습니다.',
+    delete: '삭제',
+    deleteConfirm: '"{{name}}" 단어장을 삭제할까요?',
+    deletedToast: '삭제했습니다.',
+    savedToast: '저장했습니다.',
+    tabManual: '직접 입력',
+    tabDictionary: '사전에서 선택',
+    wordPlaceholder: '단어',
+    meaningPlaceholder: '뜻',
+    addButton: '추가',
   },
 
   gameAdmin: {
@@ -1527,6 +1572,7 @@ const ko = {
     gameCenter: '게임 센터',
     dictionary: '단어 사전',
     phonics: '파닉스',
+    wordLists: '내 단어장',
     reports: '리포트',
     myBoard: '내 통장',
     games: '게임',

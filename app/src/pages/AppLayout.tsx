@@ -32,6 +32,7 @@ export default function AppLayout() {
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
         { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
         { to: '/phonics', label: t('nav.phonics'), icon: 'spellcheck' },
+        { to: '/wordlists', label: t('nav.wordLists'), icon: 'library_books' },
         { to: '/results', label: t('nav.reports'), icon: 'assessment' },
       ]
     : [

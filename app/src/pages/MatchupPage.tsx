@@ -7,6 +7,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import Matchup from '../components/Matchup';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, MatchPair } from '../lib/types';
@@ -58,6 +59,8 @@ export default function MatchupPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -83,6 +86,12 @@ export default function MatchupPage() {
 
   function addPair() {
     const next = [...draftPairs, newPair()];
+    setDraftPairs(next);
+    void persistPairs(next);
+  }
+
+  function addPairsBulk(pairs: MatchPair[]) {
+    const next = [...draftPairs, ...pairs];
     setDraftPairs(next);
     void persistPairs(next);
   }
@@ -342,6 +351,12 @@ export default function MatchupPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="pairs"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportPairs={(pairs) => addPairsBulk(pairs)}
+                    />
 
                     {draftPairs.map((p, pi) => (
                       <div key={p.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

@@ -601,6 +601,9 @@ const en: Ko = {
     scoreLabel: '{{score}} / {{total}} correct',
     finishedTitle: 'Anagram complete!',
     restartButton: 'Play again',
+    styleLabel: 'Look',
+    styleRack: 'Wood rack',
+    styleTags: 'Hanging tags',
     infoDescription: 'Tap the scrambled letters in order to spell out the original word.',
     infoSteps: [
       'In settings, add words.',
@@ -628,6 +631,9 @@ const en: Ko = {
     wrongCountLabel: '{{count}} misses',
     finishedTitle: 'Everything sorted!',
     restartButton: 'Shuffle & try again',
+    styleLabel: 'Look',
+    styleCrates: 'Wood crates',
+    styleBaskets: 'Clay baskets',
     infoDescription: 'Sort each item into the group box it belongs to.',
     infoSteps: [
       'In settings, create at least 2 groups and add the items that belong to each.',
@@ -656,6 +662,9 @@ const en: Ko = {
     scoreLabel: '{{score}} / {{total}} correct',
     finishedTitle: 'Sentence Unscramble complete!',
     restartButton: 'Play again',
+    styleLabel: 'Look',
+    styleRack: 'Wood rack',
+    styleTags: 'Hanging tags',
     infoDescription: 'Tap the scrambled words in order to build the correct sentence.',
     infoSteps: [
       'In settings, add sentences with 2 or more words.',
@@ -1148,6 +1157,20 @@ const en: Ko = {
     rosterAddAll: '+ Add all ({{count}})',
   },
 
+  wordListPicker: {
+    open: 'Load from a word list',
+    close: 'Close word lists',
+    fieldWord: 'By word',
+    fieldMeaning: 'By meaning',
+    loading: 'Loading…',
+    emptyNone: 'No word lists yet. Create one under "My Word Lists" first.',
+    emptyNoImages: 'No word lists with images. Only lists built from the dictionary carry images.',
+    emptyTooFewForQuiz: 'Only word lists with 2+ words can become a quiz — wrong-answer choices are drawn from the other words.',
+    quizWordToMeaning: 'Show word, guess meaning',
+    quizMeaningToWord: 'Show meaning, guess word',
+    quizAutoChoicesHint: 'Wrong-answer choices are generated automatically from the other words in the list.',
+  },
+
   imagePicker: {
     upload: '+ Upload Photo',
     replace: 'Replace Photo',
@@ -1175,6 +1198,28 @@ const en: Ko = {
     allRule: 'All',
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
+  },
+
+  wordLists: {
+    title: 'My Word Lists',
+    hint: 'Save the words you need for a lesson here, then load them straight into any game with "Load from a word list".',
+    empty: 'No word lists yet.',
+    academyWide: 'Academy-wide',
+    createButton: 'New word list',
+    createdToast: 'Created the word list.',
+    namePlaceholder: 'List name (e.g. Week 3 Reading)',
+    rename: 'Rename',
+    renamePrompt: 'Enter a name for the word list',
+    renamedToast: 'Renamed the list.',
+    delete: 'Delete',
+    deleteConfirm: 'Delete the word list "{{name}}"?',
+    deletedToast: 'Deleted the list.',
+    savedToast: 'Saved.',
+    tabManual: 'Type manually',
+    tabDictionary: 'Pick from dictionary',
+    wordPlaceholder: 'Word',
+    meaningPlaceholder: 'Meaning',
+    addButton: 'Add',
   },
 
   gameAdmin: {
@@ -1530,6 +1575,7 @@ const en: Ko = {
     gameCenter: 'Game Center',
     dictionary: 'Word Dictionary',
     phonics: 'Phonics',
+    wordLists: 'My Word Lists',
     reports: 'Reports',
     myBoard: 'My Passbook',
     games: 'Games',

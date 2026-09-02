@@ -7,9 +7,10 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import TypeAnswer from '../components/TypeAnswer';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, TypeAnswerEntry } from '../lib/types';
+import type { GameItem, GameTemplateConfig, MatchPair, TypeAnswerEntry } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -58,6 +59,8 @@ export default function TypeAnswerPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -95,6 +98,13 @@ export default function TypeAnswerPage() {
 
   function addEntry() {
     const next = [...draftEntries, newEntry()];
+    setDraftEntries(next);
+    void persistEntries(next);
+  }
+
+  /** 단어장의 word/meaning 쌍을 "뜻을 보고 단어 입력"에 맞게 뜻=prompt, 단어=answer 로 채운다. */
+  function addEntriesFromPairs(pairs: MatchPair[]) {
+    const next = [...draftEntries, ...pairs.map((p) => ({ id: p.id, prompt: p.right, answer: p.left }))];
     setDraftEntries(next);
     void persistEntries(next);
   }
@@ -316,6 +326,12 @@ export default function TypeAnswerPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="pairs"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportPairs={(pairs) => addEntriesFromPairs(pairs)}
+                    />
 
                     <div>
                       <div className="font-caption text-caption text-on-surface-variant mb-2">
