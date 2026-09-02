@@ -1142,6 +1142,8 @@ const ko = {
     title: '단어 사전',
     searchPlaceholder: '단어나 뜻을 검색하세요 (예: apple, 사과)',
     allCategory: '전체',
+    categoryLabel: '카테고리',
+    partOfSpeechLabel: '품사',
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
     viewFullImage: '{{word}} 이미지 전체 보기',

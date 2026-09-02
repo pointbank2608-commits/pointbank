@@ -22,6 +22,21 @@ const CATEGORIES = [
   '인사/표현',
 ] as const;
 
+/** 전통 8품사(명사~감탄사) 먼저, 데이터에만 있는 나머지 품사(관사/수사/조동사 등)는 뒤에 붙는다. */
+const PART_OF_SPEECH_ORDER = [
+  '명사',
+  '대명사',
+  '동사',
+  '형용사',
+  '부사',
+  '전치사',
+  '접속사',
+  '감탄사',
+  '관사',
+  '수사',
+  '조동사',
+];
+
 function WordImage({ entry, onOpen }: { entry: WordBankEntry; onOpen: (entry: WordBankEntry) => void }) {
   const { t } = useTranslation();
   const [broken, setBroken] = useState(false);
@@ -97,6 +112,7 @@ export default function DictionaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>('all');
+  const [partOfSpeech, setPartOfSpeech] = useState<string>('all');
   const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
 
   useEffect(() => {
@@ -111,15 +127,24 @@ export default function DictionaryPage() {
     return CATEGORIES.filter((c) => set.has(c));
   }, [entries]);
 
+  const usedPartsOfSpeech = useMemo(() => {
+    if (!entries) return [];
+    const set = new Set(entries.map((e) => e.part_of_speech).filter(Boolean));
+    const ordered = PART_OF_SPEECH_ORDER.filter((p) => set.has(p));
+    const extras = [...set].filter((p) => !PART_OF_SPEECH_ORDER.includes(p)).sort();
+    return [...ordered, ...extras];
+  }, [entries]);
+
   const filtered = useMemo(() => {
     if (!entries) return [];
     const q = query.trim().toLowerCase();
     return entries.filter((e) => {
       if (category !== 'all' && e.category !== category) return false;
+      if (partOfSpeech !== 'all' && e.part_of_speech !== partOfSpeech) return false;
       if (!q) return true;
       return e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q);
     });
-  }, [entries, query, category]);
+  }, [entries, query, category, partOfSpeech]);
 
   return (
     <div className="space-y-6">
@@ -135,32 +160,68 @@ export default function DictionaryPage() {
       />
 
       {entries && (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setCategory('all')}
-            className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
-              category === 'all'
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
-            }`}
-          >
-            {t('dictionary.allCategory')}
-          </button>
-          {usedCategories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCategory(cat)}
-              className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
-                category === cat
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="space-y-3">
+          <div>
+            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.categoryLabel')}</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setCategory('all')}
+                className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
+                  category === 'all'
+                    ? 'bg-primary text-on-primary shadow-sm'
+                    : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                {t('dictionary.allCategory')}
+              </button>
+              {usedCategories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
+                    category === cat
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.partOfSpeechLabel')}</div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setPartOfSpeech('all')}
+                className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
+                  partOfSpeech === 'all'
+                    ? 'bg-secondary text-on-secondary shadow-sm'
+                    : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                }`}
+              >
+                {t('dictionary.allCategory')}
+              </button>
+              {usedPartsOfSpeech.map((pos) => (
+                <button
+                  key={pos}
+                  type="button"
+                  onClick={() => setPartOfSpeech(pos)}
+                  className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
+                    partOfSpeech === pos
+                      ? 'bg-secondary text-on-secondary shadow-sm'
+                      : 'border border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

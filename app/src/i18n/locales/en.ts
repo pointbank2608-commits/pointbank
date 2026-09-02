@@ -1144,6 +1144,8 @@ const en: Ko = {
     title: 'Word Dictionary',
     searchPlaceholder: 'Search a word or meaning (e.g. apple, 사과)',
     allCategory: 'All',
+    categoryLabel: 'Category',
+    partOfSpeechLabel: 'Part of Speech',
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
     viewFullImage: 'View full image for {{word}}',
