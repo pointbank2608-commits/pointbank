@@ -445,6 +445,7 @@ const en: Ko = {
     wrongLettersLabel: 'Wrong letters',
     guessPlaceholder: 'One letter',
     guessButton: 'Guess',
+    keyboardLabel: 'Letter keyboard',
     maxAttemptsLabel: 'Attempts allowed',
     scoreLabel: '{{score}} / {{total}} correct',
     nextButton: 'Next word',
@@ -455,7 +456,7 @@ const en: Ko = {
     infoDescription: 'Guess letters one at a time to reveal the hidden word.',
     infoSteps: [
       'In settings, add words and set how many wrong guesses are allowed.',
-      'Look at the blanks and type one letter at a time to guess.',
+      'Look at the blanks and tap a letter on the keyboard to guess.',
       'Each wrong guess removes a heart — run out and that round is a miss.',
       'Guess the word correctly, then tap "Next word" to continue.',
     ],
@@ -1136,6 +1137,14 @@ const en: Ko = {
     uploading: 'Uploading…',
   },
 
+  dictionary: {
+    title: 'Word Dictionary',
+    searchPlaceholder: 'Search a word or meaning (e.g. apple, 사과)',
+    allCategory: 'All',
+    resultCount: '{{count}} words',
+    noResults: 'No matches found.',
+  },
+
   gameAdmin: {
     renamePrompt: 'Enter a name',
     renamedToast: 'Renamed it.',
@@ -1484,6 +1493,7 @@ const en: Ko = {
     attendance: 'Attendance',
     board: 'Point Bank',
     gameCenter: 'Game Center',
+    dictionary: 'Word Dictionary',
     reports: 'Reports',
     myBoard: 'My Passbook',
     games: 'Games',

@@ -14,6 +14,7 @@ import type {
   StudentBalance,
   SummaryRow,
   Transaction,
+  WordBankEntry,
 } from './types';
 
 /** Supabase 응답에서 에러를 던지고 데이터만 돌려준다. */
@@ -777,4 +778,12 @@ export async function deleteAcademyAsAdmin(academyId: string) {
 export async function changeMyPassword(newPassword: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw new Error(error.message);
+}
+
+/* ---------------- 단어장 ---------------- */
+
+/** 교육부 지정 초등 필수 영단어 800(학원 구분 없는 공용 사전) 전체를 한 번에 불러온다.
+ * 812행(뜻이 2개 이상인 단어는 행이 나뉨) 정도라 페이지네이션 없이 전부 가져와 화면에서 검색/필터한다. */
+export async function fetchWordBank(): Promise<WordBankEntry[]> {
+  return unwrap(await supabase.from('word_bank').select('*').order('sort_order').order('sense_number'));
 }

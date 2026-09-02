@@ -14,6 +14,7 @@ import CrosswordPage from './pages/CrosswordPage';
 import AuthPage from './pages/AuthPage';
 import ClassBoardPage from './pages/ClassBoardPage';
 import DashboardPage from './pages/DashboardPage';
+import DictionaryPage from './pages/DictionaryPage';
 import FindMissingPage from './pages/FindMissingPage';
 import FlashcardsPage from './pages/FlashcardsPage';
 import GamesPage from './pages/GamesPage';
@@ -107,6 +108,7 @@ export default function App() {
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/results/homework/:studentId" element={<HomeworkCalendarPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />

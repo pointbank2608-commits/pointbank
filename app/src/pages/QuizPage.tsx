@@ -301,8 +301,10 @@ export default function QuizPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">📝</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="qz-block qz-block-0 mx-auto mb-3 w-[72px] justify-center px-0 py-3">
+              <span className="qz-letter">A</span>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameQuiz.emptyStaff') : t('gameQuiz.emptyStudent')}
             </div>
@@ -318,7 +320,7 @@ export default function QuizPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <Quiz questions={playableQuestions} />
           </GameThemeFrame>

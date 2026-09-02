@@ -332,6 +332,20 @@ export interface ImageQuizItem {
   answer: string;
 }
 
+/* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */
+
+export interface WordBankEntry {
+  id: string;
+  word: string;
+  sense_number: number;
+  part_of_speech: string;
+  meaning: string;
+  example_sentence: string | null;
+  category: string | null;
+  image_url: string | null;
+  sort_order: number;
+}
+
 export interface GameTemplate {
   id: string;
   academy_id: string;

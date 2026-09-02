@@ -443,6 +443,7 @@ const ko = {
     wrongLettersLabel: '틀린 글자',
     guessPlaceholder: '한 글자',
     guessButton: '확인',
+    keyboardLabel: '글자 키보드',
     maxAttemptsLabel: '기회 횟수 (오답 허용)',
     scoreLabel: '{{score}} / {{total}} 성공',
     nextButton: '다음 단어',
@@ -453,7 +454,7 @@ const ko = {
     infoDescription: '한 글자씩 맞혀서 숨겨진 단어를 완성하는 행맨 게임이에요.',
     infoSteps: [
       '설정에서 단어를 등록하고, 허용할 오답 횟수(기회)를 정하세요.',
-      '빈칸으로 표시된 단어를 보고 한 글자씩 입력해 맞혀보세요.',
+      '빈칸으로 표시된 단어를 보고, 아래 글자를 눌러 맞혀보세요.',
       '틀릴 때마다 하트가 하나씩 줄어들고, 다 없어지면 그 판은 실패예요.',
       '단어를 다 맞히면 "다음 단어"를 눌러 계속 진행하세요.',
     ],
@@ -1134,6 +1135,14 @@ const ko = {
     uploading: '업로드 중…',
   },
 
+  dictionary: {
+    title: '단어 사전',
+    searchPlaceholder: '단어나 뜻을 검색하세요 (예: apple, 사과)',
+    allCategory: '전체',
+    resultCount: '{{count}}개 단어',
+    noResults: '검색 결과가 없어요.',
+  },
+
   gameAdmin: {
     renamePrompt: '이름을 입력하세요',
     renamedToast: '이름을 변경했습니다.',
@@ -1481,6 +1490,7 @@ const ko = {
     attendance: '출석부',
     board: '포인트 뱅크',
     gameCenter: '게임 센터',
+    dictionary: '단어 사전',
     reports: '리포트',
     myBoard: '내 통장',
     games: '게임',

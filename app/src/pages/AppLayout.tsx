@@ -30,6 +30,7 @@ export default function AppLayout() {
         { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
         { to: '/board', label: t('nav.board'), icon: 'payments' },
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
+        { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
         { to: '/results', label: t('nav.reports'), icon: 'assessment' },
       ]
     : [
