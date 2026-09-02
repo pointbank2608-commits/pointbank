@@ -39,7 +39,7 @@ export function useGameTemplates(params: {
   /** "다른 게임으로 열기"로 넘어온 경우, 그 새 템플릿을 최초 1회만 자동 선택하기 위한 값. */
   const openTemplateIdRef = useRef((location.state as { openTemplateId?: string } | null)?.openTemplateId);
 
-  const { classes, selectedId: staffClassId, select: selectClass } = useClasses(academy?.id);
+  const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
   const [studentClassName, setStudentClassName] = useState('');
 
@@ -235,6 +235,7 @@ export function useGameTemplates(params: {
     classes,
     staffClassId,
     selectClass,
+    reorderClasses,
     studentClassName,
     classId,
     roster,

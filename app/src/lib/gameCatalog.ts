@@ -228,7 +228,8 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     type: 'whackamole',
     number: 18,
     category: 'vocabulary',
-    minItems: 1,
+    // 단어+뜻 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
+    minItems: 999,
     icon: 'touch_app',
     path: '/games/whackamole',
     cover: '/covers/game-whackamole.jpg',

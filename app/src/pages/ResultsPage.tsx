@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchMyStudentRow, fetchRankingSummary } from '../lib/api';
@@ -28,7 +29,7 @@ export default function ResultsPage() {
   const { academy, session, pointUnit, isStaff } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();
-  const { classes, selectedId, select } = useClasses(academy?.id);
+  const { classes, selectedId, select, reorder } = useClasses(academy?.id);
 
   const [period, setPeriod] = useState<Period>('all');
   const [scope, setScope] = useState<Scope>('class');
@@ -103,21 +104,7 @@ export default function ResultsPage() {
       </div>
 
       {scope === 'class' && (
-        <div className="flex flex-wrap gap-2">
-          {classes.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => select(c.id)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-                c.id === selectedId
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
       )}
 
       <div className="flex flex-wrap gap-2">

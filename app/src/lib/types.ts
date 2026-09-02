@@ -229,10 +229,14 @@ export interface GameTemplateConfig {
    */
   statements?: TrueFalseStatement[];
   /**
-   * 매치업 전용: 단어+뜻 짝 목록. 역시 공용 items 모델(단일 라벨)로는 "짝"을 표현할 수
-   * 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
+   * 매치업·두더지잡기 전용: 단어+뜻 짝 목록. 공용 items 모델(단일 라벨)로는 "짝"을
+   * 표현할 수 없어 별도로 둔다 — 다른 게임으로 열기 대상에서 자연히 제외된다.
    */
   pairs?: MatchPair[];
+  /** 매치업 전용: 점토 트레이(A, 기본) 또는 매달린 나무 이름표(B). */
+  matchupStyle?: 'trays' | 'tags';
+  /** 두더지잡기 전용: 보드에 단어를 두고 구멍에서 뜻을 고를지, 반대로 할지. */
+  whackMode?: 'wordToMeaning' | 'meaningToWord';
   /**
    * 답 입력하기 전용: 질문(또는 빈칸 있는 문장)+정답 목록. 워드월의 "답을 입력합니다"와
    * "문장 완성"은 둘 다 "프롬프트 보여주고 텍스트로 답 입력받기"라는 같은 상호작용이라
@@ -255,6 +259,8 @@ export interface GameTemplateConfig {
   groups?: GroupSortGroup[];
   /** 플래시카드 전용: 카드 앞(left)/뒤(right) 목록. 매치업의 MatchPair 모양을 그대로 재사용한다. */
   flashcards?: MatchPair[];
+  /** 플래시카드 전용: 나무 액자(A, 기본) 또는 점토 카드(B). */
+  flashcardsStyle?: 'wood' | 'clay';
   /** 명칭이 있는 다이어그램 전용: 배경으로 쓸 업로드 이미지 URL. */
   diagramImageUrl?: string;
   /** 명칭이 있는 다이어그램 전용: 이미지 위에 찍은 핀(정답 라벨+좌표) 목록. */
@@ -344,6 +350,20 @@ export interface WordBankEntry {
   meaning: string;
   example_sentence: string | null;
   category: string | null;
+  image_url: string | null;
+  sort_order: number;
+}
+
+/* ---------------- 파닉스(소리 규칙) 단어, 학원 구분 없는 공용 데이터 ---------------- */
+
+export interface PhonicsBankEntry {
+  id: string;
+  word: string;
+  /** 소리 규칙에 해당하는 글자를 {} 로 감싼 문자열. 예: "r{ai}n", 비연속 규칙은 "b{a}k{e}". */
+  pattern_marked: string;
+  step: number;
+  rule: string;
+  meaning: string | null;
   image_url: string | null;
   sort_order: number;
 }

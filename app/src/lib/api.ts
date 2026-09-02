@@ -7,6 +7,7 @@ import type {
   GameItem,
   GameTemplate,
   GameTemplateConfig,
+  PhonicsBankEntry,
   Preset,
   RankRow,
   Settlement,
@@ -54,6 +55,15 @@ export async function renameClass(classId: string, name: string) {
 export async function deleteClass(classId: string) {
   const { error } = await supabase.from('classes').delete().eq('id', classId);
   if (error) throw new Error(error.message);
+}
+
+/** 드래그로 반 순서를 바꾼 뒤, 새 순서(앞에서부터 0,1,2…)를 한 번에 저장한다. */
+export async function reorderClasses(orderedIds: string[]) {
+  const results = await Promise.all(
+    orderedIds.map((id, i) => supabase.from('classes').update({ sort_order: i }).eq('id', id)),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
 }
 
 /* ---------------- 학생 ---------------- */
@@ -786,4 +796,11 @@ export async function changeMyPassword(newPassword: string): Promise<void> {
  * 812행(뜻이 2개 이상인 단어는 행이 나뉨) 정도라 페이지네이션 없이 전부 가져와 화면에서 검색/필터한다. */
 export async function fetchWordBank(): Promise<WordBankEntry[]> {
   return unwrap(await supabase.from('word_bank').select('*').order('sort_order').order('sense_number'));
+}
+
+/* ---------------- 파닉스 ---------------- */
+
+/** 파닉스 단어 347개(학원 구분 없는 공용 데이터) 전체를 한 번에 불러온다. */
+export async function fetchPhonicsBank(): Promise<PhonicsBankEntry[]> {
+  return unwrap(await supabase.from('phonics_bank').select('*').order('sort_order'));
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -38,6 +39,7 @@ export default function BombPage() {
     classes,
     staffClassId,
     selectClass,
+    reorderClasses,
     studentClassName,
     classId,
     roster,
@@ -169,21 +171,7 @@ export default function BombPage() {
   }
 
   const classPicker = isStaff ? (
-    <div className="flex flex-wrap gap-2">
-      {classes.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => selectClass(c.id)}
-          className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-            c.id === staffClassId
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-          }`}
-        >
-          {c.name}
-        </button>
-      ))}
-    </div>
+    <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
   ) : (
     <h2 className="font-title-md text-title-md text-on-surface">
       {t('gameBomb.studentClassTitle', { className: studentClassName })}

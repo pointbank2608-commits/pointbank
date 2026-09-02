@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
+import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
   clearCheckIn,
   clearCheckOut,
+  createClass,
+  createStudent,
   deleteAttendance,
+  deleteStudent,
   fetchAttendance,
   fetchStudentsOfClass,
   markPresent,
+  renameStudent,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import type { Attendance, Student } from '../lib/types';
@@ -28,7 +33,7 @@ export default function AttendancePage() {
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
-  const { classes, selectedId, select } = useClasses(academy?.id);
+  const { classes, selectedId, select, reload: reloadClasses, reorder } = useClasses(academy?.id);
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -78,6 +83,42 @@ export default function AttendancePage() {
   useEffect(() => {
     setDetail(null);
   }, [selectedId, year, month]);
+
+  async function handleAddClass() {
+    if (!academy?.id) return;
+    const name = prompt(t('attendance.addClassPrompt'));
+    if (!name?.trim()) return;
+    const ok = await run(async () => {
+      await createClass(academy.id, name.trim(), classes.length);
+    }, t('settings.classAddedToast'));
+    if (ok) await reloadClasses();
+  }
+
+  async function handleAddStudent() {
+    if (!academy?.id || !selectedId) return;
+    const name = prompt(t('board.addStudentPrompt'));
+    if (!name?.trim()) return;
+    const ok = await run(async () => {
+      await createStudent(academy.id, selectedId, name.trim());
+    }, t('board.addStudentToast', { name: name.trim() }));
+    if (ok) await load();
+  }
+
+  async function handleRenameStudent(studentId: string, currentName: string) {
+    const next = prompt(t('attendance.renameStudentPrompt'), currentName);
+    if (!next?.trim() || next.trim() === currentName) return;
+    const ok = await run(() => renameStudent(studentId, next.trim()), t('attendance.renameStudentToast'));
+    if (ok) setStudents((prev) => prev.map((s) => (s.id === studentId ? { ...s, name: next.trim() } : s)));
+  }
+
+  async function handleDeleteStudent(studentId: string, name: string) {
+    if (!confirm(t('board.removeStudentConfirm', { name }))) return;
+    const ok = await run(() => deleteStudent(studentId), t('board.removeStudentToast'));
+    if (ok) {
+      setStudents((prev) => prev.filter((s) => s.id !== studentId));
+      setAttendance((prev) => prev.filter((a) => a.student_id !== studentId));
+    }
+  }
 
   const map = useMemo(() => {
     const m = new Map<string, Attendance>(); // `${studentId}_${day}`
@@ -176,26 +217,31 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {classes.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => select(c.id)}
-            className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-              c.id === selectedId
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-            }`}
-          >
-            {c.name}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
+        <button
+          onClick={() => void handleAddClass()}
+          className="flex items-center gap-1 px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          {t('settings.addClass')}
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-          {t('attendance.title')}
-        </h2>
+        <div>
+          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+            {t('nav.attendance')}
+          </h2>
+          {selectedId && (
+            <button
+              onClick={() => void handleAddStudent()}
+              className="mt-1 font-label-md text-label-md text-primary hover:underline"
+            >
+              {t('board.addStudent')}
+            </button>
+          )}
+        </div>
         <div className="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-sm px-2 py-1.5">
           <button
             onClick={() => shiftMonth(-1)}
@@ -217,12 +263,22 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      <p className="font-caption text-caption text-on-surface-variant">{t('attendance.hint')}</p>
+      <p className="font-caption text-caption text-on-surface-variant">{t('attendance.title')} · {t('attendance.hint')}</p>
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : students.length === 0 ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('attendance.noStudents')}</div>
+        <div className="text-center py-16 space-y-3">
+          <p className="font-body-md text-on-surface-variant">{t('attendance.noStudents')}</p>
+          {selectedId && (
+            <button
+              onClick={() => void handleAddStudent()}
+              className="inline-flex items-center px-4 py-2 rounded-full font-label-md text-label-md bg-primary text-on-primary shadow-sm hover:opacity-90 transition-opacity"
+            >
+              {t('board.addStudent')}
+            </button>
+          )}
+        </div>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-4 md:p-6 overflow-x-auto">
           <table className="w-full text-center border-collapse">
@@ -243,7 +299,23 @@ export default function AttendancePage() {
                 return (
                   <tr key={s.id} className="border-t border-surface-container">
                     <td className="text-left py-2 pr-3 font-label-md text-label-md text-on-surface whitespace-nowrap sticky left-0 bg-surface-container-lowest">
-                      {s.name}
+                      <div className="flex items-center gap-1">
+                        <span>{s.name}</span>
+                        <button
+                          onClick={() => void handleRenameStudent(s.id, s.name)}
+                          aria-label={t('attendance.renameStudentPrompt')}
+                          className="p-1 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
+                        <button
+                          onClick={() => void handleDeleteStudent(s.id, s.name)}
+                          aria-label={t('board.removeStudent')}
+                          className="p-1 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-error transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                      </div>
                     </td>
                     {days.map((d) => {
                       const key = `${s.id}_${d}`;

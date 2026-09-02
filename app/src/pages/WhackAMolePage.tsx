@@ -1,29 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import WhackAMole from '../components/WhackAMole';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
+import WhackAMole from '../components/WhackAMole';
 import { updateGameTemplate } from '../lib/api';
-import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig } from '../lib/types';
+import type { GameItem, GameTemplate, GameTemplateConfig, MatchPair } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
 }
 
 function defaultItems(): GameItem[] {
-  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: i18n.t('gameWhackamole.defaultItem', { n }) }));
+  return [];
+}
+
+function newPair(): MatchPair {
+  return { id: uid(), left: '', right: '' };
+}
+
+function seedPairs(tpl: GameTemplate | null): MatchPair[] {
+  if (!tpl) return [];
+  if (tpl.config.pairs && tpl.config.pairs.length > 0) return tpl.config.pairs;
+  return tpl.items.map((item) => ({ id: item.id, left: item.label, right: '' }));
 }
 
 export default function WhackAMolePage() {
   const { t } = useTranslation();
-  const g = useGameTemplates({ gameType: 'whackamole', defaultItems });
+  const g = useGameTemplates({
+    gameType: 'whackamole',
+    defaultItems,
+    defaultConfig: () => ({ pairs: [], whackMode: 'wordToMeaning' }),
+  });
   const {
     isStaff,
     classes,
@@ -31,10 +42,6 @@ export default function WhackAMolePage() {
     selectClass,
     studentClassName,
     classId,
-    roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
     templates,
     setTemplates,
     selected,
@@ -52,57 +59,69 @@ export default function WhackAMolePage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
     importCandidates,
     importFromClass,
     reload,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [draftPairs, setDraftPairs] = useState<MatchPair[]>(() => seedPairs(selected));
 
-  async function persistItems(next: GameItem[]) {
+  useEffect(() => {
+    setDraftPairs(seedPairs(selected));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id]);
+
+  const playablePairs = draftPairs.filter((p) => p.left.trim() && p.right.trim());
+  const whackMode = selected?.config.whackMode === 'meaningToWord' ? 'meaningToWord' : 'wordToMeaning';
+
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: next });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function addItem() {
-    const label = newItemLabel.trim();
-    if (!label || !selected) return;
-    await persistItems([...selected.items, { id: uid(), label }]);
-    setNewItemLabel('');
-  }
-
-  async function addItemsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
-  }
-
-  async function removeItem(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
-  }
-
-  async function clearAllItems() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameWhackamole.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function persistPairs(next: MatchPair[]) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, pairs: next });
+  }
+
+  function addPair() {
+    const next = [...draftPairs, newPair()];
+    setDraftPairs(next);
+    void persistPairs(next);
+  }
+
+  function removePair(pid: string) {
+    const next = draftPairs.filter((p) => p.id !== pid);
+    setDraftPairs(next);
+    void persistPairs(next);
+  }
+
+  function updateLeftLocal(pid: string, text: string) {
+    setDraftPairs((prev) => prev.map((p) => (p.id === pid ? { ...p, left: text } : p)));
+  }
+
+  function updateRightLocal(pid: string, text: string) {
+    setDraftPairs((prev) => prev.map((p) => (p.id === pid ? { ...p, right: text } : p)));
+  }
+
+  function commitOnBlur() {
+    void persistPairs(draftPairs);
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleModeChange(mode: 'wordToMeaning' | 'meaningToWord') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, whackMode: mode });
   }
 
   if (isStaff && classes.length === 0) {
@@ -124,7 +143,7 @@ export default function WhackAMolePage() {
           onClick={() => selectClass(c.id)}
           className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
             c.id === staffClassId
-              ? 'bg-primary text-on-primary shadow-sm'
+              ? 'bg-primary text-on-primary'
               : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
           }`}
         >
@@ -256,8 +275,17 @@ export default function WhackAMolePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🐹</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center">
+              <span className="wm-well wm-well-2 pointer-events-none w-[88px]">
+                <span className="wm-hole">
+                  <span className="wm-mole is-up">
+                    <span className="wm-sign">A</span>
+                    <img className="wm-critter" src="/skins/wm-mole.png" alt="" draggable={false} />
+                  </span>
+                </span>
+              </span>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameWhackamole.emptyStaff') : t('gameWhackamole.emptyStudent')}
             </div>
@@ -273,9 +301,9 @@ export default function WhackAMolePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <WhackAMole items={selected.items} />
+            <WhackAMole pairs={playablePairs} mode={whackMode} />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -303,69 +331,74 @@ export default function WhackAMolePage() {
                   </div>
                 </div>
 
-                {editorOpen && (
-                  <div>
-                    <OpenInOtherGame currentType="whackamole" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {selected.items.length === 0 ? (
-                        <span className="font-caption text-caption text-on-surface-variant">
-                          {t('gameAdmin.noParticipants')}
-                        </span>
-                      ) : (
-                        selected.items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                          >
-                            {item.label}
-                            <button
-                              onClick={() => void removeItem(item.id)}
-                              className="text-on-surface-variant hover:text-error"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {selected.items.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameWhackamole.modeLabel')}
+                  </span>
+                  {(['wordToMeaning', 'meaningToWord'] as const).map((mode) => {
+                    const on = whackMode === mode;
+                    return (
                       <button
+                        key={mode}
                         type="button"
-                        onClick={() => void clearAllItems()}
-                        className="mt-2 font-label-md text-label-md text-error hover:underline"
+                        onClick={() => void handleModeChange(mode)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
                       >
-                        {t('gameAdmin.clearAll')}
+                        {mode === 'wordToMeaning' ? t('gameWhackamole.modeWord') : t('gameWhackamole.modeMeaning')}
                       </button>
-                    )}
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text"
-                        placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                        value={newItemLabel}
-                        onChange={(e) => setNewItemLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addItem();
-                        }}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                      />
-                      <button
-                        onClick={() => void addItem()}
-                        className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                      >
-                        {t('gameAdmin.addParticipant')}
-                      </button>
-                    </div>
+                    );
+                  })}
+                </div>
+
+                {editorOpen && (
+                  <div className="space-y-4">
+                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
+                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+
+                    {draftPairs.map((p, pi) => (
+                      <div key={p.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="font-label-md text-label-md text-on-surface-variant">
+                            {t('gameWhackamole.pairLabel', { n: pi + 1 })}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removePair(p.id)}
+                            className="font-caption text-caption text-error hover:underline"
+                          >
+                            {t('gameWhackamole.removePairButton')}
+                          </button>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            value={p.left}
+                            onChange={(e) => updateLeftLocal(p.id, e.target.value)}
+                            onBlur={commitOnBlur}
+                            placeholder={t('gameWhackamole.leftPlaceholder')}
+                            className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                          />
+                          <input
+                            value={p.right}
+                            onChange={(e) => updateRightLocal(p.id, e.target.value)}
+                            onBlur={commitOnBlur}
+                            placeholder={t('gameWhackamole.rightPlaceholder')}
+                            className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={addPair}
+                      className="w-full px-4 py-2.5 rounded-lg font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+                    >
+                      {t('gameWhackamole.addPairButton')}
+                    </button>
                   </div>
                 )}
               </div>

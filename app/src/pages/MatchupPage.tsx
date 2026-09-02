@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
@@ -34,6 +35,7 @@ export default function MatchupPage() {
     classes,
     staffClassId,
     selectClass,
+    reorderClasses,
     studentClassName,
     classId,
     templates,
@@ -103,15 +105,24 @@ export default function MatchupPage() {
     void persistPairs(draftPairs);
   }
 
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'trays' | 'tags') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, matchupStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -126,21 +137,7 @@ export default function MatchupPage() {
   }
 
   const classPicker = isStaff ? (
-    <div className="flex flex-wrap gap-2">
-      {classes.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => selectClass(c.id)}
-          className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-            c.id === staffClassId
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-          }`}
-        >
-          {c.name}
-        </button>
-      ))}
-    </div>
+    <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
   ) : (
     <h2 className="font-title-md text-title-md text-on-surface">
       {t('gameMatchup.studentClassTitle', { className: studentClassName })}
@@ -265,8 +262,11 @@ export default function MatchupPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🔗</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center gap-2">
+              <span className="mu-tile mu-tile-0 pointer-events-none w-[72px] justify-center px-0">A</span>
+              <span className="mu-tile mu-tile-2 pointer-events-none w-[72px] justify-center px-0">가</span>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameMatchup.emptyStaff') : t('gameMatchup.emptyStudent')}
             </div>
@@ -282,9 +282,12 @@ export default function MatchupPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Matchup pairs={playablePairs} />
+            <Matchup
+              pairs={playablePairs}
+              boardStyle={selected.config.matchupStyle === 'tags' ? 'tags' : 'trays'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -310,6 +313,29 @@ export default function MatchupPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameMatchup.styleLabel')}
+                  </span>
+                  {(['trays', 'tags'] as const).map((style) => {
+                    const on = (selected.config.matchupStyle ?? 'trays') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'trays' ? t('gameMatchup.styleTrays') : t('gameMatchup.styleTags')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

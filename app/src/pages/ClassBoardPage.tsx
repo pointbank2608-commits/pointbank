@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import PassbookCard from '../components/PassbookCard';
 import SettleModal from '../components/SettleModal';
 import { useAuth } from '../context/AuthContext';
@@ -28,7 +29,7 @@ export default function ClassBoardPage() {
   const { academy, profile, pointUnit } = useAuth();
   const { notify, run } = useToast();
   const { t, i18n } = useTranslation();
-  const { classes, selectedId, selected, loading: classesLoading, select } = useClasses(academy?.id);
+  const { classes, selectedId, selected, loading: classesLoading, select, reorder } = useClasses(academy?.id);
 
   const [students, setStudents] = useState<StudentBalance[]>([]);
   const [todayTx, setTodayTx] = useState<Transaction[]>([]);
@@ -318,21 +319,7 @@ export default function ClassBoardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
-        {classes.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => select(c.id)}
-            className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-              c.id === selectedId
-                ? 'bg-primary text-on-primary shadow-sm'
-                : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-            }`}
-          >
-            {c.name}
-          </button>
-        ))}
-      </div>
+      <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

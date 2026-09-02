@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import Flashcards from '../components/Flashcards';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -34,6 +35,7 @@ export default function FlashcardsPage() {
     classes,
     staffClassId,
     selectClass,
+    reorderClasses,
     studentClassName,
     classId,
     templates,
@@ -68,15 +70,19 @@ export default function FlashcardsPage() {
 
   const playableCards = draftCards.filter((c) => c.left.trim() && c.right.trim());
 
-  async function persistCards(next: MatchPair[]) {
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    const nextConfig: GameTemplateConfig = { ...selected.config, flashcards: next };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function persistCards(next: MatchPair[]) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, flashcards: next });
   }
 
   function addCard() {
@@ -105,13 +111,12 @@ export default function FlashcardsPage() {
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'wood' | 'clay') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, flashcardsStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -126,21 +131,7 @@ export default function FlashcardsPage() {
   }
 
   const classPicker = isStaff ? (
-    <div className="flex flex-wrap gap-2">
-      {classes.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => selectClass(c.id)}
-          className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-            c.id === staffClassId
-              ? 'bg-primary text-on-primary shadow-sm'
-              : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-          }`}
-        >
-          {c.name}
-        </button>
-      ))}
-    </div>
+    <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
   ) : (
     <h2 className="font-title-md text-title-md text-on-surface">
       {t('gameFlashcards.studentClassTitle', { className: studentClassName })}
@@ -265,8 +256,13 @@ export default function FlashcardsPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🗂️</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="fc-stack fc-wood mx-auto mb-3 pointer-events-none h-[120px] w-[160px]">
+              <div className="fc-behind fc-behind-1" aria-hidden />
+              <div className="fc-face">
+                <div className="fc-inset !text-[22px]">Aa</div>
+              </div>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameFlashcards.emptyStaff') : t('gameFlashcards.emptyStudent')}
             </div>
@@ -282,9 +278,12 @@ export default function FlashcardsPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Flashcards cards={playableCards} />
+            <Flashcards
+              cards={playableCards}
+              boardStyle={selected.config.flashcardsStyle === 'clay' ? 'clay' : 'wood'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -310,6 +309,29 @@ export default function FlashcardsPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameFlashcards.styleLabel')}
+                  </span>
+                  {(['wood', 'clay'] as const).map((style) => {
+                    const on = (selected.config.flashcardsStyle ?? 'wood') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'wood' ? t('gameFlashcards.styleWood') : t('gameFlashcards.styleClay')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

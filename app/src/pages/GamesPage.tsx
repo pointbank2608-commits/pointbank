@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
@@ -16,7 +17,7 @@ export default function GamesPage() {
   const [activeCategory, setActiveCategory] = useState<GameCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('library');
 
-  const { classes, selectedId: staffClassId, select: selectClass } = useClasses(academy?.id);
+  const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,22 +87,7 @@ export default function GamesPage() {
       </div>
 
       {isStaff && showLibrary && (
-        <div className="flex flex-wrap gap-2">
-          {classes.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => selectClass(c.id)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
-                c.id === staffClassId
-                  ? 'bg-primary text-on-primary shadow-sm'
-                  : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
       )}
 
       {libraryEmpty ? (
