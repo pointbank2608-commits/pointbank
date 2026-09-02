@@ -701,6 +701,9 @@ const en: Ko = {
     scoreLabel: '{{score}} / {{total}} correct',
     finishedTitle: 'Type the Answer complete!',
     restartButton: 'Try again',
+    styleLabel: 'Look',
+    styleNotebook: 'Wood notebook',
+    styleBubble: 'Clay bubble',
     infoDescription: 'Type the correct answer for each prompt. Choose between "Answer a question" and "Fill in the blank" modes.',
     infoSteps: [
       'In settings, choose the question style: "Answer a question" or "Fill in the blank".',
@@ -1169,6 +1172,7 @@ const en: Ko = {
     quizWordToMeaning: 'Show word, guess meaning',
     quizMeaningToWord: 'Show meaning, guess word',
     quizAutoChoicesHint: 'Wrong-answer choices are generated automatically from the other words in the list.',
+    trueFalseAutoHint: 'Half become true statements, half become false ones by swapping in another word.',
   },
 
   imagePicker: {

@@ -245,6 +245,8 @@ export interface GameTemplateConfig {
   typeAnswerEntries?: TypeAnswerEntry[];
   /** 답 입력하기 전용: 'question'(질문에 답하기) 또는 'cloze'(빈칸 채우기 — 프롬프트에 ___ 포함). 기본 'question'. */
   typeAnswerMode?: 'question' | 'cloze';
+  /** 답 입력하기 전용: 나무 공책(A, 기본) 또는 점토 말풍선(B). */
+  typeAnswerStyle?: 'notebook' | 'bubble';
   /** 단어 철자 전용: 단어를 보여주는 시간(초). 기본 3. */
   spellPreviewSeconds?: number;
   /**

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { buildQuizQuestions, type QuizDirection } from '../lib/quizFromWordList';
-import type { ImageQuizItem, MatchPair, QuizQuestion, WordList } from '../lib/types';
+import { buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
+import type { ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordList } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -11,7 +11,8 @@ type Props =
   | { variant: 'label'; wordLists: WordList[]; loading: boolean; onImportLabels: (labels: string[]) => void }
   | { variant: 'pairs'; wordLists: WordList[]; loading: boolean; onImportPairs: (pairs: MatchPair[]) => void }
   | { variant: 'image'; wordLists: WordList[]; loading: boolean; onImportImage: (items: ImageQuizItem[]) => void }
-  | { variant: 'quiz'; wordLists: WordList[]; loading: boolean; onImportQuestions: (questions: QuizQuestion[]) => void };
+  | { variant: 'quiz'; wordLists: WordList[]; loading: boolean; onImportQuestions: (questions: QuizQuestion[]) => void }
+  | { variant: 'truefalse'; wordLists: WordList[]; loading: boolean; onImportStatements: (statements: TrueFalseStatement[]) => void };
 
 /**
  * 선생님이 미리 만들어둔 단어장(WordListsPage 에서 관리)을 게임 항목으로 그대로 불러오는 패널.
@@ -21,6 +22,8 @@ type Props =
  * - image: 사진+정답(ImageQuizItem[])을 쓰는 게임 — 이미지가 있는 단어장(사전에서 담은 것)만 유효.
  * - quiz: 오지선다 질문(QuizQuestion[])을 쓰는 게임 — 오답 보기는 AI 없이 단어장 안의 다른
  *   항목들로 자동 생성한다(`quizFromWordList.ts`).
+ * - truefalse: 참/거짓 문장(TrueFalseStatement[])을 쓰는 게임 — 절반은 맞는 짝으로 참 문장을,
+ *   절반은 다른 항목의 짝으로 바꿔치기해 거짓 문장을 자동으로 만든다.
  */
 export default function WordListPicker(props: Props) {
   const { t } = useTranslation();
@@ -28,6 +31,7 @@ export default function WordListPicker(props: Props) {
   const [open, setOpen] = useState(false);
   const [field, setField] = useState<'word' | 'meaning'>('word');
   const [direction, setDirection] = useState<QuizDirection>('wordToMeaning');
+  const showDirectionToggle = props.variant === 'quiz' || props.variant === 'truefalse';
 
   const usable =
     props.variant === 'image'
@@ -45,8 +49,10 @@ export default function WordListPicker(props: Props) {
       props.onImportImage(
         list.items.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
-    } else {
+    } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions(list, direction));
+    } else {
+      props.onImportStatements(buildTrueFalseStatements(list, direction));
     }
   }
 
@@ -90,7 +96,7 @@ export default function WordListPicker(props: Props) {
             </div>
           )}
 
-          {props.variant === 'quiz' && (
+          {showDirectionToggle && (
             <div>
               <div className="flex bg-surface-container-lowest rounded-lg p-1 mb-2 w-fit">
                 <button
@@ -113,7 +119,7 @@ export default function WordListPicker(props: Props) {
                 </button>
               </div>
               <div className="font-caption text-caption text-on-surface-variant mb-2">
-                {t('wordListPicker.quizAutoChoicesHint')}
+                {props.variant === 'quiz' ? t('wordListPicker.quizAutoChoicesHint') : t('wordListPicker.trueFalseAutoHint')}
               </div>
             </div>
           )}

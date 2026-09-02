@@ -699,6 +699,9 @@ const ko = {
     scoreLabel: '{{score}} / {{total}} 정답',
     finishedTitle: '답 입력하기 완료!',
     restartButton: '다시 풀기',
+    styleLabel: '모양',
+    styleNotebook: '나무 공책',
+    styleBubble: '점토 말풍선',
     infoDescription: '문제를 보고 정답을 직접 타이핑해서 맞히는 게임이에요. "질문에 답하기"와 "빈칸 채우기" 두 방식 중 골라 쓸 수 있어요.',
     infoSteps: [
       '설정에서 문제 방식을 "질문에 답하기" 또는 "빈칸 채우기" 중 고르세요.',
@@ -1167,6 +1170,7 @@ const ko = {
     quizWordToMeaning: '단어 보고 뜻 맞히기',
     quizMeaningToWord: '뜻 보고 단어 맞히기',
     quizAutoChoicesHint: '오답 보기는 같은 단어장의 다른 단어에서 자동으로 만들어져요.',
+    trueFalseAutoHint: '절반은 맞는 문장, 절반은 다른 단어로 바꿔치기한 틀린 문장으로 자동 생성돼요.',
   },
 
   imagePicker: {

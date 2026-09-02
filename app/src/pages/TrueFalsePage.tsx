@@ -7,6 +7,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import TrueFalse from '../components/TrueFalse';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, TrueFalseStatement } from '../lib/types';
@@ -58,6 +59,8 @@ export default function TrueFalsePage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -83,6 +86,12 @@ export default function TrueFalsePage() {
 
   function addStatement() {
     const next = [...draftStatements, newStatement()];
+    setDraftStatements(next);
+    void persistStatements(next);
+  }
+
+  function addStatementsBulk(statements: TrueFalseStatement[]) {
+    const next = [...draftStatements, ...statements];
     setDraftStatements(next);
     void persistStatements(next);
   }
@@ -310,6 +319,12 @@ export default function TrueFalsePage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="truefalse"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportStatements={(statements) => addStatementsBulk(statements)}
+                    />
 
                     {draftStatements.map((s, si) => (
                       <div key={s.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

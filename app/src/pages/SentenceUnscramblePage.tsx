@@ -89,15 +89,24 @@ export default function SentenceUnscramblePage() {
     await persistItems([]);
   }
 
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+  async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
+  }
+
+  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'rack' | 'tags') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, unscrambleStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -237,8 +246,11 @@ export default function SentenceUnscramblePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🧩</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center gap-2">
+              <span className="su-clay su-clay-0 pointer-events-none">I</span>
+              <span className="su-clay su-clay-2 pointer-events-none">like</span>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameUnscramble.emptyStaff') : t('gameUnscramble.emptyStudent')}
             </div>
@@ -254,9 +266,12 @@ export default function SentenceUnscramblePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SentenceUnscramble items={playableItems} />
+            <SentenceUnscramble
+              items={playableItems}
+              boardStyle={selected.config.unscrambleStyle === 'tags' ? 'tags' : 'rack'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -282,6 +297,29 @@ export default function SentenceUnscramblePage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameUnscramble.styleLabel')}
+                  </span>
+                  {(['rack', 'tags'] as const).map((style) => {
+                    const on = (selected.config.unscrambleStyle ?? 'rack') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'rack' ? t('gameUnscramble.styleRack') : t('gameUnscramble.styleTags')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

@@ -7,6 +7,7 @@ import GameShowQuiz from '../components/GameShowQuiz';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, QuizQuestion } from '../lib/types';
@@ -61,6 +62,8 @@ export default function GameShowQuizPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -89,6 +92,12 @@ export default function GameShowQuizPage() {
 
   function addQuestion() {
     const next = [...draftQuestions, newQuestion()];
+    setDraftQuestions(next);
+    void persistConfig({ ...selected?.config, questions: next });
+  }
+
+  function addQuestionsBulk(questions: QuizQuestion[]) {
+    const next = [...draftQuestions, ...questions];
     setDraftQuestions(next);
     void persistConfig({ ...selected?.config, questions: next });
   }
@@ -329,6 +338,12 @@ export default function GameShowQuizPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="quiz"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportQuestions={(questions) => addQuestionsBulk(questions)}
+                    />
 
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2">

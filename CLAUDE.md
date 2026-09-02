@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-02** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 26종 적용)
+마지막 갱신: **2026-09-02** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 30종 적용(오지선다 4종 전부 오답/거짓문장 자동생성 포함) + 오지선다 게임 5종 크래시 버그 수정)
 
 ---
 
@@ -39,16 +39,20 @@
   - **31~32번 (`category: vocabulary`, 사진 업로드 필요)**: `/games/labeleddiagram` 명칭이 있는 다이어그램(사진 위 핀에 정답 이름 매칭), `/games/imagequiz` 이미지 퀴즈(흐린 사진이 점점 선명해지며 정답 맞히기). 둘 다 선생님이 직접 사진을 올린다 — `GameImagePicker.tsx` + `game-images` 스토리지 버킷(`supabase/011_game_images.sql`, `game-audio`와 동일한 RLS 패턴). **AI 이미지 생성이 아니라 파일 업로드**이므로 별도 이미지 생성 도구 불필요.
   - **33~34번 (`category: vocabulary`, 기존 퀴즈 변형)**: `/games/gameshowquiz` 게임쇼 퀴즈(청/홍팀 대결, 보너스 문제 2배 점수, 팀당 반반(50:50) 라이프라인), `/games/winlosequiz` 퀴즈를 이기거나 잃기(문제마다 점수 베팅, 맞으면 획득·틀리면 손실). 둘 다 `Quiz.tsx`의 `QuizQuestion`(질문+보기+정답) 구조를 그대로 재사용 — `config.questions`만 공유하고 나머지(팀 점수·베팅·라이프라인)는 컴포넌트 자체 상태.
   - 각 게임 페이지 상단에 `GameInfoPanel`(접이식 "게임 소개 및 방법") — `gameXxx.infoDescription`/`infoSteps` i18n 키, 전부 적용됨
-  - **단어장 불러오기(`WordListPicker.tsx`)**: 34개 중 27개(라벨 하나짜리 `GameItem[]` 게임
+  - **단어장 불러오기(`WordListPicker.tsx`)**: 34개 중 30개(라벨 하나짜리 `GameItem[]` 게임
     21개 + 단어+뜻 짝 게임 4개[매치업·두더지잡기·플래시카드·답 입력하기] + 이미지 퀴즈 +
-    퀴즈)에 적용됨 — `/wordlists`에서 만든 단어장을 게임 항목으로 그대로 불러온다. 퀴즈는
-    `variant="quiz"`로 오답 보기까지 AI 없이 자동 생성(`quizFromWordList.ts` — 같은 단어장의
-    다른 단어 뜻/단어를 무작위로 오답 후보에 씀). **참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기**
-    (퀴즈와 같은 오답 자동생성 로직을 얹으면 됨, 다음 차례)와 **그룹정렬·다이어그램·문장
-    만들기·수학 문제**(구조 자체가 단어 리스트가 아님, "나중에 같이 생각")는 아직 대상 밖 —
-    새 게임을 추가할 때 콘텐츠가 `GameItem[]`이나 `MatchPair[]` 모양이면 `useGameTemplates`가
-    이미 돌려주는 `wordLists`/`wordListsLoading`으로 `<WordListPicker variant="label|pairs|image|quiz" .../>`
-    한 줄만 추가하면 된다(`WheelPage.tsx`/`MatchupPage.tsx`/`QuizPage.tsx`의 기존 적용 예 참고).
+    오지선다 4개[퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기])에 전부 적용 완료 — `/wordlists`
+    에서 만든 단어장을 게임 항목으로 그대로 불러온다. 오지선다 4개는 AI 없이 자동 생성
+    (`quizFromWordList.ts`의 `buildQuizQuestions`/`buildTrueFalseStatements` — 같은 단어장의
+    다른 단어 뜻/단어를 무작위로 오답·거짓 문장 재료로 씀; 퀴즈·게임쇼 퀴즈·퀴즈를 이기거나
+    잃기는 셋 다 `QuizQuestion[]`이라 `variant="quiz"` 그대로 공유). **그룹정렬·다이어그램·
+    문장 만들기·수학 문제** 4개만 남음(구조 자체가 단어 리스트가 아님, "나중에 같이 생각"으로
+    사용자와 합의 — 그룹정렬은 `word_bank.category`, 문장 만들기는 `word_bank.example_sentence`
+    활용 아이디어 있음) —
+    새 게임을 추가할 때 콘텐츠가 `GameItem[]`이나 `MatchPair[]`나 `QuizQuestion[]` 모양이면
+    `useGameTemplates`가 이미 돌려주는 `wordLists`/`wordListsLoading`으로
+    `<WordListPicker variant="label|pairs|image|quiz|truefalse" .../>` 한 줄만 추가하면 된다
+    (`WheelPage.tsx`/`MatchupPage.tsx`/`QuizPage.tsx`/`TrueFalsePage.tsx`의 기존 적용 예 참고).
   - **오지선다 게임(퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기) 공통 버그 패턴**: `Quiz.tsx`/
     `TrueFalse.tsx`/`GameShowQuiz.tsx`/`WinLoseQuiz.tsx`/`ImageQuiz.tsx` 전부 `order`(인덱스
     셔플)+`pos`를 `questions.map(...).join('|')` 키의 `useEffect`로 재동기화하는데, 항목을
