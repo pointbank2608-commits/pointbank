@@ -284,6 +284,8 @@ export interface TrueFalseStatement {
   id: string;
   text: string;
   isTrue: boolean;
+  /** 틀렸을 때만 보여주는 선택 설명. 비우면 안 나온다. */
+  explanation?: string;
 }
 
 export interface MatchPair {

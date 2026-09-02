@@ -471,6 +471,9 @@ const en: Ko = {
     settingsTitle: 'Edit true or false',
     statementLabel: 'Statement {{n}}',
     statementPlaceholder: 'Enter a statement',
+    explanationLabel: 'If wrong, show this (optional)',
+    explanationPlaceholder: 'e.g. Penguins are birds. They have wings but they cannot fly.',
+    explanationTitle: 'Why was that wrong?',
     answerLabel: 'Answer:',
     trueLabel: 'True',
     falseLabel: 'False',
@@ -485,9 +488,9 @@ const en: Ko = {
     wrongFeedback: 'Not quite!',
     infoDescription: "Read a statement and decide whether it's true or false.",
     infoSteps: [
-      'In settings, add statements and mark each one true or false.',
-      'When a statement appears, tap "⭕ True" or "❌ False".',
-      'Correct or incorrect shows immediately on screen.',
+      'In settings, add statements and mark each one true or false. An explanation for wrong answers is optional.',
+      'When a statement appears, tap True or False.',
+      'Correct or incorrect shows immediately. If they miss and an explanation is set, it appears underneath.',
       'Tap "Next statement" to continue — your final score appears at the end.',
     ],
   },
@@ -1143,6 +1146,8 @@ const en: Ko = {
     allCategory: 'All',
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
+    viewFullImage: 'View full image for {{word}}',
+    closeButton: 'Close',
   },
 
   gameAdmin: {

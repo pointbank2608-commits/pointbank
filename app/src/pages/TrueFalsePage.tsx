@@ -101,6 +101,10 @@ export default function TrueFalsePage() {
     setDraftStatements((prev) => prev.map((s) => (s.id === sid ? { ...s, text } : s)));
   }
 
+  function updateExplanationLocal(sid: string, explanation: string) {
+    setDraftStatements((prev) => prev.map((s) => (s.id === sid ? { ...s, explanation } : s)));
+  }
+
   function commitOnBlur() {
     void persistStatements(draftStatements);
   }
@@ -267,8 +271,8 @@ export default function TrueFalsePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">⭕</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <span className="tf-mark tf-mark-o mx-auto mb-3" />
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameTrueFalse.emptyStaff') : t('gameTrueFalse.emptyStudent')}
             </div>
@@ -284,7 +288,7 @@ export default function TrueFalsePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <TrueFalse statements={playableStatements} />
           </GameThemeFrame>
@@ -340,6 +344,25 @@ export default function TrueFalsePage() {
                           placeholder={t('gameTrueFalse.statementPlaceholder')}
                           className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                         />
+                        <div>
+                          <label className="font-caption text-caption text-on-surface-variant block mb-1">
+                            {t('gameTrueFalse.explanationLabel')}
+                          </label>
+                          <textarea
+                            value={s.explanation ?? ''}
+                            rows={2}
+                            onChange={(e) => updateExplanationLocal(s.id, e.target.value)}
+                            onBlur={(e) => {
+                              const next = draftStatements.map((st) =>
+                                st.id === s.id ? { ...st, explanation: e.target.value } : st,
+                              );
+                              setDraftStatements(next);
+                              void persistStatements(next);
+                            }}
+                            placeholder={t('gameTrueFalse.explanationPlaceholder')}
+                            className="w-full resize-y bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                          />
+                        </div>
                         <div className="flex items-center gap-2">
                           <span className="font-caption text-caption text-on-surface-variant">
                             {t('gameTrueFalse.answerLabel')}

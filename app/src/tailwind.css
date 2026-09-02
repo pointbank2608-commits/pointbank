@@ -1093,6 +1093,96 @@
   }
 }
 
+/* 참 또는 거짓: 점토 O / X 토큰 */
+.tf-token {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: transparent;
+  padding: 8px 4px 10px;
+  touch-action: manipulation;
+  transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+}
+.tf-token:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.04);
+}
+.tf-token:not(:disabled):active {
+  transform: translateY(1px) scale(0.98);
+}
+.tf-token:disabled {
+  cursor: default;
+}
+.tf-token.is-ok .tf-mark {
+  filter: drop-shadow(0 0 8px #f4c84a) drop-shadow(0 6px 12px rgba(61, 190, 168, 0.35));
+}
+.tf-token.is-ok .tf-chip {
+  box-shadow:
+    0 0 0 3px #f4c84a,
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(166, 112, 48, 0.2);
+}
+.tf-token.is-no .tf-mark {
+  filter: drop-shadow(0 0 8px #f28b73) drop-shadow(0 6px 12px rgba(242, 139, 115, 0.35));
+}
+.tf-token.is-no .tf-chip {
+  box-shadow:
+    0 0 0 3px #f28b73,
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(166, 112, 48, 0.2);
+}
+.tf-token.is-dim {
+  opacity: 0.42;
+  filter: saturate(0.7);
+}
+.tf-mark {
+  display: block;
+  width: clamp(108px, 22vw, 156px);
+  height: clamp(108px, 22vw, 156px);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 6px 10px rgba(110, 62, 18, 0.22));
+}
+.tf-mark-o {
+  background-image: url('/skins/truefalse-o.png?v=1');
+}
+.tf-mark-x {
+  background-image: url('/skins/truefalse-x.png?v=1');
+}
+.tf-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fffef9 0%, #fff4e0 100%);
+  color: #1a2744;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(166, 112, 48, 0.2),
+    0 4px 8px rgba(110, 62, 18, 0.12);
+}
+.tf-why {
+  border-radius: 22px;
+  background: linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%);
+  box-shadow:
+    0 3px 0 #c4925c,
+    0 8px 14px rgba(110, 62, 18, 0.16);
+}
+.tf-why-inner {
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fffef9 0%, #fff4e0 100%);
+  padding: 12px 16px 14px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -3px 4px rgba(166, 112, 48, 0.16);
+}
+
 /* 랜딩: 큰 한글 타이포 */
 .landing {
   font-family: 'Noto Sans KR', 'Hanken Grotesk', sans-serif;

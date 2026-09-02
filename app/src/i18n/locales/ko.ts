@@ -469,6 +469,9 @@ const ko = {
     settingsTitle: '참 또는 거짓 편집',
     statementLabel: '문장 {{n}}',
     statementPlaceholder: '문장을 입력하세요',
+    explanationLabel: '틀렸을 때 설명 (선택)',
+    explanationPlaceholder: '예: 펭귄은 조류예요. 날개는 있지만 날지 못해요.',
+    explanationTitle: '왜 틀렸을까요?',
     answerLabel: '정답:',
     trueLabel: '참',
     falseLabel: '거짓',
@@ -483,9 +486,9 @@ const ko = {
     wrongFeedback: '아쉬워요!',
     infoDescription: '문장을 보고 참인지 거짓인지 맞히는 게임이에요.',
     infoSteps: [
-      '설정에서 문장을 등록하고, 각 문장이 참인지 거짓인지 표시하세요.',
-      '문장이 나오면 "⭕ 참"과 "❌ 거짓" 중 하나를 클릭하세요.',
-      '정답/오답이 바로 화면에 표시돼요.',
+      '설정에서 문장을 등록하고, 각 문장이 참인지 거짓인지 표시하세요. 틀렸을 때 보여줄 설명은 선택이에요.',
+      '문장이 나오면 참과 거짓 중 하나를 누르세요.',
+      '정답/오답이 바로 나와요. 틀렸고 설명이 있으면 그 아래에 보여 줘요.',
       '"다음 문장" 버튼을 눌러 계속 진행하고, 끝나면 최종 점수가 나와요.',
     ],
   },
@@ -1141,6 +1144,8 @@ const ko = {
     allCategory: '전체',
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
+    viewFullImage: '{{word}} 이미지 전체 보기',
+    closeButton: '닫기',
   },
 
   gameAdmin: {

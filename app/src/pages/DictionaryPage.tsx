@@ -22,7 +22,8 @@ const CATEGORIES = [
   '인사/표현',
 ] as const;
 
-function WordImage({ entry }: { entry: WordBankEntry }) {
+function WordImage({ entry, onOpen }: { entry: WordBankEntry; onOpen: (entry: WordBankEntry) => void }) {
+  const { t } = useTranslation();
   const [broken, setBroken] = useState(false);
   if (!entry.image_url || broken) {
     return (
@@ -32,12 +33,61 @@ function WordImage({ entry }: { entry: WordBankEntry }) {
     );
   }
   return (
-    <img
-      src={entry.image_url}
-      alt=""
-      className="h-32 w-full rounded-lg object-cover"
-      onError={() => setBroken(true)}
-    />
+    <button
+      type="button"
+      onClick={() => onOpen(entry)}
+      className="block w-full cursor-zoom-in"
+      aria-label={t('dictionary.viewFullImage', { word: entry.word })}
+    >
+      <img
+        src={entry.image_url}
+        alt=""
+        className="h-32 w-full rounded-lg object-cover transition-transform hover:scale-[1.03]"
+        onError={() => setBroken(true)}
+      />
+    </button>
+  );
+}
+
+function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () => void }) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img src={entry.image_url ?? undefined} alt="" className="max-h-[70vh] w-full object-contain bg-surface-container-low" />
+        <div className="p-5">
+          <div className="flex items-center gap-2">
+            <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
+            <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
+          </div>
+          <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>
+          {entry.example_sentence && (
+            <p className="mt-1 font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-4 rounded-full bg-primary px-6 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container"
+          >
+            {t('dictionary.closeButton')}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -47,6 +97,7 @@ export default function DictionaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>('all');
+  const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
 
   useEffect(() => {
     fetchWordBank()
@@ -137,7 +188,7 @@ export default function DictionaryPage() {
                   key={entry.id}
                   className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
                 >
-                  <WordImage entry={entry} />
+                  <WordImage entry={entry} onOpen={setLightbox} />
                   <div className="mt-3 flex items-center gap-2">
                     <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
                     <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
@@ -152,6 +203,8 @@ export default function DictionaryPage() {
           )}
         </>
       )}
+
+      {lightbox && <ImageLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }

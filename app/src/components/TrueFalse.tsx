@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TrueFalseStatement } from '../lib/types';
 
 interface Props {
   statements: TrueFalseStatement[];
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -21,14 +25,26 @@ export default function TrueFalse({ statements }: Props) {
   const [pos, setPos] = useState(0);
   const [selected, setSelected] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
+  const statementKey = statements.map((s) => s.id).join(',');
+
+  useEffect(() => {
+    setOrder(shuffle(statements.map((_, i) => i)));
+    setPos(0);
+    setSelected(null);
+    setScore(0);
+  }, [statementKey]);
 
   if (statements.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">⭕</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <span className="tf-mark tf-mark-o mx-auto mb-3" />
         <div className="font-body-md text-body-md">{t('gameTrueFalse.needStatements')}</div>
       </div>
     );
+  }
+
+  if (order.length === 0) {
+    return null;
   }
 
   const finished = pos >= order.length;
@@ -55,15 +71,29 @@ export default function TrueFalse({ statements }: Props) {
   if (finished) {
     return (
       <div className="flex flex-col items-center pt-3 pb-2">
-        <div className="text-5xl mb-3">🏁</div>
-        <div className="font-title-md text-title-md text-on-surface mb-2">{t('gameTrueFalse.finishedTitle')}</div>
-        <div className="font-display-lg text-[40px] text-deep-navy mb-6 tabular-nums">
-          {t('gameTrueFalse.scoreLabel', { score, total: order.length })}
-        </div>
-        <button
-          onClick={restart}
-          className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
         >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameTrueFalse.finishedTitle')}</div>
+            <div className="font-display-lg text-[40px] tabular-nums text-deep-navy">
+              {t('gameTrueFalse.scoreLabel', { score, total: order.length })}
+            </div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
           {t('gameTrueFalse.restartButton')}
         </button>
       </div>
@@ -72,64 +102,90 @@ export default function TrueFalse({ statements }: Props) {
 
   const current = statements[order[pos]];
   const revealed = selected !== null;
+  const gotItRight = selected === current.isTrue;
 
-  function btnClass(value: boolean) {
-    if (!revealed) {
-      return 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low';
-    }
+  function tokenState(value: boolean) {
+    if (!revealed) return '';
     const isCorrect = value === current.isTrue;
-    const isSelected = value === selected;
-    if (isCorrect) return 'bg-secondary-container/40 border-secondary text-on-surface';
-    if (isSelected) return 'bg-error-container border-error text-on-error-container';
-    return 'bg-surface-container-lowest border-outline-variant/40 text-on-surface opacity-50';
+    const isPicked = value === selected;
+    if (isCorrect) return 'is-ok';
+    if (isPicked) return 'is-no';
+    return 'is-dim';
   }
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div className="font-caption text-caption text-on-surface-variant mb-3 tabular-nums">
+      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {pos + 1} / {order.length}
       </div>
 
-      <div className="font-display-lg text-[30px] text-deep-navy mb-8 text-center [word-break:keep-all] max-w-[520px]">
-        {current.text}
+      <div
+        data-skin-stage="board"
+        className="mb-6 w-full max-w-[520px] px-2 py-2"
+        style={{
+          borderRadius: 22,
+          background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+          boxShadow: woodShadow,
+        }}
+      >
+        <div
+          className="flex min-h-[96px] items-center justify-center px-4 py-4"
+          style={{
+            borderRadius: 16,
+            background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+          }}
+        >
+          <div className="text-center font-bold leading-snug text-deep-navy [word-break:keep-all] text-[clamp(20px,3.6vw,30px)]">
+            {current.text}
+          </div>
+        </div>
       </div>
 
-      <div data-skin-stage="board" className="grid grid-cols-2 gap-4 w-full max-w-[420px] mb-5">
+      <div className="mb-5 grid w-full max-w-[480px] grid-cols-2 gap-4 sm:gap-8">
         <button
           type="button"
           disabled={revealed}
           onClick={() => selectAnswer(true)}
           data-skin-object="choice"
-          className={`px-5 py-5 rounded-xl font-title-md text-title-md text-center transition-all border-2 ${btnClass(true)}`}
+          className={`tf-token ${tokenState(true)}`}
         >
-          ⭕ {t('gameTrueFalse.trueLabel')}
+          <span className="tf-mark tf-mark-o" />
+          <span className="tf-chip">{t('gameTrueFalse.trueLabel')}</span>
         </button>
         <button
           type="button"
           disabled={revealed}
           onClick={() => selectAnswer(false)}
           data-skin-object="choice"
-          className={`px-5 py-5 rounded-xl font-title-md text-title-md text-center transition-all border-2 ${btnClass(false)}`}
+          className={`tf-token ${tokenState(false)}`}
         >
-          ❌ {t('gameTrueFalse.falseLabel')}
+          <span className="tf-mark tf-mark-x" />
+          <span className="tf-chip">{t('gameTrueFalse.falseLabel')}</span>
         </button>
       </div>
 
       {revealed && (
         <div className="result-pop flex flex-col items-center gap-4">
           <div
-            className={`px-6 py-2.5 rounded-full font-title-md text-title-md shadow-sm ${
-              selected === current.isTrue
-                ? 'bg-secondary-container/50 text-on-surface'
-                : 'bg-error-container text-on-error-container'
-            }`}
+            className="rounded-full px-6 py-2.5 font-title-md text-title-md font-bold text-white shadow-sm"
+            style={{ backgroundColor: gotItRight ? '#3dbea8' : '#f28b73', boxShadow: woodShadow }}
           >
-            {selected === current.isTrue ? t('gameTrueFalse.correctFeedback') : t('gameTrueFalse.wrongFeedback')}
+            {gotItRight ? t('gameTrueFalse.correctFeedback') : t('gameTrueFalse.wrongFeedback')}
           </div>
-          <button
-            onClick={next}
-            className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-colors"
-          >
+          {!gotItRight && current.explanation?.trim() ? (
+            <div className="tf-why w-full max-w-[480px] px-2 py-2">
+              <div className="tf-why-inner">
+                <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">
+                  {t('gameTrueFalse.explanationTitle')}
+                </div>
+                <div className="text-center font-body-md text-body-md leading-snug text-deep-navy [word-break:keep-all]">
+                  {current.explanation.trim()}
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <button onClick={next} className={pill}>
             {t('gameTrueFalse.nextButton')}
           </button>
         </div>
