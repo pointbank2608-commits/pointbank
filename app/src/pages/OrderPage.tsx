@@ -330,6 +330,7 @@ export default function OrderPage() {
           <div>
             <GameThemeFrame
               themeId={null}
+              roster={roster}
               className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
             >
               <OrderPicker participants={demoParticipants} ranks={demoRanks} music={null} resultSound={undefined} />
@@ -349,6 +350,7 @@ export default function OrderPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >

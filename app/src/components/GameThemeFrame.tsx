@@ -1,11 +1,20 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getGameTheme } from '../lib/gameThemes';
+import TeamOrderPanel from './TeamOrderPanel';
+import type { GameItem } from '../lib/types';
 
 interface Props {
   themeId?: string | null;
   className?: string;
   children: ReactNode;
+  /**
+   * 반 명단(참가자 목록과 무관, 학생 이름). 넘기면 우측 상단에 "팀·순서 정하기" 버튼이
+   * 떠서, 이 게임의 단어/문제 내용과는 별개로 학생을 팀으로 나누고 발표 순서를 정하는
+   * 패널을 열 수 있다(TeamOrderPanel.tsx) — 결과는 저장하지 않는 진행 보조 도구.
+   * 안 넘기거나 명단이 비어 있으면 버튼 자체가 안 보인다.
+   */
+  roster?: GameItem[];
   /**
    * "다시하기" 버튼을 누르면 호출된다. 게임마다 내부 상태 모양이 다 달라서, 페이지 쪽에서
    * key를 바꿔 게임 컴포넌트를 통째로 다시 마운트시키는 방식으로 구현하는 걸 전제로 한다
@@ -34,7 +43,7 @@ export function useGamePlay() {
  * 얹는다. 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만
  * 손보면 전체화면/다시하기가 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ themeId, className, children, onRestart, onUndo }: Props) {
+export default function GameThemeFrame({ themeId, className, children, onRestart, onUndo, roster }: Props) {
   const { t } = useTranslation();
   const theme = getGameTheme(themeId);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,6 +51,7 @@ export default function GameThemeFrame({ themeId, className, children, onRestart
   const scaleRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
+  const [teamOrderOpen, setTeamOrderOpen] = useState(false);
 
   useEffect(() => {
     function onChange() {
@@ -113,6 +123,17 @@ export default function GameThemeFrame({ themeId, className, children, onRestart
         style={{ ...(theme?.colors as CSSProperties | undefined), ...fullscreenStyle }}
       >
         <div className="absolute top-3 right-3 z-10 flex gap-2">
+          {roster && roster.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setTeamOrderOpen(true)}
+              title={t('gamePlay.teamOrder')}
+              aria-label={t('gamePlay.teamOrder')}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+            >
+              <span className="material-symbols-outlined text-[20px]">groups</span>
+            </button>
+          )}
           {onUndo && (
             <button
               type="button"
@@ -159,6 +180,9 @@ export default function GameThemeFrame({ themeId, className, children, onRestart
           children
         )}
       </div>
+      {teamOrderOpen && roster && (
+        <TeamOrderPanel roster={roster} onClose={() => setTeamOrderOpen(false)} />
+      )}
     </GamePlayContext.Provider>
   );
 }

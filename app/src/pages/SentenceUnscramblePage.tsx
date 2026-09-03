@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -54,10 +54,18 @@ export default function SentenceUnscramblePage() {
     importCandidates,
     importFromClass,
     reload,
+    roster,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(
+    () => [
+      { id: uid(), label: 'I like apples' },
+      { id: uid(), label: 'The cat is cute' },
+    ],
+    [],
+  );
   const [newItemLabel, setNewItemLabel] = useState('');
 
   const playableItems = (selected?.items ?? []).filter((i) => wordCount(i.label) >= 2);
@@ -247,12 +255,11 @@ export default function SentenceUnscramblePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center gap-2">
-              <span className="su-clay su-clay-0 pointer-events-none">I</span>
-              <span className="su-clay su-clay-2 pointer-events-none">like</span>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <SentenceUnscramble items={demoItems} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameUnscramble.emptyStaff') : t('gameUnscramble.emptyStudent')}
             </div>
           </div>
@@ -267,6 +274,7 @@ export default function SentenceUnscramblePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >

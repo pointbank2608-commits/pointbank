@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -6,7 +6,7 @@ import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
-import ImageQuiz, { ImageQuizEmptyMotif } from '../components/ImageQuiz';
+import ImageQuiz from '../components/ImageQuiz';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
@@ -62,10 +62,15 @@ export default function ImageQuizPage() {
     reload,
     wordLists,
     wordListsLoading,
+    roster,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(
+    () => [{ id: uid(), imageUrl: '/word-bank-images/apple.png', answer: 'apple' }],
+    [],
+  );
   const [draftItems, setDraftItems] = useState<ImageQuizItem[]>(selected?.config.imageQuizItems ?? []);
 
   useEffect(() => {
@@ -257,11 +262,11 @@ export default function ImageQuizPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mb-3">
-              <ImageQuizEmptyMotif />
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <ImageQuiz items={demoItems} revealSeconds={revealSeconds} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameImageQuiz.emptyStaff') : t('gameImageQuiz.emptyStudent')}
             </div>
           </div>
@@ -276,6 +281,7 @@ export default function ImageQuizPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >

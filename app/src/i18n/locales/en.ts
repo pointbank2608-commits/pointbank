@@ -1282,6 +1282,23 @@ const en: Ko = {
     fullscreen: 'Fullscreen',
     exitFullscreen: 'Exit fullscreen',
     undo: 'Undo',
+    teamOrder: 'Teams & order',
+  },
+
+  teamOrder: {
+    title: 'Split into teams & set the order',
+    noRoster: 'No students in this class yet. Add some under Student Management first.',
+    modeIndividual: 'Individual',
+    modeTeam: 'Teams',
+    teamCountLabel: 'Number of teams',
+    randomAssign: 'Randomize',
+    teamLabel: 'Team {{n}}',
+    emptyTeam: 'No students assigned.',
+    cycleHint: 'Tap to move to another team',
+    orderLabel: 'Order',
+    randomOrder: 'Shuffle order',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
   },
 
   wordLists: {

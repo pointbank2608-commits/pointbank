@@ -62,6 +62,7 @@ export default function MathGeneratorPage() {
     importCandidates,
     importFromClass,
     reload,
+    roster,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -259,17 +260,11 @@ export default function MathGeneratorPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <div className="mg-slate pointer-events-none w-[160px] p-2">
-                <div className="mg-face min-h-[64px] gap-1 py-3">
-                  <span className="mg-token text-[16px]">1</span>
-                  <span className="mg-token text-[16px]">+</span>
-                  <span className="mg-token text-[16px]">1</span>
-                </div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <MathGenerator operations={operations} min={min} max={max} questionCount={count} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameMathGen.emptyStaff') : t('gameMathGen.emptyStudent')}
             </div>
           </div>
@@ -284,6 +279,7 @@ export default function MathGeneratorPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >

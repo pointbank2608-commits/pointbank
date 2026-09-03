@@ -1280,6 +1280,23 @@ const ko = {
     fullscreen: '전체화면',
     exitFullscreen: '전체화면 종료',
     undo: '되돌리기',
+    teamOrder: '팀·순서 정하기',
+  },
+
+  teamOrder: {
+    title: '팀 나누기 · 순서 정하기',
+    noRoster: '이 반에 등록된 학생이 없어요. 학생관리에서 먼저 추가해보세요.',
+    modeIndividual: '개인',
+    modeTeam: '팀',
+    teamCountLabel: '팀 수',
+    randomAssign: '랜덤 배정',
+    teamLabel: '{{n}}팀',
+    emptyTeam: '배정된 학생이 없어요.',
+    cycleHint: '눌러서 다른 팀으로 옮기기',
+    orderLabel: '순서',
+    randomOrder: '랜덤 순서',
+    moveUp: '위로 이동',
+    moveDown: '아래로 이동',
   },
 
   wordLists: {

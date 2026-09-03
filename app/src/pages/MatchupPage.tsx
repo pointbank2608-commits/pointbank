@@ -62,6 +62,7 @@ export default function MatchupPage() {
     reload,
     wordLists,
     wordListsLoading,
+    roster,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -284,7 +285,7 @@ export default function MatchupPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <Matchup pairs={demoPairs} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -302,6 +303,7 @@ export default function MatchupPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"

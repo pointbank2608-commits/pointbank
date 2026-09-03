@@ -303,7 +303,7 @@ export default function BombPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <TimeBomb participants={demoParticipants} minSec={range.min} maxSec={range.max} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -321,6 +321,7 @@ export default function BombPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
