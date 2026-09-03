@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchWordBank } from '../lib/api';
 import { speak } from '../lib/speech';
 import type { WordBankEntry } from '../lib/types';
-import { WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
+import { PART_OF_SPEECH_ORDER, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 /** 발음 듣기 버튼. 문장 뒤에 카드/모달 클릭 등 다른 onClick 안에 얹힐 수 있어 항상 전파를 막는다. */
 function SpeakButton({
@@ -35,21 +35,6 @@ function SpeakButton({
 }
 
 const CATEGORIES = WORD_BANK_CATEGORIES;
-
-/** 전통 8품사(명사~감탄사) 먼저, 데이터에만 있는 나머지 품사(관사/수사/조동사 등)는 뒤에 붙는다. */
-const PART_OF_SPEECH_ORDER = [
-  '명사',
-  '대명사',
-  '동사',
-  '형용사',
-  '부사',
-  '전치사',
-  '접속사',
-  '감탄사',
-  '관사',
-  '수사',
-  '조동사',
-];
 
 function WordImage({ entry, onOpen }: { entry: WordBankEntry; onOpen: (entry: WordBankEntry) => void }) {
   const { t } = useTranslation();

@@ -14,13 +14,11 @@ import {
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import type { PhonicsBankEntry, WordBankEntry, WordList, WordListItem } from '../lib/types';
-import { WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
+import { PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
   return crypto.randomUUID();
 }
-
-const PHONICS_STEPS = [1, 2, 3, 4, 5];
 
 /** 사전(word_bank) 항목이든 파닉스(phonics_bank) 항목이든 단어장에 담을 땐 같은 모양으로.
  * 파닉스는 category 가 없으니 소리 규칙(rule, 예: "ai")을 대신 넣어준다 — 그룹정렬 자동

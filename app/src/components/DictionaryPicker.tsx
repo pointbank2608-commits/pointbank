@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchWordBank } from '../lib/api';
+import { fetchPhonicsBank, fetchWordBank } from '../lib/api';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
-import type { GroupSortGroup, ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
+import type { GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
+import { PART_OF_SPEECH_ORDER, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -18,22 +19,48 @@ type Props =
 
 const RESULT_LIMIT = 60;
 
+/** 사전(word_bank)·파닉스(phonics_bank) 항목을 이 패널 안에서 다루는 공통 모양. 출처가
+ * 달라도(사전 category 든 파닉스 rule 이든) 검색·필터·선택·추가 로직은 이거 하나로 통일한다. */
+interface PickerEntry {
+  id: string;
+  word: string;
+  meaning: string;
+  image_url: string | null;
+  category: string | null;
+  partOfSpeech: string | null;
+}
+
+function fromWordBank(e: WordBankEntry): PickerEntry {
+  return { id: e.id, word: e.word, meaning: e.meaning, image_url: e.image_url, category: e.category, partOfSpeech: e.part_of_speech };
+}
+
+function fromPhonics(e: PhonicsBankEntry): PickerEntry {
+  return { id: e.id, word: e.word, meaning: e.meaning ?? '', image_url: e.image_url, category: e.rule, partOfSpeech: null };
+}
+
+type CategoryFilter = { type: 'category'; value: string } | { type: 'pos'; value: string } | { type: 'phonics'; step: number };
+
 /**
- * 단어장을 미리 안 만들어도, 800단어 사전(word_bank)에서 바로 검색해서 게임에 단어를 담는
- * 패널. WordListPicker(단어장 불러오기) 옆에 나란히 둔다. 사전 항목을 체크박스로 여러 개
- * 고른 뒤 "추가"를 누르면 variant 에 맞는 모양으로 변환해서 넘긴다 — quiz/truefalse/groupsort
- * 는 quizFromWordList.ts 의 같은 자동 생성 로직을 재사용한다(오답·그룹 모두 선택한 단어들
- * 안에서만 만들어짐).
+ * 단어장을 미리 안 만들어도, 800단어 사전(word_bank)·파닉스(phonics_bank)에서 바로
+ * 검색/카테고리로 찾아서 게임에 단어를 담는 패널. WordListPicker(단어장 불러오기) 옆에
+ * 나란히 둔다. 검색은 사전만 대상(파닉스는 검색 UI가 따로 없어 카테고리로만 진입),
+ * "카테고리" 토글을 열면 사전 16개 카테고리 + 품사 + 파닉스 5단계를 스크롤 목록으로 보여주고
+ * 하나를 고르면 그 카테고리 항목만 걸러 보여준다(파닉스는 그 순간 phonics_bank 로 전환).
+ * 체크박스로 여러 개 고른 뒤 "추가"를 누르면 variant 에 맞는 모양으로 변환해서 넘긴다 —
+ * quiz/truefalse/groupsort 는 quizFromWordList.ts 의 같은 자동 생성 로직을 재사용한다.
  */
 export default function DictionaryPicker(props: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState<WordBankEntry[] | null>(null);
+  const [phonicsEntries, setPhonicsEntries] = useState<PhonicsBankEntry[] | null>(null);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState<Record<string, WordBankEntry>>({});
+  const [selected, setSelected] = useState<Record<string, PickerEntry>>({});
   const [field, setField] = useState<'word' | 'meaning'>('word');
   const [direction, setDirection] = useState<QuizDirection>('wordToMeaning');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter | null>(null);
+  const [showCategoryPanel, setShowCategoryPanel] = useState(false);
   const showDirectionToggle = props.variant === 'quiz' || props.variant === 'truefalse';
 
   async function handleToggleOpen() {
@@ -51,16 +78,49 @@ export default function DictionaryPicker(props: Props) {
     }
   }
 
-  const pool = useMemo(() => {
+  async function ensurePhonicsLoaded() {
+    if (phonicsEntries !== null) return;
+    try {
+      setPhonicsEntries(await fetchPhonicsBank());
+    } catch {
+      setPhonicsEntries([]);
+    }
+  }
+
+  function pickCategory(filter: CategoryFilter) {
+    setCategoryFilter(filter);
+    setShowCategoryPanel(false);
+    if (filter.type === 'phonics') void ensurePhonicsLoaded();
+  }
+
+  const pool: PickerEntry[] = useMemo(() => {
+    if (categoryFilter?.type === 'phonics') {
+      if (!phonicsEntries) return [];
+      let stepEntries = phonicsEntries.filter((e) => e.step === categoryFilter.step).map(fromPhonics);
+      if (props.variant === 'image') stepEntries = stepEntries.filter((e) => e.image_url);
+      return stepEntries;
+    }
     if (!entries) return [];
-    return props.variant === 'image' ? entries.filter((e) => e.image_url) : entries;
-  }, [entries, props.variant]);
+    let base = entries.map(fromWordBank);
+    if (props.variant === 'image') base = base.filter((e) => e.image_url);
+    if (categoryFilter?.type === 'category') base = base.filter((e) => e.category === categoryFilter.value);
+    if (categoryFilter?.type === 'pos') base = base.filter((e) => e.partOfSpeech === categoryFilter.value);
+    return base;
+  }, [entries, phonicsEntries, categoryFilter, props.variant]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return pool.slice(0, RESULT_LIMIT);
     return pool.filter((e) => e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q)).slice(0, RESULT_LIMIT);
   }, [pool, query]);
+
+  const usedPartsOfSpeech = useMemo(() => {
+    if (!entries) return [];
+    const set = new Set(entries.map((e) => e.part_of_speech).filter(Boolean));
+    const ordered = PART_OF_SPEECH_ORDER.filter((p) => set.has(p));
+    const extras = [...set].filter((p) => !PART_OF_SPEECH_ORDER.includes(p)).sort();
+    return [...ordered, ...extras];
+  }, [entries]);
 
   const selectedList = useMemo(() => Object.values(selected), [selected]);
   const selectedCategoryCount = useMemo(
@@ -77,7 +137,7 @@ export default function DictionaryPicker(props: Props) {
           ? selectedCategoryCount >= 2
           : true;
 
-  function toggleSelect(entry: WordBankEntry) {
+  function toggleSelect(entry: PickerEntry) {
     setSelected((prev) => {
       const next = { ...prev };
       if (next[entry.id]) delete next[entry.id];
@@ -88,31 +148,29 @@ export default function DictionaryPicker(props: Props) {
 
   function handleAdd() {
     if (!canAdd) return;
-    const items = selectedList.map((e) => ({
-      id: e.id,
-      word: e.word,
-      meaning: e.meaning,
-      image_url: e.image_url,
-      category: e.category,
-    }));
 
     if (props.variant === 'label') {
-      props.onImportLabels(items.map((i) => (field === 'word' ? i.word : i.meaning)));
+      props.onImportLabels(selectedList.map((i) => (field === 'word' ? i.word : i.meaning)));
     } else if (props.variant === 'pairs') {
-      props.onImportPairs(items.map((i) => ({ id: uid(), left: i.word, right: i.meaning })));
+      props.onImportPairs(selectedList.map((i) => ({ id: uid(), left: i.word, right: i.meaning })));
     } else if (props.variant === 'image') {
       props.onImportImage(
-        items.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
+        selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'quiz') {
-      props.onImportQuestions(buildQuizQuestions({ items }, direction));
+      props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {
-      props.onImportStatements(buildTrueFalseStatements({ items }, direction));
+      props.onImportStatements(buildTrueFalseStatements({ items: selectedList }, direction));
     } else {
-      props.onImportGroups(buildGroupSortGroups({ items }));
+      props.onImportGroups(buildGroupSortGroups({ items: selectedList }));
     }
     setSelected({});
   }
+
+  const categoryLabel =
+    categoryFilter?.type === 'phonics'
+      ? t('wordListPicker.phonicsStepChip', { step: categoryFilter.step })
+      : categoryFilter?.value ?? null;
 
   return (
     <div className="flex-1 min-w-[220px]">
@@ -138,26 +196,95 @@ export default function DictionaryPicker(props: Props) {
             className="w-full max-w-[360px] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
 
-          {props.variant === 'label' && (
-            <div className="flex bg-surface-container-lowest rounded-lg p-1 mt-3 w-fit">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {props.variant === 'label' && (
+              <div className="flex bg-surface-container-lowest rounded-lg p-1 w-fit">
+                <button
+                  type="button"
+                  onClick={() => setField('word')}
+                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                    field === 'word' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+                  }`}
+                >
+                  {t('wordListPicker.fieldWord')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setField('meaning')}
+                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                    field === 'meaning' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+                  }`}
+                >
+                  {t('wordListPicker.fieldMeaning')}
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowCategoryPanel((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-label-md text-label-md transition-colors ${
+                showCategoryPanel || categoryFilter
+                  ? 'bg-secondary-container text-on-secondary-container'
+                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container'
+              }`}
+            >
+              <span className="material-symbols-outlined text-base">category</span>
+              {categoryLabel ?? t('dictionaryPicker.categoryButton')}
+              <span className="material-symbols-outlined text-base">{showCategoryPanel ? 'expand_less' : 'expand_more'}</span>
+            </button>
+            {categoryFilter && (
               <button
                 type="button"
-                onClick={() => setField('word')}
-                className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
-                  field === 'word' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
-                }`}
+                onClick={() => setCategoryFilter(null)}
+                className="flex items-center gap-1 px-2 py-1 rounded-md font-caption text-caption text-on-surface-variant hover:bg-surface-container"
               >
-                {t('wordListPicker.fieldWord')}
+                <span className="material-symbols-outlined text-[16px]">close</span>
+                {t('dictionaryPicker.clearCategory')}
               </button>
-              <button
-                type="button"
-                onClick={() => setField('meaning')}
-                className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
-                  field === 'meaning' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
-                }`}
-              >
-                {t('wordListPicker.fieldMeaning')}
-              </button>
+            )}
+          </div>
+
+          {showCategoryPanel && (
+            <div className="mt-2 max-h-48 overflow-y-auto rounded-lg bg-surface-container-lowest p-2">
+              <div className="flex flex-wrap gap-1.5">
+                {WORD_BANK_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => pickCategory({ type: 'category', value: cat })}
+                    className="px-3 py-1 rounded-full bg-surface-container-low hover:bg-secondary-container hover:text-on-secondary-container text-on-surface font-label-md text-label-md transition-colors"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              {usedPartsOfSpeech.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {usedPartsOfSpeech.map((pos) => (
+                    <button
+                      key={pos}
+                      type="button"
+                      onClick={() => pickCategory({ type: 'pos', value: pos })}
+                      className="px-3 py-1 rounded-full bg-surface-container-low hover:bg-secondary-container hover:text-on-secondary-container text-on-surface font-label-md text-label-md transition-colors"
+                    >
+                      {pos}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {PHONICS_STEPS.map((step) => (
+                  <button
+                    key={step}
+                    type="button"
+                    onClick={() => pickCategory({ type: 'phonics', step })}
+                    className="px-3 py-1 rounded-full bg-tertiary-container/40 hover:bg-secondary-container hover:text-on-secondary-container text-on-surface font-label-md text-label-md transition-colors"
+                  >
+                    {t('wordListPicker.phonicsStepChip', { step })}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -194,7 +321,7 @@ export default function DictionaryPicker(props: Props) {
                   : null}
           </div>
 
-          {loading ? (
+          {loading || (categoryFilter?.type === 'phonics' && phonicsEntries === null) ? (
             <div className="font-caption text-caption text-on-surface-variant py-2">{t('wordListPicker.loading')}</div>
           ) : (
             <div className="mt-2 max-h-64 overflow-y-auto rounded-lg bg-surface-container-lowest p-1.5">

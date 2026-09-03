@@ -1226,6 +1226,8 @@ const ko = {
     groupsortHint: '카테고리가 2개 이상 섞이게 선택해야 추가할 수 있어요.',
     imageOnlyHint: '이미지가 있는 단어만 나와요.',
     addButton: '{{count}}개 추가하기',
+    categoryButton: '카테고리',
+    clearCategory: '전체',
   },
 
   imagePicker: {

@@ -1228,6 +1228,8 @@ const en: Ko = {
     groupsortHint: 'Select words spanning 2+ categories to add.',
     imageOnlyHint: 'Only words with images are shown.',
     addButton: 'Add {{count}}',
+    categoryButton: 'Category',
+    clearCategory: 'All',
   },
 
   imagePicker: {
