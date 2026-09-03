@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { fetchMyStudentRow, fetchRankingSummary } from '../lib/api';
+import { fetchBalancesOfClass, fetchMyStudentRow, fetchRankingSummary, givePoints } from '../lib/api';
 import { monthStart, todayStart, weekStart } from '../lib/format';
 import { useClasses } from '../lib/useClasses';
 import type { SummaryRow } from '../lib/types';
@@ -26,7 +26,7 @@ const PODIUM_STYLE: Record<number, { bg: string; text: string; order: string; he
 };
 
 export default function ResultsPage() {
-  const { academy, session, pointUnit, isStaff } = useAuth();
+  const { academy, session, profile, pointUnit, isStaff } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
@@ -36,6 +36,7 @@ export default function ResultsPage() {
   const [rows, setRows] = useState<SummaryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [myStudentId, setMyStudentId] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
 
   // 학생이면 본인 행을 강조하기 위해 자기 students.id 를 알아둔다.
   useEffect(() => {
@@ -66,6 +67,44 @@ export default function ResultsPage() {
     void load();
   }, [load]);
 
+  /** 지금 화면에 보이는 범위(반 또는 학원 전체)의 학생 포인트를 전부 0으로 되돌린다.
+   * transactions 를 지우는 대신, 잔액만큼 반대 부호 거래를 하나씩 남겨서(마감과 같은
+   * 방식) 히스토리는 그대로 보존한다. */
+  async function handleReset() {
+    if (!isStaff || !profile || !academy || resetting) return;
+    if (scope === 'class' && !selectedId) return;
+    if (!confirm(t('results.resetConfirm'))) return;
+
+    setResetting(true);
+    try {
+      const balances =
+        scope === 'class'
+          ? await fetchBalancesOfClass(selectedId as string)
+          : (await Promise.all(classes.map((c) => fetchBalancesOfClass(c.id)))).flat();
+
+      const targets = balances.filter((b) => b.balance !== 0);
+      await Promise.all(
+        targets.map((b) =>
+          givePoints({
+            academyId: b.academy_id,
+            classId: b.class_id,
+            studentId: b.student_id,
+            delta: -b.balance,
+            reason: t('results.resetReason'),
+            teacherId: profile.id,
+            teacherName: profile.display_name,
+          }),
+        ),
+      );
+      notify(t('results.resetDone', { count: targets.length }));
+      await load();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setResetting(false);
+    }
+  }
+
   // 기간 내 활동이 아예 없는 학생은 순위 아래로 밀어두되 목록에는 남긴다.
   const ranked = rows.filter((r) => r.tx_count > 0);
   const idle = rows.filter((r) => r.tx_count === 0);
@@ -83,23 +122,36 @@ export default function ResultsPage() {
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
           {t('results.title')}
         </h2>
-        <div className="flex bg-surface-container-low rounded-lg p-1">
-          <button
-            onClick={() => setScope('class')}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              scope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
-            {t('results.scopeClass')}
-          </button>
-          <button
-            onClick={() => setScope('academy')}
-            className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-              scope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-            }`}
-          >
-            {t('results.scopeAcademy')}
-          </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex bg-surface-container-low rounded-lg p-1">
+            <button
+              onClick={() => setScope('class')}
+              className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                scope === 'class' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              {t('results.scopeClass')}
+            </button>
+            <button
+              onClick={() => setScope('academy')}
+              className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                scope === 'academy' ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              {t('results.scopeAcademy')}
+            </button>
+          </div>
+          {isStaff && (
+            <button
+              type="button"
+              onClick={() => void handleReset()}
+              disabled={resetting || (scope === 'class' && !selectedId)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg font-label-md text-label-md text-error border border-error/40 hover:bg-error-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-base">restart_alt</span>
+              {resetting ? t('results.resetting') : t('results.resetButton')}
+            </button>
+          )}
         </div>
       </div>
 

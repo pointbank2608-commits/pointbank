@@ -1220,6 +1220,16 @@ const en: Ko = {
     emptyTooFewCategories: 'Only word lists mixing 2+ categories work for group sort. Pick words from the dictionary across a few categories to build one.',
   },
 
+  dictionaryPicker: {
+    open: 'Add from dictionary',
+    close: 'Close dictionary',
+    searchPlaceholder: 'Search a word or meaning (e.g. apple)',
+    minTwoHint: 'Select 2 or more to add — wrong-answer choices are generated from the words you pick.',
+    groupsortHint: 'Select words spanning 2+ categories to add.',
+    imageOnlyHint: 'Only words with images are shown.',
+    addButton: 'Add {{count}}',
+  },
+
   imagePicker: {
     upload: '+ Upload Photo',
     replace: 'Replace Photo',
@@ -1277,9 +1287,15 @@ const en: Ko = {
     savedToast: 'Saved.',
     tabManual: 'Type manually',
     tabDictionary: 'Pick from dictionary',
+    tabCategory: 'Pick by category',
     wordPlaceholder: 'Word',
     meaningPlaceholder: 'Meaning',
     addButton: 'Add',
+    phonicsStepChip: 'Phonics step {{step}}',
+    categoryModalCount: '{{count}} words',
+    categoryModalSelected: '{{count}} selected',
+    categoryModalAddChecked: 'Add {{count}} selected',
+    addAllButton: 'Add all',
   },
 
   gameAdmin: {
@@ -1490,6 +1506,11 @@ const en: Ko = {
     total: 'Total',
     noRecord: 'No record',
     homeworkCalendar: 'Homework calendar',
+    resetButton: 'Reset points',
+    resetting: 'Resetting…',
+    resetConfirm: "Reset every student shown here back to 0 points? The reset stays in the transaction history.",
+    resetReason: 'Point reset',
+    resetDone: 'Reset {{count}} students back to 0.',
   },
 
   settleModal: {
@@ -1528,6 +1549,7 @@ const en: Ko = {
     countBadge: '{{count}} students',
     totalEconomy: 'Total class economy',
     attendanceLink: 'Attendance',
+    resultsLink: 'View Results',
     showTotal: 'Show total',
     showTotalHint: 'Turn this off in front of students',
     hideTotal: 'Hide total',

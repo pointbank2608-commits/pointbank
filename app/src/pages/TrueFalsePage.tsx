@@ -8,6 +8,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import TrueFalse from '../components/TrueFalse';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, TrueFalseStatement } from '../lib/types';
@@ -321,12 +322,18 @@ export default function TrueFalsePage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="truefalse"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportStatements={(statements) => addStatementsBulk(statements)}
                     />
+                    <DictionaryPicker
+                      variant="truefalse"
+                      onImportStatements={(statements) => addStatementsBulk(statements)}
+                    />
+                    </div>
 
                     {draftStatements.map((s, si) => (
                       <div key={s.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

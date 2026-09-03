@@ -11,6 +11,7 @@ import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -422,12 +423,18 @@ export default function WheelPage() {
                         loading={rosterLoading}
                         onAdd={(labels) => void addItemsBulk(labels)}
                       />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
+                    <DictionaryPicker
+                      variant="label"
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
+                    />
+                    </div>
 
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (

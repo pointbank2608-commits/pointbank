@@ -10,6 +10,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import TimerMatch from '../components/TimerMatch';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -398,12 +399,18 @@ export default function TimerMatchPage() {
                         loading={rosterLoading}
                         onAdd={(labels) => void addParticipantsBulk(labels)}
                       />
+                      <div className="flex flex-wrap items-start gap-3 my-3">
                       <WordListPicker
                         variant="label"
                         wordLists={wordLists}
                         loading={wordListsLoading}
                         onImportLabels={(labels) => void addParticipantsBulk(labels)}
                       />
+                      <DictionaryPicker
+                        variant="label"
+                        onImportLabels={(labels) => void addParticipantsBulk(labels)}
+                      />
+                      </div>
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (
                           <span className="font-caption text-caption text-on-surface-variant">

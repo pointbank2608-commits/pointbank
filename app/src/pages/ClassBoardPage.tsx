@@ -340,6 +340,12 @@ export default function ClassBoardPage() {
           >
             {t('board.attendanceLink')}
           </Link>
+          <Link
+            to="/results"
+            className="px-4 py-2 rounded-lg font-label-md text-label-md bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low transition-colors"
+          >
+            {t('board.resultsLink')}
+          </Link>
           <button
             onClick={() => setShowTotal((v) => !v)}
             title={t('board.showTotalHint')}

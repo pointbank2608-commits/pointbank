@@ -1218,6 +1218,16 @@ const ko = {
     emptyTooFewCategories: '카테고리가 2개 이상 섞인 단어장만 그룹정렬에 쓸 수 있어요. "사전에서 선택"으로 여러 카테고리의 단어를 담아보세요.',
   },
 
+  dictionaryPicker: {
+    open: '사전에서 추가하기',
+    close: '사전 닫기',
+    searchPlaceholder: '단어나 뜻을 검색하세요 (예: apple, 사과)',
+    minTwoHint: '2개 이상 선택해야 추가할 수 있어요. 오답 보기를 선택한 단어들 안에서 자동으로 만들어요.',
+    groupsortHint: '카테고리가 2개 이상 섞이게 선택해야 추가할 수 있어요.',
+    imageOnlyHint: '이미지가 있는 단어만 나와요.',
+    addButton: '{{count}}개 추가하기',
+  },
+
   imagePicker: {
     upload: '+ 사진 올리기',
     replace: '사진 바꾸기',
@@ -1275,9 +1285,15 @@ const ko = {
     savedToast: '저장했습니다.',
     tabManual: '직접 입력',
     tabDictionary: '사전에서 선택',
+    tabCategory: '카테고리로 선택하기',
     wordPlaceholder: '단어',
     meaningPlaceholder: '뜻',
     addButton: '추가',
+    phonicsStepChip: '파닉스 {{step}}단계',
+    categoryModalCount: '{{count}}개 단어',
+    categoryModalSelected: '{{count}}개 선택됨',
+    categoryModalAddChecked: '선택한 {{count}}개 추가하기',
+    addAllButton: '전체 넣기',
   },
 
   gameAdmin: {
@@ -1487,6 +1503,11 @@ const ko = {
     total: '합계',
     noRecord: '기록 없음',
     homeworkCalendar: '숙제 캘린더',
+    resetButton: '포인트 초기화',
+    resetting: '초기화 중…',
+    resetConfirm: '지금 보이는 학생들의 포인트를 전부 0으로 되돌릴까요? 되돌린 내역은 거래 기록에 남아요.',
+    resetReason: '포인트 초기화',
+    resetDone: '{{count}}명의 포인트를 0으로 초기화했어요.',
   },
 
   settleModal: {
@@ -1525,6 +1546,7 @@ const ko = {
     countBadge: '{{count}}명',
     totalEconomy: '총 반 경제',
     attendanceLink: '출석부',
+    resultsLink: '결과 보기',
     showTotal: '누적 보기',
     showTotalHint: '학생들 앞에서는 꺼두세요',
     hideTotal: '누적 숨기기',

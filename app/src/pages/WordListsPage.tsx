@@ -6,32 +6,195 @@ import { useToast } from '../context/ToastContext';
 import {
   createWordList,
   deleteWordList,
+  fetchPhonicsBank,
   fetchWordBank,
   fetchWordLists,
   renameWordList,
   updateWordListItems,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import type { WordBankEntry, WordList, WordListItem } from '../lib/types';
+import type { PhonicsBankEntry, WordBankEntry, WordList, WordListItem } from '../lib/types';
+import { WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
   return crypto.randomUUID();
 }
 
+const PHONICS_STEPS = [1, 2, 3, 4, 5];
+
+/** 사전(word_bank) 항목이든 파닉스(phonics_bank) 항목이든 단어장에 담을 땐 같은 모양으로.
+ * 파닉스는 category 가 없으니 소리 규칙(rule, 예: "ai")을 대신 넣어준다 — 그룹정렬 자동
+ * 그룹화에도 그대로 쓸 수 있어 덤으로 유용하다. */
+function toWordListDraft(entry: WordBankEntry | PhonicsBankEntry): Omit<WordListItem, 'id'> {
+  if ('rule' in entry) {
+    return { word: entry.word, meaning: entry.meaning ?? '', image_url: entry.image_url, category: entry.rule };
+  }
+  return { word: entry.word, meaning: entry.meaning, image_url: entry.image_url, category: entry.category };
+}
+
+type CategoryTarget = { key: string; label: string; entries: (WordBankEntry | PhonicsBankEntry)[] };
+
+/** 카테고리(사전 카테고리 또는 파닉스 단계)를 고르면 뜨는 모달. 카카오톡 사진 첨부처럼 각
+ * 항목 이미지 위에 체크 동그라미를 얹어 여러 개를 골라 "추가하기"로 한 번에 담거나,
+ * "전체 넣기"로 그 카테고리 전부를 바로 담을 수 있다. */
+function CategoryPickerModal({
+  target,
+  existingKeys,
+  onAddMany,
+  onClose,
+}: {
+  target: CategoryTarget;
+  existingKeys: Set<string>;
+  onAddMany: (entries: (WordBankEntry | PhonicsBankEntry)[]) => void;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+
+  function keyOf(entry: WordBankEntry | PhonicsBankEntry): string {
+    const draft = toWordListDraft(entry);
+    return `${draft.word}::${draft.meaning}`;
+  }
+
+  function toggle(entry: WordBankEntry | PhonicsBankEntry) {
+    if (existingKeys.has(keyOf(entry))) return;
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(entry.id)) next.delete(entry.id);
+      else next.add(entry.id);
+      return next;
+    });
+  }
+
+  function handleAddAll() {
+    onAddMany(target.entries.filter((e) => !existingKeys.has(keyOf(e))));
+    onClose();
+  }
+
+  function handleAddChecked() {
+    const picked = target.entries.filter((e) => checked.has(e.id));
+    if (picked.length === 0) return;
+    onAddMany(picked);
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 p-4" onClick={onClose}>
+      <div
+        className="flex max-h-[85vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-surface-container px-5 py-4">
+          <div>
+            <h3 className="font-title-md text-title-md text-deep-navy">{target.label}</h3>
+            <p className="font-caption text-caption text-on-surface-variant">
+              {t('wordLists.categoryModalCount', { count: target.entries.length })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
+            aria-label={t('common.cancel')}
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 border-b border-surface-container px-5 py-3">
+          <span className="font-caption text-caption text-on-surface-variant">
+            {t('wordLists.categoryModalSelected', { count: checked.size })}
+          </span>
+          <button
+            type="button"
+            onClick={handleAddAll}
+            className="flex items-center gap-1.5 rounded-full bg-secondary-container px-4 py-1.5 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-90"
+          >
+            <span className="material-symbols-outlined text-base">playlist_add</span>
+            {t('wordLists.addAllButton')}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 overflow-y-auto p-5 sm:grid-cols-4">
+          {target.entries.map((entry) => {
+            const already = existingKeys.has(keyOf(entry));
+            const isChecked = checked.has(entry.id);
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                disabled={already}
+                onClick={() => toggle(entry)}
+                className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-center transition-colors ${
+                  already ? 'cursor-not-allowed opacity-40' : 'hover:bg-surface-container'
+                }`}
+              >
+                <span className="relative block h-16 w-16">
+                  {entry.image_url ? (
+                    <img src={entry.image_url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                  ) : (
+                    <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-surface-container-low text-2xl">
+                      🔤
+                    </span>
+                  )}
+                  <span
+                    className={`absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface-container-lowest ${
+                      isChecked ? 'bg-secondary' : already ? 'bg-on-surface-variant/50' : 'bg-inverse-surface/50'
+                    }`}
+                  >
+                    {(isChecked || already) && (
+                      <span className="material-symbols-outlined text-[16px] text-on-secondary">check</span>
+                    )}
+                  </span>
+                </span>
+                <span className="font-caption text-caption text-on-surface truncate w-full">{entry.word}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-surface-container px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg px-4 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low"
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            disabled={checked.size === 0}
+            onClick={handleAddChecked}
+            className="rounded-lg bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {t('wordLists.categoryModalAddChecked', { count: checked.size })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: WordListItem[]) => void }) {
   const { t } = useTranslation();
   const { run } = useToast();
-  const [tab, setTab] = useState<'manual' | 'dictionary'>('manual');
+  const [tab, setTab] = useState<'manual' | 'dictionary' | 'category'>('manual');
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [query, setQuery] = useState('');
   const [dictionary, setDictionary] = useState<WordBankEntry[] | null>(null);
+  const [phonics, setPhonics] = useState<PhonicsBankEntry[] | null>(null);
+  const [activeCategory, setActiveCategory] = useState<CategoryTarget | null>(null);
 
   useEffect(() => {
     if (tab === 'dictionary' && dictionary === null) {
       fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
     }
-  }, [tab, dictionary]);
+    if (tab === 'category') {
+      if (dictionary === null) fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
+      if (phonics === null) fetchPhonicsBank().then(setPhonics).catch(() => setPhonics([]));
+    }
+  }, [tab, dictionary, phonics]);
 
   async function persist(next: WordListItem[]) {
     onChange(next);
@@ -53,6 +216,15 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
     ]);
   }
 
+  function addManyFromEntries(entries: (WordBankEntry | PhonicsBankEntry)[]) {
+    const existing = new Set(list.items.map((i) => `${i.word}::${i.meaning}`));
+    const fresh = entries
+      .map(toWordListDraft)
+      .filter((d) => !existing.has(`${d.word}::${d.meaning}`));
+    if (fresh.length === 0) return;
+    void persist([...list.items, ...fresh.map((d) => ({ id: uid(), ...d }))]);
+  }
+
   function removeItem(id: string) {
     void persist(list.items.filter((i) => i.id !== id));
   }
@@ -63,6 +235,8 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
     if (!q) return dictionary.slice(0, 30);
     return dictionary.filter((e) => e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q)).slice(0, 30);
   }, [dictionary, query]);
+
+  const existingKeys = useMemo(() => new Set(list.items.map((i) => `${i.word}::${i.meaning}`)), [list.items]);
 
   return (
     <div className="mt-3 border-t border-surface-container pt-3">
@@ -106,6 +280,15 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
         >
           {t('wordLists.tabDictionary')}
         </button>
+        <button
+          type="button"
+          onClick={() => setTab('category')}
+          className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+            tab === 'category' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+          }`}
+        >
+          {t('wordLists.tabCategory')}
+        </button>
       </div>
 
       {tab === 'manual' ? (
@@ -133,7 +316,7 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
             {t('wordLists.addButton')}
           </button>
         </div>
-      ) : (
+      ) : tab === 'dictionary' ? (
         <div>
           <input
             value={query}
@@ -159,6 +342,59 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
             </div>
           )}
         </div>
+      ) : (
+        <div>
+          {dictionary === null || phonics === null ? (
+            <div className="font-caption text-caption text-on-surface-variant py-2">{t('common.loading')}</div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {WORD_BANK_CATEGORIES.map((cat) => {
+                  const entries = dictionary.filter((e) => e.category === cat);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      disabled={entries.length === 0}
+                      onClick={() => setActiveCategory({ key: cat, label: cat, entries })}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-lowest hover:bg-secondary-container hover:text-on-secondary-container text-on-surface border border-outline-variant/40 font-label-md text-label-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {cat}
+                      <span className="font-caption text-caption text-on-surface-variant">({entries.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {PHONICS_STEPS.map((step) => {
+                  const entries = phonics.filter((e) => e.step === step);
+                  const label = t('wordLists.phonicsStepChip', { step });
+                  return (
+                    <button
+                      key={step}
+                      type="button"
+                      disabled={entries.length === 0}
+                      onClick={() => setActiveCategory({ key: `phonics-${step}`, label, entries })}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-tertiary-container/40 hover:bg-secondary-container hover:text-on-secondary-container text-on-surface border border-outline-variant/40 font-label-md text-label-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {label}
+                      <span className="font-caption text-caption text-on-surface-variant">({entries.length})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeCategory && (
+        <CategoryPickerModal
+          target={activeCategory}
+          existingKeys={existingKeys}
+          onAddMany={addManyFromEntries}
+          onClose={() => setActiveCategory(null)}
+        />
       )}
     </div>
   );

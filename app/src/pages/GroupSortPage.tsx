@@ -8,6 +8,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import GroupSort from '../components/GroupSort';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, GroupSortGroup } from '../lib/types';
@@ -391,12 +392,18 @@ export default function GroupSortPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="groupsort"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportGroups={(groups) => addGroupsBulk(groups)}
                     />
+                    <DictionaryPicker
+                      variant="groupsort"
+                      onImportGroups={(groups) => addGroupsBulk(groups)}
+                    />
+                    </div>
 
                     {draftGroups.map((grp, gi) => (
                       <div key={grp.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

@@ -1,4 +1,8 @@
-import type { GroupSortGroup, QuizQuestion, TrueFalseStatement, WordList } from './types';
+import type { GroupSortGroup, QuizQuestion, TrueFalseStatement, WordListItem } from './types';
+
+/** 실제 단어장뿐 아니라 사전에서 즉석으로 고른 단어 묶음(DictionaryPicker)도 넣을 수 있도록
+ * items 배열만 요구한다 — WordList 는 이 모양을 만족하니 그대로 넘겨도 된다. */
+type WordListLike = { items: WordListItem[] };
 
 function uid(): string {
   return crypto.randomUUID();
@@ -21,7 +25,7 @@ export type QuizDirection = 'wordToMeaning' | 'meaningToWord';
  * 뜻/단어를 무작위로 뽑아서 채운다. 단어장이 작아서 보기 후보가 모자라면 그만큼만 만들고,
  * 오답 후보가 하나도 없는(사실상 단어장에 그 항목 하나뿐인) 경우는 문제를 만들 수 없어 건너뛴다.
  */
-export function buildQuizQuestions(list: WordList, direction: QuizDirection, choiceCount = 4): QuizQuestion[] {
+export function buildQuizQuestions(list: WordListLike, direction: QuizDirection, choiceCount = 4): QuizQuestion[] {
   const questions: QuizQuestion[] = [];
   for (const item of list.items) {
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;
@@ -52,7 +56,7 @@ export function buildQuizQuestions(list: WordList, direction: QuizDirection, cho
  * 문장에 넣어 참 문장을, 나머지 절반은 같은 단어장의 다른 항목의 짝을 대신 넣어 거짓
  * 문장을 만든다 — 오답 후보가 없으면(단어장에 1개뿐이면) 참 문장으로 대체한다.
  */
-export function buildTrueFalseStatements(list: WordList, direction: QuizDirection): TrueFalseStatement[] {
+export function buildTrueFalseStatements(list: WordListLike, direction: QuizDirection): TrueFalseStatement[] {
   const statements: TrueFalseStatement[] = [];
   for (const item of list.items) {
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;
@@ -87,7 +91,7 @@ export function buildTrueFalseStatements(list: WordList, direction: QuizDirectio
  * 동물/음식/색깔 등)가 있는 단어만 그 카테고리 이름으로 그룹을 나눈다 — 여러 카테고리를
  * 섞어 담은 단어장일 때만 의미가 있다(한 카테고리뿐이면 그룹이 1개만 나와 플레이가 안 됨).
  */
-export function buildGroupSortGroups(list: WordList): GroupSortGroup[] {
+export function buildGroupSortGroups(list: WordListLike): GroupSortGroup[] {
   const byCategory = new Map<string, GroupSortGroup>();
   for (const item of list.items) {
     if (!item.category) continue;

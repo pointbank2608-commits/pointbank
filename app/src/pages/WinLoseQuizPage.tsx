@@ -8,6 +8,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import WinLoseQuiz, { WinLoseQuizEmptyMotif } from '../components/WinLoseQuiz';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, QuizQuestion, UndoHandle } from '../lib/types';
@@ -379,12 +380,18 @@ export default function WinLoseQuizPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="quiz"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportQuestions={(questions) => addQuestionsBulk(questions)}
                     />
+                    <DictionaryPicker
+                      variant="quiz"
+                      onImportQuestions={(questions) => addQuestionsBulk(questions)}
+                    />
+                    </div>
 
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2">

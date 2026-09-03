@@ -8,6 +8,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import TypeAnswer from '../components/TypeAnswer';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, MatchPair, TypeAnswerEntry } from '../lib/types';
@@ -356,12 +357,18 @@ export default function TypeAnswerPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="pairs"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportPairs={(pairs) => addEntriesFromPairs(pairs)}
                     />
+                    <DictionaryPicker
+                      variant="pairs"
+                      onImportPairs={(pairs) => addEntriesFromPairs(pairs)}
+                    />
+                    </div>
 
                     <div>
                       <div className="font-caption text-caption text-on-surface-variant mb-2">

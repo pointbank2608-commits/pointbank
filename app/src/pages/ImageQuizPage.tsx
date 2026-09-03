@@ -9,6 +9,7 @@ import GameThemePicker from '../components/GameThemePicker';
 import ImageQuiz, { ImageQuizEmptyMotif } from '../components/ImageQuiz';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, ImageQuizItem } from '../lib/types';
@@ -332,12 +333,18 @@ export default function ImageQuizPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="image"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportImage={(items) => addItemsBulk(items)}
                     />
+                    <DictionaryPicker
+                      variant="image"
+                      onImportImage={(items) => addItemsBulk(items)}
+                    />
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <label htmlFor="iqreveal" className="font-label-md text-label-md text-on-surface-variant shrink-0">

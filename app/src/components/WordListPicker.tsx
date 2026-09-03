@@ -64,7 +64,7 @@ export default function WordListPicker(props: Props) {
   }
 
   return (
-    <div className="my-3">
+    <div className="flex-1 min-w-[220px]">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

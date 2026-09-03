@@ -10,6 +10,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
+import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -363,12 +364,18 @@ export default function RankOrderPage() {
                       loading={rosterLoading}
                       onAdd={(labels) => void addItemsBulk(labels)}
                     />
+                    <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
                       loading={wordListsLoading}
                       onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
+                    <DictionaryPicker
+                      variant="label"
+                      onImportLabels={(labels) => void addItemsBulk(labels)}
+                    />
+                    </div>
 
                     <div className="font-caption text-caption text-on-surface-variant mt-3 mb-1.5">
                       {t('gameRankOrder.orderHint')}
