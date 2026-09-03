@@ -4432,6 +4432,31 @@
   background: linear-gradient(145deg, #f7b09d 0%, #f28b73 48%, #de6a54 100%);
 }
 
+.game-fs {
+  box-sizing: border-box;
+}
+.game-fs-stage {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px 24px;
+  overflow: hidden;
+}
+.game-fs-scale {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  transform-origin: center center;
+  will-change: transform;
+}
+.game-fs-scale > * {
+  flex-shrink: 0;
+}
+
 /* 랜딩: 큰 한글 타이포 */
 .landing {
   font-family: 'Noto Sans KR', 'Hanken Grotesk', sans-serif;
