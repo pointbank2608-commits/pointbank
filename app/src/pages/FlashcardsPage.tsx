@@ -5,7 +5,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import Flashcards from '../components/Flashcards';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
@@ -128,11 +127,6 @@ export default function FlashcardsPage() {
 
   function commitOnBlur() {
     void persistCards(draftCards);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, theme: theme ?? undefined });
   }
 
   async function handleStyleChange(style: 'wood' | 'clay') {
@@ -278,7 +272,7 @@ export default function FlashcardsPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <Flashcards cards={demoPairs} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -295,7 +289,6 @@ export default function FlashcardsPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -356,7 +349,6 @@ export default function FlashcardsPage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker

@@ -5,7 +5,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import LabeledDiagram, { LabeledDiagramEmptyMotif } from '../components/LabeledDiagram';
 import { updateGameTemplate } from '../lib/api';
@@ -109,11 +108,6 @@ export default function LabeledDiagramPage() {
   function commitPinsOnBlur() {
     if (!selected) return;
     void persistConfig({ ...selected.config, diagramPins: draftPins });
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    void persistConfig({ ...selected.config, theme: theme ?? undefined });
   }
 
   async function handleStyleChange(style: 'wood' | 'clay') {
@@ -266,7 +260,6 @@ export default function LabeledDiagramPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -323,7 +316,6 @@ export default function LabeledDiagramPage() {
 
                 {editorOpen && academy && (
                   <div className="space-y-4">
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
 
                     <div>

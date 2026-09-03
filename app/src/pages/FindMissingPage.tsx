@@ -5,7 +5,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import FindMissing from '../components/FindMissing';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -120,10 +119,6 @@ export default function FindMissingPage() {
     } catch {
       await reload();
     }
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    await persistConfig({ theme: theme ?? undefined });
   }
 
   if (isStaff && classes.length === 0) {
@@ -264,7 +259,7 @@ export default function FindMissingPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <FindMissing items={demoItems} revealCount={revealCount} shuffleCards={shuffleCards} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -281,7 +276,6 @@ export default function FindMissingPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -370,7 +364,6 @@ export default function FindMissingPage() {
                   <div>
                     <OpenInOtherGame currentType="findmissing" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}
                       existingLabels={selected.items.map((i) => i.label)}

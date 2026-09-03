@@ -4504,5 +4504,3 @@
   line-height: 1.18;
 }
 
-/* 게임 비주얼 테마(우주/정글/캔디 등) 정의는 app/src/lib/gameThemes.ts 에 있다 —
-   GameThemeFrame.tsx 가 인라인 style로 색상 변수를 얹어서 여기 CSS를 늘릴 필요가 없다. */

@@ -1,11 +1,9 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getGameTheme } from '../lib/gameThemes';
 import TeamOrderPanel from './TeamOrderPanel';
 import type { GameItem } from '../lib/types';
 
 interface Props {
-  themeId?: string | null;
   className?: string;
   children: ReactNode;
   /**
@@ -39,13 +37,12 @@ export function useGamePlay() {
 }
 
 /**
- * 게임 플레이 영역을 감싸서 선택된 테마를 입히고, 전체화면·다시하기 버튼을 우측 상단에
- * 얹는다. 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만
- * 손보면 전체화면/다시하기가 모든 게임에 동시 적용된다.
+ * 게임 플레이 영역을 감싸서 전체화면·다시하기·되돌리기·팀순서 버튼을 우측 상단에 얹는다.
+ * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
+ * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ themeId, className, children, onRestart, onUndo, roster }: Props) {
+export default function GameThemeFrame({ className, children, onRestart, onUndo, roster }: Props) {
   const { t } = useTranslation();
-  const theme = getGameTheme(themeId);
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
@@ -120,7 +117,7 @@ export default function GameThemeFrame({ themeId, className, children, onRestart
       <div
         ref={containerRef}
         className={`relative ${isFullscreen ? 'game-fs' : ''} ${className ?? ''}`}
-        style={{ ...(theme?.colors as CSSProperties | undefined), ...fullscreenStyle }}
+        style={fullscreenStyle}
       >
         <div className="absolute top-3 right-3 z-10 flex gap-2">
           {roster && roster.length > 0 && (

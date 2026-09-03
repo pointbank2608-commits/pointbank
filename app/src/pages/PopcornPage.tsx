@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import Popcorn from '../components/Popcorn';
@@ -14,7 +13,7 @@ import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -100,17 +99,6 @@ export default function PopcornPage() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gamePopcorn.clearAllConfirm'))) return;
     await persistItems([]);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
   }
 
   if (isStaff && classes.length === 0) {
@@ -251,7 +239,7 @@ export default function PopcornPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <Popcorn items={demoItems} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -268,7 +256,6 @@ export default function PopcornPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -305,7 +292,6 @@ export default function PopcornPage() {
                   <div>
                     <OpenInOtherGame currentType="popcorn" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <StudentRosterPicker
                       roster={roster}
                       existingLabels={selected.items.map((i) => i.label)}

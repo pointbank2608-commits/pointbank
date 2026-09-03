@@ -214,8 +214,6 @@ export interface GameTemplateConfig {
   revealCount?: number;
   /** 사라진 항목 찾기 전용: 숨긴 뒤 카드 자리를 섞을지 (기본 끔). */
   shuffleCards?: boolean;
-  /** 게임 플레이 영역 비주얼 테마 id (app/src/lib/gameThemes.ts 참고). 없으면 기본 색상 그대로. */
-  theme?: string;
   /** 베스킨라빈스31 전용: 이 숫자에 도달하면 지는 목표 숫자 (기본 31). */
   targetCount?: number;
   /** 공 돌리기 전용: 음악이 멈추기까지 걸리는 시간(초)의 무작위 범위. */

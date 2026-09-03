@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import WhackAMole from '../components/WhackAMole';
 import WordListPicker from '../components/WordListPicker';
@@ -134,11 +133,6 @@ export default function WhackAMolePage() {
 
   function commitOnBlur() {
     void persistPairs(draftPairs);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, theme: theme ?? undefined });
   }
 
   async function handleModeChange(mode: 'wordToMeaning' | 'meaningToWord') {
@@ -298,7 +292,7 @@ export default function WhackAMolePage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <WhackAMole pairs={demoPairs} mode={whackMode} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -315,7 +309,6 @@ export default function WhackAMolePage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             onUndo={() => gameRef.current?.undo()}
@@ -374,7 +367,6 @@ export default function WhackAMolePage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker

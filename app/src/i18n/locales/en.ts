@@ -1175,14 +1175,6 @@ const en: Ko = {
     ding: 'Ding',
   },
 
-  gameTheme: {
-    label: 'Theme',
-    default: 'Default',
-    space: 'Space',
-    jungle: 'Jungle',
-    candy: 'Candy',
-  },
-
   musicPicker: {
     backgroundMusic: 'Background music',
     none: 'None',

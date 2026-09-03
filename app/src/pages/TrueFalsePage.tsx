@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import TrueFalse from '../components/TrueFalse';
 import WordListPicker from '../components/WordListPicker';
@@ -129,17 +128,6 @@ export default function TrueFalsePage() {
 
   function commitOnBlur() {
     void persistStatements(draftStatements);
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
   }
 
   if (isStaff && classes.length === 0) {
@@ -280,7 +268,7 @@ export default function TrueFalsePage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <TrueFalse statements={demoStatements} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -297,7 +285,6 @@ export default function TrueFalsePage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -332,7 +319,6 @@ export default function TrueFalsePage() {
 
                 {editorOpen && (
                   <div className="space-y-4">
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker

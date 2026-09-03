@@ -5,7 +5,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameMusicPicker from '../components/GameMusicPicker';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
@@ -17,7 +16,7 @@ import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, MusicSelection } from '../lib/types';
+import type { GameItem, MusicSelection } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -133,18 +132,6 @@ export default function WheelPage() {
   async function handleMusicChange(music: MusicSelection | null) {
     if (!selected) return;
     const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
-    }
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
     try {
       await updateGameTemplate(selected.id, { config: nextConfig });
@@ -306,7 +293,7 @@ export default function WheelPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <SpinWheel items={demoItems} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -323,7 +310,6 @@ export default function WheelPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -399,7 +385,6 @@ export default function WheelPage() {
                   <div className="space-y-1 divide-y divide-surface-container">
                     <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     {academy && (
                       <>
                         <GameMusicPicker

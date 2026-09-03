@@ -5,7 +5,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import SpellTheWord from '../components/SpellTheWord';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -128,11 +127,6 @@ export default function SpellTheWordPage() {
     if (!selected) return;
     const n = Math.min(10, Math.max(1, Math.round(Number(previewInput)) || DEFAULT_PREVIEW_SECONDS));
     await persistConfig({ ...selected.config, spellPreviewSeconds: n });
-  }
-
-  async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, theme: theme ?? undefined });
   }
 
   async function handleStyleChange(style: 'slate' | 'stamps') {
@@ -278,7 +272,7 @@ export default function SpellTheWordPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame themeId={null} roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <SpellTheWord items={demoItems} previewSeconds={previewSeconds} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -295,7 +289,6 @@ export default function SpellTheWordPage() {
           </h2>
 
           <GameThemeFrame
-            themeId={selected.config.theme}
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -359,7 +352,6 @@ export default function SpellTheWordPage() {
                   <div className="space-y-4">
                     <OpenInOtherGame currentType="spellword" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
 
                     <div>
                       <div className="font-caption text-caption text-on-surface-variant mb-2">
