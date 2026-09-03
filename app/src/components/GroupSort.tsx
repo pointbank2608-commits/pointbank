@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GroupSortGroup } from '../lib/types';
 
 export type GroupSortStyle = 'crates' | 'baskets';
@@ -161,11 +162,11 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     return (placed[groupId] ?? []).map((it) =>
       baskets ? (
         <span key={it.id} className="gs-placed-tag">
-          {it.text}
+          <GameFitText text={it.text} fit="block" />
         </span>
       ) : (
         <span key={it.id} className={`gs-chip gs-clay-${it.tone}`}>
-          {it.text}
+          <GameFitText text={it.text} fit="block" />
         </span>
       ),
     );
@@ -225,7 +226,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
                   data-skin-object="chip"
                   className={`gs-tag ${selectedId === it.id ? 'is-sel' : ''}`}
                 >
-                  {it.text}
+                  <GameFitText text={it.text} fit="block" />
                 </button>
               ))}
             </div>
@@ -241,7 +242,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
               data-skin-object="chip"
               className={`gs-clay gs-clay-${it.tone} ${selectedId === it.id ? 'is-sel' : ''}`}
             >
-              {it.text}
+              <GameFitText text={it.text} fit="block" />
             </button>
           ))}
         </div>

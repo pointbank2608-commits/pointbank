@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { QuizQuestion } from '../lib/types';
 
 interface Props {
@@ -129,8 +130,8 @@ export default function Quiz({ questions }: Props) {
             boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
           }}
         >
-          <div className="text-center font-bold leading-snug text-deep-navy [word-break:keep-all] text-[clamp(20px,3.6vw,30px)]">
-            {current.question}
+          <div className="w-full min-h-[3em]">
+            <GameFitText text={current.question} fit="block" />
           </div>
         </div>
       </div>
@@ -156,7 +157,9 @@ export default function Quiz({ questions }: Props) {
               className={`qz-block qz-block-${i % 4} ${state}`}
             >
               <span className="qz-letter">{String.fromCharCode(65 + i)}</span>
-              <span className="min-w-0 flex-1 text-left font-bold leading-snug [word-break:keep-all]">{choice}</span>
+              <span className="min-w-0 flex-1">
+                <GameFitText text={choice} fit="block" align="left" />
+              </span>
             </button>
           );
         })}

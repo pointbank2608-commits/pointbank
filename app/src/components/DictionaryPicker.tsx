@@ -146,6 +146,20 @@ export default function DictionaryPicker(props: Props) {
     });
   }
 
+  const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selected[e.id]);
+
+  function toggleSelectAllFiltered() {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (allFilteredSelected) {
+        for (const e of filtered) delete next[e.id];
+      } else {
+        for (const e of filtered) next[e.id] = e;
+      }
+      return next;
+    });
+  }
+
   function handleAdd() {
     if (!canAdd) return;
 
@@ -320,6 +334,21 @@ export default function DictionaryPicker(props: Props) {
                   ? t('dictionaryPicker.imageOnlyHint')
                   : null}
           </div>
+
+          {filtered.length > 0 && (
+            <div className="mt-2 flex items-center justify-between">
+              <span className="font-caption text-caption text-on-surface-variant">
+                {t('dictionaryPicker.resultCount', { count: filtered.length })}
+              </span>
+              <button
+                type="button"
+                onClick={toggleSelectAllFiltered}
+                className="font-label-md text-label-md text-primary hover:underline"
+              >
+                {allFilteredSelected ? t('dictionaryPicker.deselectAll') : t('dictionaryPicker.selectAll')}
+              </button>
+            </div>
+          )}
 
           {loading || (categoryFilter?.type === 'phonics' && phonicsEntries === null) ? (
             <div className="font-caption text-caption text-on-surface-variant py-2">{t('wordListPicker.loading')}</div>

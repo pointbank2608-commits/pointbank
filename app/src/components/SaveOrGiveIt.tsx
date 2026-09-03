@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem, SaveOrGiveReward } from '../lib/types';
 
 interface Props {
@@ -162,8 +163,8 @@ export default function SaveOrGiveIt({ items, rewardPool }: Props) {
               height: `${WORD_BOARD.height * 100}%`,
             }}
           >
-            <span className="max-w-full font-title-md text-[clamp(18px,5.4vw,28px)] leading-tight text-deep-navy [word-break:keep-all]">
-              {currentItem?.label}
+            <span className="block h-full w-full min-h-0">
+              <GameFitText text={currentItem?.label ?? ''} />
             </span>
           </div>
         </div>

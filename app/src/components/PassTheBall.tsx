@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
+import GameFitText from './GameFitText';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
@@ -118,8 +119,8 @@ export default function PassTheBall({ items, minSec, maxSec, music, resultSound 
                   boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
                 }}
               >
-                <span className="text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(24px,4.4vw,36px)]">
-                  {missionWord.label}
+                <span className="block w-full min-h-[72px]">
+                  <GameFitText text={missionWord.label} fit="block" />
                 </span>
               </span>
             </div>

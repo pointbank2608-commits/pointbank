@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { TrueFalseStatement } from '../lib/types';
 
 interface Props {
@@ -140,8 +141,8 @@ export default function TrueFalse({ statements }: Props) {
             boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
           }}
         >
-          <div className="text-center font-bold leading-snug text-deep-navy [word-break:keep-all] text-[clamp(20px,3.6vw,30px)]">
-            {current.text}
+          <div className="w-full min-h-[3em]">
+            <GameFitText text={current.text} fit="block" />
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { QuizQuestion, UndoHandle } from '../lib/types';
 
 export type WinLoseQuizStyle = 'wood' | 'clay';
@@ -237,7 +238,9 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
               {t('gameWinLoseQuiz.currentBetLabel', { bet })}
             </div>
 
-            <div className="wlq-prompt">{current.question}</div>
+            <div className="wlq-prompt">
+              <GameFitText text={current.question} fit="block" />
+            </div>
 
             <div className="mt-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
               {current.choices.map((choice, i) => {
@@ -254,7 +257,7 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
                       revealed && isCorrect ? 'is-ok' : revealed && isSelected ? 'is-no' : ''
                     }`}
                   >
-                    {choice}
+                    <GameFitText text={choice} fit="block" />
                   </button>
                 );
               })}

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem } from '../lib/types';
 
 interface Props {
@@ -282,8 +283,8 @@ export default function FindMissing({ items, revealCount, shuffleCards }: Props)
                 {showQuestion ? (
                   <img src={Q_SRC} alt="" draggable={false} className="pointer-events-none h-[78%] w-auto select-none object-contain" />
                 ) : (
-                  <span className="max-w-full text-center font-title-md text-[clamp(13px,2.8vw,17px)] leading-tight text-deep-navy [word-break:keep-all]">
-                    {item.label}
+                  <span className="block h-full w-full min-h-0">
+                    <GameFitText text={item.label} />
                   </span>
                 )}
               </div>

@@ -1227,7 +1227,10 @@ const ko = {
     imageOnlyHint: '이미지가 있는 단어만 나와요.',
     addButton: '{{count}}개 추가하기',
     categoryButton: '카테고리',
-    clearCategory: '전체',
+    clearCategory: '필터 해제',
+    resultCount: '{{count}}개',
+    selectAll: '전체 선택',
+    deselectAll: '전체 선택 해제',
   },
 
   imagePicker: {

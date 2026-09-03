@@ -1,5 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
@@ -99,6 +101,8 @@ interface Dropping {
  */
 const Connect4 = forwardRef<UndoHandle, Props>(function Connect4({ items }, ref) {
   const { t } = useTranslation();
+  const { fullscreen } = useGamePlay();
+  const labelH = fullscreen ? 96 : 58;
   const [columns, setColumns] = useState<GameItem[]>(() => pickColumnItems(items));
   const [marks, setMarks] = useState<Mark[]>(() => Array(ROWS * COLS).fill(null));
   const [turn, setTurn] = useState<Team>('blue');
@@ -347,7 +351,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4({ items }, ref)
         })}
       </div>
 
-      <div className="relative mt-3 mb-1 h-[78px] w-[min(760px,100%)]">
+      <div className={`relative mt-3 mb-1 w-[min(760px,100%)] ${fullscreen ? 'h-[120px]' : 'h-[78px]'}`}>
         <div
           aria-hidden
           className="pointer-events-none absolute rounded-full"
@@ -367,7 +371,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4({ items }, ref)
             style={{
               left: `${COL_CENTER[c] * 100}%`,
               width: `${COL_SPAN * 86}%`,
-              height: 58,
+              height: labelH,
               padding: '8px 7px',
               borderRadius: 20,
               background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
@@ -382,8 +386,8 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4({ items }, ref)
                 boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.18)',
               }}
             >
-              <span className="text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(13px,1.9vw,17px)]">
-                {item.label}
+              <span className="block h-full w-full min-h-0">
+                <GameFitText text={item.label} />
               </span>
             </span>
           </div>

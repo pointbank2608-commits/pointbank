@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
@@ -178,13 +179,13 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe({ items }, re
                     draggable={false}
                     className="pointer-events-none h-[58%] w-[58%] select-none object-contain"
                   />
-                  <span className="mt-0.5 max-w-full truncate font-label-md text-[11px] leading-tight text-deep-navy [word-break:keep-all]">
-                    {item.label}
+                  <span className="mt-0.5 h-[34%] w-full min-h-0">
+                    <GameFitText text={item.label} />
                   </span>
                 </>
               ) : (
-                <span className="max-w-full font-title-md text-[clamp(13px,3.4vw,18px)] leading-tight text-deep-navy [word-break:keep-all]">
-                  {item.label}
+                <span className="h-[86%] w-full min-h-0">
+                  <GameFitText text={item.label} />
                 </span>
               )}
             </button>

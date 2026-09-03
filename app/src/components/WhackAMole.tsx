@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { MatchPair, UndoHandle } from '../lib/types';
 
 export type WhackMode = 'wordToMeaning' | 'meaningToWord';
@@ -214,7 +215,9 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
       </div>
 
       <div className="wm-prompt mb-4 w-full max-w-[420px]">
-        <div className="wm-prompt-inner">{prompt}</div>
+        <div className="wm-prompt-inner">
+          <GameFitText text={prompt} fit="block" />
+        </div>
       </div>
 
       <div data-skin-stage="board" className="wm-board w-full max-w-[420px]">

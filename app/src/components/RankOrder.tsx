@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem } from '../lib/types';
 
 export type RankOrderStyle = 'podium' | 'plates';
@@ -135,12 +136,16 @@ export default function RankOrder({ items, boardStyle = 'podium' }: Props) {
               {plates ? (
                 <div className="ro-plate-wrap">
                   <span className="ro-tag">{i + 1}</span>
-                  <div className={`ro-plate ro-clay-${tone} ${correct ? 'is-ok' : ''}`}>{item.label}</div>
+                  <div className={`ro-plate ro-clay-${tone} ${correct ? 'is-ok' : ''}`}>
+                    <GameFitText text={item.label} fit="block" />
+                  </div>
                 </div>
               ) : (
                 <div className={`ro-step ${correct ? 'is-ok' : ''}`}>
                   <span className="ro-num">{i + 1}</span>
-                  <span className="ro-label">{item.label}</span>
+                  <span className="ro-label">
+                    <GameFitText text={item.label} fit="block" />
+                  </span>
                 </div>
               )}
               <div className="ro-arrows">

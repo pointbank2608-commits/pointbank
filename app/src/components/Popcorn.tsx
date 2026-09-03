@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem } from '../lib/types';
 
 interface Props {
@@ -180,8 +181,8 @@ export default function Popcorn({ items }: Props) {
                   boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
                 }}
               >
-                <span className="text-center font-bold leading-tight text-deep-navy [word-break:keep-all] text-[clamp(22px,4.2vw,34px)]">
-                  {lastCard.label}
+                <span className="block w-full min-h-[64px]">
+                  <GameFitText text={lastCard.label} fit="block" />
                 </span>
               </span>
             </div>

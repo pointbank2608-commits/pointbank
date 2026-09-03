@@ -1,5 +1,6 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
@@ -153,8 +154,8 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31({ items, target
                 className="absolute flex items-center justify-center px-1"
                 style={{ left: '10%', top: '13%', width: '81%', height: '75%' }}
               >
-                <span className="max-w-full text-center font-title-md text-[clamp(12px,2.6vw,16px)] leading-tight text-deep-navy [word-break:keep-all]">
-                  {w}
+                <span className="block h-full w-full min-h-0">
+                  <GameFitText text={w} />
                 </span>
               </div>
             </div>

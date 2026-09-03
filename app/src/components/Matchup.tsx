@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { MatchPair, UndoHandle } from '../lib/types';
 
 export type MatchupStyle = 'trays' | 'tags';
@@ -202,7 +203,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
                     data-skin-object="chip"
                     className={`mu-tag ${tileState(p.id, 'left')}`}
                   >
-                    {p.left}
+                    <GameFitText text={p.left} />
                   </button>
                 ))}
               </div>
@@ -219,7 +220,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
                     data-skin-object="chip"
                     className={`mu-tag ${tileState(p.id, 'right')}`}
                   >
-                    {p.right}
+                    <GameFitText text={p.right} />
                   </button>
                 ))}
               </div>
@@ -237,7 +238,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
                   data-skin-object="chip"
                   className={`mu-tile mu-tile-${i % 4} ${tileState(p.id, 'left')}`}
                 >
-                  {p.left}
+                  <GameFitText text={p.left} />
                 </button>
               ))}
             </div>
@@ -251,7 +252,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
                   data-skin-object="chip"
                   className={`mu-tile mu-tile-${(i + 2) % 4} ${tileState(p.id, 'right')}`}
                 >
-                  {p.right}
+                  <GameFitText text={p.right} />
                 </button>
               ))}
             </div>

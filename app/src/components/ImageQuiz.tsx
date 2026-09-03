@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { ImageQuizItem } from '../lib/types';
 
 export type ImageQuizStyle = 'wood' | 'clay';
@@ -148,7 +149,9 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
         </button>
       ) : (
         <div className="flex flex-col items-center gap-4">
-          <div className={`iq-answer ${clay ? 'iq-clay' : ''}`}>{current.answer}</div>
+          <div className={`iq-answer ${clay ? 'iq-clay' : ''}`}>
+            <GameFitText text={current.answer} fit="block" />
+          </div>
           <div className="flex flex-wrap justify-center gap-3">
             <button type="button" onClick={() => next(true)} className="iq-btn iq-yes">
               {t('gameImageQuiz.correctButton')}

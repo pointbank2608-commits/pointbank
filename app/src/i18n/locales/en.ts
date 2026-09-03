@@ -1229,7 +1229,10 @@ const en: Ko = {
     imageOnlyHint: 'Only words with images are shown.',
     addButton: 'Add {{count}}',
     categoryButton: 'Category',
-    clearCategory: 'All',
+    clearCategory: 'Clear filter',
+    resultCount: '{{count}}',
+    selectAll: 'Select all',
+    deselectAll: 'Deselect all',
   },
 
   imagePicker: {

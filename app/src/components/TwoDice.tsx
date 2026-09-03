@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { GameItem } from '../lib/types';
 
 interface Props {
@@ -221,7 +222,7 @@ export default function TwoDice({ items }: Props) {
                   </div>
                 )}
                 <div data-skin-object="cell" className={`td-cell ${hit ? 'td-hit' : ''}`}>
-                  {item.label}
+                  <GameFitText text={item.label} />
                 </div>
               </div>
             );

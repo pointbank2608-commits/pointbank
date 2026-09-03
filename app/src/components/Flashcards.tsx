@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
 
 export type FlashcardsStyle = 'wood' | 'clay';
@@ -123,10 +124,14 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
           className={`fc-card ${flipped ? 'is-flipped' : ''}`}
         >
           <span className="fc-face">
-            <span className="fc-inset">{current.left}</span>
+            <span className="fc-inset">
+              <GameFitText text={current.left} />
+            </span>
           </span>
           <span className="fc-face is-back">
-            <span className="fc-inset">{current.right}</span>
+            <span className="fc-inset">
+              <GameFitText text={current.right} />
+            </span>
           </span>
         </button>
       </div>
