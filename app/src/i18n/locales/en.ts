@@ -1250,6 +1250,7 @@ const en: Ko = {
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
     playWord: 'Play pronunciation of {{word}}',
+    viewFullImage: 'View full image for {{word}}',
   },
 
   gamePlay: {

@@ -40,7 +40,8 @@ function PatternWord({ pattern }: { pattern: string }) {
   );
 }
 
-function PhonicsImage({ entry }: { entry: PhonicsBankEntry }) {
+function PhonicsImage({ entry, onOpen }: { entry: PhonicsBankEntry; onOpen: (entry: PhonicsBankEntry) => void }) {
+  const { t } = useTranslation();
   const [broken, setBroken] = useState(false);
   if (!entry.image_url || broken) {
     return (
@@ -50,12 +51,66 @@ function PhonicsImage({ entry }: { entry: PhonicsBankEntry }) {
     );
   }
   return (
-    <img
-      src={entry.image_url}
-      alt=""
-      className="h-32 w-full rounded-lg object-cover"
-      onError={() => setBroken(true)}
-    />
+    <button
+      type="button"
+      onClick={() => onOpen(entry)}
+      className="block w-full cursor-zoom-in"
+      aria-label={t('phonics.viewFullImage', { word: entry.word })}
+    >
+      <img
+        src={entry.image_url}
+        alt=""
+        className="h-32 w-full rounded-lg object-cover transition-transform hover:scale-[1.03]"
+        onError={() => setBroken(true)}
+      />
+    </button>
+  );
+}
+
+function PhonicsLightbox({ entry, onClose }: { entry: PhonicsBankEntry; onClose: () => void }) {
+  const { t } = useTranslation();
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img src={entry.image_url ?? undefined} alt="" className="max-h-[70vh] w-full object-contain bg-surface-container-low" />
+        <div className="p-5">
+          <div className="flex items-center gap-1.5">
+            <PatternWord pattern={entry.pattern_marked} />
+            <button
+              type="button"
+              onClick={() => speak(entry.word)}
+              aria-label={t('phonics.playWord', { word: entry.word })}
+              title={t('phonics.playWord', { word: entry.word })}
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+            >
+              <span className="material-symbols-outlined text-[18px]">volume_up</span>
+            </button>
+          </div>
+          {entry.meaning && <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>}
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-4 rounded-full bg-primary px-6 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container"
+          >
+            {t('dictionary.closeButton')}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -65,6 +120,7 @@ export default function PhonicsPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1);
   const [rule, setRule] = useState<string>('all');
+  const [lightbox, setLightbox] = useState<PhonicsBankEntry | null>(null);
 
   useEffect(() => {
     fetchPhonicsBank()
@@ -174,7 +230,7 @@ export default function PhonicsPage() {
                   key={entry.id}
                   className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
                 >
-                  <PhonicsImage entry={entry} />
+                  <PhonicsImage entry={entry} onOpen={setLightbox} />
                   <div className="mt-3 flex items-center gap-1.5">
                     <PatternWord pattern={entry.pattern_marked} />
                     <button
@@ -194,6 +250,8 @@ export default function PhonicsPage() {
           )}
         </>
       )}
+
+      {lightbox && <PhonicsLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
     </div>
   );
 }

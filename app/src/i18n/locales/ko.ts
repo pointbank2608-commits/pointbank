@@ -1248,6 +1248,7 @@ const ko = {
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
     playWord: '{{word}} 발음 듣기',
+    viewFullImage: '{{word}} 이미지 전체 보기',
   },
 
   gamePlay: {
