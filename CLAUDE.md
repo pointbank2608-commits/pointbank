@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-03** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 31종 적용(오지선다 4종 오답/거짓문장 자동생성 + 그룹정렬 카테고리 자동그룹화) + 오지선다 게임 5종 크래시 버그 수정 + 전체화면·다시하기 버튼 게임 34종 전체 적용(`GameThemeFrame`) + 한 수만 되돌리기 8종 적용(`UndoHandle` forwardRef 패턴) + 단어 사전·파닉스 발음 재생(`speech.ts`) + 파닉스 소리규칙 강조 색상 대비 수정)
+마지막 갱신: **2026-09-03** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 31종 적용(오지선다 4종 오답/거짓문장 자동생성 + 그룹정렬 카테고리 자동그룹화) + 오지선다 게임 5종 크래시 버그 수정 + 전체화면·다시하기 버튼 게임 34종 전체 적용(`GameThemeFrame`) + 한 수만 되돌리기 8종 적용(`UndoHandle` forwardRef 패턴) + 단어 사전·파닉스 발음 재생(`speech.ts`) + 파닉스 소리규칙 강조 색상 대비 수정 + 게임 설정 화면 간소화(`OpenInOtherGame` 스크롤 패널, `DictionaryPicker` 사전 검색 추가) + 단어장 카테고리로 선택하기 + 결과 초기화 + **배포 대상 전면 교체**(`pointbank-ten.vercel.app`/`pointbank2608-1458s-projects`, 기존 `classbank-rho.vercel.app`/`businessgym11-8014s-projects` 는 무관한 프로젝트였음이 확인돼 폐기))
 
 ---
 
@@ -21,7 +21,7 @@
 5. **숙제 기록은 별도 입력이 아니다.** 통장의 숙제 완료 지급 버튼 → 캘린더 완료, 미제출 차감 버튼 → 캘린더 미제출. (`presets.is_homework`, `PassbookCard` / `ClassBoardPage`)
 6. **새 미니게임**은 네비에 메뉴를 늘리지 않는다. `app/src/lib/gameCatalog.ts`의 `GAME_CATALOG` 배열에 항목 하나만 추가하면 `/games` 카드 목록에 자동 반영된다(`GamesPage.tsx`는 이 배열을 그대로 매핑). `App.tsx`에 스태프·학생 라우트 두 줄 추가는 별도로 필요. `game_templates` + `config jsonb`. `game_type`에 CHECK 없음 → 스키마 없이 종류 추가 가능. 게임마다 `number`(참고용, DB에 저장 안 됨)와 `category`(`simple`/`vocabulary`/`sentence`/`listening`/`reading`/`speaking`)를 붙인다.
 7. **오늘 통장 화면은 오늘 적립만 크게.** 누적은 기본 숨김. 마감은 저장이 아니라 확정(`settlements`).
-8. **커밋은 사용자가 요청할 때만.** 배포는 `app/`에서 `npx vercel --prod` (아래 배포 참고).
+8. **커밋은 사용자가 요청할 때만.** `main`에 푸시하면 자동 배포된다 (아래 배포 참고). 수동 배포가 필요하면 `businessgym11-8014s-projects` 아닌 `pointbank2608-1458s-projects` 스코프로.
 
 ---
 
@@ -147,19 +147,20 @@
 
 ---
 
-## 배포 (2026-08-31에 함)
+## 배포 (2026-09-03 전면 교체)
 
 - GitHub: `https://github.com/pointbank2608-commits/pointbank` 브랜치 `main`
-- 랜딩 개편 커밋: `06411df`
-- 프로덕션: **https://classbank-rho.vercel.app**
-- 이 PC Vercel CLI 계정(`businessgym11-8014`)으로는 GitHub 저장소 자동 연결이 **실패**함 (write 권한 없음). **푸시만으로는 재배포되지 않을 수 있다.** 배포 시:
+- 프로덕션: **https://pointbank-ten.vercel.app**
+- Vercel 프로젝트: `pointbank` (팀/스코프 `pointbank2608-1458s-projects`), GitHub 저장소가 **Connect Git Repository**로 연결돼 있어서 **`main`에 푸시만 하면 자동으로 프로덕션 배포된다.** 수동 `vercel --prod` 는 이제 평소엔 필요 없음(자동 배포 실패 시 대비용으로만 아래 명령 사용).
+- Vercel 로그인은 **GitHub로**(`npx vercel login`, 브라우저에서 GitHub 선택) — 이 계정이라야 `pointbank2608-1458s-projects` 팀이 보인다.
+- **`businessgym11-8014s-projects` 계정/스코프는 완전히 다른 프로젝트다. 여기다 절대 배포하지 말 것.** (2026-09-03: 이 계정으로 여러 차례 정상 배포됐던 `classbank-rho.vercel.app` 은 사용자 확인 결과 실수로 써온 무관한 프로젝트였음 — 폐기, `pointbank-ten.vercel.app` 이 진짜 프로덕션.)
+
+혹시 자동 배포가 막히면(수동 fallback):
 
 ```bash
 cd app
-npx vercel --prod --scope businessgym11-8014s-projects
+npx vercel --prod --scope pointbank2608-1458s-projects
 ```
-
-`--scope` 없이 `npx vercel --prod`만 실행하면 `"Not authorized"` (`deploy_failed`)로 실패할 수 있다(2026-09-01 확인, `vercel whoami`/`vercel project ls`에는 정상적으로 뜨는데도 배포만 막힘) — 스코프를 명시하면 됨.
 
 빌드에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 필요 (로컬은 `app/.env.local`, git에 올리지 않음).
 
