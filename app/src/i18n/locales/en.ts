@@ -1254,6 +1254,15 @@ const en: Ko = {
     closeButton: 'Close',
     playWord: 'Play pronunciation of {{word}}',
     playExample: 'Read the example sentence aloud',
+    studyButton: 'Study with flashcards',
+  },
+
+  flashcardStudy: {
+    shuffle: 'Shuffle',
+    flip: 'Flip',
+    tapToFlip: 'Tap to see the meaning',
+    prev: 'Previous card',
+    next: 'Next card',
   },
 
   phonics: {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -72,6 +72,7 @@ export default function HangmanPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
   const [newItemLabel, setNewItemLabel] = useState('');
   const maxAttempts = selected?.config.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
@@ -274,9 +275,11 @@ export default function HangmanPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="hm-tile hm-tile-0 mx-auto mb-3 flex h-14 w-12 items-center justify-center text-[22px]">A</div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <Hangman items={demoItems} maxAttempts={maxAttempts} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameHangman.emptyStaff') : t('gameHangman.emptyStudent')}
             </div>
           </div>

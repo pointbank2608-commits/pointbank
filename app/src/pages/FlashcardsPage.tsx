@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -66,6 +66,15 @@ export default function FlashcardsPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoPairs = useMemo(
+    () => [
+      { id: uid(), left: 'apple', right: '사과' },
+      { id: uid(), left: 'cat', right: '고양이' },
+      { id: uid(), left: 'sun', right: '해' },
+      { id: uid(), left: 'book', right: '책' },
+    ],
+    [],
+  );
   const [draftCards, setDraftCards] = useState<MatchPair[]>(selected?.config.flashcards ?? []);
 
   useEffect(() => {
@@ -267,14 +276,11 @@ export default function FlashcardsPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="fc-stack fc-wood mx-auto mb-3 pointer-events-none h-[120px] w-[160px]">
-              <div className="fc-behind fc-behind-1" aria-hidden />
-              <div className="fc-face">
-                <div className="fc-inset !text-[22px]">Aa</div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <Flashcards cards={demoPairs} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameFlashcards.emptyStaff') : t('gameFlashcards.emptyStudent')}
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FlashcardStudy from '../components/FlashcardStudy';
 import { fetchWordBank } from '../lib/api';
 import { speak } from '../lib/speech';
 import type { WordBankEntry } from '../lib/types';
@@ -117,6 +118,7 @@ export default function DictionaryPage() {
   const [category, setCategory] = useState<string>('all');
   const [partOfSpeech, setPartOfSpeech] = useState<string>('all');
   const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
+  const [studying, setStudying] = useState(false);
 
   useEffect(() => {
     fetchWordBank()
@@ -236,8 +238,20 @@ export default function DictionaryPage() {
 
       {entries && (
         <>
-          <div className="font-caption text-caption text-on-surface-variant tabular-nums">
-            {t('dictionary.resultCount', { count: filtered.length })}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="font-caption text-caption text-on-surface-variant tabular-nums">
+              {t('dictionary.resultCount', { count: filtered.length })}
+            </div>
+            {filtered.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setStudying(true)}
+                className="flex items-center gap-1.5 rounded-full bg-secondary-container px-4 py-2 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-90"
+              >
+                <span className="material-symbols-outlined text-base">style</span>
+                {t('dictionary.studyButton')}
+              </button>
+            )}
           </div>
 
           {filtered.length === 0 ? (
@@ -273,6 +287,14 @@ export default function DictionaryPage() {
       )}
 
       {lightbox && <ImageLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
+
+      {studying && (
+        <FlashcardStudy
+          title={t('dictionary.title')}
+          cards={filtered.map((e) => ({ id: e.id, front: e.word, back: e.meaning, image_url: e.image_url }))}
+          onClose={() => setStudying(false)}
+        />
+      )}
     </div>
   );
 }

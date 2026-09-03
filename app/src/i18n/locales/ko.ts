@@ -1252,6 +1252,15 @@ const ko = {
     closeButton: '닫기',
     playWord: '{{word}} 발음 듣기',
     playExample: '예문 읽어주기',
+    studyButton: '카드로 외우기',
+  },
+
+  flashcardStudy: {
+    shuffle: '섞기',
+    flip: '뒤집기',
+    tapToFlip: '눌러서 뜻 보기',
+    prev: '이전 카드',
+    next: '다음 카드',
   },
 
   phonics: {

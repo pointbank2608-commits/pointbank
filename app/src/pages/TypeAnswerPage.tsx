@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -66,6 +66,15 @@ export default function TypeAnswerPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoEntries = useMemo(
+    () => [
+      { id: uid(), prompt: 'apple', answer: '사과' },
+      { id: uid(), prompt: 'cat', answer: '고양이' },
+      { id: uid(), prompt: 'sun', answer: '해' },
+      { id: uid(), prompt: 'book', answer: '책' },
+    ],
+    [],
+  );
   const [draftEntries, setDraftEntries] = useState<TypeAnswerEntry[]>(selected?.config.typeAnswerEntries ?? []);
   const mode = selected?.config.typeAnswerMode ?? 'question';
 
@@ -274,13 +283,11 @@ export default function TypeAnswerPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <div className="ta-book pointer-events-none w-[160px] p-2">
-                <div className="ta-page min-h-[72px] py-4 text-[18px]">?</div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <TypeAnswer entries={demoEntries} mode={mode} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameTypeAnswer.emptyStaff') : t('gameTypeAnswer.emptyStudent')}
             </div>
           </div>

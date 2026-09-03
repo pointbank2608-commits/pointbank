@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -75,6 +75,7 @@ export default function BombPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoParticipants = useMemo(defaultParticipants, []);
   const [newParticipant, setNewParticipant] = useState('');
   const range = selected?.config.bombRange ?? DEFAULT_RANGE;
   const [minInput, setMinInput] = useState(String(range.min));
@@ -301,9 +302,11 @@ export default function BombPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">💣</div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <TimeBomb participants={demoParticipants} minSec={range.min} maxSec={range.max} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameBomb.emptyStaff') : t('gameBomb.emptyStudent')}
             </div>
           </div>

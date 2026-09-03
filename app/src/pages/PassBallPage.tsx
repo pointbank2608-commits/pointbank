@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -75,6 +75,7 @@ export default function PassBallPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const [newParticipant, setNewParticipant] = useState('');
   const range = selected?.config.ballRange ?? DEFAULT_RANGE;
   const [minInput, setMinInput] = useState(String(range.min));
@@ -301,9 +302,11 @@ export default function PassBallPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <img src="/skins/passball.png" alt="" className="mx-auto mb-3 h-16 w-auto" />
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <PassTheBall items={demoItems} minSec={range.min} maxSec={range.max} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gamePassBall.emptyStaff') : t('gamePassBall.emptyStudent')}
             </div>
           </div>

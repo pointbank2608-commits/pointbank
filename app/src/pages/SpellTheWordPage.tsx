@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -72,6 +72,7 @@ export default function SpellTheWordPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
   const previewSeconds = selected?.config.spellPreviewSeconds ?? DEFAULT_PREVIEW_SECONDS;
   const [previewInput, setPreviewInput] = useState(String(previewSeconds));
@@ -276,13 +277,11 @@ export default function SpellTheWordPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <div className="sw-slate pointer-events-none w-[160px] p-2">
-                <div className="sw-face min-h-[72px] py-4 text-[18px]">Aa</div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <SpellTheWord items={demoItems} previewSeconds={previewSeconds} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameSpellWord.emptyStaff') : t('gameSpellWord.emptyStudent')}
             </div>
           </div>

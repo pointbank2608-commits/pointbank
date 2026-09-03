@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -70,6 +70,15 @@ export default function WhackAMolePage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoPairs = useMemo(
+    () => [
+      { id: uid(), left: 'apple', right: '사과' },
+      { id: uid(), left: 'cat', right: '고양이' },
+      { id: uid(), left: 'sun', right: '해' },
+      { id: uid(), left: 'book', right: '책' },
+    ],
+    [],
+  );
   const gameRef = useRef<UndoHandle>(null);
   const [draftPairs, setDraftPairs] = useState<MatchPair[]>(() => seedPairs(selected));
 
@@ -287,18 +296,11 @@ export default function WhackAMolePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <span className="wm-well wm-well-2 pointer-events-none w-[88px]">
-                <span className="wm-hole">
-                  <span className="wm-mole is-up">
-                    <span className="wm-sign">A</span>
-                    <img className="wm-critter" src="/skins/wm-mole.png" alt="" draggable={false} />
-                  </span>
-                </span>
-              </span>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <WhackAMole pairs={demoPairs} mode={whackMode} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameWhackamole.emptyStaff') : t('gameWhackamole.emptyStudent')}
             </div>
           </div>

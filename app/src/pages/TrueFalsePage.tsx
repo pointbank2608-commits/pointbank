@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -66,6 +66,14 @@ export default function TrueFalsePage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoStatements = useMemo(
+    () => [
+      { id: uid(), text: '"apple"는 "사과"라는 뜻이에요.', isTrue: true },
+      { id: uid(), text: '"cat"는 "바나나"라는 뜻이에요.', isTrue: false, explanation: '정답은 "고양이"예요.' },
+      { id: uid(), text: '"sun"은 "해"라는 뜻이에요.', isTrue: true },
+    ],
+    [],
+  );
   const [draftStatements, setDraftStatements] = useState<TrueFalseStatement[]>(selected?.config.statements ?? []);
 
   useEffect(() => {
@@ -270,9 +278,11 @@ export default function TrueFalsePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <span className="tf-mark tf-mark-o mx-auto mb-3" />
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <TrueFalse statements={demoStatements} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameTrueFalse.emptyStaff') : t('gameTrueFalse.emptyStudent')}
             </div>
           </div>

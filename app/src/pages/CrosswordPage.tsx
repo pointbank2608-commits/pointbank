@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -66,6 +66,7 @@ export default function CrosswordPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   async function persistItems(next: GameItem[]) {
@@ -258,23 +259,11 @@ export default function CrosswordPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <div className="cw-frame pointer-events-none w-[108px] p-2">
-                <div className="cw-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-                  {['C', 'A', 'T', null, 'A', null, 'B', 'A', 'G'].map((ch, i) =>
-                    ch === null ? (
-                      <span key={i} className="cw-hole" />
-                    ) : (
-                      <span key={i} className="cw-cell text-[10px]">
-                        {ch}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <Crossword items={demoItems} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameCrossword.emptyStaff') : t('gameCrossword.emptyStudent')}
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -66,6 +66,7 @@ export default function MazeChasePage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   async function persistItems(next: GameItem[]) {
@@ -258,17 +259,11 @@ export default function MazeChasePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center">
-              <div className="mz-tray pointer-events-none w-[140px] p-2">
-                <div className="mz-floor">
-                  <span className="mz-post" style={{ left: '38%', top: '28%', width: '22%', height: '28%' }} />
-                  <span className="mz-marble" style={{ left: '12%', top: '42%', width: '16%', height: '22%' }} />
-                  <span className="mz-marble is-foe" style={{ left: '68%', top: '18%', width: '16%', height: '22%' }} />
-                </div>
-              </div>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <MazeChase items={demoItems} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameMazeChase.emptyStaff') : t('gameMazeChase.emptyStudent')}
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -70,6 +70,13 @@ export default function GroupSortPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoGroups = useMemo(
+    () => [
+      { id: uid(), name: '동물', items: [{ id: uid(), text: 'cat' }, { id: uid(), text: 'dog' }] },
+      { id: uid(), name: '음식', items: [{ id: uid(), text: 'apple' }, { id: uid(), text: 'bread' }] },
+    ],
+    [],
+  );
   const [draftGroups, setDraftGroups] = useState<GroupSortGroup[]>(selected?.config.groups ?? []);
 
   useEffect(() => {
@@ -311,12 +318,11 @@ export default function GroupSortPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mx-auto mb-3 flex justify-center gap-2">
-              <span className="gs-clay gs-clay-0 pointer-events-none min-w-[64px]">A</span>
-              <span className="gs-clay gs-clay-2 pointer-events-none min-w-[64px]">가</span>
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <GroupSort groups={demoGroups} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameGroupSort.emptyStaff') : t('gameGroupSort.emptyStudent')}
             </div>
           </div>

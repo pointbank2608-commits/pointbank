@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -6,7 +6,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
-import WinLoseQuiz, { WinLoseQuizEmptyMotif } from '../components/WinLoseQuiz';
+import WinLoseQuiz from '../components/WinLoseQuiz';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -69,6 +69,14 @@ export default function WinLoseQuizPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoQuestions = useMemo(
+    () => [
+      { id: uid(), question: 'apple', choices: ['사과', '바나나', '고양이', '책'], correctIndex: 0 },
+      { id: uid(), question: 'cat', choices: ['개', '고양이', '해', '사과'], correctIndex: 1 },
+      { id: uid(), question: 'sun', choices: ['달', '별', '해', '나무'], correctIndex: 2 },
+    ],
+    [],
+  );
   const gameRef = useRef<UndoHandle>(null);
   const [draftQuestions, setDraftQuestions] = useState<QuizQuestion[]>(selected?.config.questions ?? []);
 
@@ -302,11 +310,11 @@ export default function WinLoseQuizPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mb-3">
-              <WinLoseQuizEmptyMotif />
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <WinLoseQuiz questions={demoQuestions} startScore={startScore} betOptions={betOptions} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameWinLoseQuiz.emptyStaff') : t('gameWinLoseQuiz.emptyStudent')}
             </div>
           </div>

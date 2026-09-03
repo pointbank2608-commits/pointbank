@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -73,6 +73,7 @@ export default function FindMissingPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
+  const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
   const revealCount = selected?.config.revealCount ?? DEFAULT_REVEAL_COUNT;
   const shuffleCards = selected?.config.shuffleCards ?? DEFAULT_SHUFFLE_CARDS;
@@ -262,9 +263,11 @@ export default function FindMissingPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <img src="/skins/miss-card.png" alt="" className="mx-auto mb-3 h-16 w-auto" />
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame themeId={null} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+              <FindMissing items={demoItems} revealCount={revealCount} shuffleCards={shuffleCards} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameFindMissing.emptyStaff') : t('gameFindMissing.emptyStudent')}
             </div>
           </div>

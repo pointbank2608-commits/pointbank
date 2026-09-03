@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -90,6 +90,12 @@ export default function OrderPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
   const [newParticipant, setNewParticipant] = useState('');
+
+  /** 아직 만든 목록이 없을 때, 빈 안내 문구 대신 실제로 돌아가는 예시 화면을 보여준다 —
+   * 처음 온 선생님이 "아 이런 게임이구나" 하고 감으로 이해하게. 참가자 수 고정(3명)이라
+   * 매 렌더마다 새로 만들지 않고 한 번만 계산해 데모 중 상태가 리셋되지 않게 한다. */
+  const demoParticipants = useMemo(defaultParticipants, []);
+  const demoRanks = useMemo(() => rankLabels(3, 'ordinal'), []);
 
   const ranks = selected ? ranksFor(selected.items, selected.config.ranks) : [];
 
@@ -321,9 +327,14 @@ export default function OrderPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🎱</div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
+          <div>
+            <GameThemeFrame
+              themeId={null}
+              className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
+            >
+              <OrderPicker participants={demoParticipants} ranks={demoRanks} music={null} resultSound={undefined} />
+            </GameThemeFrame>
+            <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameOrder.emptyStaff') : t('gameOrder.emptyStudent')}
             </div>
           </div>
