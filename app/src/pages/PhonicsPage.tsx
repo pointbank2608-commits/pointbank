@@ -22,9 +22,10 @@ function parsePattern(pattern: string): { text: string; marked?: boolean }[] {
   return parts;
 }
 
-function PatternWord({ pattern }: { pattern: string }) {
+function PatternWord({ pattern, size = 'card' }: { pattern: string; size?: 'card' | 'lightbox' }) {
+  const textSizeClass = size === 'lightbox' ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-[26px]';
   return (
-    <span className="font-title-md text-title-md text-deep-navy">
+    <span className={`font-title-md font-bold text-deep-navy ${textSizeClass}`}>
       {parsePattern(pattern).map((part, i) =>
         part.marked ? (
           // 소리 규칙 글자는 진한 남색 글자 + 밝은 노란 배경으로 대비를 크게 줘서(파란 글자에
@@ -83,28 +84,28 @@ function PhonicsLightbox({ entry, onClose }: { entry: PhonicsBankEntry; onClose:
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
+        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg sm:max-w-[600px]"
         onClick={(e) => e.stopPropagation()}
       >
         <img src={entry.image_url ?? undefined} alt="" className="max-h-[70vh] w-full object-contain bg-surface-container-low" />
-        <div className="p-5">
+        <div className="p-5 sm:p-7">
           <div className="flex items-center gap-1.5">
-            <PatternWord pattern={entry.pattern_marked} />
+            <PatternWord pattern={entry.pattern_marked} size="lightbox" />
             <button
               type="button"
               onClick={() => speak(entry.word)}
               aria-label={t('phonics.playWord', { word: entry.word })}
               title={t('phonics.playWord', { word: entry.word })}
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[18px]">volume_up</span>
+              <span className="material-symbols-outlined text-[26px]">volume_up</span>
             </button>
           </div>
-          {entry.meaning && <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>}
+          {entry.meaning && <p className="font-body-md mt-1 text-xl text-on-surface sm:text-2xl">{entry.meaning}</p>}
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 rounded-full bg-primary px-6 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container"
+            className="mt-5 rounded-full bg-primary px-6 py-2.5 font-label-md text-lg text-on-primary transition-colors hover:bg-primary-container"
           >
             {t('dictionary.closeButton')}
           </button>
@@ -231,19 +232,21 @@ export default function PhonicsPage() {
                   className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
                 >
                   <PhonicsImage entry={entry} onOpen={setLightbox} />
-                  <div className="mt-3 flex items-center gap-1.5">
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
                     <PatternWord pattern={entry.pattern_marked} />
                     <button
                       type="button"
                       onClick={() => speak(entry.word)}
                       aria-label={t('phonics.playWord', { word: entry.word })}
                       title={t('phonics.playWord', { word: entry.word })}
-                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
                     >
-                      <span className="material-symbols-outlined text-[18px]">volume_up</span>
+                      <span className="material-symbols-outlined text-[20px]">volume_up</span>
                     </button>
                   </div>
-                  {entry.meaning && <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>}
+                  {entry.meaning && (
+                    <p className="font-body-md mt-0.5 text-lg text-on-surface sm:text-xl">{entry.meaning}</p>
+                  )}
                 </div>
               ))}
             </div>

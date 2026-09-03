@@ -5,7 +5,18 @@ import { speak } from '../lib/speech';
 import type { WordBankEntry } from '../lib/types';
 
 /** 발음 듣기 버튼. 문장 뒤에 카드/모달 클릭 등 다른 onClick 안에 얹힐 수 있어 항상 전파를 막는다. */
-function SpeakButton({ text, label, className = '' }: { text: string; label: string; className?: string }) {
+function SpeakButton({
+  text,
+  label,
+  className = '',
+  size = 'md',
+}: {
+  text: string;
+  label: string;
+  className?: string;
+  size?: 'md' | 'lg';
+}) {
+  const sizeClass = size === 'lg' ? 'h-9 w-9 text-[26px]' : 'h-7 w-7 text-[20px]';
   return (
     <button
       type="button"
@@ -15,9 +26,9 @@ function SpeakButton({ text, label, className = '' }: { text: string; label: str
       }}
       aria-label={label}
       title={label}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary ${sizeClass} ${className}`}
     >
-      <span className="material-symbols-outlined text-[18px]">volume_up</span>
+      <span className="material-symbols-outlined text-[1em]">volume_up</span>
     </button>
   );
 }
@@ -99,27 +110,27 @@ function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () =
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
+        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg sm:max-w-[600px]"
         onClick={(e) => e.stopPropagation()}
       >
         <img src={entry.image_url ?? undefined} alt="" className="max-h-[70vh] w-full object-contain bg-surface-container-low" />
-        <div className="p-5">
-          <div className="flex items-center gap-2">
-            <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
-            <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} />
-            <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
+        <div className="p-5 sm:p-7">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-title-md text-3xl font-bold text-deep-navy sm:text-4xl">{entry.word}</h3>
+            <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} size="lg" />
+            <span className="font-caption text-base text-on-surface-variant">{entry.part_of_speech}</span>
           </div>
-          <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>
+          <p className="font-body-md mt-1 text-xl text-on-surface sm:text-2xl">{entry.meaning}</p>
           {entry.example_sentence && (
-            <div className="mt-1 flex items-start gap-1.5">
-              <p className="font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+            <div className="mt-2 flex items-start gap-1.5">
+              <p className="font-body-md text-lg text-on-surface-variant sm:text-xl">{entry.example_sentence}</p>
               <SpeakButton text={entry.example_sentence} label={t('dictionary.playExample')} className="mt-0.5" />
             </div>
           )}
           <button
             type="button"
             onClick={onClose}
-            className="mt-4 rounded-full bg-primary px-6 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container"
+            className="mt-5 rounded-full bg-primary px-6 py-2.5 font-label-md text-lg text-on-primary transition-colors hover:bg-primary-container"
           >
             {t('dictionary.closeButton')}
           </button>
@@ -273,15 +284,15 @@ export default function DictionaryPage() {
                   className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
                 >
                   <WordImage entry={entry} onOpen={setLightbox} />
-                  <div className="mt-3 flex items-center gap-2">
-                    <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                    <h3 className="font-title-md text-2xl font-bold text-deep-navy sm:text-[26px]">{entry.word}</h3>
                     <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} />
-                    <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
+                    <span className="font-caption text-sm text-on-surface-variant">{entry.part_of_speech}</span>
                   </div>
-                  <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>
+                  <p className="font-body-md mt-0.5 text-lg text-on-surface sm:text-xl">{entry.meaning}</p>
                   {entry.example_sentence && (
                     <div className="mt-1 flex items-start gap-1.5">
-                      <p className="font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+                      <p className="font-body-md text-base text-on-surface-variant sm:text-lg">{entry.example_sentence}</p>
                       <SpeakButton text={entry.example_sentence} label={t('dictionary.playExample')} className="mt-0.5" />
                     </div>
                   )}
