@@ -28,11 +28,8 @@ interface Flyer {
 }
 
 const MACHINE_SRC = '/skins/lottery-machine.png';
-const LID_SRC = '/skins/lottery-lid.png';
 /** 스킨 이미지에서 측정한 유리구 구멍. 값은 이미지 너비/높이 대비 비율. */
 const HOLE = { cx: 0.488, cy: 0.441, r: 0.295 };
-/** 나무 뚜껑을 유리구보다 앞에 올리기 위한 위치. */
-const LID = { left: 0.292, top: 0.0, width: 0.416, height: 0.3 };
 /** 받침대 앞쪽 배출구. */
 const CHUTE = { cx: 0.5, cy: 0.82 };
 const BALL = 40;
@@ -203,19 +200,6 @@ export default function LotteryMachine({ participants, ranks, order, active, rev
         </div>
         <img src={MACHINE_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 z-10 h-full w-full select-none" />
         <LotteryGlass id={glassId} left={glassLeft} top={glassTop} size={glassSize} />
-        <img
-          src={LID_SRC}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute z-[18] select-none object-contain"
-          style={{
-            left: `${LID.left * 100}%`,
-            top: `${LID.top * 100}%`,
-            width: `${LID.width * 100}%`,
-            height: `${LID.height * 100}%`,
-            filter: 'drop-shadow(0 6px 8px rgba(90, 50, 18, 0.28))',
-          }}
-        />
         <div
           ref={chuteRef}
           className="pointer-events-none absolute z-20 h-2 w-2 -translate-x-1/2 -translate-y-1/2"
