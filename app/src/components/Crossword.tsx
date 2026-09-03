@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
 
+export type CrosswordStyle = 'board' | 'blocks';
+
 interface Props {
   items: GameItem[];
+  boardStyle?: CrosswordStyle;
 }
 
 interface Placement {
@@ -22,6 +25,10 @@ interface Puzzle {
   width: number;
   height: number;
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function cleanWord(label: string): string {
   return label.replace(/\s+/g, '').toUpperCase();
@@ -141,18 +148,49 @@ function buildCrossword(items: GameItem[]): Puzzle {
   return { placements, grid, width, height };
 }
 
-export default function Crossword({ items }: Props) {
+export default function Crossword({ items, boardStyle = 'board' }: Props) {
   const { t } = useTranslation();
+  const blocks = boardStyle === 'blocks';
   const [puzzle, setPuzzle] = useState<Puzzle>(() => buildCrossword(items));
   const [wordBank, setWordBank] = useState<Placement[]>(() => shuffle(puzzle.placements));
   const [filledIds, setFilledIds] = useState<Set<string>>(new Set());
   const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
   const [wrongSlotId, setWrongSlotId] = useState<string | null>(null);
+  const wrongTimer = useRef<number | null>(null);
+  const itemKey = items.map((it) => it.id).join(',');
+
+  useEffect(() => {
+    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    const next = buildCrossword(items);
+    setPuzzle(next);
+    setWordBank(shuffle(next.placements));
+    setFilledIds(new Set());
+    setSelectedWordId(null);
+    setWrongSlotId(null);
+    return () => {
+      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemKey]);
 
   if (puzzle.placements.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🧩</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <div className="mx-auto mb-3 flex justify-center">
+          <div className="cw-frame pointer-events-none w-[108px] p-2">
+            <div className="cw-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+              {['C', 'A', 'T', null, 'A', null, 'B', 'A', 'G'].map((ch, i) =>
+                ch === null ? (
+                  <span key={i} className="cw-hole" />
+                ) : (
+                  <span key={i} className="cw-cell text-[10px]">
+                    {ch}
+                  </span>
+                ),
+              )}
+            </div>
+          </div>
+        </div>
         <div className="font-body-md text-body-md">{t('gameCrossword.needParticipants')}</div>
       </div>
     );
@@ -161,27 +199,13 @@ export default function Crossword({ items }: Props) {
   const finished = filledIds.size === puzzle.placements.length;
 
   function restart() {
+    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
     const next = buildCrossword(items);
     setPuzzle(next);
     setWordBank(shuffle(next.placements));
     setFilledIds(new Set());
     setSelectedWordId(null);
     setWrongSlotId(null);
-  }
-
-  if (finished) {
-    return (
-      <div className="flex flex-col items-center pt-3 pb-2">
-        <div className="text-5xl mb-3">🎉</div>
-        <div className="font-title-md text-title-md text-on-surface mb-6">{t('gameCrossword.finishedTitle')}</div>
-        <button
-          onClick={restart}
-          className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-        >
-          {t('gameCrossword.restartButton')}
-        </button>
-      </div>
-    );
   }
 
   function selectWord(id: string) {
@@ -197,8 +221,38 @@ export default function Crossword({ items }: Props) {
       setWrongSlotId(null);
     } else {
       setWrongSlotId(placement.id);
-      window.setTimeout(() => setWrongSlotId(null), 400);
+      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+      wrongTimer.current = window.setTimeout(() => setWrongSlotId(null), 400);
     }
+  }
+
+  if (finished) {
+    return (
+      <div className="flex flex-col items-center pt-3 pb-2">
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
+        >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="font-title-md text-title-md text-deep-navy">{t('gameCrossword.finishedTitle')}</div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
+          {t('gameCrossword.restartButton')}
+        </button>
+      </div>
+    );
   }
 
   const cellFilled = new Set<string>();
@@ -219,76 +273,64 @@ export default function Crossword({ items }: Props) {
   const sortedSlots = [...puzzle.placements].sort((a, b) => a.number - b.number || (a.dir === 'across' ? -1 : 1));
 
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2 w-full">
-      <div className="font-caption text-caption text-on-surface-variant mb-4 tabular-nums">
+    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
+      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {t('gameCrossword.foundLabel', { found: filledIds.size, total: puzzle.placements.length })}
       </div>
 
-      <div
-        data-skin-stage="board"
-        className="grid gap-[2px] mb-6 w-full max-w-[420px]"
-        style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}
-      >
-        {puzzle.grid.map((row, r) =>
-          row.map((ch, c) => {
-            if (ch === null) return <div key={`${r}-${c}`} className="aspect-square" />;
-            const key = `${r}-${c}`;
-            const revealed = cellFilled.has(key);
-            const num = cellNumber.get(key);
-            return (
-              <div
-                key={key}
-                data-skin-object="cell"
-                className="relative aspect-square flex items-center justify-center border border-outline-variant/50 bg-surface-container-lowest rounded-[3px]"
-              >
-                {num !== undefined && (
-                  <span className="absolute top-[1px] left-[2px] text-[7px] sm:text-[9px] text-on-surface-variant leading-none">
-                    {num}
-                  </span>
-                )}
-                <span className="font-bold text-[11px] sm:text-sm text-on-surface">{revealed ? ch : ''}</span>
-              </div>
-            );
-          }),
-        )}
+      <div data-skin-stage="board" className={`cw-frame mb-5 ${blocks ? 'cw-blocks' : ''}`}>
+        <div className="cw-grid" style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}>
+          {puzzle.grid.map((row, r) =>
+            row.map((ch, c) => {
+              if (ch === null) return <div key={`${r}-${c}`} className="cw-hole" />;
+              const key = `${r}-${c}`;
+              const revealed = cellFilled.has(key);
+              const num = cellNumber.get(key);
+              const tone = (r + c) % 4;
+              return (
+                <div
+                  key={key}
+                  data-skin-object="cell"
+                  className={`cw-cell ${blocks && !revealed ? `cw-clay-${tone}` : ''} ${revealed ? 'is-ok' : ''}`}
+                >
+                  {num !== undefined && <span className="cw-num">{num}</span>}
+                  <span>{revealed ? ch : ''}</span>
+                </div>
+              );
+            }),
+          )}
+        </div>
       </div>
 
-      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameCrossword.wordBankLabel')}</div>
-      <div className="flex flex-wrap justify-center gap-2 mb-5 max-w-[460px]">
+      <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.wordBankLabel')}</div>
+      <div className="cw-row mb-5">
         {wordBank
           .filter((p) => !filledIds.has(p.id))
-          .map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => selectWord(p.id)}
-              data-skin-object="word-chip"
-              className={`px-4 py-2 rounded-full font-label-md text-label-md border-2 transition-colors ${
-                selectedWordId === p.id
-                  ? 'bg-primary text-on-primary border-primary'
-                  : 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low'
-              }`}
-            >
-              {p.word}
-            </button>
-          ))}
+          .map((p, i) => {
+            const on = selectedWordId === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => selectWord(p.id)}
+                data-skin-object="word-chip"
+                className={`cw-chip ${on ? 'is-on' : blocks ? `is-clay-${i % 4}` : ''}`}
+              >
+                {p.word}
+              </button>
+            );
+          })}
       </div>
 
-      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameCrossword.slotListLabel')}</div>
-      <div className="flex flex-wrap justify-center gap-2 max-w-[460px]">
+      <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.slotListLabel')}</div>
+      <div className="cw-row">
         {sortedSlots.map((p) => (
           <button
             key={p.id}
             type="button"
             disabled={filledIds.has(p.id)}
             onClick={() => clickSlot(p)}
-            className={`px-3 py-1.5 rounded-full font-caption text-caption border-2 transition-colors ${
-              filledIds.has(p.id)
-                ? 'bg-secondary-container/50 border-secondary text-on-surface opacity-70'
-                : wrongSlotId === p.id
-                  ? 'bg-error-container border-error text-on-error-container'
-                  : 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low'
-            }`}
+            className={`cw-slot ${filledIds.has(p.id) ? 'is-ok' : wrongSlotId === p.id ? 'is-no' : ''}`}
           >
             {p.number}
             {p.dir === 'across' ? t('gameCrossword.acrossLabel') : t('gameCrossword.downLabel')} · {p.clean.length}

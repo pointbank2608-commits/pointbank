@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameItem } from '../lib/types';
+import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
   items: GameItem[];
@@ -58,11 +58,12 @@ function checkWinner(marks: Mark[]): Team | null {
 /**
  * 틱택토. 등록한 단어를 3×3 나무 판에 올려 두고, 두 팀이 번갈아 칸을 차지한다.
  */
-export default function TicTacToe({ items }: Props) {
+const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe({ items }, ref) {
   const { t } = useTranslation();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
   const [marks, setMarks] = useState<Mark[]>(() => Array(9).fill(null));
   const [turn, setTurn] = useState<Team>('blue');
+  const [prevSnapshot, setPrevSnapshot] = useState<{ marks: Mark[]; turn: Team } | null>(null);
   const winner = checkWinner(marks);
   const isDraw = !winner && marks.every((m) => m !== null);
 
@@ -70,15 +71,26 @@ export default function TicTacToe({ items }: Props) {
     setBoard(pickBoardItems(items));
     setMarks(Array(9).fill(null));
     setTurn('blue');
+    setPrevSnapshot(null);
   }
 
   function claim(index: number) {
     if (winner || isDraw || marks[index]) return;
+    setPrevSnapshot({ marks, turn });
     const next = [...marks];
     next[index] = turn;
     setMarks(next);
     setTurn(turn === 'blue' ? 'red' : 'blue');
   }
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (!prevSnapshot) return;
+      setMarks(prevSnapshot.marks);
+      setTurn(prevSnapshot.turn);
+      setPrevSnapshot(null);
+    },
+  }));
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gameTicTacToe.teamBlue') : t('gameTicTacToe.teamRed'));
   const pill =
@@ -185,4 +197,6 @@ export default function TicTacToe({ items }: Props) {
       )}
     </div>
   );
-}
+});
+
+export default TicTacToe;

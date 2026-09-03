@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameItem } from '../lib/types';
+import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
   items: GameItem[];
@@ -97,12 +97,13 @@ interface Dropping {
 /**
  * 4 in a row. 열 아래에 단어를 두고, 원판을 위에서 떨어뜨려 아래부터 쌓는다.
  */
-export default function Connect4({ items }: Props) {
+const Connect4 = forwardRef<UndoHandle, Props>(function Connect4({ items }, ref) {
   const { t } = useTranslation();
   const [columns, setColumns] = useState<GameItem[]>(() => pickColumnItems(items));
   const [marks, setMarks] = useState<Mark[]>(() => Array(ROWS * COLS).fill(null));
   const [turn, setTurn] = useState<Team>('blue');
   const [dropping, setDropping] = useState<Dropping | null>(null);
+  const [prevSnapshot, setPrevSnapshot] = useState<{ marks: Mark[]; turn: Team } | null>(null);
   const dropTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const win = findWin(marks);
   const winner = win?.team ?? null;
@@ -121,6 +122,7 @@ export default function Connect4({ items }: Props) {
     setColumns(pickColumnItems(items));
     setMarks(Array(ROWS * COLS).fill(null));
     setTurn('blue');
+    setPrevSnapshot(null);
   }
 
   function dropInColumn(c: number) {
@@ -134,6 +136,7 @@ export default function Connect4({ items }: Props) {
     }
     if (targetRow === -1) return;
     const team = turn;
+    setPrevSnapshot({ marks, turn });
     setDropping({ col: c, row: targetRow, team });
     dropTimer.current = setTimeout(() => {
       setMarks((prev) => {
@@ -145,6 +148,15 @@ export default function Connect4({ items }: Props) {
       setDropping(null);
     }, dropMs(targetRow));
   }
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (busy || !prevSnapshot) return;
+      setMarks(prevSnapshot.marks);
+      setTurn(prevSnapshot.turn);
+      setPrevSnapshot(null);
+    },
+  }));
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gameConnect4.teamBlue') : t('gameConnect4.teamRed'));
   const pill =
@@ -383,4 +395,6 @@ export default function Connect4({ items }: Props) {
       )}
     </div>
   );
-}
+});
+
+export default Connect4;

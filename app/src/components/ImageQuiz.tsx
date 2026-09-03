@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ImageQuizItem } from '../lib/types';
 
+export type ImageQuizStyle = 'wood' | 'clay';
+
 interface Props {
   items: ImageQuizItem[];
   revealSeconds: number;
+  boardStyle?: ImageQuizStyle;
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -16,16 +23,23 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function ImageQuiz({ items, revealSeconds }: Props) {
+export function ImageQuizEmptyMotif() {
+  return (
+    <div className="iq-frame pointer-events-none mx-auto w-[148px] p-2">
+      <div className="iq-photo is-empty" />
+    </div>
+  );
+}
+
+export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }: Props) {
   const { t } = useTranslation();
+  const clay = boardStyle === 'clay';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [phase, setPhase] = useState<'revealing' | 'revealed'>('revealing');
   const [score, setScore] = useState(0);
   const [blurred, setBlurred] = useState(true);
 
-  // 편집 중인 선생님 화면에서 사진을 추가/삭제하면 미리보기를 처음부터 다시 섞는다.
-  // items 배열은 매 렌더마다 새 참조로 넘어오므로, 내용(아이디 목록)이 실제로 바뀔 때만 반응한다.
   const itemIdsKey = items.map((it) => it.id).join('|');
   useEffect(() => {
     setOrder(shuffle(items.map((_, i) => i)));
@@ -45,8 +59,10 @@ export default function ImageQuiz({ items, revealSeconds }: Props) {
 
   if (items.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🖼️</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <div className="mb-3">
+          <ImageQuizEmptyMotif />
+        </div>
         <div className="font-body-md text-body-md">{t('gameImageQuiz.needSetup')}</div>
       </div>
     );
@@ -63,15 +79,29 @@ export default function ImageQuiz({ items, revealSeconds }: Props) {
   if (finished) {
     return (
       <div className="flex flex-col items-center pt-3 pb-2">
-        <div className="text-5xl mb-3">🏆</div>
-        <div className="font-title-md text-title-md text-on-surface mb-2">{t('gameImageQuiz.finishedTitle')}</div>
-        <div className="font-display-lg text-[40px] text-deep-navy mb-6 tabular-nums">
-          {t('gameImageQuiz.scoreLabel', { score, total: order.length })}
-        </div>
-        <button
-          onClick={restart}
-          className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
         >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameImageQuiz.finishedTitle')}</div>
+            <div className="font-title-md text-[22px] font-bold tabular-nums text-deep-navy">
+              {t('gameImageQuiz.scoreLabel', { score, total: order.length })}
+            </div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
           {t('gameImageQuiz.restartButton')}
         </button>
       </div>
@@ -79,8 +109,6 @@ export default function ImageQuiz({ items, revealSeconds }: Props) {
   }
 
   const current = items[order[pos]];
-  // 편집 화면에서 항목을 지운 직후 한 프레임 동안은 order 가 아직 옛 길이 기준이라
-  // 범위를 벗어날 수 있다 — 위 useEffect 가 재동기화하기 전까지 이 프레임만 건너뛴다.
   if (!current) return null;
 
   function reveal() {
@@ -94,48 +122,38 @@ export default function ImageQuiz({ items, revealSeconds }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div className="font-caption text-caption text-on-surface-variant mb-4 tabular-nums">
+    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
+      <div className="mb-3 rounded-full bg-secondary px-3 py-1 font-title-md text-[13px] font-bold tabular-nums text-on-secondary">
         {pos + 1} / {order.length}
       </div>
 
-      <div
-        data-skin-stage="frame"
-        className="relative w-full max-w-[420px] aspect-[4/3] rounded-2xl overflow-hidden border-2 border-outline-variant/40 mb-5 bg-surface-container-low"
-      >
-        <img
-          src={current.imageUrl}
-          alt=""
-          data-skin-object="photo"
-          className="w-full h-full object-cover"
-          style={{
-            filter: phase === 'revealed' ? 'blur(0px)' : blurred ? 'blur(28px)' : 'blur(0px)',
-            transition: phase === 'revealed' ? 'none' : `filter ${revealSeconds}s linear`,
-          }}
-        />
+      <div data-skin-stage="frame" className={`iq-frame mb-5 w-full max-w-[560px] ${clay ? 'iq-clay' : ''}`}>
+        <div className="iq-photo">
+          <img
+            src={current.imageUrl}
+            alt=""
+            data-skin-object="photo"
+            className="h-full w-full object-cover"
+            style={{
+              filter: phase === 'revealed' ? 'blur(0px)' : blurred ? 'blur(28px)' : 'blur(0px)',
+              transition: phase === 'revealed' ? 'none' : `filter ${revealSeconds}s linear`,
+            }}
+          />
+        </div>
       </div>
 
       {phase === 'revealing' ? (
-        <button
-          onClick={reveal}
-          className="px-8 py-2.5 rounded-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-sm transition-colors"
-        >
+        <button type="button" onClick={reveal} className="iq-btn iq-reveal">
           {t('gameImageQuiz.revealButton')}
         </button>
       ) : (
-        <div className="result-pop flex flex-col items-center gap-4">
-          <div className="font-display-lg text-[28px] text-deep-navy text-center [word-break:keep-all]">{current.answer}</div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => next(true)}
-              className="px-6 py-2.5 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-md text-label-md shadow-sm transition-colors"
-            >
+        <div className="flex flex-col items-center gap-4">
+          <div className={`iq-answer ${clay ? 'iq-clay' : ''}`}>{current.answer}</div>
+          <div className="flex flex-wrap justify-center gap-3">
+            <button type="button" onClick={() => next(true)} className="iq-btn iq-yes">
               {t('gameImageQuiz.correctButton')}
             </button>
-            <button
-              onClick={() => next(false)}
-              className="px-6 py-2.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant font-label-md text-label-md transition-colors"
-            >
+            <button type="button" onClick={() => next(false)} className="iq-btn iq-no">
               {t('gameImageQuiz.wrongButton')}
             </button>
           </div>

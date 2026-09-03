@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -10,7 +10,7 @@ import Matchup from '../components/Matchup';
 import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, MatchPair } from '../lib/types';
+import type { GameItem, GameTemplateConfig, MatchPair, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -64,6 +64,8 @@ export default function MatchupPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const gameRef = useRef<UndoHandle>(null);
   const [draftPairs, setDraftPairs] = useState<MatchPair[]>(selected?.config.pairs ?? []);
 
   useEffect(() => {
@@ -291,9 +293,11 @@ export default function MatchupPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
+            onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Matchup
+            <Matchup key={roundKey} ref={gameRef}
               pairs={playablePairs}
               boardStyle={selected.config.matchupStyle === 'tags' ? 'tags' : 'trays'}
             />

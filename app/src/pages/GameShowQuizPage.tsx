@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
-import GameShowQuiz from '../components/GameShowQuiz';
+import GameShowQuiz, { GameShowQuizEmptyMotif } from '../components/GameShowQuiz';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, QuizQuestion } from '../lib/types';
+import type { GameItem, GameTemplateConfig, QuizQuestion, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -67,6 +67,8 @@ export default function GameShowQuizPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const gameRef = useRef<UndoHandle>(null);
   const [draftQuestions, setDraftQuestions] = useState<QuizQuestion[]>(selected?.config.questions ?? []);
 
   useEffect(() => {
@@ -164,6 +166,10 @@ export default function GameShowQuizPage() {
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     void persistConfig({ ...selected?.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'wood' | 'clay') {
+    void persistConfig({ ...selected?.config, gameShowStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -293,8 +299,10 @@ export default function GameShowQuizPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🎪</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mb-3">
+              <GameShowQuizEmptyMotif />
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameGameShowQuiz.emptyStaff') : t('gameGameShowQuiz.emptyStudent')}
             </div>
@@ -310,9 +318,17 @@ export default function GameShowQuizPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            onUndo={() => gameRef.current?.undo()}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <GameShowQuiz questions={playableQuestions} bonusEvery={bonusEvery} lifelines={lifelines} />
+            <GameShowQuiz
+              key={roundKey} ref={gameRef}
+              questions={playableQuestions}
+              bonusEvery={bonusEvery}
+              lifelines={lifelines}
+              boardStyle={selected.config.gameShowStyle === 'clay' ? 'clay' : 'wood'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -332,6 +348,29 @@ export default function GameShowQuizPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameGameShowQuiz.styleLabel')}
+                  </span>
+                  {(['wood', 'clay'] as const).map((style) => {
+                    const on = (selected.config.gameShowStyle ?? 'wood') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'wood' ? t('gameGameShowQuiz.styleWood') : t('gameGameShowQuiz.styleClay')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

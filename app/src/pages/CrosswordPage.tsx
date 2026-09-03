@@ -64,6 +64,7 @@ export default function CrosswordPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   async function persistItems(next: GameItem[]) {
@@ -71,6 +72,16 @@ export default function CrosswordPage() {
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: next });
+    } catch {
+      await reload();
+    }
+  }
+
+  async function persistConfig(nextConfig: GameTemplateConfig) {
+    if (!selected) return;
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
@@ -101,13 +112,12 @@ export default function CrosswordPage() {
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'board' | 'blocks') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, crosswordStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -247,8 +257,22 @@ export default function CrosswordPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🧩</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center">
+              <div className="cw-frame pointer-events-none w-[108px] p-2">
+                <div className="cw-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+                  {['C', 'A', 'T', null, 'A', null, 'B', 'A', 'G'].map((ch, i) =>
+                    ch === null ? (
+                      <span key={i} className="cw-hole" />
+                    ) : (
+                      <span key={i} className="cw-cell text-[10px]">
+                        {ch}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </div>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameCrossword.emptyStaff') : t('gameCrossword.emptyStudent')}
             </div>
@@ -264,9 +288,14 @@ export default function CrosswordPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Crossword items={selected.items} />
+            <Crossword
+              key={roundKey}
+              items={selected.items}
+              boardStyle={selected.config.crosswordStyle === 'blocks' ? 'blocks' : 'board'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -292,6 +321,29 @@ export default function CrosswordPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameCrossword.styleLabel')}
+                  </span>
+                  {(['board', 'blocks'] as const).map((style) => {
+                    const on = (selected.config.crosswordStyle ?? 'board') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'board' ? t('gameCrossword.styleBoard') : t('gameCrossword.styleBlocks')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -13,7 +13,7 @@ import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig } from '../lib/types';
+import type { GameItem, GameTemplateConfig, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -70,6 +70,8 @@ export default function HangmanPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const gameRef = useRef<UndoHandle>(null);
   const [newItemLabel, setNewItemLabel] = useState('');
   const maxAttempts = selected?.config.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
   const [maxAttemptsInput, setMaxAttemptsInput] = useState(String(maxAttempts));
@@ -288,9 +290,11 @@ export default function HangmanPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
+            onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Hangman items={selected.items} maxAttempts={maxAttempts} />
+            <Hangman key={roundKey} ref={gameRef} items={selected.items} maxAttempts={maxAttempts} />
           </GameThemeFrame>
 
           <div className="space-y-4">

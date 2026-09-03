@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameItem } from '../lib/types';
+import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
   items: GameItem[];
@@ -18,16 +18,26 @@ const CARD_SRC = '/skins/miss-card.png';
 const SCREEN = { left: 0.12, top: 0.25, width: 0.75, height: 0.5 };
 const SCREEN_FILL = { left: 0.095, top: 0.195, width: 0.805, height: 0.615 };
 
-export default function Baskin31({ items, targetCount }: Props) {
+interface Snapshot {
+  count: number;
+  turn: Team;
+  wordIndex: number;
+  lastWords: string[];
+  loser: Team | null;
+}
+
+const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31({ items, targetCount }, ref) {
   const { t } = useTranslation();
   const [count, setCount] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
   const [wordIndex, setWordIndex] = useState(0);
   const [lastWords, setLastWords] = useState<string[]>([]);
   const [loser, setLoser] = useState<Team | null>(null);
+  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
 
   function pick(n: number) {
     if (loser || items.length === 0) return;
+    setPrevSnapshot({ count, turn, wordIndex, lastWords, loser });
     const words = Array.from({ length: n }, (_, i) => items[(wordIndex + i) % items.length].label);
     const nextCount = count + n;
     setLastWords(words);
@@ -47,7 +57,20 @@ export default function Baskin31({ items, targetCount }: Props) {
     setWordIndex(0);
     setLastWords([]);
     setLoser(null);
+    setPrevSnapshot(null);
   }
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (!prevSnapshot) return;
+      setCount(prevSnapshot.count);
+      setTurn(prevSnapshot.turn);
+      setWordIndex(prevSnapshot.wordIndex);
+      setLastWords(prevSnapshot.lastWords);
+      setLoser(prevSnapshot.loser);
+      setPrevSnapshot(null);
+    },
+  }));
 
   const pill =
     'px-6 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
@@ -168,4 +191,6 @@ export default function Baskin31({ items, targetCount }: Props) {
       )}
     </div>
   );
-}
+});
+
+export default Baskin31;

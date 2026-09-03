@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -9,7 +9,7 @@ import WhackAMole from '../components/WhackAMole';
 import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplate, GameTemplateConfig, MatchPair } from '../lib/types';
+import type { GameItem, GameTemplate, GameTemplateConfig, MatchPair, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -68,6 +68,8 @@ export default function WhackAMolePage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const gameRef = useRef<UndoHandle>(null);
   const [draftPairs, setDraftPairs] = useState<MatchPair[]>(() => seedPairs(selected));
 
   useEffect(() => {
@@ -310,9 +312,11 @@ export default function WhackAMolePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
+            onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <WhackAMole pairs={playablePairs} mode={whackMode} />
+            <WhackAMole key={roundKey} ref={gameRef} pairs={playablePairs} mode={whackMode} />
           </GameThemeFrame>
 
           <div className="space-y-4">

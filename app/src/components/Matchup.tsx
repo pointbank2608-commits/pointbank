@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MatchPair } from '../lib/types';
+import type { MatchPair, UndoHandle } from '../lib/types';
 
 export type MatchupStyle = 'trays' | 'tags';
 
@@ -22,7 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
+const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays' }, ref) {
   const hang = boardStyle === 'tags';
   const { t } = useTranslation();
   const [leftOrder, setLeftOrder] = useState<MatchPair[]>(() => shuffle(pairs));
@@ -33,6 +33,7 @@ export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
   const [wrongPair, setWrongPair] = useState<{ left: string; right: string } | null>(null);
   const [wrongCount, setWrongCount] = useState(0);
   const [locked, setLocked] = useState(false);
+  const [prevSnapshot, setPrevSnapshot] = useState<{ matchedIds: Set<string>; wrongCount: number } | null>(null);
   const pairKey = pairs.map((p) => p.id).join(',');
   const flashTimer = useRef<number | null>(null);
 
@@ -45,6 +46,7 @@ export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
     setWrongPair(null);
     setWrongCount(0);
     setLocked(false);
+    setPrevSnapshot(null);
   }, [pairKey]);
 
   useEffect(() => {
@@ -52,6 +54,20 @@ export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
       if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
     };
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (!prevSnapshot) return;
+      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      setMatchedIds(prevSnapshot.matchedIds);
+      setWrongCount(prevSnapshot.wrongCount);
+      setSelectedLeft(null);
+      setSelectedRight(null);
+      setWrongPair(null);
+      setLocked(false);
+      setPrevSnapshot(null);
+    },
+  }));
 
   if (pairs.length < 2) {
     return (
@@ -81,9 +97,11 @@ export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
     setWrongPair(null);
     setWrongCount(0);
     setLocked(false);
+    setPrevSnapshot(null);
   }
 
   function resolve(leftId: string, rightId: string) {
+    setPrevSnapshot({ matchedIds: new Set(matchedIds), wrongCount });
     if (leftId === rightId) {
       setMatchedIds((prev) => new Set(prev).add(leftId));
       setSelectedLeft(null);
@@ -242,4 +260,6 @@ export default function Matchup({ pairs, boardStyle = 'trays' }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default Matchup;

@@ -73,6 +73,7 @@ export default function PassBallPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newParticipant, setNewParticipant] = useState('');
   const range = selected?.config.ballRange ?? DEFAULT_RANGE;
   const [minInput, setMinInput] = useState(String(range.min));
@@ -316,9 +317,10 @@ export default function PassBallPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <PassTheBall
+            <PassTheBall key={roundKey}
               items={selected.items}
               minSec={range.min}
               maxSec={range.max}

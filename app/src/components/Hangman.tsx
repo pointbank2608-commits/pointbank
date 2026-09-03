@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { GameItem } from '../lib/types';
+import type { GameItem, UndoHandle } from '../lib/types';
 
 interface Props {
   items: GameItem[];
@@ -28,7 +28,14 @@ function isLatinLetter(ch: string): boolean {
   return /^[a-zA-Z]$/.test(ch);
 }
 
-export default function Hangman({ items, maxAttempts }: Props) {
+interface Snapshot {
+  guessed: Set<string>;
+  wrongCount: number;
+  status: Status;
+  score: number;
+}
+
+const Hangman = forwardRef<UndoHandle, Props>(function Hangman({ items, maxAttempts }, ref) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -37,13 +44,14 @@ export default function Hangman({ items, maxAttempts }: Props) {
   const [status, setStatus] = useState<Status>('playing');
   const [score, setScore] = useState(0);
   const [inputValue, setInputValue] = useState('');
+  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
   const itemKey = items.map((item) => item.id).join(',');
 
   const word =
     items.length > 0 && order.length > 0 && pos < order.length ? items[order[pos]].label : '';
 
-  const playRef = useRef({ status, guessed, word, wrongCount, maxAttempts });
-  playRef.current = { status, guessed, word, wrongCount, maxAttempts };
+  const playRef = useRef({ status, guessed, word, wrongCount, maxAttempts, score });
+  playRef.current = { status, guessed, word, wrongCount, maxAttempts, score };
 
   useEffect(() => {
     setOrder(shuffle(items.map((_, i) => i)));
@@ -53,6 +61,7 @@ export default function Hangman({ items, maxAttempts }: Props) {
     setStatus('playing');
     setScore(0);
     setInputValue('');
+    setPrevSnapshot(null);
   }, [itemKey]);
 
   function applyGuess(raw: string) {
@@ -61,6 +70,8 @@ export default function Hangman({ items, maxAttempts }: Props) {
     const key = ch.toLowerCase();
     const play = playRef.current;
     if (play.status !== 'playing' || !play.word || play.guessed.has(key)) return;
+
+    setPrevSnapshot({ guessed: new Set(play.guessed), wrongCount: play.wrongCount, status: play.status, score: play.score });
 
     const nextGuessed = new Set(play.guessed).add(key);
     play.guessed = nextGuessed;
@@ -83,6 +94,17 @@ export default function Hangman({ items, maxAttempts }: Props) {
       setScore((s) => s + 1);
     }
   }
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (!prevSnapshot) return;
+      setGuessed(prevSnapshot.guessed);
+      setWrongCount(prevSnapshot.wrongCount);
+      setStatus(prevSnapshot.status);
+      setScore(prevSnapshot.score);
+      setPrevSnapshot(null);
+    },
+  }));
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -120,6 +142,7 @@ export default function Hangman({ items, maxAttempts }: Props) {
     setStatus('playing');
     setScore(0);
     setInputValue('');
+    setPrevSnapshot(null);
   }
 
   function next() {
@@ -128,6 +151,7 @@ export default function Hangman({ items, maxAttempts }: Props) {
     setWrongCount(0);
     setStatus('playing');
     setInputValue('');
+    setPrevSnapshot(null);
   }
 
   if (finished) {
@@ -273,4 +297,6 @@ export default function Hangman({ items, maxAttempts }: Props) {
       )}
     </div>
   );
-}
+});
+
+export default Hangman;

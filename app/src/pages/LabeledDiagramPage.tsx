@@ -7,7 +7,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import ImportFromClass from '../components/ImportFromClass';
-import LabeledDiagram from '../components/LabeledDiagram';
+import LabeledDiagram, { LabeledDiagramEmptyMotif } from '../components/LabeledDiagram';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { DiagramPin, GameItem, GameTemplateConfig } from '../lib/types';
@@ -59,6 +59,7 @@ export default function LabeledDiagramPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [draftPins, setDraftPins] = useState<DiagramPin[]>(selected?.config.diagramPins ?? []);
 
   useEffect(() => {
@@ -112,6 +113,11 @@ export default function LabeledDiagramPage() {
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     if (!selected) return;
     void persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'wood' | 'clay') {
+    if (!selected) return;
+    void persistConfig({ ...selected.config, labeledDiagramStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -241,8 +247,10 @@ export default function LabeledDiagramPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">📍</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mb-3">
+              <LabeledDiagramEmptyMotif />
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameLabeledDiagram.emptyStaff') : t('gameLabeledDiagram.emptyStudent')}
             </div>
@@ -258,9 +266,15 @@ export default function LabeledDiagramPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <LabeledDiagram imageUrl={selected.config.diagramImageUrl ?? null} pins={selected.config.diagramPins ?? []} />
+            <LabeledDiagram
+              key={roundKey}
+              imageUrl={selected.config.diagramImageUrl ?? null}
+              pins={selected.config.diagramPins ?? []}
+              boardStyle={selected.config.labeledDiagramStyle === 'clay' ? 'clay' : 'wood'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -280,6 +294,29 @@ export default function LabeledDiagramPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameLabeledDiagram.styleLabel')}
+                  </span>
+                  {(['wood', 'clay'] as const).map((style) => {
+                    const on = (selected.config.labeledDiagramStyle ?? 'wood') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'wood' ? t('gameLabeledDiagram.styleWood') : t('gameLabeledDiagram.styleClay')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && academy && (
@@ -303,22 +340,24 @@ export default function LabeledDiagramPage() {
                         <div className="font-label-md text-label-md text-on-surface-variant mb-1.5">
                           {t('gameLabeledDiagram.pinEditorHint')}
                         </div>
-                        <div className="relative inline-block max-w-full">
+                        <div className="ld-frame inline-block max-w-full p-2">
+                          <div className="ld-photo relative">
                           <img
                             src={selected.config.diagramImageUrl}
                             alt=""
                             onClick={handleImageClick}
-                            className="max-w-full rounded-lg border border-outline-variant/40 cursor-crosshair"
+                            className="max-w-full cursor-crosshair"
                           />
                           {draftPins.map((pin, i) => (
                             <span
                               key={pin.id}
-                              className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-primary text-on-primary font-caption text-caption font-bold shadow-md"
+                              className="ld-pin"
                               style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%` }}
                             >
                               {i + 1}
                             </span>
                           ))}
+                          </div>
                         </div>
                       </div>
                     )}

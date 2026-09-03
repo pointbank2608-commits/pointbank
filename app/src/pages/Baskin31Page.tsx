@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -13,7 +13,7 @@ import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig } from '../lib/types';
+import type { GameItem, GameTemplateConfig, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -70,6 +70,8 @@ export default function Baskin31Page() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const gameRef = useRef<UndoHandle>(null);
   const [newItemLabel, setNewItemLabel] = useState('');
   const targetCount = selected?.config.targetCount ?? DEFAULT_TARGET_COUNT;
   const [targetInput, setTargetInput] = useState(String(targetCount));
@@ -288,9 +290,11 @@ export default function Baskin31Page() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
+            onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Baskin31 items={selected.items} targetCount={targetCount} />
+            <Baskin31 key={roundKey} ref={gameRef} items={selected.items} targetCount={targetCount} />
           </GameThemeFrame>
 
           <div className="space-y-4">

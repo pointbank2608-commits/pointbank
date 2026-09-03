@@ -71,6 +71,7 @@ export default function FindMissingPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
   const revealCount = selected?.config.revealCount ?? DEFAULT_REVEAL_COUNT;
   const shuffleCards = selected?.config.shuffleCards ?? DEFAULT_SHUFFLE_CARDS;
@@ -277,9 +278,10 @@ export default function FindMissingPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <FindMissing items={selected.items} revealCount={revealCount} shuffleCards={shuffleCards} />
+            <FindMissing key={roundKey} items={selected.items} revealCount={revealCount} shuffleCards={shuffleCards} />
           </GameThemeFrame>
 
           <div className="space-y-4">

@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-02** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 30종 적용(오지선다 4종 전부 오답/거짓문장 자동생성 포함) + 오지선다 게임 5종 크래시 버그 수정)
+마지막 갱신: **2026-09-03** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 31종 적용(오지선다 4종 오답/거짓문장 자동생성 + 그룹정렬 카테고리 자동그룹화) + 오지선다 게임 5종 크래시 버그 수정 + 전체화면·다시하기 버튼 게임 34종 전체 적용(`GameThemeFrame`) + 한 수만 되돌리기 8종 적용(`UndoHandle` forwardRef 패턴))
 
 ---
 
@@ -39,20 +39,25 @@
   - **31~32번 (`category: vocabulary`, 사진 업로드 필요)**: `/games/labeleddiagram` 명칭이 있는 다이어그램(사진 위 핀에 정답 이름 매칭), `/games/imagequiz` 이미지 퀴즈(흐린 사진이 점점 선명해지며 정답 맞히기). 둘 다 선생님이 직접 사진을 올린다 — `GameImagePicker.tsx` + `game-images` 스토리지 버킷(`supabase/011_game_images.sql`, `game-audio`와 동일한 RLS 패턴). **AI 이미지 생성이 아니라 파일 업로드**이므로 별도 이미지 생성 도구 불필요.
   - **33~34번 (`category: vocabulary`, 기존 퀴즈 변형)**: `/games/gameshowquiz` 게임쇼 퀴즈(청/홍팀 대결, 보너스 문제 2배 점수, 팀당 반반(50:50) 라이프라인), `/games/winlosequiz` 퀴즈를 이기거나 잃기(문제마다 점수 베팅, 맞으면 획득·틀리면 손실). 둘 다 `Quiz.tsx`의 `QuizQuestion`(질문+보기+정답) 구조를 그대로 재사용 — `config.questions`만 공유하고 나머지(팀 점수·베팅·라이프라인)는 컴포넌트 자체 상태.
   - 각 게임 페이지 상단에 `GameInfoPanel`(접이식 "게임 소개 및 방법") — `gameXxx.infoDescription`/`infoSteps` i18n 키, 전부 적용됨
-  - **단어장 불러오기(`WordListPicker.tsx`)**: 34개 중 30개(라벨 하나짜리 `GameItem[]` 게임
+  - **단어장 불러오기(`WordListPicker.tsx`)**: 34개 중 31개(라벨 하나짜리 `GameItem[]` 게임
     21개 + 단어+뜻 짝 게임 4개[매치업·두더지잡기·플래시카드·답 입력하기] + 이미지 퀴즈 +
-    오지선다 4개[퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기])에 전부 적용 완료 — `/wordlists`
-    에서 만든 단어장을 게임 항목으로 그대로 불러온다. 오지선다 4개는 AI 없이 자동 생성
-    (`quizFromWordList.ts`의 `buildQuizQuestions`/`buildTrueFalseStatements` — 같은 단어장의
-    다른 단어 뜻/단어를 무작위로 오답·거짓 문장 재료로 씀; 퀴즈·게임쇼 퀴즈·퀴즈를 이기거나
-    잃기는 셋 다 `QuizQuestion[]`이라 `variant="quiz"` 그대로 공유). **그룹정렬·다이어그램·
-    문장 만들기·수학 문제** 4개만 남음(구조 자체가 단어 리스트가 아님, "나중에 같이 생각"으로
-    사용자와 합의 — 그룹정렬은 `word_bank.category`, 문장 만들기는 `word_bank.example_sentence`
-    활용 아이디어 있음) —
-    새 게임을 추가할 때 콘텐츠가 `GameItem[]`이나 `MatchPair[]`나 `QuizQuestion[]` 모양이면
-    `useGameTemplates`가 이미 돌려주는 `wordLists`/`wordListsLoading`으로
-    `<WordListPicker variant="label|pairs|image|quiz|truefalse" .../>` 한 줄만 추가하면 된다
-    (`WheelPage.tsx`/`MatchupPage.tsx`/`QuizPage.tsx`/`TrueFalsePage.tsx`의 기존 적용 예 참고).
+    오지선다 4개[퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기] + 그룹정렬)에 적용 완료 —
+    `/wordlists`에서 만든 단어장을 게임 항목으로 그대로 불러온다. 오지선다 4개는 AI 없이
+    자동 생성(`quizFromWordList.ts`의 `buildQuizQuestions`/`buildTrueFalseStatements` — 같은
+    단어장의 다른 단어 뜻/단어를 무작위로 오답·거짓 문장 재료로 씀; 퀴즈·게임쇼 퀴즈·퀴즈를
+    이기거나 잃기는 셋 다 `QuizQuestion[]`이라 `variant="quiz"` 그대로 공유). 그룹정렬은
+    `buildGroupSortGroups`가 `word_bank.category`(사전에서 담은 단어만 있음, 직접 입력은
+    없음)로 자동 그룹화 — 카테고리가 2개 이상 섞인 단어장만 고를 수 있고, 이미 있는 그룹과
+    이름이 같으면 항목만 이어붙인다(`GroupSortPage.tsx`의 `addGroupsBulk`). 이걸 위해
+    `WordListItem`에 `category` 필드 추가(`word_lists` 마이그레이션 불필요, jsonb라 기존
+    행은 그냥 `null` 취급). **명칭 다이어그램·문장 만들기·수학 문제** 3개만 남음(구조 자체가
+    단어 리스트가 아님, "나중에 같이 생각"으로 사용자와 합의 — 문장 만들기는
+    `word_bank.example_sentence` 활용 아이디어 있음) —
+    새 게임을 추가할 때 콘텐츠가 `GameItem[]`/`MatchPair[]`/`QuizQuestion[]`/`GroupSortGroup[]`
+    모양이면 `useGameTemplates`가 이미 돌려주는 `wordLists`/`wordListsLoading`으로
+    `<WordListPicker variant="label|pairs|image|quiz|truefalse|groupsort" .../>` 한 줄만
+    추가하면 된다(`WheelPage.tsx`/`MatchupPage.tsx`/`QuizPage.tsx`/`TrueFalsePage.tsx`/
+    `GroupSortPage.tsx`의 기존 적용 예 참고).
   - **오지선다 게임(퀴즈·참거짓·게임쇼 퀴즈·퀴즈를 이기거나 잃기) 공통 버그 패턴**: `Quiz.tsx`/
     `TrueFalse.tsx`/`GameShowQuiz.tsx`/`WinLoseQuiz.tsx`/`ImageQuiz.tsx` 전부 `order`(인덱스
     셔플)+`pos`를 `questions.map(...).join('|')` 키의 `useEffect`로 재동기화하는데, 항목을
@@ -60,6 +65,30 @@
     배열 범위를 벗어나 `undefined`가 나올 수 있다(`current.correctIndex` 등에서 크래시,
     2026-09-02에 실제로 재현·수정함) — `const current = questions[order[pos]]; if (!current) return null;`
     가드가 5개 파일 전부에 있어야 한다. 새 오지선다류 게임을 이 패턴으로 만들 때 잊지 말 것.
+  - **전체화면·다시하기(2026-09-03)**: 34개 게임 페이지 전부가 플레이 영역을 `GameThemeFrame`
+    으로 감싸고 있다는 공통점을 이용해, `GameThemeFrame.tsx` 한 곳만 고쳐서 우측 상단에
+    전체화면 토글(Fullscreen API)과 다시하기 버튼을 얹었다 — 전자칠판에서 화면이 작아 보이고
+    선생님 실수 시 되돌릴 방법이 없다는 사용자 피드백에서 나옴. "다시하기"는 게임마다 내부
+    상태 모양이 다 달라서 게임별로 리셋 로직을 새로 짜는 대신, **각 페이지에 `roundKey`
+    state를 추가하고 실제 게임 컴포넌트에 `key={roundKey}`를 줘서 버튼 클릭 시
+    `setRoundKey((k) => k + 1)`로 컴포넌트를 통째로 리마운트시키는 방식**으로 통일함(리액트
+    key 변경 시 전체 리마운트되는 성질 이용 — 게임 컴포넌트 내부를 하나도 안 건드림). 새 게임을
+    추가할 때도 `<GameThemeFrame onRestart={() => setRoundKey((k) => k + 1)}>` +
+    `<게임컴포넌트 key={roundKey} .../>` 패턴만 따라하면 자동으로 두 기능 다 적용됨. **"한 수만
+    되돌리기"(undo)는 별도**로 논의해 턴제로 점수·상태가 누적되는 8개(틱택토·4 in a row·
+    베스킨라빈스31·게임쇼퀴즈·퀴즈이기거나잃기·매치업·두더지잡기·행맨)만 필요하다고
+    사용자와 합의, 2026-09-03에 구현 완료. `GameThemeFrame`에 `onUndo?` prop 추가(있으면
+    되돌리기 버튼도 뜸, 없으면 34개 중 나머지 26개처럼 그냥 안 보임) — 다시하기와 달리
+    `key` 리마운트로는 "한 수만"을 표현할 수 없어서(리마운트는 전체 리셋), 8개 게임
+    컴포넌트가 각자 `forwardRef` + `useImperativeHandle`로 `undo(): void`를 노출하고
+    (`UndoHandle` 타입, `types.ts`), 페이지가 `useRef<UndoHandle>(null)`을 만들어
+    게임 컴포넌트에 `ref={gameRef}`, `GameThemeFrame`엔 `onUndo={() =>
+    gameRef.current?.undo()}`로 연결한다. 되돌릴 수 있는 "한 수"의 정의는 게임마다 다르고
+    각 컴포넌트 안에 점수/보드에 영향을 주는 딱 하나의 함수(틱택토 `claim`, 게임쇼퀴즈
+    `selectChoice` 등) 직전에 그 함수가 바꾸는 state만 골라 `prevSnapshot`으로 스냅샷 1개만
+    저장했다가 `undo()`가 그걸로 복원하는 방식 — 히스토리 스택이 아니라 "바로 직전 한 번"만
+    되돌아간다(다시 시도하면 스냅샷이 덮어써짐). 새 라운드/재시작 시 반드시 `prevSnapshot`도
+    같이 `null`로 초기화해야 함(안 하면 라운드 경계를 넘어 되돌아가는 버그).
 - `/wordlists` (네비 라벨 "내 단어장") — 선생님이 반/학원별로 만드는 단어장(`word_lists` 테이블,
   `word_bank`/`phonics_bank`와 달리 **쓰기 가능**, `game_templates`와 같은 academy/class 스코프
   패턴). 단어를 "직접 입력"하거나 "사전(`word_bank`)에서 선택"으로 담는다 — 사전에서 담으면

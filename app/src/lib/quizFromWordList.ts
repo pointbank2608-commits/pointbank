@@ -1,4 +1,8 @@
-import type { QuizQuestion, TrueFalseStatement, WordList } from './types';
+import type { GroupSortGroup, QuizQuestion, TrueFalseStatement, WordList } from './types';
+
+function uid(): string {
+  return crypto.randomUUID();
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -75,4 +79,24 @@ export function buildTrueFalseStatements(list: WordList, direction: QuizDirectio
     });
   }
   return statements;
+}
+
+/**
+ * 단어장에서 그룹정렬 그룹을 자동으로 만든다. "직접 입력"으로 넣은 단어는 카테고리가 없어
+ * 그룹으로 묶을 수 없으니 건너뛰고, "사전에서 선택"으로 담아 카테고리(word_bank.category,
+ * 동물/음식/색깔 등)가 있는 단어만 그 카테고리 이름으로 그룹을 나눈다 — 여러 카테고리를
+ * 섞어 담은 단어장일 때만 의미가 있다(한 카테고리뿐이면 그룹이 1개만 나와 플레이가 안 됨).
+ */
+export function buildGroupSortGroups(list: WordList): GroupSortGroup[] {
+  const byCategory = new Map<string, GroupSortGroup>();
+  for (const item of list.items) {
+    if (!item.category) continue;
+    let group = byCategory.get(item.category);
+    if (!group) {
+      group = { id: uid(), name: item.category, items: [] };
+      byCategory.set(item.category, group);
+    }
+    group.items.push({ id: item.id, text: item.word });
+  }
+  return [...byCategory.values()];
 }

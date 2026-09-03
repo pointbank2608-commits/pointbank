@@ -70,6 +70,7 @@ export default function SpellTheWordPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
   const previewSeconds = selected?.config.spellPreviewSeconds ?? DEFAULT_PREVIEW_SECONDS;
   const [previewInput, setPreviewInput] = useState(String(previewSeconds));
@@ -83,6 +84,16 @@ export default function SpellTheWordPage() {
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: next });
+    } catch {
+      await reload();
+    }
+  }
+
+  async function persistConfig(nextConfig: GameTemplateConfig) {
+    if (!selected) return;
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
@@ -114,24 +125,17 @@ export default function SpellTheWordPage() {
   async function commitPreviewSeconds() {
     if (!selected) return;
     const n = Math.min(10, Math.max(1, Math.round(Number(previewInput)) || DEFAULT_PREVIEW_SECONDS));
-    const nextConfig = { ...selected.config, spellPreviewSeconds: n };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ ...selected.config, spellPreviewSeconds: n });
   }
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'slate' | 'stamps') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, spellwordStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -271,8 +275,12 @@ export default function SpellTheWordPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">✏️</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center">
+              <div className="sw-slate pointer-events-none w-[160px] p-2">
+                <div className="sw-face min-h-[72px] py-4 text-[18px]">Aa</div>
+              </div>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameSpellWord.emptyStaff') : t('gameSpellWord.emptyStudent')}
             </div>
@@ -288,9 +296,14 @@ export default function SpellTheWordPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SpellTheWord items={selected.items} previewSeconds={previewSeconds} />
+            <SpellTheWord key={roundKey}
+              items={selected.items}
+              previewSeconds={previewSeconds}
+              boardStyle={selected.config.spellwordStyle === 'stamps' ? 'stamps' : 'slate'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -316,6 +329,29 @@ export default function SpellTheWordPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameSpellWord.styleLabel')}
+                  </span>
+                  {(['slate', 'stamps'] as const).map((style) => {
+                    const on = (selected.config.spellwordStyle ?? 'slate') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'slate' ? t('gameSpellWord.styleSlate') : t('gameSpellWord.styleStamps')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

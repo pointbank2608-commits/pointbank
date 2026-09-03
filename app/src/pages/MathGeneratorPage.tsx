@@ -65,6 +65,7 @@ export default function MathGeneratorPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const operations = selected?.config.mathOperations ?? DEFAULT_OPERATIONS;
   const min = selected?.config.mathMin ?? DEFAULT_MIN;
   const max = selected?.config.mathMax ?? DEFAULT_MAX;
@@ -114,14 +115,11 @@ export default function MathGeneratorPage() {
   }
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'slate' | 'blocks') {
+    await persistConfig({ mathgenStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -261,8 +259,16 @@ export default function MathGeneratorPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🧮</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center">
+              <div className="mg-slate pointer-events-none w-[160px] p-2">
+                <div className="mg-face min-h-[64px] gap-1 py-3">
+                  <span className="mg-token text-[16px]">1</span>
+                  <span className="mg-token text-[16px]">+</span>
+                  <span className="mg-token text-[16px]">1</span>
+                </div>
+              </div>
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameMathGen.emptyStaff') : t('gameMathGen.emptyStudent')}
             </div>
@@ -278,9 +284,17 @@ export default function MathGeneratorPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <MathGenerator operations={operations} min={min} max={max} questionCount={count} />
+            <MathGenerator
+              key={roundKey}
+              operations={operations}
+              min={min}
+              max={max}
+              questionCount={count}
+              boardStyle={selected.config.mathgenStyle === 'blocks' ? 'blocks' : 'slate'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -306,6 +320,29 @@ export default function MathGeneratorPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameMathGen.styleLabel')}
+                  </span>
+                  {(['slate', 'blocks'] as const).map((style) => {
+                    const on = (selected.config.mathgenStyle ?? 'slate') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'slate' ? t('gameMathGen.styleSlate') : t('gameMathGen.styleBlocks')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

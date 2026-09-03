@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
 
+export type WordSearchStyle = 'board' | 'tiles';
+
 interface Props {
   items: GameItem[];
+  boardStyle?: WordSearchStyle;
 }
 
 interface Cell {
@@ -21,6 +24,10 @@ interface Puzzle {
   grid: string[][];
   placements: Placement[];
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 const DIRECTIONS: { dr: number; dc: number }[] = [
   { dr: 0, dc: 1 },
@@ -112,49 +119,65 @@ function sameCells(a: Cell[], b: Cell[]): boolean {
   return forward || backward;
 }
 
-export default function WordSearch({ items }: Props) {
+export default function WordSearch({ items, boardStyle = 'board' }: Props) {
   const { t } = useTranslation();
+  const tiles = boardStyle === 'tiles';
   const [puzzle, setPuzzle] = useState<Puzzle>(() => buildPuzzle(items));
   const [selectedStart, setSelectedStart] = useState<Cell | null>(null);
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
   const [wrongCells, setWrongCells] = useState<Set<string> | null>(null);
+  const wrongTimer = useRef<number | null>(null);
+  const itemKey = items.map((it) => it.id).join(',');
+
+  useEffect(() => {
+    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    setPuzzle(buildPuzzle(items));
+    setSelectedStart(null);
+    setFoundIds(new Set());
+    setWrongCells(null);
+    return () => {
+      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemKey]);
 
   const { grid, placements } = puzzle;
 
   if (placements.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">🔍</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <div className="mx-auto mb-3 flex justify-center">
+          <div className="ws-frame pointer-events-none w-[120px] p-2">
+            <div className="ws-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+              {['A', 'a', 'B', 'C', 'a', 'T', 'D', 'O', 'G'].map((ch, i) => (
+                <span key={i} className="ws-cell text-[10px]">
+                  {ch}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
         <div className="font-body-md text-body-md">{t('gameWordSearch.needParticipants')}</div>
       </div>
     );
   }
 
+  if (grid.length === 0) {
+    return null;
+  }
+
   const finished = foundIds.size === placements.length;
 
   function restart() {
+    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
     setPuzzle(buildPuzzle(items));
     setSelectedStart(null);
     setFoundIds(new Set());
     setWrongCells(null);
   }
 
-  if (finished) {
-    return (
-      <div className="flex flex-col items-center pt-3 pb-2">
-        <div className="text-5xl mb-3">🎉</div>
-        <div className="font-title-md text-title-md text-on-surface mb-6">{t('gameWordSearch.finishedTitle')}</div>
-        <button
-          onClick={restart}
-          className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-        >
-          {t('gameWordSearch.restartButton')}
-        </button>
-      </div>
-    );
-  }
-
   function clickCell(row: number, col: number) {
+    if (finished) return;
     if (!selectedStart) {
       setSelectedStart({ row, col });
       setWrongCells(null);
@@ -174,8 +197,38 @@ export default function WordSearch({ items }: Props) {
     } else {
       const keys = new Set(line.map((c) => cellKey(c.row, c.col)));
       setWrongCells(keys);
-      window.setTimeout(() => setWrongCells(null), 400);
+      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+      wrongTimer.current = window.setTimeout(() => setWrongCells(null), 500);
     }
+  }
+
+  if (finished) {
+    return (
+      <div className="flex flex-col items-center pt-3 pb-2">
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
+        >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="font-title-md text-title-md text-deep-navy">{t('gameWordSearch.finishedTitle')}</div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
+          {t('gameWordSearch.restartButton')}
+        </button>
+      </div>
+    );
   }
 
   const foundCellKeys = new Set<string>();
@@ -184,55 +237,43 @@ export default function WordSearch({ items }: Props) {
   });
 
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2 w-full">
-      <div className="font-caption text-caption text-on-surface-variant mb-4 tabular-nums">
+    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
+      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {t('gameWordSearch.foundLabel', { found: foundIds.size, total: placements.length })}
       </div>
 
-      <div
-        data-skin-stage="board"
-        className="grid gap-[2px] mb-6 w-full max-w-[460px]"
-        style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))` }}
-      >
-        {grid.map((row, r) =>
-          row.map((ch, c) => {
-            const key = cellKey(r, c);
-            const isFound = foundCellKeys.has(key);
-            const isSelected = selectedStart?.row === r && selectedStart?.col === c;
-            const isWrong = wrongCells?.has(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => clickCell(r, c)}
-                data-skin-object="cell"
-                className={`aspect-square flex items-center justify-center rounded font-label-md text-[12px] sm:text-sm font-bold transition-colors ${
-                  isFound
-                    ? 'bg-secondary-container text-on-surface'
-                    : isWrong
-                      ? 'bg-error-container text-on-error-container'
-                      : isSelected
-                        ? 'bg-primary text-on-primary'
-                        : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container-low'
-                }`}
-              >
-                {ch}
-              </button>
-            );
-          }),
-        )}
+      <div data-skin-stage="board" className={`ws-frame mb-5 ${tiles ? 'ws-tiles' : ''}`}>
+        <div className="ws-grid" style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))` }}>
+          {grid.map((row, r) =>
+            row.map((ch, c) => {
+              const key = cellKey(r, c);
+              const isFound = foundCellKeys.has(key);
+              const isSelected = selectedStart?.row === r && selectedStart?.col === c;
+              const isWrong = wrongCells?.has(key);
+              const tone = (r + c) % 4;
+              const mark = isFound ? 'is-ok' : isWrong ? 'is-no' : isSelected ? 'is-start' : '';
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => clickCell(r, c)}
+                  data-skin-object="cell"
+                  className={`ws-cell ${tiles && !mark ? `ws-clay-${tone}` : ''} ${mark}`}
+                >
+                  {ch}
+                </button>
+              );
+            }),
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 max-w-[460px]">
+      <div className="ws-chips">
         {placements.map((p) => (
           <span
             key={p.id}
             data-skin-object="word-chip"
-            className={`px-3 py-1.5 rounded-full font-label-md text-label-md ${
-              foundIds.has(p.id)
-                ? 'bg-secondary-container/50 text-on-surface line-through opacity-60'
-                : 'bg-surface-container-low text-on-surface'
-            }`}
+            className={`${tiles ? 'ws-tag' : 'ws-chip'} ${foundIds.has(p.id) ? 'is-found' : ''}`}
           >
             {p.word}
           </span>

@@ -6,7 +6,7 @@ import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
-import ImageQuiz from '../components/ImageQuiz';
+import ImageQuiz, { ImageQuizEmptyMotif } from '../components/ImageQuiz';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
@@ -64,6 +64,7 @@ export default function ImageQuizPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [draftItems, setDraftItems] = useState<ImageQuizItem[]>(selected?.config.imageQuizItems ?? []);
 
   useEffect(() => {
@@ -122,6 +123,10 @@ export default function ImageQuizPage() {
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     void persistConfig({ ...selected?.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'wood' | 'clay') {
+    void persistConfig({ ...selected?.config, imageQuizStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -251,8 +256,10 @@ export default function ImageQuizPage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">🖼️</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mb-3">
+              <ImageQuizEmptyMotif />
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameImageQuiz.emptyStaff') : t('gameImageQuiz.emptyStudent')}
             </div>
@@ -268,9 +275,15 @@ export default function ImageQuizPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <ImageQuiz items={playableItems} revealSeconds={revealSeconds} />
+            <ImageQuiz
+              key={roundKey}
+              items={playableItems}
+              revealSeconds={revealSeconds}
+              boardStyle={selected.config.imageQuizStyle === 'clay' ? 'clay' : 'wood'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -290,6 +303,29 @@ export default function ImageQuizPage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameImageQuiz.styleLabel')}
+                  </span>
+                  {(['wood', 'clay'] as const).map((style) => {
+                    const on = (selected.config.imageQuizStyle ?? 'wood') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'wood' ? t('gameImageQuiz.styleWood') : t('gameImageQuiz.styleClay')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && academy && (

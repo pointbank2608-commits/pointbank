@@ -64,6 +64,7 @@ export default function FlashcardsPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [draftCards, setDraftCards] = useState<MatchPair[]>(selected?.config.flashcards ?? []);
 
   useEffect(() => {
@@ -287,9 +288,10 @@ export default function FlashcardsPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Flashcards
+            <Flashcards key={roundKey}
               cards={playableCards}
               boardStyle={selected.config.flashcardsStyle === 'clay' ? 'clay' : 'wood'}
             />

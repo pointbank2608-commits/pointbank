@@ -40,14 +40,17 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
 
   function addManual() {
     if (!word.trim() || !meaning.trim()) return;
-    void persist([...list.items, { id: uid(), word: word.trim(), meaning: meaning.trim(), image_url: null }]);
+    void persist([...list.items, { id: uid(), word: word.trim(), meaning: meaning.trim(), image_url: null, category: null }]);
     setWord('');
     setMeaning('');
   }
 
   function addFromDictionary(entry: WordBankEntry) {
     if (list.items.some((i) => i.word === entry.word && i.meaning === entry.meaning)) return;
-    void persist([...list.items, { id: uid(), word: entry.word, meaning: entry.meaning, image_url: entry.image_url }]);
+    void persist([
+      ...list.items,
+      { id: uid(), word: entry.word, meaning: entry.meaning, image_url: entry.image_url, category: entry.category },
+    ]);
   }
 
   function removeItem(id: string) {

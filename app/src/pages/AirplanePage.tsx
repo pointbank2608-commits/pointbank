@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
-import Airplane from '../components/Airplane';
+import Airplane, { AirplaneEmptyMotif } from '../components/Airplane';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
@@ -64,6 +64,7 @@ export default function AirplanePage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   async function persistItems(next: GameItem[]) {
@@ -71,6 +72,16 @@ export default function AirplanePage() {
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: next });
+    } catch {
+      await reload();
+    }
+  }
+
+  async function persistConfig(nextConfig: GameTemplateConfig) {
+    if (!selected) return;
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
     } catch {
       await reload();
     }
@@ -101,13 +112,12 @@ export default function AirplanePage() {
 
   async function handleThemeChange(theme: GameTemplateConfig['theme'] | null) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, theme: theme ?? undefined };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await persistConfig({ ...selected.config, theme: theme ?? undefined });
+  }
+
+  async function handleStyleChange(style: 'wood' | 'clay') {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, airplaneStyle: style });
   }
 
   if (isStaff && classes.length === 0) {
@@ -247,8 +257,10 @@ export default function AirplanePage() {
       ) : !selected ? (
         <div className="space-y-6">
           {classPicker}
-          <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-            <div className="text-5xl mb-3">✈️</div>
+          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <div className="mx-auto mb-3 flex justify-center">
+              <AirplaneEmptyMotif />
+            </div>
             <div className="font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameAirplane.emptyStaff') : t('gameAirplane.emptyStudent')}
             </div>
@@ -264,9 +276,14 @@ export default function AirplanePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
-            className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+            onRestart={() => setRoundKey((k) => k + 1)}
+            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Airplane items={selected.items} />
+            <Airplane
+              key={roundKey}
+              items={selected.items}
+              boardStyle={selected.config.airplaneStyle === 'clay' ? 'clay' : 'wood'}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -292,6 +309,29 @@ export default function AirplanePage() {
                       {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameAirplane.styleLabel')}
+                  </span>
+                  {(['wood', 'clay'] as const).map((style) => {
+                    const on = (selected.config.airplaneStyle ?? 'wood') === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => void handleStyleChange(style)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {style === 'wood' ? t('gameAirplane.styleWood') : t('gameAirplane.styleClay')}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {editorOpen && (

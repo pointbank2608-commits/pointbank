@@ -75,6 +75,7 @@ export default function SaveOrGivePage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
   const rewardPool = selected?.config.rewardPool ?? DEFAULT_REWARD_POOL;
 
@@ -276,9 +277,10 @@ export default function SaveOrGivePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SaveOrGiveIt items={selected.items} rewardPool={rewardPool} />
+            <SaveOrGiveIt key={roundKey} items={selected.items} rewardPool={rewardPool} />
           </GameThemeFrame>
 
           <div className="space-y-4">

@@ -73,6 +73,7 @@ export default function TimerMatchPage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newParticipant, setNewParticipant] = useState('');
   const targetMs = selected?.config.targetMs ?? DEFAULT_TARGET_MS;
   const [targetInput, setTargetInput] = useState((targetMs / 1000).toFixed(2));
@@ -313,9 +314,10 @@ export default function TimerMatchPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <TimerMatch
+            <TimerMatch key={roundKey}
               participants={selected.items}
               targetMs={targetMs}
               music={selected.config.music}

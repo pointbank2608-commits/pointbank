@@ -7,6 +7,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import GameThemePicker from '../components/GameThemePicker';
 import GroupSort from '../components/GroupSort';
 import ImportFromClass from '../components/ImportFromClass';
+import WordListPicker from '../components/WordListPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, GameTemplateConfig, GroupSortGroup } from '../lib/types';
@@ -62,9 +63,12 @@ export default function GroupSortPage() {
     importCandidates,
     importFromClass,
     reload,
+    wordLists,
+    wordListsLoading,
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [draftGroups, setDraftGroups] = useState<GroupSortGroup[]>(selected?.config.groups ?? []);
 
   useEffect(() => {
@@ -89,6 +93,24 @@ export default function GroupSortPage() {
 
   function addGroup() {
     const next = [...draftGroups, newGroup()];
+    setDraftGroups(next);
+    void persistGroups(next);
+  }
+
+  /** 단어장에서 불러온 그룹을 합친다 — 이름이 같은 그룹이 이미 있으면 항목만 이어붙인다. */
+  function addGroupsBulk(groups: GroupSortGroup[]) {
+    let next = draftGroups;
+    for (const grp of groups) {
+      const idx = next.findIndex((dg) => dg.name === grp.name);
+      if (idx >= 0) {
+        const existing = next[idx];
+        const existingTexts = new Set(existing.items.map((it) => it.text));
+        const merged = { ...existing, items: [...existing.items, ...grp.items.filter((it) => !existingTexts.has(it.text))] };
+        next = next.map((dg, i) => (i === idx ? merged : dg));
+      } else {
+        next = [...next, grp];
+      }
+    }
     setDraftGroups(next);
     void persistGroups(next);
   }
@@ -308,9 +330,10 @@ export default function GroupSortPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <GroupSort
+            <GroupSort key={roundKey}
               groups={playableGroups}
               boardStyle={selected.config.groupSortStyle === 'baskets' ? 'baskets' : 'crates'}
             />
@@ -368,6 +391,12 @@ export default function GroupSortPage() {
                   <div className="space-y-4">
                     <GameThemePicker value={selected.config.theme} onChange={(theme) => void handleThemeChange(theme)} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
+                    <WordListPicker
+                      variant="groupsort"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportGroups={(groups) => addGroupsBulk(groups)}
+                    />
 
                     {draftGroups.map((grp, gi) => (
                       <div key={grp.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">

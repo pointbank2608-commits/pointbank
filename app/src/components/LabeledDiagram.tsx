@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DiagramPin } from '../lib/types';
 
+export type LabeledDiagramStyle = 'wood' | 'clay';
+
 interface Props {
   imageUrl: string | null;
   pins: DiagramPin[];
+  boardStyle?: LabeledDiagramStyle;
 }
+
+const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const pill =
+  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -16,15 +23,29 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function LabeledDiagram({ imageUrl, pins }: Props) {
+export function LabeledDiagramEmptyMotif() {
+  return (
+    <div className="ld-frame pointer-events-none mx-auto w-[148px] p-2">
+      <div className="ld-photo" style={{ aspectRatio: '4 / 3' }}>
+        <span className="ld-pin" style={{ left: '28%', top: '38%' }}>
+          1
+        </span>
+        <span className="ld-pin is-filled" style={{ left: '68%', top: '58%' }}>
+          2
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: Props) {
   const { t } = useTranslation();
+  const clay = boardStyle === 'clay';
   const [wordBank, setWordBank] = useState<DiagramPin[]>(() => shuffle(pins));
   const [filledIds, setFilledIds] = useState<Set<string>>(new Set());
   const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
   const [wrongPinId, setWrongPinId] = useState<string | null>(null);
 
-  // 편집 중인 선생님 화면에서 핀을 추가/삭제하면(= 핀 구성 자체가 바뀌면) 미리보기를 다시 섞는다.
-  // pins 배열은 매 렌더마다 새 참조로 넘어오므로, 내용(아이디 목록)이 실제로 바뀔 때만 반응한다.
   const pinIdsKey = pins.map((p) => p.id).join('|');
   useEffect(() => {
     setWordBank(shuffle(pins));
@@ -36,8 +57,10 @@ export default function LabeledDiagram({ imageUrl, pins }: Props) {
 
   if (!imageUrl || pins.length === 0) {
     return (
-      <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
-        <div className="text-4xl mb-2">📍</div>
+      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
+        <div className="mb-3">
+          <LabeledDiagramEmptyMotif />
+        </div>
         <div className="font-body-md text-body-md">{t('gameLabeledDiagram.needSetup')}</div>
       </div>
     );
@@ -69,77 +92,83 @@ export default function LabeledDiagram({ imageUrl, pins }: Props) {
     }
   }
 
+  if (finished) {
+    return (
+      <div className="flex flex-col items-center pt-3 pb-2">
+        <div
+          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          style={{
+            borderRadius: 22,
+            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+            boxShadow: woodShadow,
+          }}
+        >
+          <div
+            className="px-4 py-5"
+            style={{
+              borderRadius: 16,
+              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+            }}
+          >
+            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameLabeledDiagram.finishedTitle')}</div>
+            <div className="font-title-md text-[22px] font-bold tabular-nums text-deep-navy">
+              {t('gameLabeledDiagram.foundLabel', { found: pins.length, total: pins.length })}
+            </div>
+          </div>
+        </div>
+        <button onClick={restart} className={pill}>
+          {t('gameLabeledDiagram.restartButton')}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2 w-full">
-      <div className="font-caption text-caption text-on-surface-variant mb-4 tabular-nums">
+    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
+      <div className="mb-3 rounded-full bg-secondary px-3 py-1 font-title-md text-[13px] font-bold tabular-nums text-on-secondary">
         {t('gameLabeledDiagram.foundLabel', { found: filledIds.size, total: pins.length })}
       </div>
 
-      <div
-        data-skin-stage="diagram"
-        className="relative w-full max-w-[560px] mb-6 rounded-2xl overflow-hidden border-2 border-outline-variant/40"
-      >
-        <img src={imageUrl} alt="" className="w-full h-auto block select-none" draggable={false} />
-        {pins.map((pin, i) => {
-          const isFilled = filledIds.has(pin.id);
-          const isWrong = wrongPinId === pin.id;
-          return (
-            <button
-              key={pin.id}
-              type="button"
-              onClick={() => clickPin(pin)}
-              disabled={isFilled}
-              data-skin-object="pin"
-              className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full font-label-md text-label-md font-bold shadow-md border-2 transition-all ${
-                isFilled
-                  ? 'min-w-[36px] border-secondary bg-secondary-container px-3 py-1.5 text-on-surface'
-                  : isWrong
-                    ? 'h-9 w-9 border-error bg-error-container text-on-error-container'
-                    : 'h-9 w-9 border-primary-container bg-primary text-on-primary hover:scale-110'
-              }`}
-              style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%` }}
-            >
-              {isFilled ? pin.label : i + 1}
-            </button>
-          );
-        })}
+      <div data-skin-stage="diagram" className={`ld-frame mb-5 w-full max-w-[720px] ${clay ? 'ld-clay' : ''}`}>
+        <div className="ld-photo">
+          <img src={imageUrl} alt="" className="block h-auto w-full select-none" draggable={false} />
+          {pins.map((pin, i) => {
+            const isFilled = filledIds.has(pin.id);
+            const isWrong = wrongPinId === pin.id;
+            return (
+              <button
+                key={pin.id}
+                type="button"
+                onClick={() => clickPin(pin)}
+                disabled={isFilled}
+                data-skin-object="pin"
+                className={`ld-pin ${isFilled ? 'is-filled' : ''} ${isWrong ? 'is-wrong' : ''} ${clay ? `ld-clay-${i % 4}` : ''}`}
+                style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%` }}
+              >
+                {isFilled ? pin.label : i + 1}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {finished ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-5xl">🎉</div>
-          <div className="font-title-md text-title-md text-on-surface">{t('gameLabeledDiagram.finishedTitle')}</div>
-          <button
-            onClick={restart}
-            className="px-8 py-3 rounded-full bg-primary hover:bg-primary-container text-on-primary font-title-md text-title-md shadow-sm transition-colors"
-          >
-            {t('gameLabeledDiagram.restartButton')}
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameLabeledDiagram.wordBankLabel')}</div>
-          <div className="flex flex-wrap justify-center gap-2 max-w-[460px]">
-            {wordBank
-              .filter((p) => !filledIds.has(p.id))
-              .map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => selectWord(p.id)}
-                  data-skin-object="word-chip"
-                  className={`px-4 py-2 rounded-full font-label-md text-label-md border-2 transition-colors ${
-                    selectedWordId === p.id
-                      ? 'bg-primary text-on-primary border-primary'
-                      : 'bg-surface-container-lowest border-outline-variant/40 text-on-surface hover:bg-surface-container-low'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-          </div>
-        </>
-      )}
+      <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameLabeledDiagram.wordBankLabel')}</div>
+      <div className={`ld-bank ${clay ? 'ld-clay' : ''}`}>
+        {wordBank
+          .filter((p) => !filledIds.has(p.id))
+          .map((p, i) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => selectWord(p.id)}
+              data-skin-object="word-chip"
+              className={`ld-chip ${selectedWordId === p.id ? 'is-on' : ''} ${clay ? `ld-clay-${i % 4}` : ''}`}
+            >
+              {p.label}
+            </button>
+          ))}
+      </div>
     </div>
   );
 }

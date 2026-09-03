@@ -185,6 +185,11 @@ export interface GameItem {
   label: string;
 }
 
+/** 한 수만 되돌리기가 있는 게임 컴포넌트가 forwardRef로 노출하는 손잡이. */
+export interface UndoHandle {
+  undo: () => void;
+}
+
 /** 배경음악 선택. 기본 제공 효과음이거나, 학원이 직접 올린 음원. */
 export type MusicSelection =
   | { kind: 'builtin'; id: string }
@@ -249,6 +254,22 @@ export interface GameTemplateConfig {
   typeAnswerStyle?: 'notebook' | 'bubble';
   /** 단어 철자 전용: 단어를 보여주는 시간(초). 기본 3. */
   spellPreviewSeconds?: number;
+  /** 단어 철자 전용: 나무 슬레이트(A, 기본) 또는 점토 스탬프(B). */
+  spellwordStyle?: 'slate' | 'stamps';
+  /** 순위 전용: 나무 단상(A, 기본) 또는 점토 명패(B). */
+  rankOrderStyle?: 'podium' | 'plates';
+  /** 워드서치 전용: 나무 격자판(A, 기본) 또는 점토 타일(B). */
+  wordSearchStyle?: 'board' | 'tiles';
+  /** 크로스워드 전용: 나무 퍼즐판(A, 기본) 또는 점토 블록(B). */
+  crosswordStyle?: 'board' | 'blocks';
+  /** 수학 문제 생성기 전용: 나무 칠판(A, 기본) 또는 점토 숫자(B). */
+  mathgenStyle?: 'slate' | 'blocks';
+  /** 미로 찾기 전용: 나무 미로(A, 기본) 또는 점토 정원(B). */
+  mazeChaseStyle?: 'wood' | 'garden';
+  /** 비행기 전용: 나무 활주로(A, 기본) 또는 점토 하늘(B). */
+  airplaneStyle?: 'wood' | 'clay';
+  /** 명칭이 있는 다이어그램 전용: 나무 액자(A, 기본) 또는 점토 핀(B). */
+  labeledDiagramStyle?: 'wood' | 'clay';
   /**
    * 수학 문제 생성기 전용: 단어 리스트 대신 설정값(연산 종류·숫자 범위·문제 개수)으로
    * 매번 새 문제를 만들어낸다. 그래서 items 를 아예 쓰지 않는 유일한 게임이다.
@@ -277,14 +298,20 @@ export interface GameTemplateConfig {
   imageQuizItems?: ImageQuizItem[];
   /** 이미지 퀴즈 전용: 사진이 흐림에서 선명해지기까지 걸리는 시간(초). 기본 6. */
   imageQuizRevealSeconds?: number;
+  /** 이미지 퀴즈 전용: 나무 액자(A, 기본) 또는 점토 창(B). */
+  imageQuizStyle?: 'wood' | 'clay';
   /** 게임쇼 퀴즈 전용: 몇 번째 문제마다 보너스(2배 점수)로 만들지 (기본 5). */
   gameShowBonusEvery?: number;
   /** 게임쇼 퀴즈 전용: 팀마다 쓸 수 있는 "반반(50:50)" 라이프라인 개수 (기본 2). */
   gameShowLifelines?: number;
+  /** 게임쇼 퀴즈 전용: 나무 무대(A, 기본) 또는 점토 스튜디오(B). */
+  gameShowStyle?: 'wood' | 'clay';
   /** 퀴즈를 이기거나 잃기 전용: 팀 시작 점수 (기본 100). */
   winLoseStartScore?: number;
   /** 퀴즈를 이기거나 잃기 전용: 베팅 금액 선택지 (기본 [10, 20, 50]). */
   winLoseBetOptions?: number[];
+  /** 퀴즈를 이기거나 잃기 전용: 나무 테이블(A, 기본) 또는 점토 칩(B). */
+  winLoseStyle?: 'wood' | 'clay';
 }
 
 export interface QuizQuestion {
@@ -398,6 +425,8 @@ export interface WordListItem {
   meaning: string;
   /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.image_url 복사). 직접 입력이면 null. */
   image_url: string | null;
+  /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.category 복사). 그룹정렬 자동 그룹화에 씀. */
+  category: string | null;
 }
 
 export interface WordList {

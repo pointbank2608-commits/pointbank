@@ -57,6 +57,7 @@ export default function SentenceUnscramblePage() {
   } = g;
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   const playableItems = (selected?.items ?? []).filter((i) => wordCount(i.label) >= 2);
@@ -266,9 +267,10 @@ export default function SentenceUnscramblePage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SentenceUnscramble
+            <SentenceUnscramble key={roundKey}
               items={playableItems}
               boardStyle={selected.config.unscrambleStyle === 'tags' ? 'tags' : 'rack'}
             />

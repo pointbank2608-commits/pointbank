@@ -72,6 +72,7 @@ export default function WheelPage() {
   const [eliminateMode, setEliminateMode] = useState(false);
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
   const [newItemLabel, setNewItemLabel] = useState('');
 
   // 선택된 돌림판이 바뀌면 플레이용 사본을 새로 받고, 결과 기록을 비운다.
@@ -319,9 +320,10 @@ export default function WheelPage() {
 
           <GameThemeFrame
             themeId={selected.config.theme}
+            onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SpinWheel
+            <SpinWheel key={roundKey}
               items={playItems}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}

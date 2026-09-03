@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { MatchPair } from '../lib/types';
+import type { MatchPair, UndoHandle } from '../lib/types';
 
 export type WhackMode = 'wordToMeaning' | 'meaningToWord';
 
@@ -38,7 +38,14 @@ function dealHoles(target: MatchPair, all: MatchPair[]): (MatchPair | null)[] {
   return holes;
 }
 
-export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
+interface Snapshot {
+  pos: number;
+  hits: number;
+  misses: number;
+  holes: (MatchPair | null)[];
+}
+
+const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning' }, ref) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [pos, setPos] = useState(0);
@@ -50,6 +57,7 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
   const [locked, setLocked] = useState(false);
   const [hitHole, setHitHole] = useState<number | null>(null);
   const [hitKind, setHitKind] = useState<'ok' | 'no' | null>(null);
+  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
   const pairKey = `${mode}|${pairs.map((p) => p.id).join(',')}`;
   const flashTimer = useRef<number | null>(null);
 
@@ -64,6 +72,7 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
     setHitHole(null);
     setHitKind(null);
     setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
+    setPrevSnapshot(null);
   }, [pairKey]);
 
   useEffect(() => {
@@ -71,6 +80,24 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
       if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
     };
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    undo() {
+      if (!prevSnapshot) return;
+      if (flashTimer.current !== null) {
+        window.clearTimeout(flashTimer.current);
+        flashTimer.current = null;
+      }
+      setPos(prevSnapshot.pos);
+      setHits(prevSnapshot.hits);
+      setMisses(prevSnapshot.misses);
+      setHoles(prevSnapshot.holes);
+      setHitHole(null);
+      setHitKind(null);
+      setLocked(false);
+      setPrevSnapshot(null);
+    },
+  }));
 
   if (pairs.length < 2) {
     return (
@@ -113,6 +140,7 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
     setHitHole(null);
     setHitKind(null);
     setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
+    setPrevSnapshot(null);
   }
 
   function goNext() {
@@ -128,6 +156,7 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
   function whack(hole: number) {
     const choice = holes[hole];
     if (!choice || locked || !target) return;
+    setPrevSnapshot({ pos, hits, misses, holes: [...holes] });
     const ok = choice.id === target.id;
     if (ok) setHits((h) => h + 1);
     else setMisses((m) => m + 1);
@@ -219,4 +248,6 @@ export default function WhackAMole({ pairs, mode = 'wordToMeaning' }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default WhackAMole;
