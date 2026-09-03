@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchPhonicsBank } from '../lib/api';
+import { speak } from '../lib/speech';
 import type { PhonicsBankEntry } from '../lib/types';
 
 const STEPS = [1, 2, 3, 4, 5];
@@ -26,7 +27,9 @@ function PatternWord({ pattern }: { pattern: string }) {
     <span className="font-title-md text-title-md text-deep-navy">
       {parsePattern(pattern).map((part, i) =>
         part.marked ? (
-          <span key={i} className="rounded bg-primary-container px-0.5 text-primary">
+          // 소리 규칙 글자는 진한 남색 글자 + 밝은 노란 배경으로 대비를 크게 줘서(파란 글자에
+          // 파란 배경이라 잘 안 보인다는 피드백으로 수정) 눈에 확 띄게 한다.
+          <span key={i} className="rounded bg-warm-yellow px-0.5 font-extrabold text-deep-navy">
             {part.text}
           </span>
         ) : (
@@ -172,8 +175,17 @@ export default function PhonicsPage() {
                   className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
                 >
                   <PhonicsImage entry={entry} />
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center gap-1.5">
                     <PatternWord pattern={entry.pattern_marked} />
+                    <button
+                      type="button"
+                      onClick={() => speak(entry.word)}
+                      aria-label={t('phonics.playWord', { word: entry.word })}
+                      title={t('phonics.playWord', { word: entry.word })}
+                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">volume_up</span>
+                    </button>
                   </div>
                   {entry.meaning && <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>}
                 </div>

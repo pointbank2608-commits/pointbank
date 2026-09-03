@@ -2,7 +2,7 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
-마지막 갱신: **2026-09-03** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 31종 적용(오지선다 4종 오답/거짓문장 자동생성 + 그룹정렬 카테고리 자동그룹화) + 오지선다 게임 5종 크래시 버그 수정 + 전체화면·다시하기 버튼 게임 34종 전체 적용(`GameThemeFrame`) + 한 수만 되돌리기 8종 적용(`UndoHandle` forwardRef 패턴))
+마지막 갱신: **2026-09-03** (Claude 세션: 단어 사전(`/dictionary`, 800단어)·파닉스(`/phonics`, 347단어) 공용 데이터 도입, 출석부를 "학생관리"로 확장(반/학생 추가·이름변경·삭제), 반 선택 칩 드래그 순서변경(`ClassChipRow`) 전 페이지 적용, 선생님이 만드는 단어장(`/wordlists`, `word_lists` 테이블) + `WordListPicker` 게임 31종 적용(오지선다 4종 오답/거짓문장 자동생성 + 그룹정렬 카테고리 자동그룹화) + 오지선다 게임 5종 크래시 버그 수정 + 전체화면·다시하기 버튼 게임 34종 전체 적용(`GameThemeFrame`) + 한 수만 되돌리기 8종 적용(`UndoHandle` forwardRef 패턴) + 단어 사전·파닉스 발음 재생(`speech.ts`) + 파닉스 소리규칙 강조 색상 대비 수정)
 
 ---
 
@@ -32,8 +32,8 @@
 - `/dashboard` — 오늘 할 일, 실데이터
 - `/attendance` (네비 라벨 "학생관리") — 반 추가, 학생 추가/이름변경/삭제 + 출석부(등원·하원, 월별) 전부 한 페이지. `AttendancePage.tsx`.
 - `/board` — 반 통장. 프리셋 버튼으로 지급/차감
-- `/dictionary` — 교육부 지정 초등 필수 영단어 800(`word_bank` 테이블, 학원 구분 없는 공용 데이터). 카테고리/품사 필터, 이미지 클릭 시 전체보기. `DictionaryPage.tsx`.
-- `/phonics` — 파닉스 5단계 단어 347(`phonics_bank` 테이블, 공용 데이터). 단계 탭 + 소리규칙 필터. 소리규칙 강조는 이미지에 텍스트를 굽지 않고 `pattern_marked`의 `{}` 마커를 앱이 직접 색깔 `<span>`으로 렌더링(`PhonicsPage.tsx`). `word_bank`/`phonics_bank` 둘 다 쓰기는 SQL Editor로만, RLS는 읽기 전용.
+- `/dictionary` — 교육부 지정 초등 필수 영단어 800(`word_bank` 테이블, 학원 구분 없는 공용 데이터). 카테고리/품사 필터, 이미지 클릭 시 전체보기. 단어·예문 옆 🔊 버튼으로 발음(`app/src/lib/speech.ts`의 `speak()`, Web Speech API, 서버 비용 없음) 재생. `DictionaryPage.tsx`.
+- `/phonics` — 파닉스 5단계 단어 347(`phonics_bank` 테이블, 공용 데이터, 이미지 301장 커서가 채움). 단계 탭 + 소리규칙 필터. 소리규칙 강조는 이미지에 텍스트를 굽지 않고 `pattern_marked`의 `{}` 마커를 앱이 직접 `bg-warm-yellow text-deep-navy`(진한 남색 글자+밝은 노란 배경, 처음엔 파란 글자+파란 배경이라 안 보인다는 피드백으로 수정함)로 렌더링. 단어 옆 🔊 버튼도 `speak()` 재사용. `PhonicsPage.tsx`. `word_bank`/`phonics_bank` 둘 다 쓰기는 SQL Editor로만, RLS는 읽기 전용.
 - `/games` — 게임 34종 카드. 선생님은 "내 라이브러리"(현재 반에 템플릿이 있는 게임만)/"전체 보기" 탭, 카테고리 필터 탭 + 번호 배지. 전체 목록은 `app/src/lib/gameCatalog.ts`가 단일 소스 — 새 게임은 여기 한 줄 + `App.tsx` 라우트(스태프·학생) 두 줄이면 끝.
   - 1~30번: 돌림판·사다리·랜덤공뽑기부터 미로 찾기·비행기까지(순서/설명은 `gameCatalog.ts` 참고). 1~10번(돌림판·사다리·랜덤공뽑기·시한폭탄·타이머·틱택토·Save or Give it·사라진 항목 찾기·4 in a row)은 커서가 나무 질감 이미지 스킨(`app/public/skins/*.png`) 적용, 나머지는 `data-skin-stage`/`data-skin-object` 속성만 마킹돼 있어(시각 변화 없음) 나중에 이미지 스킨을 씌우기 쉽게 준비만 된 상태.
   - **31~32번 (`category: vocabulary`, 사진 업로드 필요)**: `/games/labeleddiagram` 명칭이 있는 다이어그램(사진 위 핀에 정답 이름 매칭), `/games/imagequiz` 이미지 퀴즈(흐린 사진이 점점 선명해지며 정답 맞히기). 둘 다 선생님이 직접 사진을 올린다 — `GameImagePicker.tsx` + `game-images` 스토리지 버킷(`supabase/011_game_images.sql`, `game-audio`와 동일한 RLS 패턴). **AI 이미지 생성이 아니라 파일 업로드**이므로 별도 이미지 생성 도구 불필요.

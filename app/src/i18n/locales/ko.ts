@@ -1235,6 +1235,8 @@ const ko = {
     noResults: '검색 결과가 없어요.',
     viewFullImage: '{{word}} 이미지 전체 보기',
     closeButton: '닫기',
+    playWord: '{{word}} 발음 듣기',
+    playExample: '예문 읽어주기',
   },
 
   phonics: {
@@ -1245,6 +1247,7 @@ const ko = {
     allRule: '전체',
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
+    playWord: '{{word}} 발음 듣기',
   },
 
   gamePlay: {

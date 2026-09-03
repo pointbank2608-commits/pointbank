@@ -1237,6 +1237,8 @@ const en: Ko = {
     noResults: 'No matches found.',
     viewFullImage: 'View full image for {{word}}',
     closeButton: 'Close',
+    playWord: 'Play pronunciation of {{word}}',
+    playExample: 'Read the example sentence aloud',
   },
 
   phonics: {
@@ -1247,6 +1249,7 @@ const en: Ko = {
     allRule: 'All',
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
+    playWord: 'Play pronunciation of {{word}}',
   },
 
   gamePlay: {

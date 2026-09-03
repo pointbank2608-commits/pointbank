@@ -1,7 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchWordBank } from '../lib/api';
+import { speak } from '../lib/speech';
 import type { WordBankEntry } from '../lib/types';
+
+/** 발음 듣기 버튼. 문장 뒤에 카드/모달 클릭 등 다른 onClick 안에 얹힐 수 있어 항상 전파를 막는다. */
+function SpeakButton({ text, label, className = '' }: { text: string; label: string; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        speak(text);
+      }}
+      aria-label={label}
+      title={label}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary ${className}`}
+    >
+      <span className="material-symbols-outlined text-[18px]">volume_up</span>
+    </button>
+  );
+}
 
 const CATEGORIES = [
   '사람/가족',
@@ -87,11 +106,15 @@ function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () =
         <div className="p-5">
           <div className="flex items-center gap-2">
             <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
+            <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} />
             <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
           </div>
           <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>
           {entry.example_sentence && (
-            <p className="mt-1 font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+            <div className="mt-1 flex items-start gap-1.5">
+              <p className="font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+              <SpeakButton text={entry.example_sentence} label={t('dictionary.playExample')} className="mt-0.5" />
+            </div>
           )}
           <button
             type="button"
@@ -252,11 +275,15 @@ export default function DictionaryPage() {
                   <WordImage entry={entry} onOpen={setLightbox} />
                   <div className="mt-3 flex items-center gap-2">
                     <h3 className="font-title-md text-title-md text-deep-navy">{entry.word}</h3>
+                    <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} />
                     <span className="font-caption text-caption text-on-surface-variant">{entry.part_of_speech}</span>
                   </div>
                   <p className="font-body-md text-body-md text-on-surface">{entry.meaning}</p>
                   {entry.example_sentence && (
-                    <p className="mt-1 font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+                    <div className="mt-1 flex items-start gap-1.5">
+                      <p className="font-caption text-caption text-on-surface-variant">{entry.example_sentence}</p>
+                      <SpeakButton text={entry.example_sentence} label={t('dictionary.playExample')} className="mt-0.5" />
+                    </div>
                   )}
                 </div>
               ))}
