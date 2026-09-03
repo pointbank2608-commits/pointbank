@@ -169,7 +169,7 @@ export default function DictionaryPicker(props: Props) {
 
   const categoryLabel =
     categoryFilter?.type === 'phonics'
-      ? t('wordListPicker.phonicsStepChip', { step: categoryFilter.step })
+      ? t('wordLists.phonicsStepChip', { step: categoryFilter.step })
       : categoryFilter?.value ?? null;
 
   return (
@@ -281,7 +281,7 @@ export default function DictionaryPicker(props: Props) {
                     onClick={() => pickCategory({ type: 'phonics', step })}
                     className="px-3 py-1 rounded-full bg-tertiary-container/40 hover:bg-secondary-container hover:text-on-secondary-container text-on-surface font-label-md text-label-md transition-colors"
                   >
-                    {t('wordListPicker.phonicsStepChip', { step })}
+                    {t('wordLists.phonicsStepChip', { step })}
                   </button>
                 ))}
               </div>
