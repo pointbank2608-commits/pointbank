@@ -1838,6 +1838,13 @@ const en: Ko = {
     ctaTitle: 'Start today, completely free',
     ctaDesc: 'Just set your academy name and point unit — up and running in a minute.',
     footer: 'ClassBank · Point banking for tutoring academies',
+    bizName: 'FluxMedia',
+    bizOwner: 'CEO: Donghee Lee',
+    bizNumber: 'Business Registration No.: 522-26-02380',
+    bizMailOrder: 'Mail-order Business No.: 2026-Bucheon Sosa-0565',
+    bizAddress: 'Address: 6F C59, 257 Sosa-ro, Sosa-gu, Bucheon-si, Gyeonggi-do, South Korea',
+    bizContact: 'Support: +82 10-7979-3621 | Email: fluxmedia20@naver.com',
+    bizCopyright: '© 2024 FluxMedia. All rights reserved.',
   },
 };
 

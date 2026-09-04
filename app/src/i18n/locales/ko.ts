@@ -1834,6 +1834,13 @@ const ko = {
     ctaTitle: '지금 바로, 무료로 시작해 보세요',
     ctaDesc: '학원 이름과 포인트 단위만 정하면 1분 안에 시작할 수 있어요.',
     footer: '클래스뱅크 · 학원용 포인트 통장 서비스',
+    bizName: '플럭스미디어',
+    bizOwner: '대표: 이동희',
+    bizNumber: '사업자등록번호: 522-26-02380',
+    bizMailOrder: '통신판매업신고: 2026-부천소사-0565',
+    bizAddress: '사업장: 경기도 부천시 소사구 소사로 257, 6층 C59호(태한빌딩)',
+    bizContact: '고객센터: 010-7979-3621 | 이메일: fluxmedia20@naver.com',
+    bizCopyright: '© 2024 FluxMedia. All rights reserved.',
   },
 };
 

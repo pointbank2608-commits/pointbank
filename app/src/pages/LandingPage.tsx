@@ -470,7 +470,16 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-outline-variant/40 py-10 text-center font-caption text-caption text-outline">
-        {t('landing.footer')}
+        <p className="mb-4">{t('landing.footer')}</p>
+        <div className="mx-auto max-w-md space-y-1">
+          <p className="font-label-md text-label-md text-on-surface-variant">{t('landing.bizName')}</p>
+          <p>{t('landing.bizOwner')}</p>
+          <p>{t('landing.bizNumber')}</p>
+          <p>{t('landing.bizMailOrder')}</p>
+          <p>{t('landing.bizAddress')}</p>
+          <p>{t('landing.bizContact')}</p>
+          <p className="pt-2">{t('landing.bizCopyright')}</p>
+        </div>
       </footer>
     </div>
   );

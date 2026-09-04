@@ -67,7 +67,7 @@ export default function ImageQuizPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(
-    () => [{ id: uid(), imageUrl: '/word-bank-images/apple.png', answer: 'apple' }],
+    () => [{ id: uid(), imageUrl: '/word-bank-images/apple.webp', answer: 'apple' }],
     [],
   );
   const [draftItems, setDraftItems] = useState<ImageQuizItem[]>(selected?.config.imageQuizItems ?? []);
