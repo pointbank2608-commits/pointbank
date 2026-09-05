@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -236,7 +237,7 @@ export default function SettingsPage() {
             {academy?.logo_url ? (
               <img src={academy.logo_url} alt={t('settings.logoAlt')} className="w-full h-full object-cover" />
             ) : (
-              <span>🐷</span>
+              <BrandMark className="h-12 w-12" />
             )}
           </div>
           <div className="flex gap-2">

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
+import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout() {
@@ -11,7 +12,7 @@ export default function AdminLayout() {
       <header className="bg-surface-container-lowest shadow-sm sticky top-0 z-30">
         <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🐷</span>
+            <BrandMark className="h-9 w-9" />
             <div>
               <div className="font-title-md text-title-md text-deep-navy">{t('admin.brandTitle')}</div>
               <div className="font-caption text-caption text-on-surface-variant">{session?.user.email}</div>

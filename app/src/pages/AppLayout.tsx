@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -52,11 +53,11 @@ export default function AppLayout() {
   const sidebarContent = (
     <>
       <Link to={homeTo} className="flex items-center gap-3 px-4 py-2 mb-6" onClick={() => setMobileOpen(false)}>
-        <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center text-xl overflow-hidden shrink-0">
+        <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
           {academy?.logo_url ? (
-            <img src={academy.logo_url} alt="" className="w-full h-full object-cover" />
+            <img src={academy.logo_url} alt="" className="h-full w-full object-cover" />
           ) : (
-            '🐷'
+            <BrandMark className="h-10 w-10" />
           )}
         </div>
         <div className="min-w-0">

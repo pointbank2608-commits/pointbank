@@ -1451,7 +1451,7 @@ const ko = {
     myNameToast: '이름을 변경했습니다.',
     academySaveToast: '저장했습니다.',
     logoTitle: '학원 로고',
-    logoHint: '업로드하면 화면 위쪽 브랜드 마크(기본은 🐷)가 학원 로고로 바뀝니다. 정사각형에 가까운 이미지가 가장 예쁘게 나옵니다.',
+    logoHint: '업로드하면 화면 위쪽 브랜드 마크가 학원 로고로 바뀝니다. 정사각형에 가까운 이미지가 가장 예쁘게 나옵니다.',
     logoAlt: '학원 로고',
     logoUploading: '업로드 중…',
     logoChange: '로고 바꾸기',

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { claimAdmin, createAcademy, joinAsTeacher } from '../lib/api';
 import { supabase } from '../lib/supabase';
@@ -84,7 +85,7 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex items-center justify-center px-margin-mobile bg-background py-10">
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgba(39,101,168,0.12)] border border-surface-container-highest p-8">
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-3xl">🐷</span>
+          <BrandMark className="h-10 w-10" />
           <div>
             <div className="font-title-md text-title-md text-deep-navy">{t('onboarding.startTitle')}</div>
             <div className="font-caption text-caption text-on-surface-variant">{session?.user.email}</div>

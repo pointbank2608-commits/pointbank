@@ -1455,7 +1455,7 @@ const en: Ko = {
     myNameToast: 'Updated your name.',
     academySaveToast: 'Saved.',
     logoTitle: 'Academy logo',
-    logoHint: "Upload one to replace the brand mark (default 🐷) at the top of the app. Square images look best.",
+    logoHint: 'Upload one to replace the default brand mark at the top of the app. Square images look best.',
     logoAlt: 'Academy logo',
     logoUploading: 'Uploading…',
     logoChange: 'Change logo',

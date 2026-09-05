@@ -1,0 +1,24 @@
+interface Props {
+  className?: string;
+}
+
+/** 영어를 재미있게 가르치자는 브랜드 마크. 말풍선 + A + 별. */
+export default function BrandMark({ className = 'h-10 w-10' }: Props) {
+  return (
+    <svg className={className} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path
+        d="M12 8h40a10 10 0 0 1 10 10v22a10 10 0 0 1-10 10H28.6L18 61.2V50H12A10 10 0 0 1 2 40V18A10 10 0 0 1 12 8Z"
+        fill="#3dbea8"
+      />
+      <path
+        fillRule="evenodd"
+        d="M32.2 16.5 42.8 42h-5.4l-2.1-5.6H28.7L26.6 42h-5.4L31.8 16.5h.4Zm.1 8.6-3.3 8.4h6.6l-3.3-8.4Z"
+        fill="#fffdf8"
+      />
+      <path
+        d="M50.2 13.2 52 17.4l4.4.5-3.3 3 1 4.3-3.9-2.3-3.9 2.3 1-4.3-3.3-3 4.4-.5 1.8-4.2Z"
+        fill="#f4c84a"
+      />
+    </svg>
+  );
+}

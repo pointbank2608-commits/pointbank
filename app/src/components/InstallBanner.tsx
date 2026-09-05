@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import BrandMark from './BrandMark';
 
 const DISMISS_KEY = 'classbank.installBannerDismissed.v1';
 
@@ -60,7 +61,7 @@ export default function InstallBanner() {
 
   return (
     <div className="sticky top-0 z-40 flex items-center gap-2.5 bg-warm-yellow/30 text-deep-navy px-3.5 py-2.5 font-body-md text-sm">
-      <span className="text-lg shrink-0">🐷</span>
+      <BrandMark className="h-6 w-6 shrink-0" />
       <span className="flex-1 [&_strong]:text-deep-navy [&_strong]:font-bold">{content}</span>
       <button
         onClick={dismiss}
