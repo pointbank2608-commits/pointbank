@@ -386,15 +386,20 @@ const ko = {
     rolling: '굴리는 중…',
     colLabel: '열 {{n}}',
     rowLabel: '행 {{n}}',
-    reshuffleButton: '판 새로 섞기',
+    reshuffleButton: '새 게임 시작(판 다시 섞기)',
     recentResults: '최근 결과',
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
-    infoDescription: '주사위 2개를 굴려서 나온 칸의 단어를 읽는 게임이에요.',
+    teamBlue: '청팀',
+    teamRed: '홍팀',
+    turnLabel: '{{team}} 차례',
+    bingoMessage: '🎉 {{team}} 빙고! 승리!',
+    playAgainButton: '다시 시작',
+    infoDescription: '주사위 2개를 굴려 나온 칸을 팀 색으로 표시하고, 가로·세로·대각선 한 줄을 먼저 완성하는 팀이 이기는 빙고 게임이에요.',
     infoSteps: [
       '설정에서 6×6 칸에 들어갈 단어를 등록하세요.',
-      '"주사위 굴리기" 버튼을 누르면 주사위 2개가 무작위로 나와요.',
-      '두 주사위 숫자가 가리키는 칸의 단어를 읽으세요.',
-      '다시 굴리려면 버튼을 한 번 더 누르면 돼요.',
+      '청팀과 홍팀이 번갈아 "주사위 굴리기"를 누릅니다.',
+      '주사위가 가리키는 칸의 단어를 읽으면, 그 칸이 우리 팀 색으로 칠해져요.',
+      '가로·세로·대각선 한 줄을 먼저 완성한 팀이 승리합니다!',
     ],
   },
 
@@ -444,6 +449,8 @@ const ko = {
     guessPlaceholder: '한 글자',
     guessButton: '확인',
     keyboardLabel: '글자 키보드',
+    keyCaseUpper: 'ABC',
+    keyCaseLower: 'abc',
     maxAttemptsLabel: '기회 횟수 (오답 허용)',
     scoreLabel: '{{score}} / {{total}} 성공',
     nextButton: '다음 단어',
@@ -1208,6 +1215,7 @@ const ko = {
     quizAutoChoicesHint: '오답 보기는 같은 단어장의 다른 단어에서 자동으로 만들어져요.',
     trueFalseAutoHint: '절반은 맞는 문장, 절반은 다른 단어로 바꿔치기한 틀린 문장으로 자동 생성돼요.',
     emptyTooFewCategories: '카테고리가 2개 이상 섞인 단어장만 그룹정렬에 쓸 수 있어요. "사전에서 선택"으로 여러 카테고리의 단어를 담아보세요.',
+    addedToast: '단어장에서 {{count}}개를 추가했어요.',
   },
 
   dictionaryPicker: {
@@ -1223,6 +1231,7 @@ const ko = {
     resultCount: '{{count}}개',
     selectAll: '전체 선택',
     deselectAll: '전체 선택 해제',
+    addedToast: '사전에서 {{count}}개를 추가했어요.',
   },
 
   imagePicker: {
@@ -1317,6 +1326,9 @@ const ko = {
     categoryModalSelected: '{{count}}개 선택됨',
     categoryModalAddChecked: '선택한 {{count}}개 추가하기',
     addAllButton: '전체 넣기',
+    viewAllTab: '전체',
+    viewAllHint: '모든 반의 단어장을 한 번에 볼 수 있어요. 새 단어장은 특정 반을 골라서 만들어 주세요.',
+    unassignedClass: '반 없음',
   },
 
   gameAdmin: {
@@ -1345,6 +1357,12 @@ const ko = {
     clearAll: '전체 삭제',
     noParticipants: '등록된 참가자가 없습니다.',
     nameFieldLabel: '이름',
+    createHelp: '이름만 정해서 만들면 바로 시작돼요. 단어·문제는 만든 다음 아래에서 "단어장에서 추가"나 "사전에서 추가"로 담으면 됩니다.',
+    itemAddedToast: '항목을 추가했어요.',
+    itemsAddedToast: '{{count}}개를 추가했어요.',
+    finishEditingButton: '완료하고 시작하기',
+    editQuestionsButton: '✏️ 문제 수정하기',
+    needAtLeastOneQuestion: '보기를 모두 채운 문제가 1개 이상 있어야 시작할 수 있어요.',
     openInOtherGameLabel: '다른 게임으로 열기',
     howToPlayTitle: '게임 소개 및 방법',
     importFromClassLabel: '다른 반에서 가져오기',

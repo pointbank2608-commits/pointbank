@@ -45,6 +45,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman({ items, maxAttem
   const [score, setScore] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
+  const [keyCase, setKeyCase] = useState<'upper' | 'lower'>('upper');
   const itemKey = items.map((item) => item.id).join(',');
 
   const word =
@@ -235,6 +236,26 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman({ items, maxAttem
 
       {status === 'playing' ? (
         <>
+          <div className="mb-2 flex bg-surface-container-lowest rounded-lg p-1 w-fit">
+            <button
+              type="button"
+              onClick={() => setKeyCase('upper')}
+              className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                keyCase === 'upper' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              {t('gameHangman.keyCaseUpper')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setKeyCase('lower')}
+              className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                keyCase === 'lower' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+              }`}
+            >
+              {t('gameHangman.keyCaseLower')}
+            </button>
+          </div>
           <div className="hm-kb" role="group" aria-label={t('gameHangman.keyboardLabel')}>
             {KEY_ROWS.map((row) => (
               <div key={row} className="hm-kb-row">
@@ -243,6 +264,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman({ items, maxAttem
                   const used = guessed.has(key);
                   const hit = used && wordLower.includes(key);
                   const miss = used && !hit;
+                  const shown = keyCase === 'upper' ? letter : key;
                   return (
                     <button
                       key={letter}
@@ -253,7 +275,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman({ items, maxAttem
                       className={`hm-key ${hit ? 'is-ok' : ''} ${miss ? 'is-no' : ''}`}
                       onClick={() => applyGuess(letter)}
                     >
-                      {letter}
+                      {shown}
                     </button>
                   );
                 })}

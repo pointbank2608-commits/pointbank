@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../context/ToastContext';
 import { fetchPhonicsBank, fetchWordBank } from '../lib/api';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
 import type { GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
@@ -51,6 +52,7 @@ type CategoryFilter = { type: 'category'; value: string } | { type: 'pos'; value
  */
 export default function DictionaryPicker(props: Props) {
   const { t } = useTranslation();
+  const { notify } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [entries, setEntries] = useState<WordBankEntry[] | null>(null);
@@ -178,6 +180,7 @@ export default function DictionaryPicker(props: Props) {
     } else {
       props.onImportGroups(buildGroupSortGroups({ items: selectedList }));
     }
+    notify(t('dictionaryPicker.addedToast', { count: selectedList.length }));
     setSelected({});
   }
 
@@ -191,13 +194,13 @@ export default function DictionaryPicker(props: Props) {
       <button
         type="button"
         onClick={() => void handleToggleOpen()}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md transition-colors ${
+        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-label-md text-label-md shadow-sm transition-colors ${
           open
             ? 'bg-secondary-container text-on-secondary-container'
-            : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+            : 'bg-primary text-on-primary hover:bg-primary-container'
         }`}
       >
-        <span className="material-symbols-outlined text-base">auto_stories</span>
+        <span className="material-symbols-outlined text-xl">auto_stories</span>
         {open ? t('dictionaryPicker.close') : t('dictionaryPicker.open')}
       </button>
 

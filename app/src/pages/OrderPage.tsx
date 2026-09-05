@@ -86,7 +86,7 @@ export default function OrderPage() {
     reload,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const [newParticipant, setNewParticipant] = useState('');
 
@@ -230,7 +230,7 @@ export default function OrderPage() {
       {isStaff && (
         <button
           onClick={() => setShowCreateForm((v) => !v)}
-          className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+          className="px-6 py-3 rounded-full font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
         >
           {t('gameOrder.newButton')}
         </button>
@@ -240,6 +240,10 @@ export default function OrderPage() {
 
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
+        <span aria-hidden="true">💬</span>
+        <span>{t('gameAdmin.createHelp')}</span>
+      </div>
       <div>
         <label htmlFor="oname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
           {t('gameAdmin.nameFieldLabel')}

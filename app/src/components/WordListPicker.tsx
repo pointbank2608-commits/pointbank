@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../context/ToastContext';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
 import type { GroupSortGroup, ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordList } from '../lib/types';
 
@@ -30,6 +31,7 @@ type Props =
  */
 export default function WordListPicker(props: Props) {
   const { t } = useTranslation();
+  const { notify } = useToast();
   const { wordLists, loading } = props;
   const [open, setOpen] = useState(false);
   const [field, setField] = useState<'word' | 'meaning'>('word');
@@ -61,6 +63,7 @@ export default function WordListPicker(props: Props) {
     } else {
       props.onImportGroups(buildGroupSortGroups(list));
     }
+    notify(t('wordListPicker.addedToast', { count: list.items.length }));
   }
 
   return (
@@ -68,13 +71,13 @@ export default function WordListPicker(props: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-label-md text-label-md transition-colors ${
+        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-label-md text-label-md shadow-sm transition-colors ${
           open
             ? 'bg-secondary-container text-on-secondary-container'
-            : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+            : 'bg-primary text-on-primary hover:bg-primary-container'
         }`}
       >
-        <span className="material-symbols-outlined text-base">library_books</span>
+        <span className="material-symbols-outlined text-xl">library_books</span>
         {open ? t('wordListPicker.close') : t('wordListPicker.open')}
       </button>
 

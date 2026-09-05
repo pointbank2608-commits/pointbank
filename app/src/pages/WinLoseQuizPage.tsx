@@ -67,7 +67,6 @@ export default function WinLoseQuizPage() {
     roster,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
   const demoQuestions = useMemo(
     () => [
@@ -79,9 +78,14 @@ export default function WinLoseQuizPage() {
   );
   const gameRef = useRef<UndoHandle>(null);
   const [draftQuestions, setDraftQuestions] = useState<QuizQuestion[]>(selected?.config.questions ?? []);
+  const [mode, setMode] = useState<'edit' | 'play'>('play');
 
   useEffect(() => {
     setDraftQuestions(selected?.config.questions ?? []);
+    const hasPlayable = (selected?.config.questions ?? []).some(
+      (q) => q.question.trim() && q.choices.length >= 2 && q.choices.every((c) => c.trim()),
+    );
+    setMode(hasPlayable ? 'play' : 'edit');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id]);
 
@@ -224,7 +228,7 @@ export default function WinLoseQuizPage() {
       {isStaff && (
         <button
           onClick={() => setShowCreateForm((v) => !v)}
-          className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+          className="px-6 py-3 rounded-full font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
         >
           {t('gameWinLoseQuiz.newButton')}
         </button>
@@ -234,6 +238,10 @@ export default function WinLoseQuizPage() {
 
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
+        <span aria-hidden="true">💬</span>
+        <span>{t('gameAdmin.createHelp')}</span>
+      </div>
       <div>
         <label htmlFor="wlqname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
           {t('gameAdmin.nameFieldLabel')}
@@ -323,20 +331,22 @@ export default function WinLoseQuizPage() {
             {selected.name}
           </h2>
 
-          <GameThemeFrame
-            roster={roster}
-            onRestart={() => setRoundKey((k) => k + 1)}
-            onUndo={() => gameRef.current?.undo()}
-            className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
-          >
-            <WinLoseQuiz
-              key={roundKey} ref={gameRef}
-              questions={playableQuestions}
-              startScore={startScore}
-              betOptions={betOptions}
-              boardStyle={selected.config.winLoseStyle === 'clay' ? 'clay' : 'wood'}
-            />
-          </GameThemeFrame>
+          {(!isStaff || mode === 'play') && (
+            <GameThemeFrame
+              roster={roster}
+              onRestart={() => setRoundKey((k) => k + 1)}
+              onUndo={() => gameRef.current?.undo()}
+              className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
+            >
+              <WinLoseQuiz
+                key={roundKey} ref={gameRef}
+                questions={playableQuestions}
+                startScore={startScore}
+                betOptions={betOptions}
+                boardStyle={selected.config.winLoseStyle === 'clay' ? 'clay' : 'wood'}
+              />
+            </GameThemeFrame>
+          )}
 
           <div className="space-y-4">
             {classPicker}
@@ -351,9 +361,11 @@ export default function WinLoseQuizPage() {
                     <button onClick={() => void handleRename()} className="font-label-md text-label-md text-primary hover:underline">
                       {t('gameAdmin.rename')}
                     </button>
-                    <button onClick={() => setEditorOpen((v) => !v)} className="font-label-md text-label-md text-primary hover:underline">
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
+                    {mode === 'play' && (
+                      <button onClick={() => setMode('edit')} className="font-label-md text-label-md text-primary hover:underline">
+                        {t('gameAdmin.editQuestionsButton')}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -380,7 +392,7 @@ export default function WinLoseQuizPage() {
                   })}
                 </div>
 
-                {editorOpen && (
+                {mode === 'edit' && (
                   <div className="space-y-4">
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="flex flex-wrap items-start gap-3 my-3">
@@ -505,6 +517,22 @@ export default function WinLoseQuizPage() {
                     >
                       {t('gameWinLoseQuiz.addQuestionButton')}
                     </button>
+
+                    <div className="flex flex-col items-center gap-1.5 pt-2">
+                      <button
+                        type="button"
+                        disabled={playableQuestions.length === 0}
+                        onClick={() => setMode('play')}
+                        className="px-6 py-3 rounded-full font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {t('gameAdmin.finishEditingButton')}
+                      </button>
+                      {playableQuestions.length === 0 && (
+                        <p className="font-caption text-caption text-on-surface-variant">
+                          {t('gameAdmin.needAtLeastOneQuestion')}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -821,6 +821,13 @@ export async function fetchWordLists(academyId: string, classId: string): Promis
   );
 }
 
+/** 반 구분 없이 이 학원의 단어장을 전부 불러온다 ("내 단어장"의 "전체" 탭). */
+export async function fetchAllWordLists(academyId: string): Promise<WordList[]> {
+  return unwrap(
+    await supabase.from('word_lists').select('*').eq('academy_id', academyId).order('created_at'),
+  );
+}
+
 export async function createWordList(params: {
   academyId: string;
   classId: string | null;

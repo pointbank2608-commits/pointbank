@@ -7,6 +7,8 @@ interface Props {
   items: GameItem[];
 }
 
+type Team = 'blue' | 'red';
+
 const SIZE = 6;
 const ROLL_MS = 980;
 const TEAL_DIE = '/skins/twodice-teal.png?v=3';
@@ -58,6 +60,21 @@ function shuffle<T>(arr: T[]): T[] {
 function pickBoardItems(items: GameItem[]): GameItem[] {
   const pool = shuffle(items);
   return Array.from({ length: SIZE * SIZE }, (_, i) => pool[i % pool.length]);
+}
+
+/** 가로 6줄 + 세로 6줄 + 대각선 2줄 = 빙고에서 이길 수 있는 모든 줄. */
+const LINES: number[][] = [
+  ...Array.from({ length: SIZE }, (_, r) => Array.from({ length: SIZE }, (_, c) => r * SIZE + c)),
+  ...Array.from({ length: SIZE }, (_, c) => Array.from({ length: SIZE }, (_, r) => r * SIZE + c)),
+  Array.from({ length: SIZE }, (_, i) => i * SIZE + i),
+  Array.from({ length: SIZE }, (_, i) => i * SIZE + (SIZE - 1 - i)),
+];
+
+function findWinningLine(claimed: Record<number, Team>, team: Team): number[] | null {
+  for (const line of LINES) {
+    if (line.every((idx) => claimed[idx] === team)) return line;
+  }
+  return null;
 }
 
 function Pips({ n }: { n: number }) {
@@ -123,8 +140,12 @@ export default function TwoDice({ items }: Props) {
   const [target2, setTarget2] = useState(1);
   const [rolling, setRolling] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
-  const [history, setHistory] = useState<{ key: string; label: string }[]>([]);
+  const [history, setHistory] = useState<{ key: string; label: string; team: Team }[]>([]);
   const [tossKey, setTossKey] = useState(0);
+  const [claimed, setClaimed] = useState<Record<number, Team>>({});
+  const [turn, setTurn] = useState<Team>('blue');
+  const [winner, setWinner] = useState<Team | null>(null);
+  const [winLine, setWinLine] = useState<number[] | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -143,10 +164,14 @@ export default function TwoDice({ items }: Props) {
     setTarget2(1);
     setHistory([]);
     setRolling(false);
+    setClaimed({});
+    setTurn('blue');
+    setWinner(null);
+    setWinLine(null);
   }
 
   function roll() {
-    if (rolling || items.length === 0) return;
+    if (rolling || items.length === 0 || winner) return;
     const d1 = 1 + Math.floor(Math.random() * SIZE);
     const d2 = 1 + Math.floor(Math.random() * SIZE);
     setTarget1(d1);
@@ -154,6 +179,7 @@ export default function TwoDice({ items }: Props) {
     setHighlightIndex(null);
     setRolling(true);
     setTossKey((n) => n + 1);
+    const rollingTeam = turn;
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setDie1(d1);
@@ -161,8 +187,19 @@ export default function TwoDice({ items }: Props) {
       const idx = (d1 - 1) * SIZE + (d2 - 1);
       setHighlightIndex(idx);
       const word = board[idx];
-      setHistory((prev) => [{ key: `${Date.now()}`, label: word.label }, ...prev].slice(0, 8));
+      setHistory((prev) => [{ key: `${Date.now()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
+      setClaimed((prev) => {
+        if (prev[idx]) return prev;
+        const next = { ...prev, [idx]: rollingTeam };
+        const line = findWinningLine(next, rollingTeam);
+        if (line) {
+          setWinner(rollingTeam);
+          setWinLine(line);
+        }
+        return next;
+      });
       setRolling(false);
+      setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
     }, ROLL_MS);
   }
 
@@ -180,9 +217,39 @@ export default function TwoDice({ items }: Props) {
 
   const row = die1 ?? 1;
   const col = die2 ?? 1;
+  const teamLabel = (team: Team) => (team === 'blue' ? t('gameTwoDice.teamBlue') : t('gameTwoDice.teamRed'));
+  const blueCount = Object.values(claimed).filter((v) => v === 'blue').length;
+  const redCount = Object.values(claimed).filter((v) => v === 'red').length;
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
+      <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
+        <div
+          data-skin-object="score-card"
+          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-on-secondary"
+          style={{ backgroundColor: '#3dbea8', boxShadow: woodShadow }}
+        >
+          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('blue')}</div>
+          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{blueCount}</div>
+        </div>
+        <div
+          className={`rounded-full px-7 py-2.5 text-center font-title-md text-[16px] font-bold shadow-sm ${
+            turn === 'blue' && !winner ? 'bg-secondary text-on-secondary' : 'text-white'
+          }`}
+          style={turn === 'red' || winner === 'red' ? { backgroundColor: '#f28b73' } : undefined}
+        >
+          {winner ? t('gameTwoDice.bingoMessage', { team: teamLabel(winner) }) : t('gameTwoDice.turnLabel', { team: teamLabel(turn) })}
+        </div>
+        <div
+          data-skin-object="score-card"
+          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-white"
+          style={{ backgroundColor: '#f28b73', boxShadow: woodShadow }}
+        >
+          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('red')}</div>
+          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{redCount}</div>
+        </div>
+      </div>
+
       <div className="td-dice-row mb-4 flex items-end justify-center gap-10 sm:gap-14">
         <div className="flex flex-col items-center gap-2">
           <ClayDie src={TEAL_DIE} tint="teal" value={rolling ? target2 : col} rolling={rolling} spin="a" tossKey={tossKey} />
@@ -194,7 +261,7 @@ export default function TwoDice({ items }: Props) {
         </div>
       </div>
 
-      <button onClick={roll} disabled={rolling} className={`mb-5 ${pill} disabled:opacity-60`}>
+      <button onClick={roll} disabled={rolling || !!winner} className={`mb-5 ${pill} disabled:opacity-60`}>
         {rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rollButton')}
       </button>
 
@@ -214,6 +281,8 @@ export default function TwoDice({ items }: Props) {
             const r = Math.floor(i / SIZE);
             const showRowBead = i % SIZE === 0;
             const hit = i === highlightIndex;
+            const owner = claimed[i];
+            const inWinLine = winLine?.includes(i) ?? false;
             return (
               <div key={`row-${r}-${i}`} className="contents">
                 {showRowBead && (
@@ -221,7 +290,10 @@ export default function TwoDice({ items }: Props) {
                     {r + 1}
                   </div>
                 )}
-                <div data-skin-object="cell" className={`td-cell ${hit ? 'td-hit' : ''}`}>
+                <div
+                  data-skin-object="cell"
+                  className={`td-cell ${owner ? `td-cell-${owner}` : ''} ${hit ? 'td-hit' : ''} ${inWinLine ? 'td-cell-win' : ''}`}
+                >
                   <GameFitText text={item.label} />
                 </div>
               </div>
@@ -235,7 +307,7 @@ export default function TwoDice({ items }: Props) {
         onClick={reshuffleBoard}
         className="mb-4 font-label-md text-label-md text-secondary hover:underline"
       >
-        {t('gameTwoDice.reshuffleButton')}
+        {winner ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
       </button>
 
       {history.length > 0 && (
@@ -247,7 +319,10 @@ export default function TwoDice({ items }: Props) {
                 key={h.key}
                 className="rounded-full px-3 py-1 font-label-md text-label-md text-deep-navy"
                 style={{
-                  background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+                  background:
+                    h.team === 'blue'
+                      ? 'linear-gradient(180deg, #eafaf6 0%, #bfeee3 100%)'
+                      : 'linear-gradient(180deg, #fdeee9 0%, #f7c9ba 100%)',
                   border: i === 0 ? '2px solid #f28b73' : '2px solid #f0d7a8',
                   boxShadow: i === 0 ? woodShadow : '0 2px 0 #e8c48a',
                 }}

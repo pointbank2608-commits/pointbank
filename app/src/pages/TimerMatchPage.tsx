@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import GameMusicPicker from '../components/GameMusicPicker';
@@ -71,8 +72,9 @@ export default function TimerMatchPage() {
     importFromClass,
     reload,
   } = g;
+  const { notify } = useToast();
 
-  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
   const [newParticipant, setNewParticipant] = useState('');
@@ -83,26 +85,31 @@ export default function TimerMatchPage() {
     setTargetInput((targetMs / 1000).toFixed(2));
   }, [targetMs]);
 
-  async function persistItems(nextItems: GameItem[]) {
-    if (!selected) return;
+  async function persistItems(nextItems: GameItem[]): Promise<boolean> {
+    if (!selected) return false;
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: nextItems });
-    } catch {
+      return true;
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
       await reload();
+      return false;
     }
   }
 
   async function addParticipant() {
     const label = newParticipant.trim();
     if (!label || !selected) return;
-    await persistItems([...selected.items, { id: uid(), label }]);
+    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
     setNewParticipant('');
   }
 
   async function addParticipantsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
-    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
+    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
+      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
+    }
   }
 
   async function removeParticipant(itemId: string) {
@@ -202,7 +209,7 @@ export default function TimerMatchPage() {
       {isStaff && (
         <button
           onClick={() => setShowCreateForm((v) => !v)}
-          className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+          className="px-6 py-3 rounded-full font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
         >
           {t('gameTimer.newButton')}
         </button>
@@ -212,6 +219,10 @@ export default function TimerMatchPage() {
 
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
+        <span aria-hidden="true">💬</span>
+        <span>{t('gameAdmin.createHelp')}</span>
+      </div>
       <div>
         <label htmlFor="tname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
           {t('gameAdmin.nameFieldLabel')}

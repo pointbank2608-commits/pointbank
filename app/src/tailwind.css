@@ -1,5 +1,5 @@
 /* 클래스뱅크 신규 디자인 — 스티치(Stitch) 목업 원본 tailwind.config 값을 그대로 옮김. */
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@600;700&family=Quicksand:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
@@ -366,6 +366,49 @@
   pointer-events: none;
   filter: drop-shadow(0 8px 8px rgba(90, 50, 18, 0.28));
   animation: pc-kernel 1.15s cubic-bezier(0.18, 0.88, 0.28, 1.08) both;
+}
+
+/* 팝콘: '펑' 터지는 순간 화면을 크게 채우는 연출 */
+@keyframes pc-burst-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  30% {
+    transform: scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+.pc-burst {
+  animation: pc-burst-in 1.4s cubic-bezier(0.22, 0.9, 0.28, 1.05) both;
+}
+@keyframes pc-burst-emoji {
+  0% {
+    transform: scale(0.3) rotate(-8deg);
+  }
+  50% {
+    transform: scale(1.18) rotate(4deg);
+  }
+  72% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1.05) rotate(0deg);
+  }
+}
+.pc-burst-emoji {
+  animation: pc-burst-emoji 0.6s cubic-bezier(0.22, 0.9, 0.28, 1.3);
 }
 
 /* 공 돌리기: 음악이 나오는 동안 공이 통통 */
@@ -782,6 +825,37 @@
     inset 0 2px 0 rgba(255, 255, 255, 0.7);
   font-weight: 800;
   animation: td-hit 0.45s cubic-bezier(0.22, 0.9, 0.28, 1.12) both;
+}
+
+/* 두 주사위(빙고): 팀이 칸을 차지하면 팀 색으로 계속 남는다 */
+.td-cell-blue {
+  background: linear-gradient(180deg, #d9f5ee 0%, #9fe0d0 100%);
+  box-shadow:
+    0 0 0 2px #3dbea8,
+    inset 0 2px 0 rgba(255, 255, 255, 0.75);
+  color: #0f4a41;
+}
+.td-cell-red {
+  background: linear-gradient(180deg, #fbe2da 0%, #f3b6a2 100%);
+  box-shadow:
+    0 0 0 2px #f28b73,
+    inset 0 2px 0 rgba(255, 255, 255, 0.75);
+  color: #7a2c17;
+}
+@keyframes td-win-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.08);
+    filter: brightness(1.12);
+  }
+}
+.td-cell-win {
+  z-index: 2;
+  animation: td-win-pulse 0.9s ease-in-out infinite;
 }
 
 /* 구멍 안에 보이는 점토 원판: 가장자리 하이라이트·그늘로 두께를 살린다 */
@@ -4493,14 +4567,32 @@
   flex-shrink: 0;
 }
 
-/* 랜딩: 큰 한글 타이포 */
+/* 랜딩: 사진 캠페인용 세리프 제목 + 본문 산세리프 */
 .landing {
-  font-family: 'Noto Sans KR', 'Hanken Grotesk', sans-serif;
+  font-family: 'IBM Plex Sans KR', 'Noto Sans KR', sans-serif;
 }
 .landing-display {
-  font-family: 'Noto Sans KR', 'Quicksand', sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.18;
+  font-family: 'Noto Serif KR', 'Noto Sans KR', serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.22;
+}
+.landing-logo {
+  font-family: 'Noto Serif KR', 'Noto Sans KR', serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.landing-hero-media {
+  min-height: min(92vh, 900px);
+}
+.landing-pain-card {
+  isolation: isolate;
+}
+.landing-pain-card img {
+  transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+.landing-pain-card:hover img {
+  transform: scale(1.04);
 }
 

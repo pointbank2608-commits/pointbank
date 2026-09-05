@@ -71,7 +71,7 @@ export default function WheelPage() {
   const [playItems, setPlayItems] = useState<GameItem[]>([]);
   const [eliminateMode, setEliminateMode] = useState(false);
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
-  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
@@ -95,27 +95,31 @@ export default function WheelPage() {
 
   /* ---------------- 항목 편집 (선생님/원장) ---------------- */
 
-  async function persistItems(next: GameItem[]) {
-    if (!selected) return;
+  async function persistItems(next: GameItem[]): Promise<boolean> {
+    if (!selected) return false;
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
     try {
       await updateGameTemplate(selected.id, { items: next });
+      return true;
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
       await reload();
+      return false;
     }
   }
 
   async function addItem() {
     const label = newItemLabel.trim();
     if (!label || !selected) return;
-    await persistItems([...selected.items, { id: uid(), label }]);
+    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
     setNewItemLabel('');
   }
 
   async function addItemsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
-    await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
+    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
+      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
+    }
   }
 
   async function removeItem(itemId: string) {
@@ -207,7 +211,7 @@ export default function WheelPage() {
       {isStaff && (
         <button
           onClick={() => setShowCreateForm((v) => !v)}
-          className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
+          className="px-6 py-3 rounded-full font-label-md text-label-md bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-colors"
         >
           {t('gameWheel.newButton')}
         </button>
@@ -217,6 +221,10 @@ export default function WheelPage() {
 
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
+        <span aria-hidden="true">💬</span>
+        <span>{t('gameAdmin.createHelp')}</span>
+      </div>
       <div>
         <label htmlFor="wname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
           {t('gameAdmin.nameFieldLabel')}

@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import {
   createWordList,
   deleteWordList,
+  fetchAllWordLists,
   fetchPhonicsBank,
   fetchWordBank,
   fetchWordLists,
@@ -410,16 +411,17 @@ export default function WordListsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
+  const [viewAll, setViewAll] = useState(false);
 
   async function load() {
-    if (!academy?.id || !selectedId) {
+    if (!academy?.id || (!viewAll && !selectedId)) {
       setLists([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      setLists(await fetchWordLists(academy.id, selectedId));
+      setLists(viewAll ? await fetchAllWordLists(academy.id) : await fetchWordLists(academy.id, selectedId as string));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -430,7 +432,11 @@ export default function WordListsPage() {
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [academy?.id, selectedId]);
+  }, [academy?.id, selectedId, viewAll]);
+
+  function classNameOf(classId: string): string {
+    return classes.find((c) => c.id === classId)?.name ?? t('wordLists.unassignedClass');
+  }
 
   async function handleCreate() {
     if (!academy?.id || !profile || !selectedId || !newName.trim()) return;
@@ -472,7 +478,20 @@ export default function WordListsPage() {
       </h2>
       <p className="font-caption text-caption text-on-surface-variant">{t('wordLists.hint')}</p>
 
-      <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setViewAll((v) => !v)}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
+            viewAll ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40'
+          }`}
+        >
+          <span className="material-symbols-outlined text-base">apps</span>
+          {t('wordLists.viewAllTab')}
+        </button>
+        {!viewAll && <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />}
+      </div>
+      {viewAll && <p className="font-caption text-caption text-on-surface-variant">{t('wordLists.viewAllHint')}</p>}
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
@@ -492,7 +511,9 @@ export default function WordListsPage() {
                   <span className="material-symbols-outlined">{openId === list.id ? 'expand_less' : 'expand_more'}</span>
                   {list.name}
                   <span className="font-caption text-caption text-on-surface-variant">
-                    ({list.items.length}) {list.class_id === null && `· ${t('wordLists.academyWide')}`}
+                    ({list.items.length})
+                    {list.class_id === null && ` · ${t('wordLists.academyWide')}`}
+                    {list.class_id !== null && viewAll && ` · ${classNameOf(list.class_id)}`}
                   </span>
                 </button>
                 <span className="flex gap-3">
@@ -525,7 +546,7 @@ export default function WordListsPage() {
         </div>
       )}
 
-      {selectedId && (
+      {selectedId && !viewAll && (
         <div>
           {showCreateForm ? (
             <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-2">

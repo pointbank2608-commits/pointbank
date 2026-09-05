@@ -388,15 +388,21 @@ const en: Ko = {
     rolling: 'Rolling…',
     colLabel: 'Col {{n}}',
     rowLabel: 'Row {{n}}',
-    reshuffleButton: 'Reshuffle the board',
+    reshuffleButton: 'Start new game (reshuffle)',
     recentResults: 'Recent results',
     needParticipants: 'Register at least 1 item to get started.',
-    infoDescription: 'Roll two dice and read the word in the matching square.',
+    teamBlue: 'Blue team',
+    teamRed: 'Red team',
+    turnLabel: "{{team}}'s turn",
+    bingoMessage: '🎉 {{team}} bingo! Winner!',
+    playAgainButton: 'Play again',
+    infoDescription:
+      'Roll two dice to color a square for your team, and race to complete a row, column, or diagonal first.',
     infoSteps: [
       'In settings, add words to fill the 6x6 grid.',
-      'Tap "Roll the dice" to roll two dice at random.',
-      'Read the word in the square the two numbers point to.',
-      'Tap the button again to roll another round.',
+      'The blue and red teams take turns tapping "Roll the dice".',
+      'Read the word in the square the dice point to — it gets colored for your team.',
+      'The first team to complete a row, column, or diagonal wins!',
     ],
   },
 
@@ -446,6 +452,8 @@ const en: Ko = {
     guessPlaceholder: 'One letter',
     guessButton: 'Guess',
     keyboardLabel: 'Letter keyboard',
+    keyCaseUpper: 'ABC',
+    keyCaseLower: 'abc',
     maxAttemptsLabel: 'Attempts allowed',
     scoreLabel: '{{score}} / {{total}} correct',
     nextButton: 'Next word',
@@ -1210,6 +1218,7 @@ const en: Ko = {
     quizAutoChoicesHint: 'Wrong-answer choices are generated automatically from the other words in the list.',
     trueFalseAutoHint: 'Half become true statements, half become false ones by swapping in another word.',
     emptyTooFewCategories: 'Only word lists mixing 2+ categories work for group sort. Pick words from the dictionary across a few categories to build one.',
+    addedToast: 'Added {{count}} from the word list.',
   },
 
   dictionaryPicker: {
@@ -1225,6 +1234,7 @@ const en: Ko = {
     resultCount: '{{count}}',
     selectAll: 'Select all',
     deselectAll: 'Deselect all',
+    addedToast: 'Added {{count}} from the dictionary.',
   },
 
   imagePicker: {
@@ -1319,6 +1329,9 @@ const en: Ko = {
     categoryModalSelected: '{{count}} selected',
     categoryModalAddChecked: 'Add {{count}} selected',
     addAllButton: 'Add all',
+    viewAllTab: 'All',
+    viewAllHint: 'See word lists from every class at once. To create a new one, pick a specific class first.',
+    unassignedClass: 'No class',
   },
 
   gameAdmin: {
@@ -1347,6 +1360,12 @@ const en: Ko = {
     clearAll: 'Clear all',
     noParticipants: 'No participants yet.',
     nameFieldLabel: 'Name',
+    createHelp: 'Just name it and hit Create to get started — add words or questions afterward using "Load from a word list" or "Add from dictionary" below.',
+    itemAddedToast: 'Added.',
+    itemsAddedToast: 'Added {{count}}.',
+    finishEditingButton: 'Finish & start',
+    editQuestionsButton: '✏️ Edit questions',
+    needAtLeastOneQuestion: 'You need at least one fully-filled-out question before you can start.',
     openInOtherGameLabel: 'Open with another game',
     howToPlayTitle: 'About this game & how to play',
     importFromClassLabel: 'Import from another class',

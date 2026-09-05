@@ -90,7 +90,22 @@ export default function Popcorn({ items }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2">
+    <div className="relative flex flex-col items-center pt-1.5 pb-2">
+      {lastCard === 'pop' && (
+        <div
+          key={`burst-${hop}`}
+          className="pc-burst pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-[28px]"
+          style={{ backgroundColor: 'rgba(242,139,115,0.95)' }}
+        >
+          <div className="pc-burst-emoji text-[28vw] leading-none sm:text-[180px]">🍿</div>
+          <div
+            className="rounded-full bg-white px-9 py-4 text-center font-title-md text-title-md"
+            style={{ color: '#f28b73' }}
+          >
+            {t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}
+          </div>
+        </div>
+      )}
       <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
         <div
           data-skin-object="score-card"
@@ -149,44 +164,29 @@ export default function Popcorn({ items }: Props) {
         )}
       </button>
 
-      {lastCard && (
+      {lastCard && lastCard !== 'pop' && (
         <div key={hop} className="result-pop mb-5 w-[min(420px,92%)] text-center">
-          {lastCard === 'pop' ? (
-            <div
-              className="rounded-[22px] px-7 py-4"
+          <div
+            className="flex items-center justify-center px-2 py-2"
+            style={{
+              borderRadius: 22,
+              background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+              boxShadow: woodShadow,
+            }}
+          >
+            <span
+              className="flex min-h-[64px] w-full items-center justify-center px-4 py-2"
               style={{
-                backgroundColor: '#f28b73',
-                border: '3px solid #f0d7a8',
-                boxShadow: woodShadow,
+                borderRadius: 16,
+                background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+                boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
               }}
             >
-              <div className="font-title-md text-[22px] font-bold leading-snug text-white">
-                {t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}
-              </div>
-            </div>
-          ) : (
-            <div
-              className="flex items-center justify-center px-2 py-2"
-              style={{
-                borderRadius: 22,
-                background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
-                boxShadow: woodShadow,
-              }}
-            >
-              <span
-                className="flex min-h-[64px] w-full items-center justify-center px-4 py-2"
-                style={{
-                  borderRadius: 16,
-                  background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
-                  boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
-                }}
-              >
-                <span className="block w-full min-h-[64px]">
-                  <GameFitText text={lastCard.label} fit="block" />
-                </span>
+              <span className="block w-full min-h-[64px]">
+                <GameFitText text={lastCard.label} fit="block" />
               </span>
-            </div>
-          )}
+            </span>
+          </div>
         </div>
       )}
 
