@@ -66,8 +66,12 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     // wrap 자체를 재는 게 아니라 그 안의 실제 게임 루트(children 이 그리는 첫 엘리먼트)를
     // 잰다. wrap 을 shrink-to-fit(width:fit-content)으로 재려고 하면 게임 내부의
     // w-full/max-w-[Npx] 같은 상대 크기 클래스들이 기준을 잃고 찌그러지는 문제가 있었다 —
-    // wrap 은 무대(stage) 폭 100%를 그대로 주고, 그 안에서 게임이 스스로 정한 자연스러운
-    // 크기(offsetWidth/Height, transform 영향 안 받음)를 읽는 게 안전하다.
+    // wrap 은 무대(stage) 폭 100%를 그대로 주고, target(게임 루트)도 CSS에서 width:100%로
+    // 고정해뒀다(tailwind.css `.game-fs-scale > *`). 다만 target 자신의 offsetWidth는
+    // 이제 그 100%(=무대 폭)를 그대로 반영해버려 실제 콘텐츠 크기로 못 쓴다 — 대신 target의
+    // 자식들(실제 시각 요소)의 바운딩 박스 합집합으로 진짜 폭을 잰다. offsetLeft/offsetWidth는
+    // transform 영향을 안 받아서(getBoundingClientRect와 달리) 이미 적용된 scale과 무관하게
+    // 안정적으로 잴 수 있다. 높이는 flex-column 자연 흐름이라 target.offsetHeight로 충분하다.
     function fit() {
       const stage = stageRef.current;
       const wrap = scaleRef.current;
@@ -75,7 +79,11 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
       const target = (wrap.firstElementChild as HTMLElement | null) ?? wrap;
       const availW = stage.clientWidth;
       const availH = stage.clientHeight;
-      const w = target.offsetWidth;
+      const kids = Array.from(target.children) as HTMLElement[];
+      const w =
+        kids.length > 0
+          ? Math.max(...kids.map((c) => c.offsetLeft + c.offsetWidth)) - Math.min(...kids.map((c) => c.offsetLeft))
+          : target.offsetWidth;
       const h = target.offsetHeight;
       if (availW < 16 || availH < 16 || w < 16 || h < 16) return;
       const next = Math.min(availW / w, availH / h) * 0.96;
