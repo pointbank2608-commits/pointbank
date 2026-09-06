@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { playMusic, playWheelSpinTicks } from '../lib/gameMusic';
+import { playMusic, playWheelSpinTicks, playWheelTickOnce } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -10,6 +10,9 @@ interface Props {
   resultSound?: MusicSelection | null;
   /** 항목 하나를 선택할 때마다 화면 밖으로 알려준다 (최근 결과 기록 등에 사용). */
   onResult?: (item: GameItem) => void;
+  /** true면 조각을 탭해서 그 자리에서 이름을 바로 수정할 수 있다(선생님용 실제 플레이 화면에서만). */
+  editable?: boolean;
+  onEditItem?: (id: string, label: string) => void;
 }
 
 const SIZE = 420;
@@ -21,6 +24,14 @@ const DEFAULT_SPIN_MS = 4600;
 const MIN_SPIN_MS = 2000;
 const MAX_SPIN_MS = 20000;
 
+/** 손으로 돌리는 실감 물리값. 실제 마찰처럼 일정한 감속(가속도)로 멈춘다 —
+ * 세게 돌릴수록(초기 속도가 클수록) 멈추기까지 오래·많이 돈다. */
+const DRAG_TICK_DEG = 9;
+const DECEL_DEG_PER_S2 = 260;
+const MIN_RELEASE_VELOCITY = 40;
+const MIN_MOMENTUM_VELOCITY = 6;
+const DRAG_MOVE_THRESHOLD = 0.6;
+
 const RIM_SRC = '/skins/wheel-rim.png';
 const HUB_SRC = '/skins/wheel-hub-spin.png';
 const POINTER_SRC = '/skins/wheel-pointer.png';
@@ -31,16 +42,34 @@ function pointOnCircle(angleDeg: number, radius: number) {
   return { x: CX + radius * Math.sin(rad), y: CY - radius * Math.cos(rad) };
 }
 
-export default function SpinWheel({ items, music, resultSound, onResult }: Props) {
+export default function SpinWheel({ items, music, resultSound, onResult, editable, onEditItem }: Props) {
   const { t } = useTranslation();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
+  const [useCssTransition, setUseCssTransition] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
   const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [itemDraft, setItemDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
   const uploadDurationsRef = useRef<Record<string, number>>({});
+
+  /* ---------------- 손으로 직접 돌리기(드래그+관성) ---------------- */
+  const wheelBoxRef = useRef<HTMLDivElement>(null);
+  const rotationRef = useRef(0);
+  const draggingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const activePointerIdRef = useRef<number | null>(null);
+  const lastAngleRef = useRef(0);
+  const velocitySamplesRef = useRef<{ t: number; angle: number }[]>([]);
+  const momentumRafRef = useRef<number | null>(null);
+  const tickAccumRef = useRef(0);
+
+  useEffect(() => () => {
+    if (momentumRafRef.current !== null) cancelAnimationFrame(momentumRafRef.current);
+  }, []);
 
   // 선생님이 회전음으로 파일을 업로드해뒀으면, 실제로 돌리기 전에 미리 길이를 읽어둔다
   // (스핀 시작 시점엔 즉시 값이 필요해서 미리 로드해두는 것 — 매번 새로 읽지 않도록 캐싱).
@@ -62,6 +91,11 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
   const slice = count > 0 ? 360 / count : 0;
   const fontSize = fontSizeFor(count);
 
+  // 항목이 늘거나 줄면(+/− 버튼 등) 편집 중이던 항목이 사라졌을 수 있으니 편집 상태를 닫는다.
+  useEffect(() => {
+    setEditingItemId(null);
+  }, [count]);
+
   const slices = useMemo(() => {
     return items.map((item, i) => {
       const a0 = i * slice;
@@ -75,15 +109,161 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
     });
   }, [items, slice]);
 
+  function handleSliceClick(itemId: string) {
+    if (didDragRef.current) return;
+    if (!editable || spinning) return;
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    setEditingItemId(itemId);
+    setItemDraft(item.label);
+  }
+
+  function commitItemEdit() {
+    const trimmed = itemDraft.trim();
+    if (editingItemId && trimmed) onEditItem?.(editingItemId, trimmed);
+    setEditingItemId(null);
+  }
+
+  /** 12시를 0도, 시계 방향 증가로 재는 각도계 — pointOnCircle/computeSpinRotation과 동일. */
+  function angleFromPoint(clientX: number, clientY: number): number {
+    const box = wheelBoxRef.current;
+    if (!box) return 0;
+    const rect = box.getBoundingClientRect();
+    const dx = clientX - (rect.left + rect.width / 2);
+    const dy = clientY - (rect.top + rect.height / 2);
+    return (Math.atan2(dx, -dy) * 180) / Math.PI;
+  }
+
+  function emitTicksForDelta(delta: number) {
+    tickAccumRef.current += Math.abs(delta);
+    while (tickAccumRef.current >= DRAG_TICK_DEG) {
+      tickAccumRef.current -= DRAG_TICK_DEG;
+      playWheelTickOnce();
+    }
+  }
+
+  function stopMomentum() {
+    if (momentumRafRef.current !== null) {
+      cancelAnimationFrame(momentumRafRef.current);
+      momentumRafRef.current = null;
+    }
+  }
+
+  function resolveLandedItem(): GameItem {
+    const theta = ((-rotationRef.current % 360) + 360) % 360;
+    const idx = Math.min(count - 1, Math.floor(theta / slice));
+    return items[idx];
+  }
+
+  function finalizeSpin() {
+    setSpinning(false);
+    const picked = resolveLandedItem();
+    setResult(picked);
+    onResult?.(picked);
+    playMusic(resultSound);
+  }
+
+  function startMomentum(v0: number) {
+    const sign = v0 >= 0 ? 1 : -1;
+    let speed = Math.abs(v0);
+    let last = performance.now();
+    function step(now: number) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      speed = Math.max(0, speed - DECEL_DEG_PER_S2 * dt);
+      const delta = speed * sign * dt;
+      rotationRef.current += delta;
+      setRotation(rotationRef.current);
+      emitTicksForDelta(delta);
+      if (speed <= MIN_MOMENTUM_VELOCITY) {
+        momentumRafRef.current = null;
+        finalizeSpin();
+        return;
+      }
+      momentumRafRef.current = requestAnimationFrame(step);
+    }
+    momentumRafRef.current = requestAnimationFrame(step);
+  }
+
+  function handleWheelPointerDown(e: React.PointerEvent) {
+    if (spinning || count === 0) return;
+    stopMomentum();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // 일부 환경(합성 이벤트 등)에서 캡처가 안 될 수 있어도 드래그 자체는 계속 진행한다.
+    }
+    activePointerIdRef.current = e.pointerId;
+    draggingRef.current = true;
+    didDragRef.current = false;
+    lastAngleRef.current = angleFromPoint(e.clientX, e.clientY);
+    velocitySamplesRef.current = [{ t: performance.now(), angle: rotationRef.current }];
+    tickAccumRef.current = 0;
+    setResult(null);
+    setUseCssTransition(false);
+    setSpinning(true);
+  }
+
+  function handleWheelPointerMove(e: React.PointerEvent) {
+    if (!draggingRef.current || e.pointerId !== activePointerIdRef.current) return;
+    const angle = angleFromPoint(e.clientX, e.clientY);
+    let delta = angle - lastAngleRef.current;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    if (Math.abs(delta) > DRAG_MOVE_THRESHOLD) didDragRef.current = true;
+    lastAngleRef.current = angle;
+    rotationRef.current += delta;
+    setRotation(rotationRef.current);
+    emitTicksForDelta(delta);
+    const now = performance.now();
+    const samples = velocitySamplesRef.current;
+    samples.push({ t: now, angle: rotationRef.current });
+    while (samples.length > 2 && now - samples[0].t > 120) samples.shift();
+  }
+
+  function endDrag(pointerId: number) {
+    if (!draggingRef.current || pointerId !== activePointerIdRef.current) return;
+    draggingRef.current = false;
+    const samples = velocitySamplesRef.current;
+    let v0 = 0;
+    if (samples.length >= 2) {
+      const first = samples[0];
+      const last = samples[samples.length - 1];
+      const dt = (last.t - first.t) / 1000;
+      if (dt > 0.005) v0 = (last.angle - first.angle) / dt;
+    }
+    if (Math.abs(v0) > MIN_RELEASE_VELOCITY) {
+      startMomentum(v0);
+    } else if (didDragRef.current) {
+      finalizeSpin();
+    } else {
+      setSpinning(false);
+    }
+  }
+
+  function handleWheelPointerUp(e: React.PointerEvent) {
+    endDrag(e.pointerId);
+  }
+
+  function handleWheelPointerCancel(e: React.PointerEvent) {
+    if (e.pointerId !== activePointerIdRef.current) return;
+    draggingRef.current = false;
+    stopMomentum();
+    setSpinning(false);
+  }
+
   function spin() {
     if (spinning || count === 0) return;
     if (timerRef.current) clearTimeout(timerRef.current);
+    stopMomentum();
     stopMusicRef.current();
 
     setResult(null);
     setSpinning(true);
+    setUseCssTransition(true);
     const targetIndex = pickRandomIndex(count);
     const next = computeSpinRotation({ targetIndex, itemCount: count, currentRotation: rotation });
+    rotationRef.current = next;
 
     // 업로드한 회전음이 있으면 그 소리 길이에 맞춰 회전 시간을 늘리거나 줄인다 —
     // 실제 녹음된 소리(예: 진짜 룰렛 소리)는 이미 그 안에 감속하는 리듬이 들어있어서,
@@ -109,6 +289,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
 
     timerRef.current = setTimeout(() => {
       setSpinning(false);
+      setUseCssTransition(false);
       const picked = items[targetIndex];
       setResult(picked);
       onResult?.(picked);
@@ -128,19 +309,34 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
 
   const spinStyle = {
     transform: `rotate(${rotation}deg)`,
-    transition: spinning ? `transform ${spinMs}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
+    transition: useCssTransition ? `transform ${spinMs}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
   };
 
   return (
     <div className="flex flex-col items-center py-4 pb-2">
-      <div className="relative w-full max-w-[420px] aspect-square">
+      <div
+        ref={wheelBoxRef}
+        className="relative w-full max-w-[420px] aspect-square touch-none cursor-grab active:cursor-grabbing"
+        onPointerDown={handleWheelPointerDown}
+        onPointerMove={handleWheelPointerMove}
+        onPointerUp={handleWheelPointerUp}
+        onPointerCancel={handleWheelPointerCancel}
+      >
         <div
           className="absolute inset-0"
           style={{ ...spinStyle, filter: 'drop-shadow(0 14px 24px rgba(110, 62, 18, 0.28))' }}
         >
           <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full">
             {slices.map((s) => (
-              <path key={s.id} d={s.path} fill={s.color} stroke="#fff8ea" strokeWidth={3} />
+              <path
+                key={s.id}
+                d={s.path}
+                fill={s.color}
+                stroke="#fff8ea"
+                strokeWidth={3}
+                onClick={editable ? () => handleSliceClick(s.id) : undefined}
+                style={editable && !spinning ? { cursor: 'pointer' } : undefined}
+              />
             ))}
             {slices.map((s) => (
               <text
@@ -151,11 +347,13 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="fill-white font-title-md font-bold"
+                onClick={editable ? () => handleSliceClick(s.id) : undefined}
                 style={{
                   fontSize,
                   paintOrder: 'stroke',
                   stroke: 'rgba(21,28,34,0.35)',
                   strokeWidth: 3,
+                  cursor: editable && !spinning ? 'pointer' : undefined,
                 }}
               >
                 {s.label}
@@ -184,6 +382,37 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
           <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
         </button>
       </div>
+
+      {editable && editingItemId && (
+        <div className="mt-5 flex w-full max-w-[360px] items-center gap-2 rounded-2xl border border-primary bg-surface-container-lowest px-3 py-2.5 shadow-sm">
+          <input
+            autoFocus
+            value={itemDraft}
+            onChange={(e) => setItemDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitItemEdit();
+              if (e.key === 'Escape') setEditingItemId(null);
+            }}
+            className="min-w-0 flex-1 bg-transparent font-body-md text-body-md text-on-surface outline-none"
+          />
+          <button
+            type="button"
+            onClick={commitItemEdit}
+            aria-label={t('gameAdmin.itemEditSave')}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">check</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditingItemId(null)}
+            aria-label={t('common.cancel')}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+      )}
 
       <button
         onClick={spin}

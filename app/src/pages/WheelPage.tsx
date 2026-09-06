@@ -143,6 +143,12 @@ export default function WheelPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  /** 돌림판에서 조각을 탭해서 바로 이름을 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
   async function clearAllItems() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameWheel.clearAllConfirm'))) return;
@@ -388,6 +394,8 @@ export default function WheelPage() {
               music={WHEEL_SPIN_SOUND}
               resultSound={resolveResultSound(selected.config.resultSound)}
               onResult={handleResult}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
             />
 
             <div className="flex flex-wrap items-center justify-center gap-4 mt-4">

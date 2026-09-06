@@ -1367,6 +1367,7 @@ const en: Ko = {
     renameInlineHint: 'Tap to rename',
     itemCountLabel: '{{count}} items',
     addItemQuick: 'Add item',
+    itemEditSave: 'Save',
     removeItemQuick: 'Remove item',
     finishEditingButton: 'Finish & start',
     editQuestionsButton: '✏️ Edit questions',

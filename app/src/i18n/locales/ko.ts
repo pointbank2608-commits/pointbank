@@ -1364,6 +1364,7 @@ const ko = {
     renameInlineHint: '탭해서 이름 수정',
     itemCountLabel: '항목 {{count}}개',
     addItemQuick: '항목 추가',
+    itemEditSave: '저장',
     removeItemQuick: '항목 빼기',
     finishEditingButton: '완료하고 시작하기',
     editQuestionsButton: '✏️ 문제 수정하기',

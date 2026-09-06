@@ -168,6 +168,11 @@ function wheelTickClick(time: number, strength: number) {
   src.start(time);
 }
 
+/** 손으로 돌림판을 직접 드래그할 때 실시간으로 한 번 울리는 딸깍음(스케줄이 아니라 그 즉시). */
+export function playWheelTickOnce(strength = 0.6) {
+  wheelTickClick(ctx().currentTime, strength);
+}
+
 /**
  * 돌림판이 실제로 도는 것처럼: 회전 각도가 일정 간격을 지날 때마다 짧은 클릭음을 하나씩
  * 울린다. 화면의 CSS 회전과 같은 이징 곡선을 그대로 샘플링해서 언제 각 클릭이 울려야
