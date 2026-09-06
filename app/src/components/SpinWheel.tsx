@@ -10,7 +10,7 @@ interface Props {
   resultSound?: MusicSelection | null;
   /** 항목 하나를 선택할 때마다 화면 밖으로 알려준다 (최근 결과 기록 등에 사용). */
   onResult?: (item: GameItem) => void;
-  /** true면 조각을 탭해서 그 자리에서 이름을 바로 수정할 수 있다(선생님용 실제 플레이 화면에서만). */
+  /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
   /** 상단 이름 표시/수정 + 항목 개수 +/- 툴바. GameThemeFrame 안(전체화면 포함)에서도
@@ -66,8 +66,7 @@ export default function SpinWheel({
   const [useCssTransition, setUseCssTransition] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
   const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [itemDraft, setItemDraft] = useState('');
+  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -110,10 +109,11 @@ export default function SpinWheel({
   const slice = count > 0 ? 360 / count : 0;
   const fontSize = fontSizeFor(count);
 
-  // 항목이 늘거나 줄면(+/− 버튼 등) 편집 중이던 항목이 사라졌을 수 있으니 편집 상태를 닫는다.
+  // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
+  // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
   useEffect(() => {
-    setEditingItemId(null);
-  }, [count]);
+    setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
+  }, [items]);
 
   const slices = useMemo(() => {
     return items.map((item, i) => {
@@ -128,19 +128,13 @@ export default function SpinWheel({
     });
   }, [items, slice]);
 
-  function handleSliceClick(itemId: string) {
-    if (didDragRef.current) return;
-    if (!editable || spinning) return;
-    const item = items.find((i) => i.id === itemId);
-    if (!item) return;
-    setEditingItemId(itemId);
-    setItemDraft(item.label);
+  function handleItemDraftChange(id: string, value: string) {
+    setItemDrafts((prev) => ({ ...prev, [id]: value }));
   }
 
-  function commitItemEdit() {
-    const trimmed = itemDraft.trim();
-    if (editingItemId && trimmed) onEditItem?.(editingItemId, trimmed);
-    setEditingItemId(null);
+  function commitItemDraft(id: string) {
+    const value = (itemDrafts[id] ?? '').trim();
+    if (value) onEditItem?.(id, value);
   }
 
   function startEditTemplateName() {
@@ -343,177 +337,159 @@ export default function SpinWheel({
   };
 
   return (
-    <div className="flex flex-col items-center py-4 pb-2">
-      {editable && (
-        <div className="mb-3 flex w-full max-w-[640px] flex-wrap items-center justify-between gap-3">
-          {editingTemplateName ? (
-            <input
-              autoFocus
-              value={templateNameDraft}
-              onChange={(e) => setTemplateNameDraft(e.target.value)}
-              onBlur={commitTemplateNameEdit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitTemplateNameEdit();
-                if (e.key === 'Escape') setEditingTemplateName(false);
-              }}
-              className="min-w-0 flex-1 font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 -mx-2 outline-none"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={startEditTemplateName}
-              title={t('gameAdmin.renameInlineHint')}
-              className="min-w-0 truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 -mx-2 text-left transition-colors"
-            >
-              {templateName}
-            </button>
+    <div className="flex w-full flex-col items-center py-4 pb-2">
+      <div
+        className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+      >
+        <div className="flex flex-col items-center">
+          {editable &&
+            (editingTemplateName ? (
+              <input
+                autoFocus
+                value={templateNameDraft}
+                onChange={(e) => setTemplateNameDraft(e.target.value)}
+                onBlur={commitTemplateNameEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTemplateNameEdit();
+                  if (e.key === 'Escape') setEditingTemplateName(false);
+                }}
+                className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={startEditTemplateName}
+                title={t('gameAdmin.renameInlineHint')}
+                className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
+              >
+                {templateName}
+              </button>
+            ))}
+          {editable && (
+            <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+              {t('gameWheel.editHint')}
+            </div>
           )}
-          <div className="flex shrink-0 items-center gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
-            <button
-              type="button"
-              onClick={onRemoveItem}
-              disabled={count <= 1}
-              aria-label={t('gameAdmin.removeItemQuick')}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          <div
+            ref={wheelBoxRef}
+            className="relative w-full max-w-[560px] aspect-square touch-none cursor-grab active:cursor-grabbing"
+            onPointerDown={handleWheelPointerDown}
+            onPointerMove={handleWheelPointerMove}
+            onPointerUp={handleWheelPointerUp}
+            onPointerCancel={handleWheelPointerCancel}
+          >
+            <div
+              className="absolute inset-0"
+              style={{ ...spinStyle, filter: 'drop-shadow(0 14px 24px rgba(110, 62, 18, 0.28))' }}
             >
-              <span className="material-symbols-outlined text-[20px]">remove</span>
-            </button>
-            <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
-              {t('gameAdmin.itemCountLabel', { count })}
-            </span>
+              <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full">
+                {slices.map((s) => (
+                  <path key={s.id} d={s.path} fill={s.color} stroke="#fff8ea" strokeWidth={3} />
+                ))}
+                {slices.map((s) => (
+                  <text
+                    key={s.id + '-label'}
+                    x={CX}
+                    y={CY - R * 0.58}
+                    transform={`rotate(${s.mid} ${CX} ${CY})`}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="fill-white font-title-md font-bold"
+                    style={{
+                      fontSize,
+                      paintOrder: 'stroke',
+                      stroke: 'rgba(21,28,34,0.35)',
+                      strokeWidth: 3,
+                    }}
+                  >
+                    {s.label}
+                  </text>
+                ))}
+              </svg>
+              <img src={RIM_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none" />
+            </div>
+
+            <img
+              src={POINTER_SRC}
+              alt=""
+              draggable={false}
+              className="pointer-events-none absolute left-1/2 z-20 w-[11%] -translate-x-1/2 select-none"
+              style={{ top: '-3.3%', filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
+            />
+
             <button
-              type="button"
-              onClick={onAddItem}
-              aria-label={t('gameAdmin.addItemQuick')}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+              onClick={spin}
+              disabled={spinning}
+              aria-label={t('gameWheel.spinAriaLabel')}
+              title={t('gameWheel.spinButton')}
+              className="absolute top-1/2 left-1/2 z-10 h-[22%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
+              style={{ filter: 'drop-shadow(0 4px 7px rgba(90, 40, 10, 0.28))' }}
             >
-              <span className="material-symbols-outlined text-[20px]">add</span>
+              <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
             </button>
           </div>
+
+          <button
+            onClick={spin}
+            disabled={spinning}
+            className="mt-5 px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
+          >
+            {spinning ? t('gameWheel.spinning') : t('gameWheel.spinButton')}
+          </button>
+
+          {result && !spinning && (
+            <div
+              key={result.id + result.label}
+              className="mt-4 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
+            >
+              <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
+              <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
+            </div>
+          )}
         </div>
-      )}
-      {editable && (
-        <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
-          {t('gameWheel.editHint')}
-        </div>
-      )}
-      <div
-        ref={wheelBoxRef}
-        className="relative w-full max-w-[640px] aspect-square touch-none cursor-grab active:cursor-grabbing"
-        onPointerDown={handleWheelPointerDown}
-        onPointerMove={handleWheelPointerMove}
-        onPointerUp={handleWheelPointerUp}
-        onPointerCancel={handleWheelPointerCancel}
-      >
-        <div
-          className="absolute inset-0"
-          style={{ ...spinStyle, filter: 'drop-shadow(0 14px 24px rgba(110, 62, 18, 0.28))' }}
-        >
-          <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full">
-            {slices.map((s) => (
-              <path
-                key={s.id}
-                d={s.path}
-                fill={s.color}
-                stroke="#fff8ea"
-                strokeWidth={3}
-                onClick={editable ? () => handleSliceClick(s.id) : undefined}
-                style={editable && !spinning ? { cursor: 'pointer' } : undefined}
-              />
-            ))}
-            {slices.map((s) => (
-              <text
-                key={s.id + '-label'}
-                x={CX}
-                y={CY - R * 0.58}
-                transform={`rotate(${s.mid} ${CX} ${CY})`}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-white font-title-md font-bold"
-                onClick={editable ? () => handleSliceClick(s.id) : undefined}
-                style={{
-                  fontSize,
-                  paintOrder: 'stroke',
-                  stroke: 'rgba(21,28,34,0.35)',
-                  strokeWidth: 3,
-                  cursor: editable && !spinning ? 'pointer' : undefined,
-                }}
+
+        {editable && (
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+            <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={onRemoveItem}
+                disabled={count <= 1}
+                aria-label={t('gameAdmin.removeItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {s.label}
-              </text>
-            ))}
-          </svg>
-          <img src={RIM_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none" />
-        </div>
-
-        <img
-          src={POINTER_SRC}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute left-1/2 z-20 w-[11%] -translate-x-1/2 select-none"
-          style={{ top: '-3.3%', filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
-        />
-
-        <button
-          onClick={spin}
-          disabled={spinning}
-          aria-label={t('gameWheel.spinAriaLabel')}
-          title={t('gameWheel.spinButton')}
-          className="absolute top-1/2 left-1/2 z-10 h-[22%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
-          style={{ filter: 'drop-shadow(0 4px 7px rgba(90, 40, 10, 0.28))' }}
-        >
-          <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
-        </button>
+                <span className="material-symbols-outlined text-[20px]">remove</span>
+              </button>
+              <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                {t('gameAdmin.itemCountLabel', { count })}
+              </span>
+              <button
+                type="button"
+                onClick={onAddItem}
+                aria-label={t('gameAdmin.addItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+              </button>
+            </div>
+            <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
+              {items.map((item, i) => (
+                <input
+                  key={item.id}
+                  value={itemDrafts[item.id] ?? item.label}
+                  onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+                  onBlur={() => commitItemDraft(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
+                  style={{ color: colorFor(i) }}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {editable && editingItemId && (
-        <div className="mt-5 flex w-full max-w-[360px] items-center gap-2 rounded-2xl border border-primary bg-surface-container-lowest px-3 py-2.5 shadow-sm">
-          <input
-            autoFocus
-            value={itemDraft}
-            onChange={(e) => setItemDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitItemEdit();
-              if (e.key === 'Escape') setEditingItemId(null);
-            }}
-            className="min-w-0 flex-1 bg-transparent font-body-md text-body-md text-on-surface outline-none"
-          />
-          <button
-            type="button"
-            onClick={commitItemEdit}
-            aria-label={t('gameAdmin.itemEditSave')}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">check</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditingItemId(null)}
-            aria-label={t('common.cancel')}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        </div>
-      )}
-
-      <button
-        onClick={spin}
-        disabled={spinning}
-        className="mt-5 px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
-      >
-        {spinning ? t('gameWheel.spinning') : t('gameWheel.spinButton')}
-      </button>
-
-      {result && !spinning && (
-        <div
-          key={result.id + result.label}
-          className="mt-4 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
-        >
-          <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
-          <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
-        </div>
-      )}
     </div>
   );
 }

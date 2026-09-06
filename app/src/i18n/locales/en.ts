@@ -33,7 +33,7 @@ const en: Ko = {
     clearAllConfirm: 'Delete all the registered items?',
     noItemsCard: 'This wheel has no items yet. Add some below.',
     spinAriaLabel: 'Spin',
-    editHint: '💡 Tap a slice to rename it. You can also grab the wheel and spin it by hand.',
+    editHint: '💡 Rename items in the list on the right. You can also grab the wheel and spin it by hand.',
     spinning: 'Spinning…',
     spinButton: 'Spin',
     winnerLabel: 'Winner',

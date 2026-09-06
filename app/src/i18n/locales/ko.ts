@@ -31,7 +31,7 @@ const ko = {
     clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
     noItemsCard: '돌림판에 항목이 없습니다. 아래에서 항목을 추가해 주세요.',
     spinAriaLabel: '돌리기',
-    editHint: '💡 조각을 탭하면 이름을 바로 바꿀 수 있어요. 손으로 잡고 돌리면 직접 돌릴 수도 있어요.',
+    editHint: '💡 오른쪽 목록에서 항목 이름을 바로 바꿀 수 있어요. 손으로 잡고 돌리면 직접 돌릴 수도 있어요.',
     spinning: '돌아가는 중…',
     spinButton: '돌리기',
     winnerLabel: '당첨',
