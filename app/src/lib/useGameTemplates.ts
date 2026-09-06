@@ -158,9 +158,10 @@ export function useGameTemplates(params: {
     }
   }
 
-  async function handleCreate() {
+  /** explicitName을 주면(이름 입력 없이 바로 만들기 등) newName 상태와 무관하게 그 이름으로 만든다. */
+  async function handleCreate(explicitName?: string) {
     if (!academy?.id || !profile || !classId) return false;
-    const name = newName.trim();
+    const name = (explicitName ?? newName).trim();
     if (!name) {
       notify(t('gameAdmin.nameRequiredError'), 'error');
       return false;

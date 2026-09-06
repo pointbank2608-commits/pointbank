@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
@@ -57,8 +57,6 @@ export default function WheelPage() {
     showCreateForm,
     setShowCreateForm,
     submitting,
-    newName,
-    setNewName,
     newScope,
     setNewScope,
     handleCreate,
@@ -87,6 +85,18 @@ export default function WheelPage() {
     setPlayItems(selected?.items ?? []);
     setRecent([]);
   }, [selected]);
+
+  // 이 반에 돌림판이 하나도 없으면, "+ 새 돌림판" 클릭 없이 바로 기본 돌림판을 하나
+  // 만들어준다 — 이름 입력·만들기 클릭 같은 절차 없이 처음부터 이름 수정·항목 +/- 를
+  // 바로 쓸 수 있게 하기 위함(이름은 나중에 화면에서 탭해서 바꾸면 됨).
+  const autoCreatingRef = useRef(false);
+  useEffect(() => {
+    if (!isStaff || loading || !classId || templates.length > 0 || autoCreatingRef.current) return;
+    autoCreatingRef.current = true;
+    void handleCreate(t('gameWheel.defaultTemplateName')).finally(() => {
+      autoCreatingRef.current = false;
+    });
+  }, [isStaff, loading, classId, templates.length, handleCreate, t]);
 
   function resetPlayItems() {
     setPlayItems(selected?.items ?? []);
@@ -241,25 +251,6 @@ export default function WheelPage() {
 
   const createForm = isStaff && showCreateForm && (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
-      <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
-        <span aria-hidden="true">💬</span>
-        <span>{t('gameAdmin.createHelp')}</span>
-      </div>
-      <div>
-        <label htmlFor="wname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
-          {t('gameAdmin.nameFieldLabel')}
-        </label>
-        <input
-          id="wname"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder={t('gameWheel.namePlaceholder')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') void handleCreate();
-          }}
-          className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2.5 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-        />
-      </div>
       <div>
         <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">{t('gameAdmin.visibilityLabel')}</label>
         <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
@@ -285,7 +276,7 @@ export default function WheelPage() {
       </div>
       <div className="flex gap-2">
         <button
-          onClick={() => void handleCreate()}
+          onClick={() => void handleCreate(t('gameWheel.defaultTemplateName'))}
           disabled={submitting}
           className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
         >

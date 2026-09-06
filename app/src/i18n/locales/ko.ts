@@ -18,6 +18,7 @@ const ko = {
     defaultItem: '항목 {{n}}',
     studentClassTitle: '{{className}} 돌림판',
     newButton: '+ 새 돌림판',
+    defaultTemplateName: '새 돌림판',
     namePlaceholder: '예: 발표 순서 뽑기',
     emptyStaff: '아직 돌림판이 없어요. 아래 "+ 새 돌림판"으로 첫 돌림판을 만들어보세요!',
     emptyStudent: '아직 선생님이 만든 돌림판이 없어요.',

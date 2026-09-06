@@ -20,6 +20,7 @@ const en: Ko = {
     defaultItem: 'Item {{n}}',
     studentClassTitle: "{{className}}'s Spin Wheel",
     newButton: '+ New wheel',
+    defaultTemplateName: 'New wheel',
     namePlaceholder: 'e.g. Who presents next',
     emptyStaff: 'No wheels yet. Tap "+ New wheel" below to make your first one!',
     emptyStudent: "Your teacher hasn't made a wheel yet.",
