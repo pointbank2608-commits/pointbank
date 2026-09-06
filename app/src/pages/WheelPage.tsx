@@ -413,6 +413,8 @@ export default function WheelPage() {
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
                     <div className="pt-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px]">
+                    <div className="flex-1 [&>div]:my-0">
                       <StudentRosterPicker
                         roster={roster}
                         existingLabels={selected.items.map((i) => i.label)}
@@ -421,7 +423,7 @@ export default function WheelPage() {
                         loading={rosterLoading}
                         onAdd={(labels) => void addItemsBulk(labels)}
                       />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
+                    </div>
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
