@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
-import GameMusicPicker from '../components/GameMusicPicker';
 import GameThemeFrame, { useGamePlay } from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
@@ -13,7 +12,6 @@ import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
-import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -35,6 +33,14 @@ const WHEEL_SPIN_SOUND: MusicSelection = {
   path: '',
   name: '돌림판 회전음',
   url: '/sounds/wheel-spin.mp3?v=2',
+};
+
+/** 당첨 결과 사운드도 회전음과 같은 이유로 커스터마이즈 UI 없이 이 파일로 고정한다. */
+const WHEEL_RESULT_SOUND: MusicSelection = {
+  kind: 'upload',
+  path: '',
+  name: '돌림판 결과음',
+  url: '/sounds/wheel-result.m4a?v=1',
 };
 
 /** 최근 결과 목록. 전체화면 중엔 안 보여준다 — 스핀 후 이게 새로 나타나면 GameThemeFrame의
@@ -66,7 +72,6 @@ export default function WheelPage() {
   const g = useGameTemplates({ gameType: 'wheel', defaultItems });
   const {
     isStaff,
-    academy,
     classes,
     staffClassId,
     selectClass,
@@ -205,18 +210,6 @@ export default function WheelPage() {
   async function removeLastItem() {
     if (!selected || selected.items.length <= 1) return;
     await persistItems(selected.items.slice(0, -1));
-  }
-
-  async function handleResultSoundChange(resultSound: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
-    }
   }
 
   /* ---------------- 렌더 ---------------- */
@@ -370,7 +363,7 @@ export default function WheelPage() {
             <SpinWheel key={roundKey}
               items={playItems}
               music={WHEEL_SPIN_SOUND}
-              resultSound={resolveResultSound(selected.config.resultSound)}
+              resultSound={WHEEL_RESULT_SOUND}
               onResult={handleResult}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
@@ -419,18 +412,6 @@ export default function WheelPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
-                    <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    {academy && (
-                      <GameMusicPicker
-                        academyId={academy.id}
-                        isStaff={isStaff}
-                        label={t('gameWheel.resultSoundLabel')}
-                        value={resolveResultSound(selected.config.resultSound)}
-                        onChange={(m) => void handleResultSoundChange(m)}
-                      />
-                    )}
-
                     <div className="pt-3">
                       <StudentRosterPicker
                         roster={roster}
@@ -502,6 +483,11 @@ export default function WheelPage() {
                           {t('gameAdmin.addParticipant')}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}
