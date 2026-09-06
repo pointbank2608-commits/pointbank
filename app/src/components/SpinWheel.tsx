@@ -39,7 +39,7 @@ const MIN_MOMENTUM_VELOCITY = 6;
 const DRAG_MOVE_THRESHOLD = 0.6;
 
 const RIM_SRC = '/skins/wheel-rim.png';
-const HUB_SRC = '/skins/wheel-hub-spin.png';
+const HUB_SRC = '/skins/wheel-hub-wood.png';
 const POINTER_SRC = '/skins/wheel-pointer.png';
 
 /** 화면 12시를 0도, 시계 방향으로 도는 각도 A 에서의 좌표. */
@@ -339,7 +339,7 @@ export default function SpinWheel({
   return (
     <div className="flex w-full flex-col items-center py-4 pb-2">
       <div
-        className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+        className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex flex-col items-center">
           {editable &&
@@ -409,6 +409,26 @@ export default function SpinWheel({
               <img src={RIM_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none" />
             </div>
 
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                spin();
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              disabled={spinning}
+              aria-label={t('gameWheel.spinAriaLabel')}
+              title={t('gameWheel.spinButton')}
+              className="absolute left-1/2 top-1/2 z-10 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 transition-[filter] hover:enabled:brightness-105 active:enabled:brightness-95 disabled:cursor-default disabled:opacity-70"
+            >
+              <img
+                src={HUB_SRC}
+                alt=""
+                draggable={false}
+                className="pointer-events-none block w-full select-none"
+                style={{ filter: 'drop-shadow(0 4px 6px rgba(90,50,10,0.28))' }}
+              />
+            </button>
             <img
               src={POINTER_SRC}
               alt=""
@@ -416,17 +436,6 @@ export default function SpinWheel({
               className="pointer-events-none absolute left-1/2 z-20 w-[11%] -translate-x-1/2 select-none"
               style={{ top: '-3.3%', filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
             />
-
-            <button
-              onClick={spin}
-              disabled={spinning}
-              aria-label={t('gameWheel.spinAriaLabel')}
-              title={t('gameWheel.spinButton')}
-              className="absolute top-1/2 left-1/2 z-10 h-[22%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
-              style={{ filter: 'drop-shadow(0 4px 7px rgba(90, 40, 10, 0.28))' }}
-            >
-              <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
-            </button>
           </div>
 
           <button
