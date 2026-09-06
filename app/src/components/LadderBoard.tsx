@@ -10,6 +10,14 @@ interface Props {
   results: GameItem[];
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
+  /** true면 이름 인라인 수정 + 참가자/결과 목록 패널 + 사다리 +/- 를 보여준다(선생님용 실제 플레이 화면에서만). */
+  editable?: boolean;
+  onEditParticipant?: (id: string, label: string) => void;
+  onEditResult?: (id: string, label: string) => void;
+  onAddColumn?: () => void;
+  onRemoveColumn?: () => void;
+  templateName?: string;
+  onRenameTemplate?: (name: string) => void;
 }
 
 type Mode = 'all' | 'one';
@@ -36,7 +44,19 @@ function plaqueStyle(index: number, emphasized = false): CSSProperties {
   };
 }
 
-export default function LadderBoard({ participants, results, music, resultSound }: Props) {
+export default function LadderBoard({
+  participants,
+  results,
+  music,
+  resultSound,
+  editable,
+  onEditParticipant,
+  onEditResult,
+  onAddColumn,
+  onRemoveColumn,
+  templateName,
+  onRenameTemplate,
+}: Props) {
   const { t } = useTranslation();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('all');
@@ -44,10 +64,51 @@ export default function LadderBoard({ participants, results, music, resultSound 
   const [mapping, setMapping] = useState<number[] | null>(null);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
   const [runningSet, setRunningSet] = useState<Set<number>>(new Set());
+  const [participantDrafts, setParticipantDrafts] = useState<Record<string, string>>({});
+  const [resultDrafts, setResultDrafts] = useState<Record<string, string>>({});
+  const [editingTemplateName, setEditingTemplateName] = useState(false);
+  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const stopMusicRef = useRef<() => void>(() => {});
   const oneStopsRef = useRef<(() => void)[]>([]);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    setParticipantDrafts(Object.fromEntries(participants.map((p) => [p.id, p.label])));
+  }, [participants]);
+
+  useEffect(() => {
+    setResultDrafts(Object.fromEntries(results.map((r) => [r.id, r.label])));
+  }, [results]);
+
+  function handleParticipantDraftChange(id: string, value: string) {
+    setParticipantDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function commitParticipantDraft(id: string) {
+    const value = (participantDrafts[id] ?? '').trim();
+    if (value) onEditParticipant?.(id, value);
+  }
+
+  function handleResultDraftChange(id: string, value: string) {
+    setResultDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function commitResultDraft(id: string) {
+    const value = (resultDrafts[id] ?? '').trim();
+    if (value) onEditResult?.(id, value);
+  }
+
+  function startEditTemplateName() {
+    setTemplateNameDraft(templateName ?? '');
+    setEditingTemplateName(true);
+  }
+
+  function commitTemplateNameEdit() {
+    const trimmed = templateNameDraft.trim();
+    setEditingTemplateName(false);
+    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
+  }
 
   // 게임을 시작하기 전(참가자만 편집 중)에는 세로줄 + 이름 칸만 미리 보여준다.
   // 실제로 사다리를 탄 적이 없는 동안은(mapping === null) 참가자 수가 바뀔 때마다 빈 틀을 다시 맞춘다.
@@ -198,6 +259,37 @@ export default function LadderBoard({ participants, results, music, resultSound 
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
+      {editable &&
+        (editingTemplateName ? (
+          <input
+            autoFocus
+            value={templateNameDraft}
+            onChange={(e) => setTemplateNameDraft(e.target.value)}
+            onBlur={commitTemplateNameEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitTemplateNameEdit();
+              if (e.key === 'Escape') setEditingTemplateName(false);
+            }}
+            className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={startEditTemplateName}
+            title={t('gameAdmin.renameInlineHint')}
+            className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
+          >
+            {templateName}
+          </button>
+        ))}
+      {editable && (
+        <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+          {t('gameLadder.editHint')}
+        </div>
+      )}
+
+      <div className={`flex max-w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}>
+      <div className="flex min-w-0 max-w-full flex-col items-center">
       <div className="flex flex-wrap justify-center gap-2.5 mb-6">
         <button
           onClick={startRevealAll}
@@ -257,48 +349,78 @@ export default function LadderBoard({ participants, results, music, resultSound 
           })}
         </div>
 
-        <svg
-          className="block"
-          viewBox={`0 0 ${width} ${height}`}
-          style={{ width, height, filter: 'drop-shadow(0 10px 18px rgba(110, 62, 18, 0.18))' }}
-        >
-          {Array.from({ length: n }, (_, i) => (
-            <image
-              key={`col-${i}`}
-              href={RAIL_SRC}
-              x={COL_W / 2 + i * COL_W - RAIL_W / 2}
-              y={TOP_PAD}
-              width={RAIL_W}
-              height={railH}
-              preserveAspectRatio="none"
-            />
-          ))}
-          {rungLines.map((l) => (
-            <image
-              key={l.key}
-              href={RUNG_SRC}
-              x={l.x1}
-              y={l.y - RUNG_H / 2}
-              width={l.x2 - l.x1}
-              height={RUNG_H}
-              preserveAspectRatio="none"
-            />
-          ))}
-          {paths.map((p, i) => (
-            <path
-              key={p.id}
-              ref={(el) => {
-                pathRefs.current[i] = el;
-              }}
-              d={p.d}
-              fill="none"
-              strokeWidth={10}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ stroke: p.color }}
-            />
-          ))}
-        </svg>
+        <div className="relative" style={{ width, height }}>
+          <svg
+            className="block"
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ width, height, filter: 'drop-shadow(0 10px 18px rgba(110, 62, 18, 0.18))' }}
+          >
+            {Array.from({ length: n }, (_, i) => (
+              <image
+                key={`col-${i}`}
+                href={RAIL_SRC}
+                x={COL_W / 2 + i * COL_W - RAIL_W / 2}
+                y={TOP_PAD}
+                width={RAIL_W}
+                height={railH}
+                preserveAspectRatio="none"
+              />
+            ))}
+            {rungLines.map((l) => (
+              <image
+                key={l.key}
+                href={RUNG_SRC}
+                x={l.x1}
+                y={l.y - RUNG_H / 2}
+                width={l.x2 - l.x1}
+                height={RUNG_H}
+                preserveAspectRatio="none"
+              />
+            ))}
+            {paths.map((p, i) => (
+              <path
+                key={p.id}
+                ref={(el) => {
+                  pathRefs.current[i] = el;
+                }}
+                d={p.d}
+                fill="none"
+                strokeWidth={10}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ stroke: p.color }}
+              />
+            ))}
+          </svg>
+
+          {editable && (
+            <div
+              className="absolute flex flex-col items-center gap-2"
+              style={{ left: width + 12, top: TOP_PAD + railH / 2, transform: 'translateY(-50%)' }}
+            >
+              <button
+                type="button"
+                onClick={onAddColumn}
+                disabled={busy}
+                aria-label={t('gameLadder.addColumnAriaLabel')}
+                title={t('gameLadder.addColumnAriaLabel')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+              </button>
+              <button
+                type="button"
+                onClick={onRemoveColumn}
+                disabled={n <= 2 || busy}
+                aria-label={t('gameLadder.removeColumnAriaLabel')}
+                title={t('gameLadder.removeColumnAriaLabel')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">remove</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="flex mt-4 items-stretch" style={{ width }}>
           {results.map((r, i) => (
@@ -347,6 +469,53 @@ export default function LadderBoard({ participants, results, music, resultSound 
           </button>
         </div>
       )}
+      </div>
+
+      {editable && (
+        <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
+          <div>
+            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+              {t('gameLadder.participantsPanelLabel')}
+            </div>
+            <div className="space-y-1.5">
+              {participants.map((p, i) => (
+                <input
+                  key={p.id}
+                  value={participantDrafts[p.id] ?? p.label}
+                  onChange={(e) => handleParticipantDraftChange(p.id, e.target.value)}
+                  onBlur={() => commitParticipantDraft(p.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
+                  style={{ color: colorFor(i) }}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+              {t('gameLadder.resultsPanelLabel')}
+            </div>
+            <div className="space-y-1.5">
+              {results.map((r, i) => (
+                <input
+                  key={r.id}
+                  value={resultDrafts[r.id] ?? r.label}
+                  onChange={(e) => handleResultDraftChange(r.id, e.target.value)}
+                  onBlur={() => commitResultDraft(r.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
+                  style={{ color: colorFor(i) }}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }
