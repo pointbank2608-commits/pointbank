@@ -13,6 +13,12 @@ interface Props {
   /** true면 조각을 탭해서 그 자리에서 이름을 바로 수정할 수 있다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
+  /** 상단 이름 표시/수정 + 항목 개수 +/- 툴바. GameThemeFrame 안(전체화면 포함)에서도
+   * 보이도록 SpinWheel 자체에 둔다 — WheelPage 바깥에 두면 전체화면에서 안 보였다. */
+  templateName?: string;
+  onRenameTemplate?: (name: string) => void;
+  onAddItem?: () => void;
+  onRemoveItem?: () => void;
 }
 
 const SIZE = 420;
@@ -42,7 +48,18 @@ function pointOnCircle(angleDeg: number, radius: number) {
   return { x: CX + radius * Math.sin(rad), y: CY - radius * Math.cos(rad) };
 }
 
-export default function SpinWheel({ items, music, resultSound, onResult, editable, onEditItem }: Props) {
+export default function SpinWheel({
+  items,
+  music,
+  resultSound,
+  onResult,
+  editable,
+  onEditItem,
+  templateName,
+  onRenameTemplate,
+  onAddItem,
+  onRemoveItem,
+}: Props) {
   const { t } = useTranslation();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -51,6 +68,8 @@ export default function SpinWheel({ items, music, resultSound, onResult, editabl
   const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [itemDraft, setItemDraft] = useState('');
+  const [editingTemplateName, setEditingTemplateName] = useState(false);
+  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
@@ -122,6 +141,17 @@ export default function SpinWheel({ items, music, resultSound, onResult, editabl
     const trimmed = itemDraft.trim();
     if (editingItemId && trimmed) onEditItem?.(editingItemId, trimmed);
     setEditingItemId(null);
+  }
+
+  function startEditTemplateName() {
+    setTemplateNameDraft(templateName ?? '');
+    setEditingTemplateName(true);
+  }
+
+  function commitTemplateNameEdit() {
+    const trimmed = templateNameDraft.trim();
+    setEditingTemplateName(false);
+    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
   /** 12시를 0도, 시계 방향 증가로 재는 각도계 — pointOnCircle/computeSpinRotation과 동일. */
@@ -314,9 +344,62 @@ export default function SpinWheel({ items, music, resultSound, onResult, editabl
 
   return (
     <div className="flex flex-col items-center py-4 pb-2">
+      {editable && (
+        <div className="mb-3 flex w-full max-w-[640px] flex-wrap items-center justify-between gap-3">
+          {editingTemplateName ? (
+            <input
+              autoFocus
+              value={templateNameDraft}
+              onChange={(e) => setTemplateNameDraft(e.target.value)}
+              onBlur={commitTemplateNameEdit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitTemplateNameEdit();
+                if (e.key === 'Escape') setEditingTemplateName(false);
+              }}
+              className="min-w-0 flex-1 font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 -mx-2 outline-none"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={startEditTemplateName}
+              title={t('gameAdmin.renameInlineHint')}
+              className="min-w-0 truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 -mx-2 text-left transition-colors"
+            >
+              {templateName}
+            </button>
+          )}
+          <div className="flex shrink-0 items-center gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+            <button
+              type="button"
+              onClick={onRemoveItem}
+              disabled={count <= 1}
+              aria-label={t('gameAdmin.removeItemQuick')}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">remove</span>
+            </button>
+            <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+              {t('gameAdmin.itemCountLabel', { count })}
+            </span>
+            <button
+              type="button"
+              onClick={onAddItem}
+              aria-label={t('gameAdmin.addItemQuick')}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+            </button>
+          </div>
+        </div>
+      )}
+      {editable && (
+        <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+          {t('gameWheel.editHint')}
+        </div>
+      )}
       <div
         ref={wheelBoxRef}
-        className="relative w-full max-w-[420px] aspect-square touch-none cursor-grab active:cursor-grabbing"
+        className="relative w-full max-w-[640px] aspect-square touch-none cursor-grab active:cursor-grabbing"
         onPointerDown={handleWheelPointerDown}
         onPointerMove={handleWheelPointerMove}
         onPointerUp={handleWheelPointerUp}
@@ -367,8 +450,8 @@ export default function SpinWheel({ items, music, resultSound, onResult, editabl
           src={POINTER_SRC}
           alt=""
           draggable={false}
-          className="pointer-events-none absolute left-1/2 z-20 w-12 -translate-x-1/2 select-none"
-          style={{ top: -14, filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
+          className="pointer-events-none absolute left-1/2 z-20 w-[11%] -translate-x-1/2 select-none"
+          style={{ top: '-3.3%', filter: 'drop-shadow(0 3px 3px rgba(90,50,10,0.3))' }}
         />
 
         <button
@@ -376,7 +459,7 @@ export default function SpinWheel({ items, music, resultSound, onResult, editabl
           disabled={spinning}
           aria-label={t('gameWheel.spinAriaLabel')}
           title={t('gameWheel.spinButton')}
-          className="absolute top-1/2 left-1/2 z-10 h-[93px] w-[93px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
+          className="absolute top-1/2 left-1/2 z-10 h-[22%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent p-0 disabled:cursor-default disabled:opacity-75 hover:not-disabled:brightness-105 active:not-disabled:brightness-95 transition-[filter]"
           style={{ filter: 'drop-shadow(0 4px 7px rgba(90, 40, 10, 0.28))' }}
         >
           <img src={HUB_SRC} alt="" draggable={false} className="pointer-events-none h-full w-full select-none object-contain" />
