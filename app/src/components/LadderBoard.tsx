@@ -349,9 +349,9 @@ export default function LadderBoard({
           })}
         </div>
 
-        <div className="relative" style={{ width, height }}>
+        <div className="flex items-center" style={{ height }}>
           <svg
-            className="block"
+            className="block shrink-0"
             viewBox={`0 0 ${width} ${height}`}
             style={{ width, height, filter: 'drop-shadow(0 10px 18px rgba(110, 62, 18, 0.18))' }}
           >
@@ -394,9 +394,11 @@ export default function LadderBoard({
           </svg>
 
           {editable && (
+            // 사다리가 화면보다 넓어 가로 스크롤이 생겨도 +/- 는 보이는 영역 오른쪽 끝에
+            // 항상 붙어있어야(스크롤해서 찾아야 하는 게 아니라) 해서, 절대좌표 대신
+            // sticky로 스크롤 컨테이너(overflow-x-auto) 기준 오른쪽에 고정한다.
             <div
-              className="absolute flex flex-col items-center gap-2"
-              style={{ left: width + 12, top: TOP_PAD + railH / 2, transform: 'translateY(-50%)' }}
+              className="sticky right-2 z-10 ml-3 flex shrink-0 flex-col items-center gap-2"
             >
               <button
                 type="button"
@@ -404,7 +406,7 @@ export default function LadderBoard({
                 disabled={busy}
                 aria-label={t('gameLadder.addColumnAriaLabel')}
                 title={t('gameLadder.addColumnAriaLabel')}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary shadow-md hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">add</span>
               </button>
@@ -414,7 +416,7 @@ export default function LadderBoard({
                 disabled={n <= 2 || busy}
                 aria-label={t('gameLadder.removeColumnAriaLabel')}
                 title={t('gameLadder.removeColumnAriaLabel')}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant shadow-md hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">remove</span>
               </button>
