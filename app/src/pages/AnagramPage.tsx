@@ -102,10 +102,29 @@ export default function AnagramPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  /** 게임 화면에서 항목을 탭해서 바로 이름을 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
   async function clearAllItems() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameAnagram.clearAllConfirm'))) return;
     await persistItems([]);
+  }
+
+  async function addQuickItem() {
+    if (!selected) return;
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameAnagram.defaultItem', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
+    }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 1) return;
+    await persistItems(selected.items.slice(0, -1));
   }
 
   async function persistConfig(nextConfig: GameTemplateConfig) {
@@ -277,9 +296,11 @@ export default function AnagramPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          {!isStaff && (
+            <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+              {selected.name}
+            </h2>
+          )}
 
           <GameThemeFrame
             roster={roster}
@@ -289,6 +310,12 @@ export default function AnagramPage() {
             <Anagram key={roundKey}
               items={selected.items}
               boardStyle={selected.config.anagramStyle === 'tags' ? 'tags' : 'rack'}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
+              onAddItem={() => void addQuickItem()}
+              onRemoveItem={() => void removeLastItem()}
             />
           </GameThemeFrame>
 
@@ -301,20 +328,12 @@ export default function AnagramPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameAnagram.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 py-2">
@@ -342,17 +361,17 @@ export default function AnagramPage() {
 
                 {editorOpen && (
                   <div>
-                    <OpenInOtherGame currentType="anagram" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                    <div className="flex-1 [&>div]:my-0">
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
+                      />
+                    </div>
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
@@ -413,6 +432,11 @@ export default function AnagramPage() {
                       >
                         {t('gameAdmin.addParticipant')}
                       </button>
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-surface-container">
+                      <OpenInOtherGame currentType="anagram" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}

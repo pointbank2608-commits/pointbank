@@ -120,6 +120,25 @@ export default function SaveOrGivePage() {
     await persistItems([]);
   }
 
+  /** 게임 화면에서 항목을 탭해서 바로 이름을 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
+  async function addQuickItem() {
+    if (!selected) return;
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameSaveOrGive.defaultItem', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
+    }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 1) return;
+    await persistItems(selected.items.slice(0, -1));
+  }
+
   if (isStaff && classes.length === 0) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
@@ -274,16 +293,28 @@ export default function SaveOrGivePage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          {!isStaff && (
+            <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+              {selected.name}
+            </h2>
+          )}
 
           <GameThemeFrame
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <SaveOrGiveIt key={roundKey} items={selected.items} rewardPool={rewardPool} />
+            <SaveOrGiveIt
+              key={roundKey}
+              items={selected.items}
+              rewardPool={rewardPool}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
+              onAddItem={() => void addQuickItem()}
+              onRemoveItem={() => void removeLastItem()}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -295,35 +326,28 @@ export default function SaveOrGivePage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameSaveOrGive.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 {editorOpen && (
-                  <div>
-                    <OpenInOtherGame currentType="saveorgive" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
+                  <div className="space-y-1 divide-y divide-surface-container">
+                    <div className="pt-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                    <div className="flex-1 [&>div]:my-0">
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
+                      />
+                    </div>
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
@@ -384,6 +408,12 @@ export default function SaveOrGivePage() {
                       >
                         {t('gameAdmin.addParticipant')}
                       </button>
+                    </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <OpenInOtherGame currentType="saveorgive" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}

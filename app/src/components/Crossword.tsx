@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 
 export type CrosswordStyle = 'board' | 'blocks';
@@ -7,6 +8,13 @@ export type CrosswordStyle = 'board' | 'blocks';
 interface Props {
   items: GameItem[];
   boardStyle?: CrosswordStyle;
+  /** true면 상단 이름 수정 + 오른쪽 항목 개수 조절/이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
+  editable?: boolean;
+  onEditItem?: (id: string, label: string) => void;
+  templateName?: string;
+  onRenameTemplate?: (name: string) => void;
+  onAddItem?: () => void;
+  onRemoveItem?: () => void;
 }
 
 interface Placement {
@@ -148,7 +156,16 @@ function buildCrossword(items: GameItem[]): Puzzle {
   return { placements, grid, width, height };
 }
 
-export default function Crossword({ items, boardStyle = 'board' }: Props) {
+export default function Crossword({
+  items,
+  boardStyle = 'board',
+  editable,
+  onEditItem,
+  templateName,
+  onRenameTemplate,
+  onAddItem,
+  onRemoveItem,
+}: Props) {
   const { t } = useTranslation();
   const blocks = boardStyle === 'blocks';
   const [puzzle, setPuzzle] = useState<Puzzle>(() => buildCrossword(items));
@@ -156,8 +173,35 @@ export default function Crossword({ items, boardStyle = 'board' }: Props) {
   const [filledIds, setFilledIds] = useState<Set<string>>(new Set());
   const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
   const [wrongSlotId, setWrongSlotId] = useState<string | null>(null);
+  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
+  const [editingTemplateName, setEditingTemplateName] = useState(false);
+  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const wrongTimer = useRef<number | null>(null);
   const itemKey = items.map((it) => it.id).join(',');
+
+  useEffect(() => {
+    setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
+  }, [items]);
+
+  function handleItemDraftChange(id: string, value: string) {
+    setItemDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function commitItemDraft(id: string) {
+    const value = (itemDrafts[id] ?? '').trim();
+    if (value) onEditItem?.(id, value);
+  }
+
+  function startEditTemplateName() {
+    setTemplateNameDraft(templateName ?? '');
+    setEditingTemplateName(true);
+  }
+
+  function commitTemplateNameEdit() {
+    const trimmed = templateNameDraft.trim();
+    setEditingTemplateName(false);
+    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
+  }
 
   useEffect(() => {
     if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
@@ -226,9 +270,11 @@ export default function Crossword({ items, boardStyle = 'board' }: Props) {
     }
   }
 
+  let stageContent: ReactNode;
+
   if (finished) {
-    return (
-      <div className="flex flex-col items-center pt-3 pb-2">
+    stageContent = (
+      <>
         <div
           className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
           style={{
@@ -251,92 +297,175 @@ export default function Crossword({ items, boardStyle = 'board' }: Props) {
         <button onClick={restart} className={pill}>
           {t('gameCrossword.restartButton')}
         </button>
-      </div>
+      </>
+    );
+  } else {
+    const cellFilled = new Set<string>();
+    puzzle.placements.forEach((p) => {
+      if (!filledIds.has(p.id)) return;
+      for (let i = 0; i < p.clean.length; i++) {
+        const r = p.dir === 'across' ? p.row : p.row + i;
+        const c = p.dir === 'across' ? p.col + i : p.col;
+        cellFilled.add(`${r}-${c}`);
+      }
+    });
+
+    const cellNumber = new Map<string, number>();
+    puzzle.placements.forEach((p) => {
+      cellNumber.set(`${p.row}-${p.col}`, p.number);
+    });
+
+    const sortedSlots = [...puzzle.placements].sort((a, b) => a.number - b.number || (a.dir === 'across' ? -1 : 1));
+
+    stageContent = (
+      <>
+        <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
+          {t('gameCrossword.foundLabel', { found: filledIds.size, total: puzzle.placements.length })}
+        </div>
+
+        <div data-skin-stage="board" className={`cw-frame mb-5 ${blocks ? 'cw-blocks' : ''}`}>
+          <div className="cw-grid" style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}>
+            {puzzle.grid.map((row, r) =>
+              row.map((ch, c) => {
+                if (ch === null) return <div key={`${r}-${c}`} className="cw-hole" />;
+                const key = `${r}-${c}`;
+                const revealed = cellFilled.has(key);
+                const num = cellNumber.get(key);
+                const tone = (r + c) % 4;
+                return (
+                  <div
+                    key={key}
+                    data-skin-object="cell"
+                    className={`cw-cell ${blocks && !revealed ? `cw-clay-${tone}` : ''} ${revealed ? 'is-ok' : ''}`}
+                  >
+                    {num !== undefined && <span className="cw-num">{num}</span>}
+                    <span>{revealed ? ch : ''}</span>
+                  </div>
+                );
+              }),
+            )}
+          </div>
+        </div>
+
+        <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.wordBankLabel')}</div>
+        <div className="cw-row mb-5">
+          {wordBank
+            .filter((p) => !filledIds.has(p.id))
+            .map((p, i) => {
+              const on = selectedWordId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => selectWord(p.id)}
+                  data-skin-object="word-chip"
+                  className={`cw-chip ${on ? 'is-on' : blocks ? `is-clay-${i % 4}` : ''}`}
+                >
+                  {p.word}
+                </button>
+              );
+            })}
+        </div>
+
+        <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.slotListLabel')}</div>
+        <div className="cw-row">
+          {sortedSlots.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              disabled={filledIds.has(p.id)}
+              onClick={() => clickSlot(p)}
+              className={`cw-slot ${filledIds.has(p.id) ? 'is-ok' : wrongSlotId === p.id ? 'is-no' : ''}`}
+            >
+              {p.number}
+              {p.dir === 'across' ? t('gameCrossword.acrossLabel') : t('gameCrossword.downLabel')} · {p.clean.length}
+              {t('gameCrossword.lettersUnit')}
+            </button>
+          ))}
+        </div>
+      </>
     );
   }
 
-  const cellFilled = new Set<string>();
-  puzzle.placements.forEach((p) => {
-    if (!filledIds.has(p.id)) return;
-    for (let i = 0; i < p.clean.length; i++) {
-      const r = p.dir === 'across' ? p.row : p.row + i;
-      const c = p.dir === 'across' ? p.col + i : p.col;
-      cellFilled.add(`${r}-${c}`);
-    }
-  });
-
-  const cellNumber = new Map<string, number>();
-  puzzle.placements.forEach((p) => {
-    cellNumber.set(`${p.row}-${p.col}`, p.number);
-  });
-
-  const sortedSlots = [...puzzle.placements].sort((a, b) => a.number - b.number || (a.dir === 'across' ? -1 : 1));
-
   return (
     <div className="flex w-full flex-col items-center pt-1.5 pb-2">
-      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
-        {t('gameCrossword.foundLabel', { found: filledIds.size, total: puzzle.placements.length })}
-      </div>
-
-      <div data-skin-stage="board" className={`cw-frame mb-5 ${blocks ? 'cw-blocks' : ''}`}>
-        <div className="cw-grid" style={{ gridTemplateColumns: `repeat(${puzzle.width}, minmax(0, 1fr))` }}>
-          {puzzle.grid.map((row, r) =>
-            row.map((ch, c) => {
-              if (ch === null) return <div key={`${r}-${c}`} className="cw-hole" />;
-              const key = `${r}-${c}`;
-              const revealed = cellFilled.has(key);
-              const num = cellNumber.get(key);
-              const tone = (r + c) % 4;
-              return (
-                <div
-                  key={key}
-                  data-skin-object="cell"
-                  className={`cw-cell ${blocks && !revealed ? `cw-clay-${tone}` : ''} ${revealed ? 'is-ok' : ''}`}
-                >
-                  {num !== undefined && <span className="cw-num">{num}</span>}
-                  <span>{revealed ? ch : ''}</span>
-                </div>
-              );
-            }),
-          )}
-        </div>
-      </div>
-
-      <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.wordBankLabel')}</div>
-      <div className="cw-row mb-5">
-        {wordBank
-          .filter((p) => !filledIds.has(p.id))
-          .map((p, i) => {
-            const on = selectedWordId === p.id;
-            return (
+      <div
+        className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+      >
+        <div className="flex flex-col items-center">
+          {editable &&
+            (editingTemplateName ? (
+              <input
+                autoFocus
+                value={templateNameDraft}
+                onChange={(e) => setTemplateNameDraft(e.target.value)}
+                onBlur={commitTemplateNameEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTemplateNameEdit();
+                  if (e.key === 'Escape') setEditingTemplateName(false);
+                }}
+                className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
+              />
+            ) : (
               <button
-                key={p.id}
                 type="button"
-                onClick={() => selectWord(p.id)}
-                data-skin-object="word-chip"
-                className={`cw-chip ${on ? 'is-on' : blocks ? `is-clay-${i % 4}` : ''}`}
+                onClick={startEditTemplateName}
+                title={t('gameAdmin.renameInlineHint')}
+                className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
               >
-                {p.word}
+                {templateName}
               </button>
-            );
-          })}
-      </div>
+            ))}
+          {editable && (
+            <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+              {t('gameAdmin.editHintItems')}
+            </div>
+          )}
 
-      <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameCrossword.slotListLabel')}</div>
-      <div className="cw-row">
-        {sortedSlots.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            disabled={filledIds.has(p.id)}
-            onClick={() => clickSlot(p)}
-            className={`cw-slot ${filledIds.has(p.id) ? 'is-ok' : wrongSlotId === p.id ? 'is-no' : ''}`}
-          >
-            {p.number}
-            {p.dir === 'across' ? t('gameCrossword.acrossLabel') : t('gameCrossword.downLabel')} · {p.clean.length}
-            {t('gameCrossword.lettersUnit')}
-          </button>
-        ))}
+          {stageContent}
+        </div>
+
+        {editable && (
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+            <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={onRemoveItem}
+                disabled={items.length <= 1}
+                aria-label={t('gameAdmin.removeItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">remove</span>
+              </button>
+              <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                {t('gameAdmin.itemCountLabel', { count: items.length })}
+              </span>
+              <button
+                type="button"
+                onClick={onAddItem}
+                aria-label={t('gameAdmin.addItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+              </button>
+            </div>
+            <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
+              {items.map((item, i) => (
+                <input
+                  key={item.id}
+                  value={itemDrafts[item.id] ?? item.label}
+                  onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+                  onBlur={() => commitItemDraft(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
+                  style={{ color: colorFor(i) }}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

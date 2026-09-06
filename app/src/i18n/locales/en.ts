@@ -1371,6 +1371,7 @@ const en: Ko = {
     itemAddedToast: 'Added.',
     itemsAddedToast: 'Added {{count}}.',
     renameInlineHint: 'Tap to rename',
+    editHintItems: '💡 You can rename items in the list on the right.',
     itemCountLabel: '{{count}} items',
     addItemQuick: 'Add item',
     itemEditSave: 'Save',

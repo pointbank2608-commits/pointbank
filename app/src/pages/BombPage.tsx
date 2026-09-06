@@ -119,6 +119,25 @@ export default function BombPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  /** 폭탄 화면에서 참가자 이름을 바로 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
+  async function addQuickItem() {
+    if (!selected) return;
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameBomb.defaultParticipant', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
+    }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 1) return;
+    await persistItems(selected.items.slice(0, -1));
+  }
+
   async function clearAllParticipants() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameBomb.clearAllConfirm'))) return;
@@ -314,9 +333,11 @@ export default function BombPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          {!isStaff && (
+            <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+              {selected.name}
+            </h2>
+          )}
 
           <GameThemeFrame
             roster={roster}
@@ -329,6 +350,12 @@ export default function BombPage() {
               maxSec={range.max}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
+              onAddItem={() => void addQuickItem()}
+              onRemoveItem={() => void removeLastItem()}
             />
           </GameThemeFrame>
 
@@ -341,71 +368,19 @@ export default function BombPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameBomb.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 {editorOpen && (
-                  <div className="space-y-4">
-                    <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    {academy && (
-                      <div className="divide-y divide-surface-container">
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={selected.config.music}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gameBomb.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <div className="font-caption text-caption text-on-surface-variant mb-2">
-                        {t('gameBomb.rangeLabel')}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          value={minInput}
-                          onChange={(e) => setMinInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <span className="font-body-md text-body-md text-on-surface-variant">~</span>
-                        <input
-                          type="number"
-                          min={1}
-                          value={maxInput}
-                          onChange={(e) => setMaxInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <span className="font-body-md text-body-md text-on-surface-variant">{t('gameBomb.seconds')}</span>
-                      </div>
-                    </div>
-
-                    <div>
+                  <div className="space-y-1 divide-y divide-surface-container">
+                    <div className="pt-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                    <div className="flex-1 [&>div]:my-0">
                       <StudentRosterPicker
                         roster={roster}
                         existingLabels={selected.items.map((i) => i.label)}
@@ -414,18 +389,19 @@ export default function BombPage() {
                         loading={rosterLoading}
                         onAdd={(labels) => void addParticipantsBulk(labels)}
                       />
-                      <div className="flex flex-wrap items-start gap-3 my-3">
-                      <WordListPicker
-                        variant="label"
-                        wordLists={wordLists}
-                        loading={wordListsLoading}
-                        onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                      />
-                      <DictionaryPicker
-                        variant="label"
-                        onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                      />
-                      </div>
+                    </div>
+                    <WordListPicker
+                      variant="label"
+                      wordLists={wordLists}
+                      loading={wordListsLoading}
+                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
+                    />
+                    <DictionaryPicker
+                      variant="label"
+                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
+                    />
+                    </div>
+
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (
                           <span className="font-caption text-caption text-on-surface-variant">
@@ -475,6 +451,55 @@ export default function BombPage() {
                           {t('gameAdmin.addParticipant')}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="font-caption text-caption text-on-surface-variant mb-2">
+                        {t('gameBomb.rangeLabel')}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          value={minInput}
+                          onChange={(e) => setMinInput(e.target.value)}
+                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
+                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <span className="font-body-md text-body-md text-on-surface-variant">~</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={maxInput}
+                          onChange={(e) => setMaxInput(e.target.value)}
+                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
+                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <span className="font-body-md text-body-md text-on-surface-variant">{t('gameBomb.seconds')}</span>
+                      </div>
+                    </div>
+
+                    {academy && (
+                      <div className="pt-3 space-y-1 divide-y divide-surface-container">
+                        <GameMusicPicker
+                          academyId={academy.id}
+                          isStaff={isStaff}
+                          value={selected.config.music}
+                          onChange={(m) => void handleMusicChange(m)}
+                        />
+                        <GameMusicPicker
+                          academyId={academy.id}
+                          isStaff={isStaff}
+                          label={t('gameBomb.resultSoundLabel')}
+                          value={resolveResultSound(selected.config.resultSound)}
+                          onChange={(m) => void handleResultSoundChange(m)}
+                        />
+                      </div>
+                    )}
+
+                    <div className="pt-3">
+                      <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}

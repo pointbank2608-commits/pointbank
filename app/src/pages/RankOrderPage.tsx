@@ -112,6 +112,25 @@ export default function RankOrderPage() {
     await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
+  /** 순위 항목을 탭해서 바로 이름을 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
+  async function addQuickItem() {
+    if (!selected) return;
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameRankOrder.defaultItem', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
+    }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 2) return;
+    await persistItems(selected.items.slice(0, -1));
+  }
+
   async function clearAllItems() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameRankOrder.clearAllConfirm'))) return;
@@ -291,9 +310,11 @@ export default function RankOrderPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          {!isStaff && (
+            <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+              {selected.name}
+            </h2>
+          )}
 
           <GameThemeFrame
             roster={roster}
@@ -303,6 +324,12 @@ export default function RankOrderPage() {
             <RankOrder key={roundKey}
               items={selected.items}
               boardStyle={selected.config.rankOrderStyle === 'plates' ? 'plates' : 'podium'}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
+              onAddItem={() => void addQuickItem()}
+              onRemoveItem={() => void removeLastItem()}
             />
           </GameThemeFrame>
 
@@ -315,58 +342,28 @@ export default function RankOrderPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameRankOrder.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 py-2">
-                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
-                    {t('gameRankOrder.styleLabel')}
-                  </span>
-                  {(['podium', 'plates'] as const).map((style) => {
-                    const on = (selected.config.rankOrderStyle ?? 'podium') === style;
-                    return (
-                      <button
-                        key={style}
-                        type="button"
-                        onClick={() => void handleStyleChange(style)}
-                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
-                          on
-                            ? 'bg-secondary text-on-secondary shadow-sm'
-                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
-                        }`}
-                      >
-                        {style === 'podium' ? t('gameRankOrder.stylePodium') : t('gameRankOrder.stylePlates')}
-                      </button>
-                    );
-                  })}
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 {editorOpen && (
-                  <div>
-                    <OpenInOtherGame currentType="rankorder" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
+                  <div className="space-y-1 divide-y divide-surface-container">
+                    <div className="pt-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                    <div className="flex-1 [&>div]:my-0">
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
+                      />
+                    </div>
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
@@ -451,6 +448,37 @@ export default function RankOrderPage() {
                       >
                         {t('gameAdmin.addParticipant')}
                       </button>
+                    </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                          {t('gameRankOrder.styleLabel')}
+                        </span>
+                        {(['podium', 'plates'] as const).map((style) => {
+                          const on = (selected.config.rankOrderStyle ?? 'podium') === style;
+                          return (
+                            <button
+                              key={style}
+                              type="button"
+                              onClick={() => void handleStyleChange(style)}
+                              className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                                on
+                                  ? 'bg-secondary text-on-secondary shadow-sm'
+                                  : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                              }`}
+                            >
+                              {style === 'podium' ? t('gameRankOrder.stylePodium') : t('gameRankOrder.stylePlates')}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <OpenInOtherGame currentType="rankorder" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}

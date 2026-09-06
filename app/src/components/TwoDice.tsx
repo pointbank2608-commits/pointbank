@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 
 interface Props {
   items: GameItem[];
+  /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
+  editable?: boolean;
+  onEditItem?: (id: string, label: string) => void;
+  /** 상단 이름 표시/수정 + 항목 개수 +/- 툴바. GameThemeFrame 안(전체화면 포함)에서도
+   * 보이도록 TwoDice 자체에 둔다. */
+  templateName?: string;
+  onRenameTemplate?: (name: string) => void;
+  onAddItem?: () => void;
+  onRemoveItem?: () => void;
 }
 
 type Team = 'blue' | 'red';
@@ -131,7 +141,15 @@ function ClayDie({
   );
 }
 
-export default function TwoDice({ items }: Props) {
+export default function TwoDice({
+  items,
+  editable,
+  onEditItem,
+  templateName,
+  onRenameTemplate,
+  onAddItem,
+  onRemoveItem,
+}: Props) {
   const { t } = useTranslation();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
   const [die1, setDie1] = useState<number | null>(null);
@@ -146,6 +164,9 @@ export default function TwoDice({ items }: Props) {
   const [turn, setTurn] = useState<Team>('blue');
   const [winner, setWinner] = useState<Team | null>(null);
   const [winLine, setWinLine] = useState<number[] | null>(null);
+  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
+  const [editingTemplateName, setEditingTemplateName] = useState(false);
+  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -153,6 +174,32 @@ export default function TwoDice({ items }: Props) {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
+  // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
+  useEffect(() => {
+    setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
+  }, [items]);
+
+  function handleItemDraftChange(id: string, value: string) {
+    setItemDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function commitItemDraft(id: string) {
+    const value = (itemDrafts[id] ?? '').trim();
+    if (value) onEditItem?.(id, value);
+  }
+
+  function startEditTemplateName() {
+    setTemplateNameDraft(templateName ?? '');
+    setEditingTemplateName(true);
+  }
+
+  function commitTemplateNameEdit() {
+    const trimmed = templateNameDraft.trim();
+    setEditingTemplateName(false);
+    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
+  }
 
   function reshuffleBoard() {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -222,7 +269,39 @@ export default function TwoDice({ items }: Props) {
   const redCount = Object.values(claimed).filter((v) => v === 'red').length;
 
   return (
-    <div className="flex flex-col items-center pt-1.5 pb-2">
+    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
+      <div
+        className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+      >
+        <div className="flex flex-col items-center">
+          {editable &&
+            (editingTemplateName ? (
+              <input
+                autoFocus
+                value={templateNameDraft}
+                onChange={(e) => setTemplateNameDraft(e.target.value)}
+                onBlur={commitTemplateNameEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTemplateNameEdit();
+                  if (e.key === 'Escape') setEditingTemplateName(false);
+                }}
+                className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={startEditTemplateName}
+                title={t('gameAdmin.renameInlineHint')}
+                className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
+              >
+                {templateName}
+              </button>
+            ))}
+          {editable && (
+            <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+              {t('gameAdmin.editHintItems')}
+            </div>
+          )}
       <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
         <div
           data-skin-object="score-card"
@@ -333,6 +412,50 @@ export default function TwoDice({ items }: Props) {
           </div>
         </div>
       )}
+        </div>
+
+        {editable && (
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+            <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+              <button
+                type="button"
+                onClick={onRemoveItem}
+                disabled={items.length <= 1}
+                aria-label={t('gameAdmin.removeItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">remove</span>
+              </button>
+              <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                {t('gameAdmin.itemCountLabel', { count: items.length })}
+              </span>
+              <button
+                type="button"
+                onClick={onAddItem}
+                aria-label={t('gameAdmin.addItemQuick')}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+              </button>
+            </div>
+            <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
+              {items.map((item, i) => (
+                <input
+                  key={item.id}
+                  value={itemDrafts[item.id] ?? item.label}
+                  onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+                  onBlur={() => commitItemDraft(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                  }}
+                  style={{ color: colorFor(i) }}
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

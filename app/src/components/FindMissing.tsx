@@ -1,12 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 
 interface Props {
   items: GameItem[];
   revealCount: number;
   shuffleCards: boolean;
+  /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
+  editable?: boolean;
+  onEditItem?: (id: string, label: string) => void;
+  templateName?: string;
+  onRenameTemplate?: (name: string) => void;
+  onAddItem?: () => void;
+  onRemoveItem?: () => void;
 }
 
 type Phase = 'idle' | 'showing' | 'shuffling' | 'hidden' | 'done';
@@ -59,7 +67,17 @@ function hideCountFor(boardLen: number, revealCount: number): number {
  * 사라진 항목 찾기. 카드를 잠깐 보여 준 뒤 몇 칸을 물음표로 숨기고, 무엇이 빠졌는지 맞힌다.
  * 난이도에서 카드 섞기를 켜면, 숨긴 뒤에 나무 카드(물음표 포함)가 자리를 바꾼다.
  */
-export default function FindMissing({ items, revealCount, shuffleCards }: Props) {
+export default function FindMissing({
+  items,
+  revealCount,
+  shuffleCards,
+  editable,
+  onEditItem,
+  templateName,
+  onRenameTemplate,
+  onAddItem,
+  onRemoveItem,
+}: Props) {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [board, setBoard] = useState<GameItem[]>([]);
@@ -67,12 +85,43 @@ export default function FindMissing({ items, revealCount, shuffleCards }: Props)
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
   const [offsets, setOffsets] = useState<Record<string, CardOffset>>({});
   const [instant, setInstant] = useState(false);
+  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
+  const [editingTemplateName, setEditingTemplateName] = useState(false);
+  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const runIdRef = useRef(0);
   const cardEls = useRef(new Map<string, HTMLElement>());
   const firstRectsRef = useRef<Map<string, DOMRect> | null>(null);
   const shuffleRef = useRef(shuffleCards);
   shuffleRef.current = shuffleCards;
+
+  const count = items.length;
+
+  // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
+  // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
+  useEffect(() => {
+    setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
+  }, [items]);
+
+  function handleItemDraftChange(id: string, value: string) {
+    setItemDrafts((prev) => ({ ...prev, [id]: value }));
+  }
+
+  function commitItemDraft(id: string) {
+    const value = (itemDrafts[id] ?? '').trim();
+    if (value) onEditItem?.(id, value);
+  }
+
+  function startEditTemplateName() {
+    setTemplateNameDraft(templateName ?? '');
+    setEditingTemplateName(true);
+  }
+
+  function commitTemplateNameEdit() {
+    const trimmed = templateNameDraft.trim();
+    setEditingTemplateName(false);
+    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
+  }
 
   function clearTimer() {
     if (timerRef.current) {
@@ -196,23 +245,92 @@ export default function FindMissing({ items, revealCount, shuffleCards }: Props)
     );
   }
 
-  if (phase === 'idle') {
-    return (
-      <div className="flex flex-col items-center py-8">
-        <img
-          src={CARD_SRC}
-          alt=""
-          className="mb-5 w-[min(180px,55vw)]"
-          style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.22))' }}
-        />
-        <button onClick={start} className={pill}>
-          {t('gameFindMissing.startButton')}
+  const nameBlock = editable && (
+    editingTemplateName ? (
+      <input
+        autoFocus
+        value={templateNameDraft}
+        onChange={(e) => setTemplateNameDraft(e.target.value)}
+        onBlur={commitTemplateNameEdit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commitTemplateNameEdit();
+          if (e.key === 'Escape') setEditingTemplateName(false);
+        }}
+        className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
+      />
+    ) : (
+      <button
+        type="button"
+        onClick={startEditTemplateName}
+        title={t('gameAdmin.renameInlineHint')}
+        className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
+      >
+        {templateName}
+      </button>
+    )
+  );
+
+  const hintBlock = editable && (
+    <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+      {t('gameAdmin.editHintItems')}
+    </div>
+  );
+
+  const sidePanel = editable && (
+    <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+      <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+        <button
+          type="button"
+          onClick={onRemoveItem}
+          disabled={count <= 2}
+          aria-label={t('gameAdmin.removeItemQuick')}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <span className="material-symbols-outlined text-[20px]">remove</span>
+        </button>
+        <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+          {t('gameAdmin.itemCountLabel', { count })}
+        </span>
+        <button
+          type="button"
+          onClick={onAddItem}
+          aria-label={t('gameAdmin.addItemQuick')}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+        >
+          <span className="material-symbols-outlined text-[20px]">add</span>
         </button>
       </div>
-    );
-  }
+      <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
+        {items.map((item, i) => (
+          <input
+            key={item.id}
+            value={itemDrafts[item.id] ?? item.label}
+            onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+            onBlur={() => commitItemDraft(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+            }}
+            style={{ color: colorFor(i) }}
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+          />
+        ))}
+      </div>
+    </div>
+  );
 
-  return (
+  const boardBody = phase === 'idle' ? (
+    <div className="flex flex-col items-center py-8">
+      <img
+        src={CARD_SRC}
+        alt=""
+        className="mb-5 w-[min(180px,55vw)]"
+        style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.22))' }}
+      />
+      <button onClick={start} className={pill}>
+        {t('gameFindMissing.startButton')}
+      </button>
+    </div>
+  ) : (
     <div className="flex flex-col items-center pt-1.5 pb-2" data-shuffle={shuffleCards ? 'on' : 'off'}>
       {phase === 'showing' && (
         <div className="mb-4 rounded-full bg-secondary px-6 py-2 font-label-md text-label-md text-on-secondary shadow-sm">
@@ -302,6 +420,21 @@ export default function FindMissing({ items, revealCount, shuffleCards }: Props)
           {t('gameFindMissing.playAgainButton')}
         </button>
       )}
+    </div>
+  );
+
+  return (
+    <div className="flex w-full flex-col items-center py-4 pb-2">
+      <div
+        className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+      >
+        <div className="flex flex-col items-center">
+          {nameBlock}
+          {hintBlock}
+          {boardBody}
+        </div>
+        {sidePanel}
+      </div>
     </div>
   );
 }

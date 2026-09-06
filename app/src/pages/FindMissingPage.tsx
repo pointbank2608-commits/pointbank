@@ -117,6 +117,25 @@ export default function FindMissingPage() {
     await persistItems([]);
   }
 
+  /** 카드에서 항목 이름을 바로 바꿀 때 쓴다. */
+  async function renameItemLabel(itemId: string, label: string) {
+    if (!selected) return;
+    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
+  }
+
+  async function addQuickItem() {
+    if (!selected) return;
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: t('gameFindMissing.defaultItem', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
+    }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 2) return;
+    await persistItems(selected.items.slice(0, -1));
+  }
+
   async function persistConfig(patch: Partial<GameTemplateConfig>) {
     if (!selected) return;
     const nextConfig = { ...selected.config, ...patch };
@@ -282,16 +301,29 @@ export default function FindMissingPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          {!isStaff && (
+            <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+              {selected.name}
+            </h2>
+          )}
 
           <GameThemeFrame
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <FindMissing key={roundKey} items={selected.items} revealCount={revealCount} shuffleCards={shuffleCards} />
+            <FindMissing
+              key={roundKey}
+              items={selected.items}
+              revealCount={revealCount}
+              shuffleCards={shuffleCards}
+              editable={isStaff}
+              onEditItem={(id, label) => void renameItemLabel(id, label)}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
+              onAddItem={() => void addQuickItem()}
+              onRemoveItem={() => void removeLastItem()}
+            />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -303,87 +335,28 @@ export default function FindMissingPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameFindMissing.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div className="font-label-md text-label-md text-on-surface">{t('gameFindMissing.difficultyTitle')}</div>
-                  <div>
-                    <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
-                      {t('gameFindMissing.hideCountLabel')}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[1, 2, 3]
-                        .filter((n) => n <= Math.max(selected.items.length - 1, 1))
-                        .map((n) => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() => void persistConfig({ revealCount: n })}
-                            className={`rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-colors ${
-                              revealCount === n
-                                ? 'bg-primary text-on-primary shadow-sm'
-                                : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
-                      {t('gameFindMissing.shuffleLabel')}
-                    </div>
-                    <div className="flex w-fit rounded-lg bg-surface-container-low p-1">
-                      <button
-                        type="button"
-                        onClick={() => void persistConfig({ shuffleCards: false })}
-                        className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
-                          !shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-                        }`}
-                      >
-                        {t('gameFindMissing.shuffleOff')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void persistConfig({ shuffleCards: true })}
-                        className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
-                          shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-                        }`}
-                      >
-                        {t('gameFindMissing.shuffleOn')}
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 {editorOpen && (
-                  <div>
-                    <OpenInOtherGame currentType="findmissing" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    <StudentRosterPicker
-                      roster={roster}
-                      existingLabels={selected.items.map((i) => i.label)}
-                      scope={rosterScope}
-                      onScopeChange={setRosterScope}
-                      loading={rosterLoading}
-                      onAdd={(labels) => void addItemsBulk(labels)}
-                    />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
+                  <div className="space-y-1 divide-y divide-surface-container">
+                    <div className="pt-3">
+                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                    <div className="flex-1 [&>div]:my-0">
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addItemsBulk(labels)}
+                      />
+                    </div>
                     <WordListPicker
                       variant="label"
                       wordLists={wordLists}
@@ -444,6 +417,64 @@ export default function FindMissingPage() {
                       >
                         {t('gameAdmin.addParticipant')}
                       </button>
+                    </div>
+                    </div>
+
+                    <div className="pt-3 space-y-3">
+                      <div className="font-label-md text-label-md text-on-surface">{t('gameFindMissing.difficultyTitle')}</div>
+                      <div>
+                        <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                          {t('gameFindMissing.hideCountLabel')}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[1, 2, 3]
+                            .filter((n) => n <= Math.max(selected.items.length - 1, 1))
+                            .map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                onClick={() => void persistConfig({ revealCount: n })}
+                                className={`rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-colors ${
+                                  revealCount === n
+                                    ? 'bg-primary text-on-primary shadow-sm'
+                                    : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                          {t('gameFindMissing.shuffleLabel')}
+                        </div>
+                        <div className="flex w-fit rounded-lg bg-surface-container-low p-1">
+                          <button
+                            type="button"
+                            onClick={() => void persistConfig({ shuffleCards: false })}
+                            className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
+                              !shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                            }`}
+                          >
+                            {t('gameFindMissing.shuffleOff')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void persistConfig({ shuffleCards: true })}
+                            className={`rounded-md px-3 py-1.5 font-label-md text-label-md transition-all ${
+                              shuffleCards ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                            }`}
+                          >
+                            {t('gameFindMissing.shuffleOn')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <OpenInOtherGame currentType="findmissing" itemCount={selected.items.length} onOpen={openInOtherGame} />
+                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     </div>
                   </div>
                 )}

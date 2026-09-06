@@ -1368,6 +1368,7 @@ const ko = {
     itemAddedToast: '항목을 추가했어요.',
     itemsAddedToast: '{{count}}개를 추가했어요.',
     renameInlineHint: '탭해서 이름 수정',
+    editHintItems: '💡 오른쪽 목록에서 항목 이름을 바로 바꿀 수 있어요.',
     itemCountLabel: '항목 {{count}}개',
     addItemQuick: '항목 추가',
     itemEditSave: '저장',
