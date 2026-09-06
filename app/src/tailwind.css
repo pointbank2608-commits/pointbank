@@ -4559,7 +4559,14 @@
 .game-fs-scale {
   width: 100%;
   display: flex;
-  justify-content: center;
+  /* 게임 페이지가 실제 게임 컴포넌트 하나만이 아니라 그 옆에 체크박스·최근 결과 같은
+     형제 엘리먼트를 나란히 넘길 때가 있다(예: 돌림판의 "당첨 항목 제거하며 진행"
+     체크박스, 최근 결과 목록). row(기본값)로 두면 이 형제들이 세로로 쌓이지 않고
+     가로로 나란히 배치되면서 폭이 어긋나 버려서(형제마다 아래 width:100%가 다 적용되니
+     한 줄에 여러 개의 "무대 폭 전체"가 겹쳐 쌓이는 셈) column으로 고정해 일반 문서
+     흐름과 똑같이 위→아래로 쌓이게 한다. */
+  flex-direction: column;
+  align-items: center;
   transform-origin: center center;
   will-change: transform;
 }

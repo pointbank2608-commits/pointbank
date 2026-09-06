@@ -63,28 +63,42 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
   useLayoutEffect(() => {
     if (!isFullscreen) return;
 
-    // wrap 자체를 재는 게 아니라 그 안의 실제 게임 루트(children 이 그리는 첫 엘리먼트)를
-    // 잰다. wrap 을 shrink-to-fit(width:fit-content)으로 재려고 하면 게임 내부의
-    // w-full/max-w-[Npx] 같은 상대 크기 클래스들이 기준을 잃고 찌그러지는 문제가 있었다 —
-    // wrap 은 무대(stage) 폭 100%를 그대로 주고, target(게임 루트)도 CSS에서 width:100%로
-    // 고정해뒀다(tailwind.css `.game-fs-scale > *`). 다만 target 자신의 offsetWidth는
-    // 이제 그 100%(=무대 폭)를 그대로 반영해버려 실제 콘텐츠 크기로 못 쓴다 — 대신 target의
-    // 자식들(실제 시각 요소)의 바운딩 박스 합집합으로 진짜 폭을 잰다. offsetLeft/offsetWidth는
-    // transform 영향을 안 받아서(getBoundingClientRect와 달리) 이미 적용된 scale과 무관하게
-    // 안정적으로 잴 수 있다. 높이는 flex-column 자연 흐름이라 target.offsetHeight로 충분하다.
+    // wrap(.game-fs-scale) 자체를 재는 게 아니라 그 안의 실제 시각 요소들을 잰다. wrap과
+    // 그 직계 자식들은 전부 CSS에서 width:100%로 고정해뒀다(tailwind.css
+    // `.game-fs-scale > *`) — 게임 내부의 w-full/max-w-[Npx] 같은 상대 크기 클래스가
+    // 기준(정해진 부모 폭)을 잃고 0에 가깝게 찌그러지는 걸 막기 위함이다. 다만 그 결과
+    // 직계 자식(target) 자신의 offsetWidth는 이제 그 100%(=무대 폭)를 그대로 반영해버려
+    // 실제 콘텐츠 크기로 못 쓴다 — 대신 target의 자식들(실제 시각 요소)의 바운딩 박스
+    // 합집합으로 진짜 폭을 잰다. offsetLeft/offsetWidth는 transform 영향을 안 받아서
+    // (getBoundingClientRect와 달리) 이미 적용된 scale과 무관하게 안정적으로 잴 수 있다.
+    //
+    // 게임 페이지가 게임 컴포넌트 하나만이 아니라 그 옆에 형제 엘리먼트(체크박스, 최근
+    // 결과 등)를 나란히 넘길 때도 있어서(예: 돌림판), wrap의 직계 자식이 여러 개일 수
+    // 있다 — 폭은 그 중 가장 넓은 자식 기준(전부 같은 폭으로 가운데 정렬되니까), 높이는
+    // (.game-fs-scale이 column이라 자연스럽게 위→아래로 쌓이므로) 전부 더한 값을 쓴다.
     function fit() {
       const stage = stageRef.current;
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
-      const target = (wrap.firstElementChild as HTMLElement | null) ?? wrap;
       const availW = stage.clientWidth;
       const availH = stage.clientHeight;
-      const kids = Array.from(target.children) as HTMLElement[];
-      const w =
-        kids.length > 0
-          ? Math.max(...kids.map((c) => c.offsetLeft + c.offsetWidth)) - Math.min(...kids.map((c) => c.offsetLeft))
-          : target.offsetWidth;
-      const h = target.offsetHeight;
+      const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
+
+      let w = 0;
+      let h = 0;
+      for (const target of targets) {
+        const kids = Array.from(target.children) as HTMLElement[];
+        const kidW =
+          kids.length > 0
+            ? Math.max(...kids.map((c) => c.offsetLeft + c.offsetWidth)) - Math.min(...kids.map((c) => c.offsetLeft))
+            : target.offsetWidth;
+        w = Math.max(w, kidW);
+        // offsetHeight엔 자기 자신의 margin이 안 들어가는데, 형제끼리 쌓일 때(mt-4 등)
+        // 그 margin도 실제로 세로 공간을 차지하므로 같이 더해줘야 총 높이가 안 밀린다.
+        const cs = getComputedStyle(target);
+        h += target.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+      }
+
       if (availW < 16 || availH < 16 || w < 16 || h < 16) return;
       const next = Math.min(availW / w, availH / h) * 0.96;
       setScale(Math.min(5, Math.max(0.5, next)));

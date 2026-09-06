@@ -137,9 +137,10 @@ export function useGameTemplates(params: {
 
   const selected = templates.find((t) => t.id === selectedId) ?? null;
 
-  async function handleRename() {
+  /** explicitName을 주면(인라인 편집 등) prompt() 없이 그 값으로 바로 바꾼다. 안 주면 기존처럼 prompt로 물어본다. */
+  async function handleRename(explicitName?: string) {
     if (!selected) return;
-    const next = prompt(t('gameAdmin.renamePrompt'), selected.name);
+    const next = explicitName ?? prompt(t('gameAdmin.renamePrompt'), selected.name);
     if (!next?.trim() || next.trim() === selected.name) return;
     const ok = await run(() => renameGameTemplate(selected.id, next.trim()), t('gameAdmin.renamedToast'));
     if (ok) setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, name: next.trim() } : tpl)));

@@ -26,6 +26,10 @@ function defaultItems(): GameItem[] {
   return [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameWheel.defaultItem', { n }) }));
 }
 
+/** 돌림판 회전음은 커스터마이즈 UI 없이 이 파일로 고정한다(선생님이 신경 쓸 일 없게).
+ * path/name 은 업로드 삭제 UI용 필드라 여기선 의미 없음 — 표시용 값만 채워둔다. */
+const WHEEL_SPIN_SOUND: MusicSelection = { kind: 'upload', path: '', name: '돌림판 회전음', url: '/sounds/wheel-spin.mp3' };
+
 export default function WheelPage() {
   const { t } = useTranslation();
   const g = useGameTemplates({ gameType: 'wheel', defaultItems });
@@ -75,6 +79,8 @@ export default function WheelPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
 
   // 선택된 돌림판이 바뀌면 플레이용 사본을 새로 받고, 결과 기록을 비운다.
   useEffect(() => {
@@ -133,16 +139,30 @@ export default function WheelPage() {
     await persistItems([]);
   }
 
-  async function handleMusicChange(music: MusicSelection | null) {
+  async function addQuickItem() {
     if (!selected) return;
-    const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
+    const n = selected.items.length + 1;
+    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameWheel.defaultItem', { n }) }])) {
+      notify(t('gameAdmin.itemAddedToast'));
     }
+  }
+
+  async function removeLastItem() {
+    if (!selected || selected.items.length <= 1) return;
+    await persistItems(selected.items.slice(0, -1));
+  }
+
+  function startEditName() {
+    if (!selected) return;
+    setNameDraft(selected.name);
+    setEditingName(true);
+  }
+
+  async function commitNameEdit() {
+    const trimmed = nameDraft.trim();
+    setEditingName(false);
+    if (!selected || !trimmed || trimmed === selected.name) return;
+    await handleRename(trimmed);
   }
 
   async function handleResultSoundChange(resultSound: MusicSelection | null) {
@@ -313,9 +333,59 @@ export default function WheelPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {selected.name}
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {isStaff && editingName ? (
+              <input
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={() => void commitNameEdit()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void commitNameEdit();
+                  if (e.key === 'Escape') setEditingName(false);
+                }}
+                className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 -mx-2 outline-none"
+              />
+            ) : isStaff ? (
+              <button
+                type="button"
+                onClick={startEditName}
+                title={t('gameAdmin.renameInlineHint')}
+                className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 -mx-2 text-left transition-colors"
+              >
+                {selected.name}
+              </button>
+            ) : (
+              <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+                {selected.name}
+              </h2>
+            )}
+
+            {isStaff && (
+              <div className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => void removeLastItem()}
+                  disabled={selected.items.length <= 1}
+                  aria-label={t('gameAdmin.removeItemQuick')}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">remove</span>
+                </button>
+                <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                  {t('gameAdmin.itemCountLabel', { count: selected.items.length })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void addQuickItem()}
+                  aria-label={t('gameAdmin.addItemQuick')}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           <GameThemeFrame
             roster={roster}
@@ -324,7 +394,7 @@ export default function WheelPage() {
           >
             <SpinWheel key={roundKey}
               items={playItems}
-              music={selected.config.music}
+              music={WHEEL_SPIN_SOUND}
               resultSound={resolveResultSound(selected.config.resultSound)}
               onResult={handleResult}
             />
@@ -373,20 +443,12 @@ export default function WheelPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameWheel.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setEditorOpen((v) => !v)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
+                  </button>
                 </div>
 
                 {editorOpen && (
@@ -394,21 +456,13 @@ export default function WheelPage() {
                     <OpenInOtherGame currentType="wheel" itemCount={selected.items.length} onOpen={openInOtherGame} />
                     <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
                     {academy && (
-                      <>
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={selected.config.music}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gameWheel.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </>
+                      <GameMusicPicker
+                        academyId={academy.id}
+                        isStaff={isStaff}
+                        label={t('gameWheel.resultSoundLabel')}
+                        value={resolveResultSound(selected.config.resultSound)}
+                        onChange={(m) => void handleResultSoundChange(m)}
+                      />
                     )}
 
                     <div className="pt-3">
