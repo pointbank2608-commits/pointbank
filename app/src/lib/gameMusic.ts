@@ -1,3 +1,4 @@
+import { cubicBezier } from './easing';
 import type { MusicSelection } from './types';
 
 /**
@@ -146,6 +147,60 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
   return () => {
     stopped = true;
     if (timer) clearTimeout(timer);
+  };
+}
+
+/** 돌림판 CSS 회전 트랜지션과 같은 이징(SpinWheel.tsx 의 `cubic-bezier(0.17, 0.89, 0.24, 1)`). */
+const WHEEL_SPIN_EASE = cubicBezier(0.17, 0.89, 0.24, 1);
+
+function wheelTickClick(time: number, strength: number) {
+  const c = ctx();
+  const duration = 0.014;
+  const bufferSize = Math.floor(c.sampleRate * duration);
+  const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+  const src = c.createBufferSource();
+  src.buffer = buffer;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.16 + strength * 0.14, time);
+  src.connect(g).connect(c.destination);
+  src.start(time);
+}
+
+/**
+ * 돌림판이 실제로 도는 것처럼: 회전 각도가 일정 간격을 지날 때마다 짧은 클릭음을 하나씩
+ * 울린다. 화면의 CSS 회전과 같은 이징 곡선을 그대로 샘플링해서 언제 각 클릭이 울려야
+ * 하는지 계산하기 때문에, 처음엔 촘촘하게(빠르게 도는 구간) 울리다가 회전이 느려질수록
+ * 클릭 간격도 자연스럽게 벌어진다 — 소리를 별도 타이머로 "점점 느리게" 흉내내는 게
+ * 아니라, 실제 회전 속도를 그대로 오디오 스케줄에 반영하는 방식.
+ * 되돌아오는 함수를 부르면 아직 안 울린 클릭을 전부 취소한다(도중에 다시 돌리기 등).
+ */
+export function playWheelSpinTicks(totalDegrees: number, durationMs: number): () => void {
+  const TICK_DEG = 9; // 대략 40칸/바퀴 밀도 — 촘촘하지도 허전하지도 않은 정도로 조정함
+  const SAMPLE_STEPS = 600;
+  let stopped = false;
+  const timers: ReturnType<typeof setTimeout>[] = [];
+
+  let nextThreshold = TICK_DEG;
+  for (let i = 1; i <= SAMPLE_STEPS && nextThreshold <= totalDegrees; i++) {
+    const frac = i / SAMPLE_STEPS;
+    const angle = WHEEL_SPIN_EASE(frac) * totalDegrees;
+    while (nextThreshold <= angle && nextThreshold <= totalDegrees) {
+      const atMs = frac * durationMs;
+      const speedFrac = 1 - frac;
+      timers.push(
+        setTimeout(() => {
+          if (!stopped) wheelTickClick(ctx().currentTime, speedFrac);
+        }, atMs),
+      );
+      nextThreshold += TICK_DEG;
+    }
+  }
+
+  return () => {
+    stopped = true;
+    timers.forEach(clearTimeout);
   };
 }
 

@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { playMusic } from '../lib/gameMusic';
+import { playMusic, playWheelSpinTicks } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -17,7 +17,9 @@ const CX = SIZE / 2;
 const CY = SIZE / 2;
 /** 스킨 구멍 안쪽. 테두리 이미지가 위에 덮이므로 회전 계산과 무관하다. */
 const R = 164;
-const SPIN_MS = 4600;
+const DEFAULT_SPIN_MS = 4600;
+const MIN_SPIN_MS = 2000;
+const MAX_SPIN_MS = 20000;
 
 const RIM_SRC = '/skins/wheel-rim.png';
 const HUB_SRC = '/skins/wheel-hub-spin.png';
@@ -34,8 +36,27 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
+  const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
+  /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
+  const uploadDurationsRef = useRef<Record<string, number>>({});
+
+  // 선생님이 회전음으로 파일을 업로드해뒀으면, 실제로 돌리기 전에 미리 길이를 읽어둔다
+  // (스핀 시작 시점엔 즉시 값이 필요해서 미리 로드해두는 것 — 매번 새로 읽지 않도록 캐싱).
+  useEffect(() => {
+    if (!music || music.kind !== 'upload') return;
+    const url = music.url;
+    if (url in uploadDurationsRef.current) return;
+    const probe = new Audio(url);
+    const onLoaded = () => {
+      if (Number.isFinite(probe.duration) && probe.duration > 0) {
+        uploadDurationsRef.current[url] = probe.duration;
+      }
+    };
+    probe.addEventListener('loadedmetadata', onLoaded);
+    return () => probe.removeEventListener('loadedmetadata', onLoaded);
+  }, [music]);
 
   const count = items.length;
   const slice = count > 0 ? 360 / count : 0;
@@ -63,9 +84,28 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
     setSpinning(true);
     const targetIndex = pickRandomIndex(count);
     const next = computeSpinRotation({ targetIndex, itemCount: count, currentRotation: rotation });
+
+    // 업로드한 회전음이 있으면 그 소리 길이에 맞춰 회전 시간을 늘리거나 줄인다 —
+    // 실제 녹음된 소리(예: 진짜 룰렛 소리)는 이미 그 안에 감속하는 리듬이 들어있어서,
+    // 회전 애니메이션 길이를 소리 길이에 맞춰야 서로 안 어긋난다.
+    const uploadUrl = music?.kind === 'upload' ? music.url : null;
+    const uploadDuration = uploadUrl ? uploadDurationsRef.current[uploadUrl] : undefined;
+    const nextSpinMs = uploadDuration
+      ? Math.min(MAX_SPIN_MS, Math.max(MIN_SPIN_MS, Math.round(uploadDuration * 1000)))
+      : DEFAULT_SPIN_MS;
+    setSpinMs(nextSpinMs);
     setRotation(next);
 
-    stopMusicRef.current = playMusic(music, { loop: true });
+    if (!music) {
+      // 아무 회전음도 안 골랐으면 무음 대신, 실제 회전 속도(화면과 같은 이징 곡선)에
+      // 맞춰 딸깍거리는 소리를 기본으로 재생한다 — 진짜 돌림판처럼 처음엔 빠르게,
+      // 느려지면 소리도 같이 느려진다.
+      stopMusicRef.current = playWheelSpinTicks(next - rotation, nextSpinMs);
+    } else {
+      // 업로드한 파일은 그 자체가 이미 감속하는 소리라 한 번만 재생하고, 기본 제공
+      // 합성음(두구두구 등)은 기존처럼 반복 재생한다.
+      stopMusicRef.current = playMusic(music, { loop: music.kind !== 'upload' });
+    }
 
     timerRef.current = setTimeout(() => {
       setSpinning(false);
@@ -74,7 +114,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
       onResult?.(picked);
       stopMusicRef.current();
       playMusic(resultSound);
-    }, SPIN_MS);
+    }, nextSpinMs);
   }
 
   if (count === 0) {
@@ -88,7 +128,7 @@ export default function SpinWheel({ items, music, resultSound, onResult }: Props
 
   const spinStyle = {
     transform: `rotate(${rotation}deg)`,
-    transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
+    transition: spinning ? `transform ${spinMs}ms cubic-bezier(0.17, 0.89, 0.24, 1)` : 'none',
   };
 
   return (
