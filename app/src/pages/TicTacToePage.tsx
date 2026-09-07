@@ -14,7 +14,15 @@ import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, UndoHandle } from '../lib/types';
+import type { GameItem, MusicSelection, UndoHandle } from '../lib/types';
+
+/** 칸에 말을 놓을 때 나는 효과음은 커스터마이즈 UI 없이 이 파일로 고정한다(돌림판 등과 같은 이유). */
+const TICTACTOE_PLACE_SOUND: MusicSelection = {
+  kind: 'upload',
+  path: '',
+  name: '틱택토 말 놓는 소리',
+  url: '/sounds/tictactoe-place.m4a?v=1',
+};
 
 function uid(): string {
   return crypto.randomUUID();
@@ -302,6 +310,7 @@ export default function TicTacToePage() {
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}
+              placeSound={TICTACTOE_PLACE_SOUND}
               onAddItem={() => void addQuickItem()}
               onRemoveItem={() => void removeLastItem()}
             />

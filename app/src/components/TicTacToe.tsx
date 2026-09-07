@@ -1,8 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
-import type { GameItem, UndoHandle } from '../lib/types';
+import type { GameItem, MusicSelection, UndoHandle } from '../lib/types';
 
 interface Props {
   items: GameItem[];
@@ -15,6 +16,8 @@ interface Props {
   onRenameTemplate?: (name: string) => void;
   onAddItem?: () => void;
   onRemoveItem?: () => void;
+  /** 칸에 말을 놓을 때마다 울리는 효과음. */
+  placeSound?: MusicSelection | null;
 }
 
 type Team = 'blue' | 'red';
@@ -70,7 +73,7 @@ function checkWinner(marks: Mark[]): Team | null {
  * 틱택토. 등록한 단어를 3×3 나무 판에 올려 두고, 두 팀이 번갈아 칸을 차지한다.
  */
 const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
-  { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
+  { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, placeSound },
   ref,
 ) {
   const { t } = useTranslation();
@@ -122,6 +125,7 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
     next[index] = turn;
     setMarks(next);
     setTurn(turn === 'blue' ? 'red' : 'blue');
+    playMusic(placeSound);
   }
 
   useImperativeHandle(ref, () => ({
