@@ -25,12 +25,12 @@ const BOMB_TICK_SOUND: MusicSelection = {
   url: '/sounds/bomb-tick.m4a?v=1',
 };
 
-/** 폭발음도 같은 이유로 고정. 원본에서 0~4초만 잘라 담아둔다. */
+/** 폭발음도 같은 이유로 고정. 원본에서 1~4초 구간만 잘라 담아둔다(앞 1초는 무음이라 뺌). */
 const BOMB_EXPLODE_SOUND: MusicSelection = {
   kind: 'upload',
   path: '',
   name: '폭탄 폭발음',
-  url: '/sounds/bomb-explode.m4a?v=1',
+  url: '/sounds/bomb-explode.m4a?v=2',
 };
 
 function uid(): string {
