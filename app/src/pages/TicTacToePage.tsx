@@ -21,7 +21,7 @@ const TICTACTOE_PLACE_SOUND: MusicSelection = {
   kind: 'upload',
   path: '',
   name: '틱택토 말 놓는 소리',
-  url: '/sounds/tictactoe-place.m4a?v=1',
+  url: '/sounds/tictactoe-place.m4a?v=2',
 };
 
 function uid(): string {
