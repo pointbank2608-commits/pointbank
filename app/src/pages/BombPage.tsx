@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
-import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
@@ -13,10 +12,26 @@ import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import TimeBomb from '../components/TimeBomb';
 import { updateGameTemplate } from '../lib/api';
-import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
+
+/** 폭탄 째깍거리는 소리는 커스터마이즈 UI 없이 이 파일로 고정한다(돌림판 회전음과 같은 이유).
+ * 게임이 진행되는 내내(터질 때까지) 반복 재생된다. */
+const BOMB_TICK_SOUND: MusicSelection = {
+  kind: 'upload',
+  path: '',
+  name: '폭탄 째깍 소리',
+  url: '/sounds/bomb-tick.m4a?v=1',
+};
+
+/** 폭발음도 같은 이유로 고정. 원본에서 0~4초만 잘라 담아둔다. */
+const BOMB_EXPLODE_SOUND: MusicSelection = {
+  kind: 'upload',
+  path: '',
+  name: '폭탄 폭발음',
+  url: '/sounds/bomb-explode.m4a?v=1',
+};
 
 function uid(): string {
   return crypto.randomUUID();
@@ -37,7 +52,6 @@ export default function BombPage() {
   });
   const {
     isStaff,
-    academy,
     classes,
     staffClassId,
     selectClass,
@@ -219,28 +233,6 @@ export default function BombPage() {
     }
   }
 
-  async function handleMusicChange(music: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleResultSoundChange(resultSound: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
   if (isStaff && classes.length === 0) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
@@ -411,8 +403,8 @@ export default function BombPage() {
               words={words}
               minSec={range.min}
               maxSec={range.max}
-              music={selected.config.music}
-              resultSound={resolveResultSound(selected.config.resultSound)}
+              music={BOMB_TICK_SOUND}
+              resultSound={BOMB_EXPLODE_SOUND}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               onAddItem={() => void addQuickItem()}
@@ -586,24 +578,6 @@ export default function BombPage() {
                         </button>
                       </div>
                     </div>
-
-                    {academy && (
-                      <div className="pt-3 space-y-1 divide-y divide-surface-container">
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={selected.config.music}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gameBomb.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </div>
-                    )}
 
                     <div className="pt-3">
                       <OpenInOtherGame currentType="bomb" itemCount={selected.items.length} onOpen={openInOtherGame} />
