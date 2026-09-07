@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
@@ -78,14 +78,27 @@ export default function BombPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
   const [newParticipant, setNewParticipant] = useState('');
+  const [newWord, setNewWord] = useState('');
   const range = selected?.config.bombRange ?? DEFAULT_RANGE;
-  const [minInput, setMinInput] = useState(String(range.min));
-  const [maxInput, setMaxInput] = useState(String(range.max));
+  const words = selected?.config.words ?? [];
 
+  // 이 반에 시한폭탄이 하나도 없으면, "+ 새 목록" 클릭 없이 바로 기본 목록을 하나
+  // 만들어준다 — 돌림판과 같은 이유(이름·항목 편집을 처음부터 화면에서 바로 쓸 수 있게).
+  const autoCreatingRef = useRef(false);
   useEffect(() => {
-    setMinInput(String(range.min));
-    setMaxInput(String(range.max));
-  }, [range.min, range.max]);
+    if (!isStaff || loading || !classId || templates.length > 0 || autoCreatingRef.current) return;
+    const guardKey = `bomb-autocreate-${classId}`;
+    try {
+      if (sessionStorage.getItem(guardKey)) return;
+      sessionStorage.setItem(guardKey, '1');
+    } catch {
+      // sessionStorage 접근이 막혀 있어도 자동 생성 자체는 계속 진행한다.
+    }
+    autoCreatingRef.current = true;
+    void handleCreate(t('gameBomb.defaultTemplateName')).finally(() => {
+      autoCreatingRef.current = false;
+    });
+  }, [isStaff, loading, classId, templates.length, handleCreate, t]);
 
   async function persistItems(nextItems: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -142,6 +155,55 @@ export default function BombPage() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameBomb.clearAllConfirm'))) return;
     await persistItems([]);
+  }
+
+  async function persistWords(nextWords: GameItem[]) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, words: nextWords };
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch {
+      await reload();
+    }
+  }
+
+  /** 폭탄 화면에서 단어·문장을 바로 바꿀 때 쓴다. */
+  async function renameWord(wordId: string, label: string) {
+    await persistWords(words.map((w) => (w.id === wordId ? { ...w, label } : w)));
+  }
+
+  async function addWord() {
+    const label = newWord.trim();
+    if (!label || !selected) return;
+    await persistWords([...words, { id: uid(), label }]);
+    setNewWord('');
+  }
+
+  async function addWordsBulk(labels: string[]) {
+    if (!selected || labels.length === 0) return;
+    await persistWords([...words, ...labels.map((label) => ({ id: uid(), label }))]);
+  }
+
+  async function removeWord(wordId: string) {
+    await persistWords(words.filter((w) => w.id !== wordId));
+  }
+
+  async function addQuickWord() {
+    if (!selected) return;
+    const n = words.length + 1;
+    await persistWords([...words, { id: uid(), label: t('gameBomb.defaultWord', { n }) }]);
+  }
+
+  async function removeLastWord() {
+    if (!selected || words.length === 0) return;
+    await persistWords(words.slice(0, -1));
+  }
+
+  async function clearAllWords() {
+    if (!selected || words.length === 0) return;
+    if (!confirm(t('gameBomb.clearAllWordsConfirm'))) return;
+    await persistWords([]);
   }
 
   async function commitRange(nextRange: { min: number; max: number }) {
@@ -322,7 +384,7 @@ export default function BombPage() {
           {classPicker}
           <div>
             <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <TimeBomb participants={demoParticipants} minSec={range.min} maxSec={range.max} />
+              <TimeBomb participants={demoParticipants} words={[]} minSec={range.min} maxSec={range.max} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameBomb.emptyStaff') : t('gameBomb.emptyStudent')}
@@ -346,16 +408,21 @@ export default function BombPage() {
           >
             <TimeBomb key={roundKey}
               participants={selected.items}
+              words={words}
               minSec={range.min}
               maxSec={range.max}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
-              templateName={selected.name}
-              onRenameTemplate={(name) => void handleRename(name)}
               onAddItem={() => void addQuickItem()}
               onRemoveItem={() => void removeLastItem()}
+              onEditWord={(id, label) => void renameWord(id, label)}
+              onAddWord={() => void addQuickWord()}
+              onRemoveWord={() => void removeLastWord()}
+              onRangeChange={(min, max) => void commitRange({ min, max })}
+              templateName={selected.name}
+              onRenameTemplate={(name) => void handleRename(name)}
             />
           </GameThemeFrame>
 
@@ -455,27 +522,68 @@ export default function BombPage() {
 
                     <div className="pt-3">
                       <div className="font-caption text-caption text-on-surface-variant mb-2">
-                        {t('gameBomb.rangeLabel')}
+                        {t('gameBomb.wordsPanelLabel')}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          value={minInput}
-                          onChange={(e) => setMinInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                      <div className="flex flex-wrap items-start gap-2 mb-3 [&>*]:min-w-[180px] [&>*]:flex-none">
+                        <WordListPicker
+                          variant="label"
+                          wordLists={wordLists}
+                          loading={wordListsLoading}
+                          onImportLabels={(labels) => void addWordsBulk(labels)}
                         />
-                        <span className="font-body-md text-body-md text-on-surface-variant">~</span>
-                        <input
-                          type="number"
-                          min={1}
-                          value={maxInput}
-                          onChange={(e) => setMaxInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        <DictionaryPicker
+                          variant="label"
+                          onImportLabels={(labels) => void addWordsBulk(labels)}
                         />
-                        <span className="font-body-md text-body-md text-on-surface-variant">{t('gameBomb.seconds')}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {words.length === 0 ? (
+                          <span className="font-caption text-caption text-on-surface-variant">
+                            {t('gameAdmin.noParticipants')}
+                          </span>
+                        ) : (
+                          words.map((w) => (
+                            <div
+                              key={w.id}
+                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+                            >
+                              {w.label}
+                              <button
+                                onClick={() => void removeWord(w.id)}
+                                className="text-on-surface-variant hover:text-error"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      {words.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => void clearAllWords()}
+                          className="mt-2 font-label-md text-label-md text-error hover:underline"
+                        >
+                          {t('gameAdmin.clearAll')}
+                        </button>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <input
+                          type="text"
+                          placeholder={t('gameBomb.newWordPlaceholder')}
+                          value={newWord}
+                          onChange={(e) => setNewWord(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void addWord();
+                          }}
+                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <button
+                          onClick={() => void addWord()}
+                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                        >
+                          {t('gameBomb.addWordButton')}
+                        </button>
                       </div>
                     </div>
 

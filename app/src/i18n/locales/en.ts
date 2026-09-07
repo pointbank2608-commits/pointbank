@@ -114,6 +114,7 @@ const en: Ko = {
 
   gameBomb: {
     defaultParticipant: 'Participant {{n}}',
+    defaultTemplateName: 'New time bomb',
     studentClassTitle: "{{className}}'s Time Bomb",
     newButton: '+ New list',
     namePlaceholder: 'e.g. Pass the cleaning-duty bomb',
@@ -124,6 +125,11 @@ const en: Ko = {
     resultSoundLabel: 'Result sound',
     rangeLabel: 'Explosion time range (seconds) — it goes off at a random moment in this range',
     seconds: 'sec',
+    wordsPanelLabel: 'Words to read',
+    defaultWord: 'Word {{n}}',
+    newWordPlaceholder: 'New word or sentence',
+    addWordButton: 'Add word',
+    clearAllWordsConfirm: 'Delete all registered words/sentences?',
     modePass: 'Pass by participant order',
     modeTimer: 'Timer only',
     needTwoParticipants: 'Register at least 2 participants to pass it around in order.',

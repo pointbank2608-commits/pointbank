@@ -202,6 +202,8 @@ export interface GameTemplateConfig {
   ranks?: GameItem[];
   /** 시한폭탄 전용: 폭발까지 걸리는 시간(초)의 무작위 범위. */
   bombRange?: { min: number; max: number };
+  /** 시한폭탄 전용: 폭탄이 넘어갈 때마다 무작위로 하나 보여주는 읽을 단어·문장 목록. */
+  words?: GameItem[];
   /** 타이머 맞추기 전용: 목표 시간(밀리초). */
   targetMs?: number;
   /** 재생할 배경음악. 없으면 무음. */

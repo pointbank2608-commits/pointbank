@@ -112,6 +112,7 @@ const ko = {
 
   gameBomb: {
     defaultParticipant: '참가자 {{n}}',
+    defaultTemplateName: '새 시한폭탄',
     studentClassTitle: '{{className}} 시한폭탄',
     newButton: '+ 새 목록',
     namePlaceholder: '예: 청소 당번 폭탄 돌리기',
@@ -122,6 +123,11 @@ const ko = {
     resultSoundLabel: '결과 사운드',
     rangeLabel: '폭발 시간 범위(초) — 이 사이 무작위 시각에 터져요',
     seconds: '초',
+    wordsPanelLabel: '읽을 단어·문장',
+    defaultWord: '단어 {{n}}',
+    newWordPlaceholder: '새 단어나 문장',
+    addWordButton: '단어 추가',
+    clearAllWordsConfirm: '등록된 단어·문장을 전부 삭제할까요?',
     modePass: '참가자 순서대로',
     modeTimer: '타이머만',
     needTwoParticipants: '참가자를 2명 이상 등록해야 순서대로 돌릴 수 있어요.',
