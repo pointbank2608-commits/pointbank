@@ -141,7 +141,7 @@ export default function TimeBomb({
 
     setHolderIndex(0);
     setPhase('active');
-    if (mode === 'pass') pickWord();
+    pickWord();
     stopMusicRef.current = playMusic(music, { loop: true });
 
     const span = Math.max(maxSec - minSec, 0);
@@ -278,9 +278,16 @@ export default function TimeBomb({
               )}
 
               {phase === 'active' && mode === 'timer' && (
-                <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
-                  {t('gameBomb.timerModeHint')}
-                </div>
+                <>
+                  <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+                    {t('gameBomb.timerModeHint')}
+                  </div>
+                  {currentWord && (
+                    <div className="mb-4 max-w-[360px] rounded-2xl border border-secondary-container bg-white/70 px-6 py-3 text-center font-title-md text-title-md text-deep-navy">
+                      {currentWord.label}
+                    </div>
+                  )}
+                </>
               )}
 
               {phase === 'exploded' && (
@@ -341,45 +348,47 @@ export default function TimeBomb({
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
-                <button
-                  type="button"
-                  onClick={onRemoveItem}
-                  disabled={n <= 1}
-                  aria-label={t('gameAdmin.removeItemQuick')}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[20px]">remove</span>
-                </button>
-                <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
-                  {t('gameAdmin.itemCountLabel', { count: n })}
-                </span>
-                <button
-                  type="button"
-                  onClick={onAddItem}
-                  aria-label={t('gameAdmin.addItemQuick')}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[20px]">add</span>
-                </button>
+            {mode === 'pass' && (
+              <div>
+                <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={onRemoveItem}
+                    disabled={n <= 1}
+                    aria-label={t('gameAdmin.removeItemQuick')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">remove</span>
+                  </button>
+                  <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                    {t('gameAdmin.itemCountLabel', { count: n })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onAddItem}
+                    aria-label={t('gameAdmin.addItemQuick')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">add</span>
+                  </button>
+                </div>
+                <div className="mt-2 max-h-[280px] space-y-1.5 overflow-y-auto pr-1">
+                  {participants.map((item, i) => (
+                    <input
+                      key={item.id}
+                      value={itemDrafts[item.id] ?? item.label}
+                      onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+                      onBlur={() => commitItemDraft(item.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                      }}
+                      style={{ color: colorFor(i) }}
+                      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="mt-2 max-h-[280px] space-y-1.5 overflow-y-auto pr-1">
-                {participants.map((item, i) => (
-                  <input
-                    key={item.id}
-                    value={itemDrafts[item.id] ?? item.label}
-                    onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
-                    onBlur={() => commitItemDraft(item.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                    }}
-                    style={{ color: colorFor(i) }}
-                    className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                ))}
-              </div>
-            </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
