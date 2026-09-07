@@ -10,13 +10,15 @@ interface Props {
    */
   fit?: 'box' | 'block';
   align?: 'center' | 'left';
+  /** 단어 최대 글자 크기(px). 문장은 이 값의 절반 근처로 맞춘다. */
+  maxSize?: number;
 }
 
 /**
  * 단어면 칸이 허락하는 한 크게, 문장이면 줄바꿈해서 잘리지 않게.
  * 부모에 크기가 있어야 box 모드가 동작한다.
  */
-export default function GameFitText({ text, className, fit = 'box', align = 'center' }: Props) {
+export default function GameFitText({ text, className, fit = 'box', align = 'center', maxSize }: Props) {
   const wrapRef = useRef<HTMLSpanElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const kind = useMemo(() => classifyPlayText(text), [text]);
@@ -35,8 +37,13 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
       }
 
       const min = 11;
-      const wordCap = Math.min(fit === 'box' ? 68 : 72, Math.floor(maxH * 0.82) || 48);
-      const sentenceCap = Math.min(fit === 'box' ? 32 : 40, Math.floor(maxH * 0.36) || 26);
+      const wordDefault = fit === 'box' ? 68 : 72;
+      const sentenceDefault = fit === 'box' ? 32 : 40;
+      const wordCap = Math.min(maxSize ?? wordDefault, Math.floor(maxH * 0.82) || 48);
+      const sentenceCap = Math.min(
+        maxSize ? Math.round(maxSize * 0.55) : sentenceDefault,
+        Math.floor(maxH * 0.36) || 26,
+      );
       const max = Math.max(min, kind === 'word' ? wordCap : sentenceCap);
 
       el.style.whiteSpace = kind === 'word' ? 'nowrap' : 'pre-wrap';
@@ -65,7 +72,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
     const ro = new ResizeObserver(apply);
     ro.observe(wrap);
     return () => ro.disconnect();
-  }, [text, kind, fit]);
+  }, [text, kind, fit, maxSize]);
 
   return (
     <span

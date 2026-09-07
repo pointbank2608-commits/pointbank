@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GameFitText from './GameFitText';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -30,6 +31,7 @@ type Mode = 'pass' | 'timer';
 
 const IDLE_SRC = '/skins/bomb-idle.png';
 const EXPLODED_SRC = '/skins/bomb-exploded.png';
+const BOARD_SRC = '/skins/bomb-word-board.png';
 
 /**
  * 시한폭탄. min~maxSec 사이의 무작위 시각에 터지도록 숨겨진 타이머를 걸어둔다.
@@ -239,20 +241,48 @@ export default function TimeBomb({
             </div>
           ) : (
             <>
-              <div className="relative mb-5 flex h-[280px] w-[min(320px,88vw)] items-center justify-center">
-                <img
-                  src={phase === 'exploded' ? EXPLODED_SRC : IDLE_SRC}
-                  alt=""
-                  draggable={false}
-                  className={`pointer-events-none max-h-full max-w-full select-none object-contain ${
-                    phase === 'active' ? 'bomb-wobble' : phase === 'exploded' ? 'bomb-burst' : ''
-                  }`}
-                  style={
-                    phase === 'active'
-                      ? undefined
-                      : { filter: 'drop-shadow(0 12px 16px rgba(110, 62, 18, 0.22))' }
-                  }
-                />
+              <div className="mb-5 flex w-[min(560px,92vw)] flex-col items-center">
+                <div className="flex h-[220px] items-center justify-center sm:h-[260px]">
+                  <img
+                    src={phase === 'exploded' ? EXPLODED_SRC : IDLE_SRC}
+                    alt=""
+                    draggable={false}
+                    className={`pointer-events-none max-h-full max-w-[78%] select-none object-contain ${
+                      phase === 'active' ? 'bomb-wobble' : phase === 'exploded' ? 'bomb-burst' : ''
+                    }`}
+                    style={
+                      phase === 'active'
+                        ? undefined
+                        : { filter: 'drop-shadow(0 12px 16px rgba(110, 62, 18, 0.22))' }
+                    }
+                  />
+                </div>
+                {currentWord && (
+                  <div
+                    className="relative mt-1 w-full"
+                    style={{
+                      aspectRatio: '3.85 / 1',
+                      filter: 'drop-shadow(0 10px 16px rgba(90, 50, 18, 0.24))',
+                    }}
+                  >
+                    <img
+                      src={BOARD_SRC}
+                      alt=""
+                      draggable={false}
+                      className="pointer-events-none absolute inset-0 h-full w-full select-none object-fill"
+                    />
+                    <div
+                      className="absolute flex items-center justify-center"
+                      style={{ left: '10.5%', top: '18%', width: '79%', height: '64%' }}
+                    >
+                      <GameFitText
+                        text={currentWord.label}
+                        maxSize={72}
+                        className="font-bold text-[#2a241c]"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {phase === 'idle' && (
@@ -263,14 +293,9 @@ export default function TimeBomb({
 
               {phase === 'active' && mode === 'pass' && (
                 <>
-                  <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
+                  <div className="mb-4 text-center font-title-md text-[22px] text-deep-navy md:text-[24px]">
                     {t('gameBomb.holderTurn', { name: participants[holderIndex]?.label })}
                   </div>
-                  {currentWord && (
-                    <div className="mb-4 max-w-[360px] rounded-2xl border border-secondary-container bg-white/70 px-6 py-3 text-center font-title-md text-title-md text-deep-navy">
-                      {currentWord.label}
-                    </div>
-                  )}
                   <button onClick={pass} className={pill}>
                     {t('gameBomb.passButton')}
                   </button>
@@ -278,16 +303,9 @@ export default function TimeBomb({
               )}
 
               {phase === 'active' && mode === 'timer' && (
-                <>
-                  <div className="font-display-lg text-[34px] text-deep-navy mb-4 text-center">
-                    {t('gameBomb.timerModeHint')}
-                  </div>
-                  {currentWord && (
-                    <div className="mb-4 max-w-[360px] rounded-2xl border border-secondary-container bg-white/70 px-6 py-3 text-center font-title-md text-title-md text-deep-navy">
-                      {currentWord.label}
-                    </div>
-                  )}
-                </>
+                <div className="mb-1 text-center font-title-md text-[22px] text-deep-navy md:text-[24px]">
+                  {t('gameBomb.timerModeHint')}
+                </div>
               )}
 
               {phase === 'exploded' && (
