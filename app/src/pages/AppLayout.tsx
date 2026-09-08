@@ -34,6 +34,7 @@ export default function AppLayout() {
         { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
         { to: '/phonics', label: t('nav.phonics'), icon: 'spellcheck' },
         { to: '/wordlists', label: t('nav.wordLists'), icon: 'library_books' },
+        { to: '/materials', label: t('nav.classroomMaterials'), icon: 'print' },
         { to: '/results', label: t('nav.reports'), icon: 'assessment' },
       ]
     : [
@@ -133,7 +134,7 @@ export default function AppLayout() {
           시작하면 왼쪽 메뉴 버튼이 그 영역에 걸려 눌리지 않는다. safe-area-inset-top 만큼 아래로
           밀어서 실제 탭 영역이 상태 바 밖으로 나오게 한다. */}
       <header
-        className="md:hidden fixed top-0 left-0 right-0 bg-surface-container-lowest shadow-sm flex items-center justify-between px-margin-mobile z-40 pt-[env(safe-area-inset-top,0px)]"
+        className="no-print md:hidden fixed top-0 left-0 right-0 bg-surface-container-lowest shadow-sm flex items-center justify-between px-margin-mobile z-40 pt-[env(safe-area-inset-top,0px)]"
         style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
       >
         <button
@@ -163,13 +164,13 @@ export default function AppLayout() {
       )}
 
       {/* 데스크톱 사이드바 */}
-      <nav className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/30 py-6 z-30">
+      <nav className="no-print hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/30 py-6 z-30">
         {sidebarContent}
       </nav>
 
       <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen">
         {/* 데스크톱 상단바 */}
-        <header className="hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+        <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
           <LanguageToggle />
           <button
             type="button"

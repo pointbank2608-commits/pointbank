@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
-import type { GroupSortGroup, ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordList } from '../lib/types';
+import type { FullCardItem, GroupSortGroup, ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordList } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -12,6 +12,7 @@ type Props =
   | { variant: 'label'; wordLists: WordList[]; loading: boolean; onImportLabels: (labels: string[]) => void }
   | { variant: 'pairs'; wordLists: WordList[]; loading: boolean; onImportPairs: (pairs: MatchPair[]) => void }
   | { variant: 'image'; wordLists: WordList[]; loading: boolean; onImportImage: (items: ImageQuizItem[]) => void }
+  | { variant: 'full'; wordLists: WordList[]; loading: boolean; onImportFull: (items: FullCardItem[]) => void }
   | { variant: 'quiz'; wordLists: WordList[]; loading: boolean; onImportQuestions: (questions: QuizQuestion[]) => void }
   | { variant: 'truefalse'; wordLists: WordList[]; loading: boolean; onImportStatements: (statements: TrueFalseStatement[]) => void }
   | { variant: 'groupsort'; wordLists: WordList[]; loading: boolean; onImportGroups: (groups: GroupSortGroup[]) => void };
@@ -56,6 +57,8 @@ export default function WordListPicker(props: Props) {
       props.onImportImage(
         list.items.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
+    } else if (props.variant === 'full') {
+      props.onImportFull(list.items.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions(list, direction));
     } else if (props.variant === 'truefalse') {

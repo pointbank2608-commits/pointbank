@@ -4608,3 +4608,36 @@
   transform: scale(1.04);
 }
 
+/* ---- 수업 자료실 인쇄(메모리 카드·빙고판) ----
+ * 화면 미리보기는 A4 폭(210mm)에 맞춘 콘텐츠를 그대로 보여주고, 실제 여러 페이지로
+ * 나누는 건 인쇄 시 break-inside/break-after 규칙에 맡긴다(미리보기에서 페이지 경계를
+ * 픽셀 단위로 재현하려 하지 않음 — 브라우저 인쇄 엔진이 어차피 이 규칙대로 나눠준다). */
+.print-sheet {
+  width: 210mm;
+  max-width: 100%;
+}
+.print-card {
+  break-inside: avoid;
+}
+.print-board {
+  break-after: page;
+}
+.print-board:last-child {
+  break-after: auto;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-sheet {
+    width: auto;
+  }
+  body {
+    background: white;
+  }
+}
+

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { fetchPhonicsBank, fetchWordBank } from '../lib/api';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
-import type { GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
+import type { FullCardItem, GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
 import { PART_OF_SPEECH_ORDER, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
@@ -14,6 +14,7 @@ type Props =
   | { variant: 'label'; onImportLabels: (labels: string[]) => void }
   | { variant: 'pairs'; onImportPairs: (pairs: MatchPair[]) => void }
   | { variant: 'image'; onImportImage: (items: ImageQuizItem[]) => void }
+  | { variant: 'full'; onImportFull: (items: FullCardItem[]) => void }
   | { variant: 'quiz'; onImportQuestions: (questions: QuizQuestion[]) => void }
   | { variant: 'truefalse'; onImportStatements: (statements: TrueFalseStatement[]) => void }
   | { variant: 'groupsort'; onImportGroups: (groups: GroupSortGroup[]) => void };
@@ -173,6 +174,8 @@ export default function DictionaryPicker(props: Props) {
       props.onImportImage(
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
+    } else if (props.variant === 'full') {
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

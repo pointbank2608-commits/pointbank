@@ -375,6 +375,14 @@ export interface ImageQuizItem {
   answer: string;
 }
 
+/** 단어+뜻+이미지를 한꺼번에 쓰는 인쇄물(메모리 카드 등) 전용. 이미지는 없을 수 있다. */
+export interface FullCardItem {
+  id: string;
+  word: string;
+  meaning: string;
+  imageUrl: string | null;
+}
+
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */
 
 export interface WordBankEntry {

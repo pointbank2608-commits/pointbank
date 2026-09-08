@@ -8,6 +8,7 @@ import AnagramPage from './pages/AnagramPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
 import Baskin31Page from './pages/Baskin31Page';
+import BingoPage from './pages/BingoPage';
 import BombPage from './pages/BombPage';
 import Connect4Page from './pages/Connect4Page';
 import CrosswordPage from './pages/CrosswordPage';
@@ -30,7 +31,9 @@ import LadderPage from './pages/LadderPage';
 import LandingPage from './pages/LandingPage';
 import MatchupPage from './pages/MatchupPage';
 import MathGeneratorPage from './pages/MathGeneratorPage';
+import MaterialsPage from './pages/MaterialsPage';
 import MazeChasePage from './pages/MazeChasePage';
+import MemoryCardsPage from './pages/MemoryCardsPage';
 import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
@@ -113,6 +116,9 @@ export default function App() {
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />
+            <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />
+            <Route path="/materials/bingo" element={<BingoPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
