@@ -2,6 +2,8 @@ export interface MaterialCatalogEntry {
   id: string;
   path: string;
   icon: string;
+  /** MaterialsPage 카드 커버 사진 경로. 없으면 그라데이션+아이콘으로 대체 표시. */
+  cover: string | null;
   nameKey: string;
   descKey: string;
 }
@@ -13,6 +15,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     id: 'memorycards',
     path: '/materials/memory-cards',
     icon: 'style',
+    cover: '/covers/material-memorycards.jpg',
     nameKey: 'materials.memoryCardsName',
     descKey: 'materials.memoryCardsDesc',
   },
@@ -20,6 +23,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     id: 'bingo',
     path: '/materials/bingo',
     icon: 'grid_on',
+    cover: '/covers/material-bingo.jpg',
     nameKey: 'materials.bingoName',
     descKey: 'materials.bingoDesc',
   },
