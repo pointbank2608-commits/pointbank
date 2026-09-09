@@ -122,18 +122,18 @@ export default function FlashcardStudy({
               setFlipped((f) => !f);
             }
           }}
-          className="flex h-full max-h-[560px] w-full max-w-[820px] cursor-pointer flex-col items-center justify-center gap-6 rounded-3xl bg-surface-container-lowest px-8 py-10 text-center shadow-xl transition-transform active:scale-[0.99]"
+          className="flex h-full max-h-[720px] w-full max-w-[1100px] cursor-pointer flex-col items-center justify-center gap-8 rounded-3xl bg-surface-container-lowest px-8 py-10 text-center shadow-xl transition-transform active:scale-[0.99]"
         >
           {!flipped ? (
             <>
               {current.image_url && (
-                <img src={current.image_url} alt="" className="max-h-[38%] max-w-full rounded-2xl object-contain" />
+                <img src={current.image_url} alt="" className="max-h-[48%] max-w-full rounded-2xl object-contain" />
               )}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 {current.front ? (
                   current.front
                 ) : (
-                  <span className="font-title-md text-[clamp(32px,7vw,72px)] font-bold text-deep-navy">{current.word}</span>
+                  <span className="font-title-md text-[clamp(48px,9vw,112px)] font-bold text-deep-navy">{current.word}</span>
                 )}
                 <button
                   type="button"
@@ -142,19 +142,19 @@ export default function FlashcardStudy({
                     speak(current.word);
                   }}
                   aria-label={t('dictionary.playWord', { word: current.word })}
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
                 >
-                  <span className="material-symbols-outlined text-[32px]">volume_up</span>
+                  <span className="material-symbols-outlined text-[44px]">volume_up</span>
                 </button>
               </div>
               <span className="font-caption text-caption text-on-surface-variant">{t('flashcardStudy.tapToFlip')}</span>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-4">
-              <span className="font-body-md text-[clamp(28px,6vw,56px)] font-semibold text-on-surface">{current.back}</span>
+            <div className="flex flex-col items-center gap-5">
+              <span className="font-body-md text-[clamp(40px,8vw,88px)] font-semibold text-on-surface">{current.back}</span>
               {current.example && (
                 <div className="flex items-center gap-2">
-                  <span className="font-body-md text-[clamp(16px,3vw,24px)] text-on-surface-variant">{current.example}</span>
+                  <span className="font-body-md text-[clamp(20px,3.5vw,32px)] text-on-surface-variant">{current.example}</span>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -162,9 +162,9 @@ export default function FlashcardStudy({
                       speak(current.example as string);
                     }}
                     aria-label={t('dictionary.playExample')}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
                   >
-                    <span className="material-symbols-outlined text-[24px]">volume_up</span>
+                    <span className="material-symbols-outlined text-[28px]">volume_up</span>
                   </button>
                 </div>
               )}
