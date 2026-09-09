@@ -1287,6 +1287,7 @@ const ko = {
     noResults: '검색 결과가 없어요.',
     playWord: '{{word}} 발음 듣기',
     viewFullImage: '{{word}} 이미지 전체 보기',
+    studyButton: '카드로 외우기',
   },
 
   gamePlay: {

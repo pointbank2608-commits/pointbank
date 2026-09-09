@@ -1,11 +1,18 @@
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../lib/speech';
 
 export interface StudyCard {
   id: string;
-  front: string;
+  /** 발음 재생·aria-label 등에 쓰는 순수 텍스트 단어. */
+  word: string;
+  /** 카드 앞면에 보여줄 내용. 생략하면 word를 그대로 보여준다 — 파닉스처럼 소리 규칙 강조
+   * 표시가 필요할 때만 하이라이트된 마크업을 넘긴다. */
+  front?: ReactNode;
   back: string;
+  /** 뒷면에 뜻과 같이 보여줄 예문(있는 데이터만). */
+  example?: string | null;
   image_url: string | null;
 }
 
@@ -123,14 +130,18 @@ export default function FlashcardStudy({
                 <img src={current.image_url} alt="" className="max-h-[38%] max-w-full rounded-2xl object-contain" />
               )}
               <div className="flex items-center gap-3">
-                <span className="font-title-md text-[clamp(32px,7vw,72px)] font-bold text-deep-navy">{current.front}</span>
+                {current.front ? (
+                  current.front
+                ) : (
+                  <span className="font-title-md text-[clamp(32px,7vw,72px)] font-bold text-deep-navy">{current.word}</span>
+                )}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    speak(current.front);
+                    speak(current.word);
                   }}
-                  aria-label={t('dictionary.playWord', { word: current.front })}
+                  aria-label={t('dictionary.playWord', { word: current.word })}
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
                 >
                   <span className="material-symbols-outlined text-[32px]">volume_up</span>
@@ -139,7 +150,25 @@ export default function FlashcardStudy({
               <span className="font-caption text-caption text-on-surface-variant">{t('flashcardStudy.tapToFlip')}</span>
             </>
           ) : (
-            <span className="font-body-md text-[clamp(28px,6vw,56px)] font-semibold text-on-surface">{current.back}</span>
+            <div className="flex flex-col items-center gap-4">
+              <span className="font-body-md text-[clamp(28px,6vw,56px)] font-semibold text-on-surface">{current.back}</span>
+              {current.example && (
+                <div className="flex items-center gap-2">
+                  <span className="font-body-md text-[clamp(16px,3vw,24px)] text-on-surface-variant">{current.example}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      speak(current.example as string);
+                    }}
+                    aria-label={t('dictionary.playExample')}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
+                  >
+                    <span className="material-symbols-outlined text-[24px]">volume_up</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

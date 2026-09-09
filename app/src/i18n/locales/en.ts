@@ -1290,6 +1290,7 @@ const en: Ko = {
     noResults: 'No matches found.',
     playWord: 'Play pronunciation of {{word}}',
     viewFullImage: 'View full image for {{word}}',
+    studyButton: 'Study with flashcards',
   },
 
   gamePlay: {

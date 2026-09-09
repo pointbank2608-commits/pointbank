@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FlashcardStudy from '../components/FlashcardStudy';
 import { fetchPhonicsBank } from '../lib/api';
 import { speak } from '../lib/speech';
 import type { PhonicsBankEntry } from '../lib/types';
@@ -122,6 +123,7 @@ export default function PhonicsPage() {
   const [step, setStep] = useState<number>(1);
   const [rule, setRule] = useState<string>('all');
   const [lightbox, setLightbox] = useState<PhonicsBankEntry | null>(null);
+  const [studying, setStudying] = useState(false);
 
   useEffect(() => {
     fetchPhonicsBank()
@@ -215,8 +217,20 @@ export default function PhonicsPage() {
 
       {entries && (
         <>
-          <div className="font-caption text-caption text-on-surface-variant tabular-nums">
-            {t('phonics.resultCount', { count: filtered.length })}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="font-caption text-caption text-on-surface-variant tabular-nums">
+              {t('phonics.resultCount', { count: filtered.length })}
+            </div>
+            {filtered.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setStudying(true)}
+                className="flex items-center gap-1.5 rounded-full bg-secondary-container px-4 py-2 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-90"
+              >
+                <span className="material-symbols-outlined text-base">style</span>
+                {t('phonics.studyButton')}
+              </button>
+            )}
           </div>
 
           {filtered.length === 0 ? (
@@ -255,6 +269,20 @@ export default function PhonicsPage() {
       )}
 
       {lightbox && <PhonicsLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
+
+      {studying && (
+        <FlashcardStudy
+          title={t('phonics.title')}
+          cards={filtered.map((e) => ({
+            id: e.id,
+            word: e.word,
+            front: <PatternWord pattern={e.pattern_marked} size="lightbox" />,
+            back: e.meaning ?? '',
+            image_url: e.image_url,
+          }))}
+          onClose={() => setStudying(false)}
+        />
+      )}
     </div>
   );
 }

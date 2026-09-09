@@ -291,7 +291,13 @@ export default function DictionaryPage() {
       {studying && (
         <FlashcardStudy
           title={t('dictionary.title')}
-          cards={filtered.map((e) => ({ id: e.id, front: e.word, back: e.meaning, image_url: e.image_url }))}
+          cards={filtered.map((e) => ({
+            id: e.id,
+            word: e.word,
+            back: e.meaning,
+            example: e.example_sentence,
+            image_url: e.image_url,
+          }))}
           onClose={() => setStudying(false)}
         />
       )}
