@@ -21,32 +21,16 @@ function uid(): string {
   return crypto.randomUUID();
 }
 
-type RankStyle = 'ordinal' | 'number';
-
-function defaultParticipants(): GameItem[] {
+function defaultPool(): GameItem[] {
   return [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameOrder.defaultParticipant', { n }) }));
-}
-
-function rankLabel(n: number, style: RankStyle): string {
-  return style === 'number' ? i18n.t('gameOrder.numberStyle', { n }) : i18n.t('gameOrder.ordinalStyle', { n });
-}
-
-function rankLabels(count: number, style: RankStyle): GameItem[] {
-  return Array.from({ length: count }, (_, i) => ({ id: uid(), label: rankLabel(i + 1, style) }));
-}
-
-/** 저장된 순위 이름이 없거나(예전 템플릿) 참가자 수와 안 맞으면 기본 순위 이름으로 새로 채운다. */
-function ranksFor(items: GameItem[], stored?: GameItem[]): GameItem[] {
-  if (stored && stored.length === items.length) return stored;
-  return rankLabels(items.length, 'ordinal');
 }
 
 export default function OrderPage() {
   const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'order',
-    defaultItems: defaultParticipants,
-    defaultConfig: () => ({ ranks: rankLabels(3, 'ordinal') }),
+    defaultItems: defaultPool,
+    defaultConfig: () => ({}),
   });
   const {
     isStaff,
@@ -91,69 +75,45 @@ export default function OrderPage() {
   const [newParticipant, setNewParticipant] = useState('');
 
   /** 아직 만든 목록이 없을 때, 빈 안내 문구 대신 실제로 돌아가는 예시 화면을 보여준다 —
-   * 처음 온 선생님이 "아 이런 게임이구나" 하고 감으로 이해하게. 참가자 수 고정(3명)이라
+   * 처음 온 선생님이 "아 이런 게임이구나" 하고 감으로 이해하게. 항목 수 고정(3개)이라
    * 매 렌더마다 새로 만들지 않고 한 번만 계산해 데모 중 상태가 리셋되지 않게 한다. */
-  const demoParticipants = useMemo(defaultParticipants, []);
-  const demoRanks = useMemo(() => rankLabels(3, 'ordinal'), []);
+  const demoPool = useMemo(defaultPool, []);
 
-  const ranks = selected ? ranksFor(selected.items, selected.config.ranks) : [];
-
-  async function persist(nextItems: GameItem[], nextRanks: GameItem[]) {
+  async function persist(nextItems: GameItem[]) {
     if (!selected) return;
-    const nextConfig = { ...selected.config, ranks: nextRanks };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems, config: nextConfig } : tpl)));
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems } : tpl)));
     try {
-      await updateGameTemplate(selected.id, { items: nextItems, config: nextConfig });
+      await updateGameTemplate(selected.id, { items: nextItems });
     } catch {
       await reload();
     }
   }
 
+  async function addItem(label: string) {
+    const trimmed = label.trim();
+    if (!trimmed || !selected) return;
+    await persist([...selected.items, { id: uid(), label: trimmed }]);
+  }
+
   async function addParticipant() {
-    const label = newParticipant.trim();
-    if (!label || !selected) return;
-    await persist(
-      [...selected.items, { id: uid(), label }],
-      [...ranks, { id: uid(), label: rankLabel(ranks.length + 1, 'ordinal') }],
-    );
+    await addItem(newParticipant);
     setNewParticipant('');
   }
 
   async function addParticipantsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
-    await persist(
-      [...selected.items, ...labels.map((label) => ({ id: uid(), label }))],
-      [...ranks, ...labels.map((_, i) => ({ id: uid(), label: rankLabel(ranks.length + i + 1, 'ordinal') }))],
-    );
+    await persist([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
   }
 
   async function removeParticipant(index: number) {
     if (!selected) return;
-    await persist(
-      selected.items.filter((_, i) => i !== index),
-      ranks.filter((_, i) => i !== index),
-    );
+    await persist(selected.items.filter((_, i) => i !== index));
   }
 
   async function clearAllParticipants() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameOrder.clearAllConfirm'))) return;
-    await persist([], []);
-  }
-
-  async function renameRank(index: number) {
-    if (!selected) return;
-    const next = prompt(t('gameOrder.renameRankPrompt'), ranks[index]?.label ?? '');
-    if (next == null || !next.trim()) return;
-    await persist(
-      selected.items,
-      ranks.map((r, i) => (i === index ? { ...r, label: next.trim() } : r)),
-    );
-  }
-
-  async function applyRankStyle(style: RankStyle) {
-    if (!selected) return;
-    await persist(selected.items, rankLabels(ranks.length, style));
+    await persist([]);
   }
 
   async function handleMusicChange(music: MusicSelection | null) {
@@ -324,7 +284,7 @@ export default function OrderPage() {
               roster={roster}
               className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
             >
-              <OrderPicker participants={demoParticipants} ranks={demoRanks} music={null} resultSound={undefined} />
+              <OrderPicker pool={demoPool} music={null} resultSound={undefined} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameOrder.emptyStaff') : t('gameOrder.emptyStudent')}
@@ -344,11 +304,12 @@ export default function OrderPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <OrderPicker key={roundKey}
-              participants={selected.items}
-              ranks={ranks}
+            <OrderPicker
+              key={roundKey}
+              pool={selected.items}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
+              onAdd={isStaff ? (label) => void addItem(label) : undefined}
             />
           </GameThemeFrame>
 
@@ -399,18 +360,17 @@ export default function OrderPage() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameOrder.participantsLabel')}</div>
-                        <StudentRosterPicker
-                          roster={roster}
-                          existingLabels={selected.items.map((i) => i.label)}
-                          scope={rosterScope}
-                          onScopeChange={setRosterScope}
-                          loading={rosterLoading}
-                          onAdd={(labels) => void addParticipantsBulk(labels)}
-                        />
-                        <div className="flex flex-wrap items-start gap-3 my-3">
+                    <div>
+                      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameOrder.itemsLabel')}</div>
+                      <StudentRosterPicker
+                        roster={roster}
+                        existingLabels={selected.items.map((i) => i.label)}
+                        scope={rosterScope}
+                        onScopeChange={setRosterScope}
+                        loading={rosterLoading}
+                        onAdd={(labels) => void addParticipantsBulk(labels)}
+                      />
+                      <div className="flex flex-wrap items-start gap-3 my-3">
                         <WordListPicker
                           variant="label"
                           wordLists={wordLists}
@@ -421,87 +381,55 @@ export default function OrderPage() {
                           variant="label"
                           onImportLabels={(labels) => void addParticipantsBulk(labels)}
                         />
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 mt-3">
-                          {selected.items.length === 0 ? (
-                            <span className="font-caption text-caption text-on-surface-variant">
-                              {t('gameAdmin.noParticipants')}
-                            </span>
-                          ) : (
-                            selected.items.map((item, i) => (
-                              <div
-                                key={item.id}
-                                className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                              >
-                                {item.label}
-                                <button
-                                  onClick={() => void removeParticipant(i)}
-                                  className="text-on-surface-variant hover:text-error"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                        {selected.items.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => void clearAllParticipants()}
-                            className="mt-2 font-label-md text-label-md text-error hover:underline"
-                          >
-                            {t('gameAdmin.clearAll')}
-                          </button>
-                        )}
-                        <div className="flex gap-2 mt-3">
-                          <input
-                            type="text"
-                            placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                            value={newParticipant}
-                            onChange={(e) => setNewParticipant(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') void addParticipant();
-                            }}
-                            className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                          />
-                          <button
-                            onClick={() => void addParticipant()}
-                            className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                          >
-                            {t('gameAdmin.addParticipant')}
-                          </button>
-                        </div>
                       </div>
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">
-                          {t('gameOrder.ranksLabel')}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {ranks.map((r, i) => (
-                            <button
-                              key={r.id}
-                              type="button"
-                              onClick={() => void renameRank(i)}
-                              className="px-3 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors"
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {selected.items.length === 0 ? (
+                          <span className="font-caption text-caption text-on-surface-variant">
+                            {t('gameAdmin.noParticipants')}
+                          </span>
+                        ) : (
+                          selected.items.map((item, i) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
                             >
-                              {r.label}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => void applyRankStyle('ordinal')}
-                            className="font-label-md text-label-md text-primary hover:underline"
-                          >
-                            {t('gameOrder.applyOrdinalStyle')}
-                          </button>
-                          <button
-                            onClick={() => void applyRankStyle('number')}
-                            className="font-label-md text-label-md text-primary hover:underline"
-                          >
-                            {t('gameOrder.applyNumberStyle')}
-                          </button>
-                        </div>
+                              {item.label}
+                              <button
+                                onClick={() => void removeParticipant(i)}
+                                className="text-on-surface-variant hover:text-error"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      {selected.items.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => void clearAllParticipants()}
+                          className="mt-2 font-label-md text-label-md text-error hover:underline"
+                        >
+                          {t('gameAdmin.clearAll')}
+                        </button>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <input
+                          type="text"
+                          placeholder={t('gameAdmin.newParticipantPlaceholder')}
+                          value={newParticipant}
+                          onChange={(e) => setNewParticipant(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void addParticipant();
+                          }}
+                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <button
+                          onClick={() => void addParticipant()}
+                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                        >
+                          {t('gameAdmin.addParticipant')}
+                        </button>
                       </div>
                     </div>
                   </div>
