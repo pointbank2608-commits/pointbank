@@ -1343,6 +1343,7 @@ const ko = {
     viewAllTab: '전체',
     viewAllHint: '모든 반의 단어장을 한 번에 볼 수 있어요. 새 단어장은 특정 반을 골라서 만들어 주세요.',
     unassignedClass: '반 없음',
+    studyButton: '카드로 외우기',
   },
 
   materials: {

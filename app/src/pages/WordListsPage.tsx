@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
+import FlashcardStudy from '../components/FlashcardStudy';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -412,6 +413,8 @@ export default function WordListsPage() {
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
   const [viewAll, setViewAll] = useState(false);
+  const [studyingListId, setStudyingListId] = useState<string | null>(null);
+  const studyingList = lists.find((l) => l.id === studyingListId) ?? null;
 
   async function load() {
     if (!academy?.id || (!viewAll && !selectedId)) {
@@ -517,6 +520,15 @@ export default function WordListsPage() {
                   </span>
                 </button>
                 <span className="flex gap-3">
+                  {list.items.length > 0 && (
+                    <button
+                      onClick={() => setStudyingListId(list.id)}
+                      className="flex items-center gap-1 font-label-md text-label-md text-secondary hover:underline"
+                    >
+                      <span className="material-symbols-outlined text-base">style</span>
+                      {t('wordLists.studyButton')}
+                    </button>
+                  )}
                   <button
                     onClick={() => void handleRename(list)}
                     className="font-label-md text-label-md text-primary hover:underline"
@@ -604,6 +616,19 @@ export default function WordListsPage() {
             </button>
           )}
         </div>
+      )}
+
+      {studyingList && (
+        <FlashcardStudy
+          title={studyingList.name}
+          cards={studyingList.items.map((i) => ({
+            id: i.id,
+            word: i.word,
+            back: i.meaning,
+            image_url: i.image_url,
+          }))}
+          onClose={() => setStudyingListId(null)}
+        />
       )}
     </div>
   );

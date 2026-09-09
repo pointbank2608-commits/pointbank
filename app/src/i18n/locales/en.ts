@@ -1346,6 +1346,7 @@ const en: Ko = {
     viewAllTab: 'All',
     viewAllHint: 'See word lists from every class at once. To create a new one, pick a specific class first.',
     unassignedClass: 'No class',
+    studyButton: 'Study with flashcards',
   },
 
   materials: {
