@@ -109,9 +109,11 @@ export default function FlashcardStudy({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center py-4">
+      <div className="flex flex-1 items-center justify-center py-4" style={{ perspective: '1800px' }}>
         {/* 카드 안에 발음 버튼(별도 <button>)이 있어 카드 자체는 <button>이 아닌
-         * role="button" div 로 만든다 — <button> 안에 <button>은 유효한 HTML이 아니다. */}
+         * role="button" div 로 만든다 — <button> 안에 <button>은 유효한 HTML이 아니다.
+         * 앞면·뒷면을 항상 둘 다 DOM에 두고 rotateY 로 뒤집는다(3D 카드 플립) — flipped에 따라
+         * 하나만 렌더링하던 방식으로는 이 회전 애니메이션을 표현할 수 없다. */}
         <div
           role="button"
           tabIndex={0}
@@ -122,10 +124,13 @@ export default function FlashcardStudy({
               setFlipped((f) => !f);
             }
           }}
-          className="flex h-full max-h-[720px] w-full max-w-[1100px] cursor-pointer flex-col items-center justify-center gap-8 rounded-3xl bg-surface-container-lowest px-8 py-10 text-center shadow-xl transition-transform active:scale-[0.99]"
+          className="relative h-full max-h-[720px] w-full max-w-[1100px] cursor-pointer text-center"
         >
-          {!flipped ? (
-            <>
+          <div
+            className="relative h-full w-full transition-transform duration-500 ease-in-out motion-reduce:transition-none [transform-style:preserve-3d]"
+            style={{ transform: flipped ? 'rotateY(180deg)' : undefined }}
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 rounded-3xl bg-surface-container-lowest px-8 py-10 shadow-xl [backface-visibility:hidden]">
               {current.image_url && (
                 <img src={current.image_url} alt="" className="max-h-[48%] max-w-full rounded-2xl object-contain" />
               )}
@@ -148,9 +153,9 @@ export default function FlashcardStudy({
                 </button>
               </div>
               <span className="font-caption text-caption text-on-surface-variant">{t('flashcardStudy.tapToFlip')}</span>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-5">
+            </div>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 rounded-3xl bg-surface-container-lowest px-8 py-10 shadow-xl [backface-visibility:hidden] [transform:rotateY(180deg)]">
               <span className="font-body-md text-[clamp(40px,8vw,88px)] font-semibold text-on-surface">{current.back}</span>
               {current.example && (
                 <div className="flex items-center gap-2">
@@ -169,7 +174,7 @@ export default function FlashcardStudy({
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
