@@ -154,6 +154,13 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     const ro = new ResizeObserver(fit);
     ro.observe(stage);
     ro.observe(wrap);
+    // wrap의 각 target도 관찰한다 — 예를 들어 전체화면에 막 들어간 시점엔 아직 로그인/권한
+    // 정보가 덜 로드돼 "바로 추가" 패널처럼 조건부로 나타나는 내용이 없다가 잠깐 뒤에
+    // 나타나는 경우가 있는데, stage/wrap 자신의 크기는 안 바뀌니 ResizeObserver가 그 변화를
+    // 못 잡는다 — target을 직접 관찰해야 내용이 늘어나는 순간 다시 재도록 잡을 수 있다.
+    for (const target of Array.from(wrap.children) as HTMLElement[]) {
+      ro.observe(target);
+    }
     return () => ro.disconnect();
   }, [isFullscreen]);
 
