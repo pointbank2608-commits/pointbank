@@ -186,7 +186,7 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
       ref={wrapRef}
       className={`relative flex w-full flex-col items-center ${onAdd ? 'md:flex-row md:items-start md:justify-center md:gap-8' : ''}`}
     >
-      <div className="flex flex-col items-center">
+      <div className="flex w-full flex-col items-center">
         <div
           ref={machineBoxRef}
           className={`relative mb-1 w-[min(380px,90vw)] aspect-square ${active ? 'lottery-box-shake' : ''}`}

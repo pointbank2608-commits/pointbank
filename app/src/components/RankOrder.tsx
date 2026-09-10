@@ -220,9 +220,9 @@ export default function RankOrder({
     return (
       <div className="flex flex-col items-center pt-3 pb-2">
         <div
-          className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+          className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
         >
-          <div className="flex flex-col items-center">
+          <div className="flex w-full flex-col items-center">
             {nameHeader}
             <div
               className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
@@ -259,9 +259,9 @@ export default function RankOrder({
   return (
     <div className="flex w-full flex-col items-center pt-1.5 pb-2">
       <div
-        className={`flex flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+        className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
-        <div className="flex flex-col items-center">
+        <div className="flex w-full flex-col items-center">
           {nameHeader}
           <div className="mb-4 font-caption text-caption text-on-surface-variant">{t('gameRankOrder.hint')}</div>
           <div data-skin-stage="board" className="ro-list">
