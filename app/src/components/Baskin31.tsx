@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -19,21 +19,66 @@ interface Props {
 
 type Team = 'blue' | 'red';
 
+type Cup = {
+  id: string;
+  absIndex: number;
+  word: string;
+  tone: 0 | 1 | 2;
+  slot: number;
+  leaving?: boolean;
+  spawn?: boolean;
+};
+
+interface Snapshot {
+  count: number;
+  turn: Team;
+  head: number;
+  loser: Team | null;
+}
+
 const PICK_OPTIONS = [1, 2, 3];
-const CONE_SRC = '/skins/baskin-cone.png';
+const CUP_SRCS = [
+  '/skins/baskin-cup-mint.png?v=1',
+  '/skins/baskin-cup-yellow.png?v=1',
+  '/skins/baskin-cup-coral.png?v=1',
+];
 const COUNTER_SRC = '/skins/baskin-counter.png';
 const CARD_SRC = '/skins/miss-card.png';
+const LEAVE_MS = 420;
+const SLIDE_MS = 560;
 
 /** 스킨 이미지에서 측정한 화면 구멍. 값은 이미지 너비/높이 대비 비율. */
 const SCREEN = { left: 0.12, top: 0.25, width: 0.75, height: 0.5 };
 const SCREEN_FILL = { left: 0.095, top: 0.195, width: 0.805, height: 0.615 };
 
-interface Snapshot {
-  count: number;
-  turn: Team;
-  wordIndex: number;
-  lastWords: string[];
-  loser: Team | null;
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function nextFrame() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
+function makeCup(absIndex: number, slot: number, items: GameItem[]): Cup {
+  const item = items[absIndex % items.length];
+  return {
+    id: `cup-${absIndex}`,
+    absIndex,
+    word: item.label,
+    tone: (absIndex % 3) as 0 | 1 | 2,
+    slot,
+  };
+}
+
+function windowCups(head: number, items: GameItem[]): Cup[] {
+  if (items.length === 0) return [];
+  return [0, 1, 2].map((slot) => makeCup(head + slot, slot, items));
 }
 
 const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
@@ -44,18 +89,44 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   const { itemsHidden } = useGamePlay();
   const [count, setCount] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
-  const [wordIndex, setWordIndex] = useState(0);
-  const [lastWords, setLastWords] = useState<string[]>([]);
+  const [head, setHead] = useState(0);
   const [loser, setLoser] = useState<Team | null>(null);
   const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [cups, setCups] = useState<Cup[]>(() => windowCups(0, items));
+  const [busy, setBusy] = useState(false);
+  const [countTick, setCountTick] = useState(0);
+  const moveGen = useRef(0);
+  const cupsRef = useRef(cups);
+  const headRef = useRef(head);
+  cupsRef.current = cups;
+  headRef.current = head;
 
-  // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
-  // 보여주다가(blur/Enter 시점에 onEditItem으로 실제 반영한다.
+  useEffect(() => {
+    CUP_SRCS.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   useEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
+  }, [items]);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setCups([]);
+      return;
+    }
+    setCups((cs) => {
+      if (cs.length === 0) return windowCups(headRef.current, items);
+      return cs.map((c) => ({
+        ...c,
+        word: items[c.absIndex % items.length]?.label ?? c.word,
+      }));
+    });
   }, [items]);
 
   function handleItemDraftChange(id: string, value: string) {
@@ -78,13 +149,14 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  function pick(n: number) {
+  function applyPick(n: number, alreadySnapshotted = false) {
     if (loser || items.length === 0) return;
-    setPrevSnapshot({ count, turn, wordIndex, lastWords, loser });
-    const words = Array.from({ length: n }, (_, i) => items[(wordIndex + i) % items.length].label);
+    if (!alreadySnapshotted) {
+      setPrevSnapshot({ count, turn, head, loser });
+    }
     const nextCount = count + n;
-    setLastWords(words);
-    setWordIndex((wordIndex + n) % items.length);
+    setHead(head + n);
+    setCountTick((k) => k + 1);
     if (nextCount >= targetCount) {
       setCount(targetCount);
       setLoser(turn);
@@ -94,23 +166,67 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
     }
   }
 
+  function requestPick(n: number) {
+    if (loser || busy || items.length === 0) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      applyPick(n);
+      setCups(windowCups(head + n, items));
+      return;
+    }
+    const gen = ++moveGen.current;
+    const startHead = head;
+    setPrevSnapshot({ count, turn, head, loser });
+    setBusy(true);
+    setCups((cs) => cs.map((c) => (c.slot < n ? { ...c, leaving: true } : c)));
+
+    void (async () => {
+      const still = () => moveGen.current === gen;
+      await sleep(LEAVE_MS);
+      if (!still()) return;
+
+      const staying = cupsRef.current
+        .filter((c) => !c.leaving)
+        .map((c) => ({ ...c, slot: c.slot - n, leaving: false, spawn: false }));
+      const incoming = Array.from({ length: n }, (_, i) => ({
+        ...makeCup(startHead + 3 + i, 3 + i, items),
+        spawn: true,
+      }));
+      setCups([...staying, ...incoming]);
+      applyPick(n, true);
+
+      await nextFrame();
+      if (!still()) return;
+      setCups((cs) =>
+        cs.map((c) => (c.spawn ? { ...c, slot: c.slot - n, spawn: false } : c)),
+      );
+
+      await sleep(SLIDE_MS);
+      if (!still()) return;
+      setBusy(false);
+    })();
+  }
+
   function resetAll() {
+    moveGen.current += 1;
+    setBusy(false);
     setCount(0);
     setTurn('blue');
-    setWordIndex(0);
-    setLastWords([]);
+    setHead(0);
     setLoser(null);
     setPrevSnapshot(null);
+    setCups(windowCups(0, items));
   }
 
   useImperativeHandle(ref, () => ({
     undo() {
+      moveGen.current += 1;
+      setBusy(false);
       if (!prevSnapshot) return;
       setCount(prevSnapshot.count);
       setTurn(prevSnapshot.turn);
-      setWordIndex(prevSnapshot.wordIndex);
-      setLastWords(prevSnapshot.lastWords);
+      setHead(prevSnapshot.head);
       setLoser(prevSnapshot.loser);
+      setCups(windowCups(prevSnapshot.head, items));
       setPrevSnapshot(null);
     },
   }));
@@ -121,7 +237,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
-        <img src={CONE_SRC} alt="" className="mx-auto mb-3 h-16 w-auto" />
+        <img src={CUP_SRCS[0]} alt="" className="mx-auto mb-3 h-20 w-auto" />
         <div className="font-body-md text-body-md">{t('gameBaskin31.needParticipants')}</div>
       </div>
     );
@@ -134,7 +250,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
       <div
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
-        <div className="flex w-full flex-col items-center">
+        <div className={`flex flex-col items-center ${editable && !itemsHidden ? '' : 'w-full'}`}>
           {editable &&
             (editingTemplateName ? (
               <input
@@ -163,107 +279,105 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <img
-        src={CONE_SRC}
-        alt=""
-        data-skin-object="scoop"
-        draggable={false}
-        className={`mb-4 h-[min(168px,38vw)] w-auto select-none transition-all ${
-          loser ? 'scale-90 grayscale opacity-40' : ''
-        }`}
-        style={{ filter: loser ? undefined : 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.22))' }}
-      />
 
-      <div
-        className="relative mb-4 w-[min(280px,86vw)]"
-        style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.28))' }}
-      >
-        <div
-          className="absolute z-0 bg-[#1a2430]"
-          style={{
-            left: `${SCREEN_FILL.left * 100}%`,
-            top: `${SCREEN_FILL.top * 100}%`,
-            width: `${SCREEN_FILL.width * 100}%`,
-            height: `${SCREEN_FILL.height * 100}%`,
-          }}
-        />
-        <img src={COUNTER_SRC} alt="" draggable={false} className="pointer-events-none relative z-10 w-full select-none" />
-        <div
-          className="absolute z-20 flex items-center justify-center"
-          style={{
-            left: `${SCREEN.left * 100}%`,
-            top: `${SCREEN.top * 100}%`,
-            width: `${SCREEN.width * 100}%`,
-            height: `${SCREEN.height * 100}%`,
-          }}
-        >
-          <span className="font-mono text-[clamp(22px,7vw,36px)] font-bold tabular-nums tracking-wide text-[#e8fbf6]">
-            {count}
-            <span className="text-[0.62em] text-[#9adfd4]"> / {targetCount}</span>
-          </span>
-        </div>
-      </div>
-
-      {!loser && (
-        <div
-          className={`mb-4 rounded-full px-6 py-2 font-label-md text-label-md shadow-sm ${
-            turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
-          }`}
-          style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
-        >
-          {t('gameBaskin31.turnLabel', { team: teamLabel(turn) })}
-        </div>
-      )}
-
-      {lastWords.length > 0 && (
-        <div className="mb-5 flex flex-wrap justify-center gap-2">
-          {lastWords.map((w, i) => (
-            <div
-              key={`${w}-${i}`}
-              className="relative w-[min(118px,30vw)]"
-              style={{ filter: 'drop-shadow(0 5px 7px rgba(90, 50, 18, 0.16))' }}
-            >
-              <img src={CARD_SRC} alt="" draggable={false} className="pointer-events-none w-full select-none" />
-              <div
-                className="absolute flex items-center justify-center px-1"
-                style={{ left: '10%', top: '13%', width: '81%', height: '75%' }}
-              >
-                <span className="block h-full w-full min-h-0">
-                  <GameFitText text={w} />
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!loser ? (
-        <div className="flex flex-wrap justify-center gap-2.5">
-          {PICK_OPTIONS.map((n) => (
-            <button key={n} onClick={() => pick(n)} className={pill}>
-              {t('gameBaskin31.pickButton', { n })}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="result-pop rounded-2xl px-8 py-4 text-center"
-            style={{
-              backgroundColor: '#f28b73',
-              border: '3px solid #f0d7a8',
-              boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
-            }}
-          >
-            <div className="font-title-md text-[20px] font-bold text-white">
-              {t('gameBaskin31.loseMessage', { team: teamLabel(loser), target: targetCount })}
+          <div className="bk-line mb-4" data-skin-stage="baskin">
+            <div className="bk-track">
+              {cups.map((cup) => (
+                <div
+                  key={cup.id}
+                  className={`bk-cell${cup.leaving ? ' is-leaving' : ''}${cup.spawn ? ' is-spawn' : ''}`}
+                  style={{ ['--slot' as string]: String(cup.slot) }}
+                  data-skin-object="scoop"
+                >
+                  <div className="bk-word">
+                    <img src={CARD_SRC} alt="" draggable={false} />
+                    <div className="bk-word-text">
+                      <span className="block h-full w-full min-h-0">
+                        <GameFitText text={cup.word} />
+                      </span>
+                    </div>
+                  </div>
+                  <img src={CUP_SRCS[cup.tone]} alt="" draggable={false} className="bk-cup" />
+                </div>
+              ))}
             </div>
           </div>
-          <button onClick={resetAll} className={`${pill} px-10`}>
-            {t('gameBaskin31.playAgainButton')}
-          </button>
-        </div>
-      )}
+
+          <div
+            className="relative mb-4 w-[min(280px,86vw)]"
+            style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.28))' }}
+          >
+            <div
+              className="absolute z-0 bg-[#1a2430]"
+              style={{
+                left: `${SCREEN_FILL.left * 100}%`,
+                top: `${SCREEN_FILL.top * 100}%`,
+                width: `${SCREEN_FILL.width * 100}%`,
+                height: `${SCREEN_FILL.height * 100}%`,
+              }}
+            />
+            <img src={COUNTER_SRC} alt="" draggable={false} className="pointer-events-none relative z-10 w-full select-none" />
+            <div
+              className="absolute z-20 flex items-center justify-center"
+              style={{
+                left: `${SCREEN.left * 100}%`,
+                top: `${SCREEN.top * 100}%`,
+                width: `${SCREEN.width * 100}%`,
+                height: `${SCREEN.height * 100}%`,
+              }}
+            >
+              <span
+                key={countTick}
+                className={`font-mono text-[clamp(22px,7vw,36px)] font-bold tabular-nums tracking-wide text-[#e8fbf6] ${
+                  countTick > 0 ? 'bk-count-tick' : ''
+                }`}
+              >
+                {count}
+                <span className="text-[0.62em] text-[#9adfd4]"> / {targetCount}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* 방금 읽은 단어 바로 아래에 둬야 "누가 방금 읽었는지"와 헷갈리지 않는다 —
+              위에 두면 다음 차례 팀이 방금 읽은 것처럼 보인다는 실사용 피드백으로 순서를 바꿈. */}
+          {!loser && (
+            <div
+              className={`mb-4 rounded-full px-6 py-2 font-label-md text-label-md shadow-sm ${
+                turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
+              }`}
+              style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
+            >
+              {t('gameBaskin31.turnLabel', { team: teamLabel(turn) })}
+            </div>
+          )}
+
+          {!loser ? (
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {PICK_OPTIONS.map((n) => (
+                <button key={n} onClick={() => requestPick(n)} disabled={busy} className={`${pill} disabled:opacity-50`}>
+                  {t('gameBaskin31.pickButton', { n })}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div
+                className="result-pop rounded-2xl px-8 py-4 text-center"
+                style={{
+                  backgroundColor: '#f28b73',
+                  border: '3px solid #f0d7a8',
+                  boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+                }}
+              >
+                <div className="font-title-md text-[20px] font-bold text-white">
+                  {t('gameBaskin31.loseMessage', { team: teamLabel(loser), target: targetCount })}
+                </div>
+              </div>
+              <button onClick={resetAll} className={`${pill} px-10`}>
+                {t('gameBaskin31.playAgainButton')}
+              </button>
+            </div>
+          )}
         </div>
 
         {editable && !itemsHidden && (

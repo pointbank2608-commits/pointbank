@@ -343,7 +343,7 @@ export default function SpinWheel({
       <div
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
-        <div className="flex w-full flex-col items-center">
+        <div className={`flex flex-col items-center ${editable && !itemsHidden ? '' : 'w-full'}`}>
           {editable &&
             (editingTemplateName ? (
               <input

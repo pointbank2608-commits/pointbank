@@ -306,6 +306,395 @@
 .gift-lid-pop {
   animation: gift-lid-pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15);
 }
+.sog-flip-scene {
+  width: min(560px, 94vw);
+  aspect-ratio: 1094 / 670;
+  perspective: 1600px;
+  perspective-origin: 50% 48%;
+  transform-style: preserve-3d;
+}
+.sog-flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 0.85s cubic-bezier(0.4, 0.12, 0.2, 1);
+  will-change: transform;
+}
+.sog-flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+.sog-flip-face {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.sog-flip-back {
+  transform: rotateY(180deg);
+}
+.sog-flip-face img {
+  filter: drop-shadow(0 12px 18px rgba(90, 50, 18, 0.26));
+}
+
+/* Save or Give it — Play-Doh 숫자공 (색은 --sog-ball-color) */
+.sog-clay-ball {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.12) 28%, transparent 46%),
+    radial-gradient(circle at 32% 30%, var(--sog-ball-color) 0%, var(--sog-ball-color) 44%, rgba(40, 22, 12, 0.28) 100%);
+  box-shadow:
+    inset 3px 4px 7px rgba(255, 255, 255, 0.42),
+    inset -4px -6px 10px rgba(40, 22, 12, 0.28),
+    0 8px 14px rgba(90, 50, 18, 0.24);
+}
+.sog-clay-ball.is-used {
+  filter: grayscale(0.4) brightness(0.92);
+  opacity: 0.72;
+}
+.sog-clay-ball-tex {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  clip-path: circle(50% at 50% 50%);
+  pointer-events: none;
+  object-fit: cover;
+  mix-blend-mode: overlay;
+  opacity: 0.78;
+}
+.sog-clay-ball-num {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fffdf8;
+  text-shadow:
+    0 1px 0 rgba(90, 50, 18, 0.28),
+    0 2px 4px rgba(40, 22, 12, 0.35);
+}
+
+/* 공을 깨면 보드가 나오는 연출 */
+.sog-board-emerge {
+  animation: sog-board-emerge 1.25s cubic-bezier(0.22, 0.9, 0.28, 1) both;
+}
+@keyframes sog-board-emerge {
+  0%,
+  38% {
+    opacity: 0;
+    transform: scale(0.12);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(0.62);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.sog-crack-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  animation: sog-crack-pulse 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+@keyframes sog-crack-pulse {
+  0% {
+    transform: scale(0.78);
+  }
+  62% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.sog-crack-half {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200px;
+  height: 200px;
+  margin: -100px 0 0 -100px;
+}
+.sog-crack-half.is-left {
+  clip-path: polygon(
+    0% 0%,
+    54% 0%,
+    46% 10%,
+    58% 20%,
+    44% 32%,
+    57% 46%,
+    43% 58%,
+    56% 72%,
+    45% 86%,
+    53% 100%,
+    0% 100%
+  );
+  animation: sog-crack-left 0.95s cubic-bezier(0.18, 0.72, 0.22, 1) 0.3s both;
+}
+.sog-crack-half.is-right {
+  clip-path: polygon(
+    100% 0%,
+    54% 0%,
+    46% 10%,
+    58% 20%,
+    44% 32%,
+    57% 46%,
+    43% 58%,
+    56% 72%,
+    45% 86%,
+    53% 100%,
+    100% 100%
+  );
+  animation: sog-crack-right 0.95s cubic-bezier(0.18, 0.72, 0.22, 1) 0.3s both;
+}
+.sog-crack-half .sog-clay-ball-num {
+  animation: sog-crack-num-fade 0.18s ease 0.26s both;
+}
+@keyframes sog-crack-left {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  62% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-190px, 40px) rotate(-42deg);
+    opacity: 0;
+  }
+}
+@keyframes sog-crack-right {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  62% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(190px, 46px) rotate(40deg);
+    opacity: 0;
+  }
+}
+@keyframes sog-crack-num-fade {
+  to {
+    opacity: 0;
+  }
+}
+.sog-crack-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  width: 12px;
+  height: 200px;
+  margin: -100px 0 0 -6px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 248, 0) 0%,
+    rgba(255, 253, 248, 0.95) 12%,
+    rgba(255, 236, 210, 0.9) 50%,
+    rgba(255, 253, 248, 0.95) 88%,
+    rgba(255, 253, 248, 0) 100%
+  );
+  clip-path: polygon(
+    38% 0%,
+    78% 8%,
+    22% 18%,
+    70% 30%,
+    18% 44%,
+    76% 56%,
+    24% 70%,
+    72% 82%,
+    30% 94%,
+    62% 100%,
+    48% 100%,
+    12% 94%,
+    58% 82%,
+    8% 70%,
+    62% 56%,
+    4% 44%,
+    52% 30%,
+    10% 18%,
+    48% 8%,
+    22% 0%
+  );
+  filter: drop-shadow(0 0 4px rgba(255, 253, 248, 0.8));
+  animation: sog-crack-line 0.48s ease 0.2s both;
+}
+@keyframes sog-crack-line {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+  35% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+.sog-crack-bit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  width: var(--bit-size, 12px);
+  height: calc(var(--bit-size, 12px) * 1.08);
+  border-radius: 46% 54% 48% 52%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.72), var(--sog-ball-color) 55%, rgba(40, 22, 12, 0.28));
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.4);
+  animation: sog-crack-bit 0.78s cubic-bezier(0.2, 0.75, 0.3, 1) both;
+}
+@keyframes sog-crack-bit {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  14% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.55) rotate(40deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sog-board-emerge,
+  .sog-crack-overlay,
+  .sog-crack-half.is-left,
+  .sog-crack-half.is-right,
+  .sog-crack-line,
+  .sog-crack-bit,
+  .bk-cell.is-leaving,
+  .bk-count-tick {
+    animation: none;
+  }
+  .bk-cell {
+    transition: none;
+  }
+}
+
+/* 베스킨라빈스31 — 컵 아이스크림 3칸 컨베이어 */
+.bk-line {
+  width: min(720px, 96vw);
+}
+.bk-track {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: min(380px, 64vw);
+}
+.bk-cell {
+  position: absolute;
+  top: 0;
+  left: calc(var(--slot) * 33.333%);
+  z-index: 1;
+  display: flex;
+  width: 33.333%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 6px 4px;
+  transform-origin: 50% 88%;
+  transition: left 0.56s cubic-bezier(0.22, 0.82, 0.2, 1);
+}
+.bk-cell.is-spawn {
+  transition: none;
+}
+.bk-cell.is-leaving {
+  z-index: 4;
+  pointer-events: none;
+  transition: none;
+  animation: bk-cup-leave 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+.bk-word {
+  position: relative;
+  z-index: 2;
+  width: 56%;
+  flex-shrink: 0;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 5px 7px rgba(90, 50, 18, 0.16));
+}
+.bk-word img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+.bk-word-text {
+  position: absolute;
+  left: 10%;
+  top: 13%;
+  display: flex;
+  width: 81%;
+  height: 75%;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.bk-cup {
+  display: block;
+  width: 86%;
+  height: auto;
+  max-height: 64%;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 10px 12px rgba(90, 50, 18, 0.22));
+}
+@keyframes bk-cup-leave {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  38% {
+    opacity: 1;
+    transform: translateY(10px) scale(0.92) rotate(-3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(42px) scale(0.62) rotate(-7deg);
+  }
+}
+@keyframes bk-count-tick {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.bk-count-tick {
+  display: inline-block;
+  animation: bk-count-tick 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
 @keyframes result-pop {
   0% {
     opacity: 0;
