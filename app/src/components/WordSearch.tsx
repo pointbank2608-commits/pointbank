@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 
 export type WordSearchStyle = 'board' | 'tiles';
@@ -140,6 +141,7 @@ export default function WordSearch({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const tiles = boardStyle === 'tiles';
   const [puzzle, setPuzzle] = useState<Puzzle>(() => buildPuzzle(items));
   const [selectedStart, setSelectedStart] = useState<Cell | null>(null);
@@ -315,7 +317,7 @@ export default function WordSearch({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -363,7 +365,7 @@ export default function WordSearch({
       </div>
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

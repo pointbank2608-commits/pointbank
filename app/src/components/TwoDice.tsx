@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 
@@ -151,6 +152,7 @@ export default function TwoDice({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
   const [die1, setDie1] = useState<number | null>(null);
   const [die2, setDie2] = useState<number | null>(null);
@@ -297,7 +299,7 @@ export default function TwoDice({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -414,7 +416,7 @@ export default function TwoDice({
       )}
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

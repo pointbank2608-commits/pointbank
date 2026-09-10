@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
@@ -45,6 +46,7 @@ export default function PassTheBall({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
   const [missionWord, setMissionWord] = useState<GameItem | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,7 +156,7 @@ export default function PassTheBall({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -215,7 +217,7 @@ export default function PassTheBall({
           )}
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

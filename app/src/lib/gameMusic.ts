@@ -209,6 +209,18 @@ export function playWheelSpinTicks(totalDegrees: number, durationMs: number): ()
   };
 }
 
+/** 카드가 자리를 바꿀 때 한 번 울리는 "촤르르" 셔플음 — 짧은 노이즈 조각을 빠르게 이어서
+ * 카드를 재빨리 섞는 손놀림 소리를 흉내낸다. 섞기 라운드마다 한 번씩 불러 쓴다. */
+export function playShuffleSwish(): void {
+  const c = ctx();
+  const start = c.currentTime + 0.01;
+  const hits = 10;
+  const span = 0.32;
+  for (let i = 0; i < hits; i++) {
+    noiseBurst(start + (i * span) / hits, 0.05, 0.22 + Math.random() * 0.1);
+  }
+}
+
 /** 결과 사운드를 한 번도 설정하지 않았을 때 쓰는 기본값. */
 export const DEFAULT_RESULT_SOUND: MusicSelection = { kind: 'builtin', id: 'tada' };
 

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGamePlay } from './GameThemeFrame';
 import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
@@ -58,6 +59,7 @@ export default function LadderBoard({
   onRenameTemplate,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('all');
   const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
@@ -282,7 +284,7 @@ export default function LadderBoard({
             {templateName}
           </button>
         ))}
-      {editable && (
+      {editable && !itemsHidden && (
         <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
           {t('gameLadder.editHint')}
         </div>
@@ -473,7 +475,7 @@ export default function LadderBoard({
       )}
       </div>
 
-      {editable && (
+      {editable && !itemsHidden && (
         <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">

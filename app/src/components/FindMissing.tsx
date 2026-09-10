@@ -1,13 +1,18 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
+import { playBuiltin, playShuffleSwish } from '../lib/gameMusic';
 import type { GameItem } from '../lib/types';
 
 interface Props {
   items: GameItem[];
   revealCount: number;
   shuffleCards: boolean;
+  /** 카드를 외우는 시간(초). null이면 시간제한 없이 선생님이 "섞기" 버튼을 눌러야 다음으로
+   * 넘어간다(수동 진행). */
+  memorizeSeconds: number | null;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -27,10 +32,9 @@ interface CardOffset {
 
 const CARD_SRC = '/skins/miss-card.png';
 const Q_SRC = '/skins/miss-q.png';
-const SHOW_MS = 3000;
 const HIDE_PAUSE_MS = 700;
-const SHUFFLE_MS = 560;
-const SHUFFLE_ROUNDS = 2;
+const SHUFFLE_MS = 480;
+const SHUFFLE_ROUNDS = 6;
 const SETTLE_MS = 380;
 
 function shuffle<T>(arr: T[]): T[] {
@@ -71,6 +75,7 @@ export default function FindMissing({
   items,
   revealCount,
   shuffleCards,
+  memorizeSeconds,
   editable,
   onEditItem,
   templateName,
@@ -79,21 +84,36 @@ export default function FindMissing({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
   const [board, setBoard] = useState<GameItem[]>([]);
   const [missingIds, setMissingIds] = useState<Set<string>>(new Set());
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
   const [offsets, setOffsets] = useState<Record<string, CardOffset>>({});
   const [instant, setInstant] = useState(false);
+  const [countdown, setCountdown] = useState(memorizeSeconds ?? 0);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stopTickRef = useRef<(() => void) | null>(null);
   const runIdRef = useRef(0);
   const cardEls = useRef(new Map<string, HTMLElement>());
   const firstRectsRef = useRef<Map<string, DOMRect> | null>(null);
   const shuffleRef = useRef(shuffleCards);
   shuffleRef.current = shuffleCards;
+
+  function stopTicking() {
+    if (tickIntervalRef.current) {
+      clearInterval(tickIntervalRef.current);
+      tickIntervalRef.current = null;
+    }
+    if (stopTickRef.current) {
+      stopTickRef.current();
+      stopTickRef.current = null;
+    }
+  }
 
   const count = items.length;
 
@@ -131,7 +151,11 @@ export default function FindMissing({
   }
 
   useEffect(() => {
-    return () => clearTimer();
+    return () => {
+      clearTimer();
+      stopTicking();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useLayoutEffect(() => {
@@ -184,6 +208,7 @@ export default function FindMissing({
     const next = shuffleDistinct(current);
     setBoard(next);
     setPhase('shuffling');
+    playShuffleSwish();
     clearTimer();
     timerRef.current = setTimeout(() => {
       if (runId !== runIdRef.current) return;
@@ -199,6 +224,20 @@ export default function FindMissing({
     }, SHUFFLE_MS);
   }
 
+  function afterShow(nextBoard: GameItem[], runId: number) {
+    if (runId !== runIdRef.current) return;
+    hideSome(nextBoard);
+    if (shuffleRef.current && nextBoard.length >= 2) {
+      setPhase('shuffling');
+      timerRef.current = setTimeout(() => {
+        if (runId !== runIdRef.current) return;
+        shuffleRound(nextBoard, SHUFFLE_ROUNDS, runId);
+      }, HIDE_PAUSE_MS);
+    } else {
+      setPhase('hidden');
+    }
+  }
+
   function start() {
     runIdRef.current += 1;
     const runId = runIdRef.current;
@@ -209,19 +248,38 @@ export default function FindMissing({
     setOffsets({});
     setPhase('showing');
     clearTimer();
-    timerRef.current = setTimeout(() => {
+    stopTicking();
+
+    // memorizeSeconds가 null이면 시간제한 없이 선생님이 "섞기" 버튼을 직접 눌러야 다음으로
+    // 넘어간다(카운트다운·초시계 소리 없음) — proceedManually()가 그 버튼에 연결된다.
+    if (memorizeSeconds == null) {
+      setCountdown(0);
+      return;
+    }
+
+    setCountdown(memorizeSeconds);
+    stopTickRef.current = playBuiltin('clock', { loop: true });
+
+    // 카운트 로직은 순수 로컬 변수(secondsLeft)로 하고, countdown state는 화면 표시 전용으로만
+    // 쓴다 — setState updater 안에서 다음 로직을 이어가면 React 배치 타이밍에 따라 ref/state가
+    // 아직 안 갱신된 값을 참조하는 버그가 생길 수 있어서(과거에 겪은 패턴), 아예 분리해둔다.
+    let secondsLeft = memorizeSeconds;
+    tickIntervalRef.current = setInterval(() => {
       if (runId !== runIdRef.current) return;
-      hideSome(nextBoard);
-      if (shuffleRef.current && nextBoard.length >= 2) {
-        setPhase('shuffling');
-        timerRef.current = setTimeout(() => {
-          if (runId !== runIdRef.current) return;
-          shuffleRound(nextBoard, SHUFFLE_ROUNDS, runId);
-        }, HIDE_PAUSE_MS);
-      } else {
-        setPhase('hidden');
+      secondsLeft -= 1;
+      setCountdown(Math.max(secondsLeft, 0));
+      if (secondsLeft <= 0) {
+        stopTicking();
+        afterShow(nextBoard, runId);
       }
-    }, SHOW_MS);
+    }, 1000);
+  }
+
+  /** 시간제한 없음(수동) 모드에서 "섞기" 버튼을 누르면 바로 다음 단계로 넘어간다. */
+  function proceedManually() {
+    if (phase !== 'showing') return;
+    stopTicking();
+    afterShow(board, runIdRef.current);
   }
 
   function reveal(itemId: string) {
@@ -270,13 +328,13 @@ export default function FindMissing({
     )
   );
 
-  const hintBlock = editable && (
+  const hintBlock = editable && !itemsHidden && (
     <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
       {t('gameAdmin.editHintItems')}
     </div>
   );
 
-  const sidePanel = editable && (
+  const sidePanel = editable && !itemsHidden && (
     <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
       <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
         <button
@@ -333,8 +391,16 @@ export default function FindMissing({
   ) : (
     <div className="flex flex-col items-center pt-1.5 pb-2" data-shuffle={shuffleCards ? 'on' : 'off'}>
       {phase === 'showing' && (
-        <div className="mb-4 rounded-full bg-secondary px-6 py-2 font-label-md text-label-md text-on-secondary shadow-sm">
-          {t('gameFindMissing.memorizeHint')}
+        <div className="mb-4 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-3 rounded-full bg-secondary px-6 py-2 font-label-md text-label-md text-on-secondary shadow-sm">
+            <span>{t('gameFindMissing.memorizeHint')}</span>
+            {memorizeSeconds != null && <span className="font-title-md text-title-md tabular-nums">{countdown}</span>}
+          </div>
+          {memorizeSeconds == null && (
+            <button onClick={proceedManually} className={pill}>
+              {t('gameFindMissing.shuffleNowButton')}
+            </button>
+          )}
         </div>
       )}
       {phase === 'shuffling' && (

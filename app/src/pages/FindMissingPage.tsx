@@ -26,6 +26,8 @@ function defaultItems(): GameItem[] {
 
 const DEFAULT_REVEAL_COUNT = 1;
 const DEFAULT_SHUFFLE_CARDS = false;
+const DEFAULT_MEMORIZE_SECONDS = 10;
+const MEMORIZE_SECONDS_OPTIONS = [5, 10, 15, 20];
 
 export default function FindMissingPage() {
   const { t } = useTranslation();
@@ -78,6 +80,8 @@ export default function FindMissingPage() {
   const [newItemLabel, setNewItemLabel] = useState('');
   const revealCount = selected?.config.revealCount ?? DEFAULT_REVEAL_COUNT;
   const shuffleCards = selected?.config.shuffleCards ?? DEFAULT_SHUFFLE_CARDS;
+  const memorizeSeconds =
+    selected?.config.memorizeSeconds !== undefined ? selected.config.memorizeSeconds : DEFAULT_MEMORIZE_SECONDS;
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -290,7 +294,7 @@ export default function FindMissingPage() {
           {classPicker}
           <div>
             <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <FindMissing items={demoItems} revealCount={revealCount} shuffleCards={shuffleCards} />
+              <FindMissing items={demoItems} revealCount={revealCount} shuffleCards={shuffleCards} memorizeSeconds={memorizeSeconds} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameFindMissing.emptyStaff') : t('gameFindMissing.emptyStudent')}
@@ -317,6 +321,7 @@ export default function FindMissingPage() {
               items={selected.items}
               revealCount={revealCount}
               shuffleCards={shuffleCards}
+              memorizeSeconds={memorizeSeconds}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
@@ -443,6 +448,38 @@ export default function FindMissingPage() {
                                 {n}
                               </button>
                             ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                          {t('gameFindMissing.memorizeTimeLabel')}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {MEMORIZE_SECONDS_OPTIONS.map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => void persistConfig({ memorizeSeconds: n })}
+                              className={`rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-colors ${
+                                memorizeSeconds === n
+                                  ? 'bg-primary text-on-primary shadow-sm'
+                                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                              }`}
+                            >
+                              {t('gameFindMissing.memorizeSecondsOption', { n })}
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => void persistConfig({ memorizeSeconds: null })}
+                            className={`rounded-full px-3.5 py-1.5 font-label-md text-label-md transition-colors ${
+                              memorizeSeconds === null
+                                ? 'bg-primary text-on-primary shadow-sm'
+                                : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                            }`}
+                          >
+                            {t('gameFindMissing.memorizeManualOption')}
+                          </button>
                         </div>
                       </div>
                       <div>

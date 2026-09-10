@@ -30,7 +30,7 @@ interface Props {
   onUndo?: () => void;
 }
 
-const GamePlayContext = createContext({ fullscreen: false });
+const GamePlayContext = createContext({ fullscreen: false, itemsHidden: false });
 
 export function useGamePlay() {
   return useContext(GamePlayContext);
@@ -49,12 +49,16 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
+  const [itemsHidden, setItemsHidden] = useState(false);
 
   useEffect(() => {
     function onChange() {
       const on = document.fullscreenElement === containerRef.current;
       setIsFullscreen(on);
       if (!on) setScale(1);
+      // 전체화면으로 들어가면 반 전체가 보는 화면이 되니 항목 목록을 기본으로 숨긴다(정답이
+      // 미리 보이지 않게). 전체화면을 나오면 다시 보이게 — 선생님은 버튼으로 언제든 뒤집을 수 있다.
+      setItemsHidden(on);
     }
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
@@ -135,13 +139,26 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     : {};
 
   return (
-    <GamePlayContext.Provider value={{ fullscreen: isFullscreen }}>
+    <GamePlayContext.Provider value={{ fullscreen: isFullscreen, itemsHidden }}>
       <div
         ref={containerRef}
         className={`relative ${isFullscreen ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
         <div className="absolute top-3 right-3 z-10 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setItemsHidden((v) => !v)}
+            title={itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
+            aria-label={itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
+            className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur transition-colors ${
+              itemsHidden
+                ? 'bg-primary text-on-primary hover:bg-primary-container'
+                : 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">{itemsHidden ? 'visibility_off' : 'visibility'}</span>
+          </button>
           {roster && roster.length > 0 && (
             <button
               type="button"

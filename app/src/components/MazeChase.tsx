@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 
 export type MazeChaseStyle = 'wood' | 'garden';
@@ -439,6 +440,7 @@ export default function MazeChase({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const garden = boardStyle === 'garden';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -709,13 +711,13 @@ export default function MazeChase({
     )
   );
 
-  const hintBlock = editable && (
+  const hintBlock = editable && !itemsHidden && (
     <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
       {t('gameAdmin.editHintItems')}
     </div>
   );
 
-  const sidePanel = editable && (
+  const sidePanel = editable && !itemsHidden && (
     <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
       <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
         <button

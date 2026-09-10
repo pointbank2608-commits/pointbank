@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
-import SaveOrGiveIt from '../components/SaveOrGiveIt';
+import SaveOrGiveIt, { type SaveOrGivePlayer } from '../components/SaveOrGiveIt';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
@@ -12,6 +12,7 @@ import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
+import { colorFor } from '../lib/wheel';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, SaveOrGiveReward } from '../lib/types';
@@ -30,6 +31,21 @@ const DEFAULT_REWARD_POOL: SaveOrGiveReward[] = [
   { kind: 'swap' },
   { kind: 'points', value: 0 },
 ];
+
+const MIN_TEAM_COUNT = 2;
+const MAX_TEAM_COUNT = 8;
+
+function teamPlayers(count: number, t: (key: string, opts?: Record<string, unknown>) => string): SaveOrGivePlayer[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `team-${i}`,
+    label: t('gameSaveOrGive.teamName', { n: i + 1 }),
+    color: colorFor(i),
+  }));
+}
+
+function individualPlayers(participants: GameItem[]): SaveOrGivePlayer[] {
+  return participants.map((p, i) => ({ id: p.id, label: p.label, color: colorFor(i) }));
+}
 
 export default function SaveOrGivePage() {
   const { t } = useTranslation();
@@ -80,7 +96,59 @@ export default function SaveOrGivePage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
+  const [newParticipantLabel, setNewParticipantLabel] = useState('');
   const rewardPool = selected?.config.rewardPool ?? DEFAULT_REWARD_POOL;
+  const mode = selected?.config.saveOrGiveMode ?? 'team';
+  const teamCount = selected?.config.saveOrGiveTeamCount ?? 2;
+  const participants = selected?.config.saveOrGiveParticipants ?? [];
+  const demoPlayers = useMemo(() => teamPlayers(2, t), [t]);
+  const players = mode === 'individual' ? individualPlayers(participants) : teamPlayers(teamCount, t);
+
+  async function persistConfig(patch: Partial<NonNullable<typeof selected>['config']>) {
+    if (!selected) return;
+    const nextConfig = { ...selected.config, ...patch };
+    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
+    try {
+      await updateGameTemplate(selected.id, { config: nextConfig });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      await reload();
+    }
+    setRoundKey((k) => k + 1);
+  }
+
+  async function setMode(next: 'individual' | 'team') {
+    if (next === mode) return;
+    await persistConfig({ saveOrGiveMode: next });
+  }
+
+  async function setTeamCount(next: number) {
+    const clamped = Math.max(MIN_TEAM_COUNT, Math.min(MAX_TEAM_COUNT, next));
+    if (clamped === teamCount) return;
+    await persistConfig({ saveOrGiveTeamCount: clamped });
+  }
+
+  async function addParticipant() {
+    const label = newParticipantLabel.trim();
+    if (!label) return;
+    await persistConfig({ saveOrGiveParticipants: [...participants, { id: uid(), label }] });
+    setNewParticipantLabel('');
+  }
+
+  async function addParticipantsBulk(labels: string[]) {
+    if (labels.length === 0) return;
+    await persistConfig({ saveOrGiveParticipants: [...participants, ...labels.map((label) => ({ id: uid(), label }))] });
+  }
+
+  async function removeParticipant(id: string) {
+    await persistConfig({ saveOrGiveParticipants: participants.filter((p) => p.id !== id) });
+  }
+
+  async function clearAllParticipants() {
+    if (participants.length === 0) return;
+    if (!confirm(t('gameSaveOrGive.clearAllConfirm'))) return;
+    await persistConfig({ saveOrGiveParticipants: [] });
+  }
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -282,7 +350,7 @@ export default function SaveOrGivePage() {
           {classPicker}
           <div>
             <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <SaveOrGiveIt items={demoItems} rewardPool={rewardPool} />
+              <SaveOrGiveIt items={demoItems} rewardPool={rewardPool} players={demoPlayers} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameSaveOrGive.emptyStaff') : t('gameSaveOrGive.emptyStudent')}
@@ -308,6 +376,7 @@ export default function SaveOrGivePage() {
               key={roundKey}
               items={selected.items}
               rewardPool={rewardPool}
+              players={players}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
@@ -336,6 +405,114 @@ export default function SaveOrGivePage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <div className="pb-3">
+                      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameSaveOrGive.modeLabel')}</div>
+                      <div className="flex bg-surface-container-lowest rounded-lg p-1 w-fit mb-3">
+                        <button
+                          type="button"
+                          onClick={() => void setMode('team')}
+                          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                            mode === 'team' ? 'bg-surface-container-lowest text-primary shadow-sm bg-primary text-on-primary' : 'text-on-surface-variant'
+                          }`}
+                        >
+                          {t('gameSaveOrGive.modeTeam')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void setMode('individual')}
+                          className={`px-4 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                            mode === 'individual' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+                          }`}
+                        >
+                          {t('gameSaveOrGive.modeIndividual')}
+                        </button>
+                      </div>
+
+                      {mode === 'team' ? (
+                        <div className="flex items-center gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 w-fit">
+                          <button
+                            type="button"
+                            onClick={() => void setTeamCount(teamCount - 1)}
+                            disabled={teamCount <= MIN_TEAM_COUNT}
+                            aria-label={t('gameSaveOrGive.decreaseTeamCount')}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">remove</span>
+                          </button>
+                          <span className="font-label-md text-label-md text-on-surface-variant tabular-nums px-1">
+                            {t('gameSaveOrGive.teamCountLabel', { count: teamCount })}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => void setTeamCount(teamCount + 1)}
+                            disabled={teamCount >= MAX_TEAM_COUNT}
+                            aria-label={t('gameSaveOrGive.increaseTeamCount')}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary hover:bg-primary-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">add</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex flex-wrap items-start gap-2 mb-2 [&>*]:min-w-[180px] [&>*]:flex-none">
+                            <StudentRosterPicker
+                              roster={roster}
+                              existingLabels={participants.map((p) => p.label)}
+                              scope={rosterScope}
+                              onScopeChange={setRosterScope}
+                              loading={rosterLoading}
+                              onAdd={(labels) => void addParticipantsBulk(labels)}
+                            />
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {participants.length === 0 ? (
+                              <span className="font-caption text-caption text-on-surface-variant">
+                                {t('gameAdmin.noParticipants')}
+                              </span>
+                            ) : (
+                              participants.map((p) => (
+                                <div
+                                  key={p.id}
+                                  className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+                                >
+                                  {p.label}
+                                  <button onClick={() => void removeParticipant(p.id)} className="text-on-surface-variant hover:text-error">
+                                    ✕
+                                  </button>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          {participants.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => void clearAllParticipants()}
+                              className="mt-2 font-label-md text-label-md text-error hover:underline"
+                            >
+                              {t('gameAdmin.clearAll')}
+                            </button>
+                          )}
+                          <div className="flex gap-2 mt-3">
+                            <input
+                              type="text"
+                              placeholder={t('gameAdmin.newParticipantPlaceholder')}
+                              value={newParticipantLabel}
+                              onChange={(e) => setNewParticipantLabel(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') void addParticipant();
+                              }}
+                              className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                            />
+                            <button
+                              onClick={() => void addParticipant()}
+                              className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                            >
+                              {t('gameAdmin.addParticipant')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="pt-3">
                     <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                     <div className="flex-1 [&>div]:my-0">

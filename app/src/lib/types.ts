@@ -210,10 +210,20 @@ export interface GameTemplateConfig {
   resultSound?: MusicSelection | null;
   /** Save it or Give it 전용: 상자를 열었을 때 나올 수 있는 반전 결과 목록. */
   rewardPool?: SaveOrGiveReward[];
+  /** Save it or Give it 전용: 개인전(학생 각자) / 팀전(N개 팀) 모드. 기본은 팀전. */
+  saveOrGiveMode?: 'individual' | 'team';
+  /** Save it or Give it 전용: 팀전일 때 팀 수 (기본 2). */
+  saveOrGiveTeamCount?: number;
+  /** Save it or Give it 전용: 개인전일 때 참가자 명단(학생 명단에서 담음). items(상자 안 단어·상품
+   * 목록)와는 별개다. */
+  saveOrGiveParticipants?: GameItem[];
   /** 사라진 항목 찾기 전용: 한 판에서 몇 개를 숨길지 (기본 1). */
   revealCount?: number;
   /** 사라진 항목 찾기 전용: 숨긴 뒤 카드 자리를 섞을지 (기본 끔). */
   shuffleCards?: boolean;
+  /** 사라진 항목 찾기 전용: 카드를 외우는 시간(초). undefined(한 번도 설정 안 함) → 기본값(10초).
+   * null(선생님이 "직접 진행"을 골라 시간제한을 껐음) → 시간 없이 "섞기" 버튼으로 수동 진행. */
+  memorizeSeconds?: number | null;
   /** 베스킨라빈스31 전용: 이 숫자에 도달하면 지는 목표 숫자 (기본 31). */
   targetCount?: number;
   /** 공 돌리기 전용: 음악이 멈추기까지 걸리는 시간(초)의 무작위 범위. */

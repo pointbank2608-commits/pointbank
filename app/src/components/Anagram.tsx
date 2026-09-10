@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 
 export type AnagramStyle = 'rack' | 'tags';
@@ -70,6 +71,7 @@ export default function Anagram({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const hang = boardStyle === 'tags';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -324,7 +326,7 @@ export default function Anagram({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -388,7 +390,7 @@ export default function Anagram({
       </div>
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

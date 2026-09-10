@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 
 interface Props {
@@ -52,6 +53,7 @@ export default function Popcorn({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items));
   const [deckIndex, setDeckIndex] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
@@ -165,7 +167,7 @@ export default function Popcorn({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -284,7 +286,7 @@ export default function Popcorn({
           </div>
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

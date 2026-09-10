@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGamePlay } from './GameThemeFrame';
 import { playMusic, playWheelSpinTicks, playWheelTickOnce } from '../lib/gameMusic';
 import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -61,6 +62,7 @@ export default function SpinWheel({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [useCssTransition, setUseCssTransition] = useState(false);
@@ -365,7 +367,7 @@ export default function SpinWheel({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameWheel.editHint')}
             </div>
@@ -457,7 +459,7 @@ export default function SpinWheel({
           )}
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
+import { useGamePlay } from './GameThemeFrame';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -58,6 +59,7 @@ export default function TimeBomb({
   onRenameTemplate,
 }: Props) {
   const { t } = useTranslation();
+  const { itemsHidden } = useGamePlay();
   const n = participants.length;
   const [mode, setMode] = useState<Mode>('pass');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -207,7 +209,7 @@ export default function TimeBomb({
                 {templateName}
               </button>
             ))}
-          {editable && (
+          {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameAdmin.editHintItems')}
             </div>
@@ -340,7 +342,7 @@ export default function TimeBomb({
           )}
         </div>
 
-        {editable && (
+        {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('gameBomb.rangeLabel')}</div>
