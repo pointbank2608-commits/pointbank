@@ -104,6 +104,20 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
     return () => clearInterval(id);
   }, [active]);
 
+  // 공이 케이지 안에서 달그락거리는 효과음 — 배경음악(선생님이 고르는 설정)과 별개로,
+  // 돌림판의 회전 딸깍음처럼 늘 켜져 있는 고정 효과음이다. 섞는 동안(active)만 반복
+  // 재생하고, 섞기가 끝나면(active가 꺼지면) 그 자리에서 바로 멈춘다.
+  useEffect(() => {
+    if (!active) return;
+    const audio = new Audio('/sounds/lottery-mix.wav?v=1');
+    audio.loop = true;
+    void audio.play().catch(() => {});
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [active]);
+
   useEffect(() => {
     if (drawnList.length === 0) {
       setDisplayedCount(0);
