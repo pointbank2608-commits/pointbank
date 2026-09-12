@@ -55,6 +55,9 @@ import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 import WinLoseQuizPage from './pages/WinLoseQuizPage';
 import WordSearchPage from './pages/WordSearchPage';
+import WorksheetPrintPage from './pages/WorksheetPrintPage';
+import CurriculumPage from './pages/CurriculumPage';
+import LessonPlayerPage from './pages/LessonPlayerPage';
 
 export default function App() {
   const { t } = useTranslation();
@@ -108,6 +111,8 @@ export default function App() {
           <>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/curriculum" element={<CurriculumPage />} />
+            <Route path="/curriculum/:id/play" element={<LessonPlayerPage />} />
             <Route path="/board" element={<ClassBoardPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
@@ -119,6 +124,7 @@ export default function App() {
             <Route path="/materials" element={<MaterialsPage />} />
             <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />
             <Route path="/materials/bingo" element={<BingoPage />} />
+            <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />

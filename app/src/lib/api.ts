@@ -4,6 +4,8 @@ import type {
   AdminAcademyRow,
   Attendance,
   ClassRow,
+  CurriculumLesson,
+  CurriculumStep,
   GameItem,
   GameTemplate,
   GameTemplateConfig,
@@ -869,4 +871,81 @@ export async function renameWordList(id: string, name: string) {
 export async function deleteWordList(id: string) {
   const { error } = await supabase.from('word_lists').delete().eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+/* ---------------- 내 커리큘럼(curriculum_lessons) ---------------- */
+
+/** 이 반(또는 학원 공용) 커리큘럼 목록. word_lists 조회와 같은 패턴. */
+export async function fetchCurriculumLessons(academyId: string, classId: string): Promise<CurriculumLesson[]> {
+  return unwrap(
+    await supabase
+      .from('curriculum_lessons')
+      .select('*')
+      .eq('academy_id', academyId)
+      .or(`class_id.eq.${classId},class_id.is.null`)
+      .order('created_at'),
+  );
+}
+
+export async function fetchCurriculumLessonById(id: string): Promise<CurriculumLesson> {
+  return unwrap(await supabase.from('curriculum_lessons').select('*').eq('id', id).single());
+}
+
+export async function createCurriculumLesson(params: {
+  academyId: string;
+  classId: string | null;
+  name: string;
+  wordListId: string | null;
+  videoUrl: string | null;
+  level: string | null;
+  playlist: CurriculumStep[];
+  teacherId: string;
+}): Promise<CurriculumLesson> {
+  return unwrap(
+    await supabase
+      .from('curriculum_lessons')
+      .insert({
+        academy_id: params.academyId,
+        class_id: params.classId,
+        name: params.name,
+        word_list_id: params.wordListId,
+        video_url: params.videoUrl,
+        level: params.level,
+        playlist: params.playlist,
+        created_by: params.teacherId,
+      })
+      .select()
+      .single(),
+  ) as CurriculumLesson;
+}
+
+export async function updateCurriculumLesson(
+  id: string,
+  patch: Partial<Pick<CurriculumLesson, 'name' | 'word_list_id' | 'video_url' | 'level' | 'playlist'>>,
+) {
+  const { error } = await supabase
+    .from('curriculum_lessons')
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteCurriculumLesson(id: string) {
+  const { error } = await supabase.from('curriculum_lessons').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * 유튜브 영상 자막에서 AI로 단어 목록을 자동 추출한다. `supabase/functions/extract-lesson-from-video`
+ * Edge Function을 호출하는데, 이 함수는 아직 배포 전이라(Anthropic API 키 등록 + 배포 필요)
+ * 지금은 항상 실패한다 — 호출하는 쪽(CurriculumPage)에서 그 실패를 잡아 안내 토스트로 보여준다.
+ */
+export async function generateWordListFromVideo(videoId: string): Promise<{ word: string; meaning: string }[]> {
+  const { data, error } = await supabase.functions.invoke<{ items?: { word: string; meaning: string }[]; error?: string }>(
+    'extract-lesson-from-video',
+    { body: { videoId } },
+  );
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
+  return data?.items ?? [];
 }

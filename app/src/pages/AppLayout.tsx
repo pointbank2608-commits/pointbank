@@ -28,6 +28,7 @@ export default function AppLayout() {
   const navItems: NavItem[] = isStaff
     ? [
         { to: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
+        { to: '/curriculum', label: t('nav.curriculum'), icon: 'auto_stories' },
         { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
         { to: '/board', label: t('nav.board'), icon: 'payments' },
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },

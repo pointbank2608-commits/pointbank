@@ -456,3 +456,29 @@ export interface WordList {
   created_at: string;
   updated_at: string;
 }
+
+/* ---------------- 내 커리큘럼 (반별 수업 유닛 — 단어장+영상+게임 재생목록 묶음) ---------------- */
+
+/** 재생목록 한 칸. id 는 순서변경(드래그) 시 React key 용, gameType 이 실제 진행할 게임. */
+export interface CurriculumStep {
+  id: string;
+  gameType: GameType;
+}
+
+export interface CurriculumLesson {
+  id: string;
+  academy_id: string;
+  /** null 이면 학원 전체 공용 */
+  class_id: string | null;
+  name: string;
+  /** 이 레슨이 쓰는 단어장. 삭제되면 null(레슨 자체는 남음). */
+  word_list_id: string | null;
+  /** 무비보기/쉐도잉 단계에서 쓸 유튜브 영상 URL. 없으면 그 단계는 건너뛴다. */
+  video_url: string | null;
+  /** 자유 태그(예: "초2", "P1"). 강제 분류가 아니라 화면 표시·정렬용 힌트일 뿐. */
+  level: string | null;
+  playlist: CurriculumStep[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}

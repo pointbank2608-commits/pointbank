@@ -27,4 +27,12 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     nameKey: 'materials.bingoName',
     descKey: 'materials.bingoDesc',
   },
+  {
+    id: 'worksheet',
+    path: '/materials/worksheet',
+    icon: 'description',
+    cover: null,
+    nameKey: 'materials.worksheetName',
+    descKey: 'materials.worksheetDesc',
+  },
 ];
