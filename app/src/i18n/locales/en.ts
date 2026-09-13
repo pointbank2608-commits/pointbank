@@ -1135,7 +1135,7 @@ const en: Ko = {
     tictactoeName: 'Tic-Tac-Toe',
     tictactoeDesc: 'Register items, then take turns filling the board as two teams.',
     saveorgiveName: 'Save it or Give it',
-    saveorgiveDesc: 'Open the box, read the word, then choose whether your team keeps the points or hands them over.',
+    saveorgiveDesc: 'Crack a numbered ball, read the word, then choose whether to keep the points or give them away.',
     findmissingName: "What's Missing?",
     findmissingDesc: 'Memorize the cards, then spot which ones disappeared.',
     baskin31Name: 'Count to 31',
@@ -1432,7 +1432,7 @@ const en: Ko = {
     deleteConfirm: 'Delete "{{name}}"?',
     deletedToast: 'Deleted.',
     noLessons: 'No curriculum lessons yet — create one above.',
-    startButton: 'Start',
+    startButton: 'Run my lesson',
     play: {
       backToList: '← My Curriculum',
       notFound: 'Lesson not found.',

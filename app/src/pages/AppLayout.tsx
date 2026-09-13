@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
+import LessonRunnerBar from '../components/LessonRunnerBar';
 import { useAuth } from '../context/AuthContext';
+import { LessonRunnerProvider } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 
 interface NavItem {
@@ -12,7 +14,17 @@ interface NavItem {
   icon: string;
 }
 
+/** 레슨 러너(수업 진행바)가 화면 전환과 무관하게 살아있어야 해서, AppLayout 전체를
+ * LessonRunnerProvider로 한 번 감싸고 실제 레이아웃은 안쪽 컴포넌트에서 그린다. */
 export default function AppLayout() {
+  return (
+    <LessonRunnerProvider>
+      <AppLayoutInner />
+    </LessonRunnerProvider>
+  );
+}
+
+function AppLayoutInner() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();
@@ -170,6 +182,7 @@ export default function AppLayout() {
       </nav>
 
       <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen">
+        <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
         <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
           <LanguageToggle />

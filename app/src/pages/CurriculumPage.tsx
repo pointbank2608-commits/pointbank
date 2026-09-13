@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
+import { useLessonRunner } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
   createCurriculumLesson,
@@ -25,7 +25,7 @@ const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'lis
 
 export default function CurriculumPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { start } = useLessonRunner();
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
@@ -372,7 +372,7 @@ export default function CurriculumPage() {
 
               <button
                 type="button"
-                onClick={() => navigate(`/curriculum/${lesson.id}/play`)}
+                onClick={() => start(lesson)}
                 className="w-full px-4 py-2 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors"
               >
                 ▶ {t('curriculum.startButton')}

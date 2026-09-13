@@ -1131,7 +1131,7 @@ const ko = {
     tictactoeName: '틱택토',
     tictactoeDesc: '항목을 등록해 두고 두 팀이 번갈아 칸을 채워요.',
     saveorgiveName: 'Save it or Give it',
-    saveorgiveDesc: '상자를 열어 단어를 읽고, 점수를 우리 팀이 가질지 상대에게 줄지 골라요.',
+    saveorgiveDesc: '번호 공을 열어 단어를 읽고, 점수를 내가 가질지 상대에게 줄지 골라요.',
     findmissingName: '사라진 항목 찾기',
     findmissingDesc: '항목을 잘 기억해 뒀다가 사라진 걸 맞혀요.',
     baskin31Name: '베스킨라빈스31',
@@ -1427,7 +1427,7 @@ const ko = {
     deleteConfirm: '"{{name}}"을(를) 삭제할까요?',
     deletedToast: '삭제했습니다.',
     noLessons: '아직 만든 커리큘럼이 없어요. 위에서 새로 만들어보세요.',
-    startButton: '시작하기',
+    startButton: '내 수업하기',
     play: {
       backToList: '← 내 커리큘럼',
       notFound: '커리큘럼을 찾을 수 없어요.',
