@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
+import { playBallCrack, preloadBallCrack, BALL_CRACK_MS } from '../lib/gameMusic';
 import type { GameItem, SaveOrGiveReward } from '../lib/types';
 
 export interface SaveOrGivePlayer {
@@ -28,8 +29,6 @@ interface Props {
 }
 
 type Phase = 'grid' | 'cracking' | 'open' | 'picking' | 'reveal';
-
-const CRACK_MS = 1250;
 
 const CRACK_BITS: { dx: number; dy: number; size: number; delay: number }[] = [
   { dx: -108, dy: -58, size: 16, delay: 0.26 },
@@ -236,6 +235,12 @@ export default function SaveOrGiveIt({
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
   }, [items]);
 
+  // 공을 실제로 클릭하는 시점에 처음 불러오면 그 첫 재생만 다운로드·디코딩 때문에 살짝
+  // 늦게 시작될 수 있어, 화면이 뜨는 시점에 미리 캐시해둔다.
+  useEffect(() => {
+    preloadBallCrack();
+  }, []);
+
   // players 는 부모가 개인전/팀전 설정에서 매 렌더마다 새로 만들어 내려줄 수 있어 참조가
   // 자주 바뀐다. id 구성이 실제로 바뀌었을 때만(모드 전환, 팀 수 변경, 참가자 추가/삭제)
   // 점수판을 초기화한다 — 매 렌더마다 초기화하면 점수가 계속 0으로 리셋되는 버그가 생긴다.
@@ -282,12 +287,17 @@ export default function SaveOrGiveIt({
     setCurrentItemId(id);
     setAnsweredCorrect(false);
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setPhase(reduceMotion ? 'open' : 'cracking');
+    if (reduceMotion) {
+      setPhase('open');
+    } else {
+      playBallCrack();
+      setPhase('cracking');
+    }
   }
 
   useEffect(() => {
     if (phase !== 'cracking') return;
-    const timer = window.setTimeout(() => setPhase('open'), CRACK_MS);
+    const timer = window.setTimeout(() => setPhase('open'), BALL_CRACK_MS);
     return () => window.clearTimeout(timer);
   }, [phase]);
 
@@ -498,16 +508,31 @@ export default function SaveOrGiveIt({
                     <div className="sog-flip-face sog-flip-back">
                       <BoardFace>
                         {lastReward?.kind === 'swap' ? (
-                          <div className="font-title-md text-[28px] font-bold leading-snug text-[#2a241c]">
-                            {t('gameSaveOrGive.swapMessage', { a: currentPlayer.label, b: appliedPlayer?.label ?? '' })}
+                          <div className="h-full w-full">
+                            <GameFitText
+                              text={t('gameSaveOrGive.swapMessage', { a: currentPlayer.label, b: appliedPlayer?.label ?? '' })}
+                              fit="box"
+                              maxSize={72}
+                              className="font-bold text-[#2a241c]"
+                            />
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <div className="font-caption text-[20px] font-bold text-[#6a5640]">
-                              {appliedPlayer?.label ?? ''}
+                          <div className="flex h-full w-full flex-col items-center">
+                            <div className="h-[30%] w-full">
+                              <GameFitText
+                                text={appliedPlayer?.label ?? ''}
+                                fit="box"
+                                maxSize={60}
+                                className="font-bold text-[#6a5640]"
+                              />
                             </div>
-                            <div className="font-title-md text-[64px] font-bold tabular-nums leading-none text-[#2a241c]">
-                              {lastReward ? formatReward(lastReward, t) : ''}
+                            <div className="h-[70%] w-full">
+                              <GameFitText
+                                text={lastReward ? formatReward(lastReward, t) : ''}
+                                fit="box"
+                                maxSize={140}
+                                className="font-bold tabular-nums text-[#2a241c]"
+                              />
                             </div>
                           </div>
                         )}

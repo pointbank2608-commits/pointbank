@@ -106,7 +106,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     minItems: 1,
     icon: 'redeem',
     path: '/games/saveorgive',
-    cover: '/covers/game-saveorgive.jpg',
+    cover: '/covers/game-saveorgive.jpg?v=4',
     nameKey: 'gamesList.saveorgiveName',
     descKey: 'gamesList.saveorgiveDesc',
   },

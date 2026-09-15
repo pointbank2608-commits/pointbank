@@ -97,6 +97,7 @@ export default function SaveOrGivePage() {
   const demoItems = useMemo(defaultItems, []);
   const [newItemLabel, setNewItemLabel] = useState('');
   const [newParticipantLabel, setNewParticipantLabel] = useState('');
+  const [newRewardValue, setNewRewardValue] = useState('');
   const rewardPool = selected?.config.rewardPool ?? DEFAULT_REWARD_POOL;
   const mode = selected?.config.saveOrGiveMode ?? 'team';
   const teamCount = selected?.config.saveOrGiveTeamCount ?? 2;
@@ -126,6 +127,27 @@ export default function SaveOrGivePage() {
     const clamped = Math.max(MIN_TEAM_COUNT, Math.min(MAX_TEAM_COUNT, next));
     if (clamped === teamCount) return;
     await persistConfig({ saveOrGiveTeamCount: clamped });
+  }
+
+  async function addRewardPoints() {
+    const trimmed = newRewardValue.trim();
+    const n = Number(trimmed);
+    if (!trimmed || !Number.isFinite(n)) return;
+    await persistConfig({ rewardPool: [...rewardPool, { kind: 'points', value: n }] });
+    setNewRewardValue('');
+  }
+
+  async function addRewardSwap() {
+    await persistConfig({ rewardPool: [...rewardPool, { kind: 'swap' }] });
+  }
+
+  async function removeReward(index: number) {
+    if (rewardPool.length <= 1) return;
+    await persistConfig({ rewardPool: rewardPool.filter((_, i) => i !== index) });
+  }
+
+  async function resetRewardPool() {
+    await persistConfig({ rewardPool: DEFAULT_REWARD_POOL });
   }
 
   async function addParticipant() {
@@ -586,6 +608,63 @@ export default function SaveOrGivePage() {
                         {t('gameAdmin.addParticipant')}
                       </button>
                     </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="font-caption text-caption text-on-surface-variant mb-2">
+                        {t('gameSaveOrGive.rewardPoolLabel')}
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {rewardPool.map((r, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
+                          >
+                            {r.kind === 'swap' ? t('gameSaveOrGive.swapReward') : (r.value ?? 0) > 0 ? `+${r.value}` : `${r.value ?? 0}`}
+                            <button
+                              type="button"
+                              onClick={() => void removeReward(i)}
+                              disabled={rewardPool.length <= 1}
+                              className="text-on-surface-variant hover:text-error disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <input
+                          type="number"
+                          placeholder={t('gameSaveOrGive.rewardValuePlaceholder')}
+                          value={newRewardValue}
+                          onChange={(e) => setNewRewardValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') void addRewardPoints();
+                          }}
+                          className="w-32 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void addRewardPoints()}
+                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                        >
+                          {t('gameSaveOrGive.addRewardPointsButton')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void addRewardSwap()}
+                          className="px-4 py-2 rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-colors whitespace-nowrap"
+                        >
+                          {t('gameSaveOrGive.addRewardSwapButton')}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void resetRewardPool()}
+                        className="mt-2 font-label-md text-label-md text-on-surface-variant hover:underline"
+                      >
+                        {t('gameSaveOrGive.resetRewardsButton')}
+                      </button>
                     </div>
 
                     <div className="pt-3">

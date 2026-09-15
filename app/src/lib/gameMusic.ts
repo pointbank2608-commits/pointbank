@@ -221,6 +221,40 @@ export function playShuffleSwish(): void {
   }
 }
 
+/** playBallCrack() 의 전체 길이(ms) — Save it or Give it 번호 공 깨지는 CSS 애니메이션
+ * (SaveOrGiveIt.tsx 의 CrackingBall/sog-crack-* 연출) 길이와 반드시 같은 값을 써야
+ * 소리와 화면이 어긋나지 않는다. 두 쪽에서 이 상수 하나를 같이 가져다 쓴다. */
+export const BALL_CRACK_MS = 1250;
+
+const BALL_CRACK_URL = '/sounds/sog-ball-crack.m4a?v=2';
+let ballCrackAudio: HTMLAudioElement | null = null;
+
+/** 공 클릭 시점에 새 Audio를 만들면 그 파일을 새로 내려받고 디코딩하는 동안 재생이
+ * 살짝 늦게 시작돼, 이미 그 순간 시작되는 CSS 크랙 애니메이션과 소리가 어긋난다 —
+ * 미리 하나 만들어 캐시해두고 재생 시점엔 그걸 되감아 트는 것만 한다. */
+function getBallCrackAudio(): HTMLAudioElement {
+  if (!ballCrackAudio) {
+    ballCrackAudio = new Audio(BALL_CRACK_URL);
+    ballCrackAudio.preload = 'auto';
+  }
+  return ballCrackAudio;
+}
+
+/** 다음 재생이 지연 없이 시작되도록 공 화면이 보이는 시점에 미리 불러둔다(선택적 호출 —
+ * 안 불러도 첫 재생 때 자동으로 만들어지지만, 그 첫 재생만 살짝 늦을 수 있다). */
+export function preloadBallCrack(): void {
+  getBallCrackAudio();
+}
+
+/** 번호 공을 눌러 열 때 나는 달걀 깨는 소리 — 실제 음원 파일(선생님이 직접 고른 소스,
+ * 저작권 책임은 그쪽에서 진다는 전제로 사용). CrackingBall 의 깨지는 애니메이션 길이에
+ * 맞춰(1.25초 안팎) 미리 잘라둔 파일이다. */
+export function playBallCrack(): void {
+  const audio = getBallCrackAudio();
+  audio.currentTime = 0;
+  void audio.play().catch(() => {});
+}
+
 /** 결과 사운드를 한 번도 설정하지 않았을 때 쓰는 기본값. */
 export const DEFAULT_RESULT_SOUND: MusicSelection = { kind: 'builtin', id: 'tada' };
 

@@ -41,7 +41,7 @@ interface InFlyer {
   dy: number;
 }
 
-const MACHINE_SRC = '/skins/lottery-machine.png?v=2';
+const MACHINE_SRC = '/skins/lottery-machine.png?v=3';
 /** 스킨에서 유리 케이지 안쪽. 값은 이미지 너비/높이 대비 비율. */
 const HOLE = { cx: 0.5, cy: 0.42, r: 0.3 };
 /** 앞쪽 나무 배출 홈. */
