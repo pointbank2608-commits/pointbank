@@ -502,7 +502,7 @@ export default function SaveOrGiveIt({
                   <div className={`sog-flip-card ${phase === 'reveal' ? 'is-flipped' : ''}`}>
                     <div className="sog-flip-face">
                       <BoardFace>
-                        <GameFitText text={currentItem.label} maxSize={48} className="font-bold text-[#2a241c]" />
+                        <GameFitText text={currentItem.label} maxSize={120} className="font-bold text-[#2a241c]" />
                       </BoardFace>
                     </div>
                     <div className="sog-flip-face sog-flip-back">

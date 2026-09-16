@@ -38,6 +38,9 @@ import OnboardingPage from './pages/OnboardingPage';
 import OrderPage from './pages/OrderPage';
 import PassBallPage from './pages/PassBallPage';
 import PopcornPage from './pages/PopcornPage';
+import PrivacyPage from './pages/PrivacyPage';
+import RefundPolicyPage from './pages/RefundPolicyPage';
+import TermsPage from './pages/TermsPage';
 import QuizPage from './pages/QuizPage';
 import RankOrderPage from './pages/RankOrderPage';
 import ResultsPage from './pages/ResultsPage';
@@ -77,6 +80,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AuthPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/refund-policy" element={<RefundPolicyPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
@@ -106,6 +112,9 @@ export default function App() {
   // 4) 정상 이용
   return (
     <Routes>
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/refund-policy" element={<RefundPolicyPage />} />
       <Route element={<AppLayout />}>
         {isStaff ? (
           <>

@@ -209,15 +209,39 @@ export function playWheelSpinTicks(totalDegrees: number, durationMs: number): ()
   };
 }
 
-/** 카드가 자리를 바꿀 때 한 번 울리는 "촤르르" 셔플음 — 짧은 노이즈 조각을 빠르게 이어서
- * 카드를 재빨리 섞는 손놀림 소리를 흉내낸다. 섞기 라운드마다 한 번씩 불러 쓴다. */
+const CARD_SWISH_URL = '/sounds/card-swish.m4a?v=1';
+const cardSwishPool: HTMLAudioElement[] = [];
+
+function getCardSwishInstance(): HTMLAudioElement {
+  const free = cardSwishPool.find((a) => a.paused || a.ended);
+  if (free) return free;
+  const a = new Audio(CARD_SWISH_URL);
+  a.preload = 'auto';
+  cardSwishPool.push(a);
+  return a;
+}
+
+/** 다음 재생이 늦게 시작되지 않도록 카드 섞기 화면이 뜨는 시점에 미리 하나 받아둔다. */
+export function preloadCardSwish(): void {
+  getCardSwishInstance();
+}
+
+/** 카드가 자리를 바꿀 때 나는 "쉭" 소리(실제 음원) — 한 라운드에 카드 여러 장이 동시에
+ * 움직이므로, 이 소리를 살짝 시간차를 두고 여러 번 겹쳐 재생해서 "여러 장이 한꺼번에
+ * 스치는" 느낌을 낸다. 재생마다 음높이·세기를 조금씩 달리해 전부 똑같은 소리가 한꺼번에
+ * 나는 게 아니라 카드마다 다르게 스치는 것처럼 들리게 한다. 섞기 라운드마다 한 번씩 불러
+ * 쓴다(내부에서 알아서 여러 겹으로 재생한다). */
 export function playShuffleSwish(): void {
-  const c = ctx();
-  const start = c.currentTime + 0.01;
-  const hits = 10;
-  const span = 0.32;
-  for (let i = 0; i < hits; i++) {
-    noiseBurst(start + (i * span) / hits, 0.05, 0.22 + Math.random() * 0.1);
+  const layers = 3;
+  for (let i = 0; i < layers; i++) {
+    const delay = Math.random() * 140;
+    window.setTimeout(() => {
+      const audio = getCardSwishInstance();
+      audio.currentTime = 0;
+      audio.volume = 0.55 + Math.random() * 0.35;
+      audio.playbackRate = 0.9 + Math.random() * 0.3;
+      void audio.play().catch(() => {});
+    }, delay);
   }
 }
 

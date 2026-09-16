@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
-import { playBuiltin, playShuffleSwish } from '../lib/gameMusic';
+import { playBuiltin, playShuffleSwish, preloadCardSwish } from '../lib/gameMusic';
 import type { GameItem } from '../lib/types';
 
 interface Props {
@@ -122,6 +122,12 @@ export default function FindMissing({
   useEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
   }, [items]);
+
+  // 카드 섞기 소리를 처음 섞는 순간 새로 받아오면 살짝 늦게 시작될 수 있어, 화면이 뜨는
+  // 시점에 미리 캐시해둔다.
+  useEffect(() => {
+    preloadCardSwish();
+  }, []);
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));

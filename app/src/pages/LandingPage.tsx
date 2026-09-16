@@ -387,6 +387,17 @@ export default function LandingPage() {
 
       <footer className="border-t border-outline-variant/40 py-10 text-center text-[15px] leading-6 text-outline">
         <p className="mb-4">{t('landing.footer')}</p>
+        <div className="mb-4 flex items-center justify-center gap-3">
+          <Link to="/terms" className="underline hover:text-on-surface-variant">
+            {t('landing.termsLink')}
+          </Link>
+          <Link to="/privacy" className="underline hover:text-on-surface-variant">
+            {t('landing.privacyLink')}
+          </Link>
+          <Link to="/refund-policy" className="underline hover:text-on-surface-variant">
+            {t('landing.refundLink')}
+          </Link>
+        </div>
         <div className="mx-auto max-w-md space-y-1">
           <p className="font-label-md text-[16px] text-on-surface-variant">{t('landing.bizName')}</p>
           <p>{t('landing.bizOwner')}</p>
