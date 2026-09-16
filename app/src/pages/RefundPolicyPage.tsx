@@ -32,7 +32,7 @@ export default function RefundPolicyPage() {
             <ol className="list-decimal space-y-1.5 pl-5">
               <li>유료 플랜은 매월 정기적으로 자동 결제되는 구독형 서비스입니다.</li>
               <li>
-                청구 금액은 <span className="font-bold">기본요금 + (등록 학생 수 − 10명) × 5,000원</span>(학생 수가 10명
+                청구 금액은 <span className="font-bold">월 9,900원 + (등록 학생 수 − 10명) × 5,000원</span>(학생 수가 10명
                 이하인 경우 추가요금 없음)으로 매월 청구 시점의 등록 학생 수를 기준으로 산정됩니다.
               </li>
               <li>결제는 회원이 등록한 신용카드로 전자지급결제대행사(PG사)를 통해 이루어지며, 카드 정보는 회사가 보관하지 않습니다.</li>

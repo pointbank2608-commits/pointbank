@@ -5,7 +5,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
+import { GAME_CATALOG, isFreeTierGame, type GameCategory } from '../lib/gameCatalog';
 
 const CATEGORIES: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
 
@@ -13,7 +13,7 @@ type ViewMode = 'library' | 'all';
 
 export default function GamesPage() {
   const { t } = useTranslation();
-  const { academy, isStaff, session } = useAuth();
+  const { academy, isStaff, session, isPaid } = useAuth();
   const [activeCategory, setActiveCategory] = useState<GameCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('library');
 
@@ -135,37 +135,55 @@ export default function GamesPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {games.map((g) => (
-              <Link
-                key={g.type}
-                to={g.path}
-                className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
-              >
-                <div className="relative h-36 overflow-hidden">
-                  {g.cover ? (
-                    <img
-                      src={g.cover}
-                      alt=""
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                      <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{g.icon}</span>
+            {games.map((g) => {
+              const locked = isStaff && !isPaid && !isFreeTierGame(g.type);
+              return (
+                <Link
+                  key={g.type}
+                  to={locked ? '/settings/billing' : g.path}
+                  className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
+                >
+                  <div className="relative h-36 overflow-hidden">
+                    {g.cover ? (
+                      <img
+                        src={g.cover}
+                        alt=""
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
+                      />
+                    ) : (
+                      <div
+                        className={`w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
+                      >
+                        <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{g.icon}</span>
+                      </div>
+                    )}
+                    <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
+                      <span className="material-symbols-outlined">{g.icon}</span>
                     </div>
-                  )}
-                  <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
-                    <span className="material-symbols-outlined">{g.icon}</span>
+                    {locked ? (
+                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[16px] text-inverse-on-surface">lock</span>
+                      </div>
+                    ) : (
+                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
+                        <span className="font-caption text-caption text-inverse-on-surface tabular-nums">{g.number}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
-                    <span className="font-caption text-caption text-inverse-on-surface tabular-nums">{g.number}</span>
+                  <div className="p-5">
+                    <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <h3 className="min-w-0 font-title-md text-title-md text-on-surface">{t(g.nameKey)}</h3>
+                      {locked && (
+                        <span className="shrink-0 whitespace-nowrap rounded-full bg-tertiary-container px-2 py-0.5 font-caption text-caption text-on-tertiary-container">
+                          {t('gamesList.lockedBadge')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
                   </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="font-title-md text-title-md text-on-surface mb-1">{t(g.nameKey)}</h3>
-                  <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </>
       )}

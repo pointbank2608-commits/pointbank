@@ -20,6 +20,7 @@ interface AuthValue {
   academy: Academy | null;
   isStaff: boolean;
   isAdmin: boolean;
+  isPaid: boolean;
   pointUnit: string;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -108,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       academy,
       isStaff: profile?.role === 'owner' || profile?.role === 'teacher',
       isAdmin: profile?.role === 'admin',
+      isPaid: academy?.plan === 'paid',
       pointUnit: academy?.point_unit ?? t('common.pointsFallback'),
       refresh: loadProfile,
       signOut,

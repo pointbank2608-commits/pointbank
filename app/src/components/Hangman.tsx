@@ -210,7 +210,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
   );
 
   const sidePanel = editable && !itemsHidden && (
-    <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+    <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
       <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
         <button
           type="button"
@@ -452,7 +452,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       <div
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
-        <div className={`flex flex-col items-center ${editable && !itemsHidden ? '' : 'w-full'}`}>
+        <div className="flex w-full max-w-[760px] flex-col items-center">
           {nameBlock}
           {hintBlock}
           {boardBody}

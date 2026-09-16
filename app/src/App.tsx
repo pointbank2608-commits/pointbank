@@ -8,6 +8,7 @@ import AnagramPage from './pages/AnagramPage';
 import AppLayout from './pages/AppLayout';
 import AttendancePage from './pages/AttendancePage';
 import Baskin31Page from './pages/Baskin31Page';
+import BillingPage from './pages/BillingPage';
 import BingoPage from './pages/BingoPage';
 import BombPage from './pages/BombPage';
 import Connect4Page from './pages/Connect4Page';
@@ -127,6 +128,7 @@ export default function App() {
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/results/homework/:studentId" element={<HomeworkCalendarPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/billing" element={<BillingPage />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />

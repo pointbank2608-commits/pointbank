@@ -25,6 +25,9 @@ export interface GameCatalogEntry {
   cover: string | null;
   nameKey: string;
   descKey: string;
+  /** 'free'로 표시된 4종(돌림판·사다리·시한폭탄·행맨)만 무료 플랜에서 플레이 가능. 없으면
+   * 유료 전용으로 취급한다 — 새 게임을 추가할 때 이 필드를 안 넣어도 안전하게 유료로 막힌다. */
+  tier?: 'free';
 }
 
 /**
@@ -43,6 +46,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-wheel.jpg',
     nameKey: 'gamesList.wheelName',
     descKey: 'gamesList.wheelDesc',
+    tier: 'free',
   },
   {
     type: 'ladder',
@@ -54,6 +58,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-ladder.jpg',
     nameKey: 'gamesList.ladderName',
     descKey: 'gamesList.ladderDesc',
+    tier: 'free',
   },
   {
     type: 'order',
@@ -76,6 +81,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-bomb.jpg',
     nameKey: 'gamesList.bombName',
     descKey: 'gamesList.bombDesc',
+    tier: 'free',
   },
   {
     type: 'timer',
@@ -199,6 +205,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-hangman.jpg',
     nameKey: 'gamesList.hangmanName',
     descKey: 'gamesList.hangmanDesc',
+    tier: 'free',
   },
   {
     type: 'truefalse',
@@ -428,4 +435,9 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
   return GAME_CATALOG.find((g) => g.type === type);
+}
+
+/** 무료 플랜에서 플레이 가능한 게임인지 — tier 필드가 없으면(대부분) 유료 전용이다. */
+export function isFreeTierGame(type: GameType): boolean {
+  return getGameCatalogEntry(type)?.tier === 'free';
 }

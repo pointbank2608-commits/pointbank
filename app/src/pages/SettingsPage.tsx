@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -25,7 +26,7 @@ import type { Preset } from '../lib/types';
 const MAX_LOGO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function SettingsPage() {
-  const { academy, profile, refresh } = useAuth();
+  const { academy, profile, refresh, isPaid } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, reload: reloadClasses } = useClasses(academy?.id);
@@ -200,6 +201,25 @@ export default function SettingsPage() {
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('settings.title')}
       </h2>
+
+      <Link
+        to="/settings/billing"
+        className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] transition-colors hover:bg-surface-container-low"
+      >
+        <div>
+          <h4 className="font-title-md text-title-md text-on-surface">{t('settings.billingTitle')}</h4>
+          <p className="mt-1 font-body-md text-body-md text-on-surface-variant">
+            {isPaid ? t('settings.billingSubtitlePaid') : t('settings.billingSubtitleFree')}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 font-label-md text-label-md ${
+            isPaid ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'
+          }`}
+        >
+          {isPaid ? t('settings.planPaidBadge') : t('settings.planFreeBadge')}
+        </span>
+      </Link>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
         <h4 className="font-title-md text-title-md text-on-surface">{t('settings.myNameTitle')}</h4>

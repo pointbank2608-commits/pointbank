@@ -48,6 +48,7 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
   const scaleRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
+  const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
   const [itemsHidden, setItemsHidden] = useState(false);
 
@@ -65,7 +66,12 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
   }, []);
 
   useLayoutEffect(() => {
-    if (!isFullscreen) return;
+    // 전체화면이 아닌 일반 화면에서도, 화면(뷰포트)보다 콘텐츠가 크면 스크롤 없이 한
+    // 화면에 다 보이도록 축소한다 — 사용을 어려워하는 선생님이 많아서(스크롤해서
+    // 버튼/문제를 찾게 하면 안 됨) "화면에 다 보인다"가 "화면보다 커 보인다"보다 우선.
+    // 다만 모바일 폭에서는 그대로 둔다 — 손가락 스크롤은 이미 익숙한 조작이라 억지로
+    // 줄이면 글씨만 작아지고 얻는 게 없다.
+    const DESKTOP_BREAKPOINT = 768;
 
     // wrap(.game-fs-scale) 자체를 재는 게 아니라 그 안의 실제 시각 요소들을 잰다. wrap과
     // 그 직계 자식들은 전부 CSS에서 width:100%로 고정해뒀다(tailwind.css
@@ -116,8 +122,20 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
       const stage = stageRef.current;
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
+
+      if (!isFullscreen && window.innerWidth < DESKTOP_BREAKPOINT) {
+        setScale(1);
+        return;
+      }
+
       const availW = stage.clientWidth;
-      const availH = stage.clientHeight;
+      // 전체화면에선 스테이지 자체가 화면 전체라 clientHeight가 곧 가용 높이지만, 일반
+      // 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
+      // 따로 재야 한다(지금 스크롤 위치 기준 — 사용자가 이미 스크롤해서 보고 있는 상태를
+      // 쫓아다니며 다시 축소하진 않는다, 새로고침·리사이즈 시점에만 재계산).
+      const availH = isFullscreen
+        ? stage.clientHeight
+        : Math.max(240, window.innerHeight - stage.getBoundingClientRect().top - 24);
       const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
 
       let w = 0;
@@ -143,8 +161,15 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
       }
 
       if (availW < 16 || availH < 16 || w < 16 || h < 16) return;
+      // 저장은 "실제로 scaleRef가 렌더링되는 폭"(=무대 폭)으로 한다 — 안(w)은 화면보다
+      // 콘텐츠가 얼마나 좁은지 잴 때만 쓰고, 축소 후 문서에 얼마만큼 공간을 예약할지는
+      // scaleRef 자체의 폭(availW) 기준이어야 실제로 줄어드는 시각적 크기와 맞아떨어진다.
+      setNaturalSize({ w: availW, h });
       const next = Math.min(availW / w, availH / h) * 0.96;
-      setScale(Math.min(5, Math.max(0.5, next)));
+      // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
+      // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
+      // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
+      setScale(isFullscreen ? Math.min(5, Math.max(0.5, next)) : Math.min(1, Math.max(0.5, next)));
     }
 
     fit();
@@ -161,7 +186,16 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     for (const target of Array.from(wrap.children) as HTMLElement[]) {
       ro.observe(target);
     }
-    return () => ro.disconnect();
+    // 일반 화면에서는 위쪽에 있는 "게임 소개" 패널을 펼치고 접는 것처럼, 게임 자신의
+    // 크기는 그대로인데 화면 속 위치(stage 위쪽 여백)만 바뀌는 경우가 있다 — 그런 경우도
+    // 페이지 전체 높이가 같이 바뀌므로 body를 관찰해 다시 재도록 한다. 창 크기 자체가
+    // 바뀔 때(회전, 창 리사이즈, 모바일↔데스크탑 폭 경계를 넘나들 때)도 다시 잰다.
+    ro.observe(document.body);
+    window.addEventListener('resize', fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', fit);
+    };
   }, [isFullscreen]);
 
   function toggleFullscreen() {
@@ -259,7 +293,23 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
             </div>
           </div>
         ) : (
-          children
+          <div ref={stageRef}>
+            <div
+              className="mx-auto"
+              style={naturalSize.h > 0 ? { width: naturalSize.w * scale, height: naturalSize.h * scale } : undefined}
+            >
+              <div
+                ref={scaleRef}
+                style={{
+                  width: naturalSize.w > 0 ? naturalSize.w : '100%',
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top left',
+                }}
+              >
+                {children}
+              </div>
+            </div>
+          </div>
         )}
       </div>
       {teamOrderOpen && roster && (

@@ -7,6 +7,11 @@ export interface Academy {
   invite_code: string;
   logo_url: string | null;
   created_at: string;
+  plan: 'free' | 'paid';
+  plan_status: 'active' | 'pending_cancel';
+  next_billing_at: string | null;
+  card_brand: string | null;
+  card_last4: string | null;
 }
 
 export interface Profile {
@@ -43,6 +48,20 @@ export interface Preset {
   sort_order: number;
   /** 숙제 캘린더에 반영할 프리셋인지 (양수=완료, 음수=미제출) */
   is_homework: boolean;
+  created_at: string;
+}
+
+export interface BillingHistoryRow {
+  id: string;
+  academy_id: string;
+  billed_at: string;
+  period_start: string;
+  period_end: string;
+  student_count: number;
+  amount_krw: number;
+  status: 'success' | 'failed';
+  portone_payment_id: string | null;
+  failure_reason: string | null;
   created_at: string;
 }
 
@@ -115,6 +134,8 @@ export interface AdminAcademyRow {
   owner_count: number;
   teacher_count: number;
   student_count: number;
+  plan: 'free' | 'paid';
+  plan_expires_at: string | null;
 }
 
 export interface Attendance {

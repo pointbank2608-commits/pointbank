@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import i18n from '../i18n';
 import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
@@ -12,11 +13,13 @@ import {
   deleteAttendance,
   deleteStudent,
   fetchAttendance,
+  fetchStudentsOfAcademy,
   fetchStudentsOfClass,
   markPresent,
   renameStudent,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
+import { FREE_CLASS_LIMIT, FREE_STUDENT_LIMIT } from '../lib/planLimits';
 import type { Attendance, Student } from '../lib/types';
 
 function pad(n: number): string {
@@ -30,10 +33,27 @@ function timeOnly(iso: string): string {
 }
 
 export default function AttendancePage() {
-  const { academy, profile } = useAuth();
+  const { academy, profile, isPaid } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reload: reloadClasses, reorder } = useClasses(academy?.id);
+  /** 무료 플랜 학생 10명 한도는 반 하나가 아니라 학원 전체 기준이라, 반별 학생 목록(students
+   * state)과는 별도로 학원 전체 학생 수를 따로 추적한다. */
+  const [academyStudentCount, setAcademyStudentCount] = useState(0);
+
+  const loadAcademyStudentCount = useCallback(async () => {
+    if (!academy?.id) return;
+    try {
+      const all = await fetchStudentsOfAcademy(academy.id);
+      setAcademyStudentCount(all.length);
+    } catch {
+      // 한도 체크용 보조 값이라 실패해도 화면을 막지 않는다.
+    }
+  }, [academy?.id]);
+
+  useEffect(() => {
+    void loadAcademyStudentCount();
+  }, [loadAcademyStudentCount]);
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -86,6 +106,10 @@ export default function AttendancePage() {
 
   async function handleAddClass() {
     if (!academy?.id) return;
+    if (!isPaid && classes.length >= FREE_CLASS_LIMIT) {
+      notify(t('attendance.freeClassLimitToast'), 'error');
+      return;
+    }
     const name = prompt(t('attendance.addClassPrompt'));
     if (!name?.trim()) return;
     const ok = await run(async () => {
@@ -96,12 +120,19 @@ export default function AttendancePage() {
 
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
+    if (!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT) {
+      notify(t('attendance.freeStudentLimitToast'), 'error');
+      return;
+    }
     const name = prompt(t('board.addStudentPrompt'));
     if (!name?.trim()) return;
     const ok = await run(async () => {
       await createStudent(academy.id, selectedId, name.trim());
     }, t('board.addStudentToast', { name: name.trim() }));
-    if (ok) await load();
+    if (ok) {
+      await load();
+      await loadAcademyStudentCount();
+    }
   }
 
   async function handleRenameStudent(studentId: string, currentName: string) {
@@ -117,6 +148,7 @@ export default function AttendancePage() {
     if (ok) {
       setStudents((prev) => prev.filter((s) => s.id !== studentId));
       setAttendance((prev) => prev.filter((a) => a.student_id !== studentId));
+      await loadAcademyStudentCount();
     }
   }
 
@@ -221,11 +253,18 @@ export default function AttendancePage() {
         <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
         <button
           onClick={() => void handleAddClass()}
-          className="flex items-center gap-1 px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors"
+          disabled={!isPaid && classes.length >= FREE_CLASS_LIMIT}
+          title={!isPaid && classes.length >= FREE_CLASS_LIMIT ? t('attendance.freeClassLimitToast') : undefined}
+          className="flex items-center gap-1 px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           {t('settings.addClass')}
         </button>
+        {!isPaid && classes.length >= FREE_CLASS_LIMIT && (
+          <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
+            {t('plan.upgradeCta')}
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -234,12 +273,25 @@ export default function AttendancePage() {
             {t('nav.attendance')}
           </h2>
           {selectedId && (
-            <button
-              onClick={() => void handleAddStudent()}
-              className="mt-1 font-label-md text-label-md text-primary hover:underline"
-            >
-              {t('board.addStudent')}
-            </button>
+            <div className="mt-1 flex items-center gap-2">
+              <button
+                onClick={() => void handleAddStudent()}
+                disabled={!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT}
+                title={
+                  !isPaid && academyStudentCount >= FREE_STUDENT_LIMIT
+                    ? t('attendance.freeStudentLimitToast')
+                    : undefined
+                }
+                className="font-label-md text-label-md text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
+              >
+                {t('board.addStudent')}
+              </button>
+              {!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT && (
+                <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
+                  {t('plan.upgradeCta')}
+                </Link>
+              )}
+            </div>
           )}
         </div>
         <div className="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-sm px-2 py-1.5">

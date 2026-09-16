@@ -3,6 +3,7 @@ import type {
   Academy,
   AdminAcademyRow,
   Attendance,
+  BillingHistoryRow,
   ClassRow,
   CurriculumLesson,
   CurriculumStep,
@@ -787,6 +788,17 @@ export async function deleteAcademyAsAdmin(academyId: string) {
   if (error) throw new Error(error.message);
 }
 
+/** 관리자가 카드 등록 없이 특정 학원을 유료/무료로 강제 전환한다(comp 계정, 이벤트 등).
+ * until을 주면(YYYY-MM-DD) 그 날짜가 지난 뒤 자동으로 무료로 돌아간다(charge-subscriptions가 매일 확인). */
+export async function adminSetAcademyPlan(academyId: string, plan: 'free' | 'paid', until?: string | null): Promise<void> {
+  const { error } = await supabase.rpc('admin_set_academy_plan', {
+    p_academy_id: academyId,
+    p_plan: plan,
+    p_until: plan === 'paid' ? (until ?? null) : null,
+  });
+  if (error) throw new Error(error.message);
+}
+
 /** 로그인한 본인의 비밀번호를 바꾼다. 현재 비밀번호는 필요 없다 —
  * 이미 유효한 세션으로 로그인돼 있어야 호출 가능한 API. */
 export async function changeMyPassword(newPassword: string): Promise<void> {
@@ -948,4 +960,32 @@ export async function generateWordListFromVideo(videoId: string): Promise<{ word
   if (error) throw new Error(error.message);
   if (data?.error) throw new Error(data.error);
   return data?.items ?? [];
+}
+
+export async function fetchBillingHistory(academyId: string): Promise<BillingHistoryRow[]> {
+  return unwrap(
+    await supabase
+      .from('billing_history')
+      .select('*')
+      .eq('academy_id', academyId)
+      .order('billed_at', { ascending: false }),
+  );
+}
+
+/** 포트원으로 카드(빌링키) 발급이 끝난 뒤 호출 — 서버(Edge Function)가 호출자 본인의
+ * academy_id를 직접 확인하므로 academyId를 body로 넘기지 않는다. */
+export async function registerBillingKey(billingKey: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string }>('register-billing-key', {
+    body: { billingKey },
+  });
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
+}
+
+export async function cancelBilling(action: 'cancel' | 'resume'): Promise<void> {
+  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string }>('cancel-billing', {
+    body: { action },
+  });
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
 }

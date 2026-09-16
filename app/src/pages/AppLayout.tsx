@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
+import PlanRouteGuard from '../components/PlanRouteGuard';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
@@ -210,6 +211,7 @@ function AppLayoutInner() {
           </Link>
         </header>
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">
+          <PlanRouteGuard />
           <Outlet />
         </div>
       </main>

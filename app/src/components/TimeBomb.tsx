@@ -185,7 +185,7 @@ export default function TimeBomb({
       <div
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
-        <div className={`flex flex-col items-center ${editable && !itemsHidden ? '' : 'w-full'}`}>
+        <div className="flex w-full max-w-[560px] flex-col items-center">
           {editable &&
             (editingTemplateName ? (
               <input
@@ -244,7 +244,7 @@ export default function TimeBomb({
           ) : (
             <>
               <div className="mb-5 flex w-[min(560px,92vw)] flex-col items-center">
-                <div className="flex h-[220px] items-center justify-center sm:h-[260px]">
+                <div className="flex aspect-[43/20] w-full items-center justify-center">
                   <img
                     src={phase === 'exploded' ? EXPLODED_SRC : IDLE_SRC}
                     alt=""
@@ -343,7 +343,7 @@ export default function TimeBomb({
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
+          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-4">
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('gameBomb.rangeLabel')}</div>
               <div className="flex items-center gap-2">

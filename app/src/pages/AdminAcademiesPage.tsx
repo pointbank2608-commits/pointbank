@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
-import { changeMyPassword, deleteAcademyAsAdmin, fetchAdminAcademies } from '../lib/api';
+import { adminSetAcademyPlan, changeMyPassword, deleteAcademyAsAdmin, fetchAdminAcademies } from '../lib/api';
 import i18n from '../i18n';
 import type { AdminAcademyRow } from '../lib/types';
 
@@ -23,6 +23,7 @@ export default function AdminAcademiesPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwBusy, setPwBusy] = useState(false);
+  const [untilDrafts, setUntilDrafts] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -38,6 +39,23 @@ export default function AdminAcademiesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function handlePlanToggle(row: AdminAcademyRow) {
+    const nextPlan = row.plan === 'paid' ? 'free' : 'paid';
+    const until = nextPlan === 'paid' ? (untilDrafts[row.academy_id] || null) : null;
+    setBusyId(row.academy_id);
+    const ok = await run(
+      () => adminSetAcademyPlan(row.academy_id, nextPlan, until),
+      nextPlan === 'paid' ? t('admin.setPaidToast', { name: row.name }) : t('admin.setFreeToast', { name: row.name }),
+    );
+    setBusyId(null);
+    if (ok) {
+      setRows((prev) =>
+        prev.map((r) => (r.academy_id === row.academy_id ? { ...r, plan: nextPlan, plan_expires_at: until } : r)),
+      );
+      setUntilDrafts((prev) => ({ ...prev, [row.academy_id]: '' }));
+    }
+  }
 
   async function handleDelete(row: AdminAcademyRow) {
     const typed = prompt(t('admin.deleteConfirmPrompt', { name: row.name }));
@@ -118,6 +136,7 @@ export default function AdminAcademiesPage() {
                   <th className="px-4 py-3 font-medium">{t('admin.colTeacher')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.colStudent')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.colJoinedAt')}</th>
+                  <th className="px-4 py-3 font-medium">{t('admin.colPlan')}</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -133,6 +152,45 @@ export default function AdminAcademiesPage() {
                     <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{r.student_count}</td>
                     <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant whitespace-nowrap">
                       {fmtDate(r.created_at)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-caption text-caption ${
+                            r.plan === 'paid'
+                              ? 'bg-primary-container text-on-primary-container'
+                              : 'bg-surface-container text-on-surface-variant'
+                          }`}
+                        >
+                          {r.plan === 'paid' ? t('admin.planPaid') : t('admin.planFree')}
+                        </span>
+                        {r.plan === 'paid' && (
+                          <span className="font-caption text-caption text-on-surface-variant">
+                            {r.plan_expires_at ? t('admin.planUntil', { date: fmtDate(r.plan_expires_at) }) : t('admin.planNoExpiry')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        {r.plan !== 'paid' && (
+                          <input
+                            type="date"
+                            value={untilDrafts[r.academy_id] ?? ''}
+                            onChange={(e) =>
+                              setUntilDrafts((prev) => ({ ...prev, [r.academy_id]: e.target.value }))
+                            }
+                            title={t('admin.planUntilInputHint')}
+                            className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1 font-caption text-caption text-on-surface outline-none focus:border-primary"
+                          />
+                        )}
+                        <button
+                          type="button"
+                          disabled={busyId === r.academy_id}
+                          onClick={() => void handlePlanToggle(r)}
+                          className="font-label-md text-label-md text-primary hover:underline disabled:opacity-50"
+                        >
+                          {r.plan === 'paid' ? t('admin.setFreeButton') : t('admin.setPaidButton')}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <button

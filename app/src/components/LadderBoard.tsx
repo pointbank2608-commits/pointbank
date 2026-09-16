@@ -74,6 +74,10 @@ export default function LadderBoard({
   const stopMusicRef = useRef<() => void>(() => {});
   const oneStopsRef = useRef<(() => void)[]>([]);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const scaleOuterRef = useRef<HTMLDivElement>(null);
+  const scaleContentRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
     setParticipantDrafts(Object.fromEntries(participants.map((p) => [p.id, p.label])));
@@ -123,6 +127,31 @@ export default function LadderBoard({
   const width = Math.max(n, 2) * COL_W;
   const height = TOP_PAD + grid.rows * ROW_H + BOTTOM_PAD;
   const railH = height - TOP_PAD - BOTTOM_PAD;
+
+  // 참가자가 적으면(사다리 폭 < 화면 폭) 전자칠판 같은 큰 화면에서 빈 여백만 남는 대신
+  // 카드 폭에 맞게 통째로 확대해서 보여준다. 참가자가 많아 원래도 화면보다 넓으면(가로
+  // 스크롤 케이스) scale은 1로 유지 — overflow-x-auto가 기존처럼 처리한다.
+  useLayoutEffect(() => {
+    const outer = scaleOuterRef.current;
+    const content = scaleContentRef.current;
+    if (!outer || !content) return;
+
+    function recompute() {
+      const availableWidth = outer!.clientWidth;
+      const naturalW = content!.offsetWidth;
+      const naturalH = content!.offsetHeight;
+      setNaturalSize({ w: naturalW, h: naturalH });
+      if (naturalW > 0 && availableWidth > 0) {
+        setScale(Math.min(2.2, Math.max(1, availableWidth / naturalW)));
+      }
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(outer);
+    ro.observe(content);
+    return () => ro.disconnect();
+  }, [width, height, n]);
 
   const paths = useMemo(() => {
     return participants.map((_, i) => {
@@ -319,7 +348,14 @@ export default function LadderBoard({
         )}
       </div>
 
-      <div className="max-w-full overflow-x-auto pb-1">
+      <div ref={scaleOuterRef} className="w-full max-w-full overflow-x-auto pb-1">
+        <div
+          style={{
+            width: naturalSize.w ? naturalSize.w * scale : undefined,
+            height: naturalSize.h ? naturalSize.h * scale : undefined,
+          }}
+        >
+          <div ref={scaleContentRef} style={{ width, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
         <div className="flex mb-3 items-stretch" style={{ width }}>
           {participants.map((p, i) => {
             const plaque = (
@@ -440,6 +476,8 @@ export default function LadderBoard({
             </div>
           ))}
         </div>
+          </div>
+        </div>
       </div>
 
       {mode === 'one' && (
@@ -476,7 +514,7 @@ export default function LadderBoard({
       </div>
 
       {editable && !itemsHidden && (
-        <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
+        <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-4">
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
               {t('gameLadder.participantsPanelLabel')}

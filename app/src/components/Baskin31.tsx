@@ -338,6 +338,25 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
             </div>
           </div>
 
+          {/* 위 3칸 미리보기 + 숫자 카운터만으로는 "31개 중 지금 몇 개째"가 잘 안
+              와닿는다는 실사용 피드백으로 추가 — targetCount칸짜리 진행 막대를 두고
+              지금까지 읽은 만큼(count칸)을 스쿱 색으로 채워서 한눈에 보이게 한다. */}
+          <div className="mb-4 flex w-full max-w-[360px] flex-wrap justify-center gap-1.5">
+            {Array.from({ length: targetCount }, (_, i) => (
+              <span
+                key={i}
+                className="h-[13px] w-[13px] rounded-full transition-colors"
+                style={{
+                  backgroundColor: i < count ? colorFor(i % 3) : 'var(--color-surface-container)',
+                  boxShadow:
+                    i < count
+                      ? 'inset 0 1px 1px rgba(255,255,255,0.55)'
+                      : 'inset 0 0 0 1px var(--color-outline-variant)',
+                }}
+              />
+            ))}
+          </div>
+
           {/* 방금 읽은 단어 바로 아래에 둬야 "누가 방금 읽었는지"와 헷갈리지 않는다 —
               위에 두면 다음 차례 팀이 방금 읽은 것처럼 보인다는 실사용 피드백으로 순서를 바꿈. */}
           {!loser && (
@@ -381,7 +400,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
+          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button
                 type="button"
