@@ -1,0 +1,212 @@
+/* Clay & birch, games 10–34. Scoped to play surfaces; score/state colors stay explicit. */
+.classroom-play {
+  --game-ink: #283e3c;
+  --game-muted: #58716b;
+  --game-paper: #fffdf6;
+  --game-wood: repeating-linear-gradient(4deg, transparent 0 26px, #b2824508 27px, transparent 29px 47px), linear-gradient(115deg, #f3e3c8, #e9d0ac 50%, #efdcbe);
+  --game-wood-shadow: inset 0 1px 1px #fff8e9, 0 4px 0 #c6a982, 0 12px 26px #72533917;
+  --game-paper-shadow: inset 0 1px 0 #ffffff, 0 1px 3px #866a4010;
+  --game-mint: linear-gradient(145deg, #bce2d6, #9ccdbc);
+  --game-coral: linear-gradient(145deg, #f4c5b6, #eeb29f);
+  --game-yellow: linear-gradient(145deg, #f6df9e, #ebcb80);
+  --game-blue: linear-gradient(145deg, #c2dfed, #aacbdc);
+  --game-clay-shadow: inset 1px 2px 2px #ffffff65, inset -1px -2px 3px #654f2915, 0 3px 0 #88755342, 0 6px 10px #6c563515;
+  --color-background: #f8f6ef;
+  --color-surface-container-lowest: #fffef9;
+  --color-deep-navy: #2d4543;
+  --color-on-surface-variant: #526963;
+  --font-body-md: 'IBM Plex Sans KR', 'Hanken Grotesk', sans-serif;
+  --font-title-md: 'IBM Plex Sans KR', 'Quicksand', sans-serif;
+  --font-label-md: 'IBM Plex Sans KR', 'Hanken Grotesk', sans-serif;
+  background: radial-gradient(ellipse at 15% 0%, #e8f1e782, transparent 60%), #fffdf7;
+  border: 1px solid #e4dccd;
+  border-radius: 26px;
+  box-shadow: 0 5px 0 #eee7d9, 0 16px 32px #6650310b;
+  color: var(--game-ink);
+}
+.classroom-play .game-clay-action {
+  min-height: 46px;
+  border-radius: 15px;
+  border: 1px solid #306d60;
+  background: #397e6e;
+  color: #fffef9;
+  box-shadow: inset 0 1px 0 #ffffff2c, 0 3px 0 #285c51;
+  padding: 12px 28px;
+  transition: background .15s ease, transform .15s ease;
+}
+.classroom-play .game-clay-action:hover:not(:disabled) { background: #306e60; transform: translateY(-1px); }
+.classroom-play .game-clay-action:active:not(:disabled) { transform: translateY(2px); }
+.classroom-play .game-clay-action:disabled { cursor: default; }
+.classroom-play .game-play-toolbar { border-bottom: 1px solid #e7dfd0; padding-bottom: 14px; margin-bottom: 22px; }
+.classroom-play .game-play-toolbar button { border: 1px solid #dfd9cc; box-shadow: 0 2px 0 #e9e3d8; }
+.classroom-play :where(button, input):focus-visible { outline: 3px solid #277164; outline-offset: 4px; }
+.classroom-play :where(.font-caption) { font-size: max(13px, 1em); }
+.classroom-play :where(.result-pop) { animation-duration: .3s; }
+
+/* 14, 33, 34: clear question cards and clay answer blocks. */
+.classroom-play :is(.qz-block, .gsq-choice, .wlq-choice) {
+  min-height: 76px;
+  border: 1px solid #ffffff88;
+  border-radius: 19px;
+  background: var(--game-mint);
+  color: var(--game-ink);
+  box-shadow: var(--game-clay-shadow);
+  padding: 18px;
+}
+.classroom-play :is(.qz-block-1, .gsq-choice:nth-child(2), .wlq-choice:nth-child(2)) { background: var(--game-coral); }
+.classroom-play :is(.qz-block-2, .gsq-choice:nth-child(3), .wlq-choice:nth-child(3)) { background: var(--game-yellow); }
+.classroom-play :is(.qz-block-3, .gsq-choice:nth-child(4), .wlq-choice:nth-child(4)) { background: var(--game-blue); }
+.classroom-play .qz-letter { color: #35574b; background: #ffffff60; border-radius: 12px; box-shadow: none; }
+.classroom-play :is(.gsq-stage, .wlq-stage) { background: var(--game-wood); border: 1px solid #d7be9a; box-shadow: var(--game-wood-shadow); border-radius: 27px; padding: 24px; }
+.classroom-play :is(.gsq-prompt, .wlq-prompt) { background: var(--game-paper); border: 1px solid #e3d6bf; box-shadow: var(--game-paper-shadow); color: var(--game-ink); border-radius: 19px; }
+.classroom-play :is(.gsq-score, .wlq-score) { border-radius: 18px; box-shadow: var(--game-clay-shadow); }
+.classroom-play :is(.gsq-score.is-blue, .wlq-score.is-blue, .gsq-turn.is-blue, .wlq-turn.is-blue) { background: #d2e6ee; color: #24495f; }
+.classroom-play :is(.gsq-score.is-red, .wlq-score.is-red, .gsq-turn.is-red, .wlq-turn.is-red) { background: #f2ccbf; color: #753d35; }
+.classroom-play :is(.gsq-score.is-turn, .wlq-score.is-turn) { outline: 3px solid #977039; outline-offset: 3px; }
+.classroom-play :is(.wlq-chip-btn, .gsq-life) { min-height: 44px; border-radius: 13px; background: #fff8e6; color: #5e503a; border: 1px solid #d7bd92; box-shadow: 0 3px 0 #c9ad83; }
+.classroom-play .wlq-chip-btn.is-allin { background: #f2cfb8; color: #653929; }
+
+/* 15, 20, 22, 24: tactile alphabet/word pieces on pale wood racks. */
+.classroom-play :is(.hm-rack, .hm-kb, .ag-rack, .ag-tray, .su-rack, .su-tray, .sw-slate, .sw-kb) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); border: 1px solid #d7be99; }
+.classroom-play :is(.hm-tile, .hm-key, .ag-clay, .su-clay, .sw-key, .sw-stamp) { background: var(--game-mint); color: var(--game-ink); border: 1px solid #ffffff73; box-shadow: var(--game-clay-shadow); border-radius: 12px; }
+.classroom-play :is(.hm-tile-1, .ag-clay-1, .su-clay-1, .sw-clay-1) { background: var(--game-coral); }
+.classroom-play :is(.hm-tile-2, .ag-clay-2, .su-clay-2, .sw-clay-2) { background: var(--game-yellow); }
+.classroom-play :is(.hm-tile-3, .ag-clay-3, .su-clay-3, .sw-clay-3) { background: var(--game-blue); }
+.classroom-play :is(.ag-hang-bar, .su-hang-bar, .gs-hang-bar) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); }
+.classroom-play :is(.ag-tag, .su-tag, .gs-tag) { background: #fff8e9; color: var(--game-ink); box-shadow: var(--game-clay-shadow); border: 1px solid #e8d7b8; }
+.classroom-play :is(.ag-slot, .su-slot, .hm-slot) { background: #dac4a443; box-shadow: inset 0 2px 4px #69482018; }
+.classroom-play .hm-key.is-used { background: #e8e3d7; box-shadow: inset 0 1px 2px #69604715; color: #76796c; }
+
+/* 16, 18: retain clay O/X and animal assets, soften their display furniture. */
+.classroom-play :is(.tf-why, .wm-prompt, .wm-board) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); border: 1px solid #d7bd99; }
+.classroom-play :is(.tf-why-inner, .wm-prompt-inner) { background: var(--game-paper); color: var(--game-ink); box-shadow: var(--game-paper-shadow); }
+.classroom-play .tf-token { border-radius: 26px; box-shadow: var(--game-clay-shadow); }
+.classroom-play .tf-token:first-child { background: var(--game-mint); }
+.classroom-play .tf-token:nth-child(2) { background: var(--game-coral); }
+.classroom-play .wm-well { background: var(--game-mint); box-shadow: var(--game-clay-shadow); }
+.classroom-play .wm-well-1 { background: var(--game-coral); }
+.classroom-play .wm-well-2 { background: var(--game-yellow); }
+.classroom-play .wm-well-3 { background: var(--game-blue); }
+.classroom-play .wm-sign { background: #fffaf0; color: #29403b; border-color: #d4b995; box-shadow: 0 3px 0 #c1a481; }
+
+/* 19: quiet paper fronts, mint backs, real card flip preserved. */
+.classroom-play .fc-face { background: var(--game-wood); box-shadow: var(--game-wood-shadow); border: 1px solid #d6bc97; border-radius: 25px; }
+.classroom-play .fc-inset { background: var(--game-paper); color: var(--game-ink); box-shadow: var(--game-paper-shadow); border-radius: 18px; }
+.classroom-play .fc-face.is-back .fc-inset { background: #e5efe6; }
+.classroom-play .fc-clay .fc-face { background: var(--game-mint); }
+.classroom-play .fc-behind { box-shadow: 0 4px 0 #c7ae8a; background: #efdec4; }
+
+/* 21, 25: sorting crates and stacking pieces retain distinct interaction states. */
+.classroom-play :is(.gs-crate, .ro-list, .ro-step) { background: var(--game-wood); border: 1px solid #d0b58e; box-shadow: var(--game-wood-shadow); border-radius: 20px; }
+.classroom-play .gs-crate-name { background: #fff9e9; color: #4d5646; box-shadow: 0 2px 0 #d1bb97; }
+.classroom-play .gs-crate-well { background: #fbf4e770; box-shadow: inset 0 2px 4px #60462316; }
+.classroom-play :is(.gs-clay, .gs-chip, .gs-basket, .ro-plate, .ro-row) { background: var(--game-mint); color: var(--game-ink); box-shadow: var(--game-clay-shadow); border: 1px solid #ffffff66; }
+.classroom-play :is(.gs-clay-1, .gs-basket-1, .ro-clay-1) { background: var(--game-coral); }
+.classroom-play :is(.gs-clay-2, .gs-basket-2, .ro-clay-2) { background: var(--game-yellow); }
+.classroom-play :is(.gs-clay-3, .gs-basket-3, .ro-clay-3) { background: var(--game-blue); }
+.classroom-play :is(.ro-num, .ro-label) { color: #354e45; }
+.classroom-play .ro-chev { min-width: 40px; min-height: 40px; border-radius: 10px; background: #fff9eb; color: #3e6153; box-shadow: 0 2px 0 #cbb58f; }
+
+/* 23, 28: notebook and arithmetic slate use calm, high-contrast writing surfaces. */
+.classroom-play :is(.ta-book, .ta-tray, .mg-slate, .mg-pad) { background: var(--game-wood); border: 1px solid #d6ba94; box-shadow: var(--game-wood-shadow); border-radius: 24px; }
+.classroom-play :is(.ta-page, .ta-bubble, .mg-face) { background: #fffdf7; color: var(--game-ink); box-shadow: var(--game-paper-shadow); }
+.classroom-play :is(.ta-input, .mg-well) { background: #fffdf8; color: var(--game-ink); border-color: #8aab99; box-shadow: inset 0 2px 3px #576f4712; }
+.classroom-play :is(.mg-key, .mg-token) { background: var(--game-mint); color: var(--game-ink); box-shadow: var(--game-clay-shadow); border: 1px solid #ffffff80; }
+.classroom-play .mg-clay-1 { background: var(--game-coral); }
+.classroom-play .mg-clay-2 { background: var(--game-yellow); }
+.classroom-play .mg-clay-3 { background: var(--game-blue); }
+
+/* 26, 27: neutral puzzle cells make found/selected letters stand out. */
+.classroom-play :is(.ws-frame, .cw-frame) { background: var(--game-wood); border: 1px solid #d6b991; box-shadow: var(--game-wood-shadow); border-radius: 24px; }
+.classroom-play :is(.ws-cell, .cw-cell) { background: #fff9e9; color: #29433c; border-radius: 8px; box-shadow: inset 0 1px 0 #fff, 0 2px 0 #d5c29e; }
+.classroom-play :is(.ws-chip, .cw-chip) { background: #e4eee1; border-color: #bbcdb2; color: #345b43; box-shadow: 0 2px 0 #c1d0b7; }
+.classroom-play :is(.ws-cell.is-ok, .cw-cell.is-ok) { background: #afd5bf; color: #244b37; }
+.classroom-play :is(.ws-cell.is-start, .cw-chip.is-on) { background: #f2d694; color: #3d432d; outline: 2px solid #7b7150; }
+.classroom-play .cw-hole { background: #aa94782b; box-shadow: inset 0 1px 3px #55431f15; }
+
+/* 29, 30: soft toy landscapes; collision geometry and target positions are unchanged. */
+.classroom-play :is(.mz-tray, .ap-tray) { background: var(--game-wood); border: 1px solid #d2b793; box-shadow: var(--game-wood-shadow); border-radius: 26px; }
+.classroom-play .mz-floor { background: #edf1db; }
+.classroom-play .mz-wall { background: linear-gradient(145deg, #98bfa3, #79a98d); border-radius: 5px; box-shadow: inset 1px 1px 1px #d4e9c8, 0 2px 2px #375e3927; }
+.classroom-play .mz-path { background: #f6edd9; }
+.classroom-play .mz-chip { background: #fff9e6; border-color: #d5b88b; color: #2b4a3c; box-shadow: 0 3px 0 #c5b082; }
+.classroom-play .mz-marble { background: radial-gradient(circle at 32% 28%, #bce8db, #4c9c86 75%); box-shadow: 0 3px 4px #345c3438; }
+.classroom-play .mz-marble.is-foe { background: radial-gradient(circle at 32% 28%, #f2baa9, #b86c58 75%); }
+.classroom-play .ap-sky { background: radial-gradient(ellipse at 16% 8%, #fffaf0 0%, #e5f2ed 40%, #c5e3e8 100%); }
+.classroom-play :is(.mz-dir, .ap-dir, .ap-fire) { background: var(--game-mint); color: #24473d; border: 1px solid #ffffff88; box-shadow: var(--game-clay-shadow); border-radius: 16px; }
+.classroom-play .ap-fire { background: var(--game-yellow); }
+.classroom-play .ap-flyer-word { color: #243d3a; text-shadow: 0 1px 0 #ffffffb3; }
+
+/* 31, 32: photo mat instead of ornate picture frames. */
+.classroom-play :is(.ld-frame, .iq-frame) { background: var(--game-wood); border: 1px solid #d6bb96; box-shadow: var(--game-wood-shadow); border-radius: 25px; }
+.classroom-play :is(.ld-photo, .iq-photo) { border-radius: 16px; background: #fffdf8; }
+.classroom-play :is(.ld-chip, .ld-pin, .iq-btn) { background: var(--game-mint); color: var(--game-ink); box-shadow: var(--game-clay-shadow); border: 1px solid #ffffff70; }
+.classroom-play .ld-bank { padding: 12px; border: 1px solid #ded5c3; background: #fbf6e9; border-radius: 18px; }
+.classroom-play .iq-answer { background: #fffdf7; border-color: #e1d2b8; color: #294239; box-shadow: var(--game-paper-shadow); }
+.classroom-play .iq-no { background: var(--game-coral); }
+
+/* Correct, wrong, selected feedback always wins over decorative color variants. */
+.classroom-play :is(.qz-block, .gsq-choice, .wlq-choice, .tf-token, .ag-clay, .su-clay, .hm-key, .ld-chip).is-ok {
+  background: #d6e8cd; color: #294d30; outline: 3px solid #5c8556; outline-offset: 2px;
+}
+.classroom-play :is(.qz-block, .gsq-choice, .wlq-choice, .tf-token, .ag-clay, .su-clay, .hm-key, .ld-chip).is-no {
+  background: #f2d5c9; color: #743c34; outline: 3px solid #b36a5c; outline-offset: 2px;
+}
+.classroom-play :is(.ag-clay, .su-clay, .gs-clay, .gs-tag, .ld-chip).is-sel { outline: 3px solid #316e60; outline-offset: 3px; }
+.classroom-play :is(.qz-block).is-dim { opacity: .6; }
+.classroom-play :is(.gsq-result.is-ok, .wlq-result.is-ok) { background: #3c785e; color: #fff; }
+.classroom-play :is(.gsq-result.is-no, .wlq-result.is-no) { background: #a45145; color: #fff; }
+@media (max-width: 540px) {
+  .classroom-play { border-radius: 18px; }
+  .classroom-play :is(.gsq-stage, .wlq-stage) { padding: 14px; }
+  .classroom-play :is(.qz-block, .gsq-choice, .wlq-choice) { min-height: 64px; padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .classroom-play :is(.result-pop, .pc-hop, .pc-burst-emoji, .td-cell-win) { animation: none; }
+  .classroom-play .game-clay-action { transition: none; }
+}
+
+.classroom-play :is(.sw-slate, .sw-tray) { background: var(--game-wood); border: 1px solid #d2b996; box-shadow: var(--game-wood-shadow); border-radius: 23px; }
+.classroom-play .sw-face { background: #fffdf6; color: var(--game-ink); box-shadow: var(--game-paper-shadow); }
+.classroom-play .sw-input { color: var(--game-ink); background: #fffaf0; border-color: #a3b79d; }
+.classroom-play :is(.ws-cell.is-no, .cw-slot.is-no, .ld-pin.is-wrong) { background: #efd0c4; outline: 3px solid #a85d50; }
+.classroom-play :is(.cw-slot.is-ok, .ld-pin.is-filled) { background: #d3e7c8; color: #2d553c; }
+.classroom-play .ld-chip.is-on { outline: 3px solid #377766; outline-offset: 2px; }
+.classroom-play[data-game="connect4"] [data-skin-object="drop-button"] { background: #f9e5b8 !important; box-shadow: 0 3px 0 #c7ad7a !important; border: 1px solid #eccea0; }
+.classroom-play[data-game="connect4"] [data-skin-stage="board"] { filter: drop-shadow(0 7px 12px #72512d22) !important; }
+.classroom-play[data-game="connect4"] [data-skin-object="drop-button"] span { color: #315e50; }
+.classroom-play[data-game="popcorn"] [data-skin-object="score-card"],
+.classroom-play[data-game="twodice"] [data-skin-object="score-card"] { color: #263e3d; border: 1px solid #ffffff80; box-shadow: var(--game-clay-shadow) !important; }
+.classroom-play[data-game="popcorn"] .pc-burst { background: #f5d8bcf5 !important; color: #3a4c40; backdrop-filter: blur(6px); }
+.classroom-play[data-game="passball"] [data-skin-object="ball"] { filter: drop-shadow(0 10px 14px #61755125); }
+
+/* Retain the existing board dimensions and hit areas while replacing the orange finish. */
+.classroom-play[data-game="connect4"] [data-skin-stage="board"] > img:not(.invisible) { filter: saturate(.36) brightness(1.13); }
+.classroom-play[data-game="popcorn"] [data-skin-object="popcorn"] > img:first-child { filter: saturate(.6) brightness(1.07) drop-shadow(0 8px 10px #72512d22) !important; }
+.classroom-play .td-board { background: var(--game-wood); border-radius: 8%; box-shadow: var(--game-wood-shadow); }
+.classroom-play .td-board-img { visibility: hidden; }
+.classroom-play .td-board::before { content: ''; position: absolute; inset: 4%; border: 1px solid #c9b08a; border-radius: 6%; box-shadow: inset 0 2px 5px #805b2820; pointer-events: none; }
+.classroom-play .td-cell { background: var(--game-paper); color: var(--game-ink); box-shadow: inset 0 1px 0 #fff, 0 2px 0 #c9b593; }
+.classroom-play .td-bead { background: #fff6df; color: #3b4b40; }
+.classroom-play .td-bead-col, .classroom-play .td-cell-blue { background: #b9dccf; color: #284d41; }
+.classroom-play .td-bead-row, .classroom-play .td-cell-red { background: #f0c2b2; color: #663d32; }
+.classroom-play .td-hit { outline: 3px solid #6e6a39; outline-offset: 1px; }
+.classroom-play .fc-stack { margin-bottom: 30px; }
+.classroom-play .wm-hole { background: linear-gradient(180deg, #7d7256, #574c35); box-shadow: inset 0 5px 9px #2f2c2730; }
+.classroom-play :is(.ap-pad, .mz-pad) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); }
+.classroom-play .ta-tray .ta-input { min-width: min(16ch, 100%); max-width: 100%; }
+.classroom-play .ro-row { border-radius: 20px; }
+.classroom-play .mg-key:last-child { background: #397e6e; color: #fff; }
+.classroom-play .mg-key:nth-last-child(3) { background: #f2cbb9; color: #673e34; }
+.classroom-play :is(.ta-input, .mg-well, .ro-plate, .ro-step).is-ok { background: #d6e8cd; color: #294d30; outline: 2px solid #5c8556; }
+.classroom-play :is(.ta-input, .mg-well, .gs-crate, .gs-basket).is-no { background: #f2d5c9; color: #743c34; outline: 3px solid #b36a5c; }
+.classroom-play :is(.gs-crate, .gs-basket).is-ready { outline: 2px dashed #397e6e; outline-offset: 3px; }
+.classroom-play .td-turn { color: #fff; }
+.classroom-play .td-turn[style] { color: #58342c; }
+@media(max-width:540px) {
+  .classroom-play .td-scoreboard { display:grid; grid-template-columns:1fr 1.25fr 1fr; width:100%; gap:8px; }
+  .classroom-play .td-scoreboard > * { min-width:0; padding:10px 6px; }
+  .classroom-play .td-turn { font-size:14px; }
+  .classroom-play .game-play-toolbar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .classroom-play .game-play-toolbar button { padding-left:6px; padding-right:6px; font-size:12px; }
+}

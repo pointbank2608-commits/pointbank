@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import WordListGameLauncher from '../components/WordListGameLauncher';
+import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
+import { prepareWordListGame, type WordListGame } from '../lib/wordListLaunch';
 import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
   createWordList,
+  createGameTemplate,
   deleteWordList,
   fetchAllWordLists,
   fetchPhonicsBank,
@@ -175,9 +180,15 @@ function CategoryPickerModal({
   );
 }
 
-function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: WordListItem[]) => void }) {
+export function WordListEditor({ list, onChange, saveItems = updateWordListItems }: {
+  list: WordList; onChange: (items: WordListItem[]) => void;
+  saveItems?: (id: string, items: WordListItem[]) => Promise<void>;
+}) {
   const { t } = useTranslation();
-  const { run } = useToast();
+  const { notify } = useToast();
+  const savingRef = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [failedSave, setFailedSave] = useState<{ items: WordListItem[]; onSuccess?: () => void } | null>(null);
   const [tab, setTab] = useState<'manual' | 'dictionary' | 'category'>('manual');
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
@@ -196,16 +207,30 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
     }
   }, [tab, dictionary, phonics]);
 
-  async function persist(next: WordListItem[]) {
-    onChange(next);
-    await run(() => updateWordListItems(list.id, next), t('wordLists.savedToast'));
+  async function persist(next: WordListItem[], onSuccess?: () => void) {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    setFailedSave(null);
+    try {
+      await saveItems(list.id, next);
+      onChange(next);
+      onSuccess?.();
+      notify(t('wordLists.savedToast'));
+    } catch {
+      setFailedSave({ items: next, onSuccess });
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   }
 
   function addManual() {
-    if (!word.trim() || !meaning.trim()) return;
-    void persist([...list.items, { id: uid(), word: word.trim(), meaning: meaning.trim(), image_url: null, category: null }]);
-    setWord('');
-    setMeaning('');
+    if (!word.trim() || !meaning.trim() || savingRef.current) return;
+    void persist([...list.items, { id: uid(), word: word.trim(), meaning: meaning.trim(), image_url: null, category: null }], () => {
+      setWord('');
+      setMeaning('');
+    });
   }
 
   function addFromDictionary(entry: WordBankEntry) {
@@ -239,7 +264,16 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
   const existingKeys = useMemo(() => new Set(list.items.map((i) => `${i.word}::${i.meaning}`)), [list.items]);
 
   return (
-    <div className="mt-3 border-t border-surface-container pt-3">
+    <div className="mt-3 border-t border-surface-container pt-3" aria-busy={saving}>
+      {saving && <p role="status" className="mb-3 text-primary">{t('common.saving')}</p>}
+      {failedSave && <div role="alert" className="mb-3 rounded-xl bg-error-container p-4 text-on-error-container">
+        <p>{t('classroomUx.saveFailed')}</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button type="button" onClick={() => void persist(failedSave.items, failedSave.onSuccess)} className="min-h-11 rounded-lg bg-surface-container-lowest px-4 font-semibold">{t('classroomUx.retrySave')}</button>
+          <button type="button" onClick={() => setFailedSave(null)} className="min-h-11 rounded-lg px-4">{t('common.cancel')}</button>
+        </div>
+      </div>}
+      <fieldset disabled={saving || !!failedSave} className="min-w-0 disabled:opacity-60">
       {list.items.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {list.items.map((i) => (
@@ -252,7 +286,8 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
               <button
                 type="button"
                 onClick={() => removeItem(i.id)}
-                className="ml-0.5 w-4 h-4 flex items-center justify-center rounded-full hover:bg-error hover:text-on-error text-on-surface-variant"
+                aria-label={t('classroomUx.removeWord', { word: i.word })}
+                className="ml-0.5 min-w-11 min-h-11 flex items-center justify-center rounded-full hover:bg-error hover:text-on-error text-on-surface-variant"
               >
                 ✕
               </button>
@@ -296,21 +331,24 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
           <input
             value={word}
             onChange={(e) => setWord(e.target.value)}
+            aria-label={t('wordLists.wordPlaceholder')}
             placeholder={t('wordLists.wordPlaceholder')}
             className="w-32 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
           <input
             value={meaning}
             onChange={(e) => setMeaning(e.target.value)}
+            aria-label={t('wordLists.meaningPlaceholder')}
             placeholder={t('wordLists.meaningPlaceholder')}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') addManual();
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing) addManual();
             }}
             className="w-32 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
           />
           <button
             type="button"
             onClick={addManual}
+            disabled={!word.trim() || !meaning.trim()}
             className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
           >
             {t('wordLists.addButton')}
@@ -321,6 +359,7 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label={t('dictionary.searchPlaceholder')}
             placeholder={t('dictionary.searchPlaceholder')}
             className="w-full max-w-[320px] bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-2"
           />
@@ -396,12 +435,18 @@ function WordListEditor({ list, onChange }: { list: WordList; onChange: (items: 
           onClose={() => setActiveCategory(null)}
         />
       )}
+      </fieldset>
     </div>
   );
 }
 
 export default function WordListsPage() {
-  const { academy, profile } = useAuth();
+  const { academy, profile, isPaid } = useAuth();
+  const navigate = useNavigate();
+  const [launchListId, setLaunchListId] = useState<string | null>(null);
+  const [launchBusy, setLaunchBusy] = useState(false);
+  const [launchError, setLaunchError] = useState(false);
+  const launchBusyRef = useRef(false);
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
@@ -478,6 +523,32 @@ export default function WordListsPage() {
     }
   }
 
+  async function handleLaunch(game: WordListGame, classId: string) {
+    const list = lists.find((item) => item.id === launchListId);
+    if (launchBusyRef.current || !list || !academy || !profile || !classes.some((row) => row.id === classId)) return;
+    if (!isPaid && !isFreeTierGame(game)) return;
+    const prepared = prepareWordListGame(list.items, game);
+    if (!prepared.ready) return;
+    launchBusyRef.current = true;
+    setLaunchBusy(true);
+    setLaunchError(false);
+    try {
+      const entry = GAME_CATALOG.find((item) => item.type === game)!;
+      const template = await createGameTemplate({
+        academyId: academy.id, classId, gameType: game,
+        name: `${list.name} · ${t(entry.nameKey)}`, items: prepared.items,
+        config: prepared.config, teacherId: profile.id,
+      });
+      select(classId);
+      navigate(entry.path, { state: { openTemplateId: template.id } });
+    } catch {
+      setLaunchError(true);
+    } finally {
+      launchBusyRef.current = false;
+      setLaunchBusy(false);
+    }
+  }
+
   async function handleRename(list: WordList) {
     const next = prompt(t('wordLists.renamePrompt'), list.name);
     if (!next?.trim() || next.trim() === list.name) return;
@@ -522,7 +593,7 @@ export default function WordListsPage() {
               key={list.id}
               className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => setOpenId((prev) => (prev === list.id ? null : list.id))}
@@ -536,7 +607,13 @@ export default function WordListsPage() {
                     {list.class_id !== null && viewAll && ` · ${classNameOf(list.class_id)}`}
                   </span>
                 </button>
-                <span className="flex gap-3">
+                <span className="flex flex-wrap items-center gap-3">
+                  {list.items.length > 0 && <button type="button"
+                    onClick={() => { setLaunchError(false); setLaunchListId(list.id); }}
+                    className="flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-on-primary hover:bg-primary-container">
+                    <span aria-hidden className="material-symbols-outlined">play_circle</span>
+                    {t('classroomUx.launch')}
+                  </button>}
                   {list.items.length > 0 && (
                     <button
                       onClick={() => setStudyingListId(list.id)}
@@ -635,6 +712,13 @@ export default function WordListsPage() {
         </div>
       )}
 
+      {launchListId && lists.find((item) => item.id === launchListId) && (
+        <WordListGameLauncher list={lists.find((item) => item.id === launchListId)!}
+          classes={classes} selectedClassId={selectedId} isPaid={isPaid}
+          busy={launchBusy} error={launchError}
+          onClose={() => { if (!launchBusyRef.current) setLaunchListId(null); }}
+          onLaunch={(game, classId) => void handleLaunch(game, classId)} />
+      )}
       {studyingList && (
         <FlashcardStudy
           title={studyingList.name}

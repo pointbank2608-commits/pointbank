@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import GameFitText from './GameFitText';
+import './matchup-clay.css';
 import type { MatchPair, UndoHandle } from '../lib/types';
 
 export type MatchupStyle = 'trays' | 'tags';
@@ -9,10 +9,6 @@ interface Props {
   pairs: MatchPair[];
   boardStyle?: MatchupStyle;
 }
-
-const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
-const pill =
-  'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -24,7 +20,6 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays' }, ref) {
-  const hang = boardStyle === 'tags';
   const { t } = useTranslation();
   const [leftOrder, setLeftOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [rightOrder, setRightOrder] = useState<MatchPair[]>(() => shuffle(pairs));
@@ -35,10 +30,13 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   const [wrongCount, setWrongCount] = useState(0);
   const [locked, setLocked] = useState(false);
   const [prevSnapshot, setPrevSnapshot] = useState<{ matchedIds: Set<string>; wrongCount: number } | null>(null);
-  const pairKey = pairs.map((p) => p.id).join(',');
+  const [round, setRound] = useState(0);
+  const pairKey = JSON.stringify(pairs);
   const flashTimer = useRef<number | null>(null);
 
   useEffect(() => {
+    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
     setMatchedIds(new Set());
@@ -71,15 +69,10 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   }));
 
   if (pairs.length < 2) {
-    return (
-      <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
-        <div className="mx-auto mb-3 flex justify-center gap-2">
-          <span className="mu-tile mu-tile-0 pointer-events-none w-[72px] justify-center px-0">A</span>
-          <span className="mu-tile mu-tile-2 pointer-events-none w-[72px] justify-center px-0">가</span>
-        </div>
-        <div className="font-body-md text-body-md">{t('gameMatchup.needPairs')}</div>
-      </div>
-    );
+    return <div className="matchup-clay matchup-clay__finish">
+      <img src="/skins/matchup-clay-guide.png" alt="" width="240" height="165" />
+      <p>{t('gameMatchup.needPairs')}</p>
+    </div>;
   }
 
   if (leftOrder.length === 0) {
@@ -87,9 +80,22 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   }
 
   const finished = matchedIds.size === pairs.length;
+  const roundCount = Math.ceil(pairs.length / 6);
+  const visibleLeft = leftOrder.slice(round * 6, (round + 1) * 6);
+  const visibleIds = new Set(visibleLeft.map((pair) => pair.id));
+  const visibleRight = rightOrder.filter((pair) => visibleIds.has(pair.id));
+  const roundComplete = visibleLeft.length > 0 && visibleLeft.every((pair) => matchedIds.has(pair.id));
+
+  function nextRound() {
+    setRound((value) => value + 1);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setPrevSnapshot(null);
+  }
 
   function restart() {
     if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
     setMatchedIds(new Set());
@@ -151,113 +157,63 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   }
 
   if (finished) {
-    return (
-      <div className="flex flex-col items-center pt-3 pb-2">
-        <div
-          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
-          style={{
-            borderRadius: 22,
-            background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
-            boxShadow: woodShadow,
-          }}
-        >
-          <div
-            className="px-4 py-5"
-            style={{
-              borderRadius: 16,
-              background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
-              boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
-            }}
-          >
-            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameMatchup.finishedTitle')}</div>
-            <div className="font-display-lg text-[32px] tabular-nums text-deep-navy">
-              {t('gameMatchup.wrongCountLabel', { count: wrongCount })}
-            </div>
-          </div>
-        </div>
-        <button onClick={restart} className={pill}>
-          {t('gameMatchup.restartButton')}
-        </button>
-      </div>
-    );
+    return <div className="matchup-clay matchup-clay__finish">
+      <img src="/skins/matchup-clay-guide.png" alt="" width="240" height="165" />
+      <h2>{t('gameMatchup.finishedTitle')}</h2>
+      <p>{t('classroomUx.matchProgress', { matched: matchedIds.size, total: pairs.length })}</p>
+      <p>{t('gameMatchup.wrongCountLabel', { count: wrongCount })}</p>
+      <button type="button" onClick={restart} className="matchup-clay__action">{t('gameMatchup.restartButton')}</button>
+    </div>;
   }
 
-  return (
-    <div className="flex flex-col items-center pt-1.5 pb-2">
-      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
-        {t('gameMatchup.wrongCountLabel', { count: wrongCount })}
-      </div>
+  function renderTile(pair: MatchPair, index: number, side: 'left' | 'right') {
+    const state = tileState(pair.id, side);
+    const selected = side === 'left' ? selectedLeft === pair.id : selectedRight === pair.id;
+    const text = side === 'left' ? pair.left : pair.right;
+    const color = (index + (side === 'right' ? 2 : 0)) % 4;
+    return <button key={pair.id} type="button" disabled={matchedIds.has(pair.id)} aria-pressed={selected}
+      aria-label={matchedIds.has(pair.id) ? t('classroomUx.matchedCard', { text }) : text}
+      onClick={() => side === 'left' ? clickLeft(pair.id) : clickRight(pair.id)}
+      className={`matchup-clay__tile matchup-clay__tile--${color} ${state}`} data-skin-object="chip">
+      <span>{text}</span>
+      <span className="matchup-clay__mark" aria-hidden>{state === 'is-ok' ? '✓' : state === 'is-no' ? '×' : selected ? '●' : ''}</span>
+    </button>;
+  }
 
-      <div data-skin-stage="board" className="grid w-full max-w-[580px] grid-cols-2 gap-3 sm:gap-5">
-        {hang ? (
-          <>
-            <div className="mu-hang">
-              <div className="mu-hang-bar" aria-hidden />
-              <div className="mu-hang-list">
-                {leftOrder.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    disabled={matchedIds.has(p.id)}
-                    onClick={() => clickLeft(p.id)}
-                    data-skin-object="chip"
-                    className={`mu-tag ${tileState(p.id, 'left')}`}
-                  >
-                    <GameFitText text={p.left} />
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mu-hang">
-              <div className="mu-hang-bar" aria-hidden />
-              <div className="mu-hang-list">
-                {rightOrder.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    disabled={matchedIds.has(p.id)}
-                    onClick={() => clickRight(p.id)}
-                    data-skin-object="chip"
-                    className={`mu-tag ${tileState(p.id, 'right')}`}
-                  >
-                    <GameFitText text={p.right} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="mu-tray">
-              {leftOrder.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  disabled={matchedIds.has(p.id)}
-                  onClick={() => clickLeft(p.id)}
-                  data-skin-object="chip"
-                  className={`mu-tile mu-tile-${i % 4} ${tileState(p.id, 'left')}`}
-                >
-                  <GameFitText text={p.left} />
-                </button>
-              ))}
-            </div>
-            <div className="mu-tray">
-              {rightOrder.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  disabled={matchedIds.has(p.id)}
-                  onClick={() => clickRight(p.id)}
-                  data-skin-object="chip"
-                  className={`mu-tile mu-tile-${(i + 2) % 4} ${tileState(p.id, 'right')}`}
-                >
-                  <GameFitText text={p.right} />
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+  const feedback = wrongPair ? t('classroomUx.tryAnotherPair')
+    : roundComplete ? t('classroomUx.roundComplete')
+    : selectedLeft || selectedRight ? t('classroomUx.pickPartner') : t('classroomUx.matchHint');
+
+  return (
+    <div className={`matchup-clay ${boardStyle === 'tags' ? 'matchup-clay--tags' : ''}`}>
+      <div className="matchup-clay__intro">
+        <div>
+          <h2>{t('classroomUx.matchTitle')}</h2>
+          <p>{t('classroomUx.matchHint')}</p>
+        </div>
+        <img className="matchup-clay__mascot" src="/skins/matchup-clay-guide.png" alt="" width="126" height="92" />
+      </div>
+      <div className="matchup-clay__stats">
+        <strong aria-live="polite">{t('classroomUx.matchProgress', { matched: matchedIds.size, total: pairs.length })}</strong>
+        <span className="matchup-clay__round">{t('classroomUx.matchRound', { current: round + 1, total: roundCount })}</span>
+        <span>{t('gameMatchup.wrongCountLabel', { count: wrongCount })}</span>
+      </div>
+      <progress className="matchup-clay__progress" value={matchedIds.size} max={pairs.length} aria-label={t('classroomUx.matchProgress', { matched: matchedIds.size, total: pairs.length })} />
+      <div className="matchup-clay__board" data-skin-stage="board">
+        <div className="matchup-clay__column">
+          <h3 className="matchup-clay__column-title">{t('classroomUx.leftCards')}</h3>
+          {visibleLeft.map((pair, index) => renderTile(pair, index, 'left'))}
+        </div>
+        <div className="matchup-clay__column">
+          <h3 className="matchup-clay__column-title">{t('classroomUx.rightCards')}</h3>
+          {visibleRight.map((pair, index) => renderTile(pair, index, 'right'))}
+        </div>
+      </div>
+      <div className="matchup-clay__footer">
+        <span role="status">{feedback}</span>
+        {roundComplete && <button type="button" className="matchup-clay__action" onClick={nextRound}>
+          {t('classroomUx.nextRound')} <span aria-hidden>→</span>
+        </button>}
       </div>
     </div>
   );

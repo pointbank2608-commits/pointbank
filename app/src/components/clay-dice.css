@@ -1,0 +1,32 @@
+/* One six-face object at rest and in motion. Lighting and perspective never switch. */
+.clay-die.td-die-scene { --td-size: 86px; --td-duration: 1280ms; perspective: 600px; perspective-origin: 50% 40%; margin: 12px 9px 22px; isolation: isolate; }
+@media(min-width:640px) { .clay-die.td-die-scene { --td-size: 104px; } }
+.clay-die .td-toss, .clay-die .td-camera { width:100%; height:100%; transform-style:preserve-3d; }
+.clay-die .td-camera { transform:rotateX(-12deg) rotateY(15deg); }
+.clay-die .td-face { border-radius: 9%; border:1px solid #ffffff35; background-image:none; box-shadow:inset 2px 3px 5px #ffffff65, inset -2px -3px 5px #163b3820; }
+.clay-die .td-face-teal { background:linear-gradient(145deg,#9edbc9,#63b7a2 64%,#55a68f); }
+.clay-die .td-face-coral { background:linear-gradient(145deg,#f3bfad,#e79580 64%,#d98570); }
+.clay-die .td-face-top { filter:brightness(1.04); }
+.clay-die .td-face-right, .clay-die .td-face-left { filter:brightness(.94); }
+.clay-die .td-face-bottom { filter:brightness(.91); }
+.clay-die .td-face-back { filter:brightness(.98); }
+.clay-die .td-pips { inset:18%; }
+.clay-die .td-pip { width:64%; border-radius:50%; background:#fff8e9; filter:none; box-shadow:inset 0 2px 2px #65533630, 0 1px 0 #ffffff90; }
+.clay-die .td-die-shadow { bottom:-22px; left:-3%; right:-3%; height:22px; background:radial-gradient(ellipse,#76674735,transparent 70%); }
+.clay-die.is-rolling .td-cube { animation:clay-die-roll var(--td-duration) cubic-bezier(.16,.55,.28,1) both; }
+.clay-die.is-rolling .td-toss { animation:clay-die-hop var(--td-duration) linear both; }
+.clay-die.is-rolling .td-die-shadow { animation:clay-die-shadow var(--td-duration) linear both; }
+@keyframes clay-die-roll {
+  from { transform:rotateX(var(--td-from-rx)) rotateY(var(--td-from-ry)); }
+  to { transform:rotateX(var(--td-rx)) rotateY(var(--td-ry)); }
+}
+@keyframes clay-die-hop {
+  0% { transform:translate3d(0,0,0); animation-timing-function:ease-out; }
+  100% { transform:translate3d(0,0,0); }
+  26% { transform:translate3d(var(--td-drift),-42px,0); animation-timing-function:cubic-bezier(.55,0,.9,.55); }
+  72% { transform:translate3d(0,0,0); animation-timing-function:ease-out; }
+  84% { transform:translate3d(0,-7px,0); animation-timing-function:ease-in; }
+  95% { transform:translate3d(0,0,0); }
+}
+@keyframes clay-die-shadow { 0%,72%,100% { transform:scale(1); opacity:1; } 26% { transform:scale(.72); opacity:.35; } 84% { transform:scale(.94); opacity:.8; } }
+@media(prefers-reduced-motion:reduce) { .clay-die.is-rolling .td-cube, .clay-die.is-rolling .td-toss, .clay-die.is-rolling .td-die-shadow { animation:none; } }

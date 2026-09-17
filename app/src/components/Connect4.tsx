@@ -202,7 +202,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gameConnect4.teamBlue') : t('gameConnect4.teamRed'));
   const pill =
-    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+    'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
   if (items.length === 0) {
     return (
@@ -268,7 +268,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
               style={{
                 backgroundColor: winner === 'blue' ? '#3dbea8' : '#f28b73',
                 border: '3px solid #f0d7a8',
-                boxShadow: '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)',
+                boxShadow: 'var(--game-wood-shadow, 0 4px 0 #c6a982)',
               }}
             >
               <div className="font-title-md text-[22px] font-bold text-white">
@@ -444,7 +444,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
               height: labelH,
               padding: '8px 7px',
               borderRadius: 20,
-              background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+              background: 'var(--game-wood, linear-gradient(115deg, #f3e3c8, #e9d0ac))',
               boxShadow: '0 5px 0 #b07d3c, 0 10px 16px rgba(110,62,18,0.16)',
             }}
           >
@@ -452,7 +452,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
               className="flex h-full w-full items-center justify-center px-1"
               style={{
                 borderRadius: 13,
-                background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
+                background: 'var(--game-paper, #fffdf6)',
                 boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.18)',
               }}
             >
@@ -470,7 +470,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button
                 type="button"

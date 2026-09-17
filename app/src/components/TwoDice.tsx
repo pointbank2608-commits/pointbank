@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ClayDie from './ClayDie';
+import AccessibleDialog from './AccessibleDialog';
+import { DICE_ROLL_MS } from '../lib/diceMotion';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
@@ -21,42 +24,10 @@ interface Props {
 type Team = 'blue' | 'red';
 
 const SIZE = 6;
-const ROLL_MS = 980;
 const TEAL_DIE = '/skins/twodice-teal.png?v=3';
-const CORAL_DIE = '/skins/twodice-coral.png?v=3';
 const BOARD_SRC = '/skins/twodice-board.png';
 
-const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
-
-/** 표준 주사위 3×3 점 위치 (0=좌상 … 8=우하). */
-const PIP_MAP: number[][] = [
-  [],
-  [4],
-  [0, 8],
-  [0, 4, 8],
-  [0, 2, 6, 8],
-  [0, 2, 4, 6, 8],
-  [0, 2, 3, 5, 6, 8],
-];
-
-/** 그 눈이 카메라를 향하게 하는 큐브 회전. 반대면 합이 7. */
-const FACE_ROT: Record<number, { rx: number; ry: number }> = {
-  1: { rx: 0, ry: 0 },
-  2: { rx: -90, ry: 0 },
-  3: { rx: 0, ry: -90 },
-  4: { rx: 0, ry: 90 },
-  5: { rx: 90, ry: 0 },
-  6: { rx: 0, ry: 180 },
-};
-
-const CUBE_FACES: { n: number; pos: string }[] = [
-  { n: 1, pos: 'front' },
-  { n: 6, pos: 'back' },
-  { n: 3, pos: 'right' },
-  { n: 4, pos: 'left' },
-  { n: 2, pos: 'top' },
-  { n: 5, pos: 'bottom' },
-];
+const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -69,6 +40,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 /** 항목이 36개보다 많으면 무작위 36개만, 적으면 부족한 만큼 반복해서 6x6 판을 채운다. */
 function pickBoardItems(items: GameItem[]): GameItem[] {
+  if (!items.length) return [];
   const pool = shuffle(items);
   return Array.from({ length: SIZE * SIZE }, (_, i) => pool[i % pool.length]);
 }
@@ -86,60 +58,6 @@ function findWinningLine(claimed: Record<number, Team>, team: Team): number[] | 
     if (line.every((idx) => claimed[idx] === team)) return line;
   }
   return null;
-}
-
-function Pips({ n }: { n: number }) {
-  const on = new Set(PIP_MAP[n] ?? PIP_MAP[1]);
-  return (
-    <div className="td-pips" aria-hidden>
-      {Array.from({ length: 9 }, (_, i) => (
-        <span key={i} className={on.has(i) ? 'td-pip' : undefined} />
-      ))}
-    </div>
-  );
-}
-
-function ClayDie({
-  src,
-  tint,
-  value,
-  rolling,
-  spin,
-  tossKey,
-}: {
-  src: string;
-  tint: 'teal' | 'coral';
-  value: number;
-  rolling: boolean;
-  spin: 'a' | 'b';
-  tossKey: number;
-}) {
-  const rot = FACE_ROT[value] ?? FACE_ROT[1];
-  const tumble = rolling ? (spin === 'b' ? 'td-tumble-b' : 'td-tumble') : '';
-  return (
-    <div data-skin-object="die" className={`td-die-scene ${rolling ? 'is-rolling' : ''}`}>
-      <div className={`td-toss ${rolling ? 'td-tossing' : ''}`}>
-        <div
-          key={tossKey}
-          className={`td-cube ${tumble}`}
-          style={
-            {
-              ['--td-rx']: `${rot.rx}deg`,
-              ['--td-ry']: `${rot.ry}deg`,
-              ['--td-skin']: `url(${src})`,
-            } as CSSProperties
-          }
-        >
-          {CUBE_FACES.map((face) => (
-            <div key={face.n} className={`td-face td-face-${face.pos} td-face-${tint}`}>
-              <Pips n={face.n} />
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className={`td-die-shadow ${rolling ? 'td-die-shadow-toss' : ''}`} />
-    </div>
-  );
 }
 
 export default function TwoDice({
@@ -169,6 +87,8 @@ export default function TwoDice({
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [reshuffleOpen, setReshuffleOpen] = useState(false);
+  const rollingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -182,6 +102,36 @@ export default function TwoDice({
   useEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
   }, [items]);
+
+  const reshuffleBoard = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setBoard(pickBoardItems(items));
+    rollingRef.current = false;
+    setTossKey(0);
+    setHighlightIndex(null);
+    setDie1(null);
+    setDie2(null);
+    setTarget1(1);
+    setTarget2(1);
+    setHistory([]);
+    setRolling(false);
+    setClaimed({});
+    setTurn('blue');
+    setWinner(null);
+    setWinLine(null);
+  }, [items]);
+
+  const itemIds = JSON.stringify(items.map((item) => item.id));
+  const previousItemIds = useRef(itemIds);
+  useEffect(() => {
+    if (previousItemIds.current !== itemIds) {
+      previousItemIds.current = itemIds;
+      reshuffleBoard();
+    } else {
+      const byId = new Map(items.map((item) => [item.id, item]));
+      setBoard((prev) => prev.map((item) => byId.get(item.id) ?? item));
+    }
+  }, [items, itemIds, reshuffleBoard]);
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -203,24 +153,10 @@ export default function TwoDice({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  function reshuffleBoard() {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setBoard(pickBoardItems(items));
-    setHighlightIndex(null);
-    setDie1(null);
-    setDie2(null);
-    setTarget1(1);
-    setTarget2(1);
-    setHistory([]);
-    setRolling(false);
-    setClaimed({});
-    setTurn('blue');
-    setWinner(null);
-    setWinLine(null);
-  }
 
   function roll() {
-    if (rolling || items.length === 0 || winner) return;
+    if (rollingRef.current || items.length === 0 || board.length !== SIZE * SIZE || winner) return;
+    rollingRef.current = true;
     const d1 = 1 + Math.floor(Math.random() * SIZE);
     const d2 = 1 + Math.floor(Math.random() * SIZE);
     setTarget1(d1);
@@ -247,13 +183,14 @@ export default function TwoDice({
         }
         return next;
       });
+      rollingRef.current = false;
       setRolling(false);
       setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
-    }, ROLL_MS);
+    }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : DICE_ROLL_MS);
   }
 
   const pill =
-    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+    'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
   if (items.length === 0) {
     return (
@@ -304,7 +241,7 @@ export default function TwoDice({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
+      <div className="td-scoreboard mb-4 flex flex-wrap items-center justify-center gap-2.5">
         <div
           data-skin-object="score-card"
           className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-on-secondary"
@@ -314,7 +251,7 @@ export default function TwoDice({
           <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{blueCount}</div>
         </div>
         <div
-          className={`rounded-full px-7 py-2.5 text-center font-title-md text-[16px] font-bold shadow-sm ${
+          className={`td-turn rounded-full px-7 py-2.5 text-center font-title-md text-[16px] font-bold shadow-sm ${
             turn === 'blue' && !winner ? 'bg-secondary text-on-secondary' : 'text-white'
           }`}
           style={turn === 'red' || winner === 'red' ? { backgroundColor: '#f28b73' } : undefined}
@@ -333,12 +270,12 @@ export default function TwoDice({
 
       <div className="td-dice-row mb-4 flex items-end justify-center gap-10 sm:gap-14">
         <div className="flex flex-col items-center gap-2">
-          <ClayDie src={TEAL_DIE} tint="teal" value={rolling ? target2 : col} rolling={rolling} spin="a" tossKey={tossKey} />
-          <div className="font-title-md text-[15px] font-bold text-deep-navy">{t('gameTwoDice.colLabel', { n: col })}</div>
+          <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.colLabel', { n: col })} tint="teal" value={rolling ? target2 : col} rolling={rolling} spin="a" tossKey={tossKey} />
+          <div className="font-title-md text-[15px] font-bold text-deep-navy">{rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.colLabel', { n: col })}</div>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <ClayDie src={CORAL_DIE} tint="coral" value={rolling ? target1 : row} rolling={rolling} spin="b" tossKey={tossKey} />
-          <div className="font-title-md text-[15px] font-bold text-deep-navy">{t('gameTwoDice.rowLabel', { n: row })}</div>
+          <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rowLabel', { n: row })} tint="coral" value={rolling ? target1 : row} rolling={rolling} spin="b" tossKey={tossKey} />
+          <div className="font-title-md text-[15px] font-bold text-deep-navy">{rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rowLabel', { n: row })}</div>
         </div>
       </div>
 
@@ -385,11 +322,22 @@ export default function TwoDice({
 
       <button
         type="button"
-        onClick={reshuffleBoard}
-        className="mb-4 font-label-md text-label-md text-secondary hover:underline"
+        onClick={() => setReshuffleOpen(true)}
+        className="mb-4 min-h-11 px-4 font-label-md text-label-md text-secondary hover:underline"
       >
         {winner ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
       </button>
+
+      {reshuffleOpen && <AccessibleDialog label={t('classroomUx.restartTitle')} onClose={() => setReshuffleOpen(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold">{t('classroomUx.restartTitle')}</h2>
+          <p className="mt-3">{t('classroomUx.restartHint')}</p>
+          <div className="mt-6 flex flex-wrap justify-end gap-3">
+            <button autoFocus className="min-h-11 rounded-xl border px-5" onClick={() => setReshuffleOpen(false)}>{t('classroomUx.keepPlaying')}</button>
+            <button className="game-clay-action" onClick={() => { setReshuffleOpen(false); reshuffleBoard(); }}>{t('gameTwoDice.reshuffleButton')}</button>
+          </div>
+        </div>
+      </AccessibleDialog>}
 
       {history.length > 0 && (
         <div className="w-full max-w-[420px]">
@@ -417,7 +365,7 @@ export default function TwoDice({
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button
                 type="button"

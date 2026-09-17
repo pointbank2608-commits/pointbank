@@ -284,7 +284,7 @@ export default function MazeChasePage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame gameType="mazechase" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <MazeChase items={demoItems} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -302,7 +302,7 @@ export default function MazeChasePage() {
             </h2>
           )}
 
-          <GameThemeFrame
+          <GameThemeFrame gameType="mazechase"
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"

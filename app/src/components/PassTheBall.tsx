@@ -26,7 +26,7 @@ interface Props {
 type Phase = 'idle' | 'active' | 'revealed';
 
 const BALL_SRC = '/skins/passball.png';
-const woodShadow = '0 3px 0 #c4925c, 0 8px 14px rgba(110,62,18,0.16)';
+const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
 
 /**
  * 공 돌리기. 음악이 흐르는 동안(min~maxSec 사이 무작위 시각에 멈춤) 화면 밖에서 실제 공을
@@ -116,7 +116,7 @@ export default function PassTheBall({
   }
 
   const pill =
-    'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+    'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
   if (items.length === 0) {
     return (
@@ -192,7 +192,7 @@ export default function PassTheBall({
                   className="flex items-center justify-center px-2 py-2"
                   style={{
                     borderRadius: 22,
-                    background: 'linear-gradient(180deg, #f8e4b8 0%, #e8c48a 42%, #c9964e 100%)',
+                    background: 'var(--game-wood, linear-gradient(115deg, #f3e3c8, #e9d0ac))',
                     boxShadow: woodShadow,
                   }}
                 >
@@ -200,8 +200,8 @@ export default function PassTheBall({
                     className="flex min-h-[72px] w-full items-center justify-center px-4 py-2"
                     style={{
                       borderRadius: 16,
-                      background: 'linear-gradient(180deg, #fffef9 0%, #fff4e0 100%)',
-                      boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -3px 4px rgba(166,112,48,0.16)',
+                      background: 'var(--game-paper, #fffdf6)',
+                      boxShadow: 'var(--game-paper-shadow, inset 0 1px 0 #fff)',
                     }}
                   >
                     <span className="block w-full min-h-[72px]">
@@ -218,7 +218,7 @@ export default function PassTheBall({
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button
                 type="button"

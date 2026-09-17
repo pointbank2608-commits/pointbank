@@ -315,7 +315,7 @@ export default function WinLoseQuizPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame gameType="winlosequiz" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <WinLoseQuiz questions={demoQuestions} startScore={startScore} betOptions={betOptions} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -332,7 +332,7 @@ export default function WinLoseQuizPage() {
           </h2>
 
           {(!isStaff || mode === 'play') && (
-            <GameThemeFrame
+            <GameThemeFrame gameType="winlosequiz"
               roster={roster}
               onRestart={() => setRoundKey((k) => k + 1)}
               onUndo={() => gameRef.current?.undo()}

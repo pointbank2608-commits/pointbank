@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AccessibleDialog from './AccessibleDialog';
 import type { GameItem } from '../lib/types';
 
 const TEAM_STYLES = [
@@ -89,7 +90,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
   }, [mode, teamCount, roster, teamOf]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/60 p-4" onClick={onClose}>
+    <AccessibleDialog label={t('teamOrder.title')} onClose={onClose}>
       <div
         className="flex max-h-[90vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg"
         onClick={(e) => e.stopPropagation()}
@@ -99,7 +100,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
             aria-label={t('common.cancel')}
           >
             <span className="material-symbols-outlined">close</span>
@@ -143,7 +144,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                         type="button"
                         onClick={() => changeTeamCount(teamCount - 1)}
                         disabled={teamCount <= 2}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
                       >
                         −
                       </button>
@@ -152,7 +153,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                         type="button"
                         onClick={() => changeTeamCount(teamCount + 1)}
                         disabled={teamCount >= 6}
-                        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
+                        className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
                       >
                         +
                       </button>
@@ -227,7 +228,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                           onClick={() => move(i, -1)}
                           disabled={i === 0}
                           aria-label={t('teamOrder.moveUp')}
-                          className="flex h-7 w-7 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container disabled:opacity-20"
+                          className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container disabled:opacity-20"
                         >
                           <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
                         </button>
@@ -236,7 +237,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                           onClick={() => move(i, 1)}
                           disabled={i === order.length - 1}
                           aria-label={t('teamOrder.moveDown')}
-                          className="flex h-7 w-7 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container disabled:opacity-20"
+                          className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container disabled:opacity-20"
                         >
                           <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
                         </button>
@@ -249,6 +250,6 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
           )}
         </div>
       </div>
-    </div>
+    </AccessibleDialog>
   );
 }

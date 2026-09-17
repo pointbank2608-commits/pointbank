@@ -514,7 +514,7 @@ export default function LadderBoard({
       </div>
 
       {editable && !itemsHidden && (
-        <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-4">
+        <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
               {t('gameLadder.participantsPanelLabel')}

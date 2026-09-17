@@ -260,7 +260,7 @@ export default function MathGeneratorPage() {
         <div className="space-y-6">
           {classPicker}
           <div>
-            <GameThemeFrame roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame gameType="mathgen" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <MathGenerator operations={operations} min={min} max={max} questionCount={count} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -276,7 +276,7 @@ export default function MathGeneratorPage() {
             {selected.name}
           </h2>
 
-          <GameThemeFrame
+          <GameThemeFrame gameType="mathgen"
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"

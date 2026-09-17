@@ -460,7 +460,7 @@ export default function SpinWheel({
         </div>
 
         {editable && !itemsHidden && (
-          <div className="w-full md:mt-10 md:w-[260px] md:shrink-0 space-y-3">
+          <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
               <button
                 type="button"

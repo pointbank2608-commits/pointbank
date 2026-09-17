@@ -88,6 +88,17 @@ export default function DashboardPage() {
       </div>
 
       {/* bento 그리드 */}
+      <section className="rounded-2xl border border-primary/15 bg-surface-container-lowest p-5 shadow-sm sm:p-7">
+        <h2 className="text-xl font-bold text-deep-navy">{t('classroomUx.lessonTitle')}</h2>
+        <p className="mt-2 text-on-surface-variant">{t('classroomUx.lessonHint')}</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link to="/wordlists" className="flex min-h-12 items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary">
+            <span aria-hidden className="material-symbols-outlined">menu_book</span>{t('classroomUx.openWordLists')}
+          </Link>
+          <Link to="/games" className="flex min-h-12 items-center rounded-xl border border-outline-variant px-5 py-3 font-semibold text-primary">{t('classroomUx.browseGames')}</Link>
+        </div>
+      </section>
+
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
         {/* 오늘 할 일 */}
         <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">

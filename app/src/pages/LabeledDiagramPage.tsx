@@ -263,7 +263,7 @@ export default function LabeledDiagramPage() {
             {selected.name}
           </h2>
 
-          <GameThemeFrame
+          <GameThemeFrame gameType="labeleddiagram"
             roster={roster}
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"

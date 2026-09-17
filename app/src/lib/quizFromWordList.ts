@@ -19,6 +19,23 @@ function shuffle<T>(arr: T[]): T[] {
 
 export type QuizDirection = 'wordToMeaning' | 'meaningToWord';
 
+function normalize(text: string): string {
+  return text.normalize('NFKC').trim().toLocaleLowerCase();
+}
+
+function distractorsFor(items: WordListItem[], item: WordListItem, direction: QuizDirection): string[] {
+  const prompt = (entry: WordListItem) => direction === 'wordToMeaning' ? entry.word : entry.meaning;
+  const answer = (entry: WordListItem) => direction === 'wordToMeaning' ? entry.meaning : entry.word;
+  const validAnswers = new Set(items.filter((entry) => normalize(prompt(entry)) === normalize(prompt(item))).map((entry) => normalize(answer(entry))));
+  const unique = new Map<string, string>();
+  for (const entry of items) {
+    const text = answer(entry).trim();
+    const key = normalize(text);
+    if (key && !validAnswers.has(key)) unique.set(key, text);
+  }
+  return [...unique.values()];
+}
+
 /**
  * 단어장에서 오지선다 퀴즈 문제를 자동으로 만든다. AI 호출 없이 단어장 자체의 데이터만
  * 쓴다 — 정답은 그 단어의 짝(뜻 또는 단어), 오답 보기는 같은 단어장 안의 "다른" 단어들의
@@ -28,18 +45,12 @@ export type QuizDirection = 'wordToMeaning' | 'meaningToWord';
 export function buildQuizQuestions(list: WordListLike, direction: QuizDirection, choiceCount = 4): QuizQuestion[] {
   const questions: QuizQuestion[] = [];
   for (const item of list.items) {
+    if (!item.word.trim() || !item.meaning.trim()) continue;
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;
     const questionText = direction === 'wordToMeaning' ? item.word : item.meaning;
-    const pool = [
-      ...new Set(
-        list.items
-          .filter((other) => other.id !== item.id)
-          .map((other) => (direction === 'wordToMeaning' ? other.meaning : other.word))
-          .filter((text) => text !== correctText),
-      ),
-    ];
+    const pool = distractorsFor(list.items, item, direction);
     if (pool.length === 0) continue;
-    const distractors = shuffle(pool).slice(0, choiceCount - 1);
+    const distractors = shuffle(pool).slice(0, Math.max(1, Math.floor(choiceCount) - 1));
     const choices = shuffle([correctText, ...distractors]);
     questions.push({
       id: item.id,
@@ -59,15 +70,9 @@ export function buildQuizQuestions(list: WordListLike, direction: QuizDirection,
 export function buildTrueFalseStatements(list: WordListLike, direction: QuizDirection): TrueFalseStatement[] {
   const statements: TrueFalseStatement[] = [];
   for (const item of list.items) {
+    if (!item.word.trim() || !item.meaning.trim()) continue;
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;
-    const pool = [
-      ...new Set(
-        list.items
-          .filter((other) => other.id !== item.id)
-          .map((other) => (direction === 'wordToMeaning' ? other.meaning : other.word))
-          .filter((text) => text !== correctText),
-      ),
-    ];
+    const pool = distractorsFor(list.items, item, direction);
     const makeFalse = pool.length > 0 && Math.random() < 0.5;
     const shown = makeFalse ? pool[Math.floor(Math.random() * pool.length)] : correctText;
     const isTrue = !makeFalse;

@@ -1,9 +1,12 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
-import type { GameItem } from '../lib/types';
+import '../gameSkins.css';
+import type { GameType, GameItem } from '../lib/types';
 
 interface Props {
+  gameType?: GameType;
   className?: string;
   children: ReactNode;
   /**
@@ -41,7 +44,7 @@ export function useGamePlay() {
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
  * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ className, children, onRestart, onUndo, roster }: Props) {
+export default function GameThemeFrame({ gameType, className, children, onRestart, onUndo, roster }: Props) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -51,6 +54,8 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
   const [itemsHidden, setItemsHidden] = useState(false);
+  const [restartOpen, setRestartOpen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState(false);
 
   useEffect(() => {
     function onChange() {
@@ -198,11 +203,14 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     };
   }, [isFullscreen]);
 
-  function toggleFullscreen() {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-    } else {
-      containerRef.current?.requestFullscreen().catch(() => {});
+  async function toggleFullscreen() {
+    setFullscreenError(false);
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (containerRef.current?.requestFullscreen) await containerRef.current.requestFullscreen();
+      else setFullscreenError(true);
+    } catch {
+      setFullscreenError(true);
     }
   }
 
@@ -222,22 +230,24 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
     <GamePlayContext.Provider value={{ fullscreen: isFullscreen, itemsHidden }}>
       <div
         ref={containerRef}
-        className={`relative ${isFullscreen ? 'game-fs' : ''} ${className ?? ''}`}
+        data-game={gameType}
+        className={`relative ${gameType ? 'classroom-play' : ''} ${isFullscreen ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
-        <div className="absolute top-3 right-3 z-10 flex gap-2">
+        <div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
           <button
             type="button"
             onClick={() => setItemsHidden((v) => !v)}
             title={itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
             aria-label={itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
-            className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur transition-colors ${
+            className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-sm backdrop-blur transition-colors ${
               itemsHidden
                 ? 'bg-primary text-on-primary hover:bg-primary-container'
                 : 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">{itemsHidden ? 'visibility_off' : 'visibility'}</span>
+            <span aria-hidden className="material-symbols-outlined text-[20px]">{itemsHidden ? 'visibility_off' : 'visibility'}</span>
+            {itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
           </button>
           {roster && roster.length > 0 && (
             <button
@@ -245,9 +255,10 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
               onClick={() => setTeamOrderOpen(true)}
               title={t('gamePlay.teamOrder')}
               aria-label={t('gamePlay.teamOrder')}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[20px]">groups</span>
+              <span aria-hidden className="material-symbols-outlined text-[20px]">groups</span>
+              {t('gamePlay.teamOrder')}
             </button>
           )}
           {onUndo && (
@@ -256,20 +267,22 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
               onClick={onUndo}
               title={t('gamePlay.undo')}
               aria-label={t('gamePlay.undo')}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[20px]">undo</span>
+              <span aria-hidden className="material-symbols-outlined text-[20px]">undo</span>
+              {t('gamePlay.undo')}
             </button>
           )}
           {onRestart && (
             <button
               type="button"
-              onClick={onRestart}
+              onClick={() => setRestartOpen(true)}
               title={t('gamePlay.restart')}
               aria-label={t('gamePlay.restart')}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[20px]">refresh</span>
+              <span aria-hidden className="material-symbols-outlined text-[20px]">refresh</span>
+              {t('gamePlay.restart')}
             </button>
           )}
           <button
@@ -277,44 +290,50 @@ export default function GameThemeFrame({ className, children, onRestart, onUndo,
             onClick={toggleFullscreen}
             title={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
             aria-label={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
           >
-            <span className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
+            <span aria-hidden className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
+            {isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
           </button>
         </div>
-        {isFullscreen ? (
-          <div ref={stageRef} className="game-fs-stage">
+        {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
+        {/* Keep the same parent chain so view changes never remount a running game. */}
+        <div ref={stageRef} className={isFullscreen ? 'game-fs-stage' : undefined}>
+          <div
+            className={isFullscreen ? 'contents' : 'mx-auto'}
+            style={!isFullscreen && naturalSize.h > 0
+              ? { width: naturalSize.w * scale, height: naturalSize.h * scale }
+              : undefined}
+          >
             <div
               ref={scaleRef}
-              className="game-fs-scale"
-              style={{ transform: `scale(${scale})` }}
+              className={isFullscreen ? 'game-fs-scale' : undefined}
+              style={{
+                width: isFullscreen ? '100%' : naturalSize.w > 0 ? naturalSize.w : '100%',
+                transform: `scale(${scale})`,
+                transformOrigin: isFullscreen ? 'center center' : 'top left',
+              }}
             >
               {children}
             </div>
           </div>
-        ) : (
-          <div ref={stageRef}>
-            <div
-              className="mx-auto"
-              style={naturalSize.h > 0 ? { width: naturalSize.w * scale, height: naturalSize.h * scale } : undefined}
-            >
-              <div
-                ref={scaleRef}
-                style={{
-                  width: naturalSize.w > 0 ? naturalSize.w : '100%',
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'top left',
-                }}
-              >
-                {children}
+        </div>
+        {restartOpen && (
+          <AccessibleDialog label={t('classroomUx.restartTitle')} onClose={() => setRestartOpen(false)}>
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-deep-navy">{t('classroomUx.restartTitle')}</h2>
+              <p className="mt-3 text-on-surface-variant">{t('classroomUx.restartHint')}</p>
+              <div className="mt-6 flex flex-wrap justify-end gap-3">
+                <button autoFocus type="button" className="min-h-11 rounded-xl border border-outline-variant px-5" onClick={() => setRestartOpen(false)}>{t('classroomUx.keepPlaying')}</button>
+                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); onRestart?.(); }}>{t('gamePlay.restart')}</button>
               </div>
             </div>
-          </div>
+          </AccessibleDialog>
         )}
-      </div>
       {teamOrderOpen && roster && (
         <TeamOrderPanel roster={roster} onClose={() => setTeamOrderOpen(false)} />
       )}
+      </div>
     </GamePlayContext.Provider>
   );
 }
