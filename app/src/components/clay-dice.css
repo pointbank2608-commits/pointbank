@@ -3,7 +3,7 @@
 @media(min-width:640px) { .clay-die.td-die-scene { --td-size: 104px; } }
 .clay-die .td-toss, .clay-die .td-camera { width:100%; height:100%; transform-style:preserve-3d; }
 .clay-die .td-camera { transform:rotateX(-12deg) rotateY(15deg); }
-.clay-die .td-face { border-radius: 9%; border:1px solid #ffffff35; background-image:none; box-shadow:inset 2px 3px 5px #ffffff65, inset -2px -3px 5px #163b3820; }
+.clay-die .td-face { border-radius: 0; border: 0; background-image:none; box-shadow:inset 1px 1px 1px #ffffff30, inset -1px -1px 1px #163b3815; }
 .clay-die .td-face-teal { background:linear-gradient(145deg,#9edbc9,#63b7a2 64%,#55a68f); }
 .clay-die .td-face-coral { background:linear-gradient(145deg,#f3bfad,#e79580 64%,#d98570); }
 .clay-die .td-face-top { filter:brightness(1.04); }
