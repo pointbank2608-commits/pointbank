@@ -1,22 +1,20 @@
 /** 무료/유료 등급 관련 숫자·경로를 한 곳에 모은다 — 화면 가드(PlanRouteGuard),
  * 학생관리(AttendancePage), 게임 목록(GamesPage), 결제 화면(BillingPage)이 전부 이
- * 파일 하나만 가져다 쓴다. 실제 청구 금액은 항상 서버(Edge Function)에서 다시 계산하고,
- * 여기 값은 화면 안내·클라이언트 가드용이다.
- */
+ * 파일 하나만 가져다 쓴다.
+ *
+ * 유료 플랜은 학생 수와 무관하게 월 9,900원 정액이다(2026-09-17 확정) — 지금 제품에는
+ * 학생이 직접 쓰는 기능이 없어서(학생 로그인 자체가 베타에서 잠겨 있음, CLAUDE.md 룰 1)
+ * 학생 수로 추가 과금할 근거가 없다. Wordwall·Baamboozle처럼 "선생님이 쓰는 도구"는
+ * 교사 라이선스 기준 정액이 맞고, 학생당 과금은 나중에 학생이 직접 쓰는 기능(숙제·
+ * 스피킹 등)을 별도 유료 레이어로 낼 때가 맞다. */
 
 export const FREE_CLASS_LIMIT = 1;
 export const FREE_STUDENT_LIMIT = 10;
 export const BASE_FEE_KRW = 9900;
-export const PER_STUDENT_FEE_KRW = 5000;
 
 /** 무료 플랜에서 접근할 수 없는 화면. 게임은 gameCatalog.ts의 tier로 별도 판단한다. */
 export const FREE_BLOCKED_PATHS = ['/dictionary', '/phonics', '/wordlists', '/results', '/curriculum', '/materials'];
 
 export function isPathBlockedForFree(pathname: string): boolean {
   return FREE_BLOCKED_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-}
-
-/** 안내용 예상 청구액 — 실제 결제는 청구 시점 학생 수로 서버가 다시 계산한다. */
-export function estimateMonthlyChargeKrw(studentCount: number): number {
-  return BASE_FEE_KRW + Math.max(0, studentCount - FREE_STUDENT_LIMIT) * PER_STUDENT_FEE_KRW;
 }

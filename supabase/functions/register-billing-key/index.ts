@@ -3,7 +3,7 @@
 // **아직 배포되지 않은 상태다.** extract-lesson-from-video/index.ts 와 같은 이유로
 // 코드만 준비해뒀다. 배포하려면:
 //   1. `npx supabase functions deploy register-billing-key`
-//   2. `npx supabase secrets set PORTONE_API_SECRET=... BASE_FEE_KRW=9900 PER_STUDENT_FEE_KRW=5000`
+//   2. `npx supabase secrets set PORTONE_API_SECRET=... BASE_FEE_KRW=9900`
 //      (PORTONE_API_SECRET은 NHN KCP 채널키가 발급된 뒤에나 실제 값이 생긴다 — 그 전까지는
 //      이 함수가 호출돼도 빌링키 저장까지는 되지만 최초 결제는 "준비 중" 실패로 기록된다.)
 // SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY는 Supabase가 모든 Edge

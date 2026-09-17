@@ -1,7 +1,11 @@
 // 포트원 빌링키 결제 공통 로직 — register-billing-key(첫 결제)와
-// charge-subscriptions(매달 결제)가 이 함수 하나를 공유한다. "학생 수를 다시 세고 →
-// 금액을 계산하고 → 포트원에 결제를 요청하고 → 결과를 돌려준다"만 한다. billing_history
-// 기록·academies 갱신은 호출한 쪽(각 함수)에서 한다 — 실패 시에도 기록을 남겨야 하기 때문.
+// charge-subscriptions(매달 결제)가 이 함수 하나를 공유한다. "청구액을 계산하고 →
+// 포트원에 결제를 요청하고 → 결과를 돌려준다"만 한다. billing_history 기록·academies
+// 갱신은 호출한 쪽(각 함수)에서 한다 — 실패 시에도 기록을 남겨야 하기 때문.
+//
+// 요금은 학생 수와 무관한 월 9,900원 정액이다(2026-09-17 확정) — 학생이 직접 쓰는
+// 기능이 없는 지금 단계에서는 학생 수로 추가 과금할 근거가 없다. student_count는
+// billing_history에 참고용으로만 남긴다(청구액 계산에는 안 쓴다).
 
 export interface ChargeResult {
   success: boolean;
@@ -11,11 +15,8 @@ export interface ChargeResult {
   failureReason?: string;
 }
 
-const FREE_STUDENT_LIMIT = 10;
 const PORTONE_API_BASE = 'https://api.portone.io';
 
-/** 학생 10명 초과분 요금은 항상 "지금 이 순간"의 실제 학생 수로 다시 계산한다 — 클라이언트가
- * 보낸 값을 절대 믿지 않는다. */
 export async function chargeAcademy(
   // deno-lint-ignore no-explicit-any
   supabaseAdmin: any,
@@ -32,9 +33,7 @@ export async function chargeAcademy(
   }
 
   const studentCount = count ?? 0;
-  const baseFee = Number(Deno.env.get('BASE_FEE_KRW') ?? '9900');
-  const perStudent = Number(Deno.env.get('PER_STUDENT_FEE_KRW') ?? '5000');
-  const amountKrw = baseFee + Math.max(0, studentCount - FREE_STUDENT_LIMIT) * perStudent;
+  const amountKrw = Number(Deno.env.get('BASE_FEE_KRW') ?? '9900');
 
   const apiSecret = Deno.env.get('PORTONE_API_SECRET');
   if (!apiSecret) {

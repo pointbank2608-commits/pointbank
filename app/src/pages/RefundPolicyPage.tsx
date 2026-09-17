@@ -16,7 +16,7 @@ export default function RefundPolicyPage() {
 
       <main className="mx-auto max-w-3xl px-5 py-12">
         <h1 className="mb-2 font-headline-lg-mobile text-headline-lg-mobile text-on-surface">환불정책</h1>
-        <p className="mb-10 font-caption text-caption text-on-surface-variant">시행일: 2026년 9월 16일</p>
+        <p className="mb-10 font-caption text-caption text-on-surface-variant">시행일: 2026년 9월 17일</p>
 
         <div className="space-y-8 font-body-md text-body-md leading-7 text-on-surface">
           <section>
@@ -31,10 +31,7 @@ export default function RefundPolicyPage() {
             <h2 className="mb-2 font-title-md text-title-md text-on-surface">1. 결제 및 청구 방식</h2>
             <ol className="list-decimal space-y-1.5 pl-5">
               <li>유료 플랜은 매월 정기적으로 자동 결제되는 구독형 서비스입니다.</li>
-              <li>
-                청구 금액은 <span className="font-bold">월 9,900원 + (등록 학생 수 − 10명) × 5,000원</span>(학생 수가 10명
-                이하인 경우 추가요금 없음)으로 매월 청구 시점의 등록 학생 수를 기준으로 산정됩니다.
-              </li>
+              <li>청구 금액은 등록 학생 수와 무관하게 <span className="font-bold">월 9,900원</span> 정액입니다.</li>
               <li>결제는 회원이 등록한 신용카드로 전자지급결제대행사(PG사)를 통해 이루어지며, 카드 정보는 회사가 보관하지 않습니다.</li>
             </ol>
           </section>
@@ -62,16 +59,7 @@ export default function RefundPolicyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-title-md text-title-md text-on-surface">4. 초과 인원 추가요금의 환불 제한</h2>
-            <p>
-              학생 10명 초과에 따른 월 추가요금은 해당 결제월 동안 실제로 제공된 서비스(등록·이용 가능 상태)에 대한
-              대가이므로, 결제월 도중에 학생 수를 줄이더라도 해당 월 추가요금은 환불되지 않습니다. 다음 결제월부터
-              변경된 학생 수를 기준으로 청구됩니다.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-2 font-title-md text-title-md text-on-surface">5. 환불 절차 및 방법</h2>
+            <h2 className="mb-2 font-title-md text-title-md text-on-surface">4. 환불 절차 및 방법</h2>
             <ol className="list-decimal space-y-1.5 pl-5">
               <li>환불은 아래 문의처로 요청하면 접수일로부터 영업일 기준 3일 이내에 처리합니다.</li>
               <li>환불은 원칙적으로 결제에 사용한 수단(신용카드 승인 취소)으로 이루어집니다.</li>
@@ -80,7 +68,7 @@ export default function RefundPolicyPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 font-title-md text-title-md text-on-surface">6. 문의처</h2>
+            <h2 className="mb-2 font-title-md text-title-md text-on-surface">5. 문의처</h2>
             <p>고객센터: 010-7979-3621 | 이메일: fluxmedia20@naver.com</p>
           </section>
 

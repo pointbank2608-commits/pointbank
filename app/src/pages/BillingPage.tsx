@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { cancelBilling, fetchBillingHistory, fetchStudentsOfAcademy, registerBillingKey } from '../lib/api';
-import { BASE_FEE_KRW, FREE_STUDENT_LIMIT, PER_STUDENT_FEE_KRW, estimateMonthlyChargeKrw } from '../lib/planLimits';
+import { BASE_FEE_KRW } from '../lib/planLimits';
 import { issueBillingKey } from '../lib/portone';
 import type { BillingHistoryRow } from '../lib/types';
 
@@ -75,8 +75,6 @@ export default function BillingPage() {
     );
   }
 
-  const estimate = studentCount !== null ? estimateMonthlyChargeKrw(studentCount) : null;
-
   return (
     <div className="space-y-6">
       <Link
@@ -116,18 +114,11 @@ export default function BillingPage() {
             {academy?.next_billing_at && (
               <p>{t('billing.nextBillingDate', { date: formatDate(academy.next_billing_at) })}</p>
             )}
-            {estimate !== null && <p>{t('billing.estimatedAmount', { amount: formatKrw(estimate) })}</p>}
-            <p className="font-caption text-caption">{t('billing.estimateDisclaimer')}</p>
+            <p>{t('billing.estimatedAmount', { amount: formatKrw(BASE_FEE_KRW) })}</p>
           </div>
         ) : (
           <div className="space-y-2 font-body-md text-body-md text-on-surface-variant">
-            <p>
-              {t('billing.freePlanPitch', {
-                base: formatKrw(BASE_FEE_KRW),
-                limit: FREE_STUDENT_LIMIT,
-                per: formatKrw(PER_STUDENT_FEE_KRW),
-              })}
-            </p>
+            <p>{t('billing.freePlanPitch', { base: formatKrw(BASE_FEE_KRW) })}</p>
           </div>
         )}
 

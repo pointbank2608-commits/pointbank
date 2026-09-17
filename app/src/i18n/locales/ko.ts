@@ -1782,10 +1782,8 @@ const ko = {
     studentCountLabel: '등록된 학생 {{count}}명',
     cardOnFile: '등록된 카드: {{brand}} {{last4}}',
     nextBillingDate: '다음 결제일: {{date}}',
-    estimatedAmount: '예상 청구액: {{amount}}',
-    estimateDisclaimer: '실제 청구 금액은 결제일 기준 등록 학생 수로 다시 계산돼요.',
-    freePlanPitch:
-      '유료 플랜은 반·학생 수 제한 없이 전체 기능을 쓸 수 있어요. 기본요금 {{base}}(학생 {{limit}}명까지 포함), 초과 인원 1명당 {{per}}이 추가돼요.',
+    estimatedAmount: '월 결제 금액: {{amount}}',
+    freePlanPitch: '유료 플랜은 반·학생 수 제한 없이 전체 기능을 학생 수와 무관하게 월 {{base}}에 쓸 수 있어요.',
     registerCardButton: '카드 등록',
     changeCardButton: '카드 변경',
     cancelButton: '구독 해지',

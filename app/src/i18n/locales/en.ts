@@ -1788,10 +1788,8 @@ const en: Ko = {
     studentCountLabel: '{{count}} students registered',
     cardOnFile: 'Card on file: {{brand}} {{last4}}',
     nextBillingDate: 'Next billing date: {{date}}',
-    estimatedAmount: 'Estimated charge: {{amount}}',
-    estimateDisclaimer: 'The actual amount is recalculated from your student count on the billing date.',
-    freePlanPitch:
-      'The paid plan removes class/student limits and unlocks every feature. Base fee {{base}} (covers up to {{limit}} students), plus {{per}} for each additional student.',
+    estimatedAmount: 'Monthly charge: {{amount}}',
+    freePlanPitch: 'The paid plan removes class/student limits and unlocks every feature for a flat {{base}}/month, regardless of student count.',
     registerCardButton: 'Register card',
     changeCardButton: 'Change card',
     cancelButton: 'Cancel subscription',

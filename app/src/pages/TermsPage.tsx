@@ -20,7 +20,7 @@ export default function TermsPage() {
 
       <main className="mx-auto max-w-3xl px-5 py-12">
         <h1 className="mb-2 font-headline-lg-mobile text-headline-lg-mobile text-on-surface">이용약관</h1>
-        <p className="mb-10 font-caption text-caption text-on-surface-variant">시행일: 2026년 9월 16일</p>
+        <p className="mb-10 font-caption text-caption text-on-surface-variant">시행일: 2026년 9월 17일</p>
 
         <div className="space-y-8 font-body-md text-body-md leading-7 text-on-surface">
           <section>
@@ -73,13 +73,12 @@ export default function TermsPage() {
                 단어장, 내 커리큘럼, 수업 자료실, 리포트, 게임 센터의 나머지 게임은 유료 플랜에서만 이용할 수 있습니다.
               </li>
               <li>
-                <span className="font-bold">유료 플랜</span> — 반·학생 수 제한 없이 전체 기능을 이용할 수 있습니다. 월
-                기본요금은 9,900원(학생 10명까지 포함, 부가세 별도)이며, 등록 학생 수가 10명을 초과하는 경우 초과 인원
-                1명당 월 5,000원(부가세 별도)이 기본요금에 추가로 청구됩니다.
+                <span className="font-bold">유료 플랜</span> — 반·학생 수 제한 없이 전체 기능을 이용할 수 있습니다. 등록
+                학생 수와 무관하게 월 9,900원(부가세 별도) 정액으로 청구됩니다.
               </li>
               <li>
-                유료 플랜 요금은 매월 정기적으로 자동 청구되며, 청구 시점의 등록 학생 수를 기준으로 산정합니다. 결제는
-                회원이 등록한 신용카드로 전자지급결제대행사를 통해 이루어집니다.
+                유료 플랜 요금은 매월 정기적으로 자동 청구됩니다. 결제는 회원이 등록한 신용카드로 전자지급결제대행사를
+                통해 이루어집니다.
               </li>
               <li>구체적인 요금·플랜 구성은 서비스 내 요금 안내 화면에서 별도로 고지하며, 이 조와 배치되는 경우 서비스 내 고지가 우선합니다.</li>
               <li>환불에 관한 사항은 별도의 <Link to="/refund-policy" className="text-primary underline">환불정책</Link>을 따릅니다.</li>
@@ -133,7 +132,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="mb-2 font-title-md text-title-md text-on-surface">부칙</h2>
-            <p>이 약관은 2026년 9월 16일부터 시행합니다.</p>
+            <p>이 약관은 2026년 9월 17일부터 시행합니다.</p>
           </section>
 
           <section className="rounded-xl bg-surface-container-lowest p-5">
