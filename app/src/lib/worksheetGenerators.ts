@@ -419,6 +419,106 @@ export function buildTrueFalsePages(words: FullCardItem[], rng: Rng, perPage = 8
   return chunk(shuffled(rows, rng), perPage);
 }
 
+
+/* ---------------- 3차: 미니북 ---------------- */
+
+export interface MiniBookPanel {
+  word: string;
+  meaning: string;
+  imageUrl: string | null;
+  example: string | null;
+}
+
+export interface MiniBook {
+  title: string;
+  coverImage: string | null;
+  /** 2~7쪽에 들어갈 단어(최대 6개, 모자라면 뒤는 null = 그림·쓰기 칸) */
+  pages: (MiniBookPanel | null)[];
+}
+
+/** 한 장(A4 가로)을 접어 만드는 8쪽 미니북. 표지 + 단어 6쪽 + 뒷표지. 단어가 6개를 넘으면 책이 여러 권이 된다. */
+export function buildMiniBooks(words: FullCardItem[], rng: Rng, title: string): MiniBook[] {
+  void rng;
+  const usable = words.filter((w) => w.word);
+  return chunk(usable, 6).map((group) => ({
+    title,
+    coverImage: group.find((w) => w.imageUrl)?.imageUrl ?? null,
+    pages: Array.from({ length: 6 }, (_, i) => {
+      const w = group[i];
+      return w ? { word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null } : null;
+    }),
+  }));
+}
+
+/* ---------------- 3차: 짝 인터뷰 (Ask & Answer) ---------------- */
+
+export type AskTemplate = 'like' | 'have' | 'see';
+
+export interface AskRow {
+  word: string;
+  imageUrl: string | null;
+}
+
+export function buildAskPages(words: FullCardItem[], perPage = 8): AskRow[][] {
+  return chunk(
+    words.filter((w) => w.word).map((w) => ({ word: w.word, imageUrl: w.imageUrl })),
+    perPage,
+  );
+}
+
+/* ---------------- 3차: 보드게임 ---------------- */
+
+export type BoardCell =
+  | { n: number; kind: 'start' | 'finish' | 'again' | 'back' | 'skip' }
+  | { n: number; kind: 'word'; word: string; imageUrl: string | null };
+
+export const BOARD_COLS = 5;
+export const BOARD_ROWS = 6;
+
+/** 5×6 = 30칸 뱀 모양 보드. 칸 번호는 1(START)~30(FINISH)이고 사이 칸에 단어를 돌려 넣는다. 단어 3개 이상 필요. */
+export function buildBoardGame(words: FullCardItem[], rng: Rng): BoardCell[] | null {
+  const usable = words.filter((w) => w.word);
+  if (usable.length < 3) return null;
+  const total = BOARD_COLS * BOARD_ROWS;
+  const special: Record<number, 'again' | 'back' | 'skip'> = { 8: 'again', 14: 'back', 20: 'skip', 24: 'again', 27: 'back' };
+  const cells: BoardCell[] = [];
+  let bag: FullCardItem[] = [];
+  for (let n = 1; n <= total; n++) {
+    if (n === 1) cells.push({ n, kind: 'start' });
+    else if (n === total) cells.push({ n, kind: 'finish' });
+    else if (special[n]) cells.push({ n, kind: special[n] });
+    else {
+      if (bag.length === 0) {
+        bag = shuffled(usable, rng);
+        // 새로 섞은 첫 낱말이 바로 앞 칸과 같지 않게 한다.
+        const prev = cells[cells.length - 1];
+        if (prev?.kind === 'word' && bag[bag.length - 1].word === prev.word) bag.unshift(bag.pop()!);
+      }
+      const w = bag.pop()!;
+      cells.push({ n, kind: 'word', word: w.word, imageUrl: w.imageUrl });
+    }
+  }
+  return cells;
+}
+
+/* ---------------- 3차: 문장 읽고 잇기 (Read & Match) ---------------- */
+
+/** 예문(왼쪽) ↔ 그림(오른쪽). 그림과 예문이 둘 다 있는 단어만 쓴다. */
+export function buildReadMatchPages(words: FullCardItem[], rng: Rng, perPage = 5): MatchPage[] {
+  const usable = words.filter((w) => w.imageUrl && (w.example ?? '').trim());
+  return chunk(usable, perPage).map((rows) => {
+    const order = shuffled(
+      rows.map((_, i) => i),
+      rng,
+    );
+    return {
+      left: rows.map((r) => ({ image: null, text: (r.example ?? '').trim() })),
+      right: order.map((i) => ({ image: rows[i].imageUrl, text: '' })),
+      answer: rows.map((_, i) => order.indexOf(i)),
+    };
+  });
+}
+
 export const NEW_WORKSHEET_KINDS = [
   'coloring',
   'match',
@@ -430,6 +530,10 @@ export const NEW_WORKSHEET_KINDS = [
   'sentence',
   'multipleChoice',
   'trueFalse',
+  'miniBook',
+  'askAnswer',
+  'boardGame',
+  'readMatch',
 ] as const;
 export type NewWorksheetKind = (typeof NEW_WORKSHEET_KINDS)[number];
 
@@ -443,10 +547,17 @@ export type WorksheetData =
   | { kind: 'cutPaste'; pages: CutPastePage[] }
   | { kind: 'sentence'; pages: SentenceRow[][] }
   | { kind: 'multipleChoice'; pages: ChoiceRow[][] }
-  | { kind: 'trueFalse'; pages: TrueFalseRow[][] };
+  | { kind: 'trueFalse'; pages: TrueFalseRow[][] }
+  | { kind: 'miniBook'; books: MiniBook[] }
+  | { kind: 'askAnswer'; pages: AskRow[][]; template: AskTemplate }
+  | { kind: 'boardGame'; cells: BoardCell[] | null; title: string }
+  | { kind: 'readMatch'; pages: MatchPage[] };
 
 export interface WorksheetOptions {
   coloring?: ColoringOptions;
+  /** 미니북·보드게임 제목(색칠하기 제목 입력칸과 같은 값을 쓴다) */
+  sheetTitle?: string;
+  askTemplate?: AskTemplate;
 }
 
 export function buildWorksheet(
@@ -479,11 +590,22 @@ export function buildWorksheet(
       return { kind, pages: buildChoicePages(words, rng) };
     case 'trueFalse':
       return { kind, pages: buildTrueFalsePages(words, rng) };
+    case 'miniBook':
+      return { kind, books: buildMiniBooks(words, rng, options.sheetTitle || 'My Mini Book') };
+    case 'askAnswer':
+      return { kind, pages: buildAskPages(words), template: options.askTemplate ?? 'like' };
+    case 'boardGame':
+      return { kind, cells: buildBoardGame(words, rng), title: options.sheetTitle || 'Board Game' };
+    case 'readMatch':
+      return { kind, pages: buildReadMatchPages(words, rng) };
   }
 }
 
 export function isWorksheetEmpty(data: WorksheetData): boolean {
-  return data.kind === 'grouping' ? data.sheet === null : data.pages.length === 0;
+  if (data.kind === 'grouping') return data.sheet === null;
+  if (data.kind === 'miniBook') return data.books.length === 0;
+  if (data.kind === 'boardGame') return data.cells === null;
+  return data.pages.length === 0;
 }
 
 /** 비어 있을 때 보여줄 안내문 i18n 키(materials.worksheet.<키>). */
@@ -498,4 +620,8 @@ export const EMPTY_HINT_KEY: Record<NewWorksheetKind, string> = {
   sentence: 'needSentences',
   multipleChoice: 'needChoices',
   trueFalse: 'needTwoChoices',
+  miniBook: 'needAtLeastOne',
+  askAnswer: 'needAtLeastOne',
+  boardGame: 'needThreeWords',
+  readMatch: 'needReadMatch',
 };

@@ -414,6 +414,8 @@ export interface FullCardItem {
   category?: string | null;
   /** 사전에서 담았을 때만 있는 예문(문장 순서 바꾸기가 쓴다). */
   example?: string | null;
+  /** 사전에서 담았을 때만 있는 품사(단어 리스트가 보여준다). */
+  partOfSpeech?: string | null;
 }
 
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */

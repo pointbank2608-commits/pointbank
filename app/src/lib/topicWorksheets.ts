@@ -85,7 +85,7 @@ export function topicEntries(entries: WordBankEntry[], category: string, level: 
 }
 
 export function toCard(e: WordBankEntry): FullCardItem {
-  return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category, example: e.example_sentence };
+  return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category, example: e.example_sentence, partOfSpeech: e.part_of_speech };
 }
 
 /**
@@ -112,6 +112,10 @@ export interface WorksheetTypeSupport {
   sentence: number;
   multipleChoice: number;
   trueFalse: number;
+  miniBook: number;
+  askAnswer: number;
+  boardGame: number;
+  readMatch: number;
 }
 
 /** 지금 고른 단어로 유형별로 몇 개가 실제로 쓰이는지(0이면 그 유형은 빈 페이지가 된다). */
@@ -128,5 +132,9 @@ export function worksheetSupport(words: FullCardItem[]): WorksheetTypeSupport {
     // 객관식은 보기를 다른 단어에서 뽑으므로 3개, 참·거짓은 틀린 짝을 만들려면 2개 이상이어야 한다.
     multipleChoice: choiceUsable(words).length >= 3 ? choiceUsable(words).length : 0,
     trueFalse: choiceUsable(words).length >= 2 ? choiceUsable(words).length : 0,
+    miniBook: words.length,
+    askAnswer: words.length,
+    boardGame: words.length >= 3 ? words.length : 0,
+    readMatch: words.filter((w) => w.imageUrl && (w.example ?? '').trim()).length,
   };
 }

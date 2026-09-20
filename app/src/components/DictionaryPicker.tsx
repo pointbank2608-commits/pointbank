@@ -186,7 +186,7 @@ export default function DictionaryPicker(props: Props) {
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence })));
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence, partOfSpeech: i.partOfSpeech })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

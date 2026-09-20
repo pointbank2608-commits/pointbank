@@ -15,6 +15,7 @@ import {
   type ColoringLabelMode,
   type ColoringOptions,
   type ColoringPerPage,
+  type AskTemplate,
   EMPTY_HINT_KEY,
   isWorksheetEmpty,
   NEW_WORKSHEET_KINDS,
@@ -38,7 +39,42 @@ const TAB_LABEL_KEY: Record<Tab, string> = {
   sentence: 'tabSentence',
   multipleChoice: 'tabMultipleChoice',
   trueFalse: 'tabTrueFalse',
+  miniBook: 'tabMiniBook',
+  askAnswer: 'tabAskAnswer',
+  boardGame: 'tabBoardGame',
+  readMatch: 'tabReadMatch',
 };
+
+/** 4선 대신 위·가운데(점선)·아래 3선 사선지 한 줄. 줄 앞에 따라 쓸 글씨(속이 빈 글씨)를 놓는다. */
+function TracingRow({ word, repeat }: { word: string; repeat: boolean }) {
+  // 글씨 크기(mm) — 줄 높이(13mm)에 대문자 높이가 거의 차도록 잡는다. 반복할 때는 글자 수로 폭을 어림해서 줄 폭(약 180mm)만큼만 채운다.
+  const emMm = 15;
+  const wordWidthMm = [...word].length * emMm * 0.56 + 6;
+  const count = repeat ? Math.max(1, Math.floor(180 / wordWidthMm)) : 1;
+  return (
+    <div className="relative mb-[8mm] h-[13mm]">
+      <div className="absolute left-0 right-0 top-0 border-t border-outline" />
+      <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-outline-variant" />
+      <div className="absolute left-0 right-0 bottom-0 border-t border-outline" />
+      <div
+        className="absolute left-[2mm] flex gap-[6mm] whitespace-nowrap"
+        style={{
+          bottom: `-${emMm * 0.24}mm`,
+          fontFamily: "'Andika', 'Comic Sans MS', sans-serif",
+          fontSize: `${emMm}mm`,
+          lineHeight: 1,
+          color: 'transparent',
+          WebkitTextStroke: '0.35mm #8a94a6',
+        }}
+        aria-hidden
+      >
+        {Array.from({ length: count }, (_, i) => (
+          <span key={i}>{word}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function isNewKind(tab: Tab): tab is NewWorksheetKind {
   return (NEW_WORKSHEET_KINDS as readonly string[]).includes(tab);
@@ -56,6 +92,11 @@ export default function WorksheetPrintPage() {
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [seed, setSeed] = useState(1);
+  const [askTemplate, setAskTemplate] = useState<AskTemplate>('like');
+  // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
+  const [listShow, setListShow] = useState({ pos: true, example: false, image: false });
+  // 사선지: 줄마다 한 번씩 따라 쓸 글씨를 보여줄지, 첫 줄은 가득 채울지.
+  const [tracingFill, setTracingFill] = useState<'once' | 'firstRow'>('once');
   const [coloring, setColoring] = useState<ColoringOptions>(() => {
     const h = handoffFromLocationState(location.state);
     return {
@@ -74,7 +115,7 @@ export default function WorksheetPrintPage() {
     [words],
   );
 
-  const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring }) : null), [tab, words, seed, coloring]);
+  const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring, sheetTitle: coloring.title, askTemplate }) : null), [tab, words, seed, coloring, askTemplate]);
   const generatedEmpty = generated ? isWorksheetEmpty(generated) : false;
   const canPreview = generated ? !generatedEmpty : tab === 'quiz' ? quiz.length > 0 : words.length > 0;
 
@@ -119,6 +160,37 @@ export default function WorksheetPrintPage() {
               </button>
             ))}
           </div>
+
+          {tab === 'list' && words.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-label-md text-label-md text-on-surface-variant">
+              <span>{t('materials.worksheet.listShowLabel')}</span>
+              {(['pos', 'example', 'image'] as const).map((key) => (
+                <label key={key} className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={listShow[key]}
+                    onChange={(e) => setListShow((prev) => ({ ...prev, [key]: e.target.checked }))}
+                    className="h-4 w-4 rounded accent-primary"
+                  />
+                  {t(`materials.worksheet.listShow_${key}`)}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {tab === 'tracing' && words.length > 0 && (
+            <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+              {t('materials.worksheet.tracingFillLabel')}
+              <select
+                value={tracingFill}
+                onChange={(e) => setTracingFill(e.target.value as 'once' | 'firstRow')}
+                className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
+              >
+                <option value="once">{t('materials.worksheet.tracingFillOnce')}</option>
+                <option value="firstRow">{t('materials.worksheet.tracingFillFirstRow')}</option>
+              </select>
+            </label>
+          )}
 
           {tab === 'quiz' && (
             <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant w-fit cursor-pointer">
@@ -192,7 +264,39 @@ export default function WorksheetPrintPage() {
             </div>
           )}
 
-          {isNewKind(tab) && tab !== 'coloring' && words.length > 0 && (
+          {(tab === 'miniBook' || tab === 'boardGame') && words.length > 0 && (
+            <div className="space-y-2 rounded-lg border border-outline-variant/50 p-3">
+              <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+                {t('materials.worksheet.coloringTitleLabel')}
+                <input
+                  value={coloring.title}
+                  onChange={(e) => setColoring((c) => ({ ...c, title: e.target.value }))}
+                  maxLength={40}
+                  className="min-w-[200px] flex-1 rounded-lg border border-outline-variant bg-surface px-3 py-1.5 font-body-md text-body-md text-on-surface"
+                />
+              </label>
+              {tab === 'miniBook' && (
+                <p className="font-caption text-caption text-on-surface-variant">{t('materials.worksheet.miniBookHint')}</p>
+              )}
+            </div>
+          )}
+
+          {tab === 'askAnswer' && words.length > 0 && (
+            <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+              {t('materials.worksheet.askTemplateLabel')}
+              <select
+                value={askTemplate}
+                onChange={(e) => setAskTemplate(e.target.value as AskTemplate)}
+                className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
+              >
+                <option value="like">{t('materials.worksheet.askTemplateLike')}</option>
+                <option value="have">{t('materials.worksheet.askTemplateHave')}</option>
+                <option value="see">{t('materials.worksheet.askTemplateSee')}</option>
+              </select>
+            </label>
+          )}
+
+          {isNewKind(tab) && tab !== 'coloring' && tab !== 'miniBook' && tab !== 'askAnswer' && tab !== 'boardGame' && words.length > 0 && (
             <div className="flex flex-wrap items-center gap-4">
               <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant w-fit cursor-pointer">
                 <input
@@ -252,12 +356,33 @@ export default function WorksheetPrintPage() {
 
       {canPreview && tab === 'list' && (
         <div className="print-sheet mx-auto p-6">
-          <div className="columns-2 gap-8">
+          {/* 예문·그림이 들어가면 한 줄이 길어져서 한 단으로, 아니면 두 단으로 보여준다. */}
+          <div className={listShow.example || listShow.image ? '' : 'columns-2 gap-8'}>
             {words.map((w, i) => (
-              <div key={w.id} className="print-card flex items-baseline gap-2 py-1.5 border-b border-outline-variant/40">
+              <div
+                key={w.id}
+                className={`print-card flex gap-2 border-b border-outline-variant/40 py-1.5 ${listShow.image ? 'items-center' : 'items-baseline'}`}
+              >
                 <span className="font-caption text-caption text-on-surface-variant w-6 shrink-0">{i + 1}.</span>
-                <span className="font-title-md text-title-md text-deep-navy">{w.word}</span>
-                <span className="font-body-md text-body-md text-on-surface-variant">{w.meaning}</span>
+                {listShow.image && (
+                  <span className="flex h-[14mm] w-[14mm] shrink-0 items-center justify-center">
+                    {w.imageUrl ? <img src={w.imageUrl} alt="" className="h-full w-full object-contain" /> : null}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="font-title-md text-title-md text-deep-navy">{w.word}</span>
+                    {listShow.pos && w.partOfSpeech && (
+                      <span className="rounded bg-surface-container-high px-1.5 font-caption text-caption text-on-surface-variant">
+                        {w.partOfSpeech}
+                      </span>
+                    )}
+                    <span className="font-body-md text-body-md text-on-surface-variant">{w.meaning}</span>
+                  </div>
+                  {listShow.example && w.example && (
+                    <div className="font-body-sm text-body-sm text-on-surface-variant">{w.example}</div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -294,16 +419,11 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'tracing' && (
-        <div className="print-sheet mx-auto p-6 space-y-[6mm]">
+        <div className="print-sheet mx-auto p-6 space-y-[7mm]">
           {words.map((w) => (
             <div key={w.id} className="print-card">
-              <div className="font-headline-sm font-bold text-deep-navy mb-[2mm]">{w.word}</div>
               {[0, 1, 2].map((row) => (
-                <div key={row} className="relative h-[9mm] mb-[1mm]">
-                  <div className="absolute left-0 right-0 top-0 border-t border-outline-variant" />
-                  <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-outline-variant" />
-                  <div className="absolute left-0 right-0 bottom-0 border-t border-outline-variant" />
-                </div>
+                <TracingRow key={row} word={w.word} repeat={tracingFill === 'firstRow' && row === 0} />
               ))}
             </div>
           ))}
