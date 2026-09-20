@@ -33,3 +33,12 @@ export const FONT_LETTER = "'Andika', 'Comic Sans MS', sans-serif";
 export function cuteCardStyle(tone: CuteTone): CSSProperties {
   return { background: tone.bg, border: `0.9mm solid ${tone.main}`, borderRadius: '7mm' };
 }
+
+/**
+ * 커서가 만든 마스코트·장식 그림(app/public/worksheet-cute/<id>.webp, 흑백판은 <id>-bw.webp).
+ * 컬러 인쇄를 끄면 흑백판을 쓴다. 리본은 흑백판 이름이 ribbon-bw 하나뿐이다.
+ */
+export function cuteAsset(id: string, color: boolean): string {
+  if (id.startsWith('ribbon-')) return `/worksheet-cute/${color ? id : 'ribbon-bw'}.webp`;
+  return `/worksheet-cute/${id}${color ? '' : '-bw'}.webp`;
+}
