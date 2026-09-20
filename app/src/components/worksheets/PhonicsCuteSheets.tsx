@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { parsePattern } from '../../lib/phonicsPattern';
+import type { FullCardItem } from '../../lib/types';
 import type {
   MatchPage,
   OddRow,
@@ -6,6 +8,7 @@ import type {
   PhonicsCircleRow,
 } from '../../lib/worksheetGenerators';
 import { CuteBadge, CuteFooter, CuteHeader, CutePage } from './CuteStyle';
+import TracingRow from './TracingRow';
 import { cuteCardStyle, cuteTone, FONT_LETTER, FONT_TITLE } from './cuteTheme';
 
 /**
@@ -63,7 +66,7 @@ export function PhonicsBlankCute({ rows, bank, color, startIndex }: Common & { r
             <div key={i} className="print-card flex items-center gap-[5mm] px-[4mm] py-[3mm]" style={cuteCardStyle(tone)}>
               <CuteBadge n={startIndex + i + 1} tone={tone} />
               {row.imageUrl ? <Picture src={row.imageUrl} size={32} /> : <span style={{ width: '32mm' }} />}
-              <div className="flex items-end" style={{ fontFamily: FONT_LETTER, fontWeight: 700, fontSize: '60px', lineHeight: 1 }}>
+              <div className="flex items-end" style={{ fontFamily: FONT_LETTER, fontWeight: 700, fontSize: row.word.length > 6 ? '46px' : '60px', lineHeight: 1 }}>
                 {row.parts.map((p, k) =>
                   p.marked ? (
                     <span
@@ -92,6 +95,11 @@ export function PhonicsBlankCute({ rows, bank, color, startIndex }: Common & { r
 
 /* ---------------- 규칙 글자 찾기 ---------------- */
 
+/** 글자 칸 폭(mm) — 긴 단어도 한 줄에 들어가게 글자 수에 맞춰 줄인다(최대 16mm, 최소 6.5mm). */
+function tileMm(letterCount: number): number {
+  return Math.max(6.5, Math.min(16, 100 / Math.max(1, letterCount) - 2));
+}
+
 export function PhonicsCircleCute({ rows, sameTarget, color, startIndex }: Common & { rows: PhonicsCircleRow[]; sameTarget: string | null }) {
   const { t } = useTranslation();
   return (
@@ -112,19 +120,19 @@ export function PhonicsCircleCute({ rows, sameTarget, color, startIndex }: Commo
             <div key={i} className="print-card flex items-center gap-[5mm] px-[4mm] py-[3mm]" style={cuteCardStyle(tone)}>
               <CuteBadge n={startIndex + i + 1} tone={tone} />
               {row.imageUrl ? <Picture src={row.imageUrl} size={32} /> : <span style={{ width: '32mm' }} />}
-              <div className="flex flex-wrap gap-[2.5mm]">
+              <div className="flex flex-wrap gap-[2mm]">
                 {row.letters.map((l, k) => (
                   <span
                     key={k}
                     className="flex items-center justify-center bg-white"
                     style={{
-                      width: '17mm',
+                      width: `${tileMm(row.letters.length)}mm`,
                       height: '20mm',
                       border: `0.9mm solid ${tone.main}`,
                       borderRadius: '4mm',
                       fontFamily: FONT_LETTER,
                       fontWeight: 700,
-                      fontSize: '48px',
+                      fontSize: `${Math.round(tileMm(row.letters.length) * 3)}px`,
                     }}
                   >
                     {l.ch}
@@ -217,6 +225,113 @@ export function RhymeCute({ page, color }: { page: MatchPage; color: boolean }) 
             })}
           </div>
         ))}
+      </div>
+      <CuteFooter color={color} />
+    </CutePage>
+  );
+}
+
+/* ---------------- 단어 리스트 · 사선지 (파닉스 전용) ---------------- */
+
+/** 소리 규칙 글자를 강조해서 보여준다(컬러: 노란 바탕, 흑백: 굵은 밑줄). 표기가 없으면 그냥 단어. */
+function PatternLetters({ item, color }: { item: FullCardItem; color: boolean }) {
+  const parts = item.patternMarked ? parsePattern(item.patternMarked) : [{ text: item.word, marked: false }];
+  return (
+    <>
+      {parts.map((p, k) =>
+        p.marked ? (
+          <span
+            key={k}
+            style={{
+              background: color ? '#ffe066' : 'transparent',
+              borderBottom: color ? 'none' : '1.4mm solid #1b1b1b',
+              borderRadius: '2.5mm',
+              padding: '0 1.5mm',
+            }}
+          >
+            {p.text}
+          </span>
+        ) : (
+          <span key={k}>{p.text}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+export function PhonicsListCute({
+  rows,
+  color,
+  startIndex,
+  showImage,
+  showMeaning,
+}: Common & { rows: FullCardItem[]; showImage: boolean; showMeaning: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <CutePage color={color}>
+      <CuteHeader color={color} title={t('materials.worksheet.sheet.phonicsListTitle')} instruction={t('materials.worksheet.sheet.phonicsListInstruction')} />
+      <div className="space-y-[4mm]">
+        {rows.map((row, i) => {
+          const tone = cuteTone(i, color);
+          return (
+            <div key={row.id} className="print-card flex items-center gap-[5mm] px-[4mm] py-[3mm]" style={cuteCardStyle(tone)}>
+              <CuteBadge n={startIndex + i + 1} tone={tone} />
+              {showImage && (row.imageUrl ? <Picture src={row.imageUrl} size={28} /> : <span style={{ width: '28mm' }} />)}
+              <span style={{ fontFamily: FONT_LETTER, fontWeight: 700, fontSize: '54px', lineHeight: 1.1 }}>
+                <PatternLetters item={row} color={color} />
+              </span>
+              {showMeaning && row.meaning && (
+                <span className="ml-auto text-[24px] font-bold" style={{ fontFamily: FONT_TITLE }}>
+                  {row.meaning}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <CuteFooter color={color} />
+    </CutePage>
+  );
+}
+
+export function PhonicsTracingCute({
+  rows,
+  color,
+  startIndex,
+  showImage,
+  showMeaning,
+}: Common & { rows: FullCardItem[]; showImage: boolean; showMeaning: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <CutePage color={color}>
+      <CuteHeader color={color} title={t('materials.worksheet.sheet.phonicsTraceTitle')} instruction={t('materials.worksheet.sheet.phonicsTraceInstruction')} />
+      <div className="space-y-[4mm]">
+        {rows.map((row, i) => {
+          const tone = cuteTone(i, color);
+          return (
+            <div key={row.id} className="print-card px-[4mm] py-[3mm]" style={cuteCardStyle(tone)}>
+              <div className="mb-[2mm] flex items-center gap-[4mm]">
+                <CuteBadge n={startIndex + i + 1} tone={tone} />
+                <span style={{ fontFamily: FONT_LETTER, fontWeight: 700, fontSize: '44px', lineHeight: 1.1 }}>
+                  <PatternLetters item={row} color={color} />
+                </span>
+                {showMeaning && row.meaning && (
+                  <span className="text-[22px] font-bold" style={{ fontFamily: FONT_TITLE }}>
+                    {row.meaning}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-stretch gap-[5mm]">
+                {showImage && (row.imageUrl ? <Picture src={row.imageUrl} size={44} /> : <span style={{ width: '44mm' }} />)}
+                <div className="min-w-0 flex-1 rounded-[4mm] bg-white px-[3mm] py-[2mm]">
+                  {[0, 1, 2].map((r) => (
+                    <TracingRow key={r} word={row.word} trace={r === 0} last={r === 2} gapMm={4} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
       <CuteFooter color={color} />
     </CutePage>

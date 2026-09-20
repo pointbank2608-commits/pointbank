@@ -7,6 +7,7 @@ import { handoffFromLocationState, wordsFromLocationState } from '../lib/materia
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { buildQuizQuestions } from '../lib/quizFromWordList';
 import type { FullCardItem } from '../lib/types';
+import TracingRow from '../components/worksheets/TracingRow';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { decorThemes, lineartWordCount } from '../lib/lineart';
 import {
@@ -24,7 +25,14 @@ import {
 } from '../lib/worksheetGenerators';
 
 type Tab = 'list' | 'card' | 'tracing' | 'quiz' | NewWorksheetKind;
-const TABS: Tab[] = ['list', 'card', 'tracing', 'quiz', ...NEW_WORKSHEET_KINDS];
+// 파닉스 전용 유형(PHONICS_KINDS)은 파닉스 워크시트 페이지(/materials/phonics)에서만 다룬다.
+const TABS: Tab[] = [
+  'list',
+  'card',
+  'tracing',
+  'quiz',
+  ...NEW_WORKSHEET_KINDS.filter((k) => !(PHONICS_KINDS as readonly string[]).includes(k)),
+];
 const TAB_LABEL_KEY: Record<Tab, string> = {
   list: 'tabList',
   card: 'tabCard',
@@ -50,37 +58,6 @@ const TAB_LABEL_KEY: Record<Tab, string> = {
   phonicsRhyme: 'tabPhonicsRhyme',
 };
 
-/** 위·가운데(점선)·아래 3선 사선지 한 줄. trace 가 true 면 줄 안에 점선 글씨(따라 쓸 글씨) 하나를 앉힌다. */
-function TracingRow({ word, trace, last }: { word: string; trace: boolean; last: boolean }) {
-  // 글씨 크기(mm) — 줄 높이(13mm)에 대문자 높이가 거의 차도록 잡는다.
-  const emMm = 15;
-  return (
-    <div className={`relative h-[13mm] ${last ? '' : 'mb-[8mm]'}`}>
-      <div className="absolute left-0 right-0 top-0 border-t border-outline" />
-      <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-outline-variant" />
-      <div className="absolute left-0 right-0 bottom-0 border-t border-outline" />
-      {trace && (
-        // 속이 빈 점선 글씨: 글자 윤곽에 점선 획만 준다(글씨 폭을 미리 몰라도 되게 SVG text 를 쓴다).
-        <svg className="absolute inset-0" width="100%" height="100%" style={{ overflow: 'visible' }} aria-hidden>
-          <text
-            x="2mm"
-            y="13mm"
-            fontFamily="'Andika', 'Comic Sans MS', sans-serif"
-            fontSize={`${emMm}mm`}
-            fill="none"
-            stroke="#6b7488"
-            strokeWidth="0.3mm"
-            strokeDasharray="0.8mm 0.9mm"
-            strokeLinecap="round"
-          >
-            {word}
-          </text>
-        </svg>
-      )}
-    </div>
-  );
-}
-
 function isNewKind(tab: Tab): tab is NewWorksheetKind {
   return (NEW_WORKSHEET_KINDS as readonly string[]).includes(tab);
 }
@@ -98,8 +75,6 @@ export default function WorksheetPrintPage() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [seed, setSeed] = useState(1);
   const [askTemplate, setAskTemplate] = useState<AskTemplate>('like');
-  // 귀여운 스타일(파닉스)을 컬러로 뽑을지 흑백에 맞는 모양으로 뽑을지.
-  const [cuteColor, setCuteColor] = useState(true);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState({ pos: true, example: false, image: false });
   // 사선지에 뜻·그림도 함께 보여줄지.
@@ -121,10 +96,6 @@ export default function WorksheetPrintPage() {
       ),
     [words],
   );
-
-  // 파닉스 전용 탭은 파닉스에서 담은 단어(소리 규칙 표시가 있는 단어)가 있을 때만 보여준다(탭이 너무 많아지지 않게).
-  const phonicsAvailable = words.some((w) => w.patternMarked);
-  const visibleTabs = TABS.filter((tb) => !(PHONICS_KINDS as readonly string[]).includes(tb) || phonicsAvailable || tb === tab);
 
   const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring, sheetTitle: coloring.title, askTemplate }) : null), [tab, words, seed, coloring, askTemplate]);
   const generatedEmpty = generated ? isWorksheetEmpty(generated) : false;
@@ -158,7 +129,7 @@ export default function WorksheetPrintPage() {
           </div>
 
           <div className="flex flex-wrap bg-surface-container-low rounded-lg p-1 w-fit max-w-full gap-y-1">
-            {visibleTabs.map((tb) => (
+            {TABS.map((tb) => (
               <button
                 key={tb}
                 type="button"
@@ -295,18 +266,6 @@ export default function WorksheetPrintPage() {
             </div>
           )}
 
-          {(PHONICS_KINDS as readonly string[]).includes(tab) && words.length > 0 && (
-            <label className="flex w-fit cursor-pointer items-center gap-2 font-label-md text-label-md text-on-surface-variant">
-              <input
-                type="checkbox"
-                checked={cuteColor}
-                onChange={(e) => setCuteColor(e.target.checked)}
-                className="h-4 w-4 rounded accent-primary"
-              />
-              {t('materials.worksheet.cuteColorLabel')}
-            </label>
-          )}
-
           {tab === 'askAnswer' && words.length > 0 && (
             <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
               {t('materials.worksheet.askTemplateLabel')}
@@ -376,7 +335,7 @@ export default function WorksheetPrintPage() {
 
       {canPreview && generated && (
         <div className="print-sheet mx-auto">
-          <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />
+          <WorksheetSheets data={generated} includeAnswers={includeAnswers} />
         </div>
       )}
 

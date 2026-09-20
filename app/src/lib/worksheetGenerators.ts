@@ -396,7 +396,7 @@ export interface TrueFalseRow {
   answer: boolean;
 }
 
-export function buildTrueFalsePages(words: FullCardItem[], rng: Rng, perPage = 8): TrueFalseRow[][] {
+export function buildTrueFalsePages(words: FullCardItem[], rng: Rng, perPage = 6): TrueFalseRow[][] {
   const usable = choiceUsable(words);
   if (usable.length < 2) return [];
   const allWords = usable.map((w) => w.word);
@@ -526,7 +526,7 @@ export function buildReadMatchPages(words: FullCardItem[], rng: Rng, perPage = 5
 export const PHONICS_KINDS = ['phonicsBlank', 'phonicsCircle', 'phonicsOdd', 'phonicsRhyme'] as const;
 
 /** 파닉스 학생용 페이지는 글씨·그림이 커서 한 장에 들어가는 개수가 적다. */
-export const PHONICS_PER_PAGE = { blank: 5, circle: 5, odd: 3, rhyme: 5 } as const;
+export const PHONICS_PER_PAGE = { blank: 3, circle: 4, odd: 3, rhyme: 5, list: 4, tracing: 2 } as const;
 
 /** 1) 규칙 글자 빈칸 채우기: 소리 규칙 글자(예: r{ai}n 의 ai)만 비운다. */
 export interface PhonicsBlankRow {

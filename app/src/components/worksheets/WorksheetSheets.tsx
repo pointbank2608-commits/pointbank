@@ -1045,7 +1045,7 @@ export default function WorksheetSheets({ data, includeAnswers, cuteColor = true
       return (
         <>
           {data.pages.map((rows, i) => (
-            <TrueFalseSheet key={i} rows={rows} startIndex={i * 8} />
+            <TrueFalseSheet key={i} rows={rows} startIndex={i * 6} />
           ))}
           {includeAnswers && <TrueFalseAnswer pages={data.pages} />}
         </>

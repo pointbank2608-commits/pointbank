@@ -20,7 +20,7 @@ export default function MaterialsLaunchButtons({ words, phonics = false }: { wor
         <button
           type="button"
           disabled={words.length === 0}
-          onClick={() => go('/materials/worksheet', 'phonicsBlank')}
+          onClick={() => navigate('/materials/phonics', { state: { phonicsWordIds: words.map((w) => w.id) } satisfies MaterialsHandoffState })}
           className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
         >
           <span className="material-symbols-outlined text-base">spellcheck</span>

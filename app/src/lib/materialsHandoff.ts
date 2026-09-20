@@ -12,6 +12,8 @@ export interface MaterialsHandoffState {
   /** 색칠하기 탭의 제목·장식 주제 초기값(주제별 워크시트에서 넘어올 때). */
   materialsColoringTitle?: string;
   materialsDecorTheme?: string | null;
+  /** 파닉스 워크시트 페이지가 처음에 골라 둘 phonics_bank 단어 id(파닉스 선택 바에서 넘어올 때). */
+  phonicsWordIds?: string[];
 }
 
 /** 자료실 페이지가 마운트될 때 useState 초기값으로 쓴다(선택 없이 직접 들어오면 빈 배열). */
