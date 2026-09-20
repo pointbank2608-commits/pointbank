@@ -12,10 +12,18 @@ export interface MaterialCatalogEntry {
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   {
+    id: 'library',
+    path: '/materials/library',
+    icon: 'collections_bookmark',
+    cover: '/covers/material-library.jpg',
+    nameKey: 'materials.libraryName',
+    descKey: 'materials.libraryDesc',
+  },
+  {
     id: 'flashcards',
     path: '/materials/flashcards',
     icon: 'print',
-    cover: null,
+    cover: '/covers/material-flashcards.jpg',
     nameKey: 'materials.flashcardsName',
     descKey: 'materials.flashcardsDesc',
   },
@@ -39,7 +47,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     id: 'worksheet',
     path: '/materials/worksheet',
     icon: 'description',
-    cover: null,
+    cover: '/covers/material-worksheet.jpg',
     nameKey: 'materials.worksheetName',
     descKey: 'materials.worksheetDesc',
   },

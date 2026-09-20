@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
-import { wordsFromLocationState } from '../lib/materialsHandoff';
+import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { buildQuizQuestions } from '../lib/quizFromWordList';
 import type { FullCardItem } from '../lib/types';
@@ -46,11 +46,21 @@ export default function WorksheetPrintPage() {
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const location = useLocation();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
-  const [tab, setTab] = useState<Tab>('list');
+  const [tab, setTab] = useState<Tab>(() => {
+    const requested = handoffFromLocationState(location.state).materialsTab;
+    return requested && (TABS as string[]).includes(requested) ? (requested as Tab) : 'list';
+  });
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [seed, setSeed] = useState(1);
-  const [coloring, setColoring] = useState<ColoringOptions>(DEFAULT_COLORING_OPTIONS);
+  const [coloring, setColoring] = useState<ColoringOptions>(() => {
+    const h = handoffFromLocationState(location.state);
+    return {
+      ...DEFAULT_COLORING_OPTIONS,
+      title: h.materialsColoringTitle ?? DEFAULT_COLORING_OPTIONS.title,
+      decorTheme: h.materialsDecorTheme ?? DEFAULT_COLORING_OPTIONS.decorTheme,
+    };
+  });
 
   const quiz = useMemo(
     () =>
