@@ -1,5 +1,5 @@
 import { lineartUrlForWord } from './lineart';
-import { eligibleLetterWords, makeRng, shuffled } from './worksheetGenerators';
+import { choiceUsable, eligibleLetterWords, makeRng, sentenceTokens, shuffled } from './worksheetGenerators';
 import type { FullCardItem, WordBankEntry } from './types';
 import { entryInCategory, isIdiomEntry } from './wordBankCategories';
 
@@ -85,7 +85,7 @@ export function topicEntries(entries: WordBankEntry[], category: string, level: 
 }
 
 export function toCard(e: WordBankEntry): FullCardItem {
-  return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category };
+  return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category, example: e.example_sentence };
 }
 
 /**
@@ -109,6 +109,9 @@ export interface WorksheetTypeSupport {
   fillBlank: number;
   cutPaste: number;
   match: number;
+  sentence: number;
+  multipleChoice: number;
+  trueFalse: number;
 }
 
 /** 지금 고른 단어로 유형별로 몇 개가 실제로 쓰이는지(0이면 그 유형은 빈 페이지가 된다). */
@@ -121,5 +124,9 @@ export function worksheetSupport(words: FullCardItem[]): WorksheetTypeSupport {
     fillBlank: words.filter((w) => [...w.word].filter((c) => /\p{L}/u.test(c)).length >= 2).length,
     cutPaste: words.filter((w) => w.imageUrl).length,
     match: words.filter((w) => w.word && (w.imageUrl || w.meaning)).length,
+    sentence: words.filter((w) => sentenceTokens(w.example)).length,
+    // 객관식은 보기를 다른 단어에서 뽑으므로 3개, 참·거짓은 틀린 짝을 만들려면 2개 이상이어야 한다.
+    multipleChoice: choiceUsable(words).length >= 3 ? choiceUsable(words).length : 0,
+    trueFalse: choiceUsable(words).length >= 2 ? choiceUsable(words).length : 0,
   };
 }

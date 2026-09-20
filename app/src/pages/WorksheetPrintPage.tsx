@@ -35,6 +35,9 @@ const TAB_LABEL_KEY: Record<Tab, string> = {
   fillBlank: 'tabFillBlank',
   grouping: 'tabGrouping',
   cutPaste: 'tabCutPaste',
+  sentence: 'tabSentence',
+  multipleChoice: 'tabMultipleChoice',
+  trueFalse: 'tabTrueFalse',
 };
 
 function isNewKind(tab: Tab): tab is NewWorksheetKind {

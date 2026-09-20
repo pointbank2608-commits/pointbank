@@ -412,6 +412,8 @@ export interface FullCardItem {
   imageUrl: string | null;
   /** 사전·단어장에서 담았을 때만 있다(분류하기 워크시트가 묶는 기준). 직접 입력한 단어는 없다. */
   category?: string | null;
+  /** 사전에서 담았을 때만 있는 예문(문장 순서 바꾸기가 쓴다). */
+  example?: string | null;
 }
 
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */

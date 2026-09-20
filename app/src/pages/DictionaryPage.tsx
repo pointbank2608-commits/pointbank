@@ -230,7 +230,7 @@ export default function DictionaryPage() {
   const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selected[e.id]);
 
   function toEntryCard(e: WordBankEntry): FullCardItem {
-    return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category };
+    return { id: e.id, word: e.word, meaning: e.meaning, imageUrl: e.image_url, category: e.category, example: e.example_sentence };
   }
 
   function toggleSelect(entry: WordBankEntry) {

@@ -31,6 +31,7 @@ interface PickerEntry {
   category: string | null;
   extra_categories?: string[] | null;
   partOfSpeech: string | null;
+  example_sentence?: string | null;
 }
 
 function fromWordBank(e: WordBankEntry): PickerEntry {
@@ -42,6 +43,7 @@ function fromWordBank(e: WordBankEntry): PickerEntry {
     category: e.category,
     extra_categories: e.extra_categories,
     partOfSpeech: e.part_of_speech,
+    example_sentence: e.example_sentence,
   };
 }
 
@@ -184,7 +186,7 @@ export default function DictionaryPicker(props: Props) {
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category })));
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

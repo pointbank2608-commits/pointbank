@@ -298,7 +298,122 @@ export function buildColoringPages(words: FullCardItem[], rng: Rng, options: Col
   return { pages, skipped };
 }
 
-export const NEW_WORKSHEET_KINDS = ['coloring', 'match', 'wordSearch', 'unscramble', 'fillBlank', 'grouping', 'cutPaste'] as const;
+
+/* ---------------- 문장 순서 바꾸기 ---------------- */
+
+export interface SentenceRow {
+  /** 섞인 낱말들 */
+  tokens: string[];
+  /** 정답 문장(끝 구두점 포함) */
+  answer: string;
+}
+
+/** 예문을 낱말로 쪼갠다. 3~9낱말인 문장만 쓴다(너무 짧거나 길면 순서 맞추기가 안 된다). 끝 구두점은 뗀다. */
+export function sentenceTokens(example: string | null | undefined): string[] | null {
+  const text = (example ?? '').normalize('NFKC').trim();
+  if (!text) return null;
+  const tokens = text.replace(/[.!?]+$/u, '').split(/\s+/).filter(Boolean);
+  return tokens.length >= 3 && tokens.length <= 9 ? tokens : null;
+}
+
+export function buildSentencePages(words: FullCardItem[], rng: Rng, perPage = 7): SentenceRow[][] {
+  const rows: SentenceRow[] = [];
+  const seen = new Set<string>();
+  for (const w of words) {
+    const tokens = sentenceTokens(w.example);
+    if (!tokens || seen.has(tokens.join(' '))) continue;
+    seen.add(tokens.join(' '));
+    let order = shuffled(tokens, rng);
+    for (let i = 0; i < 20 && order.join(' ') === tokens.join(' '); i++) order = shuffled(tokens, rng);
+    rows.push({ tokens: order, answer: (w.example ?? '').trim() });
+  }
+  return chunk(rows, perPage);
+}
+
+/* ---------------- 객관식 / 참·거짓 공통 ---------------- */
+
+/** 그림이 있으면 "그림 ↔ 단어", 없으면 "단어 ↔ 뜻"으로 묻는다. 둘 다 없는 단어는 뺀다. */
+export function choiceUsable(words: FullCardItem[]): FullCardItem[] {
+  return words.filter((w) => w.word && (w.imageUrl || w.meaning));
+}
+
+function pickDistractors(pool: string[], correct: string, count: number, rng: Rng): string[] {
+  const unique = [...new Set(pool.filter((p) => p && p.toLowerCase() !== correct.toLowerCase()))];
+  return shuffled(unique, rng).slice(0, count);
+}
+
+/* ---------------- 객관식 ---------------- */
+
+export interface ChoiceRow {
+  imageUrl: string | null;
+  /** 그림이 없을 때 물어볼 단어 */
+  prompt: string;
+  choices: string[];
+  correct: number;
+}
+
+export function buildChoicePages(words: FullCardItem[], rng: Rng, perPage = 6): ChoiceRow[][] {
+  const usable = choiceUsable(words);
+  if (usable.length < 3) return [];
+  const allWords = usable.map((w) => w.word);
+  const allMeanings = usable.map((w) => w.meaning).filter(Boolean);
+  const rows: ChoiceRow[] = usable.map((w) => {
+    const imageMode = !!w.imageUrl;
+    const correct = imageMode ? w.word : w.meaning;
+    const wrong = pickDistractors(imageMode ? allWords : allMeanings, correct, 2, rng);
+    const choices = shuffled([correct, ...wrong], rng);
+    return { imageUrl: imageMode ? w.imageUrl : null, prompt: imageMode ? '' : w.word, choices, correct: choices.indexOf(correct) };
+  });
+  return chunk(rows, perPage);
+}
+
+/* ---------------- 참·거짓 ---------------- */
+
+export interface TrueFalseRow {
+  imageUrl: string | null;
+  /** 그림이 없을 때 위에 보여줄 단어 */
+  prompt: string;
+  /** 그림(또는 단어) 옆에 붙는 말 — 맞는 짝이거나 다른 단어의 것 */
+  shown: string;
+  answer: boolean;
+}
+
+export function buildTrueFalsePages(words: FullCardItem[], rng: Rng, perPage = 8): TrueFalseRow[][] {
+  const usable = choiceUsable(words);
+  if (usable.length < 2) return [];
+  const allWords = usable.map((w) => w.word);
+  const allMeanings = usable.map((w) => w.meaning).filter(Boolean);
+  // 참/거짓이 한쪽으로 쏠리지 않게 절반씩 배정한 뒤 섞는다.
+  const flags = shuffled(usable.map((_, i) => i % 2 === 0), rng);
+  const rows: TrueFalseRow[] = usable.map((w, i) => {
+    const imageMode = !!w.imageUrl;
+    const correct = imageMode ? w.word : w.meaning;
+    let shown = correct;
+    let answer = true;
+    if (!flags[i]) {
+      const other = pickDistractors(imageMode ? allWords : allMeanings, correct, 1, rng)[0];
+      if (other) {
+        shown = other;
+        answer = false;
+      }
+    }
+    return { imageUrl: imageMode ? w.imageUrl : null, prompt: imageMode ? '' : w.word, shown, answer };
+  });
+  return chunk(shuffled(rows, rng), perPage);
+}
+
+export const NEW_WORKSHEET_KINDS = [
+  'coloring',
+  'match',
+  'wordSearch',
+  'unscramble',
+  'fillBlank',
+  'grouping',
+  'cutPaste',
+  'sentence',
+  'multipleChoice',
+  'trueFalse',
+] as const;
 export type NewWorksheetKind = (typeof NEW_WORKSHEET_KINDS)[number];
 
 export type WorksheetData =
@@ -308,7 +423,10 @@ export type WorksheetData =
   | { kind: 'unscramble'; pages: UnscrambleRow[][] }
   | { kind: 'fillBlank'; pages: BlankRow[][] }
   | { kind: 'grouping'; sheet: GroupingSheet | null }
-  | { kind: 'cutPaste'; pages: CutPastePage[] };
+  | { kind: 'cutPaste'; pages: CutPastePage[] }
+  | { kind: 'sentence'; pages: SentenceRow[][] }
+  | { kind: 'multipleChoice'; pages: ChoiceRow[][] }
+  | { kind: 'trueFalse'; pages: TrueFalseRow[][] };
 
 export interface WorksheetOptions {
   coloring?: ColoringOptions;
@@ -338,6 +456,12 @@ export function buildWorksheet(
       return { kind, sheet: buildGroupingSheet(words, rng) };
     case 'cutPaste':
       return { kind, pages: buildCutPastePages(words, rng) };
+    case 'sentence':
+      return { kind, pages: buildSentencePages(words, rng) };
+    case 'multipleChoice':
+      return { kind, pages: buildChoicePages(words, rng) };
+    case 'trueFalse':
+      return { kind, pages: buildTrueFalsePages(words, rng) };
   }
 }
 
@@ -354,4 +478,7 @@ export const EMPTY_HINT_KEY: Record<NewWorksheetKind, string> = {
   fillBlank: 'needLetterWords',
   grouping: 'needCategories',
   cutPaste: 'needImages',
+  sentence: 'needSentences',
+  multipleChoice: 'needChoices',
+  trueFalse: 'needTwoChoices',
 };

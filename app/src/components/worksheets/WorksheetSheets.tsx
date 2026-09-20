@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { decorUrl } from '../../lib/lineart';
 import type {
   BlankRow,
+  ChoiceRow,
   ColoringOptions,
   ColoringPage,
   CutPastePage,
+  SentenceRow,
+  TrueFalseRow,
   MatchPage,
   MatchSide,
   UnscrambleRow,
@@ -408,7 +411,148 @@ function CutPasteSheets({ page, answer }: { page: CutPastePage; answer: boolean 
   );
 }
 
+
+/* ---------------- 문장 순서 바꾸기 ---------------- */
+
+function SentenceSheet({ rows, startIndex }: { rows: SentenceRow[]; startIndex: number }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.sentenceTitle')} instruction={t('materials.worksheet.sheet.sentenceInstruction')} />
+      <div className="space-y-[6mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card">
+            <div className="flex items-start gap-[3mm]">
+              <span className="w-[8mm] shrink-0 pt-[1mm] text-[16px] font-bold">{startIndex + i + 1}.</span>
+              <div className="flex flex-wrap gap-[2.5mm]">
+                {row.tokens.map((tok, k) => (
+                  <span key={k} className="rounded border-2 border-black px-[3mm] py-[1mm] text-[17px] font-bold">
+                    {tok}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="ml-[11mm] mt-[6mm] border-b border-black" />
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function SentenceAnswer({ pages }: { pages: SentenceRow[][] }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.answerKey')} />
+      <div className="space-y-[2mm] text-[15px]">
+        {pages.flat().map((row, i) => (
+          <div key={i} className="print-card">
+            {i + 1}. {row.answer}
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+/* ---------------- 객관식 ---------------- */
+
+function ChoiceSheet({ rows, startIndex }: { rows: ChoiceRow[]; startIndex: number }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.choiceTitle')} instruction={t('materials.worksheet.sheet.choiceInstruction')} />
+      <div className="space-y-[5mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card flex items-center gap-[4mm] border-b border-outline-variant pb-[4mm]">
+            <span className="w-[8mm] shrink-0 text-[16px] font-bold">{startIndex + i + 1}.</span>
+            {row.imageUrl ? (
+              <Picture src={row.imageUrl} className="h-[26mm] w-[26mm]" />
+            ) : (
+              <span className="min-w-[26mm] shrink-0 text-center text-[20px] font-extrabold">{row.prompt}</span>
+            )}
+            <div className="flex flex-1 flex-wrap gap-x-[8mm] gap-y-[2mm] text-[17px]">
+              {row.choices.map((c, k) => (
+                <span key={k} className="flex items-center gap-[2mm]">
+                  <span className="font-bold">{String.fromCharCode(65 + k)}.</span> {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function ChoiceAnswer({ pages }: { pages: ChoiceRow[][] }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.answerKey')} />
+      <div className="flex flex-wrap gap-x-[8mm] gap-y-[2mm] text-[15px]">
+        {pages.flat().map((row, i) => (
+          <span key={i}>
+            {i + 1} – {String.fromCharCode(65 + row.correct)}
+          </span>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+/* ---------------- 참·거짓 ---------------- */
+
+function TrueFalseSheet({ rows, startIndex }: { rows: TrueFalseRow[]; startIndex: number }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.tfTitle')} instruction={t('materials.worksheet.sheet.tfInstruction')} />
+      <div className="grid grid-cols-2 gap-x-[6mm] gap-y-[5mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card rounded-lg border-2 border-black p-[3mm]">
+            <div className="flex items-center gap-[3mm]">
+              <span className="w-[7mm] shrink-0 text-[15px] font-bold">{startIndex + i + 1}.</span>
+              {row.imageUrl ? (
+                <Picture src={row.imageUrl} className="h-[32mm] w-[32mm]" />
+              ) : (
+                <span className="text-[18px] font-extrabold">{row.prompt}</span>
+              )}
+            </div>
+            <div className="mt-[2mm] text-center text-[19px] font-extrabold">{row.shown}</div>
+            <div className="mt-[3mm] flex justify-center gap-[10mm]">
+              {['T', 'F'].map((c) => (
+                <span key={c} className="flex h-[10mm] w-[10mm] items-center justify-center rounded-full border-2 border-black text-[18px] font-bold">
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function TrueFalseAnswer({ pages }: { pages: TrueFalseRow[][] }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header title={t('materials.worksheet.sheet.answerKey')} />
+      <div className="flex flex-wrap gap-x-[8mm] gap-y-[2mm] text-[15px]">
+        {pages.flat().map((row, i) => (
+          <span key={i}>
+            {i + 1} – {row.answer ? 'T' : 'F'}
+          </span>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
 /* ---------------- 진입점 ---------------- */
+
 
 export default function WorksheetSheets({ data, includeAnswers }: Props) {
   switch (data.kind) {
@@ -465,6 +609,33 @@ export default function WorksheetSheets({ data, includeAnswers }: Props) {
           {includeAnswers && <GroupingSheet groups={data.sheet.groups} pool={data.sheet.pool} answer />}
         </>
       ) : null;
+    case 'sentence':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <SentenceSheet key={i} rows={rows} startIndex={i * 7} />
+          ))}
+          {includeAnswers && <SentenceAnswer pages={data.pages} />}
+        </>
+      );
+    case 'multipleChoice':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <ChoiceSheet key={i} rows={rows} startIndex={i * 6} />
+          ))}
+          {includeAnswers && <ChoiceAnswer pages={data.pages} />}
+        </>
+      );
+    case 'trueFalse':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <TrueFalseSheet key={i} rows={rows} startIndex={i * 8} />
+          ))}
+          {includeAnswers && <TrueFalseAnswer pages={data.pages} />}
+        </>
+      );
     case 'cutPaste':
       return (
         <>
