@@ -348,8 +348,19 @@ export interface ChoiceRow {
   imageUrl: string | null;
   /** 그림이 없을 때 물어볼 단어 */
   prompt: string;
+  /** 그림이 있고 예문에 그 단어가 들어 있으면 그 자리를 비운 문장(그림이 정답을 하나로 정해준다). */
+  sentence: string | null;
   choices: string[];
   correct: number;
+}
+
+/** 예문에서 단어(통째로 일치, 대소문자 무시)를 빈칸으로 바꾼다. 못 찾으면(변형형 등) null. */
+export function blankOutWord(example: string | null | undefined, word: string): string | null {
+  const text = (example ?? '').trim();
+  if (!text || !word.trim() || /\s/.test(word.trim())) return null;
+  const escaped = word.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(^|[^\\p{L}])(${escaped})(?![\\p{L}])`, 'iu');
+  return re.test(text) ? text.replace(re, '$1_______') : null;
 }
 
 export function buildChoicePages(words: FullCardItem[], rng: Rng, perPage = 6): ChoiceRow[][] {
@@ -362,7 +373,13 @@ export function buildChoicePages(words: FullCardItem[], rng: Rng, perPage = 6): 
     const correct = imageMode ? w.word : w.meaning;
     const wrong = pickDistractors(imageMode ? allWords : allMeanings, correct, 2, rng);
     const choices = shuffled([correct, ...wrong], rng);
-    return { imageUrl: imageMode ? w.imageUrl : null, prompt: imageMode ? '' : w.word, choices, correct: choices.indexOf(correct) };
+    return {
+      imageUrl: imageMode ? w.imageUrl : null,
+      prompt: imageMode ? '' : w.word,
+      sentence: imageMode ? blankOutWord(w.example, w.word) : null,
+      choices,
+      correct: choices.indexOf(correct),
+    };
   });
   return chunk(rows, perPage);
 }

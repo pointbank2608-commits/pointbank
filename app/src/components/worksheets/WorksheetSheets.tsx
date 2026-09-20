@@ -472,12 +472,15 @@ function ChoiceSheet({ rows, startIndex }: { rows: ChoiceRow[]; startIndex: numb
             ) : (
               <span className="min-w-[26mm] shrink-0 text-center text-[20px] font-extrabold">{row.prompt}</span>
             )}
-            <div className="flex flex-1 flex-wrap gap-x-[8mm] gap-y-[2mm] text-[17px]">
-              {row.choices.map((c, k) => (
-                <span key={k} className="flex items-center gap-[2mm]">
-                  <span className="font-bold">{String.fromCharCode(65 + k)}.</span> {c}
-                </span>
-              ))}
+            <div className="min-w-0 flex-1">
+              {row.sentence && <div className="mb-[3mm] text-[18px] font-bold leading-snug">{row.sentence}</div>}
+              <div className="flex flex-wrap gap-x-[8mm] gap-y-[2mm] text-[17px]">
+                {row.choices.map((c, k) => (
+                  <span key={k} className="flex items-center gap-[2mm]">
+                    <span className="font-bold">{String.fromCharCode(65 + k)}.</span> {c}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         ))}
