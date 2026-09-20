@@ -303,7 +303,7 @@ export default function DictionaryPage() {
                     title={l.hint}
                     className={chipClass(level === l.level, 'tertiary')}
                   >
-                    {l.label} <span className="font-caption text-caption opacity-80">{l.hint}</span>
+                    {l.label}
                   </button>
                 ))}
               </div>
