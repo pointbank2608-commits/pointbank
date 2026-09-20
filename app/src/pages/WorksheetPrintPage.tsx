@@ -45,33 +45,33 @@ const TAB_LABEL_KEY: Record<Tab, string> = {
   readMatch: 'tabReadMatch',
 };
 
-/** 4선 대신 위·가운데(점선)·아래 3선 사선지 한 줄. 줄 앞에 따라 쓸 글씨(속이 빈 글씨)를 놓는다. */
-function TracingRow({ word, repeat }: { word: string; repeat: boolean }) {
-  // 글씨 크기(mm) — 줄 높이(13mm)에 대문자 높이가 거의 차도록 잡는다. 반복할 때는 글자 수로 폭을 어림해서 줄 폭(약 180mm)만큼만 채운다.
+/** 위·가운데(점선)·아래 3선 사선지 한 줄. trace 가 true 면 줄 안에 점선 글씨(따라 쓸 글씨) 하나를 앉힌다. */
+function TracingRow({ word, trace }: { word: string; trace: boolean }) {
+  // 글씨 크기(mm) — 줄 높이(13mm)에 대문자 높이가 거의 차도록 잡는다.
   const emMm = 15;
-  const wordWidthMm = [...word].length * emMm * 0.56 + 6;
-  const count = repeat ? Math.max(1, Math.floor(180 / wordWidthMm)) : 1;
   return (
     <div className="relative mb-[8mm] h-[13mm]">
       <div className="absolute left-0 right-0 top-0 border-t border-outline" />
       <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-outline-variant" />
       <div className="absolute left-0 right-0 bottom-0 border-t border-outline" />
-      <div
-        className="absolute left-[2mm] flex gap-[6mm] whitespace-nowrap"
-        style={{
-          bottom: `-${emMm * 0.24}mm`,
-          fontFamily: "'Andika', 'Comic Sans MS', sans-serif",
-          fontSize: `${emMm}mm`,
-          lineHeight: 1,
-          color: 'transparent',
-          WebkitTextStroke: '0.35mm #8a94a6',
-        }}
-        aria-hidden
-      >
-        {Array.from({ length: count }, (_, i) => (
-          <span key={i}>{word}</span>
-        ))}
-      </div>
+      {trace && (
+        // 속이 빈 점선 글씨: 글자 윤곽에 점선 획만 준다(글씨 폭을 미리 몰라도 되게 SVG text 를 쓴다).
+        <svg className="absolute inset-0" width="100%" height="100%" style={{ overflow: 'visible' }} aria-hidden>
+          <text
+            x="2mm"
+            y="13mm"
+            fontFamily="'Andika', 'Comic Sans MS', sans-serif"
+            fontSize={`${emMm}mm`}
+            fill="none"
+            stroke="#6b7488"
+            strokeWidth="0.3mm"
+            strokeDasharray="0.8mm 0.9mm"
+            strokeLinecap="round"
+          >
+            {word}
+          </text>
+        </svg>
+      )}
     </div>
   );
 }
@@ -95,8 +95,6 @@ export default function WorksheetPrintPage() {
   const [askTemplate, setAskTemplate] = useState<AskTemplate>('like');
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState({ pos: true, example: false, image: false });
-  // 사선지: 줄마다 한 번씩 따라 쓸 글씨를 보여줄지, 첫 줄은 가득 채울지.
-  const [tracingFill, setTracingFill] = useState<'once' | 'firstRow'>('once');
   const [coloring, setColoring] = useState<ColoringOptions>(() => {
     const h = handoffFromLocationState(location.state);
     return {
@@ -176,20 +174,6 @@ export default function WorksheetPrintPage() {
                 </label>
               ))}
             </div>
-          )}
-
-          {tab === 'tracing' && words.length > 0 && (
-            <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
-              {t('materials.worksheet.tracingFillLabel')}
-              <select
-                value={tracingFill}
-                onChange={(e) => setTracingFill(e.target.value as 'once' | 'firstRow')}
-                className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
-              >
-                <option value="once">{t('materials.worksheet.tracingFillOnce')}</option>
-                <option value="firstRow">{t('materials.worksheet.tracingFillFirstRow')}</option>
-              </select>
-            </label>
           )}
 
           {tab === 'quiz' && (
@@ -419,11 +403,14 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'tracing' && (
-        <div className="print-sheet mx-auto p-6 space-y-[7mm]">
+        <div className="print-sheet mx-auto p-6 space-y-[4mm]">
           {words.map((w) => (
             <div key={w.id} className="print-card">
+              <div className="mb-[3mm] font-bold text-deep-navy" style={{ fontSize: '30px', lineHeight: 1.1 }}>
+                {w.word}
+              </div>
               {[0, 1, 2].map((row) => (
-                <TracingRow key={row} word={w.word} repeat={tracingFill === 'firstRow' && row === 0} />
+                <TracingRow key={row} word={w.word} trace={row === 0} />
               ))}
             </div>
           ))}
