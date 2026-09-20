@@ -20,6 +20,14 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.libraryDesc',
   },
   {
+    id: 'phonics',
+    path: '/materials/phonics',
+    icon: 'spellcheck',
+    cover: '/covers/material-phonics.jpg',
+    nameKey: 'materials.phonicsLibraryName',
+    descKey: 'materials.phonicsLibraryDesc',
+  },
+  {
     id: 'flashcards',
     path: '/materials/flashcards',
     icon: 'print',

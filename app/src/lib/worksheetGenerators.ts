@@ -1,5 +1,6 @@
 import { toLetterGameText } from './gameText';
 import { decorIdsFor, lineartUrlForWord } from './lineart';
+import { markedGroups, parsePattern, rimeOf, type PatternPart } from './phonicsPattern';
 import type { FullCardItem } from './types';
 
 /**
@@ -519,6 +520,130 @@ export function buildReadMatchPages(words: FullCardItem[], rng: Rng, perPage = 5
   });
 }
 
+
+/* ---------------- 파닉스 전용 ---------------- */
+
+export const PHONICS_KINDS = ['phonicsBlank', 'phonicsCircle', 'phonicsOdd', 'phonicsRhyme'] as const;
+
+/** 파닉스 학생용 페이지는 글씨·그림이 커서 한 장에 들어가는 개수가 적다. */
+export const PHONICS_PER_PAGE = { blank: 5, circle: 5, odd: 3, rhyme: 5 } as const;
+
+/** 1) 규칙 글자 빈칸 채우기: 소리 규칙 글자(예: r{ai}n 의 ai)만 비운다. */
+export interface PhonicsBlankRow {
+  word: string;
+  imageUrl: string | null;
+  parts: PatternPart[];
+  answers: string[];
+}
+
+export function buildPhonicsBlankPages(words: FullCardItem[], rng: Rng, perPage: number = PHONICS_PER_PAGE.blank): { pages: PhonicsBlankRow[][]; bank: string[] } {
+  const rows: PhonicsBlankRow[] = [];
+  for (const w of words) {
+    const answers = markedGroups(w.patternMarked);
+    if (!answers.length) continue;
+    rows.push({ word: w.word, imageUrl: w.imageUrl, parts: parsePattern(w.patternMarked as string), answers });
+  }
+  const bank = shuffled([...new Set(rows.flatMap((r) => r.answers))], rng);
+  return { pages: chunk(rows, perPage), bank };
+}
+
+/** 2) 규칙 글자 찾아 동그라미: 글자를 칸에 나눠 보여주고, 소리를 내는 글자에 동그라미를 치게 한다. */
+export interface PhonicsCircleRow {
+  word: string;
+  imageUrl: string | null;
+  letters: { ch: string; hit: boolean }[];
+  rule: string;
+}
+
+export function buildPhonicsCirclePages(words: FullCardItem[], perPage: number = PHONICS_PER_PAGE.circle): { pages: PhonicsCircleRow[][]; sameTarget: string | null } {
+  const rows: PhonicsCircleRow[] = [];
+  const targets = new Set<string>();
+  for (const w of words) {
+    const groups = markedGroups(w.patternMarked);
+    if (!groups.length) continue;
+    targets.add(groups.join(' … '));
+    rows.push({
+      word: w.word,
+      imageUrl: w.imageUrl,
+      letters: parsePattern(w.patternMarked as string).flatMap((p) => [...p.text].map((ch) => ({ ch, hit: !!p.marked }))),
+      rule: w.category ?? '',
+    });
+  }
+  return { pages: chunk(rows, perPage), sameTarget: targets.size === 1 ? [...targets][0] : null };
+}
+
+/** 4) 다른 하나 찾기: 같은 소리 단어 3개 + 다른 소리 단어 1개. 소리 규칙(category)이 서로 달라야 한다. */
+export interface OddOption {
+  word: string;
+  imageUrl: string | null;
+}
+
+export interface OddRow {
+  options: OddOption[];
+  oddIndex: number;
+}
+
+export function buildOddPages(words: FullCardItem[], rng: Rng, perPage: number = PHONICS_PER_PAGE.odd): OddRow[][] {
+  const byRule = new Map<string, FullCardItem[]>();
+  const seen = new Set<string>();
+  for (const w of words) {
+    if (!w.category || !w.word) continue;
+    const key = `${w.category}|${w.word.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (!byRule.has(w.category)) byRule.set(w.category, []);
+    byRule.get(w.category)!.push(w);
+  }
+  const rows: OddRow[] = [];
+  for (const [rule, list] of byRule) {
+    const pool = words.filter((w) => w.category && w.category !== rule);
+    const mine = shuffled(list, rng);
+    for (let i = 0; i + 2 < mine.length; i += 3) {
+      const triple = mine.slice(i, i + 3);
+      const tripleWords = new Set(triple.map((w) => w.word.toLowerCase()));
+      const others = shuffled(pool.filter((w) => !tripleWords.has(w.word.toLowerCase())), rng);
+      const odd = others[0];
+      if (!odd) continue;
+      const options = shuffled([...triple.map((w) => ({ item: w, odd: false })), { item: odd, odd: true }], rng);
+      rows.push({
+        options: options.map((o) => ({ word: o.item.word, imageUrl: o.item.imageUrl })),
+        oddIndex: options.findIndex((o) => o.odd),
+      });
+    }
+  }
+  return chunk(shuffled(rows, rng), perPage);
+}
+
+/** 5) 라임 잇기: 끝소리(끝 2~3글자)가 같은 단어끼리 잇는다(cat–hat). */
+export function buildRhymePages(words: FullCardItem[], rng: Rng, perPage: number = PHONICS_PER_PAGE.rhyme): MatchPage[] {
+  const byRime = new Map<string, string[]>();
+  const seen = new Set<string>();
+  for (const w of words) {
+    const rime = rimeOf(w.word);
+    const key = w.word.toLowerCase();
+    if (!rime || seen.has(key)) continue;
+    seen.add(key);
+    if (!byRime.has(rime)) byRime.set(rime, []);
+    byRime.get(rime)!.push(w.word);
+  }
+  const pairs: [string, string][] = [];
+  for (const list of byRime.values()) {
+    const s = shuffled(list, rng);
+    for (let i = 0; i + 1 < s.length && i < 4; i += 2) pairs.push([s[i], s[i + 1]]);
+  }
+  return chunk(shuffled(pairs, rng), perPage).map((group) => {
+    const order = shuffled(
+      group.map((_, i) => i),
+      rng,
+    );
+    return {
+      left: group.map(([a]) => ({ image: null, text: a })),
+      right: order.map((i) => ({ image: null, text: group[i][1] })),
+      answer: group.map((_, i) => order.indexOf(i)),
+    };
+  });
+}
+
 export const NEW_WORKSHEET_KINDS = [
   'coloring',
   'match',
@@ -534,6 +659,10 @@ export const NEW_WORKSHEET_KINDS = [
   'askAnswer',
   'boardGame',
   'readMatch',
+  'phonicsBlank',
+  'phonicsCircle',
+  'phonicsOdd',
+  'phonicsRhyme',
 ] as const;
 export type NewWorksheetKind = (typeof NEW_WORKSHEET_KINDS)[number];
 
@@ -551,7 +680,11 @@ export type WorksheetData =
   | { kind: 'miniBook'; books: MiniBook[] }
   | { kind: 'askAnswer'; pages: AskRow[][]; template: AskTemplate }
   | { kind: 'boardGame'; cells: BoardCell[] | null; title: string }
-  | { kind: 'readMatch'; pages: MatchPage[] };
+  | { kind: 'readMatch'; pages: MatchPage[] }
+  | { kind: 'phonicsBlank'; pages: PhonicsBlankRow[][]; bank: string[] }
+  | { kind: 'phonicsCircle'; pages: PhonicsCircleRow[][]; sameTarget: string | null }
+  | { kind: 'phonicsOdd'; pages: OddRow[][] }
+  | { kind: 'phonicsRhyme'; pages: MatchPage[] };
 
 export interface WorksheetOptions {
   coloring?: ColoringOptions;
@@ -598,6 +731,14 @@ export function buildWorksheet(
       return { kind, cells: buildBoardGame(words, rng), title: options.sheetTitle || 'Board Game' };
     case 'readMatch':
       return { kind, pages: buildReadMatchPages(words, rng) };
+    case 'phonicsBlank':
+      return { kind, ...buildPhonicsBlankPages(words, rng) };
+    case 'phonicsCircle':
+      return { kind, ...buildPhonicsCirclePages(words) };
+    case 'phonicsOdd':
+      return { kind, pages: buildOddPages(words, rng) };
+    case 'phonicsRhyme':
+      return { kind, pages: buildRhymePages(words, rng) };
   }
 }
 
@@ -624,4 +765,8 @@ export const EMPTY_HINT_KEY: Record<NewWorksheetKind, string> = {
   askAnswer: 'needAtLeastOne',
   boardGame: 'needThreeWords',
   readMatch: 'needReadMatch',
+  phonicsBlank: 'needPhonics',
+  phonicsCircle: 'needPhonics',
+  phonicsOdd: 'needPhonicsOdd',
+  phonicsRhyme: 'needRhyme',
 };

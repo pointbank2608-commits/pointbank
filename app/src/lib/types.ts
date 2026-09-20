@@ -416,6 +416,8 @@ export interface FullCardItem {
   example?: string | null;
   /** 사전에서 담았을 때만 있는 품사(단어 리스트가 보여준다). */
   partOfSpeech?: string | null;
+  /** 파닉스에서 담았을 때만 있는 소리 규칙 글자를 {} 로 감싼 표기(예: "r{ai}n"). 파닉스 전용 워크시트가 쓴다. */
+  patternMarked?: string | null;
 }
 
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */

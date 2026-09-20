@@ -60,6 +60,7 @@ import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 import WinLoseQuizPage from './pages/WinLoseQuizPage';
 import WordSearchPage from './pages/WordSearchPage';
+import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
 import WorksheetLibraryPage from './pages/WorksheetLibraryPage';
 import WorksheetPrintPage from './pages/WorksheetPrintPage';
 import CurriculumPage from './pages/CurriculumPage';
@@ -140,6 +141,7 @@ export default function App() {
             <Route path="/materials/bingo" element={<BingoPage />} />
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
+            <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />

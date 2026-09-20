@@ -4,7 +4,7 @@ import MaterialsLaunchButtons from './MaterialsLaunchButtons';
 
 /** 사전·파닉스에서 카드를 골라 담았을 때 화면 아래에 떠서 "바로 수업 자료 만들기"를 눌러주는 바.
  * 선택이 0개면 아무것도 그리지 않는다. 사이드바(md:w-64) 옆에 맞춰 떠 있다. */
-export default function WordSelectionBar({ words, onClear }: { words: FullCardItem[]; onClear: () => void }) {
+export default function WordSelectionBar({ words, onClear, phonics = false }: { words: FullCardItem[]; onClear: () => void; phonics?: boolean }) {
   const { t } = useTranslation();
   if (words.length === 0) return null;
 
@@ -23,7 +23,7 @@ export default function WordSelectionBar({ words, onClear }: { words: FullCardIt
             {t('selectionBar.clear')}
           </button>
         </div>
-        <MaterialsLaunchButtons words={words} />
+        <MaterialsLaunchButtons words={words} phonics={phonics} />
       </div>
     </div>
   );

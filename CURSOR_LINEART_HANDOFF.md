@@ -4,7 +4,7 @@
 
 ## 무엇을 만드나
 
-색칠 워크시트에 쓸 **윤곽선(선화) 그림 238개**(아직 없는 0개). 대상은 유치~초등 저학년이 색칠하기 좋은 구체적인 명사만 골랐다. 각 단어마다 이미 클레이 그림이 `app/public/word-bank-images/<id>.webp` 에 있으니, **같은 대상을 같은 구도**로 색칠하기 좋은 선화로 옮겨 그린다.
+색칠 워크시트에 쓸 **윤곽선(선화) 그림 330개**(아직 없는 92개). 대상은 유치~초등 저학년이 색칠하기 좋은 구체적인 명사만 골랐다. 각 단어마다 이미 클레이 그림이 `app/public/word-bank-images/<id>.webp`(파닉스 카테고리는 `app/public/phonics-images/<id>.webp`)에 있으니, **같은 대상을 같은 구도**로 색칠하기 좋은 선화로 옮겨 그린다.
 
 색칠 페이지는 이 **단어 선화 + 주제별 장식 부품(59개, 아직 없는 0개)** 을 코드가 조립해서 만든다. 제목·단어 라벨·테두리는 앱이 그리므로 그림에 글자를 넣지 않는다.
 
@@ -351,6 +351,103 @@
 | `grandpa` | grandpa | 완료 |
 | `family` | family | 완료 |
 | `friend` | friend | 완료 |
+
+## 파닉스 (92개, 남은 92개)
+
+| id | 단어 | 만들어졌나 |
+|---|---|---|
+| `alligator` | alligator |  |
+| `ant` | ant |  |
+| `bag` | bag |  |
+| `bench` | bench |  |
+| `bike` | bike |  |
+| `bin` | bin |  |
+| `bone` | bone |  |
+| `box` | box |  |
+| `brush` | brush |  |
+| `cape` | cape |  |
+| `cave` | cave |  |
+| `chin` | chin |  |
+| `chip` | chip |  |
+| `coin` | coin |  |
+| `cone` | cone |  |
+| `crown` | crown |  |
+| `cub` | cub |  |
+| `cube` | cube |  |
+| `dam` | dam |  |
+| `dish` | dish |  |
+| `dot` | dot |  |
+| `elbow` | elbow |  |
+| `engine` | engine |  |
+| `fan` | fan |  |
+| `fin` | fin |  |
+| `flag` | flag |  |
+| `fog` | fog |  |
+| `fox` | fox |  |
+| `gate` | gate |  |
+| `gift` | gift |  |
+| `glass` | glass |  |
+| `gorilla` | gorilla |  |
+| `grass` | grass |  |
+| `ham` | ham |  |
+| `hen` | hen |  |
+| `hive` | hive |  |
+| `hole` | hole |  |
+| `hut` | hut |  |
+| `igloo` | igloo |  |
+| `iguana` | iguana |  |
+| `jam` | jam |  |
+| `jet` | jet |  |
+| `jug` | jug |  |
+| `kangaroo` | kangaroo |  |
+| `key` | key |  |
+| `king` | king |  |
+| `lake` | lake |  |
+| `log` | log |  |
+| `mail` | mail |  |
+| `map` | map |  |
+| `mask` | mask |  |
+| `mole` | mole |  |
+| `mop` | mop |  |
+| `mud` | mud |  |
+| `mule` | mule |  |
+| `nest` | nest |  |
+| `net` | net |  |
+| `nut` | nut |  |
+| `ostrich` | ostrich |  |
+| `ox` | ox |  |
+| `peg` | peg |  |
+| `pin` | pin |  |
+| `pipe` | pipe |  |
+| `plant` | plant |  |
+| `pot` | pot |  |
+| `queen` | queen |  |
+| `quilt` | quilt |  |
+| `rag` | rag |  |
+| `rake` | rake |  |
+| `rat` | rat |  |
+| `road` | road |  |
+| `rope` | rope |  |
+| `rose` | rose |  |
+| `seed` | seed |  |
+| `shell` | shell |  |
+| `soap` | soap |  |
+| `sock` | sock |  |
+| `stem` | stem |  |
+| `tail` | tail |  |
+| `tea` | tea |  |
+| `teeth` | teeth |  |
+| `vase` | vase |  |
+| `van` | van |  |
+| `vest` | vest |  |
+| `water` | water |  |
+| `wave` | wave |  |
+| `web` | web |  |
+| `wheel` | wheel |  |
+| `wig` | wig |  |
+| `yacht` | yacht |  |
+| `yam` | yam |  |
+| `zipper` | zipper |  |
 
 # 장식 부품
 

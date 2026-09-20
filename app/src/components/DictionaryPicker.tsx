@@ -32,6 +32,7 @@ interface PickerEntry {
   extra_categories?: string[] | null;
   partOfSpeech: string | null;
   example_sentence?: string | null;
+  patternMarked?: string | null;
 }
 
 function fromWordBank(e: WordBankEntry): PickerEntry {
@@ -48,7 +49,7 @@ function fromWordBank(e: WordBankEntry): PickerEntry {
 }
 
 function fromPhonics(e: PhonicsBankEntry): PickerEntry {
-  return { id: e.id, word: e.word, meaning: e.meaning ?? '', image_url: e.image_url, category: e.rule, partOfSpeech: null };
+  return { id: e.id, word: e.word, meaning: e.meaning ?? '', image_url: e.image_url, category: e.rule, partOfSpeech: null, patternMarked: e.pattern_marked };
 }
 
 type CategoryFilter = { type: 'category'; value: string } | { type: 'pos'; value: string } | { type: 'phonics'; step: number };
@@ -186,7 +187,7 @@ export default function DictionaryPicker(props: Props) {
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence, partOfSpeech: i.partOfSpeech })));
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence, partOfSpeech: i.partOfSpeech, patternMarked: i.patternMarked })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

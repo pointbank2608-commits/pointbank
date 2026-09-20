@@ -19,6 +19,7 @@ import {
   EMPTY_HINT_KEY,
   isWorksheetEmpty,
   NEW_WORKSHEET_KINDS,
+  PHONICS_KINDS,
   type NewWorksheetKind,
 } from '../lib/worksheetGenerators';
 
@@ -43,14 +44,18 @@ const TAB_LABEL_KEY: Record<Tab, string> = {
   askAnswer: 'tabAskAnswer',
   boardGame: 'tabBoardGame',
   readMatch: 'tabReadMatch',
+  phonicsBlank: 'tabPhonicsBlank',
+  phonicsCircle: 'tabPhonicsCircle',
+  phonicsOdd: 'tabPhonicsOdd',
+  phonicsRhyme: 'tabPhonicsRhyme',
 };
 
 /** 위·가운데(점선)·아래 3선 사선지 한 줄. trace 가 true 면 줄 안에 점선 글씨(따라 쓸 글씨) 하나를 앉힌다. */
-function TracingRow({ word, trace }: { word: string; trace: boolean }) {
+function TracingRow({ word, trace, last }: { word: string; trace: boolean; last: boolean }) {
   // 글씨 크기(mm) — 줄 높이(13mm)에 대문자 높이가 거의 차도록 잡는다.
   const emMm = 15;
   return (
-    <div className="relative mb-[8mm] h-[13mm]">
+    <div className={`relative h-[13mm] ${last ? '' : 'mb-[8mm]'}`}>
       <div className="absolute left-0 right-0 top-0 border-t border-outline" />
       <div className="absolute left-0 right-0 top-1/2 border-t border-dashed border-outline-variant" />
       <div className="absolute left-0 right-0 bottom-0 border-t border-outline" />
@@ -93,8 +98,12 @@ export default function WorksheetPrintPage() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [seed, setSeed] = useState(1);
   const [askTemplate, setAskTemplate] = useState<AskTemplate>('like');
+  // 귀여운 스타일(파닉스)을 컬러로 뽑을지 흑백에 맞는 모양으로 뽑을지.
+  const [cuteColor, setCuteColor] = useState(true);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState({ pos: true, example: false, image: false });
+  // 사선지에 뜻·그림도 함께 보여줄지.
+  const [tracingShow, setTracingShow] = useState({ meaning: false, image: false });
   const [coloring, setColoring] = useState<ColoringOptions>(() => {
     const h = handoffFromLocationState(location.state);
     return {
@@ -112,6 +121,10 @@ export default function WorksheetPrintPage() {
       ),
     [words],
   );
+
+  // 파닉스 전용 탭은 파닉스에서 담은 단어(소리 규칙 표시가 있는 단어)가 있을 때만 보여준다(탭이 너무 많아지지 않게).
+  const phonicsAvailable = words.some((w) => w.patternMarked);
+  const visibleTabs = TABS.filter((tb) => !(PHONICS_KINDS as readonly string[]).includes(tb) || phonicsAvailable || tb === tab);
 
   const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring, sheetTitle: coloring.title, askTemplate }) : null), [tab, words, seed, coloring, askTemplate]);
   const generatedEmpty = generated ? isWorksheetEmpty(generated) : false;
@@ -145,7 +158,7 @@ export default function WorksheetPrintPage() {
           </div>
 
           <div className="flex flex-wrap bg-surface-container-low rounded-lg p-1 w-fit max-w-full gap-y-1">
-            {TABS.map((tb) => (
+            {visibleTabs.map((tb) => (
               <button
                 key={tb}
                 type="button"
@@ -171,6 +184,23 @@ export default function WorksheetPrintPage() {
                     className="h-4 w-4 rounded accent-primary"
                   />
                   {t(`materials.worksheet.listShow_${key}`)}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {tab === 'tracing' && words.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-label-md text-label-md text-on-surface-variant">
+              <span>{t('materials.worksheet.listShowLabel')}</span>
+              {(['meaning', 'image'] as const).map((key) => (
+                <label key={key} className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={tracingShow[key]}
+                    onChange={(e) => setTracingShow((prev) => ({ ...prev, [key]: e.target.checked }))}
+                    className="h-4 w-4 rounded accent-primary"
+                  />
+                  {t(`materials.worksheet.tracingShow_${key}`)}
                 </label>
               ))}
             </div>
@@ -265,6 +295,18 @@ export default function WorksheetPrintPage() {
             </div>
           )}
 
+          {(PHONICS_KINDS as readonly string[]).includes(tab) && words.length > 0 && (
+            <label className="flex w-fit cursor-pointer items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+              <input
+                type="checkbox"
+                checked={cuteColor}
+                onChange={(e) => setCuteColor(e.target.checked)}
+                className="h-4 w-4 rounded accent-primary"
+              />
+              {t('materials.worksheet.cuteColorLabel')}
+            </label>
+          )}
+
           {tab === 'askAnswer' && words.length > 0 && (
             <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
               {t('materials.worksheet.askTemplateLabel')}
@@ -334,7 +376,7 @@ export default function WorksheetPrintPage() {
 
       {canPreview && generated && (
         <div className="print-sheet mx-auto">
-          <WorksheetSheets data={generated} includeAnswers={includeAnswers} />
+          <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />
         </div>
       )}
 
@@ -406,12 +448,23 @@ export default function WorksheetPrintPage() {
         <div className="print-sheet mx-auto p-6 space-y-[4mm]">
           {words.map((w) => (
             <div key={w.id} className="print-card">
-              <div className="mb-[3mm] font-bold text-deep-navy" style={{ fontSize: '30px', lineHeight: 1.1 }}>
-                {w.word}
+              <div className="mb-[3mm] flex flex-wrap items-baseline gap-x-3">
+                <span className="font-bold text-deep-navy" style={{ fontSize: '30px', lineHeight: 1.1 }}>
+                  {w.word}
+                </span>
+                {tracingShow.meaning && w.meaning && <span className="text-[18px] text-on-surface-variant">{w.meaning}</span>}
               </div>
-              {[0, 1, 2].map((row) => (
-                <TracingRow key={row} word={w.word} trace={row === 0} />
-              ))}
+              {/* 그림은 사선지 3줄 블록 높이(13mm × 3 + 줄 사이 8mm × 2 = 55mm)에 맞춘다. */}
+              <div className="flex items-stretch gap-[6mm]">
+                {tracingShow.image && w.imageUrl && (
+                  <img src={w.imageUrl} alt="" className="h-[55mm] w-[55mm] shrink-0 object-contain" />
+                )}
+                <div className="min-w-0 flex-1">
+                  {[0, 1, 2].map((row) => (
+                    <TracingRow key={row} word={w.word} trace={row === 0} last={row === 2} />
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>

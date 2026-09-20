@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { decorUrl } from '../../lib/lineart';
-import { BOARD_COLS, BOARD_ROWS } from '../../lib/worksheetGenerators';
+import { BOARD_COLS, BOARD_ROWS, PHONICS_PER_PAGE } from '../../lib/worksheetGenerators';
+import { PhonicsBlankCute, PhonicsCircleCute, PhonicsOddCute, RhymeCute } from './PhonicsCuteSheets';
 import type {
   AskRow,
   AskTemplate,
@@ -16,6 +17,9 @@ import type {
   MatchPage,
   MatchSide,
   MiniBook,
+  OddRow,
+  PhonicsBlankRow,
+  PhonicsCircleRow,
   UnscrambleRow,
   WordSearchPage,
   WorksheetData,
@@ -31,6 +35,8 @@ import type { FullCardItem } from '../../lib/types';
 interface Props {
   data: WorksheetData;
   includeAnswers: boolean;
+  /** 귀여운 스타일(파닉스)에서 컬러로 그릴지, 흑백에 맞는 모양으로 그릴지. */
+  cuteColor?: boolean;
 }
 
 function Page({ children }: { children: ReactNode }) {
@@ -139,13 +145,13 @@ function MatchCell({ side, label, dot, small = false }: { side: MatchSide; label
   );
 }
 
-function MatchSheet({ page, pictureMode }: { page: MatchPage; pictureMode: boolean }) {
+function MatchSheet({ page, pictureMode, title, instruction }: { page: MatchPage; pictureMode: boolean; title?: string; instruction?: string }) {
   const { t } = useTranslation();
   return (
     <Page>
       <Header
-        title={t('materials.worksheet.sheet.matchTitle')}
-        instruction={t(pictureMode ? 'materials.worksheet.sheet.matchPictureWord' : 'materials.worksheet.sheet.matchWordMeaning')}
+        title={title ?? t('materials.worksheet.sheet.matchTitle')}
+        instruction={instruction ?? t(pictureMode ? 'materials.worksheet.sheet.matchPictureWord' : 'materials.worksheet.sheet.matchWordMeaning')}
       />
       <div className="flex justify-between gap-[30mm] px-[4mm]">
         <div className="flex flex-1 flex-col gap-[5mm]">
@@ -766,12 +772,177 @@ function MiniBookSheet({ book }: { book: MiniBook }) {
   );
 }
 
+
+/* ---------------- 파닉스 전용 ---------------- */
+
+function PhonicsBlankSheet({ rows, bank, startIndex, answer }: { rows: PhonicsBlankRow[]; bank: string[]; startIndex: number; answer: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header
+        title={answer ? t('materials.worksheet.sheet.answerKey') : t('materials.worksheet.sheet.phonicsBlankTitle')}
+        instruction={answer ? undefined : t('materials.worksheet.sheet.phonicsBlankInstruction')}
+      />
+      {!answer && bank.length > 0 && bank.length <= 8 && (
+        <div className="mb-[5mm] flex flex-wrap items-center gap-[3mm]">
+          <span className="text-[13px] font-bold">{t('materials.worksheet.sheet.phonicsBank')}</span>
+          {bank.map((b) => (
+            <span key={b} className="rounded-lg border-2 border-black px-[4mm] py-[1mm] text-[20px] font-extrabold">
+              {b}
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="space-y-[3mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card flex items-center gap-[4mm] border-b border-outline-variant pb-[3mm]">
+            <span className="w-[8mm] shrink-0 text-[16px] font-bold">{startIndex + i + 1}.</span>
+            {row.imageUrl ? <Picture src={row.imageUrl} className="h-[20mm] w-[20mm]" /> : <span className="w-[20mm] shrink-0" />}
+            <div className="flex items-end text-[38px] font-extrabold leading-none tracking-wide">
+              {row.parts.map((p, k) =>
+                p.marked ? (
+                  <span
+                    key={k}
+                    className={`mx-[1.5mm] inline-flex h-[13mm] items-end justify-center border-b-[0.8mm] border-black px-[1mm] ${
+                      answer ? 'bg-warm-yellow' : ''
+                    }`}
+                    style={{ minWidth: `${Math.max(14, p.text.length * 12)}mm` }}
+                  >
+                    {answer ? p.text : ''}
+                  </span>
+                ) : (
+                  <span key={k}>{p.text}</span>
+                ),
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function PhonicsCircleSheet({ rows, sameTarget, startIndex, answer }: { rows: PhonicsCircleRow[]; sameTarget: string | null; startIndex: number; answer: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header
+        title={answer ? t('materials.worksheet.sheet.answerKey') : t('materials.worksheet.sheet.phonicsCircleTitle')}
+        instruction={
+          answer
+            ? undefined
+            : sameTarget
+              ? t('materials.worksheet.sheet.phonicsCircleSame', { target: sameTarget })
+              : t('materials.worksheet.sheet.phonicsCircleInstruction')
+        }
+      />
+      <div className="space-y-[3mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card flex items-center gap-[4mm] border-b border-outline-variant pb-[3mm]">
+            <span className="w-[8mm] shrink-0 text-[16px] font-bold">{startIndex + i + 1}.</span>
+            {row.imageUrl ? <Picture src={row.imageUrl} className="h-[20mm] w-[20mm]" /> : <span className="w-[20mm] shrink-0" />}
+            <div className="flex flex-wrap gap-[2mm]">
+              {row.letters.map((l, k) => (
+                <span
+                  key={k}
+                  className={`flex h-[14mm] w-[13mm] items-center justify-center rounded border-2 border-black text-[30px] font-extrabold ${
+                    answer && l.hit ? 'bg-warm-yellow ring-2 ring-black' : ''
+                  }`}
+                >
+                  {l.ch}
+                </span>
+              ))}
+            </div>
+            {!sameTarget && row.rule && <span className="ml-auto shrink-0 text-[12px] text-black/60">{row.rule}</span>}
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function PhonicsOddSheet({ rows, startIndex, answer }: { rows: OddRow[]; startIndex: number; answer: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Page>
+      <Header
+        title={answer ? t('materials.worksheet.sheet.answerKey') : t('materials.worksheet.sheet.phonicsOddTitle')}
+        instruction={answer ? undefined : t('materials.worksheet.sheet.phonicsOddInstruction')}
+      />
+      <div className="space-y-[6mm]">
+        {rows.map((row, i) => (
+          <div key={i} className="print-card flex items-center gap-[3mm]">
+            <span className="w-[8mm] shrink-0 text-[16px] font-bold">{startIndex + i + 1}.</span>
+            <div className="grid flex-1 grid-cols-4 gap-[3mm]">
+              {row.options.map((o, k) => (
+                <div
+                  key={k}
+                  className={`flex h-[40mm] flex-col items-center justify-center rounded-lg border-2 border-black px-[1mm] ${
+                    answer && k === row.oddIndex ? 'bg-warm-yellow ring-4 ring-black' : ''
+                  }`}
+                >
+                  {o.imageUrl && <Picture src={o.imageUrl} className="h-[24mm] w-[24mm]" />}
+                  <span className="mt-[1mm] text-[20px] font-extrabold leading-tight">{o.word}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
 /* ---------------- 진입점 ---------------- */
 
 
 
-export default function WorksheetSheets({ data, includeAnswers }: Props) {
+
+export default function WorksheetSheets({ data, includeAnswers, cuteColor = true }: Props) {
   switch (data.kind) {
+    case 'phonicsBlank':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <PhonicsBlankCute key={i} rows={rows} bank={data.bank} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.blank} />
+          ))}
+          {includeAnswers &&
+            data.pages.map((rows, i) => (
+              <PhonicsBlankSheet key={`a${i}`} rows={rows} bank={data.bank} startIndex={i * PHONICS_PER_PAGE.blank} answer />
+            ))}
+        </>
+      );
+    case 'phonicsCircle':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <PhonicsCircleCute key={i} rows={rows} sameTarget={data.sameTarget} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.circle} />
+          ))}
+          {includeAnswers &&
+            data.pages.map((rows, i) => (
+              <PhonicsCircleSheet key={`a${i}`} rows={rows} sameTarget={data.sameTarget} startIndex={i * PHONICS_PER_PAGE.circle} answer />
+            ))}
+        </>
+      );
+    case 'phonicsOdd':
+      return (
+        <>
+          {data.pages.map((rows, i) => (
+            <PhonicsOddCute key={i} rows={rows} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.odd} />
+          ))}
+          {includeAnswers &&
+            data.pages.map((rows, i) => <PhonicsOddSheet key={`a${i}`} rows={rows} startIndex={i * PHONICS_PER_PAGE.odd} answer />)}
+        </>
+      );
+    case 'phonicsRhyme':
+      return (
+        <>
+          {data.pages.map((p, i) => (
+            <RhymeCute key={i} page={p} color={cuteColor} />
+          ))}
+          {includeAnswers && <MatchAnswer pages={data.pages} />}
+        </>
+      );
     case 'miniBook':
       return (
         <>

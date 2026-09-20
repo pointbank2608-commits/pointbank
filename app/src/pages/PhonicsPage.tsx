@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
 import WordSelectionBar from '../components/WordSelectionBar';
@@ -155,7 +156,8 @@ export default function PhonicsPage() {
   const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selected[e.id]);
 
   function toEntryCard(e: PhonicsBankEntry): FullCardItem {
-    return { id: e.id, word: e.word, meaning: e.meaning ?? '', imageUrl: e.image_url };
+    // category 에 소리 규칙을 넣어 두면 워크시트의 "분류하기"가 소리별로 묶는다.
+    return { id: e.id, word: e.word, meaning: e.meaning ?? '', imageUrl: e.image_url, category: e.rule, patternMarked: e.pattern_marked };
   }
 
   function toggleSelect(entry: PhonicsBankEntry) {
@@ -181,9 +183,20 @@ export default function PhonicsPage() {
 
   return (
     <div className={`space-y-6 ${selectedList.length > 0 ? 'pb-24' : ''}`}>
-      <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-        {t('phonics.title')}
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+          {t('phonics.title')}
+        </h2>
+        <Link
+          to="/materials/phonics"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
+        >
+          <span className="material-symbols-outlined text-[20px]" aria-hidden>
+            spellcheck
+          </span>
+          {t('phonics.worksheetButton')}
+        </Link>
+      </div>
 
       <div>
         <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('phonics.stepLabel')}</div>
@@ -324,7 +337,7 @@ export default function PhonicsPage() {
 
       {lightbox && <PhonicsLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
 
-      <WordSelectionBar words={selectedList} onClear={() => setSelected({})} />
+      <WordSelectionBar words={selectedList} onClear={() => setSelected({})} phonics />
 
       {studying && (
         <FlashcardStudy

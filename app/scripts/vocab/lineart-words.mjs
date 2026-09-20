@@ -27,6 +27,12 @@ export const LINEART_WORDS = {
   음악: w(`piano, guitar, violin, drum, flute, trumpet, recorder, bell, microphone, xylophone, harmonica`),
   우주: w(`earth, planet, spaceship, astronaut, alien, telescope, satellite`),
   '사람/가족': w(`baby, boy, girl, man, woman, mom, dad, brother, sister, grandma, grandpa, family, friend`),
+  // 파닉스 단어 중 색칠하기 좋은 구체적인 명사(클레이 그림은 phonics-images/<id>.webp). 위 목록과 겹치는 단어는 한 번만 만든다.
+  파닉스: w(`alligator, ant, bag, bench, bike, bin, bone, box, brush, cape, cave, chin, chip, coin, cone, crown, cub, cube, dam,
+    dish, dot, elbow, engine, fan, fin, flag, fog, fox, gate, gift, glass, gorilla, grass, ham, hen, hive, hole, hut, igloo,
+    iguana, jam, jet, jug, kangaroo, key, king, lake, log, mail, map, mask, mole, mop, mud, mule, nest, net, nut, ostrich, ox,
+    peg, pin, pipe, plant, pot, queen, quilt, rag, rake, rat, road, rope, rose, seed, shell, soap, sock, stem, tail, tea, teeth,
+    vase, van, vest, water, wave, web, wheel, wig, yacht, yam, zipper`),
 };
 
 /**
@@ -145,7 +151,9 @@ export function lineartTargets() {
 if (process.argv[1] && process.argv[1].endsWith('lineart-words.mjs')) {
   const here = dirname(fileURLToPath(import.meta.url));
   const repo = join(here, '..', '..', '..');
-  const clay = new Set(readdirSync(join(repo, 'app', 'public', 'word-bank-images')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)));
+  const listIds = (dir) =>
+    new Set(readdirSync(join(repo, 'app', 'public', dir)).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)));
+  const clay = new Set([...listIds('word-bank-images'), ...listIds('phonics-images')]);
   let have = new Set();
   try {
     have = new Set(readdirSync(join(repo, 'app', 'public', 'word-bank-lineart')).filter((f) => f.endsWith('.webp')).map((f) => f.slice(0, -5)));
@@ -177,7 +185,7 @@ if (process.argv[1] && process.argv[1].endsWith('lineart-words.mjs')) {
   lines.push('');
   lines.push(
     `색칠 워크시트에 쓸 **윤곽선(선화) 그림 ${targets.length}개**(아직 없는 ${todo.length}개). 대상은 유치~초등 저학년이 색칠하기 좋은 구체적인 명사만 골랐다. ` +
-      '각 단어마다 이미 클레이 그림이 `app/public/word-bank-images/<id>.webp` 에 있으니, **같은 대상을 같은 구도**로 색칠하기 좋은 선화로 옮겨 그린다.',
+      '각 단어마다 이미 클레이 그림이 `app/public/word-bank-images/<id>.webp`(파닉스 카테고리는 `app/public/phonics-images/<id>.webp`)에 있으니, **같은 대상을 같은 구도**로 색칠하기 좋은 선화로 옮겨 그린다.',
   );
   lines.push('');
   lines.push(
