@@ -519,13 +519,13 @@ function TrueFalseSheet({ rows, startIndex }: { rows: TrueFalseRow[]; startIndex
       <Header title={t('materials.worksheet.sheet.tfTitle')} instruction={t('materials.worksheet.sheet.tfInstruction')} />
       <div className="grid grid-cols-2 gap-x-[6mm] gap-y-[5mm]">
         {rows.map((row, i) => (
-          <div key={i} className="print-card rounded-lg border-2 border-black p-[3mm]">
-            <div className="flex items-center gap-[3mm]">
-              <span className="w-[7mm] shrink-0 text-[15px] font-bold">{startIndex + i + 1}.</span>
+          <div key={i} className="print-card relative rounded-lg border-2 border-black p-[3mm]">
+            <span className="absolute left-[3mm] top-[2mm] text-[15px] font-bold">{startIndex + i + 1}.</span>
+            <div className="flex min-h-[32mm] items-center justify-center">
               {row.imageUrl ? (
                 <Picture src={row.imageUrl} className="h-[32mm] w-[32mm]" />
               ) : (
-                <span className="text-[18px] font-extrabold">{row.prompt}</span>
+                <span className="text-[22px] font-extrabold">{row.prompt}</span>
               )}
             </div>
             <div className="mt-[2mm] text-center text-[19px] font-extrabold">{row.shown}</div>
