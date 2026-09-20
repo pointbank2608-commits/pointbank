@@ -26,6 +26,7 @@ import GameShowQuizPage from './pages/GameShowQuizPage';
 import GroupSortPage from './pages/GroupSortPage';
 import HangmanPage from './pages/HangmanPage';
 import HomeworkCalendarPage from './pages/HomeworkCalendarPage';
+import FlashcardPrintPage from './pages/FlashcardPrintPage';
 import ImageQuizPage from './pages/ImageQuizPage';
 import LabeledDiagramPage from './pages/LabeledDiagramPage';
 import LadderPage from './pages/LadderPage';
@@ -133,6 +134,7 @@ export default function App() {
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />
             <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />
             <Route path="/materials/bingo" element={<BingoPage />} />
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />

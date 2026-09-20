@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { fetchPhonicsBank, fetchWordBank } from '../lib/api';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
 import type { FullCardItem, GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
-import { PART_OF_SPEECH_ORDER, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
+import { entryInCategory, PART_OF_SPEECH_ORDER, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -29,11 +29,20 @@ interface PickerEntry {
   meaning: string;
   image_url: string | null;
   category: string | null;
+  extra_categories?: string[] | null;
   partOfSpeech: string | null;
 }
 
 function fromWordBank(e: WordBankEntry): PickerEntry {
-  return { id: e.id, word: e.word, meaning: e.meaning, image_url: e.image_url, category: e.category, partOfSpeech: e.part_of_speech };
+  return {
+    id: e.id,
+    word: e.word,
+    meaning: e.meaning,
+    image_url: e.image_url,
+    category: e.category,
+    extra_categories: e.extra_categories,
+    partOfSpeech: e.part_of_speech,
+  };
 }
 
 function fromPhonics(e: PhonicsBankEntry): PickerEntry {
@@ -106,7 +115,7 @@ export default function DictionaryPicker(props: Props) {
     if (!entries) return [];
     let base = entries.map(fromWordBank);
     if (props.variant === 'image') base = base.filter((e) => e.image_url);
-    if (categoryFilter?.type === 'category') base = base.filter((e) => e.category === categoryFilter.value);
+    if (categoryFilter?.type === 'category') base = base.filter((e) => entryInCategory(e, categoryFilter.value));
     if (categoryFilter?.type === 'pos') base = base.filter((e) => e.partOfSpeech === categoryFilter.value);
     return base;
   }, [entries, phonicsEntries, categoryFilter, props.variant]);
@@ -175,7 +184,7 @@ export default function DictionaryPicker(props: Props) {
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url })));
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

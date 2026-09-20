@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { colorFor } from '../lib/wheel';
 import type { FullCardItem } from '../lib/types';
@@ -37,7 +38,8 @@ function buildDeck(items: FullCardItem[]): Card[] {
 export default function MemoryCardsPage() {
   const { t } = useTranslation();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
-  const [words, setWords] = useState<FullCardItem[]>([]);
+  const location = useLocation();
+  const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
   const [cardSize, setCardSize] = useState<CardSize>('medium');
   const [shuffleKey, setShuffleKey] = useState(0);
 

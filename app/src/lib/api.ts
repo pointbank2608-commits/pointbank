@@ -810,8 +810,26 @@ export async function changeMyPassword(newPassword: string): Promise<void> {
 
 /** 교육부 지정 초등 필수 영단어 800(학원 구분 없는 공용 사전) 전체를 한 번에 불러온다.
  * 812행(뜻이 2개 이상인 단어는 행이 나뉨) 정도라 페이지네이션 없이 전부 가져와 화면에서 검색/필터한다. */
+/** Supabase(PostgREST)는 한 번에 1,000행까지만 돌려줘서, 사전이 1,000단어를 넘으면 그냥 잘려
+ * 나온다 — 1,000행씩 끝까지 이어 받는다. 정렬에 id를 마지막 기준으로 넣는 건 sort_order가
+ * 같은 행끼리 페이지 경계에서 중복/누락되지 않게 순서를 확정하기 위해서다. */
 export async function fetchWordBank(): Promise<WordBankEntry[]> {
-  return unwrap(await supabase.from('word_bank').select('*').order('sort_order').order('sense_number'));
+  const PAGE = 1000;
+  const all: WordBankEntry[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const rows = unwrap(
+      await supabase
+        .from('word_bank')
+        .select('*')
+        .order('sort_order')
+        .order('sense_number')
+        .order('id')
+        .range(from, from + PAGE - 1),
+    ) as WordBankEntry[];
+    all.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return all;
 }
 
 /* ---------------- 파닉스 ---------------- */

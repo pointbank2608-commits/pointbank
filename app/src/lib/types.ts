@@ -410,6 +410,8 @@ export interface FullCardItem {
   word: string;
   meaning: string;
   imageUrl: string | null;
+  /** 사전·단어장에서 담았을 때만 있다(분류하기 워크시트가 묶는 기준). 직접 입력한 단어는 없다. */
+  category?: string | null;
 }
 
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */
@@ -424,6 +426,11 @@ export interface WordBankEntry {
   category: string | null;
   image_url: string | null;
   sort_order: number;
+  /** 020 마이그레이션 전에는 응답에 아예 없다 — 전부 optional로 다룬다. */
+  level?: number | null;
+  subcategory?: string | null;
+  extra_categories?: string[] | null;
+  origin?: 'moe' | 'classbank' | null;
 }
 
 /* ---------------- 파닉스(소리 규칙) 단어, 학원 구분 없는 공용 데이터 ---------------- */

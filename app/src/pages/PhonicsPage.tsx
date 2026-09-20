@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
+import WordSelectionBar from '../components/WordSelectionBar';
 import { fetchPhonicsBank } from '../lib/api';
 import { speak } from '../lib/speech';
-import type { PhonicsBankEntry } from '../lib/types';
+import type { FullCardItem, PhonicsBankEntry } from '../lib/types';
 
 const STEPS = [1, 2, 3, 4, 5];
 
@@ -124,6 +126,8 @@ export default function PhonicsPage() {
   const [rule, setRule] = useState<string>('all');
   const [lightbox, setLightbox] = useState<PhonicsBankEntry | null>(null);
   const [studying, setStudying] = useState(false);
+  // 단계·소리 규칙을 바꿔도 선택이 남도록 페이지 상태로 들고 있다(id → 카드 데이터, 담은 순서 유지).
+  const [selected, setSelected] = useState<Record<string, FullCardItem>>({});
 
   useEffect(() => {
     fetchPhonicsBank()
@@ -147,8 +151,36 @@ export default function PhonicsPage() {
     return stepEntries.filter((e) => e.rule === rule);
   }, [stepEntries, rule]);
 
+  const selectedList = useMemo(() => Object.values(selected), [selected]);
+  const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selected[e.id]);
+
+  function toEntryCard(e: PhonicsBankEntry): FullCardItem {
+    return { id: e.id, word: e.word, meaning: e.meaning ?? '', imageUrl: e.image_url };
+  }
+
+  function toggleSelect(entry: PhonicsBankEntry) {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (next[entry.id]) delete next[entry.id];
+      else next[entry.id] = toEntryCard(entry);
+      return next;
+    });
+  }
+
+  function toggleSelectAllFiltered() {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (allFilteredSelected) {
+        for (const e of filtered) delete next[e.id];
+      } else {
+        for (const e of filtered) if (!next[e.id]) next[e.id] = toEntryCard(e);
+      }
+      return next;
+    });
+  }
+
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${selectedList.length > 0 ? 'pb-24' : ''}`}>
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('phonics.title')}
       </h2>
@@ -222,16 +254,31 @@ export default function PhonicsPage() {
               {t('phonics.resultCount', { count: filtered.length })}
             </div>
             {filtered.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setStudying(true)}
-                className="flex items-center gap-1.5 rounded-full bg-secondary-container px-4 py-2 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-90"
-              >
-                <span className="material-symbols-outlined text-base">style</span>
-                {t('phonics.studyButton')}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleSelectAllFiltered}
+                  className="flex items-center gap-1.5 rounded-full border-2 border-primary/40 bg-surface-container-lowest px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-low"
+                >
+                  <span className="material-symbols-outlined text-base">
+                    {allFilteredSelected ? 'check_box_outline_blank' : 'select_all'}
+                  </span>
+                  {allFilteredSelected ? t('selectionBar.deselectAll') : t('selectionBar.selectAll')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudying(true)}
+                  className="flex items-center gap-1.5 rounded-full bg-secondary-container px-4 py-2 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-90"
+                >
+                  <span className="material-symbols-outlined text-base">style</span>
+                  {t('phonics.studyButton')}
+                </button>
+              </div>
             )}
           </div>
+          {filtered.length > 0 && selectedList.length === 0 && (
+            <p className="font-caption text-caption text-on-surface-variant">{t('selectionBar.hint')}</p>
+          )}
 
           {filtered.length === 0 ? (
             <div className="rounded-xl bg-surface-container-lowest py-16 text-center shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
@@ -243,8 +290,15 @@ export default function PhonicsPage() {
               {filtered.map((entry) => (
                 <div
                   key={entry.id}
-                  className="rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+                  className={`relative rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${
+                    selected[entry.id] ? 'ring-2 ring-secondary' : ''
+                  }`}
                 >
+                  <CardSelectToggle
+                    selected={Boolean(selected[entry.id])}
+                    word={entry.word}
+                    onToggle={() => toggleSelect(entry)}
+                  />
                   <PhonicsImage entry={entry} onOpen={setLightbox} />
                   <div className="mt-3 flex flex-wrap items-center gap-1.5">
                     <PatternWord pattern={entry.pattern_marked} />
@@ -269,6 +323,8 @@ export default function PhonicsPage() {
       )}
 
       {lightbox && <PhonicsLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
+
+      <WordSelectionBar words={selectedList} onClear={() => setSelected({})} />
 
       {studying && (
         <FlashcardStudy

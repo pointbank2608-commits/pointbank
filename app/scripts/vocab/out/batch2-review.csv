@@ -1,0 +1,787 @@
+﻿id,word,품사,뜻,예문,카테고리,추가 카테고리,소분류,레벨,뜻 번호
+cute,cute,형용사,귀여운,The baby is cute.,외모,상태,인상,1,1
+handsome,handsome,형용사,잘생긴,He is a handsome man.,외모,,인상,3,1
+lovely,lovely,형용사,사랑스러운,What a lovely dress!,외모,,인상,3,1
+neat,neat,형용사,단정한,Her desk is neat.,외모,,인상,3,1
+messy,messy,형용사,지저분한,My room is messy.,외모,,인상,3,1
+curly,curly,형용사,곱슬곱슬한,She has curly hair.,외모,,머리카락,2,1
+wavy,wavy,형용사,물결 모양의,He has wavy hair.,외모,,머리카락,3,1
+blond,blond,형용사,금발의,The boy has blond hair.,외모,,머리카락,3,1
+brown-haired,brown-haired,형용사,갈색 머리의,She is brown-haired.,외모,,머리카락,3,1
+black-haired,black-haired,형용사,검은 머리의,He is black-haired.,외모,,머리카락,3,1
+bald,bald,형용사,대머리의,My uncle is bald.,외모,,머리카락,3,1
+beard,beard,명사,턱수염,He has a long beard.,외모,,얼굴 특징,3,1
+mustache,mustache,명사,콧수염,The man has a mustache.,외모,,얼굴 특징,3,1
+freckles,freckles,명사,주근깨,She has freckles.,외모,,얼굴 특징,3,1
+glasses,glasses,명사,안경,I wear glasses.,외모,옷,얼굴 특징,1,1
+cool-2,cool,형용사,멋진,Your bag is cool!,외모,,인상,2,2
+funny,funny,형용사,"웃긴, 재미있는",The clown is funny.,외모,상태 / 성격,인상,1,1
+blonde,blonde,형용사,금발의 (여성),She has blonde hair.,외모,,머리카락,3,1
+forehead,forehead,명사,이마,My forehead is hot.,몸,,얼굴,2,1
+eyebrow,eyebrow,명사,눈썹,She has thick eyebrows.,몸,,얼굴,2,1
+eyelash,eyelash,명사,속눈썹,The baby has long eyelashes.,몸,,얼굴,3,1
+cheek,cheek,명사,볼,She has a red cheek.,몸,외모,얼굴,2,1
+chin,chin,명사,턱,He has a small chin.,몸,외모,얼굴,2,1
+tongue,tongue,명사,혀,Stick out your tongue.,몸,,얼굴,2,1
+teeth,teeth,명사,"이, 치아 (복수)",I brush my teeth.,몸,,얼굴,2,1
+skin,skin,명사,피부,The baby has soft skin.,몸,외모,속·피부,2,1
+elbow,elbow,명사,팔꿈치,My elbow hurts.,몸,,팔·손,2,1
+wrist,wrist,명사,손목,She wears a watch on her wrist.,몸,,팔·손,3,1
+thumb,thumb,명사,엄지손가락,I hurt my thumb.,몸,,팔·손,2,1
+chest,chest,명사,가슴,My chest is warm.,몸,,몸통,2,1
+stomach,stomach,명사,"배, 위",My stomach hurts.,몸,,몸통,2,1
+waist,waist,명사,허리,The belt is on my waist.,몸,,몸통,3,1
+hip,hip,명사,"엉덩이, 골반",She put her hands on her hips.,몸,,몸통,3,1
+ankle,ankle,명사,발목,I hurt my ankle.,몸,,다리·발,3,1
+feet,feet,명사,발 (복수),My feet are cold.,몸,,다리·발,1,1
+toe,toe,명사,발가락,I have ten toes.,몸,,다리·발,1,1
+bone,bone,명사,뼈,The dog has a bone.,몸,,속·피부,2,1
+brain,brain,명사,"뇌, 머리",Use your brain.,몸,,속·피부,2,1
+blood,blood,명사,피,The cut has blood.,몸,,속·피부,2,1
+back-2,back,명사,등,My back hurts.,몸,,몸통,1,2
+t-shirt,T-shirt,명사,티셔츠,I wear a T-shirt.,옷,,윗옷,1,1
+blouse,blouse,명사,블라우스,She wears a white blouse.,옷,,윗옷,3,1
+sweatshirt,sweatshirt,명사,맨투맨 티셔츠,I wear a sweatshirt.,옷,,윗옷,3,1
+hoodie,hoodie,명사,후드티,My hoodie is warm.,옷,,윗옷,3,1
+jacket,jacket,명사,"재킷, 점퍼",Put on your jacket.,옷,,윗옷,2,1
+vest,vest,명사,조끼,He wears a vest.,옷,,윗옷,3,1
+trousers,trousers,명사,바지,These trousers are long.,옷,,아래옷,3,1
+jeans,jeans,명사,청바지,I like blue jeans.,옷,,아래옷,2,1
+shorts,shorts,명사,반바지,I wear shorts in summer.,옷,,아래옷,1,1
+pajamas,pajamas,명사,잠옷,I wear pajamas at night.,옷,,잠옷·속옷,2,1
+underwear,underwear,명사,속옷,Put your underwear in the bag.,옷,,잠옷·속옷,2,1
+swimsuit,swimsuit,명사,수영복,I wear a swimsuit at the pool.,옷,,잠옷·속옷,2,1
+uniform,uniform,명사,"교복, 제복",I wear a school uniform.,옷,,잠옷·속옷,2,1
+sneakers,sneakers,명사,운동화,I run in my sneakers.,옷,,신발·양말,2,1
+boots,boots,명사,부츠,I wear boots in winter.,옷,,신발·양말,2,1
+sandals,sandals,명사,샌들,I wear sandals in summer.,옷,,신발·양말,2,1
+slippers,slippers,명사,슬리퍼,Put on your slippers.,옷,,신발·양말,2,1
+helmet,helmet,명사,헬멧,Wear a helmet on your bike.,옷,스포츠,모자·소품,2,1
+scarf,scarf,명사,목도리,I wear a scarf in winter.,옷,,모자·소품,2,1
+mittens,mittens,명사,벙어리장갑,The baby has red mittens.,옷,,모자·소품,3,1
+belt,belt,명사,허리띠,He wears a black belt.,옷,,모자·소품,2,1
+zipper,zipper,명사,지퍼,Close the zipper.,옷,,모자·소품,3,1
+sunglasses,sunglasses,명사,선글라스,I wear sunglasses in summer.,옷,,모자·소품,2,1
+backpack,backpack,명사,"배낭, 책가방",My backpack is heavy.,옷,학교/문구,모자·소품,1,1
+handbag,handbag,명사,핸드백,Mom has a new handbag.,옷,,모자·소품,3,1
+tie-2,tie,명사,넥타이,Dad wears a tie.,옷,,모자·소품,3,2
+socks,socks,명사,양말,I wear socks in winter.,옷,,신발·양말,1,1
+shoes,shoes,명사,신발,I put on my shoes.,옷,,신발·양말,1,1
+gloves,gloves,명사,장갑,I wear gloves in winter.,옷,,모자·소품,2,1
+purple,purple,형용사,보라색의,I like purple grapes.,색깔,,,1,1
+violet,violet,형용사,"제비꽃색의, 보라색의",The flower is violet.,색깔,,,3,1
+golden,golden,형용사,황금빛의,She has golden hair.,색깔,,,3,1
+beige,beige,형용사,베이지색의,The sofa is beige.,색깔,,,3,1
+navy,navy,형용사,남색의,He wears a navy jacket.,색깔,,,3,1
+sky-blue,sky blue,형용사,하늘색의,The sky is sky blue.,색깔,,,2,1
+light-blue,light blue,형용사,연한 파란색의,I have a light blue bag.,색깔,,,2,1
+dark-blue,dark blue,형용사,진한 파란색의,The sea is dark blue.,색깔,,,2,1
+light-green,light green,형용사,연두색의,The leaf is light green.,색깔,,,2,1
+dark-green,dark green,형용사,진한 초록색의,The tree is dark green.,색깔,,,2,1
+turquoise,turquoise,형용사,청록색의,The water is turquoise.,색깔,,,3,1
+mint,mint,형용사,민트색의,I have a mint bag.,색깔,,,3,1
+coral,coral,형용사,산호색의,She wears a coral dress.,색깔,,,3,1
+colorful,colorful,형용사,알록달록한,The kite is colorful.,색깔,상태,,2,1
+orange-2,orange,형용사,주황색의,The pumpkin is orange.,색깔,,,1,2
+peach-2,peach,형용사,복숭아색의,She has a peach dress.,색깔,,,3,2
+cream-2,cream,형용사,크림색의,The wall is cream.,색깔,,,3,2
+grey,grey,형용사,회색의,The cat is grey.,색깔,,,2,1
+neighborhood,neighborhood,명사,동네,I live in a nice neighborhood.,장소,,동네·건물,2,1
+building,building,명사,건물,The building is tall.,장소,,동네·건물,2,1
+factory,factory,명사,공장,My uncle works in a factory.,장소,,동네·건물,3,1
+bus-stop,bus stop,명사,버스 정류장,I wait at the bus stop.,장소,교통,동네·건물,2,1
+subway-station,subway station,명사,지하철역,The subway station is near.,장소,,동네·건물,2,1
+playground,playground,명사,"놀이터, 운동장",We play at the playground.,장소,학교/문구,놀이·문화,1,1
+movie-theater,movie theater,명사,영화관,We go to the movie theater.,장소,,놀이·문화,2,1
+museum,museum,명사,박물관,We visit the museum.,장소,,놀이·문화,2,1
+aquarium,aquarium,명사,수족관,I see fish at the aquarium.,장소,,놀이·문화,2,1
+clinic,clinic,명사,"병원, 의원",The clinic is near my house.,장소,건강/질병,공공시설,3,1
+pharmacy,pharmacy,명사,약국,I buy medicine at the pharmacy.,장소,건강/질병,공공시설,2,1
+post-office,post office,명사,우체국,I send a letter at the post office.,장소,,공공시설,2,1
+police-station,police station,명사,경찰서,The police station is on the street.,장소,,공공시설,2,1
+fire-station,fire station,명사,소방서,The fire station has a red truck.,장소,,공공시설,2,1
+bakery,bakery,명사,빵집,I buy bread at the bakery.,장소,,가게,2,1
+cafe,cafe,명사,카페,We drink juice at the cafe.,장소,,가게,2,1
+bookstore,bookstore,명사,서점,I buy a book at the bookstore.,장소,,가게,2,1
+toy-store,toy store,명사,장난감 가게,I want to go to the toy store.,장소,,가게,2,1
+clothing-store,clothing store,명사,옷 가게,We go to the clothing store.,장소,,가게,2,1
+department-store,department store,명사,백화점,Mom is at the department store.,장소,,가게,2,1
+shopping-mall,shopping mall,명사,쇼핑몰,The shopping mall is big.,장소,,가게,2,1
+grocery-store,grocery store,명사,식료품점,We buy milk at the grocery store.,장소,,가게,3,1
+korea,Korea,명사,한국,I live in Korea.,나라/세계,,아시아,1,1
+south-korea,South Korea,명사,대한민국,South Korea is in Asia.,나라/세계,,아시아,2,1
+china,China,명사,중국,China is a big country.,나라/세계,,아시아,1,1
+japan,Japan,명사,일본,Japan is near Korea.,나라/세계,,아시아,1,1
+india,India,명사,인도,India is a big country.,나라/세계,,아시아,2,1
+thailand,Thailand,명사,태국,I want to visit Thailand.,나라/세계,,아시아,2,1
+vietnam,Vietnam,명사,베트남,Vietnam is warm.,나라/세계,,아시아,2,1
+philippines,Philippines,명사,필리핀,The Philippines has many islands.,나라/세계,,아시아,3,1
+indonesia,Indonesia,명사,인도네시아,Indonesia has many islands.,나라/세계,,아시아,3,1
+singapore,Singapore,명사,싱가포르,Singapore is a small country.,나라/세계,,아시아,3,1
+malaysia,Malaysia,명사,말레이시아,Malaysia is warm all year.,나라/세계,,아시아,3,1
+australia,Australia,명사,호주,Kangaroos live in Australia.,나라/세계,,아메리카·오세아니아,2,1
+new-zealand,New Zealand,명사,뉴질랜드,New Zealand has many sheep.,나라/세계,,아메리카·오세아니아,2,1
+canada,Canada,명사,캐나다,It is cold in Canada.,나라/세계,,아메리카·오세아니아,2,1
+united-states,United States,명사,미국,He is from the United States.,나라/세계,,아메리카·오세아니아,2,1
+america,America,명사,"미국, 아메리카",She lives in America.,나라/세계,,아메리카·오세아니아,1,1
+mexico,Mexico,명사,멕시코,I want to visit Mexico.,나라/세계,,아메리카·오세아니아,2,1
+brazil,Brazil,명사,브라질,Brazil is a big country.,나라/세계,,아메리카·오세아니아,2,1
+argentina,Argentina,명사,아르헨티나,Argentina is in South America.,나라/세계,,아메리카·오세아니아,3,1
+united-kingdom,United Kingdom,명사,영국,London is in the United Kingdom.,나라/세계,,유럽·아프리카,3,1
+england,England,명사,"잉글랜드, 영국",England is a country.,나라/세계,,유럽·아프리카,2,1
+france,France,명사,프랑스,Paris is in France.,나라/세계,,유럽·아프리카,2,1
+germany,Germany,명사,독일,Germany is in Europe.,나라/세계,,유럽·아프리카,2,1
+italy,Italy,명사,이탈리아,Pizza is from Italy.,나라/세계,,유럽·아프리카,2,1
+spain,Spain,명사,스페인,Spain is a warm country.,나라/세계,,유럽·아프리카,2,1
+greece,Greece,명사,그리스,Greece is in Europe.,나라/세계,,유럽·아프리카,3,1
+egypt,Egypt,명사,이집트,The pyramids are in Egypt.,나라/세계,,유럽·아프리카,2,1
+south-africa,South Africa,명사,남아프리카 공화국,South Africa is in Africa.,나라/세계,,유럽·아프리카,3,1
+turkey-2,Turkey,명사,튀르키예(터키),Turkey is a country.,나라/세계,,유럽·아프리카,3,2
+language,language,명사,"언어, 말",English is a language.,나라/세계,,언어·국적,2,1
+korean,Korean,명사,"한국어, 한국인",I speak Korean.,나라/세계,학교/문구,언어·국적,1,1
+chinese,Chinese,명사,"중국어, 중국인",She speaks Chinese.,나라/세계,,언어·국적,2,1
+japanese,Japanese,명사,"일본어, 일본인",He speaks Japanese.,나라/세계,,언어·국적,2,1
+english,English,명사,"영어, 영국인",I study English.,나라/세계,학교/문구,언어·국적,1,1
+american,American,명사,"미국인, 미국의",He is American.,나라/세계,,언어·국적,2,1
+canadian,Canadian,명사,"캐나다인, 캐나다의",She is Canadian.,나라/세계,,언어·국적,3,1
+australian,Australian,명사,"호주인, 호주의",He is Australian.,나라/세계,,언어·국적,3,1
+french,French,명사,"프랑스어, 프랑스인",She speaks French.,나라/세계,,언어·국적,2,1
+german,German,명사,"독일어, 독일인",He speaks German.,나라/세계,,언어·국적,3,1
+italian,Italian,명사,"이탈리아어, 이탈리아인",I like Italian food.,나라/세계,,언어·국적,3,1
+spanish,Spanish,명사,"스페인어, 스페인인",She speaks Spanish.,나라/세계,,언어·국적,3,1
+festival,festival,명사,축제,We go to the festival.,행사/활동,,축제·대회,2,1
+celebration,celebration,명사,"축하, 기념 행사",We have a big celebration.,행사/활동,,축제·대회,3,1
+ceremony,ceremony,명사,"의식, 식",The ceremony starts at ten.,행사/활동,,축제·대회,3,1
+wedding,wedding,명사,결혼식,We go to a wedding.,행사/활동,,축제·대회,2,1
+concert,concert,명사,"음악회, 콘서트",We go to a concert.,행사/활동,취미/오락,축제·대회,2,1
+parade,parade,명사,"퍼레이드, 행진",I see a parade.,행사/활동,,축제·대회,3,1
+contest,contest,명사,"대회, 경연",She won the contest.,행사/활동,,축제·대회,3,1
+competition,competition,명사,"시합, 경쟁",We have a dance competition.,행사/활동,,축제·대회,4,1
+talent-show,talent show,명사,장기 자랑,I sing in the talent show.,행사/활동,,축제·대회,3,1
+flea-market,flea market,명사,벼룩시장,We go to the flea market.,행사/활동,,축제·대회,3,1
+bazaar,bazaar,명사,바자회,We sell toys at the bazaar.,행사/활동,,축제·대회,4,1
+field-trip,field trip,명사,"현장 학습, 소풍",We go on a field trip.,행사/활동,,학교 행사,2,1
+sports-day,sports day,명사,운동회,Sports day is in May.,행사/활동,,학교 행사,2,1
+school-festival,school festival,명사,학교 축제,We sing at the school festival.,행사/활동,,학교 행사,3,1
+graduation,graduation,명사,졸업,Graduation is in February.,행사/활동,,학교 행사,3,1
+entrance-ceremony,entrance ceremony,명사,입학식,The entrance ceremony is in March.,행사/활동,,학교 행사,3,1
+summer-camp,summer camp,명사,여름 캠프,I go to summer camp.,행사/활동,,학교 행사,2,1
+winter-camp,winter camp,명사,겨울 캠프,I go to winter camp.,행사/활동,,학교 행사,3,1
+family-day,family day,명사,가족의 날,We eat out on family day.,행사/활동,,기념일,3,1
+parents-day,parents' day,명사,어버이날,Parents' day is in May.,행사/활동,휴일/기념일,기념일,3,1
+children-s-day,children's day,명사,어린이날,Children's Day is on May 5.,행사/활동,휴일/기념일,기념일,2,1
+teacher-s-day,teacher's day,명사,스승의 날,I make a card for Teacher's Day.,행사/활동,휴일/기념일,기념일,3,1
+monday,Monday,명사,월요일,I go to school on Monday.,요일/달력,,요일,1,1
+tuesday,Tuesday,명사,화요일,We have art on Tuesday.,요일/달력,,요일,1,1
+wednesday,Wednesday,명사,수요일,I have piano on Wednesday.,요일/달력,,요일,1,1
+thursday,Thursday,명사,목요일,We swim on Thursday.,요일/달력,,요일,1,1
+friday,Friday,명사,금요일,Friday is fun.,요일/달력,,요일,1,1
+saturday,Saturday,명사,토요일,I play on Saturday.,요일/달력,,요일,1,1
+sunday,Sunday,명사,일요일,I rest on Sunday.,요일/달력,,요일,1,1
+weekday,weekday,명사,평일,I go to school on a weekday.,요일/달력,,요일,3,1
+weekend,weekend,명사,주말,I play soccer on the weekend.,요일/달력,,요일,2,1
+january,January,명사,1월,It is cold in January.,요일/달력,,월,1,1
+february,February,명사,2월,February is short.,요일/달력,,월,2,1
+april,April,명사,4월,Flowers bloom in April.,요일/달력,,월,1,1
+june,June,명사,6월,My birthday is in June.,요일/달력,,월,1,1
+july,July,명사,7월,It is hot in July.,요일/달력,,월,1,1
+august,August,명사,8월,We go to the beach in August.,요일/달력,,월,2,1
+september,September,명사,9월,School starts in September.,요일/달력,,월,2,1
+october,October,명사,10월,Leaves fall in October.,요일/달력,,월,2,1
+november,November,명사,11월,It is cool in November.,요일/달력,,월,2,1
+december,December,명사,12월,Christmas is in December.,요일/달력,,월,2,1
+cartoon,cartoon,명사,만화 영화,I watch a cartoon.,취미/오락,,영상·놀이,1,1
+animation,animation,명사,애니메이션,I like animation.,취미/오락,,영상·놀이,3,1
+comic,comic,명사,만화책,I read a comic.,취미/오락,,영상·놀이,2,1
+tv,TV,명사,텔레비전,I watch TV after dinner.,취미/오락,과학기술,영상·놀이,1,1
+youtube,YouTube,명사,유튜브,I watch YouTube.,취미/오락,,영상·놀이,2,1
+theater,theater,명사,극장,We go to the theater.,취미/오락,,영상·놀이,3,1
+photograph,photograph,명사,사진,This is a photograph of my family.,취미/오락,,영상·놀이,3,1
+photo,photo,명사,사진,I take a photo.,취미/오락,과학기술,영상·놀이,2,1
+puzzle,puzzle,명사,퍼즐,I like puzzles.,취미/오락,장난감,게임,2,1
+board-game,board game,명사,보드게임,We play a board game.,취미/오락,장난감,게임,2,1
+card-game,card game,명사,카드 게임,We play a card game.,취미/오락,,게임,2,1
+computer-game,computer game,명사,컴퓨터 게임,I play a computer game.,취미/오락,,게임,2,1
+video-game,video game,명사,비디오 게임,He plays a video game.,취미/오락,,게임,2,1
+karaoke,karaoke,명사,노래방,We go to karaoke.,취미/오락,,게임,3,1
+magic,magic,명사,"마술, 마법",I like magic.,취미/오락,,게임,2,1
+hobby,hobby,명사,취미,My hobby is drawing.,취미/오락,,취미 활동,2,1
+camping,camping,명사,캠핑,We go camping.,취미/오락,,취미 활동,2,1
+fishing,fishing,명사,낚시,Dad goes fishing.,취미/오락,스포츠,취미 활동,2,1
+drawing,drawing,명사,그림 그리기,Drawing is fun.,취미/오락,,취미 활동,2,1
+painting,painting,명사,"그림, 색칠하기",I like painting.,취미/오락,,취미 활동,2,1
+reading,reading,명사,독서,Reading is my hobby.,취미/오락,,취미 활동,2,1
+singing,singing,명사,노래 부르기,Singing is fun.,취미/오락,,취미 활동,2,1
+dancing,dancing,명사,춤추기,I like dancing.,취미/오락,,취미 활동,2,1
+cooking,cooking,명사,요리하기,Cooking is fun.,취미/오락,,취미 활동,2,1
+collecting,collecting,명사,수집하기,Collecting stamps is my hobby.,취미/오락,,취미 활동,3,1
+excited,excited,형용사,"신나는, 들뜬",I am excited about the trip.,감정,,기쁨,2,1
+cheerful,cheerful,형용사,"쾌활한, 명랑한",She is a cheerful girl.,감정,성격,기쁨,3,1
+joyful,joyful,형용사,아주 기쁜,The children are joyful.,감정,,기쁨,4,1
+proud,proud,형용사,자랑스러운,I am proud of you.,감정,,기쁨,3,1
+thankful,thankful,형용사,감사하는,I am thankful for my friends.,감정,,기쁨,3,1
+grateful,grateful,형용사,고마워하는,I am grateful to my teacher.,감정,,기쁨,4,1
+surprised,surprised,형용사,놀란,I am surprised.,감정,,놀람·두려움,2,1
+scared,scared,형용사,무서워하는,I am scared of dogs.,감정,,놀람·두려움,2,1
+frightened,frightened,형용사,겁먹은,The kitten is frightened.,감정,,놀람·두려움,3,1
+worried,worried,형용사,걱정하는,Mom is worried.,감정,,놀람·두려움,3,1
+nervous,nervous,형용사,긴장한,I am nervous before the test.,감정,,놀람·두려움,3,1
+shy,shy,형용사,수줍어하는,She is shy.,감정,성격,놀람·두려움,2,1
+embarrassed,embarrassed,형용사,"부끄러운, 당황한",I am embarrassed.,감정,,놀람·두려움,4,1
+sleepy,sleepy,형용사,졸린,I am sleepy.,감정,,피곤·지루함,1,1
+bored,bored,형용사,지루한,I am bored.,감정,,피곤·지루함,2,1
+lonely,lonely,형용사,외로운,The old man is lonely.,감정,,슬픔·화,3,1
+upset,upset,형용사,속상한,She is upset.,감정,,슬픔·화,3,1
+disappointed,disappointed,형용사,실망한,I am disappointed.,감정,,슬픔·화,4,1
+jealous,jealous,형용사,질투하는,He is jealous of his brother.,감정,,슬픔·화,4,1
+confused,confused,형용사,혼란스러운,I am confused.,감정,,생각·마음 상태,4,1
+interested,interested,형용사,관심 있는,I am interested in space.,감정,,생각·마음 상태,3,1
+curious,curious,형용사,궁금한,The cat is curious.,감정,성격,생각·마음 상태,3,1
+brave,brave,형용사,용감한,The firefighter is brave.,감정,성격,생각·마음 상태,2,1
+calm,calm,형용사,"침착한, 고요한",Stay calm.,감정,,생각·마음 상태,3,1
+relaxed,relaxed,형용사,느긋한,I feel relaxed.,감정,,생각·마음 상태,3,1
+comfortable,comfortable,형용사,편안한,The sofa is comfortable.,감정,,생각·마음 상태,3,1
+uncomfortable,uncomfortable,형용사,불편한,These shoes are uncomfortable.,감정,,생각·마음 상태,4,1
+friendly,friendly,형용사,"친절한, 다정한",My teacher is friendly.,감정,성격,생각·마음 상태,2,1
+silly,silly,형용사,"어리석은, 우스꽝스러운",You are so silly!,감정,성격,생각·마음 상태,3,1
+serious,serious,형용사,진지한,He looks serious.,감정,성격,생각·마음 상태,3,1
+new-year-s-day,New Year's Day,명사,설날 (1월 1일),We eat rice cake soup on New Year's Day.,휴일/기념일,,명절,2,1
+lunar-new-year,Lunar New Year,명사,설날 (음력 새해),We bow to elders on Lunar New Year.,휴일/기념일,,명절,3,1
+seollal,Seollal,명사,설날,We wear hanbok on Seollal.,휴일/기념일,,명절,3,1
+chuseok,Chuseok,명사,추석,We see the full moon on Chuseok.,휴일/기념일,,명절,2,1
+valentine-s-day,Valentine's Day,명사,밸런타인데이,I give chocolate on Valentine's Day.,휴일/기념일,,서양 기념일,2,1
+easter,Easter,명사,부활절,We hunt for eggs at Easter.,휴일/기념일,,서양 기념일,3,1
+halloween,Halloween,명사,핼러윈,I wear a costume on Halloween.,휴일/기념일,,서양 기념일,2,1
+thanksgiving,Thanksgiving,명사,추수감사절,We eat turkey on Thanksgiving.,휴일/기념일,,서양 기념일,3,1
+christmas,Christmas,명사,크리스마스,I love Christmas.,휴일/기념일,,서양 기념일,1,1
+christmas-eve,Christmas Eve,명사,크리스마스 이브,We eat cake on Christmas Eve.,휴일/기념일,,서양 기념일,2,1
+gift,gift,명사,선물,This gift is for you.,휴일/기념일,,기념일 물건,1,1
+costume,costume,명사,"의상, 분장 옷",I wear a witch costume.,휴일/기념일,,기념일 물건,3,1
+pumpkin,pumpkin,명사,호박,The pumpkin is orange.,휴일/기념일,,기념일 물건,2,1
+santa-claus,Santa Claus,명사,산타 할아버지,Santa Claus brings gifts.,휴일/기념일,,기념일 물건,1,1
+reindeer,reindeer,명사,순록,The reindeer pulls the sleigh.,휴일/기념일,,기념일 물건,3,1
+snowman,snowman,명사,눈사람,We make a snowman.,휴일/기념일,,기념일 물건,1,1
+christmas-tree,Christmas tree,명사,크리스마스 트리,The Christmas tree has lights.,휴일/기념일,,기념일 물건,1,1
+stocking,stocking,명사,(크리스마스) 양말,I hang a stocking.,휴일/기념일,,기념일 물건,3,1
+lucky-bag,lucky bag,명사,복주머니,I got a lucky bag.,휴일/기념일,,기념일 물건,3,1
+rice-cake,rice cake,명사,떡,We eat rice cake soup.,휴일/기념일,,기념일 물건,2,1
+living-room,living room,명사,거실,We watch TV in the living room.,집/가구,,방·공간,1,1
+bedroom,bedroom,명사,침실,I sleep in my bedroom.,집/가구,,방·공간,1,1
+bathroom,bathroom,명사,"욕실, 화장실",The bathroom is clean.,집/가구,,방·공간,1,1
+dining-room,dining room,명사,식당 (집의),We eat in the dining room.,집/가구,,방·공간,3,1
+balcony,balcony,명사,발코니,I have plants on the balcony.,집/가구,,방·공간,3,1
+yard,yard,명사,마당,The dog plays in the yard.,집/가구,,방·공간,2,1
+garage,garage,명사,차고,The car is in the garage.,집/가구,,방·공간,3,1
+sofa,sofa,명사,소파,I sit on the sofa.,집/가구,,가구,1,1
+couch,couch,명사,"긴 의자, 소파",The cat is on the couch.,집/가구,,가구,3,1
+pillow,pillow,명사,베개,I hug my pillow.,집/가구,,가구,2,1
+blanket,blanket,명사,담요,I have a warm blanket.,집/가구,,가구,2,1
+shelf,shelf,명사,선반,The book is on the shelf.,집/가구,쇼핑,가구,2,1
+bookshelf,bookshelf,명사,책장,The bookshelf has many books.,집/가구,,가구,2,1
+closet,closet,명사,"옷장, 벽장",My clothes are in the closet.,집/가구,,가구,3,1
+wardrobe,wardrobe,명사,옷장,The wardrobe is big.,집/가구,,가구,4,1
+drawer,drawer,명사,서랍,Open the drawer.,집/가구,,가구,2,1
+refrigerator,refrigerator,명사,냉장고,The milk is in the refrigerator.,집/가구,,가전제품,2,1
+fridge,fridge,명사,냉장고,Put it in the fridge.,집/가구,,가전제품,2,1
+freezer,freezer,명사,냉동실,The ice cream is in the freezer.,집/가구,,가전제품,3,1
+oven,oven,명사,오븐,The cake is in the oven.,집/가구,,가전제품,2,1
+microwave,microwave,명사,전자레인지,Heat it in the microwave.,집/가구,,가전제품,3,1
+sink,sink,명사,"싱크대, 세면대",Wash your hands in the sink.,집/가구,과학,가전제품,2,1
+dishwasher,dishwasher,명사,식기세척기,The dishwasher is on.,집/가구,,가전제품,4,1
+washing-machine,washing machine,명사,세탁기,The washing machine is loud.,집/가구,,가전제품,2,1
+fan,fan,명사,"선풍기, 부채",Turn on the fan.,집/가구,,가전제품,2,1
+air-conditioner,air conditioner,명사,에어컨,Turn on the air conditioner.,집/가구,,가전제품,2,1
+bathtub,bathtub,명사,욕조,I take a bath in the bathtub.,집/가구,,욕실·식탁,3,1
+toilet,toilet,명사,"변기, 화장실",Where is the toilet?,집/가구,,욕실·식탁,2,1
+towel,towel,명사,수건,I dry my hands with a towel.,집/가구,,욕실·식탁,2,1
+toothbrush,toothbrush,명사,칫솔,This is my toothbrush.,집/가구,,욕실·식탁,2,1
+toothpaste,toothpaste,명사,치약,I need toothpaste.,집/가구,,욕실·식탁,2,1
+plate,plate,명사,접시,The plate is on the table.,집/가구,,욕실·식탁,1,1
+chopsticks,chopsticks,명사,젓가락,I use chopsticks.,집/가구,,욕실·식탁,2,1
+healthy,healthy,형용사,건강한,Vegetables are healthy.,건강/질병,,건강 상태,2,1
+unhealthy,unhealthy,형용사,건강하지 않은,Too much candy is unhealthy.,건강/질병,,건강 상태,4,1
+health,health,명사,건강,Health is important.,건강/질병,,건강 상태,3,1
+pain,pain,명사,"아픔, 통증",I feel pain in my leg.,건강/질병,,증상,3,1
+flu,flu,명사,독감,I have the flu.,건강/질병,,증상,3,1
+fever,fever,명사,열,I have a fever.,건강/질병,,증상,2,1
+cough,cough,명사,기침,I have a cough.,건강/질병,,증상,2,1
+headache,headache,명사,두통,I have a headache.,건강/질병,,증상,2,1
+stomachache,stomachache,명사,복통,I have a stomachache.,건강/질병,,증상,2,1
+toothache,toothache,명사,치통,I have a toothache.,건강/질병,,증상,2,1
+earache,earache,명사,귀앓이,I have an earache.,건강/질병,,증상,3,1
+sore-throat,sore throat,명사,목이 아픔,I have a sore throat.,건강/질병,,증상,3,1
+runny-nose,runny nose,명사,콧물,I have a runny nose.,건강/질병,,증상,3,1
+sneeze,sneeze,동사,재채기하다,I sneeze a lot.,건강/질병,,증상,3,1
+bruise,bruise,명사,멍,I have a bruise on my knee.,건강/질병,,증상,4,1
+broken,broken,형용사,"부러진, 고장 난",My arm is broken.,건강/질병,상태,증상,2,1
+medicine,medicine,명사,약,Take your medicine.,건강/질병,,치료,2,1
+bandage,bandage,명사,"붕대, 반창고",I put a bandage on my finger.,건강/질병,,치료,3,1
+cold-2,cold,명사,감기,I have a cold.,건강/질병,,증상,2,2
+noodle,noodle,명사,"국수, 면",I eat noodles for lunch.,음식,,곡물·빵·면,1,1
+mall,mall,명사,쇼핑센터,We go to the mall.,쇼핑,,가게·사람,2,1
+customer,customer,명사,"손님, 고객",The customer buys a toy.,쇼핑,,가게·사람,3,1
+clerk,clerk,명사,점원,The clerk is kind.,쇼핑,,가게·사람,3,1
+cashier,cashier,명사,계산원,I pay the cashier.,쇼핑,,가게·사람,3,1
+seller,seller,명사,파는 사람,The seller has fruit.,쇼핑,,가게·사람,3,1
+buyer,buyer,명사,사는 사람,The buyer likes the bag.,쇼핑,,가게·사람,4,1
+cart,cart,명사,"카트, 수레",Put it in the cart.,쇼핑,,가게 물건,2,1
+counter,counter,명사,계산대,Pay at the counter.,쇼핑,,가게 물건,3,1
+receipt,receipt,명사,영수증,Keep the receipt.,쇼핑,,가게 물건,3,1
+price,price,명사,가격,What is the price?,쇼핑,돈,값,2,1
+cost,cost,명사,"값, 비용",The cost is ten dollars.,쇼핑,돈,값,3,1
+sale,sale,명사,"할인 판매, 세일",The shoes are on sale.,쇼핑,,값,2,1
+discount,discount,명사,할인,I get a discount.,쇼핑,,값,3,1
+expensive,expensive,형용사,비싼,This bag is expensive.,쇼핑,돈,값,2,1
+cash,cash,명사,현금,I pay in cash.,쇼핑,돈,값,2,1
+closed,closed,형용사,"닫은, 영업이 끝난",The shop is closed.,쇼핑,상태,가게 상태,2,1
+medium,medium,형용사,"중간의, M 사이즈의",I want a medium size.,쇼핑,,가게 상태,3,1
+bill,bill,명사,"지폐, 계산서",I have a one-dollar bill.,돈,,돈 종류,3,1
+credit-card,credit card,명사,신용카드,Mom pays with a credit card.,돈,,돈 종류,3,1
+wallet,wallet,명사,지갑,My wallet is in my bag.,돈,,돈 종류,2,1
+purse,purse,명사,"작은 지갑, 핸드백",She has a red purse.,돈,,돈 종류,3,1
+won,won,명사,원 (한국 돈),It is one thousand won.,돈,,돈 종류,2,1
+cent,cent,명사,센트,This candy is fifty cents.,돈,,돈 종류,3,1
+penny,penny,명사,1센트 동전,I found a penny.,돈,,돈 종류,3,1
+save,save,동사,"저축하다, 아끼다",I save my money.,돈,과학기술 / 환경,저축,2,1
+account,account,명사,계좌,I have a bank account.,돈,,저축,4,1
+allowance,allowance,명사,용돈,I get an allowance every week.,돈,,저축,3,1
+instrument,instrument,명사,악기,The piano is an instrument.,음악,,악기,3,1
+keyboard,keyboard,명사,"건반, 키보드",I play the keyboard.,음악,과학기술,악기,2,1
+electric-guitar,electric guitar,명사,전기 기타,He plays the electric guitar.,음악,,악기,3,1
+bass,bass,명사,베이스 (악기),He plays the bass.,음악,,악기,4,1
+cello,cello,명사,첼로,She plays the cello.,음악,,악기,3,1
+drums,drums,명사,드럼,I play the drums.,음악,,악기,2,1
+flute,flute,명사,플루트,She plays the flute.,음악,,악기,3,1
+recorder,recorder,명사,리코더,I play the recorder.,음악,,악기,2,1
+trumpet,trumpet,명사,트럼펫,He plays the trumpet.,음악,,악기,3,1
+trombone,trombone,명사,트롬본,The trombone is loud.,음악,,악기,4,1
+saxophone,saxophone,명사,색소폰,He plays the saxophone.,음악,,악기,4,1
+clarinet,clarinet,명사,클라리넷,She plays the clarinet.,음악,,악기,4,1
+harmonica,harmonica,명사,하모니카,I play the harmonica.,음악,,악기,3,1
+tambourine,tambourine,명사,탬버린,I shake the tambourine.,음악,,악기,3,1
+triangle,triangle,명사,"트라이앵글 (악기, 삼각형)",I hit the triangle.,음악,모양,악기,2,1
+xylophone,xylophone,명사,실로폰,I play the xylophone.,음악,,악기,3,1
+cymbal,cymbal,명사,심벌즈,The cymbal is loud.,음악,,악기,4,1
+microphone,microphone,명사,마이크,I sing into the microphone.,음악,과학기술,악기,3,1
+orchestra,orchestra,명사,오케스트라,The orchestra plays a song.,음악,,음악 요소,4,1
+melody,melody,명사,"멜로디, 가락",I like this melody.,음악,,음악 요소,3,1
+rhythm,rhythm,명사,리듬,Clap to the rhythm.,음악,,음악 요소,3,1
+beat,beat,명사,박자,I like the beat.,음악,,음악 요소,3,1
+nature,nature,명사,자연,I love nature.,자연/날씨,환경,자연 풍경,2,1
+valley,valley,명사,"계곡, 골짜기",The valley is green.,자연/날씨,,자연 풍경,3,1
+pond,pond,명사,연못,Ducks swim in the pond.,자연/날씨,,자연 풍경,2,1
+ocean,ocean,명사,"바다, 대양",The ocean is big.,자연/날씨,환경,자연 풍경,2,1
+waterfall,waterfall,명사,폭포,The waterfall is beautiful.,자연/날씨,,자연 풍경,3,1
+forest,forest,명사,숲,Deer live in the forest.,자연/날씨,환경,자연 풍경,2,1
+woods,woods,명사,"숲, 삼림",We walk in the woods.,자연/날씨,,자연 풍경,3,1
+desert,desert,명사,사막,The desert is hot.,자연/날씨,,자연 풍경,3,1
+leaves,leaves,명사,나뭇잎 (복수),The leaves turn red.,자연/날씨,,식물,2,1
+branch,branch,명사,나뭇가지,A bird is on the branch.,자연/날씨,,식물,3,1
+root,root,명사,뿌리,The plant has long roots.,자연/날씨,,식물,3,1
+seed,seed,명사,씨앗,I plant a seed.,자연/날씨,,식물,2,1
+soil,soil,명사,흙,Plants grow in the soil.,자연/날씨,재료,식물,3,1
+mud,mud,명사,진흙,My shoes are in the mud.,자연/날씨,,식물,3,1
+sunny,sunny,형용사,화창한,It is sunny today.,자연/날씨,,날씨,1,1
+cloudy,cloudy,형용사,흐린,It is cloudy today.,자연/날씨,,날씨,1,1
+rainy,rainy,형용사,비가 오는,It is a rainy day.,자연/날씨,,날씨,1,1
+snowy,snowy,형용사,눈이 오는,It is a snowy day.,자연/날씨,,날씨,1,1
+windy,windy,형용사,바람 부는,It is windy today.,자연/날씨,,날씨,1,1
+foggy,foggy,형용사,안개 낀,It is foggy this morning.,자연/날씨,,날씨,3,1
+stormy,stormy,형용사,폭풍우 치는,It is a stormy night.,자연/날씨,,날씨,3,1
+humid,humid,형용사,습한,Summer is hot and humid.,자연/날씨,,날씨,4,1
+freezing,freezing,형용사,몹시 추운,It is freezing outside.,자연/날씨,,날씨,3,1
+temperature,temperature,명사,"온도, 기온",The temperature is low.,자연/날씨,과학,날씨,3,1
+degree,degree,명사,도 (온도 단위),It is twenty degrees.,자연/날씨,,날씨,3,1
+sunshine,sunshine,명사,햇빛,I like the sunshine.,자연/날씨,,날씨,3,1
+fog,fog,명사,안개,There is fog on the road.,자연/날씨,,날씨,3,1
+thunder,thunder,명사,천둥,I hear thunder.,자연/날씨,,날씨,2,1
+lightning,lightning,명사,번개,I see lightning.,자연/날씨,,날씨,2,1
+snowflake,snowflake,명사,눈송이,A snowflake is on my hand.,자연/날씨,,날씨,3,1
+one,one,수사,"하나, 1",I have one pencil.,숫자/시간,,기수,1,1
+two,two,수사,"둘, 2",I have two eyes.,숫자/시간,,기수,1,1
+three,three,수사,"셋, 3",I see three birds.,숫자/시간,,기수,1,1
+four,four,수사,"넷, 4",A cat has four legs.,숫자/시간,,기수,1,1
+five,five,수사,"다섯, 5",I have five fingers.,숫자/시간,,기수,1,1
+six,six,수사,"여섯, 6",I am six years old.,숫자/시간,,기수,1,1
+seven,seven,수사,"일곱, 7",There are seven days.,숫자/시간,,기수,1,1
+eight,eight,수사,"여덟, 8",A spider has eight legs.,숫자/시간,,기수,1,1
+nine,nine,수사,"아홉, 9",I get up at nine.,숫자/시간,,기수,1,1
+ten,ten,수사,"열, 10",I have ten toes.,숫자/시간,,기수,1,1
+eleven,eleven,수사,"열하나, 11",A soccer team has eleven players.,숫자/시간,,기수,2,1
+twelve,twelve,수사,"열둘, 12",There are twelve months.,숫자/시간,,기수,2,1
+thirteen,thirteen,수사,"열셋, 13",My brother is thirteen.,숫자/시간,,기수,2,1
+fourteen,fourteen,수사,"열넷, 14",She is fourteen.,숫자/시간,,기수,2,1
+fifteen,fifteen,수사,"열다섯, 15",I have fifteen cards.,숫자/시간,,기수,2,1
+sixteen,sixteen,수사,"열여섯, 16",He is sixteen.,숫자/시간,,기수,2,1
+seventeen,seventeen,수사,"열일곱, 17",She is seventeen.,숫자/시간,,기수,2,1
+eighteen,eighteen,수사,"열여덟, 18",He is eighteen.,숫자/시간,,기수,2,1
+nineteen,nineteen,수사,"열아홉, 19",She is nineteen.,숫자/시간,,기수,2,1
+twenty,twenty,수사,"스물, 20",I have twenty stickers.,숫자/시간,,기수,2,1
+thirty,thirty,수사,"서른, 30",There are thirty days.,숫자/시간,,기수,2,1
+forty,forty,수사,"마흔, 40",My uncle is forty.,숫자/시간,,기수,2,1
+fifty,fifty,수사,"쉰, 50",I have fifty won.,숫자/시간,,기수,2,1
+sixty,sixty,수사,"예순, 60",One hour is sixty minutes.,숫자/시간,,기수,2,1
+seventy,seventy,수사,"일흔, 70",My grandpa is seventy.,숫자/시간,,기수,2,1
+eighty,eighty,수사,"여든, 80",She is eighty years old.,숫자/시간,,기수,2,1
+ninety,ninety,수사,"아흔, 90",The bus has ninety seats.,숫자/시간,,기수,2,1
+first,first,수사,첫 번째의,I am first.,숫자/시간,독해/이야기,서수,1,1
+second,second,수사,"두 번째의, 초",I am second.,숫자/시간,,서수,1,1
+third,third,수사,세 번째의,She is third.,숫자/시간,,서수,1,1
+fourth,fourth,수사,네 번째의,I am in the fourth grade.,숫자/시간,,서수,2,1
+fifth,fifth,수사,다섯 번째의,Today is the fifth.,숫자/시간,,서수,2,1
+sixth,sixth,수사,여섯 번째의,I am in the sixth grade.,숫자/시간,,서수,2,1
+seventh,seventh,수사,일곱 번째의,July is the seventh month.,숫자/시간,,서수,2,1
+eighth,eighth,수사,여덟 번째의,August is the eighth month.,숫자/시간,,서수,2,1
+ninth,ninth,수사,아홉 번째의,September is the ninth month.,숫자/시간,,서수,2,1
+tenth,tenth,수사,열 번째의,October is the tenth month.,숫자/시간,,서수,2,1
+plus,plus,전치사,더하기,Two plus two is four.,숫자/시간,,계산,2,1
+minus,minus,전치사,빼기,Five minus two is three.,숫자/시간,,계산,2,1
+equal,equal,형용사,같은,Two and two equal four.,숫자/시간,,계산,3,1
+more,more,형용사,더 많은,I want more.,숫자/시간,,계산,2,1
+less,less,형용사,더 적은,I want less.,숫자/시간,,계산,3,1
+o-clock,o'clock,부사,~시 (정각),It is three o'clock.,숫자/시간,,시간,1,1
+quarter,quarter,명사,"4분의 1, 15분",It is a quarter past two.,숫자/시간,,시간,3,1
+noon,noon,명사,정오,We eat lunch at noon.,숫자/시간,,시간,3,1
+midnight,midnight,명사,"한밤중, 자정",I sleep at midnight.,숫자/시간,,시간,3,1
+daily,daily,형용사,매일의,I have a daily routine.,숫자/시간,,빈도,3,1
+every-day,every day,부사,매일,I read every day.,숫자/시간,,빈도,2,1
+usually,usually,부사,"보통, 대개",I usually walk to school.,숫자/시간,,빈도,2,1
+sometimes,sometimes,부사,가끔,I sometimes play games.,숫자/시간,,빈도,2,1
+person,person,명사,사람,He is a nice person.,사람/가족,,사람,2,1
+children,children,명사,아이들 (복수),The children play outside.,사람/가족,,사람,1,1
+adult,adult,명사,어른,The adult is kind.,사람/가족,,사람,3,1
+neighbor,neighbor,명사,이웃,My neighbor is friendly.,사람/가족,,사람,3,1
+teacher,teacher,명사,선생님,My teacher is kind.,사람/가족,학교/문구 / 직업,사람,1,1
+grandma,grandma,명사,할머니,I love my grandma.,사람/가족,,가족,1,1
+grandpa,grandpa,명사,할아버지,I love my grandpa.,사람/가족,,가족,1,1
+grandfather,grandfather,명사,할아버지,My grandfather is old.,사람/가족,,가족,2,1
+parents,parents,명사,부모님,My parents are kind.,사람/가족,,가족,1,1
+grandparents,grandparents,명사,조부모님,I visit my grandparents.,사람/가족,,가족,2,1
+older-sister,older sister,명사,"언니, 누나",I have an older sister.,사람/가족,,가족,2,1
+younger-sister,younger sister,명사,여동생,I have a younger sister.,사람/가족,,가족,2,1
+older-brother,older brother,명사,"형, 오빠",I have an older brother.,사람/가족,,가족,2,1
+younger-brother,younger brother,명사,남동생,I have a younger brother.,사람/가족,,가족,2,1
+classroom,classroom,명사,교실,Our classroom is big.,학교/문구,,학교 공간,1,1
+gym,gym,명사,체육관,We play in the gym.,학교/문구,,학교 공간,2,1
+cafeteria,cafeteria,명사,구내식당,We eat in the cafeteria.,학교/문구,,학교 공간,3,1
+recess,recess,명사,쉬는 시간,We play at recess.,학교/문구,,학교 공간,3,1
+subject,subject,명사,과목,My favorite subject is art.,학교/문구,,과목,2,1
+math,math,명사,수학,I like math.,학교/문구,,과목,1,1
+science,science,명사,과학,Science is fun.,학교/문구,,과목,1,1
+social-studies,social studies,명사,사회,We study maps in social studies.,학교/문구,,과목,3,1
+art,art,명사,미술,I like art.,학교/문구,,과목,1,1
+p-e,P.E.,명사,체육,We have P.E. today.,학교/문구,,과목,2,1
+textbook,textbook,명사,교과서,Open your textbook.,학교/문구,,학용품,2,1
+workbook,workbook,명사,"문제집, 워크북",Do your workbook.,학교/문구,,학용품,2,1
+notebook,notebook,명사,공책,I write in my notebook.,학교/문구,,학용품,1,1
+scissors,scissors,명사,가위,I cut paper with scissors.,학교/문구,,학용품,1,1
+marker,marker,명사,"마커, 매직펜",I draw with a marker.,학교/문구,,학용품,2,1
+colored-pencil,colored pencil,명사,색연필,I have colored pencils.,학교/문구,,학용품,2,1
+pencil-case,pencil case,명사,필통,My pencil case is blue.,학교/문구,,학용품,1,1
+whiteboard,whiteboard,명사,화이트보드,Write on the whiteboard.,학교/문구,,학용품,2,1
+tablet,tablet,명사,태블릿,I use a tablet in class.,학교/문구,과학기술,학용품,3,1
+homework,homework,명사,숙제,I do my homework.,학교/문구,,수업,1,1
+quiz,quiz,명사,"퀴즈, 간단한 시험",We have a quiz today.,학교/문구,,수업,2,1
+sentence,sentence,명사,문장,Read the sentence.,학교/문구,,수업,3,1
+rectangle,rectangle,명사,직사각형,The door is a rectangle.,모양,,도형,2,1
+oval,oval,명사,타원형,The mirror is an oval.,모양,,도형,3,1
+diamond,diamond,명사,"마름모, 다이아몬드",The kite is a diamond.,모양,,도형,3,1
+pentagon,pentagon,명사,오각형,A pentagon has five sides.,모양,,도형,4,1
+hexagon,hexagon,명사,육각형,A hexagon has six sides.,모양,,도형,4,1
+octagon,octagon,명사,팔각형,A stop sign is an octagon.,모양,,도형,4,1
+dot,dot,명사,점,Draw a dot.,모양,,선·모양,2,1
+curve,curve,명사,곡선,The road has a curve.,모양,,선·모양,3,1
+flat,flat,형용사,평평한,The table is flat.,모양,,선·모양,3,1
+bottom,bottom,명사,"맨 아래, 바닥",Look at the bottom of the page.,모양,,선·모양,2,1
+football,football,명사,"축구, 미식축구",He plays football.,스포츠,,구기 종목,2,1
+baseball,baseball,명사,야구,I play baseball.,스포츠,,구기 종목,1,1
+basketball,basketball,명사,농구,I play basketball.,스포츠,,구기 종목,1,1
+volleyball,volleyball,명사,배구,We play volleyball.,스포츠,,구기 종목,1,1
+badminton,badminton,명사,배드민턴,We play badminton.,스포츠,,구기 종목,2,1
+table-tennis,table tennis,명사,탁구,I play table tennis.,스포츠,,구기 종목,2,1
+golf,golf,명사,골프,Dad plays golf.,스포츠,,구기 종목,2,1
+bowling,bowling,명사,볼링,We go bowling.,스포츠,,구기 종목,2,1
+swimming,swimming,명사,수영,I like swimming.,스포츠,,운동 활동,1,1
+running,running,명사,달리기,Running is fun.,스포츠,,운동 활동,1,1
+jogging,jogging,명사,조깅,I go jogging.,스포츠,,운동 활동,2,1
+cycling,cycling,명사,자전거 타기,Cycling is fun.,스포츠,,운동 활동,2,1
+skating,skating,명사,스케이트 타기,I like skating.,스포츠,,운동 활동,2,1
+skiing,skiing,명사,스키 타기,We go skiing in winter.,스포츠,,운동 활동,2,1
+snowboarding,snowboarding,명사,스노보드 타기,Snowboarding is exciting.,스포츠,,운동 활동,3,1
+surfing,surfing,명사,서핑,Surfing is fun.,스포츠,,운동 활동,3,1
+boxing,boxing,명사,권투,He likes boxing.,스포츠,,무술·개인 종목,3,1
+wrestling,wrestling,명사,레슬링,Wrestling is a strong sport.,스포츠,,무술·개인 종목,3,1
+gymnastics,gymnastics,명사,체조,She does gymnastics.,스포츠,,무술·개인 종목,3,1
+taekwondo,taekwondo,명사,태권도,I learn taekwondo.,스포츠,,무술·개인 종목,2,1
+karate,karate,명사,가라테,He learns karate.,스포츠,,무술·개인 종목,3,1
+yoga,yoga,명사,요가,Mom does yoga.,스포츠,,무술·개인 종목,3,1
+player,player,명사,"선수, 경기자",He is a good player.,스포츠,,경기 용어,2,1
+coach,coach,명사,"코치, 감독",The coach is kind.,스포츠,,경기 용어,3,1
+bat,bat,명사,야구 방망이,He has a baseball bat.,스포츠,,경기 용어,2,1
+racket,racket,명사,라켓,I hold a racket.,스포츠,,경기 용어,3,1
+goal,goal,명사,"골, 목표",He scores a goal.,스포츠,,경기 용어,2,1
+race,race,명사,"경주, 달리기 시합",I win the race.,스포츠,,경기 용어,2,1
+match,match,명사,"경기, 시합",We win the match.,스포츠,,경기 용어,3,1
+huge,huge,형용사,거대한,The whale is huge.,크기,,,3,1
+giant,giant,형용사,아주 큰,The giant tree is old.,크기,,,3,1
+tiny,tiny,형용사,아주 작은,The ant is tiny.,크기,,,3,1
+shallow,shallow,형용사,얕은,The pond is shallow.,크기,,,4,1
+different,different,형용사,다른,We are different.,크기,상태,,2,1
+bigger,bigger,형용사,더 큰,A lion is bigger than a cat.,크기,,,2,1
+smaller,smaller,형용사,더 작은,A mouse is smaller than a cat.,크기,,,2,1
+taller,taller,형용사,더 키가 큰,He is taller than me.,크기,,,2,1
+shorter,shorter,형용사,"더 짧은, 더 키가 작은",My hair is shorter now.,크기,,,2,1
+longer,longer,형용사,더 긴,The river is longer than the road.,크기,,,3,1
+heavier,heavier,형용사,더 무거운,The rock is heavier than the ball.,크기,,,3,1
+lighter,lighter,형용사,더 가벼운,The feather is lighter than a coin.,크기,,,3,1
+height,height,명사,"키, 높이",What is your height?,크기,,,3,1
+length,length,명사,길이,Measure the length.,크기,,,3,1
+weight,weight,명사,무게,What is your weight?,크기,,,3,1
+universe,universe,명사,우주,The universe is big.,우주,,우주 공간,4,1
+galaxy,galaxy,명사,은하,Our galaxy has many stars.,우주,,우주 공간,4,1
+solar-system,solar system,명사,태양계,The solar system has eight planets.,우주,,우주 공간,4,1
+planet,planet,명사,행성,Earth is a planet.,우주,,행성,3,1
+mercury,Mercury,명사,수성,Mercury is near the sun.,우주,,행성,4,1
+venus,Venus,명사,금성,Venus is bright.,우주,,행성,4,1
+mars,Mars,명사,화성,Mars is red.,우주,,행성,3,1
+jupiter,Jupiter,명사,목성,Jupiter is a big planet.,우주,,행성,4,1
+saturn,Saturn,명사,토성,Saturn has rings.,우주,,행성,4,1
+uranus,Uranus,명사,천왕성,Uranus is a cold planet.,우주,,행성,4,1
+neptune,Neptune,명사,해왕성,Neptune is far from the sun.,우주,,행성,4,1
+comet,comet,명사,혜성,A comet has a long tail.,우주,,천체·현상,4,1
+asteroid,asteroid,명사,소행성,An asteroid is a small rock.,우주,,천체·현상,4,1
+meteor,meteor,명사,유성,I see a meteor at night.,우주,,천체·현상,4,1
+gravity,gravity,명사,중력,Gravity pulls things down.,우주,,천체·현상,4,1
+spaceship,spaceship,명사,우주선,The spaceship flies to Mars.,우주,,우주 탐사,2,1
+astronaut,astronaut,명사,우주 비행사,The astronaut is in space.,우주,,우주 탐사,3,1
+alien,alien,명사,외계인,The alien is green.,우주,,우주 탐사,3,1
+satellite,satellite,명사,인공위성,A satellite goes around Earth.,우주,,우주 탐사,4,1
+telescope,telescope,명사,망원경,I see stars with a telescope.,우주,,우주 탐사,3,1
+teddy-bear,teddy bear,명사,곰 인형,I hug my teddy bear.,장난감,,인형·장난감,1,1
+stuffed-animal,stuffed animal,명사,동물 인형,I have a stuffed animal.,장난감,,인형·장난감,2,1
+puppet,puppet,명사,"꼭두각시, 손인형",The puppet is funny.,장난감,,인형·장난감,3,1
+toy-car,toy car,명사,장난감 자동차,I have a toy car.,장난감,,인형·장난감,1,1
+airplane,airplane,명사,비행기,The airplane flies high.,장난감,교통,인형·장난감,1,1
+helicopter,helicopter,명사,헬리콥터,The helicopter is loud.,장난감,교통,인형·장난감,2,1
+block,block,명사,"블록, 덩어리",I stack a block.,장난감,,만들기·놀이,1,1
+blocks,blocks,명사,"블록들, 쌓기 나무",I play with blocks.,장난감,,만들기·놀이,1,1
+lego,lego,명사,레고,I build with Lego.,장난감,,만들기·놀이,2,1
+kite,kite,명사,연,I fly a kite.,장난감,,만들기·놀이,1,1
+yo-yo,yo-yo,명사,요요,I play with a yo-yo.,장난감,,만들기·놀이,2,1
+marble,marble,명사,구슬,I have a blue marble.,장난감,,만들기·놀이,2,1
+spinning-top,spinning top,명사,팽이,I spin the spinning top.,장난감,,만들기·놀이,3,1
+dice,dice,명사,주사위,Roll the dice.,장난감,,만들기·놀이,2,1
+jump-rope,jump rope,명사,줄넘기 줄,I jump rope every day.,장난감,,탈 것·운동 도구,2,1
+hula-hoop,hula hoop,명사,훌라후프,I spin a hula hoop.,장난감,,탈 것·운동 도구,3,1
+scooter,scooter,명사,킥보드,I ride a scooter.,장난감,교통,탈 것·운동 도구,2,1
+bike,bike,명사,자전거,I ride my bike.,장난감,교통,탈 것·운동 도구,1,1
+skateboard,skateboard,명사,스케이트보드,He rides a skateboard.,장난감,,탈 것·운동 도구,3,1
+transportation,transportation,명사,"교통, 교통수단",A bus is transportation.,교통,,탈 것,4,1
+van,van,명사,승합차,We go by van.,교통,,탈 것,2,1
+motorcycle,motorcycle,명사,오토바이,He rides a motorcycle.,교통,,탈 것,3,1
+ferry,ferry,명사,여객선,We take a ferry.,교통,,탈 것,3,1
+ambulance,ambulance,명사,구급차,The ambulance is fast.,교통,,특수 차량,2,1
+police-car,police car,명사,경찰차,The police car is loud.,교통,,특수 차량,2,1
+fire-engine,fire engine,명사,소방차,The fire engine is red.,교통,,특수 차량,2,1
+school-bus,school bus,명사,통학 버스,I take the school bus.,교통,,특수 차량,2,1
+traffic-light,traffic light,명사,신호등,Stop at the traffic light.,교통,,길·규칙,2,1
+crosswalk,crosswalk,명사,횡단보도,Use the crosswalk.,교통,,길·규칙,3,1
+passenger,passenger,명사,승객,The passenger gets on the bus.,교통,,사람,3,1
+driver,driver,명사,운전사,The driver is kind.,교통,직업,사람,2,1
+sail,sail,동사,항해하다,We sail on the sea.,교통,,탈 것,4,1
+technology,technology,명사,기술,Technology is helpful.,과학기술,,기기,4,1
+laptop,laptop,명사,노트북 컴퓨터,I use a laptop.,과학기술,,기기,2,1
+smartphone,smartphone,명사,스마트폰,Mom has a smartphone.,과학기술,,기기,2,1
+phone,phone,명사,전화기,The phone is ringing.,과학기술,,기기,1,1
+machine,machine,명사,기계,This machine is loud.,과학기술,,기기,3,1
+screen,screen,명사,화면,The screen is bright.,과학기술,,기기,3,1
+printer,printer,명사,프린터,The printer is broken.,과학기술,,기기,3,1
+speaker,speaker,명사,스피커,The speaker is loud.,과학기술,,기기,3,1
+headphone,headphone,명사,헤드폰,I use headphones.,과학기술,,기기,3,1
+earphone,earphone,명사,이어폰,I use earphones.,과학기술,,기기,3,1
+charger,charger,명사,충전기,I need a charger.,과학기술,,기기,3,1
+battery,battery,명사,"건전지, 배터리",The battery is low.,과학기술,,기기,3,1
+internet,internet,명사,인터넷,I use the internet.,과학기술,,인터넷,3,1
+website,website,명사,웹사이트,This website is fun.,과학기술,,인터넷,3,1
+app,app,명사,앱,I have a new app.,과학기술,,인터넷,2,1
+message,message,명사,메시지,I send a message.,과학기술,,인터넷,2,1
+email,email,명사,이메일,I send an email.,과학기술,,인터넷,3,1
+password,password,명사,비밀번호,Do not tell your password.,과학기술,,인터넷,3,1
+click,click,동사,클릭하다,Click the button.,과학기술,,컴퓨터 동작,2,1
+type,type,동사,(글자를) 입력하다,Type your name.,과학기술,,컴퓨터 동작,2,1
+download,download,동사,내려받다,I download a game.,과학기술,,컴퓨터 동작,3,1
+upload,upload,동사,올리다,I upload a photo.,과학기술,,컴퓨터 동작,4,1
+delete,delete,동사,지우다,Delete the file.,과학기술,,컴퓨터 동작,3,1
+turn-on,turn on,숙어,(전원을) 켜다,Turn on the light.,과학기술,,컴퓨터 동작,2,1
+turn-off,turn off,숙어,(전원을) 끄다,Turn off the TV.,과학기술,,컴퓨터 동작,2,1
+ugly,ugly,형용사,"못생긴, 보기 흉한",The monster is ugly.,상태,,모습·느낌,2,1
+shiny,shiny,형용사,반짝이는,The coin is shiny.,상태,,모습·느낌,3,1
+smooth,smooth,형용사,매끄러운,The stone is smooth.,상태,맛/질감,모습·느낌,3,1
+rough,rough,형용사,거친,The wall is rough.,상태,맛/질감,모습·느낌,3,1
+smart,smart,형용사,똑똑한,She is smart.,상태,성격,평가,2,1
+clever,clever,형용사,영리한,The fox is clever.,상태,성격,평가,3,1
+difficult,difficult,형용사,어려운,This question is difficult.,상태,,평가,2,1
+dangerous,dangerous,형용사,위험한,Fire is dangerous.,상태,,평가,3,1
+special,special,형용사,특별한,Today is a special day.,상태,,평가,2,1
+important,important,형용사,중요한,It is important.,상태,,평가,2,1
+careful,careful,형용사,조심하는,Be careful.,상태,성격,평가,2,1
+useful,useful,형용사,유용한,A map is useful.,상태,,평가,3,1
+light-2,light,형용사,가벼운,The bag is light.,상태,,모습·느낌,2,2
+above,above,전치사,~보다 위에,The bird is above the tree.,위치/방향,,,2,1
+next-to,next to,전치사,~ 옆에,I sit next to Ben.,위치/방향,,,1,1
+in-front-of,in front of,전치사,~ 앞에,The dog is in front of the door.,위치/방향,,,2,1
+inside,inside,부사,안에,Come inside.,위치/방향,,,2,1
+outside,outside,부사,밖에,Let us play outside.,위치/방향,,,2,1
+forward,forward,부사,앞으로,Move forward.,위치/방향,,,3,1
+backward,backward,부사,뒤로,Step backward.,위치/방향,,,3,1
+whose,whose,대명사,누구의,Whose bag is this?,의문사,,,3,1
+how-many,how many,표현,몇 개,How many apples do you have?,의문사,,,2,1
+how-much,how much,표현,"얼마, 얼마나 많이",How much is it?,의문사,,,2,1
+how-old,how old,표현,몇 살,How old are you?,의문사,,,1,1
+how-long,how long,표현,"얼마나 오래, 얼마나 긴",How long is the river?,의문사,,,3,1
+how-often,how often,표현,얼마나 자주,How often do you exercise?,의문사,,,3,1
+what-time,what time,표현,몇 시,What time is it?,의문사,,,1,1
+what-color,what color,표현,무슨 색,What color is your bag?,의문사,,,1,1
+what-kind,what kind,표현,어떤 종류,What kind of food do you like?,의문사,,,2,1
+helpful,helpful,형용사,도움이 되는,She is helpful.,성격,,,2,1
+active,active,형용사,활동적인,He is an active boy.,성격,,,3,1
+honest,honest,형용사,정직한,He is honest.,성격,,,3,1
+polite,polite,형용사,예의 바른,She is polite.,성격,,,3,1
+patient,patient,형용사,참을성 있는,Be patient.,성격,,,3,1
+lazy,lazy,형용사,게으른,The cat is lazy.,성격,,,2,1
+hardworking,hardworking,형용사,부지런한,My mom is hardworking.,성격,,,3,1
+creative,creative,형용사,창의적인,She is creative.,성격,,,3,1
+generous,generous,형용사,너그러운,He is generous.,성격,,,4,1
+selfish,selfish,형용사,이기적인,Do not be selfish.,성격,,,4,1
+sour,sour,형용사,신,The lemon is sour.,맛/질감,상태,맛,2,1
+salty,salty,형용사,짠,The soup is salty.,맛/질감,상태,맛,2,1
+bitter,bitter,형용사,쓴,Medicine is bitter.,맛/질감,상태,맛,3,1
+spicy,spicy,형용사,매운,Kimchi is spicy.,맛/질감,상태,맛,2,1
+delicious,delicious,형용사,아주 맛있는,The cake is delicious.,맛/질감,상태,맛,2,1
+yummy,yummy,형용사,맛있는,This pizza is yummy.,맛/질감,,맛,1,1
+tasty,tasty,형용사,맛있는,The soup is tasty.,맛/질감,,맛,2,1
+juicy,juicy,형용사,즙이 많은,The peach is juicy.,맛/질감,,식감,3,1
+crunchy,crunchy,형용사,바삭바삭한,The apple is crunchy.,맛/질감,,식감,3,1
+crispy,crispy,형용사,바삭한,The chicken is crispy.,맛/질감,,식감,3,1
+chewy,chewy,형용사,쫄깃한,The candy is chewy.,맛/질감,,식감,3,1
+sticky,sticky,형용사,끈적끈적한,My hands are sticky.,맛/질감,,식감,3,1
+dentist,dentist,명사,치과 의사,The dentist checks my teeth.,직업,,의료·과학,2,1
+veterinarian,veterinarian,명사,수의사,The veterinarian helps animals.,직업,,의료·과학,4,1
+scientist,scientist,명사,과학자,The scientist does an experiment.,직업,,의료·과학,3,1
+engineer,engineer,명사,"기술자, 공학자",My dad is an engineer.,직업,,의료·과학,3,1
+programmer,programmer,명사,프로그래머,She is a programmer.,직업,,의료·과학,4,1
+police-officer,police officer,명사,경찰관,The police officer helps people.,직업,,안전·생활,2,1
+firefighter,firefighter,명사,소방관,The firefighter is brave.,직업,,안전·생활,2,1
+farmer,farmer,명사,농부,The farmer grows rice.,직업,,안전·생활,1,1
+chef,chef,명사,요리사,The chef makes pasta.,직업,,안전·생활,2,1
+baker,baker,명사,제빵사,The baker makes bread.,직업,,안전·생활,3,1
+flight-attendant,flight attendant,명사,승무원,The flight attendant is kind.,직업,,안전·생활,4,1
+artist,artist,명사,"화가, 예술가",The artist paints a picture.,직업,,예술·방송,2,1
+singer,singer,명사,가수,She is a singer.,직업,,예술·방송,1,1
+dancer,dancer,명사,무용수,He is a dancer.,직업,,예술·방송,2,1
+actor,actor,명사,배우,He is an actor.,직업,,예술·방송,2,1
+writer,writer,명사,작가,She is a writer.,직업,,예술·방송,2,1
+photographer,photographer,명사,사진작가,The photographer takes photos.,직업,,예술·방송,3,1
+designer,designer,명사,디자이너,She is a designer.,직업,,예술·방송,3,1
+athlete,athlete,명사,운동선수,He is an athlete.,직업,,운동,3,1
+soccer-player,soccer player,명사,축구 선수,He is a soccer player.,직업,,운동,2,1
+baseball-player,baseball player,명사,야구 선수,He is a baseball player.,직업,,운동,2,1
+office-worker,office worker,명사,회사원,My dad is an office worker.,직업,,안전·생활,3,1
+metal,metal,명사,금속,The spoon is metal.,재료,,,3,1
+plastic,plastic,명사,플라스틱,The bottle is plastic.,재료,환경,,2,1
+fabric,fabric,명사,"천, 직물",The fabric is soft.,재료,,,4,1
+cloth,cloth,명사,천,I wipe it with a cloth.,재료,,,3,1
+rubber,rubber,명사,고무,The ball is rubber.,재료,,,3,1
+clay,clay,명사,찰흙,I make a cup with clay.,재료,,,2,1
+cotton,cotton,명사,"면, 목화",The shirt is cotton.,재료,,,3,1
+wool,wool,명사,"양털, 털실",The sweater is wool.,재료,,,3,1
+leather,leather,명사,가죽,The bag is leather.,재료,,,3,1
+solid,solid,명사,고체,Ice is a solid.,과학,,,4,1
+liquid,liquid,명사,액체,Water is a liquid.,과학,,,4,1
+material,material,명사,"재료, 물질",What is this material?,과학,,,4,1
+heat,heat,명사,"열, 더위",I feel the heat.,과학,,,3,1
+force,force,명사,힘,Force moves things.,과학,,,4,1
+energy,energy,명사,에너지,The sun gives us energy.,과학,환경,,3,1
+magnet,magnet,명사,자석,A magnet pulls a nail.,과학,,,3,1
+electricity,electricity,명사,전기,A lamp uses electricity.,과학,,,3,1
+boil,boil,동사,끓이다,Boil the water.,과학,,,3,1
+float,float,동사,뜨다,The boat floats.,과학,,,3,1
+dissolve,dissolve,동사,"녹다, 녹이다",Sugar dissolves in water.,과학,,,4,1
+living-thing,living thing,명사,생물,A plant is a living thing.,과학,,,4,1
+habitat,habitat,명사,서식지,The forest is the bird's habitat.,과학,,,4,1
+environment,environment,명사,환경,We protect the environment.,과학,환경,,4,1
+trash,trash,명사,쓰레기,Put the trash in the bin.,환경,,,2,1
+garbage,garbage,명사,쓰레기,Take out the garbage.,환경,,,3,1
+recycle,recycle,동사,재활용하다,We recycle paper.,환경,,,3,1
+reuse,reuse,동사,다시 쓰다,Reuse the bag.,환경,,,4,1
+reduce,reduce,동사,줄이다,Reduce trash.,환경,,,4,1
+protect,protect,동사,보호하다,We protect nature.,환경,,,3,1
+pollution,pollution,명사,오염,Air pollution is bad.,환경,,,4,1
+title,title,명사,제목,What is the title?,독해/이야기,,,3,1
+author,author,명사,"저자, 작가",Who is the author?,독해/이야기,,,3,1
+illustrator,illustrator,명사,삽화가,The illustrator draws the pictures.,독해/이야기,,,4,1
+character,character,명사,등장인물,Who is the main character?,독해/이야기,,,3,1
+setting,setting,명사,배경,The setting is a forest.,독해/이야기,,,4,1
+beginning,beginning,명사,"시작, 처음",The beginning is fun.,독해/이야기,,,3,1
+solution,solution,명사,해결책,Find a solution.,독해/이야기,,,4,1
+event,event,명사,"사건, 행사",What is the main event?,독해/이야기,,,3,1
+chapter,chapter,명사,(책의) 장,Read chapter one.,독해/이야기,,,3,1
+predict,predict,동사,예측하다,Predict what happens next.,독해/이야기,,,4,1
+imagine,imagine,동사,상상하다,Imagine a big castle.,독해/이야기,,,3,1
+finally,finally,부사,"마침내, 드디어","Finally, we arrive.",독해/이야기,,,3,1
+bat-2,bat,명사,박쥐,A bat flies at night.,동물,,야생 동물,2,2
+watch-2,watch,명사,손목시계,I have a new watch.,사물,,,1,2
+free-2,free,형용사,무료의,The book is free.,쇼핑,,값,2,2
+open-2,open,형용사,"열려 있는, 영업 중인",The store is open.,쇼핑,,가게 상태,2,2
+change-2,change,명사,거스름돈,Here is your change.,돈,,돈 종류,3,2
+mouse-2,mouse,명사,(컴퓨터) 마우스,Click with the mouse.,과학기술,,기기,2,2
+circle-2,circle,동사,동그라미 치다,Circle the answer.,동작,,교실 동작,2,2
+underline,underline,동사,밑줄을 긋다,Underline the word.,동작,,교실 동작,2,1
+wake-up,wake up,숙어,잠에서 깨다,I wake up at seven.,일상생활,,아침,1,1
+get-up,get up,숙어,일어나다,I get up at seven.,일상생활,,아침,1,1
+wash-my-face,wash my face,숙어,세수하다,I wash my face in the morning.,일상생활,,아침,1,1
+brush-my-teeth,brush my teeth,숙어,이를 닦다,I brush my teeth after meals.,일상생활,,아침,1,1
+take-a-shower,take a shower,숙어,샤워하다,I take a shower every day.,일상생활,,아침,1,1
+get-dressed,get dressed,숙어,옷을 입다,I get dressed for school.,일상생활,,아침,2,1
+eat-breakfast,eat breakfast,숙어,아침을 먹다,I eat breakfast at eight.,일상생활,,식사,1,1
+eat-lunch,eat lunch,숙어,점심을 먹다,I eat lunch at school.,일상생활,,식사,1,1
+eat-dinner,eat dinner,숙어,저녁을 먹다,We eat dinner together.,일상생활,,식사,1,1
+go-to-school,go to school,숙어,학교에 가다,I go to school by bus.,일상생활,,하루 일과,1,1
+come-home,come home,숙어,집에 오다,I come home at four.,일상생활,,하루 일과,1,1
+do-homework,do homework,숙어,숙제를 하다,I do homework after school.,일상생활,,하루 일과,1,1
+watch-tv,watch TV,숙어,TV를 보다,I watch TV after dinner.,일상생활,,저녁,1,1
+read-a-book,read a book,숙어,책을 읽다,I read a book before bed.,일상생활,,저녁,1,1
+take-a-bath,take a bath,숙어,목욕하다,I take a bath at night.,일상생활,,저녁,1,1
+go-to-bed,go to bed,숙어,잠자리에 들다,I go to bed at nine.,일상생활,,저녁,1,1
+open-your-book,open your book,표현,책을 펴세요,Open your book to page ten.,교실 영어,,수업 지시,1,1
+close-your-book,close your book,표현,책을 덮으세요,"Close your book, please.",교실 영어,,수업 지시,1,1
+raise-your-hand,raise your hand,표현,손을 드세요,"Raise your hand, please.",교실 영어,,수업 지시,1,1
+sit-down,sit down,표현,앉으세요,"Sit down, please.",교실 영어,,수업 지시,1,1
+stand-up,stand up,표현,일어서세요,"Stand up, please.",교실 영어,,수업 지시,1,1
+be-quiet,be quiet,표현,조용히 하세요,"Be quiet, please.",교실 영어,,수업 지시,1,1
+work-together,work together,표현,함께 활동하세요,Let us work together.,교실 영어,,수업 지시,2,1
+make-a-group,make a group,표현,모둠을 만드세요,Make a group of four.,교실 영어,,수업 지시,2,1
+take-turns,take turns,표현,차례를 지키다,"Take turns, please.",교실 영어,,수업 지시,2,1
+try-again,try again,표현,다시 해 보세요,Try again!,교실 영어,,격려,1,1
+good-job,good job,표현,잘했어요,Good job!,교실 영어,,격려,1,1
+well-done,well done,표현,참 잘했어요,Well done!,교실 영어,,격려,1,1
+are-you-ready,are you ready?,표현,준비됐나요?,Are you ready?,교실 영어,,수업 시작,1,1
+let-s-start,let's start,표현,시작하자,Let's start the game.,교실 영어,,수업 시작,1,1
+goodbye,goodbye,표현,안녕히 가세요,"Goodbye, see you!",인사/표현,,인사,1,1
+thank-you,thank you,표현,고맙습니다,Thank you very much.,인사/표현,,예의,1,1
+excuse-me,excuse me,표현,실례합니다,"Excuse me, where is the library?",인사/표현,,예의,1,1
+you-re-welcome,you're welcome,표현,천만에요,You're welcome.,인사/표현,,예의,1,1
+that-s-okay,that's okay,표현,괜찮아요,That's okay.,인사/표현,,예의,1,1
+maybe,maybe,표현,아마도,Maybe I can go.,인사/표현,,대답,2,1
+really,really,표현,정말요?,Really?,인사/표현,,대답,2,1
+of-course,of course,표현,물론이죠,Of course you can.,인사/표현,,대답,2,1
+wow,wow,표현,와!,"Wow, it is big!",인사/표현,,감탄,1,1
+i-think,I think,표현,내 생각에는,I think it is good.,인사/표현,,의견,2,1
+i-know,I know,표현,알아요,I know the answer.,인사/표현,,의견,1,1
+i-don-t-know,I don't know,표현,모르겠어요,I don't know.,인사/표현,,의견,1,1
+i-agree,I agree,표현,동의해요,I agree with you.,인사/표현,,의견,3,1
+i-don-t-agree,I don't agree,표현,동의하지 않아요,I don't agree.,인사/표현,,의견,3,1
+me-too,me too,표현,나도요,Me too!,인사/표현,,의견,1,1
+not-me,not me,표현,난 아니에요,Not me!,인사/표현,,의견,2,1
+let-s-go,let's go,표현,가자,Let's go to the park.,인사/표현,,제안,1,1
+come-on,come on,표현,"어서, 힘내","Come on, let us play.",인사/표현,,제안,2,1

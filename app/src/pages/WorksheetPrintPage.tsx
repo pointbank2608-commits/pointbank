@@ -1,21 +1,56 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { buildQuizQuestions } from '../lib/quizFromWordList';
 import type { FullCardItem } from '../lib/types';
+import WorksheetSheets from '../components/worksheets/WorksheetSheets';
+import { decorThemes, lineartWordCount } from '../lib/lineart';
+import {
+  buildWorksheet,
+  DEFAULT_COLORING_OPTIONS,
+  type ColoringLabelMode,
+  type ColoringOptions,
+  type ColoringPerPage,
+  EMPTY_HINT_KEY,
+  isWorksheetEmpty,
+  NEW_WORKSHEET_KINDS,
+  type NewWorksheetKind,
+} from '../lib/worksheetGenerators';
 
-type Tab = 'list' | 'card' | 'tracing' | 'quiz';
-const TABS: Tab[] = ['list', 'card', 'tracing', 'quiz'];
+type Tab = 'list' | 'card' | 'tracing' | 'quiz' | NewWorksheetKind;
+const TABS: Tab[] = ['list', 'card', 'tracing', 'quiz', ...NEW_WORKSHEET_KINDS];
+const TAB_LABEL_KEY: Record<Tab, string> = {
+  list: 'tabList',
+  card: 'tabCard',
+  tracing: 'tabTracing',
+  quiz: 'tabQuiz',
+  coloring: 'tabColoring',
+  match: 'tabMatch',
+  wordSearch: 'tabWordSearch',
+  unscramble: 'tabUnscramble',
+  fillBlank: 'tabFillBlank',
+  grouping: 'tabGrouping',
+  cutPaste: 'tabCutPaste',
+};
+
+function isNewKind(tab: Tab): tab is NewWorksheetKind {
+  return (NEW_WORKSHEET_KINDS as readonly string[]).includes(tab);
+}
 
 export default function WorksheetPrintPage() {
   const { t } = useTranslation();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
-  const [words, setWords] = useState<FullCardItem[]>([]);
+  const location = useLocation();
+  const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
   const [tab, setTab] = useState<Tab>('list');
   const [showAnswerKey, setShowAnswerKey] = useState(false);
+  const [includeAnswers, setIncludeAnswers] = useState(true);
+  const [seed, setSeed] = useState(1);
+  const [coloring, setColoring] = useState<ColoringOptions>(DEFAULT_COLORING_OPTIONS);
 
   const quiz = useMemo(
     () =>
@@ -26,7 +61,9 @@ export default function WorksheetPrintPage() {
     [words],
   );
 
-  const canPreview = tab === 'quiz' ? quiz.length > 0 : words.length > 0;
+  const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring }) : null), [tab, words, seed, coloring]);
+  const generatedEmpty = generated ? isWorksheetEmpty(generated) : false;
+  const canPreview = generated ? !generatedEmpty : tab === 'quiz' ? quiz.length > 0 : words.length > 0;
 
   return (
     <div className="space-y-6">
@@ -55,7 +92,7 @@ export default function WorksheetPrintPage() {
             />
           </div>
 
-          <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
+          <div className="flex flex-wrap bg-surface-container-low rounded-lg p-1 w-fit max-w-full gap-y-1">
             {TABS.map((tb) => (
               <button
                 key={tb}
@@ -65,7 +102,7 @@ export default function WorksheetPrintPage() {
                   tab === tb ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
                 }`}
               >
-                {t(`materials.worksheet.tab${tb === 'list' ? 'List' : tb === 'card' ? 'Card' : tb === 'tracing' ? 'Tracing' : 'Quiz'}`)}
+                {t(`materials.worksheet.${TAB_LABEL_KEY[tb]}`)}
               </button>
             ))}
           </div>
@@ -82,11 +119,99 @@ export default function WorksheetPrintPage() {
             </label>
           )}
 
+          {tab === 'coloring' && words.length > 0 && (
+            <div className="space-y-3 rounded-lg border border-outline-variant/50 p-3">
+              <label className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+                {t('materials.worksheet.coloringTitleLabel')}
+                <input
+                  value={coloring.title}
+                  onChange={(e) => setColoring((c) => ({ ...c, title: e.target.value }))}
+                  maxLength={40}
+                  className="min-w-[200px] flex-1 rounded-lg border border-outline-variant bg-surface px-3 py-1.5 font-body-md text-body-md text-on-surface"
+                />
+              </label>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-label-md text-label-md text-on-surface-variant">
+                <label className="flex items-center gap-2">
+                  {t('materials.worksheet.coloringLabelMode')}
+                  <select
+                    value={coloring.labelMode}
+                    onChange={(e) => setColoring((c) => ({ ...c, labelMode: e.target.value as ColoringLabelMode }))}
+                    className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
+                  >
+                    <option value="word">{t('materials.worksheet.coloringModeWord')}</option>
+                    <option value="write">{t('materials.worksheet.coloringModeWrite')}</option>
+                    <option value="none">{t('materials.worksheet.coloringModeNone')}</option>
+                  </select>
+                </label>
+                <label className="flex items-center gap-2">
+                  {t('materials.worksheet.coloringPerPage')}
+                  <select
+                    value={coloring.perPage}
+                    onChange={(e) => setColoring((c) => ({ ...c, perPage: Number(e.target.value) as ColoringPerPage }))}
+                    className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
+                  >
+                    {[4, 6, 8, 9].map((n) => (
+                      <option key={n} value={n}>
+                        {t('materials.worksheet.coloringPerPageOption', { count: n })}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex items-center gap-2">
+                  {t('materials.worksheet.coloringTheme')}
+                  <select
+                    value={coloring.decorTheme ?? ''}
+                    onChange={(e) => setColoring((c) => ({ ...c, decorTheme: e.target.value || null }))}
+                    className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
+                  >
+                    <option value="">{t('materials.worksheet.coloringThemeNone')}</option>
+                    {decorThemes().map((th) => (
+                      <option key={th} value={th}>
+                        {th}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <p className="font-caption text-caption text-on-surface-variant">
+                {t('materials.worksheet.coloringCoverage', { count: lineartWordCount })}
+              </p>
+            </div>
+          )}
+
+          {isNewKind(tab) && tab !== 'coloring' && words.length > 0 && (
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant w-fit cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeAnswers}
+                  onChange={(e) => setIncludeAnswers(e.target.checked)}
+                  className="h-4 w-4 rounded accent-primary"
+                />
+                {t('materials.worksheet.includeAnswerPage')}
+              </label>
+              <button
+                type="button"
+                onClick={() => setSeed((n) => n + 1)}
+                className="inline-flex items-center gap-1 px-4 py-2 rounded-full border-2 border-primary text-primary hover:bg-primary/10 font-label-md text-label-md transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden>
+                  shuffle
+                </span>
+                {t('materials.worksheet.reshuffle')}
+              </button>
+            </div>
+          )}
+
           {!canPreview ? (
             <div className="font-body-md text-body-md text-on-surface-variant">
-              {tab === 'quiz' && words.length > 0
-                ? t('materials.worksheet.needAtLeastTwoForQuiz')
-                : t('materials.worksheet.needAtLeastOne')}
+              {words.length === 0
+                ? t('materials.worksheet.needAtLeastOne')
+                : generated
+                  ? t(`materials.worksheet.${EMPTY_HINT_KEY[generated.kind]}`)
+                  : tab === 'quiz'
+                    ? t('materials.worksheet.needAtLeastTwoForQuiz')
+                    : t('materials.worksheet.needAtLeastOne')}
             </div>
           ) : (
             <button
@@ -99,6 +224,18 @@ export default function WorksheetPrintPage() {
           )}
         </div>
       </div>
+
+      {canPreview && generated?.kind === 'coloring' && generated.skipped.length > 0 && (
+        <p className="no-print font-caption text-caption text-on-surface-variant">
+          {t('materials.worksheet.coloringSkipped', { words: generated.skipped.join(', ') })}
+        </p>
+      )}
+
+      {canPreview && generated && (
+        <div className="print-sheet mx-auto">
+          <WorksheetSheets data={generated} includeAnswers={includeAnswers} />
+        </div>
+      )}
 
       {canPreview && tab === 'list' && (
         <div className="print-sheet mx-auto p-6">

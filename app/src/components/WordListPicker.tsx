@@ -58,7 +58,7 @@ export default function WordListPicker(props: Props) {
         list.items.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(list.items.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url })));
+      props.onImportFull(list.items.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category ?? null })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions(list, direction));
     } else if (props.variant === 'truefalse') {

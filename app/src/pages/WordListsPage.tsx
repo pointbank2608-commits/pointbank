@@ -6,6 +6,7 @@ import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareWordListGame, type WordListGame } from '../lib/wordListLaunch';
 import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
+import MaterialsLaunchButtons from '../components/MaterialsLaunchButtons';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -21,7 +22,7 @@ import {
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import type { PhonicsBankEntry, WordBankEntry, WordList, WordListItem } from '../lib/types';
-import { PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
+import { entryInCategory, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -389,7 +390,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
             <div className="space-y-2">
               <div className="flex flex-wrap gap-1.5">
                 {WORD_BANK_CATEGORIES.map((cat) => {
-                  const entries = dictionary.filter((e) => e.category === cat);
+                  const entries = dictionary.filter((e) => entryInCategory(e, cat));
                   return (
                     <button
                       key={cat}
@@ -459,6 +460,7 @@ export default function WordListsPage() {
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
   const [viewAll, setViewAll] = useState(false);
   const [studyingListId, setStudyingListId] = useState<string | null>(null);
+  const [printListId, setPrintListId] = useState<string | null>(null);
   const studyingList = lists.find((l) => l.id === studyingListId) ?? null;
   const [dictionaryEntries, setDictionaryEntries] = useState<WordBankEntry[] | null>(null);
 
@@ -616,6 +618,20 @@ export default function WordListsPage() {
                   </button>}
                   {list.items.length > 0 && (
                     <button
+                      type="button"
+                      onClick={() => setPrintListId((prev) => (prev === list.id ? null : list.id))}
+                      className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                        printListId === list.id
+                          ? 'bg-secondary-container text-on-secondary-container'
+                          : 'border-2 border-primary/40 text-primary hover:bg-surface-container-low'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-base">print</span>
+                      {t('wordLists.printButton')}
+                    </button>
+                  )}
+                  {list.items.length > 0 && (
+                    <button
                       onClick={() => setStudyingListId(list.id)}
                       className="flex items-center gap-1 font-label-md text-label-md text-secondary hover:underline"
                     >
@@ -637,6 +653,14 @@ export default function WordListsPage() {
                   </button>
                 </span>
               </div>
+              {printListId === list.id && (
+                <div className="mt-3 rounded-lg bg-surface-container-low p-3">
+                  <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('wordLists.printHint')}</div>
+                  <MaterialsLaunchButtons
+                    words={list.items.map((i) => ({ id: i.id, word: i.word, meaning: i.meaning, imageUrl: i.image_url }))}
+                  />
+                </div>
+              )}
               {openId === list.id && (
                 <WordListEditor
                   list={list}

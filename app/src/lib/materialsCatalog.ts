@@ -12,6 +12,14 @@ export interface MaterialCatalogEntry {
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   {
+    id: 'flashcards',
+    path: '/materials/flashcards',
+    icon: 'print',
+    cover: null,
+    nameKey: 'materials.flashcardsName',
+    descKey: 'materials.flashcardsDesc',
+  },
+  {
     id: 'memorycards',
     path: '/materials/memory-cards',
     icon: 'style',
