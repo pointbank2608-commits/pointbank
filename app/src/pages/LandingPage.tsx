@@ -57,6 +57,23 @@ export default function LandingPage() {
     { n: '3', title: t('landing.step3Title'), desc: t('landing.step3Desc') },
   ];
 
+  const plans = [
+    {
+      name: t('landing.pricingFreeName'),
+      price: t('landing.pricingFreePrice'),
+      sub: '',
+      paid: false,
+      features: [t('landing.pricingFreeF1'), t('landing.pricingFreeF2'), t('landing.pricingFreeF3')],
+    },
+    {
+      name: t('landing.pricingPaidName'),
+      price: t('landing.pricingPaidPrice'),
+      sub: t('landing.pricingPaidVat'),
+      paid: true,
+      features: [t('landing.pricingPaidF1'), t('landing.pricingPaidF2'), t('landing.pricingPaidF3')],
+    },
+  ];
+
   return (
     <div className="landing bg-background text-on-background antialiased">
       <header className="sticky top-0 z-50 border-b border-[#2a241c]/8 bg-[#fff8ee]/70 backdrop-blur-xl">
@@ -367,6 +384,35 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section id="pricing" className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop">
+          <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.pricingEyebrow')}</p>
+          <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.pricingTitle')}</h2>
+          <p className="mb-10 text-[19px] leading-9 text-on-surface-variant">{t('landing.pricingDesc')}</p>
+          <div className="grid gap-6 md:grid-cols-2">
+            {plans.map((p) => (
+              <div
+                key={p.name}
+                className={`rounded-[24px] p-8 shadow-[0_8px_30px_rgba(30,75,122,0.06)] ${
+                  p.paid ? 'bg-deep-navy text-white' : 'bg-surface-container-lowest text-on-surface'
+                }`}
+              >
+                <div className={`mb-2 font-label-md text-[18px] ${p.paid ? 'text-warm-yellow' : 'text-primary'}`}>{p.name}</div>
+                <div className="landing-display mb-1 text-[40px]">{p.price}</div>
+                <div className={`mb-6 min-h-[24px] text-[15px] ${p.paid ? 'text-white/70' : 'text-on-surface-variant'}`}>{p.sub}</div>
+                <ul className="space-y-3 text-[17px] leading-7">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <span aria-hidden className={p.paid ? 'text-warm-yellow' : 'text-primary'}>✓</span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-[15px] leading-7 text-outline">{t('landing.pricingNote')}</p>
         </section>
 
         <section className="px-margin-mobile pb-20 md:px-margin-desktop">
