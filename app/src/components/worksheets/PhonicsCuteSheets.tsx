@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import type { ReaderCard } from '../../lib/cvcReaders';
 import { parsePattern } from '../../lib/phonicsPattern';
 import type { FullCardItem } from '../../lib/types';
 import type {
@@ -328,6 +329,74 @@ export function PhonicsTracingCute({
                     <TracingRow key={r} word={row.word} trace={r === 0} last={r === 2} gapMm={4} />
                   ))}
                 </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <CuteFooter color={color} />
+    </CutePage>
+  );
+}
+
+/* ---------------- I Can Read (CVC 읽기 카드) ---------------- */
+
+export type ReaderImageMode = 'draw' | 'clay' | 'none';
+
+/** 목표 단어 위에, 왼쪽엔 한 낱말씩 쌓인 줄, 오른쪽엔 그림 칸, 맨 아래엔 점선으로 따라 쓰는 문장 한 줄. */
+export function ReaderCute({
+  cards,
+  color,
+  startIndex,
+  imageMode,
+  imageOf,
+}: Common & { cards: ReaderCard[]; imageMode: ReaderImageMode; imageOf: (word: string | null) => string | null }) {
+  const { t } = useTranslation();
+  return (
+    <CutePage color={color}>
+      <CuteHeader
+        color={color}
+        title={t('materials.worksheet.sheet.readerTitle')}
+        instruction={t(imageMode === 'draw' ? 'materials.worksheet.sheet.readerInstructionDraw' : 'materials.worksheet.sheet.readerInstruction')}
+      />
+      <div className="space-y-[4mm]">
+        {cards.map((card, i) => {
+          const tone = cuteTone(i, color);
+          const many = card.lines.length > 7;
+          // 문장이 길수록 글씨를 조금 줄여 한 장에 카드 2개가 들어가게 한다.
+          const linePx = many ? 22 : 26;
+          const lineMm = many ? 6.2 : 7.4;
+          const traceEm = Math.max(5.5, Math.min(10, 150 / (0.56 * Math.max(8, card.sentence.length))));
+          const img = imageMode === 'clay' ? imageOf(card.word) : null;
+          return (
+            <div key={card.key} className="print-card px-[4mm] py-[3mm]" style={cuteCardStyle(tone)}>
+              <div className="mb-[1.5mm] flex items-center gap-[3mm]">
+                <CuteBadge n={startIndex + i + 1} tone={tone} />
+                {card.word && (
+                  <span className="flex-1 pr-[11mm] text-center font-bold" style={{ fontFamily: FONT_LETTER, fontSize: '34px', lineHeight: 1.1 }}>
+                    {card.word}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-stretch gap-[5mm]">
+                <div className="min-w-0 flex-1">
+                  {card.lines.map((line, k) => (
+                    <div key={k} style={{ fontFamily: FONT_LETTER, fontSize: `${linePx}px`, lineHeight: `${lineMm}mm`, fontWeight: 700 }}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+                {imageMode !== 'none' && (
+                  <div
+                    className="flex shrink-0 items-center justify-center self-center bg-white"
+                    style={{ width: '38mm', height: '38mm', border: `1mm ${imageMode === 'draw' ? 'dashed' : 'solid'} ${tone.main}`, borderRadius: '7mm' }}
+                  >
+                    {img && <img src={img} alt="" className="h-full w-full object-contain p-[1.5mm]" />}
+                  </div>
+                )}
+              </div>
+              <div className="mt-[2mm] rounded-[4mm] bg-white px-[3mm] py-[1mm]">
+                <TracingRow word={card.sentence} trace last emMm={traceEm} rowMm={12} />
               </div>
             </div>
           );

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { PhonicsListCute, PhonicsTracingCute } from '../components/worksheets/PhonicsCuteSheets';
+import { PhonicsListCute, PhonicsTracingCute, ReaderCute, type ReaderImageMode } from '../components/worksheets/PhonicsCuteSheets';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { fetchPhonicsBank } from '../lib/api';
+import { CVC_READERS, parseCustomReaders, readerCardFromBank, readerIdsForWords } from '../lib/cvcReaders';
 import { handoffFromLocationState } from '../lib/materialsHandoff';
 import { markedGroups, parsePattern } from '../lib/phonicsPattern';
 import { worksheetSupport } from '../lib/topicWorksheets';
@@ -84,11 +85,11 @@ interface TypeCard {
   desc: string;
   /** 쓸 수 있는 개수(0 이면 막는다) */
   count: number;
-  unit: 'words' | 'problems';
+  unit: 'words' | 'problems' | 'cards';
 }
 
-/** 파닉스 워크시트 페이지가 직접 그리는 두 유형(나머지는 WorksheetSheets 가 그린다). */
-const OWN_TABS = ['phonicsList', 'phonicsTracing'] as const;
+/** 파닉스 워크시트 페이지가 직접 그리는 유형(나머지는 WorksheetSheets 가 그린다). */
+const OWN_TABS = ['phonicsList', 'phonicsTracing', 'phonicsReader'] as const;
 
 function chip(active: boolean): string {
   return `rounded-full px-4 py-1.5 font-label-md text-label-md transition-colors ${
@@ -120,6 +121,10 @@ export default function PhonicsWorksheetLibraryPage() {
   const [showMeaning, setShowMeaning] = useState(false);
   const [showImage, setShowImage] = useState(true);
   const [coloringTitle, setColoringTitle] = useState('');
+  // I Can Read 읽기 카드: 고른 카드 번호(CVC 67개), 직접 입력한 문장, 그림 칸 방식
+  const [readerIds, setReaderIds] = useState<number[]>([]);
+  const [customText, setCustomText] = useState('');
+  const [readerImage, setReaderImage] = useState<ReaderImageMode>('draw');
   const workspaceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -218,6 +223,7 @@ export default function PhonicsWorksheetLibraryPage() {
       { tab: 'match', icon: 'link', name: name('tabMatch'), desc: desc('match'), count: support.match, unit: 'words' },
       { tab: 'wordSearch', icon: 'search', name: name('tabWordSearch'), desc: desc('wordSearch'), count: support.wordSearch, unit: 'words' },
       { tab: 'unscramble', icon: 'shuffle', name: name('tabUnscramble'), desc: desc('unscramble'), count: support.unscramble, unit: 'words' },
+      { tab: 'phonicsReader', icon: 'menu_book', name: name('tabPhonicsReader'), desc: desc('reader'), count: CVC_READERS.length, unit: 'cards' },
       { tab: 'phonicsTracing', icon: 'draw', name: name('tabTracing'), desc: desc('tracing'), count: words.length, unit: 'words' },
       { tab: 'coloring', icon: 'palette', name: name('tabColoring'), desc: desc('coloring'), count: support.coloring, unit: 'words' },
       { tab: 'phonicsList', icon: 'list_alt', name: name('tabList'), desc: desc('list'), count: words.length, unit: 'words' },
@@ -225,6 +231,11 @@ export default function PhonicsWorksheetLibraryPage() {
   }, [words, support, t]);
 
   function openTab(next: string) {
+    if (next === 'phonicsReader' && readerIds.length === 0) {
+      // 고른 파닉스 단어 중 읽기 카드가 있는 것으로 시작하고, 없으면 -at 가족 앞 4장으로 시작한다.
+      const fromWords = readerIdsForWords(words.map((w) => w.word));
+      setReaderIds(fromWords.length > 0 ? fromWords : [1, 2, 3, 4]);
+    }
     setTab(next);
     setSheetSeed(1);
     // 작업 영역으로 부드럽게 내려간다.
@@ -240,7 +251,21 @@ export default function PhonicsWorksheetLibraryPage() {
     () => (tab && !isOwn ? buildWorksheet(tab as NewWorksheetKind, words, sheetSeed, { coloring }) : null),
     [tab, isOwn, words, sheetSeed, coloring],
   );
-  const canPreview = !!tab && words.length > 0 && (isOwn ? true : generated ? !isWorksheetEmpty(generated) : false);
+  const readerCards = useMemo(
+    () => [
+      ...CVC_READERS.filter((r) => readerIds.includes(r.n)).map(readerCardFromBank),
+      ...parseCustomReaders(customText),
+    ],
+    [readerIds, customText],
+  );
+  const hasWork = !!tab && (tab === 'phonicsReader' || words.length > 0);
+  const canPreview = hasWork && (tab === 'phonicsReader' ? readerCards.length > 0 : isOwn ? true : generated ? !isWorksheetEmpty(generated) : false);
+  // 그림 칸에 보여줄 파닉스 그림(단어가 사전에 있으면 그 그림, 없으면 규칙 이름으로 추정한 경로)
+  const imageOf = (word: string | null): string | null => {
+    if (!word) return null;
+    const hit = (entries ?? []).find((e) => e.word.toLowerCase() === word.toLowerCase() && e.image_url);
+    return hit?.image_url ?? `/phonics-images/${word.toLowerCase()}.webp`;
+  };
   // 그림이 들어가면 한 줄이 높아져서 한 장에 들어가는 개수가 줄어든다.
   const listPerPage = showImage ? PHONICS_PER_PAGE.list : PHONICS_PER_PAGE.list + 2;
   const usesCute = tab === 'phonicsTracing' || tab === 'phonicsList' || (tab ?? '').startsWith('phonics');
@@ -373,7 +398,7 @@ export default function PhonicsWorksheetLibraryPage() {
                           <span className={`mt-1 block font-caption text-caption ${disabled ? 'text-error' : 'text-primary'}`}>
                             {disabled
                               ? t('materials.library.typeNone')
-                              : t(card.unit === 'problems' ? 'materials.phonicsLibrary.typeReadyProblems' : 'materials.library.typeReady', { count: card.count })}
+                              : t(card.unit === 'problems' ? 'materials.phonicsLibrary.typeReadyProblems' : card.unit === 'cards' ? 'materials.phonicsLibrary.typeReadyCards' : 'materials.library.typeReady', { count: card.count })}
                           </span>
                         </span>
                       </button>
@@ -433,7 +458,7 @@ export default function PhonicsWorksheetLibraryPage() {
 
       {/* 작업 영역: 고른 워크시트의 옵션·미리보기·인쇄 */}
       <div ref={workspaceRef} className="scroll-mt-4">
-        {tab && words.length > 0 && (
+        {hasWork && (
           <div className="no-print mb-4 space-y-3 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
             <h3 className="font-title-md text-title-md text-deep-navy">
               {t('materials.phonicsLibrary.printTitle')} · {cards.find((c) => c.tab === tab)?.name}
@@ -451,7 +476,7 @@ export default function PhonicsWorksheetLibraryPage() {
                   {t('materials.worksheet.cuteColorLabel')}
                 </label>
               )}
-              {isOwn && (
+              {isOwn && tab !== 'phonicsReader' && (
                 <>
                   <label className="flex cursor-pointer items-center gap-2">
                     <input type="checkbox" checked={showImage} onChange={(e) => setShowImage(e.target.checked)} className="h-4 w-4 rounded accent-primary" />
@@ -487,6 +512,66 @@ export default function PhonicsWorksheetLibraryPage() {
                 </button>
               )}
             </div>
+            {tab === 'phonicsReader' && (
+              <div className="space-y-4 rounded-lg border border-outline-variant/50 p-3">
+                <div className="flex flex-wrap items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+                  <span>{t('materials.phonicsLibrary.readerImageLabel')}</span>
+                  {(['draw', 'clay', 'none'] as const).map((m) => (
+                    <button key={m} type="button" onClick={() => setReaderImage(m)} aria-pressed={readerImage === m} className={chip(readerImage === m)}>
+                      {t(`materials.phonicsLibrary.readerImage_${m}`)}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <div className="mb-2 flex flex-wrap items-center gap-3">
+                    <span className="font-label-md text-label-md text-on-surface">
+                      {t('materials.phonicsLibrary.readerPickTitle', { count: readerIds.length })}
+                    </span>
+                    <button type="button" onClick={() => setReaderIds(CVC_READERS.map((r) => r.n))} className="font-label-md text-label-md text-primary hover:underline">
+                      {t('materials.phonicsLibrary.readerSelectAll')}
+                    </button>
+                    <button type="button" onClick={() => setReaderIds([])} className="font-label-md text-label-md text-on-surface-variant hover:text-error">
+                      {t('materials.library.clearAll')}
+                    </button>
+                  </div>
+                  {[...new Set(CVC_READERS.map((r) => r.vowel))].map((vowel) => (
+                    <div key={vowel} className="mb-2">
+                      <div className="mb-1 font-caption text-caption text-on-surface-variant">{vowel}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {CVC_READERS.filter((r) => r.vowel === vowel).map((r) => {
+                          const on = readerIds.includes(r.n);
+                          return (
+                            <button
+                              key={r.n}
+                              type="button"
+                              aria-pressed={on}
+                              title={r.sentence}
+                              onClick={() => setReaderIds((prev) => (prev.includes(r.n) ? prev.filter((x) => x !== r.n) : [...prev, r.n]))}
+                              className={`rounded-full px-3 py-1 font-label-md text-label-md transition-colors ${
+                                on ? 'bg-primary text-on-primary' : 'border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                              }`}
+                            >
+                              {r.word}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <label className="block font-label-md text-label-md text-on-surface-variant">
+                  {t('materials.phonicsLibrary.readerCustomLabel')}
+                  <textarea
+                    value={customText}
+                    onChange={(e) => setCustomText(e.target.value)}
+                    rows={3}
+                    placeholder={t('materials.phonicsLibrary.readerCustomPlaceholder')}
+                    className="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 font-body-md text-body-md text-on-surface"
+                  />
+                  <span className="font-caption text-caption">{t('materials.phonicsLibrary.readerCustomHint')}</span>
+                </label>
+              </div>
+            )}
             {canPreview ? (
               <button
                 type="button"
@@ -502,11 +587,22 @@ export default function PhonicsWorksheetLibraryPage() {
             )}
           </div>
         )}
-        {!tab && words.length > 0 && <div className="no-print font-body-md text-on-surface-variant">{t('materials.phonicsLibrary.pickTypeHint')}</div>}
+        {!hasWork && words.length > 0 && <div className="no-print font-body-md text-on-surface-variant">{t('materials.phonicsLibrary.pickTypeHint')}</div>}
 
         {canPreview && (
           <div className="print-sheet mx-auto">
             {generated && <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />}
+            {tab === 'phonicsReader' &&
+              chunk(readerCards, PHONICS_PER_PAGE.reader).map((rows, i) => (
+                <ReaderCute
+                  key={i}
+                  cards={rows}
+                  color={cuteColor}
+                  startIndex={i * PHONICS_PER_PAGE.reader}
+                  imageMode={readerImage}
+                  imageOf={imageOf}
+                />
+              ))}
             {tab === 'phonicsList' &&
               chunk(words, listPerPage).map((rows, i) => (
                 <PhonicsListCute key={i} rows={rows} color={cuteColor} startIndex={i * listPerPage} showImage={showImage} showMeaning={showMeaning} />
