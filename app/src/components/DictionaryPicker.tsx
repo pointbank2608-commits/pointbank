@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { fetchPhonicsBank, fetchWordBank } from '../lib/api';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
+import { slotFromPartOfSpeech, type SlottedLabel } from '../lib/sentencePatterns';
 import type { FullCardItem, GroupSortGroup, ImageQuizItem, MatchPair, PhonicsBankEntry, QuizQuestion, TrueFalseStatement, WordBankEntry } from '../lib/types';
 import { entryInCategory, PART_OF_SPEECH_ORDER, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
 
@@ -17,7 +18,8 @@ type Props =
   | { variant: 'full'; onImportFull: (items: FullCardItem[]) => void }
   | { variant: 'quiz'; onImportQuestions: (questions: QuizQuestion[]) => void }
   | { variant: 'truefalse'; onImportStatements: (statements: TrueFalseStatement[]) => void }
-  | { variant: 'groupsort'; onImportGroups: (groups: GroupSortGroup[]) => void };
+  | { variant: 'groupsort'; onImportGroups: (groups: GroupSortGroup[]) => void }
+  | { variant: 'slots'; onImportSlots: (items: SlottedLabel[]) => void };
 
 const RESULT_LIMIT = 60;
 
@@ -192,8 +194,10 @@ export default function DictionaryPicker(props: Props) {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {
       props.onImportStatements(buildTrueFalseStatements({ items: selectedList }, direction));
-    } else {
+    } else if (props.variant === 'groupsort') {
       props.onImportGroups(buildGroupSortGroups({ items: selectedList }));
+    } else {
+      props.onImportSlots(selectedList.map((i) => ({ label: i.word, slot: slotFromPartOfSpeech(i.partOfSpeech) })));
     }
     notify(t('dictionaryPicker.addedToast', { count: selectedList.length }));
     setSelected({});

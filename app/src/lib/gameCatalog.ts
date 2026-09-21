@@ -431,6 +431,17 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.winlosequizName',
     descKey: 'gamesList.winlosequizDesc',
   },
+  {
+    type: 'watermelon',
+    number: 35,
+    category: 'sentence',
+    minItems: 2,
+    icon: 'nutrition',
+    path: '/games/watermelon',
+    cover: '/covers/game-watermelon.jpg',
+    nameKey: 'gamesList.watermelonName',
+    descKey: 'gamesList.watermelonDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

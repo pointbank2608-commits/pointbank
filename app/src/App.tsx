@@ -59,6 +59,7 @@ import TypeAnswerPage from './pages/TypeAnswerPage';
 import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 import WinLoseQuizPage from './pages/WinLoseQuizPage';
+import WatermelonPage from './pages/WatermelonPage';
 import WordSearchPage from './pages/WordSearchPage';
 import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
 import WorksheetLibraryPage from './pages/WorksheetLibraryPage';
@@ -177,6 +178,7 @@ export default function App() {
             <Route path="/games/imagequiz" element={<ImageQuizPage />} />
             <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
+            <Route path="/games/watermelon" element={<WatermelonPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -218,6 +220,7 @@ export default function App() {
             <Route path="/games/imagequiz" element={<ImageQuizPage />} />
             <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
+            <Route path="/games/watermelon" element={<WatermelonPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

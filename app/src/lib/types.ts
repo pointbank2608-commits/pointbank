@@ -199,11 +199,17 @@ export type GameType =
   | 'labeleddiagram'
   | 'imagequiz'
   | 'gameshowquiz'
-  | 'winlosequiz';
+  | 'winlosequiz'
+  | 'watermelon';
 
 export interface GameItem {
   id: string;
   label: string;
+  /**
+   * 수박 문장 게임 전용: 이 단어가 문장에서 맡는 자리(주어/동사/목적어 등).
+   * 다른 게임은 무시한다. 값은 `sentencePatterns.ts` 의 SentenceSlot.
+   */
+  slot?: string | null;
 }
 
 /** 한 수만 되돌리기가 있는 게임 컴포넌트가 forwardRef로 노출하는 손잡이. */
@@ -341,6 +347,11 @@ export interface GameTemplateConfig {
   winLoseBetOptions?: number[];
   /** 퀴즈를 이기거나 잃기 전용: 나무 테이블(A, 기본) 또는 점토 칩(B). */
   winLoseStyle?: 'wood' | 'clay';
+  /**
+   * 수박 문장 게임 전용: SENTENCE_PATTERNS 의 id (sv, svo, …).
+   * 없으면 기본값 svo. 새 문장 틀은 sentencePatterns.ts 에만 추가하면 된다.
+   */
+  watermelonPatternId?: string;
 }
 
 export interface QuizQuestion {
@@ -477,6 +488,8 @@ export interface WordListItem {
   image_url: string | null;
   /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.category 복사). 그룹정렬 자동 그룹화에 씀. */
   category: string | null;
+  /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.part_of_speech 복사). 수박 문장 게임 자리 자동 부여에 씀. */
+  partOfSpeech?: string | null;
 }
 
 export interface WordList {

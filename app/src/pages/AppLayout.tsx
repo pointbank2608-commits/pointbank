@@ -5,6 +5,7 @@ import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
 import PlanRouteGuard from '../components/PlanRouteGuard';
+import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
@@ -142,6 +143,7 @@ function AppLayoutInner() {
 
   return (
     <div className="min-h-screen flex bg-background font-body-md text-on-background">
+      <PrintWatermark />
       {/* 모바일 상단바 */}
       {/* iOS PWA(홈 화면 추가, viewport-fit=cover + black-translucent 상태 바)에서는 상태 바 영역이
           웹뷰 위에 겹쳐 그려지고 그 영역의 터치는 시스템이 가로채 버려서, 헤더가 화면 맨 위(y=0)에서

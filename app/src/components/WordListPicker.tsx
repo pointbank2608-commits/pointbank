@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements, type QuizDirection } from '../lib/quizFromWordList';
 import type { FullCardItem, GroupSortGroup, ImageQuizItem, MatchPair, QuizQuestion, TrueFalseStatement, WordList } from '../lib/types';
+import { slotFromPartOfSpeech, type SlottedLabel } from '../lib/sentencePatterns';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -15,7 +16,8 @@ type Props =
   | { variant: 'full'; wordLists: WordList[]; loading: boolean; onImportFull: (items: FullCardItem[]) => void }
   | { variant: 'quiz'; wordLists: WordList[]; loading: boolean; onImportQuestions: (questions: QuizQuestion[]) => void }
   | { variant: 'truefalse'; wordLists: WordList[]; loading: boolean; onImportStatements: (statements: TrueFalseStatement[]) => void }
-  | { variant: 'groupsort'; wordLists: WordList[]; loading: boolean; onImportGroups: (groups: GroupSortGroup[]) => void };
+  | { variant: 'groupsort'; wordLists: WordList[]; loading: boolean; onImportGroups: (groups: GroupSortGroup[]) => void }
+  | { variant: 'slots'; wordLists: WordList[]; loading: boolean; onImportSlots: (items: SlottedLabel[]) => void };
 
 /**
  * 선생님이 미리 만들어둔 단어장(WordListsPage 에서 관리)을 게임 항목으로 그대로 불러오는 패널.
@@ -29,6 +31,8 @@ type Props =
  *   절반은 다른 항목의 짝으로 바꿔치기해 거짓 문장을 자동으로 만든다.
  * - groupsort: 그룹(GroupSortGroup[])을 쓰는 게임 — 단어장 항목의 카테고리(사전에서 담은
  *   단어만 있음)로 자동 그룹화. 카테고리가 2개 이상 섞인 단어장만 고를 수 있다.
+ * - slots: 수박 문장 게임처럼 단어+문장자리(SlottedLabel[])를 쓰는 게임 — 품사가 있으면
+ *   자리를 자동으로 붙이고, 없으면 선생님이 나중에 고른다.
  */
 export default function WordListPicker(props: Props) {
   const { t } = useTranslation();
@@ -63,8 +67,10 @@ export default function WordListPicker(props: Props) {
       props.onImportQuestions(buildQuizQuestions(list, direction));
     } else if (props.variant === 'truefalse') {
       props.onImportStatements(buildTrueFalseStatements(list, direction));
-    } else {
+    } else if (props.variant === 'groupsort') {
       props.onImportGroups(buildGroupSortGroups(list));
+    } else {
+      props.onImportSlots(list.items.map((i) => ({ label: i.word, slot: slotFromPartOfSpeech(i.partOfSpeech) })));
     }
     notify(t('wordListPicker.addedToast', { count: list.items.length }));
   }
@@ -134,6 +140,12 @@ export default function WordListPicker(props: Props) {
               <div className="font-caption text-caption text-on-surface-variant mb-2">
                 {props.variant === 'quiz' ? t('wordListPicker.quizAutoChoicesHint') : t('wordListPicker.trueFalseAutoHint')}
               </div>
+            </div>
+          )}
+
+          {props.variant === 'slots' && (
+            <div className="font-caption text-caption text-on-surface-variant mb-2">
+              {t('wordListPicker.slotsHint')}
             </div>
           )}
 

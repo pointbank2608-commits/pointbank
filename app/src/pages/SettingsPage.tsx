@@ -20,6 +20,7 @@ import {
 } from '../lib/api';
 import { signed } from '../lib/format';
 import { resizeImageToPng } from '../lib/image';
+import { setPrintWatermark, usePrintWatermark } from '../lib/printWatermark';
 import { useClasses } from '../lib/useClasses';
 import type { Preset } from '../lib/types';
 
@@ -29,6 +30,7 @@ export default function SettingsPage() {
   const { academy, profile, refresh, isPaid } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
+  const watermarkOn = usePrintWatermark();
   const { classes, reload: reloadClasses } = useClasses(academy?.id);
 
   const [name, setName] = useState(academy?.name ?? '');
@@ -286,6 +288,20 @@ export default function SettingsPage() {
             onChange={(e) => void handleLogoSelect(e)}
           />
         </div>
+      </div>
+
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.watermarkTitle')}</h4>
+        <p className="font-caption text-caption text-on-surface-variant mb-4">{t('settings.watermarkHint')}</p>
+        <label className="flex cursor-pointer items-center gap-3 font-label-md text-label-md text-on-surface">
+          <input
+            type="checkbox"
+            checked={watermarkOn}
+            onChange={(e) => setPrintWatermark(e.target.checked)}
+            className="h-5 w-5 accent-[var(--color-primary)]"
+          />
+          {t('settings.watermarkLabel')}
+        </label>
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
