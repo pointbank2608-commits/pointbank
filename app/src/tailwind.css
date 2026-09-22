@@ -4881,6 +4881,8 @@
   overflow: hidden;
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   cursor: pointer;
   border-radius: 28px 28px 36px 36px;
   background:
@@ -5089,6 +5091,52 @@
 @keyframes melon-sparkle-fade {
   0%, 78% { opacity: 1; }
   100% { opacity: 0; }
+}
+.melon-pad {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 72px;
+  gap: 8px;
+  width: min(100%, 420px);
+  padding: 8px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #efe0c8, #d7bd99);
+  box-shadow: 0 3px 0 #c6a982, 0 8px 14px #72533922;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.melon-dir {
+  min-height: 64px;
+  border: none;
+  border-radius: 16px;
+  color: #3a2a18;
+  font-size: 22px;
+  line-height: 1;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  background: linear-gradient(180deg, #fffef9 0%, #fff4e0 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -3px 4px rgba(166, 112, 48, 0.16),
+    0 3px 0 rgba(90, 50, 18, 0.16);
+}
+.melon-dir:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    0 1px 0 rgba(90, 50, 18, 0.16);
+}
+.melon-dir.is-drop {
+  font-size: 18px;
+  font-weight: 800;
+  color: #e8fbf6;
+  background: linear-gradient(180deg, #3d9b7a, #2f6f66);
+  box-shadow:
+    inset 0 2px 0 #ffffff33,
+    0 3px 0 #163833,
+    0 8px 14px #16383322;
 }
 @keyframes melon-burst {
   0% { transform: translate(-50%, -40%) scale(0.7); opacity: 0; }

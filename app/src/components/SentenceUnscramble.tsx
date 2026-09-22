@@ -98,7 +98,8 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
   const finished = pos >= order.length;
 
   function loadRound(nextPos: number, nextOrder: number[]) {
-    const sentence = items[nextOrder[nextPos]].label;
+    const sentence = items[nextOrder[nextPos]]?.label;
+    if (!sentence) return;
     setPool(shuffleSentence(sentence));
     setPlaced([]);
     setStatus('playing');
@@ -150,7 +151,10 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
     );
   }
 
-  const target = tokenize(items[order[pos]].label).join(' ');
+  // 항목을 지운 직후 한 프레임은 order[pos] 가 줄어든 items 범위를 벗어날 수 있다(itemKey 가
+  // 바뀌어야 도는 useEffect 는 렌더 다음에 돎) — items[order[pos]] 가 undefined 라 .label 에서
+  // 그대로 터지던 걸 막는다.
+  const target = tokenize(items[order[pos]]?.label ?? '').join(' ');
 
   function pickFromPool(tileId: string) {
     if (status === 'correct') return;
@@ -184,7 +188,9 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
 
   function reshuffleRound() {
     if (status === 'correct') return;
-    setPool(shuffleSentence(items[order[pos]].label));
+    const label = items[order[pos]]?.label;
+    if (!label) return;
+    setPool(shuffleSentence(label));
     setPlaced([]);
     setStatus('playing');
   }

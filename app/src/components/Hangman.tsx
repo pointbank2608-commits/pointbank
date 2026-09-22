@@ -91,8 +91,11 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
+  // 단어를 지운 직후 한 프레임은 order/pos 가 아직 지우기 전 길이 기준이라(itemKey 가 바뀌어야
+  // 아래 useEffect 가 다시 섞는데, 그건 렌더 다음에 돈다) order[pos] 가 줄어든 items 범위를
+  // 벗어날 수 있다 — items[order[pos]] 가 undefined 라 .label 에서 그대로 터지던 걸 막는다.
   const word =
-    items.length > 0 && order.length > 0 && pos < order.length ? items[order[pos]].label : '';
+    items.length > 0 && order.length > 0 && pos < order.length ? (items[order[pos]]?.label ?? '') : '';
 
   const playRef = useRef({ status, guessed, word, wrongCount, maxAttempts, score });
   playRef.current = { status, guessed, word, wrongCount, maxAttempts, score };

@@ -74,8 +74,11 @@ export default function SpellTheWord({
   const timerRef = useRef<number | null>(null);
   const previewMs = Math.max(500, previewSeconds * 1000);
   const itemKey = items.map((it) => it.id).join(',');
+  // 항목을 지운 직후 한 프레임은 order[pos] 가 줄어든 items 범위를 벗어날 수 있다(itemKey 가
+  // 바뀌어야 도는 useEffect 는 렌더 다음에 돎) — items[order[pos]] 가 undefined 라 .label 에서
+  // 그대로 터지던 걸 막는다.
   const currentLabel =
-    items.length > 0 && order.length > 0 && pos < order.length ? items[order[pos]].label : '';
+    items.length > 0 && order.length > 0 && pos < order.length ? (items[order[pos]]?.label ?? '') : '';
   const playRef = useRef({ phase, status, inputValue, target: currentLabel });
   playRef.current = { phase, status, inputValue, target: currentLabel };
 

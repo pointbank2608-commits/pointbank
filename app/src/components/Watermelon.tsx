@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   asSentenceSlot,
@@ -35,6 +35,16 @@ const TANK_H = 540;
 const WALL = 16;
 const DANGER_Y = 92;
 const DROP_Y = 52;
+const AIM_STEP = 28;
+
+function isPlayPointer(event: PointerEvent<HTMLElement>) {
+  return event.isPrimary && event.button === 0;
+}
+
+function blockMenu(event: { preventDefault(): void; stopPropagation(): void }) {
+  event.preventDefault();
+  event.stopPropagation();
+}
 
 interface Props {
   items: GameItem[];
@@ -215,6 +225,11 @@ export default function Watermelon({ items, patternId }: Props) {
   const [fruits, setFruits] = useState<FruitSnapshot[]>([]);
   const [nextItem, setNextItem] = useState<GameItem | null>(null);
   const [aimX, setAimX] = useState(TANK_W / 2);
+  const aimXRef = useRef(aimX);
+  const poolRef = useRef(pool);
+  const nudgeTimer = useRef<number | null>(null);
+  aimXRef.current = aimX;
+  poolRef.current = pool;
   const [score, setScore] = useState(0);
   const [popping, setPopping] = useState<{
     id: string;
@@ -329,28 +344,76 @@ export default function Watermelon({ items, patternId }: Props) {
     return (clientX - rect.left) / scale;
   }
 
-  function aimAt(clientX: number) {
+  function setAim(next: number) {
     const r = fruitStageForCount(1).radius;
-    setAimX(clampDropX(TANK_W, WALL, tankPoint(clientX), r));
+    const x = clampDropX(TANK_W, WALL, next, r);
+    aimXRef.current = x;
+    setAimX(x);
+  }
+
+  function aimAt(clientX: number) {
+    setAim(tankPoint(clientX));
+  }
+
+  function nudgeBy(dir: -1 | 1) {
+    setAim(aimXRef.current + dir * AIM_STEP);
+  }
+
+  function clearNudge() {
+    if (nudgeTimer.current != null) {
+      window.clearInterval(nudgeTimer.current);
+      nudgeTimer.current = null;
+    }
+  }
+
+  function startNudge(dir: -1 | 1, event: PointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    if (!isPlayPointer(event)) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    clearNudge();
+    nudgeBy(dir);
+    nudgeTimer.current = window.setInterval(() => nudgeBy(dir), 70);
   }
 
   function drop() {
     const world = worldRef.current;
     const item = nextRef.current;
-    if (!world || !item || over || dropLock.current || pool.length === 0) return;
+    if (!world || !item || overRef.current || dropLock.current || poolRef.current.length === 0) return;
     const slot = asSentenceSlot(item.slot);
     if (!slot) return;
     dropLock.current = true;
     const r = fruitStageForCount(1).radius;
-    const x = clampDropX(TANK_W, WALL, aimX, r);
+    const x = clampDropX(TANK_W, WALL, aimXRef.current, r);
     dropFruit(world, { id: crypto.randomUUID(), tokens: [{ word: item.label, slot }] }, x, DROP_Y);
-    const following = pickItem(pool, item.id);
+    const following = pickItem(poolRef.current, item.id);
     nextRef.current = following;
     setNextItem(following);
     window.setTimeout(() => {
       dropLock.current = false;
     }, 420);
   }
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        nudgeBy(-1);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        nudgeBy(1);
+      } else if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        drop();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      clearNudge();
+    };
+  }, []);
 
   if (pool.length === 0) {
     return (
@@ -364,7 +427,7 @@ export default function Watermelon({ items, patternId }: Props) {
   const nextSlot = asSentenceSlot(nextItem?.slot);
 
   return (
-    <div className="flex w-full flex-col items-center gap-3">
+    <div className="flex w-full flex-col items-center gap-3" onContextMenu={blockMenu}>
       <div className="flex flex-wrap items-center justify-center gap-3">
         <div className="melon-score" data-skin-object="score-card">
           <span className="font-caption text-caption text-[#9adfd4]">{t('gameWatermelon.scoreLabel')}</span>
@@ -392,13 +455,19 @@ export default function Watermelon({ items, patternId }: Props) {
         ref={tankRef}
         className="melon-tank"
         data-skin-stage="board"
-        onPointerMove={(e) => aimAt(e.clientX)}
-        onPointerDown={(e) => {
-          e.preventDefault();
-          aimAt(e.clientX);
-          (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+        onContextMenu={blockMenu}
+        onPointerMove={(event) => {
+          if (event.pointerType === 'mouse') aimAt(event.clientX);
         }}
-        onPointerUp={() => drop()}
+        onPointerDown={(event) => {
+          if (!isPlayPointer(event)) {
+            event.preventDefault();
+            return;
+          }
+          event.preventDefault();
+          aimAt(event.clientX);
+          drop();
+        }}
       >
         <div className="melon-rim" />
         <div className="melon-danger" style={{ top: `${(DANGER_Y / TANK_H) * 100}%` }} />
@@ -434,6 +503,44 @@ export default function Watermelon({ items, patternId }: Props) {
             </div>
           </div>
         )}
+      </div>
+      <div className="melon-pad" role="group" aria-label={t('gameWatermelon.padLabel')} onContextMenu={blockMenu}>
+        <button
+          type="button"
+          className="melon-dir"
+          aria-label={t('gameWatermelon.moveLeft')}
+          onContextMenu={blockMenu}
+          onPointerDown={(event) => startNudge(-1, event)}
+          onPointerUp={clearNudge}
+          onPointerCancel={clearNudge}
+          onLostPointerCapture={clearNudge}
+        >
+          ◀
+        </button>
+        <button
+          type="button"
+          className="melon-dir is-drop"
+          onContextMenu={blockMenu}
+          onPointerDown={(event) => {
+            event.preventDefault();
+            if (!isPlayPointer(event)) return;
+            drop();
+          }}
+        >
+          {t('gameWatermelon.dropButton')}
+        </button>
+        <button
+          type="button"
+          className="melon-dir"
+          aria-label={t('gameWatermelon.moveRight')}
+          onContextMenu={blockMenu}
+          onPointerDown={(event) => startNudge(1, event)}
+          onPointerUp={clearNudge}
+          onPointerCancel={clearNudge}
+          onLostPointerCapture={clearNudge}
+        >
+          ▶
+        </button>
       </div>
       <div className="font-caption text-caption text-on-surface-variant">{t('gameWatermelon.dropHint')}</div>
     </div>

@@ -111,7 +111,11 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
     );
   }
 
+  // 항목을 지운 직후 한 프레임은 order 가 아직 지우기 전 길이 기준이라(entryKey 가 바뀌어야 위
+  // useEffect 가 다시 섞는데 그건 렌더 다음에 돈다) order[pos] 가 줄어든 entries 범위를 벗어날 수
+  // 있다 — entries[order[pos]] 가 undefined 인 채로 밑에서 .answer/.prompt 를 읽다 터지던 걸 막는다.
   const current = entries[order[pos]];
+  if (!current) return null;
   const revealed = status !== 'playing';
   const mark = status === 'correct' ? 'is-ok' : status === 'wrong' ? 'is-no' : '';
   const tone = pos % 4;

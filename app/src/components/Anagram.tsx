@@ -198,7 +198,10 @@ export default function Anagram({
     );
   }
 
-  const target = items[order[pos]].label;
+  // 항목을 지운 직후 한 프레임은 order[pos] 가 줄어든 items 범위를 벗어날 수 있다(itemKey 가
+  // 바뀌어야 도는 useEffect 는 렌더 다음에 돎) — items[order[pos]] 가 undefined 라 .label 에서
+  // 그대로 터지던 걸 막는다.
+  const target = items[order[pos]]?.label ?? '';
 
   function pickFromPool(tileId: string) {
     if (status === 'correct') return;
