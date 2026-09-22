@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
 import PlanRouteGuard from '../components/PlanRouteGuard';
+import PrintBrandFooter from '../components/PrintBrandFooter';
 import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider } from '../context/LessonRunnerContext';
@@ -30,7 +31,10 @@ function AppLayoutInner() {
   const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  // 클래스뱅크 브랜드 footer 는 "수업 자료실"에서 뽑는 인쇄물에만 찍는다(학원 워터마크는 전 화면 공통).
+  const isMaterialsPrint = pathname.startsWith('/materials');
 
   const ROLE_LABEL: Record<string, string> = {
     owner: t('nav.roleOwner'),
@@ -144,6 +148,7 @@ function AppLayoutInner() {
   return (
     <div className="min-h-screen flex bg-background font-body-md text-on-background">
       <PrintWatermark />
+      {isMaterialsPrint && <PrintBrandFooter />}
       {/* 모바일 상단바 */}
       {/* iOS PWA(홈 화면 추가, viewport-fit=cover + black-translucent 상태 바)에서는 상태 바 영역이
           웹뷰 위에 겹쳐 그려지고 그 영역의 터치는 시스템이 가로채 버려서, 헤더가 화면 맨 위(y=0)에서
