@@ -28,6 +28,7 @@ import {
   type FruitSnapshot,
   type WatermelonWorld,
 } from '../lib/watermelonWorld';
+import { playWatermelonSfx, preloadWatermelonSfx } from '../lib/watermelonSfx';
 import type { GameItem } from '../lib/types';
 
 const TANK_W = 420;
@@ -267,6 +268,7 @@ export default function Watermelon({ items, patternId }: Props) {
       },
     });
     worldRef.current = world;
+    preloadWatermelonSfx();
     let raf = 0;
     let last = performance.now();
     const loop = (now: number) => {
@@ -279,6 +281,7 @@ export default function Watermelon({ items, patternId }: Props) {
         if (overflowMs.current > 1600) {
           overRef.current = true;
           setOver(true);
+          playWatermelonSfx('over');
         }
       } else if (overflowBodies(world).length === 0) {
         overflowMs.current = 0;
@@ -307,6 +310,8 @@ export default function Watermelon({ items, patternId }: Props) {
     removeFruit(world, a);
     removeFruit(world, b);
     const body = dropFruit(world, { id: crypto.randomUUID(), tokens, agreement }, x, y);
+    playWatermelonSfx('merge');
+    if (agreement) playWatermelonSfx('agree');
     if (isCompleteSentence(tokens, current.slots)) {
       const delay = agreement ? AGREE_MS : COMPLETE_HOLD_MS;
       const id = body.fruitData.id;
@@ -325,6 +330,7 @@ export default function Watermelon({ items, patternId }: Props) {
           agreement,
         });
         setBurst(phraseText(tokens));
+        playWatermelonSfx('pop');
         setScore((s) => s + pointsForComplete(current));
         removeFruit(live, still);
         window.setTimeout(() => {
@@ -385,6 +391,7 @@ export default function Watermelon({ items, patternId }: Props) {
     const r = fruitStageForCount(1).radius;
     const x = clampDropX(TANK_W, WALL, aimXRef.current, r);
     dropFruit(world, { id: crypto.randomUUID(), tokens: [{ word: item.label, slot }] }, x, DROP_Y);
+    playWatermelonSfx('drop');
     const following = pickItem(poolRef.current, item.id);
     nextRef.current = following;
     setNextItem(following);

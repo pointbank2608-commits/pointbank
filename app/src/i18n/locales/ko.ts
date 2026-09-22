@@ -761,7 +761,7 @@ const ko = {
     padLabel: '조준과 떨어뜨리기',
     moveLeft: '왼쪽으로',
     moveRight: '오른쪽으로',
-    dropButton: '떨어뜨리기',
+    dropButton: 'DROP',
     gameOver: '넘쳤어요!',
     finalScore: '점수 {{score}}',
     patternLabel: '문장 틀',

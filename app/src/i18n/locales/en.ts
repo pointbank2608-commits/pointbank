@@ -765,7 +765,7 @@ const en: Ko = {
     padLabel: 'Aim and drop',
     moveLeft: 'Move left',
     moveRight: 'Move right',
-    dropButton: 'Drop',
+    dropButton: 'DROP',
     gameOver: 'Overflow!',
     finalScore: 'Score {{score}}',
     patternLabel: 'Sentence pattern',
