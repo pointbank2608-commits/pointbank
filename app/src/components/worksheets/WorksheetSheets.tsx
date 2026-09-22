@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import BrandMark from '../BrandMark';
+import { BRAND_DOMAIN } from '../PrintBrandFooter';
 import { decorUrl } from '../../lib/lineart';
 import { BOARD_COLS, BOARD_ROWS, PHONICS_PER_PAGE } from '../../lib/worksheetGenerators';
 import { PhonicsBlankCute, PhonicsCircleCute, PhonicsOddCute, RhymeCute } from './PhonicsCuteSheets';
@@ -758,16 +760,34 @@ const BOOK_LAYOUT: { page: number; upsideDown: boolean }[] = [
   { page: 1, upsideDown: false },
 ];
 
+/** 클래스뱅크 브랜드 표시 — 다른 22종은 `PrintBrandFooter.tsx` 가 `position: fixed` 로 페이지마다
+ * 자동으로 찍어 주지만, 그 방식은 크롬 인쇄 엔진 버그로 `@page landscape-sheet`(미니북 전용
+ * 가로 페이지)에서는 아예 안 찍힌다(2026-09-22 확인). 미니북만 페이지 안쪽 흐름에 직접 한 줄
+ * 넣어서 같은 문제를 피한다 — 그래서 아래 그리드 높이를 190mm 예산 안에서 조금 줄여 자리를 냈다. */
+function MiniBookBrandFooter() {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-[2mm] flex items-center justify-center gap-[1.5mm]">
+      <BrandMark className="h-[3.5mm] w-[3.5mm] shrink-0 opacity-60" />
+      <span className="text-[8px] font-bold leading-none text-[#1e4b7a] opacity-60">
+        {t('common.brand')}
+        {BRAND_DOMAIN ? ` · ${BRAND_DOMAIN}` : ''}
+      </span>
+    </div>
+  );
+}
+
 function MiniBookSheet({ book }: { book: MiniBook }) {
   return (
     <section className="print-board print-landscape landscape-preview mb-6 rounded-lg border border-outline-variant/40 bg-white p-[6mm] text-black shadow-sm print:mb-0 print:rounded-none print:border-0 print:p-0 print:shadow-none">
-      <div className="relative mx-auto grid h-[190mm] w-[277mm] grid-cols-4 grid-rows-2">
+      <div className="relative mx-auto grid h-[183mm] w-[277mm] grid-cols-4 grid-rows-2">
         {BOOK_LAYOUT.map((slot) => (
           <BookPanel key={slot.page} page={slot.page} book={book} upsideDown={slot.upsideDown} />
         ))}
         {/* 가운데 자르는 선(가운데 두 칸 사이) */}
         <div className="pointer-events-none absolute left-[25%] right-[25%] top-1/2 border-t-2 border-dashed border-black" />
       </div>
+      <MiniBookBrandFooter />
     </section>
   );
 }

@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import BrandMark from './BrandMark';
 
-/** 나중에 도메인을 구입하면 여기 한 줄만 채우면 인쇄물 하단에 함께 찍힌다. */
-const BRAND_DOMAIN: string | null = null;
+/** 나중에 도메인을 구입하면 여기 한 줄만 채우면 인쇄물 하단에 함께 찍힌다.
+ * 미니북(WorksheetSheets.tsx 의 MiniBookSheet)도 이 값을 그대로 가져다 쓴다. */
+export const BRAND_DOMAIN: string | null = null;
 
 /**
  * 수업 자료실 인쇄물(워크시트·플래시카드·빙고판·메모리 카드) 맨 아래 가운데에 클래스뱅크
