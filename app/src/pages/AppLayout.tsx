@@ -28,7 +28,7 @@ export default function AppLayout() {
 }
 
 function AppLayoutInner() {
-  const { academy, profile, pointUnit, isStaff, signOut } = useAuth();
+  const { academy, profile, pointUnit, isStaff, isPaid, signOut } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -119,17 +119,46 @@ function AppLayoutInner() {
             {t('nav.settings')}
           </NavLink>
         )}
-        <div className="px-4 py-2 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
-            {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
+        {isStaff ? (
+          // 선생님은 플랜 배지를 눌러 결제 화면으로 바로 갈 수 있다(Claude 등 SaaS의 "이름 · 플랜" 패턴 참고).
+          <Link
+            to="/settings/billing"
+            onClick={() => setMobileOpen(false)}
+            className="px-4 py-2 flex items-center gap-2 rounded-lg transition-colors hover:bg-soft-mint/20"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
+              {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
+                <span className="truncate">{profile?.display_name}</span>
+                <span
+                  className={`shrink-0 rounded-full px-1.5 py-0.5 font-caption text-caption ${
+                    isPaid ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'
+                  }`}
+                >
+                  {isPaid ? t('settings.planPaidBadge') : t('settings.planFreeBadge')}
+                </span>
+              </p>
+              <p className="font-caption text-caption text-on-surface-variant truncate">
+                {ROLE_LABEL[profile?.role ?? ''] ?? ''}
+              </p>
+            </div>
+            <span className="material-symbols-outlined shrink-0 text-base text-on-surface-variant">chevron_right</span>
+          </Link>
+        ) : (
+          <div className="px-4 py-2 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
+              {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
+            </div>
+            <div className="min-w-0">
+              <p className="font-label-md text-label-md text-on-surface truncate">{profile?.display_name}</p>
+              <p className="font-caption text-caption text-on-surface-variant">
+                {ROLE_LABEL[profile?.role ?? ''] ?? ''}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-label-md text-label-md text-on-surface truncate">{profile?.display_name}</p>
-            <p className="font-caption text-caption text-on-surface-variant">
-              {ROLE_LABEL[profile?.role ?? ''] ?? ''}
-            </p>
-          </div>
-        </div>
+        )}
         <div className="px-4">
           <LanguageToggle />
         </div>
