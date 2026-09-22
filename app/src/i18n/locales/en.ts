@@ -1993,6 +1993,12 @@ const en: Ko = {
     rotateToast: 'Issued a new invite code.',
   },
 
+  studentHistory: {
+    title: "{{name}}'s passbook history",
+    balance: 'Current balance',
+    empty: 'No points earned or spent yet.',
+  },
+
   homework: {
     backToResults: '← Reports',
     title: "{{name}}'s Homework Calendar",
@@ -2034,6 +2040,7 @@ const en: Ko = {
     total: 'Total',
     noRecord: 'No record',
     homeworkCalendar: 'Homework calendar',
+    historyLink: 'Passbook history',
     resetButton: 'Reset points',
     resetting: 'Resetting…',
     resetConfirm: "Reset every student shown here back to 0 points? The reset stays in the transaction history.",

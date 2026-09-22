@@ -1987,6 +1987,12 @@ const ko = {
     rotateToast: '새 초대 코드를 발급했습니다.',
   },
 
+  studentHistory: {
+    title: '{{name}} 통장 내역',
+    balance: '현재 잔액',
+    empty: '아직 적립·차감 기록이 없습니다.',
+  },
+
   homework: {
     backToResults: '← 리포트',
     title: '{{name}} 숙제 캘린더',
@@ -2028,6 +2034,7 @@ const ko = {
     total: '합계',
     noRecord: '기록 없음',
     homeworkCalendar: '숙제 캘린더',
+    historyLink: '통장 내역',
     resetButton: '포인트 초기화',
     resetting: '초기화 중…',
     resetConfirm: '지금 보이는 학생들의 포인트를 전부 0으로 되돌릴까요? 되돌린 내역은 거래 기록에 남아요.',

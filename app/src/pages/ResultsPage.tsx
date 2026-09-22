@@ -241,7 +241,7 @@ export default function ResultsPage() {
               </div>
 
               <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
-                <div className="grid grid-cols-[32px_1fr_70px_70px_90px_36px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
+                <div className="grid grid-cols-[32px_1fr_70px_70px_90px_64px] gap-2 px-4 md:px-6 py-3 font-caption text-caption text-on-surface-variant border-b border-surface-container">
                   <div>{t('results.rank')}</div>
                   <div>{t('results.name')}</div>
                   <div className="text-right">{t('results.earned')}</div>
@@ -252,7 +252,7 @@ export default function ResultsPage() {
                 {ranked.map((r, i) => (
                   <div
                     key={r.student_id}
-                    className={`relative grid grid-cols-[32px_1fr_70px_70px_90px_36px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 ${
+                    className={`relative grid grid-cols-[32px_1fr_70px_70px_90px_64px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 ${
                       r.student_id === myStudentId ? 'bg-secondary-container/30' : ''
                     }`}
                   >
@@ -277,19 +277,28 @@ export default function ResultsPage() {
                       {r.balance}
                       {pointUnit}
                     </div>
-                    <Link
-                      to={`/results/homework/${r.student_id}`}
-                      title={t('results.homeworkCalendar')}
-                      className="relative text-on-surface-variant hover:text-primary flex items-center justify-center"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                    </Link>
+                    <div className="relative flex items-center justify-end gap-1">
+                      <Link
+                        to={`/results/history/${r.student_id}`}
+                        title={t('results.historyLink')}
+                        className="text-on-surface-variant hover:text-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                      </Link>
+                      <Link
+                        to={`/results/homework/${r.student_id}`}
+                        title={t('results.homeworkCalendar')}
+                        className="text-on-surface-variant hover:text-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                      </Link>
+                    </div>
                   </div>
                 ))}
                 {idle.map((r) => (
                   <div
                     key={r.student_id}
-                    className="grid grid-cols-[32px_1fr_90px_36px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 opacity-60"
+                    className="grid grid-cols-[32px_1fr_90px_64px] gap-2 px-4 md:px-6 py-3 items-center border-b border-surface-container last:border-0 opacity-60"
                   >
                     <div className="font-body-md text-body-md text-on-surface-variant">–</div>
                     <div className="min-w-0">
@@ -299,13 +308,22 @@ export default function ResultsPage() {
                       </div>
                     </div>
                     <div className="text-right font-body-md text-body-md text-on-surface-variant">–</div>
-                    <Link
-                      to={`/results/homework/${r.student_id}`}
-                      title={t('results.homeworkCalendar')}
-                      className="text-on-surface-variant hover:text-primary flex items-center justify-center"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                    </Link>
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        to={`/results/history/${r.student_id}`}
+                        title={t('results.historyLink')}
+                        className="text-on-surface-variant hover:text-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                      </Link>
+                      <Link
+                        to={`/results/homework/${r.student_id}`}
+                        title={t('results.homeworkCalendar')}
+                        className="text-on-surface-variant hover:text-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -50,6 +50,7 @@ import SaveOrGivePage from './pages/SaveOrGivePage';
 import SentenceUnscramblePage from './pages/SentenceUnscramblePage';
 import SettingsPage from './pages/SettingsPage';
 import SpellTheWordPage from './pages/SpellTheWordPage';
+import StudentHistoryPage from './pages/StudentHistoryPage';
 import StudentPage from './pages/StudentPage';
 import TicTacToePage from './pages/TicTacToePage';
 import TimerMatchPage from './pages/TimerMatchPage';
@@ -131,6 +132,7 @@ export default function App() {
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/results/homework/:studentId" element={<HomeworkCalendarPage />} />
+            <Route path="/results/history/:studentId" element={<StudentHistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/billing" element={<BillingPage />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
