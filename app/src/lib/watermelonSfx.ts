@@ -1,11 +1,11 @@
 type MelonSfx = 'drop' | 'merge' | 'agree' | 'pop' | 'over';
 
 const URLS: Record<MelonSfx, string> = {
-  drop: '/sounds/watermelon-drop.wav?v=1',
-  merge: '/sounds/watermelon-merge.wav?v=1',
-  agree: '/sounds/watermelon-agree.wav?v=1',
-  pop: '/sounds/watermelon-pop.wav?v=1',
-  over: '/sounds/watermelon-over.wav?v=1',
+  drop: '/sounds/watermelon-drop.wav?v=2',
+  merge: '/sounds/watermelon-merge.wav?v=2',
+  agree: '/sounds/watermelon-agree.wav?v=2',
+  pop: '/sounds/watermelon-pop.wav?v=2',
+  over: '/sounds/watermelon-over.wav?v=2',
 };
 
 const VOLUME: Record<MelonSfx, number> = {

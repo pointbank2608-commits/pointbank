@@ -1,6 +1,6 @@
 /**
- * 수박 문장 게임용 짧은 효과음 wav 를 만든다.
- * 오실레이터 한 방(삐-)이 아니라, 노이즈·저음 몸통·배음을 겹친 폴리 질감.
+ * 수박 문장 게임 효과음 — 유치·초등 저학년용 귀여운 물방울/비눗방울.
+ * 저음 쿵·폭발 대신, 짧고 동그란 drip / ploop / pop 만 겹친다.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,36 +14,8 @@ function clamp(v, lo, hi) {
 
 function env(t, attack, decay) {
   if (t < 0) return 0;
-  if (t < attack) return t / attack;
+  if (t < attack) return t / Math.max(0.0001, attack);
   return Math.exp(-(t - attack) / decay);
-}
-
-function noise() {
-  return Math.random() * 2 - 1;
-}
-
-function lowpassState() {
-  return { y: 0 };
-}
-
-function lowpass(state, x, cutoff) {
-  const a = 1 - Math.exp((-2 * Math.PI * cutoff) / SR);
-  state.y += a * (x - state.y);
-  return state.y;
-}
-
-function highpassState() {
-  return { prevX: 0, prevY: 0 };
-}
-
-function highpass(state, x, cutoff) {
-  const rc = 1 / (2 * Math.PI * cutoff);
-  const dt = 1 / SR;
-  const a = rc / (rc + dt);
-  const y = a * (state.prevY + x - state.prevX);
-  state.prevX = x;
-  state.prevY = y;
-  return y;
 }
 
 function mixInto(buf, start, samples, gain = 1) {
@@ -53,72 +25,58 @@ function mixInto(buf, start, samples, gain = 1) {
   }
 }
 
-function sineBurst(seconds, freqStart, freqEnd, attack, decay, gain) {
-  const n = Math.floor(SR * seconds);
+/** 물방울 한 방울: 높은 음이 살짝 머물다 동그랗게 내려온다. */
+function drip({ startHz, endHz, dur, gain, attack = 0.004, hold = 0.22 }) {
+  const n = Math.floor(SR * dur);
   const out = new Float32Array(n);
+  let phase = 0;
   for (let i = 0; i < n; i++) {
     const t = i / SR;
     const p = i / Math.max(1, n - 1);
-    const f = freqStart * Math.pow(freqEnd / freqStart, p);
-    out[i] = Math.sin(2 * Math.PI * f * t) * env(t, attack, decay) * gain;
+    const fall = Math.pow(p, 1 + hold * 2);
+    const f = startHz * Math.pow(endHz / startHz, fall);
+    phase += (2 * Math.PI * f) / SR;
+    const amp = env(t, attack, dur * 0.34) * gain;
+    out[i] = (Math.sin(phase) + 0.16 * Math.sin(phase * 2)) * amp;
   }
   return out;
 }
 
-function noiseBurst(seconds, cutoff, attack, decay, gain, hp = 80) {
-  const n = Math.floor(SR * seconds);
+/** 비눗방울이 터질 때처럼 빠르게 올라가며 사라진다. */
+function bubbleUp({ startHz, endHz, dur, gain, attack = 0.002 }) {
+  const n = Math.floor(SR * dur);
   const out = new Float32Array(n);
-  const lp = lowpassState();
-  const hip = highpassState();
+  let phase = 0;
   for (let i = 0; i < n; i++) {
     const t = i / SR;
-    const raw = highpass(hip, lowpass(lp, noise(), cutoff), hp);
-    out[i] = raw * env(t, attack, decay) * gain;
+    const p = i / Math.max(1, n - 1);
+    const f = startHz * Math.pow(endHz / startHz, Math.sqrt(p));
+    phase += (2 * Math.PI * f) / SR;
+    const amp = env(t, attack, dur * 0.22) * gain * (1 - p * 0.35);
+    out[i] = Math.sin(phase) * amp;
   }
   return out;
 }
 
-function pluck(seconds, freq, decay, gain) {
-  const n = Math.floor(SR * seconds);
-  const delay = Math.max(2, Math.round(SR / freq));
-  const buf = new Float64Array(delay);
-  for (let i = 0; i < delay; i++) buf[i] = noise();
-  const out = new Float32Array(n);
-  let idx = 0;
-  for (let i = 0; i < n; i++) {
-    const next = idx + 1 < delay ? idx + 1 : 0;
-    const x = 0.5 * (buf[idx] + buf[next]) * Math.exp(-i / (SR * decay));
-    buf[idx] = x;
-    out[i] = x * gain;
-    idx = next;
-  }
-  return out;
-}
-
-function bell(seconds, freqs, gain) {
-  const n = Math.floor(SR * seconds);
+/** 작고 반짝이는 물방울 핑. */
+function ping({ hz, dur, gain, attack = 0.003 }) {
+  const n = Math.floor(SR * dur);
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const t = i / SR;
-    let s = 0;
-    freqs.forEach((f, k) => {
-      const decay = 0.18 + k * 0.07;
-      s += Math.sin(2 * Math.PI * f * t) * Math.exp(-t / decay) * (1 / (k + 1.15));
-    });
-    out[i] = s * gain;
+    const amp = env(t, attack, dur * 0.28) * gain;
+    out[i] = Math.sin(2 * Math.PI * hz * t) * amp;
   }
   return out;
 }
 
 function soften(buf) {
-  const lp = lowpassState();
-  for (let i = 0; i < buf.length; i++) buf[i] = lowpass(lp, buf[i], 9800);
   let peak = 0.0001;
   for (let i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i]));
-  const scale = 0.88 / peak;
+  const scale = 0.76 / peak;
   for (let i = 0; i < buf.length; i++) {
     const x = buf[i] * scale;
-    buf[i] = clamp(x - x * x * x * 0.12, -0.97, 0.97);
+    buf[i] = clamp(x - x * x * x * 0.08, -0.92, 0.92);
   }
   return buf;
 }
@@ -128,9 +86,9 @@ function writeWav(name, mono) {
   const stereo = new Float32Array(mono.length * 2);
   for (let i = 0; i < mono.length; i++) {
     const l = mono[i];
-    const rIdx = Math.min(mono.length - 1, i + 11);
+    const rIdx = Math.min(mono.length - 1, i + 8);
     stereo[i * 2] = l;
-    stereo[i * 2 + 1] = mono[rIdx] * 0.92 + l * 0.08;
+    stereo[i * 2 + 1] = mono[rIdx] * 0.9 + l * 0.1;
   }
   const dataBytes = stereo.length * 2;
   const buf = Buffer.alloc(44 + dataBytes);
@@ -152,8 +110,7 @@ function writeWav(name, mono) {
     buf.writeInt16LE(Math.round(clamp(stereo[i], -1, 1) * 32767), o);
     o += 2;
   }
-  const file = path.join(OUT, name);
-  fs.writeFileSync(file, buf);
+  fs.writeFileSync(path.join(OUT, name), buf);
   console.log(name, `${(mono.length / SR).toFixed(2)}s`, buf.length, 'bytes');
 }
 
@@ -162,49 +119,44 @@ function alloc(seconds) {
 }
 
 function drop() {
-  const buf = alloc(0.28);
-  mixInto(buf, 0, noiseBurst(0.045, 1800, 0.002, 0.03, 0.55, 200));
-  mixInto(buf, 0, sineBurst(0.2, 168, 72, 0.004, 0.09, 0.62));
-  mixInto(buf, Math.floor(SR * 0.012), pluck(0.16, 210, 0.07, 0.22));
-  mixInto(buf, Math.floor(SR * 0.018), sineBurst(0.12, 92, 58, 0.008, 0.07, 0.28));
+  const buf = alloc(0.22);
+  mixInto(buf, 0, drip({ startHz: 980, endHz: 460, dur: 0.16, gain: 0.7, hold: 0.28 }));
+  mixInto(buf, 0, ping({ hz: 1560, dur: 0.05, gain: 0.14 }));
   return buf;
 }
 
 function merge() {
-  const buf = alloc(0.36);
-  mixInto(buf, 0, noiseBurst(0.07, 1400, 0.003, 0.045, 0.42, 160));
-  mixInto(buf, 0, sineBurst(0.16, 210, 110, 0.005, 0.08, 0.4));
-  mixInto(buf, Math.floor(SR * 0.04), noiseBurst(0.12, 900, 0.006, 0.08, 0.32, 120));
-  mixInto(buf, Math.floor(SR * 0.05), sineBurst(0.2, 146, 88, 0.01, 0.11, 0.38));
-  mixInto(buf, Math.floor(SR * 0.08), sineBurst(0.18, 320, 420, 0.01, 0.1, 0.16));
+  const buf = alloc(0.32);
+  mixInto(buf, 0, drip({ startHz: 1040, endHz: 560, dur: 0.12, gain: 0.48, hold: 0.2 }));
+  mixInto(buf, Math.floor(SR * 0.055), drip({ startHz: 880, endHz: 420, dur: 0.14, gain: 0.58, hold: 0.24 }));
+  mixInto(buf, Math.floor(SR * 0.12), drip({ startHz: 720, endHz: 520, dur: 0.16, gain: 0.32, hold: 0.4 }));
   return buf;
 }
 
 function agree() {
-  const buf = alloc(0.7);
-  mixInto(buf, 0, noiseBurst(0.06, 3200, 0.004, 0.04, 0.12, 600));
-  mixInto(buf, 0, bell(0.68, [784, 1178, 1568, 1975, 2352], 0.42));
-  mixInto(buf, Math.floor(SR * 0.04), sineBurst(0.28, 1178, 1178, 0.01, 0.16, 0.12));
+  const buf = alloc(0.55);
+  mixInto(buf, 0, drip({ startHz: 784, endHz: 660, dur: 0.14, gain: 0.36, hold: 0.35 }));
+  mixInto(buf, Math.floor(SR * 0.1), drip({ startHz: 988, endHz: 820, dur: 0.15, gain: 0.4, hold: 0.35 }));
+  mixInto(buf, Math.floor(SR * 0.2), drip({ startHz: 1175, endHz: 990, dur: 0.2, gain: 0.46, hold: 0.4 }));
+  mixInto(buf, Math.floor(SR * 0.22), ping({ hz: 1568, dur: 0.18, gain: 0.16 }));
   return buf;
 }
 
 function pop() {
-  const buf = alloc(0.48);
-  mixInto(buf, 0, noiseBurst(0.05, 2600, 0.0015, 0.028, 0.55, 300));
-  mixInto(buf, 0, sineBurst(0.22, 740, 160, 0.003, 0.1, 0.48));
-  mixInto(buf, Math.floor(SR * 0.03), noiseBurst(0.14, 1600, 0.006, 0.08, 0.22, 250));
-  mixInto(buf, Math.floor(SR * 0.05), sineBurst(0.12, 1240, 880, 0.004, 0.06, 0.16));
-  mixInto(buf, Math.floor(SR * 0.09), sineBurst(0.14, 1680, 1320, 0.004, 0.07, 0.1));
-  mixInto(buf, Math.floor(SR * 0.04), pluck(0.2, 280, 0.08, 0.14));
+  const buf = alloc(0.38);
+  mixInto(buf, 0, bubbleUp({ startHz: 620, endHz: 1680, dur: 0.09, gain: 0.62 }));
+  mixInto(buf, Math.floor(SR * 0.04), ping({ hz: 1320, dur: 0.1, gain: 0.22 }));
+  mixInto(buf, Math.floor(SR * 0.08), ping({ hz: 1760, dur: 0.11, gain: 0.18 }));
+  mixInto(buf, Math.floor(SR * 0.12), ping({ hz: 2093, dur: 0.12, gain: 0.14 }));
+  mixInto(buf, Math.floor(SR * 0.06), drip({ startHz: 980, endHz: 720, dur: 0.12, gain: 0.2, hold: 0.15 }));
   return buf;
 }
 
 function over() {
-  const buf = alloc(0.85);
-  mixInto(buf, 0, noiseBurst(0.16, 700, 0.008, 0.12, 0.28, 60));
-  mixInto(buf, 0, sineBurst(0.36, 96, 42, 0.01, 0.18, 0.55));
-  mixInto(buf, Math.floor(SR * 0.08), sineBurst(0.28, 196, 147, 0.012, 0.16, 0.22));
-  mixInto(buf, Math.floor(SR * 0.22), sineBurst(0.4, 147, 110, 0.02, 0.22, 0.2));
+  const buf = alloc(0.72);
+  mixInto(buf, 0, drip({ startHz: 784, endHz: 520, dur: 0.18, gain: 0.42, hold: 0.2 }));
+  mixInto(buf, Math.floor(SR * 0.2), drip({ startHz: 659, endHz: 430, dur: 0.2, gain: 0.38, hold: 0.22 }));
+  mixInto(buf, Math.floor(SR * 0.4), drip({ startHz: 523, endHz: 340, dur: 0.26, gain: 0.34, hold: 0.18 }));
   return buf;
 }
 

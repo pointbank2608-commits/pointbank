@@ -68,9 +68,9 @@ export default function TermsPage() {
             <h2 className="mb-2 font-title-md text-title-md text-on-surface">제5조 (서비스 이용요금 및 플랜)</h2>
             <ol className="list-decimal space-y-1.5 pl-5">
               <li>
-                <span className="font-bold">무료 플랜</span> — 반 1개, 학생 10명까지 등록할 수 있으며, 포인트 통장·출석부
-                기능과 게임 센터 중 일부(돌림판, 사다리, 시한폭탄, 행맨)만 이용할 수 있습니다. 단어 사전, 파닉스, 내
-                단어장, 내 커리큘럼, 수업 자료실, 리포트, 게임 센터의 나머지 게임은 유료 플랜에서만 이용할 수 있습니다.
+                <span className="font-bold">무료 플랜</span> — 반 1개, 학생 10명까지 등록할 수 있으며, 포인트 통장·출석부·리포트
+                기능과 게임 센터 중 일부(돌림판, 사다리, 시한폭탄, 행맨)를 이용할 수 있습니다. 단어 사전, 파닉스, 내
+                단어장, 내 커리큘럼, 수업 자료실, 게임 센터의 나머지 게임은 유료 플랜에서만 이용할 수 있습니다.
               </li>
               <li>
                 <span className="font-bold">유료 플랜</span> — 반·학생 수 제한 없이 전체 기능을 이용할 수 있습니다. 등록

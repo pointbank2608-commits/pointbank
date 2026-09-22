@@ -104,10 +104,11 @@ function AppLayoutInner() {
 
       <ul className="flex-1 flex flex-col gap-1 px-2">
         {navItems.map((item) => {
-          // 사전·파닉스·단어장·자료실·리포트·내 커리큘럼은 전체가 유료 전용이라(FREE_BLOCKED_PATHS),
-          // 메뉴 단계에서부터 왕관을 붙인다. 무료 선생님에겐 "여긴 유료 기능"이라는 업그레이드 유도,
-          // 유료 선생님에겐 "나는 이 유료 기능을 쓰고 있다"는 확인 — 둘 다에게 항상 보인다(게임별
-          // 잠금은 GamesPage.tsx 카드에서 따로, 이 배지와 같은 이유로 유·무료 모두에게 표시).
+          // 사전·파닉스·단어장·자료실·내 커리큘럼은 전체가 유료 전용이라(FREE_BLOCKED_PATHS),
+          // 메뉴 단계에서부터 왕관을 붙인다. 리포트(/results)는 무료 플랜에도 연다. 무료 선생님에겐
+          // "여긴 유료 기능"이라는 업그레이드 유도, 유료 선생님에겐 "나는 이 유료 기능을 쓰고 있다"는
+          // 확인 — 둘 다에게 항상 보인다(게임별 잠금은 GamesPage.tsx 카드에서 따로, 이 배지와 같은
+          // 이유로 유·무료 모두에게 표시).
           const isPremiumPage = FREE_BLOCKED_PATHS.includes(item.to);
           return (
             <li key={item.to}>

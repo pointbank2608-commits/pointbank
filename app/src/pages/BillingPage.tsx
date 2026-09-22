@@ -122,6 +122,11 @@ export default function BillingPage() {
           </div>
         )}
 
+        <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
+          <span aria-hidden="true">⚠️</span>
+          <span>{t('billing.bcCardNotice')}</span>
+        </div>
+
         <div className="flex flex-wrap gap-2 pt-2">
           <button
             type="button"
