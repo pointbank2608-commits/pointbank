@@ -163,6 +163,9 @@ export default function GamesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {games.map((g) => {
               const locked = isStaff && !isPaid && !isFreeTierGame(g.type);
+              // 왕관 배지: 유료 전용 게임이면 항상 붙인다(유료 회원도 "이건 유료 기능이구나"를 느끼도록 —
+              // 캔바 프리미엄 템플릿의 왕관 표시와 같은 목적). locked 여부와 별개로, 무료 4종만 안 붙는다.
+              const isPremiumGame = !isFreeTierGame(g.type);
               return (
                 <Link
                   key={g.type}
@@ -193,6 +196,14 @@ export default function GamesPage() {
                     ) : (
                       <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
                         <span className="font-caption text-caption text-inverse-on-surface tabular-nums">{g.number}</span>
+                      </div>
+                    )}
+                    {isPremiumGame && (
+                      <div
+                        className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-inverse-surface/70 text-[13px] leading-none backdrop-blur-sm"
+                        title={t('gamesList.premiumBadge')}
+                      >
+                        👑
                       </div>
                     )}
                   </div>

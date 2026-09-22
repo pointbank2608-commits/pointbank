@@ -10,6 +10,7 @@ import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
+import { FREE_BLOCKED_PATHS } from '../lib/planLimits';
 
 interface NavItem {
   to: string;
@@ -102,14 +103,26 @@ function AppLayoutInner() {
       )}
 
       <ul className="flex-1 flex flex-col gap-1 px-2">
-        {navItems.map((item) => (
-          <li key={item.to}>
-            <NavLink to={item.to} onClick={() => setMobileOpen(false)} className={navLinkClass}>
-              <span className="material-symbols-outlined">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          </li>
-        ))}
+        {navItems.map((item) => {
+          // 사전·파닉스·단어장·자료실·리포트·내 커리큘럼은 전체가 유료 전용이라(FREE_BLOCKED_PATHS),
+          // 메뉴 단계에서부터 왕관을 붙여 무료 선생님에게 "여긴 유료 기능"임을 미리 알려준다
+          // (게임 센터는 게임별로 잠기므로 GamesPage.tsx 카드에서 따로 표시). 유료 회원에겐 안 보인다 —
+          // 늘 붙어있으면 상시 메뉴라 거슬려서 업그레이드 설득이 필요한 무료 회원에게만 노출.
+          const isPremiumPage = !isPaid && FREE_BLOCKED_PATHS.includes(item.to);
+          return (
+            <li key={item.to}>
+              <NavLink to={item.to} onClick={() => setMobileOpen(false)} className={navLinkClass}>
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="flex-1 truncate">{item.label}</span>
+                {isPremiumPage && (
+                  <span className="shrink-0 text-[13px] leading-none" title={t('nav.premiumPageBadge')}>
+                    👑
+                  </span>
+                )}
+              </NavLink>
+            </li>
+          );
+        })}
       </ul>
 
       <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
