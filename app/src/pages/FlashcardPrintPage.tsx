@@ -229,8 +229,13 @@ export default function FlashcardPrintPage() {
               key={pageIndex}
               className="print-board mb-6 grid gap-[3mm] border border-outline-variant/40 bg-white p-3 print:mb-0 print:border-0 print:p-0"
               style={{
-                // A4 인쇄 가능 영역(여백 12mm 제외 186×273mm)보다 살짝 낮게 잡아 빈 페이지가 끼는 걸 막는다.
-                aspectRatio: '186 / 270',
+                // A4 인쇄 가능 영역(여백 12mm 제외 186×273mm)보다 낮게 잡는다 — 빈 페이지가 끼는 걸
+                // 막는 것도 있지만, 무엇보다 페이지 맨 아래에 항상 찍히는 클래스뱅크 브랜드 푸터
+                // (PrintBrandFooter.tsx, position:fixed)와 겹치지 않을 여백을 남겨야 한다. 카드가
+                // 12장(3×4)까지 꽉 차면 270mm였을 땐 마지막 줄 카드 안에 푸터 글자가 겹쳐 찍히는
+                // 실제 인쇄 사고가 났다(2026-09-23 사용자 제보, 헤드리스 크롬으로 재현·확인함) —
+                // 262mm는 파닉스 학생용 페이지에서도 쓰는 값이라 안전 여백이 이미 검증돼 있다.
+                aspectRatio: '186 / 262',
                 gridTemplateColumns: `repeat(${layout.cols}, minmax(0, 1fr))`,
                 gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`,
               }}
