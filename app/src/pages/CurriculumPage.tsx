@@ -12,6 +12,7 @@ import {
   fetchCurriculumLessons,
   fetchWordLists,
   generateWordListFromVideo,
+  updateCurriculumLesson,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG } from '../lib/gameCatalog';
@@ -63,6 +64,8 @@ export default function CurriculumPage() {
   }, [academy?.id, staffClassId]);
 
   const [showForm, setShowForm] = useState(false);
+  /** null 이면 새로 만드는 중, 값이 있으면 그 레슨을 수정하는 중(2026-09-24 수정 기능 추가). */
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [wordListId, setWordListId] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -105,6 +108,7 @@ export default function CurriculumPage() {
   }
 
   function resetForm() {
+    setEditingId(null);
     setName('');
     setWordListId('');
     setVideoUrl('');
@@ -113,7 +117,24 @@ export default function CurriculumPage() {
     setShowForm(false);
   }
 
-  async function handleCreate() {
+  function openCreateForm() {
+    resetForm();
+    setShowForm(true);
+  }
+
+  /** 레슨 카드의 "편집"을 누르면 그 레슨 내용을 폼에 채워서 연다. 영상은 예전엔 별도
+   * 컬럼(video_url)이었을 수 있어 effectiveSlides()로 슬라이드 형태로 통일해서 불러온다. */
+  function openEditForm(lesson: CurriculumLesson) {
+    setEditingId(lesson.id);
+    setName(lesson.name);
+    setWordListId(lesson.word_list_id ?? '');
+    setVideoUrl('');
+    setLevel(lesson.level ?? '');
+    setPlaylist(effectiveSlides(lesson));
+    setShowForm(true);
+  }
+
+  async function handleSave() {
     if (!academy?.id || !profile || !staffClassId) return;
     if (!name.trim()) {
       notify(t('curriculum.nameRequiredError'), 'error');
@@ -121,19 +142,32 @@ export default function CurriculumPage() {
     }
     setSubmitting(true);
     const ok = await run(async () => {
-      const lesson = await createCurriculumLesson({
-        academyId: academy.id,
-        classId: staffClassId,
-        name: name.trim(),
-        wordListId: wordListId || null,
-        // video_url 은 옛 컬럼 — 영상은 이제 playlist 안 슬라이드로 들어간다. 새 레슨은 항상 null.
-        videoUrl: null,
-        level: level.trim() || null,
-        playlist,
-        teacherId: profile.id,
-      });
-      setLessons((prev) => [...prev, lesson]);
-    }, t('curriculum.createdToast'));
+      if (editingId) {
+        const patch = {
+          name: name.trim(),
+          word_list_id: wordListId || null,
+          level: level.trim() || null,
+          playlist,
+        };
+        await updateCurriculumLesson(editingId, patch);
+        setLessons((prev) =>
+          prev.map((l) => (l.id === editingId ? { ...l, ...patch, updated_at: new Date().toISOString() } : l)),
+        );
+      } else {
+        const lesson = await createCurriculumLesson({
+          academyId: academy.id,
+          classId: staffClassId,
+          name: name.trim(),
+          wordListId: wordListId || null,
+          // video_url 은 옛 컬럼 — 영상은 이제 playlist 안 슬라이드로 들어간다. 새 레슨은 항상 null.
+          videoUrl: null,
+          level: level.trim() || null,
+          playlist,
+          teacherId: profile.id,
+        });
+        setLessons((prev) => [...prev, lesson]);
+      }
+    }, editingId ? t('curriculum.updatedToast') : t('curriculum.createdToast'));
     setSubmitting(false);
     if (ok) resetForm();
   }
@@ -170,7 +204,7 @@ export default function CurriculumPage() {
       {!showForm ? (
         <button
           type="button"
-          onClick={() => setShowForm(true)}
+          onClick={openCreateForm}
           disabled={!staffClassId}
           className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
         >
@@ -178,6 +212,9 @@ export default function CurriculumPage() {
         </button>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+          <h3 className="font-title-md text-title-md text-on-surface">
+            {t(editingId ? 'curriculum.editFormTitle' : 'curriculum.createFormTitle')}
+          </h3>
           <div>
             <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('curriculum.nameLabel')}</label>
             <input
@@ -261,10 +298,12 @@ export default function CurriculumPage() {
             <button
               type="button"
               disabled={submitting}
-              onClick={handleCreate}
+              onClick={handleSave}
               className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
             >
-              {submitting ? t('curriculum.creating') : t('curriculum.createSubmit')}
+              {submitting
+                ? t(editingId ? 'curriculum.saving' : 'curriculum.creating')
+                : t(editingId ? 'curriculum.saveSubmit' : 'curriculum.createSubmit')}
             </button>
             <button
               type="button"
@@ -298,9 +337,19 @@ export default function CurriculumPage() {
                     </span>
                   )}
                 </div>
-                <button type="button" onClick={() => handleDelete(lesson)} className="text-on-surface-variant hover:text-error">
-                  <span className="material-symbols-outlined text-[20px]">delete</span>
-                </button>
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(lesson)}
+                    className="text-on-surface-variant hover:text-primary"
+                    aria-label={t('curriculum.editButton') ?? ''}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                  </button>
+                  <button type="button" onClick={() => handleDelete(lesson)} className="text-on-surface-variant hover:text-error">
+                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
+                </div>
               </div>
 
               {wl && (

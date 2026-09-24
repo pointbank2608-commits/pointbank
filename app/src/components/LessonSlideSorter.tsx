@@ -232,37 +232,51 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
             )}
 
             {addMode === 'material' && (
-              <div className="flex flex-wrap gap-1.5">
-                {MATERIALS_CATALOG.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => addMaterialSlide(m.id)}
-                    className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
-                    {t(m.nameKey)}
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => addGameSlide('flashcards')}
+                  className="flex items-center gap-1 rounded-full bg-secondary-container px-3 py-1.5 font-label-md text-label-md text-on-secondary-container transition-colors hover:opacity-80"
+                >
+                  <span className="material-symbols-outlined text-[16px]">flip</span>
+                  {t('curriculum.slides.onScreenFlashcards')}
+                </button>
+                <div className="flex flex-wrap gap-1.5">
+                  {MATERIALS_CATALOG.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => addMaterialSlide(m.id)}
+                      className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
+                      {t(m.nameKey)}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {!selected ? (
-          <div className="py-10 text-center font-body-md text-body-md text-on-surface-variant">
-            {t('curriculum.slides.empty')}
-          </div>
-        ) : (
-          <SlideDetail
-            slide={selected}
-            academyId={academyId}
-            wordListId={wordListId}
-            wordLists={wordLists}
-            onWordListChange={onWordListChange}
-            onUpdate={(patch) => updateSlide(selected.id, patch)}
-          />
-        )}
+        {/* 추가 패널이 열려있는 동안은 상세(바꾸기) 패널을 같이 보여주지 않는다 — 방금 추가한
+            슬라이드가 자동 선택되면서 "게임 고르기"와 "게임 바꾸기"가 똑같은 그리드로 중복돼
+            보이던 것을 없앤다(2026-09-24 사용자 피드백). 패널을 닫으면 그때 상세가 보인다. */}
+        {!addMode &&
+          (!selected ? (
+            <div className="py-10 text-center font-body-md text-body-md text-on-surface-variant">
+              {t('curriculum.slides.empty')}
+            </div>
+          ) : (
+            <SlideDetail
+              slide={selected}
+              academyId={academyId}
+              wordListId={wordListId}
+              wordLists={wordLists}
+              onWordListChange={onWordListChange}
+              onUpdate={(patch) => updateSlide(selected.id, patch)}
+            />
+          ))}
       </div>
     </div>
   );
