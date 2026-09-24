@@ -1807,6 +1807,7 @@ const ko = {
       changeMaterial: '자료 바꾸기',
       onScreenFlashcards: '플래시카드 (화면)',
       worksheetTabsTitle: '워크시트 유형 (탭까지 미리 정해요)',
+      worksheetOptionsTitle: '이 유형의 세부 옵션',
       worksheetPreviewHint: '유형을 누르면 실제 수업 단어가 들어간 모습을 먼저 볼 수 있어요.',
       previewTitle: '수업 미리보기',
       previewBadge: '학생 화면',

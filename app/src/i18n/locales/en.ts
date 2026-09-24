@@ -1812,6 +1812,7 @@ const en: Ko = {
       changeMaterial: 'Change material',
       onScreenFlashcards: 'Flashcards (on screen)',
       worksheetTabsTitle: 'Worksheet type (pick the tab in advance)',
+      worksheetOptionsTitle: 'Options for this type',
       worksheetPreviewHint: 'Choose a type to preview it with the lesson words before adding it.',
       previewTitle: 'Lesson preview',
       previewBadge: 'Student view',

@@ -23,10 +23,72 @@ import { createGameTemplate, deleteLessonSlideImage, fetchGameTemplates, uploadL
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, canBuildFromWords, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
-import type { FullCardItem, GameSlide, GameTemplate, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
+import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
+import type {
+  FullCardItem,
+  GameSlide,
+  GameTemplate,
+  ImageSlide,
+  LessonSlide,
+  MaterialSlide,
+  VideoSlide,
+  WordList,
+  WorksheetSlideOptions,
+} from '../lib/types';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
+import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import WorksheetTypePreview from './WorksheetTypePreview';
+
+/** WorksheetOptionsFields 가 쓰는 "다루기 쉬운" 런타임 모양 — MaterialSlide.worksheetOptions(평탄화
+ * 저장 모양)과 서로 변환한다. 기본값은 WorksheetPrintPage.tsx 의 각 useState 초기값과 동일. */
+interface WorksheetOptionsState {
+  listShow: { pos: boolean; example: boolean; image: boolean };
+  tracingShow: { meaning: boolean; image: boolean };
+  showAnswerKey: boolean;
+  includeAnswers: boolean;
+  askTemplate: AskTemplate;
+  coloring: ColoringOptions;
+}
+
+const DEFAULT_WORKSHEET_OPTIONS_STATE: WorksheetOptionsState = {
+  listShow: { pos: true, example: false, image: false },
+  tracingShow: { meaning: false, image: false },
+  showAnswerKey: false,
+  includeAnswers: true,
+  askTemplate: 'like',
+  coloring: DEFAULT_COLORING_OPTIONS,
+};
+
+function optionsStateFromSlide(wo: WorksheetSlideOptions | undefined): WorksheetOptionsState {
+  return {
+    listShow: wo?.listShow ?? DEFAULT_WORKSHEET_OPTIONS_STATE.listShow,
+    tracingShow: wo?.tracingShow ?? DEFAULT_WORKSHEET_OPTIONS_STATE.tracingShow,
+    showAnswerKey: wo?.showAnswerKey ?? false,
+    includeAnswers: wo?.includeAnswers ?? true,
+    askTemplate: wo?.askTemplate ?? 'like',
+    coloring: {
+      title: wo?.coloringTitle ?? DEFAULT_COLORING_OPTIONS.title,
+      labelMode: wo?.coloringLabelMode ?? DEFAULT_COLORING_OPTIONS.labelMode,
+      perPage: wo?.coloringPerPage ?? DEFAULT_COLORING_OPTIONS.perPage,
+      decorTheme: wo?.coloringDecorTheme ?? DEFAULT_COLORING_OPTIONS.decorTheme,
+    },
+  };
+}
+
+function slideOptionsFromState(o: WorksheetOptionsState): WorksheetSlideOptions {
+  return {
+    listShow: o.listShow,
+    tracingShow: o.tracingShow,
+    showAnswerKey: o.showAnswerKey,
+    includeAnswers: o.includeAnswers,
+    askTemplate: o.askTemplate,
+    coloringTitle: o.coloring.title,
+    coloringLabelMode: o.coloring.labelMode,
+    coloringPerPage: o.coloring.perPage,
+    coloringDecorTheme: o.coloring.decorTheme,
+  };
+}
 
 const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
 
@@ -74,6 +136,7 @@ export default function LessonSlideSorter({
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [videoDraft, setVideoDraft] = useState('');
   const [worksheetDraftTab, setWorksheetDraftTab] = useState(WORKSHEET_TAB_CATALOG[0]?.tab ?? 'list');
+  const [worksheetDraftOptions, setWorksheetDraftOptions] = useState<WorksheetOptionsState>(DEFAULT_WORKSHEET_OPTIONS_STATE);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -140,8 +203,14 @@ export default function LessonSlideSorter({
     addSlide({ id: uid(), kind: 'game', gameType });
   }
 
-  function addMaterialSlide(materialId: string, worksheetTab?: string) {
-    addSlide({ id: uid(), kind: 'material', materialId, ...(worksheetTab ? { worksheetTab } : {}) });
+  function addMaterialSlide(materialId: string, worksheetTab?: string, worksheetOptions?: WorksheetSlideOptions) {
+    addSlide({
+      id: uid(),
+      kind: 'material',
+      materialId,
+      ...(worksheetTab ? { worksheetTab } : {}),
+      ...(worksheetOptions ? { worksheetOptions } : {}),
+    });
   }
 
   return (
@@ -321,9 +390,30 @@ export default function LessonSlideSorter({
                         compact
                       />
                       {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+                      <div className="mt-3 space-y-2 border-t border-outline-variant/40 pt-3">
+                        <div className="font-caption text-caption font-bold text-on-surface-variant">
+                          {t('curriculum.slides.worksheetOptionsTitle')}
+                        </div>
+                        <WorksheetOptionsFields
+                          tab={worksheetDraftTab}
+                          hasWords={cards.length > 0}
+                          listShow={worksheetDraftOptions.listShow}
+                          onListShowChange={(key, value) => setWorksheetDraftOptions((prev) => ({ ...prev, listShow: { ...prev.listShow, [key]: value } }))}
+                          tracingShow={worksheetDraftOptions.tracingShow}
+                          onTracingShowChange={(key, value) => setWorksheetDraftOptions((prev) => ({ ...prev, tracingShow: { ...prev.tracingShow, [key]: value } }))}
+                          showAnswerKey={worksheetDraftOptions.showAnswerKey}
+                          onShowAnswerKeyChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, showAnswerKey: value }))}
+                          coloring={worksheetDraftOptions.coloring}
+                          onColoringChange={(patch) => setWorksheetDraftOptions((prev) => ({ ...prev, coloring: { ...prev.coloring, ...patch } }))}
+                          askTemplate={worksheetDraftOptions.askTemplate}
+                          onAskTemplateChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, askTemplate: value }))}
+                          includeAnswers={worksheetDraftOptions.includeAnswers}
+                          onIncludeAnswersChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, includeAnswers: value }))}
+                        />
+                      </div>
                       <button
                         type="button"
-                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab)}
+                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab, slideOptionsFromState(worksheetDraftOptions))}
                         className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-lg text-label-lg text-on-primary shadow-sm transition-colors hover:bg-primary-container"
                       >
                         <span className="material-symbols-outlined text-[20px]">add_circle</span>
@@ -579,6 +669,11 @@ function SlideDetail({
   const worksheet = slide.materialId === 'worksheet'
     ? WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab) ?? WORKSHEET_TAB_CATALOG[0]
     : null;
+  const worksheetOptionsState = optionsStateFromSlide(slide.worksheetOptions);
+  function updateWorksheetOptions(patch: Partial<WorksheetOptionsState>) {
+    const next = { ...worksheetOptionsState, ...patch };
+    onUpdate({ worksheetOptions: slideOptionsFromState(next) } as Partial<MaterialSlide>);
+  }
   return (
     <div className="space-y-4">
       {worksheet ? (
@@ -640,6 +735,27 @@ function SlideDetail({
           ))}
         </div>
       </div>
+      {worksheet && (
+        <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+          <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.worksheetOptionsTitle')}</div>
+          <WorksheetOptionsFields
+            tab={worksheet.tab}
+            hasWords={cards.length > 0}
+            listShow={worksheetOptionsState.listShow}
+            onListShowChange={(key, value) => updateWorksheetOptions({ listShow: { ...worksheetOptionsState.listShow, [key]: value } })}
+            tracingShow={worksheetOptionsState.tracingShow}
+            onTracingShowChange={(key, value) => updateWorksheetOptions({ tracingShow: { ...worksheetOptionsState.tracingShow, [key]: value } })}
+            showAnswerKey={worksheetOptionsState.showAnswerKey}
+            onShowAnswerKeyChange={(value) => updateWorksheetOptions({ showAnswerKey: value })}
+            coloring={worksheetOptionsState.coloring}
+            onColoringChange={(patch) => updateWorksheetOptions({ coloring: { ...worksheetOptionsState.coloring, ...patch } })}
+            askTemplate={worksheetOptionsState.askTemplate}
+            onAskTemplateChange={(value) => updateWorksheetOptions({ askTemplate: value })}
+            includeAnswers={worksheetOptionsState.includeAnswers}
+            onIncludeAnswersChange={(value) => updateWorksheetOptions({ includeAnswers: value })}
+          />
+        </div>
+      )}
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
     </div>
   );

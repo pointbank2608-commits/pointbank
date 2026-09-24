@@ -124,6 +124,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           if (!entry) continue;
           const navState: Record<string, unknown> = {};
           if (slide.worksheetTab) navState.materialsTab = slide.worksheetTab;
+          if (slide.worksheetOptions) navState.materialsWorksheetOptions = slide.worksheetOptions;
           if (materialsWords.length > 0) navState.materialsWords = materialsWords;
           steps.push({
             kind: 'material',

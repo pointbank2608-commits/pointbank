@@ -1,4 +1,4 @@
-import type { FullCardItem } from './types';
+import type { FullCardItem, WorksheetSlideOptions } from './types';
 
 /**
  * 사전·파닉스·내 단어장에서 고른 단어를 수업 자료실 페이지로 넘길 때 쓰는 라우터 state 모양.
@@ -7,8 +7,12 @@ import type { FullCardItem } from './types';
  */
 export interface MaterialsHandoffState {
   materialsWords?: FullCardItem[];
-  /** 워크시트 페이지가 처음 열 탭(주제별 워크시트에서 유형을 골라 넘어올 때). */
+  /** 워크시트 페이지가 처음 열 탭(주제별 워크시트에서 유형을 골라 넘어올 때, 또는 커리큘럼
+   * 워크시트 슬라이드). */
   materialsTab?: string;
+  /** 커리큘럼 워크시트 슬라이드에서 미리 정해둔 탭별 세부 옵션(발표 중엔 옵션 컨트롤이 안 보여서
+   * 여기로 넘어온 값을 그대로 쓴다). */
+  materialsWorksheetOptions?: WorksheetSlideOptions;
   /** 색칠하기 탭의 제목·장식 주제 초기값(주제별 워크시트에서 넘어올 때). */
   materialsColoringTitle?: string;
   materialsDecorTheme?: string | null;

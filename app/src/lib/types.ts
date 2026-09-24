@@ -532,17 +532,36 @@ export interface GameSlide {
   templateId?: string;
 }
 
+/** 워크시트 탭별 세부 옵션(WorksheetPrintPage.tsx 의 listShow/tracingShow/showAnswerKey/
+ * includeAnswers/askTemplate/coloring 을 그대로 저장). worksheetGenerators.ts 의
+ * ColoringOptions/AskTemplate 타입을 그대로 가져오면 그 파일이 이 파일(FullCardItem)을 거꾸로
+ * 참조하고 있어 순환 참조가 생긴다 — 구조적으로 같은 리터럴 타입을 여기 복제해 피한다. 전부
+ * optional이라 예전에 저장된 슬라이드(옵션 없음)도 기본값으로 그대로 동작한다. */
+export interface WorksheetSlideOptions {
+  listShow?: { pos: boolean; example: boolean; image: boolean };
+  tracingShow?: { meaning: boolean; image: boolean };
+  showAnswerKey?: boolean;
+  includeAnswers?: boolean;
+  askTemplate?: 'like' | 'have' | 'see';
+  coloringTitle?: string;
+  coloringLabelMode?: 'word' | 'write' | 'none';
+  coloringPerPage?: 4 | 6 | 8 | 9;
+  coloringDecorTheme?: string | null;
+}
+
 /** 수업 자료실(플래시카드·워크시트·빙고·메모리 카드 등) 화면 하나. materialId 는
  * lib/materialsCatalog.ts 의 MATERIALS_CATALOG 항목 id. materialId 가 'worksheet' 일 때만
  * worksheetTab 을 같이 저장할 수 있다 — /materials/worksheet 페이지 안 18개 탭(빈칸 채우기·
  * 선 잇기 등) 중 어떤 탭을 열어둘지(WorksheetPrintPage 의 Tab, lib/worksheetGenerators.ts 의
  * NEW_WORKSHEET_KINDS + 'list'/'card'/'tracing'/'quiz'). 없으면 그 페이지의 기본 탭(단어
- * 리스트)으로 연다. */
+ * 리스트)으로 연다. worksheetOptions 는 그 탭의 세부 설정(2026-09-25 추가) — 발표 중엔 옵션
+ * 컨트롤이 안 보이므로 여기서 미리 정해둔 값이 그대로 쓰인다. */
 export interface MaterialSlide {
   id: string;
   kind: 'material';
   materialId: string;
   worksheetTab?: string;
+  worksheetOptions?: WorksheetSlideOptions;
 }
 
 export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide;
