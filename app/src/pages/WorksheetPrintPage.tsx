@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AskAnswerScreen from '../components/AskAnswerScreen';
@@ -124,6 +124,17 @@ export default function WorksheetPrintPage() {
       decorTheme: h.materialsDecorTheme ?? DEFAULT_COLORING_OPTIONS.decorTheme,
     };
   });
+
+  // 커리큘럼 발표에서 워크시트 다음 장도 같은 경로를 쓴다. React Router는 이때 페이지를
+  // 다시 마운트하지 않으므로, 새 navigation state의 단어와 탭을 직접 반영해야 한다.
+  useEffect(() => {
+    const handoff = handoffFromLocationState(location.state);
+    const requested = handoff.materialsTab;
+    setWords(wordsFromLocationState(location.state));
+    setTab(requested && (TABS as string[]).includes(requested) ? (requested as Tab) : 'list');
+    setShowAnswerKey(false);
+    setShowAskScreen(false);
+  }, [location.key, location.state]);
 
   const quiz = useMemo(
     () =>

@@ -26,6 +26,7 @@ import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalo
 import type { FullCardItem, GameSlide, GameTemplate, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
+import WorksheetTypePreview from './WorksheetTypePreview';
 
 const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
 
@@ -72,6 +73,7 @@ export default function LessonSlideSorter({
   const [selectedId, setSelectedId] = useState<string | null>(slides[0]?.id ?? null);
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [videoDraft, setVideoDraft] = useState('');
+  const [worksheetDraftTab, setWorksheetDraftTab] = useState(WORKSHEET_TAB_CATALOG[0]?.tab ?? 'list');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -277,22 +279,57 @@ export default function LessonSlideSorter({
                     </button>
                   ))}
                 </div>
-                <div>
-                  <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
-                    {t('curriculum.slides.worksheetTabsTitle')}
+                <div className="rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+                  <div className="mb-3">
+                    <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.worksheetTabsTitle')}</div>
+                    <p className="mt-0.5 font-caption text-caption text-on-surface-variant">{t('curriculum.slides.worksheetPreviewHint')}</p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {WORKSHEET_TAB_CATALOG.map((wt) => (
+                  <div className="grid gap-4 lg:grid-cols-[minmax(250px,0.8fr)_minmax(360px,1.2fr)]">
+                    <div className="grid max-h-[360px] grid-cols-2 content-start gap-2 overflow-y-auto pr-1">
+                      {WORKSHEET_TAB_CATALOG.map((wt) => {
+                        const active = worksheetDraftTab === wt.tab;
+                        return (
+                          <button
+                            key={wt.tab}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => setWorksheetDraftTab(wt.tab)}
+                            className={`flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left font-label-md text-label-md transition-colors ${active ? 'border-primary bg-primary text-on-primary shadow-sm' : 'border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:border-primary/50 hover:bg-secondary-container/30'}`}
+                          >
+                            <span className="material-symbols-outlined text-[19px]">{wt.icon}</span>
+                            <span>{t(`materials.worksheet.${wt.labelKey}`)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="rounded-xl bg-surface-container-lowest p-3 shadow-sm">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <div>
+                          <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
+                          <div className="font-title-sm text-title-sm font-bold text-on-surface">
+                            {t(`materials.worksheet.${WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === worksheetDraftTab)?.labelKey ?? 'tabList'}`)}
+                          </div>
+                        </div>
+                        <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">
+                          {t('curriculum.slides.previewWordCount', { count: cards.length })}
+                        </span>
+                      </div>
+                      <WorksheetTypePreview
+                        tab={worksheetDraftTab}
+                        words={cards}
+                        title={t(`materials.worksheet.${WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === worksheetDraftTab)?.labelKey ?? 'tabList'}`)}
+                        compact
+                      />
+                      {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
                       <button
-                        key={wt.tab}
                         type="button"
-                        onClick={() => addMaterialSlide('worksheet', wt.tab)}
-                        className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
+                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab)}
+                        className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-lg text-label-lg text-on-primary shadow-sm transition-colors hover:bg-primary-container"
                       >
-                        <span className="material-symbols-outlined text-[16px]">{wt.icon}</span>
-                        {t(`materials.worksheet.${wt.labelKey}`)}
+                        <span className="material-symbols-outlined text-[20px]">add_circle</span>
+                        {t('curriculum.slides.addSelectedWorksheet')}
                       </button>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -455,8 +492,9 @@ function SlideDetail({
   if (slide.kind === 'image') {
     return (
       <div className="space-y-3">
-        <div className="font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.kindImage')}</div>
-        <img src={slide.imageUrl} alt="" className="max-h-64 rounded-lg border border-outline-variant/40 object-contain" />
+        <PreviewFrame title={t('curriculum.slides.kindImage')}>
+          <img src={slide.imageUrl} alt="" className="h-full w-full object-contain" />
+        </PreviewFrame>
         <GameImagePicker
           academyId={academyId}
           value={slide.imageUrl}
@@ -475,23 +513,26 @@ function SlideDetail({
     const videoId = extractYoutubeId(slide.videoUrl);
     return (
       <div className="space-y-3">
-        <div className="font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.kindVideo')}</div>
+        <PreviewFrame title={t('curriculum.slides.kindVideo')}>
+          {videoId ? <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-6xl text-on-surface-variant">smart_display</span>}
+        </PreviewFrame>
         <input
           type="text"
           value={slide.videoUrl}
           onChange={(e) => onUpdate({ videoUrl: e.target.value } as Partial<VideoSlide>)}
           className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
-        {videoId && (
-          <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="max-h-64 rounded-lg border border-outline-variant/40" />
-        )}
       </div>
     );
   }
 
   if (slide.kind === 'game') {
+    const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
     return (
       <div className="space-y-4">
+        <PreviewFrame title={game ? t(game.nameKey) : slide.gameType}>
+          {game?.cover ? <img src={game.cover} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-6xl text-primary">{game?.icon ?? 'sports_esports'}</span>}
+        </PreviewFrame>
         <div>
           <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeGame')}</div>
           <div className="space-y-2">
@@ -534,8 +575,29 @@ function SlideDetail({
   }
 
   // material slide
+  const material = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
+  const worksheet = slide.materialId === 'worksheet'
+    ? WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab) ?? WORKSHEET_TAB_CATALOG[0]
+    : null;
   return (
     <div className="space-y-4">
+      {worksheet ? (
+        <div className="rounded-xl bg-surface-container-lowest p-3 shadow-sm">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div>
+              <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
+              <div className="font-title-sm text-title-sm font-bold text-on-surface">{t(`materials.worksheet.${worksheet.labelKey}`)}</div>
+            </div>
+            <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">{t('curriculum.slides.previewWordCount', { count: cards.length })}</span>
+          </div>
+          <WorksheetTypePreview tab={worksheet.tab} words={cards} title={t(`materials.worksheet.${worksheet.labelKey}`)} />
+          {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+        </div>
+      ) : (
+        <PreviewFrame title={material ? t(material.nameKey) : slide.materialId}>
+          {material?.cover ? <img src={material.cover} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-6xl text-primary">{material?.icon ?? 'print'}</span>}
+        </PreviewFrame>
+      )}
       <div>
         <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeMaterial')}</div>
         <div className="flex flex-wrap gap-1.5">
@@ -579,6 +641,25 @@ function SlideDetail({
         </div>
       </div>
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+    </div>
+  );
+}
+
+function PreviewFrame({ title, children }: { title: string; children: React.ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-xl bg-surface-container-lowest p-3 shadow-sm">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div>
+          <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
+          <div className="font-title-sm text-title-sm font-bold text-on-surface">{title}</div>
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 font-caption text-caption text-primary">
+          <span className="material-symbols-outlined text-[15px]">visibility</span>
+          {t('curriculum.slides.previewBadge')}
+        </span>
+      </div>
+      <div className="flex aspect-video max-h-[360px] w-full items-center justify-center overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-low">{children}</div>
     </div>
   );
 }

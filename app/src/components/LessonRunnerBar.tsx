@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
+import LessonAnnotationLayer from './LessonAnnotationLayer';
 
 /**
  * "슬라이드 쇼 진행바" — 레슨 러너가 켜져 있는 동안 AppLayout 안에서 화면이 어디로 이동하든
@@ -18,10 +19,16 @@ export default function LessonRunnerBar() {
   const { t } = useTranslation();
   const { runner, next, prev, exit, isFullscreen, toggleFullscreen } = useLessonRunner();
   const [pointsOpen, setPointsOpen] = useState(false);
+  const [annotationOpen, setAnnotationOpen] = useState(false);
+
+  useEffect(() => {
+    setAnnotationOpen(false);
+  }, [runner?.stepIndex]);
 
   if (!runner) return null;
 
   const current = runner.steps[runner.stepIndex];
+  const canAnnotate = current.kind === 'image' || current.path === '/materials/worksheet';
 
   return (
     <>
@@ -64,6 +71,18 @@ export default function LessonRunnerBar() {
           <span className="hidden sm:inline">{t('curriculum.play.pointsButton')}</span>
         </button>
       )}
+      {canAnnotate && (
+        <button
+          type="button"
+          onClick={() => setAnnotationOpen((open) => !open)}
+          className={`flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 transition-colors ${annotationOpen ? 'bg-white text-deep-navy' : 'hover:bg-white/15'}`}
+          aria-label={t('curriculum.play.annotation')}
+          aria-pressed={annotationOpen}
+        >
+          <span className="material-symbols-outlined text-[20px]">draw</span>
+          <span className="hidden sm:inline font-label-md text-label-md">{t('curriculum.play.annotation')}</span>
+        </button>
+      )}
       <button
         type="button"
         onClick={toggleFullscreen}
@@ -82,6 +101,9 @@ export default function LessonRunnerBar() {
     </div>
     {pointsOpen && runner.classId && (
       <LessonPointsPanel classId={runner.classId} onClose={() => setPointsOpen(false)} />
+    )}
+    {annotationOpen && canAnnotate && (
+      <LessonAnnotationLayer key={`${runner.lessonId}:${runner.stepIndex}`} onClose={() => setAnnotationOpen(false)} />
     )}
     </>
   );
