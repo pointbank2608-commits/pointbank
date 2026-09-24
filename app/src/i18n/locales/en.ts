@@ -1689,6 +1689,8 @@ const en: Ko = {
       screen: {
         bridgeHint: 'This type is also available as a screen game.',
         bridgeOpen: 'Open game',
+        bridgeOpening: 'Opening…',
+        bridgeTemplateName: 'Words from worksheet',
         viewOnScreen: 'View on screen',
         ask_like: 'Do you like {{word}}?',
         ask_have: 'Do you have {{word}}?',

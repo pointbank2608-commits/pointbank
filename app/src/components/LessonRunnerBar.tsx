@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLessonRunner } from '../context/LessonRunnerContext';
 
@@ -15,29 +14,11 @@ import { useLessonRunner } from '../context/LessonRunnerContext';
  */
 export default function LessonRunnerBar() {
   const { t } = useTranslation();
-  const { runner, next, prev, exit } = useLessonRunner();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  useEffect(() => {
-    function onChange() {
-      setIsFullscreen(document.fullscreenElement != null);
-    }
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+  const { runner, next, prev, exit, isFullscreen, toggleFullscreen } = useLessonRunner();
 
   if (!runner) return null;
 
   const current = runner.steps[runner.stepIndex];
-
-  async function toggleFullscreen() {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
-    } catch {
-      // 권한 없음 등으로 실패해도 진행바 자체는 계속 동작해야 한다.
-    }
-  }
 
   return (
     <div className="no-print sticky top-0 z-30 flex items-center gap-3 bg-deep-navy px-4 py-2.5 text-white shadow-md md:pl-[calc(1rem)]">
@@ -71,7 +52,7 @@ export default function LessonRunnerBar() {
       </div>
       <button
         type="button"
-        onClick={() => void toggleFullscreen()}
+        onClick={toggleFullscreen}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/15"
         aria-label={t(isFullscreen ? 'curriculum.play.exitFullscreen' : 'curriculum.play.enterFullscreen')}
       >

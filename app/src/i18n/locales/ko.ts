@@ -1685,6 +1685,8 @@ const ko = {
       screen: {
         bridgeHint: '이 유형은 화면 게임으로도 있어요.',
         bridgeOpen: '게임 열기',
+        bridgeOpening: '여는 중…',
+        bridgeTemplateName: '워크시트에서 가져온 단어',
         viewOnScreen: '화면으로 보기',
         ask_like: 'Do you like {{word}}?',
         ask_have: 'Do you have {{word}}?',

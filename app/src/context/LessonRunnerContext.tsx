@@ -48,6 +48,11 @@ interface RunnerValue {
   prev: () => void;
   goTo: (index: number) => void;
   exit: () => void;
+  /** 브라우저 Fullscreen API 상태 — LessonRunnerBar(버튼)와 AppLayout(사이드바·상단바를 진짜
+   * 전체화면일 때만 감추는 용도) 둘 다 같은 값을 봐야 해서 여기 한 곳에서만 구독한다
+   * (2026-09-25, 이전엔 LessonRunnerBar 안에 로컬 state로 따로 있었음). */
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
 }
 
 const STORAGE_KEY = 'classbank.lessonRunner';
@@ -74,6 +79,22 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       // 저장 실패해도(프라이빗 모드 등) 진행에는 지장 없다 — 새로고침 복원만 안 될 뿐.
     }
   }, [runner]);
+
+  const [isFullscreen, setIsFullscreen] = useState(() => document.fullscreenElement != null);
+
+  useEffect(() => {
+    function onChange() {
+      setIsFullscreen(document.fullscreenElement != null);
+    }
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    else void document.documentElement.requestFullscreen().catch(() => {});
+    // 권한 없음 등으로 실패해도(catch로 삼킴) 진행바 자체는 계속 동작해야 한다.
+  }, []);
 
   const start = useCallback(
     (lesson: CurriculumLesson, wordList?: WordList | null) => {
@@ -150,12 +171,15 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, [runner, goTo]);
 
   const exit = useCallback(() => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     setRunner(null);
     navigate('/curriculum');
   }, [navigate]);
 
   return (
-    <LessonRunnerContext.Provider value={{ runner, start, next, prev, goTo, exit }}>{children}</LessonRunnerContext.Provider>
+    <LessonRunnerContext.Provider value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen }}>
+      {children}
+    </LessonRunnerContext.Provider>
   );
 }
 

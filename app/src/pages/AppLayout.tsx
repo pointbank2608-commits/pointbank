@@ -8,7 +8,7 @@ import PlanRouteGuard from '../components/PlanRouteGuard';
 import PrintBrandFooter from '../components/PrintBrandFooter';
 import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
-import { LessonRunnerProvider } from '../context/LessonRunnerContext';
+import { LessonRunnerProvider, useLessonRunner } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import { FREE_BLOCKED_PATHS } from '../lib/planLimits';
 
@@ -36,6 +36,13 @@ function AppLayoutInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
   // 클래스뱅크 브랜드 footer 는 "수업 자료실"에서 뽑는 인쇄물에만 찍는다(학원 워터마크는 전 화면 공통).
   const isMaterialsPrint = pathname.startsWith('/materials');
+
+  // 수업 발표 중 + 브라우저 진짜 전체화면일 때만 사이드바·상단바·페이지 여백을 다 걷어낸다 —
+  // 풀스크린이 아니면(발표 준비 중, 방금 진입 전 등) 평소처럼 편집·다른 메뉴 이동이 가능해야
+  // 하니 그대로 둔다. "전체화면을 눌러도 사이드바가 그대로 남아 화면을 다 못 채운다"는 피드백
+  // (2026-09-25) — 지금까진 이 레이아웃이 document.fullscreenElement 상태를 전혀 보지 않았다.
+  const { runner, isFullscreen } = useLessonRunner();
+  const isPresenting = runner != null && isFullscreen;
 
   const ROLE_LABEL: Record<string, string> = {
     owner: t('nav.roleOwner'),
@@ -187,6 +194,21 @@ function AppLayoutInner() {
       </div>
     </>
   );
+
+  // 진짜 전체화면 발표 모드 — 사이드바·상단바·페이지 여백 없이 진행바 + 지금 슬라이드만 화면을
+  // 꽉 채운다. LessonSlideViewerPage.tsx 등 슬라이드 콘텐츠는 h-full 로 이 영역 높이에 맞춰 늘어남.
+  if (isPresenting) {
+    return (
+      <div className="flex h-[100dvh] flex-col bg-background font-body-md text-on-background">
+        <PrintWatermark />
+        <LessonRunnerBar />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <PlanRouteGuard />
+          <Outlet />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-background font-body-md text-on-background">

@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AskAnswerScreen from '../components/AskAnswerScreen';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
+import { createGameTemplate } from '../lib/api';
 import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
-import { buildQuizQuestions } from '../lib/quizFromWordList';
-import type { FullCardItem, GameType } from '../lib/types';
+import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from '../lib/quizFromWordList';
+import type { FullCardItem, GameItem, GameTemplateConfig, GameType, WordListItem } from '../lib/types';
 import TracingRow from '../components/worksheets/TracingRow';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { decorThemes, lineartWordCount } from '../lib/lineart';
@@ -85,11 +88,65 @@ const TAB_GAME_BRIDGE: Partial<Record<Tab, GameType>> = {
   fillBlank: 'hangman',
 };
 
+function wordsToWordListItems(words: FullCardItem[]): WordListItem[] {
+  return words.map((w) => ({
+    id: w.id,
+    word: w.word,
+    meaning: w.meaning,
+    image_url: w.imageUrl,
+    category: w.category ?? null,
+    partOfSpeech: w.partOfSpeech ?? null,
+  }));
+}
+
+/** 워크시트에 고른 단어를 다리 놓기 대상 게임이 바로 쓸 수 있는 game_templates 모양(items/config)
+ * 으로 바꾼다. 대상마다 실제로 읽는 필드가 다르다 — 플래시카드는 config.flashcards, 매치업은
+ * config.pairs, 퀴즈/참거짓/그룹정렬도 각자 config 필드, 나머지는 공용 items(라벨 하나) —
+ * 각 게임 페이지가 이미 읽고 있는 그 필드 그대로 채운다(OpenInOtherGame.tsx/useGameTemplates.ts의
+ * openInOtherGame과 같은 "새 템플릿을 만들어 openTemplateId로 연다" 패턴, 대상 타입을 미리 알고
+ * 있어서 그 패턴이 못 하는 quiz/truefalse/matchup/groupsort까지 지원). 의미 있는 템플릿을 만들 수
+ * 없으면(문장 없음, 카테고리 1개뿐 등) null — 버튼을 비활성화하는 데 쓴다. */
+function buildBridgeTemplate(
+  target: GameType,
+  words: FullCardItem[],
+): { items: GameItem[]; config?: GameTemplateConfig } | null {
+  if (words.length === 0) return null;
+  const labelItems: GameItem[] = words.map((w) => ({ id: w.id, label: w.word }));
+  switch (target) {
+    case 'flashcards':
+      return { items: labelItems, config: { flashcards: words.map((w) => ({ id: w.id, left: w.word, right: w.meaning })) } };
+    case 'matchup':
+      return { items: labelItems, config: { pairs: words.map((w) => ({ id: w.id, left: w.word, right: w.meaning })) } };
+    case 'quiz': {
+      const questions = buildQuizQuestions({ items: wordsToWordListItems(words) }, 'wordToMeaning');
+      return questions.length > 0 ? { items: labelItems, config: { questions } } : null;
+    }
+    case 'truefalse': {
+      const statements = buildTrueFalseStatements({ items: wordsToWordListItems(words) }, 'wordToMeaning');
+      return statements.length > 0 ? { items: labelItems, config: { statements } } : null;
+    }
+    case 'groupsort': {
+      const groups = buildGroupSortGroups({ items: wordsToWordListItems(words) });
+      return groups.length >= 2 ? { items: labelItems, config: { groups } } : null;
+    }
+    case 'unscramble': {
+      const sentenceItems: GameItem[] = words.filter((w) => w.example).map((w) => ({ id: w.id, label: w.example as string }));
+      return sentenceItems.length > 0 ? { items: sentenceItems } : null;
+    }
+    default:
+      return { items: labelItems };
+  }
+}
+
 export default function WorksheetPrintPage() {
   const { t } = useTranslation();
+  const { academy, profile } = useAuth();
+  const { notify } = useToast();
+  const navigate = useNavigate();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const location = useLocation();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
+  const [bridgeBusy, setBridgeBusy] = useState(false);
   const [tab, setTab] = useState<Tab>(() => {
     const requested = handoffFromLocationState(location.state).materialsTab;
     return requested && (TABS as string[]).includes(requested) ? (requested as Tab) : 'list';
@@ -124,6 +181,36 @@ export default function WorksheetPrintPage() {
   const generated = useMemo(() => (isNewKind(tab) ? buildWorksheet(tab, words, seed, { coloring, sheetTitle: coloring.title, askTemplate }) : null), [tab, words, seed, coloring, askTemplate]);
   const generatedEmpty = generated ? isWorksheetEmpty(generated) : false;
   const canPreview = generated ? !generatedEmpty : tab === 'quiz' ? quiz.length > 0 : words.length > 0;
+
+  const bridgeTarget = TAB_GAME_BRIDGE[tab];
+  const bridgeTemplate = useMemo(
+    () => (bridgeTarget ? buildBridgeTemplate(bridgeTarget, words) : null),
+    [bridgeTarget, words],
+  );
+
+  /** "게임 열기" — 지금 고른 단어로 그 게임의 새 템플릿을 만들어(useGameTemplates.ts의
+   * openInOtherGame과 같은 패턴) 바로 그 템플릿이 선택된 상태로 게임 페이지를 연다. */
+  async function handleOpenBridge() {
+    if (!academy?.id || !profile || !staffClassId || !bridgeTarget || !bridgeTemplate) return;
+    setBridgeBusy(true);
+    try {
+      const tpl = await createGameTemplate({
+        academyId: academy.id,
+        classId: staffClassId,
+        gameType: bridgeTarget,
+        name: t('materials.worksheet.screen.bridgeTemplateName'),
+        items: bridgeTemplate.items,
+        config: bridgeTemplate.config,
+        teacherId: profile.id,
+      });
+      const path = GAME_CATALOG.find((g) => g.type === bridgeTarget)?.path ?? `/games/${bridgeTarget}`;
+      navigate(path, { state: { openTemplateId: tpl.id } });
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setBridgeBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -167,7 +254,7 @@ export default function WorksheetPrintPage() {
             ))}
           </div>
 
-          {TAB_GAME_BRIDGE[tab] && (
+          {bridgeTarget && (
             <div className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary-container/30 px-3 py-2">
               <span className="material-symbols-outlined text-[18px] text-on-secondary-container" aria-hidden>
                 sports_esports
@@ -175,14 +262,26 @@ export default function WorksheetPrintPage() {
               <span className="font-body-sm text-body-sm text-on-surface-variant">
                 {t('materials.worksheet.screen.bridgeHint')}
               </span>
-              <Link
-                to={GAME_CATALOG.find((g) => g.type === TAB_GAME_BRIDGE[tab])?.path ?? '/games'}
-                className="ml-auto font-label-md text-label-md text-primary hover:underline"
+              <button
+                type="button"
+                disabled={bridgeBusy || !bridgeTemplate}
+                onClick={() => void handleOpenBridge()}
+                className="ml-auto font-label-md text-label-md text-primary hover:underline disabled:cursor-not-allowed disabled:text-on-surface-variant disabled:no-underline disabled:opacity-60"
               >
-                {t(GAME_CATALOG.find((g) => g.type === TAB_GAME_BRIDGE[tab])?.nameKey ?? '')}{' '}
-                {t('materials.worksheet.screen.bridgeOpen')}
-              </Link>
+                {bridgeBusy
+                  ? t('materials.worksheet.screen.bridgeOpening')
+                  : `${t(GAME_CATALOG.find((g) => g.type === bridgeTarget)?.nameKey ?? '')} ${t('materials.worksheet.screen.bridgeOpen')}`}
+              </button>
             </div>
+          )}
+          {bridgeTarget && !bridgeTemplate && !bridgeBusy && (
+            <p className="font-caption text-caption text-on-surface-variant">
+              {tab === 'sentence'
+                ? t('materials.worksheet.needSentences')
+                : tab === 'grouping'
+                  ? t('materials.worksheet.needCategories')
+                  : t('materials.worksheet.needAtLeastOne')}
+            </p>
           )}
 
           {tab === 'list' && words.length > 0 && (
