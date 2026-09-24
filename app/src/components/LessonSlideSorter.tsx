@@ -20,7 +20,8 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { deleteLessonSlideImage, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
-import type { GameSlide, ImageSlide, LessonSlide, VideoSlide, WordList } from '../lib/types';
+import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
+import type { GameSlide, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
 
@@ -39,10 +40,10 @@ interface Props {
   onWordListChange: (id: string) => void;
 }
 
-type AddMode = 'image' | 'video' | 'game' | null;
+type AddMode = 'image' | 'video' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
- * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임 3종을 자유 순서로 섞어 배치한다. */
+ * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
 export default function LessonSlideSorter({ academyId, slides, onChange, wordListId, wordLists, onWordListChange }: Props) {
   const { t } = useTranslation();
   const { notify } = useToast();
@@ -115,6 +116,10 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
     addSlide({ id: uid(), kind: 'game', gameType });
   }
 
+  function addMaterialSlide(materialId: string) {
+    addSlide({ id: uid(), kind: 'material', materialId });
+  }
+
   return (
     <div className="flex flex-col gap-4 md:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
@@ -150,7 +155,7 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="flex flex-wrap gap-2">
-              {(['image', 'video', 'game'] as const).map((m) => (
+              {(['image', 'video', 'game', 'material'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -225,6 +230,22 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
                 ))}
               </div>
             )}
+
+            {addMode === 'material' && (
+              <div className="flex flex-wrap gap-1.5">
+                {MATERIALS_CATALOG.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => addMaterialSlide(m.id)}
+                    className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
+                    {t(m.nameKey)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -250,8 +271,12 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'video') return { icon: 'smart_display', label: t('curriculum.slides.kindVideo') };
-  const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
-  return { icon: entry?.icon ?? 'sports_esports', label: entry ? t(entry.nameKey) : slide.gameType };
+  if (slide.kind === 'game') {
+    const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
+    return { icon: entry?.icon ?? 'sports_esports', label: entry ? t(entry.nameKey) : slide.gameType };
+  }
+  const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
+  return { icon: entry?.icon ?? 'print', label: entry ? t(entry.nameKey) : slide.materialId };
 }
 
 function SlideThumb({
@@ -385,50 +410,93 @@ function SlideDetail({
     );
   }
 
-  // game slide
+  if (slide.kind === 'game') {
+    return (
+      <div className="space-y-4">
+        <div>
+          <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeGame')}</div>
+          <div className="space-y-2">
+            {CATEGORY_ORDER.map((cat) => (
+              <div key={cat} className="flex flex-wrap gap-1.5">
+                {GAME_CATALOG.filter((g) => g.category === cat).map((g) => (
+                  <button
+                    key={g.type}
+                    type="button"
+                    onClick={() => onUpdate({ gameType: g.type } as Partial<GameSlide>)}
+                    className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                      slide.gameType === g.type
+                        ? 'bg-primary text-on-primary'
+                        : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">{g.icon}</span>
+                    {t(g.nameKey)}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+      </div>
+    );
+  }
+
+  // material slide
   return (
     <div className="space-y-4">
       <div>
-        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeGame')}</div>
-        <div className="space-y-2">
-          {CATEGORY_ORDER.map((cat) => (
-            <div key={cat} className="flex flex-wrap gap-1.5">
-              {GAME_CATALOG.filter((g) => g.category === cat).map((g) => (
-                <button
-                  key={g.type}
-                  type="button"
-                  onClick={() => onUpdate({ gameType: g.type } as Partial<GameSlide>)}
-                  className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
-                    slide.gameType === g.type
-                      ? 'bg-primary text-on-primary'
-                      : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[16px]">{g.icon}</span>
-                  {t(g.nameKey)}
-                </button>
-              ))}
-            </div>
+        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeMaterial')}</div>
+        <div className="flex flex-wrap gap-1.5">
+          {MATERIALS_CATALOG.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => onUpdate({ materialId: m.id } as Partial<MaterialSlide>)}
+              className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                slide.materialId === m.id
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
+              {t(m.nameKey)}
+            </button>
           ))}
         </div>
       </div>
-      <div>
-        <label className="mb-1.5 block font-label-md text-label-md text-on-surface-variant">
-          {t('curriculum.slides.lessonWordList')}
-        </label>
-        <select
-          value={wordListId}
-          onChange={(e) => onWordListChange(e.target.value)}
-          className="w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-        >
-          <option value="">{t('curriculum.wordListPlaceholder')}</option>
-          {wordLists.map((wl) => (
-            <option key={wl.id} value={wl.id}>
-              {wl.name} ({wl.items.length})
-            </option>
-          ))}
-        </select>
-      </div>
+      <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+    </div>
+  );
+}
+
+function WordListSelect({
+  wordListId,
+  wordLists,
+  onWordListChange,
+}: {
+  wordListId: string;
+  wordLists: WordList[];
+  onWordListChange: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div>
+      <label className="mb-1.5 block font-label-md text-label-md text-on-surface-variant">
+        {t('curriculum.slides.lessonWordList')}
+      </label>
+      <select
+        value={wordListId}
+        onChange={(e) => onWordListChange(e.target.value)}
+        className="w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+      >
+        <option value="">{t('curriculum.wordListPlaceholder')}</option>
+        {wordLists.map((wl) => (
+          <option key={wl.id} value={wl.id}>
+            {wl.name} ({wl.items.length})
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

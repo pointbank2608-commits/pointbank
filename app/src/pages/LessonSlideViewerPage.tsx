@@ -45,7 +45,7 @@ export default function LessonSlideViewerPage() {
   }
 
   const slide = effectiveSlides(lesson).find((s) => s.id === slideId);
-  if (!slide || slide.kind === 'game') {
+  if (!slide || slide.kind === 'game' || slide.kind === 'material') {
     return (
       <div className="space-y-4">
         <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.play.notFound')}</div>

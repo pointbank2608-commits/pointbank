@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { effectiveSlides } from '../lib/lessonSlides';
+import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import type { CurriculumLesson } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'video' | 'game' | 'print';
+  kind: 'image' | 'video' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -72,10 +73,14 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             label: t('curriculum.play.stepVideo'),
             icon: 'smart_display',
           });
-        } else {
+        } else if (slide.kind === 'game') {
           const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
           if (!entry) continue;
           steps.push({ kind: 'game', path: entry.path, label: t(entry.nameKey), icon: entry.icon });
+        } else {
+          const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
+          if (!entry) continue;
+          steps.push({ kind: 'material', path: entry.path, label: t(entry.nameKey), icon: entry.icon });
         }
       }
       steps.push({ kind: 'print', path: '/materials/worksheet', label: t('curriculum.play.stepPrint'), icon: 'print' });

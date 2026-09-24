@@ -529,7 +529,15 @@ export interface GameSlide {
   gameType: GameType;
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide;
+/** 수업 자료실(플래시카드·워크시트·빙고·메모리 카드 등) 화면 하나. materialId 는
+ * lib/materialsCatalog.ts 의 MATERIALS_CATALOG 항목 id. */
+export interface MaterialSlide {
+  id: string;
+  kind: 'material';
+  materialId: string;
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

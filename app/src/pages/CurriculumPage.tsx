@@ -16,6 +16,7 @@ import {
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { effectiveSlides } from '../lib/lessonSlides';
+import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
 import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
 
@@ -310,8 +311,11 @@ export default function CurriculumPage() {
 
               <div className="flex flex-wrap gap-1">
                 {effectiveSlides(lesson).map((slide) => {
-                  const icon =
-                    slide.kind === 'image' ? 'image' : slide.kind === 'video' ? 'smart_display' : (GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports');
+                  let icon = 'help';
+                  if (slide.kind === 'image') icon = 'image';
+                  else if (slide.kind === 'video') icon = 'smart_display';
+                  else if (slide.kind === 'game') icon = GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports';
+                  else icon = MATERIALS_CATALOG.find((m) => m.id === slide.materialId)?.icon ?? 'print';
                   return (
                     <span key={slide.id} className="material-symbols-outlined text-[18px] text-on-surface-variant" title={slide.kind}>
                       {icon}

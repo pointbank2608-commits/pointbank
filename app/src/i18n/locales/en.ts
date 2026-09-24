@@ -1784,6 +1784,7 @@ const en: Ko = {
         image: 'Upload image',
         video: 'YouTube link',
         game: 'Choose a game',
+        material: 'Classroom materials',
       },
       invalidVideoUrl: "Couldn't read that YouTube URL.",
       empty: 'Add a slide from the panel on the left.',
@@ -1792,6 +1793,7 @@ const en: Ko = {
       duplicate: 'Duplicate',
       delete: 'Delete',
       changeGame: 'Change game',
+      changeMaterial: 'Change material',
       lessonWordList: 'Word list used by this whole lesson',
     },
     play: {

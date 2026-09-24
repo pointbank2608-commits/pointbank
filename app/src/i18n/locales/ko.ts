@@ -1779,6 +1779,7 @@ const ko = {
         image: '이미지 업로드',
         video: '유튜브 링크',
         game: '게임 고르기',
+        material: '수업 자료실',
       },
       invalidVideoUrl: '유튜브 영상 URL을 인식하지 못했어요.',
       empty: '왼쪽에서 슬라이드를 추가해 보세요.',
@@ -1787,6 +1788,7 @@ const ko = {
       duplicate: '복제',
       delete: '삭제',
       changeGame: '게임 바꾸기',
+      changeMaterial: '자료 바꾸기',
       lessonWordList: '이 수업 전체가 쓰는 단어장',
     },
     play: {
