@@ -1686,6 +1686,14 @@ const en: Ko = {
       needCategories: 'Sorting needs words from at least 2 different categories (add them from the dictionary or a word list).',
       needImages: 'Cut & paste needs words with pictures. Words added from the dictionary come with pictures.',
       skippedWords: 'Words left out (no room in the grid): {{words}}',
+      screen: {
+        bridgeHint: 'This type is also available as a screen game.',
+        bridgeOpen: 'Open game',
+        viewOnScreen: 'View on screen',
+        ask_like: 'Do you like {{word}}?',
+        ask_have: 'Do you have {{word}}?',
+        ask_see: 'Can you see {{word}}?',
+      },
       sheet: {
         name: 'Name',
         date: 'Date',

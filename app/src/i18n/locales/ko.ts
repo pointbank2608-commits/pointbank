@@ -1682,6 +1682,14 @@ const ko = {
       needCategories: '분류하기는 사전이나 단어장에서 담은 단어 중 서로 다른 카테고리가 2개 이상 있어야 해요.',
       needImages: '오려 붙이기는 그림이 있는 단어가 필요해요. 사전에서 담으면 그림이 같이 와요.',
       skippedWords: '자리를 찾지 못해 뺀 단어: {{words}}',
+      screen: {
+        bridgeHint: '이 유형은 화면 게임으로도 있어요.',
+        bridgeOpen: '게임 열기',
+        viewOnScreen: '화면으로 보기',
+        ask_like: 'Do you like {{word}}?',
+        ask_have: 'Do you have {{word}}?',
+        ask_see: 'Can you see {{word}}?',
+      },
       sheet: {
         name: 'Name',
         date: 'Date',

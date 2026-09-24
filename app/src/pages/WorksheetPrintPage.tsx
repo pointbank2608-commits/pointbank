@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
+import AskAnswerScreen from '../components/AskAnswerScreen';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import { GAME_CATALOG } from '../lib/gameCatalog';
 import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { buildQuizQuestions } from '../lib/quizFromWordList';
-import type { FullCardItem } from '../lib/types';
+import type { FullCardItem, GameType } from '../lib/types';
 import TracingRow from '../components/worksheets/TracingRow';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { decorThemes, lineartWordCount } from '../lib/lineart';
@@ -62,6 +64,27 @@ function isNewKind(tab: Tab): tab is NewWorksheetKind {
   return (NEW_WORKSHEET_KINDS as readonly string[]).includes(tab);
 }
 
+/** 이 워크시트 탭과 똑같은 상호작용을 이미 게임으로 하는 것들 — 화면에 크게 띄워야 하면 새로
+ * 만들지 않고 그 게임을 바로 열게 안내한다(2026-09-24). 이름이 헷갈리는 것만 짚으면: 워크시트
+ * 탭 'unscramble'(글자 순서 바꾸기, 한 단어 안 철자)은 게임 'anagram'과 짝이고, 워크시트 탭
+ * 'sentence'(문장 순서 바꾸기, 여러 단어)는 게임 'unscramble'(문장 배열하기)과 짝이다 — 탭
+ * 이름과 게임 이름이 서로 반대로 겹친다. 짝 인터뷰(askAnswer)만 화면 게임이 없어서
+ * AskAnswerScreen을 새로 만들었다(아래). 사선지·색칠하기·오려 붙이기·미니북·보드게임·문장 읽고
+ * 잇기는 손으로 하는 활동이라(또는 구조가 안 맞아) 화면 모드가 없다. */
+const TAB_GAME_BRIDGE: Partial<Record<Tab, GameType>> = {
+  list: 'flashcards',
+  card: 'flashcards',
+  quiz: 'quiz',
+  multipleChoice: 'quiz',
+  trueFalse: 'truefalse',
+  match: 'matchup',
+  wordSearch: 'wordsearch',
+  grouping: 'groupsort',
+  sentence: 'unscramble',
+  unscramble: 'anagram',
+  fillBlank: 'hangman',
+};
+
 export default function WorksheetPrintPage() {
   const { t } = useTranslation();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
@@ -75,6 +98,7 @@ export default function WorksheetPrintPage() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [seed, setSeed] = useState(1);
   const [askTemplate, setAskTemplate] = useState<AskTemplate>('like');
+  const [showAskScreen, setShowAskScreen] = useState(false);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState({ pos: true, example: false, image: false });
   // 사선지에 뜻·그림도 함께 보여줄지.
@@ -142,6 +166,24 @@ export default function WorksheetPrintPage() {
               </button>
             ))}
           </div>
+
+          {TAB_GAME_BRIDGE[tab] && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary-container/30 px-3 py-2">
+              <span className="material-symbols-outlined text-[18px] text-on-secondary-container" aria-hidden>
+                sports_esports
+              </span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">
+                {t('materials.worksheet.screen.bridgeHint')}
+              </span>
+              <Link
+                to={GAME_CATALOG.find((g) => g.type === TAB_GAME_BRIDGE[tab])?.path ?? '/games'}
+                className="ml-auto font-label-md text-label-md text-primary hover:underline"
+              >
+                {t(GAME_CATALOG.find((g) => g.type === TAB_GAME_BRIDGE[tab])?.nameKey ?? '')}{' '}
+                {t('materials.worksheet.screen.bridgeOpen')}
+              </Link>
+            </div>
+          )}
 
           {tab === 'list' && words.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-label-md text-label-md text-on-surface-variant">
@@ -316,16 +358,38 @@ export default function WorksheetPrintPage() {
                     : t('materials.worksheet.needAtLeastOne')}
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors"
-            >
-              {t('materials.printButton')}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors"
+              >
+                {t('materials.printButton')}
+              </button>
+              {tab === 'askAnswer' && generated?.kind === 'askAnswer' && (
+                <button
+                  type="button"
+                  onClick={() => setShowAskScreen(true)}
+                  className="inline-flex items-center gap-1 px-5 py-2.5 rounded-full border-2 border-primary text-primary hover:bg-primary/10 font-label-md text-label-md transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden>
+                    tv
+                  </span>
+                  {t('materials.worksheet.screen.viewOnScreen')}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
+
+      {showAskScreen && generated?.kind === 'askAnswer' && (
+        <AskAnswerScreen
+          template={generated.template}
+          rows={generated.pages.flat()}
+          onClose={() => setShowAskScreen(false)}
+        />
+      )}
 
       {canPreview && generated?.kind === 'coloring' && generated.skipped.length > 0 && (
         <p className="no-print font-caption text-caption text-on-surface-variant">
