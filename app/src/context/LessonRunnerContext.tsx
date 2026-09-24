@@ -11,6 +11,9 @@ export interface RunnerStep {
   path: string;
   label: string;
   icon: string;
+  /** 이동할 때 같이 넘길 router state — 워크시트 탭 미리 지정 등(materialsHandoff.ts 의
+   * MaterialsHandoffState 모양). */
+  navState?: Record<string, unknown>;
 }
 
 interface RunnerState {
@@ -80,14 +83,20 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         } else {
           const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
           if (!entry) continue;
-          steps.push({ kind: 'material', path: entry.path, label: t(entry.nameKey), icon: entry.icon });
+          steps.push({
+            kind: 'material',
+            path: entry.path,
+            label: t(entry.nameKey),
+            icon: entry.icon,
+            navState: slide.worksheetTab ? { materialsTab: slide.worksheetTab } : undefined,
+          });
         }
       }
       steps.push({ kind: 'print', path: '/materials/worksheet', label: t('curriculum.play.stepPrint'), icon: 'print' });
 
       if (steps.length === 0) return;
       setRunner({ lessonId: lesson.id, lessonName: lesson.name, steps, stepIndex: 0 });
-      navigate(steps[0].path);
+      navigate(steps[0].path, steps[0].navState ? { state: steps[0].navState } : undefined);
     },
     [t, navigate],
   );
@@ -97,7 +106,8 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       if (!runner) return;
       const clamped = Math.max(0, Math.min(runner.steps.length - 1, index));
       setRunner({ ...runner, stepIndex: clamped });
-      navigate(runner.steps[clamped].path);
+      const step = runner.steps[clamped];
+      navigate(step.path, step.navState ? { state: step.navState } : undefined);
     },
     [runner, navigate],
   );

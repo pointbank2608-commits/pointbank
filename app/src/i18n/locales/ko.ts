@@ -1796,6 +1796,7 @@ const ko = {
       changeGame: '게임 바꾸기',
       changeMaterial: '자료 바꾸기',
       onScreenFlashcards: '플래시카드 (화면)',
+      worksheetTabsTitle: '워크시트 유형 (탭까지 미리 정해요)',
       lessonWordList: '이 수업 전체가 쓰는 단어장',
     },
     play: {

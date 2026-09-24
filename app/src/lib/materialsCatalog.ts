@@ -60,3 +60,35 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.worksheetDesc',
   },
 ];
+
+export interface WorksheetTabCatalogEntry {
+  /** WorksheetPrintPage.tsx 의 Tab 값과 같아야 한다(파닉스 전용 4종 제외). */
+  tab: string;
+  icon: string;
+  /** materials.worksheet.<labelKey> 에 이미 있는 탭 이름을 그대로 재사용한다. */
+  labelKey: string;
+}
+
+/** "워크시트·시험지 인쇄" 한 페이지 안의 18개 탭 — 커리큘럼 슬라이드가 페이지 단위가 아니라
+ * 탭 단위로 미리 정해둘 수 있게 목록으로 뽑아둔다(2026-09-24). WorksheetPrintPage.tsx 의 TABS
+ * 순서와 맞춘다. */
+export const WORKSHEET_TAB_CATALOG: WorksheetTabCatalogEntry[] = [
+  { tab: 'list', icon: 'format_list_bulleted', labelKey: 'tabList' },
+  { tab: 'card', icon: 'crop_portrait', labelKey: 'tabCard' },
+  { tab: 'tracing', icon: 'draw', labelKey: 'tabTracing' },
+  { tab: 'quiz', icon: 'quiz', labelKey: 'tabQuiz' },
+  { tab: 'coloring', icon: 'palette', labelKey: 'tabColoring' },
+  { tab: 'match', icon: 'sync_alt', labelKey: 'tabMatch' },
+  { tab: 'wordSearch', icon: 'search', labelKey: 'tabWordSearch' },
+  { tab: 'unscramble', icon: 'shuffle', labelKey: 'tabUnscramble' },
+  { tab: 'fillBlank', icon: 'edit', labelKey: 'tabFillBlank' },
+  { tab: 'grouping', icon: 'category', labelKey: 'tabGrouping' },
+  { tab: 'cutPaste', icon: 'content_cut', labelKey: 'tabCutPaste' },
+  { tab: 'sentence', icon: 'reorder', labelKey: 'tabSentence' },
+  { tab: 'multipleChoice', icon: 'checklist', labelKey: 'tabMultipleChoice' },
+  { tab: 'trueFalse', icon: 'rule', labelKey: 'tabTrueFalse' },
+  { tab: 'miniBook', icon: 'menu_book', labelKey: 'tabMiniBook' },
+  { tab: 'askAnswer', icon: 'forum', labelKey: 'tabAskAnswer' },
+  { tab: 'boardGame', icon: 'casino', labelKey: 'tabBoardGame' },
+  { tab: 'readMatch', icon: 'link', labelKey: 'tabReadMatch' },
+];

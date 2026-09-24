@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { deleteLessonSlideImage, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
-import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
+import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import type { GameSlide, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
@@ -116,8 +116,8 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
     addSlide({ id: uid(), kind: 'game', gameType });
   }
 
-  function addMaterialSlide(materialId: string) {
-    addSlide({ id: uid(), kind: 'material', materialId });
+  function addMaterialSlide(materialId: string, worksheetTab?: string) {
+    addSlide({ id: uid(), kind: 'material', materialId, ...(worksheetTab ? { worksheetTab } : {}) });
   }
 
   return (
@@ -232,7 +232,7 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
             )}
 
             {addMode === 'material' && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <button
                   type="button"
                   onClick={() => addGameSlide('flashcards')}
@@ -242,7 +242,7 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
                   {t('curriculum.slides.onScreenFlashcards')}
                 </button>
                 <div className="flex flex-wrap gap-1.5">
-                  {MATERIALS_CATALOG.map((m) => (
+                  {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet').map((m) => (
                     <button
                       key={m.id}
                       type="button"
@@ -253,6 +253,24 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
                       {t(m.nameKey)}
                     </button>
                   ))}
+                </div>
+                <div>
+                  <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
+                    {t('curriculum.slides.worksheetTabsTitle')}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {WORKSHEET_TAB_CATALOG.map((wt) => (
+                      <button
+                        key={wt.tab}
+                        type="button"
+                        onClick={() => addMaterialSlide('worksheet', wt.tab)}
+                        className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">{wt.icon}</span>
+                        {t(`materials.worksheet.${wt.labelKey}`)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -288,6 +306,10 @@ function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon
   if (slide.kind === 'game') {
     const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
     return { icon: entry?.icon ?? 'sports_esports', label: entry ? t(entry.nameKey) : slide.gameType };
+  }
+  if (slide.materialId === 'worksheet' && slide.worksheetTab) {
+    const wt = WORKSHEET_TAB_CATALOG.find((w) => w.tab === slide.worksheetTab);
+    if (wt) return { icon: wt.icon, label: t(`materials.worksheet.${wt.labelKey}`) };
   }
   const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
   return { icon: entry?.icon ?? 'print', label: entry ? t(entry.nameKey) : slide.materialId };
@@ -462,11 +484,11 @@ function SlideDetail({
       <div>
         <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeMaterial')}</div>
         <div className="flex flex-wrap gap-1.5">
-          {MATERIALS_CATALOG.map((m) => (
+          {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet').map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => onUpdate({ materialId: m.id } as Partial<MaterialSlide>)}
+              onClick={() => onUpdate({ materialId: m.id, worksheetTab: undefined } as Partial<MaterialSlide>)}
               className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
                 slide.materialId === m.id
                   ? 'bg-primary text-on-primary'
@@ -475,6 +497,28 @@ function SlideDetail({
             >
               <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
               {t(m.nameKey)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">
+          {t('curriculum.slides.worksheetTabsTitle')}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {WORKSHEET_TAB_CATALOG.map((wt) => (
+            <button
+              key={wt.tab}
+              type="button"
+              onClick={() => onUpdate({ materialId: 'worksheet', worksheetTab: wt.tab } as Partial<MaterialSlide>)}
+              className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                slide.materialId === 'worksheet' && slide.worksheetTab === wt.tab
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">{wt.icon}</span>
+              {t(`materials.worksheet.${wt.labelKey}`)}
             </button>
           ))}
         </div>

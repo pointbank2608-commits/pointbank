@@ -530,11 +530,16 @@ export interface GameSlide {
 }
 
 /** 수업 자료실(플래시카드·워크시트·빙고·메모리 카드 등) 화면 하나. materialId 는
- * lib/materialsCatalog.ts 의 MATERIALS_CATALOG 항목 id. */
+ * lib/materialsCatalog.ts 의 MATERIALS_CATALOG 항목 id. materialId 가 'worksheet' 일 때만
+ * worksheetTab 을 같이 저장할 수 있다 — /materials/worksheet 페이지 안 18개 탭(빈칸 채우기·
+ * 선 잇기 등) 중 어떤 탭을 열어둘지(WorksheetPrintPage 의 Tab, lib/worksheetGenerators.ts 의
+ * NEW_WORKSHEET_KINDS + 'list'/'card'/'tracing'/'quiz'). 없으면 그 페이지의 기본 탭(단어
+ * 리스트)으로 연다. */
 export interface MaterialSlide {
   id: string;
   kind: 'material';
   materialId: string;
+  worksheetTab?: string;
 }
 
 export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide;

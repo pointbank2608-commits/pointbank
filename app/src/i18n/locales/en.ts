@@ -1801,6 +1801,7 @@ const en: Ko = {
       changeGame: 'Change game',
       changeMaterial: 'Change material',
       onScreenFlashcards: 'Flashcards (on screen)',
+      worksheetTabsTitle: 'Worksheet type (pick the tab in advance)',
       lessonWordList: 'Word list used by this whole lesson',
     },
     play: {
