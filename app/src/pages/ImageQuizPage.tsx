@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -247,9 +248,11 @@ export default function ImageQuizPage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link to="/games" className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameImageQuiz.infoDescription')}
@@ -260,7 +263,7 @@ export default function ImageQuizPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="imagequiz" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <ImageQuiz items={demoItems} revealSeconds={revealSeconds} />
@@ -269,7 +272,7 @@ export default function ImageQuizPage() {
               {isStaff ? t('gameImageQuiz.emptyStaff') : t('gameImageQuiz.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -292,8 +295,8 @@ export default function ImageQuizPage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

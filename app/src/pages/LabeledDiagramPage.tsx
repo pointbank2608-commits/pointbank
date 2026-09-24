@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -232,9 +233,11 @@ export default function LabeledDiagramPage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link to="/games" className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameLabeledDiagram.infoDescription')}
@@ -245,7 +248,7 @@ export default function LabeledDiagramPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
             <div className="mb-3">
               <LabeledDiagramEmptyMotif />
@@ -254,7 +257,7 @@ export default function LabeledDiagramPage() {
               {isStaff ? t('gameLabeledDiagram.emptyStaff') : t('gameLabeledDiagram.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -277,8 +280,8 @@ export default function LabeledDiagramPage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import PresentPrintBar from '../components/PresentPrintBar';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { colorFor } from '../lib/wheel';
@@ -40,6 +42,7 @@ export default function MemoryCardsPage() {
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const location = useLocation();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
+  const locked = usePresenting() && words.length > 0;
   const [cardSize, setCardSize] = useState<CardSize>('medium');
   const [shuffleKey, setShuffleKey] = useState(0);
 
@@ -49,6 +52,10 @@ export default function MemoryCardsPage() {
 
   return (
     <div className="space-y-6">
+      {locked ? (
+        <PresentPrintBar canPrint onReshuffle={() => setShuffleKey((k) => k + 1)} />
+      ) : (
+      <>
       <Link
         to="/materials"
         className="no-print inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
@@ -124,6 +131,8 @@ export default function MemoryCardsPage() {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {words.length > 0 && (
         <div className="print-sheet mx-auto">

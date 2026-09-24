@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import PresentPrintBar from '../components/PresentPrintBar';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { colorFor } from '../lib/wheel';
@@ -51,7 +53,9 @@ export default function BingoPage() {
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const location = useLocation();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
-  const [gridSize, setGridSize] = useState<GridSize>(4);
+  // 단어를 넘겨받았는데 4×4(16개)에 모자라면 3×3으로 시작 — 발표 중엔 칸 크기를 못 바꾸니까.
+  const [gridSize, setGridSize] = useState<GridSize>(() => (words.length > 0 && words.length < neededWordCount(4) ? 3 : 4));
+  const locked = usePresenting() && words.length > 0;
   const [boardCountInput, setBoardCountInput] = useState('20');
   const [shuffleKey, setShuffleKey] = useState(0);
 
@@ -68,6 +72,14 @@ export default function BingoPage() {
 
   return (
     <div className="space-y-6">
+      {locked ? (
+        <PresentPrintBar
+          canPrint={hasEnoughWords}
+          emptyHint={t('materials.bingo.needMoreWords', { count: needed, current: wordLabels.length })}
+          onReshuffle={() => setShuffleKey((k) => k + 1)}
+        />
+      ) : (
+      <>
       <Link
         to="/materials"
         className="no-print inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
@@ -160,6 +172,8 @@ export default function BingoPage() {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {hasEnoughWords &&
         boards.map((board, boardIndex) => (

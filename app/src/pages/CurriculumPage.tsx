@@ -7,6 +7,7 @@ import { useLessonRunner } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
   createCurriculumLesson,
+  createGameTemplate,
   createWordList,
   deleteCurriculumLesson,
   fetchCurriculumLessons,
@@ -16,6 +17,7 @@ import {
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG } from '../lib/gameCatalog';
+import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
@@ -70,6 +72,8 @@ export default function CurriculumPage() {
   const [wordListId, setWordListId] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [level, setLevel] = useState('');
+  // 편집 중인 레슨의 반(없으면 지금 보고 있는 반) — 게임 내용(템플릿)을 이 반 것으로 고르고 만든다.
+  const formClassId = (editingId ? lessons.find((l) => l.id === editingId)?.class_id : null) ?? staffClassId ?? null;
   const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -134,6 +138,38 @@ export default function CurriculumPage() {
     setShowForm(true);
   }
 
+  /** 게임 슬라이드 중 아직 내용(템플릿)을 안 고른 것은 수업 단어장으로 게임 템플릿을 만들어 붙인다 —
+   * "준비는 편집 화면에서 끝내고 발표 중엔 고르지 않는다"(2026-09-25). 저장할 때만 만들어서 편집을
+   * 취소하면 아무것도 안 생긴다. 단어장으로 만들 수 없는 게임은 그대로 둔다(발표 땐 반의 첫 게임). */
+  async function attachGameContent(slides: LessonSlide[]): Promise<LessonSlide[]> {
+    if (!academy?.id || !profile) return slides;
+    const wordList = wordLists.find((wl) => wl.id === wordListId) ?? null;
+    const cards = wordListToCards(wordList);
+    const out: LessonSlide[] = [];
+    for (const slide of slides) {
+      if (slide.kind !== 'game' || slide.templateId) {
+        out.push(slide);
+        continue;
+      }
+      const content = buildGameContent(slide.gameType, cards);
+      if (!content) {
+        out.push(slide);
+        continue;
+      }
+      const tpl = await createGameTemplate({
+        academyId: academy.id,
+        classId: formClassId,
+        gameType: slide.gameType,
+        name: lessonGameTemplateName(name.trim(), wordList?.name),
+        items: content.items,
+        config: content.config,
+        teacherId: profile.id,
+      });
+      out.push({ ...slide, templateId: tpl.id });
+    }
+    return out;
+  }
+
   async function handleSave() {
     if (!academy?.id || !profile || !staffClassId) return;
     if (!name.trim()) {
@@ -142,12 +178,13 @@ export default function CurriculumPage() {
     }
     setSubmitting(true);
     const ok = await run(async () => {
+      const finalPlaylist = await attachGameContent(playlist);
       if (editingId) {
         const patch = {
           name: name.trim(),
           word_list_id: wordListId || null,
           level: level.trim() || null,
-          playlist,
+          playlist: finalPlaylist,
         };
         await updateCurriculumLesson(editingId, patch);
         setLessons((prev) =>
@@ -162,7 +199,7 @@ export default function CurriculumPage() {
           // video_url 은 옛 컬럼 — 영상은 이제 playlist 안 슬라이드로 들어간다. 새 레슨은 항상 null.
           videoUrl: null,
           level: level.trim() || null,
-          playlist,
+          playlist: finalPlaylist,
           teacherId: profile.id,
         });
         setLessons((prev) => [...prev, lesson]);
@@ -183,7 +220,7 @@ export default function CurriculumPage() {
    * 인정된다 — start() 가 내부에서 navigate 를 하지만 동기 호출이라 문제없다. */
   async function handleStart(lesson: CurriculumLesson) {
     const wordList = wordLists.find((wl) => wl.id === lesson.word_list_id) ?? null;
-    start(lesson, wordList);
+    start(lesson, wordList, lesson.class_id ?? staffClassId ?? null);
     try {
       await document.documentElement.requestFullscreen();
     } catch {
@@ -286,6 +323,8 @@ export default function CurriculumPage() {
             {academy?.id && (
               <LessonSlideSorter
                 academyId={academy.id}
+                classId={formClassId}
+                lessonName={name}
                 slides={playlist}
                 onChange={setPlaylist}
                 wordListId={wordListId}

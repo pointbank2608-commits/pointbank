@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import Flashcards from '../components/Flashcards';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -258,12 +259,14 @@ export default function FlashcardsPage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameFlashcards.infoDescription')}
@@ -274,7 +277,7 @@ export default function FlashcardsPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="flashcards" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <Flashcards cards={demoPairs} />
@@ -283,7 +286,7 @@ export default function FlashcardsPage() {
               {isStaff ? t('gameFlashcards.emptyStaff') : t('gameFlashcards.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -304,8 +307,8 @@ export default function FlashcardsPage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

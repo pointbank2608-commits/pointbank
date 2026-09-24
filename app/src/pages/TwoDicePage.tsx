@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -254,12 +255,14 @@ export default function TwoDicePage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameTwoDice.infoDescription')}
@@ -270,7 +273,7 @@ export default function TwoDicePage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="twodice" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <TwoDice items={demoItems} />
@@ -279,7 +282,7 @@ export default function TwoDicePage() {
               {isStaff ? t('gameTwoDice.emptyStaff') : t('gameTwoDice.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -308,8 +311,8 @@ export default function TwoDicePage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

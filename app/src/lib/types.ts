@@ -527,6 +527,9 @@ export interface GameSlide {
   id: string;
   kind: 'game';
   gameType: GameType;
+  /** 편집 화면에서 미리 만들어/골라 둔 게임 콘텐츠(game_templates.id). 발표 중엔 이 템플릿을
+   * 그대로 연다 — 없으면 그 게임 페이지가 반의 첫 템플릿을 연다. */
+  templateId?: string;
 }
 
 /** 수업 자료실(플래시카드·워크시트·빙고·메모리 카드 등) 화면 하나. materialId 는

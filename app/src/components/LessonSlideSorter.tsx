@@ -15,13 +15,15 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { deleteLessonSlideImage, uploadLessonSlideImage } from '../lib/api';
+import { createGameTemplate, deleteLessonSlideImage, fetchGameTemplates, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
+import { buildGameContent, canBuildFromWords, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
-import type { GameSlide, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
+import type { FullCardItem, GameSlide, GameTemplate, ImageSlide, LessonSlide, MaterialSlide, VideoSlide, WordList } from '../lib/types';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
 
@@ -33,6 +35,9 @@ function uid(): string {
 
 interface Props {
   academyId: string;
+  /** 이 수업을 하는 반 — 게임 내용(game_templates)을 이 반 기준으로 고르고 만든다. */
+  classId: string | null;
+  lessonName: string;
   slides: LessonSlide[];
   onChange: (slides: LessonSlide[]) => void;
   wordListId: string;
@@ -40,13 +45,30 @@ interface Props {
   onWordListChange: (id: string) => void;
 }
 
+/** 게임 슬라이드가 발표 때 열 내용이 정해졌는지 — 템플릿을 골랐거나, 저장할 때 수업 단어장으로
+ * 자동으로 만들 수 있으면 OK. */
+function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
+  return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
+}
+
 type AddMode = 'image' | 'video' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
-export default function LessonSlideSorter({ academyId, slides, onChange, wordListId, wordLists, onWordListChange }: Props) {
+export default function LessonSlideSorter({
+  academyId,
+  classId,
+  lessonName,
+  slides,
+  onChange,
+  wordListId,
+  wordLists,
+  onWordListChange,
+}: Props) {
   const { t } = useTranslation();
   const { notify } = useToast();
+  const wordList = wordLists.find((wl) => wl.id === wordListId) ?? null;
+  const cards = useMemo(() => wordListToCards(wordList), [wordList]);
   const [selectedId, setSelectedId] = useState<string | null>(slides[0]?.id ?? null);
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [videoDraft, setVideoDraft] = useState('');
@@ -135,6 +157,7 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
                 onSelect={() => setSelectedId(slide.id)}
                 onDelete={() => removeSlide(slide.id)}
                 onDuplicate={() => duplicateSlide(slide.id)}
+                needsContent={slide.kind === 'game' && !gameSlideReady(slide, cards)}
               />
             ))}
           </SortableContext>
@@ -289,6 +312,10 @@ export default function LessonSlideSorter({ academyId, slides, onChange, wordLis
             <SlideDetail
               slide={selected}
               academyId={academyId}
+              classId={classId}
+              lessonName={lessonName}
+              wordList={wordList}
+              cards={cards}
               wordListId={wordListId}
               wordLists={wordLists}
               onWordListChange={onWordListChange}
@@ -322,6 +349,7 @@ function SlideThumb({
   onSelect,
   onDelete,
   onDuplicate,
+  needsContent,
 }: {
   slide: LessonSlide;
   index: number;
@@ -329,6 +357,8 @@ function SlideThumb({
   onSelect: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  /** 게임 슬라이드인데 발표 때 열 내용이 없음 — 썸네일에 경고 표시. */
+  needsContent: boolean;
 }) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id });
@@ -385,8 +415,13 @@ function SlideThumb({
           <span className="material-symbols-outlined text-3xl text-on-surface-variant">{icon}</span>
         )}
       </div>
-      <div className="truncate bg-surface-container-lowest px-2 py-1.5 text-left font-caption text-caption text-on-surface">
-        {label}
+      <div className="flex items-center gap-1 bg-surface-container-lowest px-2 py-1.5 text-left font-caption text-caption text-on-surface">
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        {needsContent && (
+          <span className="material-symbols-outlined shrink-0 text-[16px] text-error" title={t('curriculum.slides.gameContentMissing')}>
+            error
+          </span>
+        )}
       </div>
     </div>
   );
@@ -395,6 +430,10 @@ function SlideThumb({
 function SlideDetail({
   slide,
   academyId,
+  classId,
+  lessonName,
+  wordList,
+  cards,
   wordListId,
   wordLists,
   onWordListChange,
@@ -402,6 +441,10 @@ function SlideDetail({
 }: {
   slide: LessonSlide;
   academyId: string;
+  classId: string | null;
+  lessonName: string;
+  wordList: WordList | null;
+  cards: FullCardItem[];
   wordListId: string;
   wordLists: WordList[];
   onWordListChange: (id: string) => void;
@@ -458,7 +501,10 @@ function SlideDetail({
                   <button
                     key={g.type}
                     type="button"
-                    onClick={() => onUpdate({ gameType: g.type } as Partial<GameSlide>)}
+                    onClick={() =>
+                      // 게임 종류가 바뀌면 이전 게임의 내용(템플릿)은 맞지 않으니 비운다.
+                      slide.gameType !== g.type && onUpdate({ gameType: g.type, templateId: undefined } as Partial<GameSlide>)
+                    }
                     className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
                       slide.gameType === g.type
                         ? 'bg-primary text-on-primary'
@@ -474,6 +520,15 @@ function SlideDetail({
           </div>
         </div>
         <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+        <GameContentPicker
+          slide={slide}
+          academyId={academyId}
+          classId={classId}
+          lessonName={lessonName}
+          wordList={wordList}
+          cards={cards}
+          onPick={(templateId) => onUpdate({ templateId } as Partial<GameSlide>)}
+        />
       </div>
     );
   }
@@ -524,6 +579,127 @@ function SlideDetail({
         </div>
       </div>
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+    </div>
+  );
+}
+
+/** 게임 슬라이드가 발표 때 열 "게임 내용"(game_templates) — 이 반에 이미 만든 것 중 고르거나,
+ * 수업 단어장으로 지금 새로 만든다. 아무것도 안 고르면 저장할 때 수업 단어장으로 자동으로 만든다
+ * (CurriculumPage.handleSave). */
+function GameContentPicker({
+  slide,
+  academyId,
+  classId,
+  lessonName,
+  wordList,
+  cards,
+  onPick,
+}: {
+  slide: GameSlide;
+  academyId: string;
+  classId: string | null;
+  lessonName: string;
+  wordList: WordList | null;
+  cards: FullCardItem[];
+  onPick: (templateId: string | undefined) => void;
+}) {
+  const { t } = useTranslation();
+  const { profile } = useAuth();
+  const { notify } = useToast();
+  const [templates, setTemplates] = useState<GameTemplate[]>([]);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (!classId) {
+      setTemplates([]);
+      return;
+    }
+    let cancelled = false;
+    fetchGameTemplates(academyId, classId, slide.gameType)
+      .then((rows) => {
+        if (!cancelled) setTemplates(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setTemplates([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [academyId, classId, slide.gameType]);
+
+  const content = useMemo(() => buildGameContent(slide.gameType, cards), [slide.gameType, cards]);
+  const canAuto = content !== null;
+
+  async function createNow() {
+    if (!profile || !content || creating) return;
+    setCreating(true);
+    try {
+      const tpl = await createGameTemplate({
+        academyId,
+        classId,
+        gameType: slide.gameType,
+        name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), wordList?.name),
+        items: content.items,
+        config: content.config,
+        teacherId: profile.id,
+      });
+      setTemplates((prev) => [...prev, tpl]);
+      onPick(tpl.id);
+      notify(t('curriculum.slides.gameContentCreated'));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const linkedMissing = !!slide.templateId && !templates.some((tpl) => tpl.id === slide.templateId);
+
+  let hint: string;
+  if (slide.templateId) hint = t('curriculum.slides.gameContentLinked');
+  else if (canAuto) hint = t('curriculum.slides.gameContentAutoHint');
+  else if (!canBuildFromWords(slide.gameType)) hint = t('curriculum.slides.gameContentNeedsCenter');
+  else if (!wordList) hint = t('curriculum.slides.gameContentNeedsWordList');
+  else hint = t('curriculum.slides.gameContentNotEnough');
+
+  return (
+    <div className="space-y-2 rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-3">
+      <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.gameContentTitle')}</div>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={slide.templateId ?? ''}
+          onChange={(e) => onPick(e.target.value || undefined)}
+          className="w-64 max-w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+        >
+          <option value="">
+            {canAuto ? t('curriculum.slides.gameContentAutoOption') : t('curriculum.slides.gameContentNoneOption')}
+          </option>
+          {linkedMissing && <option value={slide.templateId}>{t('curriculum.slides.gameContentLinkedOther')}</option>}
+          {templates.map((tpl) => (
+            <option key={tpl.id} value={tpl.id}>
+              {tpl.name}
+            </option>
+          ))}
+        </select>
+        {canAuto && (
+          <button
+            type="button"
+            disabled={creating}
+            onClick={() => void createNow()}
+            className="inline-flex items-center gap-1 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            {creating ? t('curriculum.slides.gameContentCreating') : t('curriculum.slides.gameContentCreateNow')}
+          </button>
+        )}
+      </div>
+      <p
+        className={`font-caption text-caption ${
+          slide.templateId || canAuto ? 'text-on-surface-variant' : 'text-error'
+        }`}
+      >
+        {hint}
+      </p>
     </div>
   );
 }

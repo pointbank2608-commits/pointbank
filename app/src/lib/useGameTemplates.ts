@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
   createGameTemplate,
@@ -21,6 +22,11 @@ import type { GameItem, GameTemplate, GameTemplateConfig, GameType, WordList } f
 
 export type RosterScope = 'class' | 'academy';
 
+interface OpenState {
+  openTemplateId?: string;
+  openClassId?: string;
+}
+
 /**
  * 게임 템플릿(반/학원 공용 목록 + 만들기/이름변경/삭제) 공통 로직.
  * 돌림판·사다리·순서정하기 모두 이 훅으로 반 선택 + 템플릿 CRUD 를 처리하고,
@@ -37,8 +43,10 @@ export function useGameTemplates(params: {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  /** "다른 게임으로 열기"로 넘어온 경우, 그 새 템플릿을 최초 1회만 자동 선택하기 위한 값. */
-  const openTemplateIdRef = useRef((location.state as { openTemplateId?: string } | null)?.openTemplateId);
+  const presenting = usePresenting();
+  /** "다른 게임으로 열기"·워크시트 다리·커리큘럼 발표에서 넘어온 템플릿 — 이게 있으면 이전 선택보다
+   * 우선해서 연다. */
+  const openTemplateIdRef = useRef((location.state as OpenState | null)?.openTemplateId);
 
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
@@ -118,10 +126,14 @@ export function useGameTemplates(params: {
     try {
       const rows = await fetchGameTemplates(academy.id, classId, gameType);
       setTemplates(rows);
+      // 한 번 반영한 openTemplateId 는 비워서, 나중에 선생님이 다른 템플릿을 고른 뒤 목록을 다시
+      // 불러와도 선택이 도로 튀지 않게 한다.
+      const openId = openTemplateIdRef.current;
+      const openFound = !!openId && rows.some((r) => r.id === openId);
+      if (openFound) openTemplateIdRef.current = undefined;
       setSelectedId((prev) => {
+        if (openFound) return openId as string;
         if (prev && rows.some((r) => r.id === prev)) return prev;
-        const openId = openTemplateIdRef.current;
-        if (openId && rows.some((r) => r.id === openId)) return openId;
         return rows[0]?.id ?? null;
       });
     } catch (err) {
@@ -134,6 +146,21 @@ export function useGameTemplates(params: {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // 같은 게임이 연속 슬라이드면 페이지가 다시 마운트되지 않아 위 ref 가 첫 값에 머문다 — 이동할
+  // 때마다(location.key) 다시 읽고, 그 템플릿이 이미 불러온 목록에 있으면 바로 고른다. 레슨의 반이
+  // 지금 보고 있는 반과 다르면 반부터 맞춘다(그러면 load 가 그 반 목록으로 다시 돈다).
+  useEffect(() => {
+    const state = location.state as OpenState | null;
+    openTemplateIdRef.current = state?.openTemplateId;
+    if (isStaff && state?.openClassId && state.openClassId !== staffClassId) selectClass(state.openClassId);
+    const openId = state?.openTemplateId;
+    if (openId && templates.some((r) => r.id === openId)) {
+      openTemplateIdRef.current = undefined;
+      setSelectedId(openId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
 
   const selected = templates.find((t) => t.id === selectedId) ?? null;
 
@@ -256,7 +283,13 @@ export function useGameTemplates(params: {
   }
 
   return {
-    isStaff,
+    /** 커리큘럼 "발표하기" 중 — 페이지는 편집 UI(EditOnly)를 숨기고 재생 영역만 보여준다. */
+    presenting,
+    // 게임 페이지에서 isStaff 는 전부 "편집 UI를 보여줄지"(편집 패널·새로 만들기·삭제·게임판 안
+    // 편집·퀴즈 편집 모드·돌림판 자동 생성)에만 쓰인다 — 발표 중엔 false 로 돌려줘서 35개 페이지를
+    // 하나하나 고치지 않고도 편집이 전부 사라지게 한다. 데이터 로딩(classId 등)은 위에서 진짜
+    // isStaff 로 이미 계산했으니 영향 없다.
+    isStaff: isStaff && !presenting,
     academy,
     classes,
     staffClassId,

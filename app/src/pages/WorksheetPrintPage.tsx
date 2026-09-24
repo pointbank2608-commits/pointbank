@@ -4,14 +4,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AskAnswerScreen from '../components/AskAnswerScreen';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import PresentPrintBar from '../components/PresentPrintBar';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { createGameTemplate } from '../lib/api';
+import { buildGameContent } from '../lib/gameFromWords';
 import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
-import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from '../lib/quizFromWordList';
-import type { FullCardItem, GameItem, GameTemplateConfig, GameType, WordListItem } from '../lib/types';
+import { buildQuizQuestions } from '../lib/quizFromWordList';
+import type { FullCardItem, GameType } from '../lib/types';
 import TracingRow from '../components/worksheets/TracingRow';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { decorThemes, lineartWordCount } from '../lib/lineart';
@@ -88,56 +91,6 @@ const TAB_GAME_BRIDGE: Partial<Record<Tab, GameType>> = {
   fillBlank: 'hangman',
 };
 
-function wordsToWordListItems(words: FullCardItem[]): WordListItem[] {
-  return words.map((w) => ({
-    id: w.id,
-    word: w.word,
-    meaning: w.meaning,
-    image_url: w.imageUrl,
-    category: w.category ?? null,
-    partOfSpeech: w.partOfSpeech ?? null,
-  }));
-}
-
-/** 워크시트에 고른 단어를 다리 놓기 대상 게임이 바로 쓸 수 있는 game_templates 모양(items/config)
- * 으로 바꾼다. 대상마다 실제로 읽는 필드가 다르다 — 플래시카드는 config.flashcards, 매치업은
- * config.pairs, 퀴즈/참거짓/그룹정렬도 각자 config 필드, 나머지는 공용 items(라벨 하나) —
- * 각 게임 페이지가 이미 읽고 있는 그 필드 그대로 채운다(OpenInOtherGame.tsx/useGameTemplates.ts의
- * openInOtherGame과 같은 "새 템플릿을 만들어 openTemplateId로 연다" 패턴, 대상 타입을 미리 알고
- * 있어서 그 패턴이 못 하는 quiz/truefalse/matchup/groupsort까지 지원). 의미 있는 템플릿을 만들 수
- * 없으면(문장 없음, 카테고리 1개뿐 등) null — 버튼을 비활성화하는 데 쓴다. */
-function buildBridgeTemplate(
-  target: GameType,
-  words: FullCardItem[],
-): { items: GameItem[]; config?: GameTemplateConfig } | null {
-  if (words.length === 0) return null;
-  const labelItems: GameItem[] = words.map((w) => ({ id: w.id, label: w.word }));
-  switch (target) {
-    case 'flashcards':
-      return { items: labelItems, config: { flashcards: words.map((w) => ({ id: w.id, left: w.word, right: w.meaning })) } };
-    case 'matchup':
-      return { items: labelItems, config: { pairs: words.map((w) => ({ id: w.id, left: w.word, right: w.meaning })) } };
-    case 'quiz': {
-      const questions = buildQuizQuestions({ items: wordsToWordListItems(words) }, 'wordToMeaning');
-      return questions.length > 0 ? { items: labelItems, config: { questions } } : null;
-    }
-    case 'truefalse': {
-      const statements = buildTrueFalseStatements({ items: wordsToWordListItems(words) }, 'wordToMeaning');
-      return statements.length > 0 ? { items: labelItems, config: { statements } } : null;
-    }
-    case 'groupsort': {
-      const groups = buildGroupSortGroups({ items: wordsToWordListItems(words) });
-      return groups.length >= 2 ? { items: labelItems, config: { groups } } : null;
-    }
-    case 'unscramble': {
-      const sentenceItems: GameItem[] = words.filter((w) => w.example).map((w) => ({ id: w.id, label: w.example as string }));
-      return sentenceItems.length > 0 ? { items: sentenceItems } : null;
-    }
-    default:
-      return { items: labelItems };
-  }
-}
-
 export default function WorksheetPrintPage() {
   const { t } = useTranslation();
   const { academy, profile } = useAuth();
@@ -147,6 +100,9 @@ export default function WorksheetPrintPage() {
   const location = useLocation();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
   const [bridgeBusy, setBridgeBusy] = useState(false);
+  // 발표 중이면 편집 UI를 숨기고 인쇄만 — 단, 수업에 단어장이 없어 단어가 비어 있으면 막다른
+  // 화면이 되지 않게 평소 화면(단어 고르기)을 그대로 보여준다.
+  const locked = usePresenting() && words.length > 0;
   const [tab, setTab] = useState<Tab>(() => {
     const requested = handoffFromLocationState(location.state).materialsTab;
     return requested && (TABS as string[]).includes(requested) ? (requested as Tab) : 'list';
@@ -184,7 +140,7 @@ export default function WorksheetPrintPage() {
 
   const bridgeTarget = TAB_GAME_BRIDGE[tab];
   const bridgeTemplate = useMemo(
-    () => (bridgeTarget ? buildBridgeTemplate(bridgeTarget, words) : null),
+    () => (bridgeTarget ? buildGameContent(bridgeTarget, words) : null),
     [bridgeTarget, words],
   );
 
@@ -212,8 +168,39 @@ export default function WorksheetPrintPage() {
     }
   }
 
+  const emptyHint =
+    words.length === 0
+      ? t('materials.worksheet.needAtLeastOne')
+      : generated
+        ? t(`materials.worksheet.${EMPTY_HINT_KEY[generated.kind]}`)
+        : tab === 'quiz'
+          ? t('materials.worksheet.needAtLeastTwoForQuiz')
+          : t('materials.worksheet.needAtLeastOne');
+
   return (
     <div className="space-y-6">
+      {locked ? (
+        // 발표 중: 단어·탭은 커리큘럼 슬라이드에서 이미 정해졌으니 인쇄(+다시 섞기)만.
+        <PresentPrintBar
+          canPrint={canPreview}
+          emptyHint={emptyHint}
+          onReshuffle={isNewKind(tab) ? () => setSeed((n) => n + 1) : undefined}
+        >
+          {tab === 'askAnswer' && generated?.kind === 'askAnswer' && (
+            <button
+              type="button"
+              onClick={() => setShowAskScreen(true)}
+              className="inline-flex items-center gap-1 px-5 py-2.5 rounded-full border-2 border-primary text-primary hover:bg-primary/10 font-label-md text-label-md transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]" aria-hidden>
+                tv
+              </span>
+              {t('materials.worksheet.screen.viewOnScreen')}
+            </button>
+          )}
+        </PresentPrintBar>
+      ) : (
+      <>
       <Link
         to="/materials"
         className="no-print inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
@@ -447,15 +434,7 @@ export default function WorksheetPrintPage() {
           )}
 
           {!canPreview ? (
-            <div className="font-body-md text-body-md text-on-surface-variant">
-              {words.length === 0
-                ? t('materials.worksheet.needAtLeastOne')
-                : generated
-                  ? t(`materials.worksheet.${EMPTY_HINT_KEY[generated.kind]}`)
-                  : tab === 'quiz'
-                    ? t('materials.worksheet.needAtLeastTwoForQuiz')
-                    : t('materials.worksheet.needAtLeastOne')}
-            </div>
+            <div className="font-body-md text-body-md text-on-surface-variant">{emptyHint}</div>
           ) : (
             <div className="flex flex-wrap gap-2">
               <button
@@ -481,6 +460,8 @@ export default function WorksheetPrintPage() {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {showAskScreen && generated?.kind === 'askAnswer' && (
         <AskAnswerScreen

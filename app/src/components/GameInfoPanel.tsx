@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePresenting } from '../context/LessonRunnerContext';
 
 interface Props {
   description: string;
   steps: string[];
 }
 
-/** 게임 페이지 상단에 붙는 "게임 소개 및 방법" 접이식 패널. 19개 게임 페이지가 전부 공유한다. */
+/** 게임 페이지 상단에 붙는 "게임 소개 및 방법" 접이식 패널. 게임 페이지가 전부 공유한다.
+ * 커리큘럼 발표 중엔 수업 화면에 필요 없어 숨긴다. */
 export default function GameInfoPanel({ description, steps }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const presenting = usePresenting();
+
+  if (presenting) return null;
 
   return (
     <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">

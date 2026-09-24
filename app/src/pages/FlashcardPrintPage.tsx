@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
+import PresentPrintBar from '../components/PresentPrintBar';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import type { FullCardItem } from '../lib/types';
@@ -75,6 +77,7 @@ export default function FlashcardPrintPage() {
   const location = useLocation();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
+  const locked = usePresenting() && words.length > 0;
   const [perPage, setPerPage] = useState<Layout['perPage']>(6);
   const [showImage, setShowImage] = useState(true);
   const [showWord, setShowWord] = useState(true);
@@ -101,6 +104,14 @@ export default function FlashcardPrintPage() {
 
   return (
     <div className="space-y-6">
+      {locked ? (
+        <PresentPrintBar canPrint>
+          <span className="font-caption text-caption text-on-surface-variant tabular-nums">
+            {t('materials.flashcards.summary', { cards: words.length, pages: pages.length })}
+          </span>
+        </PresentPrintBar>
+      ) : (
+      <>
       <Link
         to="/materials"
         className="no-print inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
@@ -221,6 +232,8 @@ export default function FlashcardPrintPage() {
           )}
         </div>
       </div>
+      </>
+      )}
 
       {words.length > 0 && (
         <div className="print-sheet mx-auto" style={colorMode === 'mono' ? { filter: 'grayscale(1)' } : undefined}>

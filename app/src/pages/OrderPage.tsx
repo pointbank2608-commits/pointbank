@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
@@ -262,12 +263,14 @@ export default function OrderPage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameOrder.infoDescription')}
@@ -278,7 +281,7 @@ export default function OrderPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame
               roster={roster}
@@ -290,7 +293,7 @@ export default function OrderPage() {
               {isStaff ? t('gameOrder.emptyStaff') : t('gameOrder.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -314,8 +317,8 @@ export default function OrderPage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

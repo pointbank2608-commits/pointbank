@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLessonRunner } from '../context/LessonRunnerContext';
+import LessonPointsPanel from './LessonPointsPanel';
 
 /**
  * "슬라이드 쇼 진행바" — 레슨 러너가 켜져 있는 동안 AppLayout 안에서 화면이 어디로 이동하든
@@ -15,12 +17,14 @@ import { useLessonRunner } from '../context/LessonRunnerContext';
 export default function LessonRunnerBar() {
   const { t } = useTranslation();
   const { runner, next, prev, exit, isFullscreen, toggleFullscreen } = useLessonRunner();
+  const [pointsOpen, setPointsOpen] = useState(false);
 
   if (!runner) return null;
 
   const current = runner.steps[runner.stepIndex];
 
   return (
+    <>
     <div className="no-print sticky top-0 z-30 flex items-center gap-3 bg-deep-navy px-4 py-2.5 text-white shadow-md md:pl-[calc(1rem)]">
       <span className="material-symbols-outlined text-[20px] shrink-0">{current.icon}</span>
       <div className="min-w-0 flex-1">
@@ -50,6 +54,16 @@ export default function LessonRunnerBar() {
           <span className="material-symbols-outlined text-[20px]">chevron_right</span>
         </button>
       </div>
+      {runner.classId && (
+        <button
+          type="button"
+          onClick={() => setPointsOpen(true)}
+          className="flex shrink-0 items-center gap-1 rounded-full bg-warm-yellow px-3 py-1.5 font-label-md text-label-md text-deep-navy transition-opacity hover:opacity-90"
+        >
+          <span className="material-symbols-outlined text-[18px]">payments</span>
+          <span className="hidden sm:inline">{t('curriculum.play.pointsButton')}</span>
+        </button>
+      )}
       <button
         type="button"
         onClick={toggleFullscreen}
@@ -66,5 +80,9 @@ export default function LessonRunnerBar() {
         {t('curriculum.play.finish')}
       </button>
     </div>
+    {pointsOpen && runner.classId && (
+      <LessonPointsPanel classId={runner.classId} onClose={() => setPointsOpen(false)} />
+    )}
+    </>
   );
 }

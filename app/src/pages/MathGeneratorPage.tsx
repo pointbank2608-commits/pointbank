@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import MathGenerator from '../components/MathGenerator';
@@ -242,12 +243,14 @@ export default function MathGeneratorPage() {
 
   return (
     <div className="space-y-6">
+      <EditOnly>
       <Link
         to="/games"
         className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
         {t('gameAdmin.backToList')}
       </Link>
+      </EditOnly>
 
       <GameInfoPanel
         description={t('gameMathGen.infoDescription')}
@@ -258,7 +261,7 @@ export default function MathGeneratorPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : !selected ? (
         <div className="space-y-6">
-          {classPicker}
+          <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="mathgen" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <MathGenerator operations={operations} min={min} max={max} questionCount={count} />
@@ -267,7 +270,7 @@ export default function MathGeneratorPage() {
               {isStaff ? t('gameMathGen.emptyStaff') : t('gameMathGen.emptyStudent')}
             </div>
           </div>
-          {templateRow}
+          <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
@@ -292,8 +295,8 @@ export default function MathGeneratorPage() {
           </GameThemeFrame>
 
           <div className="space-y-4">
-            {classPicker}
-            {templateRow}
+            <EditOnly>{classPicker}</EditOnly>
+            <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
             {isStaff && (

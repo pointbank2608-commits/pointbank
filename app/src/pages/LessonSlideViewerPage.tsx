@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import YoutubeShadowingPlayer from '../components/YoutubeShadowingPlayer';
-import { useLessonRunner } from '../context/LessonRunnerContext';
+import { usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import { fetchCurriculumLessonById } from '../lib/api';
 import { effectiveSlides } from '../lib/lessonSlides';
@@ -17,10 +17,9 @@ export default function LessonSlideViewerPage() {
   const { t } = useTranslation();
   const { id, slideId } = useParams<{ id: string; slideId: string }>();
   const { notify } = useToast();
-  const { runner, isFullscreen } = useLessonRunner();
-  // AppLayout.tsx 의 isPresenting 조건(runner && isFullscreen)과 반드시 같아야 한다 — 그래야
-  // 부모가 실제로 h-[100dvh] 진짜 높이를 주는 경우에만 이쪽도 h-full/max-h-full 을 쓴다.
-  const isPresenting = runner != null && isFullscreen;
+  // AppLayout.tsx 의 isPresenting 과 같은 조건(usePresenting) — 그때만 부모가 h-[100dvh] 진짜 높이를
+  // 주므로 이쪽도 h-full/max-h-full 을 쓴다.
+  const isPresenting = usePresenting();
 
   const [lesson, setLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
