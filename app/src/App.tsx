@@ -66,7 +66,7 @@ import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
 import WorksheetLibraryPage from './pages/WorksheetLibraryPage';
 import WorksheetPrintPage from './pages/WorksheetPrintPage';
 import CurriculumPage from './pages/CurriculumPage';
-import LessonPlayerPage from './pages/LessonPlayerPage';
+import LessonSlideViewerPage from './pages/LessonSlideViewerPage';
 
 export default function App() {
   const { t } = useTranslation();
@@ -127,7 +127,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/curriculum" element={<CurriculumPage />} />
-            <Route path="/curriculum/:id/play" element={<LessonPlayerPage />} />
+            <Route path="/curriculum/:id/slide/:slideId" element={<LessonSlideViewerPage />} />
             <Route path="/board" element={<ClassBoardPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />

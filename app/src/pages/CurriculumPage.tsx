@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
+import LessonSlideSorter from '../components/LessonSlideSorter';
 import { useAuth } from '../context/AuthContext';
 import { useLessonRunner } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
@@ -13,15 +14,14 @@ import {
   generateWordListFromVideo,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
+import { GAME_CATALOG } from '../lib/gameCatalog';
+import { effectiveSlides } from '../lib/lessonSlides';
 import { extractYoutubeId } from '../lib/youtube';
-import type { CurriculumLesson, CurriculumStep, WordList } from '../lib/types';
+import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
 }
-
-const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
 
 export default function CurriculumPage() {
   const { t } = useTranslation();
@@ -66,7 +66,7 @@ export default function CurriculumPage() {
   const [wordListId, setWordListId] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [level, setLevel] = useState('');
-  const [playlist, setPlaylist] = useState<CurriculumStep[]>([]);
+  const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [extracting, setExtracting] = useState(false);
 
@@ -103,22 +103,6 @@ export default function CurriculumPage() {
     }
   }
 
-  function toggleGame(type: CurriculumStep['gameType']) {
-    setPlaylist((prev) =>
-      prev.some((s) => s.gameType === type) ? prev.filter((s) => s.gameType !== type) : [...prev, { id: uid(), gameType: type }],
-    );
-  }
-
-  function move(index: number, dir: -1 | 1) {
-    setPlaylist((prev) => {
-      const next = [...prev];
-      const target = index + dir;
-      if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
-  }
-
   function resetForm() {
     setName('');
     setWordListId('');
@@ -141,7 +125,8 @@ export default function CurriculumPage() {
         classId: staffClassId,
         name: name.trim(),
         wordListId: wordListId || null,
-        videoUrl: videoUrl.trim() || null,
+        // video_url 은 옛 컬럼 — 영상은 이제 playlist 안 슬라이드로 들어간다. 새 레슨은 항상 null.
+        videoUrl: null,
         level: level.trim() || null,
         playlist,
         teacherId: profile.id,
@@ -156,6 +141,18 @@ export default function CurriculumPage() {
     if (!confirm(t('curriculum.deleteConfirm', { name: lesson.name }))) return;
     const ok = await run(() => deleteCurriculumLesson(lesson.id), t('curriculum.deletedToast'));
     if (ok) setLessons((prev) => prev.filter((l) => l.id !== lesson.id));
+  }
+
+  /** "발표하기" — 캔바의 "발표하기"처럼 슬라이드쇼 시작과 동시에 풀스크린으로 들어간다.
+   * requestFullscreen 은 클릭 이벤트 핸들러 안에서(비동기 대기 없이) 바로 불러야 사용자 제스처로
+   * 인정된다 — start() 가 내부에서 navigate 를 하지만 동기 호출이라 문제없다. */
+  async function handleStart(lesson: CurriculumLesson) {
+    start(lesson);
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      // 권한이 없거나(보안 컨텍스트 아님 등) 실패해도 슬라이드쇼 진행 자체는 막지 않는다.
+    }
   }
 
   return (
@@ -247,58 +244,15 @@ export default function CurriculumPage() {
 
           <div>
             <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('curriculum.playlistLabel')}</div>
-            <div className="space-y-2">
-              {CATEGORY_ORDER.map((cat) => (
-                <div key={cat} className="flex flex-wrap gap-1.5">
-                  {GAME_CATALOG.filter((g) => g.category === cat).map((g) => {
-                    const active = playlist.some((s) => s.gameType === g.type);
-                    return (
-                      <button
-                        key={g.type}
-                        type="button"
-                        onClick={() => toggleGame(g.type)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-label-md text-label-md transition-colors ${
-                          active
-                            ? 'bg-primary text-on-primary'
-                            : 'bg-surface-container-low text-on-surface-variant hover:bg-secondary-container/40'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[16px]">{g.icon}</span>
-                        {t(g.nameKey)}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-
-            {playlist.length > 0 && (
-              <div className="mt-3 space-y-1">
-                <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.orderLabel')}</div>
-                {playlist.map((step, i) => {
-                  const entry = GAME_CATALOG.find((g) => g.type === step.gameType);
-                  return (
-                    <div key={step.id} className="flex items-center gap-2 rounded-lg bg-surface-container-low px-3 py-1.5 w-fit">
-                      <span className="font-caption text-caption text-on-surface-variant w-5">{i + 1}.</span>
-                      <span className="material-symbols-outlined text-[16px]">{entry?.icon}</span>
-                      <span className="font-label-md text-label-md text-on-surface">{entry ? t(entry.nameKey) : step.gameType}</span>
-                      <button type="button" onClick={() => move(i, -1)} className="text-on-surface-variant hover:text-primary">
-                        <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
-                      </button>
-                      <button type="button" onClick={() => move(i, 1)} className="text-on-surface-variant hover:text-primary">
-                        <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPlaylist((prev) => prev.filter((s) => s.id !== step.id))}
-                        className="text-on-surface-variant hover:text-error"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+            {academy?.id && (
+              <LessonSlideSorter
+                academyId={academy.id}
+                slides={playlist}
+                onChange={setPlaylist}
+                wordListId={wordListId}
+                wordLists={wordLists}
+                onWordListChange={setWordListId}
+              />
             )}
           </div>
 
@@ -355,16 +309,12 @@ export default function CurriculumPage() {
               )}
 
               <div className="flex flex-wrap gap-1">
-                {lesson.video_url && (
-                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title="video">
-                    smart_display
-                  </span>
-                )}
-                {lesson.playlist.map((step) => {
-                  const entry = GAME_CATALOG.find((g) => g.type === step.gameType);
+                {effectiveSlides(lesson).map((slide) => {
+                  const icon =
+                    slide.kind === 'image' ? 'image' : slide.kind === 'video' ? 'smart_display' : (GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports');
                   return (
-                    <span key={step.id} className="material-symbols-outlined text-[18px] text-on-surface-variant" title={step.gameType}>
-                      {entry?.icon}
+                    <span key={slide.id} className="material-symbols-outlined text-[18px] text-on-surface-variant" title={slide.kind}>
+                      {icon}
                     </span>
                   );
                 })}
@@ -372,7 +322,7 @@ export default function CurriculumPage() {
 
               <button
                 type="button"
-                onClick={() => start(lesson)}
+                onClick={() => void handleStart(lesson)}
                 className="w-full px-4 py-2 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors"
               >
                 ▶ {t('curriculum.startButton')}

@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
+import { effectiveSlides } from '../lib/lessonSlides';
 import type { CurriculumLesson } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'video' | 'game' | 'print';
+  kind: 'image' | 'video' | 'game' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -56,18 +57,26 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   const start = useCallback(
     (lesson: CurriculumLesson) => {
       const steps: RunnerStep[] = [];
-      if (lesson.video_url) {
-        steps.push({
-          kind: 'video',
-          path: `/curriculum/${lesson.id}/play`,
-          label: t('curriculum.play.stepVideo'),
-          icon: 'smart_display',
-        });
-      }
-      for (const s of lesson.playlist) {
-        const entry = GAME_CATALOG.find((g) => g.type === s.gameType);
-        if (!entry) continue;
-        steps.push({ kind: 'game', path: entry.path, label: t(entry.nameKey), icon: entry.icon });
+      for (const slide of effectiveSlides(lesson)) {
+        if (slide.kind === 'image') {
+          steps.push({
+            kind: 'image',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t('curriculum.slides.kindImage'),
+            icon: 'image',
+          });
+        } else if (slide.kind === 'video') {
+          steps.push({
+            kind: 'video',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t('curriculum.play.stepVideo'),
+            icon: 'smart_display',
+          });
+        } else {
+          const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
+          if (!entry) continue;
+          steps.push({ kind: 'game', path: entry.path, label: t(entry.nameKey), icon: entry.icon });
+        }
       }
       steps.push({ kind: 'print', path: '/materials/worksheet', label: t('curriculum.play.stepPrint'), icon: 'print' });
 

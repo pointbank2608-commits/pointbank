@@ -504,10 +504,36 @@ export interface WordList {
   updated_at: string;
 }
 
-/* ---------------- 내 커리큘럼 (반별 수업 유닛 — 단어장+영상+게임 재생목록 묶음) ---------------- */
+/* ---------------- 내 커리큘럼 (반별 수업 유닛 — 단어장+슬라이드 목록 묶음) ---------------- */
 
-/** 재생목록 한 칸. id 는 순서변경(드래그) 시 React key 용, gameType 이 실제 진행할 게임. */
-export interface CurriculumStep {
+/** 슬라이드 한 장. id 는 드래그 순서변경 시 React key 겸 dnd-kit sortable id.
+ * 캔바 프레젠테이션처럼 이미지·영상·게임을 자유 순서로 배치한다(2026-09-24 슬라이드 빌더 도입).
+ * 다음 단계에서 'flashcard'/'worksheet' kind 를 추가할 자리를 남겨둔다 — 지금은 구현하지 않음. */
+export interface ImageSlide {
+  id: string;
+  kind: 'image';
+  /** 스토리지 경로(삭제용). lesson-slide-images 버킷 기준. */
+  imagePath: string;
+  imageUrl: string;
+}
+
+export interface VideoSlide {
+  id: string;
+  kind: 'video';
+  videoUrl: string;
+}
+
+export interface GameSlide {
+  id: string;
+  kind: 'game';
+  gameType: GameType;
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide;
+
+/** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
+ * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */
+export interface LegacyCurriculumStep {
   id: string;
   gameType: GameType;
 }
@@ -518,13 +544,17 @@ export interface CurriculumLesson {
   /** null 이면 학원 전체 공용 */
   class_id: string | null;
   name: string;
-  /** 이 레슨이 쓰는 단어장. 삭제되면 null(레슨 자체는 남음). */
+  /** 이 레슨(모든 게임 슬라이드)이 공통으로 쓰는 단어장. 삭제되면 null(레슨 자체는 남음). */
   word_list_id: string | null;
-  /** 무비보기/쉐도잉 단계에서 쓸 유튜브 영상 URL. 없으면 그 단계는 건너뛴다. */
+  /** 예전 데이터 호환용 컬럼 — 더 이상 새로 쓰지 않는다. 영상은 이제 playlist 안의
+   * VideoSlide 로 순서 자유롭게 들어간다. effectiveSlides() 가 이 값을 읽어 옛 레슨에
+   * 한해서만 맨 앞 영상 슬라이드로 합성해준다. */
   video_url: string | null;
   /** 자유 태그(예: "초2", "P1"). 강제 분류가 아니라 화면 표시·정렬용 힌트일 뿐. */
   level: string | null;
-  playlist: CurriculumStep[];
+  /** DB 컬럼명은 그대로 playlist(jsonb) 지만, 이제 슬라이드 목록이다. 옛 레슨은
+   * LegacyCurriculumStep[] 모양일 수 있어 effectiveSlides() 를 거쳐서 쓴다. */
+  playlist: LessonSlide[] | LegacyCurriculumStep[];
   created_by: string | null;
   created_at: string;
   updated_at: string;

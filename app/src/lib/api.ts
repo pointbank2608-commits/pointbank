@@ -6,10 +6,10 @@ import type {
   BillingHistoryRow,
   ClassRow,
   CurriculumLesson,
-  CurriculumStep,
   GameItem,
   GameTemplate,
   GameTemplateConfig,
+  LessonSlide,
   PhonicsBankEntry,
   Preset,
   RankRow,
@@ -626,6 +626,30 @@ export async function deleteGameImage(path: string) {
   if (error) throw new Error(error.message);
 }
 
+/* ---------------- 커리큘럼 슬라이드 이미지 업로드(캔바/PPT를 이미지로 내보낸 것) ----------------
+ * game-images 와 똑같은 패턴이지만 별도 버킷(lesson-slide-images) — 슬라이드 이미지는 나중에
+ * 레슨 삭제 시 정리 대상이 될 수 있어 용례를 분리해둔다(supabase/026_lesson_slide_images.sql). */
+
+export interface LessonSlideImageFile {
+  path: string;
+  name: string;
+  url: string;
+}
+
+export async function uploadLessonSlideImage(academyId: string, file: File): Promise<LessonSlideImageFile> {
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const path = `${academyId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('lesson-slide-images').upload(path, file);
+  if (error) throw new Error(error.message);
+  const { data: pub } = supabase.storage.from('lesson-slide-images').getPublicUrl(path);
+  return { path, name: file.name, url: pub.publicUrl };
+}
+
+export async function deleteLessonSlideImage(path: string) {
+  const { error } = await supabase.storage.from('lesson-slide-images').remove([path]);
+  if (error) throw new Error(error.message);
+}
+
 /* ---------------- 출석부 ---------------- */
 
 /** 특정 반의 특정 기간(from~to, 둘 다 YYYY-MM-DD, inclusive) 출석 기록 전체. */
@@ -928,7 +952,7 @@ export async function createCurriculumLesson(params: {
   wordListId: string | null;
   videoUrl: string | null;
   level: string | null;
-  playlist: CurriculumStep[];
+  playlist: LessonSlide[];
   teacherId: string;
 }): Promise<CurriculumLesson> {
   return unwrap(
