@@ -182,7 +182,8 @@ export default function CurriculumPage() {
    * requestFullscreen 은 클릭 이벤트 핸들러 안에서(비동기 대기 없이) 바로 불러야 사용자 제스처로
    * 인정된다 — start() 가 내부에서 navigate 를 하지만 동기 호출이라 문제없다. */
   async function handleStart(lesson: CurriculumLesson) {
-    start(lesson);
+    const wordList = wordLists.find((wl) => wl.id === lesson.word_list_id) ?? null;
+    start(lesson, wordList);
     try {
       await document.documentElement.requestFullscreen();
     } catch {

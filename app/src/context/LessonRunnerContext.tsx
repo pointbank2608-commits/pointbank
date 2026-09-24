@@ -4,7 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
-import type { CurriculumLesson } from '../lib/types';
+import type { CurriculumLesson, FullCardItem, WordList } from '../lib/types';
+
+/** word_lists 저장 모양(WordListItem)을 자료실 페이지들이 받는 모양(FullCardItem)으로 바꾼다.
+ * materialsHandoff.ts 의 materialsWords 로 넘길 때 씀. */
+function toFullCardItems(wordList: WordList | null | undefined): FullCardItem[] {
+  if (!wordList) return [];
+  return wordList.items.map((item) => ({
+    id: item.id,
+    word: item.word,
+    meaning: item.meaning,
+    imageUrl: item.image_url,
+    category: item.category,
+    partOfSpeech: item.partOfSpeech ?? null,
+  }));
+}
 
 export interface RunnerStep {
   kind: 'image' | 'video' | 'game' | 'material' | 'print';
@@ -25,8 +39,11 @@ interface RunnerState {
 
 interface RunnerValue {
   runner: RunnerState | null;
-  /** 수업 준비 화면의 "▶ 내 수업하기" 버튼이 호출한다 — PPT의 "슬라이드 쇼 시작"과 같다. */
-  start: (lesson: CurriculumLesson) => void;
+  /** 수업 준비 화면의 "▶ 내 수업하기" 버튼이 호출한다 — PPT의 "슬라이드 쇼 시작"과 같다.
+   * wordList 는 lesson.word_list_id 로 미리 찾아둔 실제 단어장(호출부가 이미 목록을 들고 있어
+   * 여기서 새로 fetch 하지 않음 — fetch를 넣으면 비동기가 껴서 풀스크린 진입에 필요한 "클릭
+   * 이벤트 핸들러 안에서 동기 호출"조건이 깨질 수 있다). */
+  start: (lesson: CurriculumLesson, wordList?: WordList | null) => void;
   next: () => void;
   prev: () => void;
   goTo: (index: number) => void;
@@ -59,7 +76,8 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, [runner]);
 
   const start = useCallback(
-    (lesson: CurriculumLesson) => {
+    (lesson: CurriculumLesson, wordList?: WordList | null) => {
+      const materialsWords = toFullCardItems(wordList);
       const steps: RunnerStep[] = [];
       for (const slide of effectiveSlides(lesson)) {
         if (slide.kind === 'image') {
@@ -83,16 +101,25 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         } else {
           const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
           if (!entry) continue;
+          const navState: Record<string, unknown> = {};
+          if (slide.worksheetTab) navState.materialsTab = slide.worksheetTab;
+          if (materialsWords.length > 0) navState.materialsWords = materialsWords;
           steps.push({
             kind: 'material',
             path: entry.path,
             label: t(entry.nameKey),
             icon: entry.icon,
-            navState: slide.worksheetTab ? { materialsTab: slide.worksheetTab } : undefined,
+            navState: Object.keys(navState).length > 0 ? navState : undefined,
           });
         }
       }
-      steps.push({ kind: 'print', path: '/materials/worksheet', label: t('curriculum.play.stepPrint'), icon: 'print' });
+      steps.push({
+        kind: 'print',
+        path: '/materials/worksheet',
+        label: t('curriculum.play.stepPrint'),
+        icon: 'print',
+        navState: materialsWords.length > 0 ? { materialsWords } : undefined,
+      });
 
       if (steps.length === 0) return;
       setRunner({ lessonId: lesson.id, lessonName: lesson.name, steps, stepIndex: 0 });
