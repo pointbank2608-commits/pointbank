@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLessonRunner } from '../context/LessonRunnerContext';
+import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
 import LessonAnnotationLayer from './LessonAnnotationLayer';
+import { zoomAt } from './PresentZoomArea';
 
 /**
  * "슬라이드 쇼 진행바" — 레슨 러너가 켜져 있는 동안 AppLayout 안에서 화면이 어디로 이동하든
@@ -17,7 +18,14 @@ import LessonAnnotationLayer from './LessonAnnotationLayer';
  */
 export default function LessonRunnerBar() {
   const { t } = useTranslation();
-  const { runner, next, prev, exit, isFullscreen, toggleFullscreen } = useLessonRunner();
+  const { runner, next, prev, exit, isFullscreen, toggleFullscreen, zoom, setZoom } = useLessonRunner();
+
+  // 버튼 확대·축소는 화면 가운데를 기준으로.
+  function zoomBy(factor: number) {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    setZoom((z) => zoomAt(z, z.scale * factor, cx, cy));
+  }
   const [pointsOpen, setPointsOpen] = useState(false);
   const [annotationOpen, setAnnotationOpen] = useState(false);
 
@@ -83,6 +91,37 @@ export default function LessonRunnerBar() {
           <span className="hidden sm:inline font-label-md text-label-md">{t('curriculum.play.annotation')}</span>
         </button>
       )}
+      <div className="flex shrink-0 items-center rounded-full bg-white/10">
+        <button
+          type="button"
+          disabled={zoom.scale <= PRESENT_ZOOM_MIN}
+          onClick={() => zoomBy(1 / 1.25)}
+          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/15 disabled:opacity-30"
+          aria-label={t('curriculum.play.zoomOut')}
+          title={t('curriculum.play.zoomOut')}
+        >
+          <span className="material-symbols-outlined text-[20px]">zoom_out</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setZoom(PRESENT_ZOOM_IDENTITY)}
+          className="min-w-[3rem] rounded-full px-1 font-caption text-caption tabular-nums text-white/90 hover:bg-white/15"
+          aria-label={t('curriculum.play.zoomReset')}
+          title={t('curriculum.play.zoomHint')}
+        >
+          {Math.round(zoom.scale * 100)}%
+        </button>
+        <button
+          type="button"
+          disabled={zoom.scale >= PRESENT_ZOOM_MAX}
+          onClick={() => zoomBy(1.25)}
+          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/15 disabled:opacity-30"
+          aria-label={t('curriculum.play.zoomIn')}
+          title={t('curriculum.play.zoomIn')}
+        >
+          <span className="material-symbols-outlined text-[20px]">zoom_in</span>
+        </button>
+      </div>
       <button
         type="button"
         onClick={toggleFullscreen}

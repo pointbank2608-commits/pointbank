@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePresenting } from '../context/LessonRunnerContext';
 import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import '../gameSkins.css';
@@ -50,10 +51,16 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   const stageRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // 커리큘럼 "수업 시작하기" 중에는 게임이 발표 영역 전체를 채운다 — 이 컴포넌트 자신의 전체화면과
+  // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
+  // absolute inset-0 으로 덮는다(2026-09-25 "수업 시작할 때 게임 화면도 전체 화면에 맞춰줘").
+  const presenting = usePresenting();
+  const fill = isFullscreen || presenting;
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
-  const [itemsHidden, setItemsHidden] = useState(false);
+  // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
+  const [itemsHidden, setItemsHidden] = useState(presenting);
   const [restartOpen, setRestartOpen] = useState(false);
   const [fullscreenError, setFullscreenError] = useState(false);
 
@@ -128,17 +135,17 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
 
-      if (!isFullscreen && window.innerWidth < DESKTOP_BREAKPOINT) {
+      if (!fill && window.innerWidth < DESKTOP_BREAKPOINT) {
         setScale(1);
         return;
       }
 
       const availW = stage.clientWidth;
-      // 전체화면에선 스테이지 자체가 화면 전체라 clientHeight가 곧 가용 높이지만, 일반
-      // 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
+      // 전체화면(·발표 중)에선 스테이지 자체가 채울 영역 전체라 clientHeight가 곧 가용 높이지만,
+      // 일반 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
       // 따로 재야 한다(지금 스크롤 위치 기준 — 사용자가 이미 스크롤해서 보고 있는 상태를
       // 쫓아다니며 다시 축소하진 않는다, 새로고침·리사이즈 시점에만 재계산).
-      const availH = isFullscreen
+      const availH = fill
         ? stage.clientHeight
         : Math.max(240, window.innerHeight - stage.getBoundingClientRect().top - 24);
       const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
@@ -174,7 +181,7 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      setScale(isFullscreen ? Math.min(5, Math.max(0.5, next)) : Math.min(1, Math.max(0.5, next)));
+      setScale(fill ? Math.min(5, Math.max(0.5, next)) : Math.min(1, Math.max(0.5, next)));
     }
 
     fit();
@@ -197,11 +204,23 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
     // 바뀔 때(회전, 창 리사이즈, 모바일↔데스크탑 폭 경계를 넘나들 때)도 다시 잰다.
     ro.observe(document.body);
     window.addEventListener('resize', fit);
+    // 처음 잴 때 웹폰트·그림이 아직 안 불러와져 있으면 안쪽 글자·그림 크기가 나중에 바뀌는데, 그
+    // 안쪽 요소들은 관찰 대상이 아니라 다시 재지 않아 배율이 엉뚱하게(예: 0.5) 굳어버렸다(발표 화면에서
+    // 발견). 폰트 로드·그림 로드·잠깐 뒤 몇 번 더 잰다.
+    const timers = [150, 600, 1500].map((ms) => window.setTimeout(fit, ms));
+    let alive = true;
+    void document.fonts?.ready.then(() => {
+      if (alive) fit();
+    });
+    wrap.addEventListener('load', fit, true);
     return () => {
+      alive = false;
+      timers.forEach((id) => window.clearTimeout(id));
+      wrap.removeEventListener('load', fit, true);
       ro.disconnect();
       window.removeEventListener('resize', fit);
     };
-  }, [isFullscreen]);
+  }, [fill]);
 
   async function toggleFullscreen() {
     setFullscreenError(false);
@@ -214,7 +233,7 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
     }
   }
 
-  const fullscreenStyle: CSSProperties = isFullscreen
+  const fullscreenStyle: CSSProperties = fill
     ? {
         display: 'flex',
         flexDirection: 'column',
@@ -223,15 +242,17 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
         width: '100%',
         height: '100%',
         backgroundColor: 'var(--color-background)',
+        // 발표 중(브라우저 전체화면이 이 요소가 아닐 때)엔 발표 영역을 통째로 덮는다.
+        ...(!isFullscreen ? { position: 'absolute', inset: 0, zIndex: 20 } : {}),
       }
     : {};
 
   return (
-    <GamePlayContext.Provider value={{ fullscreen: isFullscreen, itemsHidden }}>
+    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
       <div
         ref={containerRef}
         data-game={gameType}
-        className={`relative ${gameType ? 'classroom-play' : ''} ${isFullscreen ? 'game-fs' : ''} ${className ?? ''}`}
+        className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
         <div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
@@ -285,33 +306,36 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
               {t('gamePlay.restart')}
             </button>
           )}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            title={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
-            aria-label={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
-            className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
-          >
-            <span aria-hidden className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
-            {isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
-          </button>
+          {/* 발표 중엔 진행바의 전체화면 버튼 하나만 쓴다(게임만 따로 전체화면이 되면 진행바가 가려짐). */}
+          {!presenting && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+              aria-label={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
+            >
+              <span aria-hidden className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
+              {isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+            </button>
+          )}
         </div>
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
-        <div ref={stageRef} className={isFullscreen ? 'game-fs-stage' : undefined}>
+        <div ref={stageRef} className={fill ? 'game-fs-stage' : undefined}>
           <div
-            className={isFullscreen ? 'contents' : 'mx-auto'}
-            style={!isFullscreen && naturalSize.h > 0
+            className={fill ? 'contents' : 'mx-auto'}
+            style={!fill && naturalSize.h > 0
               ? { width: naturalSize.w * scale, height: naturalSize.h * scale }
               : undefined}
           >
             <div
               ref={scaleRef}
-              className={isFullscreen ? 'game-fs-scale' : undefined}
+              className={fill ? 'game-fs-scale' : undefined}
               style={{
-                width: isFullscreen ? '100%' : naturalSize.w > 0 ? naturalSize.w : '100%',
+                width: fill ? '100%' : naturalSize.w > 0 ? naturalSize.w : '100%',
                 transform: `scale(${scale})`,
-                transformOrigin: isFullscreen ? 'center center' : 'top left',
+                transformOrigin: fill ? 'center center' : 'top left',
               }}
             >
               {children}

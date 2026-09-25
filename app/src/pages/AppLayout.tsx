@@ -5,6 +5,7 @@ import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
 import PlanRouteGuard from '../components/PlanRouteGuard';
+import PresentZoomArea from '../components/PresentZoomArea';
 import PrintBrandFooter from '../components/PrintBrandFooter';
 import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
@@ -194,8 +195,9 @@ function AppLayoutInner() {
     </>
   );
 
-  // 진짜 전체화면 발표 모드 — 사이드바·상단바·페이지 여백 없이 진행바 + 지금 슬라이드만 화면을
-  // 꽉 채운다. LessonSlideViewerPage.tsx 등 슬라이드 콘텐츠는 h-full 로 이 영역 높이에 맞춰 늘어남.
+  // 발표 모드 — 사이드바·상단바·페이지 여백 없이 진행바 + 지금 슬라이드만 화면을 꽉 채운다.
+  // 게임(GameThemeFrame)·이미지 슬라이드는 PresentZoomArea 안에서 absolute inset-0 으로 영역 전체를
+  // 채우고, 두 손가락·Ctrl+휠로 확대·축소할 수 있다.
   if (isPresenting) {
     return (
       // 인쇄할 때는 고정 높이·스크롤 박스를 풀어야 여러 장이 잘리지 않고 다 나온다(print:*).
@@ -203,10 +205,10 @@ function AppLayoutInner() {
         <PrintWatermark />
         {isMaterialsPrint && <PrintBrandFooter />}
         <LessonRunnerBar />
-        <div className="min-h-0 flex-1 overflow-y-auto p-3 md:p-5 print:overflow-visible print:p-0">
+        <PresentZoomArea>
           <PlanRouteGuard />
           <Outlet />
-        </div>
+        </PresentZoomArea>
       </div>
     );
   }

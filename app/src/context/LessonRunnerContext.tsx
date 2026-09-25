@@ -42,7 +42,21 @@ interface RunnerValue {
    * (2026-09-25, 이전엔 LessonRunnerBar 안에 로컬 state로 따로 있었음). */
   isFullscreen: boolean;
   toggleFullscreen: () => void;
+  /** 발표 화면 확대·축소(두 손가락 핀치·Ctrl+휠·진행바 버튼). 슬라이드를 넘기면 100%로 돌아간다.
+   * PresentZoomArea 가 화면에 적용하고, LessonRunnerBar 가 버튼으로 조절한다. */
+  zoom: PresentZoom;
+  setZoom: (next: PresentZoom | ((prev: PresentZoom) => PresentZoom)) => void;
 }
+
+export interface PresentZoom {
+  scale: number;
+  x: number;
+  y: number;
+}
+
+export const PRESENT_ZOOM_IDENTITY: PresentZoom = { scale: 1, x: 0, y: 0 };
+export const PRESENT_ZOOM_MIN = 0.5;
+export const PRESENT_ZOOM_MAX = 4;
 
 const STORAGE_KEY = 'classbank.lessonRunner';
 
@@ -68,6 +82,12 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       // 저장 실패해도(프라이빗 모드 등) 진행에는 지장 없다 — 새로고침 복원만 안 될 뿐.
     }
   }, [runner]);
+
+  const [zoom, setZoom] = useState<PresentZoom>(PRESENT_ZOOM_IDENTITY);
+  // 다음/이전 슬라이드로 가거나 수업을 새로 시작·마치면 확대는 풀고 100%로.
+  useEffect(() => {
+    setZoom(PRESENT_ZOOM_IDENTITY);
+  }, [runner?.lessonId, runner?.stepIndex]);
 
   const [isFullscreen, setIsFullscreen] = useState(() => document.fullscreenElement != null);
 
@@ -178,7 +198,9 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   return (
-    <LessonRunnerContext.Provider value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen }}>
+    <LessonRunnerContext.Provider
+      value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen, zoom, setZoom }}
+    >
       {children}
     </LessonRunnerContext.Provider>
   );

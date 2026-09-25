@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { ImageQuizItem } from '../lib/types';
@@ -46,17 +46,30 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
     setScore(0);
+    setPhase('revealing');
+    setBlurred(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemIdsKey]);
 
-  useEffect(() => {
+  // 새 문제로 넘어갈 때 흐림을 "같은 렌더"에서 다시 켜야 한다 — 예전엔 useEffect 로 나중에 켜서, 이전
+  // 문제의 선명한 <img>가 그대로 재사용된 채 0→28px로 흐려지다 곧바로 다시 선명해지는 전환이
+  // 겹쳐, 두 번째 사진부터는 흐림이 거의 안 보였다(2026-09-25 사용자 제보). 이제 문제마다 <img>를
+  // key 로 새로 만들고, 사진이 실제로 다 불러와진 뒤에 선명해지기 시작한다.
+  function goToPos(nextPos: number) {
     setPhase('revealing');
     setBlurred(true);
-    const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setBlurred(false));
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [pos]);
+    setPos(nextPos);
+  }
+
+  // 사진이 불러와진 시점엔 이미 blur(28px) 로 그려져 있으니, 잠깐 뒤 흐림을 풀면 거기서부터 서서히
+  // 선명해진다. 그 사이 다음 문제로 넘어갔으면(늦게 도착한 타이머) 새 사진을 건드리지 않는다.
+  const posRef = useRef(pos);
+  posRef.current = pos;
+  function startUnblur(forPos: number) {
+    window.setTimeout(() => {
+      if (posRef.current === forPos) setBlurred(false);
+    }, 30);
+  }
 
   if (items.length === 0) {
     return (
@@ -73,8 +86,8 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
 
   function restart() {
     setOrder(shuffle(items.map((_, i) => i)));
-    setPos(0);
     setScore(0);
+    goToPos(0);
   }
 
   if (finished) {
@@ -119,7 +132,7 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
 
   function next(correct: boolean) {
     if (correct) setScore((s) => s + 1);
-    setPos((p) => p + 1);
+    goToPos(pos + 1);
   }
 
   return (
@@ -131,7 +144,9 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
       <div data-skin-stage="frame" className={`iq-frame mb-5 w-full max-w-[560px] ${clay ? 'iq-clay' : ''}`}>
         <div className="iq-photo">
           <img
+            key={`${pos}:${current.id}`}
             src={current.imageUrl}
+            onLoad={() => startUnblur(pos)}
             alt=""
             data-skin-object="photo"
             className="h-full w-full object-cover"

@@ -17,8 +17,6 @@ export default function LessonSlideViewerPage() {
   const { t } = useTranslation();
   const { id, slideId } = useParams<{ id: string; slideId: string }>();
   const { notify } = useToast();
-  // AppLayout.tsx 의 isPresenting 과 같은 조건(usePresenting) — 그때만 부모가 h-[100dvh] 진짜 높이를
-  // 주므로 이쪽도 h-full/max-h-full 을 쓴다.
   const isPresenting = usePresenting();
 
   const [lesson, setLesson] = useState<CurriculumLesson | null>(null);
@@ -71,11 +69,10 @@ export default function LessonSlideViewerPage() {
     );
   }
 
-  // AppLayout이 진짜 전체화면일 때(isPresenting)만 사이드바·여백 없이 h-[100dvh] 를 그대로 주므로,
-  // 그때는 이 래퍼도 h-full 로 그 높이를 다 채우고 이미지는 max-h-full 로 그 안에서 최대한 크게.
-  // 평소(전체화면 아님)엔 부모 높이가 콘텐츠에 따라 달라져 %가 의미 없으므로 기존 vh 값을 그대로 쓴다.
+  // 발표 중엔 PresentZoomArea(position:relative) 전체를 absolute inset-0 으로 채우고 이미지는 그 안에서
+  // 최대한 크게. 평소엔 부모 높이가 콘텐츠에 따라 달라져 %가 의미 없으므로 기존 vh 값을 그대로 쓴다.
   return (
-    <div className={isPresenting ? 'flex h-full items-center justify-center' : 'flex min-h-[70vh] items-center justify-center'}>
+    <div className={isPresenting ? 'absolute inset-0 flex items-center justify-center p-3 md:p-5' : 'flex min-h-[70vh] items-center justify-center'}>
       <img
         src={slide.imageUrl}
         alt=""
