@@ -285,7 +285,9 @@ export default function LessonSlideSorter({
                 key={slide.id}
                 slide={slide}
                 index={i}
-                selected={slide.id === selectedId}
+                // 새 슬라이드를 추가하는 동안에는 기존 슬라이드를 선택 표시하지 않는다(그 슬라이드를 고치는
+                // 중인 것처럼 보이지 않게).
+                selected={!addMode && slide.id === selectedId}
                 onSelect={() => {
                   // 추가 패널이 열려 있어도 썸네일을 누르면 바로 그 슬라이드 미리보기·편집으로.
                   setSelectedId(slide.id);
@@ -301,11 +303,18 @@ export default function LessonSlideSorter({
 
         <button
           type="button"
-          onClick={() => setAddMode((m) => (m ? null : 'canvas'))}
-          className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-outline-variant px-4 py-3 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary lg:w-full"
+          // 누를 때마다 열었다 닫았다(토글) 하면, 두 번째 클릭에 패널이 닫히며 이전 슬라이드 화면이 떠서
+          // 헷갈린다(2026-09-26 사용자 피드백) — 항상 "추가 중" 상태로 연다. 닫기는 패널의 닫기 버튼으로.
+          onClick={() => setAddMode((m) => m ?? 'canvas')}
+          aria-pressed={!!addMode}
+          className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 py-3 font-label-md text-label-md transition-colors lg:w-full ${
+            addMode
+              ? 'border-primary bg-primary-fixed text-primary'
+              : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
+          }`}
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          {t('curriculum.slides.addSlide')}
+          <span className="material-symbols-outlined text-[18px]">{addMode ? 'edit_square' : 'add'}</span>
+          {addMode ? t('curriculum.slides.addingSlide', { n: slides.length + 1 }) : t('curriculum.slides.addSlide')}
         </button>
       </div>
 
@@ -313,6 +322,9 @@ export default function LessonSlideSorter({
       <div className="min-w-0 flex-1 rounded-xl bg-surface-container-low p-4">
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
+            <div className="font-title-md text-title-md font-bold text-deep-navy">
+              {t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
+            </div>
             <div className="flex flex-wrap gap-2">
               {(['canvas', 'image', 'video', 'web', 'study', 'grammar', 'game', 'material'] as const).map((m) => (
                 <button

@@ -1890,6 +1890,8 @@ const en: Ko = {
       kindGrammar: 'Grammar',
       presentFrom: 'Present from here',
       presentFromHint: 'Saves and starts the lesson from this slide. Finishing the lesson brings you back to this editor.',
+      addingSlide: 'Adding slide {{n}}',
+      addPanelTitle: 'New slide ({{n}}) — what kind of slide?',
       kindCanvas: 'Custom slide',
       kindWeb: 'Web page',
       duplicate: 'Duplicate',

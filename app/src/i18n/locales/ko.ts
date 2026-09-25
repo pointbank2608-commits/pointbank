@@ -1885,6 +1885,8 @@ const ko = {
       kindGrammar: '문법',
       presentFrom: '이 슬라이드부터 발표',
       presentFromHint: '저장하고 이 슬라이드부터 수업을 시작해요. 수업을 마치면 이 편집 화면으로 돌아와요.',
+      addingSlide: '{{n}}번 슬라이드 추가 중',
+      addPanelTitle: '새 슬라이드 ({{n}}번) — 어떤 슬라이드를 넣을까요?',
       kindCanvas: '직접 만든 슬라이드',
       kindWeb: '웹페이지',
       duplicate: '복제',
