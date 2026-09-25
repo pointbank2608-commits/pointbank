@@ -5151,3 +5151,15 @@
 .game-embed [data-open-other-game] {
   display: none !important;
 }
+
+/* 발표 중 스페이스바를 누르고 있으면 손바닥, 끄는 중이면 쥔 손 — 안쪽 버튼·게임의 커서보다 우선. */
+.present-pan-ready,
+.present-pan-ready * {
+  cursor: grab !important;
+  user-select: none;
+}
+.present-pan-grabbing,
+.present-pan-grabbing * {
+  cursor: grabbing !important;
+  user-select: none;
+}

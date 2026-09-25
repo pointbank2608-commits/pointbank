@@ -80,8 +80,8 @@ export default function GrammarBoard({
         e.preventDefault();
       }
     }
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
   }, [interactive, lines.length]);
 
   const visible = lines.slice(0, shown);

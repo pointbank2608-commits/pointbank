@@ -535,8 +535,14 @@ export default function LessonSlideSorter({
                         words={cards}
                         title={t(`materials.worksheet.${WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === worksheetDraftTab)?.labelKey ?? 'tabList'}`)}
                         compact
+                        boardTheme={worksheetDraftBoard}
                       />
                       {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+                      <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
+                        <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
+                        <BoardThemeChips value={worksheetDraftBoard} onChange={(th) => setWorksheetDraftBoard(th?.id ?? null)} noneLabel={t('curriculum.board.none')} />
+                        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
+                      </div>
                       <div className="mt-3 space-y-2 border-t border-outline-variant/40 pt-3">
                         <div className="font-caption text-caption font-bold text-on-surface-variant">
                           {t('curriculum.slides.worksheetOptionsTitle')}
@@ -557,11 +563,6 @@ export default function LessonSlideSorter({
                           includeAnswers={worksheetDraftOptions.includeAnswers}
                           onIncludeAnswersChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, includeAnswers: value }))}
                         />
-                      </div>
-                      <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
-                        <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
-                        <BoardThemeChips value={worksheetDraftBoard} onChange={(th) => setWorksheetDraftBoard(th?.id ?? null)} noneLabel={t('curriculum.board.none')} />
-                        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
                       </div>
                       <button
                         type="button"
@@ -930,8 +931,22 @@ function SlideDetail({
             </div>
             <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">{t('curriculum.slides.previewWordCount', { count: cards.length })}</span>
           </div>
-          <WorksheetTypePreview tab={worksheet.tab} words={cards} title={t(`materials.worksheet.${worksheet.labelKey}`)} />
+          <WorksheetTypePreview
+            tab={worksheet.tab}
+            words={cards}
+            title={t(`materials.worksheet.${worksheet.labelKey}`)}
+            boardTheme={slide.boardTheme ?? null}
+          />
           {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+          <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
+            <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
+            <BoardThemeChips
+              value={slide.boardTheme ?? null}
+              onChange={(th) => onUpdate({ boardTheme: th?.id ?? null } as Partial<MaterialSlide>)}
+              noneLabel={t('curriculum.board.none')}
+            />
+            <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
+          </div>
         </div>
       ) : (
         <PreviewFrame title={material ? t(material.nameKey) : slide.materialId}>
@@ -999,17 +1014,6 @@ function SlideDetail({
             includeAnswers={worksheetOptionsState.includeAnswers}
             onIncludeAnswersChange={(value) => updateWorksheetOptions({ includeAnswers: value })}
           />
-        </div>
-      )}
-      {worksheet && (
-        <div className="space-y-1.5 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
-          <div className="font-label-md text-label-md text-on-surface">{t('curriculum.board.worksheetTitle')}</div>
-          <BoardThemeChips
-            value={slide.boardTheme ?? null}
-            onChange={(th) => onUpdate({ boardTheme: th?.id ?? null } as Partial<MaterialSlide>)}
-            noneLabel={t('curriculum.board.none')}
-          />
-          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
         </div>
       )}
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />

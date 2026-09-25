@@ -92,8 +92,8 @@ export default function FlashcardStudy({
         setFlipped((f) => !f);
       }
     }
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose, cards.length]);
 
