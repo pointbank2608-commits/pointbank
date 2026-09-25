@@ -5,16 +5,26 @@ import { GAME_CATALOG } from '../lib/gameCatalog';
 import { wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
+import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'canvas' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
   /** 이동할 때 같이 넘길 router state — 워크시트 탭 미리 지정 등(materialsHandoff.ts 의
    * MaterialsHandoffState 모양). */
   navState?: Record<string, unknown>;
+  /** 이 단계를 만든 슬라이드 — "이 슬라이드부터 발표", 수업을 마친 뒤 편집 화면의 같은 슬라이드로 돌아가기에 쓴다. */
+  slideId?: string;
+}
+
+export interface StartOptions {
+  /** 이 슬라이드부터 시작(없으면 처음부터) */
+  startSlideId?: string;
+  /** 편집 화면에서 발표를 시작함 — "수업 마치기"를 누르면 편집 화면(마지막으로 본 슬라이드)으로 돌아간다. */
+  returnToEdit?: boolean;
 }
 
 interface RunnerState {
@@ -24,6 +34,7 @@ interface RunnerState {
   classId: string | null;
   steps: RunnerStep[];
   stepIndex: number;
+  returnToEdit?: boolean;
 }
 
 interface RunnerValue {
@@ -32,7 +43,7 @@ interface RunnerValue {
    * wordList 는 lesson.word_list_id 로 미리 찾아둔 실제 단어장(호출부가 이미 목록을 들고 있어
    * 여기서 새로 fetch 하지 않음 — fetch를 넣으면 비동기가 껴서 풀스크린 진입에 필요한 "클릭
    * 이벤트 핸들러 안에서 동기 호출"조건이 깨질 수 있다). */
-  start: (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null) => void;
+  start: (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null, opts?: StartOptions) => void;
   next: () => void;
   prev: () => void;
   goTo: (index: number) => void;
@@ -106,12 +117,15 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const start = useCallback(
-    (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null) => {
+    (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null, opts?: StartOptions) => {
       const materialsWords = wordListToCards(wordList);
       const steps: RunnerStep[] = [];
+      let currentSlideId: string | undefined;
+      const push = (step: RunnerStep) => steps.push({ ...step, slideId: currentSlideId });
       for (const slide of effectiveSlides(lesson)) {
+        currentSlideId = slide.id;
         if (slide.kind === 'image') {
-          steps.push({
+          push({
             kind: 'image',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.slides.kindImage'),
@@ -119,21 +133,39 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           });
         } else if (slide.kind === 'canvas') {
           const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
-          steps.push({
+          push({
             kind: 'canvas',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: firstText && firstText.type === 'text' ? firstText.text.trim().split(/\r?\n/)[0] : t('curriculum.slides.kindCanvas'),
             icon: 'dashboard_customize',
           });
+        } else if (slide.kind === 'grammar') {
+          const point = grammarPoint(slide.grammarId);
+          push({
+            kind: 'grammar',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: point?.name ?? t('curriculum.slides.kindGrammar'),
+            icon: 'rule',
+            navState: slide.useWordList ? { materialsWords } : undefined,
+          });
+        } else if (slide.kind === 'study') {
+          // 카드는 수업 단어장으로 — 슬라이드 화면이 navigation state 의 materialsWords 를 읽는다.
+          push({
+            kind: 'study',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t('curriculum.slides.kindStudy'),
+            icon: 'style',
+            navState: { materialsWords },
+          });
         } else if (slide.kind === 'video') {
-          steps.push({
+          push({
             kind: 'video',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.play.stepVideo'),
             icon: 'smart_display',
           });
         } else if (slide.kind === 'web') {
-          steps.push({
+          push({
             kind: 'web',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: slide.title?.trim() || t('curriculum.slides.kindWeb'),
@@ -147,7 +179,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           const navState: Record<string, unknown> = {};
           if (slide.templateId) navState.openTemplateId = slide.templateId;
           if (classId) navState.openClassId = classId;
-          steps.push({
+          push({
             kind: 'game',
             path: entry.path,
             label: t(entry.nameKey),
@@ -162,7 +194,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           if (slide.worksheetOptions) navState.materialsWorksheetOptions = slide.worksheetOptions;
           if (slide.boardTheme) navState.materialsBoardTheme = slide.boardTheme;
           if (materialsWords.length > 0) navState.materialsWords = materialsWords;
-          steps.push({
+          push({
             kind: 'material',
             path: entry.path,
             label: t(entry.nameKey),
@@ -180,8 +212,11 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       });
 
       if (steps.length === 0) return;
-      setRunner({ lessonId: lesson.id, lessonName: lesson.name, classId, steps, stepIndex: 0 });
-      navigate(steps[0].path, steps[0].navState ? { state: steps[0].navState } : undefined);
+      const found = opts?.startSlideId ? steps.findIndex((s) => s.slideId === opts.startSlideId) : -1;
+      const startIndex = found >= 0 ? found : 0;
+      setRunner({ lessonId: lesson.id, lessonName: lesson.name, classId, steps, stepIndex: startIndex, returnToEdit: !!opts?.returnToEdit });
+      const first = steps[startIndex];
+      navigate(first.path, first.navState ? { state: first.navState } : undefined);
     },
     [t, navigate],
   );
@@ -209,9 +244,34 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   const exit = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    // 편집 화면에서 시작한 발표면, 마지막으로 보던 슬라이드가 선택된 편집 화면으로 돌아간다.
+    const back = runner?.returnToEdit
+      ? { reopenLessonId: runner.lessonId, reopenSlideId: runner.steps[runner.stepIndex]?.slideId }
+      : undefined;
     setRunner(null);
-    navigate('/curriculum');
-  }, [navigate]);
+    navigate('/curriculum', back ? { state: back } : undefined);
+  }, [navigate, runner]);
+
+  // 발표 리모컨(클리커)·키보드: PageDown/PageUp 으로 다음/이전 슬라이드. 슬라이드 안에서 단계가 있는
+  // 화면(문법 예문 하나씩 보기, 카드로 외우기)은 capture 단계에서 먼저 받아 처리하고 전파를 막는다 —
+  // 그 화면의 단계를 다 넘기면 여기까지 와서 다음 슬라이드로 넘어간다(PPT 애니메이션처럼).
+  useEffect(() => {
+    if (!runner) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.defaultPrevented) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
+      if (e.key === 'PageDown') {
+        e.preventDefault();
+        next();
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        prev();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [runner, next, prev]);
 
   return (
     <LessonRunnerContext.Provider

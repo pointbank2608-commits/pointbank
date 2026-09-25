@@ -82,7 +82,7 @@ export default function ClassChipRow({ classes, selectedId, onSelect, onReorder 
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div data-class-chip-row className="flex flex-wrap gap-2">
       {order.map((id) => {
         const c = byId.get(id);
         if (!c) return null;

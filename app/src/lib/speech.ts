@@ -21,3 +21,18 @@ export function speak(text: string) {
   if (voice) utter.voice = voice;
   window.speechSynthesis.speak(utter);
 }
+
+/** 여러 문장을 차례대로 읽는다(문법 예문 "모두 읽기"). 앞에서 읽던 건 멈추고 새로 시작한다. */
+export function speakSequence(texts: string[]) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const voice = voices.find((v) => v.lang.startsWith('en'));
+  for (const text of texts) {
+    if (!text.trim()) continue;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.85;
+    if (voice) utter.voice = voice;
+    window.speechSynthesis.speak(utter);
+  }
+}

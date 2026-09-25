@@ -620,7 +620,32 @@ export interface CanvasSlide {
   elements: CanvasElement[];
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide;
+/** "카드로 외우기" 슬라이드 — 단어 사전의 카드로 외우기 화면(FlashcardStudy)을 수업 단어장으로 띄운다. */
+export interface StudySlide {
+  id: string;
+  kind: 'study';
+  /** 섞은 순서로 시작 */
+  shuffle?: boolean;
+}
+
+/** "문법" 슬라이드 — 초등 영문법(lib/grammar.ts)의 한 항목을 칠판 화면(GrammarBoard)으로 띄운다. */
+export interface GrammarSlide {
+  id: string;
+  kind: 'grammar';
+  grammarId: string;
+  /** 수업 단어장 낱말로 만든 예문도 같이 보여줄지 */
+  useWordList?: boolean;
+  /** 단어장 예문 조합(다시 섞기) — 같은 값이면 미리보기와 발표가 같은 문장 */
+  seed?: number;
+  /** 칠판·화이트보드 배경(lib/boardThemes.ts). 없으면 녹색 칠판. */
+  boardTheme?: string | null;
+  /** 발표 시작할 때 예문 해석을 켠 채로 */
+  showKo?: boolean;
+  /** 발표 시작할 때 예문을 하나씩 꺼내지 않고 모두 보여주기 */
+  revealAll?: boolean;
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide | StudySlide | GrammarSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

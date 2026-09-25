@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useGameEmbed } from '../context/GameEmbedContext';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -44,9 +45,13 @@ export function useGameTemplates(params: {
   const navigate = useNavigate();
   const location = useLocation();
   const presenting = usePresenting();
+  /** 커리큘럼 편집 화면 안에 띄워진 경우(게임 슬라이드 상세) — 반·처음 템플릿이 슬라이드에서 온다. */
+  const embed = useGameEmbed();
+  const embedRef = useRef(embed);
+  embedRef.current = embed;
   /** "다른 게임으로 열기"·워크시트 다리·커리큘럼 발표에서 넘어온 템플릿 — 이게 있으면 이전 선택보다
    * 우선해서 연다. */
-  const openTemplateIdRef = useRef((location.state as OpenState | null)?.openTemplateId);
+  const openTemplateIdRef = useRef(embed ? embed.templateId : (location.state as OpenState | null)?.openTemplateId);
 
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
@@ -65,7 +70,7 @@ export function useGameTemplates(params: {
     setStudentClassName(cls?.name ?? '');
   }, [isStaff, classes, studentClassId]);
 
-  const classId = isStaff ? staffClassId : studentClassId;
+  const classId = embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
 
   // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
   const [rosterScope, setRosterScope] = useState<RosterScope>('class');
@@ -151,6 +156,7 @@ export function useGameTemplates(params: {
   // 때마다(location.key) 다시 읽고, 그 템플릿이 이미 불러온 목록에 있으면 바로 고른다. 레슨의 반이
   // 지금 보고 있는 반과 다르면 반부터 맞춘다(그러면 load 가 그 반 목록으로 다시 돈다).
   useEffect(() => {
+    if (embedRef.current) return; // 편집 화면 안에서는 주소가 커리큘럼 페이지라 읽을 게 없다.
     const state = location.state as OpenState | null;
     openTemplateIdRef.current = state?.openTemplateId;
     if (isStaff && state?.openClassId && state.openClassId !== staffClassId) selectClass(state.openClassId);
@@ -161,6 +167,15 @@ export function useGameTemplates(params: {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
+
+  // 편집 화면 안: 선생님이 고른(또는 새로 만든) 템플릿을 슬라이드의 "발표 때 열 내용"으로 되돌려 준다.
+  const reportedRef = useRef<string | null | undefined>(embed?.templateId);
+  useEffect(() => {
+    if (!embedRef.current || loading) return;
+    if (selectedId === (reportedRef.current ?? null)) return;
+    reportedRef.current = selectedId;
+    embedRef.current.onSelect(selectedId);
+  }, [loading, selectedId]);
 
   const selected = templates.find((t) => t.id === selectedId) ?? null;
 

@@ -32,7 +32,7 @@ export default function OpenInOtherGame({ currentType, itemCount, onOpen }: Prop
   }
 
   return (
-    <div className="my-3">
+    <div data-open-other-game className="my-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

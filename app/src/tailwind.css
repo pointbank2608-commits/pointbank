@@ -5143,3 +5143,11 @@
   30% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
   100% { transform: translate(-50%, -62%) scale(1); opacity: 0; }
 }
+
+/* 커리큘럼 게임 슬라이드 편집 화면 안에 게임 설정 화면을 띄울 때(GameEmbedContext) — 편집 화면을
+ * 떠나게 되는 UI(게임 목록으로·반 고르기·다른 게임으로 열기)는 숨긴다. 반은 레슨의 반으로 고정. */
+.game-embed a[href="/games"],
+.game-embed [data-class-chip-row],
+.game-embed [data-open-other-game] {
+  display: none !important;
+}

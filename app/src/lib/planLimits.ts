@@ -16,7 +16,7 @@ export const BASE_FEE_KRW = 9900;
  * 리포트(/results, 숙제 캘린더·통장 내역 하위 페이지 포함)는 무료 플랜에도 연다(2026-09-22
  * 사용자 결정) — 적립·차감은 통장(무료 기능)의 결과라 그 기록을 보는 것까지 막으면 무료 플랜이
  * 반쪽짜리로 느껴진다는 판단. */
-export const FREE_BLOCKED_PATHS = ['/dictionary', '/phonics', '/wordlists', '/curriculum', '/materials'];
+export const FREE_BLOCKED_PATHS = ['/dictionary', '/phonics', '/grammar', '/wordlists', '/curriculum', '/materials'];
 
 export function isPathBlockedForFree(pathname: string): boolean {
   return FREE_BLOCKED_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../lib/speech';
 
@@ -34,18 +34,25 @@ export default function FlashcardStudy({
   title,
   cards,
   onClose,
+  inline = false,
+  startShuffled = false,
 }: {
   title: string;
   cards: StudyCard[];
-  onClose: () => void;
+  /** 없으면 닫기 버튼을 숨긴다(커리큘럼 슬라이드처럼 화면 자체가 이 카드일 때). */
+  onClose?: () => void;
+  /** true 면 전체 화면 덮개 대신 부모 칸(position:relative)을 꽉 채운다 — 커리큘럼 "카드로 외우기" 슬라이드. */
+  inline?: boolean;
+  /** 섞은 순서로 시작 */
+  startShuffled?: boolean;
 }) {
   const { t } = useTranslation();
-  const [order, setOrder] = useState(() => cards.map((_, i) => i));
+  const [order, setOrder] = useState(() => (startShuffled ? shuffleIndices(cards.length) : cards.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
-    setOrder(Array.from({ length: cards.length }, (_, i) => i));
+    setOrder(startShuffled ? shuffleIndices(cards.length) : Array.from({ length: cards.length }, (_, i) => i));
     setPos(0);
     setFlipped(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,18 +69,31 @@ export default function FlashcardStudy({
     setFlipped(false);
   }
 
+  const posRef = useRef(pos);
+  posRef.current = pos;
+
+  // → ← · PageDown/PageUp(발표 클리커)로 카드를 넘긴다. 커리큘럼 발표 중이면 첫·마지막 카드에서는
+  // 키를 흘려보내 진행바가 이전·다음 슬라이드로 넘긴다(capture 단계에서 처리한 키만 전파를 막음).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowRight') go(1);
-      else if (e.key === 'ArrowLeft') go(-1);
-      else if (e.key === ' ') {
+      const forward = e.key === 'ArrowRight' || e.key === 'PageDown';
+      const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
+      if (e.key === 'Escape') onClose?.();
+      else if (forward && posRef.current < cards.length - 1) {
+        e.preventDefault();
+        e.stopPropagation();
+        go(1);
+      } else if (back && posRef.current > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        go(-1);
+      } else if (e.key === ' ') {
         e.preventDefault();
         setFlipped((f) => !f);
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose, cards.length]);
 
@@ -82,7 +102,7 @@ export default function FlashcardStudy({
   if (!current) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-inverse-surface p-4 sm:p-6">
+    <div className={`${inline ? 'absolute inset-0' : 'fixed inset-0 z-50'} flex flex-col bg-inverse-surface p-4 sm:p-6`}>
       <div className="flex items-center justify-between text-inverse-on-surface">
         <div className="font-label-md text-label-md tabular-nums">
           {title} · {pos + 1}/{cards.length}
@@ -97,15 +117,17 @@ export default function FlashcardStudy({
           >
             <span className="material-symbols-outlined text-[22px]">shuffle</span>
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            title={t('common.cancel')}
-            aria-label={t('common.cancel')}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-inverse-on-surface hover:bg-inverse-on-surface/10"
-          >
-            <span className="material-symbols-outlined text-[24px]">close</span>
-          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              title={t('common.cancel')}
+              aria-label={t('common.cancel')}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-inverse-on-surface hover:bg-inverse-on-surface/10"
+            >
+              <span className="material-symbols-outlined text-[24px]">close</span>
+            </button>
+          )}
         </div>
       </div>
 

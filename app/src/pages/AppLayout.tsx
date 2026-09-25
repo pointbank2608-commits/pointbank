@@ -60,6 +60,7 @@ function AppLayoutInner() {
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
         { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
         { to: '/phonics', label: t('nav.phonics'), icon: 'spellcheck' },
+        { to: '/grammar', label: t('nav.grammar'), icon: 'rule' },
         { to: '/wordlists', label: t('nav.wordLists'), icon: 'library_books' },
         { to: '/materials', label: t('nav.classroomMaterials'), icon: 'print' },
         { to: '/results', label: t('nav.reports'), icon: 'assessment' },

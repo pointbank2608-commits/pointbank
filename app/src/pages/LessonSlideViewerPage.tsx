@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import CanvasSlideView from '../components/CanvasSlideView';
+import FlashcardStudy from '../components/FlashcardStudy';
+import GrammarBoard from '../components/GrammarBoard';
+import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
+import { wordsFromLocationState } from '../lib/materialsHandoff';
 import WebSlideView from '../components/WebSlideView';
 import YoutubeShadowingPlayer from '../components/YoutubeShadowingPlayer';
 import { usePresenting } from '../context/LessonRunnerContext';
@@ -20,6 +24,22 @@ export default function LessonSlideViewerPage() {
   const { id, slideId } = useParams<{ id: string; slideId: string }>();
   const { notify } = useToast();
   const isPresenting = usePresenting();
+  const location = useLocation();
+  // "카드로 외우기" 슬라이드의 카드 — 발표 러너가 수업 단어장을 navigation state 로 넘겨준다.
+  const stateWords = useMemo(() => wordsFromLocationState(location.state), [location.state]);
+  const grammarCards = useGrammarCards(stateWords);
+  // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 state 가 바뀔 때만 만든다.
+  const studyCards = useMemo(
+    () =>
+      wordsFromLocationState(location.state).map((w) => ({
+        id: w.id,
+        word: w.word,
+        back: w.meaning,
+        example: w.example ?? null,
+        image_url: w.imageUrl,
+      })),
+    [location.state],
+  );
 
   const [lesson, setLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +76,41 @@ export default function LessonSlideViewerPage() {
         <Link to="/curriculum" className="font-label-md text-label-md text-primary hover:underline">
           {t('curriculum.play.backToList')}
         </Link>
+      </div>
+    );
+  }
+
+  if (slide.kind === 'grammar') {
+    const point = grammarPoint(slide.grammarId);
+    if (!point) return <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.play.notFound')}</div>;
+    const extra = slide.useWordList ? buildWordListSentences(point, grammarCards, 6, slide.seed ?? 0) : [];
+    return (
+      <div className={isPresenting ? 'absolute inset-0 p-2 md:p-4' : 'h-[75vh]'}>
+        <GrammarBoard
+          key={slide.id}
+          point={point}
+          extra={extra}
+          themeId={slide.boardTheme ?? 'green'}
+          initialShowKo={!!slide.showKo}
+          initialRevealAll={!!slide.revealAll}
+        />
+      </div>
+    );
+  }
+
+  if (slide.kind === 'study') {
+    if (studyCards.length === 0) {
+      return <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.study.noWords')}</div>;
+    }
+    return (
+      <div className={isPresenting ? 'absolute inset-0' : 'relative h-[80vh] overflow-hidden rounded-2xl'}>
+        <FlashcardStudy
+          key={slide.id}
+          inline
+          startShuffled={!!slide.shuffle}
+          title={t('curriculum.slides.kindStudy')}
+          cards={studyCards}
+        />
       </div>
     );
   }
