@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
 import LessonAnnotationLayer from './LessonAnnotationLayer';
-import { zoomAt } from './PresentZoomArea';
+import { PRESENT_FIT_EVENT, zoomAt } from './PresentZoomArea';
 
 /**
  * "슬라이드 쇼 진행바" — 레슨 러너가 켜져 있는 동안 AppLayout 안에서 화면이 어디로 이동하든
@@ -120,6 +120,16 @@ export default function LessonRunnerBar() {
           title={t('curriculum.play.zoomIn')}
         >
           <span className="material-symbols-outlined text-[20px]">zoom_in</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(PRESENT_FIT_EVENT))}
+          className="flex h-8 items-center gap-1 rounded-full px-2 transition-colors hover:bg-white/15"
+          aria-label={t('curriculum.play.fitScreen')}
+          title={t('curriculum.play.fitScreenHint')}
+        >
+          <span className="material-symbols-outlined text-[20px]">fit_screen</span>
+          <span className="hidden font-caption text-caption lg:inline">{t('curriculum.play.fitScreen')}</span>
         </button>
       </div>
       <button

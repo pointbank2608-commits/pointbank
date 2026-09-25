@@ -2036,6 +2036,8 @@ const en: Ko = {
       zoomOut: 'Zoom out',
       zoomReset: 'Reset to 100%',
       panHint: 'Hold Space and drag (or drag with the mouse wheel button) to move the view',
+      fitScreen: 'Fit',
+      fitScreenHint: 'Fit the whole slide on the screen',
       zoomHint: 'Click to reset to 100% — you can also pinch with two fingers or use Ctrl + mouse wheel',
       annotation: 'Draw',
       annotationCanvas: 'Lesson annotation area',

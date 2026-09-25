@@ -13,6 +13,12 @@ function clampScale(s: number): number {
 }
 
 /** (px, py) 지점이 화면에서 그대로 머물도록 배율을 바꾼다 — 손가락·커서 아래를 기준으로 확대. */
+/** 진행바의 "화면 맞춤" 버튼이 보내는 신호 — 이 영역이 슬라이드 전체가 한 화면에 들어오게 맞춘다. */
+export const PRESENT_FIT_EVENT = 'classbank:present-fit';
+
+/** 두 번 탭(더블클릭)으로 확대할 수 있는 슬라이드 — 게임·워크시트는 탭 조작과 겹쳐서 뺀다. */
+const DOUBLE_TAP_KINDS = ['image', 'canvas', 'grammar'];
+
 export function zoomAt(prev: PresentZoom, nextScale: number, px: number, py: number): PresentZoom {
   const scale = clampScale(nextScale);
   if (Math.abs(scale - 1) < 0.02) return PRESENT_ZOOM_IDENTITY;
@@ -41,7 +47,10 @@ interface Pinch {
  */
 export default function PresentZoomArea({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
-  const { zoom, setZoom } = useLessonRunner();
+  const { zoom, setZoom, runner } = useLessonRunner();
+  const stepKind = runner?.steps[runner.stepIndex]?.kind;
+  const stepKindRef = useRef(stepKind);
+  stepKindRef.current = stepKind;
   const outerRef = useRef<HTMLDivElement>(null);
   // 끌어서 옮기기 상태: 'ready' = 스페이스를 누르고 있음(손바닥), 'dragging' = 끄는 중(쥔 손)
   const [panMode, setPanMode] = useState<'off' | 'ready' | 'dragging'>('off');
@@ -214,6 +223,64 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
       if (e.button === 1 && (isZoomed() || canScroll())) e.preventDefault();
     }
 
+    /* ---------- 화면 맞춤: 슬라이드 전체가 한 화면에 보이게 ---------- */
+    function fitToScreen() {
+      const inner = el.firstElementChild instanceof HTMLElement && !el.firstElementChild.classList.contains('pointer-events-none')
+        ? el.firstElementChild
+        : (el.lastElementChild as HTMLElement | null);
+      if (!inner) return;
+      // offsetWidth/Height 는 transform 영향을 받지 않아 확대 중에도 원래 크기를 준다.
+      const cw = inner.offsetWidth;
+      const ch = inner.offsetHeight;
+      const ow = el.clientWidth;
+      const oh = el.clientHeight;
+      if (!cw || !ch || (cw <= ow + 8 && ch <= oh + 8)) {
+        // 이미 한 화면에 들어오는 슬라이드(그림·게임·문법)는 100%가 곧 화면 맞춤.
+        el.scrollTop = 0;
+        setZoom(PRESENT_ZOOM_IDENTITY);
+        return;
+      }
+      const scale = Math.min(ow / cw, oh / ch);
+      el.scrollTop = 0;
+      setZoom({ scale, x: (ow - cw * scale) / 2, y: Math.max(0, (oh - ch * scale) / 2) });
+    }
+
+    /* ---------- 두 번 탭 / 더블클릭으로 그 부분 확대·원래대로 ---------- */
+    let lastTap: { t: number; x: number; y: number } | null = null;
+    let tapStart: { id: number; x: number; y: number } | null = null;
+    function toggleZoomAt(clientX: number, clientY: number) {
+      if (!DOUBLE_TAP_KINDS.includes(stepKindRef.current ?? '')) return false;
+      if (isZoomed()) setZoom(PRESENT_ZOOM_IDENTITY);
+      else {
+        const p = localPoint(clientX, clientY);
+        setZoom((prev) => zoomAt(prev, 2.5, p.x, p.y));
+      }
+      return true;
+    }
+    function onTapDown(e: PointerEvent) {
+      if (e.pointerType !== 'touch') return;
+      tapStart = touches.size <= 1 ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+    }
+    function onTapUp(e: PointerEvent) {
+      if (e.pointerType !== 'touch' || !tapStart || tapStart.id !== e.pointerId) return;
+      const moved = Math.hypot(e.clientX - tapStart.x, e.clientY - tapStart.y) > 12;
+      tapStart = null;
+      if (moved) {
+        lastTap = null;
+        return;
+      }
+      const now = Date.now();
+      if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) {
+        lastTap = null;
+        if (toggleZoomAt(e.clientX, e.clientY)) e.preventDefault();
+      } else {
+        lastTap = { t: now, x: e.clientX, y: e.clientY };
+      }
+    }
+    function onDblClick(e: MouseEvent) {
+      if (toggleZoomAt(e.clientX, e.clientY)) e.preventDefault();
+    }
+
     function onKeyDown(e: KeyboardEvent) {
       if (!(e.ctrlKey || e.metaKey)) return;
       const r = el.getBoundingClientRect();
@@ -238,6 +305,10 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
     el.addEventListener('pointerup', onPointerEnd, true);
     el.addEventListener('pointercancel', onPointerEnd, true);
     window.addEventListener('keydown', onKeyDown);
+    window.addEventListener(PRESENT_FIT_EVENT, fitToScreen);
+    el.addEventListener('pointerdown', onTapDown, true);
+    el.addEventListener('pointerup', onTapUp, true);
+    el.addEventListener('dblclick', onDblClick);
     // 슬라이드들(문법·카드)도 window capture 로 스페이스를 듣는다 — 이 영역이 먼저 붙어 있어 먼저 받는다.
     window.addEventListener('keydown', onSpaceDown, true);
     window.addEventListener('keyup', onSpaceUp, true);
@@ -249,6 +320,10 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
     el.addEventListener('click', onClickCapture, true);
     el.addEventListener('mousedown', onAuxDown, true);
     return () => {
+      window.removeEventListener(PRESENT_FIT_EVENT, fitToScreen);
+      el.removeEventListener('pointerdown', onTapDown, true);
+      el.removeEventListener('pointerup', onTapUp, true);
+      el.removeEventListener('dblclick', onDblClick);
       window.removeEventListener('keydown', onSpaceDown, true);
       window.removeEventListener('keyup', onSpaceUp, true);
       window.removeEventListener('blur', onBlur);

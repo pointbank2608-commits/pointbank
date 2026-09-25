@@ -2031,6 +2031,8 @@ const ko = {
       zoomOut: '축소',
       zoomReset: '원래 크기(100%)로',
       panHint: '스페이스바를 누른 채 끌면(또는 마우스 휠 버튼으로 끌면) 화면을 옮길 수 있어요',
+      fitScreen: '화면 맞춤',
+      fitScreenHint: '슬라이드 전체가 한 화면에 보이게 맞춰요',
       zoomHint: '눌러서 100%로 — 두 손가락이나 Ctrl+마우스 휠로도 확대·축소할 수 있어요',
       annotation: '판서',
       annotationCanvas: '수업 화면 판서 영역',
