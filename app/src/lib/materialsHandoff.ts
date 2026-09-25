@@ -13,6 +13,8 @@ export interface MaterialsHandoffState {
   /** 커리큘럼 워크시트 슬라이드에서 미리 정해둔 탭별 세부 옵션(발표 중엔 옵션 컨트롤이 안 보여서
    * 여기로 넘어온 값을 그대로 쓴다). */
   materialsWorksheetOptions?: WorksheetSlideOptions;
+  /** 커리큘럼 발표 중 워크시트 화면 바탕(칠판·화이트보드 등, lib/boardThemes.ts). */
+  materialsBoardTheme?: string | null;
   /** 색칠하기 탭의 제목·장식 주제 초기값(주제별 워크시트에서 넘어올 때). */
   materialsColoringTitle?: string;
   materialsDecorTheme?: string | null;

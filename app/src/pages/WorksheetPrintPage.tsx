@@ -8,6 +8,7 @@ import PresentPrintBar from '../components/PresentPrintBar';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { usePresenting } from '../context/LessonRunnerContext';
+import { boardTheme as findBoardTheme, boardWorksheetCss } from '../lib/boardThemes';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { createGameTemplate } from '../lib/api';
 import { buildGameContent } from '../lib/gameFromWords';
@@ -110,6 +111,7 @@ export default function WorksheetPrintPage() {
   const [seed, setSeed] = useState(1);
   const [askTemplate, setAskTemplate] = useState<AskTemplate>(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.askTemplate ?? 'like');
   const [showAskScreen, setShowAskScreen] = useState(false);
+  const [boardThemeId, setBoardThemeId] = useState(() => handoffFromLocationState(location.state).materialsBoardTheme ?? null);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.listShow ?? { pos: true, example: false, image: false });
   // 사선지에 뜻·그림도 함께 보여줄지.
@@ -148,6 +150,7 @@ export default function WorksheetPrintPage() {
       decorTheme: wo?.coloringDecorTheme ?? handoff.materialsDecorTheme ?? DEFAULT_COLORING_OPTIONS.decorTheme,
     });
     setShowAskScreen(false);
+    setBoardThemeId(handoff.materialsBoardTheme ?? null);
   }, [location.key, location.state]);
 
   const quiz = useMemo(
@@ -202,8 +205,12 @@ export default function WorksheetPrintPage() {
           ? t('materials.worksheet.needAtLeastTwoForQuiz')
           : t('materials.worksheet.needAtLeastOne');
 
+  // 발표 중 칠판·화이트보드 바탕 — 화면에서만, 인쇄는 그대로(boardWorksheetCss 가 @media screen).
+  const board = locked ? findBoardTheme(boardThemeId) : null;
+
   return (
     <div className="space-y-6">
+      {board && <style>{boardWorksheetCss(board)}</style>}
       {locked ? (
         // 발표 중: 단어·탭은 커리큘럼 슬라이드에서 이미 정해졌으니 인쇄(+다시 섞기)만.
         <PresentPrintBar
@@ -344,6 +351,7 @@ export default function WorksheetPrintPage() {
       </>
       )}
 
+      <div data-board={board?.id} className={board ? 'min-h-[calc(100vh-10rem)] space-y-6 rounded-2xl p-6 md:p-10 print:min-h-0 print:p-0' : 'space-y-6'}>
       {showAskScreen && generated?.kind === 'askAnswer' && (
         <AskAnswerScreen
           template={generated.template}
@@ -365,7 +373,7 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'list' && (
-        <div className="print-sheet mx-auto p-6">
+        <div data-board-text className="print-sheet mx-auto p-6">
           {/* 예문·그림이 들어가면 한 줄이 길어져서 한 단으로, 아니면 두 단으로 보여준다. */}
           <div className={listShow.example || listShow.image ? '' : 'columns-2 gap-8'}>
             {words.map((w, i) => (
@@ -400,7 +408,7 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'card' && (
-        <div className="print-sheet mx-auto p-6">
+        <div data-board-text className="print-sheet mx-auto p-6">
           <div className="grid grid-cols-3 gap-[5mm]">
             {words.map((w) => (
               <div
@@ -429,7 +437,7 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'tracing' && (
-        <div className="print-sheet mx-auto p-6 space-y-[4mm]">
+        <div data-board-text className="print-sheet mx-auto p-6 space-y-[4mm]">
           {words.map((w) => (
             <div key={w.id} className="print-card">
               <div className="mb-[3mm] flex flex-wrap items-baseline gap-x-3">
@@ -455,7 +463,7 @@ export default function WorksheetPrintPage() {
       )}
 
       {canPreview && tab === 'quiz' && (
-        <div className="print-sheet mx-auto p-6 space-y-4">
+        <div data-board-text className="print-sheet mx-auto p-6 space-y-4">
           {quiz.map((q, i) => (
             <div key={q.id} className="print-card">
               <div className="font-title-md text-title-md text-deep-navy mb-1">
@@ -477,6 +485,7 @@ export default function WorksheetPrintPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

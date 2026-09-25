@@ -36,7 +36,7 @@ export default function LessonRunnerBar() {
   if (!runner) return null;
 
   const current = runner.steps[runner.stepIndex];
-  const canAnnotate = current.kind === 'image' || current.kind === 'web' || current.path === '/materials/worksheet';
+  const canAnnotate = current.kind === 'image' || current.kind === 'canvas' || current.kind === 'web' || current.path === '/materials/worksheet';
 
   return (
     <>

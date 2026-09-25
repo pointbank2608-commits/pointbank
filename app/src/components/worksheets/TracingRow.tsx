@@ -33,7 +33,7 @@ export default function TracingRow({
             fontFamily="'Andika', 'Comic Sans MS', sans-serif"
             fontSize={`${emMm}mm`}
             fill="none"
-            stroke="#6b7488"
+            style={{ stroke: 'var(--trace-stroke, #6b7488)' }}
             strokeWidth="0.3mm"
             strokeDasharray="0.8mm 0.9mm"
             strokeLinecap="round"

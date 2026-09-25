@@ -562,6 +562,8 @@ export interface MaterialSlide {
   materialId: string;
   worksheetTab?: string;
   worksheetOptions?: WorksheetSlideOptions;
+  /** 발표 중 워크시트 화면 바탕(칠판·화이트보드 등, lib/boardThemes.ts). 없으면 앱 기본 바탕. */
+  boardTheme?: string | null;
 }
 
 /** 외부 웹페이지(캔바 프레젠테이션·출판사 E-book 등) 슬라이드. mode:
@@ -576,7 +578,49 @@ export interface WebSlide {
   mode: 'embed' | 'window';
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide;
+/** "직접 만들기" 슬라이드(PPT처럼 텍스트 상자·이미지를 자유 배치, 2026-09-25). 좌표·크기는 전부
+ * 16:9 무대 기준 %(0~100), 글자 크기는 무대 높이 대비 %(cqh) — 편집 화면·썸네일·발표 화면 어디서
+ * 그려도 같은 비율로 보인다. */
+export interface CanvasElementBase {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface CanvasTextElement extends CanvasElementBase {
+  type: 'text';
+  text: string;
+  /** 무대 높이 대비 % */
+  fontSize: number;
+  color: string;
+  bold: boolean;
+  italic?: boolean;
+  align: 'left' | 'center' | 'right';
+  font: 'sans' | 'round' | 'kids' | 'hand';
+  /** 글상자 배경색(없으면 투명) */
+  fill?: string | null;
+}
+export interface CanvasImageElement extends CanvasElementBase {
+  type: 'image';
+  url: string;
+  /** 직접 올린 이미지만 있다(lesson-slide-images). 사전 그림은 없음. */
+  path?: string;
+  fit: 'contain' | 'cover';
+}
+export type CanvasElement = CanvasTextElement | CanvasImageElement;
+export interface CanvasSlide {
+  id: string;
+  kind: 'canvas';
+  background: string;
+  /** 칠판·화이트보드 등 배경 테마(lib/boardThemes.ts). 있으면 background 색 대신 이걸 그린다. */
+  theme?: string | null;
+  backgroundImageUrl?: string | null;
+  backgroundImagePath?: string | null;
+  elements: CanvasElement[];
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

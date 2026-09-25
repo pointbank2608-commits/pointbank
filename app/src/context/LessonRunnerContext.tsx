@@ -8,7 +8,7 @@ import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'image' | 'canvas' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -117,6 +117,14 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             label: t('curriculum.slides.kindImage'),
             icon: 'image',
           });
+        } else if (slide.kind === 'canvas') {
+          const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
+          steps.push({
+            kind: 'canvas',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: firstText && firstText.type === 'text' ? firstText.text.trim().split(/\r?\n/)[0] : t('curriculum.slides.kindCanvas'),
+            icon: 'dashboard_customize',
+          });
         } else if (slide.kind === 'video') {
           steps.push({
             kind: 'video',
@@ -152,6 +160,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           const navState: Record<string, unknown> = {};
           if (slide.worksheetTab) navState.materialsTab = slide.worksheetTab;
           if (slide.worksheetOptions) navState.materialsWorksheetOptions = slide.worksheetOptions;
+          if (slide.boardTheme) navState.materialsBoardTheme = slide.boardTheme;
           if (materialsWords.length > 0) navState.materialsWords = materialsWords;
           steps.push({
             kind: 'material',

@@ -40,6 +40,8 @@ import { normalizeWebUrl, webSlideHost } from '../lib/webSlides';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
 import WebSlideView from './WebSlideView';
+import CanvasSlideEditor, { BoardThemeChips, newCanvasSlide, newTextElement, themeTextDefaults } from './CanvasSlideEditor';
+import CanvasSlideView from './CanvasSlideView';
 import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import WorksheetTypePreview from './WorksheetTypePreview';
 
@@ -117,7 +119,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'image' | 'video' | 'web' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -141,6 +143,9 @@ export default function LessonSlideSorter({
   const [webDraft, setWebDraft] = useState({ url: '', title: '' });
   const [worksheetDraftTab, setWorksheetDraftTab] = useState(WORKSHEET_TAB_CATALOG[0]?.tab ?? 'list');
   const [worksheetDraftOptions, setWorksheetDraftOptions] = useState<WorksheetOptionsState>(DEFAULT_WORKSHEET_OPTIONS_STATE);
+  // 새 워크시트 슬라이드의 발표 화면 바탕 — 앱 기본 파란 바탕은 글이 잘 안 읽혀서 화이트보드로 시작.
+  const [worksheetDraftBoard, setWorksheetDraftBoard] = useState<string | null>('whiteboard');
+  const [canvasDraftTheme, setCanvasDraftTheme] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -166,7 +171,10 @@ export default function LessonSlideSorter({
     if (selectedId === id) {
       setSelectedId(next[Math.min(idx, next.length - 1)]?.id ?? null);
     }
-    if (target?.kind === 'image') {
+    // 복제한 슬라이드끼리는 같은 그림 파일을 쓰므로, 다른 슬라이드가 아직 쓰고 있으면 지우지 않는다.
+    const stillUsed = (path: string) =>
+      next.some((s) => (s.kind === 'image' && s.imagePath === path) || (s.kind === 'canvas' && s.backgroundImagePath === path));
+    if (target?.kind === 'image' && !stillUsed(target.imagePath)) {
       void deleteLessonSlideImage(target.imagePath).catch(() => {
         /* 고아 이미지가 남아도 화면 진행은 막지 않는다 */
       });
@@ -221,17 +229,34 @@ export default function LessonSlideSorter({
     setAddMode(null);
   }
 
+  function addCanvasSlide(layout: 'title' | 'word' | 'blank') {
+    const slide = newCanvasSlide(canvasDraftTheme);
+    if (layout === 'blank') slide.elements = [];
+    if (layout === 'word') {
+      const card = cards.find((c) => c.imageUrl) ?? cards[0];
+      slide.elements = card?.imageUrl
+        ? [
+            { id: uid(), type: 'image', x: 32, y: 8, w: 36, h: 62, url: card.imageUrl, fit: 'contain' },
+            newTextElement({ x: 15, y: 72, w: 70, h: 18, text: card.word, ...themeTextDefaults(canvasDraftTheme, 'title'), fontSize: 11 }),
+          ]
+        : [newTextElement({ x: 15, y: 35, w: 70, h: 24, text: card?.word ?? '', ...themeTextDefaults(canvasDraftTheme, 'title') })];
+    }
+    addSlide(slide);
+    setAddMode(null);
+  }
+
   function addGameSlide(gameType: GameSlide['gameType']) {
     addSlide({ id: uid(), kind: 'game', gameType });
   }
 
-  function addMaterialSlide(materialId: string, worksheetTab?: string, worksheetOptions?: WorksheetSlideOptions) {
+  function addMaterialSlide(materialId: string, worksheetTab?: string, worksheetOptions?: WorksheetSlideOptions, boardTheme?: string | null) {
     addSlide({
       id: uid(),
       kind: 'material',
       materialId,
       ...(worksheetTab ? { worksheetTab } : {}),
       ...(worksheetOptions ? { worksheetOptions } : {}),
+      ...(boardTheme ? { boardTheme } : {}),
     });
   }
 
@@ -247,7 +272,11 @@ export default function LessonSlideSorter({
                 slide={slide}
                 index={i}
                 selected={slide.id === selectedId}
-                onSelect={() => setSelectedId(slide.id)}
+                onSelect={() => {
+                  // 추가 패널이 열려 있어도 썸네일을 누르면 바로 그 슬라이드 미리보기·편집으로.
+                  setSelectedId(slide.id);
+                  setAddMode(null);
+                }}
                 onDelete={() => removeSlide(slide.id)}
                 onDuplicate={() => duplicateSlide(slide.id)}
                 needsContent={slide.kind === 'game' && !gameSlideReady(slide, cards)}
@@ -258,7 +287,7 @@ export default function LessonSlideSorter({
 
         <button
           type="button"
-          onClick={() => setAddMode((m) => (m ? null : 'image'))}
+          onClick={() => setAddMode((m) => (m ? null : 'canvas'))}
           className="flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-outline-variant px-4 py-3 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary md:w-full"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
@@ -271,7 +300,7 @@ export default function LessonSlideSorter({
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="flex flex-wrap gap-2">
-              {(['image', 'video', 'web', 'game', 'material'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'web', 'game', 'material'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -301,8 +330,37 @@ export default function LessonSlideSorter({
                 onUploaded={(img) => {
                   const slide: ImageSlide = { id: uid(), kind: 'image', imagePath: img.path, imageUrl: img.url };
                   addSlide(slide);
+                  setAddMode(null);
                 }}
               />
+            )}
+
+            {addMode === 'canvas' && (
+              <div className="space-y-2">
+                <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.canvas.addIntro')}</p>
+                <div className="space-y-1">
+                  <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.pickTitle')}</div>
+                  <BoardThemeChips value={canvasDraftTheme} onChange={(th) => setCanvasDraftTheme(th?.id ?? null)} noneLabel={t('curriculum.board.plainWhite')} />
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {(['title', 'word', 'blank'] as const).map((layout) => (
+                    <button
+                      key={layout}
+                      type="button"
+                      disabled={layout === 'word' && cards.length === 0}
+                      onClick={() => addCanvasSlide(layout)}
+                      className="flex flex-col items-center gap-2 rounded-xl border-2 border-outline-variant/50 bg-surface-container-lowest p-3 transition-colors hover:border-primary disabled:opacity-40"
+                    >
+                      <span className="flex aspect-video w-full items-center justify-center rounded-lg bg-surface-container">
+                        <span className="material-symbols-outlined text-3xl text-on-surface-variant">
+                          {layout === 'title' ? 'title' : layout === 'word' ? 'style' : 'crop_landscape'}
+                        </span>
+                      </span>
+                      <span className="font-label-md text-label-md text-on-surface">{t(`curriculum.canvas.layout_${layout}`)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             {addMode === 'video' && (
@@ -442,9 +500,14 @@ export default function LessonSlideSorter({
                           onIncludeAnswersChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, includeAnswers: value }))}
                         />
                       </div>
+                      <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
+                        <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
+                        <BoardThemeChips value={worksheetDraftBoard} onChange={(th) => setWorksheetDraftBoard(th?.id ?? null)} noneLabel={t('curriculum.board.none')} />
+                        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab, slideOptionsFromState(worksheetDraftOptions))}
+                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab, slideOptionsFromState(worksheetDraftOptions), worksheetDraftBoard)}
                         className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-lg text-label-lg text-on-primary shadow-sm transition-colors hover:bg-primary-container"
                       >
                         <span className="material-symbols-outlined text-[20px]">add_circle</span>
@@ -487,6 +550,13 @@ export default function LessonSlideSorter({
 
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
+  if (slide.kind === 'canvas') {
+    const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
+    return {
+      icon: 'dashboard_customize',
+      label: firstText && firstText.type === 'text' ? firstText.text.trim().split(/\r?\n/)[0] : t('curriculum.slides.kindCanvas'),
+    };
+  }
   if (slide.kind === 'video') return { icon: 'smart_display', label: t('curriculum.slides.kindVideo') };
   if (slide.kind === 'web') {
     return {
@@ -571,7 +641,9 @@ function SlideThumb({
         </button>
       </div>
       <div className="flex h-24 w-40 shrink-0 items-center justify-center bg-surface-container md:w-full">
-        {slide.kind === 'image' ? (
+        {slide.kind === 'canvas' ? (
+          <CanvasSlideView slide={slide} className="pointer-events-none" />
+        ) : slide.kind === 'image' ? (
           <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
         ) : slide.kind === 'video' && videoId ? (
           <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="h-full w-full object-cover" />
@@ -616,9 +688,39 @@ function SlideDetail({
 }) {
   const { t } = useTranslation();
 
+  if (slide.kind === 'canvas') {
+    return (
+      <CanvasSlideEditor
+        slide={slide}
+        academyId={academyId}
+        cards={cards}
+        onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)}
+      />
+    );
+  }
+
   if (slide.kind === 'image') {
     return (
       <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() =>
+            // 그림은 배경으로 깔고 그 위에 글상자·그림을 얹을 수 있는 "직접 만들기" 슬라이드로 바꾼다.
+            onUpdate({
+              kind: 'canvas',
+              background: '#ffffff',
+              backgroundImageUrl: slide.imageUrl,
+              backgroundImagePath: slide.imagePath,
+              elements: [],
+              imageUrl: undefined,
+              imagePath: undefined,
+            } as unknown as Partial<LessonSlide>)
+          }
+          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container"
+        >
+          <span className="material-symbols-outlined text-[18px]">edit_note</span>
+          {t('curriculum.canvas.convertImage')}
+        </button>
         <PreviewFrame title={t('curriculum.slides.kindImage')}>
           <img src={slide.imageUrl} alt="" className="h-full w-full object-contain" />
         </PreviewFrame>
@@ -795,6 +897,17 @@ function SlideDetail({
             includeAnswers={worksheetOptionsState.includeAnswers}
             onIncludeAnswersChange={(value) => updateWorksheetOptions({ includeAnswers: value })}
           />
+        </div>
+      )}
+      {worksheet && (
+        <div className="space-y-1.5 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+          <div className="font-label-md text-label-md text-on-surface">{t('curriculum.board.worksheetTitle')}</div>
+          <BoardThemeChips
+            value={slide.boardTheme ?? null}
+            onChange={(th) => onUpdate({ boardTheme: th?.id ?? null } as Partial<MaterialSlide>)}
+            noneLabel={t('curriculum.board.none')}
+          />
+          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
         </div>
       )}
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
