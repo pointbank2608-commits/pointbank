@@ -32,11 +32,14 @@ import type {
   LessonSlide,
   MaterialSlide,
   VideoSlide,
+  WebSlide,
   WordList,
   WorksheetSlideOptions,
 } from '../lib/types';
+import { normalizeWebUrl, webSlideHost } from '../lib/webSlides';
 import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
+import WebSlideView from './WebSlideView';
 import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import WorksheetTypePreview from './WorksheetTypePreview';
 
@@ -114,7 +117,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'image' | 'video' | 'game' | 'material' | null;
+type AddMode = 'image' | 'video' | 'web' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -135,6 +138,7 @@ export default function LessonSlideSorter({
   const [selectedId, setSelectedId] = useState<string | null>(slides[0]?.id ?? null);
   const [addMode, setAddMode] = useState<AddMode>(null);
   const [videoDraft, setVideoDraft] = useState('');
+  const [webDraft, setWebDraft] = useState({ url: '', title: '' });
   const [worksheetDraftTab, setWorksheetDraftTab] = useState(WORKSHEET_TAB_CATALOG[0]?.tab ?? 'list');
   const [worksheetDraftOptions, setWorksheetDraftOptions] = useState<WorksheetOptionsState>(DEFAULT_WORKSHEET_OPTIONS_STATE);
 
@@ -199,6 +203,24 @@ export default function LessonSlideSorter({
     setAddMode(null);
   }
 
+  function addWebSlide() {
+    const normalized = normalizeWebUrl(webDraft.url);
+    if (!normalized) {
+      notify(t('curriculum.web.invalidUrl'), 'error');
+      return;
+    }
+    const slide: WebSlide = {
+      id: uid(),
+      kind: 'web',
+      url: normalized.url,
+      mode: normalized.mode,
+      ...(webDraft.title.trim() ? { title: webDraft.title.trim() } : {}),
+    };
+    addSlide(slide);
+    setWebDraft({ url: '', title: '' });
+    setAddMode(null);
+  }
+
   function addGameSlide(gameType: GameSlide['gameType']) {
     addSlide({ id: uid(), kind: 'game', gameType });
   }
@@ -249,7 +271,7 @@ export default function LessonSlideSorter({
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="flex flex-wrap gap-2">
-              {(['image', 'video', 'game', 'material'] as const).map((m) => (
+              {(['image', 'video', 'web', 'game', 'material'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -303,6 +325,15 @@ export default function LessonSlideSorter({
                   {t('curriculum.slides.addSlide')}
                 </button>
               </div>
+            )}
+
+            {addMode === 'web' && (
+              <WebSlideAddForm
+                url={webDraft.url}
+                title={webDraft.title}
+                onChange={(patch) => setWebDraft((d) => ({ ...d, ...patch }))}
+                onAdd={addWebSlide}
+              />
             )}
 
             {addMode === 'game' && (
@@ -457,6 +488,12 @@ export default function LessonSlideSorter({
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'video') return { icon: 'smart_display', label: t('curriculum.slides.kindVideo') };
+  if (slide.kind === 'web') {
+    return {
+      icon: slide.mode === 'window' ? 'menu_book' : 'language',
+      label: slide.title?.trim() || webSlideHost(slide.url),
+    };
+  }
   if (slide.kind === 'game') {
     const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);
     return { icon: entry?.icon ?? 'sports_esports', label: entry ? t(entry.nameKey) : slide.gameType };
@@ -616,6 +653,10 @@ function SlideDetail({
     );
   }
 
+  if (slide.kind === 'web') {
+    return <WebSlideDetail slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
+  }
+
   if (slide.kind === 'game') {
     const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
     return (
@@ -757,6 +798,147 @@ function SlideDetail({
         </div>
       )}
       <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+    </div>
+  );
+}
+
+/** 슬라이드 안에 띄우기 / 새 창으로 열기 선택 — 선생님이 결과를 보고 바꿀 수 있게. */
+function WebModeToggle({ mode, onChange }: { mode: WebSlide['mode']; onChange: (mode: WebSlide['mode']) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-1.5">
+      <div className="flex flex-wrap gap-2">
+        {(['embed', 'window'] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            aria-pressed={mode === m}
+            onClick={() => onChange(m)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-label-md text-label-md transition-colors ${
+              mode === m ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-secondary-container/40'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">{m === 'embed' ? 'web_asset' : 'open_in_new'}</span>
+            {t(`curriculum.web.mode_${m}`)}
+          </button>
+        ))}
+      </div>
+      <p className="font-caption text-caption text-on-surface-variant">{t(`curriculum.web.modeHint_${mode}`)}</p>
+    </div>
+  );
+}
+
+/** 추가 패널의 웹페이지 입력 — 주소를 넣는 순간 어떤 방식으로 보일지(캔바=슬라이드 안, 로그인 E-book=새
+ * 창) 미리 알려준다. */
+function WebSlideAddForm({
+  url,
+  title,
+  onChange,
+  onAdd,
+}: {
+  url: string;
+  title: string;
+  onChange: (patch: { url?: string; title?: string }) => void;
+  onAdd: () => void;
+}) {
+  const { t } = useTranslation();
+  const normalized = url.trim() ? normalizeWebUrl(url) : null;
+  return (
+    <div className="space-y-3">
+      <p className="font-body-sm text-body-sm text-on-surface-variant">{t('curriculum.web.addIntro')}</p>
+      <input
+        type="text"
+        value={url}
+        onChange={(e) => onChange({ url: e.target.value })}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') onAdd();
+        }}
+        placeholder={t('curriculum.web.urlPlaceholder') ?? ''}
+        className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+      />
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => onChange({ title: e.target.value })}
+        maxLength={40}
+        placeholder={t('curriculum.web.titlePlaceholder') ?? ''}
+        className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+      />
+      {normalized && (
+        <div className="rounded-lg bg-secondary-container/30 px-3 py-2 font-body-sm text-body-sm text-on-surface">
+          <span className="material-symbols-outlined mr-1 align-middle text-[18px]">
+            {normalized.mode === 'embed' ? 'web_asset' : 'open_in_new'}
+          </span>
+          {t(`curriculum.web.detected_${normalized.provider}_${normalized.mode}`, {
+            defaultValue: t(`curriculum.web.detected_other_${normalized.mode}`),
+          })}
+        </div>
+      )}
+      {url.trim() && !normalized && <p className="font-caption text-caption text-error">{t('curriculum.web.invalidUrl')}</p>}
+      <button
+        type="button"
+        disabled={!normalized}
+        onClick={onAdd}
+        className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-50"
+      >
+        {t('curriculum.slides.addSlide')}
+      </button>
+      <details className="rounded-lg bg-surface-container-low px-3 py-2 font-caption text-caption text-on-surface-variant">
+        <summary className="cursor-pointer font-label-md text-label-md text-on-surface">{t('curriculum.web.howToTitle')}</summary>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>{t('curriculum.web.howToCanva')}</li>
+          <li>{t('curriculum.web.howToEbook')}</li>
+        </ul>
+      </details>
+    </div>
+  );
+}
+
+function WebSlideDetail({ slide, onUpdate }: { slide: WebSlide; onUpdate: (patch: Partial<WebSlide>) => void }) {
+  const { t } = useTranslation();
+  const [urlDraft, setUrlDraft] = useState(slide.url);
+  useEffect(() => setUrlDraft(slide.url), [slide.id, slide.url]);
+
+  function commitUrl() {
+    const normalized = normalizeWebUrl(urlDraft);
+    if (!normalized) {
+      setUrlDraft(slide.url);
+      return;
+    }
+    if (normalized.url !== slide.url) onUpdate({ url: normalized.url, mode: normalized.mode });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl bg-surface-container-lowest p-3 shadow-sm">
+        <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
+        <WebSlideView slide={slide} fill={false} />
+      </div>
+      <label className="block">
+        <span className="mb-1 block font-label-md text-label-md text-on-surface-variant">{t('curriculum.web.urlLabel')}</span>
+        <input
+          type="text"
+          value={urlDraft}
+          onChange={(e) => setUrlDraft(e.target.value)}
+          onBlur={commitUrl}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitUrl();
+          }}
+          className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+        />
+      </label>
+      <label className="block">
+        <span className="mb-1 block font-label-md text-label-md text-on-surface-variant">{t('curriculum.web.titleLabel')}</span>
+        <input
+          type="text"
+          value={slide.title ?? ''}
+          maxLength={40}
+          onChange={(e) => onUpdate({ title: e.target.value })}
+          placeholder={webSlideHost(slide.url)}
+          className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+        />
+      </label>
+      <WebModeToggle mode={slide.mode} onChange={(mode) => onUpdate({ mode })} />
     </div>
   );
 }

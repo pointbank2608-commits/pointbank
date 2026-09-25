@@ -403,6 +403,7 @@ export default function CurriculumPage() {
                   let icon = 'help';
                   if (slide.kind === 'image') icon = 'image';
                   else if (slide.kind === 'video') icon = 'smart_display';
+                  else if (slide.kind === 'web') icon = slide.mode === 'window' ? 'menu_book' : 'language';
                   else if (slide.kind === 'game') icon = GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports';
                   else if (slide.materialId === 'worksheet' && slide.worksheetTab)
                     icon = WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab)?.icon ?? 'description';

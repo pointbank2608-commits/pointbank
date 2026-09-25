@@ -564,7 +564,19 @@ export interface MaterialSlide {
   worksheetOptions?: WorksheetSlideOptions;
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide;
+/** 외부 웹페이지(캔바 프레젠테이션·출판사 E-book 등) 슬라이드. mode:
+ * - 'embed' : 슬라이드 안에 iframe 으로 띄운다(캔바 view?embed 링크처럼 끼워 넣기를 허용하는 곳).
+ * - 'window': 로그인이 필요한 E-book처럼 다른 사이트 안에선 로그인이 안 되는 곳 — 수업 중 큰 버튼으로
+ *   새 창을 연다(선생님 브라우저의 로그인이 그대로 쓰인다). lib/webSlides.ts 가 주소로 기본값을 고른다. */
+export interface WebSlide {
+  id: string;
+  kind: 'web';
+  url: string;
+  title?: string;
+  mode: 'embed' | 'window';
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

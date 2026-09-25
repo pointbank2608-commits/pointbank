@@ -8,7 +8,7 @@ import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'video' | 'game' | 'material' | 'print';
+  kind: 'image' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -123,6 +123,13 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.play.stepVideo'),
             icon: 'smart_display',
+          });
+        } else if (slide.kind === 'web') {
+          steps.push({
+            kind: 'web',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: slide.title?.trim() || t('curriculum.slides.kindWeb'),
+            icon: slide.mode === 'window' ? 'menu_book' : 'language',
           });
         } else if (slide.kind === 'game') {
           const entry = GAME_CATALOG.find((g) => g.type === slide.gameType);

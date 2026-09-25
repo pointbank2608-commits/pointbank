@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
+import WebSlideView from '../components/WebSlideView';
 import YoutubeShadowingPlayer from '../components/YoutubeShadowingPlayer';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
@@ -9,7 +10,7 @@ import { effectiveSlides } from '../lib/lessonSlides';
 import type { CurriculumLesson } from '../lib/types';
 
 /**
- * "이미지/영상" 슬라이드의 실제 화면. 단계 이동(◀ ▶)·풀스크린은 AppLayout에 항상 떠 있는
+ * "이미지/영상/웹페이지" 슬라이드의 실제 화면. 단계 이동(◀ ▶)·풀스크린은 AppLayout에 항상 떠 있는
  * LessonRunnerBar가 담당하므로, 여기서는 이 슬라이드 하나만 꽉 채워 보여주면 된다.
  * 게임 슬라이드는 이 페이지를 거치지 않고 그 게임의 실제 라우트로 바로 이동한다.
  */
@@ -56,6 +57,10 @@ export default function LessonSlideViewerPage() {
         </Link>
       </div>
     );
+  }
+
+  if (slide.kind === 'web') {
+    return <WebSlideView slide={slide} fill={isPresenting} />;
   }
 
   if (slide.kind === 'video') {
