@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import BrandMark from './BrandMark';
 
@@ -37,13 +38,15 @@ function detectKind(): Kind {
 export default function InstallBanner() {
   const { t } = useTranslation();
   const [kind, setKind] = useState<Kind>(null);
+  // 퀴즈쇼 학생 입장 화면(/join)은 수업 중에만 잠깐 쓰는 화면이라 앱 설치 안내를 띄우지 않는다.
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (localStorage.getItem(DISMISS_KEY) === '1') return;
     setKind(detectKind());
   }, []);
 
-  if (!kind) return null;
+  if (!kind || pathname === '/join' || pathname.startsWith('/join/')) return null;
 
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, '1');

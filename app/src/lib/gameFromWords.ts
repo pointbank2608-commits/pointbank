@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+import { buildContestQuestions, contestRoundNames } from './liveQuiz';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from './quizFromWordList';
 import type { FullCardItem, GameItem, GameTemplateConfig, GameType, WordList, WordListItem } from './types';
 
@@ -98,6 +100,10 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
         .filter((w) => w.imageUrl)
         .map((w) => ({ id: w.id, imageUrl: w.imageUrl as string, answer: w.word }));
       return imageQuizItems.length > 0 ? { items: labelItems, config: { imageQuizItems } } : null;
+    }
+    case 'quizshow': {
+      const liveQuestions = buildContestQuestions(words, contestRoundNames(i18n.t.bind(i18n) as (k: string, o?: Record<string, unknown>) => string));
+      return liveQuestions.length > 0 ? { items: labelItems, config: { liveQuestions } } : null;
     }
     case 'unscramble': {
       const sentences = words.filter((w) => w.example).map((w) => ({ id: w.id, label: w.example as string }));

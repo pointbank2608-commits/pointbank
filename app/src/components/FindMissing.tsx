@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -288,6 +289,22 @@ export default function FindMissing({
     afterShow(board, runIdRef.current);
   }
 
+  // [?] 카드를 누르면 화면 가득 크게 띄워 뒤집으며 정답을 보여 준다(2026-09-26, 선생님 요청).
+  // 닫을 때 판에서도 찾은 것으로 표시한다.
+  const [bigCard, setBigCard] = useState<GameItem | null>(null);
+
+  function openBig(itemId: string) {
+    if (!missingIds.has(itemId) || foundIds.has(itemId)) return;
+    const item = board.find((b) => b.id === itemId);
+    if (item) setBigCard(item);
+    else reveal(itemId);
+  }
+
+  function closeBig() {
+    if (bigCard) reveal(bigCard.id);
+    setBigCard(null);
+  }
+
   function reveal(itemId: string) {
     if (!missingIds.has(itemId) || foundIds.has(itemId)) return;
     const nextFound = new Set(foundIds).add(itemId);
@@ -452,7 +469,7 @@ export default function FindMissing({
               key={item.id}
               type="button"
               disabled={!clickable}
-              onClick={() => reveal(item.id)}
+              onClick={() => openBig(item.id)}
               data-skin-object="card"
               ref={(el) => {
                 if (el) cardEls.current.set(item.id, el);
@@ -489,6 +506,8 @@ export default function FindMissing({
         <div className="mt-4 font-caption text-caption text-on-surface-variant">{t('gameFindMissing.tapToRevealHint')}</div>
       )}
 
+      {bigCard && <BigFlipCard label={bigCard.label} onClose={closeBig} />}
+
       {phase === 'done' && (
         <button onClick={start} className={`${pill} mt-6`}>
           {t('gameFindMissing.playAgainButton')}
@@ -510,5 +529,89 @@ export default function FindMissing({
         {sidePanel}
       </div>
     </div>
+  );
+}
+
+/** 화면 가득 뜨는 카드 — 물음표 면으로 커지며 들어온 뒤 뒤집혀 정답 면이 보인다. 아무 데나 누르거나
+ * Esc·Space·Enter 로 닫는다. 전체화면(게임 전체화면·발표)에서도 보이게 전체화면 요소 안으로 띄운다. */
+function BigFlipCard({ label, onClose }: { label: string; onClose: () => void }) {
+  const [flipped, setFlipped] = useState(false);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const a = window.setTimeout(() => setShown(true), 20);
+    const b = window.setTimeout(() => setFlipped(true), reduce ? 60 : 650);
+    return () => {
+      window.clearTimeout(a);
+      window.clearTimeout(b);
+    };
+  }, []);
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [onClose]);
+
+  const face: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    backfaceVisibility: 'hidden',
+    WebkitBackfaceVisibility: 'hidden',
+  };
+  const inner = { left: '10%', top: '13%', width: '81%', height: '75%' };
+  const target = document.fullscreenElement ?? document.body;
+  return createPortal(
+    <div
+      role="dialog"
+      aria-label={label}
+      onClick={onClose}
+      className="fixed inset-0 z-[80] flex cursor-pointer items-center justify-center"
+      style={{ background: shown ? 'rgba(40, 24, 10, 0.55)' : 'rgba(40, 24, 10, 0)', transition: 'background 300ms ease' }}
+    >
+      <div
+        style={{
+          width: 'min(82vw, 118vh)',
+          perspective: '1600px',
+          // 그림자는 여기(뒤집히는 요소에 filter 를 주면 3D 가 납작해져 뒷면이 안 보인다)
+          filter: 'drop-shadow(0 18px 30px rgba(0,0,0,0.35))',
+          transform: shown ? 'scale(1)' : 'scale(0.35)',
+          opacity: shown ? 1 : 0,
+          transition: 'transform 450ms cubic-bezier(.2,1.3,.4,1), opacity 250ms ease',
+        }}
+      >
+        <div
+          className="relative"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transition: 'transform 800ms cubic-bezier(.3,.9,.3,1)',
+          }}
+        >
+          {/* 크기 잡기용(보이지 않음) */}
+          <img src={CARD_SRC} alt="" draggable={false} className="invisible w-full select-none" />
+          <div style={face}>
+            <img src={CARD_SRC} alt="" draggable={false} className="w-full select-none" />
+            <div className="absolute flex items-center justify-center" style={inner}>
+              <img src={Q_SRC} alt="" draggable={false} className="h-[78%] w-auto select-none object-contain" />
+            </div>
+          </div>
+          <div style={{ ...face, transform: 'rotateY(180deg)' }}>
+            <img src={CARD_SRC} alt="" draggable={false} className="w-full select-none" />
+            <div className="absolute flex items-center justify-center px-[3%]" style={inner}>
+              <span className="block h-full w-full min-h-0">
+                <GameFitText text={label} maxSize={360} />
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    target,
   );
 }

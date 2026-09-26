@@ -200,7 +200,31 @@ export type GameType =
   | 'imagequiz'
   | 'gameshowquiz'
   | 'winlosequiz'
-  | 'watermelon';
+  | 'watermelon'
+  | 'quizshow';
+
+/** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
+export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
+
+export interface LiveQuestion {
+  id: string;
+  kind: LiveQuestionKind;
+  /** 칠판에 크게 나오는 문제 */
+  prompt: string;
+  imageUrl?: string | null;
+  /** choice 전용 보기 */
+  choices?: string[];
+  /** choice: 정답 보기 번호, ox: 0 = O, 1 = X */
+  correctIndex?: number;
+  /** text·buzzer 정답. 여러 개 인정하려면 '/'로 나눈다(color/colour). */
+  answer?: string;
+  /** 맞혔을 때 점수(기본 1000) */
+  points?: number;
+  /** 제한 시간(초, 기본 20). 부저는 시간 제한 없음. */
+  seconds?: number;
+  /** 라운드 이름(예: "1라운드 · 뜻 고르기") — 바뀔 때 칠판에 라운드 화면이 나온다. */
+  round?: string;
+}
 
 export interface GameItem {
   id: string;
@@ -341,6 +365,10 @@ export interface GameTemplateConfig {
   gameShowLifelines?: number;
   /** 게임쇼 퀴즈 전용: 나무 무대(A, 기본) 또는 점토 스튜디오(B). */
   gameShowStyle?: 'wood' | 'clay';
+  /** 대회 퀴즈쇼 전용: 문제(라운드별 종류가 섞인다). 시작하면 live_sessions 로 복사된다. */
+  liveQuestions?: LiveQuestion[];
+  /** 대회 퀴즈쇼 전용: 빨리 맞힐수록 점수를 더 줄지(기본 켬). */
+  liveSpeedBonus?: boolean;
   /** 퀴즈를 이기거나 잃기 전용: 팀 시작 점수 (기본 100). */
   winLoseStartScore?: number;
   /** 퀴즈를 이기거나 잃기 전용: 베팅 금액 선택지 (기본 [10, 20, 50]). */

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AdminLayout from './pages/AdminLayout';
 import AdminAcademiesPage from './pages/AdminAcademiesPage';
@@ -62,6 +62,8 @@ import WhackAMolePage from './pages/WhackAMolePage';
 import WheelPage from './pages/WheelPage';
 import WinLoseQuizPage from './pages/WinLoseQuizPage';
 import WatermelonPage from './pages/WatermelonPage';
+import QuizShowPage from './pages/QuizShowPage';
+import LiveJoinPage from './pages/LiveJoinPage';
 import WordSearchPage from './pages/WordSearchPage';
 import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
 import WorksheetLibraryPage from './pages/WorksheetLibraryPage';
@@ -72,6 +74,17 @@ import LessonSlideViewerPage from './pages/LessonSlideViewerPage';
 export default function App() {
   const { t } = useTranslation();
   const { loading, session, profile, isStaff, isAdmin } = useAuth();
+  const { pathname } = useLocation();
+
+  // 대회 퀴즈쇼 학생 입장 — 로그인 없이 휴대폰으로 들어온다(로그인 여부·로딩과 상관없이 먼저).
+  if (pathname === '/join' || pathname.startsWith('/join/')) {
+    return (
+      <Routes>
+        <Route path="/join" element={<LiveJoinPage />} />
+        <Route path="/join/:code" element={<LiveJoinPage />} />
+      </Routes>
+    );
+  }
 
   if (loading) {
     return (
@@ -183,6 +196,7 @@ export default function App() {
             <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="/games/watermelon" element={<WatermelonPage />} />
+            <Route path="/games/quizshow" element={<QuizShowPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -225,6 +239,7 @@ export default function App() {
             <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="/games/watermelon" element={<WatermelonPage />} />
+            <Route path="/games/quizshow" element={<QuizShowPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

@@ -442,6 +442,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.watermelonName',
     descKey: 'gamesList.watermelonDesc',
   },
+  {
+    // 대회 퀴즈쇼(2026-09-26): 학생이 휴대폰으로 QR 입장해 답하는 실시간 대회. 질문 구조라 다른 게임으로 열기에서 빠진다.
+    type: 'quizshow',
+    number: 36,
+    category: 'vocabulary',
+    minItems: 999,
+    icon: 'emoji_events',
+    path: '/games/quizshow',
+    cover: null,
+    nameKey: 'gamesList.quizshowName',
+    descKey: 'gamesList.quizshowDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
