@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import OnlineClassPanel from './OnlineClassPanel';
 import { useTranslation } from 'react-i18next';
 import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
@@ -35,6 +36,7 @@ export default function LessonRunnerBar() {
   const [pointsOpen, setPointsOpen] = useState(false);
   const [annotationOpen, setAnnotationOpen] = useState(false);
   const [keysOpen, setKeysOpen] = useState(false);
+  const [onlineOpen, setOnlineOpen] = useState(false);
 
   useEffect(() => {
     setAnnotationOpen(false);
@@ -144,6 +146,17 @@ export default function LessonRunnerBar() {
       </div>
       <button
         type="button"
+        onClick={() => setOnlineOpen((v) => !v)}
+        className={`relative flex h-8 shrink-0 items-center gap-1 rounded-full px-2 transition-colors ${onlineOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
+        aria-label={t('online.title')}
+        title={t('online.title')}
+      >
+        <span className="material-symbols-outlined text-[20px]">cast_for_education</span>
+        <span className="hidden font-caption text-caption lg:inline">{t('online.button')}</span>
+        {runner.view && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
+      </button>
+      <button
+        type="button"
         onClick={() => setKeysOpen((v) => !v)}
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${keysOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
         aria-label={t('curriculum.play.keysTitle')}
@@ -167,6 +180,7 @@ export default function LessonRunnerBar() {
         {t('curriculum.play.finish')}
       </button>
     </div>
+    {onlineOpen && <OnlineClassPanel onClose={() => setOnlineOpen(false)} />}
     {keysOpen && (
       <div className="no-print fixed inset-0 z-40 flex items-start justify-end p-4 pt-16" onClick={() => setKeysOpen(false)}>
         <div

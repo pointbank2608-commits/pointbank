@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import LessonWatchPage from './pages/LessonWatchPage';
+import SharedLessonPage from './pages/SharedLessonPage';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import AdminLayout from './pages/AdminLayout';
@@ -82,6 +84,16 @@ export default function App() {
       <Routes>
         <Route path="/join" element={<LiveJoinPage />} />
         <Route path="/join/:code" element={<LiveJoinPage />} />
+      </Routes>
+    );
+  }
+  // 온라인 수업 학생 따라보기(로그인 없음), 공유받은 수업 미리보기(로그인 전에도 볼 수 있게)
+  if (pathname === '/watch' || pathname.startsWith('/watch/') || pathname.startsWith('/share/')) {
+    return (
+      <Routes>
+        <Route path="/watch" element={<LessonWatchPage />} />
+        <Route path="/watch/:code" element={<LessonWatchPage />} />
+        <Route path="/share/:token" element={<SharedLessonPage />} />
       </Routes>
     );
   }

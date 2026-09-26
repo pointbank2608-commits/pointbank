@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { usePhonicsFilled } from '../lib/phonicsFill';
@@ -44,18 +45,29 @@ export default function WordShowBoard({
   const font = BOARD_FONTS[th.font];
   const enriched = useWordBankEnriched(usePhonicsFilled(words));
   // 섞는 건 처음 한 번만(사전 정보가 늦게 와도 순서가 바뀌지 않게 id 순서만 기억)
-  const orderRef = useRef<string[] | null>(null);
-  if (!orderRef.current || orderRef.current.length !== words.length) {
+  const [order, setOrder] = useState<string[]>(() => {
     const ids = words.map((w) => w.id);
-    orderRef.current = shuffle && interactive ? shuffled(ids) : ids;
-  }
+    return shuffle && interactive ? shuffled(ids) : ids;
+  });
+  const wordKey = words.map((w) => w.id).join('|');
+  useEffect(() => {
+    const ids = words.map((w) => w.id);
+    setOrder((prev) => (prev.length === ids.length && prev.every((id) => ids.includes(id)) ? prev : shuffle && interactive ? shuffled(ids) : ids));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wordKey]);
   const list = useMemo(() => {
     const byId = new Map(enriched.map((w) => [w.id, w]));
-    return orderRef.current!.map((id) => byId.get(id)).filter((w): w is FullCardItem => !!w);
-  }, [enriched]);
+    return order.map((id) => byId.get(id)).filter((w): w is FullCardItem => !!w);
+  }, [enriched, order]);
 
   const [idx, setIdx] = useState(0);
   const [step, setStep] = useState(0);
+  // 학생 따라보기: 순서·지금 단어·단계를 학생 화면에 그대로(학생 화면은 자동 읽기도 안 한다)
+  const follower = useSyncedSubState({ order, idx, step }, (s) => {
+    if (Array.isArray(s.order)) setOrder(s.order as string[]);
+    setIdx(Number(s.idx) || 0);
+    setStep(Number(s.step) || 0);
+  });
   const card = list[Math.min(idx, list.length - 1)];
   const steps: Step[] = card
     ? ([card.imageUrl ? 'image' : null, 'word', card.meaning ? 'meaning' : null, card.example ? 'example' : null].filter(Boolean) as Step[])
@@ -69,7 +81,7 @@ export default function WordShowBoard({
   // 단어가 나오는 단계에서 한 번 읽어 준다
   const spokenRef = useRef<string>('');
   useEffect(() => {
-    if (!interactive || !autoSpeak || !card) return;
+    if (!interactive || follower || !autoSpeak || !card) return;
     const key = `${card.id}:word`;
     if (steps[step] === 'word' && spokenRef.current !== key) {
       spokenRef.current = key;
@@ -109,7 +121,7 @@ export default function WordShowBoard({
 
   // → · Space · PageDown(클리커): 다음 단계. 다 열었으면 흘려보내 다음 슬라이드로. ← · PageUp 은 반대.
   useEffect(() => {
-    if (!interactive) return;
+    if (!interactive || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -125,7 +137,7 @@ export default function WordShowBoard({
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [interactive]);
+  }, [interactive, follower]);
 
   if (!card) {
     return <div className="flex h-full items-center justify-center text-on-surface-variant">{t('curriculum.wordShow.noWords')}</div>;

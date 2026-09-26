@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { PENDING_SHARE_KEY } from './SharedLessonPage';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import OnboardingChecklist from '../components/OnboardingChecklist';
@@ -13,6 +14,19 @@ import {
 import { dateKey, fmtDay, signed, todayStart } from '../lib/format';
 
 export default function DashboardPage() {
+  const navigateTo = useNavigate();
+  // 로그인 전에 공유받은 수업 링크를 열었으면, 로그인 뒤 그 링크로 다시 보낸다(2026-09-27).
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem(PENDING_SHARE_KEY);
+      if (pending) {
+        localStorage.removeItem(PENDING_SHARE_KEY);
+        navigateTo(`/share/${pending}`, { replace: true });
+      }
+    } catch {
+      /* 무시 */
+    }
+  }, [navigateTo]);
   const { academy, profile, pointUnit } = useAuth();
   const { notify } = useToast();
   const { t } = useTranslation();

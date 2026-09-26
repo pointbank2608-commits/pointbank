@@ -57,6 +57,8 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 라운드 소개 화면(서버 단계와 별개로 칠판에만 잠깐 보인다)
   const [roundIntro, setRoundIntro] = useState<number | null>(null);
   const [peek, setPeek] = useState(false);
+  // 온라인(줌) 수업: 채팅에 붙일 입장 링크 복사
+  const [linkCopied, setLinkCopied] = useState(false);
   const [startLocal, setStartLocal] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -322,6 +324,18 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
             {qr && <img src={qr} alt="QR" className="w-[clamp(180px,26cqw,420px)] rounded-2xl bg-white p-3" />}
             <div className="text-center">
               <div className="text-[clamp(13px,1.3cqw,20px)] text-white/70">{liveJoinUrl('').replace(/\/$/, '')}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(liveJoinUrl(session.code)).then(() => {
+                    setLinkCopied(true);
+                    window.setTimeout(() => setLinkCopied(false), 2000);
+                  });
+                }}
+                className="mt-1 rounded-full border border-white/30 px-3 py-1 text-[clamp(11px,1.1cqw,16px)] text-white/80 hover:bg-white/10"
+              >
+                {linkCopied ? t('liveQuiz.linkCopied') : t('liveQuiz.copyLink')}
+              </button>
               <div className="text-[clamp(40px,7cqw,110px)] font-bold leading-none tracking-[0.15em] text-warm-yellow">{session.code}</div>
             </div>
           </div>

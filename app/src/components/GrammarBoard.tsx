@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint } from '../lib/grammar';
@@ -50,6 +51,12 @@ export default function GrammarBoard({
   const translations = point.translations ?? [];
   const shownRef = useRef(shown);
   shownRef.current = shown;
+  // 학생 따라보기: 선생님이 꺼낸 예문 수·화면·해석을 학생 화면에 그대로
+  const follower = useSyncedSubState({ shown, view, showKo }, (s) => {
+    setShown(Number(s.shown) || 1);
+    setView((s.view as typeof view) ?? 'examples');
+    setShowKo(!!s.showKo);
+  });
 
   useEffect(() => {
     setShown(startShown);
@@ -61,7 +68,7 @@ export default function GrammarBoard({
   // → · Space · PageDown(클리커): 예문을 하나씩 꺼낸다. 다 꺼냈으면 그냥 흘려보내서 발표 진행바가
   // 다음 슬라이드로 넘긴다. ← · PageUp 은 반대. capture 단계에서 먼저 받아 처리한 키만 전파를 막는다.
   useEffect(() => {
-    if (!interactive) return;
+    if (!interactive || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -82,7 +89,7 @@ export default function GrammarBoard({
     }
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
-  }, [interactive, lines.length]);
+  }, [interactive, lines.length, follower]);
 
   const visible = lines.slice(0, shown);
   const firstMine = lines.findIndex((l) => l.mine);

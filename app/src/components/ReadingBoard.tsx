@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { parseMarked, plainText } from '../lib/grammar';
@@ -40,6 +41,13 @@ export default function ReadingBoard({
   const videoId = videoUrl ? extractYoutubeId(videoUrl) : null;
   const idxRef = useRef(idx);
   idxRef.current = idx;
+  // 학생 따라보기: 지금 줄·해석·빈칸 연 것을 학생 화면에 그대로
+  const follower = useSyncedSubState({ idx, showKo, revealed: [...revealed], revealAll }, (s) => {
+    setIdx(Number(s.idx) || 0);
+    setShowKo(!!s.showKo);
+    setRevealed(new Set(Array.isArray(s.revealed) ? (s.revealed as string[]) : []));
+    setRevealAll(!!s.revealAll);
+  });
 
   useEffect(() => {
     setIdx(0);
@@ -49,7 +57,7 @@ export default function ReadingBoard({
   }, [source, mode]);
 
   useEffect(() => {
-    if (!interactive || mode !== 'lines') return;
+    if (!interactive || follower || mode !== 'lines') return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -67,7 +75,7 @@ export default function ReadingBoard({
     }
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
-  }, [interactive, mode, lines.length]);
+  }, [interactive, mode, lines.length, follower]);
 
   const font = BOARD_FONTS[th.font];
   const line = lines[Math.min(idx, Math.max(0, lines.length - 1))];

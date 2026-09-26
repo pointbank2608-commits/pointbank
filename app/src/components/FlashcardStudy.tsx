@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useSyncedSubState } from '../lib/presentSync';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../lib/speech';
@@ -71,11 +72,20 @@ export default function FlashcardStudy({
 
   const posRef = useRef(pos);
   posRef.current = pos;
+  // 학생 따라보기: 섞은 순서·지금 카드·뒤집힘을 학생 화면에 그대로
+  const follower = useSyncedSubState({ order, pos, flipped }, (s) => {
+    if (Array.isArray(s.order) && s.order.length === cards.length) setOrder(s.order as number[]);
+    setPos(Number(s.pos) || 0);
+    setFlipped(!!s.flipped);
+  });
+  const followerRef = useRef(follower);
+  followerRef.current = follower;
 
   // → ← · PageDown/PageUp(발표 클리커)로 카드를 넘긴다. 커리큘럼 발표 중이면 첫·마지막 카드에서는
   // 키를 흘려보내 진행바가 이전·다음 슬라이드로 넘긴다(capture 단계에서 처리한 키만 전파를 막음).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (followerRef.current) return;
       const forward = e.key === 'ArrowRight' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
       if (e.key === 'Escape') onClose?.();

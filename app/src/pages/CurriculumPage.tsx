@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import LessonRecipePicker from '../components/LessonRecipePicker';
+import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
+import ShareLessonModal from '../components/ShareLessonModal';
 import LessonWordListModal from '../components/LessonWordListModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +32,10 @@ import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
 function uid(): string {
   return crypto.randomUUID();
 }
+
+/** 수업 만들기 화면의 "유튜브 영상으로 단어 자동 추출" 칸 — 2026-09-27 사용자 결정으로 숨김(레시피·단어장 고르기와
+ * 같은 자리에선 필요 없음). 코드는 남겨 두고, 필요하면 나중에 유튜브 슬라이드 쪽에 넣는다. */
+const SHOW_VIDEO_WORD_EXTRACT = false;
 
 export default function CurriculumPage() {
   const { t } = useTranslation();
@@ -397,6 +404,16 @@ export default function CurriculumPage() {
 
   // "다른 반으로 복사" — 고른 반마다 수업을 복사한다(A반 전용 게임 내용·단어장도 같이 복사, lib/copyLesson.ts).
   const [copyLesson, setCopyLesson] = useState<CurriculumLesson | null>(null);
+  const [shareLesson, setShareLesson] = useState<CurriculumLesson | null>(null);
+  // 공유받은 수업을 가져온 뒤 알림(SharedLessonPage → navigate state)
+  useEffect(() => {
+    const st = location.state as { importedToast?: string } | null;
+    if (st?.importedToast) {
+      notify(t('lessonShare.importedToast', { name: st.importedToast }));
+      navigate('/curriculum', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
   const [copyTargets, setCopyTargets] = useState<string[]>([]);
   const [copying, setCopying] = useState(false);
 
@@ -553,6 +570,7 @@ export default function CurriculumPage() {
             </div>
           </div>
 
+          {SHOW_VIDEO_WORD_EXTRACT && (
           <div>
             <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('curriculum.videoUrlLabel')}</label>
             <div className="flex flex-wrap items-center gap-2">
@@ -575,8 +593,30 @@ export default function CurriculumPage() {
               )}
             </div>
           </div>
+          )}
 
           <div>
+            {!editingId && playlist.length === 0 && academy?.id && profile && (
+              <div className="mb-4">
+                <LessonRecipePicker
+                  hasWords={(wordLists.find((wl) => wl.id === wordListId)?.items.length ?? 0) > 0}
+                  onManageWordList={openWordListModal}
+                  makeUnscramble={(gid) =>
+                    makeUnscrambleTemplate({
+                      grammarId: gid,
+                      academyId: academy.id,
+                      classId: formClassId ?? staffClassId,
+                      teacherId: profile.id,
+                      name: (pointName) => t('grammar.gameTemplateName', { name: pointName }),
+                    })
+                  }
+                  onApply={(slides, suggested) => {
+                    setPlaylist(slides);
+                    if (!name.trim()) setName(suggested);
+                  }}
+                />
+              </div>
+            )}
             <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('curriculum.playlistLabel')}</div>
             {academy?.id && (
               <LessonSlideSorter
@@ -635,6 +675,14 @@ export default function CurriculumPage() {
         </div>
       )}
 
+      {shareLesson && academy?.id && (
+        <ShareLessonModal
+          lesson={shareLesson}
+          wordList={wordLists.find((wl) => wl.id === shareLesson.word_list_id) ?? null}
+          academyId={academy.id}
+          onClose={() => setShareLesson(null)}
+        />
+      )}
       {copyLesson && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => !copying && setCopyLesson(null)}>
           <div className="w-full max-w-md space-y-4 rounded-2xl bg-surface-container-lowest p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -708,6 +756,15 @@ export default function CurriculumPage() {
                     aria-label={t('curriculum.editButton') ?? ''}
                   >
                     <span className="material-symbols-outlined text-[20px]">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShareLesson(lesson)}
+                    className="text-on-surface-variant hover:text-primary"
+                    aria-label={t('lessonShare.button')}
+                    title={t('lessonShare.button')}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">share</span>
                   </button>
                   <button
                     type="button"

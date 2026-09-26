@@ -186,11 +186,17 @@ export default function LessonSlideSorter({
   const lastEmitRef = useRef<LessonSlide[]>(slides);
   const lastKeyRef = useRef<{ key: string; at: number; win?: number } | null>(null);
   if (slides !== lastEmitRef.current) {
-    pastRef.current = [];
+    // 빈 수업을 레시피로 채운 경우는 되돌리기로 빈 수업(레시피 고르기)으로 돌아갈 수 있게 남긴다.
+    const fromEmpty = lastEmitRef.current.length === 0 && slides.length > 0;
+    pastRef.current = fromEmpty ? [[]] : [];
     futureRef.current = [];
     lastKeyRef.current = null;
     lastEmitRef.current = slides;
   }
+  // 고른 슬라이드가 없어졌거나(레시피로 통째로 채움·되돌리기) 아직 없으면 첫 슬라이드를 고른다.
+  useEffect(() => {
+    if (!addMode && slides.length > 0 && !slides.some((sl) => sl.id === selectedId)) setSelectedId(slides[0].id);
+  }, [slides, selectedId, addMode]);
 
   function onChange(next: LessonSlide[], coalesceKey?: string) {
     const now = Date.now();
@@ -1810,7 +1816,7 @@ function ReadingSlideForm({
 }
 
 /** 문법 고르기(슬라이드 추가 패널) — 레벨 칩 + 목록, 누르면 바로 슬라이드가 된다. */
-function GrammarPickerPanel({ onPick }: { onPick: (grammarId: string) => void }) {
+export function GrammarPickerPanel({ onPick }: { onPick: (grammarId: string) => void }) {
   const { t } = useTranslation();
   const [stage, setStage] = useState<GrammarStage>('elementary');
   const [level, setLevel] = useState<number>(1);

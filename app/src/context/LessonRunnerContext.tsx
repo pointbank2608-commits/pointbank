@@ -1,4 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
+import { lessonViewChannel, lessonViewCreate, lessonViewEnd, lessonViewUpdate, type LessonViewSnapshot } from '../lib/lessonView';
+import { PresentSyncContext, type PresentSyncApi, type SubState } from '../lib/presentSync';
 import { decorThemeFor, TOPIC_TITLES } from '../lib/topicWorksheets';
 import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +40,10 @@ interface RunnerState {
   steps: RunnerStep[];
   stepIndex: number;
   returnToEdit?: boolean;
+  /** 학생 따라보기에 올릴 수업 묶음(슬라이드 + 수업 단어) — 시작할 때 만들어 둔다 */
+  viewSnapshot?: LessonViewSnapshot;
+  /** 켜 둔 학생 따라보기(온라인 수업) */
+  view?: { id: string; code: string };
 }
 
 interface RunnerValue {
@@ -59,6 +66,9 @@ interface RunnerValue {
    * PresentZoomArea 가 화면에 적용하고, LessonRunnerBar 가 버튼으로 조절한다. */
   zoom: PresentZoom;
   setZoom: (next: PresentZoom | ((prev: PresentZoom) => PresentZoom)) => void;
+  /** 학생 따라보기 링크 켜기/끄기(온라인·줌 수업) */
+  startView: () => Promise<void>;
+  stopView: () => Promise<void>;
 }
 
 export interface PresentZoom {
@@ -255,7 +265,15 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       if (steps.length === 0) return;
       const found = opts?.startSlideId ? steps.findIndex((s) => s.slideId === opts.startSlideId) : -1;
       const startIndex = found >= 0 ? found : 0;
-      setRunner({ lessonId: lesson.id, lessonName: lesson.name, classId, steps, stepIndex: startIndex, returnToEdit: !!opts?.returnToEdit });
+      setRunner({
+        lessonId: lesson.id,
+        lessonName: lesson.name,
+        classId,
+        steps,
+        stepIndex: startIndex,
+        returnToEdit: !!opts?.returnToEdit,
+        viewSnapshot: { slides: effectiveSlides(lesson), words: materialsWords },
+      });
       try {
         localStorage.setItem(ONBOARDING_PRESENTED_KEY, '1');
       } catch {
@@ -289,6 +307,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, [runner, goTo]);
 
   const exit = useCallback(() => {
+    if (runner?.view) void lessonViewEnd(runner.view.id);
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     // 편집 화면에서 시작한 발표면, 마지막으로 보던 슬라이드가 선택된 편집 화면으로 돌아간다.
     const back = runner?.returnToEdit
@@ -334,11 +353,81 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [runner, next, prev]);
 
+  /* ---------- 학생 따라보기(2026-09-27) ---------- */
+  const view = runner?.view ?? null;
+  const currentSlideId = runner ? runner.steps[runner.stepIndex]?.slideId ?? null : null;
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // 보드가 알린 마지막 단계(어느 슬라이드 것인지 같이) — 슬라이드가 바뀐 알림보다 새 보드의 첫 알림이 먼저 올 수 있어서
+  const subRef = useRef<{ slideId: string | null; sub: SubState } | null>(null);
+  const saveTimer = useRef<number | undefined>(undefined);
+
+  const startView = useCallback(async () => {
+    if (!runner || runner.view) return;
+    const row = await lessonViewCreate(runner.lessonName, runner.viewSnapshot ?? { slides: [], words: [] }, currentSlideId);
+    setRunner((r) => (r ? { ...r, view: row } : r));
+  }, [runner, currentSlideId]);
+
+  const stopView = useCallback(async () => {
+    if (!runner?.view) return;
+    const id = runner.view.id;
+    void channelRef.current?.send({ type: 'broadcast', event: 'state', payload: { ended: true } });
+    setRunner((r) => (r ? { ...r, view: undefined } : r));
+    await lessonViewEnd(id);
+  }, [runner]);
+
+  // 방송 채널(켜져 있는 동안)
+  useEffect(() => {
+    if (!view) return;
+    const ch = supabase.channel(lessonViewChannel(view.code));
+    ch.subscribe();
+    channelRef.current = ch;
+    return () => {
+      channelRef.current = null;
+      void supabase.removeChannel(ch);
+    };
+  }, [view?.code]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pushState = useCallback(
+    (slideId: string | null, sub: SubState, saveNow: boolean) => {
+      if (!view) return;
+      void channelRef.current?.send({ type: 'broadcast', event: 'state', payload: { slide_id: slideId, sub } });
+      window.clearTimeout(saveTimer.current);
+      const save = () => void lessonViewUpdate(view.id, slideId, sub);
+      if (saveNow) save();
+      else saveTimer.current = window.setTimeout(save, 500);
+    },
+    [view],
+  );
+
+  // 슬라이드를 넘기면 바로 알린다(단계는 새 슬라이드의 보드가 다시 알린다)
+  useEffect(() => {
+    if (!view) return;
+    const sub = subRef.current?.slideId === currentSlideId ? subRef.current.sub : null;
+    pushState(currentSlideId, sub, true);
+  }, [view, currentSlideId, runner?.stepIndex, pushState]);
+
+  const teacherSync = useMemo<PresentSyncApi | null>(
+    () =>
+      view
+        ? {
+            role: 'teacher',
+            remote: null,
+            report: (sub) => {
+              subRef.current = { slideId: currentSlideId, sub };
+              pushState(currentSlideId, sub, false);
+            },
+          }
+        : null,
+    [view, currentSlideId, pushState],
+  );
+
   return (
     <LessonRunnerContext.Provider
-      value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen, zoom, setZoom }}
+      value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
     >
+      <PresentSyncContext.Provider value={teacherSync}>
       {children}
+      </PresentSyncContext.Provider>
     </LessonRunnerContext.Provider>
   );
 }
