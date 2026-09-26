@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { WebSlide } from '../lib/types';
-import { openWebWindow, webSlideHost } from '../lib/webSlides';
+import { openWebWindow, webSlideHost, safeWebUrl } from '../lib/webSlides';
 
 /**
  * 웹페이지 슬라이드(캔바·E-book 등) 화면. 수업 중(LessonSlideViewerPage)과 편집 미리보기
@@ -12,14 +12,23 @@ import { openWebWindow, webSlideHost } from '../lib/webSlides';
  */
 export default function WebSlideView({ slide, fill }: { slide: WebSlide; fill: boolean }) {
   const { t } = useTranslation();
+  const safeUrl = safeWebUrl(slide.url);
   const host = webSlideHost(slide.url);
   const title = slide.title?.trim() || host;
+
+  if (!safeUrl) {
+    return (
+      <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-surface-container-low p-6 text-center font-body-md text-body-md text-on-surface-variant">
+        {t('curriculum.web.unsafeUrl')}
+      </div>
+    );
+  }
 
   if (slide.mode === 'embed') {
     return (
       <div className={fill ? 'absolute inset-0 flex flex-col p-2 md:p-3' : 'relative aspect-video w-full'}>
         <iframe
-          src={slide.url}
+          src={safeUrl}
           title={title}
           className={`${fill ? 'min-h-0 flex-1' : 'absolute inset-0 h-full'} w-full rounded-xl border-0 bg-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]`}
           allow="fullscreen; autoplay; clipboard-write; encrypted-media"

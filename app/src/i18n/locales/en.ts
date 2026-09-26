@@ -2005,7 +2005,7 @@ const en: Ko = {
     title: "Share lesson · {{name}}",
     intro: "Teachers who get the link can preview it and \"Import to my lessons\" to make their own copy. Changes stay separate.",
     includes: "Included: all slides, lesson word list, game content, uploaded pictures",
-    excludes: "Not included: student names, attendance, points (privacy)",
+    excludes: 'Not included: student roster, attendance, points (privacy), and game items that are your students\' names. Remove names typed on custom slides before sharing.',
     dropReading: "Leave out song/reading slides (lyrics and passages) — keep copyrighted text inside your own classes.",
     create: "Create share link",
     activeLinks: "Active links",
@@ -2339,6 +2339,7 @@ const en: Ko = {
       convertImage: 'Add text & pictures on top (make editable)',
     },
     web: {
+      unsafeUrl: 'This web address is not safe to open. Please re-enter it in the editor.',
       addIntro: 'Paste a Canva presentation or a publisher e-book address. Use it right inside the lesson without opening another browser.',
       urlPlaceholder: 'e.g. https://www.canva.com/design/…/view  or an e-book viewer address',
       titlePlaceholder: 'Slide name (optional) — e.g. Hi Five 1 Unit 3',

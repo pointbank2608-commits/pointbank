@@ -72,7 +72,23 @@ export function normalizeWebUrl(raw: string): NormalizedWebUrl | null {
 }
 
 /** 새 창으로 열 때 — 같은 이름의 창을 재사용해 여러 번 눌러도 창이 쌓이지 않게, 화면을 거의 채우는 크기로. */
+/** 화면에 띄우거나 새 창으로 열어도 되는 주소인지(http/https 만) — 2026-09-27 보안 점검.
+ * 슬라이드 주소는 만들 때 normalizeWebUrl 로 검사하지만, 공유받은 수업·직접 조작한 데이터에는 javascript: 같은
+ * 주소가 들어올 수 있어서 띄우는 순간에도 다시 확인한다(우리 사이트 안에서 코드가 실행되지 않게). */
+export function safeWebUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function openWebWindow(url: string): Window | null {
+  const safe = safeWebUrl(url);
+  if (!safe) return null;
+  url = safe;
   const w = Math.round(window.screen.availWidth * 0.95);
   const h = Math.round(window.screen.availHeight * 0.95);
   const left = Math.round((window.screen.availWidth - w) / 2);

@@ -1,4 +1,5 @@
-import { createCurriculumLesson, createGameTemplate, createWordList, fetchGameTemplateById } from './api';
+import { createCurriculumLesson, createGameTemplate, createWordList, fetchGameTemplateById, fetchStudentsOfAcademy } from './api';
+import { normalizeWebUrl, safeWebUrl } from './webSlides';
 import { effectiveSlides } from './lessonSlides';
 import { supabase } from './supabase';
 import type { CurriculumLesson, GameItem, GameTemplateConfig, GameType, LessonSlide, WordList, WordListItem } from './types';
@@ -35,12 +36,24 @@ export async function buildShareSnapshot(
   opts: { dropReading: boolean },
 ): Promise<LessonShareSnapshot> {
   const slides = effectiveSlides(lesson).filter((s) => !(opts.dropReading && s.kind === 'reading'));
+  // 돌림판·사다리처럼 게임 항목이 학생 이름인 경우가 많다 — 우리 학원 학생 이름과 같은 항목은 빼고 보낸다(개인정보).
+  let studentNames = new Set<string>();
+  try {
+    studentNames = new Set((await fetchStudentsOfAcademy(lesson.academy_id)).map((st) => st.name.trim().toLowerCase()).filter(Boolean));
+  } catch {
+    /* 명단을 못 읽으면 아래에서 항목을 그대로 두지 않고 게임 내용을 통째로 뺀다 */
+    studentNames = new Set(['*']);
+  }
+  const isStudentName = (label: string) => studentNames.has('*') || studentNames.has(label.trim().toLowerCase());
   const templates: LessonShareSnapshot['templates'] = {};
   for (const s of slides) {
     if (s.kind !== 'game' || !s.templateId || templates[s.templateId]) continue;
     try {
       const tpl = await fetchGameTemplateById(s.templateId);
-      templates[s.templateId] = { game_type: tpl.game_type, name: tpl.name, items: tpl.items, config: tpl.config };
+      const items = tpl.items.filter((it) => !isStudentName(it.label));
+      // 항목이 학생 이름뿐이었으면 게임 내용은 빼고 보낸다(받은 쪽이 저장할 때 단어장으로 다시 만든다)
+      if (tpl.items.length > 0 && items.length === 0) continue;
+      templates[s.templateId] = { game_type: tpl.game_type, name: tpl.name, items, config: tpl.config };
     } catch {
       /* 지워진 게임 내용 — 받은 쪽에서 저장할 때 단어장으로 다시 만든다 */
     }
@@ -115,11 +128,19 @@ export async function importSharedLesson(
       /* 하나가 실패해도 수업은 가져온다 — 그 게임 슬라이드는 저장할 때 단어장으로 다시 만들 수 있다 */
     }
   }
-  const slides: LessonSlide[] = snapshot.lesson.slides.map((s) =>
-    s.kind === 'game'
-      ? { ...s, id: crypto.randomUUID(), templateId: s.templateId ? templateMap.get(s.templateId) : undefined }
-      : { ...s, id: crypto.randomUUID() },
-  );
+  const slides: LessonSlide[] = [];
+  for (const s of snapshot.lesson.slides ?? []) {
+    if (s.kind === 'web') {
+      // 다른 학원이 만든 묶음이라 주소를 다시 확인(javascript: 등은 버린다)
+      const safe = safeWebUrl(s.url) ? normalizeWebUrl(s.url) : null;
+      if (!safe) continue;
+      slides.push({ ...s, id: crypto.randomUUID(), url: safe.url });
+    } else if (s.kind === 'game') {
+      slides.push({ ...s, id: crypto.randomUUID(), templateId: s.templateId ? templateMap.get(s.templateId) : undefined });
+    } else {
+      slides.push({ ...s, id: crypto.randomUUID() });
+    }
+  }
   return createCurriculumLesson({
     academyId,
     classId,
