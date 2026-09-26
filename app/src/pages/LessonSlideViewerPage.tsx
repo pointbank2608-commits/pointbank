@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import WordShowBoard from '../components/WordShowBoard';
+import AttendanceBoard from '../components/AttendanceBoard';
+import { useAuth } from '../context/AuthContext';
+import { useLessonRunner } from '../context/LessonRunnerContext';
+import { usePhonicsFilled } from '../lib/phonicsFill';
+import PhonicsMarkedWord from '../components/PhonicsMarkedWord';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import CanvasSlideView from '../components/CanvasSlideView';
@@ -25,21 +31,27 @@ export default function LessonSlideViewerPage() {
   const { id, slideId } = useParams<{ id: string; slideId: string }>();
   const { notify } = useToast();
   const isPresenting = usePresenting();
+  const { academy, profile } = useAuth();
+  const runnerClassId = useLessonRunner().runner?.classId ?? null;
   const location = useLocation();
   // "카드로 외우기" 슬라이드의 카드 — 발표 러너가 수업 단어장을 navigation state 로 넘겨준다.
   const stateWords = useMemo(() => wordsFromLocationState(location.state), [location.state]);
   const grammarCards = useGrammarCards(stateWords);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 state 가 바뀔 때만 만든다.
+  const studyWords = usePhonicsFilled(stateWords);
   const studyCards = useMemo(
     () =>
-      wordsFromLocationState(location.state).map((w) => ({
+      studyWords.map((w) => ({
         id: w.id,
         word: w.word,
         back: w.meaning,
         example: w.example ?? null,
         image_url: w.imageUrl,
+        front: w.patternMarked ? (
+          <PhonicsMarkedWord pattern={w.patternMarked} className="font-title-md text-[clamp(48px,9vw,112px)] font-bold text-deep-navy" />
+        ) : undefined,
       })),
-    [location.state],
+    [studyWords],
   );
 
   const [lesson, setLesson] = useState<CurriculumLesson | null>(null);
@@ -109,6 +121,35 @@ export default function LessonSlideViewerPage() {
           themeId={slide.boardTheme ?? 'green'}
           initialShowKo={!!slide.showKo}
           initialRevealAll={!!slide.revealAll}
+        />
+      </div>
+    );
+  }
+
+  if (slide.kind === 'wordshow') {
+    return (
+      <div className={isPresenting ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
+        <WordShowBoard
+          key={slide.id}
+          words={stateWords}
+          themeId={slide.boardTheme ?? 'green'}
+          interactive
+          shuffle={!!slide.shuffle}
+          autoSpeak={slide.autoSpeak !== false}
+        />
+      </div>
+    );
+  }
+
+  if (slide.kind === 'attendance') {
+    return (
+      <div className={isPresenting ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
+        <AttendanceBoard
+          academyId={academy?.id ?? ''}
+          classId={runnerClassId ?? lesson?.class_id ?? null}
+          teacherId={profile?.id ?? null}
+          themeId={slide.boardTheme ?? 'green'}
+          interactive
         />
       </div>
     );

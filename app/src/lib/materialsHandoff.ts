@@ -1,4 +1,4 @@
-import type { FullCardItem, WorksheetSlideOptions } from './types';
+import type { FullCardItem, WorksheetSlideOptions, PhonicsSlideOptions } from './types';
 
 /**
  * 사전·파닉스·내 단어장에서 고른 단어를 수업 자료실 페이지로 넘길 때 쓰는 라우터 state 모양.
@@ -20,6 +20,8 @@ export interface MaterialsHandoffState {
   materialsDecorTheme?: string | null;
   /** 파닉스 워크시트 페이지가 처음에 골라 둘 phonics_bank 단어 id(파닉스 선택 바에서 넘어올 때). */
   phonicsWordIds?: string[];
+  /** 수업 파닉스 워크시트 슬라이드의 옵션(유형은 materialsTab). */
+  phonicsOptions?: PhonicsSlideOptions;
 }
 
 /** 자료실 페이지가 마운트될 때 useState 초기값으로 쓴다(선택 없이 직접 들어오면 빈 배열). */

@@ -13,6 +13,7 @@ export function wordListToCards(wordList: WordList | null | undefined): FullCard
     imageUrl: item.image_url,
     category: item.category,
     partOfSpeech: item.partOfSpeech ?? null,
+    patternMarked: item.patternMarked ?? null,
   }));
 }
 
@@ -24,6 +25,7 @@ function cardsToWordListItems(words: FullCardItem[]): WordListItem[] {
     image_url: w.imageUrl,
     category: w.category ?? null,
     partOfSpeech: w.partOfSpeech ?? null,
+    patternMarked: w.patternMarked ?? null,
   }));
 }
 

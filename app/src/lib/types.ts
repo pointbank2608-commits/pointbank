@@ -518,6 +518,8 @@ export interface WordListItem {
   category: string | null;
   /** "사전에서 선택"으로 담았을 때만 채워짐(word_bank.part_of_speech 복사). 수박 문장 게임 자리 자동 부여에 씀. */
   partOfSpeech?: string | null;
+  /** 파닉스에서 담았을 때만(phonics_bank.pattern_marked 복사, 예: "r{ai}n") — 수업 카드의 규칙 글자 강조·파닉스 워크시트가 쓴다. */
+  patternMarked?: string | null;
 }
 
 export interface WordList {
@@ -592,6 +594,21 @@ export interface MaterialSlide {
   worksheetOptions?: WorksheetSlideOptions;
   /** 발표 중 워크시트 화면 바탕(칠판·화이트보드 등, lib/boardThemes.ts). 없으면 앱 기본 바탕. */
   boardTheme?: string | null;
+  /** 이 슬라이드만의 단어(주제별 워크시트는 사전 주제에서, 파닉스 워크시트는 파닉스 단계에서 고른 것).
+   * 있으면 수업 단어장 대신 쓴다(2026-09-27). 고른 그대로 저장해 두어 발표 때 다시 찾지 않는다. */
+  words?: FullCardItem[];
+  /** 주제별 워크시트의 주제(사전 카테고리) — 색칠하기 제목·장식 주제에 쓴다. */
+  topic?: string;
+  /** 파닉스 워크시트(materialId 'phonics') 유형과 옵션 — 발표 중엔 고르는 화면 없이 이대로 나온다. */
+  phonicsTab?: string;
+  phonicsOptions?: PhonicsSlideOptions;
+}
+
+export interface PhonicsSlideOptions {
+  includeAnswers?: boolean;
+  cuteColor?: boolean;
+  showMeaning?: boolean;
+  showImage?: boolean;
 }
 
 /** 외부 웹페이지(캔바 프레젠테이션·출판사 E-book 등) 슬라이드. mode:
@@ -685,7 +702,35 @@ export interface ReadingSlide {
   boardTheme?: string | null;
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide | StudySlide | GrammarSlide | ReadingSlide;
+/** "단어 소개" 슬라이드(2026-09-27) — 수업 단어장의 단어를 사전 카드처럼 칠판에 크게, 한 단계씩(그림 → 단어 → 뜻 → 예문). */
+export interface WordShowSlide {
+  id: string;
+  kind: 'wordshow';
+  shuffle?: boolean;
+  /** 단어가 나올 때 한 번 읽어 주기(기본 켬) */
+  autoSpeak?: boolean;
+  boardTheme?: string | null;
+}
+
+/** "출석 체크" 슬라이드(2026-09-27) — 이름을 누르면 학생관리 출석부에 오늘 등원으로 기록. */
+export interface AttendanceSlide {
+  id: string;
+  kind: 'attendance';
+  boardTheme?: string | null;
+}
+
+export type LessonSlide =
+  | ImageSlide
+  | VideoSlide
+  | GameSlide
+  | MaterialSlide
+  | WebSlide
+  | CanvasSlide
+  | StudySlide
+  | GrammarSlide
+  | ReadingSlide
+  | WordShowSlide
+  | AttendanceSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

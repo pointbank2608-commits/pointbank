@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import LessonWordListModal from '../components/LessonWordListModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
@@ -72,6 +73,11 @@ export default function CurriculumPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [wordListId, setWordListId] = useState('');
+  // 수업 화면 안에서 단어장 만들기·고치기(LessonWordListModal). listId 가 있으면 그 단어장 편집.
+  const [wordListModal, setWordListModal] = useState<{ listId: string | null } | null>(null);
+  function openWordListModal(mode: 'new' | 'edit') {
+    setWordListModal({ listId: mode === 'edit' && wordListId ? wordListId : null });
+  }
   const [videoUrl, setVideoUrl] = useState('');
   const [level, setLevel] = useState('');
   // 편집 중인 레슨의 반(없으면 지금 보고 있는 반) — 게임 내용(템플릿)을 이 반 것으로 고르고 만든다.
@@ -514,6 +520,25 @@ export default function CurriculumPage() {
                   </option>
                 ))}
               </select>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => openWordListModal('new')}
+                  className="flex items-center gap-1 rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary-fixed"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  {t('curriculum.wordListTools.newButton')}
+                </button>
+                <button
+                  type="button"
+                  disabled={!wordListId}
+                  onClick={() => openWordListModal('edit')}
+                  className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary disabled:opacity-40"
+                >
+                  <span className="material-symbols-outlined text-[16px]">edit</span>
+                  {t('curriculum.wordListTools.editButton')}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -563,8 +588,27 @@ export default function CurriculumPage() {
                 wordListId={wordListId}
                 wordLists={wordLists}
                 onWordListChange={setWordListId}
+                onManageWordList={openWordListModal}
                 initialSelectedId={reopenSlideId}
                 onPresentFrom={(id) => void handlePresentFrom(id)}
+              />
+            )}
+            {wordListModal && academy?.id && profile && (
+              <LessonWordListModal
+                academyId={academy.id}
+                classId={formClassId ?? staffClassId}
+                teacherId={profile.id}
+                list={wordLists.find((wl) => wl.id === wordListModal.listId) ?? null}
+                defaultName={t('curriculum.wordListTools.defaultName', { name: name.trim() || t('curriculum.wordListTools.untitled') })}
+                onClose={() => setWordListModal(null)}
+                onCreated={(list) => {
+                  setWordLists((prev) => [...prev, list]);
+                  setWordListId(list.id);
+                  setWordListModal({ listId: list.id });
+                }}
+                onItemsChange={(listId, items) =>
+                  setWordLists((prev) => prev.map((wl) => (wl.id === listId ? { ...wl, items } : wl)))
+                }
               />
             )}
           </div>
@@ -692,6 +736,8 @@ export default function CurriculumPage() {
                   if (slide.kind === 'image') icon = 'image';
                   else if (slide.kind === 'canvas') icon = 'dashboard_customize';
                   else if (slide.kind === 'study') icon = 'style';
+                  else if (slide.kind === 'wordshow') icon = 'menu_book';
+                  else if (slide.kind === 'attendance') icon = 'how_to_reg';
                   else if (slide.kind === 'grammar') icon = 'rule';
                   else if (slide.kind === 'reading') icon = slide.mode === 'cloze' ? 'hearing' : 'lyrics';
                   else if (slide.kind === 'video') icon = 'smart_display';

@@ -7,6 +7,10 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core';
+import WordShowBoard from './WordShowBoard';
+import AttendanceBoard from './AttendanceBoard';
+import { PhonicsOptionsFields, phonicsTabLabel, WordSourcePicker } from './LessonWordSources';
+import { PHONICS_SLIDE_TABS } from '../pages/PhonicsWorksheetLibraryPage';
 import {
   arrayMove,
   SortableContext,
@@ -15,7 +19,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -121,6 +125,8 @@ interface Props {
   initialSelectedId?: string | null;
   /** "이 슬라이드부터 발표" — 저장하고 그 슬라이드부터 수업을 시작한다(CurriculumPage). */
   onPresentFrom?: (slideId: string) => void;
+  /** 수업 화면 안에서 단어장 만들기·고치기 창 열기(CurriculumPage 의 LessonWordListModal). */
+  onManageWordList?: (mode: 'new' | 'edit') => void;
 }
 
 /** 게임 슬라이드가 발표 때 열 내용이 정해졌는지 — 템플릿을 골랐거나, 저장할 때 수업 단어장으로
@@ -129,7 +135,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'grammar' | 'reading' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -144,6 +150,7 @@ export default function LessonSlideSorter({
   onWordListChange,
   initialSelectedId,
   onPresentFrom,
+  onManageWordList,
 }: Props) {
   const { t } = useTranslation();
   const { notify } = useToast();
@@ -160,6 +167,8 @@ export default function LessonSlideSorter({
   // 새 워크시트 슬라이드의 발표 화면 바탕 — 앱 기본 파란 바탕은 글이 잘 안 읽혀서 화이트보드로 시작.
   const [worksheetDraftBoard, setWorksheetDraftBoard] = useState<string | null>('whiteboard');
   const [canvasDraftTheme, setCanvasDraftTheme] = useState<string | null>(null);
+  // 새 워크시트 슬라이드의 단어 — 비어 있으면 수업 단어장, 있으면 주제에서 고른 단어(2026-09-27)
+  const [worksheetDraftWords, setWorksheetDraftWords] = useState<{ words?: FullCardItem[]; topic?: string }>({});
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -381,7 +390,13 @@ export default function LessonSlideSorter({
     setAddMode(null);
   }
 
-  function addMaterialSlide(materialId: string, worksheetTab?: string, worksheetOptions?: WorksheetSlideOptions, boardTheme?: string | null) {
+  function addMaterialSlide(
+    materialId: string,
+    worksheetTab?: string,
+    worksheetOptions?: WorksheetSlideOptions,
+    boardTheme?: string | null,
+    extra?: Partial<MaterialSlide>,
+  ) {
     addSlide({
       id: uid(),
       kind: 'material',
@@ -389,20 +404,22 @@ export default function LessonSlideSorter({
       ...(worksheetTab ? { worksheetTab } : {}),
       ...(worksheetOptions ? { worksheetOptions } : {}),
       ...(boardTheme ? { boardTheme } : {}),
+      ...(extra ?? {}),
     });
   }
 
   return (
+    <WordListManageContext.Provider value={onManageWordList}>
     <div className="flex flex-col gap-4 lg:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
       <div className="flex shrink-0 flex-row gap-2 overflow-x-auto pb-2 lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start">
-        <div className="flex shrink-0 gap-1 lg:w-full">
+        <div className="flex shrink-0 flex-col justify-center gap-1 self-center lg:w-full lg:flex-row lg:self-auto">
           <button
             type="button"
             onClick={undoSlides}
             disabled={!canUndo}
             title={t('curriculum.slides.undoHint')}
-            className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35"
+            className="flex items-center justify-center gap-1 whitespace-nowrap rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35 lg:flex-1"
           >
             <span className="material-symbols-outlined text-[18px]">undo</span>
             {t('curriculum.slides.undo')}
@@ -412,7 +429,7 @@ export default function LessonSlideSorter({
             onClick={redoSlides}
             disabled={!canRedo}
             title={t('curriculum.slides.redoHint')}
-            className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35"
+            className="flex items-center justify-center gap-1 whitespace-nowrap rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35 lg:flex-1"
           >
             <span className="material-symbols-outlined text-[18px]">redo</span>
             {t('curriculum.slides.redo')}
@@ -471,7 +488,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'web', 'reading', 'study', 'grammar', 'game', 'material'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'web', 'reading', 'wordshow', 'study', 'grammar', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -522,6 +539,53 @@ export default function LessonSlideSorter({
                   setAddMode(null);
                 }}
               />
+            )}
+
+            {addMode === 'wordshow' && (
+              <div className="space-y-3">
+                <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.wordShow.addIntro')}</p>
+                <div className="aspect-video w-full max-w-2xl">
+                  <WordShowBoard words={cards} themeId={canvasDraftTheme ?? 'green'} interactive={false} />
+                </div>
+                <BoardThemeChips value={canvasDraftTheme ?? 'green'} onChange={(th) => setCanvasDraftTheme(th?.id ?? null)} />
+                <div className="flex flex-wrap items-center gap-3">
+                  <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+                  <button
+                    type="button"
+                    disabled={cards.length === 0}
+                    onClick={() => {
+                      addSlide({ id: uid(), kind: 'wordshow', boardTheme: canvasDraftTheme ?? 'green' });
+                      setAddMode(null);
+                    }}
+                    className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                    {t('curriculum.wordShow.addButton')}
+                  </button>
+                </div>
+                {cards.length === 0 && <p className="font-caption text-caption text-error">{t('curriculum.study.needWordList')}</p>}
+              </div>
+            )}
+
+            {addMode === 'attendance' && (
+              <div className="space-y-3">
+                <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.attendance.addIntro')}</p>
+                <div className="aspect-video w-full max-w-2xl">
+                  <AttendanceBoard academyId={academyId} classId={classId} teacherId={null} themeId={canvasDraftTheme ?? 'green'} interactive={false} />
+                </div>
+                <BoardThemeChips value={canvasDraftTheme ?? 'green'} onChange={(th) => setCanvasDraftTheme(th?.id ?? null)} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSlide({ id: uid(), kind: 'attendance', boardTheme: canvasDraftTheme ?? 'green' });
+                    setAddMode(null);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  {t('curriculum.attendance.addButton')}
+                </button>
+              </div>
             )}
 
             {addMode === 'study' && (
@@ -706,11 +770,17 @@ export default function LessonSlideSorter({
                   {t('curriculum.slides.onScreenFlashcards')}
                 </button>
                 <div className="flex flex-wrap gap-1.5">
-                  {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet').map((m) => (
+                  {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet' && m.id !== 'library').map((m) => (
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => addMaterialSlide(m.id)}
+                      onClick={() => {
+                        if (m.id === 'phonics') {
+                          // 파닉스 워크시트는 유형·단어를 슬라이드에서 정한다 — 바로 설정 화면으로
+                          addMaterialSlide('phonics', undefined, undefined, null, { phonicsTab: 'phonicsBlank' });
+                          setAddMode(null);
+                        } else addMaterialSlide(m.id);
+                      }}
                       className="flex items-center gap-1 rounded-full bg-surface-container-low px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-secondary-container/40"
                     >
                       <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
@@ -750,17 +820,26 @@ export default function LessonSlideSorter({
                           </div>
                         </div>
                         <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">
-                          {t('curriculum.slides.previewWordCount', { count: cards.length })}
+                          {t('curriculum.slides.previewWordCount', { count: (worksheetDraftWords.words?.length ? worksheetDraftWords.words : cards).length })}
                         </span>
                       </div>
                       <WorksheetTypePreview
                         tab={worksheetDraftTab}
-                        words={cards}
+                        words={(worksheetDraftWords.words?.length ? worksheetDraftWords.words : cards)}
                         title={t(`materials.worksheet.${WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === worksheetDraftTab)?.labelKey ?? 'tabList'}`)}
                         compact
                         boardTheme={worksheetDraftBoard}
                       />
-                      {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+                      {(worksheetDraftWords.words?.length ? worksheetDraftWords.words : cards).length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+                      <div className="mt-3">
+                        <WordSourcePicker
+                          kind="topic"
+                          lessonCount={cards.length}
+                          words={worksheetDraftWords.words}
+                          topic={worksheetDraftWords.topic}
+                          onChange={setWorksheetDraftWords}
+                        />
+                      </div>
                       <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
                         <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
                         <BoardThemeChips value={worksheetDraftBoard} onChange={(th) => setWorksheetDraftBoard(th?.id ?? null)} noneLabel={t('curriculum.board.none')} />
@@ -789,7 +868,16 @@ export default function LessonSlideSorter({
                       </div>
                       <button
                         type="button"
-                        onClick={() => addMaterialSlide('worksheet', worksheetDraftTab, slideOptionsFromState(worksheetDraftOptions), worksheetDraftBoard)}
+                        onClick={() => {
+                          addMaterialSlide(
+                            'worksheet',
+                            worksheetDraftTab,
+                            slideOptionsFromState(worksheetDraftOptions),
+                            worksheetDraftBoard,
+                            worksheetDraftWords.words?.length ? { words: worksheetDraftWords.words, topic: worksheetDraftWords.topic } : undefined,
+                          );
+                          setWorksheetDraftWords({});
+                        }}
                         className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-lg text-label-lg text-on-primary shadow-sm transition-colors hover:bg-primary-container"
                       >
                         <span className="material-symbols-outlined text-[20px]">add_circle</span>
@@ -864,12 +952,15 @@ export default function LessonSlideSorter({
           ))}
       </div>
     </div>
+    </WordListManageContext.Provider>
   );
 }
 
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
+  if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
+  if (slide.kind === 'attendance') return { icon: 'how_to_reg', label: t('curriculum.slides.kindAttendance') };
   if (slide.kind === 'reading')
     return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: slide.title?.trim() || t('curriculum.reading.defaultTitle') };
   if (slide.kind === 'grammar') return { icon: 'rule', label: grammarPoint(slide.grammarId)?.name ?? t('curriculum.slides.kindGrammar') };
@@ -1064,6 +1155,47 @@ function SlideDetail({
     );
   }
 
+  if (slide.kind === 'wordshow') {
+    return (
+      <div className="space-y-3">
+        <div className="aspect-video w-full max-w-3xl">
+          <WordShowBoard words={cards} themeId={slide.boardTheme ?? 'green'} interactive={false} />
+        </div>
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: cards.length })}</p>
+        <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
+            <input type="checkbox" checked={!!slide.shuffle} onChange={(e) => onUpdate({ shuffle: e.target.checked } as Partial<LessonSlide>)} className="h-4 w-4 accent-primary" />
+            {t('curriculum.study.shuffle')}
+          </label>
+          <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
+            <input
+              type="checkbox"
+              checked={slide.autoSpeak !== false}
+              onChange={(e) => onUpdate({ autoSpeak: e.target.checked } as Partial<LessonSlide>)}
+              className="h-4 w-4 accent-primary"
+            />
+            {t('curriculum.wordShow.autoSpeak')}
+          </label>
+        </div>
+        <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+        {cards.length === 0 && <p className="font-caption text-caption text-error">{t('curriculum.study.needWordList')}</p>}
+      </div>
+    );
+  }
+
+  if (slide.kind === 'attendance') {
+    return (
+      <div className="space-y-3">
+        <div className="aspect-video w-full max-w-3xl">
+          <AttendanceBoard academyId={academyId} classId={classId} teacherId={null} themeId={slide.boardTheme ?? 'green'} interactive={false} />
+        </div>
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.attendance.detailHint')}</p>
+        <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
+      </div>
+    );
+  }
+
   if (slide.kind === 'study') {
     return (
       <div className="space-y-3">
@@ -1172,7 +1304,12 @@ function SlideDetail({
   }
 
   // material slide
+  if (slide.materialId === 'phonics') {
+    return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
+  }
   const material = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
+  // 이 슬라이드만의 단어(주제에서 고른 것)가 있으면 그걸로 미리보기
+  const wsWords = slide.words && slide.words.length > 0 ? slide.words : cards;
   const worksheet = slide.materialId === 'worksheet'
     ? WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab) ?? WORKSHEET_TAB_CATALOG[0]
     : null;
@@ -1190,15 +1327,24 @@ function SlideDetail({
               <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
               <div className="font-title-sm text-title-sm font-bold text-on-surface">{t(`materials.worksheet.${worksheet.labelKey}`)}</div>
             </div>
-            <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">{t('curriculum.slides.previewWordCount', { count: cards.length })}</span>
+            <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">{t('curriculum.slides.previewWordCount', { count: wsWords.length })}</span>
           </div>
           <WorksheetTypePreview
             tab={worksheet.tab}
-            words={cards}
+            words={wsWords}
             title={t(`materials.worksheet.${worksheet.labelKey}`)}
             boardTheme={slide.boardTheme ?? null}
           />
-          {cards.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+          {wsWords.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
+          <div className="mt-3">
+            <WordSourcePicker
+              kind="topic"
+              lessonCount={cards.length}
+              words={slide.words}
+              topic={slide.topic}
+              onChange={(next) => onUpdate({ words: next.words, topic: next.topic } as Partial<MaterialSlide>)}
+            />
+          </div>
           <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
             <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
             <BoardThemeChips
@@ -1217,11 +1363,17 @@ function SlideDetail({
       <div>
         <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeMaterial')}</div>
         <div className="flex flex-wrap gap-1.5">
-          {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet').map((m) => (
+          {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet' && m.id !== 'library').map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => onUpdate({ materialId: m.id, worksheetTab: undefined } as Partial<MaterialSlide>)}
+              onClick={() =>
+                onUpdate(
+                  (m.id === 'phonics'
+                    ? { materialId: m.id, worksheetTab: undefined, phonicsTab: slide.phonicsTab ?? 'phonicsBlank', words: undefined, topic: undefined }
+                    : { materialId: m.id, worksheetTab: undefined }) as Partial<MaterialSlide>,
+                )
+              }
               className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
                 slide.materialId === m.id
                   ? 'bg-primary text-on-primary'
@@ -1261,7 +1413,7 @@ function SlideDetail({
           <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.worksheetOptionsTitle')}</div>
           <WorksheetOptionsFields
             tab={worksheet.tab}
-            hasWords={cards.length > 0}
+            hasWords={wsWords.length > 0}
             listShow={worksheetOptionsState.listShow}
             onListShowChange={(key, value) => updateWorksheetOptions({ listShow: { ...worksheetOptionsState.listShow, [key]: value } })}
             tracingShow={worksheetOptionsState.tracingShow}
@@ -1921,6 +2073,7 @@ function WordListSelect({
   onWordListChange: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const onManage = useContext(WordListManageContext);
   return (
     <div>
       <label className="mb-1.5 block font-label-md text-label-md text-on-surface-variant">
@@ -1938,6 +2091,85 @@ function WordListSelect({
           </option>
         ))}
       </select>
+      {onManage && (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => onManage('new')}
+            className="flex items-center gap-1 rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary-fixed"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            {t('curriculum.wordListTools.newButton')}
+          </button>
+          <button
+            type="button"
+            disabled={!wordListId}
+            onClick={() => onManage('edit')}
+            className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary disabled:opacity-40"
+          >
+            <span className="material-symbols-outlined text-[16px]">edit</span>
+            {t('curriculum.wordListTools.editButton')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 슬라이드 패널 곳곳의 단어장 고르기 옆 "새 단어장·단어 고치기" 버튼이 쓰는 창 열기 함수. */
+const WordListManageContext = createContext<((mode: 'new' | 'edit') => void) | undefined>(undefined);
+
+/** 파닉스 워크시트 슬라이드 설정(2026-09-27) — 유형·단어(수업 단어장 또는 파닉스 단계)·옵션을 미리 정해 두면
+ * 발표 중엔 파닉스 워크시트 페이지가 고르는 화면 없이 이대로 보여 준다. */
+function PhonicsSlideDetail({
+  slide,
+  cards,
+  onUpdate,
+}: {
+  slide: MaterialSlide;
+  cards: FullCardItem[];
+  onUpdate: (patch: Partial<MaterialSlide>) => void;
+}) {
+  const { t } = useTranslation();
+  const tab = slide.phonicsTab ?? 'phonicsBlank';
+  const own = slide.words && slide.words.length > 0;
+  const lessonPhonics = cards.filter((c) => c.patternMarked).length;
+  return (
+    <div className="space-y-4">
+      <PreviewFrame title={`${t('materials.phonicsLibraryName')} · ${phonicsTabLabel(tab, t)}`}>
+        <span className="material-symbols-outlined text-6xl text-primary">abc</span>
+      </PreviewFrame>
+      <div>
+        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.wordSource.phonicsType')}</div>
+        <div className="flex flex-wrap gap-1.5">
+          {PHONICS_SLIDE_TABS.map((pt) => (
+            <button
+              key={pt}
+              type="button"
+              onClick={() => onUpdate({ phonicsTab: pt })}
+              className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                tab === pt ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
+              }`}
+            >
+              {phonicsTabLabel(pt, t)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <WordSourcePicker
+        kind="phonics"
+        lessonCount={cards.length}
+        words={slide.words}
+        onChange={(next) => onUpdate({ words: next.words, topic: undefined })}
+      />
+      {!own && cards.length > 0 && lessonPhonics === 0 && (
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordSource.lessonNotPhonics')}</p>
+      )}
+      <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+        <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.worksheetOptionsTitle')}</div>
+        <PhonicsOptionsFields value={slide.phonicsOptions ?? {}} onChange={(phonicsOptions) => onUpdate({ phonicsOptions })} />
+      </div>
+      <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordSource.phonicsPresentHint')}</p>
     </div>
   );
 }

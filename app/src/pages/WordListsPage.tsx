@@ -33,7 +33,7 @@ function uid(): string {
  * 그룹화에도 그대로 쓸 수 있어 덤으로 유용하다. */
 function toWordListDraft(entry: WordBankEntry | PhonicsBankEntry): Omit<WordListItem, 'id'> {
   if ('rule' in entry) {
-    return { word: entry.word, meaning: entry.meaning ?? '', image_url: entry.image_url, category: entry.rule, partOfSpeech: null };
+    return { word: entry.word, meaning: entry.meaning ?? '', image_url: entry.image_url, category: entry.rule, partOfSpeech: null, patternMarked: entry.pattern_marked };
   }
   return { word: entry.word, meaning: entry.meaning, image_url: entry.image_url, category: entry.category, partOfSpeech: entry.part_of_speech };
 }

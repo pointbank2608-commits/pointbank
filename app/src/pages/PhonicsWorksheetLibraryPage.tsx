@@ -5,7 +5,10 @@ import { PhonicsListCute, PhonicsTracingCute, ReaderCute, type ReaderImageMode }
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { fetchPhonicsBank } from '../lib/api';
 import { CVC_READERS, parseCustomReaders, readerCardFromBank, readerIdsForWords } from '../lib/cvcReaders';
-import { handoffFromLocationState } from '../lib/materialsHandoff';
+import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
+import { fillPhonicsMarks } from '../lib/phonicsFill';
+import { usePresenting } from '../context/LessonRunnerContext';
+import PresentPrintBar from '../components/PresentPrintBar';
 import { markedGroups, parsePattern } from '../lib/phonicsPattern';
 import { worksheetSupport } from '../lib/topicWorksheets';
 import {
@@ -90,6 +93,22 @@ interface TypeCard {
 
 /** 파닉스 워크시트 페이지가 직접 그리는 유형(나머지는 WorksheetSheets 가 그린다). */
 const OWN_TABS = ['phonicsList', 'phonicsTracing', 'phonicsReader'] as const;
+/** 파닉스 워크시트 유형(아래 cards 의 tab 과 같은 순서) — 수업 슬라이드 편집 화면도 이 목록을 쓴다. */
+export const PHONICS_SLIDE_TABS = [
+  'phonicsBlank',
+  'phonicsCircle',
+  'grouping',
+  'phonicsOdd',
+  'phonicsRhyme',
+  'match',
+  'wordSearch',
+  'unscramble',
+  'phonicsReader',
+  'phonicsTracing',
+  'coloring',
+  'phonicsList',
+] as const;
+const cards0: readonly string[] = PHONICS_SLIDE_TABS;
 
 function chip(active: boolean): string {
   return `rounded-full px-4 py-1.5 font-label-md text-label-md transition-colors ${
@@ -105,6 +124,8 @@ export default function PhonicsWorksheetLibraryPage() {
   const { t } = useTranslation();
   const location = useLocation();
   const [entries, setEntries] = useState<PhonicsBankEntry[] | null>(null);
+  // 수업 발표 중: 고르는 화면·옵션 없이 슬라이드에서 정해 둔 워크시트 + 인쇄 바만(다른 자료실 페이지와 같게)
+  const locked = usePresenting();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1);
   const [rules, setRules] = useState<string[]>([]);
@@ -165,20 +186,60 @@ export default function PhonicsWorksheetLibraryPage() {
     recommend(inStep.filter((e) => firstRules.includes(e.rule)), count, 1);
   }
 
-  // 데이터가 처음 올 때: 파닉스 선택 바에서 넘어왔으면 그 단어로, 아니면 1단계 추천으로 시작한다.
+  /** 넘어온 단어(파닉스 선택 바의 id, 또는 수업 슬라이드·단어장의 단어) → 파닉스 자료의 항목. */
+  function entriesFromHandoff(list: PhonicsBankEntry[]): PhonicsBankEntry[] {
+    const handoff = handoffFromLocationState(location.state);
+    const ids = handoff.phonicsWordIds ?? [];
+    const byIds = ids.map((id) => list.find((e) => e.id === id)).filter((e): e is PhonicsBankEntry => !!e);
+    if (byIds.length > 0) return byIds;
+    // 수업 단어장·슬라이드 단어: 같은 낱말(규칙까지 같으면 그것)을 파닉스 자료에서 찾는다.
+    const cards = fillPhonicsMarks(wordsFromLocationState(location.state), list, true);
+    const out: PhonicsBankEntry[] = [];
+    for (const c of cards) {
+      const hit =
+        list.find((e) => e.word.toLowerCase() === c.word.trim().toLowerCase() && (!c.category || e.rule === c.category)) ??
+        list.find((e) => e.word.toLowerCase() === c.word.trim().toLowerCase());
+      if (hit && !out.includes(hit)) out.push(hit);
+    }
+    return out;
+  }
+
+  /** 수업 슬라이드에서 정해 둔 유형·옵션(발표 중엔 고르는 화면 없이 이대로). */
+  function applyLessonHandoff(picked: PhonicsBankEntry[]) {
+    const handoff = handoffFromLocationState(location.state);
+    const opts = handoff.phonicsOptions;
+    if (opts) {
+      if (opts.includeAnswers !== undefined) setIncludeAnswers(opts.includeAnswers);
+      if (opts.cuteColor !== undefined) setCuteColor(opts.cuteColor);
+      if (opts.showMeaning !== undefined) setShowMeaning(opts.showMeaning);
+      if (opts.showImage !== undefined) setShowImage(opts.showImage);
+    }
+    const requested = handoff.materialsTab;
+    if (requested && cards0.some((c) => c === requested)) {
+      if (requested === 'phonicsReader') {
+        const fromWords = readerIdsForWords(picked.map((e) => e.word));
+        setReaderIds(fromWords.length > 0 ? fromWords : [1, 2, 3, 4]);
+      }
+      setTab(requested);
+      setSheetSeed(1);
+    }
+  }
+
+  // 데이터가 처음 올 때(그리고 수업 발표에서 다음 파닉스 슬라이드로 넘어올 때마다): 넘어온 단어로,
+  // 아니면 1단계 추천으로 시작한다.
   useEffect(() => {
-    if (!entries || chosen.length > 0 || rules.length > 0) return;
-    const ids = handoffFromLocationState(location.state).phonicsWordIds ?? [];
-    const picked = ids.map((id) => entries.find((e) => e.id === id)).filter((e): e is PhonicsBankEntry => !!e);
+    if (!entries) return;
+    const picked = entriesFromHandoff(entries);
     if (picked.length > 0) {
       setStep(picked[0].step);
       setRules([...new Set(picked.map((e) => e.rule))]);
       setChosen(picked.map((e) => e.id));
-    } else {
+    } else if (chosen.length === 0 && rules.length === 0) {
       selectStep(1);
     }
+    applyLessonHandoff(picked);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entries]);
+  }, [entries, location.key]);
 
   // 단계가 바뀌면 색칠 제목 기본값도 따라간다(직접 고친 뒤에는 건드리지 않는다).
   useEffect(() => {
@@ -269,6 +330,44 @@ export default function PhonicsWorksheetLibraryPage() {
   // 그림이 들어가면 한 줄이 높아져서 한 장에 들어가는 개수가 줄어든다.
   const listPerPage = showImage ? PHONICS_PER_PAGE.list : PHONICS_PER_PAGE.list + 2;
   const usesCute = tab === 'phonicsTracing' || tab === 'phonicsList' || (tab ?? '').startsWith('phonics');
+
+  const sheets = (
+    <>
+    {generated && <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />}
+    {tab === 'phonicsReader' &&
+      chunk(readerCards, PHONICS_PER_PAGE.reader).map((rows, i) => (
+        <ReaderCute
+          key={i}
+          cards={rows}
+          color={cuteColor}
+          startIndex={i * PHONICS_PER_PAGE.reader}
+          imageMode={readerImage}
+          imageOf={imageOf}
+        />
+      ))}
+    {tab === 'phonicsList' &&
+      chunk(words, listPerPage).map((rows, i) => (
+        <PhonicsListCute key={i} rows={rows} color={cuteColor} startIndex={i * listPerPage} showImage={showImage} showMeaning={showMeaning} />
+      ))}
+    {tab === 'phonicsTracing' &&
+      chunk(words, PHONICS_PER_PAGE.tracing).map((rows, i) => (
+        <PhonicsTracingCute key={i} rows={rows} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.tracing} showImage={showImage} showMeaning={showMeaning} />
+      ))}
+    </>
+  );
+
+  if (locked) {
+    return (
+      <div className="space-y-4">
+        <PresentPrintBar
+          canPrint={canPreview}
+          emptyHint={t('materials.phonicsLibrary.presentEmpty')}
+          onReshuffle={isOwn ? undefined : () => setSheetSeed((s) => s + 1)}
+        />
+        {canPreview && <div className="print-sheet mx-auto">{sheets}</div>}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -589,30 +688,7 @@ export default function PhonicsWorksheetLibraryPage() {
         )}
         {!hasWork && words.length > 0 && <div className="no-print font-body-md text-on-surface-variant">{t('materials.phonicsLibrary.pickTypeHint')}</div>}
 
-        {canPreview && (
-          <div className="print-sheet mx-auto">
-            {generated && <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />}
-            {tab === 'phonicsReader' &&
-              chunk(readerCards, PHONICS_PER_PAGE.reader).map((rows, i) => (
-                <ReaderCute
-                  key={i}
-                  cards={rows}
-                  color={cuteColor}
-                  startIndex={i * PHONICS_PER_PAGE.reader}
-                  imageMode={readerImage}
-                  imageOf={imageOf}
-                />
-              ))}
-            {tab === 'phonicsList' &&
-              chunk(words, listPerPage).map((rows, i) => (
-                <PhonicsListCute key={i} rows={rows} color={cuteColor} startIndex={i * listPerPage} showImage={showImage} showMeaning={showMeaning} />
-              ))}
-            {tab === 'phonicsTracing' &&
-              chunk(words, PHONICS_PER_PAGE.tracing).map((rows, i) => (
-                <PhonicsTracingCute key={i} rows={rows} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.tracing} showImage={showImage} showMeaning={showMeaning} />
-              ))}
-          </div>
-        )}
+        {canPreview && <div className="print-sheet mx-auto">{sheets}</div>}
       </div>
     </div>
   );

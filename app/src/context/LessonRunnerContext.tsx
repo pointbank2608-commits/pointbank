@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { decorThemeFor, TOPIC_TITLES } from '../lib/topicWorksheets';
 import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,7 @@ import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -74,7 +75,7 @@ const STORAGE_KEY = 'classbank.lessonRunner';
 
 /** 발표 중 PPT처럼 Space·Enter·방향키·클릭으로 넘기는 슬라이드 — 게임·영상·워크시트·웹페이지는 그 키·클릭이
  * 그 화면의 조작이라 빼고, 클리커(PageDown/PageUp)로만 넘긴다. */
-export const PPT_KEY_KINDS: RunnerStep['kind'][] = ['image', 'canvas', 'grammar', 'reading', 'study'];
+export const PPT_KEY_KINDS: RunnerStep['kind'][] = ['image', 'canvas', 'grammar', 'reading', 'study', 'wordshow', 'attendance'];
 
 const LessonRunnerContext = createContext<RunnerValue | null>(null);
 
@@ -169,6 +170,21 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             icon: 'style',
             navState: { materialsWords },
           });
+        } else if (slide.kind === 'wordshow') {
+          push({
+            kind: 'wordshow',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t('curriculum.slides.kindWordShow'),
+            icon: 'menu_book',
+            navState: { materialsWords },
+          });
+        } else if (slide.kind === 'attendance') {
+          push({
+            kind: 'attendance',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t('curriculum.slides.kindAttendance'),
+            icon: 'how_to_reg',
+          });
         } else if (slide.kind === 'video') {
           push({
             kind: 'video',
@@ -199,13 +215,26 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             navState: Object.keys(navState).length > 0 ? navState : undefined,
           });
         } else {
-          const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
+          // 예전 "주제별 워크시트 라이브러리" 슬라이드는 고르는 화면이라 발표에 안 맞다 — 워크시트로 연다
+          // (주제 단어는 이제 워크시트 슬라이드의 "단어: 주제에서 고르기"로 정한다, 2026-09-27).
+          const materialId = slide.materialId === 'library' ? 'worksheet' : slide.materialId;
+          const entry = MATERIALS_CATALOG.find((m) => m.id === materialId);
           if (!entry) continue;
           const navState: Record<string, unknown> = {};
           if (slide.worksheetTab) navState.materialsTab = slide.worksheetTab;
           if (slide.worksheetOptions) navState.materialsWorksheetOptions = slide.worksheetOptions;
           if (slide.boardTheme) navState.materialsBoardTheme = slide.boardTheme;
-          if (materialsWords.length > 0) navState.materialsWords = materialsWords;
+          // 슬라이드만의 단어(주제·파닉스 단계에서 고른 것)가 있으면 수업 단어장 대신
+          const slideWords = slide.words && slide.words.length > 0 ? slide.words : materialsWords;
+          if (slideWords.length > 0) navState.materialsWords = slideWords;
+          if (slide.topic) {
+            navState.materialsColoringTitle = TOPIC_TITLES[slide.topic] ?? slide.topic;
+            navState.materialsDecorTheme = decorThemeFor(slide.topic);
+          }
+          if (slide.materialId === 'phonics') {
+            if (slide.phonicsTab) navState.materialsTab = slide.phonicsTab;
+            if (slide.phonicsOptions) navState.phonicsOptions = slide.phonicsOptions;
+          }
           push({
             kind: 'material',
             path: entry.path,

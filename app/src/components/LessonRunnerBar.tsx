@@ -43,7 +43,10 @@ export default function LessonRunnerBar() {
   if (!runner) return null;
 
   const current = runner.steps[runner.stepIndex];
-  const canAnnotate = current.kind === 'image' || current.kind === 'canvas' || current.kind === 'grammar' || current.kind === 'reading' || current.kind === 'web' || current.path === '/materials/worksheet';
+  // 판서는 게임을 뺀 모든 슬라이드에서(2026-09-27 사용자 결정) — 예전엔 그림·직접 만들기·문법·노래·웹·일반 워크시트만
+  // 돼서 파닉스 워크시트·빙고·카드·단어 소개·출석 위에는 쓸 수 없었다. 게임은 화면을 눌러 조작하고 그 자체로 진행되는
+  // 화면이라 판서 층이 방해가 돼서 뺀다. 새 슬라이드 종류도 자동으로 판서가 된다.
+  const canAnnotate = current.kind !== 'game';
 
   return (
     <>
