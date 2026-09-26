@@ -645,7 +645,19 @@ export interface GrammarSlide {
   revealAll?: boolean;
 }
 
-export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide | StudySlide | GrammarSlide;
+/** "노래·지문 한 줄씩" 슬라이드 — 원문 형식은 lib/readingLines.ts. 가사 등 원문은 이 수업 안에만 저장. */
+export interface ReadingSlide {
+  id: string;
+  kind: 'reading';
+  title?: string;
+  /** 한 줄에 "[분:초] 영어 | 해석", ** ** = 강조·빈칸 */
+  source: string;
+  videoUrl?: string | null;
+  mode: 'lines' | 'cloze';
+  boardTheme?: string | null;
+}
+
+export type LessonSlide = ImageSlide | VideoSlide | GameSlide | MaterialSlide | WebSlide | CanvasSlide | StudySlide | GrammarSlide | ReadingSlide;
 
 /** 옛 데이터 호환용 — 마이그레이션 전 playlist 가 이 모양이면 lib/lessonSlides.ts 의
  * effectiveSlides() 가 GameSlide[] 로 간주해 읽는다. */

@@ -4,6 +4,7 @@ import {
   PRESENT_ZOOM_IDENTITY,
   PRESENT_ZOOM_MAX,
   PRESENT_ZOOM_MIN,
+  PPT_KEY_KINDS,
   useLessonRunner,
   type PresentZoom,
 } from '../context/LessonRunnerContext';
@@ -17,7 +18,7 @@ function clampScale(s: number): number {
 export const PRESENT_FIT_EVENT = 'classbank:present-fit';
 
 /** 두 번 탭(더블클릭)으로 확대할 수 있는 슬라이드 — 게임·워크시트는 탭 조작과 겹쳐서 뺀다. */
-const DOUBLE_TAP_KINDS = ['image', 'canvas', 'grammar'];
+const DOUBLE_TAP_KINDS = ['image', 'canvas', 'grammar', 'reading'];
 
 export function zoomAt(prev: PresentZoom, nextScale: number, px: number, py: number): PresentZoom {
   const scale = clampScale(nextScale);
@@ -278,7 +279,27 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
       }
     }
     function onDblClick(e: MouseEvent) {
+      if (clickTimer) {
+        window.clearTimeout(clickTimer);
+        clickTimer = 0;
+      }
       if (toggleZoomAt(e.clientX, e.clientY)) e.preventDefault();
+    }
+
+    // PPT처럼 화면을 클릭하면 다음(슬라이드 안 단계가 있으면 그 단계부터). 버튼·링크·카드처럼 누를 수 있는
+    // 곳은 제외, 확대 중에도 제외(살펴보는 중). 더블클릭 확대와 구분하려고 잠깐 기다렸다 넘긴다.
+    let clickTimer = 0;
+    function onAdvanceClick(e: MouseEvent) {
+      if (e.button !== 0 || e.defaultPrevented) return;
+      const kind = stepKindRef.current;
+      if (!kind || !PPT_KEY_KINDS.includes(kind) || kind === 'study' || isZoomed()) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('button, a, input, textarea, select, label, iframe, [role="button"]')) return;
+      if (clickTimer) return;
+      clickTimer = window.setTimeout(() => {
+        clickTimer = 0;
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+      }, 260);
     }
 
     function onKeyDown(e: KeyboardEvent) {
@@ -309,6 +330,7 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
     el.addEventListener('pointerdown', onTapDown, true);
     el.addEventListener('pointerup', onTapUp, true);
     el.addEventListener('dblclick', onDblClick);
+    el.addEventListener('click', onAdvanceClick);
     // 슬라이드들(문법·카드)도 window capture 로 스페이스를 듣는다 — 이 영역이 먼저 붙어 있어 먼저 받는다.
     window.addEventListener('keydown', onSpaceDown, true);
     window.addEventListener('keyup', onSpaceUp, true);
@@ -324,6 +346,8 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
       el.removeEventListener('pointerdown', onTapDown, true);
       el.removeEventListener('pointerup', onTapUp, true);
       el.removeEventListener('dblclick', onDblClick);
+      el.removeEventListener('click', onAdvanceClick);
+      if (clickTimer) window.clearTimeout(clickTimer);
       window.removeEventListener('keydown', onSpaceDown, true);
       window.removeEventListener('keyup', onSpaceUp, true);
       window.removeEventListener('blur', onBlur);

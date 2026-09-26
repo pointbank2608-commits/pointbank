@@ -4,6 +4,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import CanvasSlideView from '../components/CanvasSlideView';
 import FlashcardStudy from '../components/FlashcardStudy';
 import GrammarBoard from '../components/GrammarBoard';
+import ReadingBoard from '../components/ReadingBoard';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import WebSlideView from '../components/WebSlideView';
@@ -76,6 +77,21 @@ export default function LessonSlideViewerPage() {
         <Link to="/curriculum" className="font-label-md text-label-md text-primary hover:underline">
           {t('curriculum.play.backToList')}
         </Link>
+      </div>
+    );
+  }
+
+  if (slide.kind === 'reading') {
+    return (
+      <div className={isPresenting ? 'absolute inset-0 p-2 md:p-4' : 'h-[75vh]'}>
+        <ReadingBoard
+          key={slide.id}
+          source={slide.source}
+          title={slide.title}
+          videoUrl={slide.videoUrl}
+          mode={slide.mode}
+          themeId={slide.boardTheme ?? 'green'}
+        />
       </div>
     );
   }

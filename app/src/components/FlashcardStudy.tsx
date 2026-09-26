@@ -87,8 +87,10 @@ export default function FlashcardStudy({
         e.preventDefault();
         e.stopPropagation();
         go(-1);
-      } else if (e.key === ' ') {
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        // 카드 뒤집기 — 발표 진행바가 이 키로 다음 슬라이드를 넘기지 않게 전파를 막는다.
         e.preventDefault();
+        e.stopPropagation();
         setFlipped((f) => !f);
       }
     }

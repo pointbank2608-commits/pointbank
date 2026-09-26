@@ -41,6 +41,8 @@ import GameImagePicker from './GameImagePicker';
 import WebSlideView from './WebSlideView';
 import { GameEmbedContext } from '../context/GameEmbedContext';
 import GrammarBoard from './GrammarBoard';
+import ReadingBoard from './ReadingBoard';
+import { parseReadingText } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
 import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarLevelTag, grammarPoint, sentencesForUnscramble, useGrammarCards, type GrammarStage } from '../lib/grammar';
 import { GAME_PAGES } from '../lib/gamePages';
@@ -127,7 +129,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'grammar' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'grammar' | 'reading' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -277,7 +279,7 @@ export default function LessonSlideSorter({
   return (
     <div className="flex flex-col gap-4 lg:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
-      <div className="flex shrink-0 flex-row gap-2 overflow-x-auto pb-2 lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0" style={{ maxHeight: '520px' }}>
+      <div className="flex shrink-0 flex-row gap-2 overflow-x-auto pb-2 lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={slides.map((s) => s.id)} strategy={rectSortingStrategy}>
             {slides.map((slide, i) => (
@@ -326,7 +328,7 @@ export default function LessonSlideSorter({
               {t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'web', 'study', 'grammar', 'game', 'material'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'web', 'reading', 'study', 'grammar', 'game', 'material'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -356,6 +358,15 @@ export default function LessonSlideSorter({
                 onUploaded={(img) => {
                   const slide: ImageSlide = { id: uid(), kind: 'image', imagePath: img.path, imageUrl: img.url };
                   addSlide(slide);
+                  setAddMode(null);
+                }}
+              />
+            )}
+
+            {addMode === 'reading' && (
+              <ReadingSlideForm
+                onAdd={(draft) => {
+                  addSlide({ id: uid(), kind: 'reading', boardTheme: 'green', ...draft });
                   setAddMode(null);
                 }}
               />
@@ -635,6 +646,8 @@ export default function LessonSlideSorter({
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
+  if (slide.kind === 'reading')
+    return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: slide.title?.trim() || t('curriculum.reading.defaultTitle') };
   if (slide.kind === 'grammar') return { icon: 'rule', label: grammarPoint(slide.grammarId)?.name ?? t('curriculum.slides.kindGrammar') };
   if (slide.kind === 'canvas') {
     const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
@@ -785,6 +798,31 @@ function SlideDetail({
   onInsertAfter: (slide: LessonSlide) => void;
 }) {
   const { t } = useTranslation();
+
+  if (slide.kind === 'reading') {
+    return (
+      <div className="space-y-3">
+        <div className="aspect-video w-full max-w-3xl">
+          <ReadingBoard
+            source={slide.source}
+            title={slide.title}
+            videoUrl={slide.videoUrl}
+            mode={slide.mode}
+            themeId={slide.boardTheme ?? 'green'}
+            interactive={false}
+          />
+        </div>
+        <ReadingSlideForm
+          initial={slide}
+          onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)}
+        />
+        <div className="space-y-1.5 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+          <div className="font-label-md text-label-md text-on-surface">{t('grammar.boardTitle')}</div>
+          <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
+        </div>
+      </div>
+    );
+  }
 
   if (slide.kind === 'grammar') {
     return (
@@ -1328,6 +1366,70 @@ function GameSlideEditor({
           </GameEmbedContext.Provider>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+type ReadingDraft = { title?: string; source: string; videoUrl?: string | null; mode: 'lines' | 'cloze' };
+
+/** 노래·지문 슬라이드 입력 — 추가 패널(onAdd)과 상세(onChange, 바로 반영) 둘 다 쓴다. */
+function ReadingSlideForm({
+  initial,
+  onAdd,
+  onChange,
+}: {
+  initial?: ReadingDraft;
+  onAdd?: (draft: ReadingDraft) => void;
+  onChange?: (patch: Partial<ReadingDraft>) => void;
+}) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<ReadingDraft>(initial ?? { title: '', source: '', videoUrl: '', mode: 'lines' });
+  const lineCount = parseReadingText(draft.source).length;
+  function set(patch: Partial<ReadingDraft>) {
+    setDraft((d) => ({ ...d, ...patch }));
+    onChange?.(patch);
+  }
+  const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
+  return (
+    <div className="space-y-3">
+      {onAdd && <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.reading.addIntro')}</p>}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input className={input} value={draft.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder={t('curriculum.reading.titlePlaceholder')} />
+        <input className={input} value={draft.videoUrl ?? ''} onChange={(e) => set({ videoUrl: e.target.value })} placeholder={t('curriculum.reading.videoPlaceholder')} />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {(['lines', 'cloze'] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => set({ mode: m })}
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md ${draft.mode === m ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">{m === 'cloze' ? 'hearing' : 'lyrics'}</span>
+            {t(`curriculum.reading.mode_${m}`)}
+          </button>
+        ))}
+      </div>
+      <textarea
+        className={`${input} min-h-[180px] font-mono`}
+        value={draft.source}
+        onChange={(e) => set({ source: e.target.value })}
+        placeholder={t('curriculum.reading.sourcePlaceholder')}
+      />
+      <p className="font-caption text-caption text-on-surface-variant">
+        {t('curriculum.reading.formatHint')} · {t('curriculum.reading.lineCount', { count: lineCount })}
+      </p>
+      {onAdd && (
+        <button
+          type="button"
+          disabled={lineCount === 0}
+          onClick={() => onAdd({ ...draft, title: draft.title?.trim() || undefined, videoUrl: draft.videoUrl?.trim() || null })}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+        >
+          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          {t('curriculum.study.addButton')}
+        </button>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -70,6 +70,10 @@ export const PRESENT_ZOOM_MIN = 0.5;
 export const PRESENT_ZOOM_MAX = 4;
 
 const STORAGE_KEY = 'classbank.lessonRunner';
+
+/** 발표 중 PPT처럼 Space·Enter·방향키·클릭으로 넘기는 슬라이드 — 게임·영상·워크시트·웹페이지는 그 키·클릭이
+ * 그 화면의 조작이라 빼고, 클리커(PageDown/PageUp)로만 넘긴다. */
+export const PPT_KEY_KINDS: RunnerStep['kind'][] = ['image', 'canvas', 'grammar', 'reading', 'study'];
 
 const LessonRunnerContext = createContext<RunnerValue | null>(null);
 
@@ -138,6 +142,13 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: firstText && firstText.type === 'text' ? firstText.text.trim().split(/\r?\n/)[0] : t('curriculum.slides.kindCanvas'),
             icon: 'dashboard_customize',
+          });
+        } else if (slide.kind === 'reading') {
+          push({
+            kind: 'reading',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: slide.title?.trim() || t('curriculum.reading.defaultTitle'),
+            icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics',
           });
         } else if (slide.kind === 'grammar') {
           const point = grammarPoint(slide.grammarId);
@@ -258,9 +269,24 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!runner) return;
     function onKey(e: KeyboardEvent) {
-      if (e.defaultPrevented) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
+      // PPT처럼: 게임·영상·워크시트가 아닌 "보여주는" 슬라이드에서는 Space·Enter·→·↓·N 으로 다음,
+      // ←·↑·Backspace·P 로 이전. 슬라이드 안 단계(문법 예문·가사 줄·카드)가 먼저 받도록 PageDown/PageUp
+      // 으로 바꿔 다시 보낸다 — 그 화면이 다 넘기면 PageDown 이 여기로 돌아와 다음 슬라이드가 된다.
+      const kind = runner?.steps[runner.stepIndex]?.kind;
+      if (kind && PPT_KEY_KINDS.includes(kind) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const forward = [' ', 'Enter', 'ArrowRight', 'ArrowDown', 'n', 'N'].includes(e.key);
+        const back = ['ArrowLeft', 'ArrowUp', 'Backspace', 'p', 'P'].includes(e.key);
+        if (forward || back) {
+          e.preventDefault();
+          (el ?? document.body).dispatchEvent(
+            new KeyboardEvent('keydown', { key: forward ? 'PageDown' : 'PageUp', bubbles: true, cancelable: true }),
+          );
+          return;
+        }
+      }
+      if (e.defaultPrevented) return;
       if (e.key === 'PageDown') {
         e.preventDefault();
         next();

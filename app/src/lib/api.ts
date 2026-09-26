@@ -439,7 +439,7 @@ export async function fetchGameTemplates(
   classId: string,
   gameType: string,
 ): Promise<GameTemplate[]> {
-  return unwrap(
+  return fixLegacyImageUrls(unwrap(
     await supabase
       .from('game_templates')
       .select('*')
@@ -447,7 +447,7 @@ export async function fetchGameTemplates(
       .eq('game_type', gameType)
       .or(`class_id.eq.${classId},class_id.is.null`)
       .order('created_at'),
-  );
+  ));
 }
 
 export async function createGameTemplate(params: {
@@ -509,7 +509,7 @@ export async function deleteGameTemplate(id: string) {
 }
 
 export async function fetchGameTemplateById(id: string): Promise<GameTemplate> {
-  return unwrap(await supabase.from('game_templates').select('*').eq('id', id).single()) as GameTemplate;
+  return fixLegacyImageUrls(unwrap(await supabase.from('game_templates').select('*').eq('id', id).single())) as GameTemplate;
 }
 
 /**
@@ -863,25 +863,43 @@ export async function fetchPhonicsBank(): Promise<PhonicsBankEntry[]> {
   return unwrap(await supabase.from('phonics_bank').select('*').order('sort_order'));
 }
 
+/** 2026-09 사전·파닉스 그림을 PNG → WebP 로 바꿨는데(supabase/017), 단어장·게임 내용·수업은 단어를
+ * 담을 때 그림 주소를 복사해 두기 때문에 그 전에 만든 것들은 아직 ".png" 주소(이제 없는 파일)를
+ * 들고 있다 — 불러올 때 여기서 한 번에 ".webp" 로 고친다. 모든 문자열을 훑어서 우리 그림 폴더
+ * 주소만 바꾸므로 단어장 항목·게임 항목·수업 슬라이드(직접 만들기 그림 등) 어디에 있어도 고쳐진다. */
+const LEGACY_IMAGE = /^\/(word-bank-images|phonics-images)\/(.+)\.png$/;
+export function fixLegacyImageUrls<T>(value: T): T {
+  if (typeof value === 'string') {
+    return (LEGACY_IMAGE.test(value) ? value.replace(/\.png$/, '.webp') : value) as T;
+  }
+  if (Array.isArray(value)) return value.map((v) => fixLegacyImageUrls(v)) as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = fixLegacyImageUrls(v);
+    return out as T;
+  }
+  return value;
+}
+
 /* ---------------- 선생님이 만드는 단어장(word_lists) ---------------- */
 
 /** 이 반(또는 학원 공용) 단어장 목록. game_templates 의 반/학원 스코프 조회와 같은 패턴. */
 export async function fetchWordLists(academyId: string, classId: string): Promise<WordList[]> {
-  return unwrap(
+  return fixLegacyImageUrls(unwrap(
     await supabase
       .from('word_lists')
       .select('*')
       .eq('academy_id', academyId)
       .or(`class_id.eq.${classId},class_id.is.null`)
       .order('created_at'),
-  );
+  ));
 }
 
 /** 반 구분 없이 이 학원의 단어장을 전부 불러온다 ("내 단어장"의 "전체" 탭). */
 export async function fetchAllWordLists(academyId: string): Promise<WordList[]> {
-  return unwrap(
+  return fixLegacyImageUrls(unwrap(
     await supabase.from('word_lists').select('*').eq('academy_id', academyId).order('created_at'),
-  );
+  ));
 }
 
 export async function createWordList(params: {
@@ -931,18 +949,18 @@ export async function deleteWordList(id: string) {
 
 /** 이 반(또는 학원 공용) 커리큘럼 목록. word_lists 조회와 같은 패턴. */
 export async function fetchCurriculumLessons(academyId: string, classId: string): Promise<CurriculumLesson[]> {
-  return unwrap(
+  return fixLegacyImageUrls(unwrap(
     await supabase
       .from('curriculum_lessons')
       .select('*')
       .eq('academy_id', academyId)
       .or(`class_id.eq.${classId},class_id.is.null`)
       .order('created_at'),
-  );
+  ));
 }
 
 export async function fetchCurriculumLessonById(id: string): Promise<CurriculumLesson> {
-  return unwrap(await supabase.from('curriculum_lessons').select('*').eq('id', id).single());
+  return fixLegacyImageUrls(unwrap(await supabase.from('curriculum_lessons').select('*').eq('id', id).single()));
 }
 
 export async function createCurriculumLesson(params: {
