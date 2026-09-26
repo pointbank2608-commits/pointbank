@@ -135,7 +135,7 @@ export default function FlashcardsPage() {
     await persistConfig({ ...selected.config, flashcardsStyle: style });
   }
 
-  if (isStaff && classes.length === 0) {
+  if (g.noClasses) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
         {t('gameAdmin.noClasses')}

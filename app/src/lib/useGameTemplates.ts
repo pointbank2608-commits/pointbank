@@ -53,7 +53,26 @@ export function useGameTemplates(params: {
    * 우선해서 연다. */
   const openTemplateIdRef = useRef(embed ? embed.templateId : (location.state as OpenState | null)?.openTemplateId);
 
-  const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
+  const {
+    classes,
+    selectedId: staffClassId,
+    select: selectClass,
+    reorder: reorderClasses,
+    loading: classesLoading,
+    error: classesError,
+    reload: reloadClasses,
+  } = useClasses(academy?.id);
+  // 반 목록을 못 불러왔으면(잠깐 끊김) 한 번 더 — 그대로 두면 "등록된 반이 없습니다"로 잘못 보인다.
+  const classesRetried = useRef(false);
+  useEffect(() => {
+    if (classesError && !classesRetried.current) {
+      classesRetried.current = true;
+      const id = window.setTimeout(() => void reloadClasses(), 1500);
+      return () => window.clearTimeout(id);
+    }
+  }, [classesError, reloadClasses]);
+  /** 정말로 반이 하나도 없을 때만 true — 불러오는 중이거나, 수업 편집 화면(반이 레슨 반으로 정해짐)에선 false. */
+  const noClasses = isStaff && !classesLoading && !classesError && classes.length === 0 && !embed?.classId;
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
   const [studentClassName, setStudentClassName] = useState('');
 
@@ -307,6 +326,7 @@ export function useGameTemplates(params: {
     isStaff: isStaff && !presenting,
     academy,
     classes,
+    noClasses,
     staffClassId,
     selectClass,
     reorderClasses,

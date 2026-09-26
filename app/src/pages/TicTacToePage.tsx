@@ -138,7 +138,7 @@ export default function TicTacToePage() {
     await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
   }
 
-  if (isStaff && classes.length === 0) {
+  if (g.noClasses) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
         {t('gameAdmin.noClasses')}
