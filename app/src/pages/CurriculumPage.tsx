@@ -120,6 +120,122 @@ export default function CurriculumPage() {
     }
   }
 
+  /* ---------- 자동 임시저장(초안, 2026-09-26) ----------
+   * 뒤로가기·다른 메뉴·새로고침·탭 닫기로 편집 화면을 떠나도 만들던 내용이 날아가지 않게, 바뀔 때마다
+   * 이 브라우저에 초안을 저장한다(학원당 하나). 다시 들어오면 "이어서 만들기 / 버리기"를 묻는다.
+   * 서버에는 선생님이 "저장"을 눌렀을 때만 반영한다(새 수업이 저절로 생기거나 게임 내용이 자동으로
+   * 만들어지지 않게). 저장하면 초안은 지운다. */
+  const draftKey = academy?.id ? `classbank.lessonDraft.${academy.id}` : null;
+  interface LessonDraft {
+    editingId: string | null;
+    classId: string | null;
+    name: string;
+    wordListId: string;
+    level: string;
+    videoUrl: string;
+    playlist: LessonSlide[];
+    savedAt: number;
+  }
+  const [draft, setDraft] = useState<LessonDraft | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<LessonDraft | null>(null);
+
+  function readDraft(): LessonDraft | null {
+    if (!draftKey) return null;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      return raw ? (JSON.parse(raw) as LessonDraft) : null;
+    } catch {
+      return null;
+    }
+  }
+  function clearDraft() {
+    if (!draftKey) return;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      /* 저장소를 못 쓰면 초안 기능만 빠진다 */
+    }
+    setDraft(null);
+  }
+
+  // 바뀐 내용을 잠깐 모았다가 저장(타자 칠 때마다 쓰지 않게). 바뀐 게 없으면(방금 저장함) 초안을 지운다.
+  useEffect(() => {
+    if (!draftKey || !showForm) return;
+    if (!dirty) {
+      // 방금 저장했거나 바꾼 게 없음 — 단, 지금 여는 수업의 초안일 때만 지운다(다른 수업 초안은 남긴다).
+      const current = readDraft();
+      if (current && (current.editingId ?? null) === (editingId ?? null)) clearDraft();
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const data: LessonDraft = { editingId, classId: formClassId, name, wordListId, level, videoUrl, playlist, savedAt: Date.now() };
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(data));
+      } catch {
+        /* 용량 초과 등 — 초안만 못 남긴다 */
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftKey, showForm, dirty, name, wordListId, level, videoUrl, playlist, editingId]);
+
+  // 편집 화면이 닫혀 있을 때 남은 초안이 있으면 알려 준다.
+  useEffect(() => {
+    if (showForm || loading) return;
+    setDraft(readDraft());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showForm, loading, draftKey]);
+
+  // 저장하지 않고 탭을 닫거나 새로고침하려 하면 브라우저가 한 번 묻는다.
+  useEffect(() => {
+    if (!dirty) return;
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
+
+  function applyDraft(d: LessonDraft) {
+    const lesson = d.editingId ? lessons.find((l) => l.id === d.editingId) : null;
+    if (lesson) openEditForm(lesson);
+    else {
+      resetForm();
+      setSavedSnapshot(JSON.stringify({ name: '', wordListId: '', level: '', playlist: [] }));
+      setShowForm(true);
+    }
+    setName(d.name);
+    setWordListId(d.wordListId);
+    setLevel(d.level);
+    setVideoUrl(d.videoUrl);
+    setPlaylist(d.playlist);
+    setDraft(null);
+  }
+
+  function continueDraft() {
+    if (!draft) return;
+    // 다른 반에서 만들던 초안이면 그 반으로 옮긴 뒤(목록을 다시 불러온 뒤) 연다.
+    if (draft.classId && draft.classId !== staffClassId) {
+      setPendingRestore(draft);
+      selectClass(draft.classId);
+      return;
+    }
+    applyDraft(draft);
+  }
+
+  useEffect(() => {
+    if (!pendingRestore || loading || pendingRestore.classId !== staffClassId) return;
+    applyDraft(pendingRestore);
+    setPendingRestore(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingRestore, loading, staffClassId, lessons]);
+
+  function discardDraft() {
+    if (!confirm(t('curriculum.draft.discardConfirm'))) return;
+    clearDraft();
+  }
+
   function resetForm() {
     setReopenSlideId(null);
     setEditingId(null);
@@ -132,6 +248,7 @@ export default function CurriculumPage() {
   }
 
   function openCreateForm() {
+    if (dirty && !confirm(t('curriculum.discardConfirm'))) return;
     resetForm();
     setSavedSnapshot(JSON.stringify({ name: '', wordListId: '', level: '', playlist: [] }));
     setShowForm(true);
@@ -139,6 +256,7 @@ export default function CurriculumPage() {
 
   function handleCancel() {
     if (dirty && !confirm(t('curriculum.discardConfirm'))) return;
+    clearDraft();
     resetForm();
   }
 
@@ -246,6 +364,7 @@ export default function CurriculumPage() {
         saved = lesson;
       }
       setSavedSnapshot(JSON.stringify({ name, wordListId, level, playlist: finalPlaylist }));
+      clearDraft(); // 서버에 저장했으니 임시저장 초안은 필요 없다
     }, editingId ? t('curriculum.updatedToast') : t('curriculum.createdToast'));
     setSubmitting(false);
     return ok ? saved : null;
@@ -319,6 +438,39 @@ export default function CurriculumPage() {
       </div>
 
       <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
+
+      {!showForm && draft && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-warm-yellow bg-warm-yellow/20 px-4 py-3">
+          <span className="material-symbols-outlined text-[22px] text-deep-navy">edit_note</span>
+          <div className="min-w-0 flex-1">
+            <div className="font-label-md text-label-md text-deep-navy">
+              {t('curriculum.draft.title', { name: draft.name.trim() || t('curriculum.draft.untitled') })}
+            </div>
+            <div className="font-caption text-caption text-on-surface-variant">
+              {t('curriculum.draft.desc', {
+                when: new Date(draft.savedAt).toLocaleString(),
+                cls: classes.find((c) => c.id === draft.classId)?.name ?? '',
+                count: draft.playlist.length,
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={continueDraft}
+            className="flex items-center gap-1 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container"
+          >
+            <span className="material-symbols-outlined text-[18px]">restore</span>
+            {t('curriculum.draft.continue')}
+          </button>
+          <button
+            type="button"
+            onClick={discardDraft}
+            className="rounded-full border border-outline-variant px-4 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low"
+          >
+            {t('curriculum.draft.discard')}
+          </button>
+        </div>
+      )}
 
       {!showForm ? (
         <button

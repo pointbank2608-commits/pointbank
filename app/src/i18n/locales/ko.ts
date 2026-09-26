@@ -1827,6 +1827,14 @@ const ko = {
     readAll: '읽어주기',
   },
   curriculum: {
+    draft: {
+      title: '저장하지 않은 수업이 있어요: "{{name}}"',
+      untitled: '이름 없는 수업',
+      desc: '{{cls}} · 슬라이드 {{count}}장 · {{when}}에 자동 임시저장됨',
+      continue: '이어서 만들기',
+      discard: '버리기',
+      discardConfirm: '임시저장된 수업을 버릴까요? 되돌릴 수 없어요.',
+    },
     copy: {
       button: '다른 반으로 복사',
       title: '"{{name}}" 다른 반으로 복사',

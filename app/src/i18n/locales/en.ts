@@ -1831,6 +1831,14 @@ const en: Ko = {
     readAll: 'Read aloud',
   },
   curriculum: {
+    draft: {
+      title: 'You have an unsaved lesson: "{{name}}"',
+      untitled: 'Untitled lesson',
+      desc: '{{cls}} · {{count}} slides · auto-saved as a draft at {{when}}',
+      continue: 'Continue editing',
+      discard: 'Discard',
+      discardConfirm: 'Discard the draft? This cannot be undone.',
+    },
     copy: {
       button: 'Copy to another class',
       title: 'Copy "{{name}}" to other classes',
