@@ -25,7 +25,7 @@ interface Props {
   templateName?: string;
   onRenameTemplate?: (name: string) => void;
   onAddItem?: () => void;
-  onRemoveItem?: () => void;
+  onRemoveItem?: (itemId?: string) => void;
 }
 
 type Phase = 'grid' | 'cracking' | 'open' | 'picking' | 'reveal';
@@ -642,15 +642,6 @@ export default function SaveOrGiveIt({
         {sidePanelVisible && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
-              <button
-                type="button"
-                onClick={onRemoveItem}
-                disabled={items.length <= 1}
-                aria-label={t('gameAdmin.removeItemQuick')}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                <span className="material-symbols-outlined text-[20px]">remove</span>
-              </button>
               <span className="font-label-md text-label-md text-on-surface-variant tabular-nums whitespace-nowrap">
                 {t('gameAdmin.itemCountLabel', { count: items.length })}
               </span>
@@ -665,8 +656,8 @@ export default function SaveOrGiveIt({
             </div>
             <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
               {items.map((item, i) => (
-                <input
-                  key={item.id}
+                <div key={item.id} className="flex items-center gap-1">
+                  <input
                   value={itemDrafts[item.id] ?? item.label}
                   onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
                   onBlur={() => commitItemDraft(item.id)}
@@ -674,8 +665,19 @@ export default function SaveOrGiveIt({
                     if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                   }}
                   style={{ color: colorFor(i) }}
-                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
+                  <button
+                    type="button"
+                    onClick={() => onRemoveItem?.(item.id)}
+                    disabled={items.length <= 1}
+                    title={t('gameAdmin.removeThisItem')}
+                    aria-label={t('gameAdmin.removeThisItem')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">remove_circle</span>
+                  </button>
+                </div>
               ))}
             </div>
           </div>

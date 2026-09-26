@@ -19,7 +19,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { createGameTemplate, deleteLessonSlideImage, uploadLessonSlideImage } from '../lib/api';
+import { createGameTemplate, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
@@ -178,21 +178,14 @@ export default function LessonSlideSorter({
   }
 
   function removeSlide(id: string) {
-    const target = slides.find((s) => s.id === id);
     const idx = slides.findIndex((s) => s.id === id);
     const next = slides.filter((s) => s.id !== id);
     onChange(next);
     if (selectedId === id) {
       setSelectedId(next[Math.min(idx, next.length - 1)]?.id ?? null);
     }
-    // 복제한 슬라이드끼리는 같은 그림 파일을 쓰므로, 다른 슬라이드가 아직 쓰고 있으면 지우지 않는다.
-    const stillUsed = (path: string) =>
-      next.some((s) => (s.kind === 'image' && s.imagePath === path) || (s.kind === 'canvas' && s.backgroundImagePath === path));
-    if (target?.kind === 'image' && !stillUsed(target.imagePath)) {
-      void deleteLessonSlideImage(target.imagePath).catch(() => {
-        /* 고아 이미지가 남아도 화면 진행은 막지 않는다 */
-      });
-    }
+    // 올린 그림 파일은 지우지 않는다 — 슬라이드 복제·다른 반으로 복사한 수업이 같은 파일을 쓰고,
+    // 편집을 취소하면 지운 슬라이드가 되살아나기 때문(2026-09-26). 남는 파일은 해가 없다.
   }
 
   function duplicateSlide(id: string) {
@@ -243,19 +236,43 @@ export default function LessonSlideSorter({
     setAddMode(null);
   }
 
-  function addCanvasSlide(layout: 'title' | 'word' | 'blank') {
+  function addCanvasSlide(layout: 'title' | 'blank') {
     const slide = newCanvasSlide(canvasDraftTheme);
     if (layout === 'blank') slide.elements = [];
-    if (layout === 'word') {
-      const card = cards.find((c) => c.imageUrl) ?? cards[0];
-      slide.elements = card?.imageUrl
+    addSlide(slide);
+    setAddMode(null);
+  }
+
+  /** "단어 카드" — 고른 단어마다 한 장씩(그림 + 단어). 예전엔 단어장의 첫 단어만 매번 들어갔다(2026-09-26 피드백). */
+  const [wordCardPicking, setWordCardPicking] = useState(false);
+  const [wordCardSelected, setWordCardSelected] = useState<string[]>([]);
+  // 이미 단어 카드로 만든 단어(직접 만들기 슬라이드 글상자에 그 단어가 있으면) — "있음" 표시
+  const usedWords = useMemo(() => {
+    const set = new Set<string>();
+    for (const sl of slides) {
+      if (sl.kind !== 'canvas') continue;
+      for (const el of sl.elements) if (el.type === 'text') set.add(el.text.trim().toLowerCase());
+    }
+    return set;
+  }, [slides]);
+
+  function addWordCardSlides() {
+    const picked = cards.filter((c) => wordCardSelected.includes(c.id));
+    if (picked.length === 0) return;
+    const made: LessonSlide[] = picked.map((card) => {
+      const slide = newCanvasSlide(canvasDraftTheme);
+      slide.elements = card.imageUrl
         ? [
             { id: uid(), type: 'image', x: 32, y: 8, w: 36, h: 62, url: card.imageUrl, fit: 'contain' },
             newTextElement({ x: 15, y: 72, w: 70, h: 18, text: card.word, ...themeTextDefaults(canvasDraftTheme, 'title'), fontSize: 11 }),
           ]
-        : [newTextElement({ x: 15, y: 35, w: 70, h: 24, text: card?.word ?? '', ...themeTextDefaults(canvasDraftTheme, 'title') })];
-    }
-    addSlide(slide);
+        : [newTextElement({ x: 15, y: 35, w: 70, h: 24, text: card.word, ...themeTextDefaults(canvasDraftTheme, 'title') })];
+      return slide;
+    });
+    onChange([...slides, ...made]);
+    setSelectedId(made[0].id);
+    setWordCardSelected([]);
+    setWordCardPicking(false);
     setAddMode(null);
   }
 
@@ -411,13 +428,81 @@ export default function LessonSlideSorter({
                   <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.pickTitle')}</div>
                   <BoardThemeChips value={canvasDraftTheme} onChange={(th) => setCanvasDraftTheme(th?.id ?? null)} noneLabel={t('curriculum.board.plainWhite')} />
                 </div>
+                {wordCardPicking ? (
+                  <div className="space-y-3 rounded-xl border-2 border-primary/40 bg-surface-container-lowest p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-label-md text-label-md text-on-surface">{t('curriculum.canvas.pickWordsTitle')}</span>
+                      <button
+                        type="button"
+                        onClick={() => setWordCardSelected((sel) => (sel.length === cards.length ? [] : cards.map((c) => c.id)))}
+                        className="rounded-full border border-outline-variant px-3 py-1 font-caption text-caption text-on-surface-variant hover:border-primary hover:text-primary"
+                      >
+                        {wordCardSelected.length === cards.length ? t('curriculum.canvas.selectNone') : t('curriculum.canvas.selectAll')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWordCardPicking(false);
+                          setWordCardSelected([]);
+                        }}
+                        className="ml-auto font-label-md text-label-md text-on-surface-variant hover:text-error"
+                      >
+                        {t('curriculum.canvas.backToLayouts')}
+                      </button>
+                    </div>
+                    <div className="grid max-h-[320px] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-6">
+                      {cards.map((card) => {
+                        const on = wordCardSelected.includes(card.id);
+                        const used = usedWords.has(card.word.trim().toLowerCase());
+                        return (
+                          <button
+                            key={card.id}
+                            type="button"
+                            aria-pressed={on}
+                            onClick={() => setWordCardSelected((sel) => (on ? sel.filter((id) => id !== card.id) : [...sel, card.id]))}
+                            className={`relative flex flex-col items-center gap-1 rounded-lg border-2 p-1.5 transition-colors ${
+                              on ? 'border-primary bg-primary-fixed' : 'border-outline-variant/50 hover:border-primary/60'
+                            }`}
+                          >
+                            {on && (
+                              <span className="material-symbols-outlined absolute left-1 top-1 rounded-full bg-primary text-[16px] text-on-primary">check</span>
+                            )}
+                            {used && (
+                              <span className="absolute right-1 top-1 rounded-full bg-secondary-container px-1.5 font-caption text-[10px] text-on-secondary-container">
+                                {t('curriculum.canvas.alreadyMade')}
+                              </span>
+                            )}
+                            <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded bg-surface-container">
+                              {card.imageUrl ? (
+                                <img src={card.imageUrl} alt="" className="h-full w-full object-contain" />
+                              ) : (
+                                <span className="material-symbols-outlined text-on-surface-variant">text_fields</span>
+                              )}
+                            </span>
+                            <span className="w-full truncate text-center font-label-md text-label-md text-on-surface">{card.word}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={wordCardSelected.length === 0}
+                      onClick={addWordCardSlides}
+                      className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                      {t('curriculum.canvas.makeWordCards', { count: wordCardSelected.length })}
+                    </button>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {(['title', 'word', 'blank'] as const).map((layout) => (
                     <button
                       key={layout}
                       type="button"
                       disabled={layout === 'word' && cards.length === 0}
-                      onClick={() => addCanvasSlide(layout)}
+                      title={layout === 'word' && cards.length === 0 ? t('curriculum.study.needWordList') : undefined}
+                      onClick={() => (layout === 'word' ? setWordCardPicking(true) : addCanvasSlide(layout))}
                       className="flex flex-col items-center gap-2 rounded-xl border-2 border-outline-variant/50 bg-surface-container-lowest p-3 transition-colors hover:border-primary disabled:opacity-40"
                     >
                       <span className="flex aspect-video w-full items-center justify-center rounded-lg bg-surface-container">
@@ -429,6 +514,7 @@ export default function LessonSlideSorter({
                     </button>
                   ))}
                 </div>
+                )}
               </div>
             )}
 
@@ -902,7 +988,6 @@ function SlideDetail({
           onChange={() => {}}
           uploadFn={uploadLessonSlideImage}
           onUploaded={(img) => {
-            void deleteLessonSlideImage(slide.imagePath).catch(() => {});
             onUpdate({ imagePath: img.path, imageUrl: img.url } as Partial<ImageSlide>);
           }}
         />

@@ -132,9 +132,10 @@ export default function TicTacToePage() {
     }
   }
 
-  async function removeLastItem() {
+  /** 게임 화면 오른쪽 빠른 편집의 항목별 − 버튼. id 가 없으면 마지막 항목. 한 개는 남긴다. */
+  async function removeLastItem(itemId?: string) {
     if (!selected || selected.items.length <= 1) return;
-    await persistItems(selected.items.slice(0, -1));
+    await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
   }
 
   if (isStaff && classes.length === 0) {
@@ -315,7 +316,7 @@ export default function TicTacToePage() {
               onRenameTemplate={(name) => void handleRename(name)}
               placeSound={TICTACTOE_PLACE_SOUND}
               onAddItem={() => void addQuickItem()}
-              onRemoveItem={() => void removeLastItem()}
+              onRemoveItem={(id) => void removeLastItem(id)}
             />
           </GameThemeFrame>
 

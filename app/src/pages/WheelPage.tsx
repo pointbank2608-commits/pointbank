@@ -208,9 +208,10 @@ export default function WheelPage() {
     }
   }
 
-  async function removeLastItem() {
+  /** 게임 화면 오른쪽 빠른 편집의 항목별 − 버튼. id 가 없으면 마지막 항목. 한 개는 남긴다. */
+  async function removeLastItem(itemId?: string) {
     if (!selected || selected.items.length <= 1) return;
-    await persistItems(selected.items.slice(0, -1));
+    await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
   }
 
   /* ---------------- 렌더 ---------------- */
@@ -373,7 +374,7 @@ export default function WheelPage() {
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}
               onAddItem={() => void addQuickItem()}
-              onRemoveItem={() => void removeLastItem()}
+              onRemoveItem={(id) => void removeLastItem(id)}
             />
 
             <div className="flex flex-wrap items-center justify-center gap-4 mt-4">

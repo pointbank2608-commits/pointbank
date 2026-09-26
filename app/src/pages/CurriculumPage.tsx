@@ -22,6 +22,7 @@ import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../li
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
+import { copyLessonToClass } from '../lib/copyLesson';
 import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
 
 function uid(): string {
@@ -269,6 +270,26 @@ export default function CurriculumPage() {
     }
   }
 
+  // "다른 반으로 복사" — 고른 반마다 수업을 복사한다(A반 전용 게임 내용·단어장도 같이 복사, lib/copyLesson.ts).
+  const [copyLesson, setCopyLesson] = useState<CurriculumLesson | null>(null);
+  const [copyTargets, setCopyTargets] = useState<string[]>([]);
+  const [copying, setCopying] = useState(false);
+
+  async function handleCopy() {
+    if (!copyLesson || !academy?.id || !profile || copyTargets.length === 0) return;
+    setCopying(true);
+    const ok = await run(async () => {
+      for (const classId of copyTargets) {
+        await copyLessonToClass({ lesson: copyLesson, targetClassId: classId, academyId: academy.id, teacherId: profile.id, wordLists });
+      }
+    }, t('curriculum.copy.done', { count: copyTargets.length }));
+    setCopying(false);
+    if (ok) {
+      setCopyLesson(null);
+      setCopyTargets([]);
+    }
+  }
+
   async function handleDelete(lesson: CurriculumLesson) {
     if (!confirm(t('curriculum.deleteConfirm', { name: lesson.name }))) return;
     const ok = await run(() => deleteCurriculumLesson(lesson.id), t('curriculum.deletedToast'));
@@ -418,6 +439,50 @@ export default function CurriculumPage() {
         </div>
       )}
 
+      {copyLesson && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => !copying && setCopyLesson(null)}>
+          <div className="w-full max-w-md space-y-4 rounded-2xl bg-surface-container-lowest p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div>
+              <h3 className="font-title-md text-title-md font-bold text-on-surface">{t('curriculum.copy.title', { name: copyLesson.name })}</h3>
+              <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('curriculum.copy.desc')}</p>
+            </div>
+            <div className="max-h-64 space-y-1.5 overflow-y-auto">
+              {classes.filter((c) => c.id !== (copyLesson.class_id ?? staffClassId)).map((c) => (
+                <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-lg border border-outline-variant/60 px-3 py-2.5 hover:border-primary">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-primary"
+                    checked={copyTargets.includes(c.id)}
+                    onChange={(e) => setCopyTargets((prev) => (e.target.checked ? [...prev, c.id] : prev.filter((id) => id !== c.id)))}
+                  />
+                  <span className="font-label-md text-label-md text-on-surface">{c.name}</span>
+                </label>
+              ))}
+              {classes.length <= 1 && <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.copy.noOtherClass')}</p>}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                disabled={copying}
+                onClick={() => setCopyLesson(null)}
+                className="rounded-full border border-outline-variant px-5 py-2.5 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low"
+              >
+                {t('curriculum.cancel')}
+              </button>
+              <button
+                type="button"
+                disabled={copying || copyTargets.length === 0}
+                onClick={() => void handleCopy()}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                {copying ? t('curriculum.copy.copying') : t('curriculum.copy.confirm', { count: copyTargets.length })}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!loading && lessons.length === 0 && (
         <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.noLessons')}</div>
       )}
@@ -447,6 +512,15 @@ export default function CurriculumPage() {
                     aria-label={t('curriculum.editButton') ?? ''}
                   >
                     <span className="material-symbols-outlined text-[20px]">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCopyLesson(lesson)}
+                    className="text-on-surface-variant hover:text-primary"
+                    aria-label={t('curriculum.copy.button')}
+                    title={t('curriculum.copy.button')}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
                   </button>
                   <button type="button" onClick={() => handleDelete(lesson)} className="text-on-surface-variant hover:text-error">
                     <span className="material-symbols-outlined text-[20px]">delete</span>
