@@ -15,7 +15,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -138,7 +138,7 @@ export default function LessonSlideSorter({
   classId,
   lessonName,
   slides,
-  onChange,
+  onChange: emitChange,
   wordListId,
   wordLists,
   onWordListChange,
@@ -168,13 +168,113 @@ export default function LessonSlideSorter({
 
   const selected = slides.find((s) => s.id === selectedId) ?? null;
 
+  /* ---------- 되돌리기·다시하기(수업 편집 전체, 2026-09-26) ----------
+   * 슬라이드 추가·삭제·순서·종류 바꾸기·내용 수정을 모두 기록한다. 글자 입력·끌기처럼 같은 슬라이드를
+   * 연달아 고치는 건(1.2초 안) 한 번으로 묶는다. 바깥(초안 불러오기 등)에서 슬라이드가 통째로 바뀌면 비운다.
+   * 직접 만들기 슬라이드 안의 Ctrl+Z 는 그 편집기가 먼저 처리한다(글상자 하나하나 되돌리기). */
+  const pastRef = useRef<LessonSlide[][]>([]);
+  const futureRef = useRef<LessonSlide[][]>([]);
+  const lastEmitRef = useRef<LessonSlide[]>(slides);
+  const lastKeyRef = useRef<{ key: string; at: number; win?: number } | null>(null);
+  if (slides !== lastEmitRef.current) {
+    pastRef.current = [];
+    futureRef.current = [];
+    lastKeyRef.current = null;
+    lastEmitRef.current = slides;
+  }
+
+  function onChange(next: LessonSlide[], coalesceKey?: string) {
+    const now = Date.now();
+    const last = lastKeyRef.current;
+    const merge = !!coalesceKey && !!last && last.key === coalesceKey && now - last.at < (last.win ?? 1200);
+    if (!merge) {
+      pastRef.current.push(slides);
+      if (pastRef.current.length > 80) pastRef.current.shift();
+    }
+    futureRef.current = [];
+    lastKeyRef.current = coalesceKey ? { key: coalesceKey, at: now } : null;
+    lastEmitRef.current = next;
+    emitChange(next);
+  }
+
+  function restore(list: LessonSlide[]) {
+    lastKeyRef.current = null;
+    lastEmitRef.current = list;
+    emitChange(list);
+    setAddMode(null);
+    if (!list.some((sl) => sl.id === selectedId)) {
+      const idx = Math.max(0, slides.findIndex((sl) => sl.id === selectedId));
+      setSelectedId(list[Math.min(idx, list.length - 1)]?.id ?? null);
+    }
+  }
+  function undoSlides() {
+    const prev = pastRef.current.pop();
+    if (!prev) return;
+    futureRef.current.push(slides);
+    restore(prev);
+  }
+  function redoSlides() {
+    const next = futureRef.current.pop();
+    if (!next) return;
+    pastRef.current.push(slides);
+    restore(next);
+  }
+  const canUndo = pastRef.current.length > 0;
+  const canRedo = futureRef.current.length > 0;
+
+  const historyKeysRef = useRef({ undoSlides, redoSlides });
+  historyKeysRef.current = { undoSlides, redoSlides };
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.defaultPrevented || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      const k = e.key.toLowerCase();
+      if (k === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        historyKeysRef.current.undoSlides();
+      } else if (k === 'y' || (k === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        historyKeysRef.current.redoSlides();
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  /* ---------- 종류 바꾸기(2026-09-26) ----------
+   * 슬라이드 상세의 "종류 바꾸기" → 추가 패널을 "바꾸기"로 연다. 고른 슬라이드가 새로 붙지 않고 그 자리에
+   * 들어간다(워크시트 → 게임처럼, 지우고 다시 만들 필요 없이). 잘못 바꿨으면 되돌리기. */
+  const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!addMode) setReplaceTargetId(null);
+  }, [addMode]);
+
+  function placeSlides(made: LessonSlide[]) {
+    if (made.length === 0) return;
+    const idx = replaceTargetId ? slides.findIndex((sl) => sl.id === replaceTargetId) : -1;
+    if (idx >= 0) {
+      onChange([...slides.slice(0, idx), ...made, ...slides.slice(idx + 1)]);
+      setReplaceTargetId(null);
+      notify(t('curriculum.slides.replacedToast'));
+    } else {
+      onChange([...slides, ...made]);
+    }
+    // 방금 넣은 슬라이드가 열리며 스스로 채우는 값(게임 슬라이드가 고른 게임 내용 등)은 넣기와 한 번으로
+    // 묶는다 — 안 그러면 되돌리기를 한 번 눌러도 그 자동 변경만 되돌아가 "안 되는 것"처럼 보인다.
+    lastKeyRef.current = { key: `update:${made[0].id}`, at: Date.now(), win: 5000 };
+    setSelectedId(made[0].id);
+  }
+
   function addSlide(slide: LessonSlide) {
-    onChange([...slides, slide]);
-    setSelectedId(slide.id);
+    placeSlides([slide]);
   }
 
   function updateSlide(id: string, patch: Partial<LessonSlide>) {
-    onChange(slides.map((s) => (s.id === id ? ({ ...s, ...patch } as LessonSlide) : s)));
+    onChange(
+      slides.map((s) => (s.id === id ? ({ ...s, ...patch } as LessonSlide) : s)),
+      `update:${id}`,
+    );
   }
 
   function removeSlide(id: string) {
@@ -269,8 +369,7 @@ export default function LessonSlideSorter({
         : [newTextElement({ x: 15, y: 35, w: 70, h: 24, text: card.word, ...themeTextDefaults(canvasDraftTheme, 'title') })];
       return slide;
     });
-    onChange([...slides, ...made]);
-    setSelectedId(made[0].id);
+    placeSlides(made);
     setWordCardSelected([]);
     setWordCardPicking(false);
     setAddMode(null);
@@ -297,6 +396,28 @@ export default function LessonSlideSorter({
     <div className="flex flex-col gap-4 lg:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
       <div className="flex shrink-0 flex-row gap-2 overflow-x-auto pb-2 lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start">
+        <div className="flex shrink-0 gap-1 lg:w-full">
+          <button
+            type="button"
+            onClick={undoSlides}
+            disabled={!canUndo}
+            title={t('curriculum.slides.undoHint')}
+            className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35"
+          >
+            <span className="material-symbols-outlined text-[18px]">undo</span>
+            {t('curriculum.slides.undo')}
+          </button>
+          <button
+            type="button"
+            onClick={redoSlides}
+            disabled={!canRedo}
+            title={t('curriculum.slides.redoHint')}
+            className="flex flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-label-md text-label-md text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-35"
+          >
+            <span className="material-symbols-outlined text-[18px]">redo</span>
+            {t('curriculum.slides.redo')}
+          </button>
+        </div>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={slides.map((s) => s.id)} strategy={rectSortingStrategy}>
             {slides.map((slide, i) => (
@@ -306,7 +427,7 @@ export default function LessonSlideSorter({
                 index={i}
                 // 새 슬라이드를 추가하는 동안에는 기존 슬라이드를 선택 표시하지 않는다(그 슬라이드를 고치는
                 // 중인 것처럼 보이지 않게).
-                selected={!addMode && slide.id === selectedId}
+                selected={addMode ? slide.id === replaceTargetId : slide.id === selectedId}
                 onSelect={() => {
                   // 추가 패널이 열려 있어도 썸네일을 누르면 바로 그 슬라이드 미리보기·편집으로.
                   setSelectedId(slide.id);
@@ -324,16 +445,19 @@ export default function LessonSlideSorter({
           type="button"
           // 누를 때마다 열었다 닫았다(토글) 하면, 두 번째 클릭에 패널이 닫히며 이전 슬라이드 화면이 떠서
           // 헷갈린다(2026-09-26 사용자 피드백) — 항상 "추가 중" 상태로 연다. 닫기는 패널의 닫기 버튼으로.
-          onClick={() => setAddMode((m) => m ?? 'canvas')}
-          aria-pressed={!!addMode}
+          onClick={() => {
+            setReplaceTargetId(null);
+            setAddMode((m) => m ?? 'canvas');
+          }}
+          aria-pressed={!!addMode && !replaceTargetId}
           className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 py-3 font-label-md text-label-md transition-colors lg:w-full ${
-            addMode
+            addMode && !replaceTargetId
               ? 'border-primary bg-primary-fixed text-primary'
               : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">{addMode ? 'edit_square' : 'add'}</span>
-          {addMode ? t('curriculum.slides.addingSlide', { n: slides.length + 1 }) : t('curriculum.slides.addSlide')}
+          <span className="material-symbols-outlined text-[18px]">{addMode && !replaceTargetId ? 'edit_square' : 'add'}</span>
+          {addMode && !replaceTargetId ? t('curriculum.slides.addingSlide', { n: slides.length + 1 }) : t('curriculum.slides.addSlide')}
         </button>
       </div>
 
@@ -342,7 +466,9 @@ export default function LessonSlideSorter({
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="font-title-md text-title-md font-bold text-deep-navy">
-              {t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
+              {replaceTargetId
+                ? t('curriculum.slides.replacePanelTitle', { n: slides.findIndex((sl) => sl.id === replaceTargetId) + 1 })
+                : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
               {(['canvas', 'image', 'video', 'web', 'reading', 'study', 'grammar', 'game', 'material'] as const).map((m) => (
@@ -362,7 +488,7 @@ export default function LessonSlideSorter({
                 onClick={() => setAddMode(null)}
                 className="ml-auto font-label-md text-label-md text-on-surface-variant hover:text-error"
               >
-                {t('curriculum.slides.closeAddPanel')}
+                {replaceTargetId ? t('curriculum.slides.cancelReplace') : t('curriculum.slides.closeAddPanel')}
               </button>
             </div>
 
@@ -693,6 +819,18 @@ export default function LessonSlideSorter({
               </span>
               <span className="material-symbols-outlined text-[20px] text-primary">{slideThumbLabel(selected, t).icon}</span>
               <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{slideThumbLabel(selected, t).label}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setReplaceTargetId(selected.id);
+                  setAddMode(selected.kind as Exclude<AddMode, null>);
+                }}
+                title={t('curriculum.slides.replaceKindHint')}
+                className="flex items-center gap-1 rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary-fixed"
+              >
+                <span className="material-symbols-outlined text-[18px]">swap_horiz</span>
+                {t('curriculum.slides.replaceKind')}
+              </button>
               {onPresentFrom && (
                 <button
                   type="button"
