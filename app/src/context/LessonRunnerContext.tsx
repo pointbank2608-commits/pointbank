@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
@@ -226,6 +227,11 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       const found = opts?.startSlideId ? steps.findIndex((s) => s.slideId === opts.startSlideId) : -1;
       const startIndex = found >= 0 ? found : 0;
       setRunner({ lessonId: lesson.id, lessonName: lesson.name, classId, steps, stepIndex: startIndex, returnToEdit: !!opts?.returnToEdit });
+      try {
+        localStorage.setItem(ONBOARDING_PRESENTED_KEY, '1');
+      } catch {
+        /* 체크리스트 표시만 못 한다 */
+      }
       const first = steps[startIndex];
       navigate(first.path, first.navState ? { state: first.navState } : undefined);
     },

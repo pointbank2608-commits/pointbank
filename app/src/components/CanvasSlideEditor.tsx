@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { uploadLessonSlideImage } from '../lib/api';
-import { BOARD_THEMES, boardTheme, type BoardTheme } from '../lib/boardThemes';
+import { BOARD_THEMES, boardTheme, preloadBoardFonts, type BoardTheme } from '../lib/boardThemes';
 import type { CanvasElement, CanvasImageElement, CanvasSlide, CanvasTextElement, FullCardItem } from '../lib/types';
 import {
   CANVAS_FONTS,
@@ -136,7 +136,11 @@ interface DragState {
   startY: number;
   orig: CanvasElement;
   pushed: boolean;
+  /** 여러 개를 골라 함께 옮길 때 각자의 시작 위치 */
+  group?: { id: string; x: number; y: number }[];
 }
+
+type AlignKind = 'left' | 'hcenter' | 'right' | 'top' | 'vmiddle' | 'bottom';
 
 export default function CanvasSlideEditor({
   slide,
@@ -155,6 +159,8 @@ export default function CanvasSlideEditor({
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadTarget = useRef<'new' | 'replace' | 'background'>('new');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Shift·Ctrl 로 더 고른 요소들(정렬·함께 옮기기·함께 지우기). selectedId 는 서식 도구가 쓰는 "대표".
+  const [multiIds, setMultiIds] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [wordsOpen, setWordsOpen] = useState(false);
@@ -167,12 +173,76 @@ export default function CanvasSlideEditor({
   slideRef.current = slide;
 
   useEffect(() => {
+    void preloadBoardFonts();
+  }, []);
+
+  useEffect(() => {
     setHistoryLen(historyBySlide.get(slide.id)?.length ?? 0);
     setSelectedId(null);
+    setMultiIds([]);
     setEditingId(null);
   }, [slide.id]);
 
   const selected = slide.elements.find((el) => el.id === selectedId) ?? null;
+  const selectedIds = [selectedId, ...multiIds].filter((id): id is string => !!id && slide.elements.some((el) => el.id === id));
+  const isMulti = selectedIds.length > 1;
+
+  function clearSelection() {
+    setSelectedId(null);
+    setMultiIds([]);
+  }
+
+  /** 일러스트레이터 정렬 — 하나만 골랐으면 슬라이드 기준, 여러 개면 고른 것들의 전체 영역 기준. */
+  function alignSelected(kind: AlignKind) {
+    const els = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    if (els.length === 0) return;
+    const b =
+      els.length === 1
+        ? { x: 0, y: 0, w: 100, h: 100 }
+        : (() => {
+            const x1 = Math.min(...els.map((e) => e.x));
+            const y1 = Math.min(...els.map((e) => e.y));
+            const x2 = Math.max(...els.map((e) => e.x + e.w));
+            const y2 = Math.max(...els.map((e) => e.y + e.h));
+            return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+          })();
+    setElements(
+      slideRef.current.elements.map((el) => {
+        if (!selectedIds.includes(el.id)) return el;
+        switch (kind) {
+          case 'left': return { ...el, x: b.x };
+          case 'hcenter': return { ...el, x: b.x + b.w / 2 - el.w / 2 };
+          case 'right': return { ...el, x: b.x + b.w - el.w };
+          case 'top': return { ...el, y: b.y };
+          case 'vmiddle': return { ...el, y: b.y + b.h / 2 - el.h / 2 };
+          case 'bottom': return { ...el, y: b.y + b.h - el.h };
+        }
+      }),
+    );
+  }
+
+  /** 간격 똑같이 — 양 끝 요소는 그대로 두고 사이 간격을 같게(3개 이상). */
+  function distributeSelected(axis: 'h' | 'v') {
+    const els = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    if (els.length < 3) return;
+    const pos = (e: CanvasElement) => (axis === 'h' ? e.x : e.y);
+    const size = (e: CanvasElement) => (axis === 'h' ? e.w : e.h);
+    const sorted = [...els].sort((a, b) => pos(a) - pos(b));
+    const start = pos(sorted[0]);
+    const end = Math.max(...sorted.map((e) => pos(e) + size(e)));
+    const gap = (end - start - sorted.reduce((sum, e) => sum + size(e), 0)) / (sorted.length - 1);
+    const next = new Map<string, number>();
+    let cursor = start;
+    for (const e of sorted) {
+      next.set(e.id, cursor);
+      cursor += size(e) + gap;
+    }
+    setElements(
+      slideRef.current.elements.map((el) =>
+        next.has(el.id) ? { ...el, ...(axis === 'h' ? { x: next.get(el.id)! } : { y: next.get(el.id)! }) } : el,
+      ),
+    );
+  }
 
   function snapshot(): Snapshot {
     const s = slideRef.current;
@@ -245,9 +315,9 @@ export default function CanvasSlideEditor({
   }
 
   function removeSelected() {
-    if (!selectedId) return;
-    setElements(slideRef.current.elements.filter((el) => el.id !== selectedId));
-    setSelectedId(null);
+    if (selectedIds.length === 0) return;
+    setElements(slideRef.current.elements.filter((el) => !selectedIds.includes(el.id)));
+    clearSelection();
     setEditingId(null);
   }
 
@@ -335,9 +405,33 @@ export default function CanvasSlideEditor({
     if (e.button !== 0) return;
     e.stopPropagation();
     if (editingId === el.id) return;
-    setSelectedId(el.id);
     if (editingId) setEditingId(null);
-    drag.current = { id: el.id, mode, startX: e.clientX, startY: e.clientY, orig: el, pushed: false };
+    // Shift·Ctrl+클릭: 선택에 넣고 빼기(일러스트레이터처럼)
+    if (mode === 'move' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+      if (!selectedId) setSelectedId(el.id);
+      else if (el.id === selectedId) {
+        setSelectedId(multiIds[0] ?? null);
+        setMultiIds(multiIds.slice(1));
+      } else setMultiIds((ids) => (ids.includes(el.id) ? ids.filter((id) => id !== el.id) : [...ids, el.id]));
+      return;
+    }
+    const inSelection = selectedIds.includes(el.id);
+    if (!inSelection) {
+      setSelectedId(el.id);
+      setMultiIds([]);
+    }
+    const groupIds = inSelection && isMulti && mode === 'move' ? selectedIds : null;
+    drag.current = {
+      id: el.id,
+      mode,
+      startX: e.clientX,
+      startY: e.clientY,
+      orig: el,
+      pushed: false,
+      group: groupIds
+        ? slideRef.current.elements.filter((x) => groupIds.includes(x.id)).map((x) => ({ id: x.id, x: x.x, y: x.y }))
+        : undefined,
+    };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
@@ -352,6 +446,18 @@ export default function CanvasSlideEditor({
       if (Math.abs(dx) < 0.2 && Math.abs(dy) < 0.2) return;
       pushHistory();
       d.pushed = true;
+    }
+    if (d.group) {
+      // 여러 개를 함께 옮기기(안내선 자석 없이)
+      const g = new Map(d.group.map((it) => [it.id, it]));
+      setElements(
+        slideRef.current.elements.map((el) => {
+          const start = g.get(el.id);
+          return start ? { ...el, x: start.x + dx, y: start.y + dy } : el;
+        }),
+        false,
+      );
+      return;
     }
     const o = d.orig;
     let { x, y, w, h } = o;
@@ -410,6 +516,14 @@ export default function CanvasSlideEditor({
       copySelected(true);
       return;
     }
+    if (mod && e.key.toLowerCase() === 'a') {
+      // 모두 선택
+      e.preventDefault();
+      const ids = slideRef.current.elements.map((el) => el.id);
+      setSelectedId(ids[0] ?? null);
+      setMultiIds(ids.slice(1));
+      return;
+    }
     if (!selected) return;
     if (e.key === 'Delete' || e.key === 'Backspace') {
       e.preventDefault();
@@ -425,9 +539,9 @@ export default function CanvasSlideEditor({
       const step = e.shiftKey ? 2 : 0.5;
       const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
       const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-      updateEl(selected.id, { x: selected.x + dx, y: selected.y + dy });
+      setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) ? { ...el, x: el.x + dx, y: el.y + dy } : el)));
     } else if (e.key === 'Escape') {
-      setSelectedId(null);
+      clearSelection();
     }
   }
 
@@ -666,6 +780,37 @@ export default function CanvasSlideEditor({
         )}
       </div>
 
+      {/* 정렬 (일러스트레이터처럼) */}
+      {selectedIds.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 rounded-lg bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+          <span className="mr-1 font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.canvas.alignTitle')}</span>
+          {(
+            [
+              ['left', 'align_horizontal_left'],
+              ['hcenter', 'align_horizontal_center'],
+              ['right', 'align_horizontal_right'],
+              ['top', 'align_vertical_top'],
+              ['vmiddle', 'align_vertical_center'],
+              ['bottom', 'align_vertical_bottom'],
+            ] as const
+          ).map(([kind, icon]) => (
+            <button key={kind} type="button" className={iconBtn()} onClick={() => alignSelected(kind)} title={t(`curriculum.canvas.align_${kind}_obj`)}>
+              <span className="material-symbols-outlined text-[20px]">{icon}</span>
+            </button>
+          ))}
+          <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+          <button type="button" className={iconBtn()} disabled={selectedIds.length < 3} onClick={() => distributeSelected('h')} title={t('curriculum.canvas.distributeH')}>
+            <span className="material-symbols-outlined text-[20px]">horizontal_distribute</span>
+          </button>
+          <button type="button" className={iconBtn()} disabled={selectedIds.length < 3} onClick={() => distributeSelected('v')} title={t('curriculum.canvas.distributeV')}>
+            <span className="material-symbols-outlined text-[20px]">vertical_distribute</span>
+          </button>
+          <span className="ml-auto font-caption text-caption text-on-surface-variant">
+            {isMulti ? t('curriculum.canvas.alignToSelection', { count: selectedIds.length }) : t('curriculum.canvas.alignToSlide')}
+          </span>
+        </div>
+      )}
+
       {/* 무대 */}
       <CanvasStageBox
         stageRef={stageRef}
@@ -673,7 +818,7 @@ export default function CanvasSlideEditor({
         className="select-none rounded-lg shadow-md outline-none ring-primary/40 focus-visible:ring-2"
         onPointerDown={(e) => {
           if (e.target === e.currentTarget || (e.target as HTMLElement).dataset.stageBg) {
-            setSelectedId(null);
+            clearSelection();
             setEditingId(null);
           }
           stageRef.current?.focus({ preventScroll: true });
@@ -692,7 +837,7 @@ export default function CanvasSlideEditor({
           <CanvasBackground slide={slide} />
         </div>
         {slide.elements.map((el) => {
-          const isSel = el.id === selectedId;
+          const isSel = selectedIds.includes(el.id);
           const isEditing = el.id === editingId && el.type === 'text';
           return (
             <div
@@ -718,7 +863,7 @@ export default function CanvasSlideEditor({
               ) : (
                 <CanvasElementContent el={el} placeholder={t('curriculum.canvas.placeholder')} />
               )}
-              {isSel && !isEditing &&
+              {isSel && !isMulti && !isEditing &&
                 HANDLES.map((hd) => (
                   <span
                     key={hd}
@@ -754,13 +899,50 @@ function TextEditBox({
   const ref = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
     const ta = ref.current;
-    if (ta && ta.scrollHeight > ta.clientHeight + 2) onGrow(ta.scrollHeight);
+    if (!ta) return;
+    // 보기 화면처럼 글을 세로 가운데에 — 입력을 마칠 때 글이 아래로 "뛰는" 것처럼 보이지 않게.
+    ta.style.paddingTop = '';
+    ta.style.paddingBottom = '';
+    if (ta.scrollHeight > ta.clientHeight + 2) {
+      onGrow(ta.scrollHeight);
+      return;
+    }
+    const cs = getComputedStyle(ta);
+    const padTop = parseFloat(cs.paddingTop) || 0;
+    const padBottom = parseFloat(cs.paddingBottom) || 0;
+    ta.style.height = '0px';
+    const content = ta.scrollHeight - padTop - padBottom;
+    ta.style.height = '';
+    const extra = ta.clientHeight - padTop - padBottom - content;
+    if (extra > 1) {
+      ta.style.paddingTop = `${padTop + extra / 2}px`;
+      ta.style.paddingBottom = `${padBottom + extra / 2}px`;
+    }
   });
   useEffect(() => {
     const ta = ref.current;
     if (!ta) return;
     ta.focus();
     ta.setSelectionRange(ta.value.length, ta.value.length);
+  }, []);
+  // 글꼴이 늦게 받아지면 입력칸이 대체 글꼴로 남아 있다가, 다른 곳을 누를 때 원래 글꼴로 "바뀌어" 보였다.
+  // 글꼴을 다 받으면 입력칸을 한 번 다시 그려 처음부터 같은 글꼴로 보이게 한다.
+  useEffect(() => {
+    let alive = true;
+    const repaint = () => {
+      const ta = ref.current;
+      if (!alive || !ta) return;
+      const family = ta.style.fontFamily;
+      ta.style.fontFamily = 'serif';
+      void ta.offsetWidth;
+      ta.style.fontFamily = family;
+    };
+    void preloadBoardFonts().then(repaint);
+    document.fonts?.addEventListener?.('loadingdone', repaint);
+    return () => {
+      alive = false;
+      document.fonts?.removeEventListener?.('loadingdone', repaint);
+    };
   }, []);
   const style = canvasTextStyle(el);
   return (

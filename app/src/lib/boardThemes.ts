@@ -207,3 +207,21 @@ export function boardWorksheetCss(th: BoardTheme): string {
   ${sel} [data-board-text] .font-bold, ${sel} [data-board-text] .font-title-md { font-weight: ${th.bold ? 700 : 600}; }
 }`;
 }
+
+/** 슬라이드 글꼴 미리 받기 — 구글 폰트는 "처음 쓰일 때" 받아서, 글상자를 처음 입력하는 동안은
+ * 다른 글꼴(대체 글꼴)로 보이다가 다른 곳을 누르면 원래 글꼴로 바뀌어 보였다(학원 와이파이처럼
+ * 느린 곳에서 특히). 편집기를 열 때 영문·한글 모두 굵게/보통을 먼저 받아 둔다. */
+let boardFontsPromise: Promise<unknown> | null = null;
+export function preloadBoardFonts(): Promise<unknown> {
+  if (boardFontsPromise) return boardFontsPromise;
+  if (typeof document === 'undefined' || !document.fonts?.load) return Promise.resolve();
+  const families = ['Gaegu', 'Andika', 'Fredoka', 'Quicksand', 'Noto Sans KR'];
+  const jobs: Promise<unknown>[] = [];
+  for (const fam of families) {
+    for (const weight of [400, 700]) {
+      jobs.push(document.fonts.load(`${weight} 20px '${fam}'`, 'AaBb 가나다').catch(() => null));
+    }
+  }
+  boardFontsPromise = Promise.all(jobs);
+  return boardFontsPromise;
+}

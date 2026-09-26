@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import OnboardingChecklist from '../components/OnboardingChecklist';
 import {
   fetchAcademyAttendanceOn,
   fetchAcademyTransactionsSince,
@@ -86,6 +87,8 @@ export default function DashboardPage() {
           style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, #FFD54F 0%, transparent 60%)' }}
         />
       </div>
+
+      {academy?.id && <OnboardingChecklist academyId={academy.id} />}
 
       {/* bento 그리드 */}
       <section className="rounded-2xl border border-primary/15 bg-surface-container-lowest p-5 shadow-sm sm:p-7">

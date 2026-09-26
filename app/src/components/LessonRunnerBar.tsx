@@ -16,6 +16,12 @@ import { PRESENT_FIT_EVENT, zoomAt } from './PresentZoomArea';
  * 슬라이드가 이미지든 영상이든 게임 라우트로 넘어가든 브라우저 레벨 상태라 그대로 유지된다.
  * 매 슬라이드마다 다시 눌러야 하면 캔바 발표 모드의 매끄러운 느낌과 어긋난다.
  */
+/** "?" 단축키 안내 — 발표 중에 쓸 수 있는 키·마우스·터치 조작(PresentZoomArea·LessonRunnerContext 동작과 같게 유지). */
+const KEY_ROWS = {
+  move: ['next', 'prev', 'clicker', 'click'],
+  screen: ['pan', 'wheelPan', 'zoom', 'dbl', 'fit'],
+} as const;
+
 export default function LessonRunnerBar() {
   const { t } = useTranslation();
   const { runner, next, prev, exit, isFullscreen, toggleFullscreen, zoom, setZoom } = useLessonRunner();
@@ -28,6 +34,7 @@ export default function LessonRunnerBar() {
   }
   const [pointsOpen, setPointsOpen] = useState(false);
   const [annotationOpen, setAnnotationOpen] = useState(false);
+  const [keysOpen, setKeysOpen] = useState(false);
 
   useEffect(() => {
     setAnnotationOpen(false);
@@ -134,6 +141,15 @@ export default function LessonRunnerBar() {
       </div>
       <button
         type="button"
+        onClick={() => setKeysOpen((v) => !v)}
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${keysOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
+        aria-label={t('curriculum.play.keysTitle')}
+        title={t('curriculum.play.keysTitle')}
+      >
+        <span className="material-symbols-outlined text-[20px]">help</span>
+      </button>
+      <button
+        type="button"
         onClick={toggleFullscreen}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/15"
         aria-label={t(isFullscreen ? 'curriculum.play.exitFullscreen' : 'curriculum.play.enterFullscreen')}
@@ -148,6 +164,39 @@ export default function LessonRunnerBar() {
         {t('curriculum.play.finish')}
       </button>
     </div>
+    {keysOpen && (
+      <div className="no-print fixed inset-0 z-40 flex items-start justify-end p-4 pt-16" onClick={() => setKeysOpen(false)}>
+        <div
+          className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-2xl bg-surface-container-lowest p-5 text-on-surface shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[22px] text-primary">keyboard</span>
+            <h2 className="font-title-md text-title-md text-deep-navy">{t('curriculum.play.keysTitle')}</h2>
+            <button type="button" onClick={() => setKeysOpen(false)} className="ml-auto rounded-full p-1 hover:bg-surface-container" aria-label={t('curriculum.play.keysClose')}>
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          {(['move', 'screen'] as const).map((group) => (
+            <div key={group} className="mb-4 last:mb-0">
+              <div className="mb-1.5 font-label-md text-label-md text-primary">{t(`curriculum.play.keys_${group}`)}</div>
+              <dl className="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-1.5">
+                {KEY_ROWS[group].map((row) => (
+                  <div key={row} className="contents">
+                    <dt className="whitespace-nowrap">
+                      <kbd className="rounded-md border border-outline-variant bg-surface-container-low px-1.5 py-0.5 font-caption text-caption">
+                        {t(`curriculum.play.key_${row}`)}
+                      </kbd>
+                    </dt>
+                    <dd className="font-body-sm text-body-sm text-on-surface-variant">{t(`curriculum.play.key_${row}_desc`)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
     {pointsOpen && runner.classId && (
       <LessonPointsPanel classId={runner.classId} onClose={() => setPointsOpen(false)} />
     )}
