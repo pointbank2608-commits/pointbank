@@ -405,7 +405,12 @@ export default function CanvasSlideEditor({
     if (e.button !== 0) return;
     e.stopPropagation();
     if (editingId === el.id) return;
-    if (editingId) setEditingId(null);
+    if (editingId) {
+      // 글을 입력하다 다른 글상자·그림을 누르면, 입력칸이 화면에서 먼저 사라져 blur(=저장)가 불리지 않아
+      // 쓴 글이 날아갔다(2026-09-27 버그). 입력칸의 초점을 먼저 빼서 저장(onDone)부터 하고 넘어간다.
+      (document.activeElement as HTMLElement | null)?.blur?.();
+      setEditingId(null);
+    }
     // Shift·Ctrl+클릭: 선택에 넣고 빼기(일러스트레이터처럼)
     if (mode === 'move' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
       if (!selectedId) setSelectedId(el.id);
