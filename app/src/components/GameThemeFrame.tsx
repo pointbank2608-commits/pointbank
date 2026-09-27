@@ -55,7 +55,11 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
   // absolute inset-0 으로 덮는다(2026-09-25 "수업 시작할 때 게임 화면도 전체 화면에 맞춰줘").
   const presenting = usePresenting();
-  const fill = isFullscreen || presenting;
+  // 아이폰 사파리는 웹 페이지 요소의 전체화면(Fullscreen API)을 지원하지 않는다(아이패드·컴퓨터만) — 그럴 땐
+  // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
+  const [pseudoFs, setPseudoFs] = useState(false);
+  const fullOn = isFullscreen || pseudoFs;
+  const fill = fullOn || presenting;
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
@@ -222,16 +226,46 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
     };
   }, [fill]);
 
+  function enterPseudo() {
+    setPseudoFs(true);
+    setItemsHidden(true);
+  }
+
   async function toggleFullscreen() {
     setFullscreenError(false);
+    if (pseudoFs) {
+      setPseudoFs(false);
+      setItemsHidden(false);
+      setScale(1);
+      return;
+    }
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else if (containerRef.current?.requestFullscreen) await containerRef.current.requestFullscreen();
-      else setFullscreenError(true);
+      else enterPseudo();
     } catch {
-      setFullscreenError(true);
+      enterPseudo();
     }
   }
+
+  // 화면 가득 모드: 뒤 페이지가 스크롤되지 않게, Esc 로도 나가게
+  useEffect(() => {
+    if (!pseudoFs) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setPseudoFs(false);
+        setItemsHidden(false);
+        setScale(1);
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [pseudoFs]);
 
   const fullscreenStyle: CSSProperties = fill
     ? {
@@ -242,10 +276,18 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
         width: '100%',
         height: '100%',
         backgroundColor: 'var(--color-background)',
-        // 발표 중(브라우저 전체화면이 이 요소가 아닐 때)엔 발표 영역을 통째로 덮는다.
-        ...(!isFullscreen ? { position: 'absolute', inset: 0, zIndex: 20 } : {}),
+        // 화면 가득(아이폰): 화면 전체를 고정으로 덮는다. 발표 중(브라우저 전체화면이 이 요소가 아닐 때)엔
+        // 발표 영역을 통째로 덮는다.
+        ...(pseudoFs
+          ? { position: 'fixed', inset: 0, zIndex: 60, height: '100dvh' }
+          : !isFullscreen
+            ? { position: 'absolute', inset: 0, zIndex: 20 }
+            : {}),
       }
-    : {};
+    : // 돌림판처럼 도는 게임은 네모 상자의 모서리가 옆으로 삐져나가 페이지 폭이 계속 바뀌었다 — 아이폰 사파리가
+      // 그 폭에 맞춰 화면을 확대·축소해서 돌릴 때 게임이 커졌다 작아졌다 흔들렸다(2026-09-27). 옆으로 삐져나간
+      // 부분만 잘라 페이지 폭을 고정한다(위아래 그림자는 그대로).
+      { overflowX: 'clip' };
 
   return (
     <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
@@ -311,12 +353,12 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
             <button
               type="button"
               onClick={toggleFullscreen}
-              title={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
-              aria-label={isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+              title={fullOn ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+              aria-label={fullOn ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
-              {isFullscreen ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
+              <span aria-hidden className="material-symbols-outlined text-[20px]">{fullOn ? 'fullscreen_exit' : 'fullscreen'}</span>
+              {fullOn ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
             </button>
           )}
         </div>
