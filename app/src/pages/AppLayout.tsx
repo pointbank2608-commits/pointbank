@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
+import { LAST_PAGE_KEY } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
@@ -10,7 +12,6 @@ import PrintBrandFooter from '../components/PrintBrandFooter';
 import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider, useLessonRunner } from '../context/LessonRunnerContext';
-import { useToast } from '../context/ToastContext';
 import { FREE_BLOCKED_PATHS } from '../lib/planLimits';
 
 interface NavItem {
@@ -31,9 +32,17 @@ export default function AppLayout() {
 
 function AppLayoutInner() {
   const { academy, profile, pointUnit, isStaff, isPaid, signOut } = useAuth();
-  const { notify } = useToast();
   const { t } = useTranslation();
   const { pathname } = useLocation();
+  // 도움말·문의를 열기 전 마지막 페이지(문의에 자동으로 붙는다)
+  useEffect(() => {
+    if (pathname.startsWith('/help')) return;
+    try {
+      sessionStorage.setItem(LAST_PAGE_KEY, pathname);
+    } catch {
+      /* 무시 */
+    }
+  }, [pathname]);
   const [mobileOpen, setMobileOpen] = useState(false);
   // 클래스뱅크 브랜드 footer 는 "수업 자료실"에서 뽑는 인쇄물에만 찍는다(학원 워터마크는 전 화면 공통).
   const isMaterialsPrint = pathname.startsWith('/materials');
@@ -135,6 +144,12 @@ function AppLayoutInner() {
       </ul>
 
       <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
+        {isStaff && (
+          <NavLink to="/help" onClick={() => setMobileOpen(false)} className={navLinkClass}>
+            <span className="material-symbols-outlined">support_agent</span>
+            {t('nav.help')}
+          </NavLink>
+        )}
         {isStaff && (
           <NavLink to="/settings" onClick={() => setMobileOpen(false)} className={navLinkClass}>
             <span className="material-symbols-outlined">settings</span>
@@ -238,7 +253,7 @@ function AppLayoutInner() {
         <span className="font-title-md text-title-md text-primary truncate">
           {academy?.name ?? t('common.brand')}
         </span>
-        <div className="w-9" aria-hidden />
+        {isStaff ? <NotificationBell /> : <div className="w-9" aria-hidden />}
       </header>
 
       {/* 모바일 드로어 */}
@@ -263,14 +278,7 @@ function AppLayoutInner() {
         {/* 데스크톱 상단바 */}
         <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
           <LanguageToggle />
-          <button
-            type="button"
-            onClick={() => notify(t('nav.notificationsComingSoon'))}
-            className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
-            aria-label={t('nav.notifications')}
-          >
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
+          {isStaff && <NotificationBell />}
           <Link
             to={isStaff ? '/settings' : homeTo}
             className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors"
@@ -287,6 +295,7 @@ function AppLayoutInner() {
           </Link>
         </header>
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">
+          {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
           <Outlet />
         </div>

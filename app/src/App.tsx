@@ -1,4 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import AdminTodayPage from './pages/AdminTodayPage';
+import AdminAcademyDetailPage from './pages/AdminAcademyDetailPage';
+import AdminSupportPage from './pages/AdminSupportPage';
+import AdminNoticesPage from './pages/AdminNoticesPage';
+import HelpPage from './pages/HelpPage';
+import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
 import SharedLessonPage from './pages/SharedLessonPage';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
@@ -134,7 +140,11 @@ export default function App() {
     return (
       <Routes>
         <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminAcademiesPage />} />
+          <Route path="/admin" element={<AdminTodayPage />} />
+          <Route path="/admin/academies" element={<AdminAcademiesPage />} />
+          <Route path="/admin/academies/:id" element={<AdminAcademyDetailPage />} />
+          <Route path="/admin/support" element={<AdminSupportPage />} />
+          <Route path="/admin/notices" element={<AdminNoticesPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>
@@ -147,7 +157,13 @@ export default function App() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/refund-policy" element={<RefundPolicyPage />} />
-      <Route element={<AppLayout />}>
+      <Route
+        element={
+          <NoticeProvider>
+            <AppLayout />
+          </NoticeProvider>
+        }
+      >
         {isStaff ? (
           <>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -160,6 +176,7 @@ export default function App() {
             <Route path="/results/homework/:studentId" element={<HomeworkCalendarPage />} />
             <Route path="/results/history/:studentId" element={<StudentHistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/help" element={<HelpPage />} />
             <Route path="/settings/billing" element={<BillingPage />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />

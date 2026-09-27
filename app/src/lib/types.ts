@@ -12,6 +12,9 @@ export interface Academy {
   next_billing_at: string | null;
   card_brand: string | null;
   card_last4: string | null;
+  /** 019 결제 컬럼 — 결제 실패 횟수·유료 만료일(원장 화면 결제 안내 띠에 쓴다) */
+  billing_failure_count?: number;
+  plan_expires_at?: string | null;
 }
 
 export interface Profile {

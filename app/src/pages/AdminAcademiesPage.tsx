@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { adminAcademyRows, type AdminAcademyRow as OpsRow } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { adminSetAcademyPlan, changeMyPassword, deleteAcademyAsAdmin, fetchAdminAcademies } from '../lib/api';
@@ -24,6 +26,16 @@ export default function AdminAcademiesPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwBusy, setPwBusy] = useState(false);
   const [untilDrafts, setUntilDrafts] = useState<Record<string, string>>({});
+  // 검색·필터(오늘 할 일에서 ?filter=billing|new|paid 로 들어올 수 있다)
+  const [params] = useSearchParams();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<string>(params.get('filter') ?? 'all');
+  const [ops, setOps] = useState<Map<string, OpsRow>>(new Map());
+  useEffect(() => {
+    adminAcademyRows()
+      .then((r) => setOps(new Map(r.map((x) => [x.academy_id, x]))))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -39,6 +51,22 @@ export default function AdminAcademiesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const now = Date.now();
+    return rows.filter((r) => {
+      const o = ops.get(r.academy_id);
+      if (q && !(r.name.toLowerCase().includes(q) || (o?.owner_email ?? '').toLowerCase().includes(q) || (o?.owner_name ?? '').toLowerCase().includes(q))) return false;
+      if (filter === 'paid') return r.plan === 'paid';
+      if (filter === 'free') return r.plan !== 'paid';
+      if (filter === 'new') return now - Date.parse(r.created_at) <= 7 * 86_400_000;
+      if (filter === 'billing')
+        return !!o && (o.billing_failure_count > 0 || o.plan_status === 'pending_cancel' || (o.plan === 'paid' && !!o.plan_expires_at && Date.parse(o.plan_expires_at) - now <= 7 * 86_400_000));
+      if (filter === 'dormant') return !o?.last_active_at || now - Date.parse(o.last_active_at) > 14 * 86_400_000;
+      return true;
+    });
+  }, [rows, ops, query, filter]);
 
   async function handlePlanToggle(row: AdminAcademyRow) {
     const nextPlan = row.plan === 'paid' ? 'free' : 'paid';
@@ -126,6 +154,26 @@ export default function AdminAcademiesPage() {
             </div>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('adminOps.searchAcademy')}
+              className="min-w-[220px] flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            {['all', 'paid', 'free', 'new', 'billing', 'dormant'].map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFilter(f)}
+                className={`rounded-full px-3 py-1.5 font-label-md text-label-md ${filter === f ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant'}`}
+              >
+                {t(`adminOps.filter_${f}`)}
+              </button>
+            ))}
+            <span className="font-caption text-caption text-on-surface-variant">{t('adminOps.shownCount', { n: shown.length })}</span>
+          </div>
           <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -141,10 +189,19 @@ export default function AdminAcademiesPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {shown.map((r) => (
                   <tr key={r.academy_id} className="border-b border-surface-container last:border-0">
                     <td className="px-4 md:px-6 py-3 font-label-md text-label-md text-on-surface whitespace-nowrap">
-                      {r.name}
+                      <Link to={`/admin/academies/${r.academy_id}`} className="text-primary hover:underline">
+                        {r.name}
+                      </Link>
+                      <div className="font-caption text-caption text-on-surface-variant">
+                        {ops.get(r.academy_id)?.owner_email ?? ''}
+                        {ops.get(r.academy_id)?.last_active_at
+                          ? ` · ${t('adminOps.lastActive', { date: new Date(ops.get(r.academy_id)!.last_active_at!).toLocaleDateString() })}`
+                          : ''}
+                        {(ops.get(r.academy_id)?.billing_failure_count ?? 0) > 0 ? ` · ⚠ ${t('adminOps.failures', { n: ops.get(r.academy_id)!.billing_failure_count })}` : ''}
+                      </div>
                     </td>
                     <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{r.point_unit}</td>
                     <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{r.owner_count}</td>

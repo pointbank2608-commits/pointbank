@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,6 +31,32 @@ export default function AdminLayout() {
           </div>
         </div>
       </header>
+      <nav className="bg-surface-container-lowest border-t border-outline-variant/30">
+        <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop flex gap-1 overflow-x-auto">
+          {(
+            [
+              ['/admin', 'today', 'task_alt'],
+              ['/admin/academies', 'academies', 'school'],
+              ['/admin/support', 'support', 'support_agent'],
+              ['/admin/notices', 'notices', 'campaign'],
+            ] as const
+          ).map(([to, key, icon]) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/admin'}
+              className={({ isActive }) =>
+                `flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-3 font-label-md text-label-md transition-colors ${
+                  isActive ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-primary'
+                }`
+              }
+            >
+              <span className="material-symbols-outlined text-[18px]">{icon}</span>
+              {t(`adminOps.tab_${key}`)}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
       <main className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-margin-desktop">
         <Outlet />
       </main>
