@@ -126,6 +126,8 @@ export interface ContestRoundNames {
   oxPrompt: (word: string, meaning: string) => string;
   picturePrompt: string;
   listenPrompt: string;
+  /** 빈칸 문제: 빈칸 문장 + 정답 뜻 힌트("I eat an _____. (사과)") — 보기 중 뜻이 맞는 건 하나뿐이라 논란이 없다 */
+  blankPrompt: (sentence: string, meaning: string) => string;
 }
 
 const LETTERS = /^[a-z]+$/i;
@@ -150,6 +152,61 @@ export function blankSentence(example: string | null | undefined, word: string):
   const re = new RegExp(`\\b${escapeRe(w)}\\b`, 'i');
   if (!re.test(example)) return null;
   return example.replace(re, '_____').trim();
+}
+
+/** 뜻 문자열을 낱낱의 뜻으로("달리다, 뛰다" → 달리다/뛰다) — 뜻이 겹치는 보기를 거를 때 쓴다 */
+function meaningParts(meaning: string): string[] {
+  return meaning
+    .split(/[,/;·()~]+/)
+    .map((m) => norm(m).replace(/\s+/g, ''))
+    .filter((m) => m.length > 0);
+}
+
+/** 두 단어가 뜻이 겹치는지(같은 뜻이 하나라도 있거나 한쪽 뜻이 다른 쪽을 품으면) */
+function meaningsOverlap(a: string, b: string): boolean {
+  const pa = meaningParts(a);
+  const pb = meaningParts(b);
+  return pa.some((x) => pb.some((y) => x === y || (x.length >= 2 && y.includes(x)) || (y.length >= 2 && x.includes(y))));
+}
+
+/** 같은 낱말의 다른 꼴(apple/apples, run/running)인지 — 빈칸에 넣으면 둘 다 말이 될 수 있다 */
+function sameStem(a: string, b: string): boolean {
+  const x = norm(a);
+  const y = norm(b);
+  if (x === y) return true;
+  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+  return short.length >= 3 && long.startsWith(short) && long.length - short.length <= 3;
+}
+
+const startsWithVowelSound = (w: string) => /^[aeiou]/i.test(w.trim()) && !/^(u[bcfhjkqrst][aeiou]|uni|eu|one|once)/i.test(w.trim());
+
+/**
+ * 빈칸 채우기 오답 보기 — 의미상 빈칸에 들어가도 말이 되는 단어를 피한다(2026-09-28, 대회에서 "이것도 답 아니에요?" 논란).
+ * 1) 뜻이 겹치거나 같은 낱말의 다른 꼴이면 절대 안 씀
+ * 2) 같은 주제(사전 카테고리)는 빈칸에 들어가도 말이 되기 쉬워서(과일 문장에 다른 과일) 뒤로 미룬다 —
+ *    주제가 한 가지뿐인 단어장이면 어쩔 수 없이 쓰지만, 문제에 정답 뜻 힌트가 붙어 있어 정답은 하나로 정해진다
+ * 3) 품사가 같은 것을 앞에(문법만 보고 찍지 못하게), 빈칸 앞 a/an 과 첫소리가 맞는 것을 앞에
+ */
+export function pickBlankDistractors(answer: FullCardItem, sentence: string, pool: FullCardItem[], count = 3): string[] {
+  const article = /\b(an?)\s+_____/i.exec(sentence)?.[1]?.toLowerCase();
+  const seen = new Set<string>();
+  const scored: { word: string; score: number }[] = [];
+  for (const w of pool) {
+    const word = w.word.trim();
+    const key = norm(word);
+    if (!word || seen.has(key)) continue;
+    if (sameStem(word, answer.word) || meaningsOverlap(w.meaning, answer.meaning)) continue;
+    // 문장 안에 이미 있는 낱말은 보기로 어색하다
+    if (new RegExp(`\\b${escapeRe(word)}\\b`, 'i').test(sentence)) continue;
+    seen.add(key);
+    let score = Math.random();
+    const sameTopic = !!answer.category && !!w.category && answer.category === w.category;
+    if (sameTopic) score -= 10;
+    if (answer.partOfSpeech && w.partOfSpeech && answer.partOfSpeech === w.partOfSpeech) score += 2;
+    if (article && startsWithVowelSound(word) === (article === 'an')) score += 1;
+    scored.push({ word, score });
+  }
+  return scored.sort((a, b) => b.score - a.score).slice(0, count).map((x) => x.word);
 }
 
 const canScramble = (w: FullCardItem) => LETTERS.test(w.word.trim()) && w.word.trim().length >= 3;
@@ -260,8 +317,19 @@ export function buildContestQuestions(
         break;
       case 'blank':
         for (const w of take('blank', usable.filter((x) => blankSentence(x.example, x.word)), r.count)) {
-          const c = choiceOf(w.word.trim(), wordsOf(w));
-          if (c) made.push({ ...base, ...c, id: uid(), prompt: blankSentence(w.example, w.word)!, points: LIVE_DEFAULT_POINTS, seconds: 25 });
+          const sentence = blankSentence(w.example, w.word)!;
+          const wrong = pickBlankDistractors(w, sentence, usable);
+          if (wrong.length === 0) continue;
+          const choices = shuffle([w.word.trim(), ...wrong]);
+          made.push({
+            ...base,
+            id: uid(),
+            prompt: names.blankPrompt(sentence, w.meaning.trim()),
+            choices,
+            correctIndex: choices.indexOf(w.word.trim()),
+            points: LIVE_DEFAULT_POINTS,
+            seconds: 25,
+          });
         }
         break;
     }
@@ -432,16 +500,32 @@ export function forgetLiveToken(code: string) {
   }
 }
 
-export async function liveJoin(code: string, nickname: string): Promise<string> {
+const NICK_KEY = 'classbank.live.nickname';
+
+/** 이 휴대폰에서 마지막으로 쓴 닉네임 — 창이 꺼졌다 다시 들어올 때 입장 칸에 미리 채운다 */
+export function readLiveNickname(): string {
+  try {
+    return localStorage.getItem(NICK_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * 입장. 같은 닉네임을 쓰던 휴대폰이 20초 넘게 조용하면(창이 꺼짐) 같은 참가자로 다시 들어와
+ * 점수·답 기록이 이어진다 — rejoined: true (supabase/032_live_quiz_rejoin.sql).
+ */
+export async function liveJoin(code: string, nickname: string): Promise<{ token: string; rejoined: boolean }> {
   const { data, error } = await supabase.rpc('live_join', { p_code: code, p_nickname: nickname });
   if (error) throw error;
-  const token = (data as { token: string }).token;
+  const res = data as { token: string; rejoined?: boolean };
   try {
-    localStorage.setItem(tokenKey(code), token);
+    localStorage.setItem(tokenKey(code), res.token);
+    localStorage.setItem(NICK_KEY, nickname);
   } catch {
     /* 새로고침하면 다시 들어와야 할 뿐 */
   }
-  return token;
+  return { token: res.token, rejoined: res.rejoined === true };
 }
 
 export async function liveState(token: string): Promise<LiveStudentState> {
@@ -473,5 +557,6 @@ export function contestRoundNames(t: (k: string, o?: Record<string, unknown>) =>
     oxPrompt: (word, meaning) => t('liveQuiz.oxPrompt', { word, meaning }),
     picturePrompt: t('liveQuiz.picturePrompt'),
     listenPrompt: t('liveQuiz.listenPrompt'),
+    blankPrompt: (sentence, meaning) => t('liveQuiz.blankPrompt', { sentence, meaning }),
   };
 }
