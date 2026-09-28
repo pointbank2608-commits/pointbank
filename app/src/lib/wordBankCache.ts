@@ -25,7 +25,7 @@ export function useWordBankEnriched(cards: FullCardItem[]): FullCardItem[] {
   return useMemo(() => (bank ? enrichCards(cards, bank) : cards), [bank, cards]);
 }
 
-/** 사전 목록으로 카드에 예문·품사·그림을 채운다(같은 낱말, 뜻까지 같으면 그 뜻 우선). */
+/** 사전 목록으로 카드에 예문·품사·그림·주제를 채운다(같은 낱말, 뜻까지 같으면 그 뜻 우선). */
 export function enrichCards(cards: FullCardItem[], bank: WordBankEntry[]): FullCardItem[] {
   if (bank.length === 0) return cards;
   const byWord = new Map<string, WordBankEntry[]>();
@@ -42,6 +42,8 @@ export function enrichCards(cards: FullCardItem[], bank: WordBankEntry[]): FullC
       example: c.example ?? hit.example_sentence,
       partOfSpeech: c.partOfSpeech ?? hit.part_of_speech,
       imageUrl: c.imageUrl ?? hit.image_url,
+      // 대회 퀴즈쇼 빈칸 보기가 "같은 주제 단어"를 피할 때 쓴다(직접 입력한 단어도 사전에 있으면 주제를 안다)
+      category: c.category ?? hit.category,
     };
   });
 }

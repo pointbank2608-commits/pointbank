@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { flushSync } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -9,6 +10,7 @@ import {
   liveJoin,
   liveState,
   liveSubmit,
+  readLiveNickname,
   readLiveToken,
   type LiveStudentState,
 } from '../lib/liveQuiz';
@@ -16,7 +18,9 @@ import { CHOICE_STYLES } from '../components/QuizShowHost';
 
 /**
  * 대회 퀴즈쇼 — 학생 휴대폰 화면(/join, /join/:code). 로그인 없이 입장 번호 + 닉네임만.
- * 화면은 선생님 칠판을 따라간다: 방송(broadcast) 신호가 오면 바로, 아니어도 2초마다 서버에 묻는다.
+ * 화면은 선생님 칠판을 따라간다: 방송(broadcast) 신호가 오면 바로 서버에 묻는다. 신호를 놓칠 때를 대비한
+ * 예비 폴링은 방송 연결이 살아 있으면 10초, 끊겼거나 다시 붙는 중이면 2초(동시 대회가 많아도 서버가 버티게).
+ * 창이 꺼져도 같은 휴대폰이면 저장해 둔 열쇠로, 다른 브라우저면 같은 닉네임으로 다시 들어와 점수가 이어진다(032).
  * 이름은 닉네임만 받는다(개인정보를 남기지 않게) — 선생님이 칠판에서 부적절한 닉네임을 내보낼 수 있다.
  */
 export default function LiveJoinPage() {
@@ -24,7 +28,8 @@ export default function LiveJoinPage() {
   const { code: codeParam } = useParams();
   const navigate = useNavigate();
   const [code, setCode] = useState(codeParam ?? '');
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNickname] = useState(() => readLiveNickname());
+  const [rejoined, setRejoined] = useState(false);
   const [token, setToken] = useState<string | null>(() => (codeParam ? readLiveToken(codeParam) : null));
   const [state, setState] = useState<LiveStudentState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,16 +61,40 @@ export default function LiveJoinPage() {
   useEffect(() => {
     if (!token) return;
     void load();
-    const poll = window.setInterval(() => void load(), 2000);
-    const ch = supabase.channel(liveChannelName(code)).on('broadcast', { event: 'state' }, () => void load()).subscribe();
+    let poll: number | undefined;
+    const setPoll = (ms: number) => {
+      window.clearInterval(poll);
+      poll = window.setInterval(() => void load(), ms);
+    };
+    setPoll(FALLBACK_POLL_MS);
+    const ch = supabase
+      .channel(liveChannelName(code))
+      .on('broadcast', { event: 'state' }, () => void load())
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // 방송이 (다시) 연결됐다 — 끊긴 사이 놓친 화면을 바로 받고, 예비 폴링은 느리게
+          void load();
+          setPoll(HEALTHY_POLL_MS);
+        } else {
+          setPoll(FALLBACK_POLL_MS);
+        }
+      });
     const onVisible = () => document.visibilityState === 'visible' && void load();
     document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', onVisible);
     return () => {
       window.clearInterval(poll);
       void supabase.removeChannel(ch);
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', onVisible);
     };
   }, [token, code, load]);
+
+  useEffect(() => {
+    if (!rejoined) return;
+    const id = window.setTimeout(() => setRejoined(false), 4000);
+    return () => window.clearTimeout(id);
+  }, [rejoined]);
 
   // 문제가 바뀌면 입력칸 비우기
   const qKey = `${state?.phase}:${state?.q_index}`;
@@ -87,7 +116,22 @@ export default function LiveJoinPage() {
     setBusy(true);
     setError(null);
     try {
-      const tk = await liveJoin(c, nickname.trim());
+      // 이 휴대폰이 이 대회에 들어왔던 적이 있으면(첫 화면 /join 으로 다시 온 경우) 그 열쇠로 이어서
+      const saved = readLiveToken(c);
+      if (saved) {
+        const s = await liveState(saved).catch(() => null);
+        if (s && s.error !== 'no_player') {
+          setCode(c);
+          if (codeParam !== c) navigate(`/join/${c}`, { replace: true });
+          setToken(saved);
+          setRejoined(true);
+          return;
+        }
+        forgetLiveToken(c);
+      }
+      const res = await liveJoin(c, nickname.trim());
+      const tk = res.token;
+      if (res.rejoined) setRejoined(true);
       setCode(c);
       if (codeParam !== c) navigate(`/join/${c}`, { replace: true });
       setToken(tk);
@@ -121,12 +165,17 @@ export default function LiveJoinPage() {
 
   const shell = 'flex min-h-[100dvh] flex-col bg-[#16213e] text-white';
   const topBar = state && (
+    <>
+    {rejoined && (
+      <div className="bg-[#2e9e5b] px-4 py-2 text-center text-sm font-bold">{t('liveQuiz.rejoined')}</div>
+    )}
     <div className="flex items-center gap-2 px-4 py-3 text-sm text-white/80">
       <span className="font-bold text-white">{state.nickname}</span>
       <span className="ml-auto tabular-nums">
         {t('liveQuiz.myScore')} <b className="text-warm-yellow">{state.score.toLocaleString()}</b>
       </span>
     </div>
+    </>
   );
 
   /* ---------- 입장 ---------- */
@@ -339,31 +388,14 @@ export default function LiveJoinPage() {
       )}
 
       {q.kind === 'text' && (
-        <form
-          className="flex flex-1 flex-col gap-3 p-4"
-          onSubmit={(e) => {
-            e.preventDefault();
+        <TextAnswer
+          text={text}
+          setText={setText}
+          disabled={pending != null || timeUp}
+          onSubmit={() => {
             if (text.trim()) void submit(null, text.trim(), 'text');
           }}
-        >
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value.slice(0, 60))}
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            autoComplete="off"
-            placeholder={t('liveQuiz.typeHere')}
-            className="w-full rounded-2xl border-2 border-white/30 bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow"
-          />
-          <button
-            type="submit"
-            disabled={!text.trim() || pending != null || timeUp}
-            className="rounded-full bg-warm-yellow py-4 text-xl font-bold text-deep-navy shadow-lg disabled:opacity-50"
-          >
-            {t('liveQuiz.submit')}
-          </button>
-        </form>
+        />
       )}
 
       {q.kind === 'buzzer' && (
@@ -379,6 +411,167 @@ export default function LiveJoinPage() {
         </div>
       )}
       {timeUp && <p className="pb-6 text-center font-bold text-white/80">{t('liveQuiz.timeUp')}</p>}
+    </div>
+  );
+}
+
+/** 방송이 살아 있을 때 예비 폴링 간격 / 끊겼을 때 */
+const HEALTHY_POLL_MS = 10_000;
+const FALLBACK_POLL_MS = 2_000;
+
+const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+const KBD_PREF_KEY = 'classbank.live.keyboard';
+
+function readKbdPref(): 'screen' | 'device' {
+  try {
+    return localStorage.getItem(KBD_PREF_KEY) === 'device' ? 'device' : 'screen';
+  } catch {
+    return 'screen';
+  }
+}
+
+/**
+ * 철자 쓰기(주관식) 답 칸 — 기본은 화면 자판(2026-09-28). 아이패드·아이폰 사파리는 입력칸을 코드로 눌러 줘도
+ * 기기 자판이 안 뜨고, 아이가 칸을 한 번 더 눌러야 해서 순발력 대회에서 불리했다. 화면 자판은 문제가 뜨자마자
+ * 바로 누를 수 있고 모든 기기에서 같다(자동 고침·대문자 자동 변환도 없음). 연결된 실물 키보드로도 칠 수 있다.
+ * 한글 답처럼 화면 자판에 없는 글자가 필요하면 "기기 자판으로 쓰기"로 바꾼다(선택은 이 휴대폰에 기억).
+ */
+function TextAnswer({
+  text,
+  setText,
+  disabled,
+  onSubmit,
+}: {
+  text: string;
+  setText: (v: string | ((prev: string) => string)) => void;
+  disabled: boolean;
+  onSubmit: () => void;
+}) {
+  const { t } = useTranslation();
+  const [mode, setMode] = useState<'screen' | 'device'>(readKbdPref);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const type = useCallback((ch: string) => setText((prev) => (prev + ch).slice(0, 60)), [setText]);
+  const back = useCallback(() => setText((prev) => prev.slice(0, -1)), [setText]);
+
+  // 실물 키보드(블루투스 키보드·노트북)
+  useEffect(() => {
+    if (mode !== 'screen' || disabled) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Backspace') back();
+      else if (e.key === 'Enter') onSubmit();
+      else if (e.key.length === 1 && /[a-zA-Z '\-.]/.test(e.key)) type(e.key.toLowerCase());
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mode, disabled, back, type, onSubmit]);
+
+  function switchMode(next: 'screen' | 'device') {
+    try {
+      localStorage.setItem(KBD_PREF_KEY, next);
+    } catch {
+      /* 무시 */
+    }
+    // 아이패드는 누른 그 순간(같은 터치 안)에 입력칸을 눌러 줘야 자판이 뜬다 — 바로 그리고 바로 누른다
+    flushSync(() => setMode(next));
+    if (next === 'device') inputRef.current?.focus();
+  }
+
+  const key = 'flex h-14 min-w-0 flex-1 items-center justify-center rounded-xl bg-white text-2xl font-bold text-deep-navy shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none disabled:opacity-50 [touch-action:manipulation]';
+
+  if (mode === 'device') {
+    return (
+      <form
+        className="flex flex-1 flex-col gap-3 p-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
+        <input
+          ref={inputRef}
+          value={text}
+          onChange={(e) => setText(e.target.value.slice(0, 60))}
+          autoFocus
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          autoComplete="off"
+          enterKeyHint="send"
+          placeholder={t('liveQuiz.typeHere')}
+          className="w-full rounded-2xl border-2 border-white/30 bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow"
+        />
+        <button
+          type="submit"
+          disabled={!text.trim() || disabled}
+          className="rounded-full bg-warm-yellow py-4 text-xl font-bold text-deep-navy shadow-lg disabled:opacity-50"
+        >
+          {t('liveQuiz.submit')}
+        </button>
+        <button type="button" onClick={() => switchMode('screen')} className="mx-auto text-sm text-white/70 underline">
+          {t('liveQuiz.useScreenKeyboard')}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3 p-3">
+      <div
+        className={`flex min-h-[64px] items-center justify-center break-all rounded-2xl border-2 bg-white px-4 py-3 text-center text-3xl font-bold text-deep-navy ${text ? 'border-warm-yellow' : 'border-white/30'}`}
+        aria-live="polite"
+      >
+        {text ? (
+          <span>
+            {text}
+            <span className="ml-0.5 inline-block h-8 w-[3px] animate-pulse bg-deep-navy align-middle" />
+          </span>
+        ) : (
+          <span className="text-xl text-on-surface-variant">{t('liveQuiz.typeHere')}</span>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 select-none">
+        {KEY_ROWS.map((row, r) => (
+          <div key={row} className="flex gap-1.5" style={{ paddingInline: r === 1 ? '4%' : r === 2 ? '0' : undefined }}>
+            {r === 2 && (
+              <button type="button" disabled={disabled} onClick={() => type("'")} className={key} aria-label="apostrophe">
+                &#39;
+              </button>
+            )}
+            {[...row].map((ch) => (
+              <button key={ch} type="button" disabled={disabled} onClick={() => type(ch)} className={key}>
+                {ch}
+              </button>
+            ))}
+            {r === 2 && (
+              <button type="button" disabled={disabled || !text} onClick={back} className={`${key} flex-[1.6] bg-white/80`} aria-label={t('liveQuiz.backspace')}>
+                <span aria-hidden>⌫</span>
+              </button>
+            )}
+          </div>
+        ))}
+        <div className="flex gap-1.5">
+          <button type="button" disabled={disabled} onClick={() => type('-')} className={key}>
+            -
+          </button>
+          <button type="button" disabled={disabled} onClick={() => type(' ')} className={`${key} flex-[5] text-base`}>
+            {t('liveQuiz.space')}
+          </button>
+          <button
+            type="button"
+            disabled={disabled || !text.trim()}
+            onClick={onSubmit}
+            className="flex h-14 min-w-0 flex-[3] items-center justify-center rounded-xl bg-warm-yellow text-xl font-bold text-deep-navy shadow-lg active:translate-y-0.5 disabled:opacity-50 [touch-action:manipulation]"
+          >
+            {t('liveQuiz.submit')}
+          </button>
+        </div>
+      </div>
+      <button type="button" onClick={() => switchMode('device')} className="mx-auto mt-1 text-sm text-white/70 underline">
+        {t('liveQuiz.useDeviceKeyboard')}
+      </button>
     </div>
   );
 }
