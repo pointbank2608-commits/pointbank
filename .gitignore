@@ -11,3 +11,6 @@ dist/
 
 # Claude Code 로컬 설정 (개인별로 달라서 공유하지 않음)
 .claude/settings.local.json
+
+# 효과음 원본(Kenney 등) — 쓸 파일만 app/public/sounds 로 옮긴다
+sound-source/

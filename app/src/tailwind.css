@@ -3079,6 +3079,49 @@
     inset -3px -4px 6px rgba(40, 22, 12, 0.18),
     0 2px 0 rgba(90, 50, 18, 0.16);
 }
+.ws-cell.ws-shake {
+  background: #e5533d !important;
+  color: #fff !important;
+  animation: ws-shake 0.35s ease-in-out;
+}
+.ws-pop {
+  animation: ws-pop 0.5s ease-out;
+}
+.ws-found-msg {
+  display: inline-block;
+  font-size: 16px;
+  animation: ws-pop 0.5s ease-out;
+}
+@keyframes ws-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+@keyframes ws-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-cell.ws-shake,
+  .ws-pop,
+  .ws-found-msg {
+    animation: none;
+  }
+}
 .ws-chips {
   display: flex;
   flex-wrap: wrap;

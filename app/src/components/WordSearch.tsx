@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -123,6 +123,10 @@ function lineBetween(a: Cell, b: Cell): Cell[] | null {
   return cells;
 }
 
+// 찾은 단어마다 다른 진한 색 — 스킨의 옅은 색에 묻히지 않게 인라인으로 칠한다(2026-09-28 선생님 피드백:
+// 눌러도 반응이 없어 보임).
+const FOUND_COLORS = ['#2a9d8c', '#e8743b', '#3f7fd0', '#d4497a', '#8a5ad6', '#c99a12', '#4f9d3a', '#1f8fb0'];
+
 function sameCells(a: Cell[], b: Cell[]): boolean {
   if (a.length !== b.length) return false;
   const forward = a.every((c, i) => c.row === b[i].row && c.col === b[i].col);
@@ -146,7 +150,15 @@ export default function WordSearch({
   const [puzzle, setPuzzle] = useState<Puzzle>(() => buildPuzzle(items));
   const [selectedStart, setSelectedStart] = useState<Cell | null>(null);
   const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
+  /** 단어별로 실제로 고른 줄(숨긴 자리와 다를 수 있다) */
+  const [foundLines, setFoundLines] = useState<Record<string, Cell[]>>({});
   const [wrongCells, setWrongCells] = useState<Set<string> | null>(null);
+  // 첫 글자를 고른 뒤 손가락·마우스가 가리키는 칸 — 첫 글자부터 여기까지 줄을 미리 보여 준다
+  const [hoverCell, setHoverCell] = useState<Cell | null>(null);
+  const [justFound, setJustFound] = useState<string | null>(null);
+  const [alreadyFound, setAlreadyFound] = useState<string | null>(null);
+  const dragging = useRef(false);
+  const justFoundTimer = useRef<number | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
@@ -160,6 +172,7 @@ export default function WordSearch({
     setPuzzle(buildPuzzle(items));
     setSelectedStart(null);
     setFoundIds(new Set());
+    setFoundLines({});
     setWrongCells(null);
     return () => {
       if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
@@ -222,36 +235,103 @@ export default function WordSearch({
 
   function restart() {
     if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    setHoverCell(null);
+    setJustFound(null);
+    setAlreadyFound(null);
     setPuzzle(buildPuzzle(items));
     setSelectedStart(null);
     setFoundIds(new Set());
+    setFoundLines({});
     setWrongCells(null);
   }
 
-  function clickCell(row: number, col: number) {
-    if (finished) return;
-    if (!selectedStart) {
-      setSelectedStart({ row, col });
-      setWrongCells(null);
-      return;
-    }
-    if (selectedStart.row === row && selectedStart.col === col) {
-      setSelectedStart(null);
-      return;
-    }
-    const line = lineBetween(selectedStart, { row, col });
+  function commit(start: Cell, end: Cell) {
     setSelectedStart(null);
-    if (!line) return;
-    const match = placements.find((p) => !foundIds.has(p.id) && sameCells(p.cells, line));
+    setHoverCell(null);
+    const line = lineBetween(start, end);
+    // 빈칸을 단어 글자로 채워서 같은 글자 줄이 우연히 여러 곳에 생길 수 있다 — 숨긴 자리가 아니어도 글자가
+    // 단어와 같으면(거꾸로 읽어도) 정답으로 인정하고, 고른 그 줄을 칠한다(2026-09-28 선생님 피드백).
+    const text = line ? line.map((c) => grid[c.row][c.col]).join('') : '';
+    const reversed = [...text].reverse().join('');
+    const match =
+      line &&
+      (placements.find((p) => !foundIds.has(p.id) && sameCells(p.cells, line)) ??
+        placements.find((p) => {
+          if (foundIds.has(p.id)) return false;
+          const clean = p.word.replace(/\s+/g, '').toUpperCase();
+          return clean === text || clean === reversed;
+        }));
     if (match) {
       setFoundIds((prev) => new Set(prev).add(match.id));
+      setFoundLines((prev) => ({ ...prev, [match.id]: line }));
       setWrongCells(null);
+      setAlreadyFound(null);
+      setJustFound(match.id);
+      if (justFoundTimer.current !== null) window.clearTimeout(justFoundTimer.current);
+      justFoundTimer.current = window.setTimeout(() => setJustFound(null), 1200);
+    } else if (
+      line &&
+      placements.some((p) => {
+        const clean = p.word.replace(/\s+/g, '').toUpperCase();
+        return foundIds.has(p.id) && (clean === text || clean === reversed);
+      })
+    ) {
+      // 이미 찾은 단어와 글자가 같은 줄 — 틀린 게 아니니 빨갛게 흔들지 않고 알려만 준다
+      const again = placements.find((p) => {
+        const clean = p.word.replace(/\s+/g, '').toUpperCase();
+        return foundIds.has(p.id) && (clean === text || clean === reversed);
+      })!;
+      setWrongCells(null);
+      setJustFound(null);
+      setAlreadyFound(again.id);
+      if (justFoundTimer.current !== null) window.clearTimeout(justFoundTimer.current);
+      justFoundTimer.current = window.setTimeout(() => setAlreadyFound(null), 1500);
     } else {
-      const keys = new Set(line.map((c) => cellKey(c.row, c.col)));
+      // 한 줄이 아니면(대각선이 아닌 비스듬한 두 칸) 두 칸만 흔든다
+      const keys = new Set((line ?? [start, end]).map((c) => cellKey(c.row, c.col)));
       setWrongCells(keys);
       if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
-      wrongTimer.current = window.setTimeout(() => setWrongCells(null), 500);
+      wrongTimer.current = window.setTimeout(() => setWrongCells(null), 600);
     }
+  }
+
+  // 두 가지로 고를 수 있다: ① 첫 글자에서 마지막 글자까지 끌기 ② 첫 글자, 마지막 글자를 차례로 누르기
+  function cellFromPoint(x: number, y: number): Cell | null {
+    const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-ws-r]');
+    if (!el) return null;
+    return { row: Number(el.dataset.wsR), col: Number(el.dataset.wsC) };
+  }
+
+  function onCellPointerDown(e: ReactPointerEvent<HTMLButtonElement>, row: number, col: number) {
+    if (finished) return;
+    e.preventDefault();
+    // 터치는 누른 칸이 포인터를 붙잡아 버려서, 놓아야 다른 칸 위의 움직임을 읽을 수 있다
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    setWrongCells(null);
+    if (selectedStart) {
+      if (selectedStart.row === row && selectedStart.col === col) {
+        setSelectedStart(null);
+        setHoverCell(null);
+      } else commit(selectedStart, { row, col });
+      return;
+    }
+    setSelectedStart({ row, col });
+    setHoverCell({ row, col });
+    dragging.current = true;
+  }
+
+  function onGridPointerMove(e: ReactPointerEvent) {
+    if (!selectedStart) return;
+    const c = cellFromPoint(e.clientX, e.clientY);
+    if (c && (c.row !== hoverCell?.row || c.col !== hoverCell?.col)) setHoverCell(c);
+  }
+
+  function onGridPointerUp(e: ReactPointerEvent) {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const c = cellFromPoint(e.clientX, e.clientY);
+    // 같은 칸에서 떼면 "누르기" 방식 — 첫 글자만 고른 채로 두고 마지막 글자를 기다린다
+    if (selectedStart && c && (c.row !== selectedStart.row || c.col !== selectedStart.col)) commit(selectedStart, c);
   }
 
   if (finished) {
@@ -283,10 +363,19 @@ export default function WordSearch({
     );
   }
 
-  const foundCellKeys = new Set<string>();
+  const colorById = new Map(placements.map((p, i) => [p.id, FOUND_COLORS[i % FOUND_COLORS.length]]));
+  const foundColorByCell = new Map<string, string>();
+  const justFoundCells = new Set<string>();
   placements.forEach((p) => {
-    if (foundIds.has(p.id)) p.cells.forEach((c) => foundCellKeys.add(cellKey(c.row, c.col)));
+    if (!foundIds.has(p.id)) return;
+    (foundLines[p.id] ?? p.cells).forEach((c) => {
+      foundColorByCell.set(cellKey(c.row, c.col), colorById.get(p.id)!);
+      if (p.id === justFound) justFoundCells.add(cellKey(c.row, c.col));
+    });
   });
+  const previewLine = selectedStart && hoverCell ? lineBetween(selectedStart, hoverCell) : null;
+  const previewKeys = new Set((previewLine ?? []).map((c) => cellKey(c.row, c.col)));
+  const justFoundWord = justFound ? placements.find((p) => p.id === justFound)?.word : undefined;
 
   return (
     <div className="flex w-full flex-col items-center pt-1.5 pb-2">
@@ -322,27 +411,61 @@ export default function WordSearch({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
+      <div className="mb-2 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {t('gameWordSearch.foundLabel', { found: foundIds.size, total: placements.length })}
+      </div>
+      <div className="mb-3 min-h-[22px] text-center font-caption text-caption text-on-surface-variant">
+        {justFoundWord ? (
+          <span key={justFound} className="ws-found-msg font-bold" style={{ color: colorById.get(justFound!) }}>
+            {t('gameWordSearch.foundWord', { word: justFoundWord })}
+          </span>
+        ) : alreadyFound ? (
+          <span key={`again-${alreadyFound}`} className="ws-found-msg font-bold" style={{ color: colorById.get(alreadyFound) }}>
+            {t('gameWordSearch.alreadyFound', { word: placements.find((p) => p.id === alreadyFound)?.word ?? '' })}
+          </span>
+        ) : selectedStart ? (
+          t('gameWordSearch.pickLastHint')
+        ) : (
+          t('gameWordSearch.howToHint')
+        )}
       </div>
 
       <div data-skin-stage="board" className={`ws-frame mb-5 ${tiles ? 'ws-tiles' : ''}`}>
-        <div className="ws-grid" style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))` }}>
+        <div
+          className="ws-grid"
+          style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`, touchAction: 'none' }}
+          onPointerMove={onGridPointerMove}
+          onPointerUp={onGridPointerUp}
+          onPointerCancel={() => {
+            dragging.current = false;
+          }}
+        >
           {grid.map((row, r) =>
             row.map((ch, c) => {
               const key = cellKey(r, c);
-              const isFound = foundCellKeys.has(key);
-              const isSelected = selectedStart?.row === r && selectedStart?.col === c;
+              const foundColor = foundColorByCell.get(key);
+              const picking = (selectedStart?.row === r && selectedStart?.col === c) || previewKeys.has(key);
               const isWrong = wrongCells?.has(key);
               const tone = (r + c) % 4;
-              const mark = isFound ? 'is-ok' : isWrong ? 'is-no' : isSelected ? 'is-start' : '';
+              const mark = isWrong ? 'is-no ws-shake' : foundColor ? 'is-ok' : picking ? 'is-start' : '';
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => clickCell(r, c)}
+                  data-ws-r={r}
+                  data-ws-c={c}
+                  onPointerDown={(e) => onCellPointerDown(e, r, c)}
                   data-skin-object="cell"
-                  className={`ws-cell ${tiles && !mark ? `ws-clay-${tone}` : ''} ${mark}`}
+                  className={`ws-cell ${tiles && !mark ? `ws-clay-${tone}` : ''} ${mark} ${justFoundCells.has(key) ? 'ws-pop' : ''}`}
+                  style={
+                    isWrong
+                      ? undefined
+                      : foundColor
+                        ? { background: foundColor, color: '#fff', outline: 'none' }
+                        : picking
+                          ? { background: '#ffd23f', color: '#1a2744', outline: '3px solid #e0a100', outlineOffset: -3 }
+                          : undefined
+                  }
                 >
                   {ch}
                 </button>
@@ -357,9 +480,12 @@ export default function WordSearch({
           <span
             key={p.id}
             data-skin-object="word-chip"
-            className={`${tiles ? 'ws-tag' : 'ws-chip'} ${foundIds.has(p.id) ? 'is-found' : ''}`}
+            className={`${tiles ? 'ws-tag' : 'ws-chip'} ${foundIds.has(p.id) ? 'is-found' : ''} ${justFound === p.id || alreadyFound === p.id ? 'ws-pop' : ''}`}
+            style={
+              foundIds.has(p.id) ? { background: colorById.get(p.id), color: '#fff', opacity: 1, textDecoration: 'none' } : undefined
+            }
           >
-            {p.word}
+            {foundIds.has(p.id) ? `✓ ${p.word}` : p.word}
           </span>
         ))}
       </div>

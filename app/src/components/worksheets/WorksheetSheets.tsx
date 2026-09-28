@@ -129,10 +129,26 @@ function ColoringSheet({ page, options }: { page: ColoringPage; options: Colorin
 
 /* ---------------- 선 잇기 ---------------- */
 
-function MatchCell({ side, label, dot, small = false }: { side: MatchSide; label: string; dot: 'left' | 'right'; small?: boolean }) {
+// compact: 칸을 그림·글자 크기에 맞게 줄여 가운데 선 긋는 공간을 넓힌다(2026-09-28 사용자 피드백). 같은 줄의
+// 칸 폭은 열에서 가장 넓은 칸에 맞춘다(열이 w-fit, 칸은 늘어남).
+function MatchCell({
+  side,
+  label,
+  dot,
+  small = false,
+  compact = false,
+}: {
+  side: MatchSide;
+  label: string;
+  dot: 'left' | 'right';
+  small?: boolean;
+  compact?: boolean;
+}) {
   return (
     <div
-      className="relative flex h-[26mm] items-center gap-[3mm] rounded-lg border-2 border-black px-[3mm]"
+      className={`relative flex h-[26mm] items-center rounded-lg border-2 border-black ${
+        compact ? 'min-w-[36mm] max-w-[62mm] gap-[2mm] px-[2.5mm]' : 'gap-[3mm] px-[3mm]'
+      }`}
     >
       <span className="w-[6mm] shrink-0 text-center text-[14px] font-bold">{label}</span>
       <div className="flex min-w-0 flex-1 items-center justify-center">
@@ -155,15 +171,15 @@ function MatchSheet({ page, pictureMode, title, instruction }: { page: MatchPage
         title={title ?? t('materials.worksheet.sheet.matchTitle')}
         instruction={instruction ?? t(pictureMode ? 'materials.worksheet.sheet.matchPictureWord' : 'materials.worksheet.sheet.matchWordMeaning')}
       />
-      <div className="flex justify-between gap-[30mm] px-[4mm]">
-        <div className="flex flex-1 flex-col gap-[5mm]">
+      <div className="flex justify-between px-[4mm]">
+        <div className="flex w-fit flex-col gap-[5mm]">
           {page.left.map((side, i) => (
-            <MatchCell key={i} side={side} label={String(i + 1)} dot="left" />
+            <MatchCell key={i} side={side} label={String(i + 1)} dot="left" compact />
           ))}
         </div>
-        <div className="flex flex-1 flex-col gap-[5mm]">
+        <div className="flex w-fit flex-col gap-[5mm]">
           {page.right.map((side, i) => (
-            <MatchCell key={i} side={side} label={String.fromCharCode(65 + i)} dot="right" />
+            <MatchCell key={i} side={side} label={String.fromCharCode(65 + i)} dot="right" compact />
           ))}
         </div>
       </div>
@@ -581,9 +597,9 @@ function ReadMatchSheet({ page }: { page: MatchPage }) {
             <MatchCell key={i} side={side} label={String(i + 1)} dot="left" small />
           ))}
         </div>
-        <div className="flex flex-1 flex-col gap-[5mm]">
+        <div className="flex w-fit flex-col gap-[5mm]">
           {page.right.map((side, i) => (
-            <MatchCell key={i} side={side} label={String.fromCharCode(65 + i)} dot="right" />
+            <MatchCell key={i} side={side} label={String.fromCharCode(65 + i)} dot="right" compact />
           ))}
         </div>
       </div>
