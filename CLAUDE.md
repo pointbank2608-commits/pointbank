@@ -202,6 +202,7 @@
 - Vercel 프로젝트: `pointbank` (팀/스코프 `pointbank2608-1458s-projects`), GitHub 저장소가 **Connect Git Repository**로 연결돼 있어서 **`main`에 푸시만 하면 자동으로 프로덕션 배포된다.** 수동 `vercel --prod` 는 이제 평소엔 필요 없음(자동 배포 실패 시 대비용으로만 아래 명령 사용).
 - Vercel 로그인은 **GitHub로**(`npx vercel login`, 브라우저에서 GitHub 선택) — 이 계정이라야 `pointbank2608-1458s-projects` 팀이 보인다.
 - **`businessgym11-8014s-projects` 계정/스코프는 완전히 다른 프로젝트다. 여기다 절대 배포하지 말 것.** (2026-09-03: 이 계정으로 여러 차례 정상 배포됐던 `classbank-rho.vercel.app` 은 사용자 확인 결과 실수로 써온 무관한 프로젝트였음 — 폐기, `pointbank-ten.vercel.app` 이 진짜 프로덕션.)
+- **클라우드(웹) Claude 세션의 배포 흐름(2026-09-28 사용자와 합의)**: Claude는 `main`에 직접 푸시·병합하지 않는다(안전장치가 막음). ① 로컬에서 `tsc`·`vite build` 확인 → ② 작업용 브랜치에 푸시하고 PR 생성 → ③ GitHub의 PR 커밋 상태에서 **Vercel 미리보기 배포가 success인지 Claude가 확인**(세션 네트워크가 vercel.app을 막아도 GitHub 기록으로 볼 수 있음) → ④ 결과를 알리면 사용자가 PR에서 **Merge** 버튼만 누른다 → `main` 자동 프로덕션 배포. DB 마이그레이션이 있으면 병합 전에 SQL Editor 실행 + 확인 쿼리(`supabase/032_check.sql` 같은 읽기 전용)를 같이 준다. PR이 병합된 뒤 새 작업은 최신 `main`에서 브랜치를 다시 시작한다.
 
 혹시 자동 배포가 막히면(수동 fallback):
 
