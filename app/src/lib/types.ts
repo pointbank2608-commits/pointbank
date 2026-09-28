@@ -227,6 +227,27 @@ export interface LiveQuestion {
   seconds?: number;
   /** 라운드 이름(예: "1라운드 · 뜻 고르기") — 바뀔 때 칠판에 라운드 화면이 나온다. */
   round?: string;
+  /**
+   * 칠판 표시 방식(2026-09-28 새 라운드). 답하는 방식은 kind 그대로(choice/text):
+   * picture = revealImage 를 흐리게 시작해 점점 선명하게, listen = speak 를 읽어 주고 글자는 안 보임,
+   * scramble = prompt(섞인 글자)를 타일로, blank = 빈칸 있는 예문.
+   * speak·revealImage 는 학생 휴대폰으로 가지 않는다(live_state 는 kind·prompt·imageUrl·choices·seconds·round 만 보냄).
+   */
+  style?: LiveQuestionStyle;
+  speak?: string;
+  revealImage?: string | null;
+  /** 자동 만들기의 라운드 종류 — 편집 화면 묶음·다시 만들기에 쓴다 */
+  roundType?: ContestRoundType;
+  /** 선생님이 직접 만든 문제(자동 만들기를 다시 해도 남는다) */
+  custom?: boolean;
+}
+
+export type LiveQuestionStyle = 'picture' | 'listen' | 'scramble' | 'blank';
+export type ContestRoundType = 'choice' | 'ox' | 'text' | 'buzzer' | 'picture' | 'listen' | 'scramble' | 'blank';
+export interface ContestRoundSetting {
+  type: ContestRoundType;
+  count: number;
+  on: boolean;
 }
 
 export interface GameItem {
@@ -372,6 +393,8 @@ export interface GameTemplateConfig {
   gameShowStyle?: 'wood' | 'clay';
   /** 대회 퀴즈쇼 전용: 문제(라운드별 종류가 섞인다). 시작하면 live_sessions 로 복사된다. */
   liveQuestions?: LiveQuestion[];
+  /** 대회 퀴즈쇼 전용: 자동 만들기 라운드 설정(순서·켜기·문제 수) */
+  liveContestRounds?: ContestRoundSetting[];
   /** 대회 퀴즈쇼 전용: 빨리 맞힐수록 점수를 더 줄지(기본 켬). */
   liveSpeedBonus?: boolean;
   /** 퀴즈를 이기거나 잃기 전용: 팀 시작 점수 (기본 100). */

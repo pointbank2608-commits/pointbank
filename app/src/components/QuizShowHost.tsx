@@ -20,6 +20,7 @@ import {
   type LiveSession,
 } from '../lib/liveQuiz';
 import type { LiveQuestion } from '../lib/types';
+import { speak } from '../lib/speech';
 import { playSfx, useBgm, useGameSfx } from '../lib/gameSfx';
 
 /**
@@ -45,9 +46,16 @@ interface Props {
   classId: string | null;
   templateId: string | null;
   speedBonus: boolean;
+  /**
+   * 미리보기(2026-09-28): 진짜 대회를 열지 않고(입장 번호·DB 기록 없이) 칠판 흐름을 그대로 넘겨 보며,
+   * 옆의 학생 휴대폰 모형에서 직접 답도 내 본다. 참가자는 "나(미리보기)" 한 명.
+   */
+  preview?: boolean;
 }
 
-export default function QuizShowHost({ title, questions, classId, templateId, speedBonus }: Props) {
+const PREVIEW_ME = 'preview-me';
+
+export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false }: Props) {
   const { t } = useTranslation();
   const [session, setSession] = useState<LiveSession | null>(null);
   const [players, setPlayers] = useState<LivePlayer[]>([]);
@@ -108,7 +116,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   }, []);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || preview) return;
     const sid = session.id;
     void refresh(sid);
     let timer: number | undefined;
@@ -137,7 +145,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   }, [session?.id]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || preview) return;
     void QRCode.toDataURL(liveJoinUrl(session.code), { margin: 1, width: 480, errorCorrectionLevel: 'M' }).then(setQr);
   }, [session?.code, session]);
 
@@ -154,6 +162,20 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   async function go(nextPhase: LivePhase | 'ended', nextIndex: number) {
     if (!session) return;
+    if (preview) {
+      // 미리보기: 서버 없이 화면 안에서만 단계를 넘긴다
+      if (nextPhase === 'ended') {
+        setSession(null);
+        setPlayers([]);
+        setAnswers([]);
+        setRoundIntro(null);
+        return;
+      }
+      if (nextPhase === 'question') setStartLocal(Date.now());
+      setSession({ ...session, phase: nextPhase, q_index: nextIndex, q_started_at: nextPhase === 'question' ? new Date().toISOString() : session.q_started_at });
+      setPeek(false);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -177,6 +199,14 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   }
 
   async function start() {
+    if (preview) {
+      const now = new Date().toISOString();
+      setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'lobby', q_index: -1, q_started_at: null, created_at: now, ended_at: null });
+      setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: now }]);
+      setAnswers([]);
+      setRoundIntro(null);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -234,6 +264,15 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remaining, everyoneAnswered, phase, qIndex]);
 
+  // 듣기 라운드: 문제가 열릴 때 한 번 읽어 준다(다시 듣기 버튼도 있음)
+  useEffect(() => {
+    if (phase === 'question' && current?.style === 'listen' && current.speak) {
+      const id = window.setTimeout(() => speak(current.speak ?? ''), 600);
+      return () => window.clearTimeout(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, qIndex]);
+
   // ---- 소리(칠판에서만 — 학생 휴대폰에는 안 난다) ----
   const sfx = useGameSfx('quizshow');
   useBgm(sfx.lobby, phase === 'lobby' && roundIntro == null, 0.3);
@@ -277,6 +316,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   async function judge(a: LiveAnswer, correct: boolean) {
     setAnswers((prev) => prev.map((x) => (x.id === a.id ? { ...x, correct, points: correct ? x.potential : 0 } : x)));
+    if (preview) return;
     try {
       await liveJudge(a, correct);
     } catch (e) {
@@ -296,8 +336,33 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   }
 
   function endContest() {
-    if (!confirm(t('liveQuiz.endConfirm'))) return;
+    if (!preview && !confirm(t('liveQuiz.endConfirm'))) return;
     void go('ended', qIndex);
+  }
+
+  /** 미리보기 휴대폰 모형에서 낸 답 — 서버 채점과 같은 규칙(부저는 선생님 판정) */
+  function previewAnswer(choice: number | null, text: string | null) {
+    if (!current || phase !== 'question') return;
+    if (answers.some((a) => a.q_index === qIndex && a.player_id === PREVIEW_ME)) return;
+    const pts = current.points ?? 1000;
+    let correct: boolean | null = null;
+    if (current.kind === 'choice' || current.kind === 'ox') correct = choice === current.correctIndex;
+    if (current.kind === 'text') correct = (current.answer ?? '').split('/').some((a) => norm(a) === norm(text ?? ''));
+    setAnswers((prev) => [
+      ...prev,
+      {
+        id: `pv-${qIndex}`,
+        session_id: 'preview',
+        player_id: PREVIEW_ME,
+        q_index: qIndex,
+        choice,
+        answer: text,
+        correct,
+        potential: pts,
+        points: correct ? pts : 0,
+        answered_at: new Date().toISOString(),
+      },
+    ]);
   }
 
   /* ---------- 화면 ---------- */
@@ -305,9 +370,28 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const bigBtn =
     'flex items-center gap-2 rounded-full bg-warm-yellow px-7 py-3 text-[clamp(16px,1.6cqw,26px)] font-bold text-deep-navy shadow-lg transition-transform hover:scale-[1.03] disabled:opacity-50';
 
+  const myAnswer = answers.find((a) => a.q_index === qIndex && a.player_id === PREVIEW_ME) ?? null;
+  const myScore = answers.filter((a) => a.player_id === PREVIEW_ME).reduce((sum, a) => sum + (a.points ?? 0), 0);
+  const wrap = (el: React.ReactElement) =>
+    preview ? (
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        {el}
+        <PreviewPhone
+          q={session ? current : null}
+          phase={session ? phase : null}
+          roundIntro={roundIntro != null}
+          myAnswer={myAnswer}
+          myScore={myScore}
+          onAnswer={previewAnswer}
+        />
+      </div>
+    ) : (
+      el
+    );
+
   if (!session) {
     const rounds = [...new Set(questions.map((q) => q.round?.trim()).filter(Boolean))];
-    return (
+    return wrap(
       <div className={stage}>
         <div className="flex flex-1 flex-col items-center justify-center gap-5 p-8 text-center">
           <span className="material-symbols-outlined text-warm-yellow" style={{ fontSize: 'clamp(48px,7cqw,110px)' }}>emoji_events</span>
@@ -318,9 +402,9 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
           </p>
           <button type="button" className={bigBtn} disabled={busy || questions.length === 0} onClick={() => void start()}>
             <span className="material-symbols-outlined">qr_code_2</span>
-            {busy ? t('common.loading') : t('liveQuiz.open')}
+            {busy ? t('common.loading') : preview ? t('liveQuiz.previewStart') : t('liveQuiz.open')}
           </button>
-          <p className="max-w-xl text-[clamp(12px,1.2cqw,18px)] text-white/60">{t('liveQuiz.openHint')}</p>
+          <p className="max-w-xl text-[clamp(12px,1.2cqw,18px)] text-white/60">{preview ? t('liveQuiz.previewHint') : t('liveQuiz.openHint')}</p>
           {error && <p className="rounded-lg bg-error px-4 py-2 text-on-error">{error}</p>}
         </div>
       </div>
@@ -329,7 +413,9 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   const header = (
     <div className="flex flex-wrap items-center gap-3 px-5 pt-4 text-[clamp(12px,1.2cqw,18px)] text-white/80">
-      <span className="rounded-full bg-white/10 px-3 py-1 font-bold tracking-widest">{t('liveQuiz.codeLabel')} {session.code}</span>
+      <span className="rounded-full bg-white/10 px-3 py-1 font-bold tracking-widest">
+        {preview ? t('liveQuiz.previewOpen') : `${t('liveQuiz.codeLabel')} ${session.code}`}
+      </span>
       {current && phase !== 'lobby' && (
         <span>
           {t('liveQuiz.questionOf', { n: qIndex + 1, total: qs.length })}
@@ -358,10 +444,16 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   // 대기실
   if (phase === 'lobby' && roundIntro == null) {
-    return (
+    return wrap(
       <div className={stage}>
         {header}
         <div className="grid flex-1 items-center gap-6 p-6 md:grid-cols-[auto_1fr]">
+          {preview ? (
+            <div className="flex max-w-xs flex-col items-center gap-3 rounded-2xl border border-dashed border-white/30 p-6 text-center">
+              <span className="material-symbols-outlined text-warm-yellow" style={{ fontSize: 'clamp(40px,5cqw,80px)' }}>preview</span>
+              <p className="text-[clamp(13px,1.4cqw,20px)] text-white/80">{t('liveQuiz.previewLobby')}</p>
+            </div>
+          ) : (
           <div className="flex flex-col items-center gap-3">
             {qr && <img src={qr} alt="QR" className="w-[clamp(180px,26cqw,420px)] rounded-2xl bg-white p-3" />}
             <div className="text-center">
@@ -381,6 +473,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
               <div className="text-[clamp(40px,7cqw,110px)] font-bold leading-none tracking-[0.15em] text-warm-yellow">{session.code}</div>
             </div>
           </div>
+          )}
           <div className="flex h-full min-h-0 flex-col">
             <h3 className="mb-3 text-[clamp(20px,2.6cqw,40px)] font-bold">{t('liveQuiz.lobbyTitle')}</h3>
             <p className="mb-4 text-[clamp(13px,1.3cqw,20px)] text-white/70">{t('liveQuiz.lobbyHint')}</p>
@@ -411,13 +504,13 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 라운드 소개
   if (roundIntro != null) {
     const q = qs[roundIntro];
-    return (
+    return wrap(
       <div className={stage}>
         {header}
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-          <span className="material-symbols-outlined text-warm-yellow" style={{ fontSize: 'clamp(44px,6cqw,96px)' }}>{KIND_ICON[q.kind]}</span>
+          <span className="material-symbols-outlined text-warm-yellow" style={{ fontSize: 'clamp(44px,6cqw,96px)' }}>{KIND_ICON[q.style ?? q.kind]}</span>
           <h2 className="text-[clamp(30px,5cqw,80px)] font-bold">{q.round}</h2>
-          <p className="max-w-3xl text-[clamp(15px,1.8cqw,28px)] text-white/80">{t(`liveQuiz.howTo_${q.kind}`)}</p>
+          <p className="max-w-3xl text-[clamp(15px,1.8cqw,28px)] text-white/80">{t(`liveQuiz.howTo_${q.style ?? q.kind}`)}</p>
         </div>
         {footer(t('liveQuiz.openQuestion'), 'play_arrow')}
       </div>
@@ -428,7 +521,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   if (phase === 'leaderboard' || phase === 'final') {
     const top = ranking.slice(0, phase === 'final' ? 3 : 8);
     const max = Math.max(1, ...ranking.map((r) => r.score));
-    return (
+    return wrap(
       <div className={stage}>
         {header}
         <div className="flex flex-1 flex-col items-center gap-4 p-6">
@@ -502,7 +595,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const revealed = phase === 'reveal';
   const counts = (current.choices ?? ['O', 'X']).map((_, i) => currentAnswers.filter((a) => a.choice === i).length);
 
-  return (
+  return wrap(
     <div className={stage}>
       {header}
       <div className="flex flex-1 flex-col gap-4 p-5">
@@ -518,7 +611,34 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
             </div>
           )}
           <div className="min-w-0 flex-1 text-center">
-            <div className="break-words text-[clamp(26px,4.6cqw,78px)] font-bold leading-tight">{current.prompt}</div>
+            {current.style === 'scramble' ? (
+              <div className="flex flex-wrap justify-center gap-[1cqw]">
+                {current.prompt.split(/\s+/).filter(Boolean).map((ch, i) => (
+                  <span
+                    key={i}
+                    className="flex h-[clamp(44px,6.4cqw,110px)] w-[clamp(44px,6.4cqw,110px)] items-center justify-center rounded-2xl bg-warm-yellow text-[clamp(26px,4.4cqw,76px)] font-black uppercase text-deep-navy shadow-lg"
+                    style={{ transform: `rotate(${((i * 37) % 11) - 5}deg)` }}
+                  >
+                    {ch}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="break-words text-[clamp(26px,4.6cqw,78px)] font-bold leading-tight">{current.prompt}</div>
+            )}
+            {current.style === 'listen' && (
+              <div className="mt-3 flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => speak(current.speak ?? '')}
+                  className="flex items-center gap-2 rounded-full bg-white/15 px-6 py-2 text-[clamp(16px,2cqw,32px)] font-bold hover:bg-white/25"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '1.3em' }}>volume_up</span>
+                  {t('liveQuiz.listenAgain')}
+                </button>
+                {revealed && <div className="text-[clamp(30px,5cqw,84px)] font-black text-warm-yellow">{current.speak}</div>}
+              </div>
+            )}
           </div>
           <div className="shrink-0 text-center text-[clamp(12px,1.3cqw,20px)] text-white/75">
             <div className="text-[clamp(22px,3cqw,48px)] font-bold tabular-nums text-white">{currentAnswers.length}</div>
@@ -527,6 +647,21 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
         </div>
         {current.imageUrl && (
           <img src={current.imageUrl} alt="" className="mx-auto max-h-[28vh] rounded-2xl bg-white object-contain p-2" />
+        )}
+        {current.style === 'picture' && current.revealImage && (
+          // 그림 보고 맞히기: 흐리게 시작해 제한 시간의 80% 동안 점점 선명해진다(정답 공개 땐 바로 선명)
+          <div className="mx-auto overflow-hidden rounded-2xl bg-white p-2">
+            <img
+              key={current.id}
+              src={current.revealImage}
+              alt=""
+              className="max-h-[32vh] object-contain"
+              style={{
+                filter: revealed || remaining == null ? 'blur(0px)' : `blur(${Math.round(28 * Math.min(1, remaining / Math.max(1, (current.seconds ?? 20) * 0.8)))}px)`,
+                transition: 'filter 0.4s linear',
+              }}
+            />
+          </div>
         )}
 
         {/* 보기·답 */}
@@ -579,7 +714,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
         {(current.kind === 'text' || current.kind === 'buzzer') && !revealed && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <p className="text-[clamp(15px,1.9cqw,30px)] text-white/80">{t(`liveQuiz.howTo_${current.kind}`)}</p>
+            <p className="text-[clamp(15px,1.9cqw,30px)] text-white/80">{t(`liveQuiz.howTo_${current.style ?? current.kind}`)}</p>
             {current.kind === 'buzzer' && <BuzzList answers={currentAnswers} nameOf={nameOf} onJudge={judge} startedAt={session.q_started_at} />}
             <button
               type="button"
@@ -614,11 +749,15 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   );
 }
 
-const KIND_ICON: Record<LiveQuestion['kind'], string> = {
+const KIND_ICON: Record<string, string> = {
   choice: 'grid_view',
   ox: 'rule',
   text: 'edit_note',
   buzzer: 'campaign',
+  picture: 'image_search',
+  listen: 'hearing',
+  scramble: 'shuffle',
+  blank: 'format_quote',
 };
 
 /** 부저를 누른 순서 — 맨 앞 판정 전 학생에게 정답/오답 버튼. */
@@ -717,6 +856,131 @@ function TextAnswers({
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/** 미리보기 전용: 학생 휴대폰 화면 모형(실제 /join 화면과 같은 답 방식). 답을 내면 칠판 집계에 "나(미리보기)"로 들어간다. */
+function PreviewPhone({
+  q,
+  phase,
+  roundIntro,
+  myAnswer,
+  myScore,
+  onAnswer,
+}: {
+  q: LiveQuestion | null;
+  phase: LivePhase | null;
+  roundIntro: boolean;
+  myAnswer: LiveAnswer | null;
+  myScore: number;
+  onAnswer: (choice: number | null, text: string | null) => void;
+}) {
+  const { t } = useTranslation();
+  const [text, setText] = useState('');
+  useEffect(() => setText(''), [q?.id]);
+  const open = phase === 'question' && !roundIntro && !!q;
+  const revealed = phase === 'reveal' && !!q;
+
+  let body: React.ReactNode;
+  if (!phase) body = <p className="text-center text-white/70">{t('liveQuiz.previewPhoneIdle')}</p>;
+  else if (phase === 'lobby' || roundIntro) body = <p className="text-center text-white/70">{t('liveQuiz.previewPhoneWait')}</p>;
+  else if (phase === 'leaderboard' || phase === 'final')
+    body = (
+      <div className="text-center">
+        <div className="text-white/70">{t('liveQuiz.previewMyScore')}</div>
+        <div className="text-4xl font-black tabular-nums text-warm-yellow">{myScore.toLocaleString()}</div>
+      </div>
+    );
+  else if (q) {
+    const answered = !!myAnswer;
+    body = (
+      <div className="flex flex-col gap-3">
+        <div className="text-center text-xl font-bold leading-snug">{q.prompt}</div>
+        {q.kind === 'choice' && (
+          <div className="grid grid-cols-2 gap-2">
+            {(q.choices ?? []).map((c, i) => {
+              const st = CHOICE_STYLES[i % CHOICE_STYLES.length];
+              const mine = myAnswer?.choice === i;
+              const right = revealed && i === q.correctIndex;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  disabled={!open || answered}
+                  onClick={() => onAnswer(i, null)}
+                  className={`min-h-16 rounded-xl px-2 text-base font-bold ${mine ? 'ring-4 ring-white' : ''} ${answered && !mine && !right ? 'opacity-40' : ''} ${right ? 'ring-4 ring-warm-yellow' : ''}`}
+                  style={{ background: st.bg }}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {q.kind === 'ox' && (
+          <div className="grid grid-cols-2 gap-2">
+            {['O', 'X'].map((m, i) => (
+              <button
+                key={m}
+                type="button"
+                disabled={!open || answered}
+                onClick={() => onAnswer(i, null)}
+                className={`h-24 rounded-2xl text-5xl font-black ${myAnswer?.choice === i ? 'ring-4 ring-white' : ''} ${answered && myAnswer?.choice !== i ? 'opacity-40' : ''}`}
+                style={{ background: i === 0 ? '#2f6fdb' : '#e5484d' }}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        )}
+        {q.kind === 'text' && (
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (text.trim()) onAnswer(null, text.trim());
+            }}
+          >
+            <input
+              value={answered ? myAnswer?.answer ?? '' : text}
+              disabled={!open || answered}
+              onChange={(e) => setText(e.target.value)}
+              className="min-w-0 flex-1 rounded-lg px-3 py-2 text-lg text-deep-navy"
+              placeholder={t('liveQuiz.previewTypeHere')}
+            />
+            <button type="submit" disabled={!open || answered} className="rounded-lg bg-warm-yellow px-3 font-bold text-deep-navy disabled:opacity-40">
+              {t('liveQuiz.previewSubmit')}
+            </button>
+          </form>
+        )}
+        {q.kind === 'buzzer' && (
+          <button
+            type="button"
+            disabled={!open || answered}
+            onClick={() => onAnswer(null, null)}
+            className="mx-auto h-32 w-32 rounded-full bg-error text-2xl font-black text-on-error shadow-lg disabled:opacity-50"
+          >
+            {t('liveQuiz.previewBuzz')}
+          </button>
+        )}
+        {answered && !revealed && <p className="text-center text-white/70">{t('liveQuiz.previewAnswered')}</p>}
+        {revealed && (
+          <p className={`text-center text-lg font-bold ${myAnswer?.correct ? 'text-warm-yellow' : 'text-white/70'}`}>
+            {!myAnswer ? t('liveQuiz.previewNoAnswer') : myAnswer.correct ? t('liveQuiz.previewRight', { points: myAnswer.points }) : myAnswer.correct === false ? t('liveQuiz.previewWrong') : t('liveQuiz.previewJudging')}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-[300px]">
+      <div className="mb-1 text-center font-caption text-caption text-on-surface-variant">{t('liveQuiz.previewPhoneTitle')}</div>
+      <div className="rounded-[36px] border-[10px] border-[#1d1d1f] bg-[#16213e] p-4 text-white shadow-xl" style={{ minHeight: 480 }}>
+        <div className="mx-auto mb-4 h-1.5 w-16 rounded-full bg-white/20" />
+        {body}
       </div>
     </div>
   );
