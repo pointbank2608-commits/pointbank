@@ -87,6 +87,7 @@ const ko = {
   },
 
   gameLadder: {
+    removeColumnHint: '이 줄 빼기 (참가자와 결과가 함께 빠져요)',
     defaultParticipant: '참가자 {{n}}',
     defaultResult: '결과 {{n}}',
     studentClassTitle: '{{className}} 사다리타기',
@@ -610,6 +611,12 @@ const ko = {
     modeLabel: '문제 방향',
     modeWord: '단어 보고 뜻 고르기',
     modeMeaning: '뜻 보고 단어 고르기',
+    timerLabel: '시간 제한',
+    timerOff: '없음',
+    timerSeconds: '{{count}}초',
+    secondsLeft: '{{count}}초',
+    timerStartHint: '첫 두더지를 치면 시간이 시작돼요',
+    timeUpTitle: '시간 끝!',
     needPairs: '짝을 2개 이상 추가해야 시작할 수 있어요.',
     hitsLabel: '적중 {{count}}',
     missesLabel: '놓침 {{count}}',
@@ -1424,6 +1431,10 @@ const ko = {
   },
 
   gamePlay: {
+    soundOn: '소리 켜기',
+    soundOff: '소리 끄기 (모든 게임)',
+    soundLabelOn: '소리',
+    soundLabelOff: '소리 꺼짐',
     restart: '다시하기',
     fullscreen: '전체화면',
     exitFullscreen: '전체화면 종료',

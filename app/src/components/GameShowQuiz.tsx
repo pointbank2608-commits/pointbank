@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion, UndoHandle } from '../lib/types';
+import { playSfx, useBgm, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type GameShowQuizStyle = 'wood' | 'clay';
 
@@ -81,6 +82,14 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
     },
   }));
 
+  const sfx = useGameSfx('gameshowquiz');
+  const playing = questions.length > 0 && pos < order.length;
+  const bonusNow = bonusEvery > 0 && (pos + 1) % bonusEvery === 0;
+  // 보너스 문제(2배)는 보너스 소리, 아니면 문제 소리. 문제 푸는 동안은 배경음악, 끝나면 우승 음악.
+  useStepSounds(pos, !playing, bonusNow ? sfx.bonus : sfx.question);
+  useBgm(sfx.bgm, playing, 0.2);
+  useBgm(sfx.win, questions.length > 0 && !playing, 0.45);
+
   if (questions.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -156,6 +165,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
       .filter((i) => i !== current.correctIndex && !removedChoices.has(i));
     const toRemove = shuffle(wrongIndices).slice(0, 2);
     setRemovedChoices((prev) => new Set([...prev, ...toRemove]));
+    playSfx(sfx.fifty);
     setLifelinesLeft((prev) => ({ ...prev, [turn]: prev[turn] - 1 }));
   }
 
@@ -163,6 +173,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
     if (revealed || removedChoices.has(choiceIndex)) return;
     setPrevScores(scores);
     setSelectedChoice(choiceIndex);
+    playSfx(choiceIndex === current.correctIndex ? sfx.correct : sfx.wrong);
     if (choiceIndex === current.correctIndex) {
       setScores((prev) => ({ ...prev, [turn]: prev[turn] + points }));
     }

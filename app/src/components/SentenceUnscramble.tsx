@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type UnscrambleStyle = 'rack' | 'tags';
 
@@ -78,6 +79,9 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
       setPlaced([]);
     }
   }, [itemKey]);
+
+  const sfx = useGameSfx('unscramble');
+  useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);
 
   if (items.length === 0) {
     return (
@@ -163,14 +167,17 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
     const tile = pool[idx];
     const nextPool = pool.filter((tl) => tl.id !== tileId);
     const nextPlaced = [...placed, tile];
+    playSfx(sfx.move, 0.7);
     setPool(nextPool);
     setPlaced(nextPlaced);
     if (nextPool.length === 0) {
       const assembled = nextPlaced.map((tl) => tl.word).join(' ');
       if (assembled === target) {
+        playSfx(sfx.correct);
         setStatus('correct');
         setScore((s) => s + 1);
       } else {
+        playSfx(sfx.wrong);
         setStatus('wrong');
       }
     }
@@ -181,6 +188,7 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
     const idx = placed.findIndex((tl) => tl.id === tileId);
     if (idx === -1) return;
     const tile = placed[idx];
+    playSfx(sfx.move, 0.7);
     setPlaced((prev) => prev.filter((tl) => tl.id !== tileId));
     setPool((prev) => [...prev, tile]);
     if (status === 'wrong') setStatus('playing');

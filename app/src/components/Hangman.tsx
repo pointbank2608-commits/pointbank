@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem, UndoHandle } from '../lib/types';
+import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
@@ -120,6 +121,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
 
     setPrevSnapshot({ guessed: new Set(play.guessed), wrongCount: play.wrongCount, status: play.status, score: play.score });
 
+    playSfx(GAME_SFX.hangman.key, 0.6);
     const nextGuessed = new Set(play.guessed).add(key);
     play.guessed = nextGuessed;
     setGuessed(nextGuessed);
@@ -131,7 +133,9 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       if (nextWrong >= play.maxAttempts) {
         play.status = 'lost';
         setStatus('lost');
-      }
+        playSfx(GAME_SFX.hangman.lose);
+        window.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 1400);
+      } else playSfx(GAME_SFX.hangman.miss);
       return;
     }
     const allRevealed = [...play.word].every((c) => c === ' ' || nextGuessed.has(c.toLowerCase()));
@@ -139,7 +143,9 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       play.status = 'won';
       setStatus('won');
       setScore((s) => s + 1);
-    }
+      playSfx(GAME_SFX.hangman.win);
+      window.setTimeout(() => playSfx(COMMON_SFX.praise), 1100);
+    } else playSfx(GAME_SFX.hangman.hit);
   }
 
   useImperativeHandle(ref, () => ({

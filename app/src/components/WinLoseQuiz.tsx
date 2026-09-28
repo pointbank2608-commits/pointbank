@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion, UndoHandle } from '../lib/types';
+import { playSfx, useBgm, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type WinLoseQuizStyle = 'wood' | 'clay';
 
@@ -94,6 +95,11 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
     },
   }));
 
+  const sfx = useGameSfx('winlosequiz');
+  const playing = questions.length > 0 && pos < order.length;
+  useStepSounds(pos, !playing, undefined, sfx.finish);
+  useBgm(sfx.bgm, playing, 0.2);
+
   if (questions.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -167,6 +173,7 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
     setPrevSnapshot({ scores, phase, bet, selectedChoice });
     setBet(Math.max(0, Math.min(amount, currentScore)));
     setPhase('answer');
+    playSfx(sfx.bet);
   }
 
   function selectChoice(choiceIndex: number) {
@@ -174,6 +181,7 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
     setPrevSnapshot({ scores, phase, bet, selectedChoice });
     setSelectedChoice(choiceIndex);
     const correct = choiceIndex === current.correctIndex;
+    playSfx(correct ? sfx.correct : sfx.wrong);
     setScores((prev) => ({ ...prev, [turn]: prev[turn] + (correct ? bet : -bet) }));
     setPhase('reveal');
   }

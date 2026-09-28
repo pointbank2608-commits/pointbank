@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 export type SpellWordStyle = 'slate' | 'stamps';
 
@@ -121,6 +122,7 @@ export default function SpellTheWord({
 
   function typeChar(ch: string) {
     if (playRef.current.phase !== 'input' || playRef.current.status !== 'playing') return;
+    playSfx(GAME_SFX.spellword.key, 0.5);
     setInputValue((v) => v + ch);
   }
 
@@ -134,6 +136,7 @@ export default function SpellTheWord({
     if (snap.phase !== 'input' || snap.status !== 'playing') return;
     const ok = normalize(snap.inputValue) === normalize(snap.target);
     setStatus(ok ? 'correct' : 'wrong');
+    playSfx(ok ? GAME_SFX.spellword.correct : GAME_SFX.spellword.wrong);
     if (ok) setScore((s) => s + 1);
   }
 
@@ -178,6 +181,8 @@ export default function SpellTheWord({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.spellword.finish);
 
   if (items.length === 0) {
     return (

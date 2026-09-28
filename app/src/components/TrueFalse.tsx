@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { TrueFalseStatement } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
   statements: TrueFalseStatement[];
@@ -35,6 +36,9 @@ export default function TrueFalse({ statements }: Props) {
     setScore(0);
   }, [statementKey]);
 
+  const sfx = useGameSfx('truefalse');
+  useStepSounds(pos, statements.length > 0 && pos >= order.length, undefined, sfx.finish);
+
   if (statements.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -62,6 +66,7 @@ export default function TrueFalse({ statements }: Props) {
     const current = statements[order[pos]];
     if (!current) return;
     setSelected(answer);
+    playSfx(answer === current.isTrue ? sfx.correct : sfx.wrong);
     if (answer === current.isTrue) setScore((s) => s + 1);
   }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { GroupSortGroup } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type GroupSortStyle = 'crates' | 'baskets';
 
@@ -74,6 +75,8 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   }, []);
 
   const allItems = flatten(groups);
+  const sfx = useGameSfx('groupsort');
+  useStepSounds(0, groups.length >= 2 && allItems.length >= 2 && pool.length === 0, undefined, sfx.finish);
 
   if (groups.length < 2 || allItems.length < 2) {
     return (
@@ -101,6 +104,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
 
   function selectItem(itemId: string) {
     if (locked) return;
+    playSfx(sfx.pick, 0.7);
     setSelectedId((prev) => (prev === itemId ? null : itemId));
   }
 
@@ -109,11 +113,14 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     const item = pool.find((it) => it.id === selectedId);
     if (!item) return;
     if (item.groupId === groupId) {
+      playSfx(sfx.drop, 0.7);
+      window.setTimeout(() => playSfx(sfx.correct), 120);
       setPool((prev) => prev.filter((it) => it.id !== selectedId));
       setPlaced((prev) => ({ ...prev, [groupId]: [...prev[groupId], item] }));
       setSelectedId(null);
       return;
     }
+    playSfx(sfx.wrong);
     setWrongCount((c) => c + 1);
     setWrongGroupId(groupId);
     setLocked(true);

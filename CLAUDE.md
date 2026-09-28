@@ -102,6 +102,7 @@
     저장했다가 `undo()`가 그걸로 복원하는 방식 — 히스토리 스택이 아니라 "바로 직전 한 번"만
     되돌아간다(다시 시도하면 스냅샷이 덮어써짐). 새 라운드/재시작 시 반드시 `prevSnapshot`도
     같이 `null`로 초기화해야 함(안 하면 라운드 경계를 넘어 되돌아가는 버그).
+- **게임 소리(2026-09-28)**: 선생님이 게임·순간마다 직접 고른 소리(`sound-source/games.html`에서 고름)를 `lib/gameSfx.ts`의 `GAME_SFX`에 모았다 — 소리 없던 26종에 연결(정답·오답·문제 나오기·끝·뒤집기·주사위·부저 등), 게임쇼 퀴즈·퀴즈를 이기거나 잃기·대회 퀴즈쇼는 배경음악(`useBgm`, 구글 Lyria). `playSfx(번호)` 한 번, `useStepSounds(step, finished, question, finish)`가 문제 바뀔 때·끝날 때 소리(끝 뒤 "Great job!" 목소리), `COMMON_SFX`(시작 "Ready, set, go!"는 다시하기 확인 시·칭찬·Try again·Your turn). `GameThemeFrame` 툴바의 **소리 켜기·끄기**는 모든 게임 공통(`classbank.gameSound` 로컬 저장)이고 옛 소리(`gameMusic.ts` 합성음·돌림판·공 뽑기·수박)도 이 스위치를 따른다. **새 게임을 만들 때도 `GAME_SFX`에 한 줄 + 해당 순간에 `playSfx`**. 대회 퀴즈쇼 소리는 칠판(`QuizShowHost`)에서만, 학생 폰은 무음.
 - **옛 .png 그림 주소**: 사전·파닉스 그림은 017에서 WebP로 바뀌었지만 단어장·게임 내용·수업은 그림 주소를 복사해 두어 옛 `.png`가 남아 있을 수 있다 — `api.ts`의 `fixLegacyImageUrls`가 word_lists·game_templates·curriculum_lessons를 불러올 때 `/word-bank-images|phonics-images/*.png`를 `.webp`로 고친다(저장 데이터 정리는 `supabase/027`). 새로 그림 주소를 복사해 저장하는 기능을 만들 때 참고.
 - `/wordlists` (네비 라벨 "내 단어장") — 선생님이 반/학원별로 만드는 단어장(`word_lists` 테이블,
   `word_bank`/`phonics_bank`와 달리 **쓰기 가능**, `game_templates`와 같은 academy/class 스코프
@@ -235,6 +236,7 @@ npx vercel --prod --scope pointbank2608-1458s-projects
 | 게임 목록에 게임 추가 | `app/src/lib/gameCatalog.ts`(카드 자동 반영) + `App.tsx` 라우트(스태프·학생 둘 다) |
 | 게임 소개/방법 문구 수정 | 각 게임의 `gameXxx.infoDescription`/`infoSteps` (`ko.ts`/`en.ts`) |
 | 게임 비주얼 테마 추가 | `app/src/lib/gameThemes.ts` (`GameThemeFrame.tsx`가 자동 반영) |
+| 게임 소리 바꾸기·새 게임에 소리 넣기 | `app/src/lib/gameSfx.ts`의 `GAME_SFX`(게임·순간 → 소리 번호) + `public/sounds/sfx/<번호>.mp3`. 번호는 `sound-source/`(git 제외, Kenney CC0 581개 + 구글 AI 8xxx)의 번호표와 같고 파일은 `sound-source/build_app_sfx.py`로 다듬는다 |
 | 게임에 사진 업로드 넣기 | `GameImagePicker.tsx` + `uploadGameImage`(`api.ts`) — `game-images` 버킷 재사용 |
 | 숙제 연동 | `PassbookCard.tsx`, `ClassBoardPage.tsx`, 프리셋 `is_homework` |
 | 숙제 캘린더 UI | `HomeworkCalendarPage.tsx` |

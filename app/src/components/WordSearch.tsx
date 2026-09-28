@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type WordSearchStyle = 'board' | 'tiles';
 
@@ -207,6 +208,8 @@ export default function WordSearch({
   }
 
   const { grid, placements } = puzzle;
+  const sfx = useGameSfx('wordsearch');
+  useStepSounds(0, placements.length > 0 && foundIds.size === placements.length, undefined, sfx.finish);
 
   if (placements.length === 0) {
     return (
@@ -266,6 +269,8 @@ export default function WordSearch({
       setFoundLines((prev) => ({ ...prev, [match.id]: line }));
       setWrongCells(null);
       setAlreadyFound(null);
+      // 마지막 단어면 끝 소리만(겹치지 않게)
+      if (foundIds.size + 1 < placements.length) playSfx(sfx.found);
       setJustFound(match.id);
       if (justFoundTimer.current !== null) window.clearTimeout(justFoundTimer.current);
       justFoundTimer.current = window.setTimeout(() => setJustFound(null), 1200);
@@ -289,6 +294,7 @@ export default function WordSearch({
     } else {
       // 한 줄이 아니면(대각선이 아닌 비스듬한 두 칸) 두 칸만 흔든다
       const keys = new Set((line ?? [start, end]).map((c) => cellKey(c.row, c.col)));
+      playSfx(sfx.wrong);
       setWrongCells(keys);
       if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
       wrongTimer.current = window.setTimeout(() => setWrongCells(null), 600);
@@ -315,6 +321,7 @@ export default function WordSearch({
       } else commit(selectedStart, { row, col });
       return;
     }
+    playSfx(sfx.pick, 0.6);
     setSelectedStart({ row, col });
     setHoverCell({ row, col });
     dragging.current = true;

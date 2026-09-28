@@ -89,6 +89,7 @@ const en: Ko = {
   },
 
   gameLadder: {
+    removeColumnHint: 'Remove this column (participant and result together)',
     defaultParticipant: 'Participant {{n}}',
     defaultResult: 'Result {{n}}',
     studentClassTitle: "{{className}}'s Ladder Game",
@@ -614,6 +615,12 @@ const en: Ko = {
     modeLabel: 'Prompt',
     modeWord: 'See word, tap meaning',
     modeMeaning: 'See meaning, tap word',
+    timerLabel: 'Time limit',
+    timerOff: 'None',
+    timerSeconds: '{{count}}s',
+    secondsLeft: '{{count}}s',
+    timerStartHint: 'The timer starts when you hit the first mole',
+    timeUpTitle: "Time's up!",
     needPairs: 'Add at least 2 pairs to start.',
     hitsLabel: '{{count}} hits',
     missesLabel: '{{count}} misses',
@@ -1428,6 +1435,10 @@ const en: Ko = {
   },
 
   gamePlay: {
+    soundOn: 'Turn sound on',
+    soundOff: 'Turn sound off (all games)',
+    soundLabelOn: 'Sound',
+    soundLabelOff: 'Muted',
     restart: 'Restart',
     fullscreen: 'Fullscreen',
     exitFullscreen: 'Exit fullscreen',

@@ -4,6 +4,7 @@ import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, UndoHandle } from '../lib/types';
+import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
@@ -134,6 +135,10 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
     };
   }, []);
 
+  // 4개 연결·무승부가 되는 순간 한 번
+  useStepSounds(0, !!winner, undefined, GAME_SFX.connect4.win, false);
+  useStepSounds(0, isDraw, undefined, GAME_SFX.connect4.tie, false);
+
   useEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
   }, [items]);
@@ -181,6 +186,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
     setPrevSnapshot({ marks, turn });
     setDropping({ col: c, row: targetRow, team });
     dropTimer.current = setTimeout(() => {
+      playSfx(GAME_SFX.connect4.drop);
       setMarks((prev) => {
         const next = [...prev];
         next[idx(targetRow, c)] = team;

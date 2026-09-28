@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { ImageQuizItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type ImageQuizStyle = 'wood' | 'clay';
 
@@ -65,9 +66,14 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
   // 선명해진다. 그 사이 다음 문제로 넘어갔으면(늦게 도착한 타이머) 새 사진을 건드리지 않는다.
   const posRef = useRef(pos);
   posRef.current = pos;
+  const sfx = useGameSfx('imagequiz');
+  useStepSounds(pos, items.length > 0 && pos >= order.length, undefined, sfx.finish);
   function startUnblur(forPos: number) {
     window.setTimeout(() => {
-      if (posRef.current === forPos) setBlurred(false);
+      if (posRef.current === forPos) {
+        setBlurred(false);
+        playSfx(sfx.reveal, 0.6);
+      }
     }, 30);
   }
 
@@ -131,6 +137,7 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
   }
 
   function next(correct: boolean) {
+    playSfx(correct ? sfx.correct : sfx.wrong);
     if (correct) setScore((s) => s + 1);
     goToPos(pos + 1);
   }

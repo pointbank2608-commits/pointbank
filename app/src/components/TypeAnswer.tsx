@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TypeAnswerEntry } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type TypeAnswerStyle = 'notebook' | 'bubble';
 
@@ -45,6 +46,9 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
     setStatus('playing');
     setScore(0);
   }, [entryKey]);
+
+  const sfx = useGameSfx('typeanswer');
+  useStepSounds(pos, entries.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);
 
   if (entries.length === 0) {
     return (
@@ -124,6 +128,7 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
     if (revealed) return;
     const ok = normalize(inputValue) === normalize(current.answer);
     setStatus(ok ? 'correct' : 'wrong');
+    playSfx(ok ? sfx.correct : sfx.wrong);
     if (ok) setScore((s) => s + 1);
   }
 
@@ -132,7 +137,10 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
       type="text"
       value={inputValue}
       disabled={revealed}
-      onChange={(e) => setInputValue(e.target.value)}
+      onChange={(e) => {
+        if (e.target.value.length > inputValue.length) playSfx(sfx.key, 0.4);
+        setInputValue(e.target.value);
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') submit();
       }}

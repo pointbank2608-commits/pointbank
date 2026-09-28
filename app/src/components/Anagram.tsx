@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type AnagramStyle = 'rack' | 'tags';
 
@@ -127,6 +128,9 @@ export default function Anagram({
     }
   }, [itemKey]);
 
+  const sfx = useGameSfx('anagram');
+  useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);
+
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -210,14 +214,17 @@ export default function Anagram({
     const tile = pool[idx];
     const nextPool = pool.filter((tl) => tl.id !== tileId);
     const nextPlaced = [...placed, tile];
+    playSfx(sfx.tile, 0.6);
     setPool(nextPool);
     setPlaced(nextPlaced);
     if (nextPool.length === 0) {
       const assembled = nextPlaced.map((tl) => tl.char).join('');
       if (assembled === target) {
+        playSfx(sfx.correct);
         setStatus('correct');
         setScore((s) => s + 1);
       } else {
+        playSfx(sfx.wrong);
         setStatus('wrong');
       }
     }
@@ -228,6 +235,7 @@ export default function Anagram({
     const idx = placed.findIndex((tl) => tl.id === tileId);
     if (idx === -1) return;
     const tile = placed[idx];
+    playSfx(sfx.tile, 0.6);
     setPlaced((prev) => prev.filter((tl) => tl.id !== tileId));
     setPool((prev) => [...prev, tile]);
     if (status === 'wrong') setStatus('playing');

@@ -1,3 +1,5 @@
+import { isGameSoundOn } from './gameSfx';
+
 type MelonSfx = 'drop' | 'merge' | 'agree' | 'pop' | 'over';
 
 const URLS: Record<MelonSfx, string> = {
@@ -35,6 +37,7 @@ export function preloadWatermelonSfx(): void {
 }
 
 export function playWatermelonSfx(name: MelonSfx): void {
+  if (!isGameSoundOn()) return;
   const audio = take(URLS[name]);
   audio.volume = VOLUME[name];
   audio.playbackRate = name === 'agree' || name === 'over' ? 1 : 0.96 + Math.random() * 0.08;

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MathOperation } from '../lib/types';
+import { GAME_SFX, playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type MathGenStyle = 'slate' | 'blocks';
 
@@ -105,6 +106,7 @@ export default function MathGenerator({
     if (snap.status !== 'playing') return;
     if (snap.inputValue.trim() === '') return;
     const ok = Number(snap.inputValue) === snap.answer;
+    playSfx(ok ? GAME_SFX.mathgen.correct : GAME_SFX.mathgen.wrong);
     setStatus(ok ? 'correct' : 'wrong');
     if (ok) setScore((s) => s + 1);
   }
@@ -130,6 +132,9 @@ export default function MathGenerator({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  const sfx = useGameSfx('mathgen');
+  useStepSounds(round, operations.length > 0 && round >= questionCount, sfx.question, sfx.finish);
 
   if (operations.length === 0) {
     return (

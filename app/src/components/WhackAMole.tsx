@@ -2,12 +2,16 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair, UndoHandle } from '../lib/types';
+import { COMMON_SFX, GAME_SFX, playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type WhackMode = 'wordToMeaning' | 'meaningToWord';
 
 interface Props {
   pairs: MatchPair[];
   mode?: WhackMode;
+  /** 시간 제한(초). 0·없음 = 제한 없이 문제를 한 바퀴 돌면 끝. 켜면 첫 두더지를 칠 때 시작하고, 문제를 다 풀어도
+   * 시간이 남으면 다시 섞어 계속 나온다(2026-09-28). */
+  timeLimit?: number;
 }
 
 const HOLE_COUNT = 9;
@@ -46,7 +50,7 @@ interface Snapshot {
   holes: (MatchPair | null)[];
 }
 
-const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning' }, ref) {
+const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning', timeLimit = 0 }, ref) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [pos, setPos] = useState(0);
@@ -59,8 +63,44 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
   const [hitHole, setHitHole] = useState<number | null>(null);
   const [hitKind, setHitKind] = useState<'ok' | 'no' | null>(null);
   const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
-  const pairKey = `${mode}|${pairs.map((p) => p.id).join(',')}`;
+  const pairKey = `${mode}|${timeLimit}|${pairs.map((p) => p.id).join(',')}`;
   const flashTimer = useRef<number | null>(null);
+  const timed = timeLimit > 0;
+  const [timerOn, setTimerOn] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(timeLimit);
+  const [timeUp, setTimeUp] = useState(false);
+  const endAt = useRef(0);
+
+  function resetTimer() {
+    setTimerOn(false);
+    setTimeUp(false);
+    setTimeLeft(timeLimit);
+  }
+
+  useEffect(() => {
+    if (!timerOn || timeUp) return;
+    const id = window.setInterval(() => {
+      const left = Math.max(0, Math.ceil((endAt.current - Date.now()) / 1000));
+      setTimeLeft(left);
+      if (left <= 0) {
+        setTimeUp(true);
+        if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      }
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [timerOn, timeUp]);
+
+  // 시간 끝: "Time's up!" → 끝 멜로디 → "Great job!"
+  useEffect(() => {
+    if (!timeUp) return;
+    playSfx(GAME_SFX.whackamole.timeUp);
+    const a = window.setTimeout(() => playSfx(GAME_SFX.whackamole.finish), 1000);
+    const b = window.setTimeout(() => playSfx(COMMON_SFX.praise), 2100);
+    return () => {
+      window.clearTimeout(a);
+      window.clearTimeout(b);
+    };
+  }, [timeUp]);
 
   useEffect(() => {
     if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
@@ -74,6 +114,8 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     setHitKind(null);
     setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
     setPrevSnapshot(null);
+    resetTimer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pairKey]);
 
   useEffect(() => {
@@ -100,6 +142,11 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     },
   }));
 
+  const sfx = useGameSfx('whackamole');
+  // 새 두더지들이 튀어나올 때(문제마다) 뿅, 다 끝나면 결과 소리
+  const roundDone = timed ? timeUp : order.length > 0 && pos >= order.length;
+  useStepSounds(pos, pairs.length >= 2 && roundDone, sfx.popUp, timed ? undefined : sfx.finish);
+
   if (pairs.length < 2) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -122,7 +169,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     return null;
   }
 
-  const finished = pos >= order.length;
+  const finished = timed ? timeUp : pos >= order.length;
   const target = !finished ? order[pos] : null;
   const prompt = target ? (mode === 'wordToMeaning' ? target.left : target.right) : '';
 
@@ -142,14 +189,22 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     setHitKind(null);
     setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
     setPrevSnapshot(null);
+    resetTimer();
   }
 
   function goNext() {
     setHitHole(null);
     setHitKind(null);
     setLocked(false);
-    const nextPos = pos + 1;
-    const nextTarget = order[nextPos];
+    let nextPos = pos + 1;
+    let nextOrder = order;
+    // 시간 제한이 있으면 한 바퀴 돈 뒤 다시 섞어서 계속
+    if (timed && nextPos >= order.length) {
+      nextOrder = shuffle(pairs);
+      nextPos = 0;
+      setOrder(nextOrder);
+    }
+    const nextTarget = nextOrder[nextPos];
     setHoles(nextTarget ? dealHoles(nextTarget, pairs) : Array(HOLE_COUNT).fill(null));
     setPos(nextPos);
   }
@@ -157,8 +212,14 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
   function whack(hole: number) {
     const choice = holes[hole];
     if (!choice || locked || !target) return;
+    if (timed && !timerOn) {
+      endAt.current = Date.now() + timeLimit * 1000;
+      setTimeLeft(timeLimit);
+      setTimerOn(true);
+    }
     setPrevSnapshot({ pos, hits, misses, holes: [...holes] });
     const ok = choice.id === target.id;
+    playSfx(ok ? sfx.hit : sfx.miss);
     if (ok) setHits((h) => h + 1);
     else setMisses((m) => m + 1);
     setHitHole(hole);
@@ -190,7 +251,9 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
               boxShadow: 'var(--game-paper-shadow, inset 0 1px 0 #fff)',
             }}
           >
-            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameWhackamole.finishedTitle')}</div>
+            <div className="mb-2 font-title-md text-title-md text-deep-navy">
+              {timed ? t('gameWhackamole.timeUpTitle') : t('gameWhackamole.finishedTitle')}
+            </div>
             <div className="font-display-lg text-[28px] tabular-nums text-deep-navy">
               {t('gameWhackamole.resultLabel', { hits, misses })}
             </div>
@@ -212,7 +275,20 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
         <span className="rounded-full bg-[#f28b73] px-3 py-1 font-title-md text-[14px] font-bold tabular-nums text-white">
           {t('gameWhackamole.missesLabel', { count: misses })}
         </span>
+        {timed && (
+          <span
+            className={`flex items-center gap-1 rounded-full px-3 py-1 font-title-md text-[14px] font-bold tabular-nums ${
+              timerOn && timeLeft <= 10 ? 'animate-pulse bg-error text-on-error' : 'bg-deep-navy text-white'
+            }`}
+          >
+            <span aria-hidden className="material-symbols-outlined text-[18px]">timer</span>
+            {t('gameWhackamole.secondsLeft', { count: timeLeft })}
+          </span>
+        )}
       </div>
+      {timed && !timerOn && (
+        <div className="mb-3 font-caption text-caption text-on-surface-variant">{t('gameWhackamole.timerStartHint')}</div>
+      )}
 
       <div className="wm-prompt mb-4 w-full max-w-[420px]">
         <div className="wm-prompt-inner">

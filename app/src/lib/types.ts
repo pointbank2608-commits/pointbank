@@ -304,6 +304,8 @@ export interface GameTemplateConfig {
   matchupStyle?: 'trays' | 'tags';
   /** 두더지잡기 전용: 보드에 단어를 두고 구멍에서 뜻을 고를지, 반대로 할지. */
   whackMode?: 'wordToMeaning' | 'meaningToWord';
+  /** 두더지 잡기 시간 제한(초), 0·없음 = 제한 없음 */
+  whackSeconds?: number;
   /**
    * 답 입력하기 전용: 질문(또는 빈칸 있는 문장)+정답 목록. 워드월의 "답을 입력합니다"와
    * "문장 완성"은 둘 다 "프롬프트 보여주고 텍스트로 답 입력받기"라는 같은 상호작용이라

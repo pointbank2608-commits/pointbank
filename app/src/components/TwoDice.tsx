@@ -7,6 +7,7 @@ import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
+import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
@@ -164,12 +165,16 @@ export default function TwoDice({
     setHighlightIndex(null);
     setRolling(true);
     setTossKey((n) => n + 1);
+    playSfx(GAME_SFX.twodice.shake);
     const rollingTeam = turn;
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setDie1(d1);
       setDie2(d2);
       const idx = (d1 - 1) * SIZE + (d2 - 1);
+      playSfx(GAME_SFX.twodice.roll);
+      // 빈 칸을 차지하면 칩 놓는 소리(빙고가 되면 빙고 소리가 따로 난다)
+      if (!claimed[idx]) window.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
       setHighlightIndex(idx);
       const word = board[idx];
       setHistory((prev) => [{ key: `${Date.now()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
@@ -191,6 +196,8 @@ export default function TwoDice({
 
   const pill =
     'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
+
+  useStepSounds(0, !!winner, undefined, GAME_SFX.twodice.bingo);
 
   if (items.length === 0) {
     return (

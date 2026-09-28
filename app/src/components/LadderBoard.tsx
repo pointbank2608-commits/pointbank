@@ -17,6 +17,8 @@ interface Props {
   onEditResult?: (id: string, label: string) => void;
   onAddColumn?: () => void;
   onRemoveColumn?: () => void;
+  /** 오른쪽 목록의 빼기 — 사다리는 참가자·결과가 한 줄이라 그 줄(참가자+결과)을 통째로 뺀다 */
+  onRemoveAt?: (index: number) => void;
   templateName?: string;
   onRenameTemplate?: (name: string) => void;
 }
@@ -55,6 +57,7 @@ export default function LadderBoard({
   onEditResult,
   onAddColumn,
   onRemoveColumn,
+  onRemoveAt,
   templateName,
   onRenameTemplate,
 }: Props) {
@@ -103,6 +106,23 @@ export default function LadderBoard({
   function commitResultDraft(id: string) {
     const value = (resultDrafts[id] ?? '').trim();
     if (value) onEditResult?.(id, value);
+  }
+
+  // 다른 게임 목록과 같은 모양의 빼기 버튼. 사다리는 최소 2줄이라 2줄이면 막는다.
+  function removeAtButton(index: number) {
+    if (!onRemoveAt) return null;
+    return (
+      <button
+        type="button"
+        onClick={() => onRemoveAt(index)}
+        disabled={n <= 2}
+        title={t('gameLadder.removeColumnHint')}
+        aria-label={t('gameLadder.removeColumnHint')}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        <span className="material-symbols-outlined text-[18px]">remove_circle</span>
+      </button>
+    );
   }
 
   function startEditTemplateName() {
@@ -521,17 +541,19 @@ export default function LadderBoard({
             </div>
             <div className="space-y-1.5">
               {participants.map((p, i) => (
-                <input
-                  key={p.id}
-                  value={participantDrafts[p.id] ?? p.label}
-                  onChange={(e) => handleParticipantDraftChange(p.id, e.target.value)}
-                  onBlur={() => commitParticipantDraft(p.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                  }}
-                  style={{ color: colorFor(i) }}
-                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+                <div key={p.id} className="flex items-center gap-1">
+                  <input
+                    value={participantDrafts[p.id] ?? p.label}
+                    onChange={(e) => handleParticipantDraftChange(p.id, e.target.value)}
+                    onBlur={() => commitParticipantDraft(p.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                    }}
+                    style={{ color: colorFor(i) }}
+                    className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                  {removeAtButton(i)}
+                </div>
               ))}
             </div>
           </div>
@@ -541,17 +563,19 @@ export default function LadderBoard({
             </div>
             <div className="space-y-1.5">
               {results.map((r, i) => (
-                <input
-                  key={r.id}
-                  value={resultDrafts[r.id] ?? r.label}
-                  onChange={(e) => handleResultDraftChange(r.id, e.target.value)}
-                  onBlur={() => commitResultDraft(r.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                  }}
-                  style={{ color: colorFor(i) }}
-                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+                <div key={r.id} className="flex items-center gap-1">
+                  <input
+                    value={resultDrafts[r.id] ?? r.label}
+                    onChange={(e) => handleResultDraftChange(r.id, e.target.value)}
+                    onBlur={() => commitResultDraft(r.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                    }}
+                    style={{ color: colorFor(i) }}
+                    className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                  {removeAtButton(i)}
+                </div>
               ))}
             </div>
           </div>

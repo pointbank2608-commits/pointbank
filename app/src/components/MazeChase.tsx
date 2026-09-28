@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 export type MazeChaseStyle = 'wood' | 'garden';
 
@@ -448,6 +449,7 @@ export default function MazeChase({
   const [, setTick] = useState(0);
   const [caughtFlash, setCaughtFlash] = useState(false);
   const [wrongFlash, setWrongFlash] = useState(false);
+  const moveSfxAt = useRef(0);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
@@ -592,7 +594,17 @@ export default function MazeChase({
         const len = Math.hypot(dx, dy) || 1;
         dx = (dx / len) * PLAYER_SPEED * dt;
         dy = (dy / len) * PLAYER_SPEED * dt;
-        if (dx !== 0 || dy !== 0) tryMove(playerRef.current, dx, dy, wall, PLAYER_R);
+        if (dx !== 0 || dy !== 0) {
+          const bx = playerRef.current.x;
+          const by = playerRef.current.y;
+          tryMove(playerRef.current, dx, dy, wall, PLAYER_R);
+          // 계속 움직이는 게임이라 소리는 몇 백 ms 에 한 번만: 움직이면 사각사각, 벽에 막혀 제자리면 콩
+          const stuck = playerRef.current.x === bx && playerRef.current.y === by;
+          if (now - moveSfxAt.current > (stuck ? 450 : 260)) {
+            moveSfxAt.current = now;
+            playSfx(stuck ? GAME_SFX.mazechase.wall : GAME_SFX.mazechase.move, stuck ? 0.6 : 0.25);
+          }
+        }
 
         const waypoint =
           performance.now() > immuneUntilRef.current
@@ -625,6 +637,7 @@ export default function MazeChase({
           playerRef.current = { ...startRef.current };
           enemyRef.current = { ...enemySpawnRef.current };
           immuneUntilRef.current = performance.now() + 900;
+          playSfx(GAME_SFX.mazechase.wall);
           setCaughtFlash(true);
           flashTimers.current.push(window.setTimeout(() => setCaughtFlash(false), 350));
         }
@@ -633,6 +646,7 @@ export default function MazeChase({
           if (hitsChip(playerRef.current.x, playerRef.current.y, b)) {
             if (b.correct) {
               roundOverRef.current = true;
+              playSfx(GAME_SFX.mazechase.goal);
               setScore((s) => s + 1);
               flashTimers.current.push(
                 window.setTimeout(() => {
@@ -641,6 +655,7 @@ export default function MazeChase({
               );
             } else {
               escapeChip(playerRef.current, b, wall);
+              playSfx(GAME_SFX.mazechase.wrong);
               setWrongFlash(true);
               flashTimers.current.push(window.setTimeout(() => setWrongFlash(false), 250));
             }
@@ -656,6 +671,8 @@ export default function MazeChase({
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [items.length]);
+
+  useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.mazechase.finish);
 
   if (items.length < 2) {
     return (

@@ -20,6 +20,7 @@ import {
   type LiveSession,
 } from '../lib/liveQuiz';
 import type { LiveQuestion } from '../lib/types';
+import { playSfx, useBgm, useGameSfx } from '../lib/gameSfx';
 
 /**
  * 대회 퀴즈쇼 — 전자칠판(선생님) 화면. 대기실(QR·입장 번호) → 라운드 소개 → 문제 → 정답 공개 → 순위 → … → 시상대.
@@ -232,6 +233,47 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [remaining, everyoneAnswered, phase, qIndex]);
+
+  // ---- 소리(칠판에서만 — 학생 휴대폰에는 안 난다) ----
+  const sfx = useGameSfx('quizshow');
+  useBgm(sfx.lobby, phase === 'lobby' && roundIntro == null, 0.3);
+  useBgm(sfx.bgm, phase === 'question', 0.18);
+  const playerCount = players.length;
+  const prevPlayers = useRef(playerCount);
+  useEffect(() => {
+    if (phase === 'lobby' && playerCount > prevPlayers.current) playSfx(sfx.join, 0.7);
+    prevPlayers.current = playerCount;
+  }, [playerCount, phase, sfx.join]);
+  // 부저 문제: 새로 누른 학생이 생길 때마다 삑
+  const answerCount = currentAnswers.length;
+  const prevAnswers = useRef(answerCount);
+  useEffect(() => {
+    if (phase === 'question' && current?.kind === 'buzzer' && answerCount > prevAnswers.current) playSfx(sfx.buzz);
+    prevAnswers.current = answerCount;
+  }, [answerCount, phase, current?.kind, sfx.buzz]);
+  const timeUpFor = useRef(-1);
+  useEffect(() => {
+    if (remaining === 0 && timeUpFor.current !== qIndex) {
+      timeUpFor.current = qIndex;
+      playSfx(sfx.timeUp);
+    }
+  }, [remaining, qIndex, sfx.timeUp]);
+  const prevPhase = useRef(phase);
+  useEffect(() => {
+    if (phase !== prevPhase.current) {
+      if (phase === 'reveal') playSfx(sfx.reveal);
+      if (phase === 'final') playSfx(sfx.champion);
+    }
+    prevPhase.current = phase;
+  }, [phase, sfx.reveal, sfx.champion]);
+  // 라운드 소개: 뒤에 다른 라운드가 더 없으면 "Final round", 아니면 "Round"
+  useEffect(() => {
+    if (roundIntro == null) return;
+    const name = qs[roundIntro]?.round?.trim();
+    const later = qs.slice(roundIntro + 1).some((q) => q.round?.trim() && q.round.trim() !== name);
+    playSfx(later ? sfx.round : sfx.finalRound);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundIntro]);
 
   async function judge(a: LiveAnswer, correct: boolean) {
     setAnswers((prev) => prev.map((x) => (x.id === a.id ? { ...x, correct, points: correct ? x.potential : 0 } : x)));

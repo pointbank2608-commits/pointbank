@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { isGameSoundOn } from '../lib/gameSfx';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
@@ -108,7 +109,7 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
   // 돌림판의 회전 딸깍음처럼 늘 켜져 있는 고정 효과음이다. 섞는 동안(active)만 반복
   // 재생하고, 섞기가 끝나면(active가 꺼지면) 그 자리에서 바로 멈춘다.
   useEffect(() => {
-    if (!active) return;
+    if (!active || !isGameSoundOn()) return;
     const audio = new Audio('/sounds/lottery-mix.wav?v=1');
     audio.loop = true;
     void audio.play().catch(() => {});

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type CrosswordStyle = 'board' | 'blocks';
 
@@ -219,6 +220,9 @@ export default function Crossword({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemKey]);
 
+  const sfx = useGameSfx('crossword');
+  useStepSounds(0, puzzle.placements.length > 0 && filledIds.size === puzzle.placements.length, undefined, sfx.finish);
+
   if (puzzle.placements.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -256,16 +260,19 @@ export default function Crossword({
 
   function selectWord(id: string) {
     if (filledIds.has(id)) return;
+    playSfx(sfx.key, 0.6);
     setSelectedWordId((prev) => (prev === id ? null : id));
   }
 
   function clickSlot(placement: Placement) {
     if (!selectedWordId || filledIds.has(placement.id)) return;
     if (selectedWordId === placement.id) {
+      if (filledIds.size + 1 < puzzle.placements.length) playSfx(sfx.word);
       setFilledIds((prev) => new Set(prev).add(placement.id));
       setSelectedWordId(null);
       setWrongSlotId(null);
     } else {
+      playSfx(sfx.wrong);
       setWrongSlotId(placement.id);
       if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
       wrongTimer.current = window.setTimeout(() => setWrongSlotId(null), 400);

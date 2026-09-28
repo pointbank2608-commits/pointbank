@@ -90,6 +90,7 @@ export default function WhackAMolePage() {
 
   const playablePairs = draftPairs.filter((p) => p.left.trim() && p.right.trim());
   const whackMode = selected?.config.whackMode === 'meaningToWord' ? 'meaningToWord' : 'wordToMeaning';
+  const whackSeconds = selected?.config.whackSeconds ?? 0;
 
   async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
@@ -139,6 +140,11 @@ export default function WhackAMolePage() {
   async function handleModeChange(mode: 'wordToMeaning' | 'meaningToWord') {
     if (!selected) return;
     await persistConfig({ ...selected.config, whackMode: mode });
+  }
+
+  async function handleSecondsChange(seconds: number) {
+    if (!selected) return;
+    await persistConfig({ ...selected.config, whackSeconds: seconds });
   }
 
   if (g.noClasses) {
@@ -321,7 +327,7 @@ export default function WhackAMolePage() {
             onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <WhackAMole key={roundKey} ref={gameRef} pairs={playablePairs} mode={whackMode} />
+            <WhackAMole key={roundKey} ref={gameRef} pairs={playablePairs} mode={whackMode} timeLimit={whackSeconds} />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -367,6 +373,29 @@ export default function WhackAMolePage() {
                         }`}
                       >
                         {mode === 'wordToMeaning' ? t('gameWhackamole.modeWord') : t('gameWhackamole.modeMeaning')}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 py-2">
+                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
+                    {t('gameWhackamole.timerLabel')}
+                  </span>
+                  {[0, 30, 60, 90].map((sec) => {
+                    const on = whackSeconds === sec;
+                    return (
+                      <button
+                        key={sec}
+                        type="button"
+                        onClick={() => void handleSecondsChange(sec)}
+                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
+                          on
+                            ? 'bg-secondary text-on-secondary shadow-sm'
+                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
+                        }`}
+                      >
+                        {sec === 0 ? t('gameWhackamole.timerOff') : t('gameWhackamole.timerSeconds', { count: sec })}
                       </button>
                     );
                   })}

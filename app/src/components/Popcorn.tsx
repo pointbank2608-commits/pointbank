@@ -4,6 +4,7 @@ import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { GAME_SFX, playSfx } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
@@ -105,6 +106,8 @@ export default function Popcorn({
     setLastCard(card);
     setHop((n) => n + 1);
 
+    // 팝콘이 터지면 뽁, 아니면 점수 얻는 딩
+    playSfx(card === 'pop' ? GAME_SFX.popcorn.pop : GAME_SFX.popcorn.result);
     if (card === 'pop') {
       setPoppedTeam(turn);
       setScores((prev) => ({ ...prev, [turn]: 0 }));

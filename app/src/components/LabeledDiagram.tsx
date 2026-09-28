@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DiagramPin } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type LabeledDiagramStyle = 'wood' | 'clay';
 
@@ -55,6 +56,9 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinIdsKey]);
 
+  const sfx = useGameSfx('labeleddiagram');
+  useStepSounds(0, !!imageUrl && pins.length > 0 && filledIds.size === pins.length, undefined, sfx.finish);
+
   if (!imageUrl || pins.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -77,16 +81,19 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
 
   function selectWord(id: string) {
     if (filledIds.has(id)) return;
+    playSfx(sfx.pick, 0.6);
     setSelectedWordId((prev) => (prev === id ? null : id));
   }
 
   function clickPin(pin: DiagramPin) {
     if (!selectedWordId || filledIds.has(pin.id)) return;
     if (selectedWordId === pin.id) {
+      if (filledIds.size + 1 < pins.length) playSfx(sfx.correct);
       setFilledIds((prev) => new Set(prev).add(pin.id));
       setSelectedWordId(null);
       setWrongPinId(null);
     } else {
+      playSfx(sfx.wrong);
       setWrongPinId(pin.id);
       window.setTimeout(() => setWrongPinId(null), 400);
     }

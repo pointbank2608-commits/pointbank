@@ -4,6 +4,7 @@ import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, UndoHandle } from '../lib/types';
+import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
@@ -155,6 +156,11 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
       setPrevSnapshot({ count, turn, head, loser });
     }
     const nextCount = count + n;
+    // 부른 숫자 개수만큼 톡톡, 31을 부르면 벌칙 소리
+    const taps = Math.min(n, targetCount - count);
+    for (let i = 0; i < taps; i++) window.setTimeout(() => playSfx(GAME_SFX.baskin31.count, 0.8), i * 110);
+    if (nextCount >= targetCount) window.setTimeout(() => playSfx(GAME_SFX.baskin31.penalty), taps * 110);
+    else window.setTimeout(() => playSfx(COMMON_SFX.yourTurn, 0.7), taps * 110 + 250);
     setHead(head + n);
     setCountTick((k) => k + 1);
     if (nextCount >= targetCount) {
@@ -207,6 +213,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   }
 
   function resetAll() {
+    playSfx(GAME_SFX.baskin31.roundEnd);
     moveGen.current += 1;
     setBusy(false);
     setCount(0);

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
+import { COMMON_SFX, GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 export type AirplaneStyle = 'wood' | 'clay';
 
@@ -404,6 +405,7 @@ export default function Airplane({
             y: playerYRef.current,
           });
           cooldownRef.current = FIRE_COOLDOWN;
+          playSfx(GAME_SFX.airplane.fly, 0.45);
         }
 
         for (const f of flyersRef.current) {
@@ -425,6 +427,7 @@ export default function Airplane({
             if (!boxesOverlap(m.x, m.y, MISSILE_W, MISSILE_H, f.x, f.y, w * 0.86, h * 0.86)) continue;
             spent = true;
             if (f.kind === 'meteor') {
+              playSfx(GAME_SFX.airplane.crash, 0.45);
               burstsRef.current.push({ id: `b-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
               flyersRef.current = flyersRef.current.filter((other) => other.id !== f.id);
             }
@@ -441,6 +444,7 @@ export default function Airplane({
           }
           if (f.kind === 'gem') {
             roundOverRef.current = true;
+            playSfx(GAME_SFX.airplane.hit);
             setScore((s) => s + 1);
             flyersRef.current = flyersRef.current.filter((other) => other.id !== f.id);
             burstsRef.current.push({ id: `g-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
@@ -458,7 +462,9 @@ export default function Airplane({
               if (livesRef.current <= 0) {
                 roundOverRef.current = true;
                 setCrashed(true);
-              }
+                playSfx(GAME_SFX.airplane.crash);
+                window.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 900);
+              } else playSfx(GAME_SFX.airplane.wrongHit);
             }
           }
           break;
@@ -477,6 +483,8 @@ export default function Airplane({
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, [items.length]);
+
+  useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.airplane.finish);
 
   if (items.length < 2) {
     return (
@@ -499,6 +507,7 @@ export default function Airplane({
     setOrder(nextOrder);
     setPos(0);
     setScore(0);
+    playSfx(COMMON_SFX.start);
     beginGame(nextOrder);
   }
 

@@ -5,6 +5,7 @@ import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import '../gameSkins.css';
 import type { GameType, GameItem } from '../lib/types';
+import { COMMON_SFX, playSfx, setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 
 interface Props {
   gameType?: GameType;
@@ -55,6 +56,7 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
   // absolute inset-0 으로 덮는다(2026-09-25 "수업 시작할 때 게임 화면도 전체 화면에 맞춰줘").
   const presenting = usePresenting();
+  const soundOn = useGameSoundOn();
   // 아이폰 사파리는 웹 페이지 요소의 전체화면(Fullscreen API)을 지원하지 않는다(아이패드·컴퓨터만) — 그럴 땐
   // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
   const [pseudoFs, setPseudoFs] = useState(false);
@@ -324,6 +326,21 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
               {t('gamePlay.teamOrder')}
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => setGameSoundOn(!soundOn)}
+            title={soundOn ? t('gamePlay.soundOff') : t('gamePlay.soundOn')}
+            aria-label={soundOn ? t('gamePlay.soundOff') : t('gamePlay.soundOn')}
+            aria-pressed={!soundOn}
+            className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-sm backdrop-blur transition-colors ${
+              soundOn
+                ? 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
+                : 'bg-primary text-on-primary hover:bg-primary-container'
+            }`}
+          >
+            <span aria-hidden className="material-symbols-outlined text-[20px]">{soundOn ? 'volume_up' : 'volume_off'}</span>
+            {soundOn ? t('gamePlay.soundLabelOn') : t('gamePlay.soundLabelOff')}
+          </button>
           {onUndo && (
             <button
               type="button"
@@ -391,7 +408,7 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
               <p className="mt-3 text-on-surface-variant">{t('classroomUx.restartHint')}</p>
               <div className="mt-6 flex flex-wrap justify-end gap-3">
                 <button autoFocus type="button" className="min-h-11 rounded-xl border border-outline-variant px-5" onClick={() => setRestartOpen(false)}>{t('classroomUx.keepPlaying')}</button>
-                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); onRestart?.(); }}>{t('gamePlay.restart')}</button>
+                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); onRestart?.(); playSfx(COMMON_SFX.start); }}>{t('gamePlay.restart')}</button>
               </div>
             </div>
           </AccessibleDialog>

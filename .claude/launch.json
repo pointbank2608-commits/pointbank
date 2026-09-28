@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "app"],
       "port": 5173
+    },
+    {
+      "name": "sounds",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "sound-source"],
+      "port": 8765
     }
   ]
 }

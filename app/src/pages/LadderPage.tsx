@@ -357,6 +357,9 @@ export default function LadderPage() {
               onEditResult={(id, label) => void renameResultLabel(id, label)}
               onAddColumn={() => void addColumn()}
               onRemoveColumn={() => void removeColumn()}
+              onRemoveAt={(i) => {
+                if (selected.items.length > 2) void removeParticipant(i);
+              }}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}
             />

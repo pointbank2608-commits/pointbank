@@ -1,3 +1,4 @@
+import { isGameSoundOn } from './gameSfx';
 import { cubicBezier } from './easing';
 import type { MusicSelection } from './types';
 
@@ -63,6 +64,7 @@ function noiseBurst(time: number, duration: number, gain: number) {
 
 /** 재생 시작. 되돌아오는 함수를 부르면 그 시점에서 소리를 멈춘다(반복 재생용 stop). */
 export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => void {
+  if (!isGameSoundOn()) return () => {};
   const c = ctx();
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -170,6 +172,7 @@ function wheelTickClick(time: number, strength: number) {
 
 /** 손으로 돌림판을 직접 드래그할 때 실시간으로 한 번 울리는 딸깍음(스케줄이 아니라 그 즉시). */
 export function playWheelTickOnce(strength = 0.6) {
+  if (!isGameSoundOn()) return;
   wheelTickClick(ctx().currentTime, strength);
 }
 
@@ -182,6 +185,7 @@ export function playWheelTickOnce(strength = 0.6) {
  * 되돌아오는 함수를 부르면 아직 안 울린 클릭을 전부 취소한다(도중에 다시 돌리기 등).
  */
 export function playWheelSpinTicks(totalDegrees: number, durationMs: number): () => void {
+  if (!isGameSoundOn()) return () => {};
   const TICK_DEG = 9; // 대략 40칸/바퀴 밀도 — 촘촘하지도 허전하지도 않은 정도로 조정함
   const SAMPLE_STEPS = 600;
   let stopped = false;
@@ -232,6 +236,7 @@ export function preloadCardSwish(): void {
  * 나는 게 아니라 카드마다 다르게 스치는 것처럼 들리게 한다. 섞기 라운드마다 한 번씩 불러
  * 쓴다(내부에서 알아서 여러 겹으로 재생한다). */
 export function playShuffleSwish(): void {
+  if (!isGameSoundOn()) return;
   const layers = 3;
   for (let i = 0; i < layers; i++) {
     const delay = Math.random() * 140;
@@ -274,6 +279,7 @@ export function preloadBallCrack(): void {
  * 저작권 책임은 그쪽에서 진다는 전제로 사용). CrackingBall 의 깨지는 애니메이션 길이에
  * 맞춰(1.25초 안팎) 미리 잘라둔 파일이다. */
 export function playBallCrack(): void {
+  if (!isGameSoundOn()) return;
   const audio = getBallCrackAudio();
   audio.currentTime = 0;
   void audio.play().catch(() => {});
@@ -295,7 +301,7 @@ export function resolveResultSound(stored: MusicSelection | null | undefined): M
  * <audio> 로 재생한다. 반환된 함수를 부르면 멈춘다. music 이 없으면 아무 일도 안 한다.
  */
 export function playMusic(music: MusicSelection | null | undefined, opts: { loop?: boolean } = {}): () => void {
-  if (!music) return () => {};
+  if (!music || !isGameSoundOn()) return () => {};
   if (music.kind === 'builtin') return playBuiltin(music.id, opts);
 
   const audio = new Audio(music.url);

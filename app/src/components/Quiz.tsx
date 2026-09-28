@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
   questions: QuizQuestion[];
@@ -35,6 +36,9 @@ export default function Quiz({ questions }: Props) {
     setScore(0);
   }, [questionKey]);
 
+  const sfx = useGameSfx('quiz');
+  useStepSounds(pos, questions.length > 0 && pos >= order.length, sfx.question, sfx.finish);
+
   if (questions.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -60,6 +64,7 @@ export default function Quiz({ questions }: Props) {
     const current = questions[order[pos]];
     if (!current) return;
     setSelectedChoice(choiceIndex);
+    playSfx(choiceIndex === current.correctIndex ? sfx.correct : sfx.wrong);
     if (choiceIndex === current.correctIndex) setScore((s) => s + 1);
   }
 

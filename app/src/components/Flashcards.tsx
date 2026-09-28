@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
+import { GAME_SFX, playSfx } from '../lib/gameSfx';
 
 export type FlashcardsStyle = 'wood' | 'clay';
 
@@ -58,17 +59,20 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
   const finished = pos >= order.length;
 
   function restart() {
+    playSfx(GAME_SFX.flashcards.shuffle);
     setOrder(shuffle(cards.map((_, i) => i)));
     setPos(0);
     setFlipped(false);
   }
 
   function next() {
+    playSfx(GAME_SFX.flashcards.next, 0.7);
     setPos((p) => p + 1);
     setFlipped(false);
   }
 
   function prev() {
+    playSfx(GAME_SFX.flashcards.next, 0.7);
     setPos((p) => Math.max(0, p - 1));
     setFlipped(false);
   }
@@ -120,7 +124,10 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
         <div className="fc-behind fc-behind-1" aria-hidden />
         <button
           type="button"
-          onClick={() => setFlipped((f) => !f)}
+          onClick={() => {
+            playSfx(GAME_SFX.flashcards.flip, 0.7);
+            setFlipped((f) => !f);
+          }}
           data-skin-object="card"
           className={`fc-card ${flipped ? 'is-flipped' : ''}`}
         >

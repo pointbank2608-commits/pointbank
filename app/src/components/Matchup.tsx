@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { useTranslation } from 'react-i18next';
 import './matchup-clay.css';
 import type { MatchPair, UndoHandle } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type MatchupStyle = 'trays' | 'tags';
 
@@ -68,6 +69,9 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     },
   }));
 
+  const sfx = useGameSfx('matchup');
+  useStepSounds(0, pairs.length >= 2 && matchedIds.size === pairs.length, undefined, sfx.finish);
+
   if (pairs.length < 2) {
     return <div className="matchup-clay matchup-clay__finish">
       <img src="/skins/matchup-clay-guide.png" alt="" width="240" height="165" />
@@ -109,6 +113,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
 
   function resolve(leftId: string, rightId: string) {
     setPrevSnapshot({ matchedIds: new Set(matchedIds), wrongCount });
+    playSfx(leftId === rightId ? sfx.match : sfx.miss);
     if (leftId === rightId) {
       setMatchedIds((prev) => new Set(prev).add(leftId));
       setSelectedLeft(null);
@@ -134,6 +139,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
       resolve(id, selectedRight);
       return;
     }
+    playSfx(sfx.pick, 0.6);
     setSelectedLeft((prev) => (prev === id ? null : id));
   }
 
@@ -143,6 +149,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
       resolve(selectedLeft, id);
       return;
     }
+    playSfx(sfx.pick, 0.6);
     setSelectedRight((prev) => (prev === id ? null : id));
   }
 

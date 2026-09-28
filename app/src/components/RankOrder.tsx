@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
+import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 export type RankOrderStyle = 'podium' | 'plates';
 
@@ -96,6 +97,17 @@ export default function RankOrder({
     setEditingTemplateName(false);
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
+
+  const sfx = useGameSfx('rankorder');
+  const solvedNow = items.length >= 2 && order.length === items.length && order.every((it, i) => it.id === items[i].id);
+  useStepSounds(0, solvedNow, undefined, sfx.finish);
+  // 옮긴 뒤 제자리에 들어간 항목이 늘면 딩(다 맞춘 순간은 끝 소리만), 아니면 옮기는 소리
+  const inPlace = order.filter((it, i) => it.id === items[i]?.id).length;
+  const prevInPlace = useRef(inPlace);
+  useEffect(() => {
+    if (inPlace > prevInPlace.current && !solvedNow) playSfx(sfx.correct, 0.7);
+    prevInPlace.current = inPlace;
+  }, [inPlace, solvedNow, sfx.correct]);
 
   if (items.length < 2) {
     return (
@@ -200,6 +212,7 @@ export default function RankOrder({
 
   function moveUp(index: number) {
     if (index === 0 || finished) return;
+    playSfx(sfx.move, 0.7);
     setOrder((prev) => {
       const next = [...prev];
       [next[index - 1], next[index]] = [next[index], next[index - 1]];
@@ -210,6 +223,7 @@ export default function RankOrder({
 
   function moveDown(index: number) {
     if (index === order.length - 1 || finished) return;
+    playSfx(sfx.move, 0.7);
     setOrder((prev) => {
       const next = [...prev];
       [next[index], next[index + 1]] = [next[index + 1], next[index]];
