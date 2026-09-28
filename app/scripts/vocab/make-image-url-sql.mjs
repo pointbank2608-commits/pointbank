@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALL_TARGETS } from './image-targets.mjs';
+import { ALL_TARGETS, MOE_TARGETS } from './image-targets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -21,7 +21,7 @@ const files = new Set(
     .map((f) => f.slice(0, -'.webp'.length)),
 );
 
-const newIds = ALL_TARGETS.map((r) => r.id);
+const newIds = [...ALL_TARGETS, ...MOE_TARGETS].map((r) => r.id);
 const withImage = newIds.filter((id) => files.has(id));
 const missing = newIds.filter((id) => !files.has(id));
 
