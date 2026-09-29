@@ -450,7 +450,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     minItems: 999,
     icon: 'emoji_events',
     path: '/games/quizshow',
-    cover: null,
+    cover: '/covers/game-quizshow.jpg',
     nameKey: 'gamesList.quizshowName',
     descKey: 'gamesList.quizshowDesc',
   },
