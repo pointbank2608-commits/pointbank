@@ -1123,7 +1123,7 @@ export async function restoreWordListRevision(rev: ContentRevision) {
 
 /** 지운 단어장 되살리기 — 같은 id 로 다시 넣는다. 그사이 반이 없으면 학원 공용으로 */
 export async function restoreDeletedWordList(rev: ContentRevision): Promise<WordList> {
-  const d = rev.data as WordList;
+  const d = rev.data as unknown as WordList;
   const row = {
     id: d.id,
     academy_id: d.academy_id,
@@ -1148,10 +1148,13 @@ export async function adminAcademyContent(academyId: string): Promise<AdminAcade
   return data as AdminAcademyContent | null;
 }
 
-function adminRpcOk<T extends { ok?: boolean; error?: string }>(data: T | null, error: { message: string } | null): T {
+function adminRpcOk<T extends { ok?: boolean; error?: string }>(
+  data: T | null,
+  error: { message: string } | null,
+): T & { ok: true } {
   if (error) throw new Error(error.message);
   if (!data?.ok) throw new Error(data?.error || 'failed');
-  return data;
+  return data as T & { ok: true };
 }
 
 /** 관리자: 그 학원 수업·단어장·게임의 지금 상태를 되돌릴 수 있는 백업으로 남긴다 */
