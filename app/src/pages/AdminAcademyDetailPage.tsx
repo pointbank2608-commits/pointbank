@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
-import { adminSetAcademyPlan } from '../lib/api';
+import {
+  adminAcademyContent,
+  adminRestoreRevision,
+  adminSetAcademyPlan,
+  adminSnapshotAcademy,
+  type AdminAcademyContent,
+} from '../lib/api';
 import { adminAcademyDetail, adminLog, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
 import { StatusPill } from './HelpPage';
 
@@ -17,6 +23,7 @@ export default function AdminAcademyDetailPage() {
   const [until, setUntil] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [content, setContent] = useState<AdminAcademyContent | null | undefined>(undefined);
 
   const load = useCallback(() => {
     adminAcademyDetail(id)
@@ -27,6 +34,21 @@ export default function AdminAcademyDetailPage() {
       .catch((e) => setMsg(String((e as { message?: string })?.message ?? e)));
   }, [id]);
   useEffect(load, [load]);
+
+  const loadContent = useCallback(() => {
+    setBusy(true);
+    return adminAcademyContent(id)
+      .then((x) => setContent(x))
+      .catch((e) => setMsg(String((e as { message?: string })?.message ?? e)))
+      .finally(() => setBusy(false));
+  }, [id]);
+  useEffect(() => {
+    void loadContent();
+  }, [loadContent]);
+
+  function formatWhen(iso: string) {
+    return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  }
 
   async function setPlan(plan: 'free' | 'paid', untilDate: string | null) {
     if (!d) return;
@@ -163,6 +185,170 @@ export default function AdminAcademyDetailPage() {
               <span className="min-w-0 flex-1 truncate font-body-sm text-body-sm">{tk.subject}</span>
             </Link>
           ))}
+        </section>
+
+        <section className={`${box} md:col-span-2`}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-title-md text-title-md">{t('adminOps.contentTitle')}</h2>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void loadContent()}
+                className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary disabled:opacity-50"
+              >
+                {t('adminOps.contentLoad')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setBusy(true);
+                  adminSnapshotAcademy(id)
+                    .then(() => {
+                      setMsg(t('adminOps.contentSnapshotOk'));
+                      return loadContent();
+                    })
+                    .then(load)
+                    .catch(() => setMsg(t('adminOps.contentRestoreFail')))
+                    .finally(() => setBusy(false));
+                }}
+                className="rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary disabled:opacity-50"
+              >
+                {t('adminOps.contentSnapshot')}
+              </button>
+            </div>
+          </div>
+          <p className="font-caption text-caption text-on-surface-variant">{t('adminOps.contentHint')}</p>
+          {content === null && <p className="font-caption text-caption text-error">{t('adminOps.contentNeedSetup')}</p>}
+          {content && (
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-body-sm text-body-sm">
+                  <thead>
+                    <tr className="text-on-surface-variant">
+                      <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentLesson')}</th>
+                      <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentClass')}</th>
+                      <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentSlides')}</th>
+                      <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentWordList')}</th>
+                      <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentShared')}</th>
+                      <th className="py-1 font-caption text-caption">{t('adminOps.contentUpdated')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {content.lessons.map((l) => (
+                      <tr key={l.id} className="border-t border-outline-variant/40">
+                        <td className="py-1.5 pr-3 font-bold">{l.name}</td>
+                        <td className="py-1.5 pr-3">{l.class_name ?? t('adminOps.contentAllClasses')}</td>
+                        <td className="py-1.5 pr-3 tabular-nums">{l.slide_count}</td>
+                        <td className="py-1.5 pr-3">{l.word_list_name ?? '–'}</td>
+                        <td className="py-1.5 pr-3">
+                          {l.word_list_shared
+                            ? t('adminOps.contentAcademyWide', { n: l.word_list_used_by })
+                            : l.word_list_used_by > 1
+                              ? t('adminOps.contentUsedBy', { n: l.word_list_used_by })
+                              : '–'}
+                        </td>
+                        <td className="py-1.5 text-on-surface-variant">{formatWhen(l.updated_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {content.recent_revisions.length > 0 && (
+                <div>
+                  <h3 className="mb-1 font-label-md text-label-md">{t('adminOps.contentRevisions')}</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-body-sm text-body-sm">
+                      <thead>
+                        <tr className="text-on-surface-variant">
+                          <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentWhen')}</th>
+                          <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentKind')}</th>
+                          <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentOp')}</th>
+                          <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentLesson')}</th>
+                          <th className="py-1 pr-3 font-caption text-caption">{t('adminOps.contentStatus')}</th>
+                          <th className="py-1 font-caption text-caption" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {content.recent_revisions.map((r) => {
+                          const when = formatWhen(r.created_at);
+                          const name = r.name ?? r.row_id;
+                          const kind =
+                            r.table_name === 'curriculum_lessons'
+                              ? t('adminOps.contentKindLesson')
+                              : r.table_name === 'word_lists'
+                                ? t('adminOps.contentKindWordList')
+                                : t('adminOps.contentKindGame');
+                          const op =
+                            r.op === 'delete'
+                              ? t('adminOps.contentOpDelete')
+                              : r.op === 'backup'
+                                ? t('adminOps.contentOpBackup')
+                                : t('adminOps.contentOpUpdate');
+                          const count = r.table_name === 'curriculum_lessons' ? r.slide_count ?? r.item_count : r.item_count;
+                          return (
+                            <tr key={r.id} className="border-t border-outline-variant/40">
+                              <td className="py-1.5 pr-3 whitespace-nowrap tabular-nums">{when}</td>
+                              <td className="py-1.5 pr-3">{kind}</td>
+                              <td className="py-1.5 pr-3">{op}</td>
+                              <td className="py-1.5 pr-3">
+                                {name}
+                                {r.class_name ? ` · ${r.class_name}` : ''}
+                                {count != null ? ` · ${r.table_name === 'curriculum_lessons' ? t('adminOps.contentSlideN', { n: count }) : t('adminOps.contentItemN', { n: count })}` : ''}
+                              </td>
+                              <td className="py-1.5 pr-3">
+                                {r.row_exists === false ? (
+                                  <span className="text-error">{t('adminOps.contentGone')}</span>
+                                ) : (
+                                  t('adminOps.contentExists')
+                                )}
+                              </td>
+                              <td className="py-1.5">
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => {
+                                    if (
+                                      !confirm(
+                                        t('adminOps.contentRestoreConfirm', {
+                                          when,
+                                          name,
+                                          status: r.row_exists === false ? t('adminOps.contentMissingHint') : t('adminOps.contentOverwriteHint'),
+                                        }),
+                                      )
+                                    ) {
+                                      return;
+                                    }
+                                    setBusy(true);
+                                    adminRestoreRevision(r.id)
+                                      .then((res) => {
+                                        setMsg(
+                                          res.recreated
+                                            ? t('adminOps.contentRecreated', { when, name: res.name ?? name })
+                                            : t('adminOps.contentRestored', { when, name: res.name ?? name }),
+                                        );
+                                        return loadContent();
+                                      })
+                                      .then(load)
+                                      .catch(() => setMsg(t('adminOps.contentRestoreFail')))
+                                      .finally(() => setBusy(false));
+                                  }}
+                                  className="rounded-full border border-primary px-3 py-0.5 font-label-md text-label-md text-primary disabled:opacity-40"
+                                >
+                                  {t('adminOps.contentRestore')}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         <section className={box}>

@@ -16,10 +16,14 @@ import {
   createWordList,
   deleteCurriculumLesson,
   fetchCurriculumLessons,
+  fetchDeletedLessons,
   fetchWordLists,
   generateWordListFromVideo,
+  restoreDeletedLesson,
   updateCurriculumLesson,
+  type ContentRevision,
 } from '../lib/api';
+import LessonHistoryModal from '../components/LessonHistoryModal';
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
@@ -46,12 +50,15 @@ export default function CurriculumPage() {
 
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
+  const [deletedLessons, setDeletedLessons] = useState<ContentRevision[]>([]);
+  const [historyLesson, setHistoryLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function reload() {
     if (!academy?.id || !staffClassId) {
       setWordLists([]);
       setLessons([]);
+      setDeletedLessons([]);
       setLoading(false);
       return;
     }
@@ -63,6 +70,11 @@ export default function CurriculumPage() {
       ]);
       setWordLists(wl);
       setLessons(ls);
+      try {
+        setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId));
+      } catch {
+        setDeletedLessons([]);
+      }
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -84,6 +96,28 @@ export default function CurriculumPage() {
   const [wordListModal, setWordListModal] = useState<{ listId: string | null } | null>(null);
   function openWordListModal(mode: 'new' | 'edit') {
     setWordListModal({ listId: mode === 'edit' && wordListId ? wordListId : null });
+  }
+
+  async function handleEditWordList() {
+    const wl = wordLists.find((w) => w.id === wordListId);
+    if (!wl || !academy?.id || !profile) return;
+    const usedBy = lessons.filter((l) => l.word_list_id === wl.id && l.id !== editingId).length;
+    const shared = wl.class_id == null || usedBy > 0;
+    if (shared) {
+      if (!confirm(t('curriculum.wordListTools.sharedConfirm', { count: usedBy + 1, name: wl.name }))) return;
+      const copy = await createWordList({
+        academyId: academy.id,
+        classId: formClassId,
+        name: wl.name,
+        items: wl.items,
+        teacherId: profile.id,
+      });
+      setWordLists((prev) => [...prev, copy]);
+      setWordListId(copy.id);
+      setWordListModal({ listId: copy.id });
+      return;
+    }
+    openWordListModal('edit');
   }
   const [videoUrl, setVideoUrl] = useState('');
   const [level, setLevel] = useState('');
@@ -435,7 +469,16 @@ export default function CurriculumPage() {
   async function handleDelete(lesson: CurriculumLesson) {
     if (!confirm(t('curriculum.deleteConfirm', { name: lesson.name }))) return;
     const ok = await run(() => deleteCurriculumLesson(lesson.id), t('curriculum.deletedToast'));
-    if (ok) setLessons((prev) => prev.filter((l) => l.id !== lesson.id));
+    if (ok) {
+      setLessons((prev) => prev.filter((l) => l.id !== lesson.id));
+      if (academy?.id && staffClassId) {
+        try {
+          setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId));
+        } catch {
+          /* 034 미적용이면 목록만 비움 */
+        }
+      }
+    }
   }
 
   /** "발표하기" — 캔바의 "발표하기"처럼 슬라이드쇼 시작과 동시에 풀스크린으로 들어간다.
@@ -537,6 +580,17 @@ export default function CurriculumPage() {
                   </option>
                 ))}
               </select>
+              {(() => {
+                const wl = wordLists.find((w) => w.id === wordListId);
+                if (!wl) return null;
+                const others = lessons.filter((l) => l.word_list_id === wl.id && l.id !== editingId).length;
+                if (wl.class_id != null && others === 0) return null;
+                return (
+                  <p className="mt-1 font-caption text-caption text-on-surface-variant">
+                    {t('curriculum.wordListTools.sharedHint', { count: others + 1 })}
+                  </p>
+                );
+              })()}
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 <button
                   type="button"
@@ -549,7 +603,7 @@ export default function CurriculumPage() {
                 <button
                   type="button"
                   disabled={!wordListId}
-                  onClick={() => openWordListModal('edit')}
+                  onClick={() => void handleEditWordList()}
                   className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary disabled:opacity-40"
                 >
                   <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -742,6 +796,11 @@ export default function CurriculumPage() {
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="font-title-md text-title-md text-on-surface">{lesson.name}</h3>
+                  {!lesson.class_id && (
+                    <span className="mt-1 inline-block rounded-full bg-tertiary-container px-2 py-0.5 font-caption text-caption text-on-tertiary-container">
+                      {t('curriculum.sharedLessonBadge')}
+                    </span>
+                  )}
                   {lesson.level && (
                     <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-caption text-caption">
                       {lesson.level}
@@ -765,6 +824,15 @@ export default function CurriculumPage() {
                     title={t('lessonShare.button')}
                   >
                     <span className="material-symbols-outlined text-[20px]">share</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryLesson(lesson)}
+                    className="text-on-surface-variant hover:text-primary"
+                    aria-label={t('curriculum.history.button')}
+                    title={t('curriculum.history.button')}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">history</span>
                   </button>
                   <button
                     type="button"
@@ -828,6 +896,45 @@ export default function CurriculumPage() {
           );
         })}
       </div>
+
+      {deletedLessons.length > 0 && (
+        <div className="rounded-xl border border-outline-variant/70 bg-surface-container-low/60 px-4 py-3">
+          <div className="mb-2 font-label-md text-label-md text-on-surface">{t('curriculum.history.deletedTitle')}</div>
+          <ul className="space-y-1.5">
+            {deletedLessons.map((rev) => (
+              <li key={rev.id} className="flex flex-wrap items-center gap-2">
+                <span className="min-w-0 flex-1 font-body-sm text-body-sm text-on-surface">
+                  {rev.name || t('curriculum.draft.untitled')}
+                  <span className="ml-2 text-on-surface-variant">{new Date(rev.created_at).toLocaleString()}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void run(async () => {
+                      await restoreDeletedLesson(rev);
+                      await reload();
+                    }, t('curriculum.history.undeleted'))
+                  }
+                  className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary"
+                >
+                  {t('curriculum.history.undelete')}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {historyLesson && (
+        <LessonHistoryModal
+          lesson={historyLesson}
+          onClose={() => setHistoryLesson(null)}
+          onRestored={() => {
+            setHistoryLesson(null);
+            void reload();
+          }}
+        />
+      )}
     </div>
   );
 }

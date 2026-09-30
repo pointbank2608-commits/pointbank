@@ -14,12 +14,16 @@ import {
   createGameTemplate,
   deleteWordList,
   fetchAllWordLists,
+  fetchDeletedWordLists,
   fetchPhonicsBank,
   fetchWordBank,
   fetchWordLists,
   renameWordList,
+  restoreDeletedWordList,
   updateWordListItems,
+  type ContentRevision,
 } from '../lib/api';
+import WordListHistoryModal from '../components/WordListHistoryModal';
 import { useClasses } from '../lib/useClasses';
 import type { PhonicsBankEntry, WordBankEntry, WordList, WordListItem } from '../lib/types';
 import { entryInCategory, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
@@ -453,6 +457,8 @@ export default function WordListsPage() {
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
 
   const [lists, setLists] = useState<WordList[]>([]);
+  const [deletedLists, setDeletedLists] = useState<ContentRevision[]>([]);
+  const [historyList, setHistoryList] = useState<WordList | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -489,6 +495,11 @@ export default function WordListsPage() {
     setLoading(true);
     try {
       setLists(viewAll ? await fetchAllWordLists(academy.id) : await fetchWordLists(academy.id, selectedId as string));
+      try {
+        setDeletedLists(await fetchDeletedWordLists(academy.id, viewAll ? null : (selectedId as string)));
+      } catch {
+        setDeletedLists([]);
+      }
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -561,7 +572,14 @@ export default function WordListsPage() {
   async function handleDelete(list: WordList) {
     if (!confirm(t('wordLists.deleteConfirm', { name: list.name }))) return;
     const ok = await run(() => deleteWordList(list.id), t('wordLists.deletedToast'));
-    if (ok) setLists((prev) => prev.filter((l) => l.id !== list.id));
+    if (ok) {
+      setLists((prev) => prev.filter((l) => l.id !== list.id));
+      if (academy?.id) {
+        fetchDeletedWordLists(academy.id, viewAll ? null : selectedId ?? null)
+          .then(setDeletedLists)
+          .catch(() => setDeletedLists([]));
+      }
+    }
   }
 
   return (
@@ -639,6 +657,16 @@ export default function WordListsPage() {
                       {t('wordLists.studyButton')}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setHistoryList(list)}
+                    className="flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary"
+                    aria-label={t('wordLists.history.button')}
+                    title={t('wordLists.history.button')}
+                  >
+                    <span className="material-symbols-outlined text-base">history</span>
+                    {t('wordLists.history.button')}
+                  </button>
                   <button
                     onClick={() => void handleRename(list)}
                     className="font-label-md text-label-md text-primary hover:underline"
@@ -734,6 +762,52 @@ export default function WordListsPage() {
             </button>
           )}
         </div>
+      )}
+
+      {deletedLists.length > 0 && (
+        <div className="rounded-xl border border-outline-variant/70 bg-surface-container-low/60 px-4 py-3">
+          <div className="mb-2 font-label-md text-label-md text-on-surface">{t('wordLists.history.deletedTitle')}</div>
+          <ul className="space-y-1.5">
+            {deletedLists.map((rev) => {
+              const items = (rev.data.items as WordListItem[] | undefined) ?? [];
+              return (
+                <li key={rev.id} className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-0 flex-1 font-body-sm text-body-sm text-on-surface">
+                    {rev.name || t('wordLists.namePlaceholder')}
+                    <span className="ml-2 text-on-surface-variant">
+                      {t('wordLists.history.words', { count: items.length })}
+                      {' · '}
+                      {new Date(rev.created_at).toLocaleString()}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void run(async () => {
+                        await restoreDeletedWordList(rev);
+                        await load();
+                      }, t('wordLists.history.undeleted'))
+                    }
+                    className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary"
+                  >
+                    {t('wordLists.history.undelete')}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {historyList && (
+        <WordListHistoryModal
+          list={historyList}
+          onClose={() => setHistoryList(null)}
+          onRestored={() => {
+            setHistoryList(null);
+            void load();
+          }}
+        />
       )}
 
       {launchListId && lists.find((item) => item.id === launchListId) && (

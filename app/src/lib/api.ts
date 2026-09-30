@@ -924,6 +924,10 @@ export async function createWordList(params: {
   ) as WordList;
 }
 
+export async function fetchWordListById(id: string): Promise<WordList> {
+  return fixLegacyImageUrls(unwrap(await supabase.from('word_lists').select('*').eq('id', id).single()));
+}
+
 export async function updateWordListItems(id: string, items: WordListItem[]) {
   const { error } = await supabase
     .from('word_lists')
@@ -1005,6 +1009,204 @@ export async function updateCurriculumLesson(
 export async function deleteCurriculumLesson(id: string) {
   const { error } = await supabase.from('curriculum_lessons').delete().eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+/* ---------- 자료 기록(되돌리기·지운 자료 되살리기, supabase/034) ---------- */
+
+export interface ContentRevision {
+  id: string;
+  academy_id: string;
+  table_name: 'curriculum_lessons' | 'word_lists' | 'game_templates';
+  row_id: string;
+  op: 'update' | 'delete' | 'backup';
+  class_id: string | null;
+  name: string | null;
+  data: Record<string, unknown>;
+  created_at: string;
+}
+
+/** 한 자료(수업 등)의 이전 버전들 — 최근 것부터 */
+export async function fetchRevisions(table: ContentRevision['table_name'], rowId: string): Promise<ContentRevision[]> {
+  return unwrap(
+    await supabase
+      .from('content_revisions')
+      .select('*')
+      .eq('table_name', table)
+      .eq('row_id', rowId)
+      .order('created_at', { ascending: false }),
+  ) as ContentRevision[];
+}
+
+/** 이미 되살아 있는 행은 "지운 목록"에서 뺀다 */
+async function excludeLiveRows(table: ContentRevision['table_name'], rows: ContentRevision[]): Promise<ContentRevision[]> {
+  if (rows.length === 0) return [];
+  const live = unwrap(await supabase.from(table).select('id').in('id', rows.map((r) => r.row_id))) as { id: string }[];
+  const ids = new Set(live.map((r) => r.id));
+  return rows.filter((r) => !ids.has(r.row_id));
+}
+
+async function fetchDeletedRows(
+  table: 'curriculum_lessons' | 'word_lists',
+  academyId: string,
+  classId: string | null,
+): Promise<ContentRevision[]> {
+  let query = supabase
+    .from('content_revisions')
+    .select('*')
+    .eq('academy_id', academyId)
+    .eq('table_name', table)
+    .eq('op', 'delete')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (classId) query = query.or(`class_id.eq.${classId},class_id.is.null`);
+  const rows = unwrap(await query) as ContentRevision[];
+  const seen = new Set<string>();
+  return excludeLiveRows(table, rows.filter((r) => (seen.has(r.row_id) ? false : (seen.add(r.row_id), true))));
+}
+
+/** 지운 수업(180일 안) — 이 반 것과 반 없는 것. 같은 수업을 여러 번 지웠다 되살렸으면 가장 최근 것만 */
+export async function fetchDeletedLessons(academyId: string, classId: string): Promise<ContentRevision[]> {
+  return fetchDeletedRows('curriculum_lessons', academyId, classId);
+}
+
+/** 지운 단어장(180일 안). classId 가 null 이면 학원 전체("전체" 탭) */
+export async function fetchDeletedWordLists(academyId: string, classId: string | null): Promise<ContentRevision[]> {
+  return fetchDeletedRows('word_lists', academyId, classId);
+}
+
+/** 이전 버전으로 되살리기 — 지금 내용은 트리거가 다시 기록해 두므로 되살린 것도 되돌릴 수 있다 */
+export async function restoreLessonRevision(rev: ContentRevision) {
+  const d = rev.data as Partial<CurriculumLesson>;
+  await updateCurriculumLesson(rev.row_id, {
+    name: d.name ?? '',
+    word_list_id: d.word_list_id ?? null,
+    level: d.level ?? null,
+    playlist: (d.playlist ?? []) as LessonSlide[],
+  });
+}
+
+/** 지운 수업 되살리기 — 같은 id 로 다시 넣는다. 그사이 단어장이 지워졌으면 단어장 연결만 뺀다 */
+export async function restoreDeletedLesson(rev: ContentRevision): Promise<CurriculumLesson> {
+  const d = rev.data as unknown as CurriculumLesson & { created_by?: string | null };
+  const row = {
+    id: d.id,
+    academy_id: d.academy_id,
+    class_id: d.class_id ?? null,
+    name: d.name,
+    word_list_id: d.word_list_id ?? null,
+    video_url: d.video_url ?? null,
+    level: d.level ?? null,
+    playlist: d.playlist ?? [],
+    created_by: d.created_by ?? null,
+    created_at: d.created_at,
+  };
+  const first = await supabase.from('curriculum_lessons').insert(row).select().single();
+  if (!first.error) return first.data as CurriculumLesson;
+  const retry = await supabase.from('curriculum_lessons').insert({ ...row, word_list_id: null, class_id: null }).select().single();
+  if (retry.error) throw new Error(retry.error.message);
+  return retry.data as CurriculumLesson;
+}
+
+/** 단어장 이전 버전으로 되살리기 — 지금 내용은 트리거가 다시 기록한다 */
+export async function restoreWordListRevision(rev: ContentRevision) {
+  const d = rev.data as Partial<WordList>;
+  const { error } = await supabase
+    .from('word_lists')
+    .update({
+      name: d.name ?? '',
+      items: (d.items ?? []) as WordListItem[],
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', rev.row_id);
+  if (error) throw new Error(error.message);
+}
+
+/** 지운 단어장 되살리기 — 같은 id 로 다시 넣는다. 그사이 반이 없으면 학원 공용으로 */
+export async function restoreDeletedWordList(rev: ContentRevision): Promise<WordList> {
+  const d = rev.data as WordList;
+  const row = {
+    id: d.id,
+    academy_id: d.academy_id,
+    class_id: d.class_id ?? null,
+    name: d.name,
+    items: d.items ?? [],
+    created_by: d.created_by ?? null,
+    created_at: d.created_at,
+    updated_at: d.updated_at ?? new Date().toISOString(),
+  };
+  const first = await supabase.from('word_lists').insert(row).select().single();
+  if (!first.error) return first.data as WordList;
+  const retry = await supabase.from('word_lists').insert({ ...row, class_id: null, created_by: null }).select().single();
+  if (retry.error) throw new Error(retry.error.message);
+  return retry.data as WordList;
+}
+
+/** 관리자: 한 학원의 수업·단어장·게임 연결과 최근 기록(볼 때마다 조치 기록에 남음) */
+export async function adminAcademyContent(academyId: string): Promise<AdminAcademyContent | null> {
+  const { data, error } = await supabase.rpc('admin_academy_content', { p_academy_id: academyId });
+  if (error) throw new Error(error.message);
+  return data as AdminAcademyContent | null;
+}
+
+function adminRpcOk<T extends { ok?: boolean; error?: string }>(data: T | null, error: { message: string } | null): T {
+  if (error) throw new Error(error.message);
+  if (!data?.ok) throw new Error(data?.error || 'failed');
+  return data;
+}
+
+/** 관리자: 그 학원 수업·단어장·게임의 지금 상태를 되돌릴 수 있는 백업으로 남긴다 */
+export async function adminSnapshotAcademy(academyId: string): Promise<{ ok: boolean; lessons?: number }> {
+  const { data, error } = await supabase.rpc('admin_snapshot_academy', { p_academy_id: academyId });
+  return adminRpcOk(data as { ok?: boolean; error?: string; lessons?: number } | null, error);
+}
+
+/** 관리자: 기록 한 건을 그 시점 내용으로 되돌린다. 행이 없으면 다시 넣는다. */
+export async function adminRestoreRevision(revisionId: string): Promise<{
+  ok: boolean;
+  table_name?: string;
+  name?: string | null;
+  when?: string;
+  recreated?: boolean;
+}> {
+  const { data, error } = await supabase.rpc('admin_restore_revision', { p_revision_id: revisionId });
+  return adminRpcOk(
+    data as { ok?: boolean; error?: string; table_name?: string; name?: string | null; when?: string; recreated?: boolean } | null,
+    error,
+  );
+}
+
+export interface AdminAcademyContent {
+  classes: { id: string; name: string }[];
+  lessons: {
+    id: string;
+    name: string;
+    class_id: string | null;
+    class_name: string | null;
+    slide_count: number;
+    slide_kinds: string | null;
+    word_list_id: string | null;
+    word_list_name: string | null;
+    word_list_shared: boolean | null;
+    word_list_used_by: number;
+    games: { id: string; name: string; game_type: string; shared: boolean; used_by: number }[];
+    revisions: number;
+    created_at: string;
+    updated_at: string;
+  }[];
+  word_lists: { id: string; name: string; class_id: string | null; class_name: string | null; item_count: number; used_by: number; updated_at: string }[];
+  recent_revisions: {
+    id: string;
+    table_name: ContentRevision['table_name'];
+    row_id: string;
+    op: ContentRevision['op'];
+    name: string | null;
+    class_id: string | null;
+    class_name?: string | null;
+    created_at: string;
+    slide_count?: number | null;
+    item_count?: number | null;
+    row_exists?: boolean;
+  }[];
 }
 
 /**

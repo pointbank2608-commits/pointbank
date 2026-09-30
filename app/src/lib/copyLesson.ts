@@ -1,13 +1,13 @@
-import { createCurriculumLesson, createGameTemplate, createWordList, fetchGameTemplateById } from './api';
+import { createCurriculumLesson, createGameTemplate, createWordList, fetchGameTemplateById, fetchWordListById } from './api';
 import { effectiveSlides } from './lessonSlides';
 import type { CurriculumLesson, LessonSlide, WordList } from './types';
 
 /**
  * 수업을 다른 반으로 복사한다(2026-09-26) — 복사한 뒤엔 서로 영향 없이 따로 고친다.
  *
- * 그냥 행만 복사하면 A반 전용 자료가 B반에서 안 보이므로 함께 복사한다:
- *  - 단어장: A반 전용이면 B반에 같은 이름·단어로 새로 만든다(학원 공용·B반 것이면 그대로 연결).
- *  - 게임 슬라이드의 게임 내용(game_templates): A반 전용이면 B반 것으로 복사해 새 id 로 바꾼다.
+ * 단어장·게임 내용(game_templates)도 **항상** B반 것으로 새로 복사한다(2026-09-30). 예전엔 학원 공용
+ * 단어장·게임은 복사하지 않고 같은 것을 연결했는데, 그러면 한 반에서 단어를 고치면 복사한 모든 반의 수업이
+ * 같이 바뀌어 "반마다 복사했는데 세 개가 동기화된다"·"슬라이드가 사라졌다"는 제보가 나왔다.
  * 이미지·영상·문법·노래·지문·직접 만들기·자료실 슬라이드는 내용이 슬라이드 안에 있어 그대로 복사된다.
  */
 export async function copyLessonToClass(params: {
@@ -22,8 +22,15 @@ export async function copyLessonToClass(params: {
 
   // 1) 단어장
   let wordListId = lesson.word_list_id;
-  const wordList = wordLists.find((wl) => wl.id === lesson.word_list_id);
-  if (wordList && wordList.class_id && wordList.class_id !== targetClassId) {
+  let wordList = wordLists.find((wl) => wl.id === lesson.word_list_id) ?? null;
+  if (!wordList && lesson.word_list_id) {
+    try {
+      wordList = await fetchWordListById(lesson.word_list_id);
+    } catch {
+      wordList = null;
+    }
+  }
+  if (wordList) {
     const copy = await createWordList({
       academyId,
       classId: targetClassId,
@@ -46,20 +53,16 @@ export async function copyLessonToClass(params: {
     if (!newId) {
       try {
         const tpl = await fetchGameTemplateById(slide.templateId);
-        if (!tpl.class_id || tpl.class_id === targetClassId) {
-          newId = tpl.id; // 학원 공용이거나 이미 그 반 것 → 그대로
-        } else {
-          const copy = await createGameTemplate({
-            academyId,
-            classId: targetClassId,
-            gameType: tpl.game_type,
-            name: tpl.name,
-            items: tpl.items,
-            config: tpl.config,
-            teacherId,
-          });
-          newId = copy.id;
-        }
+        const copy = await createGameTemplate({
+          academyId,
+          classId: targetClassId,
+          gameType: tpl.game_type,
+          name: tpl.name,
+          items: tpl.items,
+          config: tpl.config,
+          teacherId,
+        });
+        newId = copy.id;
       } catch {
         newId = undefined; // 지워진 게임 내용 — 저장할 때처럼 단어장으로 다시 만들 수 있게 비워 둔다
       }
