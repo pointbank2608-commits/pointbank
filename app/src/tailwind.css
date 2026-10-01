@@ -728,23 +728,24 @@
   animation: pc-hop 0.42s cubic-bezier(0.22, 0.9, 0.28, 1.12);
 }
 
-/* 팝콘: 솥에서 알 하나가 튀어 오른다 */
+/* 팝콘: 솥에서 알 하나가 튀어 오른다. 교실 화면에서 너무 빨리 사라져
+   공중에서 한동안 보이다가 떨어지게 한다(2026-10-01 선생님 피드백). */
 @keyframes pc-kernel {
   0% {
     opacity: 1;
     transform: translate(-50%, 10px) scale(0.4) rotate(-16deg);
   }
-  16% {
+  12% {
     opacity: 1;
     transform: translate(calc(-50% + var(--pc-x, 72px)), -156px) scale(1.14) rotate(12deg);
   }
-  48% {
+  62% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.12), -148px) scale(1.06) rotate(-8deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.08), -140px) scale(1.08) rotate(-6deg);
   }
-  72% {
+  82% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.2), 36px) scale(0.98) rotate(10deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.16), 28px) scale(0.98) rotate(10deg);
   }
   100% {
     opacity: 0;
@@ -761,50 +762,157 @@
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 8px 8px rgba(90, 50, 18, 0.28));
-  animation: pc-kernel 1.15s cubic-bezier(0.18, 0.88, 0.28, 1.08) both;
+  animation: pc-kernel 2.2s cubic-bezier(0.18, 0.88, 0.28, 1.08) both;
 }
 
-/* 팝콘: '펑' 터지는 순간 화면을 크게 채우는 연출 */
-@keyframes pc-burst-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  18% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-  30% {
-    transform: scale(1);
-  }
-  82% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.02);
-  }
-}
+/* 팝콘 POP!: 만화 폭발이 터지고 글자가 찍힌 뒤, 다시 터치할 때까지 유지 */
 .pc-burst {
-  animation: pc-burst-in 1.4s cubic-bezier(0.22, 0.9, 0.28, 1.05) both;
+  background: radial-gradient(circle at 50% 46%, #fff4b0 0%, #ffb703 28%, #ff5a36 62%, #e10600 100%);
 }
-@keyframes pc-burst-emoji {
-  0% {
-    transform: scale(0.3) rotate(-8deg);
-  }
-  50% {
-    transform: scale(1.18) rotate(4deg);
-  }
-  72% {
-    transform: scale(0.95) rotate(-2deg);
-  }
-  100% {
-    transform: scale(1.05) rotate(0deg);
-  }
+.pc-flash,
+.pc-halftone,
+.pc-star {
+  position: absolute;
+  pointer-events: none;
 }
-.pc-burst-emoji {
-  animation: pc-burst-emoji 0.6s cubic-bezier(0.22, 0.9, 0.28, 1.3);
+.pc-flash {
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: pc-flash 0.45s ease-out both;
+}
+.pc-halftone {
+  inset: -10%;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.55) 1.6px, transparent 1.7px);
+  background-size: 16px 16px;
+  mix-blend-mode: overlay;
+  animation: pc-fade-in 0.3s ease-out 0.12s both;
+}
+.pc-star {
+  left: 50%;
+  top: 44%;
+  width: min(118%, 560px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  clip-path: polygon(
+    50% 0%,
+    61% 14%,
+    79% 6%,
+    76% 26%,
+    98% 29%,
+    84% 44%,
+    100% 58%,
+    82% 66%,
+    90% 86%,
+    70% 78%,
+    61% 98%,
+    50% 82%,
+    39% 98%,
+    30% 78%,
+    10% 86%,
+    18% 66%,
+    0% 58%,
+    16% 44%,
+    2% 29%,
+    24% 26%,
+    21% 6%,
+    39% 14%
+  );
+}
+.pc-star-back {
+  background: #ffe566;
+  animation: pc-star-in 0.42s cubic-bezier(0.16, 0.9, 0.28, 1.25) both;
+}
+.pc-star-mid {
+  width: min(92%, 430px);
+  background: #ff3b30;
+  animation: pc-star-in 0.48s cubic-bezier(0.16, 0.9, 0.28, 1.25) 0.06s both;
+}
+.pc-star-front {
+  width: min(68%, 320px);
+  background: #fff6d0;
+  animation: pc-star-in 0.5s cubic-bezier(0.16, 0.9, 0.28, 1.25) 0.1s both;
+}
+.pc-pop-word {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  margin-top: -4%;
+  font-family: Fredoka, 'Noto Sans KR', sans-serif;
+  font-size: min(22vw, 148px);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: #fff8dc;
+  -webkit-text-stroke: 8px #1b2430;
+  paint-order: stroke fill;
+  filter: drop-shadow(7px 8px 0 #1b2430);
+}
+.pc-pop-word span {
+  display: inline-block;
+  animation: pc-letter 0.38s cubic-bezier(0.16, 0.9, 0.24, 1.35) both;
+}
+.pc-pop-word span:nth-child(1) {
+  animation-delay: 0.16s;
+  rotate: -8deg;
+}
+.pc-pop-word span:nth-child(2) {
+  animation-delay: 0.24s;
+  color: #ffe14a;
+  rotate: 4deg;
+}
+.pc-pop-word span:nth-child(3) {
+  animation-delay: 0.32s;
+  rotate: -3deg;
+}
+.pc-pop-word span:nth-child(4) {
+  animation-delay: 0.4s;
+  color: #ffe14a;
+  rotate: 10deg;
+}
+.pc-pop-caption {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  max-width: 90%;
+  border: 4px solid #1b2430;
+  border-radius: 999px;
+  background: #fff;
+  padding: 10px 22px;
+  text-align: center;
+  font-family: Fredoka, 'Noto Sans KR', sans-serif;
+  font-size: clamp(16px, 2.4vw, 28px);
+  font-weight: 700;
+  color: #e10600;
+  box-shadow: 4px 4px 0 #1b2430;
+  animation: pc-letter 0.35s cubic-bezier(0.16, 0.9, 0.24, 1.3) 0.48s both;
+}
+.pc-pop-hint {
+  position: absolute;
+  bottom: 16px;
+  z-index: 1;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 1px 0 #1b2430;
+}
+@keyframes pc-flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes pc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pc-star-in {
+  0% { scale: 0.15; rotate: -18deg; }
+  70% { scale: 1.08; rotate: 6deg; }
+  100% { scale: 1; rotate: 0deg; }
+}
+@keyframes pc-letter {
+  0% { opacity: 0; scale: 0.2; }
+  100% { opacity: 1; scale: 1; }
 }
 
 /* 공 돌리기: 음악이 나오는 동안 공이 통통 */

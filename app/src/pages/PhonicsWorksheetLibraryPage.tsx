@@ -370,7 +370,7 @@ export default function PhonicsWorksheetLibraryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print:space-y-0">
       <div className="no-print space-y-6">
         <Link
           to="/materials"
@@ -556,7 +556,7 @@ export default function PhonicsWorksheetLibraryPage() {
       </div>
 
       {/* 작업 영역: 고른 워크시트의 옵션·미리보기·인쇄 */}
-      <div ref={workspaceRef} className="scroll-mt-4">
+      <div ref={workspaceRef} className="scroll-mt-4 print:mt-0">
         {hasWork && (
           <div className="no-print mb-4 space-y-3 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
             <h3 className="font-title-md text-title-md text-deep-navy">

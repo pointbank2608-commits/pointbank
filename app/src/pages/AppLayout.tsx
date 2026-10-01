@@ -273,7 +273,7 @@ function AppLayoutInner() {
         {sidebarContent}
       </nav>
 
-      <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen">
+      <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
         <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
         <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
@@ -294,7 +294,7 @@ function AppLayoutInner() {
             {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
           </Link>
         </header>
-        <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full">
+        <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
           <Outlet />

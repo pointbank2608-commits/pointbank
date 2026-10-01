@@ -177,19 +177,28 @@ export default function Popcorn({
           )}
           <div className="relative flex flex-col items-center">
       {lastCard === 'pop' && (
-        <div
+        <button
+          type="button"
           key={`burst-${hop}`}
-          className="pc-burst pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-[28px]"
-          style={{ backgroundColor: 'rgba(242,139,115,0.95)' }}
+          autoFocus
+          onClick={() => setLastCard(null)}
+          aria-label={t('gamePopcorn.popDismiss')}
+          className="pc-burst absolute inset-0 z-20 flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[28px]"
         >
-          <div className="pc-burst-emoji text-[28vw] leading-none sm:text-[180px]">🍿</div>
-          <div
-            className="rounded-full bg-white px-9 py-4 text-center font-title-md text-title-md"
-            style={{ color: '#f28b73' }}
-          >
-            {t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}
-          </div>
-        </div>
+          <span className="pc-flash" />
+          <span className="pc-halftone" />
+          <span className="pc-star pc-star-back" />
+          <span className="pc-star pc-star-mid" />
+          <span className="pc-star pc-star-front" />
+          <span className="pc-pop-word" aria-hidden="true">
+            <span>P</span>
+            <span>O</span>
+            <span>P</span>
+            <span>!</span>
+          </span>
+          <span className="pc-pop-caption">{t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}</span>
+          <span className="pc-pop-hint">{t('gamePopcorn.popDismiss')}</span>
+        </button>
       )}
       <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
         <div

@@ -162,7 +162,7 @@
   .classroom-play :is(.qz-block, .gsq-choice, .wlq-choice) { min-height: 64px; padding: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .classroom-play :is(.result-pop, .pc-hop, .pc-burst-emoji, .td-cell-win) { animation: none; }
+  .classroom-play :is(.result-pop, .pc-hop, .pc-flash, .pc-star, .pc-pop-word span, .pc-pop-caption, .td-cell-win) { animation: none; }
   .classroom-play .game-clay-action { transition: none; }
 }
 
@@ -177,7 +177,7 @@
 .classroom-play[data-game="connect4"] [data-skin-object="drop-button"] span { color: #315e50; }
 .classroom-play[data-game="popcorn"] [data-skin-object="score-card"],
 .classroom-play[data-game="twodice"] [data-skin-object="score-card"] { color: #263e3d; border: 1px solid #ffffff80; box-shadow: var(--game-clay-shadow) !important; }
-.classroom-play[data-game="popcorn"] .pc-burst { background: #f5d8bcf5 !important; color: #3a4c40; backdrop-filter: blur(6px); }
+.classroom-play[data-game="popcorn"] .pc-burst { color: #fff; }
 .classroom-play[data-game="passball"] [data-skin-object="ball"] { filter: drop-shadow(0 10px 14px #61755125); }
 
 /* Retain the existing board dimensions and hit areas while replacing the orange finish. */

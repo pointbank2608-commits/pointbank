@@ -12,7 +12,7 @@ export const GAME_SFX = {
   connect4: { drop: 1024, win: 7046, tie: 7017 },
   popcorn: { pop: 2015, result: 4015 },
   twodice: { shake: 1045, roll: 1048, claim: 1024, bingo: 5037 },
-  quiz: { question: 4065, correct: 4015, wrong: 4025, finish: 5037 },
+  quiz: { question: 4066, correct: 4015, wrong: 4025, finish: 5037 },
   hangman: { key: 6001, hit: 4031, miss: 4023, win: 5037, lose: 5042 },
   truefalse: { correct: 4015, wrong: 4025, finish: 5037 },
   matchup: { pick: 6001, match: 4015, miss: 4025, finish: 5037 },

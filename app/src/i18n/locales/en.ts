@@ -405,6 +405,7 @@ const en: Ko = {
     turnLabel: "{{team}}'s turn",
     drawButton: 'Pop the popcorn',
     popMessage: "POP! {{team}}'s score was reset!",
+    popDismiss: 'Tap again to close',
     scoreLabel: 'Score',
     resetButton: 'Restart from scratch',
     needParticipants: 'Register at least 1 item to get started.',
@@ -412,7 +413,7 @@ const en: Ko = {
     infoSteps: [
       'In settings, add words.',
       'The student whose turn it is taps "Pop the popcorn" and reads the word.',
-      "Correct answers add points, but a POP! card resets that team's score.",
+      "Correct answers add points, but a POP! card resets that team's score. The POP! screen stays until you tap it again.",
       'The round ends once all popcorn cards are drawn.',
     ],
   },

@@ -35,7 +35,7 @@ export function CutePage({ children, color }: { children: ReactNode; color: bool
   return (
     <section className="print-board mb-6 rounded-lg border border-outline-variant/40 bg-white p-[6mm] text-black shadow-sm print:mb-0 print:rounded-none print:border-0 print:p-0 print:shadow-none">
       <div
-        className="relative flex min-h-[262mm] flex-col rounded-[9mm] p-[6mm]"
+        className="relative flex min-h-[262mm] flex-col rounded-[9mm] p-[6mm] print:min-h-0 print:p-[4mm]"
         style={{ border: `1.2mm dashed ${color ? '#3f97e0' : '#1b1b1b'}` }}
       >
         {/* 모서리 장식: 왼쪽 위 기준 그림을 뒤집어 네 모서리에 놓는다(글 뒤에 깔리고 내용과 겹치지 않는 자리). */}
