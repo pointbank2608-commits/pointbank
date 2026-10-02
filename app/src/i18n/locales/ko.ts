@@ -1595,8 +1595,12 @@ const ko = {
     memoryCardsDesc: '단어 카드를 두 장씩 인쇄해서 메모리 게임이나 고피쉬로 즐겨요.',
     cvcWorkbookName: '파닉스 CVC 워크북',
     cvcWorkbookDesc: '미리 만들어 둔 단모음 워크시트 24유닛. 유닛만 고르면 바로 인쇄해요.',
+    longVowelWorkbookName: '파닉스 장모음 워크북',
+    longVowelWorkbookDesc: '미리 만들어 둔 장모음(매직 e · ee · ea) 워크시트 26유닛. 유닛만 고르면 바로 인쇄해요.',
     cvc: {
       intro: '단모음(a·e·i·o·u) 낱말 68개를 24유닛으로 묶은 워크북이에요. 유닛마다 A4 두 장 — 보고 말하기, 읽고 쓰기, 맞는 낱말 고르기, 잇기, 낱말 완성하기, 색칠하기.',
+      longVowel: 'Long {{vowel}}',
+      longIntro: '장모음 낱말 71개를 26유닛으로 묶은 워크북이에요. 매직 e(a_e · i_e · o_e · u_e)와 ee · ea. 유닛마다 A4 두 장이고 활동 구성은 CVC 워크북과 같아요.',
       pickTitle: '인쇄할 유닛',
       vowel: 'Short {{vowel}}',
       selectAll: '전체 선택',

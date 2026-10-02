@@ -28,6 +28,7 @@ import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
+import { workbookOfMaterial } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
   FullCardItem,
@@ -1314,18 +1315,21 @@ function SlideDetail({
   if (slide.materialId === 'phonics') {
     return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
   }
-  if (slide.materialId === 'cvcworkbook') {
+  const workbook = workbookOfMaterial(slide.materialId);
+  if (workbook) {
+    const name = t(workbook.id === 'cvc' ? 'materials.cvcWorkbookName' : 'materials.longVowelWorkbookName');
     return (
       <div className="space-y-4">
-        <PreviewFrame title={t('materials.cvcWorkbookName')}>
+        <PreviewFrame title={name}>
           <span className="material-symbols-outlined text-6xl text-primary">menu_book</span>
         </PreviewFrame>
         <div>
           <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('materials.cvc.pickTitle')}</div>
           <CvcUnitPicker
+            book={workbook.id}
             selected={slide.cvcUnits ?? [1]}
             onChange={(cvcUnits) => onUpdate({ cvcUnits } as Partial<LessonSlide>)}
-            vowelLabel={(vowel) => t('materials.cvc.vowel', { vowel })}
+            vowelLabel={(vowel) => t(workbook.id === 'cvc' ? 'materials.cvc.vowel' : 'materials.cvc.longVowel', { vowel })}
           />
         </div>
       </div>

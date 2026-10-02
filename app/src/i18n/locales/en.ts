@@ -1599,8 +1599,12 @@ const en: Ko = {
     memoryCardsDesc: 'Print two of each word card to play Memory or Go Fish.',
     cvcWorkbookName: 'Phonics CVC Workbook',
     cvcWorkbookDesc: 'Ready-made short vowel worksheets in 24 units. Pick the units and print.',
+    longVowelWorkbookName: 'Phonics Long Vowel Workbook',
+    longVowelWorkbookDesc: 'Ready-made long vowel (magic e, ee, ea) worksheets in 26 units. Pick the units and print.',
     cvc: {
       intro: 'A workbook of 68 short vowel (a, e, i, o, u) words in 24 units. Two A4 pages per unit: look and say, read and write, circle the correct word, match, complete the word, and color.',
+      longVowel: 'Long {{vowel}}',
+      longIntro: 'A workbook of 71 long vowel words in 26 units: magic e (a_e, i_e, o_e, u_e) plus ee and ea. Two A4 pages per unit with the same activities as the CVC workbook.',
       pickTitle: 'Units to print',
       vowel: 'Short {{vowel}}',
       selectAll: 'Select all',

@@ -642,7 +642,7 @@ export interface MaterialSlide {
   /** 파닉스 워크시트(materialId 'phonics') 유형과 옵션 — 발표 중엔 고르는 화면 없이 이대로 나온다. */
   phonicsTab?: string;
   phonicsOptions?: PhonicsSlideOptions;
-  /** 파닉스 CVC 워크북(materialId 'cvcworkbook')에서 인쇄할 유닛 번호 — 발표 중엔 이 유닛이 그대로 나온다. */
+  /** 파닉스 워크북(materialId 'cvcworkbook'·'longvowelworkbook')에서 인쇄할 유닛 번호 — 발표 중엔 이 유닛이 그대로 나온다. */
   cvcUnits?: number[];
 }
 

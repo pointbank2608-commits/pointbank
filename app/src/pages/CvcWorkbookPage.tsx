@@ -4,28 +4,29 @@ import { Link, useLocation } from 'react-router-dom';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { CvcUnitPages, CvcUnitPicker } from '../components/worksheets/CvcWorkbookSheets';
 import { usePresenting } from '../context/LessonRunnerContext';
-import { CVC_UNITS } from '../data/cvcWorkbook';
+import { WORKBOOKS, type CvcUnit, type WorkbookId } from '../data/cvcWorkbook';
 
 /** 수업 슬라이드에서 넘어올 때 미리 정해 둔 유닛(navState.cvcUnits). */
-function unitsFromState(state: unknown): number[] {
+function unitsFromState(state: unknown, all: CvcUnit[]): number[] {
   const units = (state as { cvcUnits?: unknown } | null)?.cvcUnits;
-  return Array.isArray(units) ? units.filter((n): n is number => typeof n === 'number' && CVC_UNITS.some((u) => u.unit === n)) : [];
+  return Array.isArray(units) ? units.filter((n): n is number => typeof n === 'number' && all.some((u) => u.unit === n)) : [];
 }
 
 /**
  * 파닉스 CVC 워크북 — 미리 만들어 둔 워크시트. 유닛(낱말 2~3개)을 고르면 유닛마다 A4 두 장이 그대로 나온다.
  * 단어를 고르거나 옵션을 맞출 필요가 없는 "바로 쓰는" 자료다.
  */
-export default function CvcWorkbookPage() {
+export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId }) {
+  const workbook = WORKBOOKS[book];
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
   const [selected, setSelected] = useState<number[]>(() => {
-    const fromSlide = unitsFromState(location.state);
+    const fromSlide = unitsFromState(location.state, workbook.units);
     return fromSlide.length > 0 ? fromSlide : [1];
   });
-  const units = CVC_UNITS.filter((u) => selected.includes(u.unit));
-  const vowelLabel = (vowel: string) => t('materials.cvc.vowel', { vowel });
+  const units = workbook.units.filter((u) => selected.includes(u.unit));
+  const vowelLabel = (vowel: string) => t(book === 'cvc' ? 'materials.cvc.vowel' : 'materials.cvc.longVowel', { vowel });
 
   return (
     <div className="space-y-6">
@@ -37,8 +38,8 @@ export default function CvcWorkbookPage() {
             {t('materials.backToMaterials')}
           </Link>
           <div>
-            <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{t('materials.cvcWorkbookName')}</h1>
-            <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('materials.cvc.intro')}</p>
+            <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{t(book === 'cvc' ? 'materials.cvcWorkbookName' : 'materials.longVowelWorkbookName')}</h1>
+            <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t(book === 'cvc' ? 'materials.cvc.intro' : 'materials.cvc.longIntro')}</p>
           </div>
 
           <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-3">
@@ -47,7 +48,7 @@ export default function CvcWorkbookPage() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setSelected(CVC_UNITS.map((u) => u.unit))}
+                  onClick={() => setSelected(workbook.units.map((u) => u.unit))}
                   className="rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 transition-colors"
                 >
                   {t('materials.cvc.selectAll')}
@@ -61,7 +62,7 @@ export default function CvcWorkbookPage() {
                 </button>
               </div>
             </div>
-            <CvcUnitPicker selected={selected} onChange={setSelected} vowelLabel={vowelLabel} />
+            <CvcUnitPicker book={book} selected={selected} onChange={setSelected} vowelLabel={vowelLabel} />
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -82,7 +83,7 @@ export default function CvcWorkbookPage() {
 
       <div className="print-sheet mx-auto space-y-8 print:space-y-0">
         {units.map((u) => (
-          <CvcUnitPages key={u.unit} unit={u} />
+          <CvcUnitPages key={`${u.book}-${u.unit}`} unit={u} />
         ))}
       </div>
     </div>

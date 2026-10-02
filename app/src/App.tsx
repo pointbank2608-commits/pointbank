@@ -192,6 +192,7 @@ export default function App() {
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
             <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />
             <Route path="/materials/cvc-workbook" element={<CvcWorkbookPage />} />
+            <Route path="/materials/long-vowel-workbook" element={<CvcWorkbookPage key="long" book="long" />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />

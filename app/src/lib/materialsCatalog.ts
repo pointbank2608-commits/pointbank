@@ -37,6 +37,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.cvcWorkbookDesc',
   },
   {
+    // 미리 만들어 둔 장모음 워크북(2026-10-03) — 매직 e 와 ee·ea, 같은 화면(CvcWorkbookPage book="long")
+    id: 'longvowelworkbook',
+    path: '/materials/long-vowel-workbook',
+    icon: 'menu_book',
+    cover: '/covers/material-longvowelworkbook.jpg',
+    nameKey: 'materials.longVowelWorkbookName',
+    descKey: 'materials.longVowelWorkbookDesc',
+  },
+  {
     id: 'flashcards',
     path: '/materials/flashcards',
     icon: 'print',
