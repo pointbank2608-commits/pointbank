@@ -48,6 +48,11 @@ export const WORD_BANK_CATEGORIES = [
   '독해/이야기',
   '일상생활',
   '교실 영어',
+  // 교육부 3000 중·고등 확장(2026-10-02) — 추상어가 많아 넣은 카테고리
+  '생각/소통',
+  '사회/제도',
+  '일/경제',
+  '학문/지식',
 ] as const;
 
 /** 전통 8품사(명사~감탄사) 먼저, 데이터에만 있는 나머지 품사(관사/수사/조동사 등)는 뒤에 붙는다. */
@@ -73,12 +78,14 @@ export function isIdiomEntry(entry: { part_of_speech: string }): boolean {
   return IDIOM_PARTS_OF_SPEECH.includes(entry.part_of_speech);
 }
 
-/** 단어 난이도 1~4(초등 세부 단계). 5 이후는 중등 이상을 위해 비워둔다. */
+/** 단어 난이도: 1~4 초등 세부 단계, 5 중학, 6 고등(교육부 2022 기본어휘 3000의 ** / 표시 없음, 2026-10-02). */
 export const WORD_LEVELS = [
   { level: 1, label: 'Lv.1', hint: '유치~초2' },
   { level: 2, label: 'Lv.2', hint: '초3~4' },
   { level: 3, label: 'Lv.3', hint: '초5~6' },
   { level: 4, label: 'Lv.4', hint: '초등 확장' },
+  { level: 5, label: 'Lv.5', hint: '중학' },
+  { level: 6, label: 'Lv.6', hint: '고등' },
 ] as const;
 
 /** 같은 뜻의 단어가 여러 카테고리에 걸릴 수 있다(walk = 동작 + 움직임) — 대표 category

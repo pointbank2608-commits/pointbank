@@ -1,0 +1,7443 @@
+{
+"source": "2022 교육부 기본어휘 3000(엑셀 \"2022 기본어휘_3000\" 시트) 중 사전에 없던 표제어. deriv = 같은 칸의 파생어.",
+"middle": [
+{
+"word": "able",
+"deriv": "(disabled)"
+},
+{
+"word": "absolute",
+"deriv": ""
+},
+{
+"word": "accent",
+"deriv": ""
+},
+{
+"word": "accept",
+"deriv": ""
+},
+{
+"word": "access",
+"deriv": ""
+},
+{
+"word": "accident",
+"deriv": ""
+},
+{
+"word": "accuse",
+"deriv": ""
+},
+{
+"word": "achieve",
+"deriv": ""
+},
+{
+"word": "adapt",
+"deriv": ""
+},
+{
+"word": "admire",
+"deriv": ""
+},
+{
+"word": "admit",
+"deriv": "(admission)"
+},
+{
+"word": "adopt",
+"deriv": ""
+},
+{
+"word": "advance",
+"deriv": ""
+},
+{
+"word": "advantage",
+"deriv": "(disadvantage)"
+},
+{
+"word": "adventure",
+"deriv": ""
+},
+{
+"word": "advertize",
+"deriv": "/ advertise"
+},
+{
+"word": "advice",
+"deriv": ""
+},
+{
+"word": "advise",
+"deriv": ""
+},
+{
+"word": "affair",
+"deriv": ""
+},
+{
+"word": "affect",
+"deriv": "(affection)"
+},
+{
+"word": "afford",
+"deriv": ""
+},
+{
+"word": "agent",
+"deriv": ""
+},
+{
+"word": "aid",
+"deriv": ""
+},
+{
+"word": "aim",
+"deriv": ""
+},
+{
+"word": "airline",
+"deriv": ""
+},
+{
+"word": "alarm",
+"deriv": ""
+},
+{
+"word": "alcohol",
+"deriv": ""
+},
+{
+"word": "alive",
+"deriv": ""
+},
+{
+"word": "allow",
+"deriv": ""
+},
+{
+"word": "aloud",
+"deriv": ""
+},
+{
+"word": "alter",
+"deriv": ""
+},
+{
+"word": "although",
+"deriv": ""
+},
+{
+"word": "altogether",
+"deriv": ""
+},
+{
+"word": "amaze",
+"deriv": ""
+},
+{
+"word": "amount",
+"deriv": ""
+},
+{
+"word": "amuse",
+"deriv": ""
+},
+{
+"word": "analysis",
+"deriv": ""
+},
+{
+"word": "angel",
+"deriv": ""
+},
+{
+"word": "anger",
+"deriv": ""
+},
+{
+"word": "announce",
+"deriv": ""
+},
+{
+"word": "annoy",
+"deriv": ""
+},
+{
+"word": "annual",
+"deriv": ""
+},
+{
+"word": "anxious",
+"deriv": ""
+},
+{
+"word": "apart",
+"deriv": ""
+},
+{
+"word": "appeal",
+"deriv": ""
+},
+{
+"word": "appear",
+"deriv": "(disappear)"
+},
+{
+"word": "apply",
+"deriv": "(applicant)"
+},
+{
+"word": "appoint",
+"deriv": ""
+},
+{
+"word": "appreciate",
+"deriv": ""
+},
+{
+"word": "approach",
+"deriv": ""
+},
+{
+"word": "appropriate",
+"deriv": ""
+},
+{
+"word": "argue",
+"deriv": ""
+},
+{
+"word": "army",
+"deriv": ""
+},
+{
+"word": "arrange",
+"deriv": ""
+},
+{
+"word": "arrest",
+"deriv": ""
+},
+{
+"word": "article",
+"deriv": ""
+},
+{
+"word": "aside",
+"deriv": ""
+},
+{
+"word": "asleep",
+"deriv": ""
+},
+{
+"word": "assess",
+"deriv": ""
+},
+{
+"word": "assign",
+"deriv": "(assignment)"
+},
+{
+"word": "assist",
+"deriv": "(assistant)"
+},
+{
+"word": "associate",
+"deriv": ""
+},
+{
+"word": "assume",
+"deriv": ""
+},
+{
+"word": "atmosphere",
+"deriv": ""
+},
+{
+"word": "attach",
+"deriv": ""
+},
+{
+"word": "attack",
+"deriv": ""
+},
+{
+"word": "attempt",
+"deriv": ""
+},
+{
+"word": "attend",
+"deriv": ""
+},
+{
+"word": "attention",
+"deriv": ""
+},
+{
+"word": "attitude",
+"deriv": ""
+},
+{
+"word": "attract",
+"deriv": ""
+},
+{
+"word": "audience",
+"deriv": ""
+},
+{
+"word": "automatic",
+"deriv": ""
+},
+{
+"word": "average",
+"deriv": ""
+},
+{
+"word": "avoid",
+"deriv": ""
+},
+{
+"word": "awake",
+"deriv": ""
+},
+{
+"word": "award",
+"deriv": ""
+},
+{
+"word": "aware",
+"deriv": "(unaware)"
+},
+{
+"word": "awkward",
+"deriv": ""
+},
+{
+"word": "background",
+"deriv": ""
+},
+{
+"word": "bacon",
+"deriv": ""
+},
+{
+"word": "balance",
+"deriv": ""
+},
+{
+"word": "bang",
+"deriv": ""
+},
+{
+"word": "bar",
+"deriv": ""
+},
+{
+"word": "bare",
+"deriv": ""
+},
+{
+"word": "bark",
+"deriv": ""
+},
+{
+"word": "basis",
+"deriv": ""
+},
+{
+"word": "battle",
+"deriv": ""
+},
+{
+"word": "bay",
+"deriv": ""
+},
+{
+"word": "beer",
+"deriv": ""
+},
+{
+"word": "beg",
+"deriv": ""
+},
+{
+"word": "belief",
+"deriv": ""
+},
+{
+"word": "belong",
+"deriv": ""
+},
+{
+"word": "bend",
+"deriv": ""
+},
+{
+"word": "beneath",
+"deriv": ""
+},
+{
+"word": "benefit",
+"deriv": ""
+},
+{
+"word": "bet",
+"deriv": ""
+},
+{
+"word": "beyond",
+"deriv": ""
+},
+{
+"word": "billion",
+"deriv": ""
+},
+{
+"word": "bin",
+"deriv": ""
+},
+{
+"word": "bind",
+"deriv": ""
+},
+{
+"word": "bit",
+"deriv": ""
+},
+{
+"word": "bite",
+"deriv": ""
+},
+{
+"word": "blame",
+"deriv": ""
+},
+{
+"word": "blank",
+"deriv": ""
+},
+{
+"word": "bless",
+"deriv": ""
+},
+{
+"word": "blind",
+"deriv": ""
+},
+{
+"word": "bloom",
+"deriv": ""
+},
+{
+"word": "bomb",
+"deriv": ""
+},
+{
+"word": "bond",
+"deriv": ""
+},
+{
+"word": "boom",
+"deriv": ""
+},
+{
+"word": "boot",
+"deriv": ""
+},
+{
+"word": "bore",
+"deriv": ""
+},
+{
+"word": "boss",
+"deriv": ""
+},
+{
+"word": "bother",
+"deriv": ""
+},
+{
+"word": "brake",
+"deriv": ""
+},
+{
+"word": "brand",
+"deriv": ""
+},
+{
+"word": "breast",
+"deriv": ""
+},
+{
+"word": "breath",
+"deriv": ""
+},
+{
+"word": "breathe",
+"deriv": ""
+},
+{
+"word": "brick",
+"deriv": ""
+},
+{
+"word": "brief",
+"deriv": ""
+},
+{
+"word": "brilliant",
+"deriv": ""
+},
+{
+"word": "broad",
+"deriv": ""
+},
+{
+"word": "bubble",
+"deriv": ""
+},
+{
+"word": "budget",
+"deriv": ""
+},
+{
+"word": "bug",
+"deriv": ""
+},
+{
+"word": "bump",
+"deriv": ""
+},
+{
+"word": "bunch",
+"deriv": ""
+},
+{
+"word": "burst",
+"deriv": ""
+},
+{
+"word": "bury",
+"deriv": ""
+},
+{
+"word": "bush",
+"deriv": ""
+},
+{
+"word": "cable",
+"deriv": ""
+},
+{
+"word": "cage",
+"deriv": ""
+},
+{
+"word": "calculate",
+"deriv": "(calculator)"
+},
+{
+"word": "capable",
+"deriv": ""
+},
+{
+"word": "cape",
+"deriv": ""
+},
+{
+"word": "career",
+"deriv": ""
+},
+{
+"word": "carpet",
+"deriv": ""
+},
+{
+"word": "cast",
+"deriv": ""
+},
+{
+"word": "castle",
+"deriv": ""
+},
+{
+"word": "catalogue",
+"deriv": "/ catalog"
+},
+{
+"word": "category",
+"deriv": ""
+},
+{
+"word": "cause",
+"deriv": "(causal)"
+},
+{
+"word": "cell",
+"deriv": ""
+},
+{
+"word": "century",
+"deriv": ""
+},
+{
+"word": "chain",
+"deriv": ""
+},
+{
+"word": "chairman",
+"deriv": ""
+},
+{
+"word": "challenge",
+"deriv": ""
+},
+{
+"word": "champion",
+"deriv": ""
+},
+{
+"word": "channel",
+"deriv": ""
+},
+{
+"word": "characteristic",
+"deriv": ""
+},
+{
+"word": "charge",
+"deriv": "(discharge)"
+},
+{
+"word": "charm",
+"deriv": ""
+},
+{
+"word": "chart",
+"deriv": ""
+},
+{
+"word": "chase",
+"deriv": ""
+},
+{
+"word": "chat",
+"deriv": ""
+},
+{
+"word": "chew",
+"deriv": ""
+},
+{
+"word": "chief",
+"deriv": ""
+},
+{
+"word": "chip",
+"deriv": ""
+},
+{
+"word": "choice",
+"deriv": ""
+},
+{
+"word": "chop",
+"deriv": ""
+},
+{
+"word": "cigarette",
+"deriv": ""
+},
+{
+"word": "cinema",
+"deriv": ""
+},
+{
+"word": "circumstance",
+"deriv": ""
+},
+{
+"word": "citizen",
+"deriv": ""
+},
+{
+"word": "civil",
+"deriv": ""
+},
+{
+"word": "claim",
+"deriv": ""
+},
+{
+"word": "client",
+"deriv": ""
+},
+{
+"word": "cliff",
+"deriv": ""
+},
+{
+"word": "climate",
+"deriv": ""
+},
+{
+"word": "clip",
+"deriv": ""
+},
+{
+"word": "clue",
+"deriv": ""
+},
+{
+"word": "coal",
+"deriv": ""
+},
+{
+"word": "coast",
+"deriv": ""
+},
+{
+"word": "code",
+"deriv": ""
+},
+{
+"word": "combine",
+"deriv": ""
+},
+{
+"word": "comedy",
+"deriv": ""
+},
+{
+"word": "comfort",
+"deriv": "(comfortable)"
+},
+{
+"word": "command",
+"deriv": ""
+},
+{
+"word": "comment",
+"deriv": ""
+},
+{
+"word": "commerce",
+"deriv": ""
+},
+{
+"word": "committee",
+"deriv": ""
+},
+{
+"word": "common",
+"deriv": ""
+},
+{
+"word": "communicate",
+"deriv": "(communication)"
+},
+{
+"word": "community",
+"deriv": ""
+},
+{
+"word": "compare",
+"deriv": ""
+},
+{
+"word": "complain",
+"deriv": ""
+},
+{
+"word": "complete",
+"deriv": ""
+},
+{
+"word": "complex",
+"deriv": "(complexity)"
+},
+{
+"word": "complicate",
+"deriv": ""
+},
+{
+"word": "concentrate",
+"deriv": ""
+},
+{
+"word": "concept",
+"deriv": ""
+},
+{
+"word": "concern",
+"deriv": ""
+},
+{
+"word": "confirm",
+"deriv": ""
+},
+{
+"word": "conflict",
+"deriv": ""
+},
+{
+"word": "confuse",
+"deriv": ""
+},
+{
+"word": "connect",
+"deriv": ""
+},
+{
+"word": "conscious",
+"deriv": ""
+},
+{
+"word": "consider",
+"deriv": ""
+},
+{
+"word": "constant",
+"deriv": ""
+},
+{
+"word": "consume",
+"deriv": "(consumer, consumption)"
+},
+{
+"word": "contact",
+"deriv": ""
+},
+{
+"word": "contain",
+"deriv": ""
+},
+{
+"word": "content",
+"deriv": ""
+},
+{
+"word": "context",
+"deriv": ""
+},
+{
+"word": "continue",
+"deriv": ""
+},
+{
+"word": "contract",
+"deriv": ""
+},
+{
+"word": "contribute",
+"deriv": ""
+},
+{
+"word": "converse",
+"deriv": "(conversation)"
+},
+{
+"word": "convince",
+"deriv": ""
+},
+{
+"word": "cop",
+"deriv": ""
+},
+{
+"word": "cope",
+"deriv": ""
+},
+{
+"word": "correct",
+"deriv": ""
+},
+{
+"word": "cottage",
+"deriv": ""
+},
+{
+"word": "council",
+"deriv": ""
+},
+{
+"word": "countryside",
+"deriv": ""
+},
+{
+"word": "county",
+"deriv": ""
+},
+{
+"word": "crack",
+"deriv": ""
+},
+{
+"word": "crash",
+"deriv": ""
+},
+{
+"word": "create",
+"deriv": "(creature)"
+},
+{
+"word": "credit",
+"deriv": ""
+},
+{
+"word": "crime",
+"deriv": "(criminal)"
+},
+{
+"word": "crisis",
+"deriv": ""
+},
+{
+"word": "crisp",
+"deriv": ""
+},
+{
+"word": "crowd",
+"deriv": ""
+},
+{
+"word": "crown",
+"deriv": ""
+},
+{
+"word": "cruel",
+"deriv": ""
+},
+{
+"word": "cure",
+"deriv": ""
+},
+{
+"word": "curl",
+"deriv": ""
+},
+{
+"word": "current",
+"deriv": ""
+},
+{
+"word": "cycle",
+"deriv": "(recycle cyclist)"
+},
+{
+"word": "damage",
+"deriv": ""
+},
+{
+"word": "dare",
+"deriv": ""
+},
+{
+"word": "darling",
+"deriv": ""
+},
+{
+"word": "dawn",
+"deriv": ""
+},
+{
+"word": "deal",
+"deriv": ""
+},
+{
+"word": "debate",
+"deriv": ""
+},
+{
+"word": "debt",
+"deriv": ""
+},
+{
+"word": "deck",
+"deriv": ""
+},
+{
+"word": "decorate",
+"deriv": ""
+},
+{
+"word": "defense",
+"deriv": "/ defence"
+},
+{
+"word": "define",
+"deriv": ""
+},
+{
+"word": "definite",
+"deriv": ""
+},
+{
+"word": "delay",
+"deriv": ""
+},
+{
+"word": "delight",
+"deriv": ""
+},
+{
+"word": "deliver",
+"deriv": ""
+},
+{
+"word": "demand",
+"deriv": ""
+},
+{
+"word": "demonstrate",
+"deriv": ""
+},
+{
+"word": "deny",
+"deriv": ""
+},
+{
+"word": "depend",
+"deriv": "(dependence, independent)"
+},
+{
+"word": "depress",
+"deriv": ""
+},
+{
+"word": "describe",
+"deriv": "(description)"
+},
+{
+"word": "deserve",
+"deriv": ""
+},
+{
+"word": "desire",
+"deriv": ""
+},
+{
+"word": "desperate",
+"deriv": ""
+},
+{
+"word": "despite",
+"deriv": ""
+},
+{
+"word": "destroy",
+"deriv": ""
+},
+{
+"word": "detail",
+"deriv": ""
+},
+{
+"word": "detect",
+"deriv": ""
+},
+{
+"word": "determine",
+"deriv": ""
+},
+{
+"word": "develop",
+"deriv": ""
+},
+{
+"word": "diet",
+"deriv": ""
+},
+{
+"word": "dig",
+"deriv": ""
+},
+{
+"word": "direct",
+"deriv": ""
+},
+{
+"word": "dirt",
+"deriv": "(dirty)"
+},
+{
+"word": "disappoint",
+"deriv": ""
+},
+{
+"word": "disc",
+"deriv": "(disk)"
+},
+{
+"word": "discipline",
+"deriv": ""
+},
+{
+"word": "disgust",
+"deriv": ""
+},
+{
+"word": "display",
+"deriv": ""
+},
+{
+"word": "distance",
+"deriv": ""
+},
+{
+"word": "district",
+"deriv": ""
+},
+{
+"word": "disturb",
+"deriv": ""
+},
+{
+"word": "dive",
+"deriv": ""
+},
+{
+"word": "divide",
+"deriv": ""
+},
+{
+"word": "divorce",
+"deriv": ""
+},
+{
+"word": "document",
+"deriv": ""
+},
+{
+"word": "domestic",
+"deriv": ""
+},
+{
+"word": "donate",
+"deriv": ""
+},
+{
+"word": "doubt",
+"deriv": ""
+},
+{
+"word": "dozen",
+"deriv": ""
+},
+{
+"word": "drag",
+"deriv": ""
+},
+{
+"word": "drama",
+"deriv": ""
+},
+{
+"word": "drug",
+"deriv": ""
+},
+{
+"word": "due",
+"deriv": ""
+},
+{
+"word": "dump",
+"deriv": ""
+},
+{
+"word": "dust",
+"deriv": ""
+},
+{
+"word": "duty",
+"deriv": ""
+},
+{
+"word": "each",
+"deriv": ""
+},
+{
+"word": "earn",
+"deriv": ""
+},
+{
+"word": "ease",
+"deriv": "(disease, easy)"
+},
+{
+"word": "economy",
+"deriv": ""
+},
+{
+"word": "edge",
+"deriv": ""
+},
+{
+"word": "edit",
+"deriv": ""
+},
+{
+"word": "educate",
+"deriv": ""
+},
+{
+"word": "effect",
+"deriv": "(effective)"
+},
+{
+"word": "effort",
+"deriv": ""
+},
+{
+"word": "either",
+"deriv": ""
+},
+{
+"word": "elect",
+"deriv": ""
+},
+{
+"word": "electric",
+"deriv": ""
+},
+{
+"word": "element",
+"deriv": "(elementary)"
+},
+{
+"word": "else",
+"deriv": ""
+},
+{
+"word": "embarrass",
+"deriv": ""
+},
+{
+"word": "emotion",
+"deriv": ""
+},
+{
+"word": "emphasize",
+"deriv": ""
+},
+{
+"word": "empire",
+"deriv": ""
+},
+{
+"word": "employ",
+"deriv": ""
+},
+{
+"word": "enemy",
+"deriv": ""
+},
+{
+"word": "engage",
+"deriv": ""
+},
+{
+"word": "enormous",
+"deriv": ""
+},
+{
+"word": "entertain",
+"deriv": ""
+},
+{
+"word": "entire",
+"deriv": ""
+},
+{
+"word": "envelope",
+"deriv": ""
+},
+{
+"word": "escape",
+"deriv": ""
+},
+{
+"word": "especial",
+"deriv": "(especially)"
+},
+{
+"word": "essay",
+"deriv": ""
+},
+{
+"word": "establish",
+"deriv": ""
+},
+{
+"word": "estimate",
+"deriv": ""
+},
+{
+"word": "even",
+"deriv": ""
+},
+{
+"word": "ever",
+"deriv": ""
+},
+{
+"word": "evidence",
+"deriv": ""
+},
+{
+"word": "evil",
+"deriv": ""
+},
+{
+"word": "exact",
+"deriv": ""
+},
+{
+"word": "examine",
+"deriv": "(examination / exam)"
+},
+{
+"word": "except",
+"deriv": ""
+},
+{
+"word": "exchange",
+"deriv": ""
+},
+{
+"word": "exhaust",
+"deriv": ""
+},
+{
+"word": "exist",
+"deriv": ""
+},
+{
+"word": "exit",
+"deriv": ""
+},
+{
+"word": "expand",
+"deriv": ""
+},
+{
+"word": "expect",
+"deriv": ""
+},
+{
+"word": "expense",
+"deriv": "(expensive)"
+},
+{
+"word": "experience",
+"deriv": ""
+},
+{
+"word": "experiment",
+"deriv": ""
+},
+{
+"word": "expert",
+"deriv": ""
+},
+{
+"word": "explain",
+"deriv": ""
+},
+{
+"word": "expose",
+"deriv": ""
+},
+{
+"word": "express",
+"deriv": ""
+},
+{
+"word": "extend",
+"deriv": ""
+},
+{
+"word": "extra",
+"deriv": ""
+},
+{
+"word": "extreme",
+"deriv": ""
+},
+{
+"word": "factor",
+"deriv": ""
+},
+{
+"word": "faint",
+"deriv": ""
+},
+{
+"word": "faith",
+"deriv": ""
+},
+{
+"word": "familiar",
+"deriv": ""
+},
+{
+"word": "fancy",
+"deriv": ""
+},
+{
+"word": "fantastic",
+"deriv": ""
+},
+{
+"word": "fascinate",
+"deriv": ""
+},
+{
+"word": "fashion",
+"deriv": ""
+},
+{
+"word": "fault",
+"deriv": ""
+},
+{
+"word": "favor",
+"deriv": "/ favour"
+},
+{
+"word": "fear",
+"deriv": ""
+},
+{
+"word": "feature",
+"deriv": ""
+},
+{
+"word": "fee",
+"deriv": ""
+},
+{
+"word": "feed",
+"deriv": ""
+},
+{
+"word": "fellow",
+"deriv": ""
+},
+{
+"word": "female",
+"deriv": ""
+},
+{
+"word": "fence",
+"deriv": ""
+},
+{
+"word": "figure",
+"deriv": ""
+},
+{
+"word": "final",
+"deriv": ""
+},
+{
+"word": "finance",
+"deriv": ""
+},
+{
+"word": "firm",
+"deriv": ""
+},
+{
+"word": "fit",
+"deriv": ""
+},
+{
+"word": "flame",
+"deriv": ""
+},
+{
+"word": "flash",
+"deriv": ""
+},
+{
+"word": "flight",
+"deriv": ""
+},
+{
+"word": "flood",
+"deriv": ""
+},
+{
+"word": "flow",
+"deriv": ""
+},
+{
+"word": "folk",
+"deriv": ""
+},
+{
+"word": "foreign",
+"deriv": ""
+},
+{
+"word": "forever",
+"deriv": ""
+},
+{
+"word": "forgive",
+"deriv": ""
+},
+{
+"word": "forth",
+"deriv": ""
+},
+{
+"word": "fortunate",
+"deriv": ""
+},
+{
+"word": "fortune",
+"deriv": ""
+},
+{
+"word": "found",
+"deriv": "(foundation)"
+},
+{
+"word": "frame",
+"deriv": ""
+},
+{
+"word": "frankly",
+"deriv": ""
+},
+{
+"word": "fright",
+"deriv": ""
+},
+{
+"word": "frustrate",
+"deriv": ""
+},
+{
+"word": "fry",
+"deriv": ""
+},
+{
+"word": "function",
+"deriv": ""
+},
+{
+"word": "fund",
+"deriv": ""
+},
+{
+"word": "fur",
+"deriv": ""
+},
+{
+"word": "furniture",
+"deriv": ""
+},
+{
+"word": "gain",
+"deriv": ""
+},
+{
+"word": "gather",
+"deriv": ""
+},
+{
+"word": "gear",
+"deriv": ""
+},
+{
+"word": "general",
+"deriv": ""
+},
+{
+"word": "gesture",
+"deriv": ""
+},
+{
+"word": "ghost",
+"deriv": ""
+},
+{
+"word": "glance",
+"deriv": ""
+},
+{
+"word": "glory",
+"deriv": ""
+},
+{
+"word": "gorgeous",
+"deriv": ""
+},
+{
+"word": "govern",
+"deriv": "(government)"
+},
+{
+"word": "grab",
+"deriv": ""
+},
+{
+"word": "grace",
+"deriv": ""
+},
+{
+"word": "grade",
+"deriv": "(gradual)"
+},
+{
+"word": "grand",
+"deriv": ""
+},
+{
+"word": "grant",
+"deriv": ""
+},
+{
+"word": "graph",
+"deriv": "(graphic)"
+},
+{
+"word": "greet",
+"deriv": ""
+},
+{
+"word": "grocery",
+"deriv": ""
+},
+{
+"word": "guarantee",
+"deriv": ""
+},
+{
+"word": "guard",
+"deriv": ""
+},
+{
+"word": "guest",
+"deriv": ""
+},
+{
+"word": "guide",
+"deriv": ""
+},
+{
+"word": "guilt",
+"deriv": "(guilty)"
+},
+{
+"word": "gun",
+"deriv": ""
+},
+{
+"word": "harm",
+"deriv": ""
+},
+{
+"word": "heaven",
+"deriv": ""
+},
+{
+"word": "hell",
+"deriv": ""
+},
+{
+"word": "hesitate",
+"deriv": ""
+},
+{
+"word": "highway",
+"deriv": ""
+},
+{
+"word": "hint",
+"deriv": ""
+},
+{
+"word": "hire",
+"deriv": ""
+},
+{
+"word": "honor",
+"deriv": "/ honour"
+},
+{
+"word": "humor",
+"deriv": "/ humour"
+},
+{
+"word": "hunger",
+"deriv": "(hungry)"
+},
+{
+"word": "identity",
+"deriv": "(identify)"
+},
+{
+"word": "ignore",
+"deriv": ""
+},
+{
+"word": "illustrate",
+"deriv": ""
+},
+{
+"word": "immediate",
+"deriv": ""
+},
+{
+"word": "impress",
+"deriv": ""
+},
+{
+"word": "improve",
+"deriv": ""
+},
+{
+"word": "include",
+"deriv": ""
+},
+{
+"word": "income",
+"deriv": ""
+},
+{
+"word": "increase",
+"deriv": ""
+},
+{
+"word": "indeed",
+"deriv": ""
+},
+{
+"word": "indicate",
+"deriv": ""
+},
+{
+"word": "individual",
+"deriv": ""
+},
+{
+"word": "industry",
+"deriv": ""
+},
+{
+"word": "influence",
+"deriv": ""
+},
+{
+"word": "inform",
+"deriv": ""
+},
+{
+"word": "injure",
+"deriv": ""
+},
+{
+"word": "innocent",
+"deriv": ""
+},
+{
+"word": "insist",
+"deriv": ""
+},
+{
+"word": "inspect",
+"deriv": ""
+},
+{
+"word": "instance",
+"deriv": ""
+},
+{
+"word": "instant",
+"deriv": ""
+},
+{
+"word": "instead",
+"deriv": ""
+},
+{
+"word": "instruct",
+"deriv": ""
+},
+{
+"word": "insure",
+"deriv": "(insurance)"
+},
+{
+"word": "intend",
+"deriv": ""
+},
+{
+"word": "intense",
+"deriv": ""
+},
+{
+"word": "intent",
+"deriv": "(intention)"
+},
+{
+"word": "internal",
+"deriv": ""
+},
+{
+"word": "interrupt",
+"deriv": ""
+},
+{
+"word": "invent",
+"deriv": "(inventor)"
+},
+{
+"word": "invest",
+"deriv": ""
+},
+{
+"word": "investigate",
+"deriv": ""
+},
+{
+"word": "involve",
+"deriv": ""
+},
+{
+"word": "iron",
+"deriv": ""
+},
+{
+"word": "item",
+"deriv": ""
+},
+{
+"word": "jaw",
+"deriv": ""
+},
+{
+"word": "joke",
+"deriv": ""
+},
+{
+"word": "journey",
+"deriv": ""
+},
+{
+"word": "joy",
+"deriv": "(enjoy)"
+},
+{
+"word": "judge",
+"deriv": ""
+},
+{
+"word": "junior",
+"deriv": ""
+},
+{
+"word": "justice",
+"deriv": ""
+},
+{
+"word": "knowledge",
+"deriv": ""
+},
+{
+"word": "label",
+"deriv": ""
+},
+{
+"word": "labor",
+"deriv": "/ labour"
+},
+{
+"word": "laboratory",
+"deriv": "/ lab"
+},
+{
+"word": "lack",
+"deriv": ""
+},
+{
+"word": "lamb",
+"deriv": ""
+},
+{
+"word": "lane",
+"deriv": ""
+},
+{
+"word": "law",
+"deriv": ""
+},
+{
+"word": "lawn",
+"deriv": ""
+},
+{
+"word": "lawyer",
+"deriv": ""
+},
+{
+"word": "lay",
+"deriv": "(layer)"
+},
+{
+"word": "league",
+"deriv": ""
+},
+{
+"word": "lean",
+"deriv": ""
+},
+{
+"word": "leap",
+"deriv": ""
+},
+{
+"word": "legal",
+"deriv": ""
+},
+{
+"word": "lend",
+"deriv": ""
+},
+{
+"word": "level",
+"deriv": ""
+},
+{
+"word": "license",
+"deriv": "/ licence"
+},
+{
+"word": "lid",
+"deriv": ""
+},
+{
+"word": "limit",
+"deriv": ""
+},
+{
+"word": "link",
+"deriv": ""
+},
+{
+"word": "livingroom",
+"deriv": ""
+},
+{
+"word": "load",
+"deriv": ""
+},
+{
+"word": "loan",
+"deriv": ""
+},
+{
+"word": "local",
+"deriv": ""
+},
+{
+"word": "locate",
+"deriv": ""
+},
+{
+"word": "lock",
+"deriv": ""
+},
+{
+"word": "log",
+"deriv": ""
+},
+{
+"word": "loose",
+"deriv": ""
+},
+{
+"word": "loss",
+"deriv": ""
+},
+{
+"word": "magazine",
+"deriv": ""
+},
+{
+"word": "main",
+"deriv": ""
+},
+{
+"word": "maintain",
+"deriv": ""
+},
+{
+"word": "major",
+"deriv": "(majority)"
+},
+{
+"word": "male",
+"deriv": ""
+},
+{
+"word": "manage",
+"deriv": ""
+},
+{
+"word": "manner",
+"deriv": ""
+},
+{
+"word": "manufacture",
+"deriv": ""
+},
+{
+"word": "mark",
+"deriv": ""
+},
+{
+"word": "marvel",
+"deriv": ""
+},
+{
+"word": "mask",
+"deriv": ""
+},
+{
+"word": "mass",
+"deriv": ""
+},
+{
+"word": "master",
+"deriv": ""
+},
+{
+"word": "mate",
+"deriv": ""
+},
+{
+"word": "maximum",
+"deriv": ""
+},
+{
+"word": "mean",
+"deriv": ""
+},
+{
+"word": "measure",
+"deriv": ""
+},
+{
+"word": "medical",
+"deriv": ""
+},
+{
+"word": "mental",
+"deriv": ""
+},
+{
+"word": "mention",
+"deriv": ""
+},
+{
+"word": "menu",
+"deriv": ""
+},
+{
+"word": "mess",
+"deriv": ""
+},
+{
+"word": "method",
+"deriv": ""
+},
+{
+"word": "military",
+"deriv": ""
+},
+{
+"word": "mill",
+"deriv": ""
+},
+{
+"word": "minor",
+"deriv": ""
+},
+{
+"word": "mission",
+"deriv": ""
+},
+{
+"word": "modern",
+"deriv": ""
+},
+{
+"word": "moment",
+"deriv": ""
+},
+{
+"word": "monitor",
+"deriv": ""
+},
+{
+"word": "mood",
+"deriv": ""
+},
+{
+"word": "moral",
+"deriv": ""
+},
+{
+"word": "moreover",
+"deriv": ""
+},
+{
+"word": "motion",
+"deriv": ""
+},
+{
+"word": "motor",
+"deriv": ""
+},
+{
+"word": "mount",
+"deriv": ""
+},
+{
+"word": "muscle",
+"deriv": ""
+},
+{
+"word": "mystery",
+"deriv": ""
+},
+{
+"word": "nail",
+"deriv": ""
+},
+{
+"word": "native",
+"deriv": ""
+},
+{
+"word": "necessary",
+"deriv": ""
+},
+{
+"word": "neither",
+"deriv": ""
+},
+{
+"word": "nerve",
+"deriv": "(nervous)"
+},
+{
+"word": "nest",
+"deriv": ""
+},
+{
+"word": "net",
+"deriv": ""
+},
+{
+"word": "none",
+"deriv": ""
+},
+{
+"word": "nor",
+"deriv": ""
+},
+{
+"word": "notice",
+"deriv": ""
+},
+{
+"word": "nowadays",
+"deriv": ""
+},
+{
+"word": "nowhere",
+"deriv": ""
+},
+{
+"word": "nut",
+"deriv": ""
+},
+{
+"word": "oak",
+"deriv": ""
+},
+{
+"word": "object",
+"deriv": "(objective)"
+},
+{
+"word": "observe",
+"deriv": ""
+},
+{
+"word": "obvious",
+"deriv": ""
+},
+{
+"word": "occasion",
+"deriv": ""
+},
+{
+"word": "occur",
+"deriv": "(occurrence)"
+},
+{
+"word": "odd",
+"deriv": ""
+},
+{
+"word": "offer",
+"deriv": ""
+},
+{
+"word": "officer",
+"deriv": ""
+},
+{
+"word": "opera",
+"deriv": ""
+},
+{
+"word": "operate",
+"deriv": ""
+},
+{
+"word": "opinion",
+"deriv": ""
+},
+{
+"word": "oppose",
+"deriv": ""
+},
+{
+"word": "order",
+"deriv": "(disorder)"
+},
+{
+"word": "ordinary",
+"deriv": ""
+},
+{
+"word": "otherwise",
+"deriv": ""
+},
+{
+"word": "ought",
+"deriv": ""
+},
+{
+"word": "overall",
+"deriv": ""
+},
+{
+"word": "own",
+"deriv": ""
+},
+{
+"word": "pack",
+"deriv": ""
+},
+{
+"word": "palace",
+"deriv": ""
+},
+{
+"word": "pan",
+"deriv": ""
+},
+{
+"word": "panic",
+"deriv": ""
+},
+{
+"word": "paragraph",
+"deriv": ""
+},
+{
+"word": "particular",
+"deriv": "(particularly)"
+},
+{
+"word": "past",
+"deriv": ""
+},
+{
+"word": "path",
+"deriv": ""
+},
+{
+"word": "pattern",
+"deriv": ""
+},
+{
+"word": "pause",
+"deriv": ""
+},
+{
+"word": "per",
+"deriv": ""
+},
+{
+"word": "perfect",
+"deriv": ""
+},
+{
+"word": "perform",
+"deriv": ""
+},
+{
+"word": "perhaps",
+"deriv": ""
+},
+{
+"word": "period",
+"deriv": ""
+},
+{
+"word": "pet",
+"deriv": ""
+},
+{
+"word": "physical",
+"deriv": ""
+},
+{
+"word": "pile",
+"deriv": ""
+},
+{
+"word": "pitch",
+"deriv": ""
+},
+{
+"word": "pity",
+"deriv": ""
+},
+{
+"word": "plain",
+"deriv": ""
+},
+{
+"word": "plenty",
+"deriv": ""
+},
+{
+"word": "poem",
+"deriv": ""
+},
+{
+"word": "poet",
+"deriv": ""
+},
+{
+"word": "poison",
+"deriv": ""
+},
+{
+"word": "pole",
+"deriv": "(polar)"
+},
+{
+"word": "policy",
+"deriv": ""
+},
+{
+"word": "politics",
+"deriv": ""
+},
+{
+"word": "pollute",
+"deriv": ""
+},
+{
+"word": "pop",
+"deriv": ""
+},
+{
+"word": "popular",
+"deriv": ""
+},
+{
+"word": "port",
+"deriv": ""
+},
+{
+"word": "possess",
+"deriv": ""
+},
+{
+"word": "possible",
+"deriv": ""
+},
+{
+"word": "pot",
+"deriv": ""
+},
+{
+"word": "potential",
+"deriv": ""
+},
+{
+"word": "powder",
+"deriv": ""
+},
+{
+"word": "practical",
+"deriv": ""
+},
+{
+"word": "pray",
+"deriv": ""
+},
+{
+"word": "prefer",
+"deriv": ""
+},
+{
+"word": "pregnant",
+"deriv": ""
+},
+{
+"word": "prepare",
+"deriv": ""
+},
+{
+"word": "presence",
+"deriv": ""
+},
+{
+"word": "pretend",
+"deriv": ""
+},
+{
+"word": "prevent",
+"deriv": ""
+},
+{
+"word": "previous",
+"deriv": ""
+},
+{
+"word": "pride",
+"deriv": ""
+},
+{
+"word": "prime",
+"deriv": "(primary)"
+},
+{
+"word": "principle",
+"deriv": ""
+},
+{
+"word": "prison",
+"deriv": ""
+},
+{
+"word": "privacy",
+"deriv": ""
+},
+{
+"word": "private",
+"deriv": ""
+},
+{
+"word": "prize",
+"deriv": ""
+},
+{
+"word": "probable",
+"deriv": "(probably)"
+},
+{
+"word": "proceed",
+"deriv": "(procedure)"
+},
+{
+"word": "process",
+"deriv": ""
+},
+{
+"word": "produce",
+"deriv": ""
+},
+{
+"word": "profession",
+"deriv": ""
+},
+{
+"word": "profit",
+"deriv": ""
+},
+{
+"word": "progress",
+"deriv": ""
+},
+{
+"word": "promise",
+"deriv": ""
+},
+{
+"word": "promote",
+"deriv": ""
+},
+{
+"word": "pronounce",
+"deriv": "(pronunciation)"
+},
+{
+"word": "proper",
+"deriv": ""
+},
+{
+"word": "property",
+"deriv": ""
+},
+{
+"word": "propose",
+"deriv": ""
+},
+{
+"word": "protest",
+"deriv": ""
+},
+{
+"word": "prove",
+"deriv": ""
+},
+{
+"word": "provide",
+"deriv": ""
+},
+{
+"word": "pub",
+"deriv": ""
+},
+{
+"word": "public",
+"deriv": ""
+},
+{
+"word": "pump",
+"deriv": ""
+},
+{
+"word": "punch",
+"deriv": ""
+},
+{
+"word": "punish",
+"deriv": ""
+},
+{
+"word": "purchase",
+"deriv": ""
+},
+{
+"word": "pure",
+"deriv": ""
+},
+{
+"word": "purpose",
+"deriv": ""
+},
+{
+"word": "quality",
+"deriv": "(qualify)"
+},
+{
+"word": "quit",
+"deriv": ""
+},
+{
+"word": "quite",
+"deriv": ""
+},
+{
+"word": "quote",
+"deriv": ""
+},
+{
+"word": "rail",
+"deriv": ""
+},
+{
+"word": "raise",
+"deriv": ""
+},
+{
+"word": "range",
+"deriv": ""
+},
+{
+"word": "rapid",
+"deriv": ""
+},
+{
+"word": "rare",
+"deriv": ""
+},
+{
+"word": "rate",
+"deriv": ""
+},
+{
+"word": "rather",
+"deriv": ""
+},
+{
+"word": "reach",
+"deriv": ""
+},
+{
+"word": "react",
+"deriv": ""
+},
+{
+"word": "reason",
+"deriv": "(reasonable)"
+},
+{
+"word": "receive",
+"deriv": "(reception)"
+},
+{
+"word": "recent",
+"deriv": ""
+},
+{
+"word": "recipe",
+"deriv": ""
+},
+{
+"word": "recognize",
+"deriv": ""
+},
+{
+"word": "recommend",
+"deriv": ""
+},
+{
+"word": "recover",
+"deriv": ""
+},
+{
+"word": "refer",
+"deriv": ""
+},
+{
+"word": "reflect",
+"deriv": ""
+},
+{
+"word": "refuse",
+"deriv": ""
+},
+{
+"word": "regard",
+"deriv": ""
+},
+{
+"word": "region",
+"deriv": ""
+},
+{
+"word": "register",
+"deriv": ""
+},
+{
+"word": "regular",
+"deriv": ""
+},
+{
+"word": "relate",
+"deriv": "(relative, relation, relationship)"
+},
+{
+"word": "relax",
+"deriv": ""
+},
+{
+"word": "release",
+"deriv": ""
+},
+{
+"word": "relief",
+"deriv": ""
+},
+{
+"word": "rely",
+"deriv": ""
+},
+{
+"word": "remain",
+"deriv": ""
+},
+{
+"word": "remark",
+"deriv": ""
+},
+{
+"word": "remind",
+"deriv": ""
+},
+{
+"word": "remove",
+"deriv": ""
+},
+{
+"word": "rent",
+"deriv": ""
+},
+{
+"word": "repair",
+"deriv": ""
+},
+{
+"word": "replace",
+"deriv": ""
+},
+{
+"word": "reply",
+"deriv": ""
+},
+{
+"word": "report",
+"deriv": ""
+},
+{
+"word": "represent",
+"deriv": ""
+},
+{
+"word": "request",
+"deriv": ""
+},
+{
+"word": "require",
+"deriv": ""
+},
+{
+"word": "research",
+"deriv": ""
+},
+{
+"word": "reserve",
+"deriv": ""
+},
+{
+"word": "resist",
+"deriv": ""
+},
+{
+"word": "resource",
+"deriv": ""
+},
+{
+"word": "respect",
+"deriv": "(respective)"
+},
+{
+"word": "respond",
+"deriv": ""
+},
+{
+"word": "responsible",
+"deriv": ""
+},
+{
+"word": "result",
+"deriv": ""
+},
+{
+"word": "retire",
+"deriv": ""
+},
+{
+"word": "rise",
+"deriv": ""
+},
+{
+"word": "risk",
+"deriv": ""
+},
+{
+"word": "rob",
+"deriv": ""
+},
+{
+"word": "role",
+"deriv": ""
+},
+{
+"word": "rope",
+"deriv": ""
+},
+{
+"word": "route",
+"deriv": ""
+},
+{
+"word": "row",
+"deriv": ""
+},
+{
+"word": "royal",
+"deriv": ""
+},
+{
+"word": "rub",
+"deriv": "(rubber)"
+},
+{
+"word": "rude",
+"deriv": ""
+},
+{
+"word": "ruin",
+"deriv": ""
+},
+{
+"word": "rule",
+"deriv": ""
+},
+{
+"word": "rush",
+"deriv": ""
+},
+{
+"word": "salary",
+"deriv": ""
+},
+{
+"word": "sample",
+"deriv": ""
+},
+{
+"word": "satisfy",
+"deriv": ""
+},
+{
+"word": "sauce",
+"deriv": ""
+},
+{
+"word": "scale",
+"deriv": ""
+},
+{
+"word": "scare",
+"deriv": ""
+},
+{
+"word": "scene",
+"deriv": ""
+},
+{
+"word": "schedule",
+"deriv": ""
+},
+{
+"word": "scratch",
+"deriv": ""
+},
+{
+"word": "scream",
+"deriv": ""
+},
+{
+"word": "secret",
+"deriv": ""
+},
+{
+"word": "secretary",
+"deriv": ""
+},
+{
+"word": "section",
+"deriv": ""
+},
+{
+"word": "secure",
+"deriv": ""
+},
+{
+"word": "seek",
+"deriv": ""
+},
+{
+"word": "seem",
+"deriv": ""
+},
+{
+"word": "select",
+"deriv": ""
+},
+{
+"word": "self",
+"deriv": ""
+},
+{
+"word": "senior",
+"deriv": ""
+},
+{
+"word": "sense",
+"deriv": "(sensation)"
+},
+{
+"word": "separate",
+"deriv": ""
+},
+{
+"word": "series",
+"deriv": ""
+},
+{
+"word": "serve",
+"deriv": ""
+},
+{
+"word": "session",
+"deriv": ""
+},
+{
+"word": "settle",
+"deriv": ""
+},
+{
+"word": "several",
+"deriv": ""
+},
+{
+"word": "sew",
+"deriv": ""
+},
+{
+"word": "sex",
+"deriv": ""
+},
+{
+"word": "shade",
+"deriv": ""
+},
+{
+"word": "shadow",
+"deriv": ""
+},
+{
+"word": "shame",
+"deriv": ""
+},
+{
+"word": "sharp",
+"deriv": ""
+},
+{
+"word": "shave",
+"deriv": ""
+},
+{
+"word": "shell",
+"deriv": ""
+},
+{
+"word": "shelter",
+"deriv": ""
+},
+{
+"word": "shift",
+"deriv": ""
+},
+{
+"word": "shine",
+"deriv": ""
+},
+{
+"word": "shock",
+"deriv": ""
+},
+{
+"word": "shore",
+"deriv": ""
+},
+{
+"word": "sight",
+"deriv": ""
+},
+{
+"word": "similar",
+"deriv": ""
+},
+{
+"word": "simple",
+"deriv": ""
+},
+{
+"word": "since",
+"deriv": ""
+},
+{
+"word": "single",
+"deriv": ""
+},
+{
+"word": "site",
+"deriv": ""
+},
+{
+"word": "situate",
+"deriv": "(situation)"
+},
+{
+"word": "skill",
+"deriv": ""
+},
+{
+"word": "slave",
+"deriv": ""
+},
+{
+"word": "slight",
+"deriv": ""
+},
+{
+"word": "slip",
+"deriv": ""
+},
+{
+"word": "smash",
+"deriv": ""
+},
+{
+"word": "snap",
+"deriv": ""
+},
+{
+"word": "social",
+"deriv": ""
+},
+{
+"word": "society",
+"deriv": ""
+},
+{
+"word": "soldier",
+"deriv": ""
+},
+{
+"word": "solve",
+"deriv": ""
+},
+{
+"word": "somewhat",
+"deriv": ""
+},
+{
+"word": "sore",
+"deriv": ""
+},
+{
+"word": "sort",
+"deriv": ""
+},
+{
+"word": "soul",
+"deriv": ""
+},
+{
+"word": "source",
+"deriv": ""
+},
+{
+"word": "spare",
+"deriv": ""
+},
+{
+"word": "species",
+"deriv": "(special)"
+},
+{
+"word": "specific",
+"deriv": ""
+},
+{
+"word": "speech",
+"deriv": ""
+},
+{
+"word": "spin",
+"deriv": ""
+},
+{
+"word": "spirit",
+"deriv": ""
+},
+{
+"word": "spoil",
+"deriv": ""
+},
+{
+"word": "sponsor",
+"deriv": ""
+},
+{
+"word": "spot",
+"deriv": ""
+},
+{
+"word": "spray",
+"deriv": ""
+},
+{
+"word": "spread",
+"deriv": ""
+},
+{
+"word": "spy",
+"deriv": ""
+},
+{
+"word": "stable",
+"deriv": ""
+},
+{
+"word": "stage",
+"deriv": ""
+},
+{
+"word": "standard",
+"deriv": ""
+},
+{
+"word": "stare",
+"deriv": ""
+},
+{
+"word": "state",
+"deriv": ""
+},
+{
+"word": "steady",
+"deriv": ""
+},
+{
+"word": "steal",
+"deriv": ""
+},
+{
+"word": "steel",
+"deriv": ""
+},
+{
+"word": "still",
+"deriv": ""
+},
+{
+"word": "stir",
+"deriv": ""
+},
+{
+"word": "stock",
+"deriv": ""
+},
+{
+"word": "strategy",
+"deriv": ""
+},
+{
+"word": "stream",
+"deriv": ""
+},
+{
+"word": "stress",
+"deriv": ""
+},
+{
+"word": "stretch",
+"deriv": ""
+},
+{
+"word": "string",
+"deriv": ""
+},
+{
+"word": "structure",
+"deriv": ""
+},
+{
+"word": "struggle",
+"deriv": ""
+},
+{
+"word": "studio",
+"deriv": ""
+},
+{
+"word": "stuff",
+"deriv": ""
+},
+{
+"word": "succeed",
+"deriv": ""
+},
+{
+"word": "success",
+"deriv": ""
+},
+{
+"word": "such",
+"deriv": ""
+},
+{
+"word": "sudden",
+"deriv": ""
+},
+{
+"word": "suffer",
+"deriv": ""
+},
+{
+"word": "suggest",
+"deriv": ""
+},
+{
+"word": "suit",
+"deriv": ""
+},
+{
+"word": "sum",
+"deriv": "(summary)"
+},
+{
+"word": "super",
+"deriv": ""
+},
+{
+"word": "supply",
+"deriv": ""
+},
+{
+"word": "support",
+"deriv": ""
+},
+{
+"word": "suppose",
+"deriv": ""
+},
+{
+"word": "surface",
+"deriv": ""
+},
+{
+"word": "surround",
+"deriv": ""
+},
+{
+"word": "survey",
+"deriv": ""
+},
+{
+"word": "survive",
+"deriv": ""
+},
+{
+"word": "suspect",
+"deriv": ""
+},
+{
+"word": "swallow",
+"deriv": ""
+},
+{
+"word": "sweep",
+"deriv": ""
+},
+{
+"word": "system",
+"deriv": ""
+},
+{
+"word": "tale",
+"deriv": ""
+},
+{
+"word": "tank",
+"deriv": ""
+},
+{
+"word": "tap",
+"deriv": ""
+},
+{
+"word": "target",
+"deriv": ""
+},
+{
+"word": "tax",
+"deriv": ""
+},
+{
+"word": "technique",
+"deriv": "/ technic"
+},
+{
+"word": "teenage",
+"deriv": ""
+},
+{
+"word": "tend",
+"deriv": ""
+},
+{
+"word": "tense",
+"deriv": ""
+},
+{
+"word": "term",
+"deriv": ""
+},
+{
+"word": "terrible",
+"deriv": ""
+},
+{
+"word": "text",
+"deriv": ""
+},
+{
+"word": "theory",
+"deriv": ""
+},
+{
+"word": "therefore",
+"deriv": ""
+},
+{
+"word": "thief",
+"deriv": ""
+},
+{
+"word": "though",
+"deriv": ""
+},
+{
+"word": "threat",
+"deriv": ""
+},
+{
+"word": "throat",
+"deriv": ""
+},
+{
+"word": "thus",
+"deriv": ""
+},
+{
+"word": "tide",
+"deriv": "(tidy)"
+},
+{
+"word": "tight",
+"deriv": ""
+},
+{
+"word": "tin",
+"deriv": ""
+},
+{
+"word": "tip",
+"deriv": ""
+},
+{
+"word": "tone",
+"deriv": ""
+},
+{
+"word": "tool",
+"deriv": ""
+},
+{
+"word": "topic",
+"deriv": ""
+},
+{
+"word": "total",
+"deriv": ""
+},
+{
+"word": "tough",
+"deriv": ""
+},
+{
+"word": "tour",
+"deriv": ""
+},
+{
+"word": "toward",
+"deriv": "/ towards"
+},
+{
+"word": "tower",
+"deriv": ""
+},
+{
+"word": "trace",
+"deriv": ""
+},
+{
+"word": "trade",
+"deriv": ""
+},
+{
+"word": "tradition",
+"deriv": ""
+},
+{
+"word": "traffic",
+"deriv": ""
+},
+{
+"word": "transfer",
+"deriv": ""
+},
+{
+"word": "transport",
+"deriv": "(transportation)"
+},
+{
+"word": "trap",
+"deriv": ""
+},
+{
+"word": "tray",
+"deriv": ""
+},
+{
+"word": "treat",
+"deriv": ""
+},
+{
+"word": "trick",
+"deriv": ""
+},
+{
+"word": "trouble",
+"deriv": ""
+},
+{
+"word": "trunk",
+"deriv": ""
+},
+{
+"word": "trust",
+"deriv": ""
+},
+{
+"word": "truth",
+"deriv": ""
+},
+{
+"word": "tune",
+"deriv": ""
+},
+{
+"word": "twin",
+"deriv": ""
+},
+{
+"word": "twist",
+"deriv": ""
+},
+{
+"word": "unit",
+"deriv": ""
+},
+{
+"word": "unite",
+"deriv": "(union)"
+},
+{
+"word": "university",
+"deriv": ""
+},
+{
+"word": "unless",
+"deriv": ""
+},
+{
+"word": "upon",
+"deriv": ""
+},
+{
+"word": "upper",
+"deriv": ""
+},
+{
+"word": "value",
+"deriv": ""
+},
+{
+"word": "various",
+"deriv": ""
+},
+{
+"word": "vary",
+"deriv": ""
+},
+{
+"word": "vehicle",
+"deriv": ""
+},
+{
+"word": "version",
+"deriv": ""
+},
+{
+"word": "victim",
+"deriv": ""
+},
+{
+"word": "view",
+"deriv": "(interview, review)"
+},
+{
+"word": "villa",
+"deriv": ""
+},
+{
+"word": "violent",
+"deriv": ""
+},
+{
+"word": "vision",
+"deriv": ""
+},
+{
+"word": "volume",
+"deriv": ""
+},
+{
+"word": "volunteer",
+"deriv": ""
+},
+{
+"word": "vote",
+"deriv": ""
+},
+{
+"word": "wage",
+"deriv": ""
+},
+{
+"word": "warn",
+"deriv": ""
+},
+{
+"word": "weapon",
+"deriv": ""
+},
+{
+"word": "weigh",
+"deriv": ""
+},
+{
+"word": "wheel",
+"deriv": ""
+},
+{
+"word": "whether",
+"deriv": ""
+},
+{
+"word": "while",
+"deriv": ""
+},
+{
+"word": "whistle",
+"deriv": ""
+},
+{
+"word": "whole",
+"deriv": ""
+},
+{
+"word": "wild",
+"deriv": ""
+},
+{
+"word": "wipe",
+"deriv": ""
+},
+{
+"word": "wire",
+"deriv": ""
+},
+{
+"word": "wise",
+"deriv": ""
+},
+{
+"word": "within",
+"deriv": ""
+},
+{
+"word": "without",
+"deriv": ""
+},
+{
+"word": "worth",
+"deriv": ""
+},
+{
+"word": "would",
+"deriv": ""
+},
+{
+"word": "wound",
+"deriv": ""
+},
+{
+"word": "wrap",
+"deriv": ""
+}
+],
+"high": [
+{
+"word": "abandon",
+"deriv": ""
+},
+{
+"word": "aboard",
+"deriv": ""
+},
+{
+"word": "abort",
+"deriv": "(abortion)"
+},
+{
+"word": "abound",
+"deriv": "(abundant)"
+},
+{
+"word": "abroad",
+"deriv": ""
+},
+{
+"word": "absent",
+"deriv": ""
+},
+{
+"word": "absorb",
+"deriv": ""
+},
+{
+"word": "abstract",
+"deriv": ""
+},
+{
+"word": "absurd",
+"deriv": ""
+},
+{
+"word": "abuse",
+"deriv": ""
+},
+{
+"word": "academy",
+"deriv": ""
+},
+{
+"word": "accelerate",
+"deriv": ""
+},
+{
+"word": "accommodate",
+"deriv": ""
+},
+{
+"word": "accompany",
+"deriv": ""
+},
+{
+"word": "accomplish",
+"deriv": ""
+},
+{
+"word": "accord",
+"deriv": ""
+},
+{
+"word": "accumulate",
+"deriv": ""
+},
+{
+"word": "accurate",
+"deriv": ""
+},
+{
+"word": "ache",
+"deriv": "(headache)"
+},
+{
+"word": "acid",
+"deriv": ""
+},
+{
+"word": "acknowledge",
+"deriv": ""
+},
+{
+"word": "acquire",
+"deriv": ""
+},
+{
+"word": "acquisition",
+"deriv": ""
+},
+{
+"word": "addict",
+"deriv": ""
+},
+{
+"word": "adequate",
+"deriv": ""
+},
+{
+"word": "adjust",
+"deriv": ""
+},
+{
+"word": "administer",
+"deriv": "(administration)"
+},
+{
+"word": "adolescent",
+"deriv": ""
+},
+{
+"word": "adverse",
+"deriv": ""
+},
+{
+"word": "advocate",
+"deriv": ""
+},
+{
+"word": "aesthetic",
+"deriv": ""
+},
+{
+"word": "agency",
+"deriv": ""
+},
+{
+"word": "agenda",
+"deriv": ""
+},
+{
+"word": "aggress",
+"deriv": "(aggressive)"
+},
+{
+"word": "agriculture",
+"deriv": ""
+},
+{
+"word": "alert",
+"deriv": ""
+},
+{
+"word": "alike",
+"deriv": ""
+},
+{
+"word": "allocate",
+"deriv": ""
+},
+{
+"word": "ally",
+"deriv": ""
+},
+{
+"word": "alongside",
+"deriv": ""
+},
+{
+"word": "alternate",
+"deriv": "(alternative)"
+},
+{
+"word": "ambassador",
+"deriv": ""
+},
+{
+"word": "ambition",
+"deriv": "(ambitious)"
+},
+{
+"word": "analyze",
+"deriv": "/ analyse"
+},
+{
+"word": "anchor",
+"deriv": ""
+},
+{
+"word": "ancient",
+"deriv": ""
+},
+{
+"word": "angle",
+"deriv": ""
+},
+{
+"word": "anniversary",
+"deriv": ""
+},
+{
+"word": "anticipate",
+"deriv": ""
+},
+{
+"word": "anxiety",
+"deriv": ""
+},
+{
+"word": "apology",
+"deriv": ""
+},
+{
+"word": "apparent",
+"deriv": ""
+},
+{
+"word": "approve",
+"deriv": ""
+},
+{
+"word": "approximate",
+"deriv": ""
+},
+{
+"word": "architect",
+"deriv": "(architecture)"
+},
+{
+"word": "arise",
+"deriv": ""
+},
+{
+"word": "arrow",
+"deriv": ""
+},
+{
+"word": "artifice",
+"deriv": "(artificial)"
+},
+{
+"word": "aspect",
+"deriv": ""
+},
+{
+"word": "aspire",
+"deriv": ""
+},
+{
+"word": "assault",
+"deriv": ""
+},
+{
+"word": "assemble",
+"deriv": ""
+},
+{
+"word": "assert",
+"deriv": ""
+},
+{
+"word": "asset",
+"deriv": ""
+},
+{
+"word": "assure",
+"deriv": ""
+},
+{
+"word": "astonish",
+"deriv": ""
+},
+{
+"word": "atom",
+"deriv": ""
+},
+{
+"word": "attribute",
+"deriv": ""
+},
+{
+"word": "auction",
+"deriv": ""
+},
+{
+"word": "authentic",
+"deriv": ""
+},
+{
+"word": "avail",
+"deriv": "(available)"
+},
+{
+"word": "await",
+"deriv": ""
+},
+{
+"word": "awe",
+"deriv": "(awful)"
+},
+{
+"word": "ban",
+"deriv": ""
+},
+{
+"word": "bankrupt",
+"deriv": ""
+},
+{
+"word": "bargain",
+"deriv": ""
+},
+{
+"word": "barrier",
+"deriv": ""
+},
+{
+"word": "beam",
+"deriv": ""
+},
+{
+"word": "beast",
+"deriv": ""
+},
+{
+"word": "behalf",
+"deriv": ""
+},
+{
+"word": "behave",
+"deriv": "(behavior / behaviour)"
+},
+{
+"word": "betray",
+"deriv": ""
+},
+{
+"word": "bias",
+"deriv": ""
+},
+{
+"word": "biography",
+"deriv": ""
+},
+{
+"word": "biology",
+"deriv": ""
+},
+{
+"word": "blast",
+"deriv": ""
+},
+{
+"word": "blend",
+"deriv": ""
+},
+{
+"word": "blink",
+"deriv": ""
+},
+{
+"word": "blossom",
+"deriv": ""
+},
+{
+"word": "bold",
+"deriv": ""
+},
+{
+"word": "boost",
+"deriv": ""
+},
+{
+"word": "border",
+"deriv": ""
+},
+{
+"word": "boundary",
+"deriv": ""
+},
+{
+"word": "breed",
+"deriv": ""
+},
+{
+"word": "breeze",
+"deriv": ""
+},
+{
+"word": "broadcast",
+"deriv": ""
+},
+{
+"word": "brute",
+"deriv": "(brutal)"
+},
+{
+"word": "bulk",
+"deriv": ""
+},
+{
+"word": "bull",
+"deriv": ""
+},
+{
+"word": "bully",
+"deriv": ""
+},
+{
+"word": "bundle",
+"deriv": ""
+},
+{
+"word": "burden",
+"deriv": ""
+},
+{
+"word": "butcher",
+"deriv": ""
+},
+{
+"word": "buzz",
+"deriv": ""
+},
+{
+"word": "cancel",
+"deriv": ""
+},
+{
+"word": "cancer",
+"deriv": ""
+},
+{
+"word": "candidate",
+"deriv": ""
+},
+{
+"word": "canvas",
+"deriv": ""
+},
+{
+"word": "capture",
+"deriv": ""
+},
+{
+"word": "carve",
+"deriv": ""
+},
+{
+"word": "cater",
+"deriv": ""
+},
+{
+"word": "cattle",
+"deriv": ""
+},
+{
+"word": "caution",
+"deriv": ""
+},
+{
+"word": "cave",
+"deriv": ""
+},
+{
+"word": "cease",
+"deriv": ""
+},
+{
+"word": "celebrate",
+"deriv": ""
+},
+{
+"word": "celebrity",
+"deriv": ""
+},
+{
+"word": "censor",
+"deriv": ""
+},
+{
+"word": "certificate",
+"deriv": ""
+},
+{
+"word": "chamber",
+"deriv": ""
+},
+{
+"word": "chaos",
+"deriv": ""
+},
+{
+"word": "charity",
+"deriv": ""
+},
+{
+"word": "chemical",
+"deriv": ""
+},
+{
+"word": "chill",
+"deriv": ""
+},
+{
+"word": "choir",
+"deriv": ""
+},
+{
+"word": "chorus",
+"deriv": ""
+},
+{
+"word": "chronic",
+"deriv": ""
+},
+{
+"word": "circulate",
+"deriv": ""
+},
+{
+"word": "cite",
+"deriv": ""
+},
+{
+"word": "clash",
+"deriv": ""
+},
+{
+"word": "clause",
+"deriv": ""
+},
+{
+"word": "cling",
+"deriv": ""
+},
+{
+"word": "cluster",
+"deriv": ""
+},
+{
+"word": "coincide",
+"deriv": ""
+},
+{
+"word": "collaborate",
+"deriv": ""
+},
+{
+"word": "collapse",
+"deriv": ""
+},
+{
+"word": "collar",
+"deriv": ""
+},
+{
+"word": "colleague",
+"deriv": ""
+},
+{
+"word": "colony",
+"deriv": ""
+},
+{
+"word": "column",
+"deriv": ""
+},
+{
+"word": "combat",
+"deriv": ""
+},
+{
+"word": "commit",
+"deriv": "(commission)"
+},
+{
+"word": "commodity",
+"deriv": ""
+},
+{
+"word": "communist",
+"deriv": ""
+},
+{
+"word": "companion",
+"deriv": ""
+},
+{
+"word": "compatible",
+"deriv": ""
+},
+{
+"word": "compel",
+"deriv": ""
+},
+{
+"word": "compensate",
+"deriv": ""
+},
+{
+"word": "compete",
+"deriv": "(competent)"
+},
+{
+"word": "compile",
+"deriv": ""
+},
+{
+"word": "complement",
+"deriv": ""
+},
+{
+"word": "component",
+"deriv": ""
+},
+{
+"word": "compose",
+"deriv": ""
+},
+{
+"word": "compound",
+"deriv": ""
+},
+{
+"word": "comprehend",
+"deriv": "(comprehensive)"
+},
+{
+"word": "comprise",
+"deriv": ""
+},
+{
+"word": "compromise",
+"deriv": ""
+},
+{
+"word": "conceal",
+"deriv": ""
+},
+{
+"word": "conceive",
+"deriv": ""
+},
+{
+"word": "conclude",
+"deriv": ""
+},
+{
+"word": "concrete",
+"deriv": ""
+},
+{
+"word": "condemn",
+"deriv": ""
+},
+{
+"word": "conduct",
+"deriv": ""
+},
+{
+"word": "confer",
+"deriv": ""
+},
+{
+"word": "confess",
+"deriv": ""
+},
+{
+"word": "confide",
+"deriv": "(confident)"
+},
+{
+"word": "confine",
+"deriv": ""
+},
+{
+"word": "conform",
+"deriv": ""
+},
+{
+"word": "confront",
+"deriv": ""
+},
+{
+"word": "congress",
+"deriv": ""
+},
+{
+"word": "conscience",
+"deriv": ""
+},
+{
+"word": "consent",
+"deriv": ""
+},
+{
+"word": "conserve",
+"deriv": ""
+},
+{
+"word": "consist",
+"deriv": "(consistent)"
+},
+{
+"word": "constitute",
+"deriv": "(constitution)"
+},
+{
+"word": "constrain",
+"deriv": ""
+},
+{
+"word": "construct",
+"deriv": "(construction)"
+},
+{
+"word": "consult",
+"deriv": ""
+},
+{
+"word": "contemporary",
+"deriv": ""
+},
+{
+"word": "contend",
+"deriv": ""
+},
+{
+"word": "continent",
+"deriv": ""
+},
+{
+"word": "contradict",
+"deriv": ""
+},
+{
+"word": "contrary",
+"deriv": ""
+},
+{
+"word": "contrast",
+"deriv": ""
+},
+{
+"word": "controversy",
+"deriv": ""
+},
+{
+"word": "convene",
+"deriv": "(convenient, convention)"
+},
+{
+"word": "convert",
+"deriv": ""
+},
+{
+"word": "convey",
+"deriv": ""
+},
+{
+"word": "convict",
+"deriv": ""
+},
+{
+"word": "cooperate",
+"deriv": ""
+},
+{
+"word": "coordinate",
+"deriv": ""
+},
+{
+"word": "copyright",
+"deriv": ""
+},
+{
+"word": "cord",
+"deriv": ""
+},
+{
+"word": "core",
+"deriv": ""
+},
+{
+"word": "corporate",
+"deriv": "(corporation)"
+},
+{
+"word": "correspond",
+"deriv": ""
+},
+{
+"word": "corridor",
+"deriv": ""
+},
+{
+"word": "corrupt",
+"deriv": ""
+},
+{
+"word": "counsel",
+"deriv": ""
+},
+{
+"word": "counterpart",
+"deriv": ""
+},
+{
+"word": "coupon",
+"deriv": ""
+},
+{
+"word": "courage",
+"deriv": "(discourage, encourage)"
+},
+{
+"word": "craft",
+"deriv": ""
+},
+{
+"word": "craze",
+"deriv": "(crazy)"
+},
+{
+"word": "credible",
+"deriv": "(incredible)"
+},
+{
+"word": "creep",
+"deriv": ""
+},
+{
+"word": "crew",
+"deriv": ""
+},
+{
+"word": "criterion",
+"deriv": ""
+},
+{
+"word": "critic",
+"deriv": "(criticize / criticise, criticism)"
+},
+{
+"word": "crop",
+"deriv": ""
+},
+{
+"word": "crucial",
+"deriv": ""
+},
+{
+"word": "cruise",
+"deriv": ""
+},
+{
+"word": "crush",
+"deriv": ""
+},
+{
+"word": "crystal",
+"deriv": ""
+},
+{
+"word": "cultivate",
+"deriv": ""
+},
+{
+"word": "currency",
+"deriv": ""
+},
+{
+"word": "curriculum",
+"deriv": ""
+},
+{
+"word": "curse",
+"deriv": ""
+},
+{
+"word": "custody",
+"deriv": ""
+},
+{
+"word": "custom",
+"deriv": ""
+},
+{
+"word": "cynical",
+"deriv": ""
+},
+{
+"word": "dairy",
+"deriv": ""
+},
+{
+"word": "damp",
+"deriv": ""
+},
+{
+"word": "dash",
+"deriv": ""
+},
+{
+"word": "database",
+"deriv": ""
+},
+{
+"word": "datum",
+"deriv": "(data)"
+},
+{
+"word": "decade",
+"deriv": ""
+},
+{
+"word": "decay",
+"deriv": ""
+},
+{
+"word": "decent",
+"deriv": ""
+},
+{
+"word": "declare",
+"deriv": ""
+},
+{
+"word": "decline",
+"deriv": "(declension)"
+},
+{
+"word": "decrease",
+"deriv": ""
+},
+{
+"word": "dedicate",
+"deriv": ""
+},
+{
+"word": "defeat",
+"deriv": ""
+},
+{
+"word": "defend",
+"deriv": "(defendant)"
+},
+{
+"word": "deficiency",
+"deriv": ""
+},
+{
+"word": "deficit",
+"deriv": ""
+},
+{
+"word": "delegate",
+"deriv": ""
+},
+{
+"word": "deliberate",
+"deriv": ""
+},
+{
+"word": "delicate",
+"deriv": ""
+},
+{
+"word": "democracy",
+"deriv": ""
+},
+{
+"word": "democrat",
+"deriv": ""
+},
+{
+"word": "demon",
+"deriv": ""
+},
+{
+"word": "dense",
+"deriv": ""
+},
+{
+"word": "depart",
+"deriv": "(department, departure)"
+},
+{
+"word": "depict",
+"deriv": ""
+},
+{
+"word": "deposit",
+"deriv": ""
+},
+{
+"word": "deprive",
+"deriv": ""
+},
+{
+"word": "derive",
+"deriv": ""
+},
+{
+"word": "descend",
+"deriv": ""
+},
+{
+"word": "designate",
+"deriv": ""
+},
+{
+"word": "despair",
+"deriv": ""
+},
+{
+"word": "destine",
+"deriv": "(destination)"
+},
+{
+"word": "destiny",
+"deriv": ""
+},
+{
+"word": "destruct",
+"deriv": "(destruction)"
+},
+{
+"word": "detach",
+"deriv": ""
+},
+{
+"word": "device",
+"deriv": ""
+},
+{
+"word": "devil",
+"deriv": ""
+},
+{
+"word": "devise",
+"deriv": ""
+},
+{
+"word": "devote",
+"deriv": ""
+},
+{
+"word": "diabetes",
+"deriv": ""
+},
+{
+"word": "dictate",
+"deriv": ""
+},
+{
+"word": "differ",
+"deriv": "(different)"
+},
+{
+"word": "dignity",
+"deriv": ""
+},
+{
+"word": "dimension",
+"deriv": ""
+},
+{
+"word": "diminish",
+"deriv": ""
+},
+{
+"word": "dine",
+"deriv": ""
+},
+{
+"word": "dip",
+"deriv": ""
+},
+{
+"word": "diplomat",
+"deriv": ""
+},
+{
+"word": "disaster",
+"deriv": ""
+},
+{
+"word": "discourse",
+"deriv": ""
+},
+{
+"word": "discriminate",
+"deriv": ""
+},
+{
+"word": "dismiss",
+"deriv": ""
+},
+{
+"word": "dispute",
+"deriv": ""
+},
+{
+"word": "disrupt",
+"deriv": ""
+},
+{
+"word": "distinct",
+"deriv": ""
+},
+{
+"word": "distinguish",
+"deriv": ""
+},
+{
+"word": "distort",
+"deriv": ""
+},
+{
+"word": "distract",
+"deriv": ""
+},
+{
+"word": "distribute",
+"deriv": ""
+},
+{
+"word": "diverse",
+"deriv": ""
+},
+{
+"word": "divine",
+"deriv": ""
+},
+{
+"word": "domain",
+"deriv": ""
+},
+{
+"word": "dominate",
+"deriv": "(dominant)"
+},
+{
+"word": "dose",
+"deriv": ""
+},
+{
+"word": "draft",
+"deriv": ""
+},
+{
+"word": "drain",
+"deriv": ""
+},
+{
+"word": "dread",
+"deriv": ""
+},
+{
+"word": "drill",
+"deriv": ""
+},
+{
+"word": "drown",
+"deriv": ""
+},
+{
+"word": "dual",
+"deriv": ""
+},
+{
+"word": "dull",
+"deriv": ""
+},
+{
+"word": "dwell",
+"deriv": ""
+},
+{
+"word": "dynamic",
+"deriv": ""
+},
+{
+"word": "eager",
+"deriv": ""
+},
+{
+"word": "efficient",
+"deriv": ""
+},
+{
+"word": "elaborate",
+"deriv": ""
+},
+{
+"word": "electronic",
+"deriv": ""
+},
+{
+"word": "elegant",
+"deriv": ""
+},
+{
+"word": "elevate",
+"deriv": "(elevator)"
+},
+{
+"word": "eliminate",
+"deriv": ""
+},
+{
+"word": "elite",
+"deriv": ""
+},
+{
+"word": "embassy",
+"deriv": ""
+},
+{
+"word": "embrace",
+"deriv": ""
+},
+{
+"word": "emerge",
+"deriv": "(emergence)"
+},
+{
+"word": "emergency",
+"deriv": ""
+},
+{
+"word": "emit",
+"deriv": "(emission)"
+},
+{
+"word": "emphasis",
+"deriv": ""
+},
+{
+"word": "encounter",
+"deriv": ""
+},
+{
+"word": "endure",
+"deriv": ""
+},
+{
+"word": "enhance",
+"deriv": ""
+},
+{
+"word": "enterprise",
+"deriv": ""
+},
+{
+"word": "enthusiastic",
+"deriv": ""
+},
+{
+"word": "entry",
+"deriv": ""
+},
+{
+"word": "environ",
+"deriv": "(environment)"
+},
+{
+"word": "envy",
+"deriv": ""
+},
+{
+"word": "equip",
+"deriv": "(equipment)"
+},
+{
+"word": "era",
+"deriv": ""
+},
+{
+"word": "erase",
+"deriv": "(eraser)"
+},
+{
+"word": "erect",
+"deriv": ""
+},
+{
+"word": "err",
+"deriv": "(error)"
+},
+{
+"word": "essence",
+"deriv": "(essential)"
+},
+{
+"word": "estate",
+"deriv": ""
+},
+{
+"word": "ethic",
+"deriv": "(ethical)"
+},
+{
+"word": "ethnic",
+"deriv": ""
+},
+{
+"word": "evacuate",
+"deriv": ""
+},
+{
+"word": "evaluate",
+"deriv": ""
+},
+{
+"word": "evitable",
+"deriv": "(inevitable)"
+},
+{
+"word": "evolution",
+"deriv": ""
+},
+{
+"word": "evolve",
+"deriv": ""
+},
+{
+"word": "exaggerate",
+"deriv": ""
+},
+{
+"word": "exceed",
+"deriv": ""
+},
+{
+"word": "excel",
+"deriv": "(excellent)"
+},
+{
+"word": "excess",
+"deriv": ""
+},
+{
+"word": "exclude",
+"deriv": "(exclusive)"
+},
+{
+"word": "executive",
+"deriv": ""
+},
+{
+"word": "exhibit",
+"deriv": ""
+},
+{
+"word": "exotic",
+"deriv": ""
+},
+{
+"word": "expertise",
+"deriv": ""
+},
+{
+"word": "explicit",
+"deriv": ""
+},
+{
+"word": "explode",
+"deriv": ""
+},
+{
+"word": "explore",
+"deriv": ""
+},
+{
+"word": "export",
+"deriv": ""
+},
+{
+"word": "extent",
+"deriv": ""
+},
+{
+"word": "external",
+"deriv": ""
+},
+{
+"word": "extinct",
+"deriv": ""
+},
+{
+"word": "extract",
+"deriv": ""
+},
+{
+"word": "extraordinary",
+"deriv": ""
+},
+{
+"word": "facilitate",
+"deriv": ""
+},
+{
+"word": "facility",
+"deriv": ""
+},
+{
+"word": "faculty",
+"deriv": ""
+},
+{
+"word": "fade",
+"deriv": ""
+},
+{
+"word": "0",
+"deriv": ""
+},
+{
+"word": "fame",
+"deriv": "(famous)"
+},
+{
+"word": "fare",
+"deriv": ""
+},
+{
+"word": "fasten",
+"deriv": ""
+},
+{
+"word": "fate",
+"deriv": "(fatal)"
+},
+{
+"word": "federal",
+"deriv": ""
+},
+{
+"word": "fertile",
+"deriv": ""
+},
+{
+"word": "fiber",
+"deriv": "/ fibre"
+},
+{
+"word": "fiction",
+"deriv": ""
+},
+{
+"word": "fierce",
+"deriv": ""
+},
+{
+"word": "filter",
+"deriv": ""
+},
+{
+"word": "finite",
+"deriv": ""
+},
+{
+"word": "flavor",
+"deriv": "/ flavour"
+},
+{
+"word": "flaw",
+"deriv": ""
+},
+{
+"word": "flee",
+"deriv": ""
+},
+{
+"word": "flesh",
+"deriv": ""
+},
+{
+"word": "flexible",
+"deriv": ""
+},
+{
+"word": "flip",
+"deriv": ""
+},
+{
+"word": "flock",
+"deriv": ""
+},
+{
+"word": "flourish",
+"deriv": ""
+},
+{
+"word": "flush",
+"deriv": ""
+},
+{
+"word": "fond",
+"deriv": ""
+},
+{
+"word": "forbid",
+"deriv": ""
+},
+{
+"word": "forecast",
+"deriv": ""
+},
+{
+"word": "format",
+"deriv": ""
+},
+{
+"word": "former",
+"deriv": ""
+},
+{
+"word": "formula",
+"deriv": ""
+},
+{
+"word": "foster",
+"deriv": ""
+},
+{
+"word": "fountain",
+"deriv": ""
+},
+{
+"word": "fraction",
+"deriv": ""
+},
+{
+"word": "framework",
+"deriv": ""
+},
+{
+"word": "frequent",
+"deriv": ""
+},
+{
+"word": "frost",
+"deriv": ""
+},
+{
+"word": "frown",
+"deriv": ""
+},
+{
+"word": "fuel",
+"deriv": ""
+},
+{
+"word": "fulfil",
+"deriv": ""
+},
+{
+"word": "fundamental",
+"deriv": ""
+},
+{
+"word": "funeral",
+"deriv": ""
+},
+{
+"word": "furnish",
+"deriv": ""
+},
+{
+"word": "furthermore",
+"deriv": ""
+},
+{
+"word": "fury",
+"deriv": "(furious)"
+},
+{
+"word": "fuse",
+"deriv": ""
+},
+{
+"word": "gallery",
+"deriv": ""
+},
+{
+"word": "gamble",
+"deriv": ""
+},
+{
+"word": "gang",
+"deriv": ""
+},
+{
+"word": "gap",
+"deriv": ""
+},
+{
+"word": "gasoline",
+"deriv": "/ petrol"
+},
+{
+"word": "gaze",
+"deriv": ""
+},
+{
+"word": "gender",
+"deriv": ""
+},
+{
+"word": "gene",
+"deriv": "(genetic)"
+},
+{
+"word": "generate",
+"deriv": "(generation)"
+},
+{
+"word": "genius",
+"deriv": ""
+},
+{
+"word": "genuine",
+"deriv": ""
+},
+{
+"word": "geography",
+"deriv": ""
+},
+{
+"word": "geology",
+"deriv": ""
+},
+{
+"word": "glare",
+"deriv": ""
+},
+{
+"word": "globe",
+"deriv": "(global)"
+},
+{
+"word": "glow",
+"deriv": ""
+},
+{
+"word": "graduate",
+"deriv": ""
+},
+{
+"word": "grain",
+"deriv": ""
+},
+{
+"word": "grasp",
+"deriv": ""
+},
+{
+"word": "grave",
+"deriv": ""
+},
+{
+"word": "greed",
+"deriv": ""
+},
+{
+"word": "grief",
+"deriv": ""
+},
+{
+"word": "grip",
+"deriv": ""
+},
+{
+"word": "gross",
+"deriv": ""
+},
+{
+"word": "guardian",
+"deriv": ""
+},
+{
+"word": "guideline",
+"deriv": ""
+},
+{
+"word": "gulf",
+"deriv": ""
+},
+{
+"word": "gymnasium",
+"deriv": "/ gym"
+},
+{
+"word": "halt",
+"deriv": ""
+},
+{
+"word": "hammer",
+"deriv": ""
+},
+{
+"word": "handicap",
+"deriv": ""
+},
+{
+"word": "harbor",
+"deriv": "/ harbour"
+},
+{
+"word": "harmony",
+"deriv": "(harmonious)"
+},
+{
+"word": "harsh",
+"deriv": ""
+},
+{
+"word": "harvest",
+"deriv": ""
+},
+{
+"word": "haunt",
+"deriv": ""
+},
+{
+"word": "hazard",
+"deriv": ""
+},
+{
+"word": "headquarters",
+"deriv": ""
+},
+{
+"word": "heal",
+"deriv": ""
+},
+{
+"word": "heel",
+"deriv": ""
+},
+{
+"word": "heir",
+"deriv": ""
+},
+{
+"word": "hence",
+"deriv": ""
+},
+{
+"word": "heritage",
+"deriv": ""
+},
+{
+"word": "hierarchy",
+"deriv": ""
+},
+{
+"word": "highlight",
+"deriv": ""
+},
+{
+"word": "holy",
+"deriv": ""
+},
+{
+"word": "hook",
+"deriv": ""
+},
+{
+"word": "horizon",
+"deriv": ""
+},
+{
+"word": "horror",
+"deriv": ""
+},
+{
+"word": "host",
+"deriv": ""
+},
+{
+"word": "hostile",
+"deriv": ""
+},
+{
+"word": "household",
+"deriv": ""
+},
+{
+"word": "hut",
+"deriv": ""
+},
+{
+"word": "hypothesis",
+"deriv": ""
+},
+{
+"word": "ideal",
+"deriv": ""
+},
+{
+"word": "identical",
+"deriv": ""
+},
+{
+"word": "ideology",
+"deriv": ""
+},
+{
+"word": "illude",
+"deriv": "(illusion)"
+},
+{
+"word": "imitate",
+"deriv": ""
+},
+{
+"word": "immense",
+"deriv": ""
+},
+{
+"word": "immigrate",
+"deriv": ""
+},
+{
+"word": "immune",
+"deriv": ""
+},
+{
+"word": "impact",
+"deriv": ""
+},
+{
+"word": "imperial",
+"deriv": ""
+},
+{
+"word": "implement",
+"deriv": ""
+},
+{
+"word": "imply",
+"deriv": ""
+},
+{
+"word": "import",
+"deriv": "(importance, important)"
+},
+{
+"word": "impose",
+"deriv": ""
+},
+{
+"word": "incentive",
+"deriv": ""
+},
+{
+"word": "incident",
+"deriv": ""
+},
+{
+"word": "incline",
+"deriv": ""
+},
+{
+"word": "incorporate",
+"deriv": ""
+},
+{
+"word": "index",
+"deriv": ""
+},
+{
+"word": "induce",
+"deriv": ""
+},
+{
+"word": "infant",
+"deriv": ""
+},
+{
+"word": "infect",
+"deriv": ""
+},
+{
+"word": "infer",
+"deriv": "(inference)"
+},
+{
+"word": "inflate",
+"deriv": ""
+},
+{
+"word": "ingredient",
+"deriv": ""
+},
+{
+"word": "inhabit",
+"deriv": ""
+},
+{
+"word": "inherent",
+"deriv": ""
+},
+{
+"word": "inhibit",
+"deriv": ""
+},
+{
+"word": "initial",
+"deriv": ""
+},
+{
+"word": "inject",
+"deriv": ""
+},
+{
+"word": "inn",
+"deriv": ""
+},
+{
+"word": "innovate",
+"deriv": ""
+},
+{
+"word": "input",
+"deriv": ""
+},
+{
+"word": "inquire",
+"deriv": "/ enquire"
+},
+{
+"word": "insect",
+"deriv": ""
+},
+{
+"word": "insert",
+"deriv": ""
+},
+{
+"word": "insight",
+"deriv": ""
+},
+{
+"word": "inspire",
+"deriv": ""
+},
+{
+"word": "install",
+"deriv": ""
+},
+{
+"word": "instinct",
+"deriv": ""
+},
+{
+"word": "institute",
+"deriv": "(institution)"
+},
+{
+"word": "insult",
+"deriv": ""
+},
+{
+"word": "integrate",
+"deriv": ""
+},
+{
+"word": "intellect",
+"deriv": "(intellectual)"
+},
+{
+"word": "intelligent",
+"deriv": ""
+},
+{
+"word": "interfere",
+"deriv": ""
+},
+{
+"word": "interior",
+"deriv": ""
+},
+{
+"word": "intermediate",
+"deriv": ""
+},
+{
+"word": "interpret",
+"deriv": ""
+},
+{
+"word": "interval",
+"deriv": ""
+},
+{
+"word": "intervene",
+"deriv": ""
+},
+{
+"word": "intimate",
+"deriv": ""
+},
+{
+"word": "intrigue",
+"deriv": ""
+},
+{
+"word": "invade",
+"deriv": ""
+},
+{
+"word": "irony",
+"deriv": ""
+},
+{
+"word": "irritate",
+"deriv": ""
+},
+{
+"word": "isolate",
+"deriv": ""
+},
+{
+"word": "jail",
+"deriv": ""
+},
+{
+"word": "jar",
+"deriv": ""
+},
+{
+"word": "jog",
+"deriv": ""
+},
+{
+"word": "joint",
+"deriv": ""
+},
+{
+"word": "journal",
+"deriv": ""
+},
+{
+"word": "jury",
+"deriv": ""
+},
+{
+"word": "keen",
+"deriv": ""
+},
+{
+"word": "kit",
+"deriv": ""
+},
+{
+"word": "knight",
+"deriv": ""
+},
+{
+"word": "knot",
+"deriv": ""
+},
+{
+"word": "ladder",
+"deriv": ""
+},
+{
+"word": "landscape",
+"deriv": ""
+},
+{
+"word": "lap",
+"deriv": ""
+},
+{
+"word": "latter",
+"deriv": ""
+},
+{
+"word": "launch",
+"deriv": ""
+},
+{
+"word": "laundry",
+"deriv": ""
+},
+{
+"word": "leak",
+"deriv": ""
+},
+{
+"word": "lease",
+"deriv": ""
+},
+{
+"word": "lecture",
+"deriv": ""
+},
+{
+"word": "legend",
+"deriv": ""
+},
+{
+"word": "legislate",
+"deriv": ""
+},
+{
+"word": "legitimate",
+"deriv": ""
+},
+{
+"word": "leisure",
+"deriv": ""
+},
+{
+"word": "liberal",
+"deriv": ""
+},
+{
+"word": "liberty",
+"deriv": ""
+},
+{
+"word": "likewise",
+"deriv": ""
+},
+{
+"word": "linguistic",
+"deriv": ""
+},
+{
+"word": "literature",
+"deriv": ""
+},
+{
+"word": "logic",
+"deriv": ""
+},
+{
+"word": "lone",
+"deriv": ""
+},
+{
+"word": "loyal",
+"deriv": ""
+},
+{
+"word": "lump",
+"deriv": ""
+},
+{
+"word": "luxury",
+"deriv": ""
+},
+{
+"word": "magnificent",
+"deriv": ""
+},
+{
+"word": "manifest",
+"deriv": ""
+},
+{
+"word": "manipulate",
+"deriv": ""
+},
+{
+"word": "margin",
+"deriv": ""
+},
+{
+"word": "marine",
+"deriv": ""
+},
+{
+"word": "mature",
+"deriv": ""
+},
+{
+"word": "mayor",
+"deriv": ""
+},
+{
+"word": "meanwhile",
+"deriv": ""
+},
+{
+"word": "mechanic",
+"deriv": ""
+},
+{
+"word": "mechanism",
+"deriv": ""
+},
+{
+"word": "mediate",
+"deriv": ""
+},
+{
+"word": "medieval",
+"deriv": ""
+},
+{
+"word": "merchant",
+"deriv": ""
+},
+{
+"word": "mere",
+"deriv": ""
+},
+{
+"word": "merge",
+"deriv": ""
+},
+{
+"word": "merit",
+"deriv": ""
+},
+{
+"word": "metropolitan",
+"deriv": ""
+},
+{
+"word": "migrate",
+"deriv": "(migrant)"
+},
+{
+"word": "mild",
+"deriv": ""
+},
+{
+"word": "mine",
+"deriv": "(miner)"
+},
+{
+"word": "mineral",
+"deriv": ""
+},
+{
+"word": "minimal",
+"deriv": ""
+},
+{
+"word": "minimum",
+"deriv": ""
+},
+{
+"word": "ministry",
+"deriv": ""
+},
+{
+"word": "miracle",
+"deriv": ""
+},
+{
+"word": "missile",
+"deriv": ""
+},
+{
+"word": "mobile",
+"deriv": ""
+},
+{
+"word": "mock",
+"deriv": ""
+},
+{
+"word": "mode",
+"deriv": ""
+},
+{
+"word": "modify",
+"deriv": ""
+},
+{
+"word": "moderate",
+"deriv": ""
+},
+{
+"word": "modest",
+"deriv": ""
+},
+{
+"word": "moist",
+"deriv": "(moisture)"
+},
+{
+"word": "molecule",
+"deriv": ""
+},
+{
+"word": "monster",
+"deriv": ""
+},
+{
+"word": "monument",
+"deriv": ""
+},
+{
+"word": "mortal",
+"deriv": ""
+},
+{
+"word": "motive",
+"deriv": ""
+},
+{
+"word": "multiple",
+"deriv": ""
+},
+{
+"word": "murder",
+"deriv": ""
+},
+{
+"word": "mutual",
+"deriv": ""
+},
+{
+"word": "myth",
+"deriv": ""
+},
+{
+"word": "naive",
+"deriv": ""
+},
+{
+"word": "naked",
+"deriv": ""
+},
+{
+"word": "narrate",
+"deriv": ""
+},
+{
+"word": "nasty",
+"deriv": ""
+},
+{
+"word": "needle",
+"deriv": ""
+},
+{
+"word": "negate",
+"deriv": "(negative)"
+},
+{
+"word": "neglect",
+"deriv": ""
+},
+{
+"word": "negotiate",
+"deriv": ""
+},
+{
+"word": "nephew",
+"deriv": ""
+},
+{
+"word": "network",
+"deriv": ""
+},
+{
+"word": "neutral",
+"deriv": ""
+},
+{
+"word": "nevertheless",
+"deriv": ""
+},
+{
+"word": "nightmare",
+"deriv": ""
+},
+{
+"word": "noble",
+"deriv": ""
+},
+{
+"word": "nominate",
+"deriv": ""
+},
+{
+"word": "nonetheless",
+"deriv": ""
+},
+{
+"word": "norm",
+"deriv": "(normal)"
+},
+{
+"word": "novel",
+"deriv": ""
+},
+{
+"word": "nuclear",
+"deriv": ""
+},
+{
+"word": "numerous",
+"deriv": ""
+},
+{
+"word": "obey",
+"deriv": ""
+},
+{
+"word": "oblige",
+"deriv": ""
+},
+{
+"word": "obsess",
+"deriv": ""
+},
+{
+"word": "obtain",
+"deriv": ""
+},
+{
+"word": "occupy",
+"deriv": "(occupation)"
+},
+{
+"word": "offend",
+"deriv": ""
+},
+{
+"word": "opportune",
+"deriv": "(opportunity)"
+},
+{
+"word": "opt",
+"deriv": "(option)"
+},
+{
+"word": "optimist",
+"deriv": ""
+},
+{
+"word": "oral",
+"deriv": ""
+},
+{
+"word": "orbit",
+"deriv": ""
+},
+{
+"word": "organ",
+"deriv": "(organic, organize / organise)"
+},
+{
+"word": "orient",
+"deriv": "(orientation)"
+},
+{
+"word": "origin",
+"deriv": "(original)"
+},
+{
+"word": "outcome",
+"deriv": ""
+},
+{
+"word": "outline",
+"deriv": ""
+},
+{
+"word": "output",
+"deriv": ""
+},
+{
+"word": "outrage",
+"deriv": ""
+},
+{
+"word": "outstanding",
+"deriv": ""
+},
+{
+"word": "overcome",
+"deriv": ""
+},
+{
+"word": "overhead",
+"deriv": ""
+},
+{
+"word": "overlap",
+"deriv": ""
+},
+{
+"word": "overlook",
+"deriv": ""
+},
+{
+"word": "overnight",
+"deriv": ""
+},
+{
+"word": "oversea",
+"deriv": "/ overseas"
+},
+{
+"word": "overwhelm",
+"deriv": ""
+},
+{
+"word": "owe",
+"deriv": ""
+},
+{
+"word": "pace",
+"deriv": ""
+},
+{
+"word": "pad",
+"deriv": ""
+},
+{
+"word": "pale",
+"deriv": ""
+},
+{
+"word": "palm",
+"deriv": ""
+},
+{
+"word": "panel",
+"deriv": ""
+},
+{
+"word": "parallel",
+"deriv": ""
+},
+{
+"word": "parliament",
+"deriv": ""
+},
+{
+"word": "participate",
+"deriv": ""
+},
+{
+"word": "particle",
+"deriv": ""
+},
+{
+"word": "passage",
+"deriv": ""
+},
+{
+"word": "passion",
+"deriv": ""
+},
+{
+"word": "passport",
+"deriv": ""
+},
+{
+"word": "pat",
+"deriv": ""
+},
+{
+"word": "patch",
+"deriv": ""
+},
+{
+"word": "patent",
+"deriv": ""
+},
+{
+"word": "pave",
+"deriv": ""
+},
+{
+"word": "peak",
+"deriv": ""
+},
+{
+"word": "peasant",
+"deriv": ""
+},
+{
+"word": "peel",
+"deriv": ""
+},
+{
+"word": "peer",
+"deriv": ""
+},
+{
+"word": "penalty",
+"deriv": ""
+},
+{
+"word": "perceive",
+"deriv": "(perception)"
+},
+{
+"word": "permanent",
+"deriv": ""
+},
+{
+"word": "permit",
+"deriv": ""
+},
+{
+"word": "persist",
+"deriv": ""
+},
+{
+"word": "perspective",
+"deriv": ""
+},
+{
+"word": "persuade",
+"deriv": ""
+},
+{
+"word": "phase",
+"deriv": ""
+},
+{
+"word": "phenomenon",
+"deriv": ""
+},
+{
+"word": "philosophy",
+"deriv": ""
+},
+{
+"word": "phrase",
+"deriv": ""
+},
+{
+"word": "physics",
+"deriv": ""
+},
+{
+"word": "pill",
+"deriv": ""
+},
+{
+"word": "pinch",
+"deriv": ""
+},
+{
+"word": "pioneer",
+"deriv": ""
+},
+{
+"word": "platform",
+"deriv": ""
+},
+{
+"word": "plot",
+"deriv": ""
+},
+{
+"word": "polish",
+"deriv": ""
+},
+{
+"word": "poll",
+"deriv": ""
+},
+{
+"word": "populate",
+"deriv": "(population)"
+},
+{
+"word": "portion",
+"deriv": ""
+},
+{
+"word": "portrait",
+"deriv": ""
+},
+{
+"word": "pose",
+"deriv": "(dispose)"
+},
+{
+"word": "posit",
+"deriv": "(position, positive)"
+},
+{
+"word": "praise",
+"deriv": ""
+},
+{
+"word": "preach",
+"deriv": ""
+},
+{
+"word": "precede",
+"deriv": "(unprecedented)"
+},
+{
+"word": "precise",
+"deriv": ""
+},
+{
+"word": "predator",
+"deriv": ""
+},
+{
+"word": "prejudice",
+"deriv": ""
+},
+{
+"word": "premium",
+"deriv": ""
+},
+{
+"word": "prescribe",
+"deriv": ""
+},
+{
+"word": "preserve",
+"deriv": ""
+},
+{
+"word": "preside",
+"deriv": "(president)"
+},
+{
+"word": "presume",
+"deriv": ""
+},
+{
+"word": "prevail",
+"deriv": ""
+},
+{
+"word": "prey",
+"deriv": ""
+},
+{
+"word": "priest",
+"deriv": ""
+},
+{
+"word": "primitive",
+"deriv": ""
+},
+{
+"word": "principal",
+"deriv": ""
+},
+{
+"word": "prior",
+"deriv": ""
+},
+{
+"word": "privilege",
+"deriv": ""
+},
+{
+"word": "professor",
+"deriv": ""
+},
+{
+"word": "profile",
+"deriv": ""
+},
+{
+"word": "profound",
+"deriv": ""
+},
+{
+"word": "prohibit",
+"deriv": ""
+},
+{
+"word": "prominent",
+"deriv": ""
+},
+{
+"word": "prompt",
+"deriv": ""
+},
+{
+"word": "proof",
+"deriv": ""
+},
+{
+"word": "proportion",
+"deriv": ""
+},
+{
+"word": "prospect",
+"deriv": ""
+},
+{
+"word": "prosper",
+"deriv": ""
+},
+{
+"word": "protein",
+"deriv": ""
+},
+{
+"word": "province",
+"deriv": ""
+},
+{
+"word": "provoke",
+"deriv": ""
+},
+{
+"word": "psychology",
+"deriv": ""
+},
+{
+"word": "publish",
+"deriv": "(publisher)"
+},
+{
+"word": "pupil",
+"deriv": ""
+},
+{
+"word": "pursue",
+"deriv": ""
+},
+{
+"word": "quantity",
+"deriv": ""
+},
+{
+"word": "questionnaire",
+"deriv": ""
+},
+{
+"word": "rage",
+"deriv": ""
+},
+{
+"word": "rally",
+"deriv": ""
+},
+{
+"word": "random",
+"deriv": ""
+},
+{
+"word": "rank",
+"deriv": ""
+},
+{
+"word": "rational",
+"deriv": ""
+},
+{
+"word": "raw",
+"deriv": ""
+},
+{
+"word": "rear",
+"deriv": ""
+},
+{
+"word": "rebel",
+"deriv": ""
+},
+{
+"word": "recruit",
+"deriv": ""
+},
+{
+"word": "refine",
+"deriv": ""
+},
+{
+"word": "reform",
+"deriv": ""
+},
+{
+"word": "refrigerate",
+"deriv": "(refrigerator)"
+},
+{
+"word": "regret",
+"deriv": ""
+},
+{
+"word": "regulate",
+"deriv": ""
+},
+{
+"word": "reinforce",
+"deriv": ""
+},
+{
+"word": "reject",
+"deriv": ""
+},
+{
+"word": "relevant",
+"deriv": ""
+},
+{
+"word": "relieve",
+"deriv": ""
+},
+{
+"word": "religion",
+"deriv": ""
+},
+{
+"word": "reluctant",
+"deriv": ""
+},
+{
+"word": "remedy",
+"deriv": ""
+},
+{
+"word": "remote",
+"deriv": ""
+},
+{
+"word": "republic",
+"deriv": ""
+},
+{
+"word": "reputation",
+"deriv": ""
+},
+{
+"word": "rescue",
+"deriv": ""
+},
+{
+"word": "resemble",
+"deriv": ""
+},
+{
+"word": "reside",
+"deriv": "(resident)"
+},
+{
+"word": "resign",
+"deriv": ""
+},
+{
+"word": "resolve",
+"deriv": ""
+},
+{
+"word": "resort",
+"deriv": ""
+},
+{
+"word": "restore",
+"deriv": ""
+},
+{
+"word": "restrain",
+"deriv": ""
+},
+{
+"word": "restrict",
+"deriv": ""
+},
+{
+"word": "resume",
+"deriv": ""
+},
+{
+"word": "retail",
+"deriv": ""
+},
+{
+"word": "retain",
+"deriv": ""
+},
+{
+"word": "retreat",
+"deriv": ""
+},
+{
+"word": "reveal",
+"deriv": ""
+},
+{
+"word": "revenge",
+"deriv": ""
+},
+{
+"word": "reverse",
+"deriv": ""
+},
+{
+"word": "revise",
+"deriv": ""
+},
+{
+"word": "revive",
+"deriv": ""
+},
+{
+"word": "revolution",
+"deriv": ""
+},
+{
+"word": "reward",
+"deriv": ""
+},
+{
+"word": "rid",
+"deriv": ""
+},
+{
+"word": "ridicule",
+"deriv": "(ridiculous)"
+},
+{
+"word": "riot",
+"deriv": ""
+},
+{
+"word": "rival",
+"deriv": ""
+},
+{
+"word": "roar",
+"deriv": ""
+},
+{
+"word": "roast",
+"deriv": ""
+},
+{
+"word": "rod",
+"deriv": ""
+},
+{
+"word": "romantic",
+"deriv": ""
+},
+{
+"word": "rot",
+"deriv": ""
+},
+{
+"word": "routine",
+"deriv": ""
+},
+{
+"word": "rumor",
+"deriv": "/ rumour"
+},
+{
+"word": "rural",
+"deriv": ""
+},
+{
+"word": "sack",
+"deriv": ""
+},
+{
+"word": "sacred",
+"deriv": ""
+},
+{
+"word": "sacrifice",
+"deriv": ""
+},
+{
+"word": "scan",
+"deriv": ""
+},
+{
+"word": "scandal",
+"deriv": ""
+},
+{
+"word": "scarce",
+"deriv": ""
+},
+{
+"word": "scatter",
+"deriv": ""
+},
+{
+"word": "scheme",
+"deriv": ""
+},
+{
+"word": "scholar",
+"deriv": ""
+},
+{
+"word": "scope",
+"deriv": ""
+},
+{
+"word": "scramble",
+"deriv": ""
+},
+{
+"word": "screw",
+"deriv": ""
+},
+{
+"word": "sculpt",
+"deriv": "(sculpture)"
+},
+{
+"word": "sector",
+"deriv": ""
+},
+{
+"word": "seize",
+"deriv": ""
+},
+{
+"word": "sensible",
+"deriv": ""
+},
+{
+"word": "sentiment",
+"deriv": ""
+},
+{
+"word": "sequence",
+"deriv": ""
+},
+{
+"word": "severe",
+"deriv": ""
+},
+{
+"word": "sigh",
+"deriv": ""
+},
+{
+"word": "silent",
+"deriv": ""
+},
+{
+"word": "simulate",
+"deriv": ""
+},
+{
+"word": "simultaneous",
+"deriv": ""
+},
+{
+"word": "sin",
+"deriv": ""
+},
+{
+"word": "slice",
+"deriv": ""
+},
+{
+"word": "slim",
+"deriv": ""
+},
+{
+"word": "slope",
+"deriv": ""
+},
+{
+"word": "sneak",
+"deriv": ""
+},
+{
+"word": "soak",
+"deriv": ""
+},
+{
+"word": "sociology",
+"deriv": ""
+},
+{
+"word": "sole",
+"deriv": ""
+},
+{
+"word": "sophisticate",
+"deriv": ""
+},
+{
+"word": "span",
+"deriv": ""
+},
+{
+"word": "spark",
+"deriv": ""
+},
+{
+"word": "spectacle",
+"deriv": ""
+},
+{
+"word": "spectrum",
+"deriv": ""
+},
+{
+"word": "sphere",
+"deriv": ""
+},
+{
+"word": "spill",
+"deriv": ""
+},
+{
+"word": "spit",
+"deriv": ""
+},
+{
+"word": "splash",
+"deriv": ""
+},
+{
+"word": "split",
+"deriv": ""
+},
+{
+"word": "spouse",
+"deriv": ""
+},
+{
+"word": "squeeze",
+"deriv": ""
+},
+{
+"word": "stack",
+"deriv": ""
+},
+{
+"word": "stain",
+"deriv": ""
+},
+{
+"word": "starve",
+"deriv": ""
+},
+{
+"word": "statistic",
+"deriv": ""
+},
+{
+"word": "statue",
+"deriv": ""
+},
+{
+"word": "status",
+"deriv": ""
+},
+{
+"word": "steep",
+"deriv": ""
+},
+{
+"word": "stem",
+"deriv": ""
+},
+{
+"word": "stiff",
+"deriv": ""
+},
+{
+"word": "stimulate",
+"deriv": ""
+},
+{
+"word": "stitch",
+"deriv": ""
+},
+{
+"word": "strain",
+"deriv": ""
+},
+{
+"word": "strict",
+"deriv": ""
+},
+{
+"word": "strip",
+"deriv": ""
+},
+{
+"word": "stripe",
+"deriv": ""
+},
+{
+"word": "stroke",
+"deriv": ""
+},
+{
+"word": "submarine",
+"deriv": ""
+},
+{
+"word": "submit",
+"deriv": "(submission)"
+},
+{
+"word": "subscribe",
+"deriv": ""
+},
+{
+"word": "substance",
+"deriv": "(substantial)"
+},
+{
+"word": "substitute",
+"deriv": ""
+},
+{
+"word": "subtle",
+"deriv": ""
+},
+{
+"word": "suburb",
+"deriv": ""
+},
+{
+"word": "suck",
+"deriv": ""
+},
+{
+"word": "suffice",
+"deriv": "(sufficient)"
+},
+{
+"word": "suicide",
+"deriv": ""
+},
+{
+"word": "suite",
+"deriv": ""
+},
+{
+"word": "summit",
+"deriv": ""
+},
+{
+"word": "superb",
+"deriv": ""
+},
+{
+"word": "superior",
+"deriv": ""
+},
+{
+"word": "supervise",
+"deriv": ""
+},
+{
+"word": "supplement",
+"deriv": ""
+},
+{
+"word": "surgery",
+"deriv": ""
+},
+{
+"word": "surrender",
+"deriv": ""
+},
+{
+"word": "suspend",
+"deriv": ""
+},
+{
+"word": "sustain",
+"deriv": ""
+},
+{
+"word": "swear",
+"deriv": ""
+},
+{
+"word": "sweat",
+"deriv": ""
+},
+{
+"word": "swell",
+"deriv": ""
+},
+{
+"word": "swift",
+"deriv": ""
+},
+{
+"word": "symbol",
+"deriv": ""
+},
+{
+"word": "sympathy",
+"deriv": ""
+},
+{
+"word": "symphony",
+"deriv": ""
+},
+{
+"word": "symptom",
+"deriv": ""
+},
+{
+"word": "tackle",
+"deriv": ""
+},
+{
+"word": "tag",
+"deriv": ""
+},
+{
+"word": "talent",
+"deriv": ""
+},
+{
+"word": "task",
+"deriv": ""
+},
+{
+"word": "tease",
+"deriv": ""
+},
+{
+"word": "telegraph",
+"deriv": ""
+},
+{
+"word": "temporary",
+"deriv": ""
+},
+{
+"word": "tempt",
+"deriv": ""
+},
+{
+"word": "tenant",
+"deriv": ""
+},
+{
+"word": "tender",
+"deriv": ""
+},
+{
+"word": "terminal",
+"deriv": ""
+},
+{
+"word": "terminate",
+"deriv": ""
+},
+{
+"word": "terrace",
+"deriv": ""
+},
+{
+"word": "terrific",
+"deriv": ""
+},
+{
+"word": "territory",
+"deriv": ""
+},
+{
+"word": "terror",
+"deriv": "(terrorist)"
+},
+{
+"word": "theme",
+"deriv": ""
+},
+{
+"word": "therapy",
+"deriv": ""
+},
+{
+"word": "thorough",
+"deriv": ""
+},
+{
+"word": "thread",
+"deriv": ""
+},
+{
+"word": "thrill",
+"deriv": ""
+},
+{
+"word": "tick",
+"deriv": ""
+},
+{
+"word": "timber",
+"deriv": ""
+},
+{
+"word": "tissue",
+"deriv": ""
+},
+{
+"word": "torture",
+"deriv": ""
+},
+{
+"word": "toss",
+"deriv": ""
+},
+{
+"word": "toxic",
+"deriv": ""
+},
+{
+"word": "tragic",
+"deriv": ""
+},
+{
+"word": "trail",
+"deriv": ""
+},
+{
+"word": "transact",
+"deriv": ""
+},
+{
+"word": "transform",
+"deriv": ""
+},
+{
+"word": "transition",
+"deriv": ""
+},
+{
+"word": "translate",
+"deriv": ""
+},
+{
+"word": "transmit",
+"deriv": ""
+},
+{
+"word": "treasure",
+"deriv": ""
+},
+{
+"word": "treaty",
+"deriv": ""
+},
+{
+"word": "tremendous",
+"deriv": ""
+},
+{
+"word": "trend",
+"deriv": ""
+},
+{
+"word": "tribe",
+"deriv": ""
+},
+{
+"word": "trigger",
+"deriv": ""
+},
+{
+"word": "trim",
+"deriv": ""
+},
+{
+"word": "triumph",
+"deriv": ""
+},
+{
+"word": "troop",
+"deriv": ""
+},
+{
+"word": "tube",
+"deriv": ""
+},
+{
+"word": "tunnel",
+"deriv": ""
+},
+{
+"word": "turnover",
+"deriv": ""
+},
+{
+"word": "ultimate",
+"deriv": ""
+},
+{
+"word": "undergo",
+"deriv": ""
+},
+{
+"word": "underlie",
+"deriv": ""
+},
+{
+"word": "undermine",
+"deriv": ""
+},
+{
+"word": "undertake",
+"deriv": ""
+},
+{
+"word": "unify",
+"deriv": ""
+},
+{
+"word": "unique",
+"deriv": ""
+},
+{
+"word": "update",
+"deriv": ""
+},
+{
+"word": "upward",
+"deriv": "/ upwards"
+},
+{
+"word": "urban",
+"deriv": ""
+},
+{
+"word": "urge",
+"deriv": "(urgent)"
+},
+{
+"word": "utilize",
+"deriv": "/ utilise"
+},
+{
+"word": "utter",
+"deriv": ""
+},
+{
+"word": "vacate",
+"deriv": "(vacation)"
+},
+{
+"word": "vaccine",
+"deriv": ""
+},
+{
+"word": "vacuum",
+"deriv": ""
+},
+{
+"word": "vague",
+"deriv": ""
+},
+{
+"word": "valid",
+"deriv": ""
+},
+{
+"word": "vanish",
+"deriv": ""
+},
+{
+"word": "vast",
+"deriv": ""
+},
+{
+"word": "venture",
+"deriv": ""
+},
+{
+"word": "verb",
+"deriv": "(verbal)"
+},
+{
+"word": "verse",
+"deriv": ""
+},
+{
+"word": "versus",
+"deriv": ""
+},
+{
+"word": "vertical",
+"deriv": ""
+},
+{
+"word": "vessel",
+"deriv": ""
+},
+{
+"word": "via",
+"deriv": ""
+},
+{
+"word": "vice",
+"deriv": ""
+},
+{
+"word": "victory",
+"deriv": ""
+},
+{
+"word": "vigor",
+"deriv": "(vigorous)"
+},
+{
+"word": "virgin",
+"deriv": ""
+},
+{
+"word": "virtue",
+"deriv": "(virtual)"
+},
+{
+"word": "virus",
+"deriv": ""
+},
+{
+"word": "visible",
+"deriv": ""
+},
+{
+"word": "visual",
+"deriv": ""
+},
+{
+"word": "vital",
+"deriv": ""
+},
+{
+"word": "vivid",
+"deriv": ""
+},
+{
+"word": "vocabulary",
+"deriv": ""
+},
+{
+"word": "vocation",
+"deriv": ""
+},
+{
+"word": "wander",
+"deriv": ""
+},
+{
+"word": "warehouse",
+"deriv": ""
+},
+{
+"word": "warrant",
+"deriv": ""
+},
+{
+"word": "wealth",
+"deriv": ""
+},
+{
+"word": "weave",
+"deriv": ""
+},
+{
+"word": "weed",
+"deriv": ""
+},
+{
+"word": "weird",
+"deriv": ""
+},
+{
+"word": "welfare",
+"deriv": ""
+},
+{
+"word": "wheat",
+"deriv": ""
+},
+{
+"word": "whereas",
+"deriv": ""
+},
+{
+"word": "whip",
+"deriv": ""
+},
+{
+"word": "wicked",
+"deriv": ""
+},
+{
+"word": "wit",
+"deriv": ""
+},
+{
+"word": "withdraw",
+"deriv": ""
+},
+{
+"word": "witness",
+"deriv": ""
+},
+{
+"word": "worship",
+"deriv": ""
+},
+{
+"word": "wreck",
+"deriv": ""
+},
+{
+"word": "yield",
+"deriv": ""
+},
+{
+"word": "zone",
+"deriv": ""
+}
+]
+}

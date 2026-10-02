@@ -77,10 +77,11 @@ export function decorThemeFor(category: string, subcategory?: string | null): st
   return DECOR_BY_CATEGORY[category] ?? null;
 }
 
-/** 주제 하나의 후보 단어(단어 탭만, 레벨 필터 적용). */
+/** 주제 하나의 후보 단어(단어 탭만, 레벨 필터 적용). "전체"는 초등(Lv.1~4)만 — 중학(5)·고등(6) 단어는 그림이 거의
+ * 없는 글자형이라, 그 레벨을 직접 골랐을 때만 나온다(2026-10-02 교육부 3000 확장). */
 export function topicEntries(entries: WordBankEntry[], category: string, level: number | 'all'): WordBankEntry[] {
   return entries
-    .filter((e) => !isIdiomEntry(e) && entryInCategory(e, category) && (level === 'all' || e.level === level))
+    .filter((e) => !isIdiomEntry(e) && entryInCategory(e, category) && (level === 'all' ? e.level == null || e.level <= 4 : e.level === level))
     .sort((a, b) => a.word.localeCompare(b.word));
 }
 
