@@ -5314,3 +5314,27 @@
   cursor: grabbing !important;
   user-select: none;
 }
+
+/* 장보기 게임: 목록에 없는 물건을 눌렀을 때 좌우로 흔들린다 */
+@keyframes shop-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* 장보기 게임: 가게로 걸어 들어가는 느낌(통로가 앞으로 다가온다) · 물건이 담길 때 카트가 살짝 튄다 */
+@keyframes shop-enter {
+  from { transform: translateZ(-22cqw); opacity: 0.4; }
+  to { transform: translateZ(0); opacity: 1; }
+}
+@keyframes shop-bump {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(6%); }
+  100% { transform: translateY(0); }
+}
+
+/* 장보기 그림 가게: 가게 안으로 한 걸음 들어가는 느낌 */
+@keyframes shop-zoom {
+  from { transform: scale(1.14); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}

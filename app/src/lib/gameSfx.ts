@@ -31,6 +31,7 @@ export const GAME_SFX = {
   airplane: { fly: 2004, hit: 2035, wrongHit: 2059, crash: 3091, finish: 5037 },
   labeleddiagram: { pick: 6001, correct: 4015, wrong: 4025, finish: 5037 },
   imagequiz: { reveal: 4041, correct: 4015, wrong: 4025, finish: 5037 },
+  shopping: { reveal: 4041, pick: 6001, correct: 4015, wrong: 4025, finish: 5037 },
   gameshowquiz: { bgm: 8001, question: 5030, correct: 4015, wrong: 4025, bonus: 2037, fifty: 2028, win: 8007 },
   winlosequiz: { bgm: 8002, bet: 1037, correct: 2035, wrong: 2012, finish: 5054 },
   quizshow: {

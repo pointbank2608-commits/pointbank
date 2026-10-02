@@ -454,6 +454,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.quizshowName',
     descKey: 'gamesList.quizshowDesc',
   },
+  {
+    // 장보기(2026-10-02): 진열대의 단어 그림을 카트에 담으며 a / an / some 으로 말한다. 그림이 있는 낱말이 필요해 다른 게임으로 열기에서 빠진다.
+    type: 'shopping',
+    number: 37,
+    category: 'speaking',
+    minItems: 999,
+    icon: 'shopping_cart',
+    path: '/games/shopping',
+    cover: null,
+    nameKey: 'gamesList.shoppingName',
+    descKey: 'gamesList.shoppingDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -66,6 +66,12 @@ export interface GameContent {
  * 단어장으로 만들 수 없는 게임(수박 문장·명칭 다이어그램·수학)이나 재료가 모자라면 null.
  */
 export function buildGameContent(gameType: GameType, words: FullCardItem[]): GameContent | null {
+  // 장보기는 통째로 그린 마트 그림으로 시작하므로 단어가 없어도 만들어진다. 수업 단어 중 그림 있는 것은
+  // 같이 담아 두어, 설정에서 "내 단어장 가게"로 바꾸면 바로 그 낱말로 가게가 된다.
+  if (gameType === 'shopping') {
+    const shopItems = words.filter((w) => w.imageUrl).map((w) => ({ id: w.id, imageUrl: w.imageUrl as string, answer: w.word }));
+    return { items: words.map((w) => ({ id: w.id, label: w.word })), config: { shopItems, shopScene: 'market' } };
+  }
   if (words.length === 0) return null;
   const labelItems: GameItem[] = words.map((w) => ({ id: w.id, label: w.word }));
   const pairs = () => words.map((w) => ({ id: w.id, left: w.word, right: w.meaning }));

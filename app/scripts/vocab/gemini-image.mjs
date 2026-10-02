@@ -19,15 +19,23 @@ const imgDir = join(here, '..', '..', 'public', 'word-bank-images');
 
 const PROJECT = process.env.GCP_PROJECT ?? 'project-01c6d808-a517-4177-82f';
 const MODEL = process.env.GEMINI_IMAGE_MODEL ?? 'gemini-3.1-flash-image';
-const REFS = (process.env.STYLE_REFS ?? 'chair,dolphin,hug').split(',');
+const REFS = (process.env.STYLE_REFS ?? 'lean,muscle').split(',');
 const CONCURRENCY = Number(process.env.CONCURRENCY ?? 1); // 새 프로젝트는 분당 한도가 낮아(429) 기본은 하나씩
 
+// 참고 그림은 아이 한 명만 서 있는 두 장(lean·muscle) — 물건이 있는 그림을 주면 그 물건이 엉뚱한 단어에 끼어든다.
+// 사전 그림이 아닌 것(게임 배경 등)을 만들 때는 STYLE_TEXT·ASPECT 환경 변수로 지시문과 비율을 바꾼다.
+const ASPECT = process.env.ASPECT ?? '1:1';
 const STYLE =
-  'You are illustrating a children\'s English picture dictionary. Match the art style of the reference images EXACTLY: ' +
-  'soft 3D clay / plasticine look with visible sculpted texture, rounded chunky shapes, bright friendly colors, ' +
-  'warm soft lighting, cute characters with big round eyes and rosy cheeks, square 1:1 composition. ' +
-  'Show the subject clearly and large in the center so a 5-year-old instantly recognizes the word. ' +
-  'Absolutely NO text, letters, numbers, words, labels, signs or captions anywhere in the image.';
+  process.env.STYLE_TEXT ??
+  'You are illustrating an English picture dictionary for children. The two reference images show the ART STYLE ONLY: ' +
+  'soft matte 3D plasticine clay with sculpted texture; chunky toddler-like clay figures with a big round head about half of the body height, ' +
+  'short arms and legs, big round black eyes and rosy cheeks (adults have the same chunky clay-doll proportions, only a little taller); ' +
+  'a plain soft pastel background in one light warm color (cream, peach, soft yellow, light mint or light sky blue); warm soft lighting; square 1:1. ' +
+  'Do NOT copy the pose, clothes, hair or composition of the reference images, and do not add the reference children unless the scene needs children. ' +
+  'Objects and scenery must also look sculpted from clay (never photorealistic or painted) and be brightly and variously colored. ' +
+  'Show the idea clearly and large in the center. Vary the children: girls and boys, different hair colors and clothes. ' +
+  'Absolutely NO text, letters, numbers, words, labels, signs with writing, captions or speech bubbles anywhere in the image. ' +
+  'No apple, no clock, no bus, no backpack, no chair unless the scene explicitly asks for it.';
 
 function gcloudToken() {
   const gcloud = process.env.LOCALAPPDATA
@@ -43,9 +51,13 @@ if (!jobsPath || !outDir) {
 }
 const jobs = JSON.parse(readFileSync(jobsPath, 'utf8'));
 mkdirSync(outDir, { recursive: true });
-const refParts = REFS.map((w) => ({
-  inlineData: { mimeType: 'image/webp', data: readFileSync(join(imgDir, `${w}.webp`)).toString('base64') },
-}));
+// 참고 그림: 사전 그림 id(예: lean) 또는 파일 경로(예: C:/.../scene.png — 이미 만든 그림을 고쳐 그릴 때)
+const refParts = REFS.filter(Boolean).map((w) => {
+  const isPath = /[\/]/.test(w);
+  const file = isPath ? w : join(imgDir, `${w}.webp`);
+  const mimeType = file.endsWith('.png') ? 'image/png' : file.endsWith('.jpg') ? 'image/jpeg' : 'image/webp';
+  return { inlineData: { mimeType, data: readFileSync(file).toString('base64') } };
+});
 let token = gcloudToken();
 const url = `https://aiplatform.googleapis.com/v1/projects/${PROJECT}/locations/global/publishers/google/models/${MODEL}:generateContent`;
 
@@ -58,7 +70,7 @@ async function one(job) {
   if (existsSync(out)) return;
   const body = {
     contents: [{ role: 'user', parts: [...refParts, { text: `${STYLE}\n\nDraw: ${job.prompt}` }] }],
-    generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: '1:1' } },
+    generationConfig: { responseModalities: ['IMAGE'], imageConfig: { aspectRatio: ASPECT } },
   };
   for (let attempt = 1; attempt <= 5; attempt++) {
     const res = await fetch(url, {

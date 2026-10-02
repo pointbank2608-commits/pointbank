@@ -71,6 +71,7 @@ import WheelPage from './pages/WheelPage';
 import WinLoseQuizPage from './pages/WinLoseQuizPage';
 import WatermelonPage from './pages/WatermelonPage';
 import QuizShowPage from './pages/QuizShowPage';
+import ShoppingPage from './pages/ShoppingPage';
 import LiveJoinPage from './pages/LiveJoinPage';
 import WordSearchPage from './pages/WordSearchPage';
 import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
@@ -226,6 +227,7 @@ export default function App() {
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="/games/watermelon" element={<WatermelonPage />} />
             <Route path="/games/quizshow" element={<QuizShowPage />} />
+            <Route path="/games/shopping" element={<ShoppingPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -269,6 +271,7 @@ export default function App() {
             <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
             <Route path="/games/watermelon" element={<WatermelonPage />} />
             <Route path="/games/quizshow" element={<QuizShowPage />} />
+            <Route path="/games/shopping" element={<ShoppingPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

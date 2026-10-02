@@ -4,7 +4,7 @@
 이 문서 하나만 보면 된다(예전 `CURSOR_IMAGE_HANDOFF*.md`의 규격을 여기에 다시 적었고, **이 문서가 우선**이다).
 
 - 다시 만들 그림: **37장** (+ 숫자 27장은 사용자에게 물어본 뒤)
-- 새로 만들 그림: **1936장** (남은 1524장)
+- 새로 만들 그림: **1936장** (남은 895장)
 - 그리지 않는 단어: `death`, `suicide`, `murder`, `torture`, `abuse`, `terror` — 빈 자리로 둔다.
 
 ## 가장 중요한 규칙: 사과로 만들지 않는다
@@ -495,7 +495,7 @@
 | `let-s-go` | let's go | 표현 | 가자 |  | Let's go to the park. | 완료 |
 | `come-on` | come on | 표현 | 어서, 힘내 |  | Come on, let us play. | 완료 |
 
-## 5. 중학 추상어 (Lv.5) (730장, 남은 680장)
+## 5. 중학 추상어 (Lv.5) (730장, 남은 51장)
 
 | id | 단어 | 품사 | 뜻 | 장면(비어 있으면 참고 문장을 그대로 한 장면으로) | 참고 문장 | 만들어졌나 |
 |---|---|---|---|---|---|---|
@@ -549,636 +549,636 @@
 | `assess` | assess | 동사 | 평가하다 |  | Teachers assess students fairly. | 완료 |
 | `assign` | assign | 동사 | 맡기다, 배정하다 |  | The teacher assigned us homework. | 완료 |
 | `assist` | assist | 동사 | 돕다 |  | A nurse assists the doctor. | 완료 |
-| `associate` | associate | 동사 | 연관 짓다 |  | I associate summer with the beach. |  |
-| `assume` | assume | 동사 | 가정하다, 짐작하다 |  | I assume you are hungry. |  |
-| `atmosphere` | atmosphere | 명사 | 분위기, 대기 |  | The cafe has a warm atmosphere. |  |
-| `attack` | attack | 동사 | 공격하다 |  | The dog did not attack anyone. |  |
-| `attempt` | attempt | 명사 | 시도 |  | He passed on his second attempt. |  |
-| `attend` | attend | 동사 | 참석하다, 다니다 |  | I attend a middle school. |  |
-| `attention` | attention | 명사 | 주의, 관심 |  | Pay attention to the teacher. |  |
-| `attitude` | attitude | 명사 | 태도 |  | She has a positive attitude. |  |
-| `attract` | attract | 동사 | 끌다, 마음을 끌다 |  | Flowers attract bees. |  |
-| `automatic` | automatic | 형용사 | 자동의 |  | This is an automatic door. |  |
-| `average` | average | 명사 | 평균 |  | My average score is eighty. |  |
-| `avoid` | avoid | 동사 | 피하다 |  | Try to avoid junk food. |  |
-| `awake` | awake | 형용사 | 깨어 있는 |  | I was awake all night. |  |
-| `aware` | aware | 형용사 | 알고 있는 |  | Are you aware of the danger? |  |
-| `awkward` | awkward | 형용사 | 어색한, 서투른 |  | There was an awkward silence. |  |
-| `background` | background | 명사 | 배경 |  | The photo has a blue background. |  |
-| `bang` | bang | 명사 | 쾅 하는 소리 |  | The door closed with a bang. |  |
-| `bare` | bare | 형용사 | 벌거벗은, 맨 | 모래밭 위 맨발 두 개 | He walked on the sand with bare feet. |  |
-| `basis` | basis | 명사 | 기초, 근거 |  | Trust is the basis of friendship. |  |
-| `battle` | battle | 명사 | 전투 |  | The battle lasted three days. |  |
-| `beer` | beer | 명사 | 맥주 |  | Beer is a drink for adults. |  |
-| `beg` | beg | 동사 | 간청하다, 구걸하다 |  | The dog begged for food. |  |
-| `belief` | belief | 명사 | 믿음 |  | It is my belief that he is honest. |  |
-| `belong` | belong | 동사 | ~에 속하다 |  | This bag belongs to me. |  |
-| `beneath` | beneath | 전치사 | ~의 아래에 |  | The cat hid beneath the table. |  |
-| `benefit` | benefit | 명사 | 이익, 혜택 |  | Exercise has many benefits. |  |
-| `bet` | bet | 동사 | 내기하다, 장담하다 |  | I bet you will like this movie. |  |
-| `beyond` | beyond | 전치사 | ~너머에 |  | The village is beyond the hill. |  |
-| `billion` | billion | 수사 | 10억 |  | There are billions of stars. |  |
-| `bind` | bind | 동사 | 묶다 |  | Bind the sticks with a rope. |  |
-| `bit` | bit | 명사 | 조금, 작은 조각 |  | I am a bit tired. |  |
-| `blame` | blame | 동사 | 탓하다 |  | Don't blame others for your mistake. |  |
-| `bless` | bless | 동사 | 축복하다 |  | May God bless you. |  |
-| `blind` | blind | 형용사 | 눈이 먼, 보이지 않는 |  | The dog helps the blind man. |  |
-| `bomb` | bomb | 명사 | 폭탄 | 만화처럼 둥근 검은 폭탄과 짧은 심지(터지지 않은 모습, 사람 없이) | The bomb did not go off. |  |
-| `bond` | bond | 명사 | 유대, 끈 |  | There is a strong bond between them. |  |
-| `boom` | boom | 명사 | 쿵 소리, 급성장 |  | We heard a loud boom. |  |
-| `bore` | bore | 동사 | 지루하게 하다 |  | Long speeches bore me. |  |
-| `boss` | boss | 명사 | 상사, 사장 |  | My boss is very kind. |  |
-| `bother` | bother | 동사 | 괴롭히다, 귀찮게 하다 |  | Don't bother your sister. |  |
-| `brand` | brand | 명사 | 상표, 브랜드 |  | This is my favorite brand of shoes. |  |
-| `breast` | breast | 명사 | 가슴 |  | I ate chicken breast for lunch. |  |
-| `breath` | breath | 명사 | 숨 |  | Take a deep breath. |  |
-| `breathe` | breathe | 동사 | 숨 쉬다 |  | Fish breathe under water. |  |
-| `brief` | brief | 형용사 | 짧은, 간단한 |  | He gave a brief answer. |  |
-| `brilliant` | brilliant | 형용사 | 훌륭한, 눈부신 |  | That is a brilliant idea! |  |
-| `broad` | broad | 형용사 | 넓은 |  | He has broad shoulders. |  |
-| `budget` | budget | 명사 | 예산 |  | We have a small budget for the trip. |  |
-| `bump` | bump | 동사 | 부딪치다 |  | I bumped my head on the door. |  |
-| `calculate` | calculate | 동사 | 계산하다 |  | Calculate the total price. |  |
-| `capable` | capable | 형용사 | ~할 능력이 있는 |  | She is capable of doing it alone. |  |
-| `career` | career | 명사 | 직업, 경력 |  | She wants a career in music. |  |
-| `cast` | cast | 동사 | 던지다, 배역을 맡기다 |  | He cast his fishing line into the lake. |  |
-| `catalog` | catalog | 명사 | 목록, 카탈로그 |  | I looked at the toy catalog. |  |
-| `category` | category | 명사 | 범주, 종류 |  | Put the words into three categories. |  |
-| `cause` | cause | 명사 | 원인 |  | What was the cause of the fire? |  |
-| `cell` | cell | 명사 | 세포, 작은 방 |  | Our bodies are made of cells. |  |
-| `century` | century | 명사 | 100년, 세기 |  | We live in the twenty-first century. |  |
-| `chairman` | chairman | 명사 | 의장, 회장 |  | The chairman opened the meeting. |  |
-| `challenge` | challenge | 명사 | 도전 |  | Climbing the mountain was a big challenge. |  |
-| `channel` | channel | 명사 | 채널, 수로 |  | Change the TV channel, please. |  |
-| `characteristic` | characteristic | 명사 | 특징 |  | Kindness is her best characteristic. |  |
-| `charm` | charm | 명사 | 매력 |  | The old town has a lot of charm. |  |
-| `chat` | chat | 동사 | 수다 떨다 |  | We chat online every night. |  |
-| `chew` | chew | 동사 | 씹다 |  | Chew your food well. |  |
-| `chief` | chief | 형용사 | 주된, 최고의 |  | Rice is our chief food. |  |
-| `choice` | choice | 명사 | 선택 |  | You made a good choice. |  |
-| `cigarette` | cigarette | 명사 | 담배 | 담배 한 개비 위에 빨간 금지 사선이 그어진 둥근 표지(글자 없이) | Cigarettes are harmful to your body. |  |
-| `circumstance` | circumstance | 명사 | 상황, 환경 |  | Under the circumstances, we had to wait. |  |
-| `citizen` | citizen | 명사 | 시민 |  | Every citizen has the right to vote. |  |
-| `civil` | civil | 형용사 | 시민의 |  | They fought for civil rights. |  |
-| `claim` | claim | 동사 | 주장하다 |  | He claims that he saw a ghost. |  |
-| `client` | client | 명사 | 고객, 의뢰인 |  | The lawyer met her client. |  |
-| `climate` | climate | 명사 | 기후 |  | The climate here is warm and dry. |  |
-| `code` | code | 명사 | 암호, 코드 |  | Enter the secret code. |  |
-| `combine` | combine | 동사 | 결합하다, 섞다 |  | Combine the flour and eggs. |  |
-| `comedy` | comedy | 명사 | 코미디 |  | I like watching comedy shows. |  |
-| `comfort` | comfort | 명사 | 편안함, 위로 |  | She gave me comfort when I was sad. |  |
-| `command` | command | 명사 | 명령 |  | The dog follows my commands. |  |
-| `comment` | comment | 명사 | 의견, 댓글 |  | He left a kind comment on my post. |  |
-| `commerce` | commerce | 명사 | 상업 |  | The city is a center of commerce. |  |
-| `committee` | committee | 명사 | 위원회 |  | The committee meets every Monday. |  |
-| `common` | common | 형용사 | 흔한, 공통의 |  | Kim is a common name in Korea. |  |
-| `communicate` | communicate | 동사 | 의사소통하다 |  | We communicate by email. |  |
-| `community` | community | 명사 | 지역 사회, 공동체 |  | Our community has a nice park. |  |
-| `compare` | compare | 동사 | 비교하다 |  | Compare the two pictures. |  |
-| `complain` | complain | 동사 | 불평하다 |  | He always complains about the food. |  |
-| `complete` | complete | 동사 | 끝내다, 완성하다 |  | Complete the sentence. |  |
-| `complex` | complex | 형용사 | 복잡한 |  | The machine is very complex. |  |
-| `complicate` | complicate | 동사 | 복잡하게 하다 |  | Do not complicate the problem. |  |
-| `concentrate` | concentrate | 동사 | 집중하다 |  | I cannot concentrate with that noise. |  |
-| `concept` | concept | 명사 | 개념 |  | The concept is easy to understand. |  |
-| `concern` | concern | 명사 | 걱정, 관심사 |  | Thank you for your concern. |  |
-| `confirm` | confirm | 동사 | 확인하다 |  | Please confirm your address. |  |
-| `conflict` | conflict | 명사 | 갈등, 충돌 |  | They solved the conflict by talking. |  |
-| `confuse` | confuse | 동사 | 혼란스럽게 하다 |  | The map confused me. |  |
-| `conscious` | conscious | 형용사 | 의식하는, 깨어 있는 |  | He was conscious after the accident. |  |
-| `consider` | consider | 동사 | 고려하다 |  | Please consider my idea. |  |
-| `constant` | constant | 형용사 | 끊임없는, 변함없는 |  | The baby needs constant care. |  |
-| `consume` | consume | 동사 | 소비하다, 먹다 |  | We consume too much sugar. |  |
-| `contact` | contact | 동사 | 연락하다 |  | Contact me if you need help. |  |
-| `contain` | contain | 동사 | 담고 있다, 포함하다 |  | This box contains old photos. |  |
-| `content` | content | 명사 | 내용, 내용물 |  | The content of the book is interesting. |  |
-| `context` | context | 명사 | 문맥, 맥락 |  | Guess the meaning from the context. |  |
-| `continue` | continue | 동사 | 계속하다 |  | Please continue your story. |  |
-| `contract` | contract | 명사 | 계약 |  | They signed a contract. |  |
-| `contribute` | contribute | 동사 | 기여하다, 기부하다 |  | Everyone contributed to the project. |  |
-| `converse` | converse | 동사 | 대화하다 |  | They conversed in English. |  |
-| `convince` | convince | 동사 | 설득하다, 확신시키다 |  | She convinced me to join the club. |  |
-| `cop` | cop | 명사 | 경찰관 |  | A cop helped the lost child. |  |
-| `cope` | cope | 동사 | 대처하다 |  | He copes well with stress. |  |
-| `council` | council | 명사 | 의회, 협의회 |  | The student council planned the festival. |  |
-| `county` | county | 명사 | 군(행정 구역) |  | The county has many farms. |  |
-| `crash` | crash | 동사 | 충돌하다, 부서지다 |  | The car crashed into a tree. |  |
-| `create` | create | 동사 | 만들다, 창조하다 |  | She created a beautiful painting. |  |
-| `credit` | credit | 명사 | 신용, 학점 |  | I paid by credit card. |  |
-| `crime` | crime | 명사 | 범죄 | 창문으로 들어가려는 복면 도둑과 손전등을 비추는 경찰(우스꽝스럽게) | Stealing is a crime. |  |
-| `crisis` | crisis | 명사 | 위기 |  | The country is in an economic crisis. |  |
-| `crisp` | crisp | 형용사 | 바삭바삭한 |  | I like crisp toast. |  |
-| `cruel` | cruel | 형용사 | 잔인한 |  | It is cruel to hurt animals. |  |
-| `cure` | cure | 동사 | 치료하다 |  | This medicine can cure a cold. |  |
-| `curl` | curl | 동사 | 곱슬하게 하다, 말다 |  | The cat curled up on the sofa. |  |
-| `current` | current | 형용사 | 현재의 |  | What is your current address? |  |
-| `damage` | damage | 명사 | 피해, 손상 | 찌그러진 장난감 자동차 | The storm caused a lot of damage. |  |
-| `dare` | dare | 동사 | 감히 ~하다 |  | I did not dare to jump. |  |
-| `darling` | darling | 명사 | 사랑하는 사람 |  | Good night, my darling. |  |
-| `deal` | deal | 명사 | 거래, 처리 |  | We made a deal with the store. |  |
-| `debate` | debate | 명사 | 토론 |  | We had a debate about school uniforms. |  |
-| `debt` | debt | 명사 | 빚 |  | He paid off his debt. |  |
-| `deck` | deck | 명사 | 갑판, 카드 한 벌 |  | We stood on the deck of the ship. |  |
-| `defense` | defense | 명사 | 방어, 수비 |  | Our team has a strong defense. |  |
-| `define` | define | 동사 | 정의하다 |  | Can you define this word? |  |
-| `definite` | definite | 형용사 | 확실한, 분명한 |  | I need a definite answer. |  |
-| `delay` | delay | 동사 | 미루다, 지연시키다 |  | The flight was delayed by rain. |  |
-| `delight` | delight | 명사 | 큰 기쁨 |  | The children laughed with delight. |  |
-| `demand` | demand | 동사 | 요구하다 |  | They demanded an answer. |  |
-| `demonstrate` | demonstrate | 동사 | 보여 주다, 증명하다 |  | The teacher demonstrated the experiment. |  |
-| `deny` | deny | 동사 | 부인하다 |  | He denied breaking the window. |  |
-| `depend` | depend | 동사 | 의존하다, ~에 달려 있다 |  | It depends on the weather. |  |
-| `depress` | depress | 동사 | 우울하게 하다 |  | Rainy days depress me. |  |
-| `describe` | describe | 동사 | 묘사하다, 설명하다 |  | Describe your best friend. |  |
-| `deserve` | deserve | 동사 | ~을 받을 만하다 |  | You deserve a rest. |  |
-| `desire` | desire | 명사 | 욕구, 바람 |  | She has a strong desire to win. |  |
-| `desperate` | desperate | 형용사 | 절박한, 필사적인 |  | He was desperate for water. |  |
-| `despite` | despite | 전치사 | ~에도 불구하고 |  | We played despite the rain. |  |
-| `destroy` | destroy | 동사 | 파괴하다 |  | The fire destroyed the forest. |  |
-| `detail` | detail | 명사 | 세부 사항 |  | Tell me every detail. |  |
-| `detect` | detect | 동사 | 발견하다, 감지하다 |  | Dogs can detect smells very well. |  |
-| `determine` | determine | 동사 | 결정하다, 알아내다 |  | We must determine the cause. |  |
-| `develop` | develop | 동사 | 발달시키다, 개발하다 |  | Reading develops your mind. |  |
-| `diet` | diet | 명사 | 식단, 다이어트 |  | A healthy diet includes vegetables. |  |
-| `direct` | direct | 형용사 | 직접적인, 곧장 가는 |  | Is there a direct bus to the airport? |  |
-| `dirt` | dirt | 명사 | 흙, 먼지 |  | Wash the dirt off your hands. |  |
-| `disappoint` | disappoint | 동사 | 실망시키다 |  | I do not want to disappoint my parents. |  |
-| `discipline` | discipline | 명사 | 규율, 훈련 |  | Sports teach discipline. |  |
-| `disgust` | disgust | 명사 | 역겨움 |  | He looked at the trash with disgust. |  |
-| `display` | display | 동사 | 전시하다, 보여 주다 |  | The shop displays toys in the window. |  |
-| `district` | district | 명사 | 지역, 구역 |  | This is a shopping district. |  |
-| `disturb` | disturb | 동사 | 방해하다 |  | Please do not disturb me. |  |
-| `divorce` | divorce | 명사 | 이혼 |  | They got a divorce last year. |  |
-| `domestic` | domestic | 형용사 | 국내의, 가정의 |  | This is a domestic flight. |  |
-| `doubt` | doubt | 명사 | 의심 |  | I have no doubt about it. |  |
-| `drag` | drag | 동사 | 끌다 |  | He dragged the heavy bag. |  |
-| `drama` | drama | 명사 | 연극, 드라마 |  | She is in the drama club. |  |
-| `drug` | drug | 명사 | 약, 마약 | 약병과 알약 몇 알 | This drug helps with pain. |  |
-| `due` | due | 형용사 | ~하기로 되어 있는, 마감인 |  | The homework is due tomorrow. |  |
-| `dump` | dump | 동사 | 버리다 |  | Do not dump trash in the river. |  |
-| `dust` | dust | 명사 | 먼지 |  | The shelf is covered with dust. |  |
-| `duty` | duty | 명사 | 의무, 임무 |  | It is my duty to feed the dog. |  |
-| `each` | each | 형용사 | 각각의 |  | Each student has a locker. |  |
-| `earn` | earn | 동사 | 벌다, 얻다 |  | She earns money by babysitting. |  |
-| `ease` | ease | 명사 | 쉬움, 편안함 |  | She passed the test with ease. |  |
-| `economy` | economy | 명사 | 경제 |  | The country's economy is growing. |  |
-| `edge` | edge | 명사 | 가장자리, 모서리 |  | Do not stand at the edge of the pool. |  |
-| `edit` | edit | 동사 | 편집하다, 고치다 |  | I edited my video. |  |
-| `educate` | educate | 동사 | 교육하다 |  | Schools educate children. |  |
-| `effect` | effect | 명사 | 영향, 효과 |  | The medicine had a good effect. |  |
-| `effort` | effort | 명사 | 노력 |  | Thank you for your effort. |  |
-| `either` | either | 부사 | (둘 중) 어느 하나, ~도 또한 |  | You can take either bus. |  |
-| `elect` | elect | 동사 | 선출하다 |  | We elected a new class president. |  |
-| `electric` | electric | 형용사 | 전기의 |  | He plays the electric guitar. |  |
-| `element` | element | 명사 | 요소, 원소 |  | Trust is an important element of a team. |  |
-| `else` | else | 부사 | 그 밖에, 다른 |  | Do you want anything else? |  |
-| `embarrass` | embarrass | 동사 | 당황하게 하다 |  | His question embarrassed me. |  |
-| `emotion` | emotion | 명사 | 감정 |  | Music can show strong emotions. |  |
-| `emphasize` | emphasize | 동사 | 강조하다 |  | The teacher emphasized safety. |  |
-| `empire` | empire | 명사 | 제국 |  | Rome was a great empire. |  |
-| `employ` | employ | 동사 | 고용하다 |  | The factory employs 200 workers. |  |
-| `enemy` | enemy | 명사 | 적 |  | The two cats are enemies. |  |
-| `engage` | engage | 동사 | 참여하다, 약속하다 |  | Students engage in group work. |  |
-| `enormous` | enormous | 형용사 | 거대한 |  | An enormous whale swam by the boat. |  |
-| `entertain` | entertain | 동사 | 즐겁게 하다 |  | The magician entertained the kids. |  |
-| `entire` | entire | 형용사 | 전체의 |  | I read the entire book in a day. |  |
-| `especially` | especially | 부사 | 특히 |  | I like fruit, especially apples. |  |
-| `essay` | essay | 명사 | 수필, 글 |  | I wrote an essay about my family. |  |
-| `establish` | establish | 동사 | 설립하다 |  | The school was established in 1990. |  |
-| `estimate` | estimate | 동사 | 어림잡다, 추정하다 |  | I estimate that it will take an hour. |  |
-| `even` | even | 부사 | ~조차, 훨씬 |  | Even a child can do it. |  |
-| `ever` | ever | 부사 | 언젠가, 지금까지 |  | Have you ever been to Jeju? |  |
-| `evidence` | evidence | 명사 | 증거 |  | There is no evidence that he did it. |  |
-| `evil` | evil | 형용사 | 사악한 |  | The story has an evil witch. |  |
-| `exact` | exact | 형용사 | 정확한 |  | What is the exact time? |  |
-| `except` | except | 전치사 | ~을 제외하고 |  | Everyone came except Tom. |  |
-| `exhaust` | exhaust | 동사 | 지치게 하다 |  | The long hike exhausted us. |  |
-| `exist` | exist | 동사 | 존재하다 |  | Do aliens really exist? |  |
-| `expand` | expand | 동사 | 넓히다, 팽창하다 |  | Air expands when it is heated. |  |
-| `expect` | expect | 동사 | 기대하다, 예상하다 |  | I expect her to come soon. |  |
-| `expense` | expense | 명사 | 비용 |  | Travel expenses were high. |  |
-| `experience` | experience | 명사 | 경험 |  | It was a great experience for me. |  |
-| `expert` | expert | 명사 | 전문가 |  | She is an expert on dinosaurs. |  |
-| `explain` | explain | 동사 | 설명하다 |  | Can you explain the rule again? |  |
-| `expose` | expose | 동사 | 드러내다, 노출시키다 |  | Do not expose your skin to the sun too long. |  |
-| `express` | express | 동사 | 표현하다 |  | She expressed her thanks with a card. |  |
-| `extend` | extend | 동사 | 늘이다, 연장하다 |  | They extended the deadline. |  |
-| `extra` | extra | 형용사 | 추가의, 여분의 |  | Bring an extra pencil. |  |
-| `extreme` | extreme | 형용사 | 극심한, 극도의 |  | The desert has extreme heat. |  |
-| `factor` | factor | 명사 | 요인 |  | Sleep is an important factor in health. |  |
-| `faint` | faint | 형용사 | 희미한, 어지러운 |  | I heard a faint sound. |  |
-| `faith` | faith | 명사 | 믿음, 신뢰 |  | I have faith in my team. |  |
-| `familiar` | familiar | 형용사 | 익숙한, 낯익은 |  | Her face looks familiar. |  |
-| `fancy` | fancy | 형용사 | 화려한, 고급의 |  | They ate at a fancy restaurant. |  |
-| `fantastic` | fantastic | 형용사 | 환상적인, 멋진 |  | We had a fantastic time. |  |
-| `fascinate` | fascinate | 동사 | 매혹하다 |  | Stars fascinate me. |  |
-| `fashion` | fashion | 명사 | 패션, 유행 |  | She is interested in fashion. |  |
-| `fault` | fault | 명사 | 잘못, 결점 |  | It was not your fault. |  |
-| `favor` | favor | 명사 | 부탁, 호의 |  | Can you do me a favor? |  |
-| `fear` | fear | 명사 | 두려움 |  | She has a fear of heights. |  |
-| `feature` | feature | 명사 | 특징, 기능 |  | The phone has many new features. |  |
-| `fee` | fee | 명사 | 요금, 수수료 |  | The entrance fee is five dollars. |  |
-| `fellow` | fellow | 명사 | 동료, 녀석 |  | He is a friendly fellow. |  |
-| `female` | female | 형용사 | 여성의, 암컷의 |  | The female lion hunts for food. |  |
-| `figure` | figure | 명사 | 숫자, 모습, 인물 |  | Look at the figures in the table. |  |
-| `final` | final | 형용사 | 마지막의 |  | This is the final game of the season. |  |
-| `finance` | finance | 명사 | 재정, 금융 |  | She works in finance. |  |
-| `firm` | firm | 형용사 | 단단한, 확고한 |  | The bed is too firm for me. |  |
-| `fit` | fit | 동사 | (크기가) 맞다 |  | These shoes fit me well. |  |
-| `flash` | flash | 명사 | 번쩍임 |  | We saw a flash of lightning. |  |
-| `flood` | flood | 명사 | 홍수 |  | The heavy rain caused a flood. |  |
-| `flow` | flow | 동사 | 흐르다 |  | The river flows into the sea. |  |
-| `folk` | folk | 형용사 | 민속의 |  | We learned a Korean folk song. |  |
-| `foreign` | foreign | 형용사 | 외국의 |  | I want to learn a foreign language. |  |
-| `forever` | forever | 부사 | 영원히 |  | We will be friends forever. |  |
-| `forgive` | forgive | 동사 | 용서하다 |  | Please forgive me for being late. |  |
-| `forth` | forth | 부사 | 앞으로 |  | The swing moved back and forth. |  |
-| `fortunate` | fortunate | 형용사 | 운이 좋은 |  | We were fortunate to find seats. |  |
-| `fortune` | fortune | 명사 | 운, 큰돈 |  | He made a fortune in business. |  |
-| `found` | found | 동사 | 설립하다 |  | She founded a school for girls. |  |
-| `frankly` | frankly | 부사 | 솔직히 |  | Frankly, I do not like it. |  |
-| `fright` | fright | 명사 | 놀람, 공포 |  | The loud noise gave me a fright. |  |
-| `frustrate` | frustrate | 동사 | 좌절시키다, 답답하게 하다 |  | The hard puzzle frustrated him. |  |
-| `function` | function | 명사 | 기능 |  | What is the function of this button? |  |
-| `fund` | fund | 명사 | 기금, 자금 |  | We raised funds for the animal shelter. |  |
-| `fur` | fur | 명사 | 털 |  | The rabbit has soft white fur. |  |
-| `gain` | gain | 동사 | 얻다, 늘다 |  | He gained a lot of experience. |  |
-| `gear` | gear | 명사 | 장비, 기어 |  | Bring your camping gear. |  |
-| `general` | general | 형용사 | 일반적인 |  | This is a general rule. |  |
-| `gesture` | gesture | 명사 | 몸짓 |  | She made a gesture to come in. |  |
-| `glance` | glance | 동사 | 흘끗 보다 |  | He glanced at his watch. |  |
-| `glory` | glory | 명사 | 영광 |  | The team returned home in glory. |  |
-| `gorgeous` | gorgeous | 형용사 | 아주 멋진, 아름다운 |  | What a gorgeous sunset! |  |
-| `govern` | govern | 동사 | 다스리다 |  | The king governed the country wisely. |  |
-| `grab` | grab | 동사 | 움켜잡다 |  | He grabbed my hand. |  |
-| `grace` | grace | 명사 | 우아함 |  | The dancer moved with grace. |  |
-| `grade` | grade | 명사 | 학년, 성적 |  | I am in the second grade of middle school. |  |
-| `grand` | grand | 형용사 | 웅장한 |  | They live in a grand house. |  |
-| `grant` | grant | 동사 | 주다, 허락하다 |  | The fairy granted her three wishes. |  |
-| `guarantee` | guarantee | 동사 | 보장하다 |  | I guarantee you will like it. |  |
-| `guard` | guard | 명사 | 경비원, 지키는 사람 |  | A guard stands at the gate. |  |
-| `guest` | guest | 명사 | 손님 |  | We have guests for dinner. |  |
-| `guide` | guide | 명사 | 안내인, 안내서 |  | Our guide showed us the old town. |  |
-| `guilt` | guilt | 명사 | 죄책감, 유죄 |  | He felt guilt about lying. |  |
-| `gun` | gun | 명사 | 총 | 장난감 물총 하나(사람 없이, 누구도 겨누지 않게) | The police officer carries a gun. |  |
-| `harm` | harm | 명사 | 해, 피해 | 뜨거운 냄비에 손을 대려는 아이를 어른이 막는 장면 | Smoking does harm to your body. |  |
-| `heaven` | heaven | 명사 | 천국, 하늘 |  | The stars look like lights in heaven. |  |
-| `hell` | hell | 명사 | 지옥 |  | The trip was hell because of the heat. |  |
-| `hesitate` | hesitate | 동사 | 망설이다 |  | Do not hesitate to ask questions. |  |
-| `hint` | hint | 명사 | 힌트, 암시 |  | Give me a hint, please. |  |
-| `hire` | hire | 동사 | 고용하다 |  | They hired a new cook. |  |
-| `honor` | honor | 명사 | 명예, 영광 |  | It is an honor to meet you. |  |
-| `humor` | humor | 명사 | 유머 |  | He has a good sense of humor. |  |
-| `hunger` | hunger | 명사 | 배고픔, 굶주림 |  | Many children suffer from hunger. |  |
-| `identity` | identity | 명사 | 정체성, 신원 |  | The police checked his identity. |  |
-| `ignore` | ignore | 동사 | 무시하다 |  | Do not ignore the warning sign. |  |
-| `illustrate` | illustrate | 동사 | 삽화를 넣다, 예를 들어 설명하다 |  | She illustrates books for children. |  |
-| `immediate` | immediate | 형용사 | 즉각적인 |  | We need an immediate answer. |  |
-| `impress` | impress | 동사 | 깊은 인상을 주다 |  | Her speech impressed everyone. |  |
-| `improve` | improve | 동사 | 나아지다, 향상시키다 |  | Reading improves your English. |  |
-| `include` | include | 동사 | 포함하다 |  | The price includes lunch. |  |
-| `income` | income | 명사 | 소득, 수입 |  | His income is not very high. |  |
-| `indeed` | indeed | 부사 | 정말로, 참으로 |  | It is indeed a great idea. |  |
-| `indicate` | indicate | 동사 | 가리키다, 나타내다 |  | The sign indicates the way out. |  |
-| `individual` | individual | 명사 | 개인 |  | Every individual is different. |  |
-| `industry` | industry | 명사 | 산업 |  | The car industry is important in Korea. |  |
-| `influence` | influence | 명사 | 영향 |  | Friends have a big influence on us. |  |
-| `inform` | inform | 동사 | 알리다 |  | Please inform me of any changes. |  |
-| `injure` | injure | 동사 | 다치게 하다 |  | He injured his arm while skating. |  |
-| `innocent` | innocent | 형용사 | 죄 없는, 순진한 |  | The man was innocent. |  |
-| `insist` | insist | 동사 | 주장하다, 고집하다 |  | She insisted on paying for lunch. |  |
-| `inspect` | inspect | 동사 | 점검하다 |  | They inspect the bridge every year. |  |
-| `instance` | instance | 명사 | 사례, 경우 |  | For instance, cats sleep a lot. |  |
-| `instant` | instant | 형용사 | 즉각적인, 즉석의 |  | I ate instant noodles. |  |
-| `instead` | instead | 부사 | 대신에 |  | I had tea instead of coffee. |  |
-| `instruct` | instruct | 동사 | 가르치다, 지시하다 |  | The coach instructed us to run. |  |
-| `insure` | insure | 동사 | 보험에 들다 |  | We insured our house against fire. |  |
-| `intend` | intend | 동사 | ~할 작정이다 |  | I intend to study abroad. |  |
-| `intense` | intense | 형용사 | 강렬한, 극심한 |  | The heat was intense. |  |
-| `intent` | intent | 명사 | 의도 |  | It was not my intent to hurt you. |  |
-| `internal` | internal | 형용사 | 내부의 |  | The heart is an internal organ. |  |
-| `interrupt` | interrupt | 동사 | 방해하다, 끼어들다 |  | Do not interrupt when others talk. |  |
-| `invest` | invest | 동사 | 투자하다 |  | He invested money in the company. |  |
-| `investigate` | investigate | 동사 | 조사하다 |  | The police are investigating the case. |  |
-| `involve` | involve | 동사 | 포함하다, 관련시키다 |  | The job involves a lot of travel. |  |
-| `item` | item | 명사 | 물품, 항목 |  | There are ten items on the list. |  |
-| `jaw` | jaw | 명사 | 턱 |  | The shark has strong jaws. |  |
-| `joke` | joke | 명사 | 농담 |  | He told a funny joke. |  |
-| `journey` | journey | 명사 | 여행, 여정 |  | The journey took three days. |  |
-| `judge` | judge | 명사 | 판사, 심판 |  | The judge listened to both sides. |  |
-| `junior` | junior | 형용사 | 후배의, 어린 |  | He is my junior at school. |  |
-| `justice` | justice | 명사 | 정의 |  | They fought for justice. |  |
-| `knowledge` | knowledge | 명사 | 지식 |  | She has a lot of knowledge about plants. |  |
-| `label` | label | 명사 | 상표, 꼬리표 |  | Read the label on the bottle. |  |
-| `labor` | labor | 명사 | 노동 |  | Building a house takes a lot of labor. |  |
-| `lack` | lack | 명사 | 부족 |  | The plant died from lack of water. |  |
-| `lane` | lane | 명사 | 좁은 길, 차선 |  | Stay in the right lane. |  |
-| `law` | law | 명사 | 법 |  | Everyone must follow the law. |  |
-| `lawyer` | lawyer | 명사 | 변호사 |  | My aunt is a lawyer. |  |
-| `lay` | lay | 동사 | 놓다, (알을) 낳다 |  | Lay the book on the table. |  |
-| `league` | league | 명사 | 리그, 연맹 |  | Our team won the league. |  |
-| `leap` | leap | 동사 | 뛰다, 도약하다 |  | The frog leaped into the pond. |  |
-| `legal` | legal | 형용사 | 합법적인, 법률의 |  | It is not legal to park here. |  |
-| `lend` | lend | 동사 | 빌려주다 |  | Can you lend me your pen? |  |
-| `level` | level | 명사 | 수준, 높이 |  | This book is at my level. |  |
-| `license` | license | 명사 | 면허, 허가증 |  | My brother got his driver license. |  |
-| `limit` | limit | 명사 | 한계, 제한 |  | There is a speed limit on this road. |  |
-| `link` | link | 명사 | 연결, 링크 |  | Click the link to see the video. |  |
-| `load` | load | 명사 | 짐 |  | The truck carries a heavy load. |  |
-| `loan` | loan | 명사 | 대출 |  | They got a loan to buy a house. |  |
-| `local` | local | 형용사 | 지역의, 현지의 |  | We ate at a local restaurant. |  |
-| `locate` | locate | 동사 | 위치를 찾다, 두다 |  | The school is located near the park. |  |
-| `loose` | loose | 형용사 | 헐거운, 풀린 |  | My tooth is loose. |  |
-| `loss` | loss | 명사 | 손실, 패배 |  | The team had its first loss. |  |
-| `main` | main | 형용사 | 주된, 가장 중요한 |  | What is the main idea of the story? |  |
-| `maintain` | maintain | 동사 | 유지하다 |  | Exercise helps you maintain your health. |  |
-| `major` | major | 형용사 | 주요한, 큰 |  | Traffic is a major problem in the city. |  |
-| `male` | male | 형용사 | 남성의, 수컷의 |  | The male bird has bright feathers. |  |
-| `manage` | manage | 동사 | 관리하다, 해내다 |  | She manages a small shop. |  |
-| `manner` | manner | 명사 | 방식, 예절 |  | He has good table manners. |  |
-| `manufacture` | manufacture | 동사 | 제조하다 |  | The factory manufactures cars. |  |
-| `mark` | mark | 명사 | 표시, 점수 |  | Put a mark next to the right answer. |  |
-| `marvel` | marvel | 동사 | 경탄하다 |  | We marveled at the view. |  |
-| `mass` | mass | 명사 | 덩어리, 다량 |  | A mass of clouds covered the sky. |  |
-| `master` | master | 명사 | 주인, 달인 |  | The dog ran to its master. |  |
-| `mate` | mate | 명사 | 친구, 짝 |  | He is my classmate and best mate. |  |
-| `maximum` | maximum | 명사 | 최대 |  | The maximum number of players is five. |  |
-| `mean` | mean | 동사 | 의미하다 |  | What does this word mean? |  |
-| `medical` | medical | 형용사 | 의학의, 의료의 |  | She needs medical care. |  |
-| `mental` | mental | 형용사 | 정신의, 마음의 |  | Sleep is good for your mental health. |  |
-| `mention` | mention | 동사 | 언급하다 |  | He did not mention his name. |  |
-| `menu` | menu | 명사 | 메뉴, 차림표 |  | Can I see the menu, please? |  |
-| `method` | method | 명사 | 방법 |  | This is an easy method to learn words. |  |
-| `military` | military | 형용사 | 군대의 |  | He wore a military uniform. |  |
-| `minor` | minor | 형용사 | 작은, 중요하지 않은 |  | It is only a minor problem. |  |
-| `mission` | mission | 명사 | 임무 |  | The astronauts finished their mission. |  |
-| `modern` | modern | 형용사 | 현대의 |  | This is a modern building. |  |
-| `moment` | moment | 명사 | 순간, 잠깐 |  | Wait a moment, please. |  |
-| `mood` | mood | 명사 | 기분 |  | She is in a good mood today. |  |
-| `moral` | moral | 형용사 | 도덕적인 |  | The story has a moral lesson. |  |
-| `moreover` | moreover | 부사 | 게다가 |  | It is cheap. Moreover, it tastes good. |  |
-| `motion` | motion | 명사 | 움직임, 운동 |  | The motion of the boat made me sick. |  |
-| `motor` | motor | 명사 | 모터, 전동기 |  | The toy car has a small motor. |  |
-| `mount` | mount | 동사 | 오르다, 올라타다 |  | He mounted his horse. |  |
-| `mystery` | mystery | 명사 | 수수께끼, 신비 |  | The cause is still a mystery. |  |
-| `native` | native | 형용사 | 태어난 곳의, 토박이의 |  | Korean is my native language. |  |
-| `necessary` | necessary | 형용사 | 필요한 |  | Water is necessary for life. |  |
-| `neither` | neither | 부사 | (둘 중) 어느 것도 아니다 |  | Neither answer is correct. |  |
-| `nerve` | nerve | 명사 | 신경, 용기 |  | It takes nerve to speak on stage. |  |
-| `none` | none | 대명사 | 아무도, 하나도 ~않다 |  | None of us knew the answer. |  |
-| `nor` | nor | 접속사 | ~도 또한 아니다 |  | He does not sing, nor does he dance. |  |
-| `notice` | notice | 동사 | 알아차리다 |  | Did you notice her new haircut? |  |
-| `nowadays` | nowadays | 부사 | 요즘에는 |  | Nowadays, many people shop online. |  |
-| `nowhere` | nowhere | 부사 | 어디에도 ~없다 |  | My keys are nowhere to be found. |  |
-| `object` | object | 명사 | 물건, 대상 |  | What is that strange object? |  |
-| `obvious` | obvious | 형용사 | 분명한 |  | The answer is obvious. |  |
-| `occasion` | occasion | 명사 | 때, 특별한 행사 |  | A wedding is a special occasion. |  |
-| `occur` | occur | 동사 | 일어나다, 발생하다 |  | The accident occurred at night. |  |
-| `odd` | odd | 형용사 | 이상한, 홀수의 |  | One, three, and five are odd numbers. |  |
-| `offer` | offer | 동사 | 제안하다, 내주다 |  | She offered me a seat. |  |
-| `officer` | officer | 명사 | 경찰관, 장교, 공무원 |  | A police officer helped us. |  |
-| `opera` | opera | 명사 | 오페라 |  | We saw an opera at the theater. |  |
-| `operate` | operate | 동사 | 작동하다, 수술하다 | 아이가 버튼을 눌러 기계를 작동시키는 장면 | Do you know how to operate this machine? |  |
-| `opinion` | opinion | 명사 | 의견 |  | In my opinion, the movie was great. |  |
-| `oppose` | oppose | 동사 | 반대하다 |  | Many people oppose the plan. |  |
-| `order` | order | 명사 | 순서, 주문, 명령 |  | Put the words in the right order. |  |
-| `ordinary` | ordinary | 형용사 | 평범한, 보통의 |  | It was an ordinary day. |  |
-| `otherwise` | otherwise | 부사 | 그렇지 않으면 |  | Hurry up; otherwise, we will be late. |  |
-| `ought` | ought | 조동사 | ~해야 한다 |  | You ought to see a doctor. |  |
-| `overall` | overall | 형용사 | 전반적인 |  | The overall result was good. |  |
-| `own` | own | 형용사 | 자기 자신의 |  | I have my own room. |  |
-| `panic` | panic | 명사 | 공포, 당황 |  | Do not panic in an emergency. |  |
-| `paragraph` | paragraph | 명사 | 문단 |  | Read the first paragraph aloud. |  |
-| `particular` | particular | 형용사 | 특정한, 특별한 |  | Is there a particular color you like? |  |
-| `past` | past | 명사 | 과거 |  | In the past, people rode horses. |  |
-| `pause` | pause | 동사 | 잠시 멈추다 |  | Pause the video for a minute. |  |
-| `per` | per | 전치사 | ~당, ~마다 |  | The speed limit is 50 kilometers per hour. |  |
-| `perfect` | perfect | 형용사 | 완벽한 |  | Your pronunciation is perfect. |  |
-| `perhaps` | perhaps | 부사 | 아마도 |  | Perhaps it will snow tomorrow. |  |
-| `period` | period | 명사 | 기간, 교시 |  | We have math in the first period. |  |
-| `physical` | physical | 형용사 | 신체의, 물리적인 |  | Physical exercise is good for you. |  |
-| `pitch` | pitch | 동사 | 던지다 |  | He pitched the ball fast. |  |
-| `pity` | pity | 명사 | 동정, 유감 |  | It is a pity that you cannot come. |  |
-| `plain` | plain | 형용사 | 무늬 없는, 분명한 |  | She wore a plain white shirt. |  |
-| `plenty` | plenty | 명사 | 많음, 충분함 |  | We have plenty of time. |  |
-| `poem` | poem | 명사 | 시 |  | She wrote a poem about spring. |  |
-| `poet` | poet | 명사 | 시인 |  | Yun Dong-ju was a famous poet. |  |
-| `poison` | poison | 명사 | 독 | 보라색 액체가 든 병에 빨간 X 모양 표시(해골·글자 없이) | Some mushrooms have poison. |  |
-| `policy` | policy | 명사 | 정책, 방침 |  | The school has a new uniform policy. |  |
-| `politics` | politics | 명사 | 정치 |  | He is interested in politics. |  |
-| `pollute` | pollute | 동사 | 오염시키다 |  | Cars pollute the air. |  |
-| `pop` | pop | 동사 | 펑 터지다 |  | The balloon popped. |  |
-| `popular` | popular | 형용사 | 인기 있는 |  | Soccer is a popular sport. |  |
-| `possess` | possess | 동사 | 소유하다 |  | He possesses a great talent. |  |
-| `possible` | possible | 형용사 | 가능한 |  | Is it possible to finish today? |  |
-| `potential` | potential | 명사 | 잠재력 |  | She has the potential to be a great singer. |  |
-| `powder` | powder | 명사 | 가루 |  | Add some baking powder. |  |
-| `practical` | practical | 형용사 | 실용적인, 실제의 |  | This bag is very practical. |  |
-| `prefer` | prefer | 동사 | 더 좋아하다 |  | I prefer tea to coffee. |  |
-| `pregnant` | pregnant | 형용사 | 임신한 |  | My aunt is pregnant. |  |
-| `prepare` | prepare | 동사 | 준비하다 |  | I prepared for the test. |  |
-| `presence` | presence | 명사 | 존재, 참석 |  | Your presence makes me happy. |  |
-| `pretend` | pretend | 동사 | ~인 척하다 |  | He pretended to be asleep. |  |
-| `prevent` | prevent | 동사 | 막다, 예방하다 |  | Washing hands prevents colds. |  |
-| `previous` | previous | 형용사 | 이전의 |  | I saw him the previous day. |  |
-| `pride` | pride | 명사 | 자부심, 자존심 |  | She takes pride in her work. |  |
-| `prime` | prime | 형용사 | 주요한, 최고의 |  | Safety is our prime concern. |  |
-| `principle` | principle | 명사 | 원칙, 원리 |  | Honesty is my first principle. |  |
-| `prison` | prison | 명사 | 감옥 | 창살이 있는 빈 방(사람 없이) | The thief was sent to prison. |  |
-| `privacy` | privacy | 명사 | 사생활 |  | Please respect my privacy. |  |
-| `private` | private | 형용사 | 개인의, 사적인 |  | This is a private room. |  |
-| `probable` | probable | 형용사 | 있을 법한 |  | Rain is probable this afternoon. |  |
-| `proceed` | proceed | 동사 | 계속하다, 나아가다 |  | Please proceed to gate five. |  |
-| `process` | process | 명사 | 과정 |  | Learning is a slow process. |  |
-| `produce` | produce | 동사 | 생산하다 |  | This farm produces fresh milk. |  |
-| `profession` | profession | 명사 | 직업 |  | Teaching is a respected profession. |  |
-| `profit` | profit | 명사 | 이익 |  | The shop made a small profit. |  |
-| `progress` | progress | 명사 | 진전, 발전 |  | You are making good progress. |  |
-| `promote` | promote | 동사 | 홍보하다, 승진시키다 |  | The singer is promoting her new album. |  |
-| `pronounce` | pronounce | 동사 | 발음하다 |  | How do you pronounce this word? |  |
-| `proper` | proper | 형용사 | 알맞은, 올바른 |  | Use the proper tool for the job. |  |
-| `property` | property | 명사 | 재산, 특성 |  | This land is private property. |  |
-| `propose` | propose | 동사 | 제안하다, 청혼하다 |  | I propose that we start early. |  |
-| `protest` | protest | 동사 | 항의하다 |  | People protested against the plan. |  |
-| `prove` | prove | 동사 | 증명하다 |  | Can you prove that you are right? |  |
-| `provide` | provide | 동사 | 제공하다 |  | The hotel provides breakfast. |  |
-| `pub` | pub | 명사 | 술집 | 나무 간판이 달린 작은 가게 앞모습(간판 글자 없이) | The pub is closed today. |  |
-| `public` | public | 형용사 | 공공의, 대중의 |  | This is a public library. |  |
-| `punch` | punch | 동사 | 주먹으로 치다 |  | He punched the bag in the gym. |  |
-| `punish` | punish | 동사 | 벌주다 | 벽을 보고 서서 반성하는 아이와 팔짱 낀 어른(무섭지 않게) | The teacher did not punish him. |  |
-| `purchase` | purchase | 동사 | 구입하다 |  | You can purchase tickets online. |  |
-| `pure` | pure | 형용사 | 순수한, 깨끗한 |  | The water is pure and clean. |  |
-| `purpose` | purpose | 명사 | 목적 |  | What is the purpose of your visit? |  |
-| `quality` | quality | 명사 | 품질, 자질 |  | This bag is of good quality. |  |
-| `quit` | quit | 동사 | 그만두다 |  | He quit the soccer team. |  |
-| `quite` | quite | 부사 | 꽤, 상당히 |  | The test was quite easy. |  |
-| `quote` | quote | 동사 | 인용하다 |  | She quoted a line from the poem. |  |
-| `range` | range | 명사 | 범위 |  | The store sells a wide range of toys. |  |
-| `rapid` | rapid | 형용사 | 빠른 |  | The city saw rapid growth. |  |
-| `rare` | rare | 형용사 | 드문, 희귀한 |  | This bird is very rare. |  |
-| `rate` | rate | 명사 | 비율, 속도, 요금 |  | The birth rate is falling. |  |
-| `rather` | rather | 부사 | 오히려, 꽤 |  | I would rather stay home. |  |
-| `react` | react | 동사 | 반응하다 |  | How did she react to the news? |  |
-| `reason` | reason | 명사 | 이유 |  | What is the reason for your choice? |  |
-| `receive` | receive | 동사 | 받다 |  | I received a letter from my friend. |  |
-| `recent` | recent | 형용사 | 최근의 |  | This is a recent photo of me. |  |
-| `recipe` | recipe | 명사 | 요리법 |  | This is my grandma's recipe. |  |
-| `recognize` | recognize | 동사 | 알아보다, 인정하다 |  | I did not recognize you at first. |  |
-| `recommend` | recommend | 동사 | 추천하다 |  | Can you recommend a good book? |  |
-| `recover` | recover | 동사 | 회복하다 |  | She recovered from her cold. |  |
-| `refer` | refer | 동사 | 참고하다, 가리키다 |  | Refer to the map on page five. |  |
-| `reflect` | reflect | 동사 | 비추다, 반영하다 |  | The lake reflects the mountains. |  |
-| `refuse` | refuse | 동사 | 거절하다 |  | He refused to answer. |  |
-| `regard` | regard | 동사 | ~로 여기다 |  | I regard him as my best friend. |  |
-| `region` | region | 명사 | 지역 |  | This region is famous for apples. |  |
-| `register` | register | 동사 | 등록하다 |  | I registered for the swimming class. |  |
-| `regular` | regular | 형용사 | 규칙적인, 보통의 |  | Regular exercise keeps you healthy. |  |
-| `relate` | relate | 동사 | 관련시키다 |  | The two events are closely related. |  |
-| `release` | release | 동사 | 놓아주다, 발표하다 |  | They released the bird into the sky. |  |
-| `relief` | relief | 명사 | 안심, 완화 |  | It was a relief to find my bag. |  |
-| `rely` | rely | 동사 | 의지하다 |  | You can rely on me. |  |
-| `remain` | remain | 동사 | 남다, 계속 ~이다 |  | Please remain in your seat. |  |
-| `remark` | remark | 명사 | 말, 발언 |  | She made a kind remark about my work. |  |
-| `remind` | remind | 동사 | 생각나게 하다 |  | Remind me to call my mom. |  |
-| `remove` | remove | 동사 | 없애다, 치우다 |  | Remove your shoes before you enter. |  |
-| `rent` | rent | 동사 | 빌리다, 세내다 |  | We rented a car for the trip. |  |
-| `replace` | replace | 동사 | 바꾸다, 대신하다 |  | We need to replace the battery. |  |
-| `reply` | reply | 동사 | 대답하다, 답장하다 |  | She replied to my message quickly. |  |
-| `report` | report | 명사 | 보고서, 보도 |  | I wrote a report on dolphins. |  |
-| `represent` | represent | 동사 | 대표하다, 나타내다 |  | She represents our class. |  |
-| `request` | request | 명사 | 요청 |  | I have a small request. |  |
-| `require` | require | 동사 | 필요로 하다, 요구하다 |  | This job requires patience. |  |
-| `research` | research | 명사 | 연구, 조사 |  | She does research on sea animals. |  |
-| `reserve` | reserve | 동사 | 예약하다, 남겨 두다 |  | I reserved a table for four. |  |
-| `resist` | resist | 동사 | 저항하다, 참다 |  | I cannot resist chocolate. |  |
-| `resource` | resource | 명사 | 자원 |  | Water is a valuable resource. |  |
-| `respect` | respect | 동사 | 존중하다, 존경하다 |  | We should respect our elders. |  |
-| `respond` | respond | 동사 | 응답하다 |  | He did not respond to my question. |  |
-| `responsible` | responsible | 형용사 | 책임 있는 |  | You are responsible for your pet. |  |
-| `result` | result | 명사 | 결과 |  | The test results came out today. |  |
-| `retire` | retire | 동사 | 은퇴하다 |  | My grandfather retired last year. |  |
-| `risk` | risk | 명사 | 위험 |  | There is a risk of fire. |  |
-| `rob` | rob | 동사 | 강탈하다, 털다 |  | Two men robbed the bank. |  |
-| `role` | role | 명사 | 역할 |  | She played the role of a princess. |  |
-| `route` | route | 명사 | 길, 노선 |  | This is the shortest route to school. |  |
-| `royal` | royal | 형용사 | 왕의, 왕실의 |  | The royal family lives in the palace. |  |
-| `rub` | rub | 동사 | 문지르다 |  | He rubbed his eyes. |  |
-| `rude` | rude | 형용사 | 무례한 |  | It is rude to talk with your mouth full. |  |
-| `ruin` | ruin | 동사 | 망치다 |  | The rain ruined our picnic. |  |
-| `rule` | rule | 명사 | 규칙 |  | Follow the school rules. |  |
-| `rush` | rush | 동사 | 서두르다, 급히 가다 |  | We rushed to the station. |  |
-| `salary` | salary | 명사 | 월급 |  | She gets a good salary. |  |
-| `sample` | sample | 명사 | 견본, 표본 |  | Try a free sample of the cheese. |  |
-| `satisfy` | satisfy | 동사 | 만족시키다 |  | The meal satisfied everyone. |  |
-| `scare` | scare | 동사 | 겁주다 |  | The loud noise scared the cat. |  |
-| `scene` | scene | 명사 | 장면, 현장 |  | I liked the last scene of the movie. |  |
-| `schedule` | schedule | 명사 | 일정, 시간표 |  | I have a busy schedule today. |  |
-| `scratch` | scratch | 동사 | 긁다, 할퀴다 |  | The cat scratched the sofa. |  |
-| `scream` | scream | 동사 | 비명을 지르다 |  | She screamed when she saw the spider. |  |
-| `secretary` | secretary | 명사 | 비서 |  | The secretary answered the phone. |  |
-| `section` | section | 명사 | 부분, 구역 |  | The fruit section is over there. |  |
-| `secure` | secure | 형용사 | 안전한, 확실한 |  | Keep your money in a secure place. |  |
-| `seek` | seek | 동사 | 찾다, 구하다 |  | They are seeking a new home. |  |
-| `seem` | seem | 동사 | ~처럼 보이다 |  | You seem tired today. |  |
-| `select` | select | 동사 | 선택하다 |  | Select the best answer. |  |
-| `self` | self | 명사 | 자기 자신 |  | Be your true self. |  |
-| `senior` | senior | 형용사 | 선배의, 고령의 |  | She is my senior at school. |  |
-| `sense` | sense | 명사 | 감각, 의미 |  | Dogs have a good sense of smell. |  |
-| `series` | series | 명사 | 연속, 시리즈 |  | I watched a series about animals. |  |
-| `serve` | serve | 동사 | 음식을 내다, 봉사하다 |  | They serve lunch at noon. |  |
-| `session` | session | 명사 | 시간, 모임 |  | We have a training session after school. |  |
-| `settle` | settle | 동사 | 정착하다, 해결하다 |  | They settled in a small town. |  |
-| `several` | several | 형용사 | 몇몇의 |  | I have several questions. |  |
-| `sex` | sex | 명사 | 성, 성별 |  | Write your name, age, and sex. |  |
-| `shame` | shame | 명사 | 부끄러움, 유감 |  | It is a shame that you missed the show. |  |
-| `sharp` | sharp | 형용사 | 날카로운 |  | Be careful with the sharp knife. |  |
-| `shave` | shave | 동사 | 면도하다 |  | Dad shaves every morning. |  |
-| `shelter` | shelter | 명사 | 보호소, 피난처 |  | The dog lives in an animal shelter. |  |
-| `shift` | shift | 동사 | 옮기다, 바꾸다 |  | He shifted the box to the corner. |  |
-| `shock` | shock | 명사 | 충격 |  | The news was a big shock. |  |
-| `shore` | shore | 명사 | 바닷가, 호숫가 |  | We walked along the shore. |  |
-| `sight` | sight | 명사 | 시력, 광경 |  | The sunset was a beautiful sight. |  |
-| `similar` | similar | 형용사 | 비슷한 |  | Our bags are very similar. |  |
-| `simple` | simple | 형용사 | 간단한, 단순한 |  | The rule is simple. |  |
-| `since` | since | 접속사 | ~한 이후로, ~이므로 |  | I have lived here since 2020. |  |
-| `single` | single | 형용사 | 단 하나의, 혼자의 |  | I did not say a single word. |  |
-| `site` | site | 명사 | 장소, 현장, 사이트 |  | This is the site of the old castle. |  |
-| `situate` | situate | 동사 | 위치시키다 |  | The hotel is situated by the sea. |  |
-| `skill` | skill | 명사 | 기술, 솜씨 |  | Cooking is a useful skill. |  |
+| `associate` | associate | 동사 | 연관 짓다 |  | I associate summer with the beach. | 완료 |
+| `assume` | assume | 동사 | 가정하다, 짐작하다 |  | I assume you are hungry. | 완료 |
+| `atmosphere` | atmosphere | 명사 | 분위기, 대기 |  | The cafe has a warm atmosphere. | 완료 |
+| `attack` | attack | 동사 | 공격하다 |  | The dog did not attack anyone. | 완료 |
+| `attempt` | attempt | 명사 | 시도 |  | He passed on his second attempt. | 완료 |
+| `attend` | attend | 동사 | 참석하다, 다니다 |  | I attend a middle school. | 완료 |
+| `attention` | attention | 명사 | 주의, 관심 |  | Pay attention to the teacher. | 완료 |
+| `attitude` | attitude | 명사 | 태도 |  | She has a positive attitude. | 완료 |
+| `attract` | attract | 동사 | 끌다, 마음을 끌다 |  | Flowers attract bees. | 완료 |
+| `automatic` | automatic | 형용사 | 자동의 |  | This is an automatic door. | 완료 |
+| `average` | average | 명사 | 평균 |  | My average score is eighty. | 완료 |
+| `avoid` | avoid | 동사 | 피하다 |  | Try to avoid junk food. | 완료 |
+| `awake` | awake | 형용사 | 깨어 있는 |  | I was awake all night. | 완료 |
+| `aware` | aware | 형용사 | 알고 있는 |  | Are you aware of the danger? | 완료 |
+| `awkward` | awkward | 형용사 | 어색한, 서투른 |  | There was an awkward silence. | 완료 |
+| `background` | background | 명사 | 배경 |  | The photo has a blue background. | 완료 |
+| `bang` | bang | 명사 | 쾅 하는 소리 |  | The door closed with a bang. | 완료 |
+| `bare` | bare | 형용사 | 벌거벗은, 맨 | 모래밭 위 맨발 두 개 | He walked on the sand with bare feet. | 완료 |
+| `basis` | basis | 명사 | 기초, 근거 |  | Trust is the basis of friendship. | 완료 |
+| `battle` | battle | 명사 | 전투 |  | The battle lasted three days. | 완료 |
+| `beer` | beer | 명사 | 맥주 |  | Beer is a drink for adults. | 완료 |
+| `beg` | beg | 동사 | 간청하다, 구걸하다 |  | The dog begged for food. | 완료 |
+| `belief` | belief | 명사 | 믿음 |  | It is my belief that he is honest. | 완료 |
+| `belong` | belong | 동사 | ~에 속하다 |  | This bag belongs to me. | 완료 |
+| `beneath` | beneath | 전치사 | ~의 아래에 |  | The cat hid beneath the table. | 완료 |
+| `benefit` | benefit | 명사 | 이익, 혜택 |  | Exercise has many benefits. | 완료 |
+| `bet` | bet | 동사 | 내기하다, 장담하다 |  | I bet you will like this movie. | 완료 |
+| `beyond` | beyond | 전치사 | ~너머에 |  | The village is beyond the hill. | 완료 |
+| `billion` | billion | 수사 | 10억 |  | There are billions of stars. | 완료 |
+| `bind` | bind | 동사 | 묶다 |  | Bind the sticks with a rope. | 완료 |
+| `bit` | bit | 명사 | 조금, 작은 조각 |  | I am a bit tired. | 완료 |
+| `blame` | blame | 동사 | 탓하다 |  | Don't blame others for your mistake. | 완료 |
+| `bless` | bless | 동사 | 축복하다 |  | May God bless you. | 완료 |
+| `blind` | blind | 형용사 | 눈이 먼, 보이지 않는 |  | The dog helps the blind man. | 완료 |
+| `bomb` | bomb | 명사 | 폭탄 | 만화처럼 둥근 검은 폭탄과 짧은 심지(터지지 않은 모습, 사람 없이) | The bomb did not go off. | 완료 |
+| `bond` | bond | 명사 | 유대, 끈 |  | There is a strong bond between them. | 완료 |
+| `boom` | boom | 명사 | 쿵 소리, 급성장 |  | We heard a loud boom. | 완료 |
+| `bore` | bore | 동사 | 지루하게 하다 |  | Long speeches bore me. | 완료 |
+| `boss` | boss | 명사 | 상사, 사장 |  | My boss is very kind. | 완료 |
+| `bother` | bother | 동사 | 괴롭히다, 귀찮게 하다 |  | Don't bother your sister. | 완료 |
+| `brand` | brand | 명사 | 상표, 브랜드 |  | This is my favorite brand of shoes. | 완료 |
+| `breast` | breast | 명사 | 가슴 |  | I ate chicken breast for lunch. | 완료 |
+| `breath` | breath | 명사 | 숨 |  | Take a deep breath. | 완료 |
+| `breathe` | breathe | 동사 | 숨 쉬다 |  | Fish breathe under water. | 완료 |
+| `brief` | brief | 형용사 | 짧은, 간단한 |  | He gave a brief answer. | 완료 |
+| `brilliant` | brilliant | 형용사 | 훌륭한, 눈부신 |  | That is a brilliant idea! | 완료 |
+| `broad` | broad | 형용사 | 넓은 |  | He has broad shoulders. | 완료 |
+| `budget` | budget | 명사 | 예산 |  | We have a small budget for the trip. | 완료 |
+| `bump` | bump | 동사 | 부딪치다 |  | I bumped my head on the door. | 완료 |
+| `calculate` | calculate | 동사 | 계산하다 |  | Calculate the total price. | 완료 |
+| `capable` | capable | 형용사 | ~할 능력이 있는 |  | She is capable of doing it alone. | 완료 |
+| `career` | career | 명사 | 직업, 경력 |  | She wants a career in music. | 완료 |
+| `cast` | cast | 동사 | 던지다, 배역을 맡기다 |  | He cast his fishing line into the lake. | 완료 |
+| `catalog` | catalog | 명사 | 목록, 카탈로그 |  | I looked at the toy catalog. | 완료 |
+| `category` | category | 명사 | 범주, 종류 |  | Put the words into three categories. | 완료 |
+| `cause` | cause | 명사 | 원인 |  | What was the cause of the fire? | 완료 |
+| `cell` | cell | 명사 | 세포, 작은 방 |  | Our bodies are made of cells. | 완료 |
+| `century` | century | 명사 | 100년, 세기 |  | We live in the twenty-first century. | 완료 |
+| `chairman` | chairman | 명사 | 의장, 회장 |  | The chairman opened the meeting. | 완료 |
+| `challenge` | challenge | 명사 | 도전 |  | Climbing the mountain was a big challenge. | 완료 |
+| `channel` | channel | 명사 | 채널, 수로 |  | Change the TV channel, please. | 완료 |
+| `characteristic` | characteristic | 명사 | 특징 |  | Kindness is her best characteristic. | 완료 |
+| `charm` | charm | 명사 | 매력 |  | The old town has a lot of charm. | 완료 |
+| `chat` | chat | 동사 | 수다 떨다 |  | We chat online every night. | 완료 |
+| `chew` | chew | 동사 | 씹다 |  | Chew your food well. | 완료 |
+| `chief` | chief | 형용사 | 주된, 최고의 |  | Rice is our chief food. | 완료 |
+| `choice` | choice | 명사 | 선택 |  | You made a good choice. | 완료 |
+| `cigarette` | cigarette | 명사 | 담배 | 담배 한 개비 위에 빨간 금지 사선이 그어진 둥근 표지(글자 없이) | Cigarettes are harmful to your body. | 완료 |
+| `circumstance` | circumstance | 명사 | 상황, 환경 |  | Under the circumstances, we had to wait. | 완료 |
+| `citizen` | citizen | 명사 | 시민 |  | Every citizen has the right to vote. | 완료 |
+| `civil` | civil | 형용사 | 시민의 |  | They fought for civil rights. | 완료 |
+| `claim` | claim | 동사 | 주장하다 |  | He claims that he saw a ghost. | 완료 |
+| `client` | client | 명사 | 고객, 의뢰인 |  | The lawyer met her client. | 완료 |
+| `climate` | climate | 명사 | 기후 |  | The climate here is warm and dry. | 완료 |
+| `code` | code | 명사 | 암호, 코드 |  | Enter the secret code. | 완료 |
+| `combine` | combine | 동사 | 결합하다, 섞다 |  | Combine the flour and eggs. | 완료 |
+| `comedy` | comedy | 명사 | 코미디 |  | I like watching comedy shows. | 완료 |
+| `comfort` | comfort | 명사 | 편안함, 위로 |  | She gave me comfort when I was sad. | 완료 |
+| `command` | command | 명사 | 명령 |  | The dog follows my commands. | 완료 |
+| `comment` | comment | 명사 | 의견, 댓글 |  | He left a kind comment on my post. | 완료 |
+| `commerce` | commerce | 명사 | 상업 |  | The city is a center of commerce. | 완료 |
+| `committee` | committee | 명사 | 위원회 |  | The committee meets every Monday. | 완료 |
+| `common` | common | 형용사 | 흔한, 공통의 |  | Kim is a common name in Korea. | 완료 |
+| `communicate` | communicate | 동사 | 의사소통하다 |  | We communicate by email. | 완료 |
+| `community` | community | 명사 | 지역 사회, 공동체 |  | Our community has a nice park. | 완료 |
+| `compare` | compare | 동사 | 비교하다 |  | Compare the two pictures. | 완료 |
+| `complain` | complain | 동사 | 불평하다 |  | He always complains about the food. | 완료 |
+| `complete` | complete | 동사 | 끝내다, 완성하다 |  | Complete the sentence. | 완료 |
+| `complex` | complex | 형용사 | 복잡한 |  | The machine is very complex. | 완료 |
+| `complicate` | complicate | 동사 | 복잡하게 하다 |  | Do not complicate the problem. | 완료 |
+| `concentrate` | concentrate | 동사 | 집중하다 |  | I cannot concentrate with that noise. | 완료 |
+| `concept` | concept | 명사 | 개념 |  | The concept is easy to understand. | 완료 |
+| `concern` | concern | 명사 | 걱정, 관심사 |  | Thank you for your concern. | 완료 |
+| `confirm` | confirm | 동사 | 확인하다 |  | Please confirm your address. | 완료 |
+| `conflict` | conflict | 명사 | 갈등, 충돌 |  | They solved the conflict by talking. | 완료 |
+| `confuse` | confuse | 동사 | 혼란스럽게 하다 |  | The map confused me. | 완료 |
+| `conscious` | conscious | 형용사 | 의식하는, 깨어 있는 |  | He was conscious after the accident. | 완료 |
+| `consider` | consider | 동사 | 고려하다 |  | Please consider my idea. | 완료 |
+| `constant` | constant | 형용사 | 끊임없는, 변함없는 |  | The baby needs constant care. | 완료 |
+| `consume` | consume | 동사 | 소비하다, 먹다 |  | We consume too much sugar. | 완료 |
+| `contact` | contact | 동사 | 연락하다 |  | Contact me if you need help. | 완료 |
+| `contain` | contain | 동사 | 담고 있다, 포함하다 |  | This box contains old photos. | 완료 |
+| `content` | content | 명사 | 내용, 내용물 |  | The content of the book is interesting. | 완료 |
+| `context` | context | 명사 | 문맥, 맥락 |  | Guess the meaning from the context. | 완료 |
+| `continue` | continue | 동사 | 계속하다 |  | Please continue your story. | 완료 |
+| `contract` | contract | 명사 | 계약 |  | They signed a contract. | 완료 |
+| `contribute` | contribute | 동사 | 기여하다, 기부하다 |  | Everyone contributed to the project. | 완료 |
+| `converse` | converse | 동사 | 대화하다 |  | They conversed in English. | 완료 |
+| `convince` | convince | 동사 | 설득하다, 확신시키다 |  | She convinced me to join the club. | 완료 |
+| `cop` | cop | 명사 | 경찰관 |  | A cop helped the lost child. | 완료 |
+| `cope` | cope | 동사 | 대처하다 |  | He copes well with stress. | 완료 |
+| `council` | council | 명사 | 의회, 협의회 |  | The student council planned the festival. | 완료 |
+| `county` | county | 명사 | 군(행정 구역) |  | The county has many farms. | 완료 |
+| `crash` | crash | 동사 | 충돌하다, 부서지다 |  | The car crashed into a tree. | 완료 |
+| `create` | create | 동사 | 만들다, 창조하다 |  | She created a beautiful painting. | 완료 |
+| `credit` | credit | 명사 | 신용, 학점 |  | I paid by credit card. | 완료 |
+| `crime` | crime | 명사 | 범죄 | 창문으로 들어가려는 복면 도둑과 손전등을 비추는 경찰(우스꽝스럽게) | Stealing is a crime. | 완료 |
+| `crisis` | crisis | 명사 | 위기 |  | The country is in an economic crisis. | 완료 |
+| `crisp` | crisp | 형용사 | 바삭바삭한 |  | I like crisp toast. | 완료 |
+| `cruel` | cruel | 형용사 | 잔인한 |  | It is cruel to hurt animals. | 완료 |
+| `cure` | cure | 동사 | 치료하다 |  | This medicine can cure a cold. | 완료 |
+| `curl` | curl | 동사 | 곱슬하게 하다, 말다 |  | The cat curled up on the sofa. | 완료 |
+| `current` | current | 형용사 | 현재의 |  | What is your current address? | 완료 |
+| `damage` | damage | 명사 | 피해, 손상 | 찌그러진 장난감 자동차 | The storm caused a lot of damage. | 완료 |
+| `dare` | dare | 동사 | 감히 ~하다 |  | I did not dare to jump. | 완료 |
+| `darling` | darling | 명사 | 사랑하는 사람 |  | Good night, my darling. | 완료 |
+| `deal` | deal | 명사 | 거래, 처리 |  | We made a deal with the store. | 완료 |
+| `debate` | debate | 명사 | 토론 |  | We had a debate about school uniforms. | 완료 |
+| `debt` | debt | 명사 | 빚 |  | He paid off his debt. | 완료 |
+| `deck` | deck | 명사 | 갑판, 카드 한 벌 |  | We stood on the deck of the ship. | 완료 |
+| `defense` | defense | 명사 | 방어, 수비 |  | Our team has a strong defense. | 완료 |
+| `define` | define | 동사 | 정의하다 |  | Can you define this word? | 완료 |
+| `definite` | definite | 형용사 | 확실한, 분명한 |  | I need a definite answer. | 완료 |
+| `delay` | delay | 동사 | 미루다, 지연시키다 |  | The flight was delayed by rain. | 완료 |
+| `delight` | delight | 명사 | 큰 기쁨 |  | The children laughed with delight. | 완료 |
+| `demand` | demand | 동사 | 요구하다 |  | They demanded an answer. | 완료 |
+| `demonstrate` | demonstrate | 동사 | 보여 주다, 증명하다 |  | The teacher demonstrated the experiment. | 완료 |
+| `deny` | deny | 동사 | 부인하다 |  | He denied breaking the window. | 완료 |
+| `depend` | depend | 동사 | 의존하다, ~에 달려 있다 |  | It depends on the weather. | 완료 |
+| `depress` | depress | 동사 | 우울하게 하다 |  | Rainy days depress me. | 완료 |
+| `describe` | describe | 동사 | 묘사하다, 설명하다 |  | Describe your best friend. | 완료 |
+| `deserve` | deserve | 동사 | ~을 받을 만하다 |  | You deserve a rest. | 완료 |
+| `desire` | desire | 명사 | 욕구, 바람 |  | She has a strong desire to win. | 완료 |
+| `desperate` | desperate | 형용사 | 절박한, 필사적인 |  | He was desperate for water. | 완료 |
+| `despite` | despite | 전치사 | ~에도 불구하고 |  | We played despite the rain. | 완료 |
+| `destroy` | destroy | 동사 | 파괴하다 |  | The fire destroyed the forest. | 완료 |
+| `detail` | detail | 명사 | 세부 사항 |  | Tell me every detail. | 완료 |
+| `detect` | detect | 동사 | 발견하다, 감지하다 |  | Dogs can detect smells very well. | 완료 |
+| `determine` | determine | 동사 | 결정하다, 알아내다 |  | We must determine the cause. | 완료 |
+| `develop` | develop | 동사 | 발달시키다, 개발하다 |  | Reading develops your mind. | 완료 |
+| `diet` | diet | 명사 | 식단, 다이어트 |  | A healthy diet includes vegetables. | 완료 |
+| `direct` | direct | 형용사 | 직접적인, 곧장 가는 |  | Is there a direct bus to the airport? | 완료 |
+| `dirt` | dirt | 명사 | 흙, 먼지 |  | Wash the dirt off your hands. | 완료 |
+| `disappoint` | disappoint | 동사 | 실망시키다 |  | I do not want to disappoint my parents. | 완료 |
+| `discipline` | discipline | 명사 | 규율, 훈련 |  | Sports teach discipline. | 완료 |
+| `disgust` | disgust | 명사 | 역겨움 |  | He looked at the trash with disgust. | 완료 |
+| `display` | display | 동사 | 전시하다, 보여 주다 |  | The shop displays toys in the window. | 완료 |
+| `district` | district | 명사 | 지역, 구역 |  | This is a shopping district. | 완료 |
+| `disturb` | disturb | 동사 | 방해하다 |  | Please do not disturb me. | 완료 |
+| `divorce` | divorce | 명사 | 이혼 |  | They got a divorce last year. | 완료 |
+| `domestic` | domestic | 형용사 | 국내의, 가정의 |  | This is a domestic flight. | 완료 |
+| `doubt` | doubt | 명사 | 의심 |  | I have no doubt about it. | 완료 |
+| `drag` | drag | 동사 | 끌다 |  | He dragged the heavy bag. | 완료 |
+| `drama` | drama | 명사 | 연극, 드라마 |  | She is in the drama club. | 완료 |
+| `drug` | drug | 명사 | 약, 마약 | 약병과 알약 몇 알 | This drug helps with pain. | 완료 |
+| `due` | due | 형용사 | ~하기로 되어 있는, 마감인 |  | The homework is due tomorrow. | 완료 |
+| `dump` | dump | 동사 | 버리다 |  | Do not dump trash in the river. | 완료 |
+| `dust` | dust | 명사 | 먼지 |  | The shelf is covered with dust. | 완료 |
+| `duty` | duty | 명사 | 의무, 임무 |  | It is my duty to feed the dog. | 완료 |
+| `each` | each | 형용사 | 각각의 |  | Each student has a locker. | 완료 |
+| `earn` | earn | 동사 | 벌다, 얻다 |  | She earns money by babysitting. | 완료 |
+| `ease` | ease | 명사 | 쉬움, 편안함 |  | She passed the test with ease. | 완료 |
+| `economy` | economy | 명사 | 경제 |  | The country's economy is growing. | 완료 |
+| `edge` | edge | 명사 | 가장자리, 모서리 |  | Do not stand at the edge of the pool. | 완료 |
+| `edit` | edit | 동사 | 편집하다, 고치다 |  | I edited my video. | 완료 |
+| `educate` | educate | 동사 | 교육하다 |  | Schools educate children. | 완료 |
+| `effect` | effect | 명사 | 영향, 효과 |  | The medicine had a good effect. | 완료 |
+| `effort` | effort | 명사 | 노력 |  | Thank you for your effort. | 완료 |
+| `either` | either | 부사 | (둘 중) 어느 하나, ~도 또한 |  | You can take either bus. | 완료 |
+| `elect` | elect | 동사 | 선출하다 |  | We elected a new class president. | 완료 |
+| `electric` | electric | 형용사 | 전기의 |  | He plays the electric guitar. | 완료 |
+| `element` | element | 명사 | 요소, 원소 |  | Trust is an important element of a team. | 완료 |
+| `else` | else | 부사 | 그 밖에, 다른 |  | Do you want anything else? | 완료 |
+| `embarrass` | embarrass | 동사 | 당황하게 하다 |  | His question embarrassed me. | 완료 |
+| `emotion` | emotion | 명사 | 감정 |  | Music can show strong emotions. | 완료 |
+| `emphasize` | emphasize | 동사 | 강조하다 |  | The teacher emphasized safety. | 완료 |
+| `empire` | empire | 명사 | 제국 |  | Rome was a great empire. | 완료 |
+| `employ` | employ | 동사 | 고용하다 |  | The factory employs 200 workers. | 완료 |
+| `enemy` | enemy | 명사 | 적 |  | The two cats are enemies. | 완료 |
+| `engage` | engage | 동사 | 참여하다, 약속하다 |  | Students engage in group work. | 완료 |
+| `enormous` | enormous | 형용사 | 거대한 |  | An enormous whale swam by the boat. | 완료 |
+| `entertain` | entertain | 동사 | 즐겁게 하다 |  | The magician entertained the kids. | 완료 |
+| `entire` | entire | 형용사 | 전체의 |  | I read the entire book in a day. | 완료 |
+| `especially` | especially | 부사 | 특히 |  | I like fruit, especially apples. | 완료 |
+| `essay` | essay | 명사 | 수필, 글 |  | I wrote an essay about my family. | 완료 |
+| `establish` | establish | 동사 | 설립하다 |  | The school was established in 1990. | 완료 |
+| `estimate` | estimate | 동사 | 어림잡다, 추정하다 |  | I estimate that it will take an hour. | 완료 |
+| `even` | even | 부사 | ~조차, 훨씬 |  | Even a child can do it. | 완료 |
+| `ever` | ever | 부사 | 언젠가, 지금까지 |  | Have you ever been to Jeju? | 완료 |
+| `evidence` | evidence | 명사 | 증거 |  | There is no evidence that he did it. | 완료 |
+| `evil` | evil | 형용사 | 사악한 |  | The story has an evil witch. | 완료 |
+| `exact` | exact | 형용사 | 정확한 |  | What is the exact time? | 완료 |
+| `except` | except | 전치사 | ~을 제외하고 |  | Everyone came except Tom. | 완료 |
+| `exhaust` | exhaust | 동사 | 지치게 하다 |  | The long hike exhausted us. | 완료 |
+| `exist` | exist | 동사 | 존재하다 |  | Do aliens really exist? | 완료 |
+| `expand` | expand | 동사 | 넓히다, 팽창하다 |  | Air expands when it is heated. | 완료 |
+| `expect` | expect | 동사 | 기대하다, 예상하다 |  | I expect her to come soon. | 완료 |
+| `expense` | expense | 명사 | 비용 |  | Travel expenses were high. | 완료 |
+| `experience` | experience | 명사 | 경험 |  | It was a great experience for me. | 완료 |
+| `expert` | expert | 명사 | 전문가 |  | She is an expert on dinosaurs. | 완료 |
+| `explain` | explain | 동사 | 설명하다 |  | Can you explain the rule again? | 완료 |
+| `expose` | expose | 동사 | 드러내다, 노출시키다 |  | Do not expose your skin to the sun too long. | 완료 |
+| `express` | express | 동사 | 표현하다 |  | She expressed her thanks with a card. | 완료 |
+| `extend` | extend | 동사 | 늘이다, 연장하다 |  | They extended the deadline. | 완료 |
+| `extra` | extra | 형용사 | 추가의, 여분의 |  | Bring an extra pencil. | 완료 |
+| `extreme` | extreme | 형용사 | 극심한, 극도의 |  | The desert has extreme heat. | 완료 |
+| `factor` | factor | 명사 | 요인 |  | Sleep is an important factor in health. | 완료 |
+| `faint` | faint | 형용사 | 희미한, 어지러운 |  | I heard a faint sound. | 완료 |
+| `faith` | faith | 명사 | 믿음, 신뢰 |  | I have faith in my team. | 완료 |
+| `familiar` | familiar | 형용사 | 익숙한, 낯익은 |  | Her face looks familiar. | 완료 |
+| `fancy` | fancy | 형용사 | 화려한, 고급의 |  | They ate at a fancy restaurant. | 완료 |
+| `fantastic` | fantastic | 형용사 | 환상적인, 멋진 |  | We had a fantastic time. | 완료 |
+| `fascinate` | fascinate | 동사 | 매혹하다 |  | Stars fascinate me. | 완료 |
+| `fashion` | fashion | 명사 | 패션, 유행 |  | She is interested in fashion. | 완료 |
+| `fault` | fault | 명사 | 잘못, 결점 |  | It was not your fault. | 완료 |
+| `favor` | favor | 명사 | 부탁, 호의 |  | Can you do me a favor? | 완료 |
+| `fear` | fear | 명사 | 두려움 |  | She has a fear of heights. | 완료 |
+| `feature` | feature | 명사 | 특징, 기능 |  | The phone has many new features. | 완료 |
+| `fee` | fee | 명사 | 요금, 수수료 |  | The entrance fee is five dollars. | 완료 |
+| `fellow` | fellow | 명사 | 동료, 녀석 |  | He is a friendly fellow. | 완료 |
+| `female` | female | 형용사 | 여성의, 암컷의 |  | The female lion hunts for food. | 완료 |
+| `figure` | figure | 명사 | 숫자, 모습, 인물 |  | Look at the figures in the table. | 완료 |
+| `final` | final | 형용사 | 마지막의 |  | This is the final game of the season. | 완료 |
+| `finance` | finance | 명사 | 재정, 금융 |  | She works in finance. | 완료 |
+| `firm` | firm | 형용사 | 단단한, 확고한 |  | The bed is too firm for me. | 완료 |
+| `fit` | fit | 동사 | (크기가) 맞다 |  | These shoes fit me well. | 완료 |
+| `flash` | flash | 명사 | 번쩍임 |  | We saw a flash of lightning. | 완료 |
+| `flood` | flood | 명사 | 홍수 |  | The heavy rain caused a flood. | 완료 |
+| `flow` | flow | 동사 | 흐르다 |  | The river flows into the sea. | 완료 |
+| `folk` | folk | 형용사 | 민속의 |  | We learned a Korean folk song. | 완료 |
+| `foreign` | foreign | 형용사 | 외국의 |  | I want to learn a foreign language. | 완료 |
+| `forever` | forever | 부사 | 영원히 |  | We will be friends forever. | 완료 |
+| `forgive` | forgive | 동사 | 용서하다 |  | Please forgive me for being late. | 완료 |
+| `forth` | forth | 부사 | 앞으로 |  | The swing moved back and forth. | 완료 |
+| `fortunate` | fortunate | 형용사 | 운이 좋은 |  | We were fortunate to find seats. | 완료 |
+| `fortune` | fortune | 명사 | 운, 큰돈 |  | He made a fortune in business. | 완료 |
+| `found` | found | 동사 | 설립하다 |  | She founded a school for girls. | 완료 |
+| `frankly` | frankly | 부사 | 솔직히 |  | Frankly, I do not like it. | 완료 |
+| `fright` | fright | 명사 | 놀람, 공포 |  | The loud noise gave me a fright. | 완료 |
+| `frustrate` | frustrate | 동사 | 좌절시키다, 답답하게 하다 |  | The hard puzzle frustrated him. | 완료 |
+| `function` | function | 명사 | 기능 |  | What is the function of this button? | 완료 |
+| `fund` | fund | 명사 | 기금, 자금 |  | We raised funds for the animal shelter. | 완료 |
+| `fur` | fur | 명사 | 털 |  | The rabbit has soft white fur. | 완료 |
+| `gain` | gain | 동사 | 얻다, 늘다 |  | He gained a lot of experience. | 완료 |
+| `gear` | gear | 명사 | 장비, 기어 |  | Bring your camping gear. | 완료 |
+| `general` | general | 형용사 | 일반적인 |  | This is a general rule. | 완료 |
+| `gesture` | gesture | 명사 | 몸짓 |  | She made a gesture to come in. | 완료 |
+| `glance` | glance | 동사 | 흘끗 보다 |  | He glanced at his watch. | 완료 |
+| `glory` | glory | 명사 | 영광 |  | The team returned home in glory. | 완료 |
+| `gorgeous` | gorgeous | 형용사 | 아주 멋진, 아름다운 |  | What a gorgeous sunset! | 완료 |
+| `govern` | govern | 동사 | 다스리다 |  | The king governed the country wisely. | 완료 |
+| `grab` | grab | 동사 | 움켜잡다 |  | He grabbed my hand. | 완료 |
+| `grace` | grace | 명사 | 우아함 |  | The dancer moved with grace. | 완료 |
+| `grade` | grade | 명사 | 학년, 성적 |  | I am in the second grade of middle school. | 완료 |
+| `grand` | grand | 형용사 | 웅장한 |  | They live in a grand house. | 완료 |
+| `grant` | grant | 동사 | 주다, 허락하다 |  | The fairy granted her three wishes. | 완료 |
+| `guarantee` | guarantee | 동사 | 보장하다 |  | I guarantee you will like it. | 완료 |
+| `guard` | guard | 명사 | 경비원, 지키는 사람 |  | A guard stands at the gate. | 완료 |
+| `guest` | guest | 명사 | 손님 |  | We have guests for dinner. | 완료 |
+| `guide` | guide | 명사 | 안내인, 안내서 |  | Our guide showed us the old town. | 완료 |
+| `guilt` | guilt | 명사 | 죄책감, 유죄 |  | He felt guilt about lying. | 완료 |
+| `gun` | gun | 명사 | 총 | 장난감 물총 하나(사람 없이, 누구도 겨누지 않게) | The police officer carries a gun. | 완료 |
+| `harm` | harm | 명사 | 해, 피해 | 뜨거운 냄비에 손을 대려는 아이를 어른이 막는 장면 | Smoking does harm to your body. | 완료 |
+| `heaven` | heaven | 명사 | 천국, 하늘 |  | The stars look like lights in heaven. | 완료 |
+| `hell` | hell | 명사 | 지옥 |  | The trip was hell because of the heat. | 완료 |
+| `hesitate` | hesitate | 동사 | 망설이다 |  | Do not hesitate to ask questions. | 완료 |
+| `hint` | hint | 명사 | 힌트, 암시 |  | Give me a hint, please. | 완료 |
+| `hire` | hire | 동사 | 고용하다 |  | They hired a new cook. | 완료 |
+| `honor` | honor | 명사 | 명예, 영광 |  | It is an honor to meet you. | 완료 |
+| `humor` | humor | 명사 | 유머 |  | He has a good sense of humor. | 완료 |
+| `hunger` | hunger | 명사 | 배고픔, 굶주림 |  | Many children suffer from hunger. | 완료 |
+| `identity` | identity | 명사 | 정체성, 신원 |  | The police checked his identity. | 완료 |
+| `ignore` | ignore | 동사 | 무시하다 |  | Do not ignore the warning sign. | 완료 |
+| `illustrate` | illustrate | 동사 | 삽화를 넣다, 예를 들어 설명하다 |  | She illustrates books for children. | 완료 |
+| `immediate` | immediate | 형용사 | 즉각적인 |  | We need an immediate answer. | 완료 |
+| `impress` | impress | 동사 | 깊은 인상을 주다 |  | Her speech impressed everyone. | 완료 |
+| `improve` | improve | 동사 | 나아지다, 향상시키다 |  | Reading improves your English. | 완료 |
+| `include` | include | 동사 | 포함하다 |  | The price includes lunch. | 완료 |
+| `income` | income | 명사 | 소득, 수입 |  | His income is not very high. | 완료 |
+| `indeed` | indeed | 부사 | 정말로, 참으로 |  | It is indeed a great idea. | 완료 |
+| `indicate` | indicate | 동사 | 가리키다, 나타내다 |  | The sign indicates the way out. | 완료 |
+| `individual` | individual | 명사 | 개인 |  | Every individual is different. | 완료 |
+| `industry` | industry | 명사 | 산업 |  | The car industry is important in Korea. | 완료 |
+| `influence` | influence | 명사 | 영향 |  | Friends have a big influence on us. | 완료 |
+| `inform` | inform | 동사 | 알리다 |  | Please inform me of any changes. | 완료 |
+| `injure` | injure | 동사 | 다치게 하다 |  | He injured his arm while skating. | 완료 |
+| `innocent` | innocent | 형용사 | 죄 없는, 순진한 |  | The man was innocent. | 완료 |
+| `insist` | insist | 동사 | 주장하다, 고집하다 |  | She insisted on paying for lunch. | 완료 |
+| `inspect` | inspect | 동사 | 점검하다 |  | They inspect the bridge every year. | 완료 |
+| `instance` | instance | 명사 | 사례, 경우 |  | For instance, cats sleep a lot. | 완료 |
+| `instant` | instant | 형용사 | 즉각적인, 즉석의 |  | I ate instant noodles. | 완료 |
+| `instead` | instead | 부사 | 대신에 |  | I had tea instead of coffee. | 완료 |
+| `instruct` | instruct | 동사 | 가르치다, 지시하다 |  | The coach instructed us to run. | 완료 |
+| `insure` | insure | 동사 | 보험에 들다 |  | We insured our house against fire. | 완료 |
+| `intend` | intend | 동사 | ~할 작정이다 |  | I intend to study abroad. | 완료 |
+| `intense` | intense | 형용사 | 강렬한, 극심한 |  | The heat was intense. | 완료 |
+| `intent` | intent | 명사 | 의도 |  | It was not my intent to hurt you. | 완료 |
+| `internal` | internal | 형용사 | 내부의 |  | The heart is an internal organ. | 완료 |
+| `interrupt` | interrupt | 동사 | 방해하다, 끼어들다 |  | Do not interrupt when others talk. | 완료 |
+| `invest` | invest | 동사 | 투자하다 |  | He invested money in the company. | 완료 |
+| `investigate` | investigate | 동사 | 조사하다 |  | The police are investigating the case. | 완료 |
+| `involve` | involve | 동사 | 포함하다, 관련시키다 |  | The job involves a lot of travel. | 완료 |
+| `item` | item | 명사 | 물품, 항목 |  | There are ten items on the list. | 완료 |
+| `jaw` | jaw | 명사 | 턱 |  | The shark has strong jaws. | 완료 |
+| `joke` | joke | 명사 | 농담 |  | He told a funny joke. | 완료 |
+| `journey` | journey | 명사 | 여행, 여정 |  | The journey took three days. | 완료 |
+| `judge` | judge | 명사 | 판사, 심판 |  | The judge listened to both sides. | 완료 |
+| `junior` | junior | 형용사 | 후배의, 어린 |  | He is my junior at school. | 완료 |
+| `justice` | justice | 명사 | 정의 |  | They fought for justice. | 완료 |
+| `knowledge` | knowledge | 명사 | 지식 |  | She has a lot of knowledge about plants. | 완료 |
+| `label` | label | 명사 | 상표, 꼬리표 |  | Read the label on the bottle. | 완료 |
+| `labor` | labor | 명사 | 노동 |  | Building a house takes a lot of labor. | 완료 |
+| `lack` | lack | 명사 | 부족 |  | The plant died from lack of water. | 완료 |
+| `lane` | lane | 명사 | 좁은 길, 차선 |  | Stay in the right lane. | 완료 |
+| `law` | law | 명사 | 법 |  | Everyone must follow the law. | 완료 |
+| `lawyer` | lawyer | 명사 | 변호사 |  | My aunt is a lawyer. | 완료 |
+| `lay` | lay | 동사 | 놓다, (알을) 낳다 |  | Lay the book on the table. | 완료 |
+| `league` | league | 명사 | 리그, 연맹 |  | Our team won the league. | 완료 |
+| `leap` | leap | 동사 | 뛰다, 도약하다 |  | The frog leaped into the pond. | 완료 |
+| `legal` | legal | 형용사 | 합법적인, 법률의 |  | It is not legal to park here. | 완료 |
+| `lend` | lend | 동사 | 빌려주다 |  | Can you lend me your pen? | 완료 |
+| `level` | level | 명사 | 수준, 높이 |  | This book is at my level. | 완료 |
+| `license` | license | 명사 | 면허, 허가증 |  | My brother got his driver license. | 완료 |
+| `limit` | limit | 명사 | 한계, 제한 |  | There is a speed limit on this road. | 완료 |
+| `link` | link | 명사 | 연결, 링크 |  | Click the link to see the video. | 완료 |
+| `load` | load | 명사 | 짐 |  | The truck carries a heavy load. | 완료 |
+| `loan` | loan | 명사 | 대출 |  | They got a loan to buy a house. | 완료 |
+| `local` | local | 형용사 | 지역의, 현지의 |  | We ate at a local restaurant. | 완료 |
+| `locate` | locate | 동사 | 위치를 찾다, 두다 |  | The school is located near the park. | 완료 |
+| `loose` | loose | 형용사 | 헐거운, 풀린 |  | My tooth is loose. | 완료 |
+| `loss` | loss | 명사 | 손실, 패배 |  | The team had its first loss. | 완료 |
+| `main` | main | 형용사 | 주된, 가장 중요한 |  | What is the main idea of the story? | 완료 |
+| `maintain` | maintain | 동사 | 유지하다 |  | Exercise helps you maintain your health. | 완료 |
+| `major` | major | 형용사 | 주요한, 큰 |  | Traffic is a major problem in the city. | 완료 |
+| `male` | male | 형용사 | 남성의, 수컷의 |  | The male bird has bright feathers. | 완료 |
+| `manage` | manage | 동사 | 관리하다, 해내다 |  | She manages a small shop. | 완료 |
+| `manner` | manner | 명사 | 방식, 예절 |  | He has good table manners. | 완료 |
+| `manufacture` | manufacture | 동사 | 제조하다 |  | The factory manufactures cars. | 완료 |
+| `mark` | mark | 명사 | 표시, 점수 |  | Put a mark next to the right answer. | 완료 |
+| `marvel` | marvel | 동사 | 경탄하다 |  | We marveled at the view. | 완료 |
+| `mass` | mass | 명사 | 덩어리, 다량 |  | A mass of clouds covered the sky. | 완료 |
+| `master` | master | 명사 | 주인, 달인 |  | The dog ran to its master. | 완료 |
+| `mate` | mate | 명사 | 친구, 짝 |  | He is my classmate and best mate. | 완료 |
+| `maximum` | maximum | 명사 | 최대 |  | The maximum number of players is five. | 완료 |
+| `mean` | mean | 동사 | 의미하다 |  | What does this word mean? | 완료 |
+| `medical` | medical | 형용사 | 의학의, 의료의 |  | She needs medical care. | 완료 |
+| `mental` | mental | 형용사 | 정신의, 마음의 |  | Sleep is good for your mental health. | 완료 |
+| `mention` | mention | 동사 | 언급하다 |  | He did not mention his name. | 완료 |
+| `menu` | menu | 명사 | 메뉴, 차림표 |  | Can I see the menu, please? | 완료 |
+| `method` | method | 명사 | 방법 |  | This is an easy method to learn words. | 완료 |
+| `military` | military | 형용사 | 군대의 |  | He wore a military uniform. | 완료 |
+| `minor` | minor | 형용사 | 작은, 중요하지 않은 |  | It is only a minor problem. | 완료 |
+| `mission` | mission | 명사 | 임무 |  | The astronauts finished their mission. | 완료 |
+| `modern` | modern | 형용사 | 현대의 |  | This is a modern building. | 완료 |
+| `moment` | moment | 명사 | 순간, 잠깐 |  | Wait a moment, please. | 완료 |
+| `mood` | mood | 명사 | 기분 |  | She is in a good mood today. | 완료 |
+| `moral` | moral | 형용사 | 도덕적인 |  | The story has a moral lesson. | 완료 |
+| `moreover` | moreover | 부사 | 게다가 |  | It is cheap. Moreover, it tastes good. | 완료 |
+| `motion` | motion | 명사 | 움직임, 운동 |  | The motion of the boat made me sick. | 완료 |
+| `motor` | motor | 명사 | 모터, 전동기 |  | The toy car has a small motor. | 완료 |
+| `mount` | mount | 동사 | 오르다, 올라타다 |  | He mounted his horse. | 완료 |
+| `mystery` | mystery | 명사 | 수수께끼, 신비 |  | The cause is still a mystery. | 완료 |
+| `native` | native | 형용사 | 태어난 곳의, 토박이의 |  | Korean is my native language. | 완료 |
+| `necessary` | necessary | 형용사 | 필요한 |  | Water is necessary for life. | 완료 |
+| `neither` | neither | 부사 | (둘 중) 어느 것도 아니다 |  | Neither answer is correct. | 완료 |
+| `nerve` | nerve | 명사 | 신경, 용기 |  | It takes nerve to speak on stage. | 완료 |
+| `none` | none | 대명사 | 아무도, 하나도 ~않다 |  | None of us knew the answer. | 완료 |
+| `nor` | nor | 접속사 | ~도 또한 아니다 |  | He does not sing, nor does he dance. | 완료 |
+| `notice` | notice | 동사 | 알아차리다 |  | Did you notice her new haircut? | 완료 |
+| `nowadays` | nowadays | 부사 | 요즘에는 |  | Nowadays, many people shop online. | 완료 |
+| `nowhere` | nowhere | 부사 | 어디에도 ~없다 |  | My keys are nowhere to be found. | 완료 |
+| `object` | object | 명사 | 물건, 대상 |  | What is that strange object? | 완료 |
+| `obvious` | obvious | 형용사 | 분명한 |  | The answer is obvious. | 완료 |
+| `occasion` | occasion | 명사 | 때, 특별한 행사 |  | A wedding is a special occasion. | 완료 |
+| `occur` | occur | 동사 | 일어나다, 발생하다 |  | The accident occurred at night. | 완료 |
+| `odd` | odd | 형용사 | 이상한, 홀수의 |  | One, three, and five are odd numbers. | 완료 |
+| `offer` | offer | 동사 | 제안하다, 내주다 |  | She offered me a seat. | 완료 |
+| `officer` | officer | 명사 | 경찰관, 장교, 공무원 |  | A police officer helped us. | 완료 |
+| `opera` | opera | 명사 | 오페라 |  | We saw an opera at the theater. | 완료 |
+| `operate` | operate | 동사 | 작동하다, 수술하다 | 아이가 버튼을 눌러 기계를 작동시키는 장면 | Do you know how to operate this machine? | 완료 |
+| `opinion` | opinion | 명사 | 의견 |  | In my opinion, the movie was great. | 완료 |
+| `oppose` | oppose | 동사 | 반대하다 |  | Many people oppose the plan. | 완료 |
+| `order` | order | 명사 | 순서, 주문, 명령 |  | Put the words in the right order. | 완료 |
+| `ordinary` | ordinary | 형용사 | 평범한, 보통의 |  | It was an ordinary day. | 완료 |
+| `otherwise` | otherwise | 부사 | 그렇지 않으면 |  | Hurry up; otherwise, we will be late. | 완료 |
+| `ought` | ought | 조동사 | ~해야 한다 |  | You ought to see a doctor. | 완료 |
+| `overall` | overall | 형용사 | 전반적인 |  | The overall result was good. | 완료 |
+| `own` | own | 형용사 | 자기 자신의 |  | I have my own room. | 완료 |
+| `panic` | panic | 명사 | 공포, 당황 |  | Do not panic in an emergency. | 완료 |
+| `paragraph` | paragraph | 명사 | 문단 |  | Read the first paragraph aloud. | 완료 |
+| `particular` | particular | 형용사 | 특정한, 특별한 |  | Is there a particular color you like? | 완료 |
+| `past` | past | 명사 | 과거 |  | In the past, people rode horses. | 완료 |
+| `pause` | pause | 동사 | 잠시 멈추다 |  | Pause the video for a minute. | 완료 |
+| `per` | per | 전치사 | ~당, ~마다 |  | The speed limit is 50 kilometers per hour. | 완료 |
+| `perfect` | perfect | 형용사 | 완벽한 |  | Your pronunciation is perfect. | 완료 |
+| `perhaps` | perhaps | 부사 | 아마도 |  | Perhaps it will snow tomorrow. | 완료 |
+| `period` | period | 명사 | 기간, 교시 |  | We have math in the first period. | 완료 |
+| `physical` | physical | 형용사 | 신체의, 물리적인 |  | Physical exercise is good for you. | 완료 |
+| `pitch` | pitch | 동사 | 던지다 |  | He pitched the ball fast. | 완료 |
+| `pity` | pity | 명사 | 동정, 유감 |  | It is a pity that you cannot come. | 완료 |
+| `plain` | plain | 형용사 | 무늬 없는, 분명한 |  | She wore a plain white shirt. | 완료 |
+| `plenty` | plenty | 명사 | 많음, 충분함 |  | We have plenty of time. | 완료 |
+| `poem` | poem | 명사 | 시 |  | She wrote a poem about spring. | 완료 |
+| `poet` | poet | 명사 | 시인 |  | Yun Dong-ju was a famous poet. | 완료 |
+| `poison` | poison | 명사 | 독 | 보라색 액체가 든 병에 빨간 X 모양 표시(해골·글자 없이) | Some mushrooms have poison. | 완료 |
+| `policy` | policy | 명사 | 정책, 방침 |  | The school has a new uniform policy. | 완료 |
+| `politics` | politics | 명사 | 정치 |  | He is interested in politics. | 완료 |
+| `pollute` | pollute | 동사 | 오염시키다 |  | Cars pollute the air. | 완료 |
+| `pop` | pop | 동사 | 펑 터지다 |  | The balloon popped. | 완료 |
+| `popular` | popular | 형용사 | 인기 있는 |  | Soccer is a popular sport. | 완료 |
+| `possess` | possess | 동사 | 소유하다 |  | He possesses a great talent. | 완료 |
+| `possible` | possible | 형용사 | 가능한 |  | Is it possible to finish today? | 완료 |
+| `potential` | potential | 명사 | 잠재력 |  | She has the potential to be a great singer. | 완료 |
+| `powder` | powder | 명사 | 가루 |  | Add some baking powder. | 완료 |
+| `practical` | practical | 형용사 | 실용적인, 실제의 |  | This bag is very practical. | 완료 |
+| `prefer` | prefer | 동사 | 더 좋아하다 |  | I prefer tea to coffee. | 완료 |
+| `pregnant` | pregnant | 형용사 | 임신한 |  | My aunt is pregnant. | 완료 |
+| `prepare` | prepare | 동사 | 준비하다 |  | I prepared for the test. | 완료 |
+| `presence` | presence | 명사 | 존재, 참석 |  | Your presence makes me happy. | 완료 |
+| `pretend` | pretend | 동사 | ~인 척하다 |  | He pretended to be asleep. | 완료 |
+| `prevent` | prevent | 동사 | 막다, 예방하다 |  | Washing hands prevents colds. | 완료 |
+| `previous` | previous | 형용사 | 이전의 |  | I saw him the previous day. | 완료 |
+| `pride` | pride | 명사 | 자부심, 자존심 |  | She takes pride in her work. | 완료 |
+| `prime` | prime | 형용사 | 주요한, 최고의 |  | Safety is our prime concern. | 완료 |
+| `principle` | principle | 명사 | 원칙, 원리 |  | Honesty is my first principle. | 완료 |
+| `prison` | prison | 명사 | 감옥 | 창살이 있는 빈 방(사람 없이) | The thief was sent to prison. | 완료 |
+| `privacy` | privacy | 명사 | 사생활 |  | Please respect my privacy. | 완료 |
+| `private` | private | 형용사 | 개인의, 사적인 |  | This is a private room. | 완료 |
+| `probable` | probable | 형용사 | 있을 법한 |  | Rain is probable this afternoon. | 완료 |
+| `proceed` | proceed | 동사 | 계속하다, 나아가다 |  | Please proceed to gate five. | 완료 |
+| `process` | process | 명사 | 과정 |  | Learning is a slow process. | 완료 |
+| `produce` | produce | 동사 | 생산하다 |  | This farm produces fresh milk. | 완료 |
+| `profession` | profession | 명사 | 직업 |  | Teaching is a respected profession. | 완료 |
+| `profit` | profit | 명사 | 이익 |  | The shop made a small profit. | 완료 |
+| `progress` | progress | 명사 | 진전, 발전 |  | You are making good progress. | 완료 |
+| `promote` | promote | 동사 | 홍보하다, 승진시키다 |  | The singer is promoting her new album. | 완료 |
+| `pronounce` | pronounce | 동사 | 발음하다 |  | How do you pronounce this word? | 완료 |
+| `proper` | proper | 형용사 | 알맞은, 올바른 |  | Use the proper tool for the job. | 완료 |
+| `property` | property | 명사 | 재산, 특성 |  | This land is private property. | 완료 |
+| `propose` | propose | 동사 | 제안하다, 청혼하다 |  | I propose that we start early. | 완료 |
+| `protest` | protest | 동사 | 항의하다 |  | People protested against the plan. | 완료 |
+| `prove` | prove | 동사 | 증명하다 |  | Can you prove that you are right? | 완료 |
+| `provide` | provide | 동사 | 제공하다 |  | The hotel provides breakfast. | 완료 |
+| `pub` | pub | 명사 | 술집 | 나무 간판이 달린 작은 가게 앞모습(간판 글자 없이) | The pub is closed today. | 완료 |
+| `public` | public | 형용사 | 공공의, 대중의 |  | This is a public library. | 완료 |
+| `punch` | punch | 동사 | 주먹으로 치다 |  | He punched the bag in the gym. | 완료 |
+| `punish` | punish | 동사 | 벌주다 | 벽을 보고 서서 반성하는 아이와 팔짱 낀 어른(무섭지 않게) | The teacher did not punish him. | 완료 |
+| `purchase` | purchase | 동사 | 구입하다 |  | You can purchase tickets online. | 완료 |
+| `pure` | pure | 형용사 | 순수한, 깨끗한 |  | The water is pure and clean. | 완료 |
+| `purpose` | purpose | 명사 | 목적 |  | What is the purpose of your visit? | 완료 |
+| `quality` | quality | 명사 | 품질, 자질 |  | This bag is of good quality. | 완료 |
+| `quit` | quit | 동사 | 그만두다 |  | He quit the soccer team. | 완료 |
+| `quite` | quite | 부사 | 꽤, 상당히 |  | The test was quite easy. | 완료 |
+| `quote` | quote | 동사 | 인용하다 |  | She quoted a line from the poem. | 완료 |
+| `range` | range | 명사 | 범위 |  | The store sells a wide range of toys. | 완료 |
+| `rapid` | rapid | 형용사 | 빠른 |  | The city saw rapid growth. | 완료 |
+| `rare` | rare | 형용사 | 드문, 희귀한 |  | This bird is very rare. | 완료 |
+| `rate` | rate | 명사 | 비율, 속도, 요금 |  | The birth rate is falling. | 완료 |
+| `rather` | rather | 부사 | 오히려, 꽤 |  | I would rather stay home. | 완료 |
+| `react` | react | 동사 | 반응하다 |  | How did she react to the news? | 완료 |
+| `reason` | reason | 명사 | 이유 |  | What is the reason for your choice? | 완료 |
+| `receive` | receive | 동사 | 받다 |  | I received a letter from my friend. | 완료 |
+| `recent` | recent | 형용사 | 최근의 |  | This is a recent photo of me. | 완료 |
+| `recipe` | recipe | 명사 | 요리법 |  | This is my grandma's recipe. | 완료 |
+| `recognize` | recognize | 동사 | 알아보다, 인정하다 |  | I did not recognize you at first. | 완료 |
+| `recommend` | recommend | 동사 | 추천하다 |  | Can you recommend a good book? | 완료 |
+| `recover` | recover | 동사 | 회복하다 |  | She recovered from her cold. | 완료 |
+| `refer` | refer | 동사 | 참고하다, 가리키다 |  | Refer to the map on page five. | 완료 |
+| `reflect` | reflect | 동사 | 비추다, 반영하다 |  | The lake reflects the mountains. | 완료 |
+| `refuse` | refuse | 동사 | 거절하다 |  | He refused to answer. | 완료 |
+| `regard` | regard | 동사 | ~로 여기다 |  | I regard him as my best friend. | 완료 |
+| `region` | region | 명사 | 지역 |  | This region is famous for apples. | 완료 |
+| `register` | register | 동사 | 등록하다 |  | I registered for the swimming class. | 완료 |
+| `regular` | regular | 형용사 | 규칙적인, 보통의 |  | Regular exercise keeps you healthy. | 완료 |
+| `relate` | relate | 동사 | 관련시키다 |  | The two events are closely related. | 완료 |
+| `release` | release | 동사 | 놓아주다, 발표하다 |  | They released the bird into the sky. | 완료 |
+| `relief` | relief | 명사 | 안심, 완화 |  | It was a relief to find my bag. | 완료 |
+| `rely` | rely | 동사 | 의지하다 |  | You can rely on me. | 완료 |
+| `remain` | remain | 동사 | 남다, 계속 ~이다 |  | Please remain in your seat. | 완료 |
+| `remark` | remark | 명사 | 말, 발언 |  | She made a kind remark about my work. | 완료 |
+| `remind` | remind | 동사 | 생각나게 하다 |  | Remind me to call my mom. | 완료 |
+| `remove` | remove | 동사 | 없애다, 치우다 |  | Remove your shoes before you enter. | 완료 |
+| `rent` | rent | 동사 | 빌리다, 세내다 |  | We rented a car for the trip. | 완료 |
+| `replace` | replace | 동사 | 바꾸다, 대신하다 |  | We need to replace the battery. | 완료 |
+| `reply` | reply | 동사 | 대답하다, 답장하다 |  | She replied to my message quickly. | 완료 |
+| `report` | report | 명사 | 보고서, 보도 |  | I wrote a report on dolphins. | 완료 |
+| `represent` | represent | 동사 | 대표하다, 나타내다 |  | She represents our class. | 완료 |
+| `request` | request | 명사 | 요청 |  | I have a small request. | 완료 |
+| `require` | require | 동사 | 필요로 하다, 요구하다 |  | This job requires patience. | 완료 |
+| `research` | research | 명사 | 연구, 조사 |  | She does research on sea animals. | 완료 |
+| `reserve` | reserve | 동사 | 예약하다, 남겨 두다 |  | I reserved a table for four. | 완료 |
+| `resist` | resist | 동사 | 저항하다, 참다 |  | I cannot resist chocolate. | 완료 |
+| `resource` | resource | 명사 | 자원 |  | Water is a valuable resource. | 완료 |
+| `respect` | respect | 동사 | 존중하다, 존경하다 |  | We should respect our elders. | 완료 |
+| `respond` | respond | 동사 | 응답하다 |  | He did not respond to my question. | 완료 |
+| `responsible` | responsible | 형용사 | 책임 있는 |  | You are responsible for your pet. | 완료 |
+| `result` | result | 명사 | 결과 |  | The test results came out today. | 완료 |
+| `retire` | retire | 동사 | 은퇴하다 |  | My grandfather retired last year. | 완료 |
+| `risk` | risk | 명사 | 위험 |  | There is a risk of fire. | 완료 |
+| `rob` | rob | 동사 | 강탈하다, 털다 |  | Two men robbed the bank. | 완료 |
+| `role` | role | 명사 | 역할 |  | She played the role of a princess. | 완료 |
+| `route` | route | 명사 | 길, 노선 |  | This is the shortest route to school. | 완료 |
+| `royal` | royal | 형용사 | 왕의, 왕실의 |  | The royal family lives in the palace. | 완료 |
+| `rub` | rub | 동사 | 문지르다 |  | He rubbed his eyes. | 완료 |
+| `rude` | rude | 형용사 | 무례한 |  | It is rude to talk with your mouth full. | 완료 |
+| `ruin` | ruin | 동사 | 망치다 |  | The rain ruined our picnic. | 완료 |
+| `rule` | rule | 명사 | 규칙 |  | Follow the school rules. | 완료 |
+| `rush` | rush | 동사 | 서두르다, 급히 가다 |  | We rushed to the station. | 완료 |
+| `salary` | salary | 명사 | 월급 |  | She gets a good salary. | 완료 |
+| `sample` | sample | 명사 | 견본, 표본 |  | Try a free sample of the cheese. | 완료 |
+| `satisfy` | satisfy | 동사 | 만족시키다 |  | The meal satisfied everyone. | 완료 |
+| `scare` | scare | 동사 | 겁주다 |  | The loud noise scared the cat. | 완료 |
+| `scene` | scene | 명사 | 장면, 현장 |  | I liked the last scene of the movie. | 완료 |
+| `schedule` | schedule | 명사 | 일정, 시간표 |  | I have a busy schedule today. | 완료 |
+| `scratch` | scratch | 동사 | 긁다, 할퀴다 |  | The cat scratched the sofa. | 완료 |
+| `scream` | scream | 동사 | 비명을 지르다 |  | She screamed when she saw the spider. | 완료 |
+| `secretary` | secretary | 명사 | 비서 |  | The secretary answered the phone. | 완료 |
+| `section` | section | 명사 | 부분, 구역 |  | The fruit section is over there. | 완료 |
+| `secure` | secure | 형용사 | 안전한, 확실한 |  | Keep your money in a secure place. | 완료 |
+| `seek` | seek | 동사 | 찾다, 구하다 |  | They are seeking a new home. | 완료 |
+| `seem` | seem | 동사 | ~처럼 보이다 |  | You seem tired today. | 완료 |
+| `select` | select | 동사 | 선택하다 |  | Select the best answer. | 완료 |
+| `self` | self | 명사 | 자기 자신 |  | Be your true self. | 완료 |
+| `senior` | senior | 형용사 | 선배의, 고령의 |  | She is my senior at school. | 완료 |
+| `sense` | sense | 명사 | 감각, 의미 |  | Dogs have a good sense of smell. | 완료 |
+| `series` | series | 명사 | 연속, 시리즈 |  | I watched a series about animals. | 완료 |
+| `serve` | serve | 동사 | 음식을 내다, 봉사하다 |  | They serve lunch at noon. | 완료 |
+| `session` | session | 명사 | 시간, 모임 |  | We have a training session after school. | 완료 |
+| `settle` | settle | 동사 | 정착하다, 해결하다 |  | They settled in a small town. | 완료 |
+| `several` | several | 형용사 | 몇몇의 |  | I have several questions. | 완료 |
+| `sex` | sex | 명사 | 성, 성별 |  | Write your name, age, and sex. | 완료 |
+| `shame` | shame | 명사 | 부끄러움, 유감 |  | It is a shame that you missed the show. | 완료 |
+| `sharp` | sharp | 형용사 | 날카로운 |  | Be careful with the sharp knife. | 완료 |
+| `shave` | shave | 동사 | 면도하다 |  | Dad shaves every morning. | 완료 |
+| `shelter` | shelter | 명사 | 보호소, 피난처 |  | The dog lives in an animal shelter. | 완료 |
+| `shift` | shift | 동사 | 옮기다, 바꾸다 |  | He shifted the box to the corner. | 완료 |
+| `shock` | shock | 명사 | 충격 |  | The news was a big shock. | 완료 |
+| `shore` | shore | 명사 | 바닷가, 호숫가 |  | We walked along the shore. | 완료 |
+| `sight` | sight | 명사 | 시력, 광경 |  | The sunset was a beautiful sight. | 완료 |
+| `similar` | similar | 형용사 | 비슷한 |  | Our bags are very similar. | 완료 |
+| `simple` | simple | 형용사 | 간단한, 단순한 |  | The rule is simple. | 완료 |
+| `since` | since | 접속사 | ~한 이후로, ~이므로 |  | I have lived here since 2020. | 완료 |
+| `single` | single | 형용사 | 단 하나의, 혼자의 |  | I did not say a single word. | 완료 |
+| `site` | site | 명사 | 장소, 현장, 사이트 |  | This is the site of the old castle. | 완료 |
+| `situate` | situate | 동사 | 위치시키다 |  | The hotel is situated by the sea. | 완료 |
+| `skill` | skill | 명사 | 기술, 솜씨 |  | Cooking is a useful skill. | 완료 |
 | `slave` | slave | 명사 | 노예 |  | Slaves were not free long ago. |  |
-| `slight` | slight | 형용사 | 약간의 |  | I have a slight headache. |  |
-| `smash` | smash | 동사 | 박살 내다 | 바닥에 떨어져 깨진 접시(사람 없이) | The ball smashed the window. |  |
-| `snap` | snap | 동사 | 딱 부러지다, 사진을 찍다 |  | The stick snapped in two. |  |
-| `social` | social | 형용사 | 사회의, 사교적인 |  | Humans are social animals. |  |
-| `society` | society | 명사 | 사회 |  | We live in a changing society. |  |
-| `solve` | solve | 동사 | 풀다, 해결하다 |  | Can you solve this math problem? |  |
-| `somewhat` | somewhat | 부사 | 다소, 약간 |  | The test was somewhat difficult. |  |
-| `sore` | sore | 형용사 | 아픈, 쓰린 |  | I have a sore throat. |  |
-| `sort` | sort | 명사 | 종류 |  | What sort of music do you like? |  |
-| `soul` | soul | 명사 | 영혼 |  | Music is good for the soul. |  |
-| `source` | source | 명사 | 원천, 출처 |  | The sun is a source of energy. |  |
-| `spare` | spare | 형용사 | 여분의 |  | Do you have a spare pen? |  |
-| `species` | species | 명사 | (생물) 종 |  | There are many species of birds. |  |
-| `specific` | specific | 형용사 | 구체적인, 특정한 |  | Give me a specific example. |  |
-| `spirit` | spirit | 명사 | 정신, 영혼 |  | The team has a strong spirit. |  |
-| `spoil` | spoil | 동사 | 망치다, 상하다 |  | The milk spoiled in the sun. |  |
-| `sponsor` | sponsor | 명사 | 후원자 |  | The company is a sponsor of the team. |  |
-| `spot` | spot | 명사 | 점, 장소 |  | This is a good spot for a picnic. |  |
-| `spy` | spy | 명사 | 스파이, 첩자 |  | The movie is about a spy. |  |
-| `stable` | stable | 형용사 | 안정된 |  | The ladder is not stable. |  |
-| `standard` | standard | 명사 | 기준, 표준 |  | The hotel has high standards. |  |
-| `stare` | stare | 동사 | 빤히 쳐다보다 |  | It is rude to stare at people. |  |
-| `state` | state | 명사 | 상태, 주(州) |  | The house is in a bad state. |  |
-| `steady` | steady | 형용사 | 꾸준한, 안정된 |  | She made steady progress. |  |
-| `steal` | steal | 동사 | 훔치다 |  | Someone stole my bike. |  |
-| `steel` | steel | 명사 | 강철 |  | The bridge is made of steel. |  |
-| `still` | still | 부사 | 아직도, 여전히 |  | It is still raining. |  |
-| `stock` | stock | 명사 | 재고, 주식 |  | The shop has a large stock of shoes. |  |
-| `strategy` | strategy | 명사 | 전략 |  | Our team needs a new strategy. |  |
-| `stress` | stress | 명사 | 스트레스, 강세 |  | Exercise helps reduce stress. |  |
-| `structure` | structure | 명사 | 구조, 건축물 |  | The bridge is a huge structure. |  |
-| `struggle` | struggle | 동사 | 애쓰다, 싸우다 |  | He struggled to open the jar. |  |
-| `studio` | studio | 명사 | 작업실, 스튜디오 |  | The artist works in her studio. |  |
-| `stuff` | stuff | 명사 | 물건, 것 |  | Put your stuff in the bag. |  |
-| `succeed` | succeed | 동사 | 성공하다 |  | If you try hard, you will succeed. |  |
-| `success` | success | 명사 | 성공 |  | The festival was a great success. |  |
-| `such` | such | 형용사 | 그러한, 매우 ~한 |  | It was such a nice day. |  |
-| `sudden` | sudden | 형용사 | 갑작스러운 |  | There was a sudden noise. |  |
-| `suffer` | suffer | 동사 | 고통받다, 겪다 |  | She suffers from headaches. |  |
-| `suggest` | suggest | 동사 | 제안하다 |  | I suggest we take a break. |  |
-| `sum` | sum | 명사 | 합계, 금액 |  | The sum of two and three is five. |  |
-| `super` | super | 형용사 | 대단한, 굉장한 |  | We had a super time at the park. |  |
-| `supply` | supply | 동사 | 공급하다 |  | The river supplies water to the town. |  |
-| `support` | support | 동사 | 지지하다, 받치다 |  | My family always supports me. |  |
-| `suppose` | suppose | 동사 | 생각하다, 가정하다 |  | I suppose you are right. |  |
-| `surface` | surface | 명사 | 표면 |  | The surface of the lake is calm. |  |
-| `survey` | survey | 명사 | 설문 조사 |  | We did a survey about favorite foods. |  |
-| `survive` | survive | 동사 | 살아남다 | 무인도에서 작은 불을 피우고 손을 흔드는 아이 | Plants need water to survive. |  |
-| `suspect` | suspect | 동사 | 의심하다 |  | I suspect he is hiding something. |  |
-| `swallow` | swallow | 동사 | 삼키다 |  | Chew well before you swallow. |  |
-| `system` | system | 명사 | 체계, 시스템 |  | The subway system is easy to use. |  |
-| `tale` | tale | 명사 | 이야기 |  | Grandpa told us a fairy tale. |  |
-| `tap` | tap | 동사 | 가볍게 두드리다 |  | She tapped me on the shoulder. |  |
-| `target` | target | 명사 | 목표, 과녁 |  | The arrow hit the target. |  |
-| `tax` | tax | 명사 | 세금 |  | People pay tax to the government. |  |
-| `technique` | technique | 명사 | 기법, 기술 |  | She learned a new painting technique. |  |
-| `teenage` | teenage | 형용사 | 십 대의 |  | She has two teenage brothers. |  |
-| `tend` | tend | 동사 | ~하는 경향이 있다 |  | I tend to wake up early. |  |
-| `tense` | tense | 형용사 | 긴장한 |  | I felt tense before the game. |  |
-| `term` | term | 명사 | 학기, 용어 |  | The new term starts in March. |  |
-| `terrible` | terrible | 형용사 | 끔찍한, 심한 |  | I had a terrible headache. |  |
-| `text` | text | 명사 | 글, 문자 |  | Read the text and answer the questions. |  |
-| `theory` | theory | 명사 | 이론 |  | He has a theory about the stars. |  |
-| `therefore` | therefore | 부사 | 그러므로 |  | It rained; therefore, we stayed home. |  |
-| `thief` | thief | 명사 | 도둑 |  | The thief ran away. |  |
-| `though` | though | 접속사 | 비록 ~이지만 |  | Though he was tired, he kept working. |  |
-| `threat` | threat | 명사 | 위협 |  | Pollution is a threat to the ocean. |  |
-| `throat` | throat | 명사 | 목구멍 |  | My throat hurts. |  |
-| `thus` | thus | 부사 | 따라서, 이렇게 |  | He studied hard and thus passed the test. |  |
-| `tide` | tide | 명사 | 밀물과 썰물, 조수 |  | The tide is coming in. |  |
-| `tight` | tight | 형용사 | 꽉 끼는, 단단한 |  | These shoes are too tight. |  |
-| `tip` | tip | 명사 | 끝, 조언, 팁 |  | She gave me a tip for studying. |  |
-| `tone` | tone | 명사 | 어조, 음색 |  | He spoke in a friendly tone. |  |
+| `slight` | slight | 형용사 | 약간의 |  | I have a slight headache. | 완료 |
+| `smash` | smash | 동사 | 박살 내다 | 바닥에 떨어져 깨진 접시(사람 없이) | The ball smashed the window. | 완료 |
+| `snap` | snap | 동사 | 딱 부러지다, 사진을 찍다 |  | The stick snapped in two. | 완료 |
+| `social` | social | 형용사 | 사회의, 사교적인 |  | Humans are social animals. | 완료 |
+| `society` | society | 명사 | 사회 |  | We live in a changing society. | 완료 |
+| `solve` | solve | 동사 | 풀다, 해결하다 |  | Can you solve this math problem? | 완료 |
+| `somewhat` | somewhat | 부사 | 다소, 약간 |  | The test was somewhat difficult. | 완료 |
+| `sore` | sore | 형용사 | 아픈, 쓰린 |  | I have a sore throat. | 완료 |
+| `sort` | sort | 명사 | 종류 |  | What sort of music do you like? | 완료 |
+| `soul` | soul | 명사 | 영혼 |  | Music is good for the soul. | 완료 |
+| `source` | source | 명사 | 원천, 출처 |  | The sun is a source of energy. | 완료 |
+| `spare` | spare | 형용사 | 여분의 |  | Do you have a spare pen? | 완료 |
+| `species` | species | 명사 | (생물) 종 |  | There are many species of birds. | 완료 |
+| `specific` | specific | 형용사 | 구체적인, 특정한 |  | Give me a specific example. | 완료 |
+| `spirit` | spirit | 명사 | 정신, 영혼 |  | The team has a strong spirit. | 완료 |
+| `spoil` | spoil | 동사 | 망치다, 상하다 |  | The milk spoiled in the sun. | 완료 |
+| `sponsor` | sponsor | 명사 | 후원자 |  | The company is a sponsor of the team. | 완료 |
+| `spot` | spot | 명사 | 점, 장소 |  | This is a good spot for a picnic. | 완료 |
+| `spy` | spy | 명사 | 스파이, 첩자 |  | The movie is about a spy. | 완료 |
+| `stable` | stable | 형용사 | 안정된 |  | The ladder is not stable. | 완료 |
+| `standard` | standard | 명사 | 기준, 표준 |  | The hotel has high standards. | 완료 |
+| `stare` | stare | 동사 | 빤히 쳐다보다 |  | It is rude to stare at people. | 완료 |
+| `state` | state | 명사 | 상태, 주(州) |  | The house is in a bad state. | 완료 |
+| `steady` | steady | 형용사 | 꾸준한, 안정된 |  | She made steady progress. | 완료 |
+| `steal` | steal | 동사 | 훔치다 |  | Someone stole my bike. | 완료 |
+| `steel` | steel | 명사 | 강철 |  | The bridge is made of steel. | 완료 |
+| `still` | still | 부사 | 아직도, 여전히 |  | It is still raining. | 완료 |
+| `stock` | stock | 명사 | 재고, 주식 |  | The shop has a large stock of shoes. | 완료 |
+| `strategy` | strategy | 명사 | 전략 |  | Our team needs a new strategy. | 완료 |
+| `stress` | stress | 명사 | 스트레스, 강세 |  | Exercise helps reduce stress. | 완료 |
+| `structure` | structure | 명사 | 구조, 건축물 |  | The bridge is a huge structure. | 완료 |
+| `struggle` | struggle | 동사 | 애쓰다, 싸우다 |  | He struggled to open the jar. | 완료 |
+| `studio` | studio | 명사 | 작업실, 스튜디오 |  | The artist works in her studio. | 완료 |
+| `stuff` | stuff | 명사 | 물건, 것 |  | Put your stuff in the bag. | 완료 |
+| `succeed` | succeed | 동사 | 성공하다 |  | If you try hard, you will succeed. | 완료 |
+| `success` | success | 명사 | 성공 |  | The festival was a great success. | 완료 |
+| `such` | such | 형용사 | 그러한, 매우 ~한 |  | It was such a nice day. | 완료 |
+| `sudden` | sudden | 형용사 | 갑작스러운 |  | There was a sudden noise. | 완료 |
+| `suffer` | suffer | 동사 | 고통받다, 겪다 |  | She suffers from headaches. | 완료 |
+| `suggest` | suggest | 동사 | 제안하다 |  | I suggest we take a break. | 완료 |
+| `sum` | sum | 명사 | 합계, 금액 |  | The sum of two and three is five. | 완료 |
+| `super` | super | 형용사 | 대단한, 굉장한 |  | We had a super time at the park. | 완료 |
+| `supply` | supply | 동사 | 공급하다 |  | The river supplies water to the town. | 완료 |
+| `support` | support | 동사 | 지지하다, 받치다 |  | My family always supports me. | 완료 |
+| `suppose` | suppose | 동사 | 생각하다, 가정하다 |  | I suppose you are right. | 완료 |
+| `surface` | surface | 명사 | 표면 |  | The surface of the lake is calm. | 완료 |
+| `survey` | survey | 명사 | 설문 조사 |  | We did a survey about favorite foods. | 완료 |
+| `survive` | survive | 동사 | 살아남다 | 무인도에서 작은 불을 피우고 손을 흔드는 아이 | Plants need water to survive. | 완료 |
+| `suspect` | suspect | 동사 | 의심하다 |  | I suspect he is hiding something. | 완료 |
+| `swallow` | swallow | 동사 | 삼키다 |  | Chew well before you swallow. | 완료 |
+| `system` | system | 명사 | 체계, 시스템 |  | The subway system is easy to use. | 완료 |
+| `tale` | tale | 명사 | 이야기 |  | Grandpa told us a fairy tale. | 완료 |
+| `tap` | tap | 동사 | 가볍게 두드리다 |  | She tapped me on the shoulder. | 완료 |
+| `target` | target | 명사 | 목표, 과녁 |  | The arrow hit the target. | 완료 |
+| `tax` | tax | 명사 | 세금 |  | People pay tax to the government. | 완료 |
+| `technique` | technique | 명사 | 기법, 기술 |  | She learned a new painting technique. | 완료 |
+| `teenage` | teenage | 형용사 | 십 대의 |  | She has two teenage brothers. | 완료 |
+| `tend` | tend | 동사 | ~하는 경향이 있다 |  | I tend to wake up early. | 완료 |
+| `tense` | tense | 형용사 | 긴장한 |  | I felt tense before the game. | 완료 |
+| `term` | term | 명사 | 학기, 용어 |  | The new term starts in March. | 완료 |
+| `terrible` | terrible | 형용사 | 끔찍한, 심한 |  | I had a terrible headache. | 완료 |
+| `text` | text | 명사 | 글, 문자 |  | Read the text and answer the questions. | 완료 |
+| `theory` | theory | 명사 | 이론 |  | He has a theory about the stars. | 완료 |
+| `therefore` | therefore | 부사 | 그러므로 |  | It rained; therefore, we stayed home. | 완료 |
+| `thief` | thief | 명사 | 도둑 |  | The thief ran away. | 완료 |
+| `though` | though | 접속사 | 비록 ~이지만 |  | Though he was tired, he kept working. | 완료 |
+| `threat` | threat | 명사 | 위협 |  | Pollution is a threat to the ocean. | 완료 |
+| `throat` | throat | 명사 | 목구멍 |  | My throat hurts. | 완료 |
+| `thus` | thus | 부사 | 따라서, 이렇게 |  | He studied hard and thus passed the test. | 완료 |
+| `tide` | tide | 명사 | 밀물과 썰물, 조수 |  | The tide is coming in. | 완료 |
+| `tight` | tight | 형용사 | 꽉 끼는, 단단한 |  | These shoes are too tight. | 완료 |
+| `tip` | tip | 명사 | 끝, 조언, 팁 |  | She gave me a tip for studying. | 완료 |
+| `tone` | tone | 명사 | 어조, 음색 |  | He spoke in a friendly tone. | 완료 |
 | `topic` | topic | 명사 | 주제 |  | The topic of today is animals. |  |
 | `total` | total | 명사 | 합계, 총 |  | The total is twenty dollars. |  |
 | `tough` | tough | 형용사 | 힘든, 강한 |  | It was a tough game. |  |
