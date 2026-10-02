@@ -241,6 +241,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             navState.materialsColoringTitle = TOPIC_TITLES[slide.topic] ?? slide.topic;
             navState.materialsDecorTheme = decorThemeFor(slide.topic);
           }
+          if (slide.materialId === 'cvcworkbook' && slide.cvcUnits?.length) navState.cvcUnits = slide.cvcUnits;
           if (slide.materialId === 'phonics') {
             if (slide.phonicsTab) navState.materialsTab = slide.phonicsTab;
             if (slide.phonicsOptions) navState.phonicsOptions = slide.phonicsOptions;

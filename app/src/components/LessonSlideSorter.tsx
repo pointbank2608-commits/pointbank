@@ -27,6 +27,7 @@ import { createGameTemplate, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
+import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
   FullCardItem,
@@ -1312,6 +1313,23 @@ function SlideDetail({
   // material slide
   if (slide.materialId === 'phonics') {
     return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
+  }
+  if (slide.materialId === 'cvcworkbook') {
+    return (
+      <div className="space-y-4">
+        <PreviewFrame title={t('materials.cvcWorkbookName')}>
+          <span className="material-symbols-outlined text-6xl text-primary">menu_book</span>
+        </PreviewFrame>
+        <div>
+          <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('materials.cvc.pickTitle')}</div>
+          <CvcUnitPicker
+            selected={slide.cvcUnits ?? [1]}
+            onChange={(cvcUnits) => onUpdate({ cvcUnits } as Partial<LessonSlide>)}
+            vowelLabel={(vowel) => t('materials.cvc.vowel', { vowel })}
+          />
+        </div>
+      </div>
+    );
   }
   const material = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
   // 이 슬라이드만의 단어(주제에서 고른 것)가 있으면 그걸로 미리보기

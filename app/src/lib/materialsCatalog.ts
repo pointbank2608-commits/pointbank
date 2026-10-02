@@ -28,6 +28,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.phonicsLibraryDesc',
   },
   {
+    // 미리 만들어 둔 파닉스 CVC 워크북(2026-10-02) — 유닛만 고르면 바로 인쇄
+    id: 'cvcworkbook',
+    path: '/materials/cvc-workbook',
+    icon: 'menu_book',
+    cover: null,
+    nameKey: 'materials.cvcWorkbookName',
+    descKey: 'materials.cvcWorkbookDesc',
+  },
+  {
     id: 'flashcards',
     path: '/materials/flashcards',
     icon: 'print',

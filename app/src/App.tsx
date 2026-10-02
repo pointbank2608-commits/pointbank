@@ -73,6 +73,7 @@ import WatermelonPage from './pages/WatermelonPage';
 import QuizShowPage from './pages/QuizShowPage';
 import ShoppingPage from './pages/ShoppingPage';
 import LiveJoinPage from './pages/LiveJoinPage';
+import CvcWorkbookPage from './pages/CvcWorkbookPage';
 import WordSearchPage from './pages/WordSearchPage';
 import PhonicsWorksheetLibraryPage from './pages/PhonicsWorksheetLibraryPage';
 import WorksheetLibraryPage from './pages/WorksheetLibraryPage';
@@ -190,6 +191,7 @@ export default function App() {
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
             <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />
+            <Route path="/materials/cvc-workbook" element={<CvcWorkbookPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<WheelPage />} />
             <Route path="/games/ladder" element={<LadderPage />} />
