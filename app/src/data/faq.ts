@@ -35,6 +35,26 @@ export const FAQ: FaqItem[] = [
     },
   },
   {
+    id: 'lesson-history',
+    category: 'lesson',
+    q: { ko: '수업이나 단어장을 잘못 고쳤어요. 예전 내용으로 되돌릴 수 있나요?', en: 'I changed a lesson or word list by mistake. Can I go back?' },
+    a: {
+      ko: '네. 수업 카드의 시계 모양(이전 버전) 버튼을 누르면 고치기 전 내용이 날짜·시간별로 나와요. "이 버전으로"를 누르면 그때 내용으로 돌아가고, 지금 내용도 기록에 남아서 다시 돌아올 수 있어요. 내 단어장에도 같은 버튼이 있어요. 지운 수업·단어장은 목록 아래 "최근에 지운 …"에서 180일 안에 되살릴 수 있어요.',
+      en: 'Yes. Press the clock (history) button on a lesson card to see earlier versions by date and time. "Restore" brings that version back, and the current one stays in history. Word lists have the same button. Deleted lessons and word lists can be restored for 180 days from "Recently deleted" below the list.',
+    },
+    link: '/curriculum',
+  },
+  {
+    id: 'lesson-copy-class',
+    category: 'lesson',
+    q: { ko: '수업을 다른 반으로 복사하면 서로 같이 바뀌나요?', en: 'If I copy a lesson to another class, do they change together?' },
+    a: {
+      ko: '아니요. 복사한 수업은 단어장·게임 내용까지 그 반 것으로 새로 만들어져서, 한 반에서 고쳐도 다른 반은 그대로예요. 다만 예전에 복사한 수업이나 "모든 반 공용" 단어장을 같이 쓰는 수업은 단어장을 고치면 함께 바뀔 수 있어요 — 수업 화면에서 단어를 고치려고 하면 "이 수업만 따로 복사해서 고칠까요?"라고 물어보니 그때 확인을 누르세요.',
+      en: 'No. A copied lesson gets its own word list and game content, so editing one class does not change another. Lessons copied earlier, or lessons sharing an academy-wide word list, may still change together — when you edit the words from the lesson screen you will be asked whether to make a separate copy for this lesson.',
+    },
+    link: '/curriculum',
+  },
+  {
     id: 'lesson-keys',
     category: 'lesson',
     q: { ko: '발표 중에 슬라이드는 어떻게 넘기나요?', en: 'How do I move between slides while presenting?' },

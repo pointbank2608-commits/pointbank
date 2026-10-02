@@ -23,7 +23,7 @@ export default function WordListHistoryModal({
 
   useEffect(() => {
     fetchRevisions('word_lists', list.id)
-      .then((found) => setRows(found.filter((r) => r.op === 'update')))
+      .then((found) => setRows(found.filter((r) => r.op !== 'delete')))
       .catch((e) => {
         const msg = String((e as { message?: string })?.message ?? e);
         setError(msg.includes('content_revisions') || msg.includes('schema cache') ? t('wordLists.history.needSetup') : msg);

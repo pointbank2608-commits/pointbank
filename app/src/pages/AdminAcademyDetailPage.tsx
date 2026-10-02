@@ -42,9 +42,11 @@ export default function AdminAcademyDetailPage() {
       .catch((e) => setMsg(String((e as { message?: string })?.message ?? e)))
       .finally(() => setBusy(false));
   }, [id]);
+  // 자료는 "자료 불러오기"를 눌렀을 때만 읽는다 — 열람이 조치 기록에 남으므로, 학원 상세를 열기만 해도
+  // 기록이 쌓이지 않게(2026-10-02). 다른 학원으로 옮기면 비운다.
   useEffect(() => {
-    void loadContent();
-  }, [loadContent]);
+    setContent(undefined);
+  }, [id]);
 
   function formatWhen(iso: string) {
     return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });

@@ -24,7 +24,7 @@ export default function LessonHistoryModal({
 
   useEffect(() => {
     fetchRevisions('curriculum_lessons', lesson.id)
-      .then((list) => setRows(list.filter((r) => r.op === 'update')))
+      .then((list) => setRows(list.filter((r) => r.op !== 'delete')))
       .catch((e) => {
         const msg = String((e as { message?: string })?.message ?? e);
         setError(msg.includes('content_revisions') || msg.includes('schema cache') ? t('curriculum.history.needSetup') : msg);
