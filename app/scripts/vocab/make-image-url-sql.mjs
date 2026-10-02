@@ -9,7 +9,7 @@
 import { existsSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALL_TARGETS, MOE_TARGETS } from './image-targets.mjs';
+import { ALL_TARGETS, FILL_TARGETS, MOE_TARGETS } from './image-targets.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..', '..');
@@ -21,7 +21,7 @@ const files = new Set(
     .map((f) => f.slice(0, -'.webp'.length)),
 );
 
-const newIds = [...ALL_TARGETS, ...MOE_TARGETS].map((r) => r.id);
+const newIds = [...new Set([...ALL_TARGETS, ...MOE_TARGETS, ...FILL_TARGETS].map((r) => r.id))];
 const withImage = newIds.filter((id) => files.has(id));
 const missing = newIds.filter((id) => !files.has(id));
 
@@ -39,6 +39,9 @@ const sql = [
   "set image_url = '/word-bank-images/' || id || '.webp'",
   'where image_url is null',
   `  and id in (${withImage.map((id) => `'${id.replace(/'/g, "''")}'`).join(', ')});`,
+  '',
+  "-- '그림 없음'으로 정했다가 그림이 생긴 단어는 종류를 인물 장면으로 바꾼다.",
+  "update public.word_bank set image_kind = 'scene' where image_kind = 'none' and image_url is not null;",
   '',
 ].join('\n');
 

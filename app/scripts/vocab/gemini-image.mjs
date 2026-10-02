@@ -19,7 +19,7 @@ const imgDir = join(here, '..', '..', 'public', 'word-bank-images');
 
 const PROJECT = process.env.GCP_PROJECT ?? 'project-01c6d808-a517-4177-82f';
 const MODEL = process.env.GEMINI_IMAGE_MODEL ?? 'gemini-3.1-flash-image';
-const REFS = (process.env.STYLE_REFS ?? 'apple,climb').split(',');
+const REFS = (process.env.STYLE_REFS ?? 'chair,dolphin,hug').split(',');
 const CONCURRENCY = Number(process.env.CONCURRENCY ?? 1); // 새 프로젝트는 분당 한도가 낮아(429) 기본은 하나씩
 
 const STYLE =
