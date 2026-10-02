@@ -32,7 +32,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     id: 'cvcworkbook',
     path: '/materials/cvc-workbook',
     icon: 'menu_book',
-    cover: null,
+    cover: '/covers/material-cvcworkbook.jpg',
     nameKey: 'materials.cvcWorkbookName',
     descKey: 'materials.cvcWorkbookDesc',
   },
