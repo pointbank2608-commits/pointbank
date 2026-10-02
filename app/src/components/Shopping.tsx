@@ -6,6 +6,8 @@ import {
   LIST_FRAME,
   buildShelf,
   buildShoppingList,
+  isHandful,
+  phraseKind,
   missionsFor,
   sceneGoods,
   shoppingPhrase,
@@ -49,6 +51,11 @@ const AISLE_LEFT = 5;
 const AISLE_WIDTH = 90;
 
 /** 빈 칸을 채우는 상자 색(물건이 적어도 진열대가 차 보이게) */
+/** some + 여러 개 낱말을 눌렀을 때 한 번에 담기는 개수 */
+const HANDFUL = 4;
+/** 목록 문구 색: a/an 하나 · 숫자 · some */
+const KIND_COLOR = { one: '#1d4ed8', count: '#c2410c', some: '#15803d' } as const;
+
 const BOX_COLORS = ['#f6b352', '#7fc8a9', '#f08a8a', '#8fb8ed', '#c9a0dc', '#f3d36b'];
 
 interface Flyer {
@@ -99,7 +106,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
   const { t } = useTranslation();
   const sfx = useGameSfx('shopping');
   const goods: ShopGood[] = useMemo(() => (scene ? sceneGoods(scene) : uniqueShopItems(items)), [items, scene]);
-  const missions = missionsFor(mode);
+  const missions = missionsFor(mode, scene?.id);
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [list, setList] = useState<ShoppingListEntry[]>([]);
@@ -176,31 +183,45 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
 
   /** 누른 물건 그림이 진열대에서 카트로 날아가는 연출 */
   /** 누른 물건이 그 자리에서 뿅 하고 튀어나온 뒤 카트로 날아가는 연출. 도착할 때까지 카트 안 그림은 숨긴다. */
+  /**
+   * 누른 물건이 그 자리에서 뿅 하고 튀어나온 뒤 카트로 날아가는 연출. 도착할 때까지 카트 안 그림은 숨긴다.
+   * "some blocks"처럼 여러 개라서 some 인 물건은 한 움큼(HANDFUL개)이 흩어지며 차례로 와르르 날아간다.
+   */
   function flyToCart(item: ShopGood, el: HTMLElement) {
     const stage = sceneRef.current?.getBoundingClientRect();
     const basket = basketRef.current?.getBoundingClientRect();
     if (!stage || !basket) return;
     const from = el.getBoundingClientRect();
-    const key = ++flyerKey.current;
-    const flyer: Flyer = {
-      key,
-      good: item,
-      from: { cx: from.left - stage.left + from.width / 2, cy: from.top - stage.top + from.height / 2, size: Math.min(from.width, from.height) },
-      to: { cx: basket.left - stage.left + basket.width / 2, cy: basket.top - stage.top + basket.height * 0.6, size: stage.width * 0.05 },
-      step: 0,
-    };
-    const setStep = (step: 1 | 2) => setFlyers((list) => list.map((f) => (f.key === key ? { ...f, step } : f)));
-    setFlyers((list) => [...list, flyer]);
+    const copies = isHandful(item.answer) ? HANDFUL : 1;
+    const base = Math.min(from.width, from.height);
     setArriving((ids) => [...ids, item.id]);
-    window.setTimeout(() => setStep(1), 30);
-    window.setTimeout(() => setStep(2), 290);
+    for (let n = 0; n < copies; n++) {
+      const key = ++flyerKey.current;
+      const delay = n * 110;
+      // 여러 개일 때는 제자리에서 부채꼴로 흩어졌다가 카트의 서로 다른 자리로 떨어진다
+      const spread = copies > 1 ? (n - (copies - 1) / 2) / ((copies - 1) / 2) : 0;
+      const flyer: Flyer = {
+        key,
+        good: item,
+        from: { cx: from.left - stage.left + from.width / 2 + spread * base * 0.55, cy: from.top - stage.top + from.height / 2 - Math.abs(spread) * base * 0.15, size: copies > 1 ? base * 0.75 : base },
+        to: { cx: basket.left - stage.left + basket.width / 2 + spread * basket.width * 0.28, cy: basket.top - stage.top + basket.height * 0.6, size: stage.width * (copies > 1 ? 0.04 : 0.05) },
+        step: 0,
+      };
+      const setStep = (step: 1 | 2) => setFlyers((list) => list.map((f) => (f.key === key ? { ...f, step } : f)));
+      window.setTimeout(() => setFlyers((list) => [...list, flyer]), delay);
+      window.setTimeout(() => setStep(1), delay + 30);
+      window.setTimeout(() => setStep(2), delay + 290);
+      window.setTimeout(() => {
+        setFlyers((list) => list.filter((f) => f.key !== key));
+        if (n > 0) playSfx(sfx.pick, 0.5);
+      }, delay + 820);
+    }
     window.setTimeout(() => {
-      setFlyers((list) => list.filter((f) => f.key !== key));
       setArriving((ids) => {
         const k = ids.indexOf(item.id);
         return k < 0 ? ids : [...ids.slice(0, k), ...ids.slice(k + 1)];
       });
-    }, 820);
+    }, (copies - 1) * 110 + 820);
   }
 
   function pick(item: ShopGood, el: HTMLElement) {
@@ -288,6 +309,8 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       <img key={key} src={good.imageUrl} alt={good.answer} className={`object-cover ${className}`} style={style} draggable={false} />
     );
   };
+
+  const inBasket = landed.flatMap((good) => (isHandful(good.answer) ? Array.from({ length: HANDFUL }, () => ({ good, small: true })) : [{ good, small: false }]));
 
   // ── 진열대 한 면 ──
   /** texture 가 있으면 물건이 가득 그려진 진열대 그림을 깔고(양옆), 단어 그림은 그 위에 카드로만 올린다. */
@@ -385,7 +408,12 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
               >
                 {showChecks && got ? '✓' : ''}
               </span>
-              <span className={showChecks && got && !big ? 'opacity-60 line-through' : ''}>{e.phrase}</span>
+              <span className={showChecks && got && !big ? 'opacity-60 line-through' : ''}>
+                <span className="font-extrabold" style={{ color: KIND_COLOR[phraseKind(e.phrase)] }}>
+                  {e.phrase.split(' ')[0]}
+                </span>{' '}
+                {e.phrase.split(' ').slice(1).join(' ')}
+              </span>
               {showChecks && !got && have > 0 && (
                 <span className="font-bold text-[#c2410c]" style={{ fontSize: '0.8em' }}>
                   {have} / {e.quantity}
@@ -536,17 +564,17 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
         <img src="/skins/shop-cart.webp" alt="" className="absolute inset-0 h-full w-full" draggable={false} />
         <div
           ref={basketRef}
-          key={landed.length}
-          className={`absolute flex flex-wrap content-end items-end justify-center ${landed.length ? 'animate-[shop-bump_0.3s]' : ''}`}
+          key={inBasket.length}
+          className={`absolute flex flex-wrap content-end items-end justify-center ${inBasket.length ? 'animate-[shop-bump_0.3s]' : ''}`}
           style={{ left: '27%', right: '27%', top: '20%', height: '46%' }}
         >
-          {landed.slice(-9).map((it, i) =>
+          {inBasket.slice(-14).map(({ good: it, small }, i) =>
             thumb(
               it,
               'rounded-full',
               it.cutout
-                ? { width: '6cqw', height: '6cqw', margin: '-0.9cqw -0.7cqw', transform: `rotate(${((i * 37) % 31) - 15}deg)` }
-                : { width: '4.8cqw', height: '4.8cqw', margin: '-0.35cqw', border: '0.3cqw solid #ffffff', boxShadow: '0 0.3cqw 0.6cqw rgba(30,50,80,0.4)' },
+                ? { width: small ? '4.8cqw' : '6cqw', height: small ? '4.8cqw' : '6cqw', margin: small ? '-0.9cqw -0.8cqw' : '-0.9cqw -0.7cqw', transform: `rotate(${((i * 37) % 31) - 15}deg)` }
+                : { width: small ? '3.6cqw' : '4.8cqw', height: small ? '3.6cqw' : '4.8cqw', margin: '-0.35cqw', border: '0.3cqw solid #ffffff', boxShadow: '0 0.3cqw 0.6cqw rgba(30,50,80,0.4)' },
               `${it.id}-${i}`,
             ),
           )}
@@ -582,7 +610,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
         <>
           <div className="absolute z-20 bg-white/95" style={{ left: '1.5cqw', top: '1.5cqw', maxWidth: '40cqw', borderRadius: '1.2cqw', padding: '0.8cqw 1.3cqw', boxShadow: '0 0.6cqw 1.6cqw rgba(20,40,70,0.3)' }}>
             <div className="font-bold text-deep-navy" style={{ fontSize: '1.7cqw' }}>
-              {frame} <span className="text-primary">a … / an … / some …</span>
+              {frame} <span style={{ color: KIND_COLOR.one }}>a … / an …</span> / <span style={{ color: KIND_COLOR.some }}>some …</span>
             </div>
             {spoken && (
               <button type="button" onClick={() => say(spoken)} className="flex items-center text-left font-extrabold text-deep-navy" style={{ gap: '0.6cqw', fontSize: '2.6cqw', marginTop: '0.3cqw' }}>

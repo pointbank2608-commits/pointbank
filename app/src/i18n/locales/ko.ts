@@ -1143,9 +1143,15 @@ const ko = {
     addItemButton: '+ 물건 추가',
     answerPlaceholder: '낱말을 입력하세요 (예: onion)',
     storeLabel: '가게',
-    store_market: '식품 마트 (그림)',
+    store_market: '식품 마트',
+    store_clothes: '옷 가게',
+    store_stationery: '문구점',
+    store_toys: '장난감 가게',
     store_words: '내 단어장 가게',
     storeHint_market: '과일·채소·빵·우유 등 27가지가 그려진 마트예요. 단어를 넣지 않아도 바로 시작할 수 있어요.',
+    storeHint_clothes: '티셔츠·코트·양말·모자 등 20가지가 그려진 옷 가게예요. 단어를 넣지 않아도 바로 시작할 수 있어요.',
+    storeHint_stationery: '연필·지우개·가위·공책 등 20가지가 그려진 문구점이에요. 단어를 넣지 않아도 바로 시작할 수 있어요.',
+    storeHint_toys: '곰 인형·로봇·기차·연 등 20가지가 그려진 장난감 가게예요. 단어를 넣지 않아도 바로 시작할 수 있어요.',
     storeHint_words: '아래에서 단어장이나 사전의 그림 있는 낱말을 넣으면 그 낱말로 가게가 만들어져요.',
     modeLabel: '방식',
     mode_list: '목록 외우고 담기',
@@ -1270,6 +1276,7 @@ const ko = {
     listening: '리스닝',
     reading: '리딩',
     speaking: '스피킹',
+    roleplay: '롤플레이',
   },
 
   gamesList: {
@@ -1353,7 +1360,7 @@ const ko = {
     quizshowName: "대회 퀴즈쇼",
     quizshowDesc: "학생들이 휴대폰으로 QR 입장해 뜻 고르기·O·X·철자 쓰기·부저로 겨루는 실시간 보카 대회예요.",
     shoppingName: '장보기',
-    shoppingDesc: '진열대의 물건을 카트에 담으며 a / an / some 으로 말해요. 목록 외우기·요리 재료·특별한 날 세 가지 방식.',
+    shoppingDesc: '가게에 들어가 물건을 카트에 담으며 a / an / some 으로 말하는 롤플레이예요. 식품 마트·옷 가게·문구점·장난감 가게.',
   },
 
   gameSound: {

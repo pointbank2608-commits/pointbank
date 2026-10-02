@@ -1147,9 +1147,15 @@ const en: Ko = {
     addItemButton: '+ Add item',
     answerPlaceholder: 'Type the word (e.g. onion)',
     storeLabel: 'Store',
-    store_market: 'Food market (picture)',
+    store_market: 'Food market',
+    store_clothes: 'Clothing shop',
+    store_stationery: 'Stationery shop',
+    store_toys: 'Toy shop',
     store_words: 'My word list store',
     storeHint_market: 'A market drawn with 27 foods such as fruit, vegetables, bread and milk. You can start right away without adding words.',
+    storeHint_clothes: 'A clothing shop drawn with 20 items such as a T-shirt, a coat, socks and a hat. You can start right away without adding words.',
+    storeHint_stationery: 'A stationery shop drawn with 20 items such as a pencil, an eraser, scissors and a notebook. You can start right away without adding words.',
+    storeHint_toys: 'A toy shop drawn with 20 toys such as a teddy bear, a robot, a train and a kite. You can start right away without adding words.',
     storeHint_words: 'Add words with pictures from a word list or the dictionary below, and the store is built from those words.',
     modeLabel: 'Mode',
     mode_list: 'Remember the list',
@@ -1274,6 +1280,7 @@ const en: Ko = {
     listening: 'Listening',
     reading: 'Reading',
     speaking: 'Speaking',
+    roleplay: 'Role play',
   },
 
   gamesList: {
@@ -1357,7 +1364,7 @@ const en: Ko = {
     quizshowName: "Contest Quiz Show",
     quizshowDesc: "A live vocab contest: students join by QR on their phones and compete with choices, O/X, spelling and buzzers.",
     shoppingName: 'Shopping',
-    shoppingDesc: 'Put items in the cart while speaking with a / an / some. Three modes: remember the list, cook a dish, special day.',
+    shoppingDesc: 'A role play: walk into a store and put things in your cart while speaking with a / an / some. Food market, clothing shop, stationery shop and toy shop.',
   },
 
   gameSound: {

@@ -7,7 +7,7 @@ import type { GameType } from './types';
  * - sentence: 문장 만들기/어순 연습
  * - listening / reading / speaking: 각 언어 영역 특화
  */
-export type GameCategory = 'simple' | 'vocabulary' | 'sentence' | 'listening' | 'reading' | 'speaking';
+export type GameCategory = 'simple' | 'vocabulary' | 'sentence' | 'listening' | 'reading' | 'speaking' | 'roleplay';
 
 export interface GameCatalogEntry {
   type: GameType;
@@ -458,11 +458,11 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 장보기(2026-10-02): 진열대의 단어 그림을 카트에 담으며 a / an / some 으로 말한다. 그림이 있는 낱말이 필요해 다른 게임으로 열기에서 빠진다.
     type: 'shopping',
     number: 37,
-    category: 'speaking',
+    category: 'roleplay',
     minItems: 999,
     icon: 'shopping_cart',
     path: '/games/shopping',
-    cover: null,
+    cover: '/covers/game-shopping.jpg',
     nameKey: 'gamesList.shoppingName',
     descKey: 'gamesList.shoppingDesc',
   },

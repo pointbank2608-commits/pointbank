@@ -14,18 +14,36 @@ const SOME_WORDS = new Set([
   'pasta', 'spaghetti', 'cereal', 'popcorn', 'chocolate', 'candy', 'pudding', 'jam', 'honey', 'sauce', 'ketchup',
   'salt', 'sugar', 'pepper', 'flour', 'oil', 'garlic', 'corn', 'spinach', 'lettuce', 'broccoli', 'cabbage', 'tofu',
   'kimchi', 'seafood', 'fruit', 'food', 'gum', 'wine', 'beer', 'ice', 'paper', 'soap', 'shampoo', 'toothpaste', 'glue',
-  'tape', 'sand', 'clay', 'money', 'furniture', 'homework', 'sunscreen', 'medicine', 'wood', 'wool', 'cotton',
+  'tape', 'paint', 'sand', 'clay', 'money', 'furniture', 'homework', 'sunscreen', 'medicine', 'wood', 'wool', 'cotton',
 ]);
 /** s 로 끝나지만 하나를 뜻하는 낱말(some 이 아니라 a/an). */
 const SINGULAR_S = new Set(['bus', 'glass', 'dress', 'class', 'octopus', 'cactus', 'walrus', 'compass', 'circus', 'lens', 'gas', 'boss', 'kiss', 'cross', 'grass']);
 
 const norm = (word: string) => word.trim().toLowerCase();
+/** grammar.ts 의 규칙으로 틀리는 복수형 */
+const PLURAL_FIX: Record<string, string> = { scarf: 'scarves' };
+const pluralOf = (word: string) => PLURAL_FIX[norm(word)] ?? pluralize(word);
 
 /** 이미 여럿 꼴(noodles, grapes, socks)이라 some 을 붙이는지. */
 function looksPlural(word: string): boolean {
   const w = norm(word);
   const last = w.split(/\s+/).pop() ?? w;
   return last.length > 3 && last.endsWith('s') && !last.endsWith('ss') && !SINGULAR_S.has(last);
+}
+
+/** 한 켤레·한 벌이 한 덩어리인 낱말 — some 이 붙어도 하나만 담긴다. */
+const PAIR_WORDS = new Set(['jeans', 'shorts', 'pants', 'trousers', 'scissors', 'glasses', 'socks', 'gloves', 'sneakers', 'boots', 'shoes', 'mittens', 'slippers']);
+
+/** "some blocks"처럼 여러 개라서 some 인 낱말 — 누르면 한 움큼이 와르르 담긴다(some rice 같은 셀 수 없는 것은 하나). */
+export function isHandful(word: string): boolean {
+  const last = norm(word).split(/\s+/).pop() ?? '';
+  return looksPlural(word) && !SOME_WORDS.has(norm(word)) && !PAIR_WORDS.has(last);
+}
+
+/** 문구의 종류 — 목록에서 색으로 구분한다: a/an 하나 · 숫자 세어서 · some 정해지지 않은 양 */
+export function phraseKind(phrase: string): 'one' | 'count' | 'some' {
+  const first = phrase.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
+  return first === 'some' ? 'some' : /^\d+$/.test(first) ? 'count' : 'one';
 }
 
 export function isUncountable(word: string): boolean {
@@ -37,7 +55,7 @@ export function shoppingPhrase(word: string, quantity = 1): string {
   const w = word.trim();
   if (isUncountable(w)) return `some ${w}`;
   if (quantity > 1) {
-    const plural = pluralize(w);
+    const plural = pluralOf(w);
     if (plural) return `${quantity} ${plural}`;
   }
   return withArticle(w);
@@ -74,7 +92,7 @@ export function buildShoppingList(items: ImageQuizItem[], size: number): Shoppin
   return shuffle(items)
     .slice(0, Math.max(1, Math.min(size, items.length)))
     .map((item) => {
-      const countable = !isUncountable(item.answer) && pluralize(item.answer) != null;
+      const countable = !isUncountable(item.answer) && pluralOf(item.answer) != null;
       const quantity = countable && Math.random() < 0.34 ? 2 + Math.floor(Math.random() * 4) : 1;
       return { item, quantity, phrase: shoppingPhrase(item.answer, quantity) };
     });
@@ -132,6 +150,8 @@ export interface SceneSpot {
 export interface ShoppingScene {
   id: string;
   image: string;
+  /** 낱개 그림 폴더 — <cutoutDir>/<낱말>.webp (띄어쓰기는 -) */
+  cutoutDir: string;
   width: number;
   height: number;
   items: SceneSpot[];
@@ -148,6 +168,7 @@ export interface ShopGood extends ImageQuizItem {
 export const MARKET_SCENE: ShoppingScene = {
   id: 'market',
   image: '/skins/shop-market.webp',
+  cutoutDir: '/skins/shop-items',
   width: 1376,
   height: 768,
   items: [
@@ -181,8 +202,102 @@ export const MARKET_SCENE: ShoppingScene = {
   ],
 };
 
+/** 그림 가게 목록 — 가게를 늘리려면 장면 그림 + 물건 자리 + 낱개 그림을 넣고 여기에 한 묶음 추가(+ STORE_EVENTS, 번역 문구 store_<id>). */
+export type ShopStoreId = 'market' | 'clothes' | 'stationery' | 'toys';
+export const SHOP_STORE_IDS: ShopStoreId[] = ['market', 'clothes', 'stationery', 'toys'];
+export const SHOP_SCENES: Record<ShopStoreId, ShoppingScene> = {
+  market: MARKET_SCENE,
+  clothes: {
+    id: 'clothes',
+    image: '/skins/shop-clothes.webp',
+    cutoutDir: '/skins/shop-items/clothes',
+    width: 1376,
+    height: 768,
+    items: [
+      { word: 'T-shirt', x: 88, y: 172, w: 190, h: 120 },
+      { word: 'shirt', x: 290, y: 172, w: 186, h: 120 },
+      { word: 'dress', x: 490, y: 172, w: 188, h: 120 },
+      { word: 'skirt', x: 692, y: 172, w: 188, h: 120 },
+      { word: 'jacket', x: 82, y: 300, w: 194, h: 110 },
+      { word: 'coat', x: 286, y: 300, w: 190, h: 110 },
+      { word: 'sweater', x: 490, y: 300, w: 188, h: 110 },
+      { word: 'hoodie', x: 692, y: 300, w: 190, h: 110 },
+      { word: 'jeans', x: 76, y: 418, w: 196, h: 98 },
+      { word: 'shorts', x: 284, y: 418, w: 190, h: 98 },
+      { word: 'socks', x: 490, y: 418, w: 188, h: 98 },
+      { word: 'gloves', x: 694, y: 418, w: 192, h: 98 },
+      { word: 'hat', x: 1028, y: 138, w: 152, h: 84 },
+      { word: 'cap', x: 1196, y: 128, w: 150, h: 76 },
+      { word: 'scarf', x: 1018, y: 262, w: 144, h: 100 },
+      { word: 'umbrella', x: 1180, y: 266, w: 192, h: 56 },
+      { word: 'sneakers', x: 1040, y: 368, w: 136, h: 60 },
+      { word: 'boots', x: 1202, y: 344, w: 142, h: 106 },
+      { word: 'belt', x: 1046, y: 480, w: 130, h: 58 },
+      { word: 'bag', x: 1218, y: 466, w: 114, h: 114 },
+    ],
+  },
+  stationery: {
+    id: 'stationery',
+    image: '/skins/shop-stationery.webp',
+    cutoutDir: '/skins/shop-items/stationery',
+    width: 1376,
+    height: 768,
+    items: [
+      { word: 'pencil', x: 88, y: 172, w: 190, h: 120 },
+      { word: 'pen', x: 290, y: 172, w: 186, h: 120 },
+      { word: 'eraser', x: 490, y: 172, w: 188, h: 120 },
+      { word: 'ruler', x: 692, y: 172, w: 188, h: 120 },
+      { word: 'notebook', x: 82, y: 300, w: 194, h: 110 },
+      { word: 'crayons', x: 286, y: 300, w: 190, h: 110 },
+      { word: 'scissors', x: 490, y: 300, w: 188, h: 110 },
+      { word: 'glue', x: 692, y: 300, w: 190, h: 110 },
+      { word: 'marker', x: 76, y: 418, w: 196, h: 98 },
+      { word: 'paintbrush', x: 284, y: 418, w: 190, h: 98 },
+      { word: 'paint', x: 490, y: 418, w: 188, h: 98 },
+      { word: 'tape', x: 694, y: 418, w: 192, h: 98 },
+      { word: 'globe', x: 1076, y: 118, w: 80, h: 94 },
+      { word: 'calculator', x: 1230, y: 106, w: 88, h: 94 },
+      { word: 'pencil case', x: 1050, y: 262, w: 132, h: 56 },
+      { word: 'backpack', x: 1226, y: 224, w: 114, h: 94 },
+      { word: 'book', x: 1044, y: 370, w: 140, h: 56 },
+      { word: 'envelope', x: 1214, y: 358, w: 128, h: 90 },
+      { word: 'paper', x: 1026, y: 472, w: 142, h: 70 },
+      { word: 'stapler', x: 1204, y: 500, w: 138, h: 80 },
+    ],
+  },
+  toys: {
+    id: 'toys',
+    image: '/skins/shop-toys.webp',
+    cutoutDir: '/skins/shop-items/toys',
+    width: 1376,
+    height: 768,
+    items: [
+      { word: 'teddy bear', x: 88, y: 172, w: 190, h: 120 },
+      { word: 'doll', x: 290, y: 172, w: 186, h: 120 },
+      { word: 'robot', x: 490, y: 172, w: 188, h: 120 },
+      { word: 'ball', x: 692, y: 172, w: 188, h: 120 },
+      { word: 'car', x: 82, y: 300, w: 194, h: 110 },
+      { word: 'train', x: 286, y: 300, w: 190, h: 110 },
+      { word: 'airplane', x: 490, y: 300, w: 188, h: 110 },
+      { word: 'boat', x: 692, y: 300, w: 190, h: 110 },
+      { word: 'blocks', x: 76, y: 418, w: 196, h: 98 },
+      { word: 'puzzle', x: 284, y: 418, w: 190, h: 98 },
+      { word: 'kite', x: 490, y: 418, w: 188, h: 98 },
+      { word: 'yo-yo', x: 694, y: 418, w: 192, h: 98 },
+      { word: 'dinosaur', x: 1036, y: 120, w: 146, h: 94 },
+      { word: 'rocket', x: 1240, y: 88, w: 78, h: 112 },
+      { word: 'drum', x: 1048, y: 244, w: 102, h: 74 },
+      { word: 'xylophone', x: 1184, y: 246, w: 190, h: 76 },
+      { word: 'balloons', x: 1044, y: 330, w: 98, h: 92 },
+      { word: 'jump rope', x: 1210, y: 346, w: 130, h: 96 },
+      { word: 'scooter', x: 1030, y: 436, w: 138, h: 106 },
+      { word: 'skateboard', x: 1182, y: 512, w: 186, h: 74 },
+    ],
+  },
+};
+
 export function sceneGoods(scene: ShoppingScene): ShopGood[] {
-  return scene.items.map((spot) => ({ id: `${scene.id}:${spot.word}`, answer: spot.word, imageUrl: scene.image, spot, scene, cutout: `/skins/shop-items/${spot.word}.webp` }));
+  return scene.items.map((spot) => ({ id: `${scene.id}:${spot.word}`, answer: spot.word, imageUrl: scene.image, spot, scene, cutout: `${scene.cutoutDir}/${spot.word.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.webp` }));
 }
 
 /** 정사각 칸에 그 물건 자리만 보이게 하는 배경 설정(자리 가운데를 정사각으로 자른다). */
@@ -200,6 +315,40 @@ export function spotBackground(good: ShopGood): Record<string, string> | null {
   };
 }
 
-export function missionsFor(mode: ShoppingMode): ShoppingMission[] {
+/** 가게마다 다른 "특별한 날" 상황 카드(식품 마트는 EVENT_MISSIONS). */
+const STORE_EVENTS: Record<string, ShoppingMission[]> = {
+  clothes: [
+    { id: 'winter', image: img('winter'), prompt: "It's a cold winter day! What will you buy?", frame: 'I will buy' },
+    { id: 'beach', image: img('beach'), prompt: 'We are going to the beach! What will you buy?', frame: 'I will buy' },
+    { id: 'rainy', image: img('rainy'), prompt: "It's a rainy day! What will you buy?", frame: 'I will buy' },
+    { id: 'party', image: img('party'), prompt: 'You are going to a party! What will you buy?', frame: 'I will buy' },
+    { id: 'hiking', image: img('hiking'), prompt: 'We are going hiking! What will you buy?', frame: 'I will buy' },
+    { id: 'sports-day', image: img('sports-day'), prompt: "It's sports day! What will you buy?", frame: 'I will buy' },
+  ],
+  stationery: [
+    { id: 'school', image: img('school'), prompt: 'Tomorrow is the first day of school! What do you need?', frame: 'I need' },
+    { id: 'art', image: img('art'), prompt: "It's art class today! What do you need?", frame: 'I need' },
+    { id: 'math', image: img('math'), prompt: "It's math class today! What do you need?", frame: 'I need' },
+    { id: 'homework', image: img('homework'), prompt: 'You have a lot of homework! What do you need?', frame: 'I need' },
+    { id: 'letter', image: img('letter'), prompt: 'You want to write a letter to a friend! What do you need?', frame: 'I need' },
+    { id: 'trip', image: img('trip'), prompt: 'We are going on a school trip! What do you need?', frame: 'I need' },
+  ],
+  toys: [
+    { id: 'birthday', image: img('birthday'), prompt: "It's your friend's birthday! What will you buy?", frame: 'I will buy' },
+    { id: 'baby', image: img('baby'), prompt: 'You are visiting a baby! What will you buy?', frame: 'I will buy' },
+    { id: 'park', image: img('park'), prompt: 'We are going to the park! What will you buy?', frame: 'I will buy' },
+    { id: 'rainy', image: img('rainy'), prompt: "It's a rainy day at home! What will you buy?", frame: 'I will buy' },
+    { id: 'christmas', image: img('christmas'), prompt: "It's Christmas! What will you buy?", frame: 'I will buy' },
+    { id: 'beach', image: img('beach'), prompt: 'We are going to the beach! What will you buy?', frame: 'I will buy' },
+  ],
+};
+
+/** 그 가게에서 쓸 수 있는 방식 — 요리 재료 담기는 식품 가게(식품 마트·내 단어장 가게)에서만. */
+export function modesForStore(store: string): ShoppingMode[] {
+  return store === 'market' || store === 'words' ? SHOPPING_MODES : ['list', 'event'];
+}
+
+export function missionsFor(mode: ShoppingMode, sceneId?: string): ShoppingMission[] {
+  if (mode === 'event' && sceneId && STORE_EVENTS[sceneId]) return STORE_EVENTS[sceneId];
   return mode === 'dish' ? DISH_MISSIONS : mode === 'event' ? EVENT_MISSIONS : [];
 }

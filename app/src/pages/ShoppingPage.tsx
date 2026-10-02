@@ -12,7 +12,7 @@ import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import { MARKET_SCENE, SHOPPING_MODES, type ShoppingMode } from '../lib/shopping';
+import { MARKET_SCENE, SHOP_SCENES, SHOP_STORE_IDS, modesForStore, type ShopStoreId, type ShoppingMode } from '../lib/shopping';
 import type { GameItem, GameTemplateConfig, ImageQuizItem } from '../lib/types';
 
 function uid(): string {
@@ -85,9 +85,12 @@ export default function ShoppingPage() {
   }, [selected?.id]);
 
   const playableItems = draftItems.filter((it) => it.imageUrl && it.answer.trim());
-  const mode: ShoppingMode = selected?.config.shopMode ?? 'list';
   /** 가게: 통째로 그린 식품 마트(준비 없이 바로) / 내 단어장 가게 */
-  const store: 'market' | 'words' = selected?.config.shopScene ?? ((selected?.config.shopItems?.length ?? 0) > 0 ? 'words' : 'market');
+  const store: ShopStoreId | 'words' = selected?.config.shopScene ?? ((selected?.config.shopItems?.length ?? 0) > 0 ? 'words' : 'market');
+  const storeModes = modesForStore(store);
+  /** 요리 재료 담기는 식품 가게에서만 — 다른 가게에서는 특별한 날로 바꿔 보여 준다 */
+  const savedMode: ShoppingMode = selected?.config.shopMode ?? 'list';
+  const mode: ShoppingMode = storeModes.includes(savedMode) ? savedMode : 'event';
   const listSize = selected?.config.shopListSize ?? DEFAULT_LIST_SIZE;
   const memorizeSeconds =
     selected?.config.shopMemorizeSeconds !== undefined ? selected.config.shopMemorizeSeconds : DEFAULT_MEMORIZE_SECONDS;
@@ -296,7 +299,7 @@ export default function ShoppingPage() {
             <Shopping
               key={`${roundKey}-${store}-${mode}-${listSize}-${memorizeSeconds}`}
               items={playableItems}
-              scene={store === 'market' ? MARKET_SCENE : null}
+              scene={store === 'words' ? null : SHOP_SCENES[store]}
               mode={mode}
               listSize={listSize}
               memorizeSeconds={memorizeSeconds}
@@ -324,7 +327,7 @@ export default function ShoppingPage() {
 
                 <div className="flex flex-wrap items-center gap-2 py-2">
                   <span className="font-label-md text-label-md text-on-surface-variant shrink-0">{t('gameShopping.storeLabel')}</span>
-                  {(['market', 'words'] as const).map((s) => (
+                  {([...SHOP_STORE_IDS, 'words'] as const).map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -343,7 +346,7 @@ export default function ShoppingPage() {
 
                 <div className="flex flex-wrap items-center gap-2 py-2">
                   <span className="font-label-md text-label-md text-on-surface-variant shrink-0">{t('gameShopping.modeLabel')}</span>
-                  {SHOPPING_MODES.map((m) => (
+                  {storeModes.map((m) => (
                     <button
                       key={m}
                       type="button"

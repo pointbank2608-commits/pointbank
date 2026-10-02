@@ -105,7 +105,7 @@ function slideOptionsFromState(o: WorksheetOptionsState): WorksheetSlideOptions 
   };
 }
 
-const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
+const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking', 'roleplay'];
 
 function uid(): string {
   return crypto.randomUUID();

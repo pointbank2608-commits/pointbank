@@ -7,7 +7,7 @@ import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG, isFreeTierGame, type GameCategory } from '../lib/gameCatalog';
 
-const CATEGORIES: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking'];
+const CATEGORIES: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking', 'roleplay'];
 
 type ViewMode = 'library' | 'all';
 
