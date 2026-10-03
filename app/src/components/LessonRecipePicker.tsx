@@ -193,7 +193,7 @@ export default function LessonRecipePicker({
                     if (!id) return;
                     setScripting(true);
                     try {
-                      const script = await generateShadowScript(id);
+                      const script = await generateShadowScript(id, video.source);
                       setVideo((r) => ({ ...r, source: script }));
                     } catch {
                       notify(t('curriculum.shadow.autoUnavailable'), 'error');

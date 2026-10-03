@@ -185,7 +185,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.slides.kindStudy'),
             icon: 'style',
-            navState: { materialsWords },
+            navState: { materialsWords: slide.words?.length ? slide.words : materialsWords },
           });
         } else if (slide.kind === 'wordshow') {
           push({
@@ -193,7 +193,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.slides.kindWordShow'),
             icon: 'menu_book',
-            navState: { materialsWords },
+            navState: { materialsWords: slide.words?.length ? slide.words : materialsWords },
           });
         } else if (slide.kind === 'attendance') {
           push({

@@ -2658,6 +2658,16 @@ const en: Ko = {
       addUnscramble: 'Add an unscramble game next',
       gameAdded: 'Added an unscramble game slide right after.',
     },
+    ownWords: {
+      title: 'Words on this slide',
+      useLesson: 'Whole lesson word list ({{count}})',
+      pick: 'Pick for this slide only',
+      hint: 'Picked words are used only on this slide, so copies of a slide can show different words.',
+      fromLesson: 'From the lesson word list',
+      all: 'Add all',
+      clear: 'Clear',
+      count: '{{count}} picked',
+    },
     shadow: {
       defaultTitle: 'Shadowing',
       empty: 'No lines yet.',

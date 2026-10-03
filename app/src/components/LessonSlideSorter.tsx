@@ -1207,9 +1207,10 @@ function SlideDetail({
     return (
       <div className="space-y-3">
         <div className="aspect-video w-full max-w-3xl">
-          <WordShowBoard words={cards} themeId={slide.boardTheme ?? 'green'} interactive={false} />
+          <WordShowBoard key={(slide.words ?? cards).map((w) => w.id).join(',')} words={slide.words?.length ? slide.words : cards} themeId={slide.boardTheme ?? 'green'} interactive={false} />
         </div>
-        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: cards.length })}</p>
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: (slide.words?.length ? slide.words : cards).length })}</p>
+        <SlideOwnWords cards={cards} wordLists={wordLists} value={slide.words} onChange={(words) => onUpdate({ words } as Partial<LessonSlide>)} />
         <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
@@ -1247,8 +1248,9 @@ function SlideDetail({
   if (slide.kind === 'study') {
     return (
       <div className="space-y-3">
-        <StudySlidePreview cards={cards} />
-        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.detailHint', { count: cards.length })}</p>
+        <StudySlidePreview cards={slide.words?.length ? slide.words : cards} />
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.detailHint', { count: (slide.words?.length ? slide.words : cards).length })}</p>
+        <SlideOwnWords cards={cards} wordLists={wordLists} value={slide.words} onChange={(words) => onUpdate({ words } as Partial<LessonSlide>)} />
         <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
           <input
             type="checkbox"
@@ -1898,7 +1900,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
     if (!id || busy) return;
     setBusy(true);
     try {
-      const script = await generateShadowScript(id);
+      const script = await generateShadowScript(id, draft.source);
       set({ source: script });
       notify(t('curriculum.shadow.autoDone'));
     } catch {
@@ -2243,6 +2245,103 @@ function StudySlidePreview({ cards }: { cards: FullCardItem[] }) {
           <span className="font-title-md text-[28px] font-bold text-deep-navy">{first?.word ?? 'apple'}</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * 단어 소개·카드로 외우기 슬라이드의 "이 슬라이드 단어"(2026-10-03 제보: 복사한 슬라이드가 같이 바뀐다).
+ * 기본은 수업 단어장 전체. "이 슬라이드만 고르기"를 켜면 수업 단어장(또는 다른 단어장)에서 골라 이 슬라이드에만 저장한다.
+ */
+function SlideOwnWords({
+  cards,
+  wordLists,
+  value,
+  onChange,
+}: {
+  cards: FullCardItem[];
+  wordLists: WordList[];
+  value: FullCardItem[] | undefined;
+  onChange: (words: FullCardItem[] | undefined) => void;
+}) {
+  const { t } = useTranslation();
+  const own = !!value && value.length > 0;
+  const [pickOn, setPickOn] = useState(own);
+  const [sourceId, setSourceId] = useState('');
+  useEffect(() => setPickOn(own), [own]);
+  const source = sourceId ? wordListToCards(wordLists.find((wl) => wl.id === sourceId) ?? null) : cards;
+  const chosen = new Set((value ?? []).map((w) => `${w.word.toLowerCase()}::${w.meaning}`));
+  const keyOf = (w: FullCardItem) => `${w.word.toLowerCase()}::${w.meaning}`;
+  function toggle(w: FullCardItem) {
+    const list = value ?? [];
+    const next = chosen.has(keyOf(w)) ? list.filter((x) => keyOf(x) !== keyOf(w)) : [...list, w];
+    onChange(next.length ? next : undefined);
+  }
+  const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant'}`;
+  return (
+    <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+      <div className="font-label-md text-label-md text-on-surface">{t('curriculum.ownWords.title')}</div>
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          className={chip(!pickOn)}
+          onClick={() => {
+            setPickOn(false);
+            onChange(undefined);
+          }}
+        >
+          {t('curriculum.ownWords.useLesson', { count: cards.length })}
+        </button>
+        <button type="button" className={chip(pickOn)} onClick={() => setPickOn(true)}>
+          {t('curriculum.ownWords.pick')}
+        </button>
+      </div>
+      {pickOn && (
+        <div className="space-y-2">
+          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.ownWords.hint')}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={sourceId}
+              onChange={(e) => setSourceId(e.target.value)}
+              className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary"
+            >
+              <option value="">{t('curriculum.ownWords.fromLesson')}</option>
+              {wordLists.map((wl) => (
+                <option key={wl.id} value={wl.id}>
+                  {wl.name} ({wl.items.length})
+                </option>
+              ))}
+            </select>
+            <button type="button" onClick={() => onChange([...(value ?? []), ...source.filter((w) => !chosen.has(keyOf(w)))])} className="font-label-md text-label-md text-primary hover:underline">
+              {t('curriculum.ownWords.all')}
+            </button>
+            <button type="button" onClick={() => onChange(undefined)} className="font-label-md text-label-md text-on-surface-variant hover:underline">
+              {t('curriculum.ownWords.clear')}
+            </button>
+            <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.ownWords.count', { count: value?.length ?? 0 })}</span>
+          </div>
+          <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
+            {source.map((w) => {
+              const on = chosen.has(keyOf(w));
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => toggle(w)}
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors ${
+                    on ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:border-primary'
+                  }`}
+                >
+                  {w.imageUrl && <img src={w.imageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />}
+                  {w.word}
+                  {on && <span className="material-symbols-outlined text-[16px]">check</span>}
+                </button>
+              );
+            })}
+            {source.length === 0 && <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.needWordList')}</span>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

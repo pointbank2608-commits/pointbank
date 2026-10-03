@@ -30,8 +30,16 @@ Deno.serve(async (req: Request) => {
   try {
     const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) return json({ error: 'GEMINI_API_KEY 가 등록되지 않았어요.' }, 500);
-    const { videoId } = (await req.json()) as { videoId?: string };
+    const { videoId, transcript } = (await req.json()) as { videoId?: string; transcript?: string };
     if (!videoId || !/^[\w-]{11}$/.test(videoId)) return json({ error: '영상 주소가 올바르지 않아요.' }, 400);
+    // 선생님이 붙여넣은 자막(시간 있음)이 있으면 같이 보낸다 — AI 가 영상을 보며 문장을 나누고 배역·해석을 붙이되 시간은 자막을 따른다.
+    const hint = transcript?.trim()
+      ? `
+
+The teacher pasted this auto-generated transcript (times are reliable, but sentences run together and speakers are missing). ` +
+        `Use its times; split it into separate sentences, estimating each sentence's start and end inside its chunk:
+${transcript.slice(0, 30000)}`
+      : '';
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -42,7 +50,7 @@ Deno.serve(async (req: Request) => {
             role: 'user',
             parts: [
               { fileData: { fileUri: `https://www.youtube.com/watch?v=${videoId}`, mimeType: 'video/*' }, videoMetadata: { startOffset: '0s', endOffset: '600s' } },
-              { text: PROMPT },
+              { text: PROMPT + hint },
             ],
           },
         ],

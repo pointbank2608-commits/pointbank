@@ -1231,8 +1231,8 @@ export async function generateWordListFromVideo(videoId: string): Promise<{ word
  * 유튜브 영상을 AI(Gemini)가 보고 쉐도잉 대사표("[시작-끝] 배역: 영어 | 해석")를 만든다 — `supabase/functions/shadow-script`.
  * 배포 전(GEMINI_API_KEY 등록 + 배포 필요)에는 실패하고, 슬라이드 편집 화면이 붙여넣기 안내를 띄운다.
  */
-export async function generateShadowScript(videoId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke<{ script?: string; error?: string }>('shadow-script', { body: { videoId } });
+export async function generateShadowScript(videoId: string, transcript?: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke<{ script?: string; error?: string }>('shadow-script', { body: { videoId, transcript } });
   if (error) throw new Error(error.message);
   if (data?.error) throw new Error(data.error);
   if (!data?.script) throw new Error('empty');

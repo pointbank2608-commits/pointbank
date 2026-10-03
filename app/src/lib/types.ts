@@ -715,6 +715,8 @@ export interface StudySlide {
   kind: 'study';
   /** 섞은 순서로 시작 */
   shuffle?: boolean;
+  /** 이 슬라이드만 쓰는 단어(2026-10-03) — 있으면 수업 단어장 대신 이것. 슬라이드를 복사해 서로 다른 단어로 쓰려고. */
+  words?: FullCardItem[];
 }
 
 /** "문법" 슬라이드 — 초등 영문법(lib/grammar.ts)의 한 항목을 칠판 화면(GrammarBoard)으로 띄운다. */
@@ -772,6 +774,8 @@ export interface WordShowSlide {
   id: string;
   kind: 'wordshow';
   shuffle?: boolean;
+  /** 이 슬라이드만 쓰는 단어(2026-10-03) — 있으면 수업 단어장 대신 이것. 슬라이드를 복사해 서로 다른 단어로 쓰려고. */
+  words?: FullCardItem[];
   /** 단어가 나올 때 한 번 읽어 주기(기본 켬) */
   autoSpeak?: boolean;
   boardTheme?: string | null;

@@ -2653,6 +2653,16 @@ const ko = {
       addUnscramble: '다음에 문장 배열하기 게임 넣기',
       gameAdded: '문장 배열하기 게임 슬라이드를 바로 뒤에 넣었어요.',
     },
+    ownWords: {
+      title: '이 슬라이드 단어',
+      useLesson: '수업 단어장 전체 ({{count}}개)',
+      pick: '이 슬라이드만 고르기',
+      hint: '고른 단어는 이 슬라이드에만 쓰여요. 슬라이드를 복사해서 단어를 나눠 보여 줄 수 있어요.',
+      fromLesson: '수업 단어장에서',
+      all: '모두 넣기',
+      clear: '비우기',
+      count: '{{count}}개 골랐어요',
+    },
     shadow: {
       defaultTitle: '쉐도잉',
       empty: '아직 대사가 없어요.',

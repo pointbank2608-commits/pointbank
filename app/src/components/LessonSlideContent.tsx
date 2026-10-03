@@ -38,6 +38,8 @@ export default function LessonSlideContent({
   student?: boolean;
 }) {
   const { t } = useTranslation();
+  // 단어 소개·카드로 외우기는 이 슬라이드만의 단어가 있으면 그것으로
+  if ((slide.kind === 'wordshow' || slide.kind === 'study') && slide.words?.length) words = slide.words;
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 단어가 바뀔 때만 만든다.
