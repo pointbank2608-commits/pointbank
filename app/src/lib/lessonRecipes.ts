@@ -2,8 +2,9 @@ import { newCanvasSlide, newTextElement, themeTextDefaults } from '../components
 import { createGameTemplate } from './api';
 import { grammarPoint, sentencesForUnscramble } from './grammar';
 import { loadWordBank } from './wordBankCache';
-import { buildVideoLessonParts } from './videoLesson';
-import type { FullCardItem, LessonSlide } from './types';
+import { buildVideoLessonParts, markBingoWords } from './videoLesson';
+import type { FullCardItem, LessonSlide, WordBankEntry } from './types';
+import type { VideoClip } from './videoClips';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -19,7 +20,7 @@ export interface RecipeContext {
   grammarId?: string;
   reading?: { source: string; title?: string; videoUrl?: string | null };
   /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
-  video?: { source: string; title?: string; videoUrl: string };
+  video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null };
   /** 영상 레시피: 대사에서 고른 낱말로 수업 단어장을 만들어 고른다(이미 단어장이 있으면 부르지 않는다) */
   makeWordList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   /** 영상 레시피: 대사 문장으로 "문장 배열하기" 게임 내용을 만든다 */
@@ -125,6 +126,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     preview: ['smart_display', 'menu_book', 'record_voice_over', 'hearing', 'reorder', 'quiz', 'groups'],
     build: async (ctx) => {
       if (!ctx.video?.source.trim() || !ctx.video.videoUrl.trim()) return [];
+      if (ctx.video.clip) return buildClipLesson(ctx, ctx.video.clip);
       const { videoUrl, title, source } = ctx.video;
       const parts = buildVideoLessonParts(source, await loadWordBank());
       let hasWords = ctx.hasWords;
@@ -174,6 +176,68 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     build: async () => [study(), game('matchup')],
   },
 ];
+
+/** 영상 묶음 단어 → 카드(사전에 같은 낱말이 있으면 그림·분류를 빌린다) */
+export function clipWordCards(clip: VideoClip, bank: WordBankEntry[]): FullCardItem[] {
+  const byWord = new Map<string, WordBankEntry>();
+  for (const e of bank) {
+    const k = e.word.toLowerCase();
+    const prev = byWord.get(k);
+    if (!prev || (!prev.image_url && e.image_url) || ((prev.level ?? 9) > (e.level ?? 9) && !!e.image_url === !!prev.image_url)) byWord.set(k, e);
+  }
+  return (clip.pack?.words ?? []).map((w) => {
+    const hit = byWord.get(w.word.toLowerCase());
+    return {
+      id: uid(),
+      word: w.word,
+      meaning: w.meaning,
+      imageUrl: hit?.image_url ?? null,
+      category: hit?.category ?? null,
+      partOfSpeech: w.pos ?? hit?.part_of_speech ?? null,
+      example: w.example,
+      exampleKo: w.exampleKo ?? null,
+      sceneTime: w.time,
+    };
+  });
+}
+
+/**
+ * 영상 라이브러리 장면 하나로 수업(클래스5 무비 수업 8단계 참고): 장면 보기 → Q&A → 단어 소개(영화 예문·장면 보기) →
+ * 쉐도잉 → 빈칸 듣기 → 문법 칠판 → 문장 배열하기 → 퀴즈 → 배역 나눠 따라하기.
+ */
+async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<LessonSlide[]> {
+  const videoUrl = `https://www.youtube.com/watch?v=${clip.youtube_id}`;
+  const title = clip.title;
+  const bank = await loadWordBank();
+  const words = clipWordCards(clip, bank);
+  let hasWords = ctx.hasWords;
+  if (!hasWords && words.length >= 3 && ctx.makeWordList) hasWords = await ctx.makeWordList(words, `${clip.series} · ${title}`);
+  const parts = buildVideoLessonParts(clip.script, bank);
+  const slides: LessonSlide[] = [{ id: uid(), kind: 'video', videoUrl, startSec: Number(clip.start_sec), endSec: Number(clip.end_sec) }];
+  if (clip.pack?.questions?.length) slides.push({ id: uid(), kind: 'qna', title, questions: clip.pack.questions, videoUrl, boardTheme: 'green', clipId: clip.id });
+  if (words.length) slides.push({ id: uid(), kind: 'wordshow', boardTheme: 'green', words, videoUrl });
+  slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0, clipId: clip.id });
+  slides.push({ id: uid(), kind: 'reading', mode: 'cloze', title, videoUrl, source: parts.clozeSource, boardTheme: 'green' });
+  const g = clip.pack?.grammar;
+  if (g?.grammarId && grammarPoint(g.grammarId)) slides.push({ id: uid(), kind: 'grammar', grammarId: g.grammarId, useWordList: false, boardTheme: 'green' });
+  if (g?.drills?.length)
+    slides.push({ id: uid(), kind: 'drill', title, sentence: g.sentence, sentenceKo: g.sentenceKo, point: g.point, drills: g.drills, time: g.time, videoUrl, boardTheme: 'green', clipId: clip.id });
+  if (parts.unscramble.length >= 3 && ctx.makeUnscrambleFromSentences) {
+    const tplId = await ctx.makeUnscrambleFromSentences(parts.unscramble, title);
+    if (tplId) slides.push(game('unscramble', tplId));
+  }
+  if (hasWords) slides.push(game('quiz'));
+  const speakers = new Set(parts.lines.map((l) => l.speaker).filter(Boolean));
+  if (speakers.size > 1)
+    slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'manual', repeat: 1, speed: 1, subtitle: 'ko', roleTeams: Math.min(4, Math.max(2, speakers.size)), clipId: clip.id });
+  // 리스닝 빙고: 학생마다 다른 빙고판 인쇄(자료실 빙고) → 빙고 낱말만 비운 빈칸 자막으로 한 문장씩 듣기
+  const bingo = [...new Set((clip.pack?.bingo ?? []).map((w) => w.toLowerCase()))];
+  if (bingo.length >= 9) {
+    slides.push({ id: uid(), kind: 'material', materialId: 'bingo', words: bingo.map((w) => ({ id: uid(), word: w, meaning: '', imageUrl: null })) });
+    slides.push({ id: uid(), kind: 'shadow', title: `${title} · ${ctx.t('recipes.bingoListen')}`, videoUrl, source: markBingoWords(clip.script, bingo), flow: 'manual', repeat: 2, speed: 1, subtitle: 'cloze', roleTeams: 0, clipId: clip.id });
+  }
+  return slides;
+}
 
 /** 문법 레시피가 쓰는 "문장 배열하기" 게임 내용 만들기(예문으로) */
 export async function makeUnscrambleTemplate(params: {

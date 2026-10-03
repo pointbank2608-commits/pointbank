@@ -39,6 +39,7 @@ export default function AdminLayout() {
               ['/admin/academies', 'academies', 'school'],
               ['/admin/support', 'support', 'support_agent'],
               ['/admin/notices', 'notices', 'campaign'],
+              ['/admin/videos', 'videos', 'video_library'],
             ] as const
           ).map(([to, key, icon]) => (
             <NavLink

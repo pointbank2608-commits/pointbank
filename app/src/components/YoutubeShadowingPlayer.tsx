@@ -6,6 +6,9 @@ interface Props {
   videoUrl: string;
   /** 발표 중: 주어진 칸을 꽉 채우되 영상이 잘리지 않게 16:9 로 맞추고, 구간 설정은 아래 한 줄로 */
   fit?: boolean;
+  /** 처음 구간(초) */
+  start?: number;
+  end?: number;
 }
 
 const RATES = [0.75, 1, 1.25, 1.5];
@@ -15,13 +18,13 @@ const RATES = [0.75, 1, 1.25, 1.5];
  * 같은 원리 — 영상을 새로 만들거나 라이선싱하지 않고, 이미 공개된 유튜브 영상을 IFrame
  * Player API로 embed 한 뒤 원하는 구간(startSeconds~endSeconds)만 반복 재생한다.
  */
-export default function YoutubeShadowingPlayer({ videoUrl, fit = false }: Props) {
+export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, end }: Props) {
   const { t } = useTranslation();
   const [elementId] = useState(() => `yt-player-${crypto.randomUUID()}`);
   const playerRef = useRef<YoutubePlayer | null>(null);
   const [ready, setReady] = useState(false);
-  const [startSec, setStartSec] = useState(0);
-  const [endSec, setEndSec] = useState<number | ''>('');
+  const [startSec, setStartSec] = useState(start ?? 0);
+  const [endSec, setEndSec] = useState<number | ''>(end ?? '');
   const [rate, setRate] = useState(1);
   const [loop, setLoop] = useState(true);
   // onStateChange 는 플레이어 생성 시 한 번만 등록돼서 그 시점의 state를 그대로 가둔다(stale

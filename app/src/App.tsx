@@ -3,6 +3,7 @@ import AdminTodayPage from './pages/AdminTodayPage';
 import AdminAcademyDetailPage from './pages/AdminAcademyDetailPage';
 import AdminSupportPage from './pages/AdminSupportPage';
 import AdminNoticesPage from './pages/AdminNoticesPage';
+import AdminVideosPage from './pages/AdminVideosPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -147,6 +148,7 @@ export default function App() {
           <Route path="/admin/academies/:id" element={<AdminAcademyDetailPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />
+          <Route path="/admin/videos" element={<AdminVideosPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>

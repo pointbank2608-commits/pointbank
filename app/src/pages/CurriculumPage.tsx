@@ -898,6 +898,8 @@ export default function CurriculumPage() {
                   else if (slide.kind === 'grammar') icon = 'rule';
                   else if (slide.kind === 'reading') icon = slide.mode === 'cloze' ? 'hearing' : 'lyrics';
                   else if (slide.kind === 'shadow') icon = 'record_voice_over';
+                  else if (slide.kind === 'qna') icon = 'forum';
+                  else if (slide.kind === 'drill') icon = 'swap_horiz';
                   else if (slide.kind === 'video') icon = 'smart_display';
                   else if (slide.kind === 'web') icon = slide.mode === 'window' ? 'menu_book' : 'language';
                   else if (slide.kind === 'game') icon = GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports';

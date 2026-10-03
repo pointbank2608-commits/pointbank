@@ -497,6 +497,9 @@ export interface FullCardItem {
   partOfSpeech?: string | null;
   /** 파닉스에서 담았을 때만 있는 소리 규칙 글자를 {} 로 감싼 표기(예: "r{ai}n"). 파닉스 전용 워크시트가 쓴다. */
   patternMarked?: string | null;
+  /** 영상 묶음 단어: 예문 해석과 그 예문이 나오는 시간(단어 소개의 "장면 보기") */
+  exampleKo?: string | null;
+  sceneTime?: number | null;
 }
 
 /* ---------------- 단어장 (교육부 지정 초등 필수 영단어 800, 학원 구분 없는 공용 사전) ---------------- */
@@ -591,6 +594,9 @@ export interface VideoSlide {
   id: string;
   kind: 'video';
   videoUrl: string;
+  /** 처음 정해 둘 구간(초) — 영상 라이브러리 장면이면 그 장면만 */
+  startSec?: number;
+  endSec?: number;
 }
 
 export interface GameSlide {
@@ -767,6 +773,40 @@ export interface ShadowSlide {
   subtitle?: 'both' | 'en' | 'ko' | 'cloze' | 'none';
   /** 배역 나눠 따라하기 — 팀 수(0 이면 끔) */
   roleTeams?: number;
+  /** 영상 라이브러리(video_clips)에서 고른 장면이면 그 id — 장면이 내려가면 슬라이드도 막는다(2026-10-03) */
+  clipId?: string;
+}
+
+/** Q&A 슬라이드(2026-10-03, 클래스5 무비 수업 참고) — 영상 내용 질문을 하나씩, 정답 공개, 장면 보기 */
+export interface QnaSlide {
+  id: string;
+  kind: 'qna';
+  title?: string;
+  questions: { q: string; a: string; qKo?: string; aKo?: string; time?: number }[];
+  /** 장면 보기에 쓰는 영상(선택) */
+  videoUrl?: string | null;
+  boardTheme?: string | null;
+  showKo?: boolean;
+  /** 영상 라이브러리 장면에서 가져왔으면 그 id(장면이 내려가면 막는다) */
+  clipId?: string;
+}
+
+/** "바꿔 말하기" 슬라이드(2026-10-03) — 영화 문장 하나를 틀로 단서만 바꿔 말하기(클래스5 "문법 포인트" 카드 참고) */
+export interface DrillSlide {
+  id: string;
+  kind: 'drill';
+  title?: string;
+  /** 본보기 문장(영화 대사) */
+  sentence: string;
+  sentenceKo?: string;
+  /** 한 줄 설명 (예: "should + 동사원형: ~해야 한다") */
+  point: string;
+  drills: { cue: string; answer: string; answerKo?: string }[];
+  videoUrl?: string | null;
+  /** 본보기 문장이 나오는 시간(장면 보기) */
+  time?: number;
+  boardTheme?: string | null;
+  clipId?: string;
 }
 
 /** "단어 소개" 슬라이드(2026-09-27) — 수업 단어장의 단어를 사전 카드처럼 칠판에 크게, 한 단계씩(그림 → 단어 → 뜻 → 예문). */
@@ -779,6 +819,8 @@ export interface WordShowSlide {
   /** 단어가 나올 때 한 번 읽어 주기(기본 켬) */
   autoSpeak?: boolean;
   boardTheme?: string | null;
+  /** 단어의 sceneTime 을 틀어 줄 영상(영상 묶음에서 만든 슬라이드) */
+  videoUrl?: string | null;
 }
 
 /** "출석 체크" 슬라이드(2026-09-27) — 이름을 누르면 학생관리 출석부에 오늘 등원으로 기록. */
@@ -799,6 +841,8 @@ export type LessonSlide =
   | GrammarSlide
   | ReadingSlide
   | ShadowSlide
+  | QnaSlide
+  | DrillSlide
   | WordShowSlide
   | AttendanceSlide;
 

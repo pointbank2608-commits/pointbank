@@ -38,6 +38,8 @@ import type {
   LessonSlide,
   MaterialSlide,
   ShadowSlide,
+  QnaSlide,
+  DrillSlide,
   VideoSlide,
   WebSlide,
   WordList,
@@ -51,6 +53,11 @@ import { GameEmbedContext } from '../context/GameEmbedContext';
 import GrammarBoard from './GrammarBoard';
 import ShadowBoard, { SHADOW_REPEATS, SHADOW_SPEEDS, SHADOW_SUBTITLES } from './ShadowBoard';
 import { parseShadowText, shadowSpeakers, toShadowSource } from '../lib/shadowLines';
+import { useClipTakenDown, type VideoClip } from '../lib/videoClips';
+import VideoClipLibrary from './VideoClipLibrary';
+import QnaBoard from './QnaBoard';
+import DrillBoard from './DrillBoard';
+import { parseQnaText, qnaToText } from '../lib/qnaLines';
 import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText } from '../lib/readingLines';
@@ -146,7 +153,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -505,7 +512,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'shadow', 'web', 'reading', 'wordshow', 'study', 'grammar', 'game', 'material', 'attendance'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -541,9 +548,27 @@ export default function LessonSlideSorter({
             )}
 
             {addMode === 'shadow' && (
-              <ShadowSlideForm
+              <ShadowAddPanel
                 onAdd={(draft) => {
                   addSlide({ id: uid(), kind: 'shadow', ...draft });
+                  setAddMode(null);
+                }}
+              />
+            )}
+
+            {addMode === 'drill' && (
+              <DrillSlideForm
+                onAdd={(draft) => {
+                  addSlide({ id: uid(), kind: 'drill', boardTheme: 'green', ...draft });
+                  setAddMode(null);
+                }}
+              />
+            )}
+
+            {addMode === 'qna' && (
+              <QnaSlideForm
+                onAdd={(draft) => {
+                  addSlide({ id: uid(), kind: 'qna', boardTheme: 'green', ...draft });
                   setAddMode(null);
                 }}
               />
@@ -989,6 +1014,8 @@ function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
   if (slide.kind === 'attendance') return { icon: 'how_to_reg', label: t('curriculum.slides.kindAttendance') };
+  if (slide.kind === 'drill') return { icon: 'swap_horiz', label: slide.title?.trim() || t('drill.title') };
+  if (slide.kind === 'qna') return { icon: 'forum', label: slide.title?.trim() || t('qna.title') };
   if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: slide.title?.trim() || t('curriculum.shadow.defaultTitle') };
   if (slide.kind === 'reading')
     return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: slide.title?.trim() || t('curriculum.reading.defaultTitle') };
@@ -1144,21 +1171,29 @@ function SlideDetail({
   const { t } = useTranslation();
 
   if (slide.kind === 'shadow') {
+    return <ShadowSlideDetail slide={slide} onUpdate={onUpdate} />;
+  }
+
+  if (slide.kind === 'drill') {
     return (
       <div className="space-y-3">
         <div className="aspect-video w-full max-w-3xl">
-          <ShadowBoard
-            source={slide.source}
-            title={slide.title}
-            videoUrl={slide.videoUrl}
-            flow={slide.flow}
-            repeat={slide.repeat}
-            speed={slide.speed}
-            subtitle={slide.subtitle}
-            roleTeams={slide.roleTeams}
-          />
+          <DrillBoard slide={slide} interactive={false} videoUrl={slide.videoUrl} />
         </div>
-        <ShadowSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />
+        <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
+        <DrillSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />
+      </div>
+    );
+  }
+
+  if (slide.kind === 'qna') {
+    return (
+      <div className="space-y-3">
+        <div className="aspect-video w-full max-w-3xl">
+          <QnaBoard key={slide.questions.map((q) => q.q).join('|')} questions={slide.questions} title={slide.title} videoUrl={slide.videoUrl} themeId={slide.boardTheme ?? 'green'} interactive={false} initialShowKo={!!slide.showKo} />
+        </div>
+        <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
+        <QnaSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />
       </div>
     );
   }
@@ -1883,6 +1918,220 @@ function ReadingSlideForm({
 }
 
 type ShadowDraft = Omit<ShadowSlide, 'id' | 'kind'>;
+
+type DrillDraft = Omit<DrillSlide, 'id' | 'kind'>;
+
+const drillsToText = (d: DrillDraft['drills']) => d.map((x) => `${x.cue} | ${x.answer}${x.answerKo ? ` | ${x.answerKo}` : ''}`).join('\n');
+const parseDrills = (text: string): DrillDraft['drills'] =>
+  text
+    .split(/\r?\n/)
+    .map((l) => l.split('|').map((x) => x.trim()))
+    .filter(([cue, answer]) => cue && answer)
+    .map(([cue, answer, answerKo]) => ({ cue: cue.replace(/^\((.*)\)$/, '$1'), answer, ...(answerKo ? { answerKo } : {}) }));
+
+/** 바꿔 말하기 슬라이드 만들기·고치기 — 본보기 문장 + 설명 + "단서 | 정답 | 해석" 줄. 영상 라이브러리 장면의 문법 연습을 가져올 수 있다. */
+function DrillSlideForm({ initial, onAdd, onChange }: { initial?: DrillDraft; onAdd?: (draft: DrillDraft) => void; onChange?: (patch: Partial<DrillDraft>) => void }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<DrillDraft>(initial ?? { title: '', sentence: '', sentenceKo: '', point: '', drills: [], videoUrl: '' });
+  const [text, setText] = useState(() => drillsToText(initial?.drills ?? []));
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  function set(patch: Partial<DrillDraft>) {
+    setDraft((d) => ({ ...d, ...patch }));
+    onChange?.(patch);
+  }
+  const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
+  return (
+    <div className="space-y-3">
+      {onAdd && <p className="font-body-md text-body-md text-on-surface-variant">{t('drill.addIntro')}</p>}
+      <button
+        type="button"
+        onClick={() => setLibraryOpen((o) => !o)}
+        className="flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10"
+      >
+        <span className="material-symbols-outlined text-[18px]">video_library</span>
+        {t('drill.fromLibrary')}
+      </button>
+      {libraryOpen && (
+        <VideoClipLibrary
+          pickLabel={t('drill.useClip')}
+          onPick={(clip) => {
+            const g = clip.pack?.grammar;
+            if (!g) return;
+            setText(drillsToText(g.drills));
+            set({ title: clip.title, sentence: g.sentence, sentenceKo: g.sentenceKo ?? '', point: g.point, drills: g.drills, time: g.time, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clipId: clip.id });
+            setLibraryOpen(false);
+          }}
+        />
+      )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input className={input} value={draft.sentence} onChange={(e) => set({ sentence: e.target.value })} placeholder={t('drill.sentencePlaceholder')} />
+        <input className={input} value={draft.sentenceKo ?? ''} onChange={(e) => set({ sentenceKo: e.target.value })} placeholder={t('drill.sentenceKoPlaceholder')} />
+        <input className={input} value={draft.point} onChange={(e) => set({ point: e.target.value })} placeholder={t('drill.pointPlaceholder')} />
+        <input className={input} value={draft.videoUrl ?? ''} onChange={(e) => set({ videoUrl: e.target.value })} placeholder={t('qna.videoPlaceholder')} />
+      </div>
+      <textarea
+        className={`${input} min-h-[140px] font-mono`}
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          set({ drills: parseDrills(e.target.value) });
+        }}
+        placeholder={t('drill.drillsPlaceholder')}
+      />
+      <p className="font-caption text-caption text-on-surface-variant">{t('drill.formatHint', { count: draft.drills.length })}</p>
+      {onAdd && (
+        <button
+          type="button"
+          disabled={!draft.sentence.trim() || draft.drills.length === 0}
+          onClick={() => onAdd({ ...draft, videoUrl: draft.videoUrl?.trim() || null })}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+        >
+          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          {t('curriculum.study.addButton')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+type QnaDraft = Omit<QnaSlide, 'id' | 'kind'>;
+
+/** Q&A 슬라이드 만들기·고치기 — "질문 | 답 | 질문 해석 | 답 해석", 앞에 [분:초]를 붙이면 장면 보기. 영상 라이브러리 장면의 질문을 가져올 수 있다. */
+function QnaSlideForm({ initial, onAdd, onChange }: { initial?: QnaDraft; onAdd?: (draft: QnaDraft) => void; onChange?: (patch: Partial<QnaDraft>) => void }) {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState<QnaDraft>(initial ?? { title: '', questions: [], videoUrl: '', showKo: false });
+  const [text, setText] = useState(() => qnaToText(initial?.questions ?? []));
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  function set(patch: Partial<QnaDraft>) {
+    setDraft((d) => ({ ...d, ...patch }));
+    onChange?.(patch);
+  }
+  const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
+  return (
+    <div className="space-y-3">
+      {onAdd && <p className="font-body-md text-body-md text-on-surface-variant">{t('qna.addIntro')}</p>}
+      <button
+        type="button"
+        onClick={() => setLibraryOpen((o) => !o)}
+        className="flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10"
+      >
+        <span className="material-symbols-outlined text-[18px]">video_library</span>
+        {t('qna.fromLibrary')}
+      </button>
+      {libraryOpen && (
+        <VideoClipLibrary
+          pickLabel={t('qna.useClip')}
+          onPick={(clip) => {
+            const questions = clip.pack?.questions ?? [];
+            setText(qnaToText(questions));
+            set({ title: clip.title, questions, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clipId: clip.id });
+            setLibraryOpen(false);
+          }}
+        />
+      )}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input className={input} value={draft.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder={t('qna.titlePlaceholder')} />
+        <input className={input} value={draft.videoUrl ?? ''} onChange={(e) => set({ videoUrl: e.target.value })} placeholder={t('qna.videoPlaceholder')} />
+      </div>
+      <textarea
+        className={`${input} min-h-[160px] font-mono`}
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          set({ questions: parseQnaText(e.target.value) });
+        }}
+        placeholder={t('qna.sourcePlaceholder')}
+      />
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface-variant">
+          <input type="checkbox" checked={!!draft.showKo} onChange={(e) => set({ showKo: e.target.checked })} />
+          {t('qna.showKoStart')}
+        </label>
+        <span className="font-caption text-caption text-on-surface-variant">{t('qna.count', { count: draft.questions.length })}</span>
+      </div>
+      <p className="font-caption text-caption text-on-surface-variant">{t('qna.formatHint')}</p>
+      {onAdd && (
+        <button
+          type="button"
+          disabled={draft.questions.length === 0}
+          onClick={() => onAdd({ ...draft, title: draft.title?.trim() || undefined, videoUrl: draft.videoUrl?.trim() || null })}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+        >
+          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          {t('curriculum.study.addButton')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** 라이브러리 장면 → 쉐도잉 슬라이드 내용 */
+function shadowDraftFromClip(clip: VideoClip): ShadowDraft {
+  return {
+    title: clip.title,
+    source: clip.script,
+    videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`,
+    flow: 'auto',
+    repeat: 1,
+    speed: 1,
+    subtitle: 'both',
+    roleTeams: 0,
+    clipId: clip.id,
+  };
+}
+
+/** 쉐도잉 슬라이드 추가 — 영상 라이브러리에서 고르기(기본) / 직접 만들기 */
+function ShadowAddPanel({ onAdd }: { onAdd: (draft: ShadowDraft) => void }) {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<'library' | 'own'>('library');
+  const chip = (on: boolean) => `flex items-center gap-1.5 rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-secondary-container/40'}`;
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={chip(tab === 'library')} onClick={() => setTab('library')}>
+          <span className="material-symbols-outlined text-[18px]">video_library</span>
+          {t('videoLibrary.tabLibrary')}
+        </button>
+        <button type="button" className={chip(tab === 'own')} onClick={() => setTab('own')}>
+          <span className="material-symbols-outlined text-[18px]">edit_note</span>
+          {t('videoLibrary.tabOwn')}
+        </button>
+      </div>
+      {tab === 'library' ? <VideoClipLibrary onPick={(clip) => onAdd(shadowDraftFromClip(clip))} /> : <ShadowSlideForm onAdd={onAdd} />}
+    </div>
+  );
+}
+
+/** 쉐도잉 슬라이드 상세 — 라이브러리 장면이 내려갔으면 칠판 대신 안내 */
+function ShadowSlideDetail({ slide, onUpdate }: { slide: ShadowSlide; onUpdate: (patch: Partial<LessonSlide>) => void }) {
+  const { t } = useTranslation();
+  const down = useClipTakenDown(slide.clipId);
+  return (
+    <div className="space-y-3">
+      {slide.clipId && (
+        <div className={`flex items-center gap-2 rounded-lg px-3 py-2 font-caption text-caption ${down ? 'bg-error-container text-on-error-container' : 'bg-secondary-container/30 text-on-surface-variant'}`}>
+          <span className="material-symbols-outlined text-[18px]">{down ? 'block' : 'video_library'}</span>
+          {t(down ? 'videoLibrary.takenDown' : 'videoLibrary.fromLibrary')}
+        </div>
+      )}
+      {!down && (
+        <div className="aspect-video w-full max-w-3xl">
+          <ShadowBoard
+            source={slide.source}
+            title={slide.title}
+            videoUrl={slide.videoUrl}
+            flow={slide.flow}
+            repeat={slide.repeat}
+            speed={slide.speed}
+            subtitle={slide.subtitle}
+            roleTeams={slide.roleTeams}
+          />
+        </div>
+      )}
+      {!down && <ShadowSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />}
+    </div>
+  );
+}
 
 /** 쉐도잉 슬라이드 만들기·고치기 — 유튜브 주소 + 대사표. 유튜브 "스크립트 표시"를 그대로 붙여넣어도 시간표로 바꿔 준다. */
 function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; onAdd?: (draft: ShadowDraft) => void; onChange?: (patch: Partial<ShadowDraft>) => void }) {

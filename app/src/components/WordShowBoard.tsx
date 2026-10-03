@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
-import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
+import { BOARD_FONTS, boardSlideStyle, boardTheme, textOnAccent } from '../lib/boardThemes';
 import { usePhonicsFilled } from '../lib/phonicsFill';
 import { speak } from '../lib/speech';
 import { useWordBankEnriched } from '../lib/wordBankCache';
 import type { FullCardItem } from '../lib/types';
 import { CanvasStageBox } from './CanvasSlideView';
 import PhonicsMarkedWord from './PhonicsMarkedWord';
+import SceneOverlay from './SceneOverlay';
+import { extractYoutubeId } from '../lib/youtube';
 
 /**
  * "단어 소개" 슬라이드(2026-09-27) — 사전 카드를 칠판에 크게. 단어 하나씩, 한 단계씩 연다:
@@ -32,6 +34,7 @@ export default function WordShowBoard({
   interactive,
   shuffle = false,
   autoSpeak = true,
+  videoUrl,
 }: {
   words: FullCardItem[];
   themeId?: string | null;
@@ -39,6 +42,8 @@ export default function WordShowBoard({
   interactive: boolean;
   shuffle?: boolean;
   autoSpeak?: boolean;
+  /** 단어의 sceneTime(영화 예문이 나오는 시간)을 틀어 줄 영상 */
+  videoUrl?: string | null;
 }) {
   const { t } = useTranslation();
   const th = boardTheme(themeId ?? 'green') ?? boardTheme('green')!;
@@ -61,6 +66,8 @@ export default function WordShowBoard({
   }, [enriched, order]);
 
   const [idx, setIdx] = useState(0);
+  const [scene, setScene] = useState<number | null>(null);
+  const videoId = videoUrl ? extractYoutubeId(videoUrl) : null;
   const [step, setStep] = useState(0);
   // 학생 따라보기: 순서·지금 단어·단계를 학생 화면에 그대로(학생 화면은 자동 읽기도 안 한다)
   const follower = useSyncedSubState({ order, idx, step }, (s) => {
@@ -200,8 +207,31 @@ export default function WordShowBoard({
               </div>
               {card.example && (
                 <div className="flex items-start gap-[1.5cqh] transition-opacity duration-300" style={{ opacity: has('example') ? 1 : 0 }}>
-                  <span style={{ fontSize: '4.6cqh', lineHeight: 1.35 }}>{card.example}</span>
+                  <span className="min-w-0">
+                    <span className="block" style={{ fontSize: '4.6cqh', lineHeight: 1.35 }}>{card.example}</span>
+                    {card.exampleKo && (
+                      <span className="mt-[0.6cqh] block" style={{ fontSize: '3cqh', color: th.muted }}>
+                        {card.exampleKo}
+                      </span>
+                    )}
+                  </span>
                   {has('example') && speakBtn(card.example, '6cqh')}
+                  {has('example') && interactive && !follower && videoId && card.sceneTime != null && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setScene(card.sceneTime ?? 0);
+                      }}
+                      className="inline-flex shrink-0 items-center gap-[0.8cqh] rounded-full px-[1.8cqh] transition-transform hover:scale-105"
+                      style={{ height: '6cqh', fontSize: '2.6cqh', background: th.accent, color: textOnAccent(th.accent) }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.4em' }}>
+                        movie
+                      </span>
+                      {t('qna.scene')}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -218,6 +248,7 @@ export default function WordShowBoard({
             </div>
           )}
         </div>
+        {scene !== null && videoId && <SceneOverlay videoId={videoId} time={scene} onClose={() => setScene(null)} />}
       </CanvasStageBox>
     </div>
   );

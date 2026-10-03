@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
+import { useClipTakenDown } from '../lib/videoClips';
 import { extractYoutubeId } from '../lib/youtube';
 import type { FullCardItem, LessonSlide } from '../lib/types';
 import AttendanceBoard from './AttendanceBoard';
@@ -9,6 +10,8 @@ import CanvasSlideView from './CanvasSlideView';
 import FlashcardStudy from './FlashcardStudy';
 import GrammarBoard from './GrammarBoard';
 import PhonicsMarkedWord from './PhonicsMarkedWord';
+import QnaBoard from './QnaBoard';
+import DrillBoard from './DrillBoard';
 import ShadowBoard from './ShadowBoard';
 import ReadingBoard from './ReadingBoard';
 import WebSlideView from './WebSlideView';
@@ -42,6 +45,7 @@ export default function LessonSlideContent({
   if ((slide.kind === 'wordshow' || slide.kind === 'study') && slide.words?.length) words = slide.words;
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
+  const clipDown = useClipTakenDown(slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 단어가 바뀔 때만 만든다.
   const studyCards = useMemo(
     () =>
@@ -60,7 +64,52 @@ export default function LessonSlideContent({
 
   const boardBox = fill ? 'absolute inset-0 p-2 md:p-4' : 'h-[75vh]';
 
+  if ((slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill') && clipDown) {
+    return (
+      <div className="flex h-full min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center">
+        <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '56px' }}>
+          block
+        </span>
+        <div className="max-w-md font-body-lg text-body-lg text-on-surface-variant">{t('videoLibrary.takenDown')}</div>
+      </div>
+    );
+  }
+
+  if (slide.kind === 'drill') {
+    return (
+      <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
+        <DrillBoard key={slide.id} slide={slide} interactive videoUrl={student ? undefined : slide.videoUrl} />
+      </div>
+    );
+  }
+
+  if (slide.kind === 'qna') {
+    return (
+      <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
+        <QnaBoard
+          key={slide.id}
+          questions={slide.questions}
+          title={slide.title}
+          videoUrl={student ? undefined : slide.videoUrl}
+          themeId={slide.boardTheme ?? 'green'}
+          interactive
+          initialShowKo={!!slide.showKo}
+        />
+      </div>
+    );
+  }
+
   if (slide.kind === 'shadow') {
+    if (clipDown) {
+      return (
+        <div className="flex h-full min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center">
+          <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '56px' }}>
+            block
+          </span>
+          <div className="max-w-md font-body-lg text-body-lg text-on-surface-variant">{t('videoLibrary.takenDown')}</div>
+        </div>
+      );
+    }
     return (
       <div className={boardBox}>
         <ShadowBoard
@@ -121,6 +170,7 @@ export default function LessonSlideContent({
           interactive
           shuffle={!!slide.shuffle}
           autoSpeak={slide.autoSpeak !== false}
+          videoUrl={student ? undefined : slide.videoUrl}
         />
       </div>
     );
@@ -194,14 +244,14 @@ export default function LessonSlideContent({
     if (fill) {
       return (
         <div className="absolute inset-0 p-2 md:p-3">
-          <YoutubeShadowingPlayer videoUrl={slide.videoUrl} fit />
+          <YoutubeShadowingPlayer videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
         </div>
       );
     }
     return (
       <div className="space-y-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{lessonName}</h2>
-        <YoutubeShadowingPlayer videoUrl={slide.videoUrl} />
+        <YoutubeShadowingPlayer videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
       </div>
     );
   }

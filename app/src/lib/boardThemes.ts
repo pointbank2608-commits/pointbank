@@ -225,3 +225,11 @@ export function preloadBoardFonts(): Promise<unknown> {
   boardFontsPromise = Promise.all(jobs);
   return boardFontsPromise;
 }
+
+/** 강조색 위에 올릴 글자색 — 밝은 강조색(칠판의 노랑)엔 진한 글자, 진한 강조색엔 흰 글자 */
+export function textOnAccent(hex: string): string {
+  const m = hex.replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (!m) return '#ffffff';
+  const [r, g, b] = m.slice(1).map((x) => parseInt(x, 16));
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? '#1f2937' : '#ffffff';
+}

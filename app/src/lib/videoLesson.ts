@@ -23,6 +23,25 @@ function lemmas(w: string): string[] {
   return out;
 }
 
+/**
+ * 리스닝 빙고(2026-10-03, 클래스5 "리스닝 빙고" 참고)용 — 대사표에서 빙고 낱말을 ** ** 로 감싼다.
+ * 쉐도잉 칠판의 "빈칸 자막"이 이 낱말만 비우므로, 문장을 들으며 빙고판에서 찾아 표시한다. 영어 부분만 건드린다.
+ */
+export function markBingoWords(script: string, words: string[]): string {
+  const set = new Set(words.map((w) => w.toLowerCase()));
+  return script
+    .split('\n')
+    .map((line) => {
+      const head = line.match(/^(\[[^\]]*\]\s*(?:[A-Za-z][\w .'-]{0,19}:\s+)?)/)?.[1] ?? '';
+      const body = line.slice(head.length);
+      const bar = body.indexOf('|');
+      const en = bar >= 0 ? body.slice(0, bar) : body;
+      const rest = bar >= 0 ? body.slice(bar) : '';
+      return head + en.replace(/\*\*/g, '').replace(/[A-Za-z']+/g, (w) => (set.has(w.toLowerCase()) ? `**${w}**` : w)) + rest;
+    })
+    .join('\n');
+}
+
 export interface VideoLessonParts {
   lines: ShadowLine[];
   words: FullCardItem[];

@@ -1,3 +1,5 @@
+import type { VideoClip } from '../lib/videoClips';
+import VideoClipLibrary from './VideoClipLibrary';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
@@ -34,12 +36,14 @@ export default function LessonRecipePicker({
   const [reading, setReading] = useState({ source: '', title: '', videoUrl: '' });
   const [video, setVideo] = useState({ source: '', title: '', videoUrl: '' });
   const [scripting, setScripting] = useState(false);
+  const [videoTab, setVideoTab] = useState<'library' | 'own'>('library');
+  const videoTabChip = (on: boolean) => `flex items-center gap-1.5 rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`;
   const { notify } = useToast();
   const [busy, setBusy] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
   const [open, setOpen] = useState(true);
 
-  async function apply(recipe: LessonRecipe) {
+  async function apply(recipe: LessonRecipe, clip?: VideoClip) {
     setBusy(true);
     try {
       const slides = await recipe.build({
@@ -48,12 +52,14 @@ export default function LessonRecipePicker({
         grammarId: grammarId ?? undefined,
         reading: { source: reading.source, title: reading.title.trim() || undefined, videoUrl: reading.videoUrl.trim() || null },
         makeUnscramble,
-        video: { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
+        video: clip
+          ? { source: clip.script, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clip }
+          : { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
         makeWordList,
         makeUnscrambleFromSentences,
       });
       if (slides.length === 0) return;
-      const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? video.title.trim() : '';
+      const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? (clip ? `${clip.series} · ${clip.title}` : video.title.trim()) : '';
       onApply(slides, extra ? `${t(`recipes.${recipe.id}Name`)} · ${extra}` : t(`recipes.${recipe.id}Name`));
     } finally {
       setBusy(false);
@@ -155,6 +161,21 @@ export default function LessonRecipePicker({
           )}
           {picked.input === 'video' && (
             <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => setVideoTab('library')} className={videoTabChip(videoTab === 'library')}>
+                  <span className="material-symbols-outlined text-[18px]">video_library</span>
+                  {t('videoLibrary.tabLibrary')}
+                </button>
+                <button type="button" onClick={() => setVideoTab('own')} className={videoTabChip(videoTab === 'own')}>
+                  <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                  {t('videoLibrary.tabOwn')}
+                </button>
+              </div>
+              {videoTab === 'library' && <VideoClipLibrary pickLabel={t('recipes.videoUseClip')} onPick={(clip) => void apply(picked, clip)} />}
+            </div>
+          )}
+          {picked.input === 'video' && videoTab === 'own' && (
+            <div className="space-y-2">
               <p className="font-caption text-caption text-on-surface-variant">{t('recipes.videoHint')}</p>
               <input
                 value={video.title}
@@ -234,7 +255,8 @@ export default function LessonRecipePicker({
               />
             </div>
           )}
-          <button
+          {busy && picked.input === 'video' && videoTab === 'library' && <div className="font-caption text-caption text-on-surface-variant">{t('common.loading')}</div>}
+          {!(picked.input === 'video' && videoTab === 'library') && <button
             type="button"
             disabled={busy || (picked.input === 'grammar' && !grammarId) || (picked.input === 'reading' && !reading.source.trim()) || (picked.input === 'video' && (!video.source.trim() || !extractYoutubeId(video.videoUrl)))}
             onClick={() => void apply(picked)}
@@ -242,7 +264,7 @@ export default function LessonRecipePicker({
           >
             <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
             {busy ? t('common.loading') : t('recipes.apply')}
-          </button>
+          </button>}
         </div>
       )}
       </>
