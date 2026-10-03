@@ -1449,6 +1449,7 @@ const ko = {
     partOfSpeechLabel: '품사',
     resultCount: '{{count}}개 단어',
     noResults: '검색 결과가 없어요.',
+    noPicture: '그림으로 나타내지 않는 낱말이에요',
     viewFullImage: '{{word}} 이미지 전체 보기',
     closeButton: '닫기',
     playWord: '{{word}} 발음 듣기',

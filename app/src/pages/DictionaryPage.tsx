@@ -62,14 +62,27 @@ function SpeakButton({
 
 const CATEGORIES = WORD_BANK_CATEGORIES;
 
+/** 그림이 없는 낱말 자리에 대신 보여 줄 그림 */
+const NO_PICTURE_URL = '/word-bank-images/_no-picture.webp';
+
 function WordImage({ entry, onOpen }: { entry: WordBankEntry; onOpen: (entry: WordBankEntry) => void }) {
   const { t } = useTranslation();
   const [broken, setBroken] = useState(false);
+  const [fallbackBroken, setFallbackBroken] = useState(false);
   if (!entry.image_url || broken) {
+    // 그리지 않기로 한 낱말(death·murder 등)과 그림이 아직 없는 낱말 — 빈칸 대신 "X 카드를 든 아이"(2026-10-04 사용자 요청).
+    // DB 에는 넣지 않는다(그림 퀴즈 같은 게임에 같은 그림이 섞여 나오지 않게).
+    if (fallbackBroken) {
+      return <div className="flex h-32 w-full items-center justify-center rounded-lg bg-surface-container-low text-3xl">📖</div>;
+    }
     return (
-      <div className="flex h-32 w-full items-center justify-center rounded-lg bg-surface-container-low text-3xl">
-        📖
-      </div>
+      <img
+        src={NO_PICTURE_URL}
+        alt=""
+        title={t('dictionary.noPicture')}
+        className="h-32 w-full rounded-lg object-cover"
+        onError={() => setFallbackBroken(true)}
+      />
     );
   }
   return (

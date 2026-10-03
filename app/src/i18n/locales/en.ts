@@ -1453,6 +1453,7 @@ const en: Ko = {
     partOfSpeechLabel: 'Part of Speech',
     resultCount: '{{count}} words',
     noResults: 'No matches found.',
+    noPicture: 'This word is not shown as a picture',
     viewFullImage: 'View full image for {{word}}',
     closeButton: 'Close',
     playWord: 'Play pronunciation of {{word}}',
