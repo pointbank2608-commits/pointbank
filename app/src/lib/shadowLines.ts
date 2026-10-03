@@ -20,6 +20,11 @@ const TIME = String.raw`(\d{1,2}):(\d{2}(?:\.\d+)?)`;
 const toSec = (m: string, s: string) => Number(m) * 60 + Number(s);
 
 export function parseShadowText(source: string): ShadowLine[] {
+  // 시간표 없이 유튜브 "스크립트 표시"·SRT 를 그대로 넣어 둔 대본도 그 자리에서 바꿔 읽는다(이미 저장된 슬라이드도 고쳐진다)
+  if (!/^\s*\[\d{1,2}:\d{2}/m.test(source)) {
+    const converted = toShadowSource(source);
+    if (/^\[\d{1,2}:\d{2}/m.test(converted)) source = converted;
+  }
   const rows: { en: string; ko: string; speaker: string | null; start: number | null; end: number | null }[] = [];
   for (const raw of source.split(/\r?\n/)) {
     let rest = raw.trim();
@@ -91,18 +96,31 @@ export function toShadowSource(text: string): string {
     }
     if (cur?.text) out.push(cur);
   } else {
-    const stamp = /^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})(?:\s+(.*))?$/;
+    // 유튜브 "스크립트 표시" 복사본. 화면 읽기용 글이 시간 뒤에 붙어 온다: "0:033초[Music]", "1:091분 9초gilbert where…",
+    // 영어 화면이면 "0:033 seconds…". 시간 뒤의 "3초"·"1분 9초"·"3 seconds" 는 버리고, [Music] 같은 소리 표시는 문장으로 쓰지 않는다
+    // (대신 앞 문장의 끝 시간으로 쓴다). "스크립트 검색"·"챕터 1: …" 같은 머리 줄은 첫 시간 앞이라 저절로 빠진다(2026-10-03 제보).
+    const stamp = /^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s*((?:\d+\s*(?:시간|분|초|hours?|minutes?|seconds?)\s*,?\s*)*)(.*)$/i;
+    const noise = /^\s*[[(（][^\])）]*[\])）]\s*$/;
     let cur: { start: number; end: number | null; text: string } | null = null;
+    const flush = (nextStart: number | null) => {
+      if (!cur) return;
+      if (cur.text && !noise.test(cur.text)) out.push(cur);
+      else if (nextStart === null && out.length) out[out.length - 1].end ??= cur.start;
+      else if (out.length && out[out.length - 1].end === null) out[out.length - 1].end = cur.start;
+    };
     for (const l of lines) {
       const m = l.match(stamp);
       if (m) {
-        if (cur?.text) out.push(cur);
-        cur = { start: Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]), end: null, text: m[4] ?? '' };
-      } else if (cur && l) {
+        const start = Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+        flush(start);
+        cur = { start, end: null, text: m[5].trim() };
+      } else if (cur && l && !/^\d+\s*(?:시간|분|초|hours?|minutes?|seconds?)/i.test(l)) {
         cur.text = `${cur.text} ${l}`.trim();
       }
     }
-    if (cur?.text) out.push(cur);
+    flush(null);
+    // 자동 자막은 소문자로 시작한다 — 첫 글자만 대문자로, 나 혼자인 i 도 I 로
+    for (const o of out) o.text = o.text.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/\bi\b/g, 'I');
   }
   if (out.length === 0) return text.trim();
   return out.map((o) => `[${fmt(o.start)}${o.end !== null ? `-${fmt(o.end)}` : ''}] ${o.text.replace(/\s+/g, ' ')}`).join('\n');
