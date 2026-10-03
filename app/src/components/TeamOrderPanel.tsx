@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
+import { loadTeamOrder, saveTeamOrder } from '../lib/teamOrder';
 import type { GameItem } from '../lib/types';
 
 const TEAM_STYLES = [
@@ -71,11 +72,25 @@ function useSlotSpin() {
  */
 export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]; onClose: () => void }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'individual' | 'team'>('individual');
-  const [teamCount, setTeamCount] = useState(2);
-  const [teamOf, setTeamOf] = useState<Record<string, number>>({});
-  const [order, setOrder] = useState<string[]>(() => roster.map((r) => r.id));
+  // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
+  const [saved] = useState(() => loadTeamOrder(roster));
+  const [mode, setMode] = useState<'individual' | 'team'>(saved.mode);
+  const [teamCount, setTeamCount] = useState(saved.teamCount);
+  const [teamOf, setTeamOf] = useState<Record<string, number>>(saved.teamOf);
+  const [order, setOrder] = useState<string[]>(saved.order);
   const { spin, spinning } = useSlotSpin();
+  const firstSave = useRef(true);
+
+  // 바뀔 때마다 저장(슬롯머신처럼 돌아가는 동안의 중간 결과는 저장하지 않는다). 순서가 바뀌면 차례는 처음부터.
+  useEffect(() => {
+    if (spinning) return;
+    if (firstSave.current) {
+      firstSave.current = false;
+      return;
+    }
+    saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, teamCount, teamOf, order, spinning]);
 
   /** 순서대로(섞지 않고) count개 팀에 고르게 나눠 담는다 — 팀 모드에 처음 들어가거나
    * 팀 수를 바꿀 때 쓰는 "일단 뭐라도 채워두는" 기본값. 실제 무작위 배정은

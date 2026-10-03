@@ -613,6 +613,8 @@ export interface WorksheetSlideOptions {
   showAnswerKey?: boolean;
   includeAnswers?: boolean;
   askTemplate?: 'like' | 'have' | 'see';
+  /** 선 잇기: 그림 아래에 한글 뜻 넣기 */
+  matchMeaning?: boolean;
   coloringTitle?: string;
   coloringLabelMode?: 'word' | 'write' | 'none';
   coloringPerPage?: 4 | 6 | 8 | 9;

@@ -44,6 +44,8 @@ export function chunk<T>(list: readonly T[], size: number): T[][] {
 export interface MatchSide {
   image: string | null;
   text: string;
+  /** 그림 칸 아래에 작게 넣을 한글 뜻(선 잇기의 "그림 아래 뜻" 옵션을 켰을 때만 보인다) */
+  caption?: string;
 }
 
 export interface MatchPage {
@@ -58,7 +60,7 @@ export interface MatchPage {
 export function buildMatchPages(words: FullCardItem[], rng: Rng, perPage = 6): MatchPage[] {
   const usable = words
     .map((w) => {
-      const left: MatchSide | null = w.imageUrl ? { image: w.imageUrl, text: '' } : w.word ? { image: null, text: w.word } : null;
+      const left: MatchSide | null = w.imageUrl ? { image: w.imageUrl, text: '', caption: w.meaning || undefined } : w.word ? { image: null, text: w.word } : null;
       const rightText = w.imageUrl ? w.word : w.meaning;
       return left && rightText ? { left, right: { image: null, text: rightText } as MatchSide } : null;
     })

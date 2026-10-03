@@ -6,6 +6,7 @@ import TeamOrderPanel from './TeamOrderPanel';
 import '../gameSkins.css';
 import type { GameType, GameItem } from '../lib/types';
 import { COMMON_SFX, playSfx, setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
+import { TEAM_ORDER_EVENT, isShowOrderOn, loadTeamOrder, saveTeamOrder, setShowOrderOn, type TeamOrderState } from '../lib/teamOrder';
 
 interface Props {
   gameType?: GameType;
@@ -65,6 +66,26 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
+  // 순서 보여주기: 팀·순서 정하기에서 정한 순서를 게임 위에 한 줄로 띄우고 지금 차례를 표시한다. 끄면 아무나.
+  const [showOrder, setShowOrder] = useState(isShowOrderOn);
+  const [teamOrder, setTeamOrder] = useState<TeamOrderState | null>(null);
+  const rosterKey = (roster ?? []).map((r) => r.id).join(',');
+  useEffect(() => {
+    if (!roster || roster.length === 0) {
+      setTeamOrder(null);
+      return;
+    }
+    const read = () => setTeamOrder(loadTeamOrder(roster));
+    read();
+    window.addEventListener(TEAM_ORDER_EVENT, read);
+    return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rosterKey]);
+  function setTurn(turn: number) {
+    if (!roster || !teamOrder || teamOrder.order.length === 0) return;
+    const n = teamOrder.order.length;
+    saveTeamOrder(roster, { ...teamOrder, turn: ((turn % n) + n) % n });
+  }
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
   const [restartOpen, setRestartOpen] = useState(false);
@@ -326,6 +347,25 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
               {t('gamePlay.teamOrder')}
             </button>
           )}
+          {roster && roster.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowOrderOn(!showOrder);
+                setShowOrder(!showOrder);
+              }}
+              title={showOrder ? t('gamePlay.hideOrder') : t('gamePlay.showOrder')}
+              aria-pressed={showOrder}
+              className={`flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold shadow-sm backdrop-blur transition-colors ${
+                showOrder
+                  ? 'bg-primary text-on-primary hover:bg-primary-container'
+                  : 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
+              }`}
+            >
+              <span aria-hidden className="material-symbols-outlined text-[20px]">format_list_numbered</span>
+              {showOrder ? t('gamePlay.hideOrder') : t('gamePlay.showOrder')}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setGameSoundOn(!soundOn)}
@@ -379,6 +419,52 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
             </button>
           )}
         </div>
+        {showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
+          <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setTurn(teamOrder.turn - 1)}
+              aria-label={t('gamePlay.prevTurn')}
+              title={t('gamePlay.prevTurn')}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container"
+            >
+              <span aria-hidden className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5">
+              {teamOrder.order.map((id, i) => {
+                const isTeam = teamOrder.mode === 'team';
+                const teamIndex = isTeam ? Number(id.split('-')[1]) : -1;
+                const label = isTeam ? t('teamOrder.teamLabel', { n: teamIndex + 1 }) : (roster.find((r) => r.id === id)?.label ?? '');
+                const members = isTeam ? roster.filter((r) => (teamOrder.teamOf[r.id] ?? 0) === teamIndex).map((r) => r.label).join(', ') : '';
+                const now = i === teamOrder.turn;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTurn(i)}
+                    title={members || label}
+                    aria-current={now ? 'step' : undefined}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-all ${
+                      now ? 'scale-110 bg-warm-yellow text-deep-navy shadow-md ring-2 ring-deep-navy/20' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                    }`}
+                  >
+                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${now ? 'bg-deep-navy text-white' : 'bg-surface-container-lowest text-on-surface-variant'}`}>{i + 1}</span>
+                    {label}
+                    {isTeam && now && members && <span className="font-medium opacity-80">· {members}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => setTurn(teamOrder.turn + 1)}
+              className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-sm font-bold text-on-primary shadow-sm hover:bg-primary-container"
+            >
+              {t('gamePlay.nextTurn')}
+              <span aria-hidden className="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+          </div>
+        )}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div ref={stageRef} className={fill ? 'game-fs-stage' : undefined}>

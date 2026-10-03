@@ -29,6 +29,9 @@ interface Props {
   onAskTemplateChange: (value: AskTemplate) => void;
   includeAnswers: boolean;
   onIncludeAnswersChange: (value: boolean) => void;
+  /** 선 잇기: 그림 아래에 한글 뜻 넣기 */
+  matchMeaning: boolean;
+  onMatchMeaningChange: (value: boolean) => void;
   /** 다시 섞기는 "저장해둘 설정"이 아니라 그때그때 하는 조작이라 커리큘럼 편집에서는 안 씀 — 그
    * 페이지(WorksheetPrintPage)에서만 넘긴다. */
   onReshuffle?: () => void;
@@ -52,6 +55,8 @@ export default function WorksheetOptionsFields({
   onAskTemplateChange,
   includeAnswers,
   onIncludeAnswersChange,
+  matchMeaning,
+  onMatchMeaningChange,
   onReshuffle,
 }: Props) {
   const { t } = useTranslation();
@@ -179,6 +184,13 @@ export default function WorksheetOptionsFields({
             <p className="font-caption text-caption text-on-surface-variant">{t('materials.worksheet.miniBookHint')}</p>
           )}
         </div>
+      )}
+
+      {tab === 'match' && hasWords && (
+        <label className="flex w-fit cursor-pointer items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+          <input type="checkbox" checked={matchMeaning} onChange={(e) => onMatchMeaningChange(e.target.checked)} className="h-4 w-4 rounded accent-primary" />
+          {t('materials.worksheet.matchMeaning')}
+        </label>
       )}
 
       {tab === 'askAnswer' && hasWords && (

@@ -65,6 +65,7 @@ interface WorksheetOptionsState {
   showAnswerKey: boolean;
   includeAnswers: boolean;
   askTemplate: AskTemplate;
+  matchMeaning: boolean;
   coloring: ColoringOptions;
 }
 
@@ -74,6 +75,7 @@ const DEFAULT_WORKSHEET_OPTIONS_STATE: WorksheetOptionsState = {
   showAnswerKey: false,
   includeAnswers: true,
   askTemplate: 'like',
+  matchMeaning: false,
   coloring: DEFAULT_COLORING_OPTIONS,
 };
 
@@ -84,6 +86,7 @@ function optionsStateFromSlide(wo: WorksheetSlideOptions | undefined): Worksheet
     showAnswerKey: wo?.showAnswerKey ?? false,
     includeAnswers: wo?.includeAnswers ?? true,
     askTemplate: wo?.askTemplate ?? 'like',
+    matchMeaning: wo?.matchMeaning ?? false,
     coloring: {
       title: wo?.coloringTitle ?? DEFAULT_COLORING_OPTIONS.title,
       labelMode: wo?.coloringLabelMode ?? DEFAULT_COLORING_OPTIONS.labelMode,
@@ -100,6 +103,7 @@ function slideOptionsFromState(o: WorksheetOptionsState): WorksheetSlideOptions 
     showAnswerKey: o.showAnswerKey,
     includeAnswers: o.includeAnswers,
     askTemplate: o.askTemplate,
+    matchMeaning: o.matchMeaning,
     coloringTitle: o.coloring.title,
     coloringLabelMode: o.coloring.labelMode,
     coloringPerPage: o.coloring.perPage,
@@ -870,6 +874,8 @@ export default function LessonSlideSorter({
                           onColoringChange={(patch) => setWorksheetDraftOptions((prev) => ({ ...prev, coloring: { ...prev.coloring, ...patch } }))}
                           askTemplate={worksheetDraftOptions.askTemplate}
                           onAskTemplateChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, askTemplate: value }))}
+                          matchMeaning={worksheetDraftOptions.matchMeaning}
+                          onMatchMeaningChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, matchMeaning: value }))}
                           includeAnswers={worksheetDraftOptions.includeAnswers}
                           onIncludeAnswersChange={(value) => setWorksheetDraftOptions((prev) => ({ ...prev, includeAnswers: value }))}
                         />
@@ -1452,6 +1458,8 @@ function SlideDetail({
             onColoringChange={(patch) => updateWorksheetOptions({ coloring: { ...worksheetOptionsState.coloring, ...patch } })}
             askTemplate={worksheetOptionsState.askTemplate}
             onAskTemplateChange={(value) => updateWorksheetOptions({ askTemplate: value })}
+            matchMeaning={worksheetOptionsState.matchMeaning}
+            onMatchMeaningChange={(value) => updateWorksheetOptions({ matchMeaning: value })}
             includeAnswers={worksheetOptionsState.includeAnswers}
             onIncludeAnswersChange={(value) => updateWorksheetOptions({ includeAnswers: value })}
           />

@@ -110,6 +110,7 @@ export default function WorksheetPrintPage() {
   const [includeAnswers, setIncludeAnswers] = useState(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.includeAnswers ?? true);
   const [seed, setSeed] = useState(1);
   const [askTemplate, setAskTemplate] = useState<AskTemplate>(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.askTemplate ?? 'like');
+  const [matchMeaning, setMatchMeaning] = useState(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.matchMeaning ?? false);
   const [showAskScreen, setShowAskScreen] = useState(false);
   const [boardThemeId, setBoardThemeId] = useState(() => handoffFromLocationState(location.state).materialsBoardTheme ?? null);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
@@ -140,6 +141,7 @@ export default function WorksheetPrintPage() {
     setShowAnswerKey(wo?.showAnswerKey ?? false);
     setIncludeAnswers(wo?.includeAnswers ?? true);
     setAskTemplate(wo?.askTemplate ?? 'like');
+    setMatchMeaning(wo?.matchMeaning ?? false);
     setListShow(wo?.listShow ?? { pos: true, example: false, image: false });
     setTracingShow(wo?.tracingShow ?? { meaning: false, image: false });
     setColoring({
@@ -316,6 +318,8 @@ export default function WorksheetPrintPage() {
             onColoringChange={(patch) => setColoring((c) => ({ ...c, ...patch }))}
             askTemplate={askTemplate}
             onAskTemplateChange={setAskTemplate}
+            matchMeaning={matchMeaning}
+            onMatchMeaningChange={setMatchMeaning}
             includeAnswers={includeAnswers}
             onIncludeAnswersChange={setIncludeAnswers}
             onReshuffle={() => setSeed((n) => n + 1)}
@@ -368,7 +372,7 @@ export default function WorksheetPrintPage() {
 
       {canPreview && generated && (
         <div className="print-sheet mx-auto">
-          <WorksheetSheets data={generated} includeAnswers={includeAnswers} />
+          <WorksheetSheets data={generated} includeAnswers={includeAnswers} matchMeaning={matchMeaning} />
         </div>
       )}
 

@@ -14,3 +14,4 @@ dist/
 
 # 효과음 원본(Kenney 등) — 쓸 파일만 app/public/sounds 로 옮긴다
 sound-source/
+app/scripts/vocab/out/fill/

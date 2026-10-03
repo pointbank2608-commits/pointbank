@@ -37,6 +37,8 @@ import type { FullCardItem } from '../../lib/types';
 interface Props {
   data: WorksheetData;
   includeAnswers: boolean;
+  /** 선 잇기: 그림 아래에 한글 뜻을 넣는다 */
+  matchMeaning?: boolean;
   /** 귀여운 스타일(파닉스)에서 컬러로 그릴지, 흑백에 맞는 모양으로 그릴지. */
   cuteColor?: boolean;
 }
@@ -137,13 +139,17 @@ function MatchCell({
   dot,
   small = false,
   compact = false,
+  showCaption = false,
 }: {
   side: MatchSide;
   label: string;
   dot: 'left' | 'right';
   small?: boolean;
   compact?: boolean;
+  /** 그림 아래에 한글 뜻을 작게 넣는다(그림만으로 헷갈리는 낱말용) */
+  showCaption?: boolean;
 }) {
+  const caption = showCaption && side.image ? side.caption : undefined;
   return (
     <div
       className={`relative flex h-[26mm] items-center rounded-lg border-2 border-black ${
@@ -152,7 +158,16 @@ function MatchCell({
     >
       <span className="w-[6mm] shrink-0 text-center text-[14px] font-bold">{label}</span>
       <div className="flex min-w-0 flex-1 items-center justify-center">
-        {side.image ? <Picture src={side.image} className="h-[20mm] w-[20mm]" /> : <span className={`text-center font-bold ${small ? 'text-[14px] leading-tight' : 'text-[17px]'}`}>{side.text}</span>}
+        {side.image ? (
+          caption ? (
+            <div className="flex flex-col items-center">
+              <Picture src={side.image} className="h-[17mm] w-[17mm]" />
+              <span className="max-w-[34mm] truncate text-center text-[11px] font-semibold leading-tight">{caption}</span>
+            </div>
+          ) : (
+            <Picture src={side.image} className="h-[20mm] w-[20mm]" />
+          )
+        ) : <span className={`text-center font-bold ${small ? 'text-[14px] leading-tight' : 'text-[17px]'}`}>{side.text}</span>}
       </div>
       <span
         className={`absolute top-1/2 h-[3.5mm] w-[3.5mm] -translate-y-1/2 rounded-full border-2 border-black bg-white ${
@@ -163,7 +178,7 @@ function MatchCell({
   );
 }
 
-function MatchSheet({ page, pictureMode, title, instruction }: { page: MatchPage; pictureMode: boolean; title?: string; instruction?: string }) {
+function MatchSheet({ page, pictureMode, title, instruction, showMeaning = false }: { page: MatchPage; pictureMode: boolean; title?: string; instruction?: string; showMeaning?: boolean }) {
   const { t } = useTranslation();
   return (
     <Page>
@@ -174,7 +189,7 @@ function MatchSheet({ page, pictureMode, title, instruction }: { page: MatchPage
       <div className="flex justify-between px-[4mm]">
         <div className="flex w-fit flex-col gap-[5mm]">
           {page.left.map((side, i) => (
-            <MatchCell key={i} side={side} label={String(i + 1)} dot="left" compact />
+            <MatchCell key={i} side={side} label={String(i + 1)} dot="left" compact showCaption={showMeaning} />
           ))}
         </div>
         <div className="flex w-fit flex-col gap-[5mm]">
@@ -934,7 +949,7 @@ function PhonicsOddSheet({ rows, startIndex, answer }: { rows: OddRow[]; startIn
 
 
 
-export default function WorksheetSheets({ data, includeAnswers, cuteColor = true }: Props) {
+export default function WorksheetSheets({ data, includeAnswers, cuteColor = true, matchMeaning = false }: Props) {
   switch (data.kind) {
     case 'phonicsBlank':
       return (
@@ -1019,7 +1034,7 @@ export default function WorksheetSheets({ data, includeAnswers, cuteColor = true
       return (
         <>
           {data.pages.map((p, i) => (
-            <MatchSheet key={i} page={p} pictureMode={pictureMode} />
+            <MatchSheet key={i} page={p} pictureMode={pictureMode} showMeaning={matchMeaning} />
           ))}
           {includeAnswers && <MatchAnswer pages={data.pages} />}
         </>
