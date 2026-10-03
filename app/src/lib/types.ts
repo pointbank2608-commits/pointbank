@@ -759,7 +759,7 @@ export interface ShadowSlide {
   flow?: 'auto' | 'manual';
   /** 한 문장을 몇 번 따라 할지(1~5) */
   repeat?: number;
-  /** 재생 속도(0.5·0.75·1) */
+  /** 재생 속도(0.5~2배) */
   speed?: number;
   /** 시작할 때 자막: 영어+한글 / 영어 / 한글 / 빈칸 / 없음 */
   subtitle?: 'both' | 'en' | 'ko' | 'cloze' | 'none';

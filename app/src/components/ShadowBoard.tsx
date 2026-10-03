@@ -8,7 +8,7 @@ import { CanvasStageBox } from './CanvasSlideView';
 export type ShadowFlow = 'auto' | 'manual';
 export type ShadowSubtitle = 'both' | 'en' | 'ko' | 'cloze' | 'none';
 export const SHADOW_SUBTITLES: ShadowSubtitle[] = ['both', 'en', 'ko', 'cloze', 'none'];
-export const SHADOW_SPEEDS = [0.5, 0.75, 1];
+export const SHADOW_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 export const SHADOW_REPEATS = [1, 2, 3, 4, 5];
 
 type Phase = 'idle' | 'listen' | 'speak' | 'wait' | 'done';
