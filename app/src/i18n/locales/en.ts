@@ -2468,6 +2468,7 @@ const en: Ko = {
       untitled: "New lesson",
     },
     wordSource: {
+      phonicsPreviewEmpty: 'Pick phonics words below (or use a phonics word list for the lesson) to see a preview.',
       title: "Where do the words come from?",
       lesson: "Lesson word list ({{count}})",
       topic: "Pick from a dictionary topic",

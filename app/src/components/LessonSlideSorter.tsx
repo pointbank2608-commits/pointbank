@@ -28,6 +28,7 @@ import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
+import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
 import { workbookOfMaterial } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
@@ -2420,7 +2421,7 @@ function PhonicsSlideDetail({
   return (
     <div className="space-y-4">
       <PreviewFrame title={`${t('materials.phonicsLibraryName')} · ${phonicsTabLabel(tab, t)}`}>
-        <span className="material-symbols-outlined text-6xl text-primary">abc</span>
+        <PhonicsSlidePreview tab={tab} words={own ? slide.words! : cards} options={slide.phonicsOptions ?? {}} />
       </PreviewFrame>
       <div>
         <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.wordSource.phonicsType')}</div>

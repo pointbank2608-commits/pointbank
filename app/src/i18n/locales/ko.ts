@@ -2464,6 +2464,7 @@ const ko = {
       untitled: "새 수업",
     },
     wordSource: {
+      phonicsPreviewEmpty: '파닉스 단어가 있어야 미리보기가 보여요. 아래에서 단어를 고르거나 파닉스 단어장을 수업 단어장으로 골라 주세요.',
       title: "단어는 어디서?",
       lesson: "수업 단어장 ({{count}}개)",
       topic: "사전 주제에서 고르기",
