@@ -4,7 +4,7 @@
 이 문서 하나만 보면 된다(예전 `CURSOR_IMAGE_HANDOFF*.md`의 규격을 여기에 다시 적었고, **이 문서가 우선**이다).
 
 - 다시 만들 그림: **37장** (+ 숫자 27장은 사용자에게 물어본 뒤)
-- 새로 만들 그림: **1936장** (남은 895장)
+- 새로 만들 그림: **1936장** (남은 493장)
 - 그리지 않는 단어: `death`, `suicide`, `murder`, `torture`, `abuse`, `terror` — 빈 자리로 둔다.
 
 ## 가장 중요한 규칙: 사과로 만들지 않는다
@@ -495,7 +495,7 @@
 | `let-s-go` | let's go | 표현 | 가자 |  | Let's go to the park. | 완료 |
 | `come-on` | come on | 표현 | 어서, 힘내 |  | Come on, let us play. | 완료 |
 
-## 5. 중학 추상어 (Lv.5) (730장, 남은 51장)
+## 5. 중학 추상어 (Lv.5) (730장, 남은 1장)
 
 | id | 단어 | 품사 | 뜻 | 장면(비어 있으면 참고 문장을 그대로 한 장면으로) | 참고 문장 | 만들어졌나 |
 |---|---|---|---|---|---|---|
@@ -1105,7 +1105,7 @@
 | `site` | site | 명사 | 장소, 현장, 사이트 |  | This is the site of the old castle. | 완료 |
 | `situate` | situate | 동사 | 위치시키다 |  | The hotel is situated by the sea. | 완료 |
 | `skill` | skill | 명사 | 기술, 솜씨 |  | Cooking is a useful skill. | 완료 |
-| `slave` | slave | 명사 | 노예 |  | Slaves were not free long ago. |  |
+| `slave` | slave | 명사 | 노예 |  | Slaves were not free long ago. | 완료 |
 | `slight` | slight | 형용사 | 약간의 |  | I have a slight headache. | 완료 |
 | `smash` | smash | 동사 | 박살 내다 | 바닥에 떨어져 깨진 접시(사람 없이) | The ball smashed the window. | 완료 |
 | `snap` | snap | 동사 | 딱 부러지다, 사진을 찍다 |  | The stick snapped in two. | 완료 |
@@ -1179,426 +1179,426 @@
 | `tight` | tight | 형용사 | 꽉 끼는, 단단한 |  | These shoes are too tight. | 완료 |
 | `tip` | tip | 명사 | 끝, 조언, 팁 |  | She gave me a tip for studying. | 완료 |
 | `tone` | tone | 명사 | 어조, 음색 |  | He spoke in a friendly tone. | 완료 |
-| `topic` | topic | 명사 | 주제 |  | The topic of today is animals. |  |
-| `total` | total | 명사 | 합계, 총 |  | The total is twenty dollars. |  |
-| `tough` | tough | 형용사 | 힘든, 강한 |  | It was a tough game. |  |
-| `tour` | tour | 명사 | 여행, 관광 |  | We took a bus tour of the city. |  |
-| `toward` | toward | 전치사 | ~쪽으로 |  | He walked toward the door. |  |
+| `topic` | topic | 명사 | 주제 |  | The topic of today is animals. | 완료 |
+| `total` | total | 명사 | 합계, 총 |  | The total is twenty dollars. | 완료 |
+| `tough` | tough | 형용사 | 힘든, 강한 |  | It was a tough game. | 완료 |
+| `tour` | tour | 명사 | 여행, 관광 |  | We took a bus tour of the city. | 완료 |
+| `toward` | toward | 전치사 | ~쪽으로 |  | He walked toward the door. | 완료 |
 | `trace` | trace | 동사 | 따라 그리다, 추적하다 |  | Trace the letters with your pencil. |  |
-| `trade` | trade | 명사 | 무역, 거래 |  | Trade between the two countries grew. |  |
-| `tradition` | tradition | 명사 | 전통 |  | It is a Korean tradition to bow. |  |
-| `transfer` | transfer | 동사 | 옮기다, 갈아타다 |  | Transfer to line two at this station. |  |
-| `transport` | transport | 명사 | 수송, 교통수단 |  | I use public transport every day. |  |
-| `trap` | trap | 명사 | 덫 |  | The mouse did not go into the trap. |  |
-| `treat` | treat | 동사 | 대하다, 치료하다, 대접하다 |  | Treat others kindly. |  |
-| `trick` | trick | 명사 | 속임수, 마술 |  | He showed us a card trick. |  |
-| `trouble` | trouble | 명사 | 문제, 곤란 |  | I had trouble opening the door. |  |
-| `trunk` | trunk | 명사 | 나무 줄기, (자동차) 트렁크, 코끼리 코 |  | The elephant lifted its trunk. |  |
-| `trust` | trust | 동사 | 믿다, 신뢰하다 |  | I trust my best friend. |  |
-| `truth` | truth | 명사 | 진실 |  | Always tell the truth. |  |
-| `tune` | tune | 명사 | 곡조, 선율 |  | She hummed a happy tune. |  |
-| `twist` | twist | 동사 | 비틀다, 꼬다 |  | Twist the cap to open the bottle. |  |
-| `unit` | unit | 명사 | 단원, 단위 |  | We are on unit three of the book. |  |
-| `unite` | unite | 동사 | 합치다, 단결하다 |  | The players united as one team. |  |
-| `university` | university | 명사 | 대학교 |  | My brother studies at a university. |  |
-| `unless` | unless | 접속사 | ~하지 않으면 |  | You will be late unless you hurry. |  |
-| `upon` | upon | 전치사 | ~위에 |  | Once upon a time, there was a king. |  |
-| `upper` | upper | 형용사 | 위쪽의 |  | My room is on the upper floor. |  |
-| `value` | value | 명사 | 가치 |  | This ring has great value. |  |
-| `various` | various | 형용사 | 다양한 |  | The shop sells various kinds of bread. |  |
-| `vary` | vary | 동사 | 서로 다르다, 달라지다 |  | Prices vary from shop to shop. |  |
-| `vehicle` | vehicle | 명사 | 차량, 탈것 |  | A bus is a large vehicle. |  |
-| `version` | version | 명사 | 버전, 판 |  | This is the new version of the game. |  |
-| `victim` | victim | 명사 | 피해자 | 넘어진 아이를 다른 아이가 일으켜 주는 장면 | They helped the victims of the flood. |  |
-| `villa` | villa | 명사 | 별장, 빌라 |  | They stayed at a villa by the sea. |  |
-| `violent` | violent | 형용사 | 폭력적인, 격렬한 | 거센 파도와 번개가 치는 폭풍우 바다(사람 없이) | I do not like violent movies. |  |
-| `vision` | vision | 명사 | 시력, 전망 |  | He has good vision. |  |
-| `volume` | volume | 명사 | 음량, 부피, 권 |  | Turn down the volume, please. |  |
-| `wage` | wage | 명사 | 임금 |  | The workers asked for higher wages. |  |
-| `warn` | warn | 동사 | 경고하다 |  | I warned him about the dog. |  |
-| `weapon` | weapon | 명사 | 무기 | 박물관 유리장 안의 옛 칼과 방패(사람 없이) | A sword is an old weapon. |  |
-| `weigh` | weigh | 동사 | 무게가 ~이다, 무게를 달다 |  | How much do you weigh? |  |
-| `whether` | whether | 접속사 | ~인지 아닌지 |  | I do not know whether he will come. |  |
-| `while` | while | 접속사 | ~하는 동안 |  | I read a book while I waited. |  |
-| `whole` | whole | 형용사 | 전체의 |  | I ate the whole pizza. |  |
-| `wild` | wild | 형용사 | 야생의 |  | Wild animals live in the forest. |  |
-| `wire` | wire | 명사 | 철사, 전선 |  | The fence is made of wire. |  |
-| `wise` | wise | 형용사 | 현명한 |  | My grandmother is very wise. |  |
-| `within` | within | 전치사 | ~이내에 |  | Come back within an hour. |  |
-| `without` | without | 전치사 | ~없이 |  | I cannot see without my glasses. |  |
-| `worth` | worth | 형용사 | ~의 가치가 있는 |  | The book is worth reading. |  |
-| `would` | would | 조동사 | ~할 것이다, ~하곤 했다 |  | I would like some water. |  |
-| `wound` | wound | 명사 | 상처 |  | The nurse cleaned the wound. |  |
+| `trade` | trade | 명사 | 무역, 거래 |  | Trade between the two countries grew. | 완료 |
+| `tradition` | tradition | 명사 | 전통 |  | It is a Korean tradition to bow. | 완료 |
+| `transfer` | transfer | 동사 | 옮기다, 갈아타다 |  | Transfer to line two at this station. | 완료 |
+| `transport` | transport | 명사 | 수송, 교통수단 |  | I use public transport every day. | 완료 |
+| `trap` | trap | 명사 | 덫 |  | The mouse did not go into the trap. | 완료 |
+| `treat` | treat | 동사 | 대하다, 치료하다, 대접하다 |  | Treat others kindly. | 완료 |
+| `trick` | trick | 명사 | 속임수, 마술 |  | He showed us a card trick. | 완료 |
+| `trouble` | trouble | 명사 | 문제, 곤란 |  | I had trouble opening the door. | 완료 |
+| `trunk` | trunk | 명사 | 나무 줄기, (자동차) 트렁크, 코끼리 코 |  | The elephant lifted its trunk. | 완료 |
+| `trust` | trust | 동사 | 믿다, 신뢰하다 |  | I trust my best friend. | 완료 |
+| `truth` | truth | 명사 | 진실 |  | Always tell the truth. | 완료 |
+| `tune` | tune | 명사 | 곡조, 선율 |  | She hummed a happy tune. | 완료 |
+| `twist` | twist | 동사 | 비틀다, 꼬다 |  | Twist the cap to open the bottle. | 완료 |
+| `unit` | unit | 명사 | 단원, 단위 |  | We are on unit three of the book. | 완료 |
+| `unite` | unite | 동사 | 합치다, 단결하다 |  | The players united as one team. | 완료 |
+| `university` | university | 명사 | 대학교 |  | My brother studies at a university. | 완료 |
+| `unless` | unless | 접속사 | ~하지 않으면 |  | You will be late unless you hurry. | 완료 |
+| `upon` | upon | 전치사 | ~위에 |  | Once upon a time, there was a king. | 완료 |
+| `upper` | upper | 형용사 | 위쪽의 |  | My room is on the upper floor. | 완료 |
+| `value` | value | 명사 | 가치 |  | This ring has great value. | 완료 |
+| `various` | various | 형용사 | 다양한 |  | The shop sells various kinds of bread. | 완료 |
+| `vary` | vary | 동사 | 서로 다르다, 달라지다 |  | Prices vary from shop to shop. | 완료 |
+| `vehicle` | vehicle | 명사 | 차량, 탈것 |  | A bus is a large vehicle. | 완료 |
+| `version` | version | 명사 | 버전, 판 |  | This is the new version of the game. | 완료 |
+| `victim` | victim | 명사 | 피해자 | 넘어진 아이를 다른 아이가 일으켜 주는 장면 | They helped the victims of the flood. | 완료 |
+| `villa` | villa | 명사 | 별장, 빌라 |  | They stayed at a villa by the sea. | 완료 |
+| `violent` | violent | 형용사 | 폭력적인, 격렬한 | 거센 파도와 번개가 치는 폭풍우 바다(사람 없이) | I do not like violent movies. | 완료 |
+| `vision` | vision | 명사 | 시력, 전망 |  | He has good vision. | 완료 |
+| `volume` | volume | 명사 | 음량, 부피, 권 |  | Turn down the volume, please. | 완료 |
+| `wage` | wage | 명사 | 임금 |  | The workers asked for higher wages. | 완료 |
+| `warn` | warn | 동사 | 경고하다 |  | I warned him about the dog. | 완료 |
+| `weapon` | weapon | 명사 | 무기 | 박물관 유리장 안의 옛 칼과 방패(사람 없이) | A sword is an old weapon. | 완료 |
+| `weigh` | weigh | 동사 | 무게가 ~이다, 무게를 달다 |  | How much do you weigh? | 완료 |
+| `whether` | whether | 접속사 | ~인지 아닌지 |  | I do not know whether he will come. | 완료 |
+| `while` | while | 접속사 | ~하는 동안 |  | I read a book while I waited. | 완료 |
+| `whole` | whole | 형용사 | 전체의 |  | I ate the whole pizza. | 완료 |
+| `wild` | wild | 형용사 | 야생의 |  | Wild animals live in the forest. | 완료 |
+| `wire` | wire | 명사 | 철사, 전선 |  | The fence is made of wire. | 완료 |
+| `wise` | wise | 형용사 | 현명한 |  | My grandmother is very wise. | 완료 |
+| `within` | within | 전치사 | ~이내에 |  | Come back within an hour. | 완료 |
+| `without` | without | 전치사 | ~없이 |  | I cannot see without my glasses. | 완료 |
+| `worth` | worth | 형용사 | ~의 가치가 있는 |  | The book is worth reading. | 완료 |
+| `would` | would | 조동사 | ~할 것이다, ~하곤 했다 |  | I would like some water. | 완료 |
+| `wound` | wound | 명사 | 상처 |  | The nurse cleaned the wound. | 완료 |
 
-## 6. 고등 추상어 (Lv.6) (844장, 남은 844장)
+## 6. 고등 추상어 (Lv.6) (844장, 남은 492장)
 
 | id | 단어 | 품사 | 뜻 | 장면(비어 있으면 참고 문장을 그대로 한 장면으로) | 참고 문장 | 만들어졌나 |
 |---|---|---|---|---|---|---|
-| `abandon` | abandon | 동사 | 버리다, 포기하다 |  | They had to abandon the sinking ship. |  |
-| `aboard` | aboard | 부사 | (배·비행기에) 탑승하여 |  | All the passengers are now aboard. |  |
-| `abort` | abort | 동사 | 중단하다 |  | The mission was aborted because of bad weather. |  |
-| `abound` | abound | 동사 | 풍부하다, 많이 있다 |  | Fish abound in this river. |  |
-| `abroad` | abroad | 부사 | 해외에, 해외로 |  | She wants to study abroad next year. |  |
-| `absent` | absent | 형용사 | 결석한, 없는 |  | He was absent from school yesterday. |  |
-| `absorb` | absorb | 동사 | 흡수하다 |  | A sponge absorbs water quickly. |  |
+| `abandon` | abandon | 동사 | 버리다, 포기하다 |  | They had to abandon the sinking ship. | 완료 |
+| `aboard` | aboard | 부사 | (배·비행기에) 탑승하여 |  | All the passengers are now aboard. | 완료 |
+| `abort` | abort | 동사 | 중단하다 |  | The mission was aborted because of bad weather. | 완료 |
+| `abound` | abound | 동사 | 풍부하다, 많이 있다 |  | Fish abound in this river. | 완료 |
+| `abroad` | abroad | 부사 | 해외에, 해외로 |  | She wants to study abroad next year. | 완료 |
+| `absent` | absent | 형용사 | 결석한, 없는 |  | He was absent from school yesterday. | 완료 |
+| `absorb` | absorb | 동사 | 흡수하다 |  | A sponge absorbs water quickly. | 완료 |
 | `abstract` | abstract | 형용사 | 추상적인 |  | Love is an abstract idea. |  |
-| `absurd` | absurd | 형용사 | 터무니없는 |  | It is absurd to blame the weather for everything. |  |
-| `academy` | academy | 명사 | 학원, 학회 |  | She attends a music academy after school. |  |
-| `accelerate` | accelerate | 동사 | 가속하다 |  | The car accelerated on the highway. |  |
-| `accommodate` | accommodate | 동사 | 수용하다, 숙박시키다 |  | The hotel can accommodate 200 guests. |  |
-| `accompany` | accompany | 동사 | 동행하다, 반주하다 |  | I will accompany you to the station. |  |
-| `accomplish` | accomplish | 동사 | 성취하다, 해내다 |  | We accomplished our goal in a month. |  |
-| `accord` | accord | 명사 | 합의, 일치 |  | The two countries signed a peace accord. |  |
-| `accumulate` | accumulate | 동사 | 모으다, 축적하다 |  | Dust accumulated on the shelf. |  |
-| `accurate` | accurate | 형용사 | 정확한 |  | The weather forecast was accurate. |  |
-| `ache` | ache | 명사 | 아픔, 통증 |  | I have an ache in my back. |  |
-| `acid` | acid | 명사 | 산(酸) |  | Lemons contain a lot of acid. |  |
-| `acknowledge` | acknowledge | 동사 | 인정하다 |  | He acknowledged that he had made a mistake. |  |
-| `acquire` | acquire | 동사 | 얻다, 습득하다 |  | Children acquire language naturally. |  |
-| `acquisition` | acquisition | 명사 | 습득, 취득 |  | Language acquisition takes time. |  |
-| `addict` | addict | 명사 | 중독자 | 주변에 장난감이 있어도 게임기 화면에서 눈을 못 떼는 아이 | He is a game addict. |  |
-| `adequate` | adequate | 형용사 | 충분한, 적절한 |  | Make sure you get adequate sleep. |  |
-| `adjust` | adjust | 동사 | 조정하다, 적응하다 |  | Adjust the seat to your height. |  |
-| `administer` | administer | 동사 | 관리하다, 집행하다 |  | The office administers the school budget. |  |
-| `adolescent` | adolescent | 명사 | 청소년 |  | Adolescents need a lot of sleep. |  |
-| `adverse` | adverse | 형용사 | 불리한, 해로운 |  | The drug had no adverse effects. |  |
+| `absurd` | absurd | 형용사 | 터무니없는 |  | It is absurd to blame the weather for everything. | 완료 |
+| `academy` | academy | 명사 | 학원, 학회 |  | She attends a music academy after school. | 완료 |
+| `accelerate` | accelerate | 동사 | 가속하다 |  | The car accelerated on the highway. | 완료 |
+| `accommodate` | accommodate | 동사 | 수용하다, 숙박시키다 |  | The hotel can accommodate 200 guests. | 완료 |
+| `accompany` | accompany | 동사 | 동행하다, 반주하다 |  | I will accompany you to the station. | 완료 |
+| `accomplish` | accomplish | 동사 | 성취하다, 해내다 |  | We accomplished our goal in a month. | 완료 |
+| `accord` | accord | 명사 | 합의, 일치 |  | The two countries signed a peace accord. | 완료 |
+| `accumulate` | accumulate | 동사 | 모으다, 축적하다 |  | Dust accumulated on the shelf. | 완료 |
+| `accurate` | accurate | 형용사 | 정확한 |  | The weather forecast was accurate. | 완료 |
+| `ache` | ache | 명사 | 아픔, 통증 |  | I have an ache in my back. | 완료 |
+| `acid` | acid | 명사 | 산(酸) |  | Lemons contain a lot of acid. | 완료 |
+| `acknowledge` | acknowledge | 동사 | 인정하다 |  | He acknowledged that he had made a mistake. | 완료 |
+| `acquire` | acquire | 동사 | 얻다, 습득하다 |  | Children acquire language naturally. | 완료 |
+| `acquisition` | acquisition | 명사 | 습득, 취득 |  | Language acquisition takes time. | 완료 |
+| `addict` | addict | 명사 | 중독자 | 주변에 장난감이 있어도 게임기 화면에서 눈을 못 떼는 아이 | He is a game addict. | 완료 |
+| `adequate` | adequate | 형용사 | 충분한, 적절한 |  | Make sure you get adequate sleep. | 완료 |
+| `adjust` | adjust | 동사 | 조정하다, 적응하다 |  | Adjust the seat to your height. | 완료 |
+| `administer` | administer | 동사 | 관리하다, 집행하다 |  | The office administers the school budget. | 완료 |
+| `adolescent` | adolescent | 명사 | 청소년 |  | Adolescents need a lot of sleep. | 완료 |
+| `adverse` | adverse | 형용사 | 불리한, 해로운 |  | The drug had no adverse effects. | 완료 |
 | `advocate` | advocate | 동사 | 옹호하다, 지지하다 |  | She advocates equal rights for all. |  |
-| `aesthetic` | aesthetic | 형용사 | 미적인, 미학의 |  | The building has great aesthetic value. |  |
-| `agency` | agency | 명사 | 대행사, 기관 |  | She works for a travel agency. |  |
-| `agenda` | agenda | 명사 | 의제, 안건 |  | What is on the agenda for the meeting? |  |
-| `aggressive` | aggressive | 형용사 | 공격적인 |  | The dog became aggressive when it was scared. |  |
-| `alert` | alert | 형용사 | 경계하는, 기민한 |  | Stay alert while you are driving. |  |
-| `alike` | alike | 형용사 | 서로 닮은 |  | The two brothers look alike. |  |
-| `allocate` | allocate | 동사 | 할당하다 |  | The school allocated money for new books. |  |
-| `ally` | ally | 명사 | 동맹국, 협력자 |  | The two nations became allies. |  |
-| `alongside` | alongside | 전치사 | ~와 나란히, ~와 함께 |  | A path runs alongside the river. |  |
-| `alternate` | alternate | 동사 | 번갈아 하다 |  | Rainy days alternated with sunny ones. |  |
-| `ambassador` | ambassador | 명사 | 대사 |  | The ambassador met the president. |  |
-| `ambition` | ambition | 명사 | 야망, 포부 |  | Her ambition is to become a pilot. |  |
-| `analyze` | analyze | 동사 | 분석하다 |  | We analyzed the results of the survey. |  |
-| `ancient` | ancient | 형용사 | 고대의, 아주 오래된 |  | We visited the ancient temple. |  |
-| `anniversary` | anniversary | 명사 | 기념일 |  | Today is our tenth wedding anniversary. |  |
-| `anticipate` | anticipate | 동사 | 예상하다, 기대하다 |  | We anticipate a large crowd at the festival. |  |
-| `anxiety` | anxiety | 명사 | 불안, 걱정 |  | She felt anxiety before the interview. |  |
-| `apology` | apology | 명사 | 사과 |  | Please accept my sincere apology. |  |
-| `apparent` | apparent | 형용사 | 분명한, 겉보기의 |  | It was apparent that he was tired. |  |
-| `approve` | approve | 동사 | 승인하다, 찬성하다 |  | The teacher approved our project plan. |  |
-| `approximate` | approximate | 형용사 | 대략의 |  | What is the approximate cost of the trip? |  |
-| `architect` | architect | 명사 | 건축가 |  | The architect designed a new library. |  |
-| `arise` | arise | 동사 | 생기다, 발생하다 |  | A problem arose during the meeting. |  |
-| `artificial` | artificial | 형용사 | 인공의 |  | The cake has no artificial colors. |  |
-| `aspect` | aspect | 명사 | 측면 |  | We discussed every aspect of the plan. |  |
-| `aspire` | aspire | 동사 | 열망하다 |  | She aspires to be a great scientist. |  |
-| `assault` | assault | 명사 | 폭행, 공격 |  | He was arrested for assault. |  |
-| `assemble` | assemble | 동사 | 모이다, 조립하다 |  | We assembled the bookshelf ourselves. |  |
-| `assert` | assert | 동사 | 주장하다 |  | She asserted that she was innocent. |  |
-| `asset` | asset | 명사 | 자산 |  | Good health is a great asset. |  |
-| `assure` | assure | 동사 | 확신시키다, 보장하다 |  | I assure you that everything is fine. |  |
-| `astonish` | astonish | 동사 | 깜짝 놀라게 하다 |  | The news astonished everyone. |  |
-| `attribute` | attribute | 동사 | ~의 덕분으로 돌리다 |  | She attributes her success to hard work. |  |
-| `auction` | auction | 명사 | 경매 |  | The painting was sold at auction. |  |
-| `authentic` | authentic | 형용사 | 진짜의, 진품인 |  | This restaurant serves authentic Italian food. |  |
-| `available` | available | 형용사 | 이용할 수 있는 |  | Are there any seats available? |  |
-| `await` | await | 동사 | 기다리다 |  | A surprise awaits you at home. |  |
-| `awe` | awe | 명사 | 경외감 |  | We looked at the mountain in awe. |  |
-| `ban` | ban | 동사 | 금지하다 |  | Smoking is banned in this building. |  |
+| `aesthetic` | aesthetic | 형용사 | 미적인, 미학의 |  | The building has great aesthetic value. | 완료 |
+| `agency` | agency | 명사 | 대행사, 기관 |  | She works for a travel agency. | 완료 |
+| `agenda` | agenda | 명사 | 의제, 안건 |  | What is on the agenda for the meeting? | 완료 |
+| `aggressive` | aggressive | 형용사 | 공격적인 |  | The dog became aggressive when it was scared. | 완료 |
+| `alert` | alert | 형용사 | 경계하는, 기민한 |  | Stay alert while you are driving. | 완료 |
+| `alike` | alike | 형용사 | 서로 닮은 |  | The two brothers look alike. | 완료 |
+| `allocate` | allocate | 동사 | 할당하다 |  | The school allocated money for new books. | 완료 |
+| `ally` | ally | 명사 | 동맹국, 협력자 |  | The two nations became allies. | 완료 |
+| `alongside` | alongside | 전치사 | ~와 나란히, ~와 함께 |  | A path runs alongside the river. | 완료 |
+| `alternate` | alternate | 동사 | 번갈아 하다 |  | Rainy days alternated with sunny ones. | 완료 |
+| `ambassador` | ambassador | 명사 | 대사 |  | The ambassador met the president. | 완료 |
+| `ambition` | ambition | 명사 | 야망, 포부 |  | Her ambition is to become a pilot. | 완료 |
+| `analyze` | analyze | 동사 | 분석하다 |  | We analyzed the results of the survey. | 완료 |
+| `ancient` | ancient | 형용사 | 고대의, 아주 오래된 |  | We visited the ancient temple. | 완료 |
+| `anniversary` | anniversary | 명사 | 기념일 |  | Today is our tenth wedding anniversary. | 완료 |
+| `anticipate` | anticipate | 동사 | 예상하다, 기대하다 |  | We anticipate a large crowd at the festival. | 완료 |
+| `anxiety` | anxiety | 명사 | 불안, 걱정 |  | She felt anxiety before the interview. | 완료 |
+| `apology` | apology | 명사 | 사과 |  | Please accept my sincere apology. | 완료 |
+| `apparent` | apparent | 형용사 | 분명한, 겉보기의 |  | It was apparent that he was tired. | 완료 |
+| `approve` | approve | 동사 | 승인하다, 찬성하다 |  | The teacher approved our project plan. | 완료 |
+| `approximate` | approximate | 형용사 | 대략의 |  | What is the approximate cost of the trip? | 완료 |
+| `architect` | architect | 명사 | 건축가 |  | The architect designed a new library. | 완료 |
+| `arise` | arise | 동사 | 생기다, 발생하다 |  | A problem arose during the meeting. | 완료 |
+| `artificial` | artificial | 형용사 | 인공의 |  | The cake has no artificial colors. | 완료 |
+| `aspect` | aspect | 명사 | 측면 |  | We discussed every aspect of the plan. | 완료 |
+| `aspire` | aspire | 동사 | 열망하다 |  | She aspires to be a great scientist. | 완료 |
+| `assault` | assault | 명사 | 폭행, 공격 |  | He was arrested for assault. | 완료 |
+| `assemble` | assemble | 동사 | 모이다, 조립하다 |  | We assembled the bookshelf ourselves. | 완료 |
+| `assert` | assert | 동사 | 주장하다 |  | She asserted that she was innocent. | 완료 |
+| `asset` | asset | 명사 | 자산 |  | Good health is a great asset. | 완료 |
+| `assure` | assure | 동사 | 확신시키다, 보장하다 |  | I assure you that everything is fine. | 완료 |
+| `astonish` | astonish | 동사 | 깜짝 놀라게 하다 |  | The news astonished everyone. | 완료 |
+| `attribute` | attribute | 동사 | ~의 덕분으로 돌리다 |  | She attributes her success to hard work. | 완료 |
+| `auction` | auction | 명사 | 경매 |  | The painting was sold at auction. | 완료 |
+| `authentic` | authentic | 형용사 | 진짜의, 진품인 |  | This restaurant serves authentic Italian food. | 완료 |
+| `available` | available | 형용사 | 이용할 수 있는 |  | Are there any seats available? | 완료 |
+| `await` | await | 동사 | 기다리다 |  | A surprise awaits you at home. | 완료 |
+| `awe` | awe | 명사 | 경외감 |  | We looked at the mountain in awe. | 완료 |
+| `ban` | ban | 동사 | 금지하다 |  | Smoking is banned in this building. | 완료 |
 | `bankrupt` | bankrupt | 형용사 | 파산한 |  | The company went bankrupt last year. |  |
-| `bargain` | bargain | 명사 | 싸게 산 물건, 흥정 |  | This jacket was a real bargain. |  |
-| `barrier` | barrier | 명사 | 장벽, 장애물 |  | Language can be a barrier to communication. |  |
-| `beam` | beam | 명사 | 빛줄기, 들보 |  | A beam of light came through the window. |  |
-| `beast` | beast | 명사 | 짐승 |  | The lion is called the king of beasts. |  |
-| `behalf` | behalf | 명사 | 대신, 이익 |  | I thanked them on behalf of my class. |  |
-| `behave` | behave | 동사 | 행동하다 |  | The children behaved well at the museum. |  |
-| `betray` | betray | 동사 | 배신하다 |  | He would never betray his friends. |  |
-| `bias` | bias | 명사 | 편견, 치우침 |  | A good judge has no bias. |  |
-| `biography` | biography | 명사 | 전기(傳記) |  | I read a biography of King Sejong. |  |
+| `bargain` | bargain | 명사 | 싸게 산 물건, 흥정 |  | This jacket was a real bargain. | 완료 |
+| `barrier` | barrier | 명사 | 장벽, 장애물 |  | Language can be a barrier to communication. | 완료 |
+| `beam` | beam | 명사 | 빛줄기, 들보 |  | A beam of light came through the window. | 완료 |
+| `beast` | beast | 명사 | 짐승 |  | The lion is called the king of beasts. | 완료 |
+| `behalf` | behalf | 명사 | 대신, 이익 |  | I thanked them on behalf of my class. | 완료 |
+| `behave` | behave | 동사 | 행동하다 |  | The children behaved well at the museum. | 완료 |
+| `betray` | betray | 동사 | 배신하다 |  | He would never betray his friends. | 완료 |
+| `bias` | bias | 명사 | 편견, 치우침 |  | A good judge has no bias. | 완료 |
+| `biography` | biography | 명사 | 전기(傳記) |  | I read a biography of King Sejong. | 완료 |
 | `biology` | biology | 명사 | 생물학 |  | We learned about cells in biology class. |  |
-| `blast` | blast | 명사 | 폭발, 돌풍 | 밤하늘에 터지는 불꽃놀이 | A blast of cold wind came through the door. |  |
-| `blend` | blend | 동사 | 섞다 |  | Blend the fruit and milk together. |  |
-| `blink` | blink | 동사 | 눈을 깜박이다 |  | She blinked in the bright light. |  |
-| `bold` | bold | 형용사 | 대담한, 굵은 |  | It was a bold decision to move abroad. |  |
-| `boost` | boost | 동사 | 끌어올리다, 북돋우다 |  | The win boosted the team's confidence. |  |
-| `border` | border | 명사 | 국경, 가장자리 |  | They crossed the border by train. |  |
-| `boundary` | boundary | 명사 | 경계 |  | The river forms the boundary of the park. |  |
-| `breed` | breed | 동사 | 기르다, 새끼를 낳다 |  | They breed horses on the farm. |  |
-| `breeze` | breeze | 명사 | 산들바람 |  | A cool breeze blew from the sea. |  |
-| `broadcast` | broadcast | 동사 | 방송하다 |  | The game will be broadcast live. |  |
-| `brute` | brute | 명사 | 짐승 같은 사람 |  | He acted like a brute in the fight. |  |
-| `bulk` | bulk | 명사 | 대부분, 큰 부피 |  | The bulk of the work is finished. |  |
-| `bully` | bully | 명사 | 괴롭히는 사람 |  | We should stand up to a bully. |  |
-| `burden` | burden | 명사 | 부담, 짐 |  | I do not want to be a burden to you. |  |
-| `butcher` | butcher | 명사 | 정육점 주인 |  | We bought meat from the butcher. |  |
-| `buzz` | buzz | 동사 | 윙윙거리다 |  | Bees buzzed around the flowers. |  |
-| `cancel` | cancel | 동사 | 취소하다 |  | The game was canceled because of rain. |  |
+| `blast` | blast | 명사 | 폭발, 돌풍 | 밤하늘에 터지는 불꽃놀이 | A blast of cold wind came through the door. | 완료 |
+| `blend` | blend | 동사 | 섞다 |  | Blend the fruit and milk together. | 완료 |
+| `blink` | blink | 동사 | 눈을 깜박이다 |  | She blinked in the bright light. | 완료 |
+| `bold` | bold | 형용사 | 대담한, 굵은 |  | It was a bold decision to move abroad. | 완료 |
+| `boost` | boost | 동사 | 끌어올리다, 북돋우다 |  | The win boosted the team's confidence. | 완료 |
+| `border` | border | 명사 | 국경, 가장자리 |  | They crossed the border by train. | 완료 |
+| `boundary` | boundary | 명사 | 경계 |  | The river forms the boundary of the park. | 완료 |
+| `breed` | breed | 동사 | 기르다, 새끼를 낳다 |  | They breed horses on the farm. | 완료 |
+| `breeze` | breeze | 명사 | 산들바람 |  | A cool breeze blew from the sea. | 완료 |
+| `broadcast` | broadcast | 동사 | 방송하다 |  | The game will be broadcast live. | 완료 |
+| `brute` | brute | 명사 | 짐승 같은 사람 |  | He acted like a brute in the fight. | 완료 |
+| `bulk` | bulk | 명사 | 대부분, 큰 부피 |  | The bulk of the work is finished. | 완료 |
+| `bully` | bully | 명사 | 괴롭히는 사람 |  | We should stand up to a bully. | 완료 |
+| `burden` | burden | 명사 | 부담, 짐 |  | I do not want to be a burden to you. | 완료 |
+| `butcher` | butcher | 명사 | 정육점 주인 |  | We bought meat from the butcher. | 완료 |
+| `buzz` | buzz | 동사 | 윙윙거리다 |  | Bees buzzed around the flowers. | 완료 |
+| `cancel` | cancel | 동사 | 취소하다 |  | The game was canceled because of rain. | 완료 |
 | `cancer` | cancer | 명사 | 암 |  | Doctors are looking for a cure for cancer. |  |
-| `candidate` | candidate | 명사 | 후보자, 지원자 |  | There are three candidates for class president. |  |
-| `capture` | capture | 동사 | 붙잡다, 포착하다 |  | The photo captured a beautiful moment. |  |
-| `carve` | carve | 동사 | 조각하다, 새기다 |  | He carved a bear out of wood. |  |
-| `cater` | cater | 동사 | 음식을 공급하다, 요구를 채우다 |  | The restaurant caters for large parties. |  |
-| `caution` | caution | 명사 | 조심, 주의 |  | Cross the road with caution. |  |
-| `cease` | cease | 동사 | 그치다, 중단하다 |  | The rain ceased in the evening. |  |
-| `celebrity` | celebrity | 명사 | 유명인 |  | The celebrity waved to her fans. |  |
-| `censor` | censor | 동사 | 검열하다 |  | Some scenes were censored from the film. |  |
-| `certificate` | certificate | 명사 | 증명서, 자격증 |  | She received a certificate for the course. |  |
-| `chamber` | chamber | 명사 | 방, 회의실 |  | The meeting was held in the council chamber. |  |
-| `chaos` | chaos | 명사 | 혼돈, 대혼란 |  | The traffic jam caused chaos in the city. |  |
-| `charity` | charity | 명사 | 자선, 자선 단체 |  | She gives money to charity every month. |  |
-| `chemical` | chemical | 명사 | 화학 물질 |  | Some chemicals are harmful to the skin. |  |
-| `chill` | chill | 명사 | 냉기, 한기 |  | There is a chill in the air this morning. |  |
-| `chorus` | chorus | 명사 | 합창, 후렴 |  | Everyone joined in the chorus. |  |
-| `chronic` | chronic | 형용사 | 만성의 |  | He suffers from chronic back pain. |  |
-| `circulate` | circulate | 동사 | 순환하다, 돌다 |  | Blood circulates through the body. |  |
-| `cite` | cite | 동사 | 인용하다, 예로 들다 |  | She cited two studies in her report. |  |
-| `clash` | clash | 명사 | 충돌 |  | There was a clash between the two groups. |  |
-| `clause` | clause | 명사 | 절, 조항 |  | This sentence has two clauses. |  |
-| `cling` | cling | 동사 | 달라붙다, 매달리다 |  | The child clung to her mother. |  |
-| `cluster` | cluster | 명사 | 무리, 송이 |  | A cluster of stars shone in the sky. |  |
-| `coincide` | coincide | 동사 | 동시에 일어나다, 일치하다 |  | My birthday coincides with the holiday. |  |
-| `collaborate` | collaborate | 동사 | 협력하다 |  | The two teams collaborated on the project. |  |
-| `collapse` | collapse | 동사 | 무너지다 |  | The old bridge collapsed in the storm. |  |
-| `colleague` | colleague | 명사 | 동료 |  | She had lunch with her colleagues. |  |
-| `colony` | colony | 명사 | 식민지, 군집 |  | The country was once a colony. |  |
-| `combat` | combat | 명사 | 전투 |  | The soldiers were trained for combat. |  |
-| `commit` | commit | 동사 | 저지르다, 전념하다 |  | He committed himself to helping others. |  |
-| `commodity` | commodity | 명사 | 상품, 원자재 |  | Oil is a valuable commodity. |  |
-| `communist` | communist | 명사 | 공산주의자 |  | The country was ruled by a communist party. |  |
-| `companion` | companion | 명사 | 동반자, 친구 |  | A dog is a loyal companion. |  |
-| `compatible` | compatible | 형용사 | 호환되는, 잘 맞는 |  | Is this charger compatible with my phone? |  |
-| `compel` | compel | 동사 | 강요하다 |  | The rain compelled us to stay inside. |  |
-| `compensate` | compensate | 동사 | 보상하다 |  | The company compensated him for the damage. |  |
-| `compete` | compete | 동사 | 경쟁하다 |  | Ten teams will compete in the tournament. |  |
-| `compile` | compile | 동사 | 엮다, 편집하다 |  | She compiled a list of useful websites. |  |
-| `complement` | complement | 동사 | 보완하다 |  | The sauce complements the fish perfectly. |  |
-| `component` | component | 명사 | 구성 요소, 부품 |  | The engine has many components. |  |
-| `compose` | compose | 동사 | 구성하다, 작곡하다 |  | He composed a song for his mother. |  |
-| `compound` | compound | 명사 | 화합물, 복합체 |  | Water is a compound of hydrogen and oxygen. |  |
-| `comprehend` | comprehend | 동사 | 이해하다 |  | I could not comprehend the long sentence. |  |
-| `comprise` | comprise | 동사 | 구성되다, 포함하다 |  | The team comprises ten members. |  |
-| `compromise` | compromise | 명사 | 타협 |  | After a long talk, they reached a compromise. |  |
+| `candidate` | candidate | 명사 | 후보자, 지원자 |  | There are three candidates for class president. | 완료 |
+| `capture` | capture | 동사 | 붙잡다, 포착하다 |  | The photo captured a beautiful moment. | 완료 |
+| `carve` | carve | 동사 | 조각하다, 새기다 |  | He carved a bear out of wood. | 완료 |
+| `cater` | cater | 동사 | 음식을 공급하다, 요구를 채우다 |  | The restaurant caters for large parties. | 완료 |
+| `caution` | caution | 명사 | 조심, 주의 |  | Cross the road with caution. | 완료 |
+| `cease` | cease | 동사 | 그치다, 중단하다 |  | The rain ceased in the evening. | 완료 |
+| `celebrity` | celebrity | 명사 | 유명인 |  | The celebrity waved to her fans. | 완료 |
+| `censor` | censor | 동사 | 검열하다 |  | Some scenes were censored from the film. | 완료 |
+| `certificate` | certificate | 명사 | 증명서, 자격증 |  | She received a certificate for the course. | 완료 |
+| `chamber` | chamber | 명사 | 방, 회의실 |  | The meeting was held in the council chamber. | 완료 |
+| `chaos` | chaos | 명사 | 혼돈, 대혼란 |  | The traffic jam caused chaos in the city. | 완료 |
+| `charity` | charity | 명사 | 자선, 자선 단체 |  | She gives money to charity every month. | 완료 |
+| `chemical` | chemical | 명사 | 화학 물질 |  | Some chemicals are harmful to the skin. | 완료 |
+| `chill` | chill | 명사 | 냉기, 한기 |  | There is a chill in the air this morning. | 완료 |
+| `chorus` | chorus | 명사 | 합창, 후렴 |  | Everyone joined in the chorus. | 완료 |
+| `chronic` | chronic | 형용사 | 만성의 |  | He suffers from chronic back pain. | 완료 |
+| `circulate` | circulate | 동사 | 순환하다, 돌다 |  | Blood circulates through the body. | 완료 |
+| `cite` | cite | 동사 | 인용하다, 예로 들다 |  | She cited two studies in her report. | 완료 |
+| `clash` | clash | 명사 | 충돌 |  | There was a clash between the two groups. | 완료 |
+| `clause` | clause | 명사 | 절, 조항 |  | This sentence has two clauses. | 완료 |
+| `cling` | cling | 동사 | 달라붙다, 매달리다 |  | The child clung to her mother. | 완료 |
+| `cluster` | cluster | 명사 | 무리, 송이 |  | A cluster of stars shone in the sky. | 완료 |
+| `coincide` | coincide | 동사 | 동시에 일어나다, 일치하다 |  | My birthday coincides with the holiday. | 완료 |
+| `collaborate` | collaborate | 동사 | 협력하다 |  | The two teams collaborated on the project. | 완료 |
+| `collapse` | collapse | 동사 | 무너지다 |  | The old bridge collapsed in the storm. | 완료 |
+| `colleague` | colleague | 명사 | 동료 |  | She had lunch with her colleagues. | 완료 |
+| `colony` | colony | 명사 | 식민지, 군집 |  | The country was once a colony. | 완료 |
+| `combat` | combat | 명사 | 전투 |  | The soldiers were trained for combat. | 완료 |
+| `commit` | commit | 동사 | 저지르다, 전념하다 |  | He committed himself to helping others. | 완료 |
+| `commodity` | commodity | 명사 | 상품, 원자재 |  | Oil is a valuable commodity. | 완료 |
+| `communist` | communist | 명사 | 공산주의자 |  | The country was ruled by a communist party. | 완료 |
+| `companion` | companion | 명사 | 동반자, 친구 |  | A dog is a loyal companion. | 완료 |
+| `compatible` | compatible | 형용사 | 호환되는, 잘 맞는 |  | Is this charger compatible with my phone? | 완료 |
+| `compel` | compel | 동사 | 강요하다 |  | The rain compelled us to stay inside. | 완료 |
+| `compensate` | compensate | 동사 | 보상하다 |  | The company compensated him for the damage. | 완료 |
+| `compete` | compete | 동사 | 경쟁하다 |  | Ten teams will compete in the tournament. | 완료 |
+| `compile` | compile | 동사 | 엮다, 편집하다 |  | She compiled a list of useful websites. | 완료 |
+| `complement` | complement | 동사 | 보완하다 |  | The sauce complements the fish perfectly. | 완료 |
+| `component` | component | 명사 | 구성 요소, 부품 |  | The engine has many components. | 완료 |
+| `compose` | compose | 동사 | 구성하다, 작곡하다 |  | He composed a song for his mother. | 완료 |
+| `compound` | compound | 명사 | 화합물, 복합체 |  | Water is a compound of hydrogen and oxygen. | 완료 |
+| `comprehend` | comprehend | 동사 | 이해하다 |  | I could not comprehend the long sentence. | 완료 |
+| `comprise` | comprise | 동사 | 구성되다, 포함하다 |  | The team comprises ten members. | 완료 |
+| `compromise` | compromise | 명사 | 타협 |  | After a long talk, they reached a compromise. | 완료 |
 | `conceal` | conceal | 동사 | 숨기다 |  | He tried to conceal his feelings. |  |
-| `conceive` | conceive | 동사 | 생각해 내다, 상상하다 |  | She conceived the idea during a walk. |  |
-| `conclude` | conclude | 동사 | 결론짓다, 끝내다 |  | We concluded that the plan would work. |  |
-| `concrete` | concrete | 형용사 | 구체적인, 콘크리트의 |  | Give me a concrete example. |  |
-| `condemn` | condemn | 동사 | 비난하다 |  | Many people condemned the unfair decision. |  |
-| `conduct` | conduct | 동사 | 실시하다, 지휘하다 |  | The students conducted a survey. |  |
-| `confer` | confer | 동사 | 상의하다, 수여하다 |  | The doctors conferred about the patient. |  |
-| `confess` | confess | 동사 | 고백하다, 자백하다 |  | He confessed that he had broken the vase. |  |
-| `confide` | confide | 동사 | 비밀을 털어놓다 |  | She confided her worries to her sister. |  |
-| `confine` | confine | 동사 | 가두다, 한정하다 |  | The bird was confined in a small cage. |  |
-| `conform` | conform | 동사 | 따르다, 순응하다 |  | Students must conform to the school rules. |  |
-| `confront` | confront | 동사 | 맞서다, 직면하다 |  | She confronted her fear of water. |  |
-| `congress` | congress | 명사 | 의회, 회의 |  | The law was passed by congress. |  |
-| `conscience` | conscience | 명사 | 양심 |  | My conscience told me to tell the truth. |  |
-| `consent` | consent | 명사 | 동의, 허락 |  | You need your parents' consent to join. |  |
-| `conserve` | conserve | 동사 | 보존하다, 아끼다 |  | We must conserve water and energy. |  |
-| `consist` | consist | 동사 | ~로 이루어지다 |  | The class consists of thirty students. |  |
-| `constitute` | constitute | 동사 | 구성하다 |  | Women constitute half of the team. |  |
-| `constrain` | constrain | 동사 | 제한하다, 억누르다 |  | Lack of money constrained our plans. |  |
-| `consult` | consult | 동사 | 상담하다, 참고하다 |  | You should consult a doctor about that cough. |  |
-| `contemporary` | contemporary | 형용사 | 현대의, 동시대의 |  | She likes contemporary art. |  |
-| `contend` | contend | 동사 | 주장하다, 겨루다 |  | Three teams are contending for the title. |  |
-| `contradict` | contradict | 동사 | 모순되다, 반박하다 |  | His actions contradict his words. |  |
-| `contrary` | contrary | 형용사 | 반대의 |  | Contrary to my fears, the test was easy. |  |
-| `contrast` | contrast | 명사 | 대조, 차이 |  | There is a sharp contrast between the two cities. |  |
-| `controversy` | controversy | 명사 | 논란 |  | The new rule caused a lot of controversy. |  |
-| `convene` | convene | 동사 | 소집하다, 모이다 |  | The committee will convene next week. |  |
-| `convert` | convert | 동사 | 전환하다, 바꾸다 |  | We converted the garage into a study. |  |
-| `convey` | convey | 동사 | 전달하다 |  | Colors can convey different feelings. |  |
-| `convict` | convict | 동사 | 유죄를 선고하다 |  | He was convicted of stealing. |  |
-| `cooperate` | cooperate | 동사 | 협력하다 |  | Everyone cooperated to clean the park. |  |
-| `coordinate` | coordinate | 동사 | 조정하다, 조화시키다 |  | She coordinated the school event. |  |
-| `copyright` | copyright | 명사 | 저작권 |  | The song is protected by copyright. |  |
-| `cord` | cord | 명사 | 끈, 전선 |  | Do not pull the cord of the lamp. |  |
-| `corporate` | corporate | 형용사 | 기업의, 법인의 |  | He works in a corporate office. |  |
-| `correspond` | correspond | 동사 | 일치하다, 편지를 주고받다 |  | The results correspond with our guess. |  |
-| `corrupt` | corrupt | 형용사 | 부패한 |  | The corrupt official was arrested. |  |
-| `counsel` | counsel | 명사 | 조언, 상담 |  | She gave me wise counsel. |  |
-| `counterpart` | counterpart | 명사 | 상대방, 대응하는 것 |  | The minister met his Japanese counterpart. |  |
-| `coupon` | coupon | 명사 | 쿠폰 |  | I used a coupon to get a free drink. |  |
-| `courage` | courage | 명사 | 용기 |  | It takes courage to say sorry. |  |
-| `craft` | craft | 명사 | 공예, 기술 |  | She sells her crafts at the market. |  |
-| `craze` | craze | 명사 | 열풍, 대유행 |  | The dance became a craze among teenagers. |  |
-| `credible` | credible | 형용사 | 믿을 만한 |  | The witness gave a credible account. |  |
-| `creep` | creep | 동사 | 살금살금 가다 |  | The cat crept toward the bird. |  |
-| `crew` | crew | 명사 | 승무원, 팀 |  | The crew welcomed us onto the plane. |  |
+| `conceive` | conceive | 동사 | 생각해 내다, 상상하다 |  | She conceived the idea during a walk. | 완료 |
+| `conclude` | conclude | 동사 | 결론짓다, 끝내다 |  | We concluded that the plan would work. | 완료 |
+| `concrete` | concrete | 형용사 | 구체적인, 콘크리트의 |  | Give me a concrete example. | 완료 |
+| `condemn` | condemn | 동사 | 비난하다 |  | Many people condemned the unfair decision. | 완료 |
+| `conduct` | conduct | 동사 | 실시하다, 지휘하다 |  | The students conducted a survey. | 완료 |
+| `confer` | confer | 동사 | 상의하다, 수여하다 |  | The doctors conferred about the patient. | 완료 |
+| `confess` | confess | 동사 | 고백하다, 자백하다 |  | He confessed that he had broken the vase. | 완료 |
+| `confide` | confide | 동사 | 비밀을 털어놓다 |  | She confided her worries to her sister. | 완료 |
+| `confine` | confine | 동사 | 가두다, 한정하다 |  | The bird was confined in a small cage. | 완료 |
+| `conform` | conform | 동사 | 따르다, 순응하다 |  | Students must conform to the school rules. | 완료 |
+| `confront` | confront | 동사 | 맞서다, 직면하다 |  | She confronted her fear of water. | 완료 |
+| `congress` | congress | 명사 | 의회, 회의 |  | The law was passed by congress. | 완료 |
+| `conscience` | conscience | 명사 | 양심 |  | My conscience told me to tell the truth. | 완료 |
+| `consent` | consent | 명사 | 동의, 허락 |  | You need your parents' consent to join. | 완료 |
+| `conserve` | conserve | 동사 | 보존하다, 아끼다 |  | We must conserve water and energy. | 완료 |
+| `consist` | consist | 동사 | ~로 이루어지다 |  | The class consists of thirty students. | 완료 |
+| `constitute` | constitute | 동사 | 구성하다 |  | Women constitute half of the team. | 완료 |
+| `constrain` | constrain | 동사 | 제한하다, 억누르다 |  | Lack of money constrained our plans. | 완료 |
+| `consult` | consult | 동사 | 상담하다, 참고하다 |  | You should consult a doctor about that cough. | 완료 |
+| `contemporary` | contemporary | 형용사 | 현대의, 동시대의 |  | She likes contemporary art. | 완료 |
+| `contend` | contend | 동사 | 주장하다, 겨루다 |  | Three teams are contending for the title. | 완료 |
+| `contradict` | contradict | 동사 | 모순되다, 반박하다 |  | His actions contradict his words. | 완료 |
+| `contrary` | contrary | 형용사 | 반대의 |  | Contrary to my fears, the test was easy. | 완료 |
+| `contrast` | contrast | 명사 | 대조, 차이 |  | There is a sharp contrast between the two cities. | 완료 |
+| `controversy` | controversy | 명사 | 논란 |  | The new rule caused a lot of controversy. | 완료 |
+| `convene` | convene | 동사 | 소집하다, 모이다 |  | The committee will convene next week. | 완료 |
+| `convert` | convert | 동사 | 전환하다, 바꾸다 |  | We converted the garage into a study. | 완료 |
+| `convey` | convey | 동사 | 전달하다 |  | Colors can convey different feelings. | 완료 |
+| `convict` | convict | 동사 | 유죄를 선고하다 |  | He was convicted of stealing. | 완료 |
+| `cooperate` | cooperate | 동사 | 협력하다 |  | Everyone cooperated to clean the park. | 완료 |
+| `coordinate` | coordinate | 동사 | 조정하다, 조화시키다 |  | She coordinated the school event. | 완료 |
+| `copyright` | copyright | 명사 | 저작권 |  | The song is protected by copyright. | 완료 |
+| `cord` | cord | 명사 | 끈, 전선 |  | Do not pull the cord of the lamp. | 완료 |
+| `corporate` | corporate | 형용사 | 기업의, 법인의 |  | He works in a corporate office. | 완료 |
+| `correspond` | correspond | 동사 | 일치하다, 편지를 주고받다 |  | The results correspond with our guess. | 완료 |
+| `corrupt` | corrupt | 형용사 | 부패한 |  | The corrupt official was arrested. | 완료 |
+| `counsel` | counsel | 명사 | 조언, 상담 |  | She gave me wise counsel. | 완료 |
+| `counterpart` | counterpart | 명사 | 상대방, 대응하는 것 |  | The minister met his Japanese counterpart. | 완료 |
+| `coupon` | coupon | 명사 | 쿠폰 |  | I used a coupon to get a free drink. | 완료 |
+| `courage` | courage | 명사 | 용기 |  | It takes courage to say sorry. | 완료 |
+| `craft` | craft | 명사 | 공예, 기술 |  | She sells her crafts at the market. | 완료 |
+| `craze` | craze | 명사 | 열풍, 대유행 |  | The dance became a craze among teenagers. | 완료 |
+| `credible` | credible | 형용사 | 믿을 만한 |  | The witness gave a credible account. | 완료 |
+| `creep` | creep | 동사 | 살금살금 가다 |  | The cat crept toward the bird. | 완료 |
+| `crew` | crew | 명사 | 승무원, 팀 |  | The crew welcomed us onto the plane. | 완료 |
 | `criterion` | criterion | 명사 | 기준 |  | Price is one criterion for choosing a phone. |  |
-| `critic` | critic | 명사 | 비평가 |  | The critic praised the new film. |  |
-| `crucial` | crucial | 형용사 | 결정적인, 매우 중요한 |  | Sleep is crucial for good health. |  |
-| `crush` | crush | 동사 | 으깨다, 눌러 부수다 |  | Crush the garlic before you cook it. |  |
-| `cultivate` | cultivate | 동사 | 경작하다, 기르다 |  | Farmers cultivate rice in this valley. |  |
-| `currency` | currency | 명사 | 통화, 화폐 |  | The won is the currency of Korea. |  |
+| `critic` | critic | 명사 | 비평가 |  | The critic praised the new film. | 완료 |
+| `crucial` | crucial | 형용사 | 결정적인, 매우 중요한 |  | Sleep is crucial for good health. | 완료 |
+| `crush` | crush | 동사 | 으깨다, 눌러 부수다 |  | Crush the garlic before you cook it. | 완료 |
+| `cultivate` | cultivate | 동사 | 경작하다, 기르다 |  | Farmers cultivate rice in this valley. | 완료 |
+| `currency` | currency | 명사 | 통화, 화폐 |  | The won is the currency of Korea. | 완료 |
 | `curriculum` | curriculum | 명사 | 교육 과정 |  | Music is part of the school curriculum. |  |
-| `curse` | curse | 명사 | 저주, 욕 |  | The witch put a curse on the prince. |  |
-| `custody` | custody | 명사 | 양육권, 구금 |  | The mother was given custody of the child. |  |
-| `custom` | custom | 명사 | 관습, 풍습 |  | It is a custom to take off shoes at home. |  |
-| `cynical` | cynical | 형용사 | 냉소적인 |  | He is cynical about politics. |  |
-| `damp` | damp | 형용사 | 축축한 |  | The towel is still damp. |  |
-| `dash` | dash | 동사 | 돌진하다, 급히 가다 |  | She dashed to catch the bus. |  |
-| `database` | database | 명사 | 데이터베이스 |  | The names are stored in a database. |  |
-| `data` | data | 명사 | 자료, 데이터 |  | We collected data from fifty students. |  |
-| `decade` | decade | 명사 | 10년 |  | The city has changed a lot in a decade. |  |
-| `decay` | decay | 동사 | 썩다, 부패하다 |  | Sugar can cause your teeth to decay. |  |
-| `decent` | decent | 형용사 | 괜찮은, 예의 바른 |  | He earns a decent salary. |  |
-| `declare` | declare | 동사 | 선언하다, 신고하다 |  | The country declared its independence. |  |
-| `decline` | decline | 동사 | 감소하다, 거절하다 |  | The number of students has declined. |  |
-| `dedicate` | dedicate | 동사 | 바치다, 헌신하다 |  | She dedicated her life to teaching. |  |
-| `defeat` | defeat | 동사 | 이기다, 패배시키다 |  | Our team defeated the champions. |  |
-| `defend` | defend | 동사 | 방어하다, 지키다 |  | The players defended their goal well. |  |
-| `deficiency` | deficiency | 명사 | 결핍, 부족 |  | A vitamin deficiency can make you tired. |  |
-| `deficit` | deficit | 명사 | 적자, 부족액 |  | The company has a large deficit. |  |
-| `delegate` | delegate | 명사 | 대표, 대리인 |  | Each school sent two delegates. |  |
-| `deliberate` | deliberate | 형용사 | 고의적인, 신중한 |  | It was a deliberate choice, not an accident. |  |
-| `delicate` | delicate | 형용사 | 섬세한, 깨지기 쉬운 |  | Be careful with the delicate glass. |  |
-| `democracy` | democracy | 명사 | 민주주의 |  | Voting is an important part of democracy. |  |
-| `democrat` | democrat | 명사 | 민주주의자, 민주당원 |  | He is a strong democrat. |  |
-| `demon` | demon | 명사 | 악마 |  | The hero fought a demon in the story. |  |
-| `dense` | dense | 형용사 | 빽빽한, 짙은 |  | We walked through a dense forest. |  |
-| `depart` | depart | 동사 | 출발하다, 떠나다 |  | The train departs at six o'clock. |  |
-| `depict` | depict | 동사 | 묘사하다, 그리다 |  | The painting depicts a quiet village. |  |
-| `deposit` | deposit | 명사 | 예금, 보증금 |  | I made a deposit at the bank. |  |
-| `deprive` | deprive | 동사 | 빼앗다 |  | The noise deprived me of sleep. |  |
-| `derive` | derive | 동사 | 끌어내다, 유래하다 |  | The word derives from Latin. |  |
-| `descend` | descend | 동사 | 내려가다 |  | The plane began to descend. |  |
-| `designate` | designate | 동사 | 지정하다 |  | This area is designated as a park. |  |
-| `despair` | despair | 명사 | 절망 |  | He cried out in despair. |  |
-| `destination` | destination | 명사 | 목적지 |  | We reached our destination at noon. |  |
-| `destiny` | destiny | 명사 | 운명 |  | She believes it was her destiny to become a doctor. |  |
-| `destruction` | destruction | 명사 | 파괴 |  | The storm caused great destruction. |  |
-| `detach` | detach | 동사 | 떼어 내다 |  | Detach the form and send it back. |  |
-| `device` | device | 명사 | 장치, 기기 |  | A phone is a useful device. |  |
-| `devil` | devil | 명사 | 악마 |  | The devil appears in many old stories. |  |
-| `devise` | devise | 동사 | 고안하다 |  | They devised a new way to save water. |  |
-| `devote` | devote | 동사 | 바치다, 쏟다 |  | He devotes his weekends to his family. |  |
-| `diabetes` | diabetes | 명사 | 당뇨병 |  | People with diabetes must watch their diet. |  |
-| `dictate` | dictate | 동사 | 받아쓰게 하다, 지시하다 |  | The teacher dictated a short passage. |  |
-| `differ` | differ | 동사 | 다르다 |  | Opinions differ on this issue. |  |
-| `dignity` | dignity | 명사 | 존엄, 품위 |  | Everyone deserves to be treated with dignity. |  |
-| `dimension` | dimension | 명사 | 치수, 차원 |  | What are the dimensions of the room? |  |
-| `diminish` | diminish | 동사 | 줄어들다, 줄이다 |  | The pain diminished after an hour. |  |
-| `dine` | dine | 동사 | 식사하다 |  | We dined at a restaurant by the river. |  |
-| `dip` | dip | 동사 | 살짝 담그다 |  | Dip the bread in the soup. |  |
-| `diplomat` | diplomat | 명사 | 외교관 |  | Her father works as a diplomat in France. |  |
-| `disaster` | disaster | 명사 | 재난, 재해 |  | The flood was a terrible disaster. |  |
-| `discourse` | discourse | 명사 | 담화, 담론 |  | The book is a discourse on education. |  |
-| `discriminate` | discriminate | 동사 | 차별하다, 구별하다 |  | It is wrong to discriminate against anyone. |  |
-| `dismiss` | dismiss | 동사 | 해고하다, 묵살하다 |  | The class was dismissed early today. |  |
-| `dispute` | dispute | 명사 | 분쟁, 논쟁 |  | The two neighbors settled their dispute. |  |
-| `disrupt` | disrupt | 동사 | 방해하다, 지장을 주다 |  | The storm disrupted train services. |  |
-| `distinct` | distinct | 형용사 | 뚜렷한, 별개의 |  | The two languages are quite distinct. |  |
-| `distinguish` | distinguish | 동사 | 구별하다 |  | Can you distinguish between the twins? |  |
-| `distort` | distort | 동사 | 왜곡하다, 비틀다 |  | The mirror distorted my face. |  |
-| `distract` | distract | 동사 | 주의를 흩뜨리다 |  | The noise distracted me from my homework. |  |
-| `distribute` | distribute | 동사 | 나누어 주다, 분배하다 |  | The teacher distributed the test papers. |  |
-| `diverse` | diverse | 형용사 | 다양한 |  | The city has a diverse population. |  |
-| `divine` | divine | 형용사 | 신의, 신성한 |  | The temple was a divine place to them. |  |
-| `domain` | domain | 명사 | 영역, 분야 |  | This question is outside my domain. |  |
-| `dominate` | dominate | 동사 | 지배하다, 우세하다 |  | Our team dominated the second half. |  |
-| `dose` | dose | 명사 | (약의) 1회분 |  | Take one dose of the medicine after meals. |  |
-| `draft` | draft | 명사 | 초안 |  | I wrote the first draft of my essay. |  |
-| `drain` | drain | 동사 | 물을 빼다 |  | Drain the water from the pasta. |  |
-| `dread` | dread | 동사 | 몹시 두려워하다 |  | I dread going to the dentist. |  |
-| `drown` | drown | 동사 | 물에 빠져 죽다, 익사하다 | 수영장에서 구명 튜브를 던져 주는 안전요원(위험한 모습 없이) | Wear a life jacket so you do not drown. |  |
-| `dual` | dual | 형용사 | 이중의 |  | The room serves a dual purpose. |  |
-| `dull` | dull | 형용사 | 지루한, 무딘 |  | The lecture was long and dull. |  |
-| `dwell` | dwell | 동사 | 살다, 거주하다 |  | They dwell in a small village by the sea. |  |
+| `curse` | curse | 명사 | 저주, 욕 |  | The witch put a curse on the prince. | 완료 |
+| `custody` | custody | 명사 | 양육권, 구금 |  | The mother was given custody of the child. | 완료 |
+| `custom` | custom | 명사 | 관습, 풍습 |  | It is a custom to take off shoes at home. | 완료 |
+| `cynical` | cynical | 형용사 | 냉소적인 |  | He is cynical about politics. | 완료 |
+| `damp` | damp | 형용사 | 축축한 |  | The towel is still damp. | 완료 |
+| `dash` | dash | 동사 | 돌진하다, 급히 가다 |  | She dashed to catch the bus. | 완료 |
+| `database` | database | 명사 | 데이터베이스 |  | The names are stored in a database. | 완료 |
+| `data` | data | 명사 | 자료, 데이터 |  | We collected data from fifty students. | 완료 |
+| `decade` | decade | 명사 | 10년 |  | The city has changed a lot in a decade. | 완료 |
+| `decay` | decay | 동사 | 썩다, 부패하다 |  | Sugar can cause your teeth to decay. | 완료 |
+| `decent` | decent | 형용사 | 괜찮은, 예의 바른 |  | He earns a decent salary. | 완료 |
+| `declare` | declare | 동사 | 선언하다, 신고하다 |  | The country declared its independence. | 완료 |
+| `decline` | decline | 동사 | 감소하다, 거절하다 |  | The number of students has declined. | 완료 |
+| `dedicate` | dedicate | 동사 | 바치다, 헌신하다 |  | She dedicated her life to teaching. | 완료 |
+| `defeat` | defeat | 동사 | 이기다, 패배시키다 |  | Our team defeated the champions. | 완료 |
+| `defend` | defend | 동사 | 방어하다, 지키다 |  | The players defended their goal well. | 완료 |
+| `deficiency` | deficiency | 명사 | 결핍, 부족 |  | A vitamin deficiency can make you tired. | 완료 |
+| `deficit` | deficit | 명사 | 적자, 부족액 |  | The company has a large deficit. | 완료 |
+| `delegate` | delegate | 명사 | 대표, 대리인 |  | Each school sent two delegates. | 완료 |
+| `deliberate` | deliberate | 형용사 | 고의적인, 신중한 |  | It was a deliberate choice, not an accident. | 완료 |
+| `delicate` | delicate | 형용사 | 섬세한, 깨지기 쉬운 |  | Be careful with the delicate glass. | 완료 |
+| `democracy` | democracy | 명사 | 민주주의 |  | Voting is an important part of democracy. | 완료 |
+| `democrat` | democrat | 명사 | 민주주의자, 민주당원 |  | He is a strong democrat. | 완료 |
+| `demon` | demon | 명사 | 악마 |  | The hero fought a demon in the story. | 완료 |
+| `dense` | dense | 형용사 | 빽빽한, 짙은 |  | We walked through a dense forest. | 완료 |
+| `depart` | depart | 동사 | 출발하다, 떠나다 |  | The train departs at six o'clock. | 완료 |
+| `depict` | depict | 동사 | 묘사하다, 그리다 |  | The painting depicts a quiet village. | 완료 |
+| `deposit` | deposit | 명사 | 예금, 보증금 |  | I made a deposit at the bank. | 완료 |
+| `deprive` | deprive | 동사 | 빼앗다 |  | The noise deprived me of sleep. | 완료 |
+| `derive` | derive | 동사 | 끌어내다, 유래하다 |  | The word derives from Latin. | 완료 |
+| `descend` | descend | 동사 | 내려가다 |  | The plane began to descend. | 완료 |
+| `designate` | designate | 동사 | 지정하다 |  | This area is designated as a park. | 완료 |
+| `despair` | despair | 명사 | 절망 |  | He cried out in despair. | 완료 |
+| `destination` | destination | 명사 | 목적지 |  | We reached our destination at noon. | 완료 |
+| `destiny` | destiny | 명사 | 운명 |  | She believes it was her destiny to become a doctor. | 완료 |
+| `destruction` | destruction | 명사 | 파괴 |  | The storm caused great destruction. | 완료 |
+| `detach` | detach | 동사 | 떼어 내다 |  | Detach the form and send it back. | 완료 |
+| `device` | device | 명사 | 장치, 기기 |  | A phone is a useful device. | 완료 |
+| `devil` | devil | 명사 | 악마 |  | The devil appears in many old stories. | 완료 |
+| `devise` | devise | 동사 | 고안하다 |  | They devised a new way to save water. | 완료 |
+| `devote` | devote | 동사 | 바치다, 쏟다 |  | He devotes his weekends to his family. | 완료 |
+| `diabetes` | diabetes | 명사 | 당뇨병 |  | People with diabetes must watch their diet. | 완료 |
+| `dictate` | dictate | 동사 | 받아쓰게 하다, 지시하다 |  | The teacher dictated a short passage. | 완료 |
+| `differ` | differ | 동사 | 다르다 |  | Opinions differ on this issue. | 완료 |
+| `dignity` | dignity | 명사 | 존엄, 품위 |  | Everyone deserves to be treated with dignity. | 완료 |
+| `dimension` | dimension | 명사 | 치수, 차원 |  | What are the dimensions of the room? | 완료 |
+| `diminish` | diminish | 동사 | 줄어들다, 줄이다 |  | The pain diminished after an hour. | 완료 |
+| `dine` | dine | 동사 | 식사하다 |  | We dined at a restaurant by the river. | 완료 |
+| `dip` | dip | 동사 | 살짝 담그다 |  | Dip the bread in the soup. | 완료 |
+| `diplomat` | diplomat | 명사 | 외교관 |  | Her father works as a diplomat in France. | 완료 |
+| `disaster` | disaster | 명사 | 재난, 재해 |  | The flood was a terrible disaster. | 완료 |
+| `discourse` | discourse | 명사 | 담화, 담론 |  | The book is a discourse on education. | 완료 |
+| `discriminate` | discriminate | 동사 | 차별하다, 구별하다 |  | It is wrong to discriminate against anyone. | 완료 |
+| `dismiss` | dismiss | 동사 | 해고하다, 묵살하다 |  | The class was dismissed early today. | 완료 |
+| `dispute` | dispute | 명사 | 분쟁, 논쟁 |  | The two neighbors settled their dispute. | 완료 |
+| `disrupt` | disrupt | 동사 | 방해하다, 지장을 주다 |  | The storm disrupted train services. | 완료 |
+| `distinct` | distinct | 형용사 | 뚜렷한, 별개의 |  | The two languages are quite distinct. | 완료 |
+| `distinguish` | distinguish | 동사 | 구별하다 |  | Can you distinguish between the twins? | 완료 |
+| `distort` | distort | 동사 | 왜곡하다, 비틀다 |  | The mirror distorted my face. | 완료 |
+| `distract` | distract | 동사 | 주의를 흩뜨리다 |  | The noise distracted me from my homework. | 완료 |
+| `distribute` | distribute | 동사 | 나누어 주다, 분배하다 |  | The teacher distributed the test papers. | 완료 |
+| `diverse` | diverse | 형용사 | 다양한 |  | The city has a diverse population. | 완료 |
+| `divine` | divine | 형용사 | 신의, 신성한 |  | The temple was a divine place to them. | 완료 |
+| `domain` | domain | 명사 | 영역, 분야 |  | This question is outside my domain. | 완료 |
+| `dominate` | dominate | 동사 | 지배하다, 우세하다 |  | Our team dominated the second half. | 완료 |
+| `dose` | dose | 명사 | (약의) 1회분 |  | Take one dose of the medicine after meals. | 완료 |
+| `draft` | draft | 명사 | 초안 |  | I wrote the first draft of my essay. | 완료 |
+| `drain` | drain | 동사 | 물을 빼다 |  | Drain the water from the pasta. | 완료 |
+| `dread` | dread | 동사 | 몹시 두려워하다 |  | I dread going to the dentist. | 완료 |
+| `drown` | drown | 동사 | 물에 빠져 죽다, 익사하다 | 수영장에서 구명 튜브를 던져 주는 안전요원(위험한 모습 없이) | Wear a life jacket so you do not drown. | 완료 |
+| `dual` | dual | 형용사 | 이중의 |  | The room serves a dual purpose. | 완료 |
+| `dull` | dull | 형용사 | 지루한, 무딘 |  | The lecture was long and dull. | 완료 |
+| `dwell` | dwell | 동사 | 살다, 거주하다 |  | They dwell in a small village by the sea. | 완료 |
 | `dynamic` | dynamic | 형용사 | 역동적인 |  | Seoul is a dynamic city. |  |
-| `eager` | eager | 형용사 | 간절히 바라는, 열심인 |  | The children were eager to open their gifts. |  |
-| `efficient` | efficient | 형용사 | 효율적인 |  | This is an efficient way to study. |  |
-| `elaborate` | elaborate | 형용사 | 정교한, 공들인 |  | She wore an elaborate costume. |  |
-| `electronic` | electronic | 형용사 | 전자의 |  | Turn off all electronic devices. |  |
-| `elegant` | elegant | 형용사 | 우아한 |  | She looked elegant in her black dress. |  |
-| `elevate` | elevate | 동사 | 올리다, 높이다 |  | Elevate your leg to reduce the swelling. |  |
-| `eliminate` | eliminate | 동사 | 제거하다, 탈락시키다 |  | Our team was eliminated in the first round. |  |
-| `elite` | elite | 명사 | 엘리트, 최상류층 |  | Only the elite could attend the school. |  |
-| `embassy` | embassy | 명사 | 대사관 |  | I went to the embassy to get a visa. |  |
-| `embrace` | embrace | 동사 | 껴안다, 받아들이다 |  | The mother embraced her child. |  |
-| `emerge` | emerge | 동사 | 나타나다, 드러나다 |  | The sun emerged from behind the clouds. |  |
-| `emit` | emit | 동사 | 내뿜다, 방출하다 |  | Cars emit harmful gases. |  |
-| `emphasis` | emphasis | 명사 | 강조 |  | The school puts emphasis on reading. |  |
-| `encounter` | encounter | 동사 | 마주치다, 맞닥뜨리다 |  | We encountered a deer on the trail. |  |
-| `endure` | endure | 동사 | 견디다, 참다 |  | She endured the pain without complaining. |  |
-| `enhance` | enhance | 동사 | 높이다, 향상시키다 |  | Good lighting enhances the photo. |  |
-| `enterprise` | enterprise | 명사 | 기업, 사업 |  | He started a small enterprise. |  |
-| `enthusiastic` | enthusiastic | 형용사 | 열정적인 |  | The fans were enthusiastic about the concert. |  |
-| `entry` | entry | 명사 | 입장, 참가, 항목 |  | Entry to the museum is free. |  |
-| `envy` | envy | 동사 | 부러워하다 |  | I envy your beautiful voice. |  |
-| `equip` | equip | 동사 | 장비를 갖추다 |  | The gym is equipped with new machines. |  |
-| `era` | era | 명사 | 시대 |  | We live in the era of the internet. |  |
-| `erect` | erect | 동사 | 세우다, 건립하다 |  | They erected a statue in the square. |  |
-| `error` | error | 명사 | 오류, 실수 |  | There is an error in your calculation. |  |
-| `essence` | essence | 명사 | 본질, 정수 |  | The essence of teamwork is trust. |  |
-| `estate` | estate | 명사 | 사유지, 재산 |  | The family owns a large estate. |  |
-| `ethic` | ethic | 명사 | 윤리, 도덕 |  | She has a strong work ethic. |  |
+| `eager` | eager | 형용사 | 간절히 바라는, 열심인 |  | The children were eager to open their gifts. | 완료 |
+| `efficient` | efficient | 형용사 | 효율적인 |  | This is an efficient way to study. | 완료 |
+| `elaborate` | elaborate | 형용사 | 정교한, 공들인 |  | She wore an elaborate costume. | 완료 |
+| `electronic` | electronic | 형용사 | 전자의 |  | Turn off all electronic devices. | 완료 |
+| `elegant` | elegant | 형용사 | 우아한 |  | She looked elegant in her black dress. | 완료 |
+| `elevate` | elevate | 동사 | 올리다, 높이다 |  | Elevate your leg to reduce the swelling. | 완료 |
+| `eliminate` | eliminate | 동사 | 제거하다, 탈락시키다 |  | Our team was eliminated in the first round. | 완료 |
+| `elite` | elite | 명사 | 엘리트, 최상류층 |  | Only the elite could attend the school. | 완료 |
+| `embassy` | embassy | 명사 | 대사관 |  | I went to the embassy to get a visa. | 완료 |
+| `embrace` | embrace | 동사 | 껴안다, 받아들이다 |  | The mother embraced her child. | 완료 |
+| `emerge` | emerge | 동사 | 나타나다, 드러나다 |  | The sun emerged from behind the clouds. | 완료 |
+| `emit` | emit | 동사 | 내뿜다, 방출하다 |  | Cars emit harmful gases. | 완료 |
+| `emphasis` | emphasis | 명사 | 강조 |  | The school puts emphasis on reading. | 완료 |
+| `encounter` | encounter | 동사 | 마주치다, 맞닥뜨리다 |  | We encountered a deer on the trail. | 완료 |
+| `endure` | endure | 동사 | 견디다, 참다 |  | She endured the pain without complaining. | 완료 |
+| `enhance` | enhance | 동사 | 높이다, 향상시키다 |  | Good lighting enhances the photo. | 완료 |
+| `enterprise` | enterprise | 명사 | 기업, 사업 |  | He started a small enterprise. | 완료 |
+| `enthusiastic` | enthusiastic | 형용사 | 열정적인 |  | The fans were enthusiastic about the concert. | 완료 |
+| `entry` | entry | 명사 | 입장, 참가, 항목 |  | Entry to the museum is free. | 완료 |
+| `envy` | envy | 동사 | 부러워하다 |  | I envy your beautiful voice. | 완료 |
+| `equip` | equip | 동사 | 장비를 갖추다 |  | The gym is equipped with new machines. | 완료 |
+| `era` | era | 명사 | 시대 |  | We live in the era of the internet. | 완료 |
+| `erect` | erect | 동사 | 세우다, 건립하다 |  | They erected a statue in the square. | 완료 |
+| `error` | error | 명사 | 오류, 실수 |  | There is an error in your calculation. | 완료 |
+| `essence` | essence | 명사 | 본질, 정수 |  | The essence of teamwork is trust. | 완료 |
+| `estate` | estate | 명사 | 사유지, 재산 |  | The family owns a large estate. | 완료 |
+| `ethic` | ethic | 명사 | 윤리, 도덕 |  | She has a strong work ethic. | 완료 |
 | `ethnic` | ethnic | 형용사 | 민족의 |  | The city has many ethnic restaurants. |  |
-| `evacuate` | evacuate | 동사 | 대피시키다 | 아이들이 선생님을 따라 줄지어 건물 밖으로 나가는 장면 | People were evacuated from the building. |  |
-| `evaluate` | evaluate | 동사 | 평가하다 |  | Teachers evaluate each student's work. |  |
-| `inevitable` | inevitable | 형용사 | 피할 수 없는 |  | Change is inevitable as we grow up. |  |
-| `evolution` | evolution | 명사 | 진화, 발전 |  | Darwin studied the evolution of animals. |  |
-| `evolve` | evolve | 동사 | 진화하다, 발전하다 |  | Languages evolve over time. |  |
-| `exaggerate` | exaggerate | 동사 | 과장하다 |  | He tends to exaggerate his stories. |  |
-| `exceed` | exceed | 동사 | 넘다, 초과하다 |  | Do not exceed the speed limit. |  |
-| `excel` | excel | 동사 | 뛰어나다 |  | She excels at mathematics. |  |
-| `excess` | excess | 명사 | 과잉, 초과 |  | An excess of sugar is bad for you. |  |
-| `exclude` | exclude | 동사 | 제외하다 |  | The price excludes delivery. |  |
-| `executive` | executive | 명사 | 경영진, 임원 |  | She is a senior executive at the bank. |  |
-| `exhibit` | exhibit | 동사 | 전시하다 |  | The museum exhibits ancient coins. |  |
-| `exotic` | exotic | 형용사 | 이국적인 |  | We tasted exotic fruits on the island. |  |
-| `expertise` | expertise | 명사 | 전문 지식 |  | We need her expertise in computers. |  |
-| `explicit` | explicit | 형용사 | 명백한, 분명한 |  | The teacher gave explicit instructions. |  |
-| `export` | export | 동사 | 수출하다 |  | Korea exports cars to many countries. |  |
-| `extent` | extent | 명사 | 정도, 범위 |  | To some extent, I agree with you. |  |
-| `external` | external | 형용사 | 외부의 |  | The external walls need painting. |  |
-| `extinct` | extinct | 형용사 | 멸종한 |  | Dinosaurs became extinct long ago. |  |
-| `extract` | extract | 동사 | 뽑아내다, 추출하다 |  | They extract oil from the seeds. |  |
-| `extraordinary` | extraordinary | 형용사 | 비범한, 놀라운 |  | She has an extraordinary memory. |  |
-| `facilitate` | facilitate | 동사 | 쉽게 하다, 촉진하다 |  | Technology facilitates communication. |  |
-| `facility` | facility | 명사 | 시설 |  | The school has excellent sports facilities. |  |
-| `faculty` | faculty | 명사 | 교수진, 능력 |  | She joined the faculty of the university. |  |
-| `fade` | fade | 동사 | 바래다, 서서히 사라지다 |  | The color faded in the sun. |  |
-| `false` | false | 형용사 | 틀린, 거짓의 |  | Is this sentence true or false? |  |
+| `evacuate` | evacuate | 동사 | 대피시키다 | 아이들이 선생님을 따라 줄지어 건물 밖으로 나가는 장면 | People were evacuated from the building. | 완료 |
+| `evaluate` | evaluate | 동사 | 평가하다 |  | Teachers evaluate each student's work. | 완료 |
+| `inevitable` | inevitable | 형용사 | 피할 수 없는 |  | Change is inevitable as we grow up. | 완료 |
+| `evolution` | evolution | 명사 | 진화, 발전 |  | Darwin studied the evolution of animals. | 완료 |
+| `evolve` | evolve | 동사 | 진화하다, 발전하다 |  | Languages evolve over time. | 완료 |
+| `exaggerate` | exaggerate | 동사 | 과장하다 |  | He tends to exaggerate his stories. | 완료 |
+| `exceed` | exceed | 동사 | 넘다, 초과하다 |  | Do not exceed the speed limit. | 완료 |
+| `excel` | excel | 동사 | 뛰어나다 |  | She excels at mathematics. | 완료 |
+| `excess` | excess | 명사 | 과잉, 초과 |  | An excess of sugar is bad for you. | 완료 |
+| `exclude` | exclude | 동사 | 제외하다 |  | The price excludes delivery. | 완료 |
+| `executive` | executive | 명사 | 경영진, 임원 |  | She is a senior executive at the bank. | 완료 |
+| `exhibit` | exhibit | 동사 | 전시하다 |  | The museum exhibits ancient coins. | 완료 |
+| `exotic` | exotic | 형용사 | 이국적인 |  | We tasted exotic fruits on the island. | 완료 |
+| `expertise` | expertise | 명사 | 전문 지식 |  | We need her expertise in computers. | 완료 |
+| `explicit` | explicit | 형용사 | 명백한, 분명한 |  | The teacher gave explicit instructions. | 완료 |
+| `export` | export | 동사 | 수출하다 |  | Korea exports cars to many countries. | 완료 |
+| `extent` | extent | 명사 | 정도, 범위 |  | To some extent, I agree with you. | 완료 |
+| `external` | external | 형용사 | 외부의 |  | The external walls need painting. | 완료 |
+| `extinct` | extinct | 형용사 | 멸종한 |  | Dinosaurs became extinct long ago. | 완료 |
+| `extract` | extract | 동사 | 뽑아내다, 추출하다 |  | They extract oil from the seeds. | 완료 |
+| `extraordinary` | extraordinary | 형용사 | 비범한, 놀라운 |  | She has an extraordinary memory. | 완료 |
+| `facilitate` | facilitate | 동사 | 쉽게 하다, 촉진하다 |  | Technology facilitates communication. | 완료 |
+| `facility` | facility | 명사 | 시설 |  | The school has excellent sports facilities. | 완료 |
+| `faculty` | faculty | 명사 | 교수진, 능력 |  | She joined the faculty of the university. | 완료 |
+| `fade` | fade | 동사 | 바래다, 서서히 사라지다 |  | The color faded in the sun. | 완료 |
+| `false` | false | 형용사 | 틀린, 거짓의 |  | Is this sentence true or false? | 완료 |
 | `fame` | fame | 명사 | 명성 |  | The singer gained fame overnight. |  |
-| `fare` | fare | 명사 | (교통) 요금 |  | The bus fare went up this year. |  |
-| `fate` | fate | 명사 | 운명 |  | Nobody knows what fate has in store. |  |
-| `federal` | federal | 형용사 | 연방의 |  | It is against federal law. |  |
-| `fertile` | fertile | 형용사 | 비옥한 |  | The valley has fertile soil. |  |
-| `fiber` | fiber | 명사 | 섬유, 섬유질 |  | Vegetables are rich in fiber. |  |
-| `fiction` | fiction | 명사 | 소설, 허구 |  | I enjoy reading science fiction. |  |
-| `fierce` | fierce | 형용사 | 사나운, 격렬한 |  | A fierce wind blew all night. |  |
-| `filter` | filter | 명사 | 여과 장치, 필터 |  | Change the water filter every month. |  |
-| `finite` | finite | 형용사 | 유한한 |  | The earth has finite resources. |  |
-| `flavor` | flavor | 명사 | 맛, 풍미 |  | Which flavor of ice cream do you want? |  |
-| `flaw` | flaw | 명사 | 결함, 흠 |  | There is a small flaw in the glass. |  |
-| `flee` | flee | 동사 | 달아나다 |  | The deer fled into the woods. |  |
-| `flesh` | flesh | 명사 | 살, 과육 |  | The flesh of the peach is soft. |  |
-| `flexible` | flexible | 형용사 | 유연한, 융통성 있는 |  | My work hours are flexible. |  |
-| `flip` | flip | 동사 | 뒤집다 |  | Flip the pancake when it turns brown. |  |
-| `flourish` | flourish | 동사 | 번창하다 |  | The town flourished because of trade. |  |
-| `flush` | flush | 동사 | 물을 내리다, 붉어지다 |  | Do not forget to flush the toilet. |  |
-| `fond` | fond | 형용사 | 좋아하는 |  | I am very fond of my grandmother. |  |
-| `forbid` | forbid | 동사 | 금지하다 |  | The school forbids phones in class. |  |
-| `forecast` | forecast | 명사 | 예보, 예측 |  | The weather forecast says it will snow. |  |
-| `format` | format | 명사 | 형식 |  | Save the file in a different format. |  |
-| `former` | former | 형용사 | 이전의 |  | He is a former teacher of mine. |  |
-| `formula` | formula | 명사 | 공식 |  | Learn the formula for the area of a circle. |  |
-| `foster` | foster | 동사 | 기르다, 육성하다 |  | Reading fosters imagination. |  |
-| `framework` | framework | 명사 | 틀, 뼈대 |  | We need a clear framework for the project. |  |
-| `frequent` | frequent | 형용사 | 잦은, 빈번한 |  | She is a frequent visitor to the library. |  |
-| `frost` | frost | 명사 | 서리 |  | The grass was white with frost. |  |
-| `fuel` | fuel | 명사 | 연료 |  | The car ran out of fuel. |  |
-| `fulfil` | fulfil | 동사 | 이행하다, 달성하다 |  | She fulfilled her dream of becoming a pilot. |  |
-| `fundamental` | fundamental | 형용사 | 근본적인, 기본적인 |  | Reading is a fundamental skill. |  |
-| `funeral` | funeral | 명사 | 장례식 |  | Many people attended the funeral. |  |
-| `furnish` | furnish | 동사 | 가구를 갖추다, 제공하다 |  | The room is furnished with a desk and a bed. |  |
-| `furthermore` | furthermore | 부사 | 게다가 |  | The plan is cheap; furthermore, it is simple. |  |
-| `fury` | fury | 명사 | 격분, 분노 |  | He slammed the door in fury. |  |
-| `fuse` | fuse | 명사 | 퓨즈, 도화선 |  | The fuse blew and the lights went out. |  |
-| `gamble` | gamble | 동사 | 도박하다, 모험하다 | 주사위 두 개와 카드 몇 장(숫자·글자 없이 무늬만) | He gambled all his money away. |  |
-| `gang` | gang | 명사 | 패거리, 무리 |  | A gang of boys ran down the street. |  |
-| `gap` | gap | 명사 | 틈, 격차 |  | Mind the gap between the train and the platform. |  |
+| `fare` | fare | 명사 | (교통) 요금 |  | The bus fare went up this year. | 완료 |
+| `fate` | fate | 명사 | 운명 |  | Nobody knows what fate has in store. | 완료 |
+| `federal` | federal | 형용사 | 연방의 |  | It is against federal law. | 완료 |
+| `fertile` | fertile | 형용사 | 비옥한 |  | The valley has fertile soil. | 완료 |
+| `fiber` | fiber | 명사 | 섬유, 섬유질 |  | Vegetables are rich in fiber. | 완료 |
+| `fiction` | fiction | 명사 | 소설, 허구 |  | I enjoy reading science fiction. | 완료 |
+| `fierce` | fierce | 형용사 | 사나운, 격렬한 |  | A fierce wind blew all night. | 완료 |
+| `filter` | filter | 명사 | 여과 장치, 필터 |  | Change the water filter every month. | 완료 |
+| `finite` | finite | 형용사 | 유한한 |  | The earth has finite resources. | 완료 |
+| `flavor` | flavor | 명사 | 맛, 풍미 |  | Which flavor of ice cream do you want? | 완료 |
+| `flaw` | flaw | 명사 | 결함, 흠 |  | There is a small flaw in the glass. | 완료 |
+| `flee` | flee | 동사 | 달아나다 |  | The deer fled into the woods. | 완료 |
+| `flesh` | flesh | 명사 | 살, 과육 |  | The flesh of the peach is soft. | 완료 |
+| `flexible` | flexible | 형용사 | 유연한, 융통성 있는 |  | My work hours are flexible. | 완료 |
+| `flip` | flip | 동사 | 뒤집다 |  | Flip the pancake when it turns brown. | 완료 |
+| `flourish` | flourish | 동사 | 번창하다 |  | The town flourished because of trade. | 완료 |
+| `flush` | flush | 동사 | 물을 내리다, 붉어지다 |  | Do not forget to flush the toilet. | 완료 |
+| `fond` | fond | 형용사 | 좋아하는 |  | I am very fond of my grandmother. | 완료 |
+| `forbid` | forbid | 동사 | 금지하다 |  | The school forbids phones in class. | 완료 |
+| `forecast` | forecast | 명사 | 예보, 예측 |  | The weather forecast says it will snow. | 완료 |
+| `format` | format | 명사 | 형식 |  | Save the file in a different format. | 완료 |
+| `former` | former | 형용사 | 이전의 |  | He is a former teacher of mine. | 완료 |
+| `formula` | formula | 명사 | 공식 |  | Learn the formula for the area of a circle. | 완료 |
+| `foster` | foster | 동사 | 기르다, 육성하다 |  | Reading fosters imagination. | 완료 |
+| `framework` | framework | 명사 | 틀, 뼈대 |  | We need a clear framework for the project. | 완료 |
+| `frequent` | frequent | 형용사 | 잦은, 빈번한 |  | She is a frequent visitor to the library. | 완료 |
+| `frost` | frost | 명사 | 서리 |  | The grass was white with frost. | 완료 |
+| `fuel` | fuel | 명사 | 연료 |  | The car ran out of fuel. | 완료 |
+| `fulfil` | fulfil | 동사 | 이행하다, 달성하다 |  | She fulfilled her dream of becoming a pilot. | 완료 |
+| `fundamental` | fundamental | 형용사 | 근본적인, 기본적인 |  | Reading is a fundamental skill. | 완료 |
+| `funeral` | funeral | 명사 | 장례식 |  | Many people attended the funeral. | 완료 |
+| `furnish` | furnish | 동사 | 가구를 갖추다, 제공하다 |  | The room is furnished with a desk and a bed. | 완료 |
+| `furthermore` | furthermore | 부사 | 게다가 |  | The plan is cheap; furthermore, it is simple. | 완료 |
+| `fury` | fury | 명사 | 격분, 분노 |  | He slammed the door in fury. | 완료 |
+| `fuse` | fuse | 명사 | 퓨즈, 도화선 |  | The fuse blew and the lights went out. | 완료 |
+| `gamble` | gamble | 동사 | 도박하다, 모험하다 | 주사위 두 개와 카드 몇 장(숫자·글자 없이 무늬만) | He gambled all his money away. | 완료 |
+| `gang` | gang | 명사 | 패거리, 무리 |  | A gang of boys ran down the street. | 완료 |
+| `gap` | gap | 명사 | 틈, 격차 |  | Mind the gap between the train and the platform. | 완료 |
 | `gasoline` | gasoline | 명사 | 휘발유 |  | The price of gasoline keeps rising. |  |
-| `gaze` | gaze | 동사 | 응시하다 |  | She gazed at the stars for hours. |  |
+| `gaze` | gaze | 동사 | 응시하다 |  | She gazed at the stars for hours. | 완료 |
 | `gender` | gender | 명사 | 성, 성별 |  | Jobs should be open to every gender. |  |
-| `gene` | gene | 명사 | 유전자 |  | Eye color is decided by genes. |  |
+| `gene` | gene | 명사 | 유전자 |  | Eye color is decided by genes. | 완료 |
 | `generate` | generate | 동사 | 만들어 내다, 발생시키다 |  | Wind turbines generate electricity. |  |
 | `genius` | genius | 명사 | 천재 |  | Einstein was a genius. |  |
 | `genuine` | genuine | 형용사 | 진짜의, 진심의 |  | This bag is made of genuine leather. |  |
