@@ -189,6 +189,13 @@ export default function LessonSlideContent({
         </div>
       );
     }
+    if (fill) {
+      return (
+        <div className="absolute inset-0 p-2 md:p-3">
+          <YoutubeShadowingPlayer videoUrl={slide.videoUrl} fit />
+        </div>
+      );
+    }
     return (
       <div className="space-y-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{lessonName}</h2>

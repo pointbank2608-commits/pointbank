@@ -4,6 +4,8 @@ import { extractYoutubeId, loadYoutubeIframeApi, type YoutubePlayer } from '../l
 
 interface Props {
   videoUrl: string;
+  /** 발표 중: 주어진 칸을 꽉 채우되 영상이 잘리지 않게 16:9 로 맞추고, 구간 설정은 아래 한 줄로 */
+  fit?: boolean;
 }
 
 const RATES = [0.75, 1, 1.25, 1.5];
@@ -13,7 +15,7 @@ const RATES = [0.75, 1, 1.25, 1.5];
  * 같은 원리 — 영상을 새로 만들거나 라이선싱하지 않고, 이미 공개된 유튜브 영상을 IFrame
  * Player API로 embed 한 뒤 원하는 구간(startSeconds~endSeconds)만 반복 재생한다.
  */
-export default function YoutubeShadowingPlayer({ videoUrl }: Props) {
+export default function YoutubeShadowingPlayer({ videoUrl, fit = false }: Props) {
   const { t } = useTranslation();
   const [elementId] = useState(() => `yt-player-${crypto.randomUUID()}`);
   const playerRef = useRef<YoutubePlayer | null>(null);
@@ -77,12 +79,18 @@ export default function YoutubeShadowingPlayer({ videoUrl }: Props) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16 / 9' }}>
-        <div id={elementId} className="absolute inset-0 h-full w-full" />
+    <div className={fit ? 'flex h-full flex-col gap-2' : 'space-y-3'}>
+      {/* 발표 중에는 남는 칸 안에서 가로·세로 모두 넘치지 않는 가장 큰 16:9 로(2026-10-03 "영상이 잘린다" 제보) */}
+      <div className={fit ? 'flex min-h-0 flex-1 items-center justify-center' : ''} style={fit ? { containerType: 'size' } : undefined}>
+        <div
+          className="relative overflow-hidden rounded-xl bg-black"
+          style={fit ? { aspectRatio: '16 / 9', width: 'min(100cqw, calc(100cqh * 16 / 9))' } : { aspectRatio: '16 / 9', width: '100%' }}
+        >
+          <div id={elementId} className="absolute inset-0 h-full w-full" />
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-4 rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className={`flex flex-wrap items-end rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${fit ? 'shrink-0 gap-3 px-3 py-2' : 'gap-4 p-4'}`}>
         <div>
           <label className="mb-1 block font-caption text-caption text-on-surface-variant">
             {t('curriculum.player.startSec')}
