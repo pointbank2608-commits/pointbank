@@ -8,7 +8,7 @@ import ShadowBoard from './ShadowBoard';
  * 영상 라이브러리 고르기(2026-10-03) — 쉐도잉 슬라이드 추가 패널·"영상 하나로 수업" 레시피에서 쓴다.
  * 시리즈·레벨·검색으로 거르고, 장면을 누르면 위에 미리보기(쉐도잉 칠판)와 "이 장면 넣기" 버튼이 뜬다.
  */
-export default function VideoClipLibrary({ onPick, pickLabel }: { onPick: (clip: VideoClip) => void; pickLabel?: string }) {
+export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { onPick: (clip: VideoClip) => void; pickLabel?: string; /** 메뉴 페이지: 목록을 화면 높이만큼 */ tall?: boolean }) {
   const { t } = useTranslation();
   const { clips, error } = useVideoClips();
   const [series, setSeries] = useState<string>('');
@@ -75,7 +75,7 @@ export default function VideoClipLibrary({ onPick, pickLabel }: { onPick: (clip:
 
       <div className="md:grid md:grid-cols-[200px_minmax(0,1fr)] md:items-start md:gap-4">
         {/* 넓은 화면: 왼쪽 시리즈 목록(2026-10-03 사용자 요청) */}
-        <nav className="hidden max-h-[560px] flex-col gap-1 overflow-y-auto rounded-xl bg-surface-container-low p-2 md:flex" aria-label={t('videoLibrary.seriesNav')}>
+        <nav className="hidden max-h-[calc(100vh-260px)] flex-col gap-1 overflow-y-auto rounded-xl bg-surface-container-low p-2 md:flex" aria-label={t('videoLibrary.seriesNav')}>
           <div className="px-2 pb-1 pt-1 font-label-md text-label-md text-on-surface-variant">{t('videoLibrary.seriesNav')}</div>
           {[{ key: '', name: t('videoLibrary.allSeriesShort'), count: clips.length, thumb: null as string | null }, ...seriesList.map((s) => {
             const first = clips.find((c) => c.series === s);
@@ -103,7 +103,7 @@ export default function VideoClipLibrary({ onPick, pickLabel }: { onPick: (clip:
           })}
         </nav>
 
-        <div className="grid max-h-[560px] min-w-0 auto-rows-max grid-cols-2 content-start gap-3 overflow-y-auto pr-1 sm:grid-cols-3 xl:grid-cols-4">
+        <div className={`grid ${tall ? 'max-h-[calc(100vh-260px)] min-h-[420px]' : 'max-h-[560px]'} min-w-0 auto-rows-max grid-cols-2 content-start gap-3 overflow-y-auto pr-1 sm:grid-cols-3 xl:grid-cols-4`}>
           {shown.map((c) => {
             const n = parseShadowText(c.script).length;
             const on = c.id === selectedId;

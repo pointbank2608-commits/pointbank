@@ -2345,6 +2345,8 @@ const en: Ko = {
     count: '{{count}} questions',
   },
   videoLibrary: {
+    pageTitle: 'Video library',
+    pageIntro: 'Ready-made English video scenes. Each comes with a script, questions, key words, a grammar drill and listening bingo. Pick a scene and press "Build a lesson from this scene" to fill a whole lesson.',
     tabLibrary: 'Pick from the video library',
     tabOwn: 'Make your own',
     search: 'Search titles and words',
@@ -3404,6 +3406,7 @@ const en: Ko = {
   },
 
   nav: {
+    videoLibrary: 'Video library',
     help: 'Help & support',
     pointUnitLabel: "Point unit: '{{unit}}'",
     addPoints: 'Add Points',

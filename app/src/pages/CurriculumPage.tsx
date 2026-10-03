@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import LessonRecipePicker from '../components/LessonRecipePicker';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
@@ -321,6 +322,24 @@ export default function CurriculumPage() {
     );
     setShowForm(true);
   }
+
+  // 영상 라이브러리 메뉴의 "이 장면으로 수업 만들기"(2026-10-03) — 새 수업을 열고 레시피가 그 장면으로 채운다
+  const [autoClip, setAutoClip] = useState<VideoClip | null>(null);
+  const clipHandled = useRef<string | null>(null);
+  useEffect(() => {
+    const st = location.state as { createFromClipId?: string } | null;
+    if (!st?.createFromClipId || loading || clipHandled.current === location.key) return;
+    clipHandled.current = location.key;
+    const clipId = st.createFromClipId;
+    navigate('/curriculum', { replace: true });
+    void fetchVideoClips().then((clips) => {
+      const clip = clips.find((c) => c.id === clipId);
+      if (!clip) return;
+      openCreateForm();
+      setAutoClip(clip);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key, loading]);
 
   // "이 슬라이드부터 발표"로 시작한 수업을 마치면 편집 화면으로 돌아온다 — 마지막으로 보던 슬라이드를
   // 고른 채로 다시 연다(LessonRunnerContext.exit 가 state 로 넘겨줌).
@@ -653,6 +672,7 @@ export default function CurriculumPage() {
             {!editingId && playlist.length === 0 && academy?.id && profile && (
               <div className="mb-4">
                 <LessonRecipePicker
+                  autoClip={autoClip}
                   hasWords={(wordLists.find((wl) => wl.id === wordListId)?.items.length ?? 0) > 0}
                   onManageWordList={openWordListModal}
                   makeUnscramble={(gid) =>

@@ -2341,6 +2341,8 @@ const ko = {
     count: '질문 {{count}}개',
   },
   videoLibrary: {
+    pageTitle: '영상 라이브러리',
+    pageIntro: '클래스뱅크가 미리 만들어 둔 영어 영상 장면이에요. 장면마다 대사표·내용 질문·핵심 단어·문법 바꿔 말하기·리스닝 빙고가 들어 있어요. 장면을 골라 "이 장면으로 수업 만들기"를 누르면 수업이 한 번에 채워져요.',
     tabLibrary: '영상 라이브러리에서 고르기',
     tabOwn: '직접 만들기',
     search: '제목·낱말로 찾기',
@@ -3398,6 +3400,7 @@ const ko = {
   },
 
   nav: {
+    videoLibrary: '영상 라이브러리',
     help: '도움말·문의',
     pointUnitLabel: "포인트 단위 '{{unit}}'",
     addPoints: '포인트 지급',

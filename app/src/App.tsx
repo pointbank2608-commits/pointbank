@@ -4,6 +4,7 @@ import AdminAcademyDetailPage from './pages/AdminAcademyDetailPage';
 import AdminSupportPage from './pages/AdminSupportPage';
 import AdminNoticesPage from './pages/AdminNoticesPage';
 import AdminVideosPage from './pages/AdminVideosPage';
+import VideoLibraryPage from './pages/VideoLibraryPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -185,6 +186,7 @@ export default function App() {
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/grammar" element={<GrammarPage />} />
+            <Route path="/videos" element={<VideoLibraryPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/materials" element={<MaterialsPage />} />
             <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />

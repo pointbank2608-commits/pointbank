@@ -1,6 +1,6 @@
 import type { VideoClip } from '../lib/videoClips';
 import VideoClipLibrary from './VideoClipLibrary';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
 import { LESSON_RECIPES, type LessonRecipe, type RecipeContext } from '../lib/lessonRecipes';
@@ -22,6 +22,7 @@ export default function LessonRecipePicker({
   makeWordList,
   makeUnscrambleFromSentences,
   onApply,
+  autoClip,
 }: {
   hasWords: boolean;
   onManageWordList: (mode: 'new' | 'edit') => void;
@@ -29,6 +30,8 @@ export default function LessonRecipePicker({
   makeWordList?: RecipeContext['makeWordList'];
   makeUnscrambleFromSentences?: RecipeContext['makeUnscrambleFromSentences'];
   onApply: (slides: LessonSlide[], suggestedName: string) => void;
+  /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
+  autoClip?: VideoClip | null;
 }) {
   const { t } = useTranslation();
   const [picked, setPicked] = useState<LessonRecipe | null>(null);
@@ -65,6 +68,17 @@ export default function LessonRecipePicker({
       setBusy(false);
     }
   }
+
+  const autoDone = useRef<string | null>(null);
+  useEffect(() => {
+    if (!autoClip || autoDone.current === autoClip.id) return;
+    const recipe = LESSON_RECIPES.find((r) => r.id === 'video');
+    if (!recipe) return;
+    autoDone.current = autoClip.id;
+    setPicked(recipe);
+    void apply(recipe, autoClip);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoClip]);
 
   function choose(recipe: LessonRecipe) {
     if (recipe.needsWords && !hasWords) return;
