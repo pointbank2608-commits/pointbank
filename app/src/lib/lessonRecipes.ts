@@ -1,7 +1,9 @@
 import { newCanvasSlide, newTextElement, themeTextDefaults } from '../components/CanvasSlideEditor';
 import { createGameTemplate } from './api';
 import { grammarPoint, sentencesForUnscramble } from './grammar';
-import type { LessonSlide } from './types';
+import { loadWordBank } from './wordBankCache';
+import { buildVideoLessonParts } from './videoLesson';
+import type { FullCardItem, LessonSlide } from './types';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -9,13 +11,19 @@ import type { LessonSlide } from './types';
  * 게임 슬라이드는 템플릿 없이 넣고, 저장할 때 수업 단어장으로 게임 내용을 자동으로 만든다(gameFromWords).
  * 새 레시피는 여기 한 줄 + i18n(recipes.<id>Name/Desc) — AI 수업 만들기도 나중에 이 틀을 고르게 하면 된다.
  */
-export type RecipeInput = 'grammar' | 'reading';
+export type RecipeInput = 'grammar' | 'reading' | 'video';
 
 export interface RecipeContext {
   t: (k: string, o?: Record<string, unknown>) => string;
   hasWords: boolean;
   grammarId?: string;
   reading?: { source: string; title?: string; videoUrl?: string | null };
+  /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
+  video?: { source: string; title?: string; videoUrl: string };
+  /** 영상 레시피: 대사에서 고른 낱말로 수업 단어장을 만들어 고른다(이미 단어장이 있으면 부르지 않는다) */
+  makeWordList?: (words: FullCardItem[], name: string) => Promise<boolean>;
+  /** 영상 레시피: 대사 문장으로 "문장 배열하기" 게임 내용을 만든다 */
+  makeUnscrambleFromSentences?: (sentences: string[], name: string) => Promise<string | null>;
   /** 문법 레시피: 예문으로 "문장 배열하기" 게임 내용을 만든다(없으면 null) */
   makeUnscramble: (grammarId: string) => Promise<string | null>;
 }
@@ -104,6 +112,34 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         { id: uid(), kind: 'reading', mode: 'cloze', ...base },
       ];
       if (ctx.hasWords) slides.push(wordshow(), game('quiz'));
+      return slides;
+    },
+  },
+  {
+    // 영상 하나로 수업(2026-10-03, 클래스5 무비 유닛 참고): 영상 보기 → 단어 소개 → 쉐도잉 → 빈칸 듣기 → 문장 배열하기 → 퀴즈 → 배역 나눠 따라하기
+    id: 'video',
+    icon: 'movie',
+    minutes: 45,
+    needsWords: false,
+    input: 'video',
+    preview: ['smart_display', 'menu_book', 'record_voice_over', 'hearing', 'reorder', 'quiz', 'groups'],
+    build: async (ctx) => {
+      if (!ctx.video?.source.trim() || !ctx.video.videoUrl.trim()) return [];
+      const { videoUrl, title, source } = ctx.video;
+      const parts = buildVideoLessonParts(source, await loadWordBank());
+      let hasWords = ctx.hasWords;
+      if (!hasWords && parts.words.length >= 3 && ctx.makeWordList) hasWords = await ctx.makeWordList(parts.words, title || ctx.t('recipes.videoName'));
+      const slides: LessonSlide[] = [{ id: uid(), kind: 'video', videoUrl }];
+      if (hasWords) slides.push(wordshow());
+      slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source, flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
+      slides.push({ id: uid(), kind: 'reading', mode: 'cloze', title, videoUrl, source: parts.clozeSource, boardTheme: 'green' });
+      if (parts.unscramble.length >= 3 && ctx.makeUnscrambleFromSentences) {
+        const tplId = await ctx.makeUnscrambleFromSentences(parts.unscramble, title || ctx.t('recipes.videoName'));
+        if (tplId) slides.push(game('unscramble', tplId));
+      }
+      if (hasWords) slides.push(game('quiz'));
+      const speakers = new Set(parts.lines.map((l) => l.speaker).filter(Boolean));
+      if (speakers.size > 1) slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source, flow: 'manual', repeat: 1, speed: 1, subtitle: 'ko', roleTeams: Math.min(4, Math.max(2, speakers.size)) });
       return slides;
     },
   },

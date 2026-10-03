@@ -203,8 +203,9 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
   const [activeCategory, setActiveCategory] = useState<CategoryTarget | null>(null);
 
   useEffect(() => {
-    if (tab === 'dictionary' && dictionary === null) {
-      fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
+    if (tab === 'dictionary') {
+      if (dictionary === null) fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
+      if (phonics === null) fetchPhonicsBank().then(setPhonics).catch(() => setPhonics([]));
     }
     if (tab === 'category') {
       if (dictionary === null) fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
@@ -238,12 +239,10 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
     });
   }
 
-  function addFromDictionary(entry: WordBankEntry) {
-    if (list.items.some((i) => i.word === entry.word && i.meaning === entry.meaning)) return;
-    void persist([
-      ...list.items,
-      { id: uid(), word: entry.word, meaning: entry.meaning, image_url: entry.image_url, category: entry.category },
-    ]);
+  function addFromDictionary(entry: WordBankEntry | PhonicsBankEntry) {
+    const draft = toWordListDraft(entry);
+    if (list.items.some((i) => i.word === draft.word && i.meaning === draft.meaning)) return;
+    void persist([...list.items, { id: uid(), ...draft }]);
   }
 
   function addManyFromEntries(entries: (WordBankEntry | PhonicsBankEntry)[]) {
@@ -259,12 +258,34 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
     void persist(list.items.filter((i) => i.id !== id));
   }
 
+  // 사전(word_bank)과 파닉스(phonics_bank)를 같이 찾는다 — mat·ram·wag 같은 CVC 낱말은 파닉스에만 있다(2026-10-03 제보).
+  // 같은 낱말·같은 뜻은 하나만, 똑같은 낱말 → 그 낱말로 시작 → 낱말 안에 포함 → 뜻에 포함 순서로.
   const filteredDictionary = useMemo(() => {
     if (!dictionary) return [];
     const q = query.trim().toLowerCase();
     if (!q) return dictionary.slice(0, 30);
-    return dictionary.filter((e) => e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q)).slice(0, 30);
-  }, [dictionary, query]);
+    const all: (WordBankEntry | PhonicsBankEntry)[] = [...dictionary, ...(phonics ?? [])];
+    const rank = (e: WordBankEntry | PhonicsBankEntry) => {
+      const w = e.word.toLowerCase();
+      if (w === q) return 0;
+      if (w.startsWith(q)) return 1;
+      if (w.includes(q)) return 2;
+      return (e.meaning ?? '').toLowerCase().includes(q) ? 3 : 9;
+    };
+    const seen = new Set<string>();
+    return all
+      .map((e) => ({ e, r: rank(e) }))
+      .filter((x) => x.r < 9)
+      .sort((a, b) => a.r - b.r || a.e.word.length - b.e.word.length)
+      .map((x) => x.e)
+      .filter((e) => {
+        const key = `${e.word.toLowerCase()}::${e.meaning ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 40);
+  }, [dictionary, phonics, query]);
 
   const existingKeys = useMemo(() => new Set(list.items.map((i) => `${i.word}::${i.meaning}`)), [list.items]);
 
@@ -381,6 +402,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
                 >
                   {entry.image_url && <img src={entry.image_url} alt="" className="w-5 h-5 rounded-full object-cover" />}
                   {entry.word} <span className="text-on-surface-variant text-xs">{entry.meaning}</span>
+                  {'rule' in entry && <span className="rounded-full bg-tertiary-container/60 px-1.5 text-[10px] text-on-surface-variant">{t('wordLists.phonicsBadge')}</span>}
                 </button>
               ))}
             </div>

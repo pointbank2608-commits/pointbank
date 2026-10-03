@@ -35,7 +35,7 @@ export async function buildShareSnapshot(
   wordList: WordList | null,
   opts: { dropReading: boolean },
 ): Promise<LessonShareSnapshot> {
-  const slides = effectiveSlides(lesson).filter((s) => !(opts.dropReading && s.kind === 'reading'));
+  const slides = effectiveSlides(lesson).filter((s) => !(opts.dropReading && (s.kind === 'reading' || s.kind === 'shadow')));
   // 돌림판·사다리처럼 게임 항목이 학생 이름인 경우가 많다 — 우리 학원 학생 이름과 같은 항목은 빼고 보낸다(개인정보).
   let studentNames = new Set<string>();
   try {

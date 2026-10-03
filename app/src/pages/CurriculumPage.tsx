@@ -664,6 +664,38 @@ export default function CurriculumPage() {
                       name: (pointName) => t('grammar.gameTemplateName', { name: pointName }),
                     })
                   }
+                  makeWordList={async (words, listName) => {
+                    try {
+                      const list = await createWordList({
+                        academyId: academy.id,
+                        classId: formClassId ?? staffClassId,
+                        name: listName,
+                        items: words.map((w) => ({ id: uid(), word: w.word, meaning: w.meaning, image_url: w.imageUrl, category: w.category ?? null, partOfSpeech: w.partOfSpeech ?? null })),
+                        teacherId: profile.id,
+                      });
+                      setWordLists((prev) => [...prev, list]);
+                      setWordListId(list.id);
+                      notify(t('recipes.videoWordListMade', { count: words.length }));
+                      return true;
+                    } catch {
+                      return false;
+                    }
+                  }}
+                  makeUnscrambleFromSentences={async (sentences, listName) => {
+                    try {
+                      const tpl = await createGameTemplate({
+                        academyId: academy.id,
+                        classId: formClassId ?? staffClassId,
+                        gameType: 'unscramble',
+                        name: listName,
+                        items: sentences.map((label) => ({ id: uid(), label })),
+                        teacherId: profile.id,
+                      });
+                      return tpl.id;
+                    } catch {
+                      return null;
+                    }
+                  }}
                   onApply={(slides, suggested) => {
                     setPlaylist(slides);
                     if (!name.trim()) setName(suggested);
@@ -865,6 +897,7 @@ export default function CurriculumPage() {
                   else if (slide.kind === 'attendance') icon = 'how_to_reg';
                   else if (slide.kind === 'grammar') icon = 'rule';
                   else if (slide.kind === 'reading') icon = slide.mode === 'cloze' ? 'hearing' : 'lyrics';
+                  else if (slide.kind === 'shadow') icon = 'record_voice_over';
                   else if (slide.kind === 'video') icon = 'smart_display';
                   else if (slide.kind === 'web') icon = slide.mode === 'window' ? 'menu_book' : 'language';
                   else if (slide.kind === 'game') icon = GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports';

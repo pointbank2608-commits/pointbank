@@ -31,6 +31,7 @@ export interface YoutubePlayer {
   pauseVideo: () => void;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   setPlaybackRate: (rate: number) => void;
+  getCurrentTime: () => number;
   destroy: () => void;
 }
 

@@ -20,7 +20,7 @@ export default function ShareLessonModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const hasReading = effectiveSlides(lesson).some((s) => s.kind === 'reading');
+  const hasReading = effectiveSlides(lesson).some((s) => s.kind === 'reading' || s.kind === 'shadow');
   const [dropReading, setDropReading] = useState(true);
   const [shares, setShares] = useState<LessonShareRow[] | null>(null);
   const [busy, setBusy] = useState(false);

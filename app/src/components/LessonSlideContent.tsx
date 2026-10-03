@@ -9,6 +9,7 @@ import CanvasSlideView from './CanvasSlideView';
 import FlashcardStudy from './FlashcardStudy';
 import GrammarBoard from './GrammarBoard';
 import PhonicsMarkedWord from './PhonicsMarkedWord';
+import ShadowBoard from './ShadowBoard';
 import ReadingBoard from './ReadingBoard';
 import WebSlideView from './WebSlideView';
 import WordShowBoard from './WordShowBoard';
@@ -56,6 +57,24 @@ export default function LessonSlideContent({
   );
 
   const boardBox = fill ? 'absolute inset-0 p-2 md:p-4' : 'h-[75vh]';
+
+  if (slide.kind === 'shadow') {
+    return (
+      <div className={boardBox}>
+        <ShadowBoard
+          key={slide.id}
+          source={slide.source}
+          title={slide.title}
+          videoUrl={student ? undefined : slide.videoUrl}
+          flow={slide.flow}
+          repeat={slide.repeat}
+          speed={slide.speed}
+          subtitle={slide.subtitle}
+          roleTeams={slide.roleTeams}
+        />
+      </div>
+    );
+  }
 
   if (slide.kind === 'reading') {
     return (

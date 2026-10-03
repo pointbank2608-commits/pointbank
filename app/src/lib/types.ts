@@ -746,6 +746,27 @@ export interface ReadingSlide {
   boardTheme?: string | null;
 }
 
+/** 쉐도잉 슬라이드(2026-10-03) — 유튜브 영상을 대사표(lib/shadowLines.ts)의 한 문장씩 재생하고 멈춰서 따라 말한다.
+ * 대본은 이 수업 안에만 저장(저작권). AI 발음 채점은 하지 않는다. */
+export interface ShadowSlide {
+  id: string;
+  kind: 'shadow';
+  title?: string;
+  /** 한 줄에 "[시작-끝] 배역: 영어 | 해석" */
+  source: string;
+  videoUrl?: string | null;
+  /** auto 연속 따라하기 · manual 듣고 따라하기(클리커로 넘김) */
+  flow?: 'auto' | 'manual';
+  /** 한 문장을 몇 번 따라 할지(1~5) */
+  repeat?: number;
+  /** 재생 속도(0.5·0.75·1) */
+  speed?: number;
+  /** 시작할 때 자막: 영어+한글 / 영어 / 한글 / 빈칸 / 없음 */
+  subtitle?: 'both' | 'en' | 'ko' | 'cloze' | 'none';
+  /** 배역 나눠 따라하기 — 팀 수(0 이면 끔) */
+  roleTeams?: number;
+}
+
 /** "단어 소개" 슬라이드(2026-09-27) — 수업 단어장의 단어를 사전 카드처럼 칠판에 크게, 한 단계씩(그림 → 단어 → 뜻 → 예문). */
 export interface WordShowSlide {
   id: string;
@@ -773,6 +794,7 @@ export type LessonSlide =
   | StudySlide
   | GrammarSlide
   | ReadingSlide
+  | ShadowSlide
   | WordShowSlide
   | AttendanceSlide;
 

@@ -4,6 +4,10 @@ import { grammarPoint } from '../lib/grammar';
 import { LESSON_RECIPES, type LessonRecipe, type RecipeContext } from '../lib/lessonRecipes';
 import type { LessonSlide } from '../lib/types';
 import { GrammarPickerPanel } from './LessonSlideSorter';
+import { useToast } from '../context/ToastContext';
+import { generateShadowScript } from '../lib/api';
+import { parseShadowText, toShadowSource } from '../lib/shadowLines';
+import { extractYoutubeId } from '../lib/youtube';
 
 /**
  * 새 수업 만들기의 "레시피로 시작하기"(2026-09-27). 수업 종류를 고르면 슬라이드가 순서대로 채워진다.
@@ -13,17 +17,24 @@ export default function LessonRecipePicker({
   hasWords,
   onManageWordList,
   makeUnscramble,
+  makeWordList,
+  makeUnscrambleFromSentences,
   onApply,
 }: {
   hasWords: boolean;
   onManageWordList: (mode: 'new' | 'edit') => void;
   makeUnscramble: RecipeContext['makeUnscramble'];
+  makeWordList?: RecipeContext['makeWordList'];
+  makeUnscrambleFromSentences?: RecipeContext['makeUnscrambleFromSentences'];
   onApply: (slides: LessonSlide[], suggestedName: string) => void;
 }) {
   const { t } = useTranslation();
   const [picked, setPicked] = useState<LessonRecipe | null>(null);
   const [grammarId, setGrammarId] = useState<string | null>(null);
   const [reading, setReading] = useState({ source: '', title: '', videoUrl: '' });
+  const [video, setVideo] = useState({ source: '', title: '', videoUrl: '' });
+  const [scripting, setScripting] = useState(false);
+  const { notify } = useToast();
   const [busy, setBusy] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
   const [open, setOpen] = useState(true);
@@ -37,9 +48,12 @@ export default function LessonRecipePicker({
         grammarId: grammarId ?? undefined,
         reading: { source: reading.source, title: reading.title.trim() || undefined, videoUrl: reading.videoUrl.trim() || null },
         makeUnscramble,
+        video: { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
+        makeWordList,
+        makeUnscrambleFromSentences,
       });
       if (slides.length === 0) return;
-      const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : '';
+      const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? video.title.trim() : '';
       onApply(slides, extra ? `${t(`recipes.${recipe.id}Name`)} · ${extra}` : t(`recipes.${recipe.id}Name`));
     } finally {
       setBusy(false);
@@ -139,6 +153,63 @@ export default function LessonRecipePicker({
               )}
             </>
           )}
+          {picked.input === 'video' && (
+            <div className="space-y-2">
+              <p className="font-caption text-caption text-on-surface-variant">{t('recipes.videoHint')}</p>
+              <input
+                value={video.title}
+                onChange={(e) => setVideo((r) => ({ ...r, title: e.target.value }))}
+                placeholder={t('curriculum.shadow.titlePlaceholder')}
+                className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <input
+                value={video.videoUrl}
+                onChange={(e) => setVideo((r) => ({ ...r, videoUrl: e.target.value }))}
+                placeholder={t('curriculum.shadow.videoPlaceholder')}
+                className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <textarea
+                value={video.source}
+                onChange={(e) => setVideo((r) => ({ ...r, source: e.target.value }))}
+                onPaste={(e) => {
+                  if (video.source.trim()) return;
+                  const text = e.clipboardData.getData('text');
+                  const converted = toShadowSource(text);
+                  if (converted !== text.trim()) {
+                    e.preventDefault();
+                    setVideo((r) => ({ ...r, source: converted }));
+                  }
+                }}
+                rows={7}
+                placeholder={t('curriculum.shadow.sourcePlaceholder')}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 font-mono text-sm outline-none focus:border-primary"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={scripting || !extractYoutubeId(video.videoUrl)}
+                  onClick={async () => {
+                    const id = extractYoutubeId(video.videoUrl);
+                    if (!id) return;
+                    setScripting(true);
+                    try {
+                      const script = await generateShadowScript(id);
+                      setVideo((r) => ({ ...r, source: script }));
+                    } catch {
+                      notify(t('curriculum.shadow.autoUnavailable'), 'error');
+                    } finally {
+                      setScripting(false);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-40"
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${scripting ? 'animate-spin' : ''}`}>{scripting ? 'progress_activity' : 'auto_awesome'}</span>
+                  {t('curriculum.shadow.autoButton')}
+                </button>
+                <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.shadow.lineCount', { count: parseShadowText(video.source).length })}</span>
+              </div>
+            </div>
+          )}
           {picked.input === 'reading' && (
             <div className="space-y-2">
               <p className="font-caption text-caption text-on-surface-variant">{t('recipes.readingHint')}</p>
@@ -165,7 +236,7 @@ export default function LessonRecipePicker({
           )}
           <button
             type="button"
-            disabled={busy || (picked.input === 'grammar' && !grammarId) || (picked.input === 'reading' && !reading.source.trim())}
+            disabled={busy || (picked.input === 'grammar' && !grammarId) || (picked.input === 'reading' && !reading.source.trim()) || (picked.input === 'video' && (!video.source.trim() || !extractYoutubeId(video.videoUrl)))}
             onClick={() => void apply(picked)}
             className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-40"
           >

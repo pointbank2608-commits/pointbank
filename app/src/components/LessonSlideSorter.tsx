@@ -36,6 +36,7 @@ import type {
   ImageSlide,
   LessonSlide,
   MaterialSlide,
+  ShadowSlide,
   VideoSlide,
   WebSlide,
   WordList,
@@ -47,6 +48,9 @@ import GameImagePicker from './GameImagePicker';
 import WebSlideView from './WebSlideView';
 import { GameEmbedContext } from '../context/GameEmbedContext';
 import GrammarBoard from './GrammarBoard';
+import ShadowBoard, { SHADOW_REPEATS, SHADOW_SPEEDS, SHADOW_SUBTITLES } from './ShadowBoard';
+import { parseShadowText, shadowSpeakers, toShadowSource } from '../lib/shadowLines';
+import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
@@ -141,7 +145,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -500,7 +504,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'web', 'reading', 'wordshow', 'study', 'grammar', 'game', 'material', 'attendance'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'shadow', 'web', 'reading', 'wordshow', 'study', 'grammar', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -530,6 +534,15 @@ export default function LessonSlideSorter({
                 onUploaded={(img) => {
                   const slide: ImageSlide = { id: uid(), kind: 'image', imagePath: img.path, imageUrl: img.url };
                   addSlide(slide);
+                  setAddMode(null);
+                }}
+              />
+            )}
+
+            {addMode === 'shadow' && (
+              <ShadowSlideForm
+                onAdd={(draft) => {
+                  addSlide({ id: uid(), kind: 'shadow', ...draft });
                   setAddMode(null);
                 }}
               />
@@ -975,6 +988,7 @@ function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
   if (slide.kind === 'attendance') return { icon: 'how_to_reg', label: t('curriculum.slides.kindAttendance') };
+  if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: slide.title?.trim() || t('curriculum.shadow.defaultTitle') };
   if (slide.kind === 'reading')
     return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: slide.title?.trim() || t('curriculum.reading.defaultTitle') };
   if (slide.kind === 'grammar') return { icon: 'rule', label: grammarPoint(slide.grammarId)?.name ?? t('curriculum.slides.kindGrammar') };
@@ -1127,6 +1141,26 @@ function SlideDetail({
   onInsertAfter: (slide: LessonSlide) => void;
 }) {
   const { t } = useTranslation();
+
+  if (slide.kind === 'shadow') {
+    return (
+      <div className="space-y-3">
+        <div className="aspect-video w-full max-w-3xl">
+          <ShadowBoard
+            source={slide.source}
+            title={slide.title}
+            videoUrl={slide.videoUrl}
+            flow={slide.flow}
+            repeat={slide.repeat}
+            speed={slide.speed}
+            subtitle={slide.subtitle}
+            roleTeams={slide.roleTeams}
+          />
+        </div>
+        <ShadowSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />
+      </div>
+    );
+  }
 
   if (slide.kind === 'reading') {
     return (
@@ -1834,6 +1868,120 @@ function ReadingSlideForm({
         <button
           type="button"
           disabled={lineCount === 0}
+          onClick={() => onAdd({ ...draft, title: draft.title?.trim() || undefined, videoUrl: draft.videoUrl?.trim() || null })}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+        >
+          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          {t('curriculum.study.addButton')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+type ShadowDraft = Omit<ShadowSlide, 'id' | 'kind'>;
+
+/** 쉐도잉 슬라이드 만들기·고치기 — 유튜브 주소 + 대사표. 유튜브 "스크립트 표시"를 그대로 붙여넣어도 시간표로 바꿔 준다. */
+function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; onAdd?: (draft: ShadowDraft) => void; onChange?: (patch: Partial<ShadowDraft>) => void }) {
+  const { t } = useTranslation();
+  const { notify } = useToast();
+  const [draft, setDraft] = useState<ShadowDraft>(initial ?? { title: '', source: '', videoUrl: '', flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
+  const [busy, setBusy] = useState(false);
+  const lines = parseShadowText(draft.source);
+  const speakers = shadowSpeakers(lines);
+  function set(patch: Partial<ShadowDraft>) {
+    setDraft((d) => ({ ...d, ...patch }));
+    onChange?.(patch);
+  }
+  async function autoScript() {
+    const id = extractYoutubeId(draft.videoUrl ?? '');
+    if (!id || busy) return;
+    setBusy(true);
+    try {
+      const script = await generateShadowScript(id);
+      set({ source: script });
+      notify(t('curriculum.shadow.autoDone'));
+    } catch {
+      notify(t('curriculum.shadow.autoUnavailable'), 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+  const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
+  const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`;
+  return (
+    <div className="space-y-3">
+      {onAdd && <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.shadow.addIntro')}</p>}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input className={input} value={draft.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder={t('curriculum.shadow.titlePlaceholder')} />
+        <input className={input} value={draft.videoUrl ?? ''} onChange={(e) => set({ videoUrl: e.target.value })} placeholder={t('curriculum.shadow.videoPlaceholder')} />
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-label-md text-label-md text-on-surface-variant">{t('curriculum.shadow.flowLabel')}</span>
+        {(['auto', 'manual'] as const).map((f) => (
+          <button key={f} type="button" onClick={() => set({ flow: f })} className={chip((draft.flow ?? 'auto') === f)}>
+            {t(`curriculum.shadow.flow_${f}`)}
+          </button>
+        ))}
+        <select value={draft.repeat ?? 1} onChange={(e) => set({ repeat: Number(e.target.value) })} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm">
+          {SHADOW_REPEATS.map((n) => <option key={n} value={n}>{t('curriculum.shadow.repeatN', { n })}</option>)}
+        </select>
+        <select value={draft.speed ?? 1} onChange={(e) => set({ speed: Number(e.target.value) })} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm">
+          {SHADOW_SPEEDS.map((n) => <option key={n} value={n}>{n}x</option>)}
+        </select>
+        <select value={draft.subtitle ?? 'both'} onChange={(e) => set({ subtitle: e.target.value as ShadowDraft['subtitle'] })} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm">
+          {SHADOW_SUBTITLES.map((n) => <option key={n} value={n}>{t(`curriculum.shadow.sub_${n}`)}</option>)}
+        </select>
+        {speakers.length > 1 && (
+          <select value={draft.roleTeams ?? 0} onChange={(e) => set({ roleTeams: Number(e.target.value) })} className="rounded-full border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm">
+            {[0, 2, 3, 4].map((n) => <option key={n} value={n}>{n === 0 ? t('curriculum.shadow.rolesOff') : t('curriculum.shadow.rolesN', { n })}</option>)}
+          </select>
+        )}
+      </div>
+      <textarea
+        className={`${input} min-h-[200px] font-mono`}
+        value={draft.source}
+        onChange={(e) => set({ source: e.target.value })}
+        onPaste={(e) => {
+          // 유튜브 "스크립트 표시"·SRT 를 붙여넣으면 바로 대사표로 바꾼다(빈 칸에 붙여넣을 때만)
+          if (draft.source.trim()) return;
+          const text = e.clipboardData.getData('text');
+          const converted = toShadowSource(text);
+          if (converted !== text.trim()) {
+            e.preventDefault();
+            set({ source: converted });
+          }
+        }}
+        placeholder={t('curriculum.shadow.sourcePlaceholder')}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => void autoScript()}
+          disabled={busy || !extractYoutubeId(draft.videoUrl ?? '')}
+          className="flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-40"
+        >
+          <span className={`material-symbols-outlined text-[18px] ${busy ? 'animate-spin' : ''}`}>{busy ? 'progress_activity' : 'auto_awesome'}</span>
+          {t('curriculum.shadow.autoButton')}
+        </button>
+        <button
+          type="button"
+          onClick={() => set({ source: toShadowSource(draft.source) })}
+          className="flex items-center gap-1.5 rounded-full border border-outline-variant px-4 py-1.5 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low"
+        >
+          <span className="material-symbols-outlined text-[18px]">schedule</span>
+          {t('curriculum.shadow.convertButton')}
+        </button>
+        <span className="font-caption text-caption text-on-surface-variant">
+          {t('curriculum.shadow.lineCount', { count: lines.length })}
+          {speakers.length > 0 && ` · ${t('curriculum.shadow.speakers', { names: speakers.join(', ') })}`}
+        </span>
+      </div>
+      <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.shadow.formatHint')}</p>
+      {onAdd && (
+        <button
+          type="button"
+          disabled={lines.length === 0 || !extractYoutubeId(draft.videoUrl ?? '')}
           onClick={() => onAdd({ ...draft, title: draft.title?.trim() || undefined, videoUrl: draft.videoUrl?.trim() || null })}
           className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
         >

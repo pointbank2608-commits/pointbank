@@ -28,6 +28,8 @@ function slideInfo(s: LessonSlide, t: (k: string) => string): { icon: string; la
       return { icon: 'rule', label: t('curriculum.slides.kindGrammar') };
     case 'reading':
       return { icon: 'lyrics', label: t('curriculum.reading.defaultTitle') };
+    case 'shadow':
+      return { icon: 'record_voice_over', label: t('curriculum.shadow.defaultTitle') };
     case 'study':
       return { icon: 'style', label: t('curriculum.slides.kindStudy') };
     case 'wordshow':

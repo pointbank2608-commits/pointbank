@@ -1,0 +1,129 @@
+/**
+ * 쉐도잉 슬라이드(2026-10-03)의 대사표 형식 — 노래·지문(readingLines.ts) 형식을 넓힌 것.
+ *
+ * 한 줄에 한 문장:  [0:29.0-0:30.7] Caillou: Can we make a **snowman**? | 우리 눈사람 만들어도 돼요?
+ *  - [시작-끝] 은 분:초(소수점 가능). 끝을 빼면 다음 줄 시작까지(마지막 줄은 시작 + 3초).
+ *  - "이름:" 은 배역(선택) — 배역 나눠 따라하기에 쓴다.
+ *  - | 뒤는 해석(선택), ** ** 는 빈칸 자막에서 비울 낱말.
+ * 유튜브 "스크립트 표시"를 복사한 글(0:03 다음 줄에 문장)과 SRT·VTT 자막도 이 형식으로 바꿔 준다(toShadowSource).
+ * 영상 대본은 이 선생님의 수업 안에만 저장한다 — 공용 자료로 모으지 않는다(저작권).
+ */
+export interface ShadowLine {
+  en: string;
+  ko: string;
+  speaker: string | null;
+  start: number;
+  end: number;
+}
+
+const TIME = String.raw`(\d{1,2}):(\d{2}(?:\.\d+)?)`;
+const toSec = (m: string, s: string) => Number(m) * 60 + Number(s);
+
+export function parseShadowText(source: string): ShadowLine[] {
+  const rows: { en: string; ko: string; speaker: string | null; start: number | null; end: number | null }[] = [];
+  for (const raw of source.split(/\r?\n/)) {
+    let rest = raw.trim();
+    if (!rest) continue;
+    let start: number | null = null;
+    let end: number | null = null;
+    const m = rest.match(new RegExp(String.raw`^\[${TIME}(?:\s*-\s*${TIME})?\]\s*`));
+    if (m) {
+      start = toSec(m[1], m[2]);
+      if (m[3] !== undefined) end = toSec(m[3], m[4]);
+      rest = rest.slice(m[0].length);
+    }
+    let speaker: string | null = null;
+    const sp = rest.match(/^([A-Za-z][\w .'-]{0,19}):\s+/);
+    if (sp) {
+      speaker = sp[1].trim();
+      rest = rest.slice(sp[0].length);
+    }
+    const bar = rest.indexOf('|');
+    const en = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
+    const ko = bar >= 0 ? rest.slice(bar + 1).trim() : '';
+    if (en) rows.push({ en, ko, speaker, start, end });
+  }
+  // 시간이 없는 줄은 앞 줄 끝에 이어 붙이고, 끝이 없는 줄은 다음 줄 시작까지로 채운다
+  let clock = 0;
+  return rows.map((r, i) => {
+    const start = r.start ?? clock;
+    const nextStart = rows.slice(i + 1).find((x) => x.start !== null)?.start ?? null;
+    const end = r.end ?? (nextStart !== null && nextStart > start ? nextStart : start + 3);
+    clock = end;
+    return { en: r.en, ko: r.ko, speaker: r.speaker, start, end: Math.max(end, start + 0.5) };
+  });
+}
+
+/** 배역 목록(나온 순서대로). */
+export function shadowSpeakers(lines: ShadowLine[]): string[] {
+  return [...new Set(lines.map((l) => l.speaker).filter((s): s is string => !!s))];
+}
+
+const fmt = (sec: number) => {
+  const m = Math.floor(sec / 60);
+  const s = sec - m * 60;
+  return `${m}:${s.toFixed(1).padStart(4, '0')}`;
+};
+
+/**
+ * 붙여넣은 글을 대사표로 바꾼다 — 이미 대사표 형식이면 그대로 둔다.
+ *  - 유튜브 "스크립트 표시" 복사: "0:03" 줄 다음에 문장 줄(또는 "0:03 문장")
+ *  - SRT/VTT: "00:00:03,000 --> 00:00:05,500" 다음에 문장
+ */
+export function toShadowSource(text: string): string {
+  const lines = text.split(/\r?\n/).map((l) => l.trim());
+  if (lines.some((l) => /^\[\d{1,2}:\d{2}/.test(l))) return text.trim();
+
+  const out: { start: number; end: number | null; text: string }[] = [];
+  const cue = /^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})[.,](\d{1,3})\s*-->\s*(?:(\d{1,2}):)?(\d{1,2}):(\d{2})[.,](\d{1,3})/;
+  if (lines.some((l) => cue.test(l))) {
+    let cur: { start: number; end: number | null; text: string } | null = null;
+    for (const l of lines) {
+      const m = l.match(cue);
+      if (m) {
+        if (cur?.text) out.push(cur);
+        const s = Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(`0.${m[4]}`);
+        const e = Number(m[5] ?? 0) * 3600 + Number(m[6]) * 60 + Number(m[7]) + Number(`0.${m[8]}`);
+        cur = { start: s, end: e, text: '' };
+      } else if (cur && l && !/^\d+$/.test(l) && l !== 'WEBVTT') {
+        cur.text = `${cur.text} ${l.replace(/<[^>]+>/g, '')}`.trim();
+      }
+    }
+    if (cur?.text) out.push(cur);
+  } else {
+    const stamp = /^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})(?:\s+(.*))?$/;
+    let cur: { start: number; end: number | null; text: string } | null = null;
+    for (const l of lines) {
+      const m = l.match(stamp);
+      if (m) {
+        if (cur?.text) out.push(cur);
+        cur = { start: Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]), end: null, text: m[4] ?? '' };
+      } else if (cur && l) {
+        cur.text = `${cur.text} ${l}`.trim();
+      }
+    }
+    if (cur?.text) out.push(cur);
+  }
+  if (out.length === 0) return text.trim();
+  return out.map((o) => `[${fmt(o.start)}${o.end !== null ? `-${fmt(o.end)}` : ''}] ${o.text.replace(/\s+/g, ' ')}`).join('\n');
+}
+
+/** 빈칸 자막 — ** ** 낱말을 밑줄 칸으로. 표시된 낱말이 없으면 4글자 이상 낱말 중 하나를 고정으로 비운다. */
+export function shadowCloze(en: string, seed: number): { text: string; blank: boolean }[] {
+  if (en.includes('**')) {
+    return en
+      .split('**')
+      .map((text, i) => ({ text, blank: i % 2 === 1 }))
+      .filter((s) => s.text !== '');
+  }
+  const parts = en.split(/(\s+)/);
+  const candidates = parts.map((p, i) => ({ p, i })).filter(({ p }) => /^[A-Za-z']{4,}/.test(p));
+  if (candidates.length === 0) return [{ text: en, blank: false }];
+  const pick = candidates[seed % candidates.length].i;
+  return parts.flatMap((p, i) => {
+    if (i !== pick) return [{ text: p, blank: false }];
+    const word = p.match(/^[A-Za-z']+/)![0];
+    const tail = p.slice(word.length);
+    return tail ? [{ text: word, blank: true }, { text: tail, blank: false }] : [{ text: word, blank: true }];
+  });
+}

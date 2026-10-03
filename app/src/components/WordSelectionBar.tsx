@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AddToWordListModal from './AddToWordListModal';
 import type { FullCardItem } from '../lib/types';
 import MaterialsLaunchButtons from './MaterialsLaunchButtons';
 
@@ -6,6 +8,7 @@ import MaterialsLaunchButtons from './MaterialsLaunchButtons';
  * 선택이 0개면 아무것도 그리지 않는다. 사이드바(md:w-64) 옆에 맞춰 떠 있다. */
 export default function WordSelectionBar({ words, onClear, phonics = false }: { words: FullCardItem[]; onClear: () => void; phonics?: boolean }) {
   const { t } = useTranslation();
+  const [adding, setAdding] = useState(false);
   if (words.length === 0) return null;
 
   return (
@@ -23,7 +26,16 @@ export default function WordSelectionBar({ words, onClear, phonics = false }: { 
             {t('selectionBar.clear')}
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container"
+        >
+          <span className="material-symbols-outlined text-[18px]">library_add</span>
+          {t('addToWordList.button')}
+        </button>
         <MaterialsLaunchButtons words={words} phonics={phonics} />
+        {adding && <AddToWordListModal words={words} onClose={() => setAdding(false)} onDone={onClear} />}
       </div>
     </div>
   );

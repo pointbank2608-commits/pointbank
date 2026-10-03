@@ -145,7 +145,11 @@ export default function LadderBoard({
   }, [n]);
 
   const width = Math.max(n, 2) * COL_W;
-  const height = TOP_PAD + grid.rows * ROW_H + BOTTOM_PAD;
+  // 사다리를 새로 만들면 줄 수가 늘어나(참가자 × 3) 화면보다 길어져 위가 잘렸다(2026-10-03 사용자 제보) —
+  // 전체 높이는 시작 전 빈 사다리와 같게 두고 한 줄 간격만 촘촘하게 줄인다.
+  const rowH = (ROW_H * DEFAULT_ROWS) / Math.max(grid.rows, DEFAULT_ROWS);
+  const rungH = Math.min(RUNG_H, rowH * 0.42);
+  const height = TOP_PAD + grid.rows * rowH + BOTTOM_PAD;
   const railH = height - TOP_PAD - BOTTOM_PAD;
 
   // 참가자가 적으면(사다리 폭 < 화면 폭) 전자칠판 같은 큰 화면에서 빈 여백만 남는 대신
@@ -177,19 +181,19 @@ export default function LadderBoard({
     return participants.map((_, i) => {
       const pts = tracePath(grid, i).map((p) => ({
         x: COL_W / 2 + p.col * COL_W,
-        y: TOP_PAD + p.row * ROW_H,
+        y: TOP_PAD + p.row * rowH,
       }));
       const d = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
       return { id: participants[i].id, d, color: colorFor(i) };
     });
-  }, [grid, participants]);
+  }, [grid, participants, rowH]);
 
   const rungLines = useMemo(() => {
     const lines: { key: string; x1: number; x2: number; y: number }[] = [];
     grid.rungs.forEach((row, r) => {
       row.forEach((has, gap) => {
         if (!has) return;
-        const y = TOP_PAD + (r + 0.5) * ROW_H;
+        const y = TOP_PAD + (r + 0.5) * rowH;
         lines.push({
           key: `${r}-${gap}`,
           x1: COL_W / 2 + gap * COL_W,
@@ -199,7 +203,7 @@ export default function LadderBoard({
       });
     });
     return lines;
-  }, [grid]);
+  }, [grid, rowH]);
 
   // 경로 길이만큼 stroke-dasharray 를 잡아둔 뒤(안 보이게), 다음 프레임에 dashoffset 을 0 으로
   // 애니메이션하면 위→아래로 선이 그려지는 것처럼 보인다. 새 사다리가 만들어질 때마다 전부 다시 숨긴다.
@@ -429,9 +433,9 @@ export default function LadderBoard({
                 key={l.key}
                 href={RUNG_SRC}
                 x={l.x1}
-                y={l.y - RUNG_H / 2}
+                y={l.y - rungH / 2}
                 width={l.x2 - l.x1}
-                height={RUNG_H}
+                height={rungH}
                 preserveAspectRatio="none"
               />
             ))}

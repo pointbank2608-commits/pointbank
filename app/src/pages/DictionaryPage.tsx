@@ -105,11 +105,19 @@ function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () =
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[520px] overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg sm:max-w-[600px]"
+        className="relative flex max-h-[92vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl bg-surface-container-lowest shadow-lg sm:max-w-[600px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <img src={entry.image_url ?? undefined} alt="" className="max-h-[70vh] w-full object-contain bg-surface-container-low" />
-        <div className="p-5 sm:p-7">
+        <img src={entry.image_url ?? undefined} alt="" className="min-h-0 flex-1 w-full object-contain bg-surface-container-low" />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('dictionary.closeButton')}
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-on-surface shadow-md hover:bg-white"
+        >
+          <span className="material-symbols-outlined">close</span>
+        </button>
+        <div className="shrink-0 p-5 sm:p-7">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-title-md text-3xl font-bold text-deep-navy sm:text-4xl">{entry.word}</h3>
             <SpeakButton text={entry.word} label={t('dictionary.playWord', { word: entry.word })} size="lg" />
