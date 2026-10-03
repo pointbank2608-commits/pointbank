@@ -2345,6 +2345,8 @@ const ko = {
     tabOwn: '직접 만들기',
     search: '제목·낱말로 찾기',
     allSeries: '전체 ({{count}})',
+    seriesNav: '시리즈',
+    allSeriesShort: '전체',
     allLevels: '모든 레벨',
     noMatch: '맞는 장면이 없어요.',
     empty: '아직 준비된 장면이 없어요. 곧 채워 넣을게요. 지금은 "직접 만들기"로 유튜브 주소와 대사를 넣어 주세요.',

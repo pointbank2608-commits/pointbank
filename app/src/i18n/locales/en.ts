@@ -2349,6 +2349,8 @@ const en: Ko = {
     tabOwn: 'Make your own',
     search: 'Search titles and words',
     allSeries: 'All ({{count}})',
+    seriesNav: 'Series',
+    allSeriesShort: 'All',
     allLevels: 'All levels',
     noMatch: 'No matching scenes.',
     empty: 'No scenes yet. We are filling the library. For now, use "Make your own" with a YouTube link and script.',
