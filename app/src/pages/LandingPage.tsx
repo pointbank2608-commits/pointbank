@@ -16,25 +16,20 @@ export default function LandingPage() {
   const { t } = useTranslation();
 
   const wheelItems = [
-    { id: '1', label: t('landing.wheelItem1') },
-    { id: '2', label: t('landing.wheelItem2') },
-    { id: '3', label: t('landing.wheelItem3') },
-    { id: '4', label: t('landing.wheelItem4') },
-    { id: '5', label: t('landing.wheelItem5') },
+    { id: '1', label: 'apple' },
+    { id: '2', label: 'banana' },
+    { id: '3', label: 'grape' },
+    { id: '4', label: 'melon' },
+    { id: '5', label: 'peach' },
   ];
 
-  const summary = [
-    { icon: 'menu_book', title: t('landing.summaryClassTitle'), desc: t('landing.summaryClassDesc') },
-    { icon: 'sports_esports', title: t('landing.summaryGameTitle'), desc: t('landing.summaryGameDesc') },
-    { icon: 'auto_stories', title: t('landing.summaryHomeworkTitle'), desc: t('landing.summaryHomeworkDesc') },
-    { icon: 'account_balance_wallet', title: t('landing.summaryPointTitle'), desc: t('landing.summaryPointDesc') },
-    { icon: 'event_available', title: t('landing.summaryAttendanceTitle'), desc: t('landing.summaryAttendanceDesc') },
-  ];
-
-  const mockWords = [
-    { word: t('landing.mockStudent1'), meaning: t('landing.mockMeaning1') },
-    { word: t('landing.mockStudent2'), meaning: t('landing.mockMeaning2') },
-    { word: t('landing.mockStudent3'), meaning: t('landing.mockMeaning3') },
+  const mockSlides = [
+    { icon: 'style', label: t('landing.mockSlide1') },
+    { icon: 'flip', label: t('landing.mockSlide2') },
+    { icon: 'casino', label: t('landing.mockSlide3') },
+    { icon: 'emoji_events', label: t('landing.mockSlide4') },
+    { icon: 'print', label: t('landing.mockSlide5') },
+    { icon: 'stars', label: t('landing.mockSlide6') },
   ];
 
   const pains = [
@@ -43,19 +38,33 @@ export default function LandingPage() {
     { n: '03', title: t('landing.pain3Title'), desc: t('landing.pain3Desc'), image: '/covers/landing-pain-3.jpg' },
   ];
 
-  const compareRows = [
-    [t('landing.compareRow1Label'), t('landing.compareRow1Off'), t('landing.compareRow1On')],
-    [t('landing.compareRow2Label'), t('landing.compareRow2Off'), t('landing.compareRow2On')],
-    [t('landing.compareRowHwLabel'), t('landing.compareRowHwOff'), t('landing.compareRowHwOn')],
-    [t('landing.compareRow3Label'), t('landing.compareRow3Off'), t('landing.compareRow3On')],
-    [t('landing.compareRow4Label'), t('landing.compareRow4Off'), t('landing.compareRow4On')],
+  const flow = [
+    { n: '1', icon: 'menu_book', title: t('landing.flow1Title'), desc: t('landing.flow1Desc') },
+    { n: '2', icon: 'library_add', title: t('landing.flow2Title'), desc: t('landing.flow2Desc') },
+    { n: '3', icon: 'co_present', title: t('landing.flow3Title'), desc: t('landing.flow3Desc') },
   ];
 
-  const steps = [
-    { n: '1', title: t('landing.step1Title'), desc: t('landing.step1Desc') },
-    { n: '2', title: t('landing.step2Title'), desc: t('landing.step2Desc') },
-    { n: '3', title: t('landing.step3Title'), desc: t('landing.step3Desc') },
+  const showcases = [
+    { eyebrow: t('landing.show1Eyebrow'), title: t('landing.show1Title'), desc: t('landing.show1Desc'), image: '/covers/game-quizshow.jpg' },
+    { eyebrow: t('landing.show2Eyebrow'), title: t('landing.show2Title'), desc: t('landing.show2Desc'), image: '/covers/material-cvcworkbook.jpg' },
   ];
+
+  const everything = [
+    { icon: 'co_present', title: t('landing.allLessonTitle'), desc: t('landing.allLessonDesc') },
+    { icon: 'sports_esports', title: t('landing.allGameTitle'), desc: t('landing.allGameDesc') },
+    { icon: 'emoji_events', title: t('landing.allContestTitle'), desc: t('landing.allContestDesc') },
+    { icon: 'print', title: t('landing.allPrintTitle'), desc: t('landing.allPrintDesc') },
+    { icon: 'auto_stories', title: t('landing.allWordsTitle'), desc: t('landing.allWordsDesc') },
+    { icon: 'smart_display', title: t('landing.allVideoTitle'), desc: t('landing.allVideoDesc') },
+    { icon: 'videocam', title: t('landing.allOnlineTitle'), desc: t('landing.allOnlineDesc') },
+    { icon: 'account_balance_wallet', title: t('landing.allManageTitle'), desc: t('landing.allManageDesc') },
+  ];
+
+  const compareRows = [1, 2, 3, 4, 5].map((n) => [
+    t(`landing.compareRow${n}Label`),
+    t(`landing.compareRow${n}Off`),
+    t(`landing.compareRow${n}On`),
+  ]);
 
   const plans = [
     {
@@ -111,7 +120,7 @@ export default function LandingPage() {
               className="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#fff8ee]/18 via-transparent to-[#2a241c]/20" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#2a241c]/78 via-[#2a241c]/38 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2a241c]/80 via-[#2a241c]/42 to-transparent" />
             <div className="relative mx-auto grid h-full min-h-[inherit] max-w-container-max items-center gap-10 px-margin-mobile py-16 md:grid-cols-[1.05fr_0.95fr] md:px-margin-desktop md:py-20">
               <div className="space-y-7 text-white">
                 <div className="flex flex-wrap gap-2">
@@ -119,15 +128,13 @@ export default function LandingPage() {
                     {t('landing.heroEyebrow')}
                   </div>
                   <div className="inline-flex items-center rounded-full bg-warm-yellow px-4 py-1.5 font-label-md text-[15px] text-deep-navy">
-                    {t('landing.betaBadge')}
+                    {t('landing.heroBadge')}
                   </div>
                 </div>
                 <h1 className="landing-display text-[42px] leading-[1.2] text-white md:text-[64px] md:leading-[1.16]">
                   {t('landing.heroLine1')}
                   <br />
-                  {t('landing.heroLine2')}
-                  <br />
-                  <span className="text-warm-yellow">{t('landing.heroLine3')}</span>
+                  {t('landing.heroLine2')} <span className="text-warm-yellow">{t('landing.heroLine3')}</span>
                 </h1>
                 <p className="max-w-xl text-[19px] leading-8 text-white/86 md:text-[21px] md:leading-9">{t('landing.heroDesc')}</p>
                 <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center">
@@ -139,17 +146,14 @@ export default function LandingPage() {
                     <span className="material-symbols-outlined text-[22px]">arrow_forward</span>
                   </Link>
                 </div>
-                <div className="flex flex-col gap-2 text-[16px] text-white/82 sm:flex-row sm:gap-5 md:text-[17px]">
-                  <span className="inline-flex items-center gap-2">
-                    <CheckIcon />
-                    {t('landing.heroCheck1')}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <CheckIcon />
-                    {t('landing.heroCheck2')}
-                  </span>
+                <div className="flex flex-col gap-2 text-[16px] text-white/82 sm:flex-row sm:flex-wrap sm:gap-x-5 md:text-[17px]">
+                  {[t('landing.heroCheck1'), t('landing.heroCheck2'), t('landing.heroCheck3')].map((c) => (
+                    <span key={c} className="inline-flex items-center gap-2">
+                      <CheckIcon />
+                      {c}
+                    </span>
+                  ))}
                 </div>
-                <p className="text-[16px] leading-6 text-white/65">{t('landing.heroCaption')}</p>
               </div>
 
               <div className="relative">
@@ -157,50 +161,35 @@ export default function LandingPage() {
                   <div className="space-y-4 p-5 md:p-6">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="font-title-md text-[18px] text-deep-navy">{t('landing.mockClassName')}</div>
-                        <div className="text-[15px] text-on-surface-variant">{t('landing.mockStudentCount')}</div>
+                        <div className="font-title-md text-[18px] text-deep-navy">{t('landing.mockLessonTitle')}</div>
+                        <div className="text-[15px] text-on-surface-variant">{t('landing.mockLessonSub')}</div>
                       </div>
                       <div className="rounded-full bg-warm-yellow px-3 py-1.5 font-label-md text-[15px] text-deep-navy">
-                        {t('landing.mockReadyBadge')}
+                        {t('landing.mockBadge')}
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      {mockWords.map((s) => (
-                        <div key={s.word} className="flex items-center justify-between rounded-2xl bg-surface-container-low px-3 py-2.5">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container font-title-md text-[14px] text-on-primary-container">
-                              {s.word.slice(0, 1)}
-                            </div>
-                            <span className="text-[17px] text-on-surface">{s.word}</span>
-                          </div>
-                          <span className="rounded-full bg-primary/10 px-3 py-1 font-title-md text-[16px] text-primary">
-                            {s.meaning}
+                    <ol className="grid grid-cols-2 gap-2">
+                      {mockSlides.map((s, i) => (
+                        <li key={s.label} className="flex items-center gap-2.5 rounded-2xl bg-surface-container-low px-3 py-2.5">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
+                            <span className="material-symbols-outlined text-[18px]">{s.icon}</span>
                           </span>
-                        </div>
+                          <span className="min-w-0 text-[15px] leading-5 text-on-surface">
+                            <span className="mr-1 text-outline">{i + 1}</span>
+                            {s.label}
+                          </span>
+                        </li>
                       ))}
-                    </div>
-                    <div>
-                      <div className="mb-2 text-[15px] text-outline">{t('landing.mockPreset')}</div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="rounded-full bg-secondary-container px-3 py-1.5 text-[15px] text-on-secondary-container">
-                          {t('landing.mockPreset1')}
-                        </span>
-                        <span className="rounded-full bg-secondary-container px-3 py-1.5 text-[15px] text-on-secondary-container">
-                          {t('landing.mockPreset2')}
-                        </span>
-                        <span className="rounded-full bg-secondary-container px-3 py-1.5 text-[15px] text-on-secondary-container">
-                          {t('landing.mockPreset3')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="rounded-2xl bg-primary py-3 text-center font-label-md text-[16px] text-on-primary">
-                      {t('landing.mockGive')}
+                    </ol>
+                    <div className="flex items-center justify-center gap-2 rounded-2xl bg-primary py-3 font-label-md text-[16px] text-on-primary">
+                      <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+                      {t('landing.mockPresent')}
                     </div>
                   </div>
                 </div>
-                <div className="absolute -right-2 -top-3 rounded-2xl border border-white/70 bg-white px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.12)] md:-right-4">
-                  <div className="text-[14px] text-outline">{t('landing.mockSettleTitle')}</div>
-                  <div className="font-label-md text-[15px] text-deep-navy">{t('landing.mockSettleDone')}</div>
+                <div className="absolute -bottom-5 -left-2 rounded-2xl border border-white/70 bg-white px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.12)] md:-left-6">
+                  <div className="text-[14px] text-outline">{t('landing.mockFloatTitle')}</div>
+                  <div className="font-label-md text-[15px] text-deep-navy">{t('landing.mockFloatDone')}</div>
                 </div>
               </div>
             </div>
@@ -210,12 +199,10 @@ export default function LandingPage() {
         <section className="bg-[#12263d]">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
             <p className="mb-3 font-label-md text-[16px] tracking-wide text-soft-mint">{t('landing.painEyebrow')}</p>
-            <h2 className="landing-display mb-12 max-w-3xl text-[32px] text-white md:text-[48px]">
-              {t('landing.painTitle')}
-            </h2>
+            <h2 className="landing-display mb-12 max-w-3xl text-[32px] text-white md:text-[48px]">{t('landing.painTitle')}</h2>
             <div className="grid gap-5 md:grid-cols-3">
               {pains.map((p) => (
-                <article key={p.n} className="landing-pain-card relative overflow-hidden rounded-[28px] aspect-[3/4]">
+                <article key={p.n} className="landing-pain-card relative aspect-[3/4] overflow-hidden rounded-[28px]">
                   <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0b1726]/92 via-[#0b1726]/35 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-7">
@@ -231,18 +218,17 @@ export default function LandingPage() {
 
         <section className="bg-[#fff8ee]">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.solutionEyebrow')}</p>
-            <h2 className="landing-display mb-10 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">
-              {t('landing.solutionTitle')}
-            </h2>
+            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.flowEyebrow')}</p>
+            <h2 className="landing-display mb-10 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">{t('landing.flowTitle')}</h2>
             <div className="grid gap-5 md:grid-cols-3">
-              {[
-                { n: '01', title: t('landing.solution1Title'), desc: t('landing.solution1Desc') },
-                { n: '02', title: t('landing.solution2Title'), desc: t('landing.solution2Desc') },
-                { n: '03', title: t('landing.solution3Title'), desc: t('landing.solution3Desc') },
-              ].map((s) => (
+              {flow.map((s) => (
                 <div key={s.n} className="rounded-[28px] bg-white p-7 shadow-[0_8px_30px_rgba(30,75,122,0.06)]">
-                  <div className="mb-4 font-label-md text-[16px] text-primary">{s.n}</div>
+                  <div className="mb-5 flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary font-title-md text-[18px] text-on-primary">
+                      {s.n}
+                    </span>
+                    <span className="material-symbols-outlined text-[28px] text-primary">{s.icon}</span>
+                  </div>
                   <h3 className="landing-display mb-3 text-[26px] text-deep-navy">{s.title}</h3>
                   <p className="text-[17px] leading-8 text-on-surface-variant">{s.desc}</p>
                 </div>
@@ -251,13 +237,41 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {showcases.map((sc, i) => (
+          <section key={sc.title} className={i % 2 === 0 ? '' : 'bg-surface-container-lowest'}>
+            <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
+              <div className={`overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)] ${i % 2 === 0 ? '' : 'md:order-2'}`}>
+                <img src={sc.image} alt="" className="aspect-[4/3] w-full object-cover" />
+              </div>
+              <div className={i % 2 === 0 ? '' : 'md:order-1'}>
+                <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{sc.eyebrow}</div>
+                <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{sc.title}</h2>
+                <p className="text-[19px] leading-9 text-on-surface-variant">{sc.desc}</p>
+              </div>
+            </div>
+          </section>
+        ))}
+
+        <section>
+          <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
+            <div className="flex h-[320px] items-center justify-center overflow-hidden rounded-[28px] bg-background shadow-[0_16px_48px_rgba(30,75,122,0.08)]">
+              <div className="origin-center scale-[0.68]" style={{ width: 420, height: 420 }}>
+                <SpinWheel items={wheelItems} />
+              </div>
+            </div>
+            <div>
+              <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.show3Eyebrow')}</div>
+              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.show3Title')}</h2>
+              <p className="text-[19px] leading-9 text-on-surface-variant">{t('landing.show3Desc')}</p>
+            </div>
+          </div>
+        </section>
+
         <section className="bg-surface-container-lowest">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <h2 className="landing-display mb-10 text-center text-[32px] text-deep-navy md:text-[48px]">
-              {t('landing.summaryTitle')}
-            </h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5 md:gap-5">
-              {summary.map((s) => (
+            <h2 className="landing-display mb-10 text-center text-[32px] text-deep-navy md:text-[48px]">{t('landing.allTitle')}</h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
+              {everything.map((s) => (
                 <div
                   key={s.title}
                   className="flex flex-col items-center gap-2 rounded-[24px] bg-background p-6 text-center shadow-[0_8px_30px_rgba(30,75,122,0.06)]"
@@ -273,49 +287,15 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-          <div className="overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)]">
-            <img src="/covers/landing-feature-points.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
-          </div>
-          <div>
-            <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.feature1Eyebrow')}</div>
-            <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.feature1Title')}</h2>
-            <p className="text-[19px] leading-9 text-on-surface-variant">
-              {t('landing.feature1DescBefore')}
-              <strong className="text-on-surface">{t('landing.feature1DescStrong')}</strong>{t('landing.feature1DescAfter')}
-            </p>
+        <section className="bg-[#12263d]">
+          <div className="mx-auto max-w-container-max px-margin-mobile py-16 text-center md:px-margin-desktop md:py-20">
+            <p className="mb-3 font-label-md text-[16px] tracking-wide text-soft-mint">{t('landing.placeEyebrow')}</p>
+            <h2 className="landing-display mx-auto mb-4 max-w-3xl text-[30px] text-white md:text-[44px]">{t('landing.placeTitle')}</h2>
+            <p className="mx-auto max-w-2xl text-[19px] leading-9 text-white/80">{t('landing.placeDesc')}</p>
           </div>
         </section>
 
-        <section className="bg-surface-container-lowest">
-          <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-            <div className="md:order-2">
-              <div className="flex h-[320px] items-center justify-center overflow-hidden rounded-[28px] bg-background shadow-[0_16px_48px_rgba(30,75,122,0.08)]">
-                <div className="origin-center scale-[0.68]" style={{ width: 420, height: 420 }}>
-                  <SpinWheel items={wheelItems} />
-                </div>
-              </div>
-            </div>
-            <div className="md:order-1">
-              <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.feature2Eyebrow')}</div>
-              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.feature2Title')}</h2>
-              <p className="text-[19px] leading-9 text-on-surface-variant">{t('landing.feature2Desc')}</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-          <div className="overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)]">
-            <img src="/covers/landing-feature-attendance.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
-          </div>
-          <div>
-            <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.feature3Eyebrow')}</div>
-            <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.feature3Title')}</h2>
-            <p className="text-[19px] leading-9 text-on-surface-variant">{t('landing.feature3Desc')}</p>
-          </div>
-        </section>
-
-        <section className="bg-surface-container-lowest">
+        <section>
           <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
             <div>
               <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.feature4Eyebrow')}</div>
@@ -336,14 +316,13 @@ export default function LandingPage() {
               </div>
               <p className="mt-5 text-[16px] leading-7 text-outline">{t('landing.feature4Hint')}</p>
             </div>
-
             <div className="overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)]">
               <img src="/covers/landing-feature-homework.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
             </div>
           </div>
         </section>
 
-        <section>
+        <section className="bg-surface-container-lowest">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop">
             <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.compareEyebrow')}</p>
             <h2 className="landing-display mb-10 text-[32px] text-deep-navy md:text-[48px]">{t('landing.compareTitle')}</h2>
@@ -367,22 +346,6 @@ export default function LandingPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-        </section>
-
-        <section className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop">
-          <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.stepsEyebrow')}</p>
-          <h2 className="landing-display mb-12 text-[32px] text-deep-navy md:text-[48px]">{t('landing.stepsTitle')}</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {steps.map((s) => (
-              <div key={s.n} className="rounded-[24px] bg-surface-container-lowest p-7 shadow-[0_8px_30px_rgba(30,75,122,0.06)]">
-                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-primary font-title-md text-[18px] text-on-primary">
-                  {s.n}
-                </div>
-                <h3 className="landing-display mb-2 text-[24px] text-on-surface">{s.title}</h3>
-                <p className="text-[17px] leading-8 text-on-surface-variant">{s.desc}</p>
-              </div>
-            ))}
           </div>
         </section>
 
