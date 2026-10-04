@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { parseShadowText, shadowSpeakers } from '../lib/shadowLines';
 import { clipLength, clipThumb, formatClipTime, useVideoClips, type VideoClip } from '../lib/videoClips';
@@ -139,6 +139,17 @@ function ClipPreview({ clip, onPick, onClose, pickLabel }: { clip: VideoClip; on
   const { t } = useTranslation();
   const lines = parseShadowText(clip.script);
   const speakers = shadowSpeakers(lines);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [isFull, setIsFull] = useState(false);
+  useEffect(() => {
+    const onChange = () => setIsFull(document.fullscreenElement === stageRef.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  function toggleFullscreen() {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void stageRef.current?.requestFullscreen?.();
+  }
   return (
     <div className="space-y-3 rounded-xl border border-primary/30 bg-secondary-container/20 p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -165,6 +176,14 @@ function ClipPreview({ clip, onPick, onClose, pickLabel }: { clip: VideoClip; on
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
+            onClick={toggleFullscreen}
+            className="flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px]">fullscreen</span>
+            {t('videoLibrary.fullscreen')}
+          </button>
+          <button
+            type="button"
             onClick={onPick}
             className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container"
           >
@@ -176,8 +195,19 @@ function ClipPreview({ clip, onPick, onClose, pickLabel }: { clip: VideoClip; on
           </button>
         </div>
       </div>
-      <div className="aspect-video w-full max-w-3xl">
+      {/* 화면에 맞춰 크게(가로는 칸 전체, 세로는 창 높이의 약 75%까지) + 전체 화면(2026-10-05 사용자 요청) */}
+      <div ref={stageRef} className="relative mx-auto aspect-video w-full max-w-[calc(75vh*16/9)] bg-surface-container-low [&:fullscreen]:max-w-none [&:fullscreen]:bg-black [&:fullscreen]:px-[2vh] [&:fullscreen]:pb-[2vh] [&:fullscreen]:pt-[5vh]">
         <ShadowBoard key={clip.id} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} />
+        {isFull && (
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="absolute left-1/2 top-[0.4vh] z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm text-white hover:bg-white/30"
+          >
+            <span className="material-symbols-outlined text-[18px]">fullscreen_exit</span>
+            {t('videoLibrary.exitFullscreen')}
+          </button>
+        )}
       </div>
     </div>
   );
