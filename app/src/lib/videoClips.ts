@@ -89,6 +89,47 @@ export function useVideoClips() {
   return { clips, error };
 }
 
+const packCache = new Map<string, Promise<ClipPack | null>>();
+
+/**
+ * 라이브러리 장면의 지금 수업 묶음(장면 보기 시간을 고친 뒤에도 이미 만든 수업이 새 시간을 쓰게, 2026-10-05).
+ * 못 읽으면 null(슬라이드에 저장된 값을 그대로 쓴다).
+ */
+export function useClipPack(clipId: string | null | undefined): ClipPack | null {
+  const [pack, setPack] = useState<ClipPack | null>(null);
+  useEffect(() => {
+    if (!clipId) {
+      setPack(null);
+      return;
+    }
+    let alive = true;
+    let p = packCache.get(clipId);
+    if (!p) {
+      p = (async () => {
+        const { data, error } = await supabase.from('video_clips').select('pack').eq('id', clipId).maybeSingle();
+        if (error || !data) {
+          packCache.delete(clipId);
+          return null;
+        }
+        return (data.pack ?? null) as ClipPack | null;
+      })();
+      packCache.set(clipId, p);
+    }
+    void p.then((v) => alive && setPack(v));
+    return () => {
+      alive = false;
+    };
+  }, [clipId]);
+  return pack;
+}
+
+/** 저장된 Q&A 질문에 라이브러리의 지금 장면 시간을 덮어쓴다(같은 질문 글끼리). 라이브러리에서 시간을 지웠으면 장면 보기도 뺀다. */
+export function withFreshQuestionTimes<T extends { q: string; time?: number }>(questions: T[], pack: ClipPack | null): T[] {
+  if (!pack?.questions) return questions;
+  const byQ = new Map(pack.questions.map((x) => [x.q.trim(), x.time]));
+  return questions.map((x) => (byQ.has(x.q.trim()) ? { ...x, time: byQ.get(x.q.trim()) } : x));
+}
+
 const takenDown = new Map<string, Promise<boolean>>();
 
 /** 이 장면이 내려갔는지(없어졌거나 hidden). 확인하기 전·확인 실패 시에는 false(막지 않음). */

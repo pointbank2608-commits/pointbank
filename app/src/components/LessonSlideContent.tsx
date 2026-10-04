@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
-import { useClipTakenDown } from '../lib/videoClips';
+import { useClipPack, useClipTakenDown, withFreshQuestionTimes } from '../lib/videoClips';
 import { extractYoutubeId } from '../lib/youtube';
 import type { FullCardItem, LessonSlide } from '../lib/types';
 import AttendanceBoard from './AttendanceBoard';
@@ -45,6 +45,7 @@ export default function LessonSlideContent({
   if ((slide.kind === 'wordshow' || slide.kind === 'study') && slide.words?.length) words = slide.words;
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
+  const clipPack = useClipPack(slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
   const clipDown = useClipTakenDown(slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 단어가 바뀔 때만 만든다.
   const studyCards = useMemo(
@@ -78,7 +79,12 @@ export default function LessonSlideContent({
   if (slide.kind === 'drill') {
     return (
       <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
-        <DrillBoard key={slide.id} slide={slide} interactive videoUrl={student ? undefined : slide.videoUrl} />
+        <DrillBoard
+          key={slide.id}
+          slide={clipPack?.grammar && clipPack.grammar.sentence === slide.sentence ? { ...slide, time: clipPack.grammar.time } : slide}
+          interactive
+          videoUrl={student ? undefined : slide.videoUrl}
+        />
       </div>
     );
   }
@@ -88,7 +94,7 @@ export default function LessonSlideContent({
       <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
         <QnaBoard
           key={slide.id}
-          questions={slide.questions}
+          questions={withFreshQuestionTimes(slide.questions, clipPack)}
           title={slide.title}
           videoUrl={student ? undefined : slide.videoUrl}
           themeId={slide.boardTheme ?? 'green'}
