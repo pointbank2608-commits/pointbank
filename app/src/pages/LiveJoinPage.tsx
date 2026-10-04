@@ -436,7 +436,7 @@ function readKbdPref(): 'screen' | 'device' {
  * 바로 누를 수 있고 모든 기기에서 같다(자동 고침·대문자 자동 변환도 없음). 연결된 실물 키보드로도 칠 수 있다.
  * 한글 답처럼 화면 자판에 없는 글자가 필요하면 "기기 자판으로 쓰기"로 바꾼다(선택은 이 휴대폰에 기억).
  */
-function TextAnswer({
+export function TextAnswer({
   text,
   setText,
   disabled,

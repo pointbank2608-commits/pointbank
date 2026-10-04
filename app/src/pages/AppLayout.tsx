@@ -65,6 +65,7 @@ function AppLayoutInner() {
         { to: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
         { to: '/curriculum', label: t('nav.curriculum'), icon: 'auto_stories' },
         { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
+        { to: '/homework', label: t('nav.homework'), icon: 'assignment' },
         { to: '/board', label: t('nav.board'), icon: 'payments' },
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
         { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },

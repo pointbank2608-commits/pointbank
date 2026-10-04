@@ -5,6 +5,8 @@ import AdminSupportPage from './pages/AdminSupportPage';
 import AdminNoticesPage from './pages/AdminNoticesPage';
 import AdminVideosPage from './pages/AdminVideosPage';
 import VideoLibraryPage from './pages/VideoLibraryPage';
+import HomeworkPage from './pages/HomeworkPage';
+import HomeworkStudentPage from './pages/HomeworkStudentPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -94,6 +96,15 @@ export default function App() {
       <Routes>
         <Route path="/join" element={<LiveJoinPage />} />
         <Route path="/join/:code" element={<LiveJoinPage />} />
+      </Routes>
+    );
+  }
+  // 학생 숙제(Classbank Student, 로그인 없이 숙제 번호 + 이름 + PIN)
+  if (pathname === '/hw' || pathname.startsWith('/hw/')) {
+    return (
+      <Routes>
+        <Route path="/hw" element={<HomeworkStudentPage />} />
+        <Route path="/hw/:code" element={<HomeworkStudentPage />} />
       </Routes>
     );
   }
@@ -187,6 +198,7 @@ export default function App() {
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/grammar" element={<GrammarPage />} />
             <Route path="/videos" element={<VideoLibraryPage />} />
+            <Route path="/homework" element={<HomeworkPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/materials" element={<MaterialsPage />} />
             <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />
