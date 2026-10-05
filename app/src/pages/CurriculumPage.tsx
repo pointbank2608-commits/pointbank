@@ -26,10 +26,8 @@ import {
 } from '../lib/api';
 import LessonHistoryModal from '../components/LessonHistoryModal';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
-import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
 import { copyLessonToClass } from '../lib/copyLesson';
 import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
@@ -42,6 +40,13 @@ function uid(): string {
  * 같은 자리에선 필요 없음). 코드는 남겨 두고, 필요하면 나중에 유튜브 슬라이드 쪽에 넣는다. */
 const SHOW_VIDEO_WORD_EXTRACT = false;
 
+type LessonSortKey = 'updated' | 'created' | 'name';
+type LessonSort = { key: LessonSortKey; dir: 'asc' | 'desc' };
+const LESSON_SORT_KEYS: LessonSortKey[] = ['updated', 'created', 'name'];
+const LESSON_SORT_KEY = 'classbank.lessonSort2';
+/** 처음 누를 때 방향: 날짜는 최근 것 먼저, 이름은 가나다 */
+const firstDir = (k: LessonSortKey): 'asc' | 'desc' => (k === 'name' ? 'asc' : 'desc');
+
 export default function CurriculumPage() {
   const { t } = useTranslation();
   const { start } = useLessonRunner();
@@ -51,6 +56,17 @@ export default function CurriculumPage() {
 
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
+  // 수업 목록 정렬·찾기(2026-10-05) — 정렬은 이 기기에 기억
+  const [lessonSort, setLessonSort] = useState<LessonSort>(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem(LESSON_SORT_KEY) ?? 'null') as LessonSort | null;
+      if (v && LESSON_SORT_KEYS.includes(v.key) && (v.dir === 'asc' || v.dir === 'desc')) return v;
+    } catch {
+      /* 처음 값으로 */
+    }
+    return { key: 'updated', dir: 'desc' };
+  });
+  const [lessonQuery, setLessonQuery] = useState('');
   const [deletedLessons, setDeletedLessons] = useState<ContentRevision[]>([]);
   const [historyLesson, setHistoryLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -513,6 +529,19 @@ export default function CurriculumPage() {
     }
   }
 
+  const sortedLessons = (() => {
+    const q = lessonQuery.trim().toLowerCase();
+    const list = q ? lessons.filter((l) => l.name.toLowerCase().includes(q)) : [...lessons];
+    const time = (v: string) => new Date(v).getTime() || 0;
+    const sign = lessonSort.dir === 'asc' ? 1 : -1;
+    if (lessonSort.key === 'name') list.sort((a, b) => sign * a.name.localeCompare(b.name, 'ko', { numeric: true }));
+    else {
+      const field = lessonSort.key === 'updated' ? 'updated_at' : 'created_at';
+      list.sort((a, b) => sign * (time(a[field]) - time(b[field])));
+    }
+    return list;
+  })();
+
   return (
     <div className="space-y-6">
       <div>
@@ -837,8 +866,58 @@ export default function CurriculumPage() {
         <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.noLessons')}</div>
       )}
 
+      {lessons.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative min-w-[200px] flex-1 sm:max-w-xs">
+            <span className="sr-only">{t('curriculum.sort.search')}</span>
+            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
+            <input
+              value={lessonQuery}
+              onChange={(e) => setLessonQuery(e.target.value)}
+              placeholder={t('curriculum.sort.search')}
+              className="min-h-11 w-full rounded-full border border-outline-variant bg-surface-container-lowest pl-10 pr-4 text-base outline-none focus:border-primary"
+            />
+          </label>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('curriculum.sort.label')}>
+            {LESSON_SORT_KEYS.map((k) => {
+              const on = lessonSort.key === k;
+              const dir = on ? lessonSort.dir : firstDir(k);
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={on}
+                  aria-label={t('curriculum.sort.aria', { label: t(`curriculum.sort.${k}`), dir: t(`curriculum.sort.${k}_${dir}`) })}
+                  onClick={() => {
+                    // 같은 버튼을 다시 누르면 방향만 바꾼다
+                    const next: LessonSort = on ? { key: k, dir: lessonSort.dir === 'asc' ? 'desc' : 'asc' } : { key: k, dir: firstDir(k) };
+                    setLessonSort(next);
+                    try {
+                      localStorage.setItem(LESSON_SORT_KEY, JSON.stringify(next));
+                    } catch {
+                      /* 기억 못 해도 정렬은 된다 */
+                    }
+                  }}
+                  className={`flex min-h-11 items-center gap-0.5 rounded-full pl-4 pr-3 font-label-md text-label-md transition-colors ${
+                    on ? 'bg-secondary-container text-on-secondary-container' : 'border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
+                >
+                  {t(`curriculum.sort.${k}`)}
+                  <span className={`material-symbols-outlined text-[18px] ${on ? '' : 'opacity-30'}`} aria-hidden="true">
+                    {dir === 'desc' ? 'arrow_downward' : 'arrow_upward'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {lessons.length > 1 && sortedLessons.length === 0 && (
+        <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.sort.noMatch')}</div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {lessons.map((lesson) => {
+        {sortedLessons.map((lesson) => {
           const wl = wordLists.find((w) => w.id === lesson.word_list_id);
           return (
             <div
@@ -907,37 +986,11 @@ export default function CurriculumPage() {
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-1">
-                {effectiveSlides(lesson).map((slide, i) => {
-                  let icon = 'help';
-                  if (slide.kind === 'image') icon = 'image';
-                  else if (slide.kind === 'canvas') icon = 'dashboard_customize';
-                  else if (slide.kind === 'study') icon = 'style';
-                  else if (slide.kind === 'wordshow') icon = 'menu_book';
-                  else if (slide.kind === 'attendance') icon = 'how_to_reg';
-                  else if (slide.kind === 'grammar') icon = 'rule';
-                  else if (slide.kind === 'reading') icon = slide.mode === 'cloze' ? 'hearing' : 'lyrics';
-                  else if (slide.kind === 'shadow') icon = 'record_voice_over';
-                  else if (slide.kind === 'qna') icon = 'forum';
-                  else if (slide.kind === 'drill') icon = 'swap_horiz';
-                  else if (slide.kind === 'video') icon = 'smart_display';
-                  else if (slide.kind === 'web') icon = slide.mode === 'window' ? 'menu_book' : 'language';
-                  else if (slide.kind === 'game') icon = GAME_CATALOG.find((g) => g.type === slide.gameType)?.icon ?? 'sports_esports';
-                  else if (slide.materialId === 'worksheet' && slide.worksheetTab)
-                    icon = WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab)?.icon ?? 'description';
-                  else icon = MATERIALS_CATALOG.find((m) => m.id === slide.materialId)?.icon ?? 'print';
-                  return (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      onClick={() => void handleStart(lesson, slide.id)}
-                      title={t('curriculum.startFromSlide', { n: i + 1 })}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-primary-fixed hover:text-primary"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{icon}</span>
-                    </button>
-                  );
-                })}
+              {/* 슬라이드 아이콘 줄은 화면만 차지해서(2026-10-05 사용자 피드백) 장 수만 보여 준다.
+                  특정 슬라이드부터 발표는 편집 화면의 "이 슬라이드부터 발표"로 한다. */}
+              <div className="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+                <span className="material-symbols-outlined text-[18px]">slideshow</span>
+                {t('curriculum.slideCount', { count: effectiveSlides(lesson).length })}
               </div>
 
               <button
