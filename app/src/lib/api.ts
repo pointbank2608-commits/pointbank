@@ -73,16 +73,20 @@ export async function reorderClasses(orderedIds: string[]) {
 
 /* ---------------- 학생 ---------------- */
 
+// 학습 기록이 있는 학생은 지우면 보관(archived_at)된다(041) — 평소 목록에서는 숨긴다.
+// 041 을 실행하기 전이면 그 칸이 없으므로 예전처럼 전부 읽는다.
+async function activeStudents(column: 'class_id' | 'academy_id', id: string): Promise<Student[]> {
+  const res = await supabase.from('students').select('*').eq(column, id).is('archived_at', null).order('name');
+  if (res.error && /archived_at/.test(res.error.message)) return unwrap(await supabase.from('students').select('*').eq(column, id).order('name'));
+  return unwrap(res);
+}
+
 export async function fetchStudentsOfClass(classId: string): Promise<Student[]> {
-  return unwrap(
-    await supabase.from('students').select('*').eq('class_id', classId).order('name'),
-  );
+  return activeStudents('class_id', classId);
 }
 
 export async function fetchStudentsOfAcademy(academyId: string): Promise<Student[]> {
-  return unwrap(
-    await supabase.from('students').select('*').eq('academy_id', academyId).order('name'),
-  );
+  return activeStudents('academy_id', academyId);
 }
 
 export async function createStudent(academyId: string, classId: string, name: string) {

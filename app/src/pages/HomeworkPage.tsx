@@ -1,37 +1,27 @@
-import QRCode from 'qrcode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
+import HomeworkResults from '../components/homework/teacher/HomeworkResults';
+import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
+import HomeworkWizard from '../components/homework/teacher/HomeworkWizard';
+import LearningCardModal from '../components/homework/teacher/LearningCardModal';
+import PinManager from '../components/homework/teacher/PinManager';
+import RecommendReview from '../components/homework/teacher/RecommendReview';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { fetchWordLists } from '../lib/api';
-import { wordListToCards } from '../lib/gameFromWords';
-import {
-  buildHomeworkQuestions,
-  closeHomework,
-  createHomework,
-  DEFAULT_HOMEWORK_ROUNDS,
-  deleteHomework,
-  fetchHomeworkAnswers,
-  fetchHomeworkAttempts,
-  fetchHomeworks,
-  fetchStudentPins,
-  homeworkUrl,
-  randomPin,
-  setStudentPin,
-  type HomeworkAnswer,
-  type HomeworkAssignment,
-  type HomeworkAttempt,
-  type HomeworkRoundSetting,
-} from '../lib/homework';
-import { contestRoundNames } from '../lib/liveQuiz';
+import { fetchStudentsOfClass } from '../lib/api';
+import { fetchHomeworkOverview, fetchHomeworkUsage, teacherErrorKey, type HomeworkOverviewRow } from '../lib/homework';
+import type { FullCardItem, Student } from '../lib/types';
 import { useClasses } from '../lib/useClasses';
-import { enrichCards, loadWordBank } from '../lib/wordBankCache';
-import type { WordList } from '../lib/types';
+
+type Panel =
+  | { k: 'none' }
+  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string }
+  | { k: 'recommend'; studentIds: string[] };
 
 /**
- * 숙제(2026-10-04, Classbank Student ②) — 선생님이 단어장으로 숙제를 내고(활동·문제 수·마감), 숙제 번호·링크·QR 을
- * 학생에게 준다. 학생별 진행(안 함·하는 중·완료)·점수·자주 틀린 낱말을 보고, 학생 PIN(4자리)을 관리한다.
+ * 숙제(Classbank Student, 2026-10-05 2단계) — 수업 자료 → 온라인 숙제 → 서버 채점·학습 기록 → 학습 카드 → 맞춤 숙제 추천
+ * → 선생님 확인 뒤 발송. 목록·결과 숫자는 서버가 집계한다.
  */
 export default function HomeworkPage() {
   const { t } = useTranslation();
@@ -39,51 +29,94 @@ export default function HomeworkPage() {
   const { notify } = useToast();
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
   const classId = selectedId ?? classes[0]?.id ?? null;
-  const [wordLists, setWordLists] = useState<WordList[]>([]);
-  const [list, setList] = useState<HomeworkAssignment[] | null>(null);
-  const [attempts, setAttempts] = useState<HomeworkAttempt[]>([]);
-  const [students, setStudents] = useState<{ id: string; name: string; hw_pin: string | null }[]>([]);
-  const [creating, setCreating] = useState(false);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [shareId, setShareId] = useState<string | null>(null);
-  const [pinsOpen, setPinsOpen] = useState(false);
+  const className = classes.find((c) => c.id === classId)?.name ?? '';
+  const [list, setList] = useState<HomeworkOverviewRow[] | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [panel, setPanel] = useState<Panel>({ k: 'none' });
+  const [shareId, setShareId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [cardStudent, setCardStudent] = useState<string | null>(null);
+  const [pinsOpen, setPinsOpen] = useState(false);
+  const [usage, setUsage] = useState<number | null>(null);
 
   const reload = useCallback(async () => {
-    if (!classId || !academy?.id) return;
+    if (!classId) return;
     try {
-      const [hw, wl, st] = await Promise.all([fetchHomeworks(classId), fetchWordLists(academy.id, classId), fetchStudentPins(classId)]);
+      const [hw, st] = await Promise.all([fetchHomeworkOverview(classId), fetchStudentsOfClass(classId)]);
       setList(hw);
-      setWordLists(wl);
       setStudents(st);
-      setAttempts(await fetchHomeworkAttempts(hw.map((h) => h.id)));
       setError(null);
     } catch (e) {
-      const msg = String((e as { message?: string })?.message ?? e);
-      setError(/homework|hw_pin|relation|column/i.test(msg) ? t('studentHw.needSetup') : msg);
+      setError(t(teacherErrorKey(e)));
       setList([]);
     }
-  }, [classId, academy?.id, t]);
+  }, [classId, t]);
 
   useEffect(() => {
     setList(null);
+    setPanel({ k: 'none' });
+    setShareId(null);
+    setOpenId(null);
     void reload();
   }, [reload]);
 
+  // 이번 달 온라인 숙제를 시작한 학생 수(안내용 — 요금·제한과 연결되지 않음)
+  useEffect(() => {
+    const now = new Date();
+    fetchHomeworkUsage(new Date(now.getFullYear(), now.getMonth(), 1), now).then(
+      (u) => setUsage(u.active_students),
+      () => setUsage(null),
+    );
+  }, [list]);
+
+  // 맞춤 숙제는 같은 묶음(group_id)끼리 모아서 보여 준다
+  const groups = useMemo(() => {
+    const out: { key: string; rows: HomeworkOverviewRow[] }[] = [];
+    const byGroup = new Map<string, HomeworkOverviewRow[]>();
+    for (const h of list ?? []) {
+      if (h.kind === 'custom' && h.group_id) {
+        if (!byGroup.has(h.group_id)) {
+          byGroup.set(h.group_id, []);
+          out.push({ key: h.group_id, rows: byGroup.get(h.group_id)! });
+        }
+        byGroup.get(h.group_id)!.push(h);
+      } else out.push({ key: h.id, rows: [h] });
+    }
+    return out;
+  }, [list]);
+
+  const openCard = (id: string) => setCardStudent(id);
+  const startRecommend = (ids: string[]) => {
+    const use = ids.length ? ids : students.map((s) => s.id);
+    if (use.length === 0) {
+      notify(t('studentHw.noStudentsTeacher'), 'error');
+      return;
+    }
+    setCardStudent(null);
+    setPanel({ k: 'recommend', studentIds: use });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-label-md text-label-md text-primary">Classbank Student</div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('studentHw.pageTitle')}</h1>
-          <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('studentHw.pageIntro')}</p>
+          <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{t('studentHw.pageIntro')}</p>
         </div>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setPinsOpen((o) => !o)} className="flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
-            <span className="material-symbols-outlined text-[18px]">pin</span>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setPinsOpen(true)} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
+            <span className="material-symbols-outlined text-[18px]">key</span>
             {t('studentHw.pinsButton')}
           </button>
-          <button type="button" onClick={() => setCreating(true)} disabled={!classId} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-40">
+          <button type="button" onClick={() => startRecommend([])} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            {t('studentHw.checkRecommend')}
+          </button>
+          <button type="button" onClick={() => setPanel({ k: 'wizard' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">add</span>
             {t('studentHw.newButton')}
           </button>
@@ -91,367 +124,200 @@ export default function HomeworkPage() {
       </div>
 
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
-      {error && <div className="rounded-lg bg-error-container px-4 py-2 text-sm text-on-error-container">{error}</div>}
+      {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
 
-      {pinsOpen && <PinPanel students={students} onChanged={reload} />}
-
-      {creating && classId && (
-        <CreatePanel
+      {panel.k === 'wizard' && classId && academy?.id && (
+        <HomeworkWizard
+          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}`}
+          academyId={academy.id}
           classId={classId}
-          wordLists={wordLists}
-          onCancel={() => setCreating(false)}
+          className={className}
+          initialStudentIds={panel.studentIds}
+          initialCards={panel.cards}
+          initialTitle={panel.title}
+          onCancel={() => setPanel({ k: 'none' })}
           onCreated={async (hw) => {
-            setCreating(false);
-            setShareId(hw.id);
+            setPanel({ k: 'none' });
             notify(t('studentHw.created'));
+            await reload();
+            setShareId(hw.id);
+          }}
+        />
+      )}
+
+      {panel.k === 'recommend' && classId && academy?.id && (
+        <RecommendReview
+          academyId={academy.id}
+          classId={classId}
+          students={students.filter((s) => panel.studentIds.includes(s.id)).map((s) => ({ id: s.id, name: s.name }))}
+          onClose={() => setPanel({ k: 'none' })}
+          onSent={async () => {
+            setPanel({ k: 'none' });
             await reload();
           }}
         />
       )}
 
       {list === null ? (
-        <div className="text-on-surface-variant">{t('common.loading')}</div>
-      ) : list.length === 0 && !creating ? (
-        <div className="rounded-xl bg-surface-container-lowest p-8 text-center text-on-surface-variant shadow-sm">{t('studentHw.empty')}</div>
+        <div className="text-base text-on-surface-variant">{t('common.loading')}</div>
+      ) : list.length === 0 && panel.k === 'none' ? (
+        <div className="rounded-xl bg-surface-container-lowest p-8 text-center text-base text-on-surface-variant shadow-sm">{t('studentHw.empty')}</div>
       ) : (
         <div className="space-y-3">
-          {list.map((hw) => {
-            const att = attempts.filter((a) => a.assignment_id === hw.id);
-            const finished = att.filter((a) => a.finished_at);
-            const avg = finished.length ? Math.round((finished.reduce((s, a) => s + a.score / Math.max(1, a.total), 0) / finished.length) * 100) : null;
-            return (
-              <div key={hw.id} className={`rounded-xl bg-surface-container-lowest shadow-sm ${hw.closed_at ? 'opacity-70' : ''}`}>
-                <div className="flex flex-wrap items-center gap-3 p-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-title-md text-title-md text-deep-navy">{hw.title || t('studentHw.defaultTitle')}</span>
-                      {hw.closed_at && <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs text-on-surface-variant">{t('studentHw.closed')}</span>}
-                    </div>
-                    <div className="font-caption text-caption text-on-surface-variant">
-                      {t('studentHw.questionCount', { count: hw.questions.length })} · {t('studentHw.code')} <b className="tabular-nums">{hw.code}</b>
-                      {hw.due_at && ` · ${t('studentHw.dueShort', { date: new Date(hw.due_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) })}`}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-center">
-                    <div>
-                      <div className="font-title-md text-title-md tabular-nums text-deep-navy">
-                        {finished.length}/{students.length}
-                      </div>
-                      <div className="text-xs text-on-surface-variant">{t('studentHw.doneCount')}</div>
-                    </div>
-                    <div>
-                      <div className="font-title-md text-title-md tabular-nums text-deep-navy">{avg === null ? '–' : `${avg}%`}</div>
-                      <div className="text-xs text-on-surface-variant">{t('studentHw.avgScore')}</div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <button type="button" onClick={() => setShareId(shareId === hw.id ? null : hw.id)} className="flex items-center gap-1 rounded-full bg-secondary-container/60 px-3 py-1.5 text-sm text-on-surface hover:bg-secondary-container">
-                      <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
-                      {t('studentHw.share')}
-                    </button>
-                    <button type="button" onClick={() => setOpenId(openId === hw.id ? null : hw.id)} className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-sm text-on-primary hover:bg-primary-container">
-                      <span className="material-symbols-outlined text-[18px]">monitoring</span>
-                      {t('studentHw.results')}
-                    </button>
-                  </div>
-                </div>
-                {shareId === hw.id && <SharePanel hw={hw} />}
-                {openId === hw.id && (
-                  <ResultsPanel
-                    hw={hw}
-                    attempts={att}
-                    students={students}
-                    onClose={async (closed) => {
-                      await closeHomework(hw.id, closed);
-                      await reload();
-                    }}
-                    onDelete={async () => {
-                      if (!window.confirm(t('studentHw.deleteConfirm'))) return;
-                      await deleteHomework(hw.id);
-                      await reload();
-                    }}
-                  />
-                )}
-              </div>
-            );
-          })}
+          {groups.map((g) =>
+            g.rows.length > 1 || g.rows[0].kind === 'custom' ? (
+              <CustomGroup key={g.key} rows={g.rows} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
+            ) : (
+              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)}>
+                {renderPanels(g.rows[0])}
+              </HomeworkCard>
+            ),
+          )}
         </div>
       )}
+
+      {usage !== null && <p className="text-sm text-on-surface-variant">{t('studentHw.usageNote', { count: usage })}</p>}
+
+      {cardStudent && <LearningCardModal studentId={cardStudent} onClose={() => setCardStudent(null)} onRecommend={(id) => startRecommend([id])} />}
+      {pinsOpen && classId && <PinManager classId={classId} className={className} onClose={() => setPinsOpen(false)} />}
     </div>
   );
-}
 
-function CreatePanel({ classId, wordLists, onCancel, onCreated }: { classId: string; wordLists: WordList[]; onCancel: () => void; onCreated: (hw: HomeworkAssignment) => void }) {
-  const { t } = useTranslation();
-  const [wordListId, setWordListId] = useState(wordLists[0]?.id ?? '');
-  const [title, setTitle] = useState('');
-  const [rounds, setRounds] = useState<HomeworkRoundSetting[]>(DEFAULT_HOMEWORK_ROUNDS);
-  const [due, setDue] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const wl = wordLists.find((w) => w.id === wordListId) ?? null;
-  const total = rounds.filter((r) => r.on).reduce((s, r) => s + r.count, 0);
-
-  async function create() {
-    if (!wl) return;
-    setBusy(true);
-    setErr(null);
-    try {
-      const cards = enrichCards(wordListToCards(wl), await loadWordBank());
-      const questions = buildHomeworkQuestions(cards, contestRoundNames(t), rounds);
-      if (questions.length === 0) {
-        setErr(t('studentHw.noQuestions'));
-        return;
-      }
-      const hw = await createHomework({
-        classId,
-        title: title.trim() || wl.name,
-        questions,
-        wordListId: wl.id,
-        rounds,
-        dueAt: due ? new Date(due).toISOString() : null,
-      });
-      onCreated(hw);
-    } catch (e) {
-      setErr(String((e as { message?: string })?.message ?? e));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary';
-  return (
-    <div className="space-y-4 rounded-xl border-2 border-primary/30 bg-surface-container-lowest p-4 shadow-sm">
-      <div className="font-title-md text-title-md text-deep-navy">{t('studentHw.newTitle')}</div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <label className="space-y-1">
-          <span className="font-label-md text-label-md text-on-surface-variant">{t('studentHw.wordList')}</span>
-          <select className={input} value={wordListId} onChange={(e) => setWordListId(e.target.value)}>
-            {wordLists.length === 0 && <option value="">{t('studentHw.noWordLists')}</option>}
-            {wordLists.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name} ({w.items.length})
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-1">
-          <span className="font-label-md text-label-md text-on-surface-variant">{t('studentHw.titleLabel')}</span>
-          <input className={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={wl?.name ?? ''} />
-        </label>
-        <label className="space-y-1">
-          <span className="font-label-md text-label-md text-on-surface-variant">{t('studentHw.dueLabel')}</span>
-          <input className={input} type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
-        </label>
-      </div>
-      <div className="space-y-2">
-        <div className="font-label-md text-label-md text-on-surface-variant">{t('studentHw.activities')}</div>
-        <div className="flex flex-wrap gap-2">
-          {rounds.map((r, i) => (
-            <div key={r.type} className={`flex items-center gap-1 rounded-full border px-1 py-1 ${r.on ? 'border-primary bg-primary/10' : 'border-outline-variant'}`}>
-              <button type="button" onClick={() => setRounds((rs) => rs.map((x, j) => (j === i ? { ...x, on: !x.on } : x)))} className="flex items-center gap-1 rounded-full px-2 text-sm">
-                <span className="material-symbols-outlined text-[18px]">{r.on ? 'check_box' : 'check_box_outline_blank'}</span>
-                {t(`studentHw.round_${r.type}`)}
-              </button>
-              {r.on && (
-                <span className="flex items-center gap-0.5">
-                  <button type="button" className="h-6 w-6 rounded-full hover:bg-surface-container-high" onClick={() => setRounds((rs) => rs.map((x, j) => (j === i ? { ...x, count: Math.max(1, x.count - 1) } : x)))}>
-                    −
-                  </button>
-                  <span className="w-5 text-center text-sm tabular-nums">{r.count}</span>
-                  <button type="button" className="h-6 w-6 rounded-full hover:bg-surface-container-high" onClick={() => setRounds((rs) => rs.map((x, j) => (j === i ? { ...x, count: Math.min(20, x.count + 1) } : x)))}>
-                    +
-                  </button>
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-        <p className="font-caption text-caption text-on-surface-variant">{t('studentHw.activitiesHint', { count: total })}</p>
-      </div>
-      {err && <div className="text-sm text-error">{err}</div>}
-      <div className="flex gap-2">
-        <button type="button" disabled={busy || !wl || total === 0} onClick={() => void create()} className="rounded-full bg-primary px-6 py-2 font-label-md text-label-md text-on-primary disabled:opacity-40">
-          {busy ? t('common.loading') : t('studentHw.createButton')}
-        </button>
-        <button type="button" onClick={onCancel} className="rounded-full border border-outline-variant px-6 py-2 font-label-md text-label-md text-on-surface-variant">
-          {t('common.cancel')}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function SharePanel({ hw }: { hw: HomeworkAssignment }) {
-  const { t } = useTranslation();
-  const { notify } = useToast();
-  const [qr, setQr] = useState<string | null>(null);
-  const url = homeworkUrl(hw.code);
-  useEffect(() => {
-    void QRCode.toDataURL(url, { margin: 1, width: 360, errorCorrectionLevel: 'M' }).then(setQr);
-  }, [url]);
-  const message = t('studentHw.shareMessage', { title: hw.title || t('studentHw.defaultTitle'), url, code: hw.code });
-  return (
-    <div className="flex flex-wrap items-center gap-6 border-t border-outline-variant/40 p-4">
-      {qr && <img src={qr} alt="" className="h-40 w-40 rounded-lg bg-white p-1" />}
-      <div className="min-w-0 flex-1 space-y-2">
-        <div className="font-caption text-caption text-on-surface-variant">{t('studentHw.code')}</div>
-        <div className="font-headline-md text-headline-md tabular-nums tracking-widest text-deep-navy">{hw.code}</div>
-        <div className="break-all font-body-md text-body-md text-primary">{url}</div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              void navigator.clipboard.writeText(message).then(() => notify(t('studentHw.copied')));
+  function renderPanels(hw: HomeworkOverviewRow) {
+    return (
+      <>
+        {shareId === hw.id && <HomeworkSharePanel hw={hw} />}
+        {openId === hw.id && (
+          <HomeworkResults
+            hw={hw}
+            onChanged={() => void reload()}
+            onCard={openCard}
+            onRecommend={startRecommend}
+            onMakeHomework={({ studentIds, cards, title }) => {
+              setPanel({ k: 'wizard', studentIds, cards, title });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 text-sm text-on-primary"
-          >
-            <span className="material-symbols-outlined text-[18px]">content_copy</span>
-            {t('studentHw.copyMessage')}
-          </button>
-        </div>
-        <p className="font-caption text-caption text-on-surface-variant">{t('studentHw.shareHint')}</p>
-      </div>
-    </div>
-  );
+          />
+        )}
+      </>
+    );
+  }
 }
 
-function ResultsPanel({
+function HomeworkCard({
   hw,
-  attempts,
-  students,
-  onClose,
-  onDelete,
+  shareOpen,
+  resultsOpen,
+  onShare,
+  onResults,
+  children,
+  compact = false,
 }: {
-  hw: HomeworkAssignment;
-  attempts: HomeworkAttempt[];
-  students: { id: string; name: string }[];
-  onClose: (closed: boolean) => Promise<void>;
-  onDelete: () => Promise<void>;
+  hw: HomeworkOverviewRow;
+  shareOpen: boolean;
+  resultsOpen: boolean;
+  onShare: () => void;
+  onResults: () => void;
+  children: React.ReactNode;
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
-  const [answers, setAnswers] = useState<HomeworkAnswer[]>([]);
-  useEffect(() => {
-    void fetchHomeworkAnswers(attempts.map((a) => a.id)).then(setAnswers).catch(() => setAnswers([]));
-  }, [attempts]);
-
-  const wrongWords = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const a of answers) if (!a.correct && a.word) m.set(a.word, (m.get(a.word) ?? 0) + 1);
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  }, [answers]);
-
+  const pastDue = !!hw.due_at && new Date(hw.due_at).getTime() < Date.now();
+  const btn = 'flex min-h-11 items-center gap-1 rounded-full px-4 text-base font-bold';
   return (
-    <div className="space-y-4 border-t border-outline-variant/40 p-4">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr className="text-left text-on-surface-variant">
-              <th className="py-2 pr-3 font-label-md">{t('studentHw.colName')}</th>
-              <th className="py-2 pr-3 font-label-md">{t('studentHw.colStatus')}</th>
-              <th className="py-2 pr-3 font-label-md">{t('studentHw.colScore')}</th>
-              <th className="py-2 pr-3 font-label-md">{t('studentHw.colTime')}</th>
-              <th className="py-2 font-label-md">{t('studentHw.colWrong')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s) => {
-              const a = attempts.find((x) => x.student_id === s.id);
-              const mine = a ? answers.filter((x) => x.attempt_id === a.id) : [];
-              const correct = mine.filter((x) => x.correct).length;
-              const minutes = a ? Math.max(1, Math.round((new Date(a.finished_at ?? a.last_seen_at).getTime() - new Date(a.started_at).getTime()) / 60000)) : null;
-              const status = !a ? 'none' : a.finished_at ? 'done' : 'doing';
-              return (
-                <tr key={s.id} className="border-t border-outline-variant/30">
-                  <td className="py-2 pr-3 font-label-md text-on-surface">{s.name}</td>
-                  <td className="py-2 pr-3">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        status === 'done' ? 'bg-emerald-100 text-emerald-800' : status === 'doing' ? 'bg-amber-100 text-amber-800' : 'bg-surface-container-high text-on-surface-variant'
-                      }`}
-                    >
-                      {t(`studentHw.status_${status}`)}
-                      {status === 'doing' && ` ${mine.length}/${hw.questions.length}`}
-                    </span>
-                  </td>
-                  <td className="py-2 pr-3 tabular-nums">{a ? `${correct} / ${hw.questions.length}` : '–'}</td>
-                  <td className="py-2 pr-3 tabular-nums">{minutes === null ? '–' : t('studentHw.minutes', { n: minutes })}</td>
-                  <td className="py-2 text-on-surface-variant">
-                    {mine
-                      .filter((x) => !x.correct)
-                      .map((x) => x.word)
-                      .filter(Boolean)
-                      .slice(0, 6)
-                      .join(', ')}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {wrongWords.length > 0 && (
-        <div className="space-y-1">
-          <div className="font-label-md text-label-md text-on-surface">{t('studentHw.classWrongWords')}</div>
-          <div className="flex flex-wrap gap-1.5">
-            {wrongWords.map(([w, n]) => (
-              <span key={w} className="rounded-full bg-error-container/60 px-2.5 py-1 text-sm text-on-error-container">
-                {w} <b>×{n}</b>
-              </span>
-            ))}
+    <div className={`${compact ? 'border-t border-outline-variant/40' : 'rounded-xl bg-surface-container-lowest shadow-sm'} ${hw.closed_at ? 'opacity-75' : ''}`}>
+      <div className="flex flex-wrap items-center gap-3 p-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-lg font-bold text-deep-navy">{compact && hw.custom_student ? hw.custom_student : hw.title || t('studentHw.defaultTitle')}</span>
+            {hw.kind === 'selected' && <span className="rounded-full bg-secondary-container/60 px-2.5 py-0.5 text-sm">{t('studentHw.kindSelected')}</span>}
+            {hw.closed_at && <span className="rounded-full bg-surface-container-high px-2.5 py-0.5 text-sm text-on-surface-variant">{t('studentHw.closed')}</span>}
+            {!hw.closed_at && pastDue && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-sm text-amber-900">{t('studentHw.pastDue')}</span>}
+          </div>
+          <div className="text-sm text-on-surface-variant">
+            {t('studentHw.questionCount', { count: hw.question_count })}
+            {hw.kind !== 'custom' && (
+              <>
+                {' · '}
+                {t('studentHw.code')} <b className="tabular-nums">{hw.code}</b>
+              </>
+            )}
+            {hw.due_at && ` · ${t('studentHw.dueShort', { date: new Date(hw.due_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) })}`}
           </div>
         </div>
-      )}
-      <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => void onClose(!hw.closed_at)} className="rounded-full border border-outline-variant px-4 py-1.5 text-sm text-on-surface-variant hover:bg-surface-container-low">
-          {t(hw.closed_at ? 'studentHw.reopen' : 'studentHw.close')}
-        </button>
-        <button type="button" onClick={() => void onDelete()} className="rounded-full px-4 py-1.5 text-sm text-error hover:bg-error-container/40">
-          {t('studentHw.delete')}
-        </button>
+        <div className="flex items-center gap-5 text-center">
+          <div>
+            <div className="text-lg font-bold tabular-nums text-deep-navy">
+              {hw.done}/{hw.target_count}
+            </div>
+            <div className="text-sm text-on-surface-variant">{t('studentHw.doneCount')}</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold tabular-nums text-deep-navy">{hw.avg_pct === null ? '–' : `${Math.round(hw.avg_pct)}%`}</div>
+            <div className="text-sm text-on-surface-variant">{t('studentHw.avgScore')}</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <button type="button" aria-expanded={shareOpen} onClick={onShare} className={`${btn} bg-secondary-container/60 text-on-surface hover:bg-secondary-container`}>
+            <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
+            {t('studentHw.share')}
+          </button>
+          <button type="button" aria-expanded={resultsOpen} onClick={onResults} className={`${btn} bg-primary text-on-primary hover:bg-primary-container`}>
+            <span className="material-symbols-outlined text-[18px]">monitoring</span>
+            {t('studentHw.results')}
+          </button>
+        </div>
       </div>
+      {children}
     </div>
   );
 }
 
-function PinPanel({ students, onChanged }: { students: { id: string; name: string; hw_pin: string | null }[]; onChanged: () => Promise<void> }) {
+function CustomGroup({
+  rows,
+  shareId,
+  openId,
+  setShareId,
+  setOpenId,
+  renderOpen,
+}: {
+  rows: HomeworkOverviewRow[];
+  shareId: string | null;
+  openId: string | null;
+  setShareId: (id: string | null) => void;
+  setOpenId: (id: string | null) => void;
+  renderOpen: (hw: HomeworkOverviewRow) => React.ReactNode;
+}) {
   const { t } = useTranslation();
-  const [busy, setBusy] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const done = rows.filter((r) => r.done > 0).length;
   return (
-    <div className="space-y-3 rounded-xl bg-surface-container-lowest p-4 shadow-sm">
-      <div>
-        <div className="font-title-md text-title-md text-deep-navy">{t('studentHw.pinsTitle')}</div>
-        <p className="font-caption text-caption text-on-surface-variant">{t('studentHw.pinsHint')}</p>
-      </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-        {students.map((s) => (
-          <div key={s.id} className="flex items-center justify-between gap-2 rounded-lg border border-outline-variant/50 px-3 py-2">
-            <span className="truncate font-label-md text-label-md">{s.name}</span>
-            <span className="flex items-center gap-1">
-              <b className="tabular-nums tracking-widest text-deep-navy">{s.hw_pin ?? '----'}</b>
-              <button
-                type="button"
-                disabled={busy === s.id}
-                onClick={async () => {
-                  setBusy(s.id);
-                  try {
-                    await setStudentPin(s.id, randomPin());
-                    await onChanged();
-                  } finally {
-                    setBusy(null);
-                  }
-                }}
-                title={t('studentHw.newPin')}
-                aria-label={t('studentHw.newPin')}
-                className="rounded-full p-1 text-on-surface-variant hover:bg-surface-container-low"
-              >
-                <span className="material-symbols-outlined text-[18px]">refresh</span>
-              </button>
-            </span>
-          </div>
+    <div className="rounded-xl bg-surface-container-lowest shadow-sm">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex min-h-14 w-full flex-wrap items-center gap-3 p-4 text-left">
+        <span className="material-symbols-outlined text-primary">auto_awesome</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-lg font-bold text-deep-navy">{t('studentHw.customGroup', { count: rows.length })}</span>
+          <span className="block text-sm text-on-surface-variant">{new Date(rows[0].created_at).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</span>
+        </span>
+        <span className="text-lg font-bold tabular-nums text-deep-navy">
+          {done}/{rows.length} <span className="text-sm font-normal text-on-surface-variant">{t('studentHw.doneCount')}</span>
+        </span>
+        <span className="material-symbols-outlined">{open ? 'expand_less' : 'expand_more'}</span>
+      </button>
+      {open &&
+        rows.map((hw) => (
+          <HomeworkCard
+            key={hw.id}
+            hw={hw}
+            compact
+            shareOpen={shareId === hw.id}
+            resultsOpen={openId === hw.id}
+            onShare={() => setShareId(shareId === hw.id ? null : hw.id)}
+            onResults={() => setOpenId(openId === hw.id ? null : hw.id)}
+          >
+            {renderOpen(hw)}
+          </HomeworkCard>
         ))}
-      </div>
-      {students.length === 0 && <p className="text-sm text-on-surface-variant">{t('studentHw.noStudentsTeacher')}</p>}
     </div>
   );
 }

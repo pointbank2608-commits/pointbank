@@ -104,6 +104,7 @@ export default function App() {
     return (
       <Routes>
         <Route path="/hw" element={<HomeworkStudentPage />} />
+        <Route path="/hw/p/:access" element={<HomeworkStudentPage />} />
         <Route path="/hw/:code" element={<HomeworkStudentPage />} />
       </Routes>
     );
