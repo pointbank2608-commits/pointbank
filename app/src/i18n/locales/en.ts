@@ -2624,6 +2624,11 @@ const en: Ko = {
     errHelp_network: 'Turn on Wi-Fi or data, then press "Try again". Your answers are kept on this device.',
     errHelp_incomplete: 'Finish the remaining questions.',
     errHelp_unknown: 'Press "Try again" in a moment.',
+    classStatsIntro: 'Stats for each student from online homework. Listed by name only — students are never ranked. Open one for the stat card and parent report.',
+    noOnlineHomework: 'No online homework yet',
+    collectingShort: 'collecting records',
+    statShort: 'Stats',
+    statOf: 'Stats for {{name}}',
     rewardWaiting: '{{count}} students finished but have not received points yet',
     rewardAllDone: 'All {{count}} finishers received points',
     rewardHint: 'Give a passbook preset in one go. Never twice for the same homework; homework presets also mark the homework calendar as done.',
@@ -3546,6 +3551,9 @@ const en: Ko = {
   },
 
   results: {
+    viewTabs: 'Report views',
+    viewPoints: 'Points',
+    viewStats: 'Student stats',
     title: 'Reports',
     scopeClass: 'By class',
     scopeAcademy: 'Whole academy',

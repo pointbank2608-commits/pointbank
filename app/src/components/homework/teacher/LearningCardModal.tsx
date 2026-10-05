@@ -22,12 +22,22 @@ const LABEL_STYLE: Record<SkillLabel, string> = {
  * 이 화면은 말로 바꾸기만 한다. 다른 학생과 비교하지 않고 "지난 기간의 나"와만 비교한다. 순위 없음.
  * 통장의 숙제 검사(오프라인 숙제)는 따로 보여 준다(섞지 않는다).
  */
-export default function LearningCardModal({ studentId, onClose, onRecommend }: { studentId: string; onClose: () => void; onRecommend?: (studentId: string) => void }) {
+export default function LearningCardModal({
+  studentId,
+  onClose,
+  onRecommend,
+  initialView = 'stat',
+}: {
+  studentId: string;
+  onClose: () => void;
+  onRecommend?: (studentId: string) => void;
+  initialView?: 'stat' | 'detail' | 'report';
+}) {
   const { t } = useTranslation();
   const [days, setDays] = useState<30 | 90>(30);
   const [card, setCard] = useState<LearningCard | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [view, setView] = useState<'stat' | 'detail' | 'report'>('stat');
+  const [view, setView] = useState<'stat' | 'detail' | 'report'>(initialView);
   const sheet = useMemo(() => (card ? buildStatSheet(card) : null), [card]);
 
   useEffect(() => {

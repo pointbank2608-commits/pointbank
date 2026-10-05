@@ -2620,6 +2620,11 @@ const ko = {
     errHelp_network: '와이파이나 데이터를 켠 뒤 "다시 해 보기"를 눌러요. 푼 답은 이 기기에 남아 있어요.',
     errHelp_incomplete: '남은 문제를 마저 풀어요.',
     errHelp_unknown: '잠시 뒤에 "다시 해 보기"를 눌러요.',
+    classStatsIntro: '온라인 숙제 기록으로 만든 학생별 스탯이에요. 이름순으로만 보여 주고 학생끼리 순위는 매기지 않아요. 누르면 스탯 카드와 학부모 리포트가 열려요.',
+    noOnlineHomework: '아직 온라인 숙제를 받은 적이 없어요',
+    collectingShort: '기록 모으는 중',
+    statShort: '스탯',
+    statOf: '{{name}} 스탯 보기',
     rewardWaiting: '숙제를 끝낸 학생 {{count}}명이 아직 포인트를 안 받았어요',
     rewardAllDone: '끝낸 학생 {{count}}명 모두 포인트를 받았어요',
     rewardHint: '통장 프리셋으로 한 번에 줘요. 같은 숙제로 두 번 주지 않고, 숙제 프리셋이면 숙제 캘린더에 "완료"로 남아요.',
@@ -3540,6 +3545,9 @@ const ko = {
   },
 
   results: {
+    viewTabs: '리포트 보기 방식',
+    viewPoints: '포인트',
+    viewStats: '학생 스탯',
     title: '리포트',
     scopeClass: '반별',
     scopeAcademy: '학원 전체',

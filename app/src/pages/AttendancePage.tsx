@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import i18n from '../i18n';
 import ClassChipRow from '../components/ClassChipRow';
+import LearningCardModal from '../components/homework/teacher/LearningCardModal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -62,6 +63,8 @@ export default function AttendancePage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
+  // 학생 이름 옆 "스탯" → 숙제 결과·리포트와 같은 학습 카드 창
+  const [statStudent, setStatStudent] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   /** 상세 팝업 대상: 셀을 눌렀을 때 등원/하원 시각을 보여주는 용도 */
   const [detail, setDetail] = useState<{ studentId: string; studentName: string; day: number } | null>(
@@ -367,6 +370,14 @@ export default function AttendancePage() {
                         >
                           <span className="material-symbols-outlined text-[16px]">delete</span>
                         </button>
+                        <button
+                          onClick={() => setStatStudent(s.id)}
+                          aria-label={t('studentHw.statOf', { name: s.name })}
+                          className="flex items-center gap-0.5 rounded px-1 py-1 text-xs text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">military_tech</span>
+                          {t('studentHw.statShort')}
+                        </button>
                       </div>
                     </td>
                     {days.map((d) => {
@@ -464,6 +475,7 @@ export default function AttendancePage() {
           </div>
         </div>
       )}
+      {statStudent && <LearningCardModal studentId={statStudent} onClose={() => setStatStudent(null)} />}
     </div>
   );
 }

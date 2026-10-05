@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
+import ClassStatsPanel from '../components/homework/teacher/ClassStatsPanel';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchBalancesOfClass, fetchMyStudentRow, fetchRankingSummary, givePoints } from '../lib/api';
@@ -37,6 +38,8 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [myStudentId, setMyStudentId] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
+  // 선생님: 포인트 결과 / 학생 스탯(Classbank Student) 두 보기
+  const [view, setView] = useState<'points' | 'stats'>('points');
 
   // 학생이면 본인 행을 강조하기 위해 자기 students.id 를 알아둔다.
   useEffect(() => {
@@ -116,6 +119,41 @@ export default function ResultsPage() {
   const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
   const maxBalance = Math.max(1, ...ranked.map((r) => r.balance));
 
+  const viewTabs = isStaff ? (
+    <div className="flex gap-2" role="tablist" aria-label={t('results.viewTabs')}>
+      {(['points', 'stats'] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          role="tab"
+          aria-selected={view === v}
+          onClick={() => setView(v)}
+          className={`flex min-h-11 items-center gap-1.5 rounded-xl px-4 font-label-md text-label-md ${
+            view === v ? 'bg-deep-navy text-white' : 'bg-surface-container-lowest text-on-surface border border-outline-variant/40'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">{v === 'points' ? 'savings' : 'military_tech'}</span>
+          {t(v === 'points' ? 'results.viewPoints' : 'results.viewStats')}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  if (isStaff && view === 'stats') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
+            {t('results.title')}
+          </h2>
+        </div>
+        {viewTabs}
+        <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
+        <ClassStatsPanel classId={selectedId} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -154,6 +192,8 @@ export default function ResultsPage() {
           )}
         </div>
       </div>
+
+      {viewTabs}
 
       {scope === 'class' && (
         <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />

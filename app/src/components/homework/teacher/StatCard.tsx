@@ -10,13 +10,19 @@ const GRADE_COLOR: Record<Grade, string> = {
 };
 
 /** 등급 배지 — 등급이 없으면 "?" */
-export function GradeBadge({ grade, size = 'md' }: { grade: Grade | null; size?: 'sm' | 'md' | 'lg' }) {
+export function GradeBadge({ grade, size = 'md', tone = 'dark' }: { grade: Grade | null; size?: 'sm' | 'md' | 'lg'; tone?: 'dark' | 'light' }) {
   const { t } = useTranslation();
   const dim = size === 'lg' ? 'h-20 w-20 text-4xl' : size === 'md' ? 'h-11 w-11 text-xl' : 'h-7 min-w-7 px-1 text-sm';
   return (
     <span
       className={`inline-flex shrink-0 items-center justify-center rounded-xl font-black italic tabular-nums ${dim}`}
-      style={grade ? { background: GRADE_COLOR[grade], color: '#16213e' } : { background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
+      style={
+        grade
+          ? { background: GRADE_COLOR[grade], color: '#16213e' }
+          : tone === 'light'
+            ? { background: '#e6e8ee', color: '#5b6476' }
+            : { background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }
+      }
       aria-label={grade ? t('studentHw.gradeIs', { grade }) : t('studentHw.gradeUnknown')}
     >
       {grade ?? '?'}
