@@ -262,7 +262,7 @@ function AppLayoutInner() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 bg-inverse-surface/40 z-50" onClick={() => setMobileOpen(false)}>
           <nav
-            className="h-full w-72 max-w-[80vw] bg-surface-container-low flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+            className="h-full w-72 max-w-[80vw] overflow-y-auto overscroll-contain bg-surface-container-low flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}
@@ -271,7 +271,8 @@ function AppLayoutInner() {
       )}
 
       {/* 데스크톱 사이드바 */}
-      <nav className="no-print hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/30 py-6 z-30">
+      {/* 화면 높이가 낮으면(작은 노트북·브라우저 창 축소) 하단 설정·로그아웃이 잘려서, 사이드바 자체를 스크롤되게 한다. */}
+      <nav className="no-print hidden md:flex flex-col h-[100dvh] w-64 fixed left-0 top-0 overflow-y-auto overscroll-contain bg-surface-container-low border-r border-outline-variant/30 py-6 z-30">
         {sidebarContent}
       </nav>
 

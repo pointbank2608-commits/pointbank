@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchLearningCard, teacherErrorKey, type LearningCard } from '../../../lib/homework';
 import { SKILL } from '../../../lib/homework/build';
 import { MIN_SKILL_N as MIN_N, skillLabel, type SkillLabel } from '../../../lib/homework/teacherHelpers';
+import { buildStatSheet } from '../../../lib/homework/stats';
 import AccessibleDialog from '../../AccessibleDialog';
+import ParentReport from './ParentReport';
+import StatCard from './StatCard';
 
 /** 학습 카드에 보이는 능력(순서 고정). 기록이 없으면 "아직 기록이 없어요". */
 const SKILLS = [SKILL.meaning, SKILL.picture, SKILL.listen, SKILL.spelling, SKILL.context, SKILL.sentence, SKILL.content] as const;
@@ -24,6 +27,8 @@ export default function LearningCardModal({ studentId, onClose, onRecommend }: {
   const [days, setDays] = useState<30 | 90>(30);
   const [card, setCard] = useState<LearningCard | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [view, setView] = useState<'stat' | 'detail' | 'report'>('stat');
+  const sheet = useMemo(() => (card ? buildStatSheet(card) : null), [card]);
 
   useEffect(() => {
     let alive = true;
@@ -68,10 +73,29 @@ export default function LearningCardModal({ studentId, onClose, onRecommend }: {
           ))}
         </div>
 
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label={t('studentHw.cardViews')}>
+          {(['stat', 'detail', 'report'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              className={`flex min-h-11 items-center gap-1.5 rounded-xl px-4 font-label-md text-label-md ${view === v ? 'bg-deep-navy text-white' : 'bg-surface-container-low text-on-surface'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">{{ stat: 'military_tech', detail: 'list_alt', report: 'family_restroom' }[v]}</span>
+              {t(`studentHw.view_${v}`)}
+            </button>
+          ))}
+        </div>
+
         {err && <p className="text-base text-error">{err}</p>}
         {!card && !err && <p className="text-base text-on-surface-variant">{t('common.loading')}</p>}
 
-        {card && (
+        {card && sheet && view === 'stat' && <StatCard name={card.student.name} days={card.days} sheet={sheet} />}
+        {card && sheet && view === 'report' && <ParentReport key={card.days} card={card} sheet={sheet} onBack={() => setView('stat')} />}
+
+        {card && view === 'detail' && (
           <>
             <p className="text-sm text-on-surface-variant">{t('studentHw.evidence', { graded: card.graded, activities: card.completed_activities })}</p>
             {!enough && (

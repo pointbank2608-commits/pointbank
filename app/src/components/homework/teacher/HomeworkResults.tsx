@@ -4,6 +4,7 @@ import { useToast } from '../../../context/ToastContext';
 import { closeHomework, deleteHomework, fetchHomeworkSummary, homeworkUrl, teacherErrorKey, type HomeworkOverviewRow, type HomeworkSummary } from '../../../lib/homework';
 import type { FullCardItem } from '../../../lib/types';
 import { cardFromSnapshot } from '../../../lib/homework/teacherHelpers';
+import HomeworkRewardPanel from './HomeworkRewardPanel';
 
 const POLL_MS = 15000;
 
@@ -87,6 +88,8 @@ export default function HomeworkResults({
         )}
       </div>
 
+      <HomeworkRewardPanel assignmentId={hw.id} summary={sum} onGiven={() => void load()} />
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-base">
           <thead>
@@ -113,6 +116,12 @@ export default function HomeworkResults({
                     {t(`studentHw.status_${s.status}`)}
                     {s.status === 'doing' && ` ${s.answered}/${totalQ}`}
                   </span>
+                  {s.rewarded && (
+                    <span className="ml-1 inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-warm-yellow/40 px-2 py-0.5 text-sm text-deep-navy">
+                      <span className="material-symbols-outlined text-[14px]">savings</span>
+                      {t('studentHw.rewarded')}
+                    </span>
+                  )}
                 </td>
                 <td className="py-2 pr-3 tabular-nums">{s.status === 'none' ? '–' : `${s.correct} / ${totalQ}`}</td>
                 <td className="py-2 pr-3 tabular-nums">{s.minutes === null ? '–' : t('studentHw.minutes', { n: s.minutes })}</td>

@@ -42,6 +42,8 @@ export interface HomeworkSummary {
     correct: number;
     minutes: number | null;
     retries: number;
+    /** 042: 이 숙제로 포인트를 받았나(042 전에는 없음) */
+    rewarded?: boolean;
     wrong_words: string[];
   }[];
   class_wrong_words: { word: string; count: number; card: Record<string, unknown> | null }[];
@@ -99,6 +101,19 @@ export const fetchPersonalLinks = (assignmentId: string) => rpc<PersonalLink[]>(
 export const resetStudentPin = (studentId: string) => rpc<string>('hw_reset_pin', { p_student_id: studentId });
 /** 반 학생의 PIN 있음/없음(원문·해시는 오지 않는다) */
 export const fetchPinStatus = (classId: string) => rpc<{ student_id: string; name: string; has_pin: boolean; updated_at: string | null }[]>('hw_pin_status', { p_class_id: classId });
+/** 숙제를 끝낸 학생에게 통장 프리셋 지급(042). 같은 숙제로 두 번 주지 않고, 그날 반 통장이 마감됐으면 locked */
+export const rewardHomework = (assignmentId: string, presetId: string, studentIds: string[], today: string) =>
+  rpc<{ given: number; locked: boolean }>('hw_reward', { p_assignment_id: assignmentId, p_preset_id: presetId, p_student_ids: studentIds, p_today: today });
+
+export interface ReportExtras {
+  class_name: string | null;
+  attended_days: number;
+  points_earned: number;
+  online_finished: number;
+}
+/** 학부모 리포트용 기간 숫자(042) */
+export const fetchReportExtras = (studentId: string, days: 30 | 90) => rpc<ReportExtras>('student_report_extras', { p_student_id: studentId, p_days: days });
+
 export const fetchLearningCard = (studentId: string, days: 30 | 90) => rpc<LearningCard>('student_learning_card', { p_student_id: studentId, p_days: days });
 export const fetchReviewCandidates = (studentId: string) => rpc<import('./homework/recommend').ReviewCandidates>('student_review_candidates', { p_student_id: studentId });
 /** 다음 단계 학생 좌석 요금용 사용량(지금은 계산만 — 결제·제한 없음) */
@@ -127,7 +142,7 @@ export const personalHomeworkUrl = (access: string) => `${window.location.origin
 /** 서버 오류 → 화면 문구 키 */
 export function teacherErrorKey(err: unknown): string {
   const msg = String((err as { message?: string })?.message ?? err ?? '');
-  if (/homework_items|hw_create_v2|function .* does not exist|Could not find the function|schema cache|PGRST202|student_learning_card|relation/i.test(msg)) return 'studentHw.needSetup';
+  if (/homework_items|hw_create_v2|hw_reward|student_report_extras|function .* does not exist|Could not find the function|schema cache|PGRST202|student_learning_card|relation/i.test(msg)) return 'studentHw.needSetup';
   if (msg.includes('no_students')) return 'studentHw.errNoStudents';
   if (msg.includes('no_items')) return 'studentHw.errNoItems';
   return 'studentHw.errGeneric';

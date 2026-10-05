@@ -110,6 +110,51 @@ try {
     assert.ok(appleQs.length > 0 && appleQs.every((q) => q.style !== 'meaning'), '틀린 문제와 같은 모양(뜻 고르기)을 그대로 냄');
     assert.ok(r.reasons.some((x) => x.kind === 'review_due'), '복습할 때 된 낱말이 없음');
   });
+  // ---- 스탯 카드 ----
+  const stats = await server.ssrLoadModule('/src/lib/homework/stats.ts');
+  const baseCard = (over) => ({
+    student: { id: 's', name: '민준', archived: false },
+    days: 30,
+    graded: 60,
+    completed_activities: 6,
+    skills: [],
+    habit: { assigned: 4, finished: 4, prev_assigned: 0, prev_finished: 0 },
+    retries: { count: 0, corrected: 0 },
+    shadowing: { lines: 0, listens: 0 },
+    wrong_words: [],
+    recent: [],
+    passbook_homework: { done: 0, missing: 0 },
+    ...over,
+  });
+  await test('스탯: 등급 경계(S+ 95 · S 90 · A 80 · B 70 · C)', () => {
+    assert.deepEqual([0.96, 0.9, 0.85, 0.7, 0.69].map(stats.gradeOf), ['S+', 'S', 'A', 'B', 'C']);
+  });
+  await test('스탯: 문제 8개 미만 세부 능력은 ?, 기록이 모자라면 모두 ?', () => {
+    const sk = (skill, n, correct, weighted) => ({ skill, n, correct, weighted, prev_n: 0, prev_correct: 0 });
+    const full = stats.buildStatSheet(baseCard({ skills: [sk('vocab.meaning', 20, 19, 0.95), sk('vocab.spelling', 5, 5, 1)] }));
+    const vocab = full.abilities.find((a) => a.key === 'vocab');
+    assert.equal(vocab.subs.find((s) => s.key === 'vocab.meaning').grade, 'S+');
+    assert.equal(vocab.subs.find((s) => s.key === 'vocab.spelling').grade, null);
+    assert.equal(vocab.grade, 'S+');
+    assert.equal(full.abilities.find((a) => a.key === 'reading').grade, null);
+    const thin = stats.buildStatSheet(baseCard({ graded: 20, skills: [sk('vocab.meaning', 20, 19, 0.95)] }));
+    assert.equal(thin.enough, false);
+    assert.ok(thin.abilities.every((a) => a.grade === null) && thin.overall.grade === null);
+  });
+  await test('스탯: 지난 기간 비교(%p)와 잘하는·연습할 것', () => {
+    const s = stats.buildStatSheet(
+      baseCard({
+        skills: [
+          { skill: 'vocab.meaning', n: 20, correct: 18, weighted: 0.9, prev_n: 10, prev_correct: 6 },
+          { skill: 'listening.word', n: 10, correct: 5, weighted: 0.5, prev_n: 0, prev_correct: 0 },
+        ],
+      }),
+    );
+    assert.equal(s.abilities[0].subs[0].delta, 30);
+    const sf = stats.strengthsAndFocus(s);
+    assert.deepEqual(sf.strengths.map((x) => x.key).slice(0, 1), ['vocab.meaning']);
+    assert.deepEqual(sf.focus.map((x) => x.key), ['listening.word']);
+  });
 } finally {
   await server.close();
 }
