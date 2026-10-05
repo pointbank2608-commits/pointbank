@@ -3,12 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { uploadLessonSlideImage } from '../lib/api';
 import { BOARD_THEMES, boardTheme, preloadBoardFonts, type BoardTheme } from '../lib/boardThemes';
-import type { CanvasElement, CanvasImageElement, CanvasSlide, CanvasTextElement, FullCardItem } from '../lib/types';
+import { isLineShape, MARK_SHAPES, newCoverElement, newMarkElement, newShapeElement, PAIRED_CHARS, SHAPE_KINDS, SPECIAL_CHAR_GROUPS } from '../lib/canvasMarks';
+import { buildMotionPlan, DEFAULT_MOTION, effectIcon, effectsFor, type MotionPlan } from '../lib/canvasMotion';
+import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement, FullCardItem } from '../lib/types';
 import {
   CANVAS_FONTS,
   CanvasBackground,
   CanvasElementContent,
+  CanvasMarkContent,
   CanvasStageBox,
+  MotionLayer,
   canvasElementBoxStyle,
   canvasTextStyle,
 } from './CanvasSlideView';
@@ -36,6 +40,8 @@ const HANDLE_POS: Record<Handle, React.CSSProperties> = {
   w: { left: 0, top: '50%', cursor: 'ew-resize' },
 };
 const MIN_SIZE = 3;
+/** 특수 문자 패널 → 고치는 중인 글상자 */
+const CANVAS_INSERT_EVENT = 'classbank-canvas-insert';
 const SNAP = 1.2;
 
 function uid() {
@@ -120,18 +126,30 @@ function rethemeElement(el: CanvasElement, prev: BoardTheme | null, next: BoardT
 }
 const historyBySlide = new Map<string, Snapshot[]>();
 
+/** 복사본: 새 id, 묶음(group)은 복사본끼리 새 묶음으로 */
+function freshCopies(els: CanvasElement[], d: number): CanvasElement[] {
+  const groups = new Map<string, string>();
+  return els.map((el) => {
+    let group = el.group;
+    if (group) {
+      if (!groups.has(group)) groups.set(group, uid());
+      group = groups.get(group);
+    }
+    return { ...el, id: uid(), group, x: clamp(el.x + d, -el.w + 4, 96), y: clamp(el.y + d, -el.h + 4, 96) };
+  });
+}
+
 function cloneForPaste(els: CanvasElement[], existing: CanvasElement[]): CanvasElement[] {
   // 같은 자리에 이미 있으면(같은 슬라이드에 붙여넣기) 살짝 비켜 놓는다.
   const overlaps = els.some((el) => existing.some((ex) => Math.abs(ex.x - el.x) < 0.5 && Math.abs(ex.y - el.y) < 0.5));
-  const d = overlaps ? 3 : 0;
-  return els.map((el) => ({ ...el, id: uid(), x: clamp(el.x + d, -el.w + 4, 96), y: clamp(el.y + d, -el.h + 4, 96) }));
+  return freshCopies(els, overlaps ? 3 : 0);
 }
 
-type Snapshot = Pick<CanvasSlide, 'elements' | 'background' | 'backgroundImageUrl' | 'backgroundImagePath' | 'theme'>;
+type Snapshot = Pick<CanvasSlide, 'elements' | 'background' | 'backgroundImageUrl' | 'backgroundImagePath' | 'theme' | 'motionOrder'>;
 
 interface DragState {
   id: string;
-  mode: 'move' | Handle;
+  mode: 'move' | 'rotate' | Handle;
   startX: number;
   startY: number;
   orig: CanvasElement;
@@ -164,6 +182,11 @@ export default function CanvasSlideEditor({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [wordsOpen, setWordsOpen] = useState(false);
+  // 특수 문자 · 그려지는 표시 패널(2026-10-05)
+  const [panel, setPanel] = useState<'chars' | 'shapes' | null>(null);
+  // 효과 창 · 효과 미리 보기(숫자가 바뀌면 다시 재생)
+  const [motionOpen, setMotionOpen] = useState(false);
+  const [preview, setPreview] = useState<{ ids: string[]; n: number } | null>(null);
   const [guides, setGuides] = useState<{ v: boolean; h: boolean }>({ v: false, h: false });
   const drag = useRef<DragState | null>(null);
   const [historyLen, setHistoryLen] = useState(() => historyBySlide.get(slide.id)?.length ?? 0);
@@ -186,6 +209,20 @@ export default function CanvasSlideEditor({
   const selected = slide.elements.find((el) => el.id === selectedId) ?? null;
   const selectedIds = [selectedId, ...multiIds].filter((id): id is string => !!id && slide.elements.some((el) => el.id === id));
   const isMulti = selectedIds.length > 1;
+  const primary = slide.elements.find((el) => el.id === selectedIds[0]) ?? null;
+  const selectedEls = slide.elements.filter((el) => selectedIds.includes(el.id));
+  const allLocked = selectedEls.length > 0 && selectedEls.every((el) => el.locked);
+  const anyGrouped = selectedEls.some((el) => !!el.group);
+  const plan = buildMotionPlan(slide);
+
+  // 효과 미리 보기는 끝날 때쯤 지워서 요소가 원래 모습(사라지기 효과도 다시 보이게)으로 돌아온다
+  useEffect(() => {
+    if (!preview) return;
+    const els = slideRef.current.elements.filter((el) => preview.ids.includes(el.id) && el.motion);
+    const end = Math.max(0.4, ...els.map((el) => (el.motion?.duration ?? 0.6) + (el.motion?.delay ?? 0))) + 0.7;
+    const id = window.setTimeout(() => setPreview(null), end * 1000);
+    return () => window.clearTimeout(id);
+  }, [preview]);
 
   function clearSelection() {
     setSelectedId(null);
@@ -252,6 +289,7 @@ export default function CanvasSlideEditor({
       backgroundImageUrl: s.backgroundImageUrl ?? null,
       backgroundImagePath: s.backgroundImagePath ?? null,
       theme: s.theme ?? null,
+      motionOrder: s.motionOrder,
     };
   }
 
@@ -305,6 +343,19 @@ export default function CanvasSlideEditor({
     );
   }
 
+  /** 특수 문자 넣기: 고치는 중인 글상자면 커서 자리에, 고른 글상자면 글 끝에, 아니면 그 문자로 새 글상자 */
+  function insertChar(ch: string) {
+    if (editingId) {
+      window.dispatchEvent(new CustomEvent(CANVAS_INSERT_EVENT, { detail: ch }));
+      return;
+    }
+    if (selected?.type === 'text') {
+      updateEl(selected.id, { text: selected.text + ch } as Partial<CanvasTextElement>);
+      return;
+    }
+    addElement(newTextElement({ ...themeTextDefaults(slide.theme), text: ch, x: 44, y: 38, w: 12, h: 22, fontSize: 14 }));
+  }
+
   function addElement(el: CanvasElement) {
     // 같은 자리에 겹쳐 쌓이지 않게 기존 개수만큼 살짝 비켜 놓는다.
     const offset = (slideRef.current.elements.length % 5) * 2;
@@ -316,31 +367,104 @@ export default function CanvasSlideEditor({
 
   function removeSelected() {
     if (selectedIds.length === 0) return;
-    setElements(slideRef.current.elements.filter((el) => !selectedIds.includes(el.id)));
+    const removable = slideRef.current.elements.filter((el) => selectedIds.includes(el.id) && !el.locked).map((el) => el.id);
+    if (removable.length === 0) {
+      notify(t('curriculum.canvas.lockedNote'), 'error');
+      return;
+    }
+    setElements(slideRef.current.elements.filter((el) => !removable.includes(el.id)));
     clearSelection();
     setEditingId(null);
   }
 
   function duplicateSelected() {
-    if (!selected) return;
-    const copy = { ...selected, id: uid(), x: clamp(selected.x + 3, 0, 100 - selected.w), y: clamp(selected.y + 3, 0, 100 - selected.h) };
-    setElements([...slideRef.current.elements, copy]);
-    setSelectedId(copy.id);
+    const src = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    if (src.length === 0) return;
+    const copies = freshCopies(src, 3);
+    setElements([...slideRef.current.elements, ...copies]);
+    setSelectedId(copies[0].id);
+    setMultiIds(copies.slice(1).map((c) => c.id));
   }
 
   function reorder(dir: 'front' | 'back') {
-    if (!selected) return;
-    const rest = slideRef.current.elements.filter((el) => el.id !== selected.id);
-    setElements(dir === 'front' ? [...rest, selected] : [selected, ...rest]);
+    const sel = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    if (sel.length === 0) return;
+    const rest = slideRef.current.elements.filter((el) => !selectedIds.includes(el.id));
+    setElements(dir === 'front' ? [...rest, ...sel] : [...sel, ...rest]);
+  }
+
+  /** 고른 요소 모두에 같은 값을(잠긴 것은 건드리지 않는다) */
+  function patchSelected(patch: Partial<CanvasElement>, record = true) {
+    setElements(
+      slideRef.current.elements.map((el) => (selectedIds.includes(el.id) && !el.locked ? ({ ...el, ...patch } as CanvasElement) : el)),
+      record,
+    );
+  }
+
+  function toggleLock() {
+    const els = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    const lock = !els.every((el) => el.locked);
+    setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) ? { ...el, locked: lock } : el)));
+  }
+
+  function groupSelected() {
+    if (selectedIds.length < 2) return;
+    const g = uid();
+    setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) ? { ...el, group: g } : el)));
+  }
+
+  function ungroupSelected() {
+    const groups = new Set(slideRef.current.elements.filter((el) => selectedIds.includes(el.id) && el.group).map((el) => el.group));
+    setElements(slideRef.current.elements.map((el) => (el.group && groups.has(el.group) ? { ...el, group: undefined } : el)));
+  }
+
+  /** 효과 바꾸기 — 고른 요소 모두에. 여럿을 한꺼번에 고르면 첫 요소만 정한 시작 방식이고 나머지는 "함께"로 따라간다 */
+  function applyMotion(patch: Partial<CanvasMotion>) {
+    const ids = selectedIds;
+    setElements(
+      slideRef.current.elements.map((el) => {
+        if (!ids.includes(el.id)) return el;
+        const allowed = effectsFor(el);
+        const draw = allowed[0] === 'draw';
+        const base: CanvasMotion = el.motion ?? { ...DEFAULT_MOTION, effect: draw ? 'draw' : 'fade' };
+        let next: CanvasMotion = { ...base, ...patch };
+        if (patch.effect && !allowed.includes(patch.effect)) next = { ...next, effect: base.effect };
+        if (next.out && next.effect === 'draw' && el.type === 'mark') next = { ...next, effect: 'fade' };
+        // 새로 효과를 주는 요소는 첫 요소(대표)와 함께 나오게 — 묶음을 한 번 클릭에 같이 나타내려고
+        if (ids.length > 1 && el.id !== ids[0] && (patch.trigger || !el.motion)) next = { ...next, trigger: 'with' };
+        return { ...el, motion: next };
+      }),
+    );
+  }
+
+  function clearMotion() {
+    setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) ? { ...el, motion: null } : el)));
+  }
+
+  function moveMotion(id: string, dir: -1 | 1) {
+    const order = buildMotionPlan(slideRef.current).ordered.map((i) => i.id);
+    const at = order.indexOf(id);
+    const to = at + dir;
+    if (at < 0 || to < 0 || to >= order.length) return;
+    [order[at], order[to]] = [order[to], order[at]];
+    commit({ motionOrder: order });
+  }
+
+  function playPreview() {
+    const ids = slideRef.current.elements.filter((el) => selectedIds.includes(el.id) && el.motion).map((el) => el.id);
+    if (ids.length === 0) return;
+    setPreview((p) => ({ ids, n: (p?.n ?? 0) + 1 }));
   }
 
   function copySelected(cut = false) {
     if (!selected) return null;
-    clipboardElements = [selected];
+    const els = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
+    clipboardElements = els;
     clipboardTheme = slideRef.current.theme ?? null;
     setHasClipboard(true);
+    const payload = CLIP_MARKER + JSON.stringify({ theme: clipboardTheme, elements: els });
     if (cut) removeSelected();
-    return CLIP_MARKER + JSON.stringify({ theme: clipboardTheme, elements: [selected] });
+    return payload;
   }
 
   function pasteElements(els: CanvasElement[], fromTheme: string | null) {
@@ -348,7 +472,8 @@ export default function CanvasSlideEditor({
     const to = boardTheme(slideRef.current.theme);
     const copies = cloneForPaste(els.map((el) => rethemeElement(el, from, to)), slideRef.current.elements);
     setElements([...slideRef.current.elements, ...copies]);
-    setSelectedId(copies[copies.length - 1]?.id ?? null);
+    setSelectedId(copies[0]?.id ?? null);
+    setMultiIds(copies.slice(1).map((c) => c.id));
   }
 
   /** 배경 테마를 바꾸면, 이전 테마 기본값 그대로인 글자는 새 테마 기본값(색·글꼴)으로 따라 바꾼다.
@@ -421,11 +546,19 @@ export default function CanvasSlideEditor({
       return;
     }
     const inSelection = selectedIds.includes(el.id);
+    const members = el.group ? slideRef.current.elements.filter((x) => x.group === el.group).map((x) => x.id) : [];
     if (!inSelection) {
-      setSelectedId(el.id);
-      setMultiIds([]);
+      // 묶음의 한 요소를 누르면 묶음 전체가 골라진다
+      if (members.length > 1) {
+        setSelectedId(members[0]);
+        setMultiIds(members.slice(1));
+      } else {
+        setSelectedId(el.id);
+        setMultiIds([]);
+      }
     }
-    const groupIds = inSelection && isMulti && mode === 'move' ? selectedIds : null;
+    if (el.locked) return; // 잠긴 요소는 고르기만 되고 옮겨지지 않는다
+    const groupIds = mode === 'move' ? (inSelection ? (isMulti ? selectedIds : null) : members.length > 1 ? members : null) : null;
     drag.current = {
       id: el.id,
       mode,
@@ -434,7 +567,7 @@ export default function CanvasSlideEditor({
       orig: el,
       pushed: false,
       group: groupIds
-        ? slideRef.current.elements.filter((x) => groupIds.includes(x.id)).map((x) => ({ id: x.id, x: x.x, y: x.y }))
+        ? slideRef.current.elements.filter((x) => groupIds.includes(x.id) && !x.locked).map((x) => ({ id: x.id, x: x.x, y: x.y }))
         : undefined,
     };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -466,6 +599,20 @@ export default function CanvasSlideEditor({
     }
     const o = d.orig;
     let { x, y, w, h } = o;
+    if (d.mode === 'rotate') {
+      // 요소 가운데에서 포인터까지의 각도(위쪽이 0°). 45° 근처에서 달라붙고, Shift 는 15° 단위, Alt 는 자유
+      const cx = rect.left + ((o.x + o.w / 2) / 100) * rect.width;
+      const cy = rect.top + ((o.y + o.h / 2) / 100) * rect.height;
+      let ang = (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI + 90;
+      ang = ((((ang + 180) % 360) + 360) % 360) - 180;
+      if (e.shiftKey) ang = Math.round(ang / 15) * 15;
+      else if (!e.altKey) {
+        const near = Math.round(ang / 45) * 45;
+        if (Math.abs(ang - near) < 4) ang = near;
+      }
+      updateEl(d.id, { rotate: Math.round(ang * 10) / 10 }, false);
+      return;
+    }
     if (d.mode === 'move') {
       x = clamp(o.x + dx, -o.w + 4, 96);
       y = clamp(o.y + dy, -o.h + 4, 96);
@@ -478,22 +625,37 @@ export default function CanvasSlideEditor({
       if (snapH) y = 50 - h / 2;
       setGuides({ v: snapV, h: snapH });
     } else {
+      // 크기 바꾸기: 돌아간 요소도 맞게, 반대쪽 모서리가 제자리에 있도록(화면 픽셀로 계산)
       const m = d.mode;
-      if (m.includes('e')) w = Math.max(MIN_SIZE, o.w + dx);
-      if (m.includes('s')) h = Math.max(MIN_SIZE, o.h + dy);
-      if (m.includes('w')) {
-        w = Math.max(MIN_SIZE, o.w - dx);
-        x = o.x + o.w - w;
-      }
-      if (m.includes('n')) {
-        h = Math.max(MIN_SIZE, o.h - dy);
-        y = o.y + o.h - h;
-      }
+      const W = rect.width;
+      const H = rect.height;
+      const th = ((o.rotate ?? 0) * Math.PI) / 180;
+      const cos = Math.cos(th);
+      const sin = Math.sin(th);
+      const dpx = e.clientX - d.startX;
+      const dpy = e.clientY - d.startY;
+      const lx = dpx * cos + dpy * sin;
+      const ly = -dpx * sin + dpy * cos;
+      const ow = (o.w / 100) * W;
+      const oh = (o.h / 100) * H;
+      const minW = (MIN_SIZE / 100) * W;
+      const minH = (MIN_SIZE / 100) * H;
+      let nw = ow;
+      let nh = oh;
+      if (m.includes('e')) nw = Math.max(minW, ow + lx);
+      if (m.includes('w')) nw = Math.max(minW, ow - lx);
+      if (m.includes('s')) nh = Math.max(minH, oh + ly);
+      if (m.includes('n')) nh = Math.max(minH, oh - ly);
       // 그림을 모서리로 끌면 가로세로 비율 유지(Shift 누르면 자유롭게).
-      if (o.type === 'image' && m.length === 2 && !e.shiftKey) {
-        h = w * (o.h / o.w);
-        if (m.includes('n')) y = o.y + o.h - h;
-      }
+      if (o.type === 'image' && m.length === 2 && !e.shiftKey) nh = nw * (oh / ow);
+      const sx = m.includes('e') ? (nw - ow) / 2 : m.includes('w') ? -(nw - ow) / 2 : 0;
+      const sy = m.includes('s') ? (nh - oh) / 2 : m.includes('n') ? -(nh - oh) / 2 : 0;
+      const ncx = ((o.x + o.w / 2) / 100) * W + sx * cos - sy * sin;
+      const ncy = ((o.y + o.h / 2) / 100) * H + sx * sin + sy * cos;
+      w = (nw / W) * 100;
+      h = (nh / H) * 100;
+      x = ((ncx - nw / 2) / W) * 100;
+      y = ((ncy - nh / 2) / H) * 100;
     }
     updateEl(d.id, { x, y, w, h }, false);
   }
@@ -544,7 +706,7 @@ export default function CanvasSlideEditor({
       const step = e.shiftKey ? 2 : 0.5;
       const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
       const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-      setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) ? { ...el, x: el.x + dx, y: el.y + dy } : el)));
+      setElements(slideRef.current.elements.map((el) => (selectedIds.includes(el.id) && !el.locked ? { ...el, x: el.x + dx, y: el.y + dy } : el)));
     } else if (e.key === 'Escape') {
       clearSelection();
     }
@@ -643,6 +805,26 @@ export default function CanvasSlideEditor({
           <span className="material-symbols-outlined text-[18px]">style</span>
           {t('curriculum.canvas.addWord')}
         </button>
+        <button
+          type="button"
+          className={`${btnIdle} ${panel === 'shapes' ? '!bg-secondary-container' : ''}`}
+          aria-expanded={panel === 'shapes'}
+          onClick={() => setPanel((p) => (p === 'shapes' ? null : 'shapes'))}
+        >
+          <span className="material-symbols-outlined text-[18px]">category</span>
+          {t('curriculum.canvas.addShape')}
+        </button>
+        <button
+          type="button"
+          className={`${btnIdle} ${panel === 'chars' ? '!bg-secondary-container' : ''}`}
+          aria-expanded={panel === 'chars'}
+          onPointerDown={(e) => editingId && e.preventDefault()}
+          onMouseDown={(e) => editingId && e.preventDefault()}
+          onClick={() => setPanel((p) => (p === 'chars' ? null : 'chars'))}
+        >
+          <span className="material-symbols-outlined text-[18px]">special_character</span>
+          {t('curriculum.canvas.addChar')}
+        </button>
         <button type="button" className={btnIdle} disabled={!selected} onClick={() => copySelected()} title="Ctrl+C">
           <span className="material-symbols-outlined text-[18px]">content_copy</span>
           {t('curriculum.canvas.copy')}
@@ -694,6 +876,88 @@ export default function CanvasSlideEditor({
         </div>
       )}
 
+      {panel === 'shapes' && (
+        <div className="space-y-3 rounded-lg bg-surface-container-lowest p-2 shadow-sm">
+          <div className="space-y-1">
+            <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.canvas.shapesTitle')}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {SHAPE_KINDS.map(({ shape, icon }) => (
+                <button
+                  key={shape}
+                  type="button"
+                  onClick={() => {
+                    addElement(newShapeElement(shape));
+                    setPanel(null);
+                  }}
+                  className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-container-lowest px-3 font-label-md text-label-md text-on-surface hover:border-primary"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-primary">{icon}</span>
+                  {t(`curriculum.canvas.shape_${shape}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.canvas.marksTitle')}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {MARK_SHAPES.map(({ shape, icon }) => (
+                <button
+                  key={shape}
+                  type="button"
+                  onClick={() => {
+                    addElement(newMarkElement(shape));
+                    setPanel(null);
+                  }}
+                  className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant/60 bg-surface-container-lowest px-3 font-label-md text-label-md text-on-surface hover:border-primary"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-[#e11d48]">{icon}</span>
+                  {t(`curriculum.canvas.mark_${shape}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                addElement(newCoverElement());
+                setPanel(null);
+              }}
+              className="flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-label-md text-label-md text-on-primary"
+            >
+              <span className="material-symbols-outlined text-[20px]">visibility_off</span>
+              {t('curriculum.canvas.addCover')}
+            </button>
+            <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.coverHint')}</span>
+          </div>
+        </div>
+      )}
+
+      {panel === 'chars' && (
+        <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg bg-surface-container-lowest p-2 shadow-sm">
+          {SPECIAL_CHAR_GROUPS.map((g) => (
+            <div key={g.id} className="flex flex-wrap items-center gap-1">
+              <span className="w-16 shrink-0 font-caption text-caption text-on-surface-variant">{t(`curriculum.canvas.chars_${g.id}`)}</span>
+              {g.chars.map((ch) => (
+                <button
+                  key={ch}
+                  type="button"
+                  title={ch}
+                  aria-label={t('curriculum.canvas.insertChar', { ch })}
+                  onPointerDown={(e) => e.preventDefault()}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => insertChar(ch)}
+                  className="flex h-10 min-w-10 items-center justify-center rounded-lg border border-outline-variant/50 bg-surface-container-lowest px-1.5 text-xl text-on-surface hover:border-primary hover:bg-primary/5"
+                >
+                  {ch}
+                </button>
+              ))}
+            </div>
+          ))}
+          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.charHint')}</p>
+        </div>
+      )}
+
       {/* 선택한 요소 서식 도구 */}
       <div className="flex min-h-[44px] flex-wrap items-center gap-1 rounded-lg bg-surface-container-lowest px-2 py-1.5 shadow-sm">
         {!selected ? (
@@ -721,6 +985,10 @@ export default function CanvasSlideEditor({
             )}
             <span className="ml-auto hidden font-caption text-caption text-on-surface-variant lg:inline">{t('curriculum.canvas.hint')}</span>
           </>
+        ) : selected.type === 'shape' ? (
+          <ShapeTools el={selected} iconBtn={iconBtn} onChange={(patch) => updateEl(selected.id, patch as Partial<CanvasElement>)} />
+        ) : selected.type === 'mark' ? (
+          <MarkTools el={selected} iconBtn={iconBtn} onChange={(patch) => updateEl(selected.id, patch as Partial<CanvasElement>)} />
         ) : selected.type === 'text' ? (
           <>
             <select
@@ -785,6 +1053,85 @@ export default function CanvasSlideEditor({
         )}
       </div>
 
+      {selectedIds.length > 0 && primary && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-surface-container-lowest px-2 py-1.5 shadow-sm">
+          <label className="flex items-center gap-1 text-sm text-on-surface" title={t('curriculum.canvas.rotateTitle')}>
+            <span className="material-symbols-outlined text-[20px] text-on-surface-variant">rotate_right</span>
+            <input
+              type="number"
+              min={-180}
+              max={180}
+              step={5}
+              value={Math.round(primary.rotate ?? 0)}
+              aria-label={t('curriculum.canvas.rotateTitle')}
+              onChange={(e) => patchSelected({ rotate: clamp(Number(e.target.value) || 0, -180, 180) })}
+              className="h-9 w-16 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm tabular-nums"
+            />
+            °
+            <button type="button" className={iconBtn()} onClick={() => patchSelected({ rotate: 0 })} title={t('curriculum.canvas.rotateReset')} disabled={!primary.rotate}>
+              <span className="material-symbols-outlined text-[18px]">restart_alt</span>
+            </button>
+          </label>
+          <label className="flex items-center gap-1 text-sm text-on-surface" title={t('curriculum.canvas.opacity')}>
+            <span className="material-symbols-outlined text-[20px] text-on-surface-variant">opacity</span>
+            <input
+              type="range"
+              min={10}
+              max={100}
+              step={5}
+              value={Math.round((primary.opacity ?? 1) * 100)}
+              aria-label={t('curriculum.canvas.opacity')}
+              onChange={(e) => patchSelected({ opacity: Number(e.target.value) / 100 })}
+              className="w-24 accent-[#2765a8]"
+            />
+            <span className="w-9 tabular-nums">{Math.round((primary.opacity ?? 1) * 100)}%</span>
+          </label>
+          <span className="h-6 w-px bg-outline-variant/50" />
+          <button
+            type="button"
+            className={`${btn} ${allLocked ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface'}`}
+            aria-pressed={allLocked}
+            onClick={toggleLock}
+          >
+            <span className="material-symbols-outlined text-[18px]">{allLocked ? 'lock' : 'lock_open'}</span>
+            {allLocked ? t('curriculum.canvas.unlock') : t('curriculum.canvas.lock')}
+          </button>
+          {isMulti && (
+            <button type="button" className={`${btn} bg-surface-container-low text-on-surface`} onClick={groupSelected}>
+              <span className="material-symbols-outlined text-[18px]">join_full</span>
+              {t('curriculum.canvas.group')}
+            </button>
+          )}
+          {anyGrouped && (
+            <button type="button" className={`${btn} bg-surface-container-low text-on-surface`} onClick={ungroupSelected}>
+              <span className="material-symbols-outlined text-[18px]">join_inner</span>
+              {t('curriculum.canvas.ungroup')}
+            </button>
+          )}
+          <button type="button" className={`${btn} ${motionOpen ? 'bg-primary text-on-primary' : 'bg-secondary-container/60 text-on-surface'}`} aria-expanded={motionOpen} onClick={() => setMotionOpen((o) => !o)}>
+            <span className="material-symbols-outlined text-[18px]">animation</span>
+            {t('curriculum.canvas.motion')}
+            {primary.motion && <span className="rounded-full bg-deep-navy px-1.5 text-[11px] text-white">{t(primary.motion.out ? 'curriculum.canvas.motionOut' : 'curriculum.canvas.motionIn')}</span>}
+          </button>
+          {(primary.type === 'shape' || primary.type === 'mark') && (
+            <ElementActions onFront={() => reorder('front')} onBack={() => reorder('back')} onDuplicate={duplicateSelected} onDelete={removeSelected} iconBtn={iconBtn} />
+          )}
+        </div>
+      )}
+
+      {motionOpen && selectedIds.length > 0 && primary && (
+        <MotionPanel
+          primary={primary}
+          plan={plan}
+          elements={slide.elements}
+          selectedIds={selectedIds}
+          onApply={applyMotion}
+          onClear={clearMotion}
+          onMove={moveMotion}
+          onPreview={playPreview}
+        />
+      )}
+
       {/* 정렬 (일러스트레이터처럼) */}
       {selectedIds.length > 0 && (
         <div className="flex flex-wrap items-center gap-1 rounded-lg bg-surface-container-lowest px-2 py-1.5 shadow-sm">
@@ -844,17 +1191,19 @@ export default function CanvasSlideEditor({
         {slide.elements.map((el) => {
           const isSel = selectedIds.includes(el.id);
           const isEditing = el.id === editingId && el.type === 'text';
+          const info = plan.byId.get(el.id);
+          const previewing = !!preview && preview.ids.includes(el.id) && !!el.motion;
           return (
             <div
               key={el.id}
               data-el-id={el.id}
               style={canvasElementBoxStyle(el)}
-              className={`${isEditing ? '' : 'cursor-move'} ${isSel ? 'outline outline-2 outline-primary' : 'hover:outline hover:outline-1 hover:outline-primary/50'}`}
+              className={`${isEditing ? '' : el.locked ? 'cursor-not-allowed' : 'cursor-move'} ${isSel ? 'outline outline-2 outline-primary' : 'hover:outline hover:outline-1 hover:outline-primary/50'}`}
               onPointerDown={(e) => startDrag(e, el, 'move')}
               onPointerMove={onDragMove}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
-              onDoubleClick={() => el.type === 'text' && setEditingId(el.id)}
+              onDoubleClick={() => el.type === 'text' && !el.locked && setEditingId(el.id)}
             >
               {isEditing ? (
                 <TextEditBox el={el as CanvasTextElement} onDone={(text) => {
@@ -865,21 +1214,58 @@ export default function CanvasSlideEditor({
                   const stageH = stageRef.current?.clientHeight;
                   if (stageH) updateEl(el.id, { h: (px / stageH) * 100 + 0.5 }, false);
                 }} />
+              ) : previewing && el.motion ? (
+                el.type === 'mark' && el.motion.effect === 'draw' && !el.motion.out ? (
+                  <CanvasMarkContent key={preview!.n} el={el} draw duration={el.motion.duration} delay={el.motion.delay} />
+                ) : (
+                  <MotionLayer key={preview!.n} motion={el.motion} el={el} animate delay={el.motion.delay}>
+                    <CanvasElementContent el={el} />
+                  </MotionLayer>
+                )
               ) : (
                 <CanvasElementContent el={el} placeholder={t('curriculum.canvas.placeholder')} />
               )}
-              {isSel && !isMulti && !isEditing &&
-                HANDLES.map((hd) => (
+              {info && (
+                <span className="pointer-events-none absolute -left-1 -top-1 z-10 flex items-center gap-0.5 whitespace-nowrap rounded-full bg-deep-navy px-1.5 text-[10px] font-bold leading-4 text-white">
+                  {info.motion.out && <span className="material-symbols-outlined text-[11px]">visibility_off</span>}
+                  {info.motion.trigger === 'click'
+                    ? t('curriculum.canvas.badgeClick', { n: info.step })
+                    : info.motion.trigger === 'with'
+                      ? t('curriculum.canvas.badgeWith')
+                      : t('curriculum.canvas.badgeAuto')}
+                </span>
+              )}
+              {el.locked && (
+                <span className="pointer-events-none absolute -right-1 -top-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-on-surface text-white">
+                  <span className="material-symbols-outlined text-[11px]">lock</span>
+                </span>
+              )}
+              {isSel && !isMulti && !isEditing && !el.locked && (
+                <>
+                  {HANDLES.map((hd) => (
+                    <span
+                      key={hd}
+                      onPointerDown={(e) => startDrag(e, el, hd)}
+                      onPointerMove={onDragMove}
+                      onPointerUp={endDrag}
+                      onPointerCancel={endDrag}
+                      className="absolute z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-white"
+                      style={HANDLE_POS[hd]}
+                    />
+                  ))}
                   <span
-                    key={hd}
-                    onPointerDown={(e) => startDrag(e, el, hd)}
+                    onPointerDown={(e) => startDrag(e, el, 'rotate')}
                     onPointerMove={onDragMove}
                     onPointerUp={endDrag}
                     onPointerCancel={endDrag}
-                    className="absolute z-10 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-white"
-                    style={HANDLE_POS[hd]}
-                  />
-                ))}
+                    title={t('curriculum.canvas.rotateTitle')}
+                    className="absolute left-1/2 z-10 flex h-5 w-5 -translate-x-1/2 cursor-grab items-center justify-center rounded-full border-2 border-primary bg-white text-primary"
+                    style={{ top: '-30px' }}
+                  >
+                    <span className="material-symbols-outlined text-[13px]">rotate_right</span>
+                  </span>
+                </>
+              )}
             </div>
           );
         })}
@@ -949,6 +1335,25 @@ function TextEditBox({
       document.fonts?.removeEventListener?.('loadingdone', repaint);
     };
   }, []);
+  // 특수 문자 패널에서 누른 문자를 커서 자리에 넣는다(짝 문자는 가운데에 커서)
+  useEffect(() => {
+    function onInsert(e: Event) {
+      const ch = (e as CustomEvent<string>).detail;
+      const ta = ref.current;
+      if (!ta || typeof ch !== 'string') return;
+      const start = ta.selectionStart ?? ta.value.length;
+      const end = ta.selectionEnd ?? start;
+      const next = ta.value.slice(0, start) + ch + ta.value.slice(end);
+      const caret = start + (PAIRED_CHARS.has(ch) ? 1 : ch.length);
+      setValue(next);
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(caret, caret);
+      });
+    }
+    window.addEventListener(CANVAS_INSERT_EVENT, onInsert);
+    return () => window.removeEventListener(CANVAS_INSERT_EVENT, onInsert);
+  }, []);
   const style = canvasTextStyle(el);
   return (
     <textarea
@@ -964,6 +1369,218 @@ function TextEditBox({
       className="h-full w-full resize-none overflow-hidden border-0 outline-none"
       style={{ ...style, background: el.fill ?? 'rgba(255,255,255,0.35)' }}
     />
+  );
+}
+
+const MARK_COLORS = ['#e11d48', '#f97316', '#eab308', '#16a34a', '#2563eb', '#7c3aed', '#1f2937', '#ffffff'];
+const SHAPE_COLORS = ['#e11d48', '#f97316', '#fbbf24', '#16a34a', '#2563eb', '#7c3aed', '#1f2937', '#ffffff', '#fde68a', '#dbeafe', '#dcfce7', '#fce7f3'];
+
+/** 고른 표시의 도구: 모양·색·굵기. 돌리기·투명도·효과는 공통 줄에서 */
+function MarkTools({ el, iconBtn, onChange }: { el: CanvasMarkElement; iconBtn: (active?: boolean) => string; onChange: (patch: Partial<CanvasMarkElement>) => void }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      {MARK_SHAPES.map(({ shape, icon }) => (
+        <button key={shape} type="button" className={iconBtn(el.shape === shape)} onClick={() => onChange({ shape })} title={t(`curriculum.canvas.mark_${shape}`)}>
+          <span className="material-symbols-outlined text-[20px]">{icon}</span>
+        </button>
+      ))}
+      <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+      {MARK_COLORS.map((c) => (
+        <ColorDot key={c} color={c} active={el.color === c} onClick={() => onChange({ color: c })} />
+      ))}
+      <CustomColor value={el.color} onChange={(c) => onChange({ color: c })} />
+      <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+      <Stepper label={t('curriculum.canvas.lineWidth')} icon="line_weight" onLess={() => onChange({ stroke: Math.max(0.4, +(el.stroke / 1.25).toFixed(2)) })} onMore={() => onChange({ stroke: Math.min(6, +(el.stroke * 1.25).toFixed(2)) })} iconBtn={iconBtn} />
+    </>
+  );
+}
+
+function Stepper({ label, icon, onLess, onMore, iconBtn }: { label: string; icon: string; onLess: () => void; onMore: () => void; iconBtn: (active?: boolean) => string }) {
+  return (
+    <span className="flex items-center" title={label}>
+      <button type="button" className={iconBtn()} onClick={onLess} aria-label={`${label} −`}>
+        <span className="material-symbols-outlined text-[16px]">remove</span>
+      </button>
+      <span className="material-symbols-outlined text-[18px] text-on-surface-variant" aria-hidden="true">{icon}</span>
+      <button type="button" className={iconBtn()} onClick={onMore} aria-label={`${label} +`}>
+        <span className="material-symbols-outlined text-[16px]">add</span>
+      </button>
+    </span>
+  );
+}
+
+/** 고른 도형의 도구: 채우기·테두리 색·굵기·선 모양·모서리 */
+function ShapeTools({ el, iconBtn, onChange }: { el: CanvasShapeElement; iconBtn: (active?: boolean) => string; onChange: (patch: Partial<CanvasShapeElement>) => void }) {
+  const { t } = useTranslation();
+  const line = isLineShape(el.shape);
+  return (
+    <>
+      {!line && (
+        <>
+          <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.fill')}>format_color_fill</span>
+          <ColorDot color={null} active={el.fill === null} onClick={() => onChange({ fill: null })} />
+          {SHAPE_COLORS.map((c) => (
+            <ColorDot key={`f${c}`} color={c} active={el.fill === c} onClick={() => onChange({ fill: c })} />
+          ))}
+          <CustomColor value={el.fill ?? '#ffffff'} onChange={(c) => onChange({ fill: c })} />
+          <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+        </>
+      )}
+      <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.strokeColor')}>border_color</span>
+      {!line && <ColorDot color={null} active={el.stroke === null} onClick={() => onChange({ stroke: null })} />}
+      {SHAPE_COLORS.map((c) => (
+        <ColorDot key={`s${c}`} color={c} active={el.stroke === c} onClick={() => onChange({ stroke: c })} />
+      ))}
+      <CustomColor value={el.stroke ?? '#1f2937'} onChange={(c) => onChange({ stroke: c })} />
+      <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+      <Stepper label={t('curriculum.canvas.lineWidth')} icon="line_weight" onLess={() => onChange({ strokeWidth: Math.max(0.2, +(el.strokeWidth / 1.3).toFixed(2)) })} onMore={() => onChange({ strokeWidth: Math.min(6, +(el.strokeWidth * 1.3).toFixed(2)) })} iconBtn={iconBtn} />
+      <select
+        value={el.dash}
+        onChange={(e) => onChange({ dash: e.target.value as CanvasShapeElement['dash'] })}
+        aria-label={t('curriculum.canvas.dash')}
+        className="h-8 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface"
+      >
+        {(['solid', 'dashed', 'dotted'] as const).map((d) => (
+          <option key={d} value={d}>
+            {t(`curriculum.canvas.dash_${d}`)}
+          </option>
+        ))}
+      </select>
+      {el.shape === 'roundrect' && (
+        <Stepper label={t('curriculum.canvas.radius')} icon="rounded_corner" onLess={() => onChange({ radius: Math.max(0, (el.radius ?? 4) - 1) })} onMore={() => onChange({ radius: Math.min(30, (el.radius ?? 4) + 1) })} iconBtn={iconBtn} />
+      )}
+    </>
+  );
+}
+
+/** 효과 창 — 파워포인트의 "애니메이션 창"처럼: 효과 고르기·나타나기/사라지기·시작 방식·속도·지연·미리 보기·순서 */
+function MotionPanel({
+  primary,
+  plan,
+  elements,
+  selectedIds,
+  onApply,
+  onClear,
+  onMove,
+  onPreview,
+}: {
+  primary: CanvasElement;
+  plan: MotionPlan;
+  elements: CanvasElement[];
+  selectedIds: string[];
+  onApply: (patch: Partial<CanvasMotion>) => void;
+  onClear: () => void;
+  onMove: (id: string, dir: -1 | 1) => void;
+  onPreview: () => void;
+}) {
+  const { t } = useTranslation();
+  const m = primary.motion ?? null;
+  const effects = effectsFor(primary);
+  const seg = (on: boolean) =>
+    `min-h-10 flex-1 rounded-lg px-3 font-label-md text-label-md transition-colors ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface hover:bg-secondary-container/50'}`;
+  const label = (el: CanvasElement) =>
+    el.type === 'text' ? el.text.trim().split(/\n/)[0].slice(0, 14) || t('curriculum.canvas.addText') : el.type === 'image' ? t('curriculum.canvas.imageLabel') : el.type === 'shape' ? t(`curriculum.canvas.shape_${el.shape}`) : t(`curriculum.canvas.mark_${el.shape}`);
+  const byId = new Map(elements.map((e) => [e.id, e]));
+  return (
+    <div className="space-y-3 rounded-lg border border-outline-variant/40 bg-surface-container-lowest p-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="font-label-md text-label-md font-bold text-deep-navy">
+          {t('curriculum.canvas.motionTitle')}
+          {selectedIds.length > 1 && <span className="ml-2 font-caption text-caption font-normal text-on-surface-variant">{t('curriculum.canvas.motionMulti', { count: selectedIds.length })}</span>}
+        </div>
+        <div className="flex gap-1.5">
+          <button type="button" onClick={onPreview} disabled={!m} className="flex min-h-10 items-center gap-1 rounded-full bg-secondary-container px-4 font-label-md text-label-md text-on-secondary-container disabled:opacity-40">
+            <span className="material-symbols-outlined text-[18px]">play_circle</span>
+            {t('curriculum.canvas.motionPreview')}
+          </button>
+          <button type="button" onClick={onClear} disabled={!m} className="flex min-h-10 items-center gap-1 rounded-full border border-outline-variant px-4 font-label-md text-label-md text-on-surface-variant disabled:opacity-40">
+            <span className="material-symbols-outlined text-[18px]">block</span>
+            {t('curriculum.canvas.motionNone')}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('curriculum.canvas.motionEffect')}>
+        {effects.map((fx) => (
+          <button
+            key={fx}
+            type="button"
+            aria-pressed={m?.effect === fx}
+            onClick={() => onApply({ effect: fx })}
+            className={`flex min-h-10 items-center gap-1 rounded-full border px-3 font-label-md text-label-md ${
+              m?.effect === fx ? 'border-primary bg-primary/10 text-deep-navy' : 'border-outline-variant/60 text-on-surface hover:border-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">{effectIcon(fx)}</span>
+            {t(`curriculum.canvas.fx_${fx}`)}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.motionKind')}</div>
+          <div className="flex gap-1.5">
+            <button type="button" className={seg(!!m && !m.out)} onClick={() => onApply({ out: false })}>
+              {t('curriculum.canvas.motionIn')}
+            </button>
+            <button type="button" className={seg(!!m?.out)} onClick={() => onApply({ out: true })}>
+              {t('curriculum.canvas.motionOut')}
+            </button>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.motionStart')}</div>
+          <div className="flex gap-1.5">
+            {(['click', 'with', 'auto'] as const).map((tr) => (
+              <button key={tr} type="button" className={seg(m?.trigger === tr)} onClick={() => onApply({ trigger: tr })}>
+                {t(`curriculum.canvas.trigger_${tr}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-on-surface">
+          <span className="w-12 shrink-0 text-on-surface-variant">{t('curriculum.canvas.motionSpeed')}</span>
+          <input type="range" min={0.2} max={2.5} step={0.1} value={m?.duration ?? 0.6} onChange={(e) => onApply({ duration: Number(e.target.value) })} className="flex-1 accent-[#2765a8]" />
+          <span className="w-10 tabular-nums">{(m?.duration ?? 0.6).toFixed(1)}s</span>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-on-surface">
+          <span className="w-12 shrink-0 text-on-surface-variant">{t('curriculum.canvas.motionDelay')}</span>
+          <input type="range" min={0} max={3} step={0.1} value={m?.delay ?? 0} onChange={(e) => onApply({ delay: Number(e.target.value) })} className="flex-1 accent-[#2765a8]" />
+          <span className="w-10 tabular-nums">{(m?.delay ?? 0).toFixed(1)}s</span>
+        </label>
+      </div>
+
+      {plan.ordered.length > 0 && (
+        <div className="space-y-1">
+          <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.canvas.motionOrder')}</div>
+          <ol className="space-y-1">
+            {plan.ordered.map((info, i) => {
+              const el = byId.get(info.id);
+              if (!el) return null;
+              return (
+                <li key={info.id} className={`flex items-center gap-2 rounded-lg px-2 py-1 text-sm ${selectedIds.includes(info.id) ? 'bg-primary/10' : 'bg-surface-container-low'}`}>
+                  <span className="w-20 shrink-0 text-xs font-bold text-primary">
+                    {info.motion.trigger === 'click' ? t('curriculum.canvas.badgeClick', { n: info.step }) : info.motion.trigger === 'with' ? t('curriculum.canvas.badgeWith') : t('curriculum.canvas.badgeAuto')}
+                  </span>
+                  <span className="material-symbols-outlined text-[16px] text-on-surface-variant">{effectIcon(info.motion.effect)}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {label(el)} <span className="text-on-surface-variant">· {t(`curriculum.canvas.fx_${info.motion.effect}`)}{info.motion.out ? ` (${t('curriculum.canvas.motionOut')})` : ''}</span>
+                  </span>
+                  <button type="button" disabled={i === 0} onClick={() => onMove(info.id, -1)} aria-label={t('curriculum.canvas.moveUp')} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-container disabled:opacity-30">
+                    <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+                  </button>
+                  <button type="button" disabled={i === plan.ordered.length - 1} onClick={() => onMove(info.id, 1)} aria-label={t('curriculum.canvas.moveDown')} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-surface-container disabled:opacity-30">
+                    <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
+    </div>
   );
 }
 

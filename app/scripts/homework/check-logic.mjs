@@ -155,6 +155,26 @@ try {
     assert.deepEqual(sf.strengths.map((x) => x.key).slice(0, 1), ['vocab.meaning']);
     assert.deepEqual(sf.focus.map((x) => x.key), ['listening.word']);
   });
+  // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
+  const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
+  const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });
+  const fx = (trigger, extra = {}) => ({ effect: 'fade', trigger, duration: 0.5, delay: 0, ...extra });
+  await test('효과 순서: 클릭마다 새 단계, 함께는 같은 단계·같은 시작, 이어서는 앞이 끝난 뒤', () => {
+    const plan = motion.buildMotionPlan({ elements: [el('plain', null), el('a', fx('click')), el('b', fx('with', { delay: 0.2 })), el('c', fx('auto')), el('d', fx('click', { out: true }))] });
+    assert.equal(plan.clickSteps, 2);
+    assert.equal(plan.byId.has('plain'), false);
+    assert.deepEqual([plan.byId.get('a').step, plan.byId.get('b').step, plan.byId.get('c').step, plan.byId.get('d').step], [1, 1, 1, 2]);
+    assert.equal(plan.byId.get('b').start, 0.2);
+    assert.ok(Math.abs(plan.byId.get('c').start - 0.7) < 1e-9, '이어서는 앞(0.2+0.5)이 끝난 뒤');
+  });
+  await test('효과 순서: 슬라이드 열릴 때 나오는 효과는 단계 0, 순서 목록(motionOrder)을 따른다', () => {
+    const els = [el('a', fx('auto')), el('b', fx('click')), el('c', fx('click'))];
+    assert.equal(motion.buildMotionPlan({ elements: els }).byId.get('a').step, 0);
+    const swapped = motion.buildMotionPlan({ elements: els, motionOrder: ['c', 'b', 'a'] });
+    assert.deepEqual(swapped.ordered.map((i) => i.id), ['c', 'b', 'a']);
+    assert.equal(swapped.byId.get('c').step, 1);
+    assert.equal(swapped.byId.get('b').step, 2);
+  });
 } finally {
   await server.close();
 }

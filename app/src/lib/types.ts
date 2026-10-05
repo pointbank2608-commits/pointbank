@@ -682,6 +682,29 @@ export interface CanvasElementBase {
   y: number;
   w: number;
   h: number;
+  /** 도(°), 가운데를 중심으로 돌린다 */
+  rotate?: number;
+  /** 0~1 (없으면 1) */
+  opacity?: number;
+  /** 잠그면 옮기기·크기·돌리기·지우기가 안 된다 */
+  locked?: boolean;
+  /** 같은 값이면 한 덩어리로 선택·이동한다 */
+  group?: string;
+  /** 발표 중 나타나거나 사라지는 효과(없으면 처음부터 보임) */
+  motion?: CanvasMotion | null;
+}
+
+/** 발표 중 효과(2026-10-05) — 파워포인트처럼 순서대로. click: 클릭할 때마다 새 단계 · with: 앞 효과와 함께 · auto: 앞 효과가 끝나면 */
+export type CanvasMotionEffect = 'fade' | 'pop' | 'zoom' | 'slide-left' | 'slide-right' | 'slide-up' | 'slide-down' | 'wipe' | 'bounce' | 'spin' | 'draw';
+export interface CanvasMotion {
+  effect: CanvasMotionEffect;
+  /** true 면 나타나는 게 아니라 사라진다(가리개) */
+  out?: boolean;
+  trigger: 'click' | 'with' | 'auto';
+  /** 초 */
+  duration: number;
+  /** 초 */
+  delay: number;
 }
 export interface CanvasTextElement extends CanvasElementBase {
   type: 'text';
@@ -703,7 +726,31 @@ export interface CanvasImageElement extends CanvasElementBase {
   path?: string;
   fit: 'contain' | 'cover';
 }
-export type CanvasElement = CanvasTextElement | CanvasImageElement;
+/** 그려지는 표시(2026-10-05) — 체크·동그라미·X·화살표·밑줄·별·네모. 손으로 그린 듯한 선이고, 기본 효과는 "그려지기" */
+export type CanvasMarkShape = 'check' | 'circle' | 'cross' | 'arrow' | 'underline' | 'star' | 'box';
+export interface CanvasMarkElement extends CanvasElementBase {
+  type: 'mark';
+  shape: CanvasMarkShape;
+  color: string;
+  /** 선 굵기(무대 높이 %) */
+  stroke: number;
+}
+/** 도형(2026-10-05) — 네모·둥근 네모·원·삼각형·마름모·별·말풍선·블록 화살표(채우기+테두리), 선·화살표 선(테두리만) */
+export type CanvasShapeKind = 'rect' | 'roundrect' | 'ellipse' | 'triangle' | 'diamond' | 'star' | 'speech' | 'blockarrow' | 'line' | 'arrow';
+export interface CanvasShapeElement extends CanvasElementBase {
+  type: 'shape';
+  shape: CanvasShapeKind;
+  /** 채우기(없으면 투명) */
+  fill: string | null;
+  /** 테두리 색(없으면 테두리 없음) */
+  stroke: string | null;
+  /** 테두리 굵기(무대 높이 %) */
+  strokeWidth: number;
+  dash: 'solid' | 'dashed' | 'dotted';
+  /** 둥근 네모의 모서리 둥글기(무대 높이 %) */
+  radius?: number;
+}
+export type CanvasElement = CanvasTextElement | CanvasImageElement | CanvasMarkElement | CanvasShapeElement;
 export interface CanvasSlide {
   id: string;
   kind: 'canvas';
@@ -713,6 +760,8 @@ export interface CanvasSlide {
   backgroundImageUrl?: string | null;
   backgroundImagePath?: string | null;
   elements: CanvasElement[];
+  /** 효과가 나오는 순서(요소 id). 없으면 요소 순서대로 */
+  motionOrder?: string[];
 }
 
 /** "카드로 외우기" 슬라이드 — 단어 사전의 카드로 외우기 화면(FlashcardStudy)을 수업 단어장으로 띄운다. */

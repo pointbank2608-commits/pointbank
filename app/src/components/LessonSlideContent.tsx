@@ -220,7 +220,7 @@ export default function LessonSlideContent({
   if (slide.kind === 'canvas') {
     return (
       <div className={boardBox}>
-        <CanvasSlideView slide={slide} className="[&>div]:rounded-xl" />
+        <CanvasSlideView key={slide.id} slide={slide} play className="[&>div]:rounded-xl" />
       </div>
     );
   }
