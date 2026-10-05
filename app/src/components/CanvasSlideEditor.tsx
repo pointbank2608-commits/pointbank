@@ -156,6 +156,8 @@ interface DragState {
   pushed: boolean;
   /** 여러 개를 골라 함께 옮길 때 각자의 시작 위치 */
   group?: { id: string; x: number; y: number }[];
+  /** 끌지 않고 눌렀다 떼면 선택을 이 요소 하나로 좁힌다(여럿 선택 안의 요소를 눌렀을 때) */
+  collapse?: boolean;
 }
 
 type AlignKind = 'left' | 'hcenter' | 'right' | 'top' | 'vmiddle' | 'bottom';
@@ -213,6 +215,7 @@ export default function CanvasSlideEditor({
   const selectedEls = slide.elements.filter((el) => selectedIds.includes(el.id));
   const allLocked = selectedEls.length > 0 && selectedEls.every((el) => el.locked);
   const anyGrouped = selectedEls.some((el) => !!el.group);
+  const sameSize = selectedEls.filter((el): el is CanvasTextElement => el.type === 'text').every((el, _i, all) => el.fontSize === all[0].fontSize);
   const plan = buildMotionPlan(slide);
 
   // 효과 미리 보기는 끝날 때쯤 지워서 요소가 원래 모습(사라지기 효과도 다시 보이게)으로 돌아온다
@@ -401,6 +404,13 @@ export default function CanvasSlideEditor({
     );
   }
 
+  /** 글자 서식(크기·굵기·색…)은 고른 글상자 모두에 — 하나만 골랐으면 그 하나 */
+  function updateTexts(fn: (el: CanvasTextElement) => Partial<CanvasTextElement>) {
+    setElements(
+      slideRef.current.elements.map((el) => (selectedIds.includes(el.id) && el.type === 'text' && !el.locked ? { ...el, ...fn(el) } : el)),
+    );
+  }
+
   function toggleLock() {
     const els = slideRef.current.elements.filter((el) => selectedIds.includes(el.id));
     const lock = !els.every((el) => el.locked);
@@ -566,6 +576,7 @@ export default function CanvasSlideEditor({
       startY: e.clientY,
       orig: el,
       pushed: false,
+      collapse: inSelection && isMulti && mode === 'move' && !el.group,
       group: groupIds
         ? slideRef.current.elements.filter((x) => groupIds.includes(x.id) && !x.locked).map((x) => ({ id: x.id, x: x.x, y: x.y }))
         : undefined,
@@ -661,6 +672,11 @@ export default function CanvasSlideEditor({
   }
 
   function endDrag() {
+    const d = drag.current;
+    if (d && !d.pushed && d.collapse) {
+      setSelectedId(d.id);
+      setMultiIds([]);
+    }
     drag.current = null;
     setGuides({ v: false, h: false });
   }
@@ -993,7 +1009,7 @@ export default function CanvasSlideEditor({
           <>
             <select
               value={selected.font}
-              onChange={(e) => updateEl(selected.id, { font: e.target.value as CanvasTextElement['font'] })}
+              onChange={(e) => updateTexts(() => ({ font: e.target.value as CanvasTextElement['font'] }))}
               className="h-8 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface"
               style={{ fontFamily: CANVAS_FONTS[selected.font] }}
             >
@@ -1004,35 +1020,41 @@ export default function CanvasSlideEditor({
               ))}
             </select>
             <div className="flex items-center">
-              <button type="button" className={iconBtn()} onClick={() => updateEl(selected.id, { fontSize: Math.max(2, +(selected.fontSize / 1.15).toFixed(2)) })} title={t('curriculum.canvas.smaller')}>
+              <button type="button" className={iconBtn()} onClick={() => updateTexts((el) => ({ fontSize: Math.max(2, +(el.fontSize / 1.15).toFixed(2)) }))} title={t('curriculum.canvas.smaller')}>
                 <span className="material-symbols-outlined text-[20px]">text_decrease</span>
               </button>
-              <span className="w-8 text-center font-caption text-caption tabular-nums text-on-surface-variant">{Math.round(selected.fontSize * 4)}</span>
-              <button type="button" className={iconBtn()} onClick={() => updateEl(selected.id, { fontSize: Math.min(60, +(selected.fontSize * 1.15).toFixed(2)) })} title={t('curriculum.canvas.bigger')}>
+              <span className="w-8 text-center font-caption text-caption tabular-nums text-on-surface-variant">{sameSize ? Math.round(selected.fontSize * 4) : '–'}</span>
+              <button type="button" className={iconBtn()} onClick={() => updateTexts((el) => ({ fontSize: Math.min(60, +(el.fontSize * 1.15).toFixed(2)) }))} title={t('curriculum.canvas.bigger')}>
                 <span className="material-symbols-outlined text-[20px]">text_increase</span>
               </button>
             </div>
-            <button type="button" className={iconBtn(selected.bold)} onClick={() => updateEl(selected.id, { bold: !selected.bold })} title={t('curriculum.canvas.bold')}>
+            <button type="button" className={iconBtn(selected.bold)} onClick={() => {
+              const v = !selected.bold;
+              updateTexts(() => ({ bold: v }));
+            }} title={t('curriculum.canvas.bold')}>
               <span className="material-symbols-outlined text-[20px]">format_bold</span>
             </button>
-            <button type="button" className={iconBtn(!!selected.italic)} onClick={() => updateEl(selected.id, { italic: !selected.italic })} title={t('curriculum.canvas.italic')}>
+            <button type="button" className={iconBtn(!!selected.italic)} onClick={() => {
+              const v = !selected.italic;
+              updateTexts(() => ({ italic: v }));
+            }} title={t('curriculum.canvas.italic')}>
               <span className="material-symbols-outlined text-[20px]">format_italic</span>
             </button>
             {(['left', 'center', 'right'] as const).map((a) => (
-              <button key={a} type="button" className={iconBtn(selected.align === a)} onClick={() => updateEl(selected.id, { align: a })} title={t(`curriculum.canvas.align_${a}`)}>
+              <button key={a} type="button" className={iconBtn(selected.align === a)} onClick={() => updateTexts(() => ({ align: a }))} title={t(`curriculum.canvas.align_${a}`)}>
                 <span className="material-symbols-outlined text-[20px]">{`format_align_${a}`}</span>
               </button>
             ))}
             <span className="mx-1 h-6 w-px bg-outline-variant/50" />
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.textColor')}>format_color_text</span>
             {TEXT_COLORS.map((c) => (
-              <ColorDot key={c} color={c} active={selected.color === c} onClick={() => updateEl(selected.id, { color: c })} />
+              <ColorDot key={c} color={c} active={selected.color === c} onClick={() => updateTexts(() => ({ color: c }))} />
             ))}
-            <CustomColor value={selected.color} onChange={(c) => updateEl(selected.id, { color: c })} />
+            <CustomColor value={selected.color} onChange={(c) => updateTexts(() => ({ color: c }))} />
             <span className="mx-1 h-6 w-px bg-outline-variant/50" />
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.fill')}>format_color_fill</span>
             {FILL_COLORS.map((c) => (
-              <ColorDot key={c ?? 'none'} color={c} active={(selected.fill ?? null) === c} onClick={() => updateEl(selected.id, { fill: c })} />
+              <ColorDot key={c ?? 'none'} color={c} active={(selected.fill ?? null) === c} onClick={() => updateTexts(() => ({ fill: c }))} />
             ))}
             <ElementActions onFront={() => reorder('front')} onBack={() => reorder('back')} onDuplicate={duplicateSelected} onDelete={removeSelected} iconBtn={iconBtn} />
           </>
