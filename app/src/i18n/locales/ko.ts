@@ -2216,6 +2216,13 @@ const ko = {
     importedToast: "\"{{name}}\" 수업을 가져왔어요.",
   },
   recipes: {
+    setsTab: '수업 세트',
+    recipesTab: '직접 고르기',
+    setsHint: '미리 만들어 둔 수업이에요. 누르면 단어장과 슬라이드가 한 번에 채워져요. 만든 뒤 자유롭게 고쳐도 돼요.',
+    setsGroup_word: '단어 수업',
+    setsGroup_grammar: '문법 수업',
+    setsGroup_video: '영상 수업',
+    setFailed: '이 세트를 만들지 못했어요. 잠시 뒤 다시 시도해 주세요.',
     collapse: '접기',
     expand: '펼치기',
     title: "레시피로 시작하기",

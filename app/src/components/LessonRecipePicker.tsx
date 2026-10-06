@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
 import { LESSON_RECIPES, type LessonRecipe, type RecipeContext } from '../lib/lessonRecipes';
+import { findSetClip, LESSON_SETS, lessonSetDesc, lessonSetName, pickSetWords, type LessonSet } from '../lib/lessonSets';
+import { loadWordBank } from '../lib/wordBankCache';
 import type { LessonSlide } from '../lib/types';
 import { GrammarPickerPanel } from './LessonSlideSorter';
 import { useToast } from '../context/ToastContext';
 import { generateShadowScript } from '../lib/api';
+import { fetchVideoClips } from '../lib/videoClips';
 import { parseShadowText, toShadowSource } from '../lib/shadowLines';
 import { extractYoutubeId } from '../lib/youtube';
 
@@ -33,7 +36,8 @@ export default function LessonRecipePicker({
   /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
   autoClip?: VideoClip | null;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [tab, setTab] = useState<'sets' | 'recipes'>('sets');
   const [picked, setPicked] = useState<LessonRecipe | null>(null);
   const [grammarId, setGrammarId] = useState<string | null>(null);
   const [reading, setReading] = useState({ source: '', title: '', videoUrl: '' });
@@ -64,6 +68,44 @@ export default function LessonRecipePicker({
       if (slides.length === 0) return;
       const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? (clip ? `${clip.series} · ${clip.title}` : video.title.trim()) : '';
       onApply(slides, extra ? `${t(`recipes.${recipe.id}Name`)} · ${extra}` : t(`recipes.${recipe.id}Name`));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** 수업 세트: 미리 만들어 둔 수업 — 단어 세트는 단어장을 같이 만들고, 문법·영상 세트는 해당 레시피에 내용을 끼워 넣는다. */
+  async function applySet(set: LessonSet) {
+    setBusy(true);
+    try {
+      const name = lessonSetName(set, i18n.language);
+      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, reading: undefined, video: undefined };
+      if (set.kind === 'word') {
+        const cards = pickSetWords(set, await loadWordBank());
+        if (cards.length < 5 || !makeWordList || !(await makeWordList(cards, name))) {
+          notify(t('recipes.setFailed'), 'error');
+          return;
+        }
+        const recipe = LESSON_RECIPES.find((r) => r.id === 'vocab');
+        const slides = recipe ? await recipe.build({ ...common, hasWords: true }) : [];
+        if (slides.length) onApply(slides, `${t('recipes.vocabName')} · ${name}`);
+      } else if (set.kind === 'grammar' && set.grammarId) {
+        const recipe = LESSON_RECIPES.find((r) => r.id === 'grammar');
+        const slides = recipe ? await recipe.build({ ...common, hasWords: hasWords, grammarId: set.grammarId }) : [];
+        if (slides.length) onApply(slides, `${t('recipes.grammarName')} · ${name}`);
+      } else if (set.kind === 'video') {
+        const clip = findSetClip(set, await fetchVideoClips());
+        const recipe = LESSON_RECIPES.find((r) => r.id === 'video');
+        if (!clip || !recipe) {
+          notify(t('recipes.setFailed'), 'error');
+          return;
+        }
+        const slides = await recipe.build({
+          ...common,
+          hasWords,
+          video: { source: clip.script, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clip },
+        });
+        if (slides.length) onApply(slides, name);
+      }
     } finally {
       setBusy(false);
     }
@@ -117,7 +159,47 @@ export default function LessonRecipePicker({
         </div>
       )}
 
-      {!picked ? (
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => setTab('sets')} className={videoTabChip(tab === 'sets')}>
+          <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+          {t('recipes.setsTab')}
+        </button>
+        <button type="button" onClick={() => setTab('recipes')} className={videoTabChip(tab === 'recipes')}>
+          <span className="material-symbols-outlined text-[18px]">tune</span>
+          {t('recipes.recipesTab')}
+        </button>
+      </div>
+
+      {tab === 'sets' && !picked && (
+        <div className="space-y-4">
+          <p className="font-caption text-caption text-on-surface-variant">{t('recipes.setsHint')}</p>
+          {(['word', 'grammar', 'video'] as const).map((kind) => (
+            <div key={kind} className="space-y-2">
+              <div className="font-label-md text-label-md font-bold text-deep-navy">{t(`recipes.setsGroup_${kind}`)}</div>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {LESSON_SETS.filter((s) => s.kind === kind).map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void applySet(s)}
+                    className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[22px] text-primary">{s.icon}</span>
+                      <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{lessonSetName(s, i18n.language)}</span>
+                      <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t('recipes.minutes', { n: s.minutes })}</span>
+                    </div>
+                    <div className="font-caption text-caption text-on-surface-variant">{lessonSetDesc(s, i18n.language)}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'recipes' && !picked ? (
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {LESSON_RECIPES.map((r) => {
             const locked = r.needsWords && !hasWords;
@@ -149,7 +231,7 @@ export default function LessonRecipePicker({
             );
           })}
         </div>
-      ) : (
+      ) : picked ? (
         <div className="space-y-3 rounded-xl bg-surface-container-lowest p-4">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-[22px] text-primary">{picked.icon}</span>
@@ -280,7 +362,7 @@ export default function LessonRecipePicker({
             {busy ? t('common.loading') : t('recipes.apply')}
           </button>}
         </div>
-      )}
+      ) : null}
       </>
       )}
     </div>

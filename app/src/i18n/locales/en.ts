@@ -2220,6 +2220,13 @@ const en: Ko = {
     importedToast: "Imported \"{{name}}\".",
   },
   recipes: {
+    setsTab: 'Ready-made lessons',
+    recipesTab: 'Choose yourself',
+    setsHint: 'These lessons are made in advance. Tap one to fill the word list and slides at once, then edit freely.',
+    setsGroup_word: 'Word lessons',
+    setsGroup_grammar: 'Grammar lessons',
+    setsGroup_video: 'Video lessons',
+    setFailed: "Couldn't build this set. Please try again in a moment.",
     collapse: 'Collapse',
     expand: 'Expand',
     title: "Start from a recipe",
