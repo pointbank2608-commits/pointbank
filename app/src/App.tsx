@@ -7,6 +7,7 @@ import AdminVideosPage from './pages/AdminVideosPage';
 import VideoLibraryPage from './pages/VideoLibraryPage';
 import HomeworkPage from './pages/HomeworkPage';
 import HomeworkStudentPage from './pages/HomeworkStudentPage';
+import StudentPortalPage from './pages/StudentPortalPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -96,6 +97,15 @@ export default function App() {
       <Routes>
         <Route path="/join" element={<LiveJoinPage />} />
         <Route path="/join/:code" element={<LiveJoinPage />} />
+      </Routes>
+    );
+  }
+  // 학생용 페이지(Classbank Student): 학원 코드 + 이름 + 학부모 전화번호로 로그인. 선생님 로그인과 따로.
+  if (pathname === '/s' || pathname.startsWith('/s/')) {
+    return (
+      <Routes>
+        <Route path="/s" element={<StudentPortalPage />} />
+        <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
     );
   }

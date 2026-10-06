@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import i18n from '../i18n';
 import ClassChipRow from '../components/ClassChipRow';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
+import StudentLoginPanel from '../components/StudentLoginPanel';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -317,6 +318,8 @@ export default function AttendancePage() {
           </button>
         </div>
       </div>
+
+      {selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
 
       <p className="font-caption text-caption text-on-surface-variant">{t('attendance.title')} · {t('attendance.hint')}</p>
 
