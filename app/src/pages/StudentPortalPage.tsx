@@ -203,7 +203,26 @@ function HomeView({
           <span className="material-symbols-outlined text-[24px] text-warm-yellow">school</span>
           {t('studentPortal.todayLesson')}
         </h2>
-        <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>
+        {(home.lessons ?? []).length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
+        <ul className="mt-3 flex flex-col gap-3">
+          {(home.lessons ?? []).map((l) => (
+            <li key={l.id}>
+              <a
+                href={`/s/lesson/${l.id}`}
+                className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done ? 'bg-white/10 text-white/70' : 'bg-warm-yellow text-deep-navy'}`}
+              >
+                <span className="material-symbols-outlined text-[28px]">{l.done ? 'task_alt' : 'play_circle'}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xl font-bold">{l.name}</span>
+                  <span className="block text-sm opacity-75">
+                    {l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
+                  </span>
+                </span>
+                <span className="text-base font-bold">{l.done ? t('studentPortal.again') : l.progress > 0 ? t('studentPortal.continue') : t('studentPortal.start')}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">

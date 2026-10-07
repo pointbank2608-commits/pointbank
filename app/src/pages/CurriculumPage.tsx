@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import LessonRecipePicker from '../components/LessonRecipePicker';
+import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
 import LessonWordListModal from '../components/LessonWordListModal';
@@ -53,6 +54,22 @@ export default function CurriculumPage() {
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
+  // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
+  const [mode, setMode] = useState<'group' | 'solo'>(() => {
+    try {
+      return localStorage.getItem('classbank.lessonMode') === 'solo' ? 'solo' : 'group';
+    } catch {
+      return 'group';
+    }
+  });
+  const changeMode = (m: 'group' | 'solo') => {
+    setMode(m);
+    try {
+      localStorage.setItem('classbank.lessonMode', m);
+    } catch {
+      /* 저장이 막힌 브라우저 */
+    }
+  };
 
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
@@ -553,6 +570,28 @@ export default function CurriculumPage() {
 
       <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
 
+      {!showForm && (
+        <div className="flex flex-wrap gap-2" role="tablist">
+          {(['group', 'solo'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="tab"
+              aria-selected={mode === m}
+              onClick={() => changeMode(m)}
+              className={`flex items-center gap-1.5 rounded-full px-5 py-2 font-label-md text-label-md transition-colors ${mode === m ? 'bg-primary text-on-primary shadow-sm' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">{m === 'group' ? 'co_present' : 'person'}</span>
+              {t(`solo.mode_${m}`)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {mode === 'solo' && !showForm && academy?.id && <SoloLessonsPanel academyId={academy.id} classId={staffClassId ?? null} />}
+
+      {(mode === 'group' || showForm) && (
+      <>
       {!showForm && draft && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-warm-yellow bg-warm-yellow/20 px-4 py-3">
           <span className="material-symbols-outlined text-[22px] text-deep-navy">edit_note</span>
@@ -1031,6 +1070,9 @@ export default function CurriculumPage() {
             ))}
           </ul>
         </div>
+      )}
+
+      </>
       )}
 
       {historyLesson && (

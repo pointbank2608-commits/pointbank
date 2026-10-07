@@ -24,8 +24,19 @@ export interface PortalHomework {
   done: boolean;
 }
 
+export interface PortalLesson {
+  id: string;
+  name: string;
+  minutes: number;
+  progress: number;
+  total: number;
+  done: boolean;
+  due_at: string | null;
+}
+
 export interface PortalHome {
   name: string;
+  lessons: PortalLesson[];
   academy: string;
   class_name: string;
   homework: PortalHomework[];

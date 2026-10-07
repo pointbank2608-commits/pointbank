@@ -8,6 +8,7 @@ import VideoLibraryPage from './pages/VideoLibraryPage';
 import HomeworkPage from './pages/HomeworkPage';
 import HomeworkStudentPage from './pages/HomeworkStudentPage';
 import StudentPortalPage from './pages/StudentPortalPage';
+import StudentSoloPage from './pages/StudentSoloPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -105,6 +106,7 @@ export default function App() {
     return (
       <Routes>
         <Route path="/s" element={<StudentPortalPage />} />
+        <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
     );
