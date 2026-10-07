@@ -14,6 +14,7 @@ import {
   saveGuardianPhone,
   type GuardianStatus,
 } from '../lib/studentPortal';
+import { setRecordConsent } from '../lib/soloApi';
 import type { Student } from '../lib/types';
 
 /**
@@ -136,8 +137,13 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
                   <li key={s.id} className="flex items-center gap-3 py-2">
                     <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{s.name}</span>
                     {st ? (
-                      <span className="rounded-full bg-secondary-container/60 px-2.5 py-0.5 font-caption text-caption text-on-surface">
-                        {t('studentLogin.registered', { last4: st.last4 })}
+                      <span className="flex items-center gap-1.5">
+                        <span className="rounded-full bg-secondary-container/60 px-2.5 py-0.5 font-caption text-caption text-on-surface">
+                          {t('studentLogin.registered', { last4: st.last4 })}
+                        </span>
+                        {st.record_consent_at && (
+                          <span className="rounded-full bg-primary-fixed/60 px-2.5 py-0.5 font-caption text-caption text-on-surface">{t('studentLogin.recordOn')}</span>
+                        )}
                       </span>
                     ) : (
                       <span className="rounded-full bg-surface-container px-2.5 py-0.5 font-caption text-caption text-on-surface-variant">{t('studentLogin.notRegistered')}</span>
@@ -162,6 +168,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
         <GuardianModal
           student={editing}
           registered={status.has(editing.id)}
+          recordConsent={!!status.get(editing.id)?.record_consent_at}
           onClose={() => setEditing(null)}
           onChanged={() => {
             setEditing(null);
@@ -173,7 +180,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
   );
 }
 
-function GuardianModal({ student, registered, onClose, onChanged }: { student: Student; registered: boolean; onClose: () => void; onChanged: () => void }) {
+function GuardianModal({ student, registered, recordConsent, onClose, onChanged }: { student: Student; registered: boolean; recordConsent: boolean; onClose: () => void; onChanged: () => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [phone, setPhone] = useState('');
@@ -234,6 +241,32 @@ function GuardianModal({ student, registered, onClose, onChanged }: { student: S
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" />
           <span className="font-caption text-caption text-on-surface">{t('studentLogin.consent')}</span>
         </label>
+        {registered && (
+          <div className="space-y-1.5 rounded-lg border border-outline-variant/50 p-3">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px] text-primary">mic</span>
+              <span className="flex-1 font-label-md text-label-md text-on-surface">{t('studentLogin.recordTitle')}</span>
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = !recordConsent;
+                  if (next ? !window.confirm(t('studentLogin.recordConfirmOn')) : !window.confirm(t('studentLogin.recordConfirmOff'))) return;
+                  try {
+                    await setRecordConsent(student.id, next);
+                    notify(next ? t('studentLogin.recordOnToast') : t('studentLogin.recordOffToast'));
+                    onChanged();
+                  } catch (e) {
+                    notify(e instanceof Error ? e.message : String(e), 'error');
+                  }
+                }}
+                className={`rounded-full px-3 py-1 font-label-md text-label-md ${recordConsent ? 'bg-primary text-on-primary' : 'border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'}`}
+              >
+                {recordConsent ? t('studentLogin.recordAgreed') : t('studentLogin.recordAgree')}
+              </button>
+            </div>
+            <p className="font-caption text-caption text-on-surface-variant">{t('studentLogin.recordHint')}</p>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"

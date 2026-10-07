@@ -9,6 +9,7 @@ import HomeworkPage from './pages/HomeworkPage';
 import HomeworkStudentPage from './pages/HomeworkStudentPage';
 import StudentPortalPage from './pages/StudentPortalPage';
 import StudentSoloPage from './pages/StudentSoloPage';
+import SharedRecordingPage from './pages/SharedRecordingPage';
 import HelpPage from './pages/HelpPage';
 import { NoticeProvider } from './components/NoticeCenter';
 import LessonWatchPage from './pages/LessonWatchPage';
@@ -108,6 +109,14 @@ export default function App() {
         <Route path="/s" element={<StudentPortalPage />} />
         <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
+      </Routes>
+    );
+  }
+  // 학부모가 링크로 보는 아이의 녹음(로그인 없음, 만료·닫힘이 있는 무작위 열쇠)
+  if (pathname.startsWith('/r/')) {
+    return (
+      <Routes>
+        <Route path="/r/:token" element={<SharedRecordingPage />} />
       </Routes>
     );
   }

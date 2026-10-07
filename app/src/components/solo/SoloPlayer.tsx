@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
-import type { SoloPublicStep } from '../../lib/soloLessons';
+import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
+import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -17,12 +18,14 @@ export interface SoloPlayerApi {
   advance(step: number, unsure: boolean): Promise<{ answer: string | null }>;
   /** 두 번 틀린 뒤 정답 보기 */
   reveal(step: number): Promise<string | null>;
+  /** 따라 부른 녹음 보내기(보호자 동의가 있는 학생만) — 실패하면 false */
+  record?(step: number, blob: Blob, seconds: number): Promise<boolean>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
 
 const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
-const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect'];
+const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank'];
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble'];
 
 export default function SoloPlayer({
@@ -31,12 +34,15 @@ export default function SoloPlayer({
   api,
   onExit,
   preview = false,
+  canRecord = false,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
   api: SoloPlayerApi;
   onExit: () => void;
   preview?: boolean;
+  /** 이 학생의 녹음을 서버에 보관해도 되는지(보호자 동의) */
+  canRecord?: boolean;
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
@@ -57,6 +63,100 @@ export default function SoloPlayer({
 
   const step = steps[idx];
 
+  // 노래·영상 단계가 쓰는 유튜브 플레이어(수업 하나에 영상 하나) — 한 번만 만들고 구간만 바꿔 튼다
+  const videoId = useMemo(() => {
+    for (const st of steps) {
+      const c = (st as { clip?: SoloClip }).clip;
+      if (c) return c.videoId;
+    }
+    return null;
+  }, [steps]);
+  const yt = useYoutubeSegment(videoId);
+  const clip = (step as { clip?: SoloClip } | undefined)?.clip ?? null;
+  const [clipPlaying, setClipPlaying] = useState(false);
+
+  async function playClip(c: SoloClip, fallback?: string) {
+    setClipPlaying(true);
+    try {
+      if (yt.ready && !yt.failed) await yt.playSegment(c.start, c.end);
+      else if (fallback) speak(fallback);
+    } finally {
+      setClipPlaying(false);
+    }
+  }
+
+  // 따라 부르기 녹음(이 기기에서 듣기, 동의가 있으면 서버에도 보관)
+  const [mic, setMic] = useState<'unknown' | 'asking' | 'ready' | 'denied' | 'unsupported'>(() =>
+    typeof window !== 'undefined' && 'MediaRecorder' in window && typeof navigator.mediaDevices?.getUserMedia === 'function' ? 'unknown' : 'unsupported',
+  );
+  const [recording, setRecording] = useState(false);
+  const [clipUrl, setClipUrl] = useState<string | null>(null);
+  const [uploaded, setUploaded] = useState<'no' | 'yes' | 'fail'>('no');
+  const recRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const blobRef = useRef<{ blob: Blob; seconds: number } | null>(null);
+  const recStartedAt = useRef(0);
+
+  useEffect(
+    () => () => {
+      streamRef.current?.getTracks().forEach((tr) => tr.stop());
+    },
+    [],
+  );
+  useEffect(
+    () => () => {
+      if (clipUrl) URL.revokeObjectURL(clipUrl);
+    },
+    [clipUrl],
+  );
+
+  async function enableMic() {
+    setMic('asking');
+    try {
+      streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setMic('ready');
+    } catch {
+      setMic('denied');
+    }
+  }
+
+  function toggleRecord(maxSeconds: number) {
+    if (recording) {
+      recRef.current?.stop();
+      return;
+    }
+    if (!streamRef.current) return;
+    const chunks: Blob[] = [];
+    const rec = new MediaRecorder(streamRef.current);
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      setRecording(false);
+      const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+      blobRef.current = { blob, seconds: Math.round(((Date.now() - recStartedAt.current) / 1000) * 10) / 10 };
+      setUploaded('no');
+      setClipUrl((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return URL.createObjectURL(blob);
+      });
+    };
+    recRef.current = rec;
+    recStartedAt.current = Date.now();
+    rec.start();
+    setRecording(true);
+    window.setTimeout(() => rec.state === 'recording' && rec.stop(), Math.max(5000, maxSeconds * 1000 + 4000));
+  }
+
+  /** 한 줄을 다 불렀으면 녹음을 보내고(동의가 있고 서버가 받을 때) 다음으로 */
+  async function finishSing() {
+    const rec = blobRef.current;
+    if (rec && canRecord && api.record) {
+      const ok = await guard(() => api.record!(idx, rec.blob, rec.seconds));
+      setUploaded(ok ? 'yes' : 'fail');
+    }
+    blobRef.current = null;
+    await next();
+  }
+
   // 새 단계로 올 때: 상태 비우고, 소리 나는 단계는 자동으로 읽어 준다
   useEffect(() => {
     setPhase('ask');
@@ -68,6 +168,9 @@ export default function SoloPlayer({
     setShowKo(false);
     setAdvanced(false);
     setError(false);
+    setClipUrl(null);
+    setUploaded('no');
+    blobRef.current = null;
     attempts.current = 0;
     if (!step) return;
     if (step.t === 'meet' || step.t === 'listenPick' || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
@@ -186,6 +289,98 @@ export default function SoloPlayer({
       </header>
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-5 px-5 pb-6 pt-2">
+        {/* 노래·영상 플레이어: 수업 안에서 계속 켜 두고, 영상이 필요한 단계에서만 보여 준다 */}
+        {videoId && (
+          <div
+            className={
+              clip
+                ? `relative aspect-video w-full overflow-hidden rounded-2xl bg-black ${yt.failed ? 'hidden' : ''}`
+                : 'pointer-events-none fixed -left-[9999px] top-0 h-48 w-80'
+            }
+          >
+            <div id={yt.elementId} className="absolute inset-0 h-full w-full" />
+          </div>
+        )}
+        {clip && yt.failed && <p className="rounded-xl bg-white/10 p-3 text-center text-sm text-white/80">{t('solo.videoFallback')}</p>}
+
+        {step.t === 'watch' && (
+          <>
+            <p className="text-xl font-bold">{step.mode === 'listen' ? t('solo.watchListen') : t('solo.watchSing')}</p>
+            <h2 className="text-center text-2xl font-bold text-warm-yellow">{step.title}</h2>
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip)} className={`${btn} w-full bg-white/15 text-white`}>
+              {clipPlaying ? t('solo.playing') : t('solo.play')}
+            </button>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+              {step.mode === 'listen' ? t('solo.heardAll') : t('solo.sangAll')}
+            </button>
+          </>
+        )}
+
+        {step.t === 'lyricBlank' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.lyricQ')}</p>
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy disabled:opacity-60">
+              <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
+              {t('solo.listenLine')}
+            </button>
+            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+          </>
+        )}
+
+        {step.t === 'lineSing' && (
+          <>
+            <p className="text-lg text-white/70">{t('solo.singPrompt')}</p>
+            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-3xl font-bold leading-snug">{step.en}</p>
+            {step.ko && (showKo ? (
+              <p className="text-xl text-white/85">{step.ko}</p>
+            ) : (
+              <button type="button" onClick={() => setShowKo(true)} className="rounded-full border border-white/30 px-4 py-1.5 text-base text-white/85">
+                {t('solo.showKo')}
+              </button>
+            ))}
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.en)} className={`${btn} w-full bg-white/15 text-white`}>
+              {clipPlaying ? t('solo.playing') : t('solo.listenLine')}
+            </button>
+            {mic === 'unknown' && (
+              <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+                <p>{t('solo.micExplain')}</p>
+                <div className="mt-2 flex gap-2">
+                  <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
+                    {t('solo.micOn')}
+                  </button>
+                  <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                    {t('solo.micSkip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {mic === 'denied' && <p className="text-center text-base text-white/70">{t('solo.micDenied')}</p>}
+            {mic === 'ready' && (
+              <button type="button" onClick={() => toggleRecord(step.clip.end - step.clip.start)} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+                <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
+              </button>
+            )}
+            {clipUrl && (
+              <div className="flex w-full flex-col items-center gap-1">
+                <span className="text-sm text-white/70">{t('solo.myVoice')}</span>
+                <audio src={clipUrl} controls className="w-full" />
+              </div>
+            )}
+            {uploaded === 'fail' && <p className="text-center text-sm text-warm-yellow">{t('solo.uploadFail')}</p>}
+            {canRecord && mic === 'ready' && <p className="text-center text-xs text-white/50">{t('solo.recordSavedNote')}</p>}
+            <button
+              type="button"
+              disabled={busy || recording || (mic === 'ready' && !clipUrl)}
+              onClick={() => void finishSing()}
+              className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+            >
+              {t('solo.sangIt')}
+            </button>
+          </>
+        )}
+
         {step.t === 'intro' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
             <div className="text-6xl">📚</div>
@@ -421,6 +616,12 @@ export default function SoloPlayer({
         {step.t === 'unscramble' && (
           <>
             <p className="text-xl font-bold">{t('solo.unscrambleQ')}</p>
+            {step.clip && (
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+                <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
+                {t('solo.listenLine')}
+              </button>
+            )}
             <div className="flex min-h-20 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
               {typed.map((n, k) => (
                 <button key={k} type="button" disabled={answered} onClick={() => setTyped((a) => a.filter((_, j) => j !== k))} className="rounded-xl bg-white px-3 py-2 text-2xl font-bold text-deep-navy">
@@ -470,7 +671,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && !answered && (
+        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && !answered && (
           <button
             type="button"
             disabled={busy}

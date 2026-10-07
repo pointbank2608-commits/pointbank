@@ -1,5 +1,6 @@
 import { GRAMMAR_POINTS, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
 import { LESSON_SETS, pickSetWords } from './lessonSets';
+import { parseShadowText } from './shadowLines';
 import type { FullCardItem, WordBankEntry } from './types';
 
 /**
@@ -25,7 +26,17 @@ export type SoloStep =
   | { t: 'example'; sentence: string; ko: string }
   | { t: 'translatePick'; sentence: string; options: string[]; answer: number }
   | { t: 'pickCorrect'; options: string[]; answer: number; why: string }
-  | { t: 'unscramble'; sentence: string; words: string[] };
+  | { t: 'unscramble'; sentence: string; words: string[]; clip?: SoloClip }
+  | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
+  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number }
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string };
+
+/** 노래·영상 단계가 틀어 줄 유튜브 구간 */
+export interface SoloClip {
+  videoId: string;
+  start: number;
+  end: number;
+}
 
 /** 학생에게 가는 모양(정답 없음) */
 export type SoloPublicStep =
@@ -42,10 +53,13 @@ export type SoloPublicStep =
   | { t: 'example'; sentence: string; ko: string }
   | { t: 'translatePick'; sentence: string; options: string[] }
   | { t: 'pickCorrect'; options: string[]; why: string }
-  | { t: 'unscramble'; words: string[] };
+  | { t: 'unscramble'; words: string[]; clip?: SoloClip }
+  | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
+  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[] }
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string };
 
 /** 보기에서 번호로 고르는 단계 */
-export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect'] as const;
+export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank'] as const;
 /** 글자로 답하는 단계 */
 export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble'] as const;
 
@@ -263,6 +277,110 @@ export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; ste
 export const SOLO_GRAMMAR_POINTS = GRAMMAR_POINTS.filter((p) => p.stage === 'elementary' || p.stage === 'middle');
 export { grammarLevelTag };
 
+/* ---------------- 노래 수업 ---------------- */
+
+const SONG_STOP = new Set(
+  `the and you your are was were have has had for but not with that this they them their there then than from what when where who why how can could would should will just like love baby oh yeah cause gonna wanna gotta ain't don't can't won't i'm i'll i've you're we're it's that's let's one all any some too very more most only also even ever never always still down over under about into onto out off up`.split(/\s+/),
+);
+
+/** 가사 낱말 → 사전에서 찾기(단순한 어미 처리) */
+function findInBank(word: string, byWord: Map<string, WordBankEntry>): WordBankEntry | null {
+  const w = word.toLowerCase();
+  const tries = [w, w.replace(/s$/, ''), w.replace(/es$/, ''), w.replace(/ing$/, ''), w.replace(/ing$/, 'e'), w.replace(/ed$/, ''), w.replace(/ed$/, 'e'), w.replace(/ied$/, 'y')];
+  for (const t of tries) if (t.length >= 3 && byWord.has(t)) return byWord.get(t) ?? null;
+  return null;
+}
+
+export interface SongInput {
+  title: string;
+  videoId: string;
+  /** "[분:초] 영어 | 해석" 형식(시간이 있어야 영상과 맞는다) 또는 유튜브 스크립트·SRT */
+  source: string;
+}
+
+/** 가사 줄 중 시간이 직접 적힌 줄 수(없으면 영상과 안 맞는다고 알려 주려고) */
+export function songTimedLineCount(source: string): number {
+  return source.split(/\r?\n/).filter((l) => /^\s*\[\d{1,2}:\d{2}/.test(l)).length;
+}
+
+/**
+ * 노래 개별수업(약 20분): 소개 → 노래 듣기 → 가사 속 낱말 → 한 줄씩 듣고 빈칸 → 줄 순서 맞추기 → (해석 고르기) → 한 줄씩 따라 부르기 → 다 같이 부르기.
+ * 가사는 이 수업(선생님 것) 안에만 저장된다 — 공용 자료로 모으지 않는다(저작권).
+ */
+export function buildSoloSongLesson(input: SongInput, bank: WordBankEntry[]): { name: string; steps: SoloStep[]; minutes: number } | null {
+  const all = parseShadowText(input.source).map((l) => ({ ...l, en: l.en.replace(/\*\*/g, '').trim() }));
+  const lines = all.filter((l) => l.en.split(/\s+/).length >= 3 && l.end - l.start >= 1 && l.end - l.start <= 25);
+  if (lines.length < 4) return null;
+  const clip = (l: { start: number; end: number }): SoloClip => ({ videoId: input.videoId, start: l.start, end: l.end });
+  const first = lines[0];
+  const last = lines[lines.length - 1];
+  const steps: SoloStep[] = [
+    { t: 'intro', title: input.title, text: `${input.title}` },
+    { t: 'watch', title: input.title, clip: { videoId: input.videoId, start: first.start, end: Math.min(last.end, first.start + 240) }, mode: 'listen' },
+  ];
+
+  // 가사 속 낱말(사전에 있는 것 최대 8개)
+  const byWord = new Map<string, WordBankEntry>();
+  for (const e of bank) {
+    const k = e.word.toLowerCase();
+    if (!byWord.has(k) || (byWord.get(k)?.level ?? 9) > (e.level ?? 9)) byWord.set(k, e);
+  }
+  const seen = new Set<string>();
+  const picked: { entry: WordBankEntry; line: string }[] = [];
+  for (const l of lines) {
+    for (const raw of l.en.split(/[\s,.!?;:"()]+/)) {
+      const w = raw.toLowerCase().replace(/^'+|'+$/g, '');
+      if (w.length < 4 || SONG_STOP.has(w) || /[^a-z']/.test(w)) continue;
+      const e = findInBank(w, byWord);
+      if (!e || e.part_of_speech === '숙어' || e.part_of_speech === '표현' || seen.has(e.word.toLowerCase()) || (e.level ?? 9) > 6) continue;
+      seen.add(e.word.toLowerCase());
+      picked.push({ entry: e, line: l.en });
+    }
+  }
+  const words = shuffle(picked).slice(0, 8);
+  if (words.length >= 3) {
+    for (const { entry, line } of words)
+      steps.push({ t: 'meet', word: entry.word, meaning: entry.meaning, imageUrl: entry.image_url, example: line });
+    const meanings = [...new Set(words.map((w) => w.entry.meaning))];
+    const poolMeanings = [...new Set([...meanings, ...shuffle(bank.filter((e) => (e.level ?? 9) <= 4)).slice(0, 12).map((e) => e.meaning)])];
+    for (const { entry } of shuffle(words).slice(0, 5)) {
+      const o = options(entry.meaning, poolMeanings);
+      steps.push({ t: 'pickMeaning', word: entry.word, imageUrl: entry.image_url, options: o.list, answer: o.answer });
+    }
+  }
+
+  // 줄 고르기(앞에서부터 고르게)
+  const evenly = (n: number) => {
+    if (lines.length <= n) return lines;
+    return Array.from({ length: n }, (_, i) => lines[Math.floor((i * lines.length) / n)]);
+  };
+  const contentWords = lines.flatMap((l) => l.en.split(/[\s,.!?;:"()]+/).filter((w) => w.length >= 4 && !SONG_STOP.has(w.toLowerCase()) && /^[A-Za-z']+$/.test(w)));
+  for (const l of evenly(8)) {
+    const cand = l.en.split(/\s+/).map((w) => w.replace(/[,.!?;:"()]/g, '')).filter((w) => w.length >= 4 && !SONG_STOP.has(w.toLowerCase()) && /^[A-Za-z']+$/.test(w));
+    if (cand.length === 0) continue;
+    const target = cand[Math.floor(Math.random() * cand.length)];
+    const sentence = l.en.replace(new RegExp(`\\b${target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`), '_____');
+    if (sentence === l.en) continue;
+    const o = options(target.toLowerCase(), [target.toLowerCase(), ...[...new Set(contentWords.map((w) => w.toLowerCase()))].filter((w) => w !== target.toLowerCase())]);
+    steps.push({ t: 'lyricBlank', clip: clip(l), sentence, ko: l.ko, options: o.list, answer: o.answer });
+  }
+  for (const l of shuffle(lines).slice(0, 4)) {
+    const ws = l.en.split(/\s+/);
+    if (ws.length < 3 || ws.length > 10) continue;
+    let sc = shuffle(ws);
+    for (let i = 0; i < 5 && sc.join(' ') === ws.join(' '); i++) sc = shuffle(ws);
+    steps.push({ t: 'unscramble', sentence: ws.join(' '), words: sc, clip: clip(l) });
+  }
+  const koPool = lines.map((l) => l.ko).filter(Boolean);
+  for (const l of shuffle(lines.filter((x) => x.ko)).slice(0, 3)) {
+    const o = options(l.ko, koPool);
+    if (o.list.length >= 3) steps.push({ t: 'translatePick', sentence: l.en, options: o.list, answer: o.answer });
+  }
+  for (const l of evenly(8)) steps.push({ t: 'lineSing', clip: clip(l), en: l.en, ko: l.ko });
+  steps.push({ t: 'watch', title: input.title, clip: { videoId: input.videoId, start: first.start, end: Math.min(last.end, first.start + 240) }, mode: 'sing' });
+  return { name: input.title, steps, minutes: Math.max(15, Math.round(steps.length * 0.6)) };
+}
+
 /* ---------------- 미리보기 채점·공개 ---------------- */
 
 const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -304,7 +422,9 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
     case 'pickCorrect':
       return { t: step.t, options: step.options, why: step.why };
     case 'unscramble':
-      return { t: step.t, words: step.words };
+      return { t: step.t, words: step.words, clip: step.clip };
+    case 'lyricBlank':
+      return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
     default:
       return step;
   }

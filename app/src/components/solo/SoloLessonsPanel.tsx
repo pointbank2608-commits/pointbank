@@ -18,6 +18,8 @@ import {
   buildSoloDayLessons,
   buildSoloFromCatalog,
   buildSoloGrammarLesson,
+  buildSoloSongLesson,
+  songTimedLineCount,
   gradeSoloLocal,
   soloCorrectText,
   SOLO_CATALOG,
@@ -28,7 +30,10 @@ import {
   type SoloWordStyle,
 } from '../../lib/soloLessons';
 import type { Student } from '../../lib/types';
+import { extractYoutubeId } from '../../lib/youtube';
 import { loadWordBank } from '../../lib/wordBankCache';
+import { parseShadowText } from '../../lib/shadowLines';
+import RecordingsModal from './RecordingsModal';
 import SoloPlayer, { type SoloPlayerApi } from './SoloPlayer';
 
 /**
@@ -45,6 +50,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
   const [preview, setPreview] = useState<SoloLesson | null>(null);
   const [assigning, setAssigning] = useState<SoloLesson | null>(null);
   const [statusOf, setStatusOf] = useState<SoloLesson | null>(null);
+  const [recordsOf, setRecordsOf] = useState<{ lesson: SoloLesson; row: SoloStatusRow } | null>(null);
 
   const reload = useCallback(async () => {
     if (!classId) {
@@ -193,7 +199,8 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
           }}
         />
       )}
-      {statusOf && <StatusModal lesson={statusOf} onClose={() => setStatusOf(null)} />}
+      {statusOf && <StatusModal lesson={statusOf} onClose={() => setStatusOf(null)} onRecords={(row) => setRecordsOf({ lesson: statusOf, row })} />}
+      {recordsOf && <RecordingsModal lesson={recordsOf.lesson} row={recordsOf.row} onClose={() => setRecordsOf(null)} />}
     </div>
   );
 }
@@ -235,6 +242,28 @@ function CatalogModal({
         return;
       }
       await onBatch(lessons, t('solo.moe800Level'), `solo-moe800-d${day}-${style}-${per}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  // 노래 수업: 유튜브 링크 + 가사(선생님이 붙여넣기 — 이 수업 안에만 저장된다)
+  const [songUrl, setSongUrl] = useState('');
+  const [songTitle, setSongTitle] = useState('');
+  const [songText, setSongText] = useState('');
+  const songLines = useMemo(() => parseShadowText(songText).length, [songText]);
+  const songTimed = useMemo(() => songTimedLineCount(songText), [songText]);
+  async function makeSong() {
+    const videoId = extractYoutubeId(songUrl);
+    if (!videoId || !songTitle.trim()) return;
+    setBusy('song');
+    try {
+      const lesson = buildSoloSongLesson({ title: songTitle.trim(), videoId, source: songText }, await loadWordBank());
+      if (!lesson) {
+        notify(t('solo.songTooShort'), 'error');
+        return;
+      }
+      await onBatch([lesson], t('solo.songLevel'), 'solo-song');
     } finally {
       setBusy(null);
     }
@@ -325,6 +354,37 @@ function CatalogModal({
                   </button>
                 </div>
                 <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
+              </div>
+            )}
+
+            {tr.id === 'video' && (
+              <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
+                <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.songTitle')}</div>
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.songHint')}</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input value={songTitle} onChange={(e) => setSongTitle(e.target.value)} placeholder={t('solo.songNamePlaceholder')} className={`${select} w-full`} />
+                  <input value={songUrl} onChange={(e) => setSongUrl(e.target.value)} placeholder={t('solo.songUrlPlaceholder')} className={`${select} w-full`} />
+                </div>
+                <textarea
+                  value={songText}
+                  onChange={(e) => setSongText(e.target.value)}
+                  rows={7}
+                  placeholder={t('solo.songTextPlaceholder')}
+                  className={`${select} w-full font-mono`}
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={busy !== null || !extractYoutubeId(songUrl) || !songTitle.trim() || songLines < 4}
+                    onClick={() => void makeSong()}
+                    className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50"
+                  >
+                    {busy === 'song' ? t('common.loading') : t('solo.makeSong')}
+                  </button>
+                  <span className="font-caption text-caption text-on-surface-variant">{t('solo.songLineCount', { lines: songLines, timed: songTimed })}</span>
+                </div>
+                {songLines > 0 && songTimed < songLines / 2 && <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 font-caption text-caption text-on-surface">{t('solo.songNoTimes')}</p>}
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.songCopyright')}</p>
               </div>
             )}
 
@@ -509,10 +569,11 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
 
 /* ---------------- 현황 ---------------- */
 
-function StatusModal({ lesson, onClose }: { lesson: SoloLesson; onClose: () => void }) {
+function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClose: () => void; onRecords: (row: SoloStatusRow) => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [rows, setRows] = useState<SoloStatusRow[] | null>(null);
+  const hasSing = lesson.steps.some((st) => st.t === 'lineSing');
 
   useEffect(() => {
     let alive = true;
@@ -559,7 +620,8 @@ function StatusModal({ lesson, onClose }: { lesson: SoloLesson; onClose: () => v
                     <th className="pb-2 pr-3">{t('attendance.name')}</th>
                     <th className="pb-2 pr-3">{t('solo.colProgress')}</th>
                     <th className="pb-2 pr-3">{t('solo.colRight')}</th>
-                    <th className="pb-2">{t('solo.colUnsure')}</th>
+                    <th className="pb-2 pr-3">{t('solo.colUnsure')}</th>
+                    {hasSing && <th className="pb-2" />}
                   </tr>
                 </thead>
                 <tbody>
@@ -580,9 +642,16 @@ function StatusModal({ lesson, onClose }: { lesson: SoloLesson; onClose: () => v
                       <td className="py-2 pr-3 font-caption text-caption tabular-nums text-on-surface">
                         {r.right_count + r.wrong_count > 0 ? `${r.right_count}/${r.right_count + r.wrong_count}` : '-'}
                       </td>
-                      <td className="py-2 font-caption text-caption text-on-surface">
+                      <td className="py-2 pr-3 font-caption text-caption text-on-surface">
                         {r.unsure_count > 0 ? t('solo.unsureAt', { steps: r.unsure_steps.join(', ') }) : '-'}
                       </td>
+                      {hasSing && (
+                        <td className="py-2">
+                          <button type="button" onClick={() => onRecords(r)} className="whitespace-nowrap rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10">
+                            {t('solo.listenRecordings')}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

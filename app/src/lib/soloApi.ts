@@ -111,6 +111,7 @@ export async function fetchSoloAssignmentCounts(lessonIds: string[]): Promise<Ma
 
 export interface SoloOpenResult {
   name: string;
+  can_record?: boolean;
   progress: number;
   done: boolean;
   steps: SoloPublicStep[];
@@ -161,4 +162,116 @@ export const soloAdvance = (token: string, assignment: string, step: number, uns
 export async function soloReveal(token: string, assignment: string, step: number): Promise<string | null> {
   const r = await rpc<{ answer: string | null }>('solo_reveal', { p_token: token, p_assignment: assignment, p_step: step });
   return r.answer ?? null;
+}
+
+/* ---------------- 녹음 보관·학부모 공유(051) ---------------- */
+
+/** Blob → base64(앞의 data: 머리 없이) */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] ?? '');
+    r.onerror = () => reject(new Error('read'));
+    r.readAsDataURL(blob);
+  });
+}
+
+export function base64ToBlobUrl(b64: string, mime: string): string {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([bytes], { type: mime || 'audio/webm' }));
+}
+
+/** 학생: 따라 부른 녹음 보내기(보호자 동의가 없으면 서버가 거절) */
+export async function soloRecordSave(token: string, assignment: string, step: number, blob: Blob, seconds: number): Promise<boolean> {
+  try {
+    const b64 = await blobToBase64(blob);
+    const r = await rpc<{ ok?: boolean }>('solo_record_save', {
+      p_token: token,
+      p_assignment: assignment,
+      p_step: step,
+      p_mime: blob.type || 'audio/webm',
+      p_b64: b64,
+      p_seconds: seconds,
+    });
+    return !!r.ok;
+  } catch {
+    return false;
+  }
+}
+
+export interface SoloRecordingMeta {
+  id: string;
+  step: number;
+  seconds: number | null;
+  created_at: string;
+}
+
+export async function fetchSoloRecordings(assignmentId: string): Promise<SoloRecordingMeta[]> {
+  const { data, error } = await supabase.rpc('solo_record_list', { p_assignment: assignmentId });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SoloRecordingMeta[];
+}
+
+export async function fetchSoloRecordingAudio(id: string): Promise<string> {
+  const { data, error } = await supabase.rpc('solo_record_get', { p_recording: id });
+  if (error) throw new Error(error.message);
+  const r = data as { mime: string; b64: string };
+  return base64ToBlobUrl(r.b64, r.mime);
+}
+
+export type ShareNameMode = 'full' | 'given' | 'hidden';
+
+export interface SoloShareRow {
+  token: string;
+  name_mode: ShareNameMode;
+  created_at: string;
+  expires_at: string;
+  revoked: boolean;
+}
+
+export async function createSoloShare(assignmentId: string, nameMode: ShareNameMode, days: number): Promise<string> {
+  const { data, error } = await supabase.rpc('solo_share_create', { p_assignment: assignmentId, p_name_mode: nameMode, p_days: days });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+export async function revokeSoloShare(token: string) {
+  const { error } = await supabase.rpc('solo_share_revoke', { p_token: token });
+  if (error) throw new Error(error.message);
+}
+
+export async function fetchSoloShares(assignmentId: string): Promise<SoloShareRow[]> {
+  const { data, error } = await supabase.rpc('solo_share_list', { p_assignment: assignmentId });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SoloShareRow[];
+}
+
+export async function setRecordConsent(studentId: string, on: boolean) {
+  const { error } = await supabase.rpc('student_record_consent_set', { p_student: studentId, p_on: on });
+  if (error) throw new Error(error.message);
+}
+
+export interface SharedRecording {
+  academy: string | null;
+  lesson: string;
+  student: string | null;
+  expires_at: string;
+  items: {
+    step: number;
+    seconds: number | null;
+    mime: string;
+    b64: string;
+    line: { en: string | null; ko: string | null; videoId: string | null; start: number | null; end: number | null } | null;
+  }[];
+}
+
+/** 학부모(로그인 없음): 링크로 녹음 보기 */
+export async function fetchSharedRecording(token: string): Promise<SharedRecording | null> {
+  const { data, error } = await supabase.rpc('solo_share_get', { p_token: token });
+  if (error) throw new Error(error.message);
+  const r = data as (SharedRecording & { error?: string }) | null;
+  if (!r || r.error) return null;
+  return r;
 }

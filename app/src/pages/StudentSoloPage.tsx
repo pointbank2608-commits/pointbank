@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
-import { SoloError, soloAdvance, soloAnswer, soloOpen, soloReveal, type SoloOpenResult } from '../lib/soloApi';
+import { SoloError, soloAdvance, soloAnswer, soloOpen, soloRecordSave, soloReveal, type SoloOpenResult } from '../lib/soloApi';
 
 const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
@@ -47,6 +47,7 @@ export default function StudentSoloPage() {
         return { answer: r.answer };
       },
       reveal: (step) => soloReveal(token, assignmentId, step),
+      record: (step, blob, seconds) => soloRecordSave(token, assignmentId, step, blob, seconds),
     };
   }, [token, assignmentId]);
 
@@ -66,6 +67,7 @@ export default function StudentSoloPage() {
       steps={lesson.steps}
       startAt={lesson.done ? 0 : lesson.progress}
       api={api}
+      canRecord={!!lesson.can_record}
       onExit={() => navigate('/s')}
     />
   );

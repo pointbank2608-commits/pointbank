@@ -136,6 +136,7 @@ export interface GuardianStatus {
   student_id: string;
   last4: string;
   consent_at: string;
+  record_consent_at?: string | null;
 }
 
 export async function fetchStudentCode(): Promise<string> {
