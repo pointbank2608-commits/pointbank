@@ -1437,6 +1437,9 @@ const ko = {
   },
 
   dictionary: {
+    listLabel: '목록',
+    moe800: '교육부 초등 800',
+    moeDay: 'DAY {{n}}',
     title: '단어 사전',
     searchPlaceholder: '단어나 뜻을 검색하세요 (예: apple, 사과)',
     allCategory: '전체',

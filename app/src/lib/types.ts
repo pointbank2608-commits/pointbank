@@ -519,6 +519,9 @@ export interface WordBankEntry {
   subcategory?: string | null;
   extra_categories?: string[] | null;
   origin?: 'moe' | 'classbank' | null;
+  /** 교육부 지정 초등 영단어 800 목록의 번호(1~800)와 DAY(1~16, 하루 50개). 048 마이그레이션 전에는 없다. */
+  moe800_no?: number | null;
+  moe800_day?: number | null;
 }
 
 /* ---------------- 파닉스(소리 규칙) 단어, 학원 구분 없는 공용 데이터 ---------------- */

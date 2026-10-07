@@ -166,6 +166,9 @@ export default function DictionaryPage() {
   const [subcategory, setSubcategory] = useState<string>('all');
   const [level, setLevel] = useState<number | 'all'>('all');
   const [partOfSpeech, setPartOfSpeech] = useState<string>('all');
+  // 교육부 지정 초등 800 목록(DAY 1~16)으로 모아 보기
+  const [moe800, setMoe800] = useState(false);
+  const [moeDay, setMoeDay] = useState<number | 'all'>('all');
   const [limit, setLimit] = useState<{ key: string; count: number }>({ key: '', count: PAGE_SIZE });
   const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
   const [studying, setStudying] = useState(false);
@@ -222,15 +225,24 @@ export default function DictionaryPage() {
         if (subcategory !== 'all' && e.subcategory !== subcategory) return false;
         if (level !== 'all' && e.level !== level) return false;
         if (partOfSpeech !== 'all' && e.part_of_speech !== partOfSpeech) return false;
+        if (moe800 && e.moe800_day == null) return false;
+        if (moe800 && moeDay !== 'all' && e.moe800_day !== moeDay) return false;
         if (!q) return true;
         return e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q);
       })
       // 새 단어가 뒤에 붙어도 가나다순처럼 알파벳순으로 섞여 보이도록 화면에서 정렬한다.
-      .sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase(), 'en') || a.sense_number - b.sense_number);
-  }, [tabEntries, query, category, subcategory, level, partOfSpeech]);
+      // 교육부 800 목록을 볼 때는 목록 번호 순서(DAY 순서)로 보여 준다.
+      .sort((a, b) =>
+        moe800
+          ? (a.moe800_no ?? 0) - (b.moe800_no ?? 0) || a.sense_number - b.sense_number
+          : a.word.toLowerCase().localeCompare(b.word.toLowerCase(), 'en') || a.sense_number - b.sense_number,
+      );
+  }, [tabEntries, query, category, subcategory, level, partOfSpeech, moe800, moeDay]);
+
+  const hasMoe800 = useMemo(() => tabEntries.some((e) => e.moe800_day != null), [tabEntries]);
 
   // 필터가 바뀌면 "더 보기"로 늘려둔 개수는 처음(PAGE_SIZE)으로 돌아간다.
-  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}`;
+  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}`;
   const visibleCount = limit.key === filterKey ? limit.count : PAGE_SIZE;
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -240,6 +252,8 @@ export default function DictionaryPage() {
     setSubcategory('all');
     setLevel('all');
     setPartOfSpeech('all');
+    setMoe800(false);
+    setMoeDay('all');
   }
 
   function changeCategory(next: string) {
@@ -309,6 +323,31 @@ export default function DictionaryPage() {
 
       {entries && (
         <div className="space-y-3">
+          {hasMoe800 && (
+            <div>
+              <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.listLabel')}</div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => { setMoe800(false); setMoeDay('all'); }} className={chipClass(!moe800, 'tertiary')}>
+                  {t('dictionary.allCategory')}
+                </button>
+                <button type="button" onClick={() => setMoe800(true)} className={chipClass(moe800, 'tertiary')}>
+                  {t('dictionary.moe800')}
+                </button>
+              </div>
+              {moe800 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <button type="button" onClick={() => setMoeDay('all')} className={chipClass(moeDay === 'all', 'tertiary')}>
+                    {t('dictionary.allCategory')}
+                  </button>
+                  {Array.from({ length: 16 }, (_, i) => i + 1).map((d) => (
+                    <button key={d} type="button" onClick={() => setMoeDay(d)} className={chipClass(moeDay === d, 'tertiary')}>
+                      {t('dictionary.moeDay', { n: d })}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {usedLevels.length > 0 && (
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.levelLabel')}</div>

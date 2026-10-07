@@ -1441,6 +1441,9 @@ const en: Ko = {
   },
 
   dictionary: {
+    listLabel: 'List',
+    moe800: 'MOE Elementary 800',
+    moeDay: 'DAY {{n}}',
     title: 'Word Dictionary',
     searchPlaceholder: 'Search a word or meaning (e.g. apple, 사과)',
     allCategory: 'All',
