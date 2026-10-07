@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AddStudentModal from '../components/AddStudentModal';
 import ClassChipRow from '../components/ClassChipRow';
 import PassbookCard from '../components/PassbookCard';
 import SettleModal from '../components/SettleModal';
@@ -10,7 +11,6 @@ import {
   checkIn,
   checkOut,
   createSettlement,
-  createStudent,
   deleteSettlement,
   deleteStudent,
   deleteTransaction,
@@ -36,6 +36,7 @@ export default function ClassBoardPage() {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [presets, setPresets] = useState<Preset[]>([]);
   const [settlement, setSettlement] = useState<Settlement | null>(null);
+  const [addingStudent, setAddingStudent] = useState(false);
   const [showTotal, setShowTotal] = useState(false);
   const [sortByName, setSortByName] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -254,12 +255,7 @@ export default function ClassBoardPage() {
 
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
-    const name = prompt(t('board.addStudentPrompt'));
-    if (!name?.trim()) return;
-    const ok = await run(async () => {
-      await createStudent(academy.id, selectedId, name.trim());
-    }, t('board.addStudentToast', { name: name.trim() }));
-    if (ok) await loadBoard();
+    setAddingStudent(true);
   }
 
   async function handleRemoveStudent(studentId: string, name: string) {
@@ -493,6 +489,21 @@ export default function ClassBoardPage() {
             </button>
           )}
         </div>
+      )}
+
+      {addingStudent && academy?.id && selectedId && (
+        <AddStudentModal
+          academyId={academy.id}
+          classId={selectedId}
+          existingNames={students.map((x) => x.name)}
+          onClose={() => setAddingStudent(false)}
+          onAdded={(n, problem) => {
+            setAddingStudent(false);
+            notify(t('board.addStudentToast', { name: n }));
+            if (problem) notify(problem, 'error');
+            void loadBoard();
+          }}
+        />
       )}
 
       {modalOpen && (

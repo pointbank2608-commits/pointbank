@@ -5,13 +5,13 @@ import i18n from '../i18n';
 import ClassChipRow from '../components/ClassChipRow';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
 import StudentLoginPanel from '../components/StudentLoginPanel';
+import AddStudentModal from '../components/AddStudentModal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
   clearCheckIn,
   clearCheckOut,
   createClass,
-  createStudent,
   deleteAttendance,
   deleteStudent,
   fetchAttendance,
@@ -42,12 +42,15 @@ export default function AttendancePage() {
   /** 무료 플랜 학생 10명 한도는 반 하나가 아니라 학원 전체 기준이라, 반별 학생 목록(students
    * state)과는 별도로 학원 전체 학생 수를 따로 추적한다. */
   const [academyStudentCount, setAcademyStudentCount] = useState(0);
+  const [academyStudentNames, setAcademyStudentNames] = useState<string[]>([]);
+  const [addingStudent, setAddingStudent] = useState(false);
 
   const loadAcademyStudentCount = useCallback(async () => {
     if (!academy?.id) return;
     try {
       const all = await fetchStudentsOfAcademy(academy.id);
       setAcademyStudentCount(all.length);
+      setAcademyStudentNames(all.map((s) => s.name));
     } catch {
       // 한도 체크용 보조 값이라 실패해도 화면을 막지 않는다.
     }
@@ -128,15 +131,15 @@ export default function AttendancePage() {
       notify(t('attendance.freeStudentLimitToast'), 'error');
       return;
     }
-    const name = prompt(t('board.addStudentPrompt'));
-    if (!name?.trim()) return;
-    const ok = await run(async () => {
-      await createStudent(academy.id, selectedId, name.trim());
-    }, t('board.addStudentToast', { name: name.trim() }));
-    if (ok) {
-      await load();
-      await loadAcademyStudentCount();
-    }
+    setAddingStudent(true);
+  }
+
+  async function handleStudentAdded(name: string, phoneProblem: string | null) {
+    setAddingStudent(false);
+    notify(t('board.addStudentToast', { name }));
+    if (phoneProblem) notify(phoneProblem, 'error');
+    await load();
+    await loadAcademyStudentCount();
   }
 
   async function handleRenameStudent(studentId: string, currentName: string) {
@@ -477,6 +480,15 @@ export default function AttendancePage() {
             </div>
           </div>
         </div>
+      )}
+      {addingStudent && academy?.id && selectedId && (
+        <AddStudentModal
+          academyId={academy.id}
+          classId={selectedId}
+          existingNames={academyStudentNames}
+          onClose={() => setAddingStudent(false)}
+          onAdded={(n, problem) => void handleStudentAdded(n, problem)}
+        />
       )}
       {statStudent && <LearningCardModal studentId={statStudent} onClose={() => setStatStudent(null)} />}
     </div>

@@ -2378,6 +2378,8 @@ const en: Ko = {
     err_unknown: 'Something went wrong. Please try again.',
   },
   studentLogin: {
+    err_duplicate: 'A student with the same name and number already exists. Add A, B or similar to the name, then register the number.',
+    err_phone: "The student was added but the phone number couldn't be saved. Register it again under 'Student login'.",
     title: 'Student login',
     subtitle: 'Students come in on a phone or tablet for homework and lessons',
     codeLabel: 'Academy code',
@@ -2403,6 +2405,15 @@ const en: Ko = {
     saved: 'Saved. Devices this student logged in on are logged out.',
     remove: 'Remove number',
     removeConfirm: "Remove {{name}}'s parent number? This student will no longer be able to log in.",
+  },
+  addStudent: {
+    title: 'Add student',
+    name: 'Student name',
+    phone: 'Parent phone number (optional)',
+    phoneHint: 'Used when the student logs in on the student page. You can also add it later under "Student login" in Students.',
+    ownerPhone: 'The owner registers parent phone numbers under "Student login" in Students.',
+    sameName: 'A student with this name already exists. If their parent phone numbers differ, each can log in. If the numbers are also the same, add A, B or similar to the name.',
+    add: 'Add',
   },
   studentHw: {
     pageTitle: 'Homework',
