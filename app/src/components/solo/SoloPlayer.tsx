@@ -7,6 +7,7 @@ import type { SoloPublicStep } from '../../lib/soloLessons';
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
  * 채점·기록은 api 가 한다(학생: 서버, 미리보기: 이 브라우저 안).
  *  - 고르기: 한 번 틀리면 "다시 해 볼까요?"(틀린 보기는 흐려짐), 두 번 틀리면 정답을 알려 준다.
+ *  - 쓰기·문장 배열: 한 번 틀리면 힌트(첫 글자·글자 수), 두 번 틀리면 정답을 알려 준다.
  *  - "모르겠어요": 정답을 알려 주고 넘어간다(선생님 현황에 막힌 단계로 보인다).
  */
 export interface SoloPlayerApi {
@@ -20,8 +21,9 @@ export interface SoloPlayerApi {
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
 
-const btn =
-  'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
+const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
+const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect'];
+const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble'];
 
 export default function SoloPlayer({
   steps,
@@ -46,9 +48,12 @@ export default function SoloPlayer({
   const [stats, setStats] = useState({ right: 0, unsure: 0 });
   const [error, setError] = useState(false);
   const [typed, setTyped] = useState<number[]>([]);
+  const [text, setText] = useState('');
   const [heard, setHeard] = useState(false);
+  const [showKo, setShowKo] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const attempts = useRef(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const step = steps[idx];
 
@@ -58,31 +63,30 @@ export default function SoloPlayer({
     setWrong([]);
     setShownAnswer(null);
     setTyped([]);
+    setText('');
     setHeard(false);
+    setShowKo(false);
     setAdvanced(false);
     setError(false);
     attempts.current = 0;
     if (!step) return;
-    if (step.t === 'meet') speak(step.word);
-    if (step.t === 'listenPick') speak(step.word);
-    if (step.t === 'pickMeaning') speak(step.word);
+    if (step.t === 'meet' || step.t === 'listenPick' || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
+    if (step.t === 'example') speak(step.sentence);
+    if (step.t === 'translatePick') speak(step.sentence);
   }, [idx, step]);
 
-  const guard = useCallback(
-    async <T,>(fn: () => Promise<T>): Promise<T | null> => {
-      setBusy(true);
-      setError(false);
-      try {
-        return await fn();
-      } catch {
-        setError(true);
-        return null;
-      } finally {
-        setBusy(false);
-      }
-    },
-    [],
-  );
+  const guard = useCallback(async <T,>(fn: () => Promise<T>): Promise<T | null> => {
+    setBusy(true);
+    setError(false);
+    try {
+      return await fn();
+    } catch {
+      setError(true);
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
   async function next(unsure = false) {
     const r = await guard(() => api.advance(idx, unsure));
@@ -102,9 +106,9 @@ export default function SoloPlayer({
     else setIdx(idx + 1);
   }
 
-  async function choose(i: number) {
-    if (busy || phase === 'right' || phase === 'shown' || wrong.includes(i)) return;
-    const ok = await guard(() => api.answer(idx, String(i)));
+  /** 답을 서버에 내고 맞았는지에 따라 단계 상태를 바꾼다 */
+  async function submit(value: string, onWrong?: () => void) {
+    const ok = await guard(() => api.answer(idx, value));
     if (ok === null) return;
     attempts.current += 1;
     if (ok) {
@@ -112,7 +116,7 @@ export default function SoloPlayer({
       setStats((s) => ({ ...s, right: s.right + 1 }));
       return;
     }
-    setWrong((w) => [...w, i]);
+    onWrong?.();
     if (attempts.current >= 2) await showAnswer();
     else setPhase('wrong1');
   }
@@ -124,20 +128,27 @@ export default function SoloPlayer({
     setPhase('shown');
   }
 
+  async function choose(i: number) {
+    if (busy || phase === 'right' || phase === 'shown' || wrong.includes(i)) return;
+    await submit(String(i), () => setWrong((w) => [...w, i]));
+  }
+
   async function checkSpell() {
     if (!step || step.t !== 'spell') return;
-    const value = typed.map((n) => step.letters[n]).join('');
-    const ok = await guard(() => api.answer(idx, value));
-    if (ok === null) return;
-    attempts.current += 1;
-    if (ok) {
-      setPhase('right');
-      setStats((s) => ({ ...s, right: s.right + 1 }));
-      return;
-    }
-    setTyped([]);
-    if (attempts.current >= 2) await showAnswer();
-    else setPhase('wrong1');
+    await submit(typed.map((n) => step.letters[n]).join(''), () => setTyped([]));
+  }
+
+  async function checkUnscramble() {
+    if (!step || step.t !== 'unscramble') return;
+    await submit(typed.map((n) => step.words[n]).join(' '), () => setTyped([]));
+  }
+
+  async function checkText() {
+    if (!text.trim()) return;
+    await submit(text.trim(), () => {
+      setText('');
+      inputRef.current?.focus();
+    });
   }
 
   const percent = useMemo(() => (steps.length ? Math.round((Math.min(idx, steps.length) / steps.length) * 100) : 0), [idx, steps.length]);
@@ -156,8 +167,9 @@ export default function SoloPlayer({
   }
   if (!step) return null;
 
-  const isQuestion = step.t === 'pickWord' || step.t === 'pickMeaning' || step.t === 'listenPick' || step.t === 'spell';
+  const isQuestion = QUESTION.includes(step.t);
   const answered = phase === 'right' || phase === 'shown';
+  const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation');
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#16213e] text-white">
@@ -178,7 +190,7 @@ export default function SoloPlayer({
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
             <div className="text-6xl">📚</div>
             <h1 className="text-3xl font-bold">{step.title}</h1>
-            <p className="max-w-sm text-xl text-white/85">{t('solo.introText', { count: Number(step.text) || 0 })}</p>
+            <p className="max-w-sm text-xl text-white/85">{/^\d+$/.test(step.text) ? t('solo.introText', { count: Number(step.text) || 0 }) : step.text}</p>
             <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} bg-warm-yellow px-10 text-deep-navy`}>
               {t('solo.start')}
             </button>
@@ -206,6 +218,48 @@ export default function SoloPlayer({
           </>
         )}
 
+        {step.t === 'rule' && (
+          <>
+            <p className="text-lg text-white/70">{t('solo.rulePrompt')}</p>
+            <h2 className="text-center text-2xl font-bold">{step.title}</h2>
+            <div className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold text-warm-yellow">{step.pattern}</div>
+            <p className="text-center text-lg text-white/85">{step.explain}</p>
+            {step.lines.length > 0 && (
+              <ul className="w-full list-disc space-y-1.5 rounded-2xl bg-white/5 py-3 pl-8 pr-4 text-left text-lg text-white/85">
+                {step.lines.map((l, i) => (
+                  <li key={i}>{l}</li>
+                ))}
+              </ul>
+            )}
+            {step.tip && <p className="text-center text-xl font-bold text-emerald-200">💡 {step.tip}</p>}
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+              {t('solo.readIt')}
+            </button>
+          </>
+        )}
+
+        {step.t === 'example' && (
+          <>
+            <p className="text-lg text-white/70">{t('solo.examplePrompt')}</p>
+            <button type="button" onClick={() => { speak(step.sentence); setHeard(true); }} className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-5 py-5 text-left text-3xl font-bold leading-snug">
+              <span className="material-symbols-outlined shrink-0 text-[36px] text-warm-yellow">volume_up</span>
+              {step.sentence}
+            </button>
+            {step.ko &&
+              (showKo ? (
+                <p className="text-2xl text-white/90">{step.ko}</p>
+              ) : (
+                <button type="button" onClick={() => setShowKo(true)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                  {t('solo.showKo')}
+                </button>
+              ))}
+            <p className="text-center text-lg text-warm-yellow">{t('solo.readAloud')}</p>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+              {t('solo.readIt')}
+            </button>
+          </>
+        )}
+
         {step.t === 'pickWord' && (
           <>
             <p className="text-xl font-bold">{t('solo.pickWordQ')}</p>
@@ -218,6 +272,7 @@ export default function SoloPlayer({
         {step.t === 'pickMeaning' && (
           <>
             <p className="text-xl font-bold">{t('solo.pickMeaningQ')}</p>
+            <Picture url={step.imageUrl} />
             <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-3 text-5xl font-bold">
               <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
               {step.word}
@@ -243,7 +298,7 @@ export default function SoloPlayer({
                   className={`flex min-h-32 flex-col items-center justify-center gap-1 rounded-2xl p-2 ${wrong.includes(i) ? 'bg-white/10 opacity-40' : 'bg-white text-deep-navy'} [touch-action:manipulation]`}
                 >
                   {step.images[i] ? <img src={step.images[i] ?? ''} alt="" className="h-24 w-24 object-contain" /> : <span className="text-2xl font-bold">{o}</span>}
-                  {answered && <span className="text-base font-bold">{o}</span>}
+                  {answered && step.images[i] && <span className="text-base font-bold">{o}</span>}
                 </button>
               ))}
             </div>
@@ -288,8 +343,119 @@ export default function SoloPlayer({
           </>
         )}
 
+        {(step.t === 'typeWord' || step.t === 'dictation') && (
+          <>
+            {step.t === 'typeWord' ? (
+              <>
+                <p className="text-xl font-bold">{t('solo.typeQ')}</p>
+                <Picture url={step.imageUrl} />
+                <p className="text-3xl font-bold">{step.meaning}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl font-bold">{t('solo.dictationQ')}</p>
+                <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy">
+                  <span className="material-symbols-outlined">volume_up</span>
+                  {t('solo.listenAgain')}
+                </button>
+              </>
+            )}
+            <p className="font-mono text-2xl tracking-[0.3em] text-white/60" aria-label={t('solo.lettersHint', { n: step.length })}>
+              {hintFirst && step.t === 'typeWord' ? `${step.first}${'_'.repeat(Math.max(0, step.length - 1))}` : '_'.repeat(step.length)}
+            </p>
+            {!answered && (
+              <form
+                className="flex w-full flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void checkText();
+                }}
+              >
+                <input
+                  ref={inputRef}
+                  autoFocus
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                />
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                  {t('solo.check')}
+                </button>
+              </form>
+            )}
+          </>
+        )}
+
+        {step.t === 'fillBlank' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.fillQ')}</p>
+            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            <p className="text-lg text-white/70">{step.meaning}</p>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+          </>
+        )}
+
+        {step.t === 'translatePick' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.translateQ')}</p>
+            <button type="button" onClick={() => speak(step.sentence)} className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-5 py-4 text-left text-2xl font-bold leading-snug">
+              <span className="material-symbols-outlined shrink-0 text-[32px] text-warm-yellow">volume_up</span>
+              {step.sentence}
+            </button>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+          </>
+        )}
+
+        {step.t === 'pickCorrect' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.correctQ')}</p>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+            {answered && step.why && <p className="text-center text-lg text-white/80">💡 {step.why}</p>}
+          </>
+        )}
+
+        {step.t === 'unscramble' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.unscrambleQ')}</p>
+            <div className="flex min-h-20 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
+              {typed.map((n, k) => (
+                <button key={k} type="button" disabled={answered} onClick={() => setTyped((a) => a.filter((_, j) => j !== k))} className="rounded-xl bg-white px-3 py-2 text-2xl font-bold text-deep-navy">
+                  {step.words[n]}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {step.words.map((w, n) => (
+                <button
+                  key={n}
+                  type="button"
+                  disabled={typed.includes(n) || answered || busy}
+                  onClick={() => setTyped((a) => [...a, n])}
+                  className="rounded-xl bg-white/90 px-3 py-2 text-2xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+            {!answered && (
+              <div className="flex w-full gap-3">
+                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-white/15`}>
+                  {t('solo.erase')}
+                </button>
+                <button type="button" onClick={() => void checkUnscramble()} disabled={typed.length !== step.words.length || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                  {t('solo.check')}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
         {/* 결과 말풍선 */}
-        {isQuestion && phase === 'wrong1' && <Banner tone="try">{t('solo.tryAgain')}</Banner>}
+        {isQuestion && phase === 'wrong1' && <Banner tone="try">{hintFirst ? t('solo.tryAgainHint') : t('solo.tryAgain')}</Banner>}
         {isQuestion && phase === 'right' && <Banner tone="ok">{t('solo.great')}</Banner>}
         {isQuestion && phase === 'shown' && (
           <Banner tone="show">
@@ -314,7 +480,7 @@ export default function SoloPlayer({
             {t('solo.dontKnow')}
           </button>
         )}
-        {step.t === 'meet' && phase === 'shown' && (
+        {!isQuestion && phase === 'shown' && (
           <button type="button" onClick={goOn} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
             {t('solo.next')}
           </button>
@@ -339,7 +505,7 @@ function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: 
           type="button"
           disabled={wrong.includes(i) || phase === 'right' || phase === 'shown'}
           onClick={() => onPick(i)}
-          className={`min-h-16 rounded-2xl px-4 text-2xl font-bold [touch-action:manipulation] ${wrong.includes(i) ? 'bg-white/10 text-white/40 line-through' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none'}`}
+          className={`min-h-16 rounded-2xl px-4 py-2 text-xl font-bold leading-snug [touch-action:manipulation] sm:text-2xl ${wrong.includes(i) ? 'bg-white/10 text-white/40 line-through' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none'}`}
         >
           {o}
         </button>

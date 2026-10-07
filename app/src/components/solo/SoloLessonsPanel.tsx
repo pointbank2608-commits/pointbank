@@ -13,7 +13,20 @@ import {
   type SoloLesson,
   type SoloStatusRow,
 } from '../../lib/soloApi';
-import { buildSoloFromCatalog, gradeSoloLocal, soloCorrectText, SOLO_CATALOG, toPublicStep, type SoloCatalogItem } from '../../lib/soloLessons';
+import { grammarLevelTag } from '../../lib/grammar';
+import {
+  buildSoloDayLessons,
+  buildSoloFromCatalog,
+  buildSoloGrammarLesson,
+  gradeSoloLocal,
+  soloCorrectText,
+  SOLO_CATALOG,
+  SOLO_GRAMMAR_POINTS,
+  toPublicStep,
+  type SoloCatalogItem,
+  type SoloStep,
+  type SoloWordStyle,
+} from '../../lib/soloLessons';
 import type { Student } from '../../lib/types';
 import { loadWordBank } from '../../lib/wordBankCache';
 import SoloPlayer, { type SoloPlayerApi } from './SoloPlayer';
@@ -139,6 +152,18 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       {catalogOpen && classId && (
         <CatalogModal
           onClose={() => setCatalogOpen(false)}
+          onBatch={async (lessons, level, source) => {
+            try {
+              for (const l of lessons) {
+                await createSoloLesson({ academyId, classId, name: l.name, level, minutes: l.minutes, steps: l.steps, source });
+              }
+              notify(t('solo.createdMany', { count: lessons.length }));
+              setCatalogOpen(false);
+              void reload();
+            } catch (e) {
+              notify(e instanceof Error ? e.message : String(e), 'error');
+            }
+          }}
           onPick={async (item) => {
             try {
               const built = buildSoloFromCatalog(item, await loadWordBank(), i18n.language);
@@ -175,8 +200,19 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
 
 /* ---------------- 커리큘럼 보기(미리 만든 개별수업) ---------------- */
 
-function CatalogModal({ onClose, onPick }: { onClose: () => void; onPick: (item: SoloCatalogItem) => Promise<void> }) {
+type BatchLesson = { name: string; steps: SoloStep[]; minutes: number };
+
+function CatalogModal({
+  onClose,
+  onPick,
+  onBatch,
+}: {
+  onClose: () => void;
+  onPick: (item: SoloCatalogItem) => Promise<void>;
+  onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
+}) {
   const { t, i18n } = useTranslation();
+  const { notify } = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const ko = i18n.language.startsWith('ko');
   const tracks: { id: SoloCatalogItem['track']; icon: string }[] = [
@@ -184,6 +220,48 @@ function CatalogModal({ onClose, onPick }: { onClose: () => void; onPick: (item:
     { id: 'grammar', icon: 'rule' },
     { id: 'video', icon: 'movie' },
   ];
+
+  // 교육부 초등 800 · DAY별(하루 분량과 활동 방식은 만들 때 정한다)
+  const [day, setDay] = useState(1);
+  const [per, setPer] = useState(10);
+  const [style, setStyle] = useState<SoloWordStyle>('writing');
+
+  async function makeDay() {
+    setBusy('moe800');
+    try {
+      const lessons = buildSoloDayLessons(await loadWordBank(), { day, perLesson: per, style, baseName: t('solo.moe800Name', { day }) });
+      if (lessons.length === 0) {
+        notify(t('solo.moe800Missing'), 'error');
+        return;
+      }
+      await onBatch(lessons, t('solo.moe800Level'), `solo-moe800-d${day}-${style}-${per}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  // 문법: 묶음(초등 Level / 중1~3)별 목록
+  const grammarGroups = useMemo(() => {
+    const map = new Map<string, typeof SOLO_GRAMMAR_POINTS>();
+    for (const p of SOLO_GRAMMAR_POINTS) {
+      const key = p.stage === 'elementary' ? `L${p.level}` : `G${p.level}`;
+      map.set(key, [...(map.get(key) ?? []), p]);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, []);
+
+  async function makeGrammar(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
+    setBusy(label);
+    try {
+      await onBatch(points.map(buildSoloGrammarLesson), label, `solo-grammar-${points[0]?.id ?? ''}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`;
+  const select = 'rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary';
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true">
       <div className="my-6 w-full max-w-3xl space-y-4 rounded-2xl bg-surface-container-lowest p-5 shadow-xl">
@@ -197,13 +275,101 @@ function CatalogModal({ onClose, onPick }: { onClose: () => void; onPick: (item:
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <div className="font-label-md text-label-md font-bold text-deep-navy">Level 1</div>
+
         {tracks.map((tr) => (
           <div key={tr.id} className="space-y-2">
-            <div className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface-variant">
-              <span className="material-symbols-outlined text-[18px]">{tr.icon}</span>
+            <div className="flex items-center gap-1.5 font-label-md text-label-md font-bold text-deep-navy">
+              <span className="material-symbols-outlined text-[18px] text-primary">{tr.icon}</span>
               {t(`solo.track_${tr.id}`)}
             </div>
+
+            {tr.id === 'word' && (
+              <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
+                <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.moe800Title')}</div>
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.moe800Hint')}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: 16 }, (_, i) => i + 1).map((d) => (
+                    <button key={d} type="button" onClick={() => setDay(d)} className={chip(day === d)}>
+                      DAY {d}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-end gap-4">
+                  <label className="space-y-1">
+                    <span className="block font-caption text-caption text-on-surface-variant">{t('solo.perLesson')}</span>
+                    <select value={per} onChange={(e) => setPer(Number(e.target.value))} className={select}>
+                      {[5, 10, 15, 20, 25, 50].map((n) => (
+                        <option key={n} value={n}>
+                          {t('solo.perLessonOption', { n, lessons: Math.ceil(50 / n) })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="space-y-1">
+                    <span className="block font-caption text-caption text-on-surface-variant">{t('solo.styleLabel')}</span>
+                    <div className="flex gap-1.5">
+                      {(['writing', 'picture'] as const).map((st) => (
+                        <button key={st} type="button" onClick={() => setStyle(st)} className={chip(style === st)}>
+                          {t(`solo.style_${st}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={() => void makeDay()}
+                    className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50"
+                  >
+                    {busy === 'moe800' ? t('common.loading') : t('solo.makeDay', { day })}
+                  </button>
+                </div>
+                <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
+              </div>
+            )}
+
+            {tr.id === 'grammar' && (
+              <div className="space-y-2">
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.grammarHint')}</p>
+                {grammarGroups.map(([key, points]) => {
+                  const label = grammarLevelTag(points[0]);
+                  return (
+                    <details key={key} className="rounded-xl border border-outline-variant/50 bg-surface-container-lowest">
+                      <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 font-label-md text-label-md text-on-surface">
+                        <span className="flex-1">
+                          {label} <span className="font-caption text-caption text-on-surface-variant">· {t('solo.grammarCount', { count: points.length })}</span>
+                        </span>
+                        <button
+                          type="button"
+                          disabled={busy !== null}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (window.confirm(t('solo.makeAllConfirm', { count: points.length, label }))) void makeGrammar(points, label);
+                          }}
+                          className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-50"
+                        >
+                          {busy === label ? t('common.loading') : t('solo.makeAll')}
+                        </button>
+                      </summary>
+                      <div className="grid gap-1.5 px-3 pb-3 sm:grid-cols-2">
+                        {points.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            disabled={busy !== null}
+                            onClick={() => void makeGrammar([p], label)}
+                            className="truncate rounded-lg border border-outline-variant/50 px-3 py-2 text-left font-body-sm text-body-sm text-on-surface transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
+                          >
+                            {p.name}
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="grid gap-2 sm:grid-cols-2">
               {SOLO_CATALOG.filter((c) => c.track === tr.id).map((c) => (
                 <button
