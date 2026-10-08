@@ -184,7 +184,7 @@ export function base64ToBlobUrl(b64: string, mime: string): string {
 }
 
 /** 학생: 따라 부른 녹음 보내기(보호자 동의가 없으면 서버가 거절) */
-export async function soloRecordSave(token: string, assignment: string, step: number, blob: Blob, seconds: number): Promise<boolean> {
+export async function soloRecordSave(token: string, assignment: string, step: number, blob: Blob, seconds: number, sub = 0): Promise<boolean> {
   try {
     const b64 = await blobToBase64(blob);
     const r = await rpc<{ ok?: boolean }>('solo_record_save', {
@@ -194,6 +194,8 @@ export async function soloRecordSave(token: string, assignment: string, step: nu
       p_mime: blob.type || 'audio/webm',
       p_b64: b64,
       p_seconds: seconds,
+      // 052 를 아직 안 돌린 서버(이 칸이 없는 함수)에서도 노래 녹음이 되도록, 번호가 있을 때만 보낸다
+      ...(sub > 0 ? { p_sub: sub } : {}),
     });
     return !!r.ok;
   } catch {
@@ -204,6 +206,7 @@ export async function soloRecordSave(token: string, assignment: string, step: nu
 export interface SoloRecordingMeta {
   id: string;
   step: number;
+  sub?: number;
   seconds: number | null;
   created_at: string;
 }

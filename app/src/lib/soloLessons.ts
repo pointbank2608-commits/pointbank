@@ -13,7 +13,7 @@ import type { FullCardItem, WordBankEntry } from './types';
  *  문법: intro · rule · example · translatePick · pickCorrect · unscramble
  */
 export type SoloStep =
-  | { t: 'intro'; title: string; text: string }
+  | { t: 'intro'; title: string; text: string; imageUrl?: string }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null }
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[]; answer: number }
@@ -29,7 +29,18 @@ export type SoloStep =
   | { t: 'unscramble'; sentence: string; words: string[]; clip?: SoloClip }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number }
-  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string };
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
+  | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
+  | { t: 'sayPick'; situation: string; options: string[]; answer: number; imageUrl?: string }
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] };
+
+/** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
+export interface RoleplayLine {
+  who: 'other' | 'me';
+  speaker: string;
+  en: string;
+  ko: string;
+}
 
 /** 노래·영상 단계가 틀어 줄 유튜브 구간 */
 export interface SoloClip {
@@ -40,7 +51,7 @@ export interface SoloClip {
 
 /** 학생에게 가는 모양(정답 없음) */
 export type SoloPublicStep =
-  | { t: 'intro'; title: string; text: string }
+  | { t: 'intro'; title: string; text: string; imageUrl?: string }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null }
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[] }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[] }
@@ -56,10 +67,13 @@ export type SoloPublicStep =
   | { t: 'unscramble'; words: string[]; clip?: SoloClip }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[] }
-  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string };
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
+  | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
+  | { t: 'sayPick'; situation: string; options: string[]; imageUrl?: string }
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] };
 
 /** 보기에서 번호로 고르는 단계 */
-export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank'] as const;
+export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick'] as const;
 /** 글자로 답하는 단계 */
 export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble'] as const;
 
@@ -246,7 +260,7 @@ export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; ste
   const lines = [...(point.usage ?? []), ...(point.detail ?? []), ...(point.rule ?? [])].map(plainText);
   steps.push({ t: 'rule', title: name, pattern: plainText(point.pattern), explain: point.explain, lines, tip: point.tip ?? '' });
   const ex = exampleSteps(point);
-  for (const e of ex) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
+  for (const e of ex) steps.push({ t: 'fadeRead', sentence: e.sentence, ko: e.ko });
 
   const koPool = GRAMMAR_POINTS.filter((p) => p.stage === point.stage && p.id !== point.id)
     .flatMap((p) => (p.translations ?? []).map(cleanKo))
@@ -425,6 +439,8 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       return { t: step.t, words: step.words, clip: step.clip };
     case 'lyricBlank':
       return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
+    case 'sayPick':
+      return { t: step.t, situation: step.situation, options: step.options, imageUrl: step.imageUrl };
     default:
       return step;
   }
@@ -435,7 +451,7 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
 export interface SoloCatalogItem {
   id: string;
   /** 레벨 경로의 줄: 단어 / 문법 / 영상 */
-  track: 'word' | 'grammar' | 'video';
+  track: 'word' | 'grammar' | 'video' | 'talk';
   level: string;
   ko: string;
   en: string;

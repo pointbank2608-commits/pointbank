@@ -34,6 +34,7 @@ import { extractYoutubeId } from '../../lib/youtube';
 import { loadWordBank } from '../../lib/wordBankCache';
 import { parseShadowText } from '../../lib/shadowLines';
 import RecordingsModal from './RecordingsModal';
+import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
 import SoloPlayer, { type SoloPlayerApi } from './SoloPlayer';
 
 /**
@@ -225,6 +226,7 @@ function CatalogModal({
   const tracks: { id: SoloCatalogItem['track']; icon: string }[] = [
     { id: 'word', icon: 'abc' },
     { id: 'grammar', icon: 'rule' },
+    { id: 'talk', icon: 'forum' },
     { id: 'video', icon: 'movie' },
   ];
 
@@ -354,6 +356,43 @@ function CatalogModal({
                   </button>
                 </div>
                 <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
+              </div>
+            )}
+
+            {tr.id === 'talk' && (
+              <div className="space-y-2">
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.talkHint')}</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {SOLO_SCENARIOS.map((sc) => (
+                    <button
+                      key={sc.id}
+                      type="button"
+                      disabled={busy !== null}
+                      onClick={async () => {
+                        setBusy(sc.id);
+                        try {
+                          const lesson = buildSoloScenarioLesson(sc, await loadWordBank(), i18n.language);
+                          if (!lesson) {
+                            notify(t('solo.buildFailed'), 'error');
+                            return;
+                          }
+                          await onBatch([lesson], t('solo.talkLevel'), sc.id);
+                        } finally {
+                          setBusy(null);
+                        }
+                      }}
+                      className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[22px] text-primary">{sc.icon}</span>
+                        <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{ko ? sc.ko : sc.en}</span>
+                        <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t('recipes.minutes', { n: 20 })}</span>
+                      </div>
+                      <div className="font-caption text-caption text-on-surface-variant">{ko ? sc.koDesc : sc.enDesc}</div>
+                      {busy === sc.id && <div className="font-caption text-caption text-primary">{t('common.loading')}</div>}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -573,7 +612,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
   const { t } = useTranslation();
   const { notify } = useToast();
   const [rows, setRows] = useState<SoloStatusRow[] | null>(null);
-  const hasSing = lesson.steps.some((st) => st.t === 'lineSing');
+  const hasSing = lesson.steps.some((st) => st.t === 'lineSing' || st.t === 'fadeRead' || st.t === 'roleplay');
 
   useEffect(() => {
     let alive = true;

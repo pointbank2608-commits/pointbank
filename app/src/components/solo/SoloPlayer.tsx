@@ -19,13 +19,13 @@ export interface SoloPlayerApi {
   /** 두 번 틀린 뒤 정답 보기 */
   reveal(step: number): Promise<string | null>;
   /** 따라 부른 녹음 보내기(보호자 동의가 있는 학생만) — 실패하면 false */
-  record?(step: number, blob: Blob, seconds: number): Promise<boolean>;
+  record?(step: number, blob: Blob, seconds: number, sub?: number): Promise<boolean>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
 
 const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
-const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank'];
+const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick'];
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble'];
 
 export default function SoloPlayer({
@@ -147,15 +147,39 @@ export default function SoloPlayer({
   }
 
   /** 한 줄을 다 불렀으면 녹음을 보내고(동의가 있고 서버가 받을 때) 다음으로 */
-  async function finishSing() {
+  async function uploadRecording(sub = 0): Promise<void> {
     const rec = blobRef.current;
     if (rec && canRecord && api.record) {
-      const ok = await guard(() => api.record!(idx, rec.blob, rec.seconds));
+      const ok = await guard(() => api.record!(idx, rec.blob, rec.seconds, sub));
       setUploaded(ok ? 'yes' : 'fail');
     }
     blobRef.current = null;
+    setClipUrl(null);
+  }
+
+  async function finishSing() {
+    await uploadRecording(0);
     await next();
   }
+
+  /* 끝 낱말부터 지우며 말하기(fadeRead): 라운드마다 가려지는 낱말이 늘고, 마지막은 한국어 뜻만 보고 전체를 말한다 */
+  const [round, setRound] = useState(0);
+  const [peek, setPeek] = useState(false);
+  const fadeWords = useMemo(() => (step && step.t === 'fadeRead' ? step.sentence.split(/\s+/).filter(Boolean) : []), [step]);
+  const fadeHidden = useMemo(() => {
+    const n = fadeWords.length;
+    if (n === 0) return [0];
+    const per = Math.max(1, Math.ceil(n / 4));
+    const list: number[] = [0];
+    for (let h = per; h < n; h += per) list.push(h);
+    list.push(n);
+    return list;
+  }, [fadeWords]);
+
+  // 역할극: 1번 읽기(내 대사도 보임) → 2번 내 대사 숨기고 말하기
+  const [rpPass, setRpPass] = useState<1 | 2>(1);
+  const [rpTurn, setRpTurn] = useState(0);
+  const [rpPeek, setRpPeek] = useState(false);
 
   // 새 단계로 올 때: 상태 비우고, 소리 나는 단계는 자동으로 읽어 준다
   useEffect(() => {
@@ -171,8 +195,14 @@ export default function SoloPlayer({
     setClipUrl(null);
     setUploaded('no');
     blobRef.current = null;
+    setRound(0);
+    setPeek(false);
+    setRpPass(1);
+    setRpTurn(0);
+    setRpPeek(false);
     attempts.current = 0;
     if (!step) return;
+    if (step.t === 'fadeRead') speak(step.sentence);
     if (step.t === 'meet' || step.t === 'listenPick' || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
     if (step.t === 'example') speak(step.sentence);
     if (step.t === 'translatePick') speak(step.sentence);
@@ -381,9 +411,195 @@ export default function SoloPlayer({
           </>
         )}
 
+        {step.t === 'fadeRead' && (
+          <>
+            <p className="text-lg text-white/70">{round === fadeHidden.length - 1 ? t('solo.fadeLast') : round === 0 ? t('solo.fadeFirst') : t('solo.fadeMid')}</p>
+            <Picture url={step.imageUrl ?? null} />
+            {step.ko && <p className="text-center text-2xl font-bold leading-snug">{step.ko}</p>}
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-4" aria-live="polite">
+              {fadeWords.map((w, i) => {
+                const hidden = i >= fadeWords.length - fadeHidden[round] && !peek;
+                return hidden ? (
+                  <span key={i} className="inline-block h-9 rounded-lg border-b-4 border-warm-yellow/70 bg-white/5" style={{ width: `${Math.max(2.2, w.length * 0.95)}rem` }} />
+                ) : (
+                  <span key={i} className="text-3xl font-bold">
+                    {w}
+                  </span>
+                );
+              })}
+            </div>
+            <div className="flex w-full flex-wrap justify-center gap-2">
+              <button type="button" onClick={() => speak(step.sentence)} className="flex items-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+                <span className="material-symbols-outlined">volume_up</span>
+                {t('solo.listenAgain')}
+              </button>
+              {round > 0 && (
+                <button type="button" onMouseDown={() => setPeek(true)} onMouseUp={() => setPeek(false)} onMouseLeave={() => setPeek(false)} onTouchStart={() => setPeek(true)} onTouchEnd={() => setPeek(false)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                  {t('solo.peek')}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-1.5" aria-hidden>
+              {fadeHidden.map((_, i) => (
+                <span key={i} className={`h-2.5 w-2.5 rounded-full ${i <= round ? 'bg-warm-yellow' : 'bg-white/20'}`} />
+              ))}
+            </div>
+            {round === fadeHidden.length - 1 && (
+              <>
+                {mic === 'unknown' && (
+                  <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+                    <p>{t('solo.micExplain')}</p>
+                    <div className="mt-2 flex gap-2">
+                      <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
+                        {t('solo.micOn')}
+                      </button>
+                      <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                        {t('solo.micSkip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {mic === 'ready' && (
+                  <button type="button" onClick={() => toggleRecord(Math.max(4, fadeWords.length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+                    <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
+                  </button>
+                )}
+                {clipUrl && <audio src={clipUrl} controls className="w-full" />}
+                {uploaded === 'fail' && <p className="text-center text-sm text-warm-yellow">{t('solo.uploadFail')}</p>}
+              </>
+            )}
+            <button
+              type="button"
+              disabled={busy || recording}
+              onClick={async () => {
+                if (round < fadeHidden.length - 1) {
+                  setRound(round + 1);
+                  setPeek(false);
+                  return;
+                }
+                await uploadRecording(0);
+                await next();
+              }}
+              className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+            >
+              {round < fadeHidden.length - 1 ? t('solo.saidNext') : t('solo.saidIt')}
+            </button>
+          </>
+        )}
+
+        {step.t === 'sayPick' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.sayPickQ')}</p>
+            <Picture url={step.imageUrl ?? null} />
+            <p className="rounded-2xl bg-white/10 px-4 py-3 text-center text-2xl font-bold leading-snug">{step.situation}</p>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+          </>
+        )}
+
+        {step.t === 'roleplay' && (() => {
+          const lines = step.lines;
+          const line = lines[rpTurn];
+          const mine = line?.who === 'me';
+          const hideMine = rpPass === 2 && mine && !rpPeek;
+          const advanceTurn = async () => {
+            if (rpTurn + 1 < lines.length) {
+              setRpTurn(rpTurn + 1);
+              setRpPeek(false);
+              setClipUrl(null);
+              blobRef.current = null;
+              return;
+            }
+            if (rpPass === 1) {
+              setRpPass(2);
+              setRpTurn(0);
+              setRpPeek(false);
+              return;
+            }
+            await next();
+          };
+          return (
+            <>
+              <Picture url={step.imageUrl ?? null} />
+              <p className="text-lg text-white/70">{rpPass === 1 ? t('solo.rpPass1') : t('solo.rpPass2')}</p>
+              <div className="flex w-full flex-col gap-2">
+                {lines.slice(0, rpTurn + 1).map((l, i) => {
+                  const isCur = i === rpTurn;
+                  const hide = rpPass === 2 && l.who === 'me' && (!isCur || !rpPeek);
+                  return (
+                    <div key={i} className={`flex ${l.who === 'me' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${l.who === 'me' ? 'bg-warm-yellow text-deep-navy' : 'bg-white/15'} ${isCur ? 'ring-2 ring-white/60' : 'opacity-80'}`}>
+                        <div className="text-xs opacity-70">{l.speaker}</div>
+                        <div className="text-xl font-bold leading-snug">{hide ? <span className="opacity-60">{l.ko}</span> : l.en}</div>
+                        {!hide && l.ko && <div className="mt-0.5 text-sm opacity-70">{l.ko}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {line && (
+                <div className="flex w-full flex-col gap-2">
+                  {!mine && (
+                    <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+                      <span className="material-symbols-outlined">volume_up</span>
+                      {t('solo.listenAgain')}
+                    </button>
+                  )}
+                  {mine && (
+                    <>
+                      {rpPass === 1 && (
+                        <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+                          <span className="material-symbols-outlined">volume_up</span>
+                          {t('solo.listenAgain')}
+                        </button>
+                      )}
+                      {rpPass === 2 && hideMine && (
+                        <button type="button" onClick={() => setRpPeek(true)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                          {t('solo.showAnswer')}
+                        </button>
+                      )}
+                      {rpPass === 2 && mic === 'unknown' && (
+                        <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+                          <p>{t('solo.micExplain')}</p>
+                          <div className="mt-2 flex gap-2">
+                            <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
+                              {t('solo.micOn')}
+                            </button>
+                            <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                              {t('solo.micSkip')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {rpPass === 2 && mic === 'ready' && (
+                        <button type="button" onClick={() => toggleRecord(Math.max(4, line.en.split(/\s+/).length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+                          <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
+                        </button>
+                      )}
+                      {rpPass === 2 && clipUrl && <audio src={clipUrl} controls className="w-full" />}
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    disabled={busy || recording}
+                    onClick={async () => {
+                      if (rpPass === 2 && mine) await uploadRecording(rpTurn);
+                      if (mine && rpPass === 1) speak(line.en);
+                      await advanceTurn();
+                    }}
+                    className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+                  >
+                    {mine ? t('solo.saidIt') : t('solo.next')}
+                  </button>
+                  {mic === 'ready' && canRecord && rpPass === 2 && mine && <p className="text-center text-xs text-white/50">{t('solo.recordSavedNote')}</p>}
+                </div>
+              )}
+            </>
+          );
+        })()}
+
         {step.t === 'intro' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-            <div className="text-6xl">📚</div>
+            {step.imageUrl ? <Picture url={step.imageUrl} wide /> : <div className="text-6xl">📚</div>}
             <h1 className="text-3xl font-bold">{step.title}</h1>
             <p className="max-w-sm text-xl text-white/85">{/^\d+$/.test(step.text) ? t('solo.introText', { count: Number(step.text) || 0 }) : step.text}</p>
             <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} bg-warm-yellow px-10 text-deep-navy`}>
@@ -671,7 +887,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && !answered && (
+        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && !answered && (
           <button
             type="button"
             disabled={busy}
@@ -692,9 +908,17 @@ export default function SoloPlayer({
   );
 }
 
-function Picture({ url }: { url: string | null }) {
-  if (!url) return null;
-  return <img src={url} alt="" className="h-52 w-52 rounded-3xl bg-white object-contain p-2 sm:h-60 sm:w-60" />;
+function Picture({ url, wide = false }: { url: string | null; wide?: boolean }) {
+  const [broken, setBroken] = useState(false);
+  if (!url || broken) return null;
+  return (
+    <img
+      src={url}
+      alt=""
+      onError={() => setBroken(true)}
+      className={wide ? 'w-full max-w-md rounded-3xl bg-white object-cover' : 'max-h-56 w-full max-w-sm rounded-3xl bg-white object-contain p-2 sm:max-h-64'}
+    />
+  );
 }
 
 function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: number[]; phase: Phase; onPick: (i: number) => void }) {

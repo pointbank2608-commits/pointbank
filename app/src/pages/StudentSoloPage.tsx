@@ -47,7 +47,7 @@ export default function StudentSoloPage() {
         return { answer: r.answer };
       },
       reveal: (step) => soloReveal(token, assignmentId, step),
-      record: (step, blob, seconds) => soloRecordSave(token, assignmentId, step, blob, seconds),
+      record: (step, blob, seconds, sub) => soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
     };
   }, [token, assignmentId]);
 

@@ -62,9 +62,13 @@ export default function RecordingsModal({ lesson, row, onClose }: { lesson: Solo
     }
   }
 
-  const lineOf = (step: number) => {
+  const lineOf = (step: number, sub = 0) => {
     const s = lesson.steps[step];
-    return s && s.t === 'lineSing' ? s.en : '';
+    if (!s) return '';
+    if (s.t === 'lineSing') return s.en;
+    if (s.t === 'fadeRead') return s.sentence;
+    if (s.t === 'roleplay') return s.lines[sub]?.en ?? '';
+    return '';
   };
 
   const linkOf = (token: string) => `${window.location.origin}/r/${token}`;
@@ -109,7 +113,7 @@ export default function RecordingsModal({ lesson, row, onClose }: { lesson: Solo
             <ul className="space-y-3">
               {records.map((r) => (
                 <li key={r.id} className="rounded-xl border border-outline-variant/50 p-3">
-                  <div className="font-body-md text-body-md text-on-surface">{lineOf(r.step) || t('solo.stepN', { n: r.step + 1 })}</div>
+                  <div className="font-body-md text-body-md text-on-surface">{lineOf(r.step, r.sub ?? 0) || t('solo.stepN', { n: r.step + 1 })}</div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {urls[r.id] ? (
                       <audio src={urls[r.id]} controls autoPlay className="h-10 max-w-full" />
