@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { fetchStudentsOfClass } from '../../lib/api';
+import { fetchPresets, fetchStudentsOfClass } from '../../lib/api';
+import { dateKey } from '../../lib/format';
+import type { Preset } from '../../lib/types';
 import {
   assignSoloLesson,
   createSoloLesson,
@@ -10,6 +13,7 @@ import {
   fetchSoloLessons,
   fetchSoloStatus,
   renameSoloLesson,
+  rewardSoloLesson,
   type SoloLesson,
   type SoloStatusRow,
 } from '../../lib/soloApi';
@@ -20,11 +24,8 @@ import {
   buildSoloGrammarLesson,
   buildSoloSongLesson,
   songTimedLineCount,
-  gradeSoloLocal,
-  soloCorrectText,
   SOLO_CATALOG,
   SOLO_GRAMMAR_POINTS,
-  toPublicStep,
   type SoloCatalogItem,
   type SoloStep,
   type SoloWordStyle,
@@ -34,8 +35,9 @@ import { extractYoutubeId } from '../../lib/youtube';
 import { loadWordBank } from '../../lib/wordBankCache';
 import { parseShadowText } from '../../lib/shadowLines';
 import RecordingsModal from './RecordingsModal';
+import SoloLessonEditor from './SoloLessonEditor';
+import SoloPreview from './SoloPreview';
 import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
-import SoloPlayer, { type SoloPlayerApi } from './SoloPlayer';
 
 /**
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
@@ -49,6 +51,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
   const [loading, setLoading] = useState(true);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [preview, setPreview] = useState<SoloLesson | null>(null);
+  const [editing, setEditing] = useState<SoloLesson | null>(null);
   const [assigning, setAssigning] = useState<SoloLesson | null>(null);
   const [statusOf, setStatusOf] = useState<SoloLesson | null>(null);
   const [recordsOf, setRecordsOf] = useState<{ lesson: SoloLesson; row: SoloStatusRow } | null>(null);
@@ -140,6 +143,10 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
                   {c ? t('solo.assignedCount', { total: c.total, done: c.done }) : t('solo.notAssigned')}
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setEditing(l)} className="flex items-center gap-1 rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    {t('solo.editLesson')}
+                  </button>
                   <button type="button" onClick={() => setPreview(l)} className="rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
                     {t('solo.preview')}
                   </button>
@@ -188,7 +195,18 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
           }}
         />
       )}
-      {preview && <PreviewOverlay lesson={preview} onClose={() => setPreview(null)} />}
+      {preview && <SoloPreview steps={preview.steps} onClose={() => setPreview(null)} />}
+      {editing && (
+        <SoloLessonEditor
+          lesson={editing}
+          academyId={academyId}
+          assignedCount={counts.get(editing.id)?.total ?? 0}
+          onClose={(saved) => {
+            setEditing(null);
+            if (saved) void reload();
+          }}
+        />
+      )}
       {assigning && classId && (
         <AssignModal
           lesson={assigning}
@@ -503,28 +521,6 @@ function CatalogModal({
   );
 }
 
-/* ---------------- 학생 화면 미리보기 ---------------- */
-
-function PreviewOverlay({ lesson, onClose }: { lesson: SoloLesson; onClose: () => void }) {
-  const api = useMemo<SoloPlayerApi>(() => {
-    const attempts = new Map<number, number>();
-    return {
-      answer: async (step, value) => {
-        attempts.set(step, (attempts.get(step) ?? 0) + 1);
-        return gradeSoloLocal(lesson.steps[step], value) ?? true;
-      },
-      advance: async (step, unsure) => ({ answer: unsure ? soloCorrectText(lesson.steps[step]) : null }),
-      reveal: async (step) => soloCorrectText(lesson.steps[step]),
-    };
-  }, [lesson]);
-  const steps = useMemo(() => lesson.steps.map(toPublicStep), [lesson]);
-  return (
-    <div className="fixed inset-0 z-[60] overflow-y-auto bg-[#16213e]">
-      <SoloPlayer steps={steps} api={api} onExit={onClose} preview />
-    </div>
-  );
-}
-
 /* ---------------- 학생에게 내기 ---------------- */
 
 function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson; classId: string; onClose: () => void; onDone: () => void }) {
@@ -533,6 +529,7 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
   const [students, setStudents] = useState<Student[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [due, setDue] = useState('');
+  const [kind, setKind] = useState<'lesson' | 'homework'>('lesson');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -556,7 +553,7 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
     if (picked.size === 0 || busy) return;
     setBusy(true);
     try {
-      const n = await assignSoloLesson(lesson.id, [...picked], due ? new Date(`${due}T23:59:59`).toISOString() : null);
+      const n = await assignSoloLesson(lesson.id, [...picked], due ? new Date(`${due}T23:59:59`).toISOString() : null, kind);
       notify(t('solo.assignedToast', { count: n }));
       onDone();
     } catch (e) {
@@ -573,6 +570,21 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
           <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low">
             <span className="material-symbols-outlined">close</span>
           </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('solo.kindLabel')}>
+          {(['lesson', 'homework'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="radio"
+              aria-checked={kind === k}
+              onClick={() => setKind(k)}
+              className={`rounded-xl border-2 px-3 py-2 text-left ${kind === k ? 'border-primary bg-primary/10' : 'border-outline-variant hover:bg-surface-container-low'}`}
+            >
+              <span className="block font-label-md text-label-md font-bold text-deep-navy">{t(`solo.kind_${k}`)}</span>
+              <span className="block font-caption text-caption text-on-surface-variant">{t(`solo.kindHint_${k}`)}</span>
+            </button>
+          ))}
         </div>
         <p className="font-caption text-caption text-on-surface-variant">{t('solo.assignHint')}</p>
         <div className="flex gap-3 font-caption text-caption">
@@ -611,8 +623,25 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
 function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClose: () => void; onRecords: (row: SoloStatusRow) => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
+  const { academy, pointUnit } = useAuth();
   const [rows, setRows] = useState<SoloStatusRow[] | null>(null);
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [presetId, setPresetId] = useState('');
+  const [rewarding, setRewarding] = useState(false);
+  const [tick, setTick] = useState(0);
   const hasSing = lesson.steps.some((st) => st.t === 'lineSing' || st.t === 'fadeRead' || st.t === 'roleplay');
+
+  useEffect(() => {
+    if (!academy?.id) return;
+    fetchPresets(academy.id).then(
+      (ps) => {
+        const plus = ps.filter((p) => p.delta > 0);
+        setPresets(plus);
+        setPresetId((cur) => cur || (plus.find((p) => p.is_homework) ?? plus[0])?.id || '');
+      },
+      () => setPresets([]),
+    );
+  }, [academy?.id]);
 
   useEffect(() => {
     let alive = true;
@@ -626,7 +655,26 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
       alive = false;
       window.clearInterval(timer);
     };
-  }, [lesson.id, notify]);
+  }, [lesson.id, notify, tick]);
+
+  const waiting = (rows ?? []).filter((r) => r.finished_at && !r.rewarded);
+  const rewardedCount = (rows ?? []).filter((r) => r.rewarded).length;
+  const preset = presets.find((p) => p.id === presetId);
+
+  async function give() {
+    if (!preset || waiting.length === 0 || rewarding) return;
+    setRewarding(true);
+    try {
+      const r = await rewardSoloLesson(lesson.id, preset.id, waiting.map((w) => w.student_id), dateKey());
+      if (r.locked) notify(t('solo.rewardLocked'), 'error');
+      else notify(t('solo.rewardGiven', { count: r.given, delta: preset.delta, unit: pointUnit }));
+      setTick((n) => n + 1);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : String(e), 'error');
+    } finally {
+      setRewarding(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true">
@@ -652,6 +700,43 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                 </div>
               );
             })()}
+            {rows.some((r) => r.finished_at) && (
+              <div className="flex flex-wrap items-center gap-3 rounded-xl bg-warm-yellow/30 p-3">
+                <span className="material-symbols-outlined text-deep-navy">savings</span>
+                <div className="min-w-0 flex-1 font-label-md text-label-md text-deep-navy">
+                  {waiting.length > 0 ? (
+                    <>
+                      <b>{t('solo.rewardWaiting', { count: waiting.length })}</b>
+                      <span className="ml-1 font-caption text-caption text-on-surface-variant">{waiting.map((w) => w.name).join(', ')}</span>
+                    </>
+                  ) : (
+                    <b>{t('solo.rewardAllDone', { count: rewardedCount })}</b>
+                  )}
+                </div>
+                {waiting.length > 0 &&
+                  (presets.length === 0 ? (
+                    <span className="font-caption text-caption text-on-surface-variant">{t('solo.rewardNoPreset')}</span>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={presetId}
+                        onChange={(e) => setPresetId(e.target.value)}
+                        aria-label={t('solo.rewardPreset')}
+                        className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm"
+                      >
+                        {presets.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.label} (+{p.delta})
+                          </option>
+                        ))}
+                      </select>
+                      <button type="button" disabled={rewarding} onClick={() => void give()} className="rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary disabled:opacity-40">
+                        {t('solo.rewardGive')}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -669,7 +754,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                       <td className="py-2 pr-3 font-label-md text-label-md text-on-surface">{r.name}</td>
                       <td className="py-2 pr-3">
                         {r.finished_at ? (
-                          <span className="rounded-full bg-secondary-container/60 px-2 py-0.5 font-caption text-caption">{t('solo.finished')}</span>
+                          <span className="rounded-full bg-secondary-container/60 px-2 py-0.5 font-caption text-caption">{t('solo.finished')}{r.rewarded ? ` · ${t('solo.rewardedBadge')}` : ''}</span>
                         ) : r.started_at ? (
                           <span className="font-caption text-caption tabular-nums text-on-surface">
                             {r.progress}/{r.total}

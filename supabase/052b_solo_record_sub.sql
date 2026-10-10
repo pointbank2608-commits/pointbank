@@ -7,6 +7,7 @@ alter table public.solo_recordings drop constraint if exists solo_recordings_ass
 create unique index if not exists solo_recordings_assignment_step_sub_key on public.solo_recordings (assignment_id, step_index, sub);
 
 drop function if exists public.solo_record_save(uuid, uuid, int, text, text, numeric);
+drop function if exists public.solo_record_save(uuid, uuid, int, text, text, numeric, int);
 create function public.solo_record_save(p_token uuid, p_assignment uuid, p_step int, p_mime text, p_b64 text, p_seconds numeric, p_sub int default 0)
 returns jsonb
 language plpgsql security definer set search_path = public

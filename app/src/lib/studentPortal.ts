@@ -32,6 +32,7 @@ export interface PortalLesson {
   total: number;
   done: boolean;
   due_at: string | null;
+  kind?: 'lesson' | 'homework';
 }
 
 export interface PortalHome {

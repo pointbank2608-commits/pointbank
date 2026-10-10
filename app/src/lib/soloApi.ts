@@ -29,6 +29,8 @@ export interface SoloStatusRow {
   wrong_count: number;
   unsure_count: number;
   unsure_steps: number[];
+  kind?: 'lesson' | 'homework';
+  rewarded?: boolean;
 }
 
 /* ---------------- 선생님 ---------------- */
@@ -80,8 +82,9 @@ export async function deleteSoloLesson(id: string) {
   if (error) throw new Error(error.message);
 }
 
-export async function assignSoloLesson(lessonId: string, studentIds: string[], dueAt: string | null): Promise<number> {
-  const { data, error } = await supabase.rpc('solo_assign', { p_lesson: lessonId, p_students: studentIds, p_due: dueAt });
+export async function assignSoloLesson(lessonId: string, studentIds: string[], dueAt: string | null, kind: 'lesson' | 'homework' = 'lesson'): Promise<number> {
+  // 053 을 아직 안 돌린 서버(종류 칸이 없는 함수)에서도 오늘의 수업은 낼 수 있게, 숙제일 때만 종류를 보낸다
+  const { data, error } = await supabase.rpc('solo_assign', { p_lesson: lessonId, p_students: studentIds, p_due: dueAt, ...(kind === 'homework' ? { p_kind: kind } : {}) });
   if (error) throw new Error(error.message);
   return Number(data ?? 0);
 }
@@ -90,6 +93,13 @@ export async function fetchSoloStatus(lessonId: string): Promise<SoloStatusRow[]
   const { data, error } = await supabase.rpc('solo_status', { p_lesson: lessonId });
   if (error) throw new Error(error.message);
   return (data ?? []) as SoloStatusRow[];
+}
+
+/** 끝낸 학생에게 통장 포인트를 한 번만 준다(053) */
+export async function rewardSoloLesson(lessonId: string, presetId: string, studentIds: string[], today: string): Promise<{ given: number; locked: boolean }> {
+  const { data, error } = await supabase.rpc('solo_reward', { p_lesson: lessonId, p_preset: presetId, p_students: studentIds, p_today: today });
+  if (error) throw new Error(error.message);
+  return data as { given: number; locked: boolean };
 }
 
 /** 이 반 학생들에게 낸 수업 수(목록 배지용) */
@@ -277,4 +287,13 @@ export async function fetchSharedRecording(token: string): Promise<SharedRecordi
   const r = data as (SharedRecording & { error?: string }) | null;
   if (!r || r.error) return null;
   return r;
+}
+
+/** 개별수업 내용 고치기(이름·시간·단계). 이미 낸 학생의 진행(단계 번호)은 그대로라, 낸 수업을 고칠 땐 편집기가 경고한다. */
+export async function updateSoloLesson(id: string, patch: { name: string; minutes: number; steps: SoloStep[] }) {
+  const { error } = await supabase
+    .from('solo_lessons')
+    .update({ name: patch.name, minutes: patch.minutes, steps: patch.steps, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
 }

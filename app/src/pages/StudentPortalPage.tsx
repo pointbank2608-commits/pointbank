@@ -213,7 +213,10 @@ function HomeView({
               >
                 <span className="material-symbols-outlined text-[28px]">{l.done ? 'task_alt' : 'play_circle'}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-xl font-bold">{l.name}</span>
+                  <span className="block truncate text-xl font-bold">
+                    {l.kind === 'homework' && <span className="mr-2 rounded-full bg-deep-navy/80 px-2 py-0.5 align-middle text-sm text-white">{t('studentPortal.homeworkTag')}</span>}
+                    {l.name}
+                  </span>
                   <span className="block text-sm opacity-75">
                     {l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
                   </span>
