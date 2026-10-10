@@ -1,4 +1,5 @@
 import type { RoleplayLine, SoloClip, SoloStep } from './soloLessons';
+import type { FullCardItem } from './types';
 import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
 
 /**
@@ -148,6 +149,40 @@ export function normalizeStep(step: SoloStep): SoloStep {
     default:
       return step;
   }
+}
+
+/** 같은 종류가 이어진 단계 묶음 = 블록(양 끝 포함) */
+export interface StepRun {
+  start: number;
+  end: number;
+  t: SoloStep['t'];
+}
+
+export function stepRuns(steps: SoloStep[]): StepRun[] {
+  const runs: StepRun[] = [];
+  steps.forEach((s, i) => {
+    const last = runs[runs.length - 1];
+    if (last && last.t === s.t && s.t !== 'intro') last.end = i;
+    else runs.push({ start: i, end: i, t: s.t });
+  });
+  return runs;
+}
+
+/** 수업 안 단계에서 낱말(영어·뜻·그림·예문)을 모은다 — 블록을 다시 만들거나 새로 추가할 때 쓴다 */
+export function wordsFromSteps(steps: SoloStep[]): FullCardItem[] {
+  const map = new Map<string, FullCardItem>();
+  const put = (word: string, patch: Partial<FullCardItem>) => {
+    const key = word.trim().toLowerCase();
+    if (!key) return;
+    const cur = map.get(key) ?? { id: `w-${key}`, word: word.trim(), meaning: '', imageUrl: null };
+    map.set(key, { ...cur, ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined && v !== null && v !== '')) });
+  };
+  for (const s of steps) {
+    if (s.t === 'meet') put(s.word, { meaning: s.meaning, imageUrl: s.imageUrl, example: s.example });
+    else if (s.t === 'typeWord' || s.t === 'spell') put(s.word, { meaning: s.meaning, imageUrl: s.imageUrl });
+    else if (s.t === 'pickMeaning') put(s.word, { imageUrl: s.imageUrl, meaning: s.options[s.answer] });
+  }
+  return [...map.values()].filter((w) => w.meaning.trim());
 }
 
 /** 단계 목록 한 줄 요약(왼쪽 목록에 보인다) */

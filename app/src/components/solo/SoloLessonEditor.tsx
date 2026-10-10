@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { createSoloLesson, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
-import { kindOf, lessonProblems, newStep, normalizeStep, STEP_KINDS, stepProblems, stepSummary } from '../../lib/soloEdit';
+import { kindOf, lessonProblems, newStep, normalizeStep, STEP_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
+import { buildWordBlock, WORD_BLOCK_TYPES, type WordBlockType } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
 import SoloPasteWords from './SoloPasteWords';
 import SoloPreview from './SoloPreview';
@@ -38,6 +39,8 @@ export default function SoloLessonEditor({
   const [preview, setPreview] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(startWithPaste);
+  const [view, setView] = useState<'blocks' | 'steps'>('blocks');
+  const [openRuns, setOpenRuns] = useState<Set<number>>(new Set());
   const [problems, setProblems] = useState<{ index: number; keys: string[] }[]>([]);
   const [asking, setAsking] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -117,6 +120,39 @@ export default function SoloLessonEditor({
   const step = steps[sel];
   const problemSet = new Set(problems.map((p) => p.index));
 
+  const renderStep = (i: number) => {
+    const s = steps[i];
+    const k = kindOf(s.t);
+    const bad = problemSet.has(i);
+    const summary = stepSummary(s);
+    return (
+                <li
+                  key={i}
+                  draggable
+                  onDragStart={() => setDragFrom(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (dragFrom !== null) move(dragFrom, i);
+                    setDragFrom(null);
+                  }}
+                  onDragEnd={() => setDragFrom(null)}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSel(i)}
+                    className={`flex w-full items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-colors ${sel === i ? 'border-primary bg-primary/10' : 'border-outline-variant/40 bg-surface-container-lowest hover:border-primary/50'} ${dragFrom === i ? 'opacity-50' : ''}`}
+                  >
+                    <span className="w-5 shrink-0 text-center font-caption text-caption tabular-nums text-on-surface-variant">{i + 1}</span>
+                    <span className={`material-symbols-outlined shrink-0 text-[20px] ${bad ? 'text-error' : 'text-primary'}`}>{bad ? 'error' : k.icon}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-label-md text-label-md text-on-surface">{t(`soloEdit.stepType_${s.t}`)}</span>
+                      <span className="block truncate font-caption text-caption text-on-surface-variant">{summary || t('soloEdit.emptyStep')}</span>
+                    </span>
+                  </button>
+                </li>
+    );
+  };
+
   function move(from: number, to: number) {
     if (to < 0 || to >= steps.length || from === to) return;
     const next = [...steps];
@@ -152,6 +188,76 @@ export default function SoloLessonEditor({
     setPasteOpen(false);
     setPaletteOpen(false);
   }
+  /* ---------- 블록(같은 종류 단계 묶음) 단위 ---------- */
+  const runs = stepRuns(steps);
+  const lessonWords = wordsFromSteps(steps);
+  const canWordBlocks = lessonWords.length >= 4;
+  const runIndexOf = (i: number) => runs.findIndex((r) => i >= r.start && i <= r.end);
+  const isWordBlock = (t: SoloStep['t']) => (WORD_BLOCK_TYPES as readonly string[]).includes(t);
+
+  function moveRun(ri: number, dir: -1 | 1) {
+    const to = ri + dir;
+    if (to < 0 || to >= runs.length) return;
+    const groups = runs.map((r) => steps.slice(r.start, r.end + 1));
+    const [g] = groups.splice(ri, 1);
+    groups.splice(to, 0, g);
+    const next = groups.flat();
+    commit(next);
+    let start = 0;
+    for (let k = 0; k < to; k++) start += groups[k].length;
+    setSel(start);
+  }
+  function duplicateRun(ri: number) {
+    const r = runs[ri];
+    const copy = JSON.parse(JSON.stringify(steps.slice(r.start, r.end + 1))) as SoloStep[];
+    // 바로 뒤에 두면 같은 종류끼리 한 블록으로 합쳐 보이므로 맨 끝에 두고, 위로 옮기게 한다
+    commit([...steps, ...copy]);
+    setSel(steps.length);
+    notify(t('soloEdit.blockCopied'));
+  }
+  function removeRun(ri: number) {
+    const r = runs[ri];
+    const count = r.end - r.start + 1;
+    if (steps.length - count < 1) return;
+    if (count > 1 && !window.confirm(t('soloEdit.blockDeleteConfirm', { name: t(`soloEdit.stepType_${r.t}`), count }))) return;
+    commit(steps.filter((_, j) => j < r.start || j > r.end));
+    setSel(Math.max(0, Math.min(r.start, steps.length - count - 1)));
+  }
+  function regenerateRun(ri: number) {
+    const r = runs[ri];
+    if (!isWordBlock(r.t)) return;
+    const made = buildWordBlock(r.t as WordBlockType, lessonWords);
+    if (made.length === 0) {
+      notify(t('soloEdit.blockRegenEmpty'), 'error');
+      return;
+    }
+    if (!window.confirm(t('soloEdit.blockRegenConfirm', { count: r.end - r.start + 1, made: made.length }))) return;
+    const next = [...steps.slice(0, r.start), ...made, ...steps.slice(r.end + 1)];
+    commit(next);
+    setSel(r.start);
+  }
+  function addWordBlock(type: WordBlockType) {
+    const made = buildWordBlock(type, lessonWords);
+    if (made.length === 0) {
+      notify(t('soloEdit.blockRegenEmpty'), 'error');
+      return;
+    }
+    const ri = runIndexOf(sel);
+    const at = ri >= 0 ? runs[ri].end + 1 : steps.length;
+    const next = [...steps];
+    next.splice(at, 0, ...made);
+    commit(next);
+    setSel(at);
+    setPaletteOpen(false);
+  }
+  const toggleRun = (start: number) =>
+    setOpenRuns((cur) => {
+      const n = new Set(cur);
+      if (n.has(start)) n.delete(start);
+      else n.add(start);
+      return n;
+    });
+
   function edit(s: SoloStep) {
     commit(steps.map((x, j) => (j === sel ? s : x)), { field: sel });
   }
@@ -252,38 +358,89 @@ export default function SoloLessonEditor({
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* 왼쪽: 단계 목록 */}
         <aside className="flex max-h-[34vh] shrink-0 flex-col border-b border-outline-variant/40 bg-surface-container-low/50 lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r">
-          <ol className="flex-1 space-y-1.5 overflow-y-auto p-2">
-            {steps.map((s, i) => {
-              const k = kindOf(s.t);
-              const bad = problemSet.has(i);
-              const summary = stepSummary(s);
-              return (
-                <li
-                  key={i}
-                  draggable
-                  onDragStart={() => setDragFrom(i)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => {
-                    if (dragFrom !== null) move(dragFrom, i);
-                    setDragFrom(null);
-                  }}
-                  onDragEnd={() => setDragFrom(null)}
+          <div className="flex items-center gap-1 border-b border-outline-variant/40 px-2 py-1.5">
+            <div className="flex rounded-full bg-surface-container p-0.5" role="radiogroup" aria-label={t('soloEdit.viewLabel')}>
+              {(['blocks', 'steps'] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={view === v}
+                  onClick={() => setView(v)}
+                  className={`rounded-full px-3 py-1 font-label-md text-label-md ${view === v ? 'bg-primary text-on-primary' : 'text-on-surface-variant'}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setSel(i)}
-                    className={`flex w-full items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-colors ${sel === i ? 'border-primary bg-primary/10' : 'border-outline-variant/40 bg-surface-container-lowest hover:border-primary/50'} ${dragFrom === i ? 'opacity-50' : ''}`}
-                  >
-                    <span className="w-5 shrink-0 text-center font-caption text-caption tabular-nums text-on-surface-variant">{i + 1}</span>
-                    <span className={`material-symbols-outlined shrink-0 text-[20px] ${bad ? 'text-error' : 'text-primary'}`}>{bad ? 'error' : k.icon}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-label-md text-label-md text-on-surface">{t(`soloEdit.stepType_${s.t}`)}</span>
-                      <span className="block truncate font-caption text-caption text-on-surface-variant">{summary || t('soloEdit.emptyStep')}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
+                  {t(`soloEdit.view_${v}`)}
+                </button>
+              ))}
+            </div>
+            {view === 'blocks' && (
+              <button
+                type="button"
+                onClick={() => setOpenRuns((cur) => (cur.size > 0 ? new Set() : new Set(runs.filter((r) => r.end > r.start).map((r) => r.start))))}
+                className="ml-auto font-caption text-caption text-primary hover:underline"
+              >
+                {openRuns.size > 0 ? t('soloEdit.collapseAll') : t('soloEdit.expandAll')}
+              </button>
+            )}
+          </div>
+          <ol className="flex-1 space-y-1.5 overflow-y-auto p-2">
+            {view === 'steps'
+              ? steps.map((_, i) => renderStep(i))
+              : runs.map((r, ri) => {
+                  const count = r.end - r.start + 1;
+                  const open = r.t === 'intro' ? false : openRuns.has(r.start) || (sel >= r.start && sel <= r.end);
+                  const single = count === 1;
+                  const k = kindOf(r.t);
+                  const bad = problems.some((p) => p.index >= r.start && p.index <= r.end);
+                  const btn = 'rounded p-0.5 text-on-surface-variant hover:bg-surface-container hover:text-primary disabled:opacity-30';
+                  return (
+                    <li key={`run-${r.start}`} className="space-y-1">
+                      <div className={`flex items-center gap-1 rounded-xl border px-2 py-1.5 ${sel >= r.start && sel <= r.end ? 'border-primary/60 bg-primary/5' : 'border-outline-variant/40 bg-surface-container-lowest'}`}>
+                        <button
+                          type="button"
+                          onClick={() => (single ? setSel(r.start) : toggleRun(r.start))}
+                          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+                          aria-expanded={open}
+                        >
+                          <span className="material-symbols-outlined shrink-0 text-[18px] text-on-surface-variant">
+                            {single ? 'chevron_right' : open ? 'expand_more' : 'chevron_right'}
+                          </span>
+                          <span className={`material-symbols-outlined shrink-0 text-[20px] ${bad ? 'text-error' : 'text-primary'}`}>{bad ? 'error' : k.icon}</span>
+                          <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{t(`soloEdit.stepType_${r.t}`)}</span>
+                          <span className="shrink-0 rounded-full bg-surface-container px-1.5 py-0.5 font-caption text-caption tabular-nums text-on-surface-variant">
+                            {r.start + 1}{count > 1 ? `–${r.end + 1}` : ''}
+                          </span>
+                        </button>
+                        {r.t !== 'intro' && (
+                          <span className="flex shrink-0 items-center">
+                            {canWordBlocks && isWordBlock(r.t) && (
+                              <button type="button" onClick={() => regenerateRun(ri)} title={t('soloEdit.blockRegen')} aria-label={t('soloEdit.blockRegen')} className={btn}>
+                                <span className="material-symbols-outlined text-[18px]">autorenew</span>
+                              </button>
+                            )}
+                            <button type="button" disabled={ri <= 1} onClick={() => moveRun(ri, -1)} title={t('soloEdit.blockUp')} aria-label={t('soloEdit.blockUp')} className={btn}>
+                              <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+                            </button>
+                            <button type="button" disabled={ri >= runs.length - 1} onClick={() => moveRun(ri, 1)} title={t('soloEdit.blockDown')} aria-label={t('soloEdit.blockDown')} className={btn}>
+                              <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
+                            </button>
+                            <button type="button" onClick={() => duplicateRun(ri)} title={t('soloEdit.blockCopy')} aria-label={t('soloEdit.blockCopy')} className={btn}>
+                              <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                            </button>
+                            <button type="button" onClick={() => removeRun(ri)} title={t('soloEdit.blockDelete')} aria-label={t('soloEdit.blockDelete')} className={`${btn} hover:text-error`}>
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                      {(open || single) && (
+                        <ol className="space-y-1.5 pl-3">
+                          {Array.from({ length: count }, (_, j) => r.start + j).map((i) => renderStep(i))}
+                        </ol>
+                      )}
+                    </li>
+                  );
+                })}
           </ol>
           <div className="relative border-t border-outline-variant/40 p-2">
             <button type="button" onClick={() => setPaletteOpen((o) => !o)} className="flex w-full items-center justify-center gap-1 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container">
@@ -296,6 +453,24 @@ export default function SoloLessonEditor({
                   <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
                   {t('soloEdit.pasteOpen')}
                 </button>
+                <div>
+                  <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t('soloEdit.addBlockGroup')}</div>
+                  {!canWordBlocks && <p className="mb-1 font-caption text-caption text-on-surface-variant">{t('soloEdit.addBlockNeed')}</p>}
+                  <div className="grid grid-cols-2 gap-1">
+                    {WORD_BLOCK_TYPES.map((bt) => (
+                      <button
+                        key={bt}
+                        type="button"
+                        disabled={!canWordBlocks}
+                        onClick={() => addWordBlock(bt)}
+                        className="flex items-center gap-1.5 rounded-lg border border-outline-variant/50 px-2 py-1.5 text-left font-label-md text-label-md text-on-surface hover:border-primary hover:bg-primary/5 disabled:opacity-40"
+                      >
+                        <span className="material-symbols-outlined text-[18px] text-primary">{kindOf(bt).icon}</span>
+                        <span className="truncate">{t(`soloEdit.stepType_${bt}`)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {groups.map((g) => (
                   <div key={g}>
                     <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t(`soloEdit.group_${g}`)}</div>

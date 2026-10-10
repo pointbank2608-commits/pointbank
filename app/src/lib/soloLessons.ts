@@ -145,6 +145,68 @@ export function buildSoloWordSteps(title: string, words: FullCardItem[], pool?: 
   return steps;
 }
 
+/* ---------------- 낱말 블록(편집기에서 블록 하나만 새로 만들 때) ---------------- */
+
+export const WORD_BLOCK_TYPES = ['meet', 'pickWord', 'pickMeaning', 'listenPick', 'spell', 'typeWord', 'fillBlank', 'dictation'] as const;
+export type WordBlockType = (typeof WORD_BLOCK_TYPES)[number];
+
+/**
+ * 수업의 낱말 전체로 활동 블록 하나(같은 종류 단계 묶음)를 만든다. 낱말이 모자라거나 그 활동에 맞는 낱말이 없으면 빈 배열.
+ * 보기는 같은 낱말 목록에서 뽑는다.
+ */
+export function buildWordBlock(type: WordBlockType, words: FullCardItem[]): SoloStep[] {
+  const usable = words.filter((w) => w.word.trim() && w.meaning.trim());
+  if (usable.length < 4) return [];
+  const wordsOnly = usable.map((w) => w.word);
+  const meanings = usable.map((w) => w.meaning);
+  const typable = usable.filter((w) => /^[a-z' .-]{1,20}$/i.test(w.word.trim()));
+  switch (type) {
+    case 'meet':
+      return usable.map((w) => ({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null }));
+    case 'pickWord':
+      return shuffle(usable).map((w) => {
+        const o = options(w.word, wordsOnly);
+        return { t: 'pickWord', imageUrl: w.imageUrl, meaning: w.meaning, options: o.list, answer: o.answer };
+      });
+    case 'pickMeaning':
+      return shuffle(usable).map((w) => {
+        const o = options(w.meaning, meanings);
+        return { t: 'pickMeaning', word: w.word, imageUrl: w.imageUrl, options: o.list, answer: o.answer };
+      });
+    case 'listenPick':
+      return shuffle(usable).map((w) => {
+        const others = shuffle(usable.filter((x) => x.word !== w.word)).slice(0, 3);
+        const list = shuffle([w, ...others]);
+        return { t: 'listenPick', word: w.word, options: list.map((x) => x.word), images: list.map((x) => x.imageUrl), answer: list.indexOf(w) };
+      });
+    case 'spell':
+      return shuffle(usable.filter((w) => /^[a-z]{3,8}$/i.test(w.word.trim()))).map((w) => ({
+        t: 'spell',
+        word: w.word.trim().toLowerCase(),
+        meaning: w.meaning,
+        imageUrl: w.imageUrl,
+        letters: scrambleLetters(w.word),
+      }));
+    case 'typeWord':
+      return shuffle(typable).map((w) => {
+        const word = w.word.trim().toLowerCase();
+        return { t: 'typeWord', word, meaning: w.meaning, imageUrl: w.imageUrl, length: word.length, first: word[0] ?? '' };
+      });
+    case 'fillBlank':
+      return shuffle(usable).flatMap((w): SoloStep[] => {
+        const blank = w.example ? blankSentence(w.example, w.word.trim()) : null;
+        if (!blank) return [];
+        const o = options(w.word, [w.word, ...wordsOnly.filter((x) => x !== w.word)]);
+        return [{ t: 'fillBlank', sentence: blank, meaning: w.meaning, options: o.list, answer: o.answer }];
+      });
+    case 'dictation':
+      return shuffle(typable).map((w) => {
+        const word = w.word.trim().toLowerCase();
+        return { t: 'dictation', word, length: word.length };
+      });
+  }
+}
+
 /* ---------------- 단어: 쓰기 중심(중학생용) ---------------- */
 
 /** 예문에서 낱말을 ____ 로 비운다(낱말 그대로 나올 때만). 못 비우면 null. */
