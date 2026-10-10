@@ -17,11 +17,14 @@ export default function SoloLessonEditor({
   lesson,
   academyId,
   assignedCount,
+  startWithPaste = false,
   onClose,
 }: {
   lesson: SoloLesson;
   academyId: string;
   assignedCount: number;
+  /** 새 수업이면 단어 붙여넣기 창부터 연다 */
+  startWithPaste?: boolean;
   /** saved 가 true 면 목록을 다시 불러온다 */
   onClose: (saved: boolean) => void;
 }) {
@@ -34,7 +37,7 @@ export default function SoloLessonEditor({
   const [dirty, setDirty] = useState(false);
   const [preview, setPreview] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(startWithPaste);
   const [problems, setProblems] = useState<{ index: number; keys: string[] }[]>([]);
   const [asking, setAsking] = useState(false);
   const [saving, setSaving] = useState(false);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -17,35 +17,18 @@ import {
   type SoloLesson,
   type SoloStatusRow,
 } from '../../lib/soloApi';
-import { grammarLevelTag } from '../../lib/grammar';
-import {
-  buildSoloDayLessons,
-  buildSoloFromCatalog,
-  buildSoloGrammarLesson,
-  buildSoloRainbowLesson,
-  buildSoloSongLesson,
-  songTimedLineCount,
-  SOLO_CATALOG,
-  SOLO_GRAMMAR_POINTS,
-  type SoloCatalogItem,
-  type SoloStep,
-  type SoloWordStyle,
-} from '../../lib/soloLessons';
 import type { Student } from '../../lib/types';
-import { extractYoutubeId } from '../../lib/youtube';
-import { loadWordBank } from '../../lib/wordBankCache';
-import { parseShadowText } from '../../lib/shadowLines';
 import RecordingsModal from './RecordingsModal';
+import SoloCatalogModal from './SoloCatalogModal';
 import SoloLessonEditor from './SoloLessonEditor';
 import SoloPreview from './SoloPreview';
-import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
 
 /**
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
  * 만들기 = "커리큘럼 보기"에서 미리 만든 수업을 골라 이 반 것으로 가져온다 → 학생에게 내기 → 현황 보기.
  */
 export default function SoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { notify } = useToast();
   const [lessons, setLessons] = useState<SoloLesson[]>([]);
   const [counts, setCounts] = useState<Map<string, { total: number; done: number }>>(new Map());
@@ -53,6 +36,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [preview, setPreview] = useState<SoloLesson | null>(null);
   const [editing, setEditing] = useState<SoloLesson | null>(null);
+  const [startPaste, setStartPaste] = useState(false);
   const [assigning, setAssigning] = useState<SoloLesson | null>(null);
   const [statusOf, setStatusOf] = useState<SoloLesson | null>(null);
   const [recordsOf, setRecordsOf] = useState<{ lesson: SoloLesson; row: SoloStatusRow } | null>(null);
@@ -165,7 +149,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       )}
 
       {catalogOpen && classId && (
-        <CatalogModal
+        <SoloCatalogModal
           onClose={() => setCatalogOpen(false)}
           onBatch={async (lessons, level, source) => {
             try {
@@ -179,17 +163,21 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
               notify(e instanceof Error ? e.message : String(e), 'error');
             }
           }}
-          onPick={async (item) => {
+          onScratch={async (name, withPaste) => {
             try {
-              const built = buildSoloFromCatalog(item, await loadWordBank(), i18n.language);
-              if (!built) {
-                notify(t('solo.buildFailed'), 'error');
-                return;
-              }
-              await createSoloLesson({ academyId, classId, name: built.name, level: item.level, minutes: item.minutes, steps: built.steps, source: item.id });
-              notify(t('solo.created', { name: built.name }));
+              const created = await createSoloLesson({
+                academyId,
+                classId,
+                name,
+                level: null,
+                minutes: 10,
+                steps: [{ t: 'intro', title: name, text: t('solo.scratchIntro') }],
+                source: 'scratch',
+              });
               setCatalogOpen(false);
               void reload();
+              setStartPaste(withPaste);
+              setEditing(created);
             } catch (e) {
               notify(e instanceof Error ? e.message : String(e), 'error');
             }
@@ -201,6 +189,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
         <SoloLessonEditor
           lesson={editing}
           academyId={academyId}
+          startWithPaste={startPaste}
           assignedCount={counts.get(editing.id)?.total ?? 0}
           onClose={(saved) => {
             setEditing(null);
@@ -221,335 +210,6 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       )}
       {statusOf && <StatusModal lesson={statusOf} onClose={() => setStatusOf(null)} onRecords={(row) => setRecordsOf({ lesson: statusOf, row })} />}
       {recordsOf && <RecordingsModal lesson={recordsOf.lesson} row={recordsOf.row} onClose={() => setRecordsOf(null)} />}
-    </div>
-  );
-}
-
-/* ---------------- 커리큘럼 보기(미리 만든 개별수업) ---------------- */
-
-type BatchLesson = { name: string; steps: SoloStep[]; minutes: number };
-
-function CatalogModal({
-  onClose,
-  onPick,
-  onBatch,
-}: {
-  onClose: () => void;
-  onPick: (item: SoloCatalogItem) => Promise<void>;
-  onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
-}) {
-  const { t, i18n } = useTranslation();
-  const { notify } = useToast();
-  const [busy, setBusy] = useState<string | null>(null);
-  const ko = i18n.language.startsWith('ko');
-  const tracks: { id: SoloCatalogItem['track']; icon: string }[] = [
-    { id: 'word', icon: 'abc' },
-    { id: 'grammar', icon: 'rule' },
-    { id: 'talk', icon: 'forum' },
-    { id: 'rainbow', icon: 'palette' },
-    { id: 'video', icon: 'movie' },
-  ];
-
-  // 교육부 초등 800 · DAY별(하루 분량과 활동 방식은 만들 때 정한다)
-  const [day, setDay] = useState(1);
-  const [per, setPer] = useState(10);
-  const [style, setStyle] = useState<SoloWordStyle>('writing');
-
-  async function makeDay() {
-    setBusy('moe800');
-    try {
-      const lessons = buildSoloDayLessons(await loadWordBank(), { day, perLesson: per, style, baseName: t('solo.moe800Name', { day }) });
-      if (lessons.length === 0) {
-        notify(t('solo.moe800Missing'), 'error');
-        return;
-      }
-      await onBatch(lessons, t('solo.moe800Level'), `solo-moe800-d${day}-${style}-${per}`);
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  // 노래 수업: 유튜브 링크 + 가사(선생님이 붙여넣기 — 이 수업 안에만 저장된다)
-  const [songUrl, setSongUrl] = useState('');
-  const [songTitle, setSongTitle] = useState('');
-  const [songText, setSongText] = useState('');
-  const songLines = useMemo(() => parseShadowText(songText).length, [songText]);
-  const songTimed = useMemo(() => songTimedLineCount(songText), [songText]);
-  async function makeSong() {
-    const videoId = extractYoutubeId(songUrl);
-    if (!videoId || !songTitle.trim()) return;
-    setBusy('song');
-    try {
-      const lesson = buildSoloSongLesson({ title: songTitle.trim(), videoId, source: songText }, await loadWordBank());
-      if (!lesson) {
-        notify(t('solo.songTooShort'), 'error');
-        return;
-      }
-      await onBatch([lesson], t('solo.songLevel'), 'solo-song');
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  // 문법: 묶음(초등 Level / 중1~3)별 목록
-  const grammarGroups = useMemo(() => {
-    const map = new Map<string, typeof SOLO_GRAMMAR_POINTS>();
-    for (const p of SOLO_GRAMMAR_POINTS) {
-      const key = p.stage === 'elementary' ? `L${p.level}` : `G${p.level}`;
-      map.set(key, [...(map.get(key) ?? []), p]);
-    }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, []);
-
-  async function makeGrammar(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
-    setBusy(label);
-    try {
-      await onBatch(points.map(buildSoloGrammarLesson), label, `solo-grammar-${points[0]?.id ?? ''}`);
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`;
-  const select = 'rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary';
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true">
-      <div className="my-6 w-full max-w-3xl space-y-4 rounded-2xl bg-surface-container-lowest p-5 shadow-xl">
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[24px] text-primary">route</span>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-title-md text-title-md font-bold text-deep-navy">{t('solo.catalogTitle')}</h3>
-            <p className="font-caption text-caption text-on-surface-variant">{t('solo.catalogHint')}</p>
-          </div>
-          <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {tracks.map((tr) => (
-          <div key={tr.id} className="space-y-2">
-            <div className="flex items-center gap-1.5 font-label-md text-label-md font-bold text-deep-navy">
-              <span className="material-symbols-outlined text-[18px] text-primary">{tr.icon}</span>
-              {t(`solo.track_${tr.id}`)}
-            </div>
-
-            {tr.id === 'word' && (
-              <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
-                <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.moe800Title')}</div>
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.moe800Hint')}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {Array.from({ length: 16 }, (_, i) => i + 1).map((d) => (
-                    <button key={d} type="button" onClick={() => setDay(d)} className={chip(day === d)}>
-                      DAY {d}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap items-end gap-4">
-                  <label className="space-y-1">
-                    <span className="block font-caption text-caption text-on-surface-variant">{t('solo.perLesson')}</span>
-                    <select value={per} onChange={(e) => setPer(Number(e.target.value))} className={select}>
-                      {[5, 10, 15, 20, 25, 50].map((n) => (
-                        <option key={n} value={n}>
-                          {t('solo.perLessonOption', { n, lessons: Math.ceil(50 / n) })}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="space-y-1">
-                    <span className="block font-caption text-caption text-on-surface-variant">{t('solo.styleLabel')}</span>
-                    <div className="flex gap-1.5">
-                      {(['writing', 'picture'] as const).map((st) => (
-                        <button key={st} type="button" onClick={() => setStyle(st)} className={chip(style === st)}>
-                          {t(`solo.style_${st}`)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={busy !== null}
-                    onClick={() => void makeDay()}
-                    className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50"
-                  >
-                    {busy === 'moe800' ? t('common.loading') : t('solo.makeDay', { day })}
-                  </button>
-                </div>
-                <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
-              </div>
-            )}
-
-            {tr.id === 'rainbow' && (
-              <div className="space-y-2">
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.rainbowHint')}</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(['speak', 'structure'] as const).map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      disabled={busy !== null}
-                      onClick={async () => {
-                        setBusy(`rainbow-${k}`);
-                        try {
-                          await onBatch([buildSoloRainbowLesson(k, t(`rainbow.mode_${k}`))], t('solo.rainbowLevel'), `rainbow-${k}`);
-                        } finally {
-                          setBusy(null);
-                        }
-                      }}
-                      className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[22px] text-primary">{k === 'speak' ? 'palette' : 'account_tree'}</span>
-                        <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{t(`rainbow.mode_${k}`)}</span>
-                      </div>
-                      <div className="font-caption text-caption text-on-surface-variant">{t(`rainbow.modeHint_${k}`)}</div>
-                      {busy === `rainbow-${k}` && <div className="font-caption text-caption text-primary">{t('common.loading')}</div>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {tr.id === 'talk' && (
-              <div className="space-y-2">
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.talkHint')}</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {SOLO_SCENARIOS.map((sc) => (
-                    <button
-                      key={sc.id}
-                      type="button"
-                      disabled={busy !== null}
-                      onClick={async () => {
-                        setBusy(sc.id);
-                        try {
-                          const lesson = buildSoloScenarioLesson(sc, await loadWordBank(), i18n.language);
-                          if (!lesson) {
-                            notify(t('solo.buildFailed'), 'error');
-                            return;
-                          }
-                          await onBatch([lesson], t('solo.talkLevel'), sc.id);
-                        } finally {
-                          setBusy(null);
-                        }
-                      }}
-                      className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[22px] text-primary">{sc.icon}</span>
-                        <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{ko ? sc.ko : sc.en}</span>
-                        <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t('recipes.minutes', { n: 20 })}</span>
-                      </div>
-                      <div className="font-caption text-caption text-on-surface-variant">{ko ? sc.koDesc : sc.enDesc}</div>
-                      {busy === sc.id && <div className="font-caption text-caption text-primary">{t('common.loading')}</div>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {tr.id === 'video' && (
-              <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
-                <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.songTitle')}</div>
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.songHint')}</p>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <input value={songTitle} onChange={(e) => setSongTitle(e.target.value)} placeholder={t('solo.songNamePlaceholder')} className={`${select} w-full`} />
-                  <input value={songUrl} onChange={(e) => setSongUrl(e.target.value)} placeholder={t('solo.songUrlPlaceholder')} className={`${select} w-full`} />
-                </div>
-                <textarea
-                  value={songText}
-                  onChange={(e) => setSongText(e.target.value)}
-                  rows={7}
-                  placeholder={t('solo.songTextPlaceholder')}
-                  className={`${select} w-full font-mono`}
-                />
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    disabled={busy !== null || !extractYoutubeId(songUrl) || !songTitle.trim() || songLines < 4}
-                    onClick={() => void makeSong()}
-                    className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-50"
-                  >
-                    {busy === 'song' ? t('common.loading') : t('solo.makeSong')}
-                  </button>
-                  <span className="font-caption text-caption text-on-surface-variant">{t('solo.songLineCount', { lines: songLines, timed: songTimed })}</span>
-                </div>
-                {songLines > 0 && songTimed < songLines / 2 && <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 font-caption text-caption text-on-surface">{t('solo.songNoTimes')}</p>}
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.songCopyright')}</p>
-              </div>
-            )}
-
-            {tr.id === 'grammar' && (
-              <div className="space-y-2">
-                <p className="font-caption text-caption text-on-surface-variant">{t('solo.grammarHint')}</p>
-                {grammarGroups.map(([key, points]) => {
-                  const label = grammarLevelTag(points[0]);
-                  return (
-                    <details key={key} className="rounded-xl border border-outline-variant/50 bg-surface-container-lowest">
-                      <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 font-label-md text-label-md text-on-surface">
-                        <span className="flex-1">
-                          {label} <span className="font-caption text-caption text-on-surface-variant">· {t('solo.grammarCount', { count: points.length })}</span>
-                        </span>
-                        <button
-                          type="button"
-                          disabled={busy !== null}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (window.confirm(t('solo.makeAllConfirm', { count: points.length, label }))) void makeGrammar(points, label);
-                          }}
-                          className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-50"
-                        >
-                          {busy === label ? t('common.loading') : t('solo.makeAll')}
-                        </button>
-                      </summary>
-                      <div className="grid gap-1.5 px-3 pb-3 sm:grid-cols-2">
-                        {points.map((p) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            disabled={busy !== null}
-                            onClick={() => void makeGrammar([p], label)}
-                            className="truncate rounded-lg border border-outline-variant/50 px-3 py-2 text-left font-body-sm text-body-sm text-on-surface transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
-                          >
-                            {p.name}
-                          </button>
-                        ))}
-                      </div>
-                    </details>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="grid gap-2 sm:grid-cols-2">
-              {SOLO_CATALOG.filter((c) => c.track === tr.id).map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  disabled={!!c.soon || busy !== null}
-                  onClick={async () => {
-                    setBusy(c.id);
-                    await onPick(c);
-                    setBusy(null);
-                  }}
-                  className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[22px] text-primary">{c.icon}</span>
-                    <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{ko ? c.ko : c.en}</span>
-                    {c.soon ? (
-                      <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t('solo.soon')}</span>
-                    ) : (
-                      <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t('recipes.minutes', { n: c.minutes })}</span>
-                    )}
-                  </div>
-                  <div className="font-caption text-caption text-on-surface-variant">{ko ? c.koDesc : c.enDesc}</div>
-                  {busy === c.id && <div className="font-caption text-caption text-primary">{t('common.loading')}</div>}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
