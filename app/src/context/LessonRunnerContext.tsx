@@ -14,7 +14,7 @@ import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   icon: string;
@@ -85,7 +85,7 @@ const STORAGE_KEY = 'classbank.lessonRunner';
 
 /** 발표 중 PPT처럼 Space·Enter·방향키·클릭으로 넘기는 슬라이드 — 게임·영상·워크시트·웹페이지는 그 키·클릭이
  * 그 화면의 조작이라 빼고, 클리커(PageDown/PageUp)로만 넘긴다. */
-export const PPT_KEY_KINDS: RunnerStep['kind'][] = ['image', 'canvas', 'grammar', 'reading', 'shadow', 'qna', 'drill', 'study', 'wordshow', 'attendance'];
+export const PPT_KEY_KINDS: RunnerStep['kind'][] = ['image', 'canvas', 'grammar', 'reading', 'shadow', 'qna', 'drill', 'rainbow', 'study', 'wordshow', 'attendance'];
 
 const LessonRunnerContext = createContext<RunnerValue | null>(null);
 
@@ -161,6 +161,13 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: slide.title?.trim() || t('curriculum.shadow.defaultTitle'),
             icon: 'record_voice_over',
+          });
+        } else if (slide.kind === 'rainbow') {
+          push({
+            kind: 'rainbow',
+            path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: t(slide.mode === 'structure' ? 'rainbow.mode_structure' : 'rainbow.mode_speak'),
+            icon: 'palette',
           });
         } else if (slide.kind === 'drill') {
           push({

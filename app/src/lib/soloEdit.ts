@@ -1,4 +1,5 @@
 import type { RoleplayLine, SoloClip, SoloStep } from './soloLessons';
+import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
 
 /**
  * 개별수업 편집기(2026-10-08)의 도우미 — 단계 종류 이름·아이콘, 새 단계 기본값, 저장 전 검사, 목록 요약.
@@ -30,6 +31,8 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'fadeRead', icon: 'mic', group: 'speak' },
   { t: 'sayPick', icon: 'forum', group: 'speak' },
   { t: 'roleplay', icon: 'theater_comedy', group: 'speak' },
+  { t: 'rainbowSpeak', icon: 'palette', group: 'speak' },
+  { t: 'rainbowStructure', icon: 'account_tree', group: 'grammar' },
   { t: 'watch', icon: 'smart_display', group: 'video' },
   { t: 'lyricBlank', icon: 'lyrics', group: 'video' },
   { t: 'lineSing', icon: 'mic_external_on', group: 'video' },
@@ -83,6 +86,10 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, situation: '', options: ['', '', '', ''], answer: 0 };
     case 'roleplay':
       return { t, title: '', lines: [emptyLine('other'), emptyLine('me')] };
+    case 'rainbowSpeak':
+      return { t, itemId: SPEAKING_ITEMS[0].id };
+    case 'rainbowStructure':
+      return { t, itemId: STRUCTURE_ITEMS[0].id };
   }
 }
 
@@ -175,6 +182,10 @@ export function stepSummary(step: SoloStep): string {
       return step.options[step.answer] ?? '';
     case 'sayPick':
       return step.situation;
+    case 'rainbowSpeak':
+      return SPEAKING_ITEMS.find((i) => i.id === step.itemId)?.englishAnswer ?? '';
+    case 'rainbowStructure':
+      return STRUCTURE_ITEMS.find((i) => i.id === step.itemId)?.sentence ?? '';
   }
 }
 
@@ -253,6 +264,12 @@ export function stepProblems(step: SoloStep): string[] {
       if (blank(step.en)) p.push('sentenceEmpty');
       if (!step.clip.videoId.trim()) p.push('clipEmpty');
       if (step.clip.end <= step.clip.start) p.push('clipRange');
+      break;
+    case 'rainbowSpeak':
+      if (!SPEAKING_ITEMS.some((i) => i.id === step.itemId)) p.push('rainbowMissing');
+      break;
+    case 'rainbowStructure':
+      if (!STRUCTURE_ITEMS.some((i) => i.id === step.itemId)) p.push('rainbowMissing');
       break;
     case 'roleplay':
       if (step.lines.length < 2) p.push('rpShort');

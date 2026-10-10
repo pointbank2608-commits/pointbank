@@ -6,6 +6,7 @@ import { lettersOf, wordsOfSentence } from '../../lib/soloEdit';
 import type { RoleplayLine, SoloClip, SoloStep } from '../../lib/soloLessons';
 import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
+import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
 import { loadWordBank } from '../../lib/wordBankCache';
 
 const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
@@ -374,6 +375,27 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
           <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />
         </div>
       );
+    case 'rainbowSpeak':
+    case 'rainbowStructure': {
+      const pool = step.t === 'rainbowSpeak' ? SPEAKING_ITEMS.map((i) => ({ id: i.id, text: i.englishAnswer })) : STRUCTURE_ITEMS.map((i) => ({ id: i.id, text: i.sentence }));
+      return (
+        <div className="space-y-4">
+          <Field title={t('soloEdit.rainbowSentence')} hint={t('soloEdit.rainbowHint')}>
+            <select
+              value={step.itemId}
+              onChange={(e) => set({ itemId: e.target.value })}
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm"
+            >
+              {pool.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.text}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      );
+    }
     case 'roleplay':
       return (
         <div className="space-y-4">

@@ -57,6 +57,9 @@ import { useClipTakenDown, type VideoClip } from '../lib/videoClips';
 import VideoClipLibrary from './VideoClipLibrary';
 import QnaBoard from './QnaBoard';
 import DrillBoard from './DrillBoard';
+import RainbowSpeaking from './rainbow/RainbowSpeaking';
+import RainbowStructure from './rainbow/RainbowStructure';
+import RainbowSlideForm, { pickSpeaking, pickStructure, type RainbowDraft } from './rainbow/RainbowSlideForm';
 import { parseQnaText, qnaToText } from '../lib/qnaLines';
 import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
@@ -153,7 +156,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'game' | 'material' | null;
+type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -512,7 +515,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'game', 'material', 'attendance'] as const).map((m) => (
+              {(['canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -551,6 +554,15 @@ export default function LessonSlideSorter({
               <ShadowAddPanel
                 onAdd={(draft) => {
                   addSlide({ id: uid(), kind: 'shadow', ...draft });
+                  setAddMode(null);
+                }}
+              />
+            )}
+
+            {addMode === 'rainbow' && (
+              <RainbowAddPanel
+                onAdd={(d) => {
+                  addSlide({ id: uid(), kind: 'rainbow', mode: d.mode, itemIds: d.itemIds, showKo: d.showKo });
                   setAddMode(null);
                 }}
               />
@@ -1009,12 +1021,18 @@ export default function LessonSlideSorter({
   );
 }
 
+function RainbowAddPanel({ onAdd }: { onAdd: (d: RainbowDraft) => void }) {
+  const [draft, setDraft] = useState<RainbowDraft>({ mode: 'speak', itemIds: [], showKo: false });
+  return <RainbowSlideForm value={draft} onChange={setDraft} onAdd={() => onAdd(draft)} />;
+}
+
 function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
   if (slide.kind === 'attendance') return { icon: 'how_to_reg', label: t('curriculum.slides.kindAttendance') };
   if (slide.kind === 'drill') return { icon: 'swap_horiz', label: slide.title?.trim() || t('drill.title') };
+  if (slide.kind === 'rainbow') return { icon: 'palette', label: t(slide.mode === 'structure' ? 'rainbow.mode_structure' : 'rainbow.mode_speak') };
   if (slide.kind === 'qna') return { icon: 'forum', label: slide.title?.trim() || t('qna.title') };
   if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: slide.title?.trim() || t('curriculum.shadow.defaultTitle') };
   if (slide.kind === 'reading')
@@ -1172,6 +1190,24 @@ function SlideDetail({
 
   if (slide.kind === 'shadow') {
     return <ShadowSlideDetail slide={slide} onUpdate={onUpdate} />;
+  }
+
+  if (slide.kind === 'rainbow') {
+    return (
+      <div className="space-y-3">
+        <div className="relative aspect-video w-full max-w-3xl">
+          {slide.mode === 'structure' ? (
+            <RainbowStructure key={`s-${(slide.itemIds ?? []).join(',')}`} items={pickStructure(slide.itemIds)} interactive={false} />
+          ) : (
+            <RainbowSpeaking key={`p-${(slide.itemIds ?? []).join(',')}-${slide.showKo ? 1 : 0}`} items={pickSpeaking(slide.itemIds)} interactive={false} initialShowKo={!!slide.showKo} />
+          )}
+        </div>
+        <RainbowSlideForm
+          value={{ mode: slide.mode, itemIds: slide.itemIds ?? [], showKo: !!slide.showKo }}
+          onChange={(d) => onUpdate({ mode: d.mode, itemIds: d.itemIds, showKo: d.showKo } as Partial<LessonSlide>)}
+        />
+      </div>
+    );
   }
 
   if (slide.kind === 'drill') {

@@ -12,6 +12,9 @@ import GrammarBoard from './GrammarBoard';
 import PhonicsMarkedWord from './PhonicsMarkedWord';
 import QnaBoard from './QnaBoard';
 import DrillBoard from './DrillBoard';
+import RainbowSpeaking from './rainbow/RainbowSpeaking';
+import RainbowStructure from './rainbow/RainbowStructure';
+import { pickSpeaking, pickStructure } from './rainbow/RainbowSlideForm';
 import ShadowBoard from './ShadowBoard';
 import ReadingBoard from './ReadingBoard';
 import WebSlideView from './WebSlideView';
@@ -72,6 +75,20 @@ export default function LessonSlideContent({
           block
         </span>
         <div className="max-w-md font-body-lg text-body-lg text-on-surface-variant">{t('videoLibrary.takenDown')}</div>
+      </div>
+    );
+  }
+
+  if (slide.kind === 'rainbow') {
+    return (
+      <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
+        <div className="relative h-full w-full">
+          {slide.mode === 'structure' ? (
+            <RainbowStructure key={slide.id} items={pickStructure(slide.itemIds)} interactive />
+          ) : (
+            <RainbowSpeaking key={slide.id} items={pickSpeaking(slide.itemIds)} interactive initialShowKo={!!slide.showKo} />
+          )}
+        </div>
       </div>
     );
   }

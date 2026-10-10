@@ -22,6 +22,7 @@ import {
   buildSoloDayLessons,
   buildSoloFromCatalog,
   buildSoloGrammarLesson,
+  buildSoloRainbowLesson,
   buildSoloSongLesson,
   songTimedLineCount,
   SOLO_CATALOG,
@@ -245,6 +246,7 @@ function CatalogModal({
     { id: 'word', icon: 'abc' },
     { id: 'grammar', icon: 'rule' },
     { id: 'talk', icon: 'forum' },
+    { id: 'rainbow', icon: 'palette' },
     { id: 'video', icon: 'movie' },
   ];
 
@@ -374,6 +376,37 @@ function CatalogModal({
                   </button>
                 </div>
                 <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
+              </div>
+            )}
+
+            {tr.id === 'rainbow' && (
+              <div className="space-y-2">
+                <p className="font-caption text-caption text-on-surface-variant">{t('solo.rainbowHint')}</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(['speak', 'structure'] as const).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      disabled={busy !== null}
+                      onClick={async () => {
+                        setBusy(`rainbow-${k}`);
+                        try {
+                          await onBatch([buildSoloRainbowLesson(k, t(`rainbow.mode_${k}`))], t('solo.rainbowLevel'), `rainbow-${k}`);
+                        } finally {
+                          setBusy(null);
+                        }
+                      }}
+                      className="flex flex-col gap-1 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[22px] text-primary">{k === 'speak' ? 'palette' : 'account_tree'}</span>
+                        <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{t(`rainbow.mode_${k}`)}</span>
+                      </div>
+                      <div className="font-caption text-caption text-on-surface-variant">{t(`rainbow.modeHint_${k}`)}</div>
+                      {busy === `rainbow-${k}` && <div className="font-caption text-caption text-primary">{t('common.loading')}</div>}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

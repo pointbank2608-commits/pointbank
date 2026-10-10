@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
+import RainbowSpeaking from '../rainbow/RainbowSpeaking';
+import RainbowStructure from '../rainbow/RainbowStructure';
+import { SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 
 /**
@@ -496,6 +499,27 @@ export default function SoloPlayer({
           </>
         )}
 
+        {(step.t === 'rainbowSpeak' || step.t === 'rainbowStructure') && (() => {
+          const sp = step.t === 'rainbowSpeak' ? SPEAKING_ITEMS.find((i) => i.id === step.itemId) : null;
+          const st = step.t === 'rainbowStructure' ? STRUCTURE_ITEMS.find((i) => i.id === step.itemId) : null;
+          if (!sp && !st) {
+            return (
+              <button type="button" onClick={() => void next()} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                {t('solo.next')}
+              </button>
+            );
+          }
+          return (
+            <div className="relative h-[min(76dvh,680px)] w-full">
+              {sp ? (
+                <RainbowSpeaking key={idx} items={[sp]} compact onComplete={() => void next()} />
+              ) : (
+                <RainbowStructure key={idx} items={[st as StructureItem]} compact onComplete={() => void next()} />
+              )}
+            </div>
+          );
+        })()}
+
         {step.t === 'roleplay' && (() => {
           const lines = step.lines;
           const line = lines[rpTurn];
@@ -887,7 +911,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && !answered && (
+        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && (
           <button
             type="button"
             disabled={busy}

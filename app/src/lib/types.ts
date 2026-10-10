@@ -843,6 +843,17 @@ export interface QnaSlide {
   clipId?: string;
 }
 
+/** "무지개 문법" 슬라이드(2026-10-11) — 그림 보고 말하기(6단계) 또는 구조 보기(역할 색). 문장 자료는 lib/rainbow.ts. */
+export interface RainbowSlide {
+  id: string;
+  kind: 'rainbow';
+  mode: 'speak' | 'structure';
+  /** 비어 있거나 없으면 모든 문장 */
+  itemIds?: string[];
+  /** 독립 말하기에서 한국어 문장을 처음부터 보여 줄지 */
+  showKo?: boolean;
+}
+
 /** "바꿔 말하기" 슬라이드(2026-10-03) — 영화 문장 하나를 틀로 단서만 바꿔 말하기(클래스5 "문법 포인트" 카드 참고) */
 export interface DrillSlide {
   id: string;
@@ -895,6 +906,7 @@ export type LessonSlide =
   | ShadowSlide
   | QnaSlide
   | DrillSlide
+  | RainbowSlide
   | WordShowSlide
   | AttendanceSlide;
 

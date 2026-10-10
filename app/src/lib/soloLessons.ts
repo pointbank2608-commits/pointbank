@@ -1,6 +1,7 @@
 import { GRAMMAR_POINTS, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
 import { LESSON_SETS, pickSetWords } from './lessonSets';
 import { parseShadowText } from './shadowLines';
+import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
 import type { FullCardItem, WordBankEntry } from './types';
 
 /**
@@ -32,7 +33,9 @@ export type SoloStep =
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
   | { t: 'sayPick'; situation: string; options: string[]; answer: number; imageUrl?: string }
-  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] };
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
+  | { t: 'rainbowSpeak'; itemId: string }
+  | { t: 'rainbowStructure'; itemId: string };
 
 /** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
 export interface RoleplayLine {
@@ -70,7 +73,9 @@ export type SoloPublicStep =
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
   | { t: 'sayPick'; situation: string; options: string[]; imageUrl?: string }
-  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] };
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
+  | { t: 'rainbowSpeak'; itemId: string }
+  | { t: 'rainbowStructure'; itemId: string };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick'] as const;
@@ -451,7 +456,7 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
 export interface SoloCatalogItem {
   id: string;
   /** 레벨 경로의 줄: 단어 / 문법 / 영상 */
-  track: 'word' | 'grammar' | 'video' | 'talk';
+  track: 'word' | 'grammar' | 'video' | 'talk' | 'rainbow';
   level: string;
   ko: string;
   en: string;
@@ -473,6 +478,18 @@ export const SOLO_CATALOG: SoloCatalogItem[] = [
   { id: 'solo-family', track: 'word', level: 'Level 1', ko: '가족과 사람 단어', en: 'Family & people', koDesc: '엄마·아빠·친구 같은 단어 10개', enDesc: '10 family and people words', minutes: 15, icon: 'family_restroom', setId: 'w-family' },
   { id: 'solo-v-short', track: 'video', level: 'Level 1', ko: '짧은 영상 보고 대답하기', en: 'Watch a short clip and answer', koDesc: '5~10분 영상을 보고 질문에 답해요', enDesc: 'Watch a 5-10 minute clip and answer questions', minutes: 10, icon: 'movie', soon: true },
 ];
+
+/** 무지개 문법 개별수업(2026-10-11): 그림 보고 말하기 / 구조 보기. 문장 자료는 lib/rainbow.ts 에서 id 로 읽는다(서버 채점 없음). */
+export function buildSoloRainbowLesson(kind: 'speak' | 'structure', name: string): { name: string; steps: SoloStep[]; minutes: number } {
+  const ids = kind === 'speak' ? SPEAKING_ITEMS.map((i) => i.id) : STRUCTURE_ITEMS.map((i) => i.id);
+  const intro: SoloStep = {
+    t: 'intro',
+    title: name,
+    text: kind === 'speak' ? '그림을 보고, 힌트를 하나씩 열면서 문장을 말해 봐요. 마지막엔 새 그림을 보고 혼자 말해요!' : '긴 문장을 덩어리로 나눠 색으로 구조를 찾아봐요. 먼저 스스로 찾아보고 색을 열어 확인해요.',
+  };
+  const steps: SoloStep[] = [intro, ...ids.map((itemId): SoloStep => (kind === 'speak' ? { t: 'rainbowSpeak', itemId } : { t: 'rainbowStructure', itemId }))];
+  return { name, steps, minutes: Math.max(5, ids.length * 4) };
+}
 
 /** 카탈로그 항목 → 개별수업 단계(그림 중심 단어 수업). 낱말이 모자라면 null. */
 export function buildSoloFromCatalog(item: SoloCatalogItem, bank: WordBankEntry[], lang: string): { name: string; steps: SoloStep[] } | null {
