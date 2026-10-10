@@ -2365,6 +2365,7 @@ const ko = {
     count: '질문 {{count}}개',
   },
   studentPortal: {
+    todayPick: "오늘 할 것",
     lessonDone: '끝냈어요!',
     homeworkTag: '숙제',
     lessonProgress: '{{progress}} / {{total}} 단계',
@@ -2519,6 +2520,9 @@ const ko = {
     posLessonDesc_1: "명사·동사·형용사를 색과 함께 배우고, 낱말과 문장 속에서 찾아봐요",
     posLesson_2: "품사 알아보기 ② 더하는 말·위치 말·이어 주는 말",
     posLessonDesc_2: "부사·전치사·접속사·관사를 배우고, 색 문장으로 말해 봐요",
+    more: "더보기",
+    finishLearned: "새 낱말 {{count}}개를 만났어요!",
+    finishReview: "다시 보면 좋은 낱말 (눌러서 들어 보세요)",
     track_talk: '일상 대화·역할극',
     talkHint: '마트·식당·길 묻기처럼 실제로 쓰는 상황이에요. 필요한 낱말 → 표현(끝 낱말부터 지우며 말하기) → 상황 보고 표현 고르기 → 대화 역할극 순서로 해요. 표현과 대화는 Claude가 쓴 초안이니 학원에 맞게 확인해 주세요.',
     talkLevel: '일상 대화',

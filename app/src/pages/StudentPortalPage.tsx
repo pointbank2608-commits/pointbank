@@ -183,6 +183,7 @@ function HomeView({
   }
   if (!home) return <div className={`${shell} items-center justify-center text-lg text-white/70`}>{t('common.loading')}</div>;
 
+  const firstOpenId = (home.lessons ?? []).find((l) => !l.done)?.id ?? null;
   const open = home.homework.filter((h) => !h.done);
   const done = home.homework.filter((h) => h.done);
   return (
@@ -207,6 +208,7 @@ function HomeView({
         <ul className="mt-3 flex flex-col gap-3">
           {(home.lessons ?? []).map((l) => (
             <li key={l.id}>
+              {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-warm-yellow">{t('studentPortal.todayPick')}</div>}
               <a
                 href={`/s/lesson/${l.id}`}
                 className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done ? 'bg-white/10 text-white/70' : 'bg-warm-yellow text-deep-navy'}`}

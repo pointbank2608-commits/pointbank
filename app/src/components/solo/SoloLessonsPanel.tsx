@@ -27,6 +27,35 @@ import SoloPreview from './SoloPreview';
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
  * 만들기 = "커리큘럼 보기"에서 미리 만든 수업을 골라 이 반 것으로 가져온다 → 학생에게 내기 → 현황 보기.
  */
+/** 목록 정렬: 최근 것이 위 — 다만 "이름 (1/3)(2/3)(3/3)" 처럼 한꺼번에 만든 묶음은 번호 순서로 */
+function orderLessons(list: SoloLesson[]): SoloLesson[] {
+  const part = (name: string) => {
+    const m = name.match(/^(.*)\((\d+)\/(\d+)\)\s*$/);
+    return m ? { base: m[1].trim(), n: Number(m[2]), of: Number(m[3]) } : null;
+  };
+  const out: SoloLesson[] = [];
+  const used = new Set<string>();
+  for (const l of list) {
+    if (used.has(l.id)) continue;
+    const p = part(l.name);
+    if (!p) {
+      out.push(l);
+      used.add(l.id);
+      continue;
+    }
+    const group = list.filter((x) => {
+      const q = part(x.name);
+      return q && q.base === p.base && q.of === p.of && !used.has(x.id);
+    });
+    group.sort((a, b) => (part(a.name)?.n ?? 0) - (part(b.name)?.n ?? 0));
+    for (const g of group) {
+      out.push(g);
+      used.add(g.id);
+    }
+  }
+  return out;
+}
+
 export default function SoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
   const { t } = useTranslation();
   const { notify } = useToast();
@@ -105,7 +134,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
         <div className="rounded-xl border border-dashed border-outline-variant py-12 text-center font-body-md text-on-surface-variant">{t('solo.empty')}</div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {lessons.map((l) => {
+          {orderLessons(lessons).map((l) => {
             const c = counts.get(l.id);
             return (
               <div key={l.id} className="space-y-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-4 shadow-sm">
@@ -127,24 +156,34 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
                 <div className="font-caption text-caption text-on-surface-variant">
                   {c ? t('solo.assignedCount', { total: c.total, done: c.done }) : t('solo.notAssigned')}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setEditing(l)} className="flex items-center gap-1 rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                    {t('solo.editLesson')}
-                  </button>
-                  <button type="button" onClick={() => setPreview(l)} className="rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
-                    {t('solo.preview')}
-                  </button>
-                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'lesson' })} className="rounded-full bg-primary px-3 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
-                    {t('solo.assign')}
-                  </button>
-                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'homework' })} className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 font-label-md text-label-md text-on-secondary hover:opacity-90">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'homework' })} className="flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
                     <span className="material-symbols-outlined text-[16px]">edit_note</span>
                     {t('solo.assignHomework')}
                   </button>
                   <button type="button" onClick={() => setStatusOf(l)} className="rounded-full border border-outline-variant px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
                     {t('solo.status')}
                   </button>
+                  <button type="button" onClick={() => setEditing(l)} className="flex items-center gap-1 rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    {t('solo.editLesson')}
+                  </button>
+                  <details className="relative">
+                    <summary
+                      className="flex cursor-pointer list-none items-center rounded-full border border-outline-variant px-2 py-1.5 text-on-surface-variant hover:border-primary hover:text-primary [&::-webkit-details-marker]:hidden"
+                      aria-label={t('solo.more')}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">more_horiz</span>
+                    </summary>
+                    <div className="absolute left-0 top-full z-10 mt-1 w-48 space-y-0.5 rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-lg">
+                      <button type="button" onClick={(e) => { (e.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open'); setPreview(l); }} className="block w-full rounded-lg px-3 py-2 text-left font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
+                        {t('solo.preview')}
+                      </button>
+                      <button type="button" onClick={(e) => { (e.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open'); setAssigning({ lesson: l, kind: 'lesson' }); }} className="block w-full rounded-lg px-3 py-2 text-left font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
+                        {t('solo.assign')}
+                      </button>
+                    </div>
+                  </details>
                 </div>
               </div>
             );

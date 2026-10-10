@@ -2369,6 +2369,7 @@ const en: Ko = {
     count: '{{count}} questions',
   },
   studentPortal: {
+    todayPick: "Today's pick",
     lessonDone: 'Finished!',
     homeworkTag: 'Homework',
     lessonProgress: 'Step {{progress}} of {{total}}',
@@ -2523,6 +2524,9 @@ const en: Ko = {
     posLessonDesc_1: "Learn nouns, verbs and adjectives with colors, then find them in words and sentences",
     posLesson_2: "Parts of speech 2: adding, place and joining words",
     posLessonDesc_2: "Learn adverbs, prepositions, conjunctions and articles, then speak color sentences",
+    more: "More",
+    finishLearned: "You met {{count}} new words!",
+    finishReview: "Worth another look (tap to hear)",
     track_talk: 'Everyday talk & role-play',
     talkHint: 'Real-life situations such as the supermarket, a restaurant and asking the way: words, then phrases (say them as words fade), picking the right phrase, then a role-play. The phrases and dialogues are drafts, so please check them for your students.',
     talkLevel: 'Everyday talk',

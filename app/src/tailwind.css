@@ -5382,3 +5382,26 @@
 @media (prefers-reduced-motion: reduce) {
   .cm-fx { animation: none !important; }
 }
+
+/* 개별수업 학생 화면: 맞혔을 때 통통, 틀렸을 때 살짝 흔들 — 움직임 줄이기 설정이면 끈다 */
+@keyframes solo-pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  60% { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes solo-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+@keyframes solo-confetti {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-70px) scale(1.2); opacity: 0; }
+}
+.solo-pop { animation: solo-pop 0.35s ease-out both; }
+.solo-shake { animation: solo-shake 0.3s ease-in-out both; }
+.solo-confetti { animation: solo-confetti 0.9s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .solo-pop, .solo-shake, .solo-confetti { animation: none; }
+}

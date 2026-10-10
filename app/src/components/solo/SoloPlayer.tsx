@@ -4,6 +4,7 @@ import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 import RainbowSpeaking from '../rainbow/RainbowSpeaking';
 import RainbowStructure from '../rainbow/RainbowStructure';
+import { COMMON_SFX, playSfx } from '../../lib/gameSfx';
 import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 
@@ -86,6 +87,9 @@ export default function SoloPlayer({
   const [busy, setBusy] = useState(false);
   const [finished, setFinished] = useState(startAt >= steps.length && steps.length > 0);
   const [stats, setStats] = useState({ right: 0, unsure: 0 });
+  /** 틀렸거나 "모르겠어요"를 누른 단계 번호 — 끝 화면에서 다시 볼 것으로 보여 준다 */
+  const [missed, setMissed] = useState<Set<number>>(new Set());
+  const markMissed = (i: number) => setMissed((cur) => (cur.has(i) ? cur : new Set(cur).add(i)));
   const [error, setError] = useState(false);
   const [typed, setTyped] = useState<number[]>([]);
   const [text, setText] = useState('');
@@ -256,10 +260,23 @@ export default function SoloPlayer({
     }
   }, []);
 
+  // 맞히면 짧은 소리, 한 번 틀리면 부드러운 소리 — 끝나면 박수와 칭찬 목소리
+  useEffect(() => {
+    if (phase === 'right') playSfx(4015);
+    else if (phase === 'wrong1') playSfx(4025);
+  }, [phase, idx]);
+  useEffect(() => {
+    if (!finished) return;
+    playSfx(5037);
+    const timer = window.setTimeout(() => playSfx(COMMON_SFX.praise), 900);
+    return () => window.clearTimeout(timer);
+  }, [finished]);
+
   async function next(unsure = false) {
     const r = await guard(() => api.advance(idx, unsure));
     if (r === null) return;
     if (unsure) {
+      markMissed(idx);
       setStats((s) => ({ ...s, unsure: s.unsure + 1 }));
       setAdvanced(true);
       setShownAnswer(r.answer);
@@ -285,6 +302,7 @@ export default function SoloPlayer({
       return;
     }
     onWrong?.();
+    markMissed(idx);
     if (attempts.current >= 2) await showAnswer();
     else setPhase('wrong1');
   }
@@ -319,14 +337,55 @@ export default function SoloPlayer({
     });
   }
 
+  /** 지금 활동(같은 종류 단계 묶음)에서 몇 번째인지 */
+  const activity = useMemo(() => {
+    const cur = steps[idx];
+    if (!cur || cur.t === 'intro') return null;
+    let a = idx;
+    while (a > 0 && steps[a - 1].t === cur.t) a--;
+    let b = idx;
+    while (b + 1 < steps.length && steps[b + 1].t === cur.t) b++;
+    return { n: idx - a + 1, of: b - a + 1 };
+  }, [steps, idx]);
+
+  /** 끝 화면: 새로 만난 낱말 수, 다시 볼 낱말 */
+  const learned = useMemo(() => new Set(steps.filter((s) => s.t === 'meet').map((s) => (s as { word: string }).word.toLowerCase())).size, [steps]);
+  const review = useMemo(() => {
+    const out: string[] = [];
+    for (const i of [...missed].sort((a, b) => a - b)) {
+      const s = steps[i] as { word?: string; sentence?: string } | undefined;
+      const w = s?.word?.trim();
+      if (w && !out.includes(w)) out.push(w);
+    }
+    return out.slice(0, 10);
+  }, [missed, steps]);
+
   const percent = useMemo(() => (steps.length ? Math.round((Math.min(idx, steps.length) / steps.length) * 100) : 0), [idx, steps.length]);
 
   if (finished) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
-        <div className="text-7xl">🎉</div>
+        <div className="solo-pop text-7xl">🎉</div>
         <h1 className="text-4xl font-bold">{t('solo.finishTitle')}</h1>
+        {learned > 0 && <p className="text-2xl font-bold text-warm-yellow">{t('solo.finishLearned', { count: learned })}</p>}
         <p className="text-xl text-white/80">{t('solo.finishStats', { right: stats.right, unsure: stats.unsure })}</p>
+        {review.length > 0 && (
+          <div className="w-full max-w-md rounded-2xl bg-white/10 px-4 py-3 text-left">
+            <div className="mb-2 text-base font-bold text-white/80">{t('solo.finishReview')}</div>
+            <div className="flex flex-wrap gap-2">
+              {review.map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => speak(w)}
+                  className="rounded-full bg-white/15 px-3 py-1.5 text-lg font-bold hover:bg-white/25"
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <button type="button" onClick={onExit} className={`${btn} bg-warm-yellow text-deep-navy`}>
           {preview ? t('solo.closePreview') : t('solo.backHome')}
         </button>
@@ -352,6 +411,15 @@ export default function SoloPlayer({
           {idx + 1}/{steps.length}
         </span>
       </header>
+
+      {activity && (
+        <div className="-mt-1 flex justify-center px-4 pb-1">
+          <span className="rounded-full bg-white/10 px-4 py-1 text-base font-bold text-white/80">
+            {t(`soloEdit.stepType_${step.t}`)}
+            {activity.of > 1 ? ` · ${activity.n}/${activity.of}` : ''}
+          </span>
+        </div>
+      )}
 
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-5 px-5 pb-6 pt-2">
         {/* 노래·영상 플레이어: 수업 안에서 계속 켜 두고, 영상이 필요한 단계에서만 보여 준다 */}
@@ -1015,5 +1083,6 @@ function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: 
 
 function Banner({ tone, children }: { tone: 'ok' | 'try' | 'show'; children: React.ReactNode }) {
   const cls = tone === 'ok' ? 'bg-emerald-500/25 text-emerald-100' : tone === 'try' ? 'bg-warm-yellow/25 text-warm-yellow' : 'bg-sky-400/25 text-sky-100';
-  return <div className={`w-full rounded-2xl px-4 py-3 text-center text-xl ${cls}`}>{children}</div>;
+  const anim = tone === 'ok' ? 'solo-pop' : tone === 'try' ? 'solo-shake' : '';
+  return <div className={`w-full rounded-2xl px-4 py-3 text-center text-xl ${cls} ${anim}`}>{children}</div>;
 }
