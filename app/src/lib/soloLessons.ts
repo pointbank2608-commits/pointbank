@@ -1,7 +1,7 @@
 import { GRAMMAR_POINTS, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
 import { LESSON_SETS, pickSetWords } from './lessonSets';
 import { parseShadowText } from './shadowLines';
-import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
+import { posOptionLabel, SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
 import type { FullCardItem, WordBankEntry } from './types';
 
 /**
@@ -15,7 +15,7 @@ import type { FullCardItem, WordBankEntry } from './types';
  */
 export type SoloStep =
   | { t: 'intro'; title: string; text: string; imageUrl?: string }
-  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null }
+  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[]; answer: number }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[]; answer: number }
@@ -35,7 +35,8 @@ export type SoloStep =
   | { t: 'sayPick'; situation: string; options: string[]; answer: number; imageUrl?: string }
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
-  | { t: 'rainbowStructure'; itemId: string };
+  | { t: 'rainbowStructure'; itemId: string }
+  | { t: 'pickPos'; word: string; sentence?: string; options: string[]; answer: number };
 
 /** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
 export interface RoleplayLine {
@@ -55,7 +56,7 @@ export interface SoloClip {
 /** 학생에게 가는 모양(정답 없음) */
 export type SoloPublicStep =
   | { t: 'intro'; title: string; text: string; imageUrl?: string }
-  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null }
+  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[] }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[] }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[] }
@@ -75,10 +76,11 @@ export type SoloPublicStep =
   | { t: 'sayPick'; situation: string; options: string[]; imageUrl?: string }
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
-  | { t: 'rainbowStructure'; itemId: string };
+  | { t: 'rainbowStructure'; itemId: string }
+  | { t: 'pickPos'; word: string; sentence?: string; options: string[] };
 
 /** 보기에서 번호로 고르는 단계 */
-export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick'] as const;
+export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
 /** 글자로 답하는 단계 */
 export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble'] as const;
 
@@ -123,7 +125,7 @@ export function buildSoloWordSteps(title: string, words: FullCardItem[], pool?: 
   const meanings = poolWords.map((w) => w.meaning);
   for (let i = 0; i < usable.length; i += 5) {
     const chunk = usable.slice(i, i + 5);
-    for (const w of chunk) steps.push({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null });
+    for (const w of chunk) steps.push({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null, pos: w.partOfSpeech ?? null });
     for (const w of shuffle(chunk)) {
       const o = options(w.word, wordsOnly);
       steps.push({ t: 'pickWord', imageUrl: w.imageUrl, meaning: w.meaning, options: o.list, answer: o.answer });
@@ -138,6 +140,7 @@ export function buildSoloWordSteps(title: string, words: FullCardItem[], pool?: 
     const o = options(w.meaning, meanings);
     steps.push({ t: 'pickMeaning', word: w.word, imageUrl: w.imageUrl, options: o.list, answer: o.answer });
   }
+  steps.push(...posQuestions(usable, 4));
   const spellable = usable.filter((w) => /^[a-z]{3,8}$/i.test(w.word.trim()));
   for (const w of shuffle(spellable).slice(0, 5)) {
     steps.push({ t: 'spell', word: w.word.trim().toLowerCase(), meaning: w.meaning, imageUrl: w.imageUrl, letters: scrambleLetters(w.word) });
@@ -145,9 +148,37 @@ export function buildSoloWordSteps(title: string, words: FullCardItem[], pool?: 
   return steps;
 }
 
+/* ---------------- 품사 고르기 ---------------- */
+
+const MAIN_POS = ['명사', '동사', '형용사', '부사'];
+
+/** 정답 품사 + 다른 품사 둘을 섞은 선택지 */
+export function posChoices(correct: string, pool: string[] = MAIN_POS): { options: string[]; answer: number } {
+  const others = shuffle(pool.filter((p) => p !== correct)).slice(0, 2);
+  const list = shuffle([correct, ...others]);
+  return { options: list.map(posOptionLabel), answer: list.indexOf(correct) };
+}
+
+/** 사전 품사가 있는 낱말로 "무슨 말일까요?" 문제를 만든다(품사가 고루 나오게 돌려 가며 뽑는다). 낱말이 모자라면 빈 배열. */
+export function posQuestions(words: FullCardItem[], max: number): SoloStep[] {
+  const ok = words.filter((w) => w.word.trim() && w.partOfSpeech && MAIN_POS.includes(w.partOfSpeech));
+  if (ok.length < 3) return [];
+  const buckets = new Map<string, FullCardItem[]>();
+  for (const w of shuffle(ok)) buckets.set(w.partOfSpeech as string, [...(buckets.get(w.partOfSpeech as string) ?? []), w]);
+  const picked: FullCardItem[] = [];
+  const lists = [...buckets.values()];
+  for (let r = 0; picked.length < max && lists.some((l) => l[r]); r++) {
+    for (const l of lists) if (l[r] && picked.length < max) picked.push(l[r]);
+  }
+  return shuffle(picked).map((w) => {
+    const c = posChoices(w.partOfSpeech as string);
+    return { t: 'pickPos', word: w.word.trim(), options: c.options, answer: c.answer };
+  });
+}
+
 /* ---------------- 낱말 블록(편집기에서 블록 하나만 새로 만들 때) ---------------- */
 
-export const WORD_BLOCK_TYPES = ['meet', 'pickWord', 'pickMeaning', 'listenPick', 'spell', 'typeWord', 'fillBlank', 'dictation'] as const;
+export const WORD_BLOCK_TYPES = ['meet', 'pickWord', 'pickMeaning', 'pickPos', 'listenPick', 'spell', 'typeWord', 'fillBlank', 'dictation'] as const;
 export type WordBlockType = (typeof WORD_BLOCK_TYPES)[number];
 
 /** n개 중 k개를 앞뒤 고르게(순서 유지) 뽑은 번호 — 낱말 묶음이 나뉜 수업에서도 뒤쪽이 통째로 빠지지 않게 */
@@ -174,7 +205,7 @@ export function buildWordBlock(type: WordBlockType, words: FullCardItem[]): Solo
   const typable = usable.filter((w) => /^[a-z' .-]{1,20}$/i.test(w.word.trim()));
   switch (type) {
     case 'meet':
-      return usable.map((w) => ({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null }));
+      return usable.map((w) => ({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null, pos: w.partOfSpeech ?? null }));
     case 'pickWord':
       return shuffle(usable).map((w) => {
         const o = options(w.word, wordsOnly);
@@ -185,6 +216,8 @@ export function buildWordBlock(type: WordBlockType, words: FullCardItem[]): Solo
         const o = options(w.meaning, meanings);
         return { t: 'pickMeaning', word: w.word, imageUrl: w.imageUrl, options: o.list, answer: o.answer };
       });
+    case 'pickPos':
+      return posQuestions(usable, usable.length);
     case 'listenPick':
       return shuffle(usable).map((w) => {
         const others = shuffle(usable.filter((x) => x.word !== w.word)).slice(0, 3);
@@ -238,11 +271,12 @@ export function buildSoloWritingSteps(title: string, words: FullCardItem[], pool
   const poolWords = (pool ?? usable).filter((w) => w.word.trim() && w.meaning.trim());
   const steps: SoloStep[] = [{ t: 'intro', title, text: `${usable.length}` }];
   const meanings = poolWords.map((w) => w.meaning);
-  for (const w of usable) steps.push({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null });
+  for (const w of usable) steps.push({ t: 'meet', word: w.word, meaning: w.meaning, imageUrl: w.imageUrl, example: w.example ?? null, pos: w.partOfSpeech ?? null });
   for (const w of shuffle(usable)) {
     const o = options(w.meaning, meanings);
     steps.push({ t: 'pickMeaning', word: w.word, imageUrl: w.imageUrl, options: o.list, answer: o.answer });
   }
+  steps.push(...posQuestions(usable, 4));
   const typable = usable.filter((w) => /^[a-z' .-]{1,20}$/i.test(w.word.trim()));
   for (const w of shuffle(typable)) {
     const word = w.word.trim().toLowerCase();
@@ -433,7 +467,7 @@ export function buildSoloSongLesson(input: SongInput, bank: WordBankEntry[]): { 
   const words = shuffle(picked).slice(0, 8);
   if (words.length >= 3) {
     for (const { entry, line } of words)
-      steps.push({ t: 'meet', word: entry.word, meaning: entry.meaning, imageUrl: entry.image_url, example: line });
+      steps.push({ t: 'meet', word: entry.word, meaning: entry.meaning, imageUrl: entry.image_url, example: line, pos: entry.part_of_speech });
     const meanings = [...new Set(words.map((w) => w.entry.meaning))];
     const poolMeanings = [...new Set([...meanings, ...shuffle(bank.filter((e) => (e.level ?? 9) <= 4)).slice(0, 12).map((e) => e.meaning)])];
     for (const { entry } of shuffle(words).slice(0, 5)) {
@@ -520,6 +554,8 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
     case 'sayPick':
       return { t: step.t, situation: step.situation, options: step.options, imageUrl: step.imageUrl };
+    case 'pickPos':
+      return { t: step.t, word: step.word, sentence: step.sentence, options: step.options };
     default:
       return step;
   }

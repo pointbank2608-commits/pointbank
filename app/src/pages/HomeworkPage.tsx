@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
 import HomeworkResults from '../components/homework/teacher/HomeworkResults';
@@ -16,7 +17,7 @@ import { useClasses } from '../lib/useClasses';
 
 type Panel =
   | { k: 'none' }
-  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string }
+  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string }
   | { k: 'recommend'; studentIds: string[] };
 
 /**
@@ -33,6 +34,8 @@ export default function HomeworkPage() {
   const [list, setList] = useState<HomeworkOverviewRow[] | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [panel, setPanel] = useState<Panel>({ k: 'none' });
   const [shareId, setShareId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -99,6 +102,14 @@ export default function HomeworkPage() {
   };
 
   const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
+  // 내 수업 카드의 "숙제 내기"에서 넘어온 경우: 그 수업으로 마법사를 한 번만 연다
+  useEffect(() => {
+    const st = location.state as { fromLessonId?: string } | null;
+    if (!st?.fromLessonId || !classId) return;
+    setPanel({ k: 'wizard', lessonId: st.fromLessonId });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, classId, navigate]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -128,7 +139,8 @@ export default function HomeworkPage() {
 
       {panel.k === 'wizard' && classId && academy?.id && (
         <HomeworkWizard
-          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}`}
+          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}-${panel.lessonId ?? ''}`}
+          initialLessonId={panel.lessonId}
           academyId={academy.id}
           classId={classId}
           className={className}

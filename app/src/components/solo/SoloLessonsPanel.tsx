@@ -37,7 +37,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
   const [preview, setPreview] = useState<SoloLesson | null>(null);
   const [editing, setEditing] = useState<SoloLesson | null>(null);
   const [startPaste, setStartPaste] = useState(false);
-  const [assigning, setAssigning] = useState<SoloLesson | null>(null);
+  const [assigning, setAssigning] = useState<{ lesson: SoloLesson; kind: 'lesson' | 'homework' } | null>(null);
   const [statusOf, setStatusOf] = useState<SoloLesson | null>(null);
   const [recordsOf, setRecordsOf] = useState<{ lesson: SoloLesson; row: SoloStatusRow } | null>(null);
 
@@ -135,8 +135,12 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
                   <button type="button" onClick={() => setPreview(l)} className="rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
                     {t('solo.preview')}
                   </button>
-                  <button type="button" onClick={() => setAssigning(l)} className="rounded-full bg-primary px-3 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
+                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'lesson' })} className="rounded-full bg-primary px-3 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
                     {t('solo.assign')}
+                  </button>
+                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'homework' })} className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 font-label-md text-label-md text-on-secondary hover:opacity-90">
+                    <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                    {t('solo.assignHomework')}
                   </button>
                   <button type="button" onClick={() => setStatusOf(l)} className="rounded-full border border-outline-variant px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
                     {t('solo.status')}
@@ -150,6 +154,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
 
       {catalogOpen && classId && (
         <SoloCatalogModal
+          academyId={academyId}
           onClose={() => setCatalogOpen(false)}
           onBatch={async (lessons, level, source) => {
             try {
@@ -199,7 +204,8 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       )}
       {assigning && classId && (
         <AssignModal
-          lesson={assigning}
+          lesson={assigning.lesson}
+          initialKind={assigning.kind}
           classId={classId}
           onClose={() => setAssigning(null)}
           onDone={() => {
@@ -216,13 +222,19 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
 
 /* ---------------- 학생에게 내기 ---------------- */
 
-function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson; classId: string; onClose: () => void; onDone: () => void }) {
+function AssignModal({ lesson, classId, initialKind, onClose, onDone }: { lesson: SoloLesson; classId: string; initialKind: 'lesson' | 'homework'; onClose: () => void; onDone: () => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [due, setDue] = useState('');
-  const [kind, setKind] = useState<'lesson' | 'homework'>('lesson');
+  // 숙제는 기한이 있어야 해서 기본을 3일 뒤로 둔다(바꿀 수 있다)
+  const defaultDue = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const [kind, setKind] = useState<'lesson' | 'homework'>(initialKind);
+  const [due, setDue] = useState(initialKind === 'homework' ? defaultDue() : '');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -271,7 +283,10 @@ function AssignModal({ lesson, classId, onClose, onDone }: { lesson: SoloLesson;
               type="button"
               role="radio"
               aria-checked={kind === k}
-              onClick={() => setKind(k)}
+              onClick={() => {
+                setKind(k);
+                if (k === 'homework' && !due) setDue(defaultDue());
+              }}
               className={`rounded-xl border-2 px-3 py-2 text-left ${kind === k ? 'border-primary bg-primary/10' : 'border-outline-variant hover:bg-surface-container-low'}`}
             >
               <span className="block font-label-md text-label-md font-bold text-deep-navy">{t(`solo.kind_${k}`)}</span>

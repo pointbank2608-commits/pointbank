@@ -21,6 +21,7 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'example', icon: 'record_voice_over', group: 'grammar' },
   { t: 'pickWord', icon: 'image_search', group: 'quiz' },
   { t: 'pickMeaning', icon: 'translate', group: 'quiz' },
+  { t: 'pickPos', icon: 'category', group: 'quiz' },
   { t: 'listenPick', icon: 'hearing', group: 'quiz' },
   { t: 'spell', icon: 'abc', group: 'quiz' },
   { t: 'typeWord', icon: 'keyboard', group: 'quiz' },
@@ -57,6 +58,8 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, word: '', imageUrl: null, options: ['', '', '', ''], answer: 0 };
     case 'listenPick':
       return { t, word: '', options: ['', '', '', ''], images: [null, null, null, null], answer: 0 };
+    case 'pickPos':
+      return { t, word: '', options: ['명사', '동사', '형용사'], answer: 0 };
     case 'spell':
       return { t, word: '', meaning: '', imageUrl: null, letters: [] };
     case 'typeWord':
@@ -178,7 +181,7 @@ export function wordsFromSteps(steps: SoloStep[]): FullCardItem[] {
     map.set(key, { ...cur, ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined && v !== null && v !== '')) });
   };
   for (const s of steps) {
-    if (s.t === 'meet') put(s.word, { meaning: s.meaning, imageUrl: s.imageUrl, example: s.example });
+    if (s.t === 'meet') put(s.word, { meaning: s.meaning, imageUrl: s.imageUrl, example: s.example, partOfSpeech: s.pos });
     else if (s.t === 'typeWord' || s.t === 'spell') put(s.word, { meaning: s.meaning, imageUrl: s.imageUrl });
     else if (s.t === 'pickMeaning') put(s.word, { imageUrl: s.imageUrl, meaning: s.options[s.answer] });
   }
@@ -195,6 +198,7 @@ export function stepSummary(step: SoloStep): string {
     case 'typeWord':
     case 'spell':
     case 'pickMeaning':
+    case 'pickPos':
     case 'listenPick':
       return step.word || ('meaning' in step ? step.meaning : '');
     case 'pickWord':
@@ -246,6 +250,10 @@ export function stepProblems(step: SoloStep): string[] {
       choice(step.options, step.answer);
       break;
     case 'pickMeaning':
+      if (blank(step.word)) p.push('wordEmpty');
+      choice(step.options, step.answer);
+      break;
+    case 'pickPos':
       if (blank(step.word)) p.push('wordEmpty');
       choice(step.options, step.answer);
       break;

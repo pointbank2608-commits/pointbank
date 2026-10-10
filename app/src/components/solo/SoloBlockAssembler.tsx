@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../context/ToastContext';
+import { deleteBlockPreset, fetchBlockPresets, saveBlockPreset, type BlockPreset } from '../../lib/soloApi';
 import { kindOf, stepSummary } from '../../lib/soloEdit';
 import { evenIndexes, type SoloStep } from '../../lib/soloLessons';
 
@@ -16,17 +18,20 @@ export interface AssembleLesson {
  * 소개 화면은 늘 들어가고, 단계가 하나도 안 남는 조합은 만들 수 없다.
  */
 export default function SoloBlockAssembler({
+  academyId,
   title,
   lessons,
   busy,
   onMake,
 }: {
+  academyId: string;
   title: string;
   lessons: AssembleLesson[];
   busy: boolean;
   onMake: (lessons: AssembleLesson[]) => void;
 }) {
   const { t } = useTranslation();
+  const { notify } = useToast();
   const [off, setOff] = useState<Set<string>>(new Set());
   /** 블록별 "수업당 단계 수" — 없으면 전부 */
   const [limit, setLimit] = useState<Record<string, number>>({});
@@ -54,6 +59,68 @@ export default function SoloBlockAssembler({
     }
     return order.map((type) => ({ type, ...(info.get(type) as { count: number; sample: string; perLesson: number }) }));
   }, [lessons]);
+
+  /* ---------- 내 블록 조합 ---------- */
+  const [presets, setPresets] = useState<BlockPreset[] | null>(null);
+  const [presetsError, setPresetsError] = useState(false);
+  const [presetName, setPresetName] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const loadPresets = useCallback(async () => {
+    try {
+      setPresets(await fetchBlockPresets(academyId));
+      setPresetsError(false);
+    } catch {
+      // 054 를 아직 안 돌렸으면 표가 없다 — 조합 기능만 조용히 숨긴다
+      setPresets([]);
+      setPresetsError(true);
+    }
+  }, [academyId]);
+  useEffect(() => {
+    void loadPresets();
+  }, [loadPresets]);
+
+  function applyPreset(p: BlockPreset) {
+    const types = new Set(blocks.map((b) => b.type as string));
+    setOff(new Set((p.config.off ?? []).filter((x) => types.has(x))));
+    const next: Record<string, number> = {};
+    for (const [k, v] of Object.entries(p.config.limit ?? {})) {
+      const b = blocks.find((x) => x.type === k);
+      if (b) next[k] = Math.max(1, Math.min(b.perLesson, Math.round(Number(v) || 1)));
+    }
+    setLimit(next);
+  }
+
+  async function saveCurrent() {
+    const name = presetName.trim();
+    if (!name || saving) return;
+    setSaving(true);
+    try {
+      const limits: Record<string, number> = {};
+      for (const b of blocks) {
+        const v = limit[b.type];
+        if (v !== undefined && v < b.perLesson) limits[b.type] = v;
+      }
+      await saveBlockPreset(academyId, name, { off: [...off], limit: limits });
+      setPresetName('');
+      notify(t('solo.preset_saved', { name }));
+      await loadPresets();
+    } catch (e) {
+      notify(e instanceof Error ? e.message : String(e), 'error');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removePreset(p: BlockPreset) {
+    if (!window.confirm(t('solo.preset_deleteConfirm', { name: p.name }))) return;
+    try {
+      await deleteBlockPreset(p.id);
+      await loadPresets();
+    } catch (e) {
+      notify(e instanceof Error ? e.message : String(e), 'error');
+    }
+  }
 
   /** 수업 하나에서 그 블록이 실제로 남길 단계 수 */
   const capOf = (type: string, own: number) => Math.min(own, Math.max(1, limit[type] ?? own));
@@ -113,6 +180,53 @@ export default function SoloBlockAssembler({
           {lessons.length > 1 ? t('solo.asm_hintMany', { count: lessons.length }) : t('solo.asm_hint')}
         </p>
       </div>
+
+      {!presetsError && presets !== null && (
+        <div className="space-y-2 rounded-xl border border-outline-variant/50 p-3">
+          <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.preset_title')}</div>
+          {presets.length === 0 ? (
+            <p className="font-caption text-caption text-on-surface-variant">{t('solo.preset_empty')}</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {presets.map((p) => (
+                <span key={p.id} className="inline-flex items-center overflow-hidden rounded-full border border-primary/50 bg-primary/5">
+                  <button type="button" onClick={() => applyPreset(p)} className="px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10" title={t('solo.preset_apply')}>
+                    {p.name}
+                    <span className="ml-1 font-caption text-caption text-on-surface-variant">
+                      {t('solo.preset_meta', { off: (p.config.off ?? []).length, limited: Object.keys(p.config.limit ?? {}).length })}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void removePreset(p)}
+                    aria-label={t('common.delete')}
+                    className="px-1.5 py-1 text-on-surface-variant hover:bg-error/10 hover:text-error"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              value={presetName}
+              maxLength={40}
+              onChange={(e) => setPresetName(e.target.value)}
+              placeholder={t('solo.preset_namePlaceholder')}
+              className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary"
+            />
+            <button
+              type="button"
+              disabled={!presetName.trim() || saving}
+              onClick={() => void saveCurrent()}
+              className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-40"
+            >
+              {t('solo.preset_save')}
+            </button>
+          </div>
+        </div>
+      )}
 
       <ul className="space-y-1.5">
         {blocks.map((b) => {

@@ -297,3 +297,42 @@ export async function updateSoloLesson(id: string, patch: { name: string; minute
     .eq('id', id);
   if (error) throw new Error(error.message);
 }
+
+/* ---------------- 내 블록 조합(054) ---------------- */
+
+export interface BlockPresetConfig {
+  /** 끈 활동 블록(단계 종류) */
+  off: string[];
+  /** 블록별 수업당 단계 수 */
+  limit: Record<string, number>;
+}
+
+export interface BlockPreset {
+  id: string;
+  name: string;
+  config: BlockPresetConfig;
+}
+
+export async function fetchBlockPresets(academyId: string): Promise<BlockPreset[]> {
+  const { data, error } = await supabase
+    .from('solo_block_presets')
+    .select('id, name, config')
+    .eq('academy_id', academyId)
+    .order('created_at', { ascending: false })
+    .limit(30);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as BlockPreset[];
+}
+
+/** 같은 이름이면 덮어쓴다 */
+export async function saveBlockPreset(academyId: string, name: string, config: BlockPresetConfig): Promise<void> {
+  const { error } = await supabase
+    .from('solo_block_presets')
+    .upsert({ academy_id: academyId, name: name.trim(), config }, { onConflict: 'academy_id,name' });
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteBlockPreset(id: string): Promise<void> {
+  const { error } = await supabase.from('solo_block_presets').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}

@@ -27,6 +27,7 @@ export default function HomeworkWizard({
   initialStudentIds,
   initialCards,
   initialTitle,
+  initialLessonId,
   onCancel,
   onCreated,
 }: {
@@ -37,6 +38,8 @@ export default function HomeworkWizard({
   initialStudentIds?: string[];
   initialCards?: FullCardItem[];
   initialTitle?: string;
+  /** 내 수업 카드의 "숙제 내기"에서 넘어올 때: 이 수업의 단어장으로 미리 채운다 */
+  initialLessonId?: string;
   onCancel: () => void;
   onCreated: (hw: { id: string; code: string }) => void;
 }) {
@@ -58,6 +61,7 @@ export default function HomeworkWizard({
   const [clip, setClip] = useState<VideoClip | null>(null);
   const [cards, setCards] = useState<FullCardItem[]>(initialCards ?? []);
   const [sourceName, setSourceName] = useState(initialTitle ?? '');
+  const [missingLessonWords, setMissingLessonWords] = useState(false);
 
   const [minutes, setMinutes] = useState<HwDuration | null>(10);
   const [custom, setCustom] = useState(false);
@@ -69,8 +73,24 @@ export default function HomeworkWizard({
   useEffect(() => {
     void fetchStudentsOfClass(classId).then(setStudents).catch(() => setStudents([]));
     void Promise.all([fetchCurriculumLessons(academyId, classId).catch(() => []), fetchWordLists(academyId, classId).catch(() => [])]).then(([ls, wl]) => {
-      setLessons(ls.filter((l) => l.word_list_id).slice(0, 8));
+      const withWords = ls.filter((l) => l.word_list_id);
+      const recent = withWords.slice(0, 8);
+      // 수업 카드에서 넘어온 수업은 8개 밖이어도 목록에 넣고 미리 고른다
+      const target = initialLessonId ? withWords.find((l) => l.id === initialLessonId) : undefined;
+      setLessons(target && !recent.some((l) => l.id === target.id) ? [target, ...recent] : recent);
       setWordLists(wl);
+      if (initialLessonId) {
+        const l = ls.find((x) => x.id === initialLessonId);
+        const list = l ? wl.find((w) => w.id === l.word_list_id) : undefined;
+        if (l && list) {
+          setSource('lesson');
+          setLessonId(l.id);
+          setTitle((cur) => cur || l.name);
+          void applyWordList(list, l.name);
+        } else {
+          setMissingLessonWords(true);
+        }
+      }
     });
   }, [academyId, classId]);
 
@@ -234,6 +254,7 @@ export default function HomeworkWizard({
             ))}
           </div>
 
+          {source === 'lesson' && missingLessonWords && <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 text-base text-on-surface">{t('studentHw.lessonNoWords')}</p>}
           {source === 'lesson' &&
             (lessons.length === 0 ? (
               <p className="text-base text-on-surface-variant">{t('studentHw.noLessons')}</p>

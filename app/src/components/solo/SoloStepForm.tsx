@@ -6,7 +6,7 @@ import { lettersOf, wordsOfSentence } from '../../lib/soloEdit';
 import type { RoleplayLine, SoloClip, SoloStep } from '../../lib/soloLessons';
 import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
-import { SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
+import { POS_HINT_KO, SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
 import { loadWordBank } from '../../lib/wordBankCache';
 
 const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
@@ -210,6 +210,16 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
         <div className="space-y-4">
           {text(t('soloEdit.word'), step.word, 'word')}
           {text(t('soloEdit.meaning'), step.meaning, 'meaning')}
+          <Field title={t('soloEdit.pos')} hint={t('soloEdit.posHint')}>
+            <select value={step.pos ?? ''} onChange={(e) => set({ pos: e.target.value || null })} className={input}>
+              <option value="">{t('soloEdit.posNone')}</option>
+              {Object.keys(POS_HINT_KO).map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </Field>
           <Field title={t('soloEdit.example')}>
             <input value={step.example ?? ''} onChange={(e) => set({ example: e.target.value || null })} className={input} />
           </Field>
@@ -231,6 +241,18 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
         <div className="space-y-4">
           {text(t('soloEdit.word'), step.word, 'word', { hint: t('soloEdit.readAloudHint') })}
           {image(step.imageUrl)}
+          <Field title={t('soloEdit.options')}>
+            <OptionsField options={step.options} answer={step.answer} onChange={(options, answer) => set({ options, answer })} />
+          </Field>
+        </div>
+      );
+    case 'pickPos':
+      return (
+        <div className="space-y-4">
+          {text(t('soloEdit.word'), step.word, 'word')}
+          <Field title={t('soloEdit.sentenceOptional')} hint={t('soloEdit.pickPosSentenceHint')}>
+            <input value={step.sentence ?? ''} onChange={(e) => set({ sentence: e.target.value || undefined })} className={input} />
+          </Field>
           <Field title={t('soloEdit.options')}>
             <OptionsField options={step.options} answer={step.answer} onChange={(options, answer) => set({ options, answer })} />
           </Field>

@@ -4,7 +4,7 @@ import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 import RainbowSpeaking from '../rainbow/RainbowSpeaking';
 import RainbowStructure from '../rainbow/RainbowStructure';
-import { SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
+import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 
 /**
@@ -28,7 +28,38 @@ export interface SoloPlayerApi {
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
 
 const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
-const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick'];
+const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'];
+/** 문장에서 낱말(첫 번째로 나오는 것)을 노랗게 표시 */
+function highlightWord(sentence: string, word: string) {
+  const esc = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = new RegExp(`\\b${esc}\\b`, 'i').exec(sentence);
+  if (!m) return sentence;
+  return (
+    <>
+      {sentence.slice(0, m.index)}
+      <span className="rounded-lg bg-warm-yellow px-2 text-deep-navy">{m[0]}</span>
+      {sentence.slice(m.index + m[0].length)}
+    </>
+  );
+}
+
+/** 낱말의 품사(명사·동사 …) — 색은 무지개 문법의 품사색과 같다. 어휘를 알아도 품사를 모르면 쓰지 못하므로 만날 때 같이 알려 준다. */
+function PosBadge({ pos }: { pos: string }) {
+  const c = RAINBOW_THEME.pos[posFromKo(pos) ?? 'other'];
+  const hint = POS_HINT_KO[pos];
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span
+        className="rounded-full px-5 py-1 text-xl font-bold text-deep-navy"
+        style={{ background: c?.bg ?? '#E5E7EB', borderBottom: `3px solid ${c?.line ?? '#9CA3AF'}` }}
+      >
+        {pos}
+      </span>
+      {hint && <span className="text-base text-white/70">{hint}</span>}
+    </div>
+  );
+}
+
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble'];
 
 export default function SoloPlayer({
@@ -208,6 +239,7 @@ export default function SoloPlayer({
     if (step.t === 'fadeRead') speak(step.sentence);
     if (step.t === 'meet' || step.t === 'listenPick' || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
     if (step.t === 'example') speak(step.sentence);
+    if (step.t === 'pickPos') speak(step.sentence ?? step.word);
     if (step.t === 'translatePick') speak(step.sentence);
   }, [idx, step]);
 
@@ -640,6 +672,7 @@ export default function SoloPlayer({
               <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
               {step.word}
             </button>
+            {step.pos && <PosBadge pos={step.pos} />}
             <p className="text-2xl text-white/85">{step.meaning}</p>
             {step.example && (
               <button type="button" onClick={() => speak(step.example ?? '')} className="rounded-xl bg-white/5 px-4 py-2 text-lg text-white/75">
@@ -712,6 +745,23 @@ export default function SoloPlayer({
               <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
               {step.word}
             </button>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+          </>
+        )}
+
+        {step.t === 'pickPos' && (
+          <>
+            <p className="text-xl font-bold">{step.sentence ? t('solo.pickPosSentenceQ') : t('solo.pickPosQ')}</p>
+            {step.sentence ? (
+              <button type="button" onClick={() => speak(step.sentence ?? '')} className="rounded-2xl bg-white/10 px-5 py-4 text-center text-3xl font-bold leading-snug">
+                {highlightWord(step.sentence, step.word)}
+              </button>
+            ) : (
+              <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-3 text-5xl font-bold">
+                <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
+                {step.word}
+              </button>
+            )}
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
           </>
         )}

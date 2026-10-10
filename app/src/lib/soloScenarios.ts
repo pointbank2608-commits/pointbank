@@ -227,7 +227,7 @@ export function buildSoloScenarioLesson(sc: SoloScenario, bank: WordBankEntry[],
   const img = (n: string) => `/solo-images/talk/${key}-${n}.webp`;
   const steps: SoloStep[] = [{ t: 'intro', title: name, text: ko ? sc.koDesc : sc.enDesc, imageUrl: img('scene') }];
 
-  for (const e of entries) steps.push({ t: 'meet', word: e.word, meaning: e.meaning, imageUrl: e.image_url, example: e.example_sentence });
+  for (const e of entries) steps.push({ t: 'meet', word: e.word, meaning: e.meaning, imageUrl: e.image_url, example: e.example_sentence, pos: e.part_of_speech });
   if (entries.length >= 4) {
     const meanings = entries.map((e) => e.meaning);
     for (const e of shuffle(entries).slice(0, 4)) {

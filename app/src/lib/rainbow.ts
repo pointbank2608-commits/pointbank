@@ -397,3 +397,54 @@ export function structureProblems(item: StructureItem): string[] {
     }
   return p;
 }
+
+/* ---------------- 사전의 한국어 품사 이름 → 품사 색·한 줄 설명(낱말 만나기에서 보여 준다) ---------------- */
+
+const POS_FROM_KO: Record<string, Pos> = {
+  명사: 'noun',
+  대명사: 'pronoun',
+  동사: 'verb',
+  조동사: 'verb',
+  형용사: 'adjective',
+  부사: 'adverb',
+  전치사: 'preposition',
+  관사: 'determiner',
+  접속사: 'conjunction',
+  감탄사: 'interjection',
+};
+
+export function posFromKo(ko: string | null | undefined): Pos | null {
+  return (ko && POS_FROM_KO[ko.trim()]) || null;
+}
+
+export const POS_HINT_KO: Record<string, string> = {
+  명사: '사람·동물·물건의 이름을 나타내는 말',
+  대명사: '이름 대신 쓰는 말',
+  동사: '동작이나 상태를 나타내는 말',
+  조동사: '동사를 도와주는 말',
+  형용사: '모습이나 느낌을 꾸며 주는 말',
+  부사: '어떻게·언제·어디서를 더해 주는 말',
+  전치사: '위치·방향·때를 나타내는 말',
+  관사: '명사 앞에 붙는 a, an, the',
+  접속사: '말과 말을 이어 주는 말',
+  감탄사: '느낌을 나타내는 말',
+  수사: '수를 나타내는 말',
+  숙어: '여러 낱말이 한 덩어리로 쓰이는 말',
+  표현: '자주 쓰는 말',
+};
+
+/** 품사 색 이름(설명 글에 쓴다) — 위 RAINBOW_THEME 색을 바꾸면 여기도 같이 고친다 */
+export const POS_COLOR_NAME_KO: Record<string, string> = {
+  명사: '빨간색',
+  대명사: '빨간색',
+  동사: '노란색',
+  조동사: '노란색',
+  형용사: '초록색',
+  부사: '주황색',
+  전치사: '파란색',
+  관사: '남색',
+  접속사: '보라색',
+};
+
+/** 선택지 글: "명사 (사람·동물·물건의 이름을 나타내는 말)" */
+export const posOptionLabel = (ko: string) => (POS_HINT_KO[ko] ? `${ko} (${POS_HINT_KO[ko]})` : ko);

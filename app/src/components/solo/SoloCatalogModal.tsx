@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { grammarLevelTag } from '../../lib/grammar';
 import { LESSON_SETS, pickSetWords } from '../../lib/lessonSets';
 import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
+import { buildSoloPosLesson } from '../../lib/soloPosLessons';
 import {
   buildSoloDayLessons,
   buildSoloGrammarLesson,
@@ -69,10 +70,12 @@ const PURPOSES: { id: Purpose; icon: string }[] = [
 ];
 
 export default function SoloCatalogModal({
+  academyId,
   onClose,
   onBatch,
   onScratch,
 }: {
+  academyId: string;
   onClose: () => void;
   onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
   /** 빈 수업으로 시작(편집기가 바로 열린다) */
@@ -120,6 +123,21 @@ export default function SoloCatalogModal({
           const lesson = buildSoloScenarioLesson(sc, await loadWordBank(), i18n.language);
           if (!lesson) return null;
           return { lessons: [lesson], level: t('solo.talkLevel'), source: sc.id };
+        },
+      });
+    }
+    for (const n of [1, 2] as const) {
+      list.push({
+        key: `pos-${n}`,
+        type: 'rainbow',
+        icon: 'category',
+        title: t(`solo.posLesson_${n}`),
+        desc: t(`solo.posLessonDesc_${n}`),
+        minutes: 15,
+        haystack: `품사 명사 동사 형용사 부사 전치사 접속사 관사 part of speech ${t(`solo.posLesson_${n}`)}`,
+        build: async () => {
+          const l = buildSoloPosLesson(n, t(`solo.posLesson_${n}`));
+          return { lessons: [l], level: t('solo.rainbowLevel'), source: `pos-${n}` };
         },
       });
     }
@@ -278,6 +296,7 @@ export default function SoloCatalogModal({
   if (pending) {
     body = (
       <SoloBlockAssembler
+        academyId={academyId}
         title={pending.title}
         lessons={pending.lessons}
         busy={busy === 'make'}

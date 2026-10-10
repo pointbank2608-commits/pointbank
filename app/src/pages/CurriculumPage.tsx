@@ -1039,6 +1039,14 @@ export default function CurriculumPage() {
               >
                 ▶ {t('curriculum.startButton')}
               </button>
+              <button
+                type="button"
+                onClick={() => navigate('/homework', { state: { fromLessonId: lesson.id } })}
+                className="flex w-full items-center justify-center gap-1.5 rounded-full border border-primary px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+              >
+                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                {t('curriculum.homeworkButton')}
+              </button>
             </div>
           );
         })}
