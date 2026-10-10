@@ -17,6 +17,7 @@ import {
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
 import { loadWordBank } from '../../lib/wordBankCache';
+import SoloBlockAssembler from './SoloBlockAssembler';
 import { extractYoutubeId } from '../../lib/youtube';
 
 /**
@@ -83,6 +84,8 @@ export default function SoloCatalogModal({
   const [view, setView] = useState<View>({ id: 'home' });
   const [busy, setBusy] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
+  const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
 
   /* ---------- 수업 항목(검색·주제·목적이 같은 목록을 쓴다) ---------- */
   const entries = useMemo<Entry[]>(() => {
@@ -158,7 +161,7 @@ export default function SoloCatalogModal({
         notify(t('solo.buildFailed'), 'error');
         return;
       }
-      await onBatch(r.lessons, r.level, r.source);
+      setPending({ title: entry.title, ...r });
     } finally {
       setBusy(null);
     }
@@ -176,7 +179,7 @@ export default function SoloCatalogModal({
         notify(t('solo.moe800Missing'), 'error');
         return;
       }
-      await onBatch(lessons, t('solo.moe800Level'), `solo-moe800-d${day}-${style}-${per}`);
+      setPending({ title: t('solo.moe800Name', { day }), lessons, level: t('solo.moe800Level'), source: `solo-moe800-d${day}-${style}-${per}` });
     } finally {
       setBusy(null);
     }
@@ -198,7 +201,7 @@ export default function SoloCatalogModal({
         notify(t('solo.songTooShort'), 'error');
         return;
       }
-      await onBatch([lesson], t('solo.songLevel'), 'solo-song');
+      setPending({ title: songTitle.trim(), lessons: [lesson], level: t('solo.songLevel'), source: 'solo-song' });
     } finally {
       setBusy(null);
     }
@@ -216,7 +219,7 @@ export default function SoloCatalogModal({
   async function makeGrammarAll(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
     setBusy(label);
     try {
-      await onBatch(points.map(buildSoloGrammarLesson), label, `solo-grammar-${points[0]?.id ?? ''}`);
+      setPending({ title: label, lessons: points.map(buildSoloGrammarLesson), level: label, source: `solo-grammar-${points[0]?.id ?? ''}` });
     } finally {
       setBusy(null);
     }
@@ -272,7 +275,23 @@ export default function SoloCatalogModal({
   const results = q ? entries.filter((e) => `${e.title} ${e.haystack}`.toLowerCase().includes(q)) : [];
 
   let body: ReactNode;
-  if (q) {
+  if (pending) {
+    body = (
+      <SoloBlockAssembler
+        title={pending.title}
+        lessons={pending.lessons}
+        busy={busy === 'make'}
+        onMake={async (made) => {
+          setBusy('make');
+          try {
+            await onBatch(made, pending.level, pending.source);
+          } finally {
+            setBusy(null);
+          }
+        }}
+      />
+    );
+  } else if (q) {
     body = results.length === 0 ? (
       <p className="py-8 text-center font-body-md text-on-surface-variant">{t('solo.cat_searchEmpty')}</p>
     ) : (
@@ -399,7 +418,7 @@ export default function SoloCatalogModal({
                     disabled={busy !== null}
                     onClick={(e) => {
                       e.preventDefault();
-                      if (window.confirm(t('solo.makeAllConfirm', { count: points.length, label }))) void makeGrammarAll(points, label);
+                      void makeGrammarAll(points, label);
                     }}
                     className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-50"
                   >
@@ -534,7 +553,9 @@ export default function SoloCatalogModal({
   }
 
   const title =
-    q
+    pending
+      ? t('solo.asm_title')
+      : q
       ? t('solo.cat_searchResults', { count: results.length })
       : view.id === 'home'
         ? t('solo.catalogTitle')
@@ -546,8 +567,11 @@ export default function SoloCatalogModal({
               ? t('solo.cat_byTopic')
               : t('solo.cat_scratch');
 
-  const canBack = !q && view.id !== 'home';
-  const goBack = () => setView(view.id === 'purpose' ? { id: 'purposes' } : { id: 'home' });
+  const canBack = !!pending || (!q && view.id !== 'home');
+  const goBack = () => {
+    if (pending) setPending(null);
+    else setView(view.id === 'purpose' ? { id: 'purposes' } : { id: 'home' });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4" role="dialog" aria-modal="true">
@@ -569,6 +593,7 @@ export default function SoloCatalogModal({
           </button>
         </div>
 
+        {!pending && (
         <div className="relative">
           <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-on-surface-variant">search</span>
           <input
@@ -578,6 +603,7 @@ export default function SoloCatalogModal({
             className={`${field} w-full pl-10`}
           />
         </div>
+        )}
 
         {body}
       </div>
