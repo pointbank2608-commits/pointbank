@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSyncedSubState } from '../../lib/presentSync';
 import {
   buildSpanTree,
@@ -15,6 +15,21 @@ function levelsOf(item: StructureItem) {
   return Math.max(1, maxDepth(item.spans));
 }
 
+/** 글자 하나가 놓이는 칸 — 덩어리 칸과 같은 테두리·안쪽 여백이라 글자 높이가 서로 맞는다 */
+const BOX_PAD = '0.1em 0.26em 0.04em';
+const wordBox = (bg?: string, line?: string): React.CSSProperties => ({
+  display: 'inline-block',
+  padding: BOX_PAD,
+  border: '0.07em solid transparent',
+  borderBottomWidth: '0.17em',
+  borderRadius: '0.35em',
+  ...(bg ? { background: bg, borderColor: line } : {}),
+});
+
+/**
+ * 덩어리를 "끊기지 않는 네모 칸"으로 그린다(줄 바꿈은 칸 안에서 일어난다).
+ * 칸 이름표는 칸 윗 모서리에 걸쳐 놓아서 글자 줄과 정렬이 어긋나지 않는다.
+ */
 function renderRange(item: StructureItem, from: number, to: number, nodes: SNode[], level: number): ReactNode[] {
   const out: ReactNode[] = [];
   let i = from;
@@ -22,29 +37,34 @@ function renderRange(item: StructureItem, from: number, to: number, nodes: SNode
     const node = nodes.find((n) => n.span.from === i);
     if (node) {
       const inner = renderRange(item, node.span.from, node.span.to, node.children, level);
-      // depth 가 level 이내인 덩어리만 띠를 그린다(레벨 1 이면 depth 0 만)
+      // depth 가 level 이내인 덩어리만 칸을 그린다(레벨 1 이면 depth 0 만)
       if (node.depth < level) {
         const c = RAINBOW_THEME.role[node.span.role];
         out.push(
           <span
             key={`s${node.span.from}-${node.span.to}-${node.depth}`}
-            className="relative rounded-[0.35em]"
             style={{
-              background: c.bg,
+              position: 'relative',
+              display: 'inline-flex',
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              justifyContent: 'center',
+              columnGap: '0.22em',
+              rowGap: '0.55em',
+              maxWidth: '100%',
+              padding: '0.2em 0.3em 0.06em',
               border: `0.07em solid ${c.line}`,
               borderBottomWidth: '0.17em',
-              padding: '0.1em 0.26em 0.04em',
-              margin: '0 0.07em',
-              boxDecorationBreak: 'clone',
-              WebkitBoxDecorationBreak: 'clone',
+              borderRadius: '0.4em',
+              background: c.bg,
             }}
           >
-            <sup
-              className="mr-[0.25em] align-top font-bold text-deep-navy/60"
-              style={{ fontSize: '0.4em', lineHeight: 1, position: 'relative', top: '-0.1em' }}
+            <span
+              className="absolute left-[0.5em] whitespace-nowrap rounded-full bg-white px-[0.4em] font-bold leading-none"
+              style={{ top: '-0.52em', fontSize: '0.4em', color: '#334155', border: `0.12em solid ${c.line}`, paddingTop: '0.18em', paddingBottom: '0.18em' }}
             >
               {node.span.kind ?? ROLE_LABEL_KO[node.span.role]}
-            </sup>
+            </span>
             {inner}
           </span>,
         );
@@ -59,19 +79,14 @@ function renderRange(item: StructureItem, from: number, to: number, nodes: SNode
       out.push(
         <span
           key={`t${i}`}
+          style={isVerb ? wordBox(v.bg, v.line) : wordBox()}
           className={t.marker && level >= 1 ? 'font-bold underline decoration-dotted decoration-[0.08em] underline-offset-[0.18em]' : undefined}
-          style={
-            isVerb
-              ? { background: v.bg, border: `0.07em solid ${v.line}`, borderBottomWidth: '0.17em', padding: '0.1em 0.26em 0.04em', margin: '0 0.07em', borderRadius: '0.35em' }
-              : { margin: '0 0.12em' }
-          }
         >
           {t.text}
         </span>,
       );
       i += 1;
     }
-    out.push(' ');
   }
   return out;
 }
@@ -168,7 +183,7 @@ export default function RainbowStructure({
   const btn = 'rounded-full px-[2.6cqh] py-[1.2cqh] text-[2.4cqh] font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40';
   // 글자 크기: 문장이 길수록 작게(칸 폭 기준)
   const len = item.sentence.length;
-  const fontCqh = len > 80 ? 4.6 : len > 55 ? 5.4 : 6.4;
+  const fontCqh = len > 80 ? 5.6 : len > 55 ? 6.4 : 7.4;
   const fontCqw = len > 80 ? 6.2 : len > 55 ? 7.2 : 8.4;
   const fontSize = compact ? `min(${fontCqh}cqh, ${fontCqw}cqw)` : `${fontCqh}cqh`;
 
@@ -189,9 +204,12 @@ export default function RainbowStructure({
 
       {/* 문장 */}
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[2cqh] px-[5cqh]">
-        <p className="w-full text-center font-bold" style={{ fontSize, lineHeight: 2.1 }}>
+        <div
+          className="flex w-full flex-wrap items-baseline justify-center font-bold"
+          style={{ fontSize, lineHeight: 1.25, columnGap: '0.25em', rowGap: '0.9em' }}
+        >
           {renderRange(item, 0, item.tokens.length - 1, tree, level)}
-        </p>
+        </div>
         {showKo && <p className="text-center text-[3.2cqh] font-medium text-deep-navy/70">{item.ko}</p>}
         {atEnd && <p className="max-w-[140cqh] rounded-2xl bg-surface-container-low px-[3cqh] py-[1.6cqh] text-center text-[2.6cqh] leading-snug text-deep-navy/80">{item.note}</p>}
       </div>
