@@ -250,6 +250,44 @@ export default function SoloLessonEditor({
     setSel(at);
     setPaletteOpen(false);
   }
+  /** 이 수업의 같은 종류 단계에서 이미 쓴 낱말(영어, 소문자) */
+  const meaningToWord = new Map(lessonWords.map((w) => [w.meaning, w.word.toLowerCase()]));
+  const keyOf = (s: SoloStep): string => {
+    if (s.t === 'pickWord' || s.t === 'fillBlank') return meaningToWord.get(s.meaning) ?? s.meaning;
+    if ('word' in s) return String(s.word).toLowerCase();
+    return '';
+  };
+  /** 이 블록에 더 넣을 수 있는 새 단계들 — 같은 종류 단계에 아직 안 쓴 낱말만(수업 안에서 같은 문제가 겹치지 않게) */
+  function freshFor(type: SoloStep['t']): SoloStep[] {
+    if (!isWordBlock(type)) return [];
+    const used = new Set(steps.filter((s) => s.t === type).map(keyOf));
+    return buildWordBlock(type as WordBlockType, lessonWords).filter((s) => !used.has(keyOf(s)));
+  }
+
+  /** 블록의 문제 수를 target 으로 — 줄이면 뒤쪽 단계부터 빼고, 늘리면(낱말 블록만) 아직 안 쓴 낱말로 채운다 */
+  function setRunCount(ri: number, target: number) {
+    const r = runs[ri];
+    const cur = r.end - r.start + 1;
+    const want = Math.max(1, Math.round(target));
+    if (want === cur) return;
+    if (want < cur) {
+      const removeFrom = r.start + want;
+      if (steps.length - (cur - want) < 1) return;
+      commit(steps.filter((_, j) => j < removeFrom || j > r.end));
+      setSel((s) => Math.min(s, removeFrom - 1));
+      return;
+    }
+    const add = freshFor(r.t).slice(0, want - cur);
+    if (add.length === 0) {
+      notify(t('soloEdit.blockNoMore'), 'error');
+      return;
+    }
+    const next = [...steps];
+    next.splice(r.end + 1, 0, ...add);
+    commit(next);
+  }
+  const runCapacity = (type: SoloStep['t'], count: number) => count + freshFor(type).length;
+
   const toggleRun = (start: number) =>
     setOpenRuns((cur) => {
       const n = new Set(cur);
@@ -433,6 +471,31 @@ export default function SoloLessonEditor({
                           </span>
                         )}
                       </div>
+                      {open && !single && (
+                        <div className="flex items-center gap-1.5 pl-3 font-caption text-caption text-on-surface-variant">
+                          <span>{t('soloEdit.blockCount')}</span>
+                          <button type="button" onClick={() => setRunCount(ri, count - 1)} disabled={count <= 1} aria-label={t('soloEdit.blockFewer')} className="rounded-full border border-outline-variant px-1.5 leading-5 hover:border-primary disabled:opacity-30">−</button>
+                          <input
+                            type="number"
+                            min={1}
+                            max={runCapacity(r.t, count)}
+                            value={count}
+                            onChange={(e) => setRunCount(ri, Number(e.target.value) || 1)}
+                            aria-label={t('soloEdit.blockCount')}
+                            className="w-12 rounded-lg border border-outline-variant bg-surface-container-low px-1 py-0.5 text-center text-sm tabular-nums text-on-surface"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setRunCount(ri, count + 1)}
+                            disabled={count >= runCapacity(r.t, count)}
+                            aria-label={t('soloEdit.blockMore')}
+                            className="rounded-full border border-outline-variant px-1.5 leading-5 hover:border-primary disabled:opacity-30"
+                          >
+                            +
+                          </button>
+                          <span className="tabular-nums">/ {runCapacity(r.t, count)}</span>
+                        </div>
+                      )}
                       {(open || single) && (
                         <ol className="space-y-1.5 pl-3">
                           {Array.from({ length: count }, (_, j) => r.start + j).map((i) => renderStep(i))}

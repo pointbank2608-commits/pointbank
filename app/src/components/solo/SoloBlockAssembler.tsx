@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { kindOf, stepSummary } from '../../lib/soloEdit';
-import type { SoloStep } from '../../lib/soloLessons';
+import { evenIndexes, type SoloStep } from '../../lib/soloLessons';
 
 export interface AssembleLesson {
   name: string;
@@ -28,27 +28,43 @@ export default function SoloBlockAssembler({
 }) {
   const { t } = useTranslation();
   const [off, setOff] = useState<Set<string>>(new Set());
+  /** 블록별 "수업당 단계 수" — 없으면 전부 */
+  const [limit, setLimit] = useState<Record<string, number>>({});
 
   /** 종류별 묶음(처음 나온 순서) */
   const blocks = useMemo(() => {
     const order: SoloStep['t'][] = [];
-    const info = new Map<SoloStep['t'], { count: number; sample: string }>();
+    const info = new Map<SoloStep['t'], { count: number; sample: string; perLesson: number }>();
     for (const l of lessons) {
+      const own = new Map<string, number>();
       for (const s of l.steps) {
         if (s.t === 'intro') continue;
+        own.set(s.t, (own.get(s.t) ?? 0) + 1);
         const cur = info.get(s.t);
         if (cur) cur.count += 1;
         else {
           order.push(s.t);
-          info.set(s.t, { count: 1, sample: stepSummary(s) });
+          info.set(s.t, { count: 1, sample: stepSummary(s), perLesson: 0 });
         }
       }
+      for (const [t, n] of own) {
+        const cur = info.get(t as SoloStep['t']);
+        if (cur) cur.perLesson = Math.max(cur.perLesson, n);
+      }
     }
-    return order.map((type) => ({ type, ...(info.get(type) as { count: number; sample: string }) }));
+    return order.map((type) => ({ type, ...(info.get(type) as { count: number; sample: string; perLesson: number }) }));
   }, [lessons]);
 
+  /** 수업 하나에서 그 블록이 실제로 남길 단계 수 */
+  const capOf = (type: string, own: number) => Math.min(own, Math.max(1, limit[type] ?? own));
+  const countsPerLesson = lessons.map((l) => {
+    const m = new Map<string, number>();
+    for (const s of l.steps) if (s.t !== 'intro') m.set(s.t, (m.get(s.t) ?? 0) + 1);
+    return m;
+  });
   const total = blocks.reduce((n, b) => n + b.count, 0);
-  const kept = blocks.filter((b) => !off.has(b.type)).reduce((n, b) => n + b.count, 0);
+  const keptOf = (type: string) => countsPerLesson.reduce((n, m) => n + capOf(type, m.get(type) ?? 0), 0);
+  const kept = blocks.filter((b) => !off.has(b.type)).reduce((n, b) => n + keptOf(b.type), 0);
   const sumMinutes = lessons.reduce((n, l) => n + l.minutes, 0);
   const minutes = total === 0 ? 0 : Math.max(5 * lessons.length, Math.round((sumMinutes * kept) / total));
 
@@ -67,7 +83,19 @@ export default function SoloBlockAssembler({
 
   function make() {
     const made = lessons.map((l) => {
-      const steps = l.steps.filter((s) => s.t === 'intro' || !off.has(s.t));
+      // 블록별 한도: 그 종류 단계를 앞뒤 고르게 뽑는다
+      const keepIdx = new Set<number>();
+      const byType = new Map<string, number[]>();
+      l.steps.forEach((s, i) => {
+        if (s.t === 'intro') return;
+        byType.set(s.t, [...(byType.get(s.t) ?? []), i]);
+      });
+      for (const [type, idxs] of byType) {
+        if (off.has(type)) continue;
+        const cap = capOf(type, idxs.length);
+        for (const k of evenIndexes(idxs.length, cap)) keepIdx.add(idxs[k]);
+      }
+      const steps = l.steps.filter((s, i) => s.t === 'intro' || keepIdx.has(i));
       const non = steps.filter((s) => s.t !== 'intro').length;
       const origin = l.steps.filter((s) => s.t !== 'intro').length || 1;
       return { ...l, steps, minutes: Math.max(5, Math.round((l.minutes * non) / origin)) };
@@ -75,7 +103,7 @@ export default function SoloBlockAssembler({
     onMake(made);
   }
 
-  const allOn = off.size === 0;
+  const allOn = off.size === 0 && Object.keys(limit).every((k) => limit[k] >= (blocks.find((b) => b.type === k)?.perLesson ?? 0));
 
   return (
     <div className="space-y-4">
@@ -91,9 +119,10 @@ export default function SoloBlockAssembler({
           const on = !off.has(b.type);
           return (
             <li key={b.type}>
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-3 py-2 transition-colors ${on ? 'border-primary/60 bg-primary/5' : 'border-outline-variant/50 bg-surface-container-lowest opacity-70'}`}
+              <div
+                className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2 transition-colors ${on ? 'border-primary/60 bg-primary/5' : 'border-outline-variant/50 bg-surface-container-lowest opacity-70'}`}
               >
+              <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={on} onChange={() => toggle(b.type)} className="h-5 w-5 shrink-0 accent-primary" />
                 <span className="material-symbols-outlined shrink-0 text-[22px] text-primary">{kindOf(b.type).icon}</span>
                 <span className="min-w-0 flex-1">
@@ -103,10 +132,24 @@ export default function SoloBlockAssembler({
                     {b.sample ? ` · ${t('solo.asm_example', { text: b.sample })}` : ''}
                   </span>
                 </span>
-                <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption tabular-nums text-on-surface-variant">
-                  {t('solo.asm_steps', { count: b.count })}
-                </span>
               </label>
+              <label className="flex shrink-0 items-center gap-1 font-caption text-caption text-on-surface-variant">
+                <input
+                  type="number"
+                  min={1}
+                  max={b.perLesson}
+                  disabled={!on || b.perLesson <= 1}
+                  value={limit[b.type] ?? b.perLesson}
+                  onChange={(e) => {
+                    const v = Math.max(1, Math.min(b.perLesson, Math.round(Number(e.target.value) || 1)));
+                    setLimit((cur) => ({ ...cur, [b.type]: v }));
+                  }}
+                  aria-label={t('solo.asm_countLabel')}
+                  className="w-14 rounded-lg border border-outline-variant bg-surface-container-low px-2 py-1 text-center text-sm tabular-nums text-on-surface disabled:opacity-50"
+                />
+                <span className="tabular-nums">/ {b.perLesson}{lessons.length > 1 ? t('solo.asm_perLesson') : ''}</span>
+              </label>
+              </div>
             </li>
           );
         })}
@@ -128,7 +171,7 @@ export default function SoloBlockAssembler({
           {lessons.length > 1 ? ` · ${t('solo.asm_lessons', { count: lessons.length })}` : ''}
         </span>
         {!allOn && (
-          <button type="button" onClick={() => setOff(new Set())} className="ml-auto font-caption text-caption text-primary hover:underline">
+          <button type="button" onClick={() => { setOff(new Set()); setLimit({}); }} className="ml-auto font-caption text-caption text-primary hover:underline">
             {t('solo.asm_reset')}
           </button>
         )}

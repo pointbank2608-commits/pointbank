@@ -150,6 +150,18 @@ export function buildSoloWordSteps(title: string, words: FullCardItem[], pool?: 
 export const WORD_BLOCK_TYPES = ['meet', 'pickWord', 'pickMeaning', 'listenPick', 'spell', 'typeWord', 'fillBlank', 'dictation'] as const;
 export type WordBlockType = (typeof WORD_BLOCK_TYPES)[number];
 
+/** n개 중 k개를 앞뒤 고르게(순서 유지) 뽑은 번호 — 낱말 묶음이 나뉜 수업에서도 뒤쪽이 통째로 빠지지 않게 */
+export function evenIndexes(n: number, k: number): number[] {
+  if (k >= n) return Array.from({ length: n }, (_, i) => i);
+  if (k <= 0) return [];
+  if (k === 1) return [0];
+  const set = new Set<number>();
+  for (let i = 0; i < k; i++) set.add(Math.round((i * (n - 1)) / (k - 1)));
+  // 반올림으로 겹치면 빈 번호를 채운다
+  for (let i = 0; set.size < k && i < n; i++) set.add(i);
+  return [...set].sort((a, b) => a - b);
+}
+
 /**
  * 수업의 낱말 전체로 활동 블록 하나(같은 종류 단계 묶음)를 만든다. 낱말이 모자라거나 그 활동에 맞는 낱말이 없으면 빈 배열.
  * 보기는 같은 낱말 목록에서 뽑는다.
