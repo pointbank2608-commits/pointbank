@@ -5,7 +5,7 @@ import { parseShadowText, shadowCloze, shadowSpeakers, type ShadowLine } from '.
 import { extractYoutubeId, loadYoutubeIframeApi, type YoutubePlayer } from '../lib/youtube';
 import { CanvasStageBox } from './CanvasSlideView';
 
-export type ShadowFlow = 'auto' | 'manual';
+export type ShadowFlow = 'video' | 'auto' | 'manual';
 export type ShadowSubtitle = 'both' | 'en' | 'ko' | 'cloze' | 'none';
 export const SHADOW_SUBTITLES: ShadowSubtitle[] = ['both', 'en', 'ko', 'cloze', 'none'];
 export const SHADOW_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -19,7 +19,8 @@ const TEAM_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706'];
 /**
  * 쉐도잉 칠판(2026-10-03, 클래스5 무비 쉐도잉을 참고). 유튜브 영상을 대사표의 한 문장씩 재생하고 자동으로 멈춘 뒤,
  * 그 문장 길이만큼 "따라 말하기" 시간을 준다.
- *  - auto(연속 따라하기): 듣기 → 따라 말하기 → (반복 횟수만큼) → 다음 문장으로 저절로
+ *  - video(영상 따라하기, 2026-10-11): 영상이 쉬지 않고 흘러가고 자막이 시간에 맞춰 바뀐다 — 소리를 들으며 바로 따라 말하는 진짜 쉐도잉
+ *  - auto(자동 듣고 따라하기): 듣기 → 따라 말하기 → (반복 횟수만큼) → 다음 문장으로 저절로
  *  - manual(듣고 따라하기): 듣기 → 따라 말하기 → 기다림. Space·→·클리커로 다음 문장
  *  - 자막: 영어+한글 / 영어 / 한글 / 빈칸 / 없음 — 같은 영상을 점점 어렵게 여러 번 돌릴 수 있다
  *  - 배역 나눠 따라하기(roleTeams 2~4): 배역마다 팀을 정해 그 팀만 따라 말한다(교실 단체 수업용)
@@ -131,6 +132,40 @@ export default function ShadowBoard({
     player.setPlaybackRate(sp);
     player.seekTo(Math.max(0, line.start - 0.05), true);
     player.playVideo();
+    if (state.current.flow === 'video') {
+      // 영상 따라하기: 멈추지 않고 흘려보내며, 지금 시간이 속한 문장으로 자막만 바꾼다
+      let shown = i;
+      let seeked = false;
+      const began = Date.now();
+      pollRef.current = window.setInterval(() => {
+        const now = player.getCurrentTime();
+        const all = state.current.lines;
+        // seekTo 가 반영되기 전의 옛 시간으로 자막이 되돌아가지 않게, 시작 위치 근처가 될 때까지 기다린다(최대 2초)
+        if (!seeked) {
+          if (Math.abs(now - line.start) < 1.5 || Date.now() - began > 2000) seeked = true;
+          else return;
+        }
+        let k = 0;
+        for (let n = 0; n < all.length; n++) {
+          if (all[n].start <= now + 0.15) k = n;
+          else break;
+        }
+        if (k !== shown) {
+          shown = k;
+          setIdx(k);
+          setRep(1);
+        }
+        const last = all[all.length - 1];
+        if (last && now >= last.end - 0.05) {
+          player.pauseVideo();
+          if (pollRef.current) window.clearInterval(pollRef.current);
+          pollRef.current = null;
+          setIdx(all.length - 1);
+          setPhase('done');
+        }
+      }, 100);
+      return;
+    }
     pollRef.current = window.setInterval(() => {
       const now = player.getCurrentTime();
       if (now >= line.end - 0.05) {
@@ -149,7 +184,7 @@ export default function ShadowBoard({
     setPhase('speak');
     timerRef.current = window.setTimeout(() => {
       if (repNo < rp) playLine(i, repNo + 1);
-      else if (fl === 'auto' && i < ls.length - 1) playLine(i + 1, 1);
+      else if (fl !== 'manual' && i < ls.length - 1) playLine(i + 1, 1);
       else setPhase(i >= ls.length - 1 ? 'done' : 'wait');
     }, ms);
   }
@@ -266,6 +301,8 @@ export default function ShadowBoard({
               {title || t('curriculum.shadow.defaultTitle')}
             </div>
           )}
+          {/* 영상을 직접 눌러 재생·정지하면 자막(문장)과 영상이 어긋나므로, 영상 위를 막고 아래 조작 줄로만 움직인다 */}
+          {usePlayer && <div className="absolute inset-0 z-[5]" aria-hidden />}
           {usePlayer && phase === 'idle' && lines.length > 0 && (
             <button
               type="button"
@@ -279,7 +316,7 @@ export default function ShadowBoard({
                 </span>
               </span>
               <span style={{ fontSize: '3cqh' }} className="font-bold">
-                {ready ? t(flow === 'auto' ? 'curriculum.shadow.startAuto' : 'curriculum.shadow.startManual') : t('common.loading')}
+                {ready ? t(flow === 'video' ? 'curriculum.shadow.startVideo' : flow === 'auto' ? 'curriculum.shadow.startAuto' : 'curriculum.shadow.startManual') : t('common.loading')}
               </span>
             </button>
           )}
@@ -295,9 +332,9 @@ export default function ShadowBoard({
           {phase === 'listen' && (
             <div className="pointer-events-none absolute right-[2cqh] top-[2cqh] z-10 flex items-center gap-[0.8cqh] rounded-full bg-white/90 px-[2cqh] py-[1cqh] font-bold text-[#1f2937]" style={{ fontSize: '2.8cqh' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '1.2em' }}>
-                hearing
+                {flow === 'video' ? 'mic' : 'hearing'}
               </span>
-              {t('curriculum.shadow.listen')}
+              {flow === 'video' ? t('curriculum.shadow.together') : t('curriculum.shadow.listen')}
             </div>
           )}
         </div>
@@ -343,7 +380,7 @@ export default function ShadowBoard({
               </button>
               <span className="mx-[0.5cqh] h-[4cqh] w-px bg-[#cbd5e1]" />
               <div className="flex shrink-0 rounded-full bg-white p-[0.4cqh] shadow">
-                {(['auto', 'manual'] as const).map((f) => (
+                {(['video', 'auto', 'manual'] as const).map((f) => (
                   <button
                     key={f}
                     type="button"

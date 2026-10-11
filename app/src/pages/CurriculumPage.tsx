@@ -27,11 +27,12 @@ import {
 } from '../lib/api';
 import LessonHistoryModal from '../components/LessonHistoryModal';
 import { useClasses } from '../lib/useClasses';
-import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
+import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { extractYoutubeId } from '../lib/youtube';
 import { copyLessonToClass } from '../lib/copyLesson';
-import type { CurriculumLesson, LessonSlide, WordList } from '../lib/types';
+import type { CurriculumLesson, FullCardItem, LessonSlide, WordList } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -389,13 +390,46 @@ export default function CurriculumPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key, loading, lessons]);
 
+  /** 낱말 묶음을 이 반의 "내 단어장"으로 저장하고 수업 단어장으로 지정한다. 영상 수업의 단어 슬라이드는 낱말을 슬라이드 안에만
+   * 갖고 있어서, 이렇게 저장해 둬야 게임 슬라이드를 더하거나 바꿀 때 같은 낱말이 들어가고 내 단어장에서도 쓸 수 있다. */
+  async function saveWordsAsList(words: FullCardItem[], listName: string, announce: boolean): Promise<boolean> {
+    if (!academy?.id || !profile) return false;
+    try {
+      const list = await createWordList({
+        academyId: academy.id,
+        classId: formClassId ?? staffClassId,
+        name: listName,
+        items: words.map((w) => ({
+          id: uid(),
+          word: w.word,
+          meaning: w.meaning,
+          image_url: w.imageUrl,
+          category: w.category ?? null,
+          partOfSpeech: w.partOfSpeech ?? null,
+          patternMarked: w.patternMarked ?? null,
+        })),
+        teacherId: profile.id,
+      });
+      setWordLists((prev) => [...prev, list]);
+      setWordListId(list.id);
+      notify(t(announce ? 'recipes.videoWordListMade' : 'recipes.wordListSaved', { count: words.length, name: listName }));
+      return true;
+    } catch {
+      notify(t('recipes.wordListSaveFailed'), 'error');
+      return false;
+    }
+  }
+
   /** 게임 슬라이드 중 아직 내용(템플릿)을 안 고른 것은 수업 단어장으로 게임 템플릿을 만들어 붙인다 —
    * "준비는 편집 화면에서 끝내고 발표 중엔 고르지 않는다"(2026-09-25). 저장할 때만 만들어서 편집을
    * 취소하면 아무것도 안 생긴다. 단어장으로 만들 수 없는 게임은 그대로 둔다(발표 땐 반의 첫 게임). */
   async function attachGameContent(slides: LessonSlide[]): Promise<LessonSlide[]> {
     if (!academy?.id || !profile) return slides;
     const wordList = wordLists.find((wl) => wl.id === wordListId) ?? null;
-    const cards = wordListToCards(wordList);
+    // 단어장에는 예문이 저장돼 있지 않아서, 사전에서 같은 낱말의 예문·품사를 보충해야 "문장 배열하기" 같은 게임도 만들어진다
+    // 수업 단어장을 안 골랐으면 단어 슬라이드(영상 수업 등)에 들어 있는 낱말로 게임 내용을 만든다
+    const base = wordList ? wordListToCards(wordList) : lessonSlideWords(slides);
+    const cards = enrichCards(base, await loadWordBank());
     const out: LessonSlide[] = [];
     for (const slide of slides) {
       if (slide.kind !== 'game' || slide.templateId) {
@@ -742,6 +776,7 @@ export default function CurriculumPage() {
                 <LessonRecipePicker
                   autoClip={autoClip}
                   hasWords={(wordLists.find((wl) => wl.id === wordListId)?.items.length ?? 0) > 0}
+                  wordListName={wordLists.find((wl) => wl.id === wordListId)?.name}
                   onManageWordList={openWordListModal}
                   makeUnscramble={(gid) =>
                     makeUnscrambleTemplate({
@@ -752,21 +787,23 @@ export default function CurriculumPage() {
                       name: (pointName) => t('grammar.gameTemplateName', { name: pointName }),
                     })
                   }
-                  makeWordList={async (words, listName) => {
+                  makeWordList={(words, listName) => saveWordsAsList(words, listName, true)}
+                  makeGameFromWords={async (gameType, words, listName) => {
+                    const content = buildGameContent(gameType, words);
+                    if (!content) return null;
                     try {
-                      const list = await createWordList({
+                      const tpl = await createGameTemplate({
                         academyId: academy.id,
                         classId: formClassId ?? staffClassId,
+                        gameType,
                         name: listName,
-                        items: words.map((w) => ({ id: uid(), word: w.word, meaning: w.meaning, image_url: w.imageUrl, category: w.category ?? null, partOfSpeech: w.partOfSpeech ?? null })),
+                        items: content.items,
+                        config: content.config,
                         teacherId: profile.id,
                       });
-                      setWordLists((prev) => [...prev, list]);
-                      setWordListId(list.id);
-                      notify(t('recipes.videoWordListMade', { count: words.length }));
-                      return true;
+                      return tpl.id;
                     } catch {
-                      return false;
+                      return null;
                     }
                   }}
                   makeUnscrambleFromSentences={async (sentences, listName) => {
@@ -803,6 +840,7 @@ export default function CurriculumPage() {
                 wordLists={wordLists}
                 onWordListChange={setWordListId}
                 onManageWordList={openWordListModal}
+                onSaveWordsAsList={(words, listName) => saveWordsAsList(words, listName, false)}
                 initialSelectedId={reopenSlideId}
                 onPresentFrom={(id) => void handlePresentFrom(id)}
               />

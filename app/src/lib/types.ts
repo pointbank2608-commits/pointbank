@@ -815,8 +815,8 @@ export interface ShadowSlide {
   /** 한 줄에 "[시작-끝] 배역: 영어 | 해석" */
   source: string;
   videoUrl?: string | null;
-  /** auto 연속 따라하기 · manual 듣고 따라하기(클리커로 넘김) */
-  flow?: 'auto' | 'manual';
+  /** video 영상 따라하기(쉬지 않고 재생) · auto 자동 듣고 따라하기(문장마다 멈췄다 저절로 다음) · manual 듣고 따라하기(클리커로 넘김) */
+  flow?: 'video' | 'auto' | 'manual';
   /** 한 문장을 몇 번 따라 할지(1~5) */
   repeat?: number;
   /** 재생 속도(0.5~2배) */

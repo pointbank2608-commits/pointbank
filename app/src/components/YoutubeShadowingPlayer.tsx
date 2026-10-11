@@ -27,12 +27,19 @@ export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, e
   const [endSec, setEndSec] = useState<number | ''>(end ?? '');
   const [rate, setRate] = useState(1);
   const [loop, setLoop] = useState(true);
+  // 구간이 정해진 영상(영상 라이브러리 장면 등)은 처음부터 그 구간만 틀고, 유튜브 자체 진행 막대(영상 전체 길이) 대신
+  // 구간 길이만큼의 진행 막대를 보여 준다(2026-10-11 "영상 전체가 나온다" 제보).
+  const segmentMode = start !== undefined && end !== undefined && end > start;
+  const [playing, setPlaying] = useState(false);
+  const [now, setNow] = useState(start ?? 0);
   // onStateChange 는 플레이어 생성 시 한 번만 등록돼서 그 시점의 state를 그대로 가둔다(stale
   // closure) — 이후 시작(초)·반복 설정을 바꿔도 반영되도록 매 렌더마다 최신값을 ref에 적어둔다.
   const loopRef = useRef(loop);
   const startSecRef = useRef(startSec);
   loopRef.current = loop;
   startSecRef.current = startSec;
+  const endSecRef = useRef<number | ''>(endSec);
+  endSecRef.current = endSec;
 
   const videoId = extractYoutubeId(videoUrl);
 
@@ -43,10 +50,17 @@ export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, e
       if (cancelled || !window.YT) return;
       playerRef.current = new window.YT.Player(elementId, {
         videoId,
-        playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
+        playerVars: segmentMode ? { rel: 0, modestbranding: 1, playsinline: 1, controls: 0, disablekb: 1, fs: 0 } : { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: () => setReady(true),
+          onReady: () => {
+            setReady(true);
+            // 구간이 있으면 그 구간부터(처음 0초가 아니라) 바로 튼다
+            if (segmentMode) {
+              playerRef.current?.loadVideoById({ videoId, startSeconds: startSecRef.current, endSeconds: endSecRef.current === '' ? undefined : endSecRef.current });
+            }
+          },
           onStateChange: (e: { data: number }) => {
+            setPlaying(e.data === 1);
             if (loopRef.current && window.YT && e.data === window.YT.PlayerState.ENDED) {
               playerRef.current?.seekTo(startSecRef.current, true);
               playerRef.current?.playVideo();
@@ -61,6 +75,33 @@ export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, e
       playerRef.current = null;
     };
   }, [videoId, elementId]);
+
+  // 구간 진행 시간(150ms마다)
+  useEffect(() => {
+    if (!ready || !segmentMode) return;
+    const timer = window.setInterval(() => {
+      const t = playerRef.current?.getCurrentTime();
+      if (typeof t === 'number') setNow(t);
+    }, 150);
+    return () => window.clearInterval(timer);
+  }, [ready, segmentMode]);
+
+  const segEnd = endSec === '' ? undefined : endSec;
+  const segLen = segmentMode && segEnd !== undefined ? Math.max(1, segEnd - startSec) : 0;
+  const segPos = Math.min(segLen, Math.max(0, now - startSec));
+  const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+
+  function toggle() {
+    const p = playerRef.current;
+    if (!p) return;
+    if (playing) {
+      p.pauseVideo();
+    } else {
+      // 구간 끝까지 갔으면 처음부터
+      if (segEnd !== undefined && now >= segEnd - 0.3) p.seekTo(startSec, true);
+      p.playVideo();
+    }
+  }
 
   function playSegment() {
     const player = playerRef.current;
@@ -92,6 +133,37 @@ export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, e
           <div id={elementId} className="absolute inset-0 h-full w-full" />
         </div>
       </div>
+
+      {segmentMode && segLen > 0 && (
+        <div className={`flex items-center gap-3 rounded-xl bg-surface-container-lowest px-3 py-2 ${fit ? 'shrink-0' : ''}`}>
+          <button
+            type="button"
+            onClick={toggle}
+            disabled={!ready}
+            aria-label={playing ? t('curriculum.player.pause') : t('curriculum.player.play')}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined">{playing ? 'pause' : 'play_arrow'}</span>
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={segLen}
+            step={0.1}
+            value={segPos}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              setNow(startSec + v);
+              playerRef.current?.seekTo(startSec + v, true);
+            }}
+            aria-label={t('curriculum.player.seek')}
+            className="min-w-0 flex-1 accent-primary"
+          />
+          <span className="shrink-0 font-caption text-caption tabular-nums text-on-surface-variant">
+            {fmt(segPos)} / {fmt(segLen)}
+          </span>
+        </div>
+      )}
 
       <div className={`flex flex-wrap items-end rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${fit ? 'shrink-0 gap-3 px-3 py-2' : 'gap-4 p-4'}`}>
         <div>

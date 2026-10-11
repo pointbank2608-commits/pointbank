@@ -20,18 +20,23 @@ import { extractYoutubeId } from '../lib/youtube';
  */
 export default function LessonRecipePicker({
   hasWords,
+  wordListName,
   onManageWordList,
   makeUnscramble,
   makeWordList,
   makeUnscrambleFromSentences,
+  makeGameFromWords,
   onApply,
   autoClip,
 }: {
   hasWords: boolean;
+  /** 지금 고른 수업 단어장 이름(영상 수업을 만들 때 계속 쓸지 고르는 안내에 보인다) */
+  wordListName?: string;
   onManageWordList: (mode: 'new' | 'edit') => void;
   makeUnscramble: RecipeContext['makeUnscramble'];
   makeWordList?: RecipeContext['makeWordList'];
   makeUnscrambleFromSentences?: RecipeContext['makeUnscrambleFromSentences'];
+  makeGameFromWords?: RecipeContext['makeGameFromWords'];
   onApply: (slides: LessonSlide[], suggestedName: string) => void;
   /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
   autoClip?: VideoClip | null;
@@ -47,6 +52,8 @@ export default function LessonRecipePicker({
   const videoTabChip = (on: boolean) => `flex items-center gap-1.5 rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`;
   const { notify } = useToast();
   const [busy, setBusy] = useState(false);
+  // 영상 수업: 이미 단어장을 골라 뒀을 때 그 단어장을 계속 쓸지(기본은 영상 낱말로 새로 만든다)
+  const [keepMyList, setKeepMyList] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
   const [open, setOpen] = useState(true);
 
@@ -56,6 +63,7 @@ export default function LessonRecipePicker({
       const slides = await recipe.build({
         t,
         hasWords,
+        keepWordList: hasWords && keepMyList,
         grammarId: grammarId ?? undefined,
         reading: { source: reading.source, title: reading.title.trim() || undefined, videoUrl: reading.videoUrl.trim() || null },
         makeUnscramble,
@@ -64,6 +72,7 @@ export default function LessonRecipePicker({
           : { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
         makeWordList,
         makeUnscrambleFromSentences,
+        makeGameFromWords,
       });
       if (slides.length === 0) return;
       const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? (clip ? `${clip.series} · ${clip.title}` : video.title.trim()) : '';
@@ -78,7 +87,7 @@ export default function LessonRecipePicker({
     setBusy(true);
     try {
       const name = lessonSetName(set, i18n.language);
-      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, reading: undefined, video: undefined };
+      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
       if (set.kind === 'word') {
         const cards = pickSetWords(set, await loadWordBank());
         if (cards.length < 5 || !makeWordList || !(await makeWordList(cards, name))) {
@@ -254,6 +263,20 @@ export default function LessonRecipePicker({
                 <GrammarPickerPanel onPick={setGrammarId} />
               )}
             </>
+          )}
+          {picked.input === 'video' && hasWords && (
+            <div className="space-y-1.5 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+              <div className="font-label-md text-label-md text-on-surface">{t('recipes.wordListChoiceTitle')}</div>
+              <label className="flex cursor-pointer items-start gap-2 font-body-md text-body-md text-on-surface">
+                <input type="radio" name="video-wordlist" checked={!keepMyList} onChange={() => setKeepMyList(false)} className="mt-1 h-4 w-4 accent-primary" />
+                <span>{t('recipes.wordListChoiceVideo')}</span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 font-body-md text-body-md text-on-surface">
+                <input type="radio" name="video-wordlist" checked={keepMyList} onChange={() => setKeepMyList(true)} className="mt-1 h-4 w-4 accent-primary" />
+                <span>{t('recipes.wordListChoiceMine', { name: wordListName || t('curriculum.slides.lessonWordList') })}</span>
+              </label>
+              <p className="font-caption text-caption text-on-surface-variant">{t(keepMyList ? 'recipes.wordListChoiceMineHint' : 'recipes.wordListChoiceVideoHint')}</p>
+            </div>
           )}
           {picked.input === 'video' && (
             <div className="space-y-2">

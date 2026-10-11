@@ -1,7 +1,7 @@
 import i18n from '../i18n';
 import { buildContestQuestions, contestRoundNames } from './liveQuiz';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from './quizFromWordList';
-import type { FullCardItem, GameItem, GameTemplateConfig, GameType, WordList, WordListItem } from './types';
+import type { FullCardItem, GameItem, GameTemplateConfig, GameType, LessonSlide, WordList, WordListItem } from './types';
 
 /** word_lists 저장 모양(WordListItem)을 자료실·게임 변환이 받는 모양(FullCardItem)으로 바꾼다. */
 export function wordListToCards(wordList: WordList | null | undefined): FullCardItem[] {
@@ -15,6 +15,22 @@ export function wordListToCards(wordList: WordList | null | undefined): FullCard
     partOfSpeech: item.partOfSpeech ?? null,
     patternMarked: item.patternMarked ?? null,
   }));
+}
+
+/** 수업 단어장을 안 골랐을 때 게임 재료로 쓰는 낱말 — 단어 소개·카드로 외우기 슬라이드가 자기 낱말을 갖고 있으면 그걸 모은다(같은 낱말은 한 번). */
+export function lessonSlideWords(slides: LessonSlide[]): FullCardItem[] {
+  const seen = new Set<string>();
+  const out: FullCardItem[] = [];
+  for (const s of slides) {
+    if ((s.kind !== 'wordshow' && s.kind !== 'study') || !s.words?.length) continue;
+    for (const w of s.words) {
+      const key = `${w.word.toLowerCase()}::${w.meaning}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(w);
+    }
+  }
+  return out;
 }
 
 function cardsToWordListItems(words: FullCardItem[]): WordListItem[] {

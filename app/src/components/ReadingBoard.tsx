@@ -38,12 +38,19 @@ export default function ReadingBoard({
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [revealAll, setRevealAll] = useState(false);
   const [playAt, setPlayAt] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
   const videoId = videoUrl ? extractYoutubeId(videoUrl) : null;
   const idxRef = useRef(idx);
   idxRef.current = idx;
+  // 빈칸 듣기는 긴 대사(영상 한 편)를 한 화면에 다 넣으면 글자가 깨알이 되므로 8줄씩 나눠 보여 준다(12줄까지는 한 화면)
+  const clozePerPage = lines.length <= 12 ? lines.length : 8;
+  const pageCount = mode === 'cloze' && clozePerPage > 0 ? Math.ceil(lines.length / clozePerPage) : 1;
+  const pageRef = useRef({ page, pageCount });
+  pageRef.current = { page, pageCount };
   // 학생 따라보기: 지금 줄·해석·빈칸 연 것을 학생 화면에 그대로
-  const follower = useSyncedSubState({ idx, showKo, revealed: [...revealed], revealAll }, (s) => {
+  const follower = useSyncedSubState({ idx, page, showKo, revealed: [...revealed], revealAll }, (s) => {
     setIdx(Number(s.idx) || 0);
+    setPage(Number(s.page) || 0);
     setShowKo(!!s.showKo);
     setRevealed(new Set(Array.isArray(s.revealed) ? (s.revealed as string[]) : []));
     setRevealAll(!!s.revealAll);
@@ -51,18 +58,33 @@ export default function ReadingBoard({
 
   useEffect(() => {
     setIdx(0);
+    setPage(0);
     setRevealed(new Set());
     setRevealAll(false);
     setPlayAt(null);
   }, [source, mode]);
 
   useEffect(() => {
-    if (!interactive || follower || mode !== 'lines') return;
+    if (!interactive || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const forward = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
+      if (mode === 'cloze') {
+        // 여러 쪽이면 쪽 단위로 넘기고, 마지막 쪽 뒤에는 다음 슬라이드로 흘려보낸다
+        const { page: pg, pageCount: pc } = pageRef.current;
+        if (forward && pg < pc - 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          setPage(pg + 1);
+        } else if (back && pg > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          setPage(pg - 1);
+        }
+        return;
+      }
       if (forward && idxRef.current < lines.length - 1) {
         e.preventDefault();
         e.stopPropagation();
@@ -92,8 +114,11 @@ export default function ReadingBoard({
     );
   }
 
-  // 빈칸 듣기: 줄 수에 맞춰 글자 크기(한 줄 높이 ≈ 글자 × 1.5)
-  const clozeSize = Math.min(4.2, 60 / Math.max(1, lines.length * 1.5 + (showKo ? lines.length * 0.9 : 0)));
+  // 빈칸 듣기: 이 쪽의 줄 수에 맞춰 글자 크기(한 줄 높이 ≈ 글자 × 1.5)
+  const curPage = Math.min(page, pageCount - 1);
+  const pageStart = mode === 'cloze' ? curPage * clozePerPage : 0;
+  const pageLines = mode === 'cloze' ? lines.slice(pageStart, pageStart + clozePerPage) : lines;
+  const clozeSize = Math.min(4.6, 58 / Math.max(1, pageLines.length * 1.5 + (showKo ? pageLines.length * 0.9 : 0)));
 
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ containerType: 'size' }}>
@@ -108,6 +133,11 @@ export default function ReadingBoard({
             {mode === 'lines' && lines.length > 0 && (
               <span className="ml-auto rounded-full px-[1.4cqh]" style={{ background: th.chip }}>
                 {idx + 1} / {lines.length}
+              </span>
+            )}
+            {mode === 'cloze' && pageCount > 1 && (
+              <span className="ml-auto rounded-full px-[1.4cqh]" style={{ background: th.chip }}>
+                {curPage + 1} / {pageCount}
               </span>
             )}
           </div>
@@ -127,7 +157,9 @@ export default function ReadingBoard({
             </div>
           ) : (
             <ol className="mt-[2cqh] flex min-h-0 flex-1 flex-col justify-center gap-[1cqh] overflow-y-auto pb-[6cqh]" style={{ fontSize: `${clozeSize}cqh` }}>
-              {lines.map((l, li) => (
+              {pageLines.map((l, pi) => {
+                const li = pageStart + pi;
+                return (
                 <li key={li}>
                   {clozeSegments(l.en).map((seg, si) => {
                     const key = `${li}:${si}`;
@@ -151,7 +183,8 @@ export default function ReadingBoard({
                     </span>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ol>
           )}
         </div>
@@ -180,7 +213,19 @@ export default function ReadingBoard({
             )}
             {mode === 'cloze' && (
               <>
-                {videoId && <Btn icon="play_circle" label={t('curriculum.reading.playSong')} onClick={() => setPlayAt(lines[0]?.start ?? 0)} />}
+                {pageCount > 1 && (
+                  <>
+                    <Btn icon="chevron_left" label={t('curriculum.reading.prevPage')} disabled={curPage === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} />
+                    <Btn icon="chevron_right" label={t('curriculum.reading.nextPage')} disabled={curPage >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))} />
+                  </>
+                )}
+                {videoId && (
+                  <Btn
+                    icon="play_circle"
+                    label={t(pageCount > 1 ? 'curriculum.reading.playPage' : 'curriculum.reading.playSong')}
+                    onClick={() => setPlayAt(pageLines[0]?.start ?? lines[0]?.start ?? 0)}
+                  />
+                )}
                 <Btn icon="visibility" label={revealAll ? t('curriculum.reading.hideAnswers') : t('curriculum.reading.showAnswers')} onClick={() => { setRevealAll((v) => !v); setRevealed(new Set()); }} />
               </>
             )}

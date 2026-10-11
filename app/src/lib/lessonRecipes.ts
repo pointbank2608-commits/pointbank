@@ -3,7 +3,7 @@ import { createGameTemplate } from './api';
 import { grammarPoint, sentencesForUnscramble } from './grammar';
 import { loadWordBank } from './wordBankCache';
 import { buildVideoLessonParts, markBingoWords } from './videoLesson';
-import type { FullCardItem, LessonSlide, WordBankEntry } from './types';
+import type { FullCardItem, GameType, LessonSlide, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
 
 /**
@@ -17,6 +17,8 @@ export type RecipeInput = 'grammar' | 'reading' | 'video';
 export interface RecipeContext {
   t: (k: string, o?: Record<string, unknown>) => string;
   hasWords: boolean;
+  /** 영상 레시피: 이미 골라 둔 수업 단어장을 그대로 쓴다(영상 낱말로 단어장·퀴즈를 새로 만들지 않는다) */
+  keepWordList?: boolean;
   grammarId?: string;
   reading?: { source: string; title?: string; videoUrl?: string | null };
   /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
@@ -25,6 +27,8 @@ export interface RecipeContext {
   makeWordList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   /** 영상 레시피: 대사 문장으로 "문장 배열하기" 게임 내용을 만든다 */
   makeUnscrambleFromSentences?: (sentences: string[], name: string) => Promise<string | null>;
+  /** 영상 레시피: 영상에서 고른 낱말로 그 게임 내용을 만든다(수업에 다른 단어장이 있어도 영상 내용으로 게임이 열리게) */
+  makeGameFromWords?: (gameType: GameType, words: FullCardItem[], name: string) => Promise<string | null>;
   /** 문법 레시피: 예문으로 "문장 배열하기" 게임 내용을 만든다(없으면 null) */
   makeUnscramble: (grammarId: string) => Promise<string | null>;
 }
@@ -130,16 +134,22 @@ export const LESSON_RECIPES: LessonRecipe[] = [
       const { videoUrl, title, source } = ctx.video;
       const parts = buildVideoLessonParts(source, await loadWordBank());
       let hasWords = ctx.hasWords;
-      if (!hasWords && parts.words.length >= 3 && ctx.makeWordList) hasWords = await ctx.makeWordList(parts.words, title || ctx.t('recipes.videoName'));
+      // 영상에서 고른 낱말은 항상 "내 단어장"에 저장하고 이 수업의 단어장으로 지정한다 — 그래야 게임을 더하거나 바꿀 때 같은 낱말이 들어간다
+      if (!ctx.keepWordList && parts.words.length >= 3 && ctx.makeWordList) hasWords = (await ctx.makeWordList(parts.words, title || ctx.t('recipes.videoName'))) || hasWords;
       const slides: LessonSlide[] = [{ id: uid(), kind: 'video', videoUrl }];
       if (hasWords) slides.push(wordshow());
-      slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source, flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
+      slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source, flow: 'video', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
       slides.push({ id: uid(), kind: 'reading', mode: 'cloze', title, videoUrl, source: parts.clozeSource, boardTheme: 'green' });
-      if (parts.unscramble.length >= 3 && ctx.makeUnscrambleFromSentences) {
-        const tplId = await ctx.makeUnscrambleFromSentences(parts.unscramble, title || ctx.t('recipes.videoName'));
+      const gameName = title || ctx.t('recipes.videoName');
+      const sentences = unscrambleSentences(parts.unscramble, parts.words);
+      if (sentences.length >= 3 && ctx.makeUnscrambleFromSentences) {
+        const tplId = await ctx.makeUnscrambleFromSentences(sentences, gameName);
         if (tplId) slides.push(game('unscramble', tplId));
       }
-      if (hasWords) slides.push(game('quiz'));
+      // 퀴즈는 수업에 원래 있던 단어장이 아니라 이 영상에서 고른 낱말로 — 단어 소개 슬라이드와 같은 낱말이 나온다
+      const quizTpl = !ctx.keepWordList && ctx.makeGameFromWords && parts.words.length >= 3 ? await ctx.makeGameFromWords('quiz', parts.words, gameName) : null;
+      if (quizTpl) slides.push(game('quiz', quizTpl));
+      else if (hasWords) slides.push(game('quiz'));
       const speakers = new Set(parts.lines.map((l) => l.speaker).filter(Boolean));
       if (speakers.size > 1) slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source, flow: 'manual', repeat: 1, speed: 1, subtitle: 'ko', roleTeams: Math.min(4, Math.max(2, speakers.size)) });
       return slides;
@@ -177,6 +187,17 @@ export const LESSON_RECIPES: LessonRecipe[] = [
   },
 ];
 
+/** 문장 배열하기에 쓸 문장 — 대사에서 뽑은 짧은 문장이 모자라면 영상 낱말의 예문(2~8낱말)으로 채운다 */
+function unscrambleSentences(fromScript: string[], words: FullCardItem[]): string[] {
+  const out = [...fromScript];
+  for (const w of words) {
+    const s = (w.example ?? '').trim();
+    const n = s.split(/\s+/).filter(Boolean).length;
+    if (n >= 3 && n <= 8 && !out.includes(s)) out.push(s);
+  }
+  return out.slice(0, 10);
+}
+
 /** 영상 묶음 단어 → 카드(사전에 같은 낱말이 있으면 그림·분류를 빌린다) */
 export function clipWordCards(clip: VideoClip, bank: WordBankEntry[]): FullCardItem[] {
   const byWord = new Map<string, WordBankEntry>();
@@ -211,22 +232,27 @@ async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<Les
   const bank = await loadWordBank();
   const words = clipWordCards(clip, bank);
   let hasWords = ctx.hasWords;
-  if (!hasWords && words.length >= 3 && ctx.makeWordList) hasWords = await ctx.makeWordList(words, `${clip.series} · ${title}`);
+  // 장면의 핵심 단어는 항상 "내 단어장"에 저장하고 이 수업의 단어장으로 지정한다(게임을 더하거나 바꿀 때 같은 낱말이 들어가게)
+  if (!ctx.keepWordList && words.length >= 3 && ctx.makeWordList) hasWords = (await ctx.makeWordList(words, `${clip.series} · ${title}`)) || hasWords;
   const parts = buildVideoLessonParts(clip.script, bank);
   const slides: LessonSlide[] = [{ id: uid(), kind: 'video', videoUrl, startSec: Number(clip.start_sec), endSec: Number(clip.end_sec) }];
   if (clip.pack?.questions?.length) slides.push({ id: uid(), kind: 'qna', title, questions: clip.pack.questions, videoUrl, boardTheme: 'green', clipId: clip.id });
   if (words.length) slides.push({ id: uid(), kind: 'wordshow', boardTheme: 'green', words, videoUrl });
-  slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0, clipId: clip.id });
+  slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'video', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0, clipId: clip.id });
   slides.push({ id: uid(), kind: 'reading', mode: 'cloze', title, videoUrl, source: parts.clozeSource, boardTheme: 'green' });
   const g = clip.pack?.grammar;
   if (g?.grammarId && grammarPoint(g.grammarId)) slides.push({ id: uid(), kind: 'grammar', grammarId: g.grammarId, useWordList: false, boardTheme: 'green' });
   if (g?.drills?.length)
     slides.push({ id: uid(), kind: 'drill', title, sentence: g.sentence, sentenceKo: g.sentenceKo, point: g.point, drills: g.drills, time: g.time, videoUrl, boardTheme: 'green', clipId: clip.id });
-  if (parts.unscramble.length >= 3 && ctx.makeUnscrambleFromSentences) {
-    const tplId = await ctx.makeUnscrambleFromSentences(parts.unscramble, title);
+  const sentences = unscrambleSentences(parts.unscramble, words);
+  if (sentences.length >= 3 && ctx.makeUnscrambleFromSentences) {
+    const tplId = await ctx.makeUnscrambleFromSentences(sentences, title);
     if (tplId) slides.push(game('unscramble', tplId));
   }
-  if (hasWords) slides.push(game('quiz'));
+  // 퀴즈는 이 장면의 핵심 단어로(수업에 다른 단어장이 이미 있어도 영상 내용이 나오게)
+  const quizTpl = !ctx.keepWordList && ctx.makeGameFromWords && words.length >= 3 ? await ctx.makeGameFromWords('quiz', words, title) : null;
+  if (quizTpl) slides.push(game('quiz', quizTpl));
+  else if (hasWords) slides.push(game('quiz'));
   const speakers = new Set(parts.lines.map((l) => l.speaker).filter(Boolean));
   if (speakers.size > 1)
     slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'manual', repeat: 1, speed: 1, subtitle: 'ko', roleTeams: Math.min(4, Math.max(2, speakers.size)), clipId: clip.id });

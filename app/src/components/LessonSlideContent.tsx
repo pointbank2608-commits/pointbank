@@ -255,7 +255,7 @@ export default function LessonSlideContent({
           {vid ? (
             <iframe
               title="video"
-              src={`https://www.youtube-nocookie.com/embed/${vid}`}
+              src={`https://www.youtube-nocookie.com/embed/${vid}${slide.startSec !== undefined ? `?start=${Math.floor(slide.startSec)}${slide.endSec !== undefined ? `&end=${Math.ceil(slide.endSec)}` : ''}` : ''}`}
               className="aspect-video w-full max-w-5xl rounded-xl"
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen

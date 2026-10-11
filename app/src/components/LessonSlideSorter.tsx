@@ -25,7 +25,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createGameTemplate, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
-import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
+import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { useWordBankEnriched } from '../lib/wordBankCache';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
@@ -148,6 +149,8 @@ interface Props {
   onPresentFrom?: (slideId: string) => void;
   /** 수업 화면 안에서 단어장 만들기·고치기 창 열기(CurriculumPage 의 LessonWordListModal). */
   onManageWordList?: (mode: 'new' | 'edit') => void;
+  /** 단어 슬라이드의 낱말을 "내 단어장"으로 저장하고 수업 단어장으로 지정한다(CurriculumPage). */
+  onSaveWordsAsList?: (words: FullCardItem[], name: string) => Promise<boolean>;
 }
 
 /** 게임 슬라이드가 발표 때 열 내용이 정해졌는지 — 템플릿을 골랐거나, 저장할 때 수업 단어장으로
@@ -172,11 +175,17 @@ export default function LessonSlideSorter({
   initialSelectedId,
   onPresentFrom,
   onManageWordList,
+  onSaveWordsAsList,
 }: Props) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const wordList = wordLists.find((wl) => wl.id === wordListId) ?? null;
   const cards = useMemo(() => wordListToCards(wordList), [wordList]);
+  // 수업 단어장이 없으면 단어 슬라이드(영상 수업 등)의 낱말을 게임 재료로 쓴다. 그리고 게임 내용(문장 배열하기의 예문 등)은
+  // 사전에서 보충한 카드로 만든다 — 단어장에는 예문이 저장돼 있지 않다
+  const slideWords = useMemo(() => lessonSlideWords(slides), [slides]);
+  const gameBase = cards.length > 0 ? cards : slideWords;
+  const gameCards = useWordBankEnriched(gameBase);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
@@ -479,7 +488,7 @@ export default function LessonSlideSorter({
                 }}
                 onDelete={() => removeSlide(slide.id)}
                 onDuplicate={() => duplicateSlide(slide.id)}
-                needsContent={slide.kind === 'game' && !gameSlideReady(slide, cards)}
+                needsContent={slide.kind === 'game' && !gameSlideReady(slide, gameCards)}
               />
             ))}
           </SortableContext>
@@ -1003,9 +1012,11 @@ export default function LessonSlideSorter({
               lessonName={lessonName}
               wordList={wordList}
               cards={cards}
+              gameCards={gameBase}
               wordListId={wordListId}
               wordLists={wordLists}
               onWordListChange={onWordListChange}
+              onSaveWordsAsList={onSaveWordsAsList}
               onUpdate={(patch) => updateSlide(selected.id, patch)}
               onInsertAfter={(slide) => {
                 const idx = slides.findIndex((s) => s.id === selected.id);
@@ -1167,9 +1178,11 @@ function SlideDetail({
   lessonName,
   wordList,
   cards,
+  gameCards,
   wordListId,
   wordLists,
   onWordListChange,
+  onSaveWordsAsList,
   onUpdate,
   onInsertAfter,
 }: {
@@ -1179,9 +1192,12 @@ function SlideDetail({
   lessonName: string;
   wordList: WordList | null;
   cards: FullCardItem[];
+  /** 게임 슬라이드가 쓰는 낱말 — 수업 단어장이 없으면 단어 슬라이드의 낱말 */
+  gameCards: FullCardItem[];
   wordListId: string;
   wordLists: WordList[];
   onWordListChange: (id: string) => void;
+  onSaveWordsAsList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   onUpdate: (patch: Partial<LessonSlide>) => void;
   /** 이 슬라이드 바로 뒤에 새 슬라이드를 넣는다(문법 → 문장 배열하기 게임). */
   onInsertAfter: (slide: LessonSlide) => void;
@@ -1283,6 +1299,13 @@ function SlideDetail({
         </div>
         <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: (slide.words?.length ? slide.words : cards).length })}</p>
         <SlideOwnWords cards={cards} wordLists={wordLists} value={slide.words} onChange={(words) => onUpdate({ words } as Partial<LessonSlide>)} />
+        {slide.words?.length && onSaveWordsAsList ? (
+          <SaveWordsAsList
+            words={slide.words}
+            name={t('curriculum.slides.savedWordListName', { name: lessonName || t('curriculum.shadow.defaultTitle') })}
+            onSave={onSaveWordsAsList}
+          />
+        ) : null}
         <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
@@ -1416,7 +1439,7 @@ function SlideDetail({
         classId={classId}
         lessonName={lessonName}
         wordList={wordList}
-        cards={cards}
+        cards={gameCards}
         wordListId={wordListId}
         wordLists={wordLists}
         onWordListChange={onWordListChange}
@@ -1753,7 +1776,7 @@ function GameSlideEditor({
   classId,
   lessonName,
   wordList,
-  cards,
+  cards: rawCards,
   wordListId,
   wordLists,
   onWordListChange,
@@ -1779,6 +1802,7 @@ function GameSlideEditor({
   const [reloadKey, setReloadKey] = useState(0);
   const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
   const GamePage = game ? GAME_PAGES[game.path] : undefined;
+  const cards = useWordBankEnriched(rawCards);
 
   const content = useMemo(() => buildGameContent(slide.gameType, cards), [slide.gameType, cards]);
 
@@ -2107,7 +2131,7 @@ function shadowDraftFromClip(clip: VideoClip): ShadowDraft {
     title: clip.title,
     source: clip.script,
     videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`,
-    flow: 'auto',
+    flow: 'video',
     repeat: 1,
     speed: 1,
     subtitle: 'both',
@@ -2173,7 +2197,7 @@ function ShadowSlideDetail({ slide, onUpdate }: { slide: ShadowSlide; onUpdate: 
 function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; onAdd?: (draft: ShadowDraft) => void; onChange?: (patch: Partial<ShadowDraft>) => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
-  const [draft, setDraft] = useState<ShadowDraft>(initial ?? { title: '', source: '', videoUrl: '', flow: 'auto', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
+  const [draft, setDraft] = useState<ShadowDraft>(initial ?? { title: '', source: '', videoUrl: '', flow: 'video', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
   const [busy, setBusy] = useState(false);
   const lines = parseShadowText(draft.source);
   const speakers = shadowSpeakers(lines);
@@ -2206,7 +2230,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-label-md text-label-md text-on-surface-variant">{t('curriculum.shadow.flowLabel')}</span>
-        {(['auto', 'manual'] as const).map((f) => (
+        {(['video', 'auto', 'manual'] as const).map((f) => (
           <button key={f} type="button" onClick={() => set({ flow: f })} className={chip((draft.flow ?? 'auto') === f)}>
             {t(`curriculum.shadow.flow_${f}`)}
           </button>
@@ -2539,6 +2563,32 @@ function StudySlidePreview({ cards }: { cards: FullCardItem[] }) {
  * 단어 소개·카드로 외우기 슬라이드의 "이 슬라이드 단어"(2026-10-03 제보: 복사한 슬라이드가 같이 바뀐다).
  * 기본은 수업 단어장 전체. "이 슬라이드만 고르기"를 켜면 수업 단어장(또는 다른 단어장)에서 골라 이 슬라이드에만 저장한다.
  */
+/** 슬라이드가 자기 낱말만 갖고 있을 때(영상 수업 등) "내 단어장"으로 저장 — 게임 슬라이드가 같은 낱말을 쓰게 된다 */
+function SaveWordsAsList({ words, name, onSave }: { words: FullCardItem[]; name: string; onSave: (words: FullCardItem[], name: string) => Promise<boolean> }) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
+      <button
+        type="button"
+        disabled={busy || done}
+        onClick={async () => {
+          setBusy(true);
+          const ok = await onSave(words, name);
+          setBusy(false);
+          if (ok) setDone(true);
+        }}
+        className="flex items-center gap-1.5 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-50"
+      >
+        <span className="material-symbols-outlined text-[18px]">{done ? 'check_circle' : 'bookmark_add'}</span>
+        {done ? t('curriculum.slides.saveWordsAsListDone') : t('curriculum.slides.saveWordsAsList', { count: words.length })}
+      </button>
+      <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.saveWordsAsListHint')}</span>
+    </div>
+  );
+}
+
 function SlideOwnWords({
   cards,
   wordLists,
