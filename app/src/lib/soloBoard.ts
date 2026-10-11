@@ -81,6 +81,7 @@ const SECONDS: Partial<Record<SoloStep['t'], number>> = {
   unscramble: 50,
   gapType: 35,
   lineOrder: 60,
+  fixError: 50,
   fadeRead: 90,
   sayPick: 30,
   roleplay: 240,

@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import type { SoloPublicStep, SoloStep } from './soloLessons';
 import type { PoolWord } from './soloReview';
 import type { TestResult } from './soloTest';
+import type { BlockStatsData } from './soloBlockStats';
 
 /** 개별수업 서버 연동(047_solo_lessons.sql) — 선생님 쪽(RLS·함수)과 학생 쪽(기기 열쇠 함수). */
 
@@ -196,6 +197,16 @@ export interface SoloTestSummaryRow {
   total: number;
   by_area: TestResult['by_area'];
   created_at: string;
+}
+
+/** (선생님) 블록 보드에 보여 줄 정답률 — 이 수업의 문제별 합계 + 이 반 최근 능력별 합계(063). 063 을 안 돌렸으면 null. */
+export async function fetchSoloBlockStats(lessonId: string, days = 30): Promise<BlockStatsData | null> {
+  const { data, error } = await supabase.rpc('solo_block_stats', { p_lesson: lessonId, p_days: days });
+  if (error) {
+    if (/solo_block_stats/.test(error.message) || error.code === 'PGRST202') return null;
+    throw error;
+  }
+  return (data ?? null) as BlockStatsData | null;
 }
 
 /** (선생님) 이 수업의 시험 결과 — 학생(낸 수업)마다, 시험 블록마다 한 줄. 058 을 안 돌렸으면 빈 목록. */

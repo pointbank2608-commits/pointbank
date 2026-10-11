@@ -5,6 +5,8 @@ import { PRINTABLE_STEP_TYPES } from '../../lib/soloPrint';
 import { WORD_BLOCK_TYPES } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
 import { buildBoard, formatMinutes, sameStepSource, type BoardBlock } from '../../lib/soloBoard';
+import type { BlockStatsData } from '../../lib/soloBlockStats';
+import SoloBlockStatsLine from './SoloBlockStatsLine';
 import type { WordList } from '../../lib/types';
 
 /**
@@ -30,6 +32,8 @@ export interface BoardActions {
   testAddEnd: () => void;
   /** 그룹 끝에 글(가사·대사)로 만든 블록 넣기 */
   textAdd: (gi: number) => void;
+  /** 그룹 끝에 문법 항목으로 만든 블록(어법 오류 고치기) 넣기 */
+  grammarAdd: (gi: number) => void;
   /** 이 블록의 문제를 인쇄 */
   blockPrint: (b: BoardBlock) => void;
 }
@@ -41,6 +45,8 @@ export default function SoloBlockBoard({
   wordLists,
   problemIndexes,
   actions,
+  blockStats = null,
+  savedSteps = [],
 }: {
   steps: SoloStep[];
   minutes: number;
@@ -50,6 +56,10 @@ export default function SoloBlockBoard({
   /** 저장 전 검사에서 걸린 문제 위치 */
   problemIndexes: Set<number>;
   actions: BoardActions;
+  /** 이 수업·이 반의 정답률(063) — 없으면 카드에 안 보인다 */
+  blockStats?: BlockStatsData | null;
+  /** 기록이 붙은 저장본 문제 목록 */
+  savedSteps?: SoloStep[];
 }) {
   const { t } = useTranslation();
   const board = useMemo(() => buildBoard(steps), [steps]);
@@ -173,6 +183,7 @@ export default function SoloBlockBoard({
                     <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption tabular-nums text-on-surface-variant">{t('soloBoard.about', { n: formatMinutes(b.seconds) })}</span>
                   </div>
                   {b.edited > 0 && <div className="mt-1 font-caption text-caption text-on-surface-variant">✎ {t('soloBoard.edited', { n: b.edited })}</div>}
+                  {!isIntro && <SoloBlockStatsLine data={blockStats} saved={savedSteps} steps={steps} block={b} />}
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     <button type="button" onClick={() => actions.blockOpen(b)} className="rounded-full bg-primary/10 px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/20">
                       {t('soloBoard.openQuestions')}
@@ -267,6 +278,20 @@ export default function SoloBlockBoard({
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                actions.grammarAdd(paletteFor);
+                setPaletteFor(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-xl bg-primary-fixed/60 px-3 py-2.5 text-left hover:bg-primary-fixed"
+            >
+              <span className="material-symbols-outlined text-[24px] text-deep-navy">spellcheck</span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-label-md text-label-md font-bold text-deep-navy">{t('soloGrammar.addButton')}</span>
+                <span className="block font-caption text-caption text-on-surface-variant">{t('soloGrammar.addHint')}</span>
+              </span>
+            </button>
             <button
               type="button"
               onClick={() => {

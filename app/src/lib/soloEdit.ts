@@ -32,6 +32,7 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'unscramble', icon: 'reorder', group: 'grammar' },
   { t: 'gapType', icon: 'format_underlined', group: 'quiz' },
   { t: 'lineOrder', icon: 'low_priority', group: 'grammar' },
+  { t: 'fixError', icon: 'spellcheck', group: 'grammar' },
   { t: 'fadeRead', icon: 'mic', group: 'speak' },
   { t: 'sayPick', icon: 'forum', group: 'speak' },
   { t: 'roleplay', icon: 'theater_comedy', group: 'speak' },
@@ -105,6 +106,8 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, sentence: '', word: '', ko: '', length: 0, first: '' };
     case 'lineOrder':
       return { t, lines: ['', '', ''], pieces: ['', '', ''] };
+    case 'fixError':
+      return { t, wrong: '', right: '', why: '', ko: '' };
     case 'test':
       return { t, title: '', scope: 'lesson', timed: true, items: [] };
   }
@@ -166,6 +169,8 @@ export function normalizeStep(step: SoloStep): SoloStep {
       const word = step.word.trim();
       return { ...step, word, length: word.length, first: word[0] ?? '' };
     }
+    case 'fixError':
+      return { ...step, wrong: step.wrong.trim().replace(/\s+/g, ' '), right: step.right.trim().replace(/\s+/g, ' ') };
     case 'lineOrder': {
       const lines = step.lines.map((l) => l.trim().replace(/\s+/g, ' ')).filter(Boolean);
       const same = [...step.pieces].map((x) => x.trim()).sort().join('|') === [...lines].sort().join('|');
@@ -267,6 +272,8 @@ export function stepSummary(step: SoloStep): string {
       return step.sentence;
     case 'lineOrder':
       return step.lines[0] ?? '';
+    case 'fixError':
+      return step.wrong;
     case 'test':
       return step.title || `${step.items.length}`;
   }
@@ -367,6 +374,10 @@ export function stepProblems(step: SoloStep): string[] {
       if (!step.sentence.includes('_____')) p.push('blankMissing');
       if (blank(step.word)) p.push('wordEmpty');
       if (step.clip && (!step.clip.videoId.trim() || step.clip.end <= step.clip.start)) p.push('clipRange');
+      break;
+    case 'fixError':
+      if (blank(step.wrong) || blank(step.right)) p.push('fixEmpty');
+      else if (step.wrong.trim().toLowerCase().replace(/[^a-z0-9']+/g, ' ').trim() === step.right.trim().toLowerCase().replace(/[^a-z0-9']+/g, ' ').trim()) p.push('fixSame');
       break;
     case 'lineOrder':
       if (step.lines.filter((l) => !blank(l)).length < 3) p.push('lineShort');

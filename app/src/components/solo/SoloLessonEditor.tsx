@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { fetchWordLists } from '../../lib/api';
 import { wordListToCards } from '../../lib/gameFromWords';
-import { createSoloLesson, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
+import { createSoloLesson, fetchSoloBlockStats, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
+import type { BlockStatsData } from '../../lib/soloBlockStats';
 import { addGroup, buildBoard, groupInsertAt, lessonSourceOf, moveGroup, removeGroup, stepSource, updateGroup, withSource, type BoardBlock } from '../../lib/soloBoard';
 import type { WordList } from '../../lib/types';
 import { kindOf, lessonProblems, newStep, normalizeStep, PALETTE_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
@@ -15,6 +16,7 @@ import SoloPreview from './SoloPreview';
 import SoloStepForm from './SoloStepForm';
 import SoloTestBlockModal from './SoloTestBlockModal';
 import SoloTextBlockModal from './SoloTextBlockModal';
+import SoloGrammarBlockModal from './SoloGrammarBlockModal';
 import SoloPrintModal from './SoloPrintModal';
 
 /**
@@ -53,6 +55,10 @@ export default function SoloLessonEditor({
   /** 블록 보드(수업 전체를 그룹·블록 카드로) / 문제 고치기 — 기본은 보드 */
   const [board, setBoard] = useState(true);
   const [wordLists, setWordLists] = useState<WordList[] | null>(null);
+  /** 이 수업·이 반의 정답률(063) — 아직 안 낸 수업이거나 063 전이면 null */
+  const [blockStats, setBlockStats] = useState<BlockStatsData | null>(null);
+  /** 기록이 붙은 저장본 문제 목록(편집 중 번호가 어긋났는지 보려고) */
+  const savedSteps = useRef<SoloStep[]>(lesson.steps);
   const [openRuns, setOpenRuns] = useState<Set<number>>(new Set());
   const [problems, setProblems] = useState<{ index: number; keys: string[] }[]>([]);
   const [asking, setAsking] = useState(false);
@@ -62,6 +68,8 @@ export default function SoloLessonEditor({
   const [testModal, setTestModal] = useState<{ at: number; replace?: number } | null>(null);
   /** 글(가사·대사)로 블록 만들기 창: at = 넣을 자리 */
   const [textModal, setTextModal] = useState<{ at: number } | null>(null);
+  /** 문법 항목으로 블록 만들기 창(어법 오류 고치기): at = 넣을 자리 */
+  const [grammarModal, setGrammarModal] = useState<{ at: number } | null>(null);
   /** 인쇄 창: 인쇄할 문제들 */
   const [printJob, setPrintJob] = useState<SoloStep[] | null>(null);
 
@@ -151,6 +159,18 @@ export default function SoloLessonEditor({
       alive = false;
     };
   }, [board, wordLists, academyId, lesson.class_id]);
+
+  // 이 수업을 학생에게 낸 적이 있으면 블록 카드에 정답률을 보여 준다(한 번만 읽는다)
+  useEffect(() => {
+    if (!lesson.id || assignedCount <= 0) return;
+    let alive = true;
+    fetchSoloBlockStats(lesson.id)
+      .then((d) => alive && setBlockStats(d))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [lesson.id, assignedCount]);
 
   const step = steps[sel];
   const problemSet = new Set(problems.map((p) => p.index));
@@ -318,6 +338,21 @@ export default function SoloLessonEditor({
     setPaletteOpen(false);
     notify(t('soloText.created', { count: made.length }));
   }
+  /** 문법 항목으로 만든 문제들을 넣는다 */
+  function placeGrammar(made: SoloStep[]) {
+    if (!grammarModal || made.length === 0) return;
+    const next = [...steps];
+    next.splice(grammarModal.at, 0, ...made);
+    commit(next);
+    setSel(grammarModal.at);
+    setGrammarModal(null);
+    setPaletteOpen(false);
+    notify(t('soloText.created', { count: made.length }));
+  }
+  function openGrammarAfterSel() {
+    const ri = runIndexOf(sel);
+    setGrammarModal({ at: ri >= 0 ? runs[ri].end + 1 : steps.length });
+  }
   function openTextAfterSel() {
     const ri = runIndexOf(sel);
     setTextModal({ at: ri >= 0 ? runs[ri].end + 1 : steps.length });
@@ -469,6 +504,7 @@ export default function SoloLessonEditor({
     capacity: (b) => runCapacity(b.type, b.count),
     testAddEnd: () => setTestModal({ at: steps.length }),
     textAdd: (gi) => setTextModal({ at: groupInsertAt(steps, gi) }),
+    grammarAdd: (gi) => setGrammarModal({ at: groupInsertAt(steps, gi) }),
     blockPrint: (b) => setPrintJob(steps.slice(b.start, b.end + 1)),
   };
 
@@ -695,6 +731,10 @@ export default function SoloLessonEditor({
             </button>
             {paletteOpen && (
               <div className="absolute bottom-full left-2 right-2 z-10 mb-2 max-h-[60vh] space-y-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-xl">
+                <button type="button" onClick={openGrammarAfterSel} className="flex w-full items-center gap-2 rounded-lg bg-primary-fixed/60 px-3 py-2 text-left font-label-md text-label-md font-bold text-deep-navy hover:bg-primary-fixed">
+                  <span className="material-symbols-outlined text-[20px]">spellcheck</span>
+                  {t('soloGrammar.addButton')}
+                </button>
                 <button type="button" onClick={openTextAfterSel} className="flex w-full items-center gap-2 rounded-lg bg-tertiary-fixed/60 px-3 py-2 text-left font-label-md text-label-md font-bold text-deep-navy hover:bg-tertiary-fixed">
                   <span className="material-symbols-outlined text-[20px]">lyrics</span>
                   {t('soloText.addButton')}
@@ -753,6 +793,8 @@ export default function SoloLessonEditor({
               wordLists={wordLists}
               problemIndexes={problemSet}
               actions={boardActions}
+              blockStats={blockStats}
+              savedSteps={savedSteps.current}
             />
           ) : step ? (
             <div className="mx-auto max-w-2xl space-y-5">
@@ -822,6 +864,7 @@ export default function SoloLessonEditor({
         </div>
       )}
 
+      {grammarModal && <SoloGrammarBlockModal lessonName={name} onCreate={placeGrammar} onClose={() => setGrammarModal(null)} />}
       {textModal && <SoloTextBlockModal lessonName={name} onCreate={placeText} onClose={() => setTextModal(null)} />}
       {printJob && <SoloPrintModal steps={printJob} title={name} onClose={() => setPrintJob(null)} />}
       {testModal && (

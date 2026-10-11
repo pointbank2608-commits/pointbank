@@ -169,7 +169,7 @@ try {
   await test('스탯: 서버(060 SQL)의 단계 → 능력 이름표가 앱의 세부 능력 목록과 같다', async () => {
     const fs = await import('node:fs');
     // 가장 나중 파일의 정의가 서버에 적용된 것이다(060 에서 만들고 062 에서 새 단계 종류를 더함)
-    const files = ['060_solo_stats.sql', '062_solo_skill_text_blocks.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
+    const files = ['060_solo_stats.sql', '062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
     const sql = fs.readFileSync(new URL('../../../supabase/' + files[files.length - 1], import.meta.url), 'utf8');
     const from = sql.indexOf('create or replace function public.solo_step_skill');
     const to = sql.indexOf('$$;', sql.indexOf('$$', from) + 2);
@@ -177,6 +177,56 @@ try {
     const fromSql = new Set([...body.matchAll(/'((?:vocab|listening|reading|sentence)\.[a-z]+)'/g)].map((m) => m[1]));
     const fromApp = new Set(stats.buildStatSheet(baseCard()).abilities.flatMap((a) => a.subs.map((x) => x.key)).filter((k) => k.includes('.') && !k.startsWith('habit.')));
     assert.deepEqual([...fromSql].sort(), [...fromApp].sort());
+  });
+  // ---- 블록 보드 정답률(063) ----
+  const bs = await server.ssrLoadModule('/src/lib/soloBlockStats.ts');
+  await test('블록 정답률: 앱의 단계 → 능력 이름표가 서버(062 SQL)와 같다', async () => {
+    const fs = await import('node:fs');
+    // solo_step_skill 을 다시 정의한 가장 나중 파일이 적용본(062, 064 …)
+    const files = ['062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
+    let sql = '';
+    for (const f of files) {
+      const t = fs.readFileSync(new URL('../../../supabase/' + f, import.meta.url), 'utf8');
+      if (t.includes('create or replace function public.solo_step_skill')) sql = t;
+    }
+    const from = sql.indexOf('create or replace function public.solo_step_skill');
+    const body = sql.slice(from, sql.indexOf('$$;', sql.indexOf('$$', from) + 2));
+    const pairs = [...body.matchAll(/when '([A-Za-z]+)' then '([a-z]+\.[a-z]+)'/g)].map((m) => [m[1], m[2]]);
+    assert.ok(pairs.length >= 14);
+    for (const [type, skill] of pairs) assert.equal(bs.soloStepSkill({ t: type }), skill, type);
+    // pickWord 는 그림이 있으면 vocab.picture
+    assert.equal(bs.soloStepSkill({ t: 'pickWord', imageUrl: 'x' }), 'vocab.picture');
+    assert.equal(bs.soloStepSkill({ t: 'meet' }), null);
+    assert.equal(bs.soloStepSkill({ t: 'roleplay' }), null);
+  });
+  await test('블록 정답률: 블록 범위의 처음 답을 더하고, 번호가 어긋나면 이 수업 숫자는 숨긴다', () => {
+    const saved = [{ t: 'intro' }, { t: 'spell' }, { t: 'spell' }, { t: 'listenPick' }];
+    const block = { type: 'spell', start: 1, end: 2, count: 2, edited: 0, words: [], seconds: 90, source: null };
+    const data = {
+      days: 30,
+      scope: 'class',
+      steps: [
+        { step: 1, students: 4, n: 4, correct: 3 },
+        { step: 2, students: 5, n: 5, correct: 2 },
+        { step: 3, students: 5, n: 5, correct: 5 },
+      ],
+      skills: [{ skill: 'vocab.spelling', n: 40, correct: 24, students: 6 }],
+    };
+    const p = bs.blockPerformance(data, saved, saved, block);
+    assert.deepEqual([p.lesson.n, p.lesson.correct, p.lesson.students], [9, 5, 5]);
+    assert.equal(p.lesson.label, 'review'); // 5/9 = 56%
+    assert.equal(p.klass.skill, 'vocab.spelling');
+    assert.equal(p.klass.label, 'review'); // 60%
+    // 문제를 하나 지워 번호가 어긋나면 "이 수업" 숫자는 안 보이고 반 능력 숫자만 남는다
+    const edited = [saved[0], saved[3], saved[1], saved[2]];
+    const moved = bs.blockPerformance(data, saved, edited, block);
+    assert.equal(moved.lesson, null);
+    // 기록이 8개 미만이면 판단 말이 없다
+    const few = bs.blockPerformance({ ...data, steps: [{ step: 1, students: 1, n: 3, correct: 3 }], skills: [] }, saved, saved, block);
+    assert.equal(few.lesson.label, null);
+    assert.equal(few.klass, null);
+    // 시험 블록·정보 블록은 능력 숫자를 안 붙인다
+    assert.equal(bs.blockPerformance(data, saved, [{ t: 'test' }], { ...block, type: 'test', start: 0, end: 0 }).klass, null);
   });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');

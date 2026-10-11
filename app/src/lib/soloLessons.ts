@@ -54,6 +54,8 @@ export type SoloStep =
   | { t: 'rainbowStructure'; itemId: string }
   /** 가사·대사 빈칸 쓰기 — 문장 속 빈칸에 들어갈 낱말을 직접 쓴다(어려운 판). 영상 구간이 있으면 그 줄을 들려 준다. */
   | { t: 'gapType'; sentence: string; word: string; ko: string; length: number; first: string; clip?: SoloClip }
+  /** 어법 오류 고치기 — 틀린 문장(wrong)을 학생이 고쳐 쓴다. right 가 정답(대소문자·문장부호는 무시). why 는 이유 설명. */
+  | { t: 'fixError'; wrong: string; right: string; why: string; ko: string }
   /** 줄 순서 맞추기 — lines 는 정답 순서, pieces 는 학생에게 보이는 섞인 순서 */
   | { t: 'lineOrder'; lines: string[]; pieces: string[]; clip?: SoloClip }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloTestItem[] };
@@ -106,12 +108,13 @@ export type SoloPublicStep =
   | { t: 'rainbowStructure'; itemId: string }
   | { t: 'gapType'; sentence: string; ko: string; length: number; first: string; clip?: SoloClip }
   | { t: 'lineOrder'; pieces: string[]; clip?: SoloClip }
+  | { t: 'fixError'; wrong: string; why: string; ko: string }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloPublicTestItem[] };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
 /** 글자로 답하는 단계 */
-export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder'] as const;
+export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError'] as const;
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -547,12 +550,36 @@ export function buildSoloSongLesson(input: SongInput, bank: WordBankEntry[]): { 
 
 const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 
+/**
+ * 어법 오류 고치기 정답 판정. 정답이 여러 개면 " / " 로 이어 쓴다("I need much water. / a lot of water.").
+ * 뒤쪽 정답이 첫 정답과 같은 낱말로 시작하면 온전한 문장이라 그대로 같아야 맞고,
+ * 다른 낱말로 시작하면 문장 일부(조각)라서 "맨 앞 낱말이 첫 정답과 같고 그 조각으로 끝나는" 답이 맞다.
+ * (서버 solo_fix_matches 와 같은 규칙)
+ */
+export function fixAccepts(right: string, value: string): boolean {
+  const alts = right.split(/\s+\/\s+/).map(looseNorm).filter(Boolean);
+  const v = looseNorm(value);
+  if (!v || alts.length === 0) return false;
+  const first = alts[0];
+  const head = first.split(' ')[0];
+  return alts.some((a, i) => {
+    if (i === 0 || a.split(' ')[0] === head) return v === a;
+    return v !== a && v.endsWith(` ${a}`) && v.split(' ')[0] === head;
+  });
+}
+
+/** 어법 오류 고치기 채점용: 대소문자·문장부호·여는따옴표 모양을 무시한다(서버 solo_norm_loose 와 같은 규칙) */
+export function looseNorm(s: string): string {
+  return s.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']+/g, ' ').trim();
+}
+
 /** 서버와 같은 규칙으로 미리보기에서 채점 */
 export function gradeSoloLocal(step: SoloStep, value: string): boolean | null {
   if ((SOLO_CHOICE_TYPES as readonly string[]).includes(step.t)) return Number(value) === (step as { answer: number }).answer;
   if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType') return norm(step.word) === norm(value);
   if (step.t === 'unscramble') return norm(step.sentence) === norm(value);
   if (step.t === 'lineOrder') return norm(step.lines.join(' ')) === norm(value);
+  if (step.t === 'fixError') return fixAccepts(step.right, value);
   return null;
 }
 
@@ -564,6 +591,7 @@ export function soloCorrectText(step: SoloStep): string | null {
   if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType') return step.word;
   if (step.t === 'unscramble') return step.sentence;
   if (step.t === 'lineOrder') return step.lines.join(' / ');
+  if (step.t === 'fixError') return step.right;
   return null;
 }
 
@@ -583,6 +611,8 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       return { t: step.t, sentence: step.sentence, ko: step.ko, length: step.length, first: step.first, clip: step.clip };
     case 'lineOrder':
       return { t: step.t, pieces: step.pieces, clip: step.clip };
+    case 'fixError':
+      return { t: step.t, wrong: step.wrong, why: step.why, ko: step.ko };
     case 'pickWord':
       return { t: step.t, imageUrl: step.imageUrl, meaning: step.meaning, options: step.options };
     case 'pickMeaning':

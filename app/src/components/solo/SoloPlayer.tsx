@@ -8,6 +8,7 @@ import { COMMON_SFX, playSfx } from '../../lib/gameSfx';
 import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 import type { TestResult } from '../../lib/soloTest';
+import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
 import SoloTestRunner from './SoloTestRunner';
 
 /**
@@ -67,7 +68,7 @@ function PosBadge({ pos }: { pos: string }) {
   );
 }
 
-const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder'];
+const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError'];
 
 export default function SoloPlayer({
   steps,
@@ -237,6 +238,9 @@ export default function SoloPlayer({
   const [rpPass, setRpPass] = useState<1 | 2>(1);
   const [rpTurn, setRpTurn] = useState(0);
   const [rpPeek, setRpPeek] = useState(false);
+  // 어법 오류 고치기: 고친 낱말(칸 번호 → 글)과 지금 고치는 칸
+  const [fixEdits, setFixEdits] = useState<Record<number, string>>({});
+  const [fixOpen, setFixOpen] = useState<number | null>(null);
 
   // 새 단계로 올 때: 상태 비우고, 소리 나는 단계는 자동으로 읽어 준다
   useEffect(() => {
@@ -257,6 +261,8 @@ export default function SoloPlayer({
     setRpPass(1);
     setRpTurn(0);
     setRpPeek(false);
+    setFixEdits({});
+    setFixOpen(null);
     attempts.current = 0;
     if (!step) return;
     if (step.t === 'fadeRead') speak(step.sentence);
@@ -346,6 +352,11 @@ export default function SoloPlayer({
   async function checkUnscramble() {
     if (!step || step.t !== 'unscramble') return;
     await submit(typed.map((n) => step.words[n]).join(' '), () => setTyped([]));
+  }
+
+  async function checkFixError() {
+    if (!step || step.t !== 'fixError') return;
+    await submit(applyFixEdits(step.wrong, fixEdits));
   }
 
   async function checkLineOrder() {
@@ -1073,6 +1084,75 @@ export default function SoloPlayer({
             )}
           </>
         )}
+
+        {step.t === 'fixError' && (() => {
+          const tokens = fixTokens(step.wrong);
+          const edited = Object.keys(fixEdits).length > 0;
+          return (
+            <>
+              <p className="text-xl font-bold">{t('solo.fixQ')}</p>
+              <p className="text-center text-base text-white/70">{t('solo.fixHow')}</p>
+              <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-4" aria-live="polite">
+                {tokens.map((w, i) => {
+                  const changed = i in fixEdits;
+                  if (fixOpen === i && !answered) {
+                    return (
+                      <input
+                        key={i}
+                        autoFocus
+                        value={fixEdits[i] ?? w}
+                        onChange={(e) => setFixEdits((cur) => ({ ...cur, [i]: e.target.value }))}
+                        onBlur={() => {
+                          setFixOpen(null);
+                          setFixEdits((cur) => {
+                            // 처음과 같으면 고친 것으로 치지 않는다
+                            if (cur[i] !== undefined && cur[i].trim() === w) {
+                              const { [i]: _drop, ...rest } = cur;
+                              return rest;
+                            }
+                            return cur;
+                          });
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        size={Math.max(4, (fixEdits[i] ?? w).length + 1)}
+                        className="min-h-12 rounded-xl bg-white px-3 text-center text-2xl font-bold text-deep-navy outline-none ring-4 ring-warm-yellow"
+                      />
+                    );
+                  }
+                  const shown = changed ? fixEdits[i].trim() : w;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={answered || busy}
+                      onClick={() => setFixOpen(i)}
+                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${changed ? 'bg-warm-yellow text-deep-navy' : 'bg-white/90 text-deep-navy shadow-[0_4px_0_#9aa3b5]'}`}
+                    >
+                      {shown || '∅'}
+                    </button>
+                  );
+                })}
+              </div>
+              {edited && !answered && <p className="text-center text-lg text-white/85">{t('solo.fixResult')} <span className="font-bold text-warm-yellow">{applyFixEdits(step.wrong, fixEdits) || '…'}</span></p>}
+              {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
+              {!answered && (
+                <div className="flex w-full gap-3">
+                  <button type="button" onClick={() => { setFixEdits({}); setFixOpen(null); }} disabled={!edited} className={`${btn} flex-1 bg-white/15`}>
+                    {t('solo.fixReset')}
+                  </button>
+                  <button type="button" onClick={() => void checkFixError()} disabled={!edited || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                    {t('solo.check')}
+                  </button>
+                </div>
+              )}
+              {answered && step.why && <p className="text-center text-lg text-white/80">💡 {step.why}</p>}
+            </>
+          );
+        })()}
 
         {step.t === 'lineOrder' && (
           <>

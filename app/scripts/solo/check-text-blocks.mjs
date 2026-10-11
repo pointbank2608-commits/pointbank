@@ -123,7 +123,50 @@ try {
   // 인쇄할 수 있는 종류는 전부 렌더된다
   for (const ty of P.PRINTABLE_STEP_TYPES) assert.ok(typeof ty === 'string');
 
-  console.log('글 블록 확인 통과 — 현재완료 빈칸 2문제, 줄 순서 2문제, 인쇄 HTML', Math.round(html.length / 1024) + 'KB');
+  // 7) 어법 오류 고치기(문법 항목의 틀리기 쉬운 문장)
+  const G = await server.ssrLoadModule('/src/lib/grammarBlocks.ts');
+  const grammar = await server.ssrLoadModule('/src/lib/grammar.ts');
+  const withPit = grammar.GRAMMAR_POINTS.filter((g) => g.pitfalls && g.pitfalls.length > 0);
+  assert.ok(withPit.length > 100, '틀리기 쉬운 문장이 있는 문법 항목이 충분하다');
+  const ids = withPit.slice(0, 6).map((g) => g.id);
+  const fix = G.buildFixErrorSteps(ids, 8);
+  assert.ok(fix.length >= 6 && fix.every((x) => x.t === 'fixError'), '오류 고치기 문제가 만들어진다');
+  for (const f of fix) {
+    assert.deepEqual(E.stepProblems(f), [], `검사 통과: ${f.wrong}`);
+    assert.ok(!/\*\*/.test(f.wrong + f.right), '강조 표시(**)가 없다');
+    const fp = L.toPublicStep(f);
+    assert.ok(!('right' in fp) && fp.wrong === f.wrong, 'fixError: right 가 빠져야 한다');
+    // 대소문자·문장부호가 달라도 맞다, 틀린 문장 그대로면 틀리다
+    assert.equal(L.gradeSoloLocal(f, f.right.toUpperCase().replace(/[.!?]+$/, '')), true);
+    assert.equal(L.gradeSoloLocal(f, f.wrong), false);
+    assert.equal(L.soloCorrectText(f), f.right);
+  }
+  assert.equal(new Set(fix.map((f) => f.wrong.toLowerCase())).size, fix.length, '같은 틀린 문장이 겹치지 않는다');
+  // 낱말을 눌러 고치기: 칸 번호별 고친 글을 반영해 문장을 만든다
+  assert.deepEqual(G.fixTokens('He go to school.'), ['He', 'go', 'to', 'school.']);
+  assert.equal(G.applyFixEdits('He go to school.', { 1: 'goes' }), 'He goes to school.');
+  assert.equal(G.applyFixEdits('I am a a boy.', { 3: '' }), 'I am a boy.', '낱말을 비우면 지운 것');
+  assert.equal(G.applyFixEdits('She happy.', { 1: 'is happy.' }), 'She is happy.', '낱말 대신 여러 낱말을 써도 된다');
+  const manual = { t: 'fixError', wrong: 'He go to school.', right: 'He goes to school.', why: '', ko: '' };
+  assert.equal(L.gradeSoloLocal(manual, G.applyFixEdits(manual.wrong, { 1: 'goes' })), true);
+  assert.deepEqual(E.stepProblems({ ...manual, right: 'he go to school' }), ['fixSame'], '같으면 안 된다');
+  assert.deepEqual(E.stepProblems({ ...manual, right: '' }), ['fixEmpty']);
+  // 정답이 여러 개(" / ")인 항목: 어느 쪽이든 맞고, 조각 정답도 앞 낱말이 같으면 맞다
+  const alt = { t: 'fixError', wrong: 'I need many water.', right: 'I need much water. / a lot of water.', why: '', ko: '' };
+  assert.equal(L.gradeSoloLocal(alt, 'I need much water.'), true);
+  assert.equal(L.gradeSoloLocal(alt, 'i need a lot of water'), true, '조각 정답');
+  assert.equal(L.gradeSoloLocal(alt, 'A lot of water.'), false, '앞 낱말이 다르면 아니다');
+  assert.equal(L.gradeSoloLocal(alt, 'I need many water.'), false);
+  const alt2 = { t: 'fixError', wrong: "I don't know neither.", right: "I don't know either. / I know neither.", why: '', ko: '' };
+  assert.equal(L.gradeSoloLocal(alt2, 'I know neither.'), true);
+  assert.equal(L.gradeSoloLocal(alt2, "I don't know either"), true);
+  // 인쇄
+  const fhtml = P.buildSoloPrintHtml(fix, { title: '오류 고치기', includeAnswers: true, showBank: false }, t);
+  assert.equal((fhtml.match(/class="no"/g) ?? []).length, fix.length);
+  assert.ok(fhtml.includes('inst_fixError'));
+  assert.ok(fhtml.split('class="page ans"')[1].includes(fix[0].right.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')), '정답지에 고친 문장');
+
+  console.log('글 블록 확인 통과 — 현재완료 빈칸 2문제, 줄 순서 2문제, 오류 고치기 ' + fix.length + '문제, 인쇄 HTML', Math.round(html.length / 1024) + 'KB');
 } finally {
   await server.close();
 }

@@ -357,6 +357,15 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
           {step.clip && <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />}
         </div>
       );
+    case 'fixError':
+      return (
+        <div className="space-y-4">
+          {text(t('soloEdit.fixWrong'), step.wrong, 'wrong', { area: true, hint: t('soloEdit.fixWrongHint') })}
+          {text(t('soloEdit.fixRight'), step.right, 'right', { area: true, hint: t('soloEdit.fixRightHint') })}
+          {text(t('soloEdit.fixWhy'), step.why, 'why', { hint: t('soloEdit.fixWhyHint') })}
+          {text(t('soloEdit.ko'), step.ko, 'ko')}
+        </div>
+      );
     case 'gapType':
       return (
         <div className="space-y-4">

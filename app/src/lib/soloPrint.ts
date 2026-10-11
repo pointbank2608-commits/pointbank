@@ -24,6 +24,7 @@ export const PRINTABLE_STEP_TYPES: SoloStep['t'][] = [
   'unscramble',
   'gapType',
   'lineOrder',
+  'fixError',
 ];
 
 export const isPrintableStep = (s: SoloStep): boolean => PRINTABLE_STEP_TYPES.includes(s.t);
@@ -114,6 +115,11 @@ function render(step: SoloStep, no: number, t: PrintT, origin: string): Rendered
         answer: letters.join(' → '),
       };
     }
+    case 'fixError':
+      return {
+        body: `<div class="q">${n}<span class="sent wrong">${esc(step.wrong)}</span>${ko(step.ko)}<div class="line"></div></div>`,
+        answer: `${esc(step.right)}${step.why ? `<div class="why">${esc(step.why)}</div>` : ''}`,
+      };
     case 'unscramble': {
       const chips = step.words.map((w) => `<span class="chip">${esc(w)}</span>`).join('');
       return {
@@ -204,6 +210,8 @@ h1 { margin: 0; font-size: 21px; border: 2px solid #1e4b7a; color: #1e4b7a; bord
 .no { display: inline-block; min-width: 7mm; height: 7mm; line-height: 7mm; text-align: center; border-radius: 50%; background: #1e4b7a; color: #fff; font-weight: 700; font-size: 12.5px; margin-right: 2.5mm; }
 .sent { font-size: 16px; font-weight: 600; }
 .sent.big { font-size: 22px; }
+.sent.wrong { color: #8a1c1c; }
+.why { font-size: 12.5px; color: #555; font-weight: 400; }
 .blank { display: inline-block; border-bottom: 1.4px solid #000; height: 1.1em; vertical-align: baseline; margin: 0 1mm; }
 .ko { margin: 0.8mm 0 0 10mm; color: #555; font-size: 12.5px; }
 .choices { margin: 1.5mm 0 0 10mm; }
