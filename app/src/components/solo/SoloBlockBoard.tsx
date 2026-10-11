@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { kindOf, STEP_KINDS } from '../../lib/soloEdit';
 import { WORD_BLOCK_TYPES } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
-import { buildBoard, formatMinutes, type BoardBlock } from '../../lib/soloBoard';
+import { buildBoard, formatMinutes, sameStepSource, type BoardBlock } from '../../lib/soloBoard';
 import type { WordList } from '../../lib/types';
 
 /**
@@ -130,6 +130,20 @@ export default function SoloBlockBoard({
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-label-md text-label-md font-bold text-on-surface">{t(`soloEdit.stepType_${b.type}`)}</div>
                       {b.words.length > 0 && <div className="truncate font-caption text-caption text-on-surface-variant">{b.words.join(' · ')}{b.count > b.words.length ? ' …' : ''}</div>}
+                      {(WORD_BLOCK_TYPES as readonly string[]).includes(b.type) && (
+                        <div className="mt-0.5 flex items-center gap-1 font-caption text-caption">
+                          <span className="material-symbols-outlined text-[14px] text-primary">book_2</span>
+                          <span className={b.source && b.source !== 'mixed' && !sameStepSource(b.source, board.lessonSource) ? 'font-bold text-primary' : 'text-on-surface-variant'}>
+                            {b.source === 'mixed'
+                              ? t('soloBoard.sourceMixed')
+                              : b.source && sameStepSource(b.source, board.lessonSource)
+                                ? t('soloBoard.sourceLessonNamed', { name: b.source.name })
+                                : b.source
+                                  ? t('soloBoard.source', { name: b.source.name })
+                                  : t('soloBoard.sourceLesson')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     {!isIntro && (
                       <span className="flex shrink-0 items-center gap-1 font-caption text-caption text-on-surface-variant">
@@ -147,7 +161,7 @@ export default function SoloBlockBoard({
                     </button>
                     {canRegen && (
                       <button type="button" onClick={() => actions.blockRegen(b)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
-                        {t('soloBoard.regen')}
+                        {b.source && b.source !== 'mixed' && !sameStepSource(b.source, board.lessonSource) ? t('soloBoard.revertLesson') : t('soloBoard.regen')}
                       </button>
                     )}
                     {(WORD_BLOCK_TYPES as readonly string[]).includes(b.type) && wordLists && wordLists.length > 0 && (

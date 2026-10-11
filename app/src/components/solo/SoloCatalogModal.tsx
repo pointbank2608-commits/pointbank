@@ -19,6 +19,7 @@ import {
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
 import { buildStandardGrammarLesson, buildStandardTopicLesson, buildStandardVideoLesson, buildStandardWordLesson } from '../../lib/soloStandard';
+import { withSource } from '../../lib/soloBoard';
 import type { VideoClip } from '../../lib/videoClips';
 import VideoClipLibrary from '../VideoClipLibrary';
 import { loadWordBank } from '../../lib/wordBankCache';
@@ -128,9 +129,9 @@ export default function SoloCatalogModal({
           if (words.length < 4) return null;
           if (standard) {
             const std = buildStandardWordLesson(title, words);
-            if (std) return { lessons: [std], level: 'Level 1', source: `${set.id}-std` };
+            if (std) return { lessons: [{ ...std, steps: withSource(std.steps, { name: title }) }], level: 'Level 1', source: `${set.id}-std` };
           }
-          return { lessons: [{ name: title, steps: buildSoloWordSteps(title, words), minutes: 15 }], level: 'Level 1', source: set.id };
+          return { lessons: [{ name: title, steps: withSource(buildSoloWordSteps(title, words), { name: title }), minutes: 15 }], level: 'Level 1', source: set.id };
         },
       });
     }
@@ -223,14 +224,14 @@ export default function SoloCatalogModal({
     try {
       const bank = await loadWordBank();
       const baseName = t('solo.moe800Name', { day });
-      let lessons = buildSoloDayLessons(bank, { day, perLesson: per, style, baseName });
+      let lessons = buildSoloDayLessons(bank, { day, perLesson: per, style, baseName }).map((l) => ({ ...l, steps: withSource(l.steps, { name: baseName }) }));
       if (standard) {
         // 표준 50분 흐름: 나눈 낱말 묶음마다 한 차시(낱말 6개 이상)
         const { chunks } = moe800Chunks(bank, day, Math.max(6, per));
         const std = chunks.flatMap((chunk, i) => {
           const name = chunks.length > 1 ? `${baseName} (${i + 1}/${chunks.length})` : baseName;
           const l = buildStandardWordLesson(name, chunk);
-          return l ? [l] : [];
+          return l ? [{ ...l, steps: withSource(l.steps, { name: baseName }) }] : [];
         });
         if (std.length > 0) lessons = std;
       }

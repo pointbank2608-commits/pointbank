@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { fetchWordLists } from '../../lib/api';
 import { wordListToCards } from '../../lib/gameFromWords';
 import { createSoloLesson, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
-import { addGroup, buildBoard, groupInsertAt, moveGroup, removeGroup, updateGroup, type BoardBlock } from '../../lib/soloBoard';
+import { addGroup, buildBoard, groupInsertAt, lessonSourceOf, moveGroup, removeGroup, stepSource, updateGroup, withSource, type BoardBlock } from '../../lib/soloBoard';
 import type { WordList } from '../../lib/types';
 import { kindOf, lessonProblems, newStep, normalizeStep, STEP_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
 import { buildWordBlock, WORD_BLOCK_TYPES, type WordBlockType } from '../../lib/soloLessons';
@@ -260,7 +260,8 @@ export default function SoloLessonEditor({
       ? t('soloBoard.regenEditedConfirm', { count: r.end - r.start + 1, made: made.length, edited: editedN })
       : t('soloEdit.blockRegenConfirm', { count: r.end - r.start + 1, made: made.length });
     if (!window.confirm(msg)) return;
-    const next = [...steps.slice(0, r.start), ...made, ...steps.slice(r.end + 1)];
+    const base = lessonSourceOf(steps);
+    const next = [...steps.slice(0, r.start), ...(base ? withSource(made, base) : made), ...steps.slice(r.end + 1)];
     commit(next);
     setSel(r.start);
   }
@@ -273,7 +274,8 @@ export default function SoloLessonEditor({
     const ri = runIndexOf(sel);
     const at = ri >= 0 ? runs[ri].end + 1 : steps.length;
     const next = [...steps];
-    next.splice(at, 0, ...made);
+    const base = lessonSourceOf(steps);
+    next.splice(at, 0, ...(base ? withSource(made, base) : made));
     commit(next);
     setSel(at);
     setPaletteOpen(false);
@@ -305,7 +307,9 @@ export default function SoloLessonEditor({
       setSel((s) => Math.min(s, removeFrom - 1));
       return;
     }
-    const add = freshFor(r.t).slice(0, want - cur);
+    const own = stepSource(steps[r.start]);
+    const fresh = freshFor(r.t).slice(0, want - cur);
+    const add = own ? withSource(fresh, own) : fresh;
     if (add.length === 0) {
       notify(t('soloEdit.blockNoMore'), 'error');
       return;
@@ -379,7 +383,8 @@ export default function SoloLessonEditor({
         return;
       }
       if (b.edited > 0 && !window.confirm(t('soloBoard.pickListConfirm', { name: list.name, edited: b.edited }))) return;
-      const take = made.slice(0, Math.max(1, b.count));
+      // 어느 단어장으로 만들었는지 문제에 남겨 두면, 다시 열어도 블록 카드가 "단어장 ○○"로 보인다
+      const take = withSource(made.slice(0, Math.max(1, b.count)), { id: list.id, name: list.name });
       commit([...steps.slice(0, b.start), ...take, ...steps.slice(b.end + 1)]);
       notify(t('soloBoard.listApplied', { name: list.name, count: take.length }));
     },
@@ -396,7 +401,8 @@ export default function SoloLessonEditor({
           return;
         }
         const next = [...steps];
-        next.splice(at, 0, ...made);
+        const base = lessonSourceOf(steps);
+        next.splice(at, 0, ...(base ? withSource(made, base) : made));
         commit(next);
         return;
       }

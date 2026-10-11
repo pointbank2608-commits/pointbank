@@ -9,6 +9,14 @@ import type { SoloStep } from './soloLessons';
  * 그룹 이름·시간·순서를 바꾸면 이 `intro` 문제와 번호를 고쳐 쓴다.
  */
 
+/** 문제에 붙는 출처(블록 옵션 저장) — 이 문제를 만든 단어장. 문제와 같이 옮겨지고 복사돼서, 보드가 블록의 단어장을 다시 읽는다. */
+export interface StepSource {
+  id?: string;
+  name: string;
+}
+
+export type BlockSource = StepSource | 'mixed' | null;
+
 export interface BoardBlock {
   type: SoloStep['t'];
   /** steps 안 위치(start..end 포함) */
@@ -20,6 +28,8 @@ export interface BoardBlock {
   /** 낱말 몇 개 미리보기 */
   words: string[];
   seconds: number;
+  /** 이 블록을 만든 단어장 — 없으면 null("수업 낱말"), 여러 곳에서 섞였으면 'mixed' */
+  source: BlockSource;
 }
 
 export interface BoardGroup {
@@ -38,6 +48,8 @@ export interface BoardGroup {
 }
 
 export interface Board {
+  /** 이 수업의 기본 단어장 — 문제에 가장 많이 붙은 출처 */
+  lessonSource: StepSource | null;
   /** 맨 앞 수업 소개 화면(있으면 0) */
   head: number | null;
   groups: BoardGroup[];
@@ -84,6 +96,14 @@ const wordOf = (s: SoloStep): string => {
   return '';
 };
 const isEdited = (s: SoloStep): boolean => !!(s as { edited?: boolean }).edited;
+export const stepSource = (s: SoloStep): StepSource | null => (s as { src?: StepSource }).src ?? null;
+
+/** 단어 문제(소개 화면 제외)에 단어장 출처를 붙인다 — 같은 값이면 그대로 둔다 */
+export function withSource<T extends { t: SoloStep['t'] }>(steps: T[], src: StepSource): T[] {
+  return steps.map((s) => (s.t === 'intro' ? s : ({ ...s, src } as T)));
+}
+
+const sameSource = (a: BlockSource, b: StepSource | null): boolean => (a === null ? b === null : a !== 'mixed' && b !== null && a.name === b.name && a.id === b.id);
 
 /** 저장된 문제 목록 → 보드 */
 export function buildBoard(steps: SoloStep[]): Board {
@@ -103,11 +123,12 @@ export function buildBoard(steps: SoloStep[]): Board {
         last.count += 1;
         last.seconds += stepSeconds(s.t);
         if (isEdited(s)) last.edited += 1;
+        if (!sameSource(last.source, stepSource(s))) last.source = 'mixed';
         const w = wordOf(s);
         if (w && last.words.length < 4 && !last.words.includes(w)) last.words.push(w);
       } else {
         const w = wordOf(s);
-        blocks.push({ type: s.t, start: i, end: i, count: 1, edited: isEdited(s) ? 1 : 0, words: w ? [w] : [], seconds: stepSeconds(s.t) });
+        blocks.push({ type: s.t, start: i, end: i, count: 1, edited: isEdited(s) ? 1 : 0, words: w ? [w] : [], seconds: stepSeconds(s.t), source: stepSource(s) });
       }
     }
     return blocks;
@@ -138,8 +159,26 @@ export function buildBoard(steps: SoloStep[]): Board {
       seconds: blocks.reduce((n, x) => n + x.seconds, 0),
     });
   });
-  return { head, groups, totalSteps: steps.length, totalSeconds: steps.reduce((n, s) => n + stepSeconds(s.t), 0) };
+  return { lessonSource: lessonSourceOf(steps), head, groups, totalSteps: steps.length, totalSeconds: steps.reduce((n, s) => n + stepSeconds(s.t), 0) };
 }
+
+/** 수업의 기본 단어장 — 문제에 가장 많이 붙은 출처(없으면 null) */
+export function lessonSourceOf(steps: SoloStep[]): StepSource | null {
+  const count = new Map<string, { src: StepSource; n: number }>();
+  for (const s of steps) {
+    const src = stepSource(s);
+    if (!src) continue;
+    const k = `${src.id ?? ''}|${src.name}`;
+    const cur = count.get(k);
+    if (cur) cur.n += 1;
+    else count.set(k, { src, n: 1 });
+  }
+  let best: { src: StepSource; n: number } | null = null;
+  for (const v of count.values()) if (!best || v.n > best.n) best = v;
+  return best ? best.src : null;
+}
+
+export const sameStepSource = (a: StepSource | null, b: StepSource | null): boolean => (a === null ? b === null : b !== null && a.name === b.name && a.id === b.id);
 
 /** 단계 나눔 번호를 앞에서부터 다시 매긴다("1. …", "2. …") */
 export function renumber(steps: SoloStep[]): SoloStep[] {

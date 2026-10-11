@@ -2376,6 +2376,11 @@ const en: Ko = {
     count: '{{count}} questions',
   },
   soloBoard: {
+    source: "Word list: {{name}}",
+    sourceLesson: "Lesson words",
+    sourceMixed: "Mixed word lists",
+    revertLesson: "Back to lesson words",
+    sourceLessonNamed: "Lesson list: {{name}}",
     summary: "{{groups}} groups · {{blocks}} blocks · {{steps}} questions",
     estimate: "About {{n}} min",
     matchMinutes: "Set lesson time to {{n}} min",

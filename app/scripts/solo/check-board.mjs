@@ -94,6 +94,26 @@ try {
     const b = board.buildBoard(copy);
     assert.equal(b.groups[0].blocks[0].edited, 2);
   });
+  await test('단어장 출처가 문제에 남고 블록이 다시 읽는다', () => {
+    const stamped = board.withSource(lesson.steps, { id: 'L1', name: '과일 단어' });
+    assert.ok(stamped.filter((s) => s.t !== 'intro').every((s) => s.src?.name === '과일 단어'));
+    assert.ok(stamped.filter((s) => s.t === 'intro').every((s) => !s.src));
+    const b = board.buildBoard(stamped);
+    assert.equal(b.lessonSource.name, '과일 단어');
+    assert.ok(b.groups[0].blocks.every((x) => x.type === 'intro' || x.source?.name === '과일 단어'));
+    // 한 블록만 다른 단어장으로 바꾸면 그 블록만 다른 출처, 수업 기본은 그대로
+    const first = b.groups[0].blocks[0];
+    const swapped = stamped.map((s, i) => (i >= first.start && i <= first.end ? { ...s, src: { id: 'L2', name: '동물 단어' } } : s));
+    const b2 = board.buildBoard(swapped);
+    assert.equal(b2.groups[0].blocks[0].source.name, '동물 단어');
+    assert.equal(b2.lessonSource.name, '과일 단어');
+    assert.equal(board.sameStepSource(b2.groups[0].blocks[1].source, b2.lessonSource), true);
+    // 한 블록 안에서 출처가 섞이면 mixed
+    const mixed = swapped.map((s, i) => (i === first.start ? { ...s, src: { id: 'L3', name: '다른 것' } } : s));
+    assert.equal(board.buildBoard(mixed).groups[0].blocks[0].source, 'mixed');
+    // 출처가 없는 옛 수업은 null
+    assert.equal(board.buildBoard(lesson.steps).lessonSource, null);
+  });
 } finally {
   await server.close();
 }

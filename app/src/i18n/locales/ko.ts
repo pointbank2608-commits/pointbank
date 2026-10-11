@@ -2372,6 +2372,11 @@ const ko = {
     count: '질문 {{count}}개',
   },
   soloBoard: {
+    source: "단어장: {{name}}",
+    sourceLesson: "수업 낱말",
+    sourceMixed: "여러 단어장 섞임",
+    revertLesson: "수업 낱말로 되돌리기",
+    sourceLessonNamed: "수업 단어장: {{name}}",
     summary: "그룹 {{groups}}개 · 블록 {{blocks}}개 · 문제 {{steps}}개",
     estimate: "예상 시간 약 {{n}}분",
     matchMinutes: "수업 시간을 {{n}}분으로 맞추기",
