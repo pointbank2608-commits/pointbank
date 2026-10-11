@@ -900,7 +900,8 @@ export type SlideHelper =
   | { id: string; type: 'timer'; seconds: number; position: HelperPosition }
   | { id: string; type: 'scoreboard'; teams: number; position: HelperPosition };
 
-export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[] };
+/** helpers: 보조 블록. ownWordListId: "이 블록만 다른 단어장"으로 고른 단어장(없으면 수업 단어장을 같이 쓴다). */
+export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[]; ownWordListId?: string };
 
 export type LessonSlideBase =
   | ImageSlide

@@ -28,6 +28,7 @@ import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
+import BlockOptionsPanel from './BlockOptionsPanel';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
@@ -1028,7 +1029,17 @@ export default function LessonSlideSorter({
                 setSelectedId(slide.id);
               }}
             />
-            <div className="mt-4">
+            <div className="mt-4 space-y-3">
+              <BlockOptionsPanel
+                slide={selected}
+                academyId={academyId}
+                classId={classId}
+                lessonName={lessonName}
+                lessonCards={cards}
+                lessonListName={wordList?.name}
+                wordLists={wordLists}
+                onUpdate={(patch) => updateSlide(selected.id, patch)}
+              />
               <SlideHelpersEditor helpers={selected.helpers ?? []} onChange={(next) => updateSlide(selected.id, { helpers: next })} />
             </div>
             </>
@@ -1441,6 +1452,7 @@ function SlideDetail({
   if (slide.kind === 'game') {
     return (
       <GameSlideEditor
+        key={`${slide.id}:${slide.ownWordListId ?? ''}`}
         slide={slide}
         academyId={academyId}
         classId={classId}
