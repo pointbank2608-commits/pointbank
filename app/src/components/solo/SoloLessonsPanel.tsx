@@ -22,6 +22,7 @@ import RecordingsModal from './RecordingsModal';
 import SoloCatalogModal from './SoloCatalogModal';
 import SoloLessonEditor from './SoloLessonEditor';
 import SoloPreview from './SoloPreview';
+import WatchPanel from './WatchPanel';
 
 /**
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
@@ -118,6 +119,8 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       <div className="rounded-xl bg-primary-fixed/25 p-4">
         <p className="font-body-md text-body-md text-on-surface">{t('solo.intro')}</p>
       </div>
+
+      {classId && <WatchPanel academyId={academyId} classId={classId} />}
 
       <button
         type="button"

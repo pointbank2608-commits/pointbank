@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { SoloPublicStep, SoloStep } from './soloLessons';
+import type { PoolWord } from './soloReview';
 
 /** 개별수업 서버 연동(047_solo_lessons.sql) — 선생님 쪽(RLS·함수)과 학생 쪽(기기 열쇠 함수). */
 
@@ -29,7 +30,7 @@ export interface SoloStatusRow {
   wrong_count: number;
   unsure_count: number;
   unsure_steps: number[];
-  kind?: 'lesson' | 'homework';
+  kind?: 'lesson' | 'homework' | 'review';
   rewarded?: boolean;
 }
 
@@ -41,6 +42,8 @@ export async function fetchSoloLessons(academyId: string, classId: string): Prom
     .select('*')
     .eq('academy_id', academyId)
     .or(`class_id.eq.${classId},class_id.is.null`)
+    // 학생이 복습 버튼으로 만든 복습 수업(057)은 선생님 목록에 섞이지 않게
+    .or('source.is.null,source.neq.review')
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as SoloLesson[];
@@ -335,4 +338,80 @@ export async function saveBlockPreset(academyId: string, name: string, config: B
 export async function deleteBlockPreset(id: string): Promise<void> {
   const { error } = await supabase.from('solo_block_presets').delete().eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+/* ---------------- 복습·누적 테스트·도움 요청(057) ---------------- */
+
+/** 학생: 내가 만난 낱말과 기록(어제 복습·누적 테스트·다시 배우기의 재료). assignment 를 주면 그 수업에서 틀린 낱말이 표시된다. */
+export const soloReviewPool = (token: string, assignment?: string) =>
+  rpc<PoolWord[]>('solo_review_pool', { p_token: token, p_assignment: assignment ?? null });
+
+/** 학생: 앱이 만든 복습 수업을 내 것으로 등록 → 수업(배정) id */
+export async function soloStartReview(token: string, name: string, minutes: number, steps: SoloStep[]): Promise<string> {
+  const r = await rpc<{ assignment: string }>('solo_start_review', { p_token: token, p_name: name, p_minutes: minutes, p_steps: steps });
+  return r.assignment;
+}
+
+/** 학생: 선생님 도와주세요 */
+export const soloHelp = (token: string, assignment: string, step: number) => rpc<{ ok: boolean }>('solo_help', { p_token: token, p_assignment: assignment, p_step: step });
+
+export interface SoloAttentionRow {
+  assignment_id: string;
+  student_id: string;
+  name: string;
+  lesson_name: string;
+  kind: 'lesson' | 'homework' | 'review';
+  progress: number;
+  total: number;
+  reason: 'help' | 'unsure' | 'struggling';
+  help_step: number | null;
+  wrong_recent: number;
+  unsure_recent: number;
+}
+
+/** 선생님: 지금 도움이 필요한 학생(도와주세요·모르겠어요 많음·자주 틀림) */
+export async function fetchSoloAttention(): Promise<SoloAttentionRow[]> {
+  const { data, error } = await supabase.rpc('solo_attention');
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SoloAttentionRow[];
+}
+
+export async function clearSoloHelp(assignmentId: string): Promise<void> {
+  const { error } = await supabase.rpc('solo_help_clear', { p_assignment: assignmentId });
+  if (error) throw new Error(error.message);
+}
+
+export interface SoloReviewRow {
+  assignment_id: string;
+  student_id: string;
+  name: string;
+  lesson_name: string;
+  assigned_at: string;
+  finished_at: string | null;
+  checked_at: string | null;
+  progress: number;
+  total: number;
+  right_count: number;
+  wrong_count: number;
+  unsure_count: number;
+  missed_words: string[];
+}
+
+/** 선생님: 학생들이 한 복습·누적 테스트 결과(최근 며칠) */
+export async function fetchSoloReviews(days = 7): Promise<SoloReviewRow[]> {
+  const { data, error } = await supabase.rpc('solo_review_list', { p_days: days });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SoloReviewRow[];
+}
+
+export async function checkSoloReviews(assignmentIds: string[]): Promise<void> {
+  const { error } = await supabase.rpc('solo_review_check', { p_assignments: assignmentIds });
+  if (error) throw new Error(error.message);
+}
+
+/** 선생님: 한 학생의 낱말 기록(약한 낱말 처방용) */
+export async function fetchStudentWords(studentId: string): Promise<Omit<PoolWord, 'recent' | 'missed_here'>[]> {
+  const { data, error } = await supabase.rpc('solo_student_words', { p_student: studentId });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as Omit<PoolWord, 'recent' | 'missed_here'>[];
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
@@ -70,6 +70,8 @@ export default function SoloPlayer({
   onExit,
   preview = false,
   canRecord = false,
+  finishExtra,
+  onHelp,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
@@ -78,6 +80,10 @@ export default function SoloPlayer({
   preview?: boolean;
   /** 이 학생의 녹음을 서버에 보관해도 되는지(보호자 동의) */
   canRecord?: boolean;
+  /** 끝 화면 아래에 더 보여 줄 것(다시 배우기·숙제 안내) */
+  finishExtra?: ReactNode;
+  /** "선생님 도와주세요" — 주면 위쪽에 버튼이 보인다(학생 화면만) */
+  onHelp?: (step: number) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
@@ -98,6 +104,7 @@ export default function SoloPlayer({
   const [advanced, setAdvanced] = useState(false);
   const attempts = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [helpSent, setHelpSent] = useState(false);
 
   const step = steps[idx];
 
@@ -386,6 +393,7 @@ export default function SoloPlayer({
             </div>
           </div>
         )}
+        {finishExtra}
         <button type="button" onClick={onExit} className={`${btn} bg-warm-yellow text-deep-navy`}>
           {preview ? t('solo.closePreview') : t('solo.backHome')}
         </button>
@@ -410,6 +418,25 @@ export default function SoloPlayer({
         <span className="text-sm tabular-nums text-white/70">
           {idx + 1}/{steps.length}
         </span>
+        {onHelp && (
+          <button
+            type="button"
+            disabled={helpSent}
+            onClick={async () => {
+              setHelpSent(true);
+              try {
+                await onHelp(idx);
+              } catch {
+                setHelpSent(false);
+              }
+              window.setTimeout(() => setHelpSent(false), 90000);
+            }}
+            className="flex items-center gap-1 rounded-full border border-white/30 px-3 py-1.5 text-sm font-bold text-white/90 hover:bg-white/10 disabled:opacity-70"
+          >
+            <span className="material-symbols-outlined text-[18px]">back_hand</span>
+            {helpSent ? t('solo.helpSent') : t('solo.help')}
+          </button>
+        )}
       </header>
 
       {activity && (

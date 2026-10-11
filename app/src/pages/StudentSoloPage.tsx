@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
-import { SoloError, soloAdvance, soloAnswer, soloOpen, soloRecordSave, soloReveal, type SoloOpenResult } from '../lib/soloApi';
+import FinishPanel from '../components/solo/FinishPanel';
+import { SoloError, soloAdvance, soloAnswer, soloHelp, soloOpen, soloRecordSave, soloReveal, type SoloOpenResult } from '../lib/soloApi';
 
 const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
@@ -22,6 +23,8 @@ export default function StudentSoloPage() {
       return;
     }
     let alive = true;
+    // 다시 배우기로 다른 수업으로 넘어갈 때 이전 화면(끝 화면)이 남지 않게 비운다
+    setLesson(null);
     soloOpen(token, assignmentId)
       .then((r) => alive && setLesson(r))
       .catch((e) => {
@@ -69,6 +72,10 @@ export default function StudentSoloPage() {
       api={api}
       canRecord={!!lesson.can_record}
       onExit={() => navigate('/s')}
+      onHelp={async (step) => {
+        await soloHelp(token as string, assignmentId as string, step);
+      }}
+      finishExtra={<FinishPanel token={token as string} assignment={assignmentId as string} onStarted={(id) => navigate(`/s/lesson/${id}`)} />}
     />
   );
 }
