@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
 import LessonAnnotationLayer from './LessonAnnotationLayer';
+import SlideHelpersLayer from './SlideHelpersLayer';
 import { PRESENT_FIT_EVENT, zoomAt } from './PresentZoomArea';
 
 /**
@@ -217,6 +218,7 @@ export default function LessonRunnerBar() {
     {pointsOpen && runner.classId && (
       <LessonPointsPanel classId={runner.classId} onClose={() => setPointsOpen(false)} />
     )}
+    {current.helpers && current.helpers.length > 0 && <SlideHelpersLayer key={`${runner.lessonId}:${runner.stepIndex}`} helpers={current.helpers} />}
     {annotationOpen && canAnnotate && (
       <LessonAnnotationLayer key={`${runner.lessonId}:${runner.stepIndex}`} onClose={() => setAnnotationOpen(false)} />
     )}

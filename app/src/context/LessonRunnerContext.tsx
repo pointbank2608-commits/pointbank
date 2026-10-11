@@ -11,7 +11,7 @@ import { wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { grammarPoint } from '../lib/grammar';
-import type { CurriculumLesson, WordList } from '../lib/types';
+import type { CurriculumLesson, SlideHelper, WordList } from '../lib/types';
 
 export interface RunnerStep {
   kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
@@ -23,6 +23,8 @@ export interface RunnerStep {
   navState?: Record<string, unknown>;
   /** 이 단계를 만든 슬라이드 — "이 슬라이드부터 발표", 수업을 마친 뒤 편집 화면의 같은 슬라이드로 돌아가기에 쓴다. */
   slideId?: string;
+  /** 이 슬라이드의 보조 블록(제목·타이머·점수판) — 발표 중 SlideHelpersLayer 가 그린다 */
+  helpers?: SlideHelper[];
 }
 
 export interface StartOptions {
@@ -137,9 +139,11 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       const materialsWords = wordListToCards(wordList);
       const steps: RunnerStep[] = [];
       let currentSlideId: string | undefined;
-      const push = (step: RunnerStep) => steps.push({ ...step, slideId: currentSlideId });
+      let currentHelpers: SlideHelper[] | undefined;
+      const push = (step: RunnerStep) => steps.push({ ...step, slideId: currentSlideId, helpers: currentHelpers });
       for (const slide of effectiveSlides(lesson)) {
         currentSlideId = slide.id;
+        currentHelpers = slide.helpers && slide.helpers.length > 0 ? slide.helpers : undefined;
         if (slide.kind === 'image') {
           push({
             kind: 'image',

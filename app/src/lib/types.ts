@@ -893,7 +893,16 @@ export interface AttendanceSlide {
   boardTheme?: string | null;
 }
 
-export type LessonSlide =
+/** 보조 블록(BLOCK_SPEC) — 슬라이드의 주 블록 곁에 놓이는 작은 것. 발표 중에만 보이고 키보드를 쓰지 않는다. */
+export type HelperPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type SlideHelper =
+  | { id: string; type: 'title'; text: string; position: HelperPosition }
+  | { id: string; type: 'timer'; seconds: number; position: HelperPosition }
+  | { id: string; type: 'scoreboard'; teams: number; position: HelperPosition };
+
+export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[] };
+
+export type LessonSlideBase =
   | ImageSlide
   | VideoSlide
   | GameSlide

@@ -27,6 +27,7 @@ import { createGameTemplate, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { useWordBankEnriched } from '../lib/wordBankCache';
+import SlideHelpersEditor from './SlideHelpersEditor';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
@@ -299,7 +300,10 @@ export default function LessonSlideSorter({
     if (made.length === 0) return;
     const idx = replaceTargetId ? slides.findIndex((sl) => sl.id === replaceTargetId) : -1;
     if (idx >= 0) {
-      onChange([...slides.slice(0, idx), ...made, ...slides.slice(idx + 1)]);
+      // 주 블록을 바꿔도 제목·타이머 같은 보조 블록은 그대로 남는다(BLOCK_SPEC §6)
+      const kept = slides[idx].helpers;
+      const first = kept && kept.length > 0 && !made[0].helpers?.length ? { ...made[0], helpers: kept } : made[0];
+      onChange([...slides.slice(0, idx), first, ...made.slice(1), ...slides.slice(idx + 1)]);
       setReplaceTargetId(null);
       notify(t('curriculum.slides.replacedToast'));
     } else {
@@ -1024,6 +1028,9 @@ export default function LessonSlideSorter({
                 setSelectedId(slide.id);
               }}
             />
+            <div className="mt-4">
+              <SlideHelpersEditor helpers={selected.helpers ?? []} onChange={(next) => updateSlide(selected.id, { helpers: next })} />
+            </div>
             </>
           ))}
       </div>
