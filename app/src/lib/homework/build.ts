@@ -19,6 +19,12 @@ export const SKILL = {
   context: 'vocab.context',
   sentence: 'sentence.order',
   content: 'listening.content',
+  // 개별수업·복습·시험에서 오는 세부 능력(060_solo_stats.sql 의 단계 → 능력 이름표와 같다)
+  pos: 'vocab.pos',
+  dictation: 'listening.dictation',
+  readSentence: 'reading.sentence',
+  situation: 'reading.situation',
+  correct: 'sentence.correct',
 } as const;
 
 export type Rng = () => number;

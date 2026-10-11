@@ -14,6 +14,8 @@ import SoloPasteWords from './SoloPasteWords';
 import SoloPreview from './SoloPreview';
 import SoloStepForm from './SoloStepForm';
 import SoloTestBlockModal from './SoloTestBlockModal';
+import SoloTextBlockModal from './SoloTextBlockModal';
+import SoloPrintModal from './SoloPrintModal';
 
 /**
  * 개별수업 편집기 — 내 수업 만들기처럼 왼쪽에 단계 목록, 오른쪽에 고치는 칸.
@@ -43,6 +45,8 @@ export default function SoloLessonEditor({
   const [sel, setSel] = useState(0);
   const [dirty, setDirty] = useState(false);
   const [preview, setPreview] = useState(false);
+  /** 미리보기를 열 때의 문제 목록 — 열려 있는 동안 편집기가 다시 그려져도 학생 화면이 처음으로 돌아가지 않게 고정한다 */
+  const [previewSnap, setPreviewSnap] = useState<{ steps: SoloStep[]; at: number } | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(startWithPaste);
   const [view, setView] = useState<'blocks' | 'steps'>('blocks');
@@ -56,6 +60,10 @@ export default function SoloLessonEditor({
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   /** 시험 블록 만들기 창: at = 넣을 자리, replace = 다시 만들 시험 블록 위치 */
   const [testModal, setTestModal] = useState<{ at: number; replace?: number } | null>(null);
+  /** 글(가사·대사)로 블록 만들기 창: at = 넣을 자리 */
+  const [textModal, setTextModal] = useState<{ at: number } | null>(null);
+  /** 인쇄 창: 인쇄할 문제들 */
+  const [printJob, setPrintJob] = useState<SoloStep[] | null>(null);
 
   // 되돌리기: 구조를 바꿀 땐 바로, 글자 고치기는 0.8초 안이면 한 번으로 묶어 기록
   const past = useRef<SoloStep[][]>([]);
@@ -299,6 +307,21 @@ export default function SoloLessonEditor({
     setPaletteOpen(false);
     notify(t('soloTest.created', { count: (test as { items: unknown[] }).items.length }));
   }
+  /** 글로 만든 문제들을 넣는다 */
+  function placeText(made: SoloStep[]) {
+    if (!textModal || made.length === 0) return;
+    const next = [...steps];
+    next.splice(textModal.at, 0, ...made);
+    commit(next);
+    setSel(textModal.at);
+    setTextModal(null);
+    setPaletteOpen(false);
+    notify(t('soloText.created', { count: made.length }));
+  }
+  function openTextAfterSel() {
+    const ri = runIndexOf(sel);
+    setTextModal({ at: ri >= 0 ? runs[ri].end + 1 : steps.length });
+  }
   /** 지금 고른 블록 뒤(없으면 맨 끝)에 시험 블록 */
   function openTestAfterSel() {
     const ri = runIndexOf(sel);
@@ -445,6 +468,8 @@ export default function SoloLessonEditor({
     },
     capacity: (b) => runCapacity(b.type, b.count),
     testAddEnd: () => setTestModal({ at: steps.length }),
+    textAdd: (gi) => setTextModal({ at: groupInsertAt(steps, gi) }),
+    blockPrint: (b) => setPrintJob(steps.slice(b.start, b.end + 1)),
   };
 
   function validate(): SoloStep[] | null {
@@ -526,7 +551,10 @@ export default function SoloLessonEditor({
           <button type="button" onClick={redo} disabled={future.current.length === 0} aria-label={t('soloEdit.redo')} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low disabled:opacity-30">
             <span className="material-symbols-outlined">redo</span>
           </button>
-          <button type="button" onClick={() => setPreview(true)} className="flex items-center gap-1 rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
+          <button type="button" onClick={() => {
+              setPreviewSnap({ steps: steps.map(normalizeStep), at: sel });
+              setPreview(true);
+            }} className="flex items-center gap-1 rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
             <span className="material-symbols-outlined text-[18px]">smartphone</span>
             {t('soloEdit.preview')}
           </button>
@@ -667,6 +695,10 @@ export default function SoloLessonEditor({
             </button>
             {paletteOpen && (
               <div className="absolute bottom-full left-2 right-2 z-10 mb-2 max-h-[60vh] space-y-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-xl">
+                <button type="button" onClick={openTextAfterSel} className="flex w-full items-center gap-2 rounded-lg bg-tertiary-fixed/60 px-3 py-2 text-left font-label-md text-label-md font-bold text-deep-navy hover:bg-tertiary-fixed">
+                  <span className="material-symbols-outlined text-[20px]">lyrics</span>
+                  {t('soloText.addButton')}
+                </button>
                 <button type="button" onClick={openTestAfterSel} className="flex w-full items-center gap-2 rounded-lg bg-secondary-container/60 px-3 py-2 text-left font-label-md text-label-md font-bold text-on-secondary-container hover:bg-secondary-container">
                   <span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>
                   {t('soloTest.addButton')}
@@ -790,6 +822,8 @@ export default function SoloLessonEditor({
         </div>
       )}
 
+      {textModal && <SoloTextBlockModal lessonName={name} onCreate={placeText} onClose={() => setTextModal(null)} />}
+      {printJob && <SoloPrintModal steps={printJob} title={name} onClose={() => setPrintJob(null)} />}
       {testModal && (
         <SoloTestBlockModal
           steps={steps}
@@ -799,7 +833,7 @@ export default function SoloLessonEditor({
         />
       )}
       {pasteOpen && <SoloPasteWords hasSteps={steps.length > 0} onAdd={addMany} onClose={() => setPasteOpen(false)} />}
-      {preview && <SoloPreview steps={steps.map(normalizeStep)} startAt={sel} onClose={() => setPreview(false)} />}
+      {preview && previewSnap && <SoloPreview steps={previewSnap.steps} startAt={previewSnap.at} onClose={() => setPreview(false)} />}
     </div>
   );
 }

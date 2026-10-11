@@ -52,6 +52,10 @@ export type SoloStep =
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
+  /** 가사·대사 빈칸 쓰기 — 문장 속 빈칸에 들어갈 낱말을 직접 쓴다(어려운 판). 영상 구간이 있으면 그 줄을 들려 준다. */
+  | { t: 'gapType'; sentence: string; word: string; ko: string; length: number; first: string; clip?: SoloClip }
+  /** 줄 순서 맞추기 — lines 는 정답 순서, pieces 는 학생에게 보이는 섞인 순서 */
+  | { t: 'lineOrder'; lines: string[]; pieces: string[]; clip?: SoloClip }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloTestItem[] };
 
 /** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
@@ -100,12 +104,14 @@ export type SoloPublicStep =
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
+  | { t: 'gapType'; sentence: string; ko: string; length: number; first: string; clip?: SoloClip }
+  | { t: 'lineOrder'; pieces: string[]; clip?: SoloClip }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloPublicTestItem[] };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
 /** 글자로 답하는 단계 */
-export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble'] as const;
+export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder'] as const;
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -544,8 +550,9 @@ const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
 /** 서버와 같은 규칙으로 미리보기에서 채점 */
 export function gradeSoloLocal(step: SoloStep, value: string): boolean | null {
   if ((SOLO_CHOICE_TYPES as readonly string[]).includes(step.t)) return Number(value) === (step as { answer: number }).answer;
-  if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation') return norm(step.word) === norm(value);
+  if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType') return norm(step.word) === norm(value);
   if (step.t === 'unscramble') return norm(step.sentence) === norm(value);
+  if (step.t === 'lineOrder') return norm(step.lines.join(' ')) === norm(value);
   return null;
 }
 
@@ -554,8 +561,9 @@ export function soloCorrectText(step: SoloStep): string | null {
     const s = step as { options: string[]; answer: number };
     return s.options[s.answer] ?? null;
   }
-  if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation') return step.word;
+  if (step.t === 'spell' || step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType') return step.word;
   if (step.t === 'unscramble') return step.sentence;
+  if (step.t === 'lineOrder') return step.lines.join(' / ');
   return null;
 }
 
@@ -571,6 +579,10 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       };
     case 'lyricBlank':
       return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
+    case 'gapType':
+      return { t: step.t, sentence: step.sentence, ko: step.ko, length: step.length, first: step.first, clip: step.clip };
+    case 'lineOrder':
+      return { t: step.t, pieces: step.pieces, clip: step.clip };
     case 'pickWord':
       return { t: step.t, imageUrl: step.imageUrl, meaning: step.meaning, options: step.options };
     case 'pickMeaning':

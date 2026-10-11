@@ -1,0 +1,129 @@
+// 개별수업 글 블록(lib/textBlocks.ts · lib/soloPrint.ts) 확인 — 가사로 빈칸·줄 순서 문제를 만들고,
+// 문법 겨냥이 맞는 낱말을 비우는지·정답이 학생에게 안 가는지·채점이 맞는지·인쇄 HTML 이 같은 문제를 쓰는지 본다.
+// 실행: node app/scripts/solo/check-text-blocks.mjs   (저장소 루트 또는 app/ 어디서든)
+import assert from 'node:assert/strict';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'vite';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const stubSupabase = {
+  name: 'stub-supabase',
+  enforce: 'pre',
+  load(id) {
+    if (id.replace(/\\/g, '/').endsWith('/src/lib/supabase.ts')) return 'export const supabase = {};';
+  },
+};
+const server = await createServer({ root, logLevel: 'error', plugins: [stubSupabase], server: { middlewareMode: true, hmr: false }, appType: 'custom' });
+
+try {
+  const L = await server.ssrLoadModule('/src/lib/soloLessons.ts');
+  const X = await server.ssrLoadModule('/src/lib/textBlocks.ts');
+  const P = await server.ssrLoadModule('/src/lib/soloPrint.ts');
+  const E = await server.ssrLoadModule('/src/lib/soloEdit.ts');
+
+  const SONG = `[0:10-0:14] I have been waiting for you | 널 기다려 왔어
+[0:14-0:18] She has never seen the ocean | 그녀는 바다를 본 적이 없어
+[0:18-0:22] We are going to the park | 우린 공원에 갈 거야
+[0:22-0:26] The cake was eaten by my brother | 케이크는 내 동생이 먹었어
+[0:26-0:30] I want to learn English | 영어를 배우고 싶어
+[0:30-0:34] He enjoys playing the guitar | 그는 기타 치는 걸 즐겨
+[0:34-0:38] This is bigger than that one | 이게 저것보다 커
+[0:38-0:42] You are the best friend | 넌 최고의 친구야`;
+
+  // 1) 읽기
+  const parsed = X.parseTextSource(SONG);
+  assert.equal(parsed.lines.length, 8);
+  assert.equal(parsed.timed, true);
+  assert.equal(parsed.lines[0].ko, '널 기다려 왔어');
+  assert.equal(X.parseTextSource('I like apples.\nYou like pears.\nWe like plums.').timed, false);
+  const para = X.parseTextSource('I like apples very much. You like pears and plums too. We all like fruit a lot because it is sweet and healthy.');
+  assert.ok(para.lines.length >= 3, '한 덩어리 문단은 문장으로 나뉜다');
+
+  // 2) 문법 겨냥: 맞는 낱말만 비운다
+  const blankOf = (id, line) => {
+    const items = X.buildGapItems([{ en: line, ko: '', start: 0, end: 3 }], { target: id }, 5);
+    return items[0]?.answer ?? null;
+  };
+  assert.equal(blankOf('presentPerfect', 'I have been waiting for you'), 'been');
+  assert.equal(blankOf('presentPerfect', 'She has never seen the ocean'), 'seen');
+  assert.equal(blankOf('presentPerfect', 'I have a red hat'), null, 'have + 명사는 현재완료가 아니다');
+  assert.equal(blankOf('progressive', 'We are going to the park'), 'going');
+  assert.equal(blankOf('passive', 'The cake was eaten by my brother'), 'eaten');
+  assert.equal(blankOf('toInfinitive', 'I want to learn English'), 'learn');
+  assert.equal(blankOf('toInfinitive', 'I go to school'), null, 'to + 명사는 to부정사가 아니다');
+  assert.equal(blankOf('gerund', 'He enjoys playing the guitar'), 'playing');
+  assert.equal(blankOf('comparative', 'This is bigger than that one'), 'bigger');
+  assert.equal(blankOf('superlative', 'You are the best friend'), 'best');
+  assert.equal(blankOf('pastSimple', 'We need some speed'), null, 'need·speed 는 과거형이 아니다');
+
+  // 3) 문법 겨냥으로 만든 빈칸 → 단계
+  const ctx = { videoId: 'dQw4w9WgXcQ', timed: parsed.timed, lines: parsed.lines };
+  const gapItems = X.buildGapItems(parsed.lines, { target: 'presentPerfect' }, 8);
+  assert.equal(gapItems.length, 2, '현재완료가 쓰인 줄만(2줄)');
+  const easy = X.buildGapSteps(gapItems, 'easy', ctx);
+  assert.ok(easy.every((s) => s.t === 'lyricBlank'), '영상+시간표가 있으면 줄 듣기 빈칸');
+  for (const s of easy) {
+    assert.equal(s.options[s.answer], gapItems[easy.indexOf(s)].answer);
+    assert.equal(new Set(s.options.map((o) => o.toLowerCase())).size, s.options.length, '보기에 같은 낱말이 없다');
+    assert.deepEqual(E.stepProblems(s), []);
+    assert.equal(s.clip.videoId, 'dQw4w9WgXcQ');
+  }
+  const noVideo = X.buildGapSteps(gapItems, 'easy', { videoId: null, timed: true, lines: parsed.lines });
+  assert.ok(noVideo.every((s) => s.t === 'fillBlank'), '영상이 없으면 일반 빈칸 고르기');
+  const hard = X.buildGapSteps(gapItems, 'hard', ctx);
+  assert.ok(hard.every((s) => s.t === 'gapType' && s.clip));
+  for (const s of hard) assert.deepEqual(E.stepProblems(s), []);
+
+  // 4) 학생에게 가는 모양에는 정답이 없다 + 채점
+  const gap = hard[0];
+  const pub = L.toPublicStep(gap);
+  assert.ok(!('word' in pub), 'gapType: word 가 빠져야 한다');
+  assert.equal(pub.first, gap.word[0]);
+  assert.equal(L.gradeSoloLocal(gap, ` ${gap.word.toUpperCase()} `), true);
+  assert.equal(L.gradeSoloLocal(gap, 'zzz'), false);
+  assert.equal(L.soloCorrectText(gap), gap.word);
+
+  // 5) 줄 순서
+  const orders = X.buildLineOrderSteps(parsed.lines, 4, ctx);
+  assert.equal(orders.length, 2, '8줄을 4줄씩 2문제');
+  for (const o of orders) {
+    assert.equal(o.t, 'lineOrder');
+    assert.equal(o.lines.length, 4);
+    assert.deepEqual([...o.pieces].sort(), [...o.lines].sort(), '같은 줄을 섞은 것');
+    assert.notDeepEqual(o.pieces, o.lines, '섞였다');
+    assert.deepEqual(E.stepProblems(o), []);
+    const opub = L.toPublicStep(o);
+    assert.ok(!('lines' in opub), 'lineOrder: lines 가 빠져야 한다');
+    assert.equal(L.gradeSoloLocal(o, o.lines.join(' ')), true);
+    assert.equal(L.gradeSoloLocal(o, [...o.lines].reverse().join(' ')), false);
+  }
+  assert.equal(X.buildLineOrderSteps(parsed.lines.slice(0, 2), 4, ctx).length, 0, '줄이 3개 미만이면 만들지 않는다');
+  assert.equal(L.soloCorrectText(orders[0]), orders[0].lines.join(' / '));
+
+  // 6) 인쇄 HTML: 같은 문제 + 정답지 + 이스케이프
+  const t = (k) => k;
+  const steps = [...hard, ...orders, { t: 'fillBlank', sentence: 'I <b>like</b> _____.', meaning: '', options: ['a & b', 'c', 'd'], answer: 0 }];
+  const html = P.buildSoloPrintHtml(steps, { title: '확인 <시험>', includeAnswers: true, showBank: true }, t);
+  assert.ok(html.includes('확인 &lt;시험&gt;'), '제목이 이스케이프된다');
+  assert.ok(!html.includes('<b>like</b>'), '문장 속 태그가 이스케이프된다');
+  assert.ok(html.includes('a &amp; b'));
+  assert.equal((html.match(/class="no"/g) ?? []).length, steps.length, '문제 번호가 문제 수와 같다');
+  assert.ok(html.includes('class="bank"'), '빈칸 쓰기에는 낱말 은행');
+  assert.ok(html.includes('class="page ans"'), '정답지 장');
+  for (const g of hard) assert.ok(html.split('class="page ans"')[1].includes(g.word), '정답지에 정답');
+  const letters = P.lineOrderLetters(orders[0].lines, orders[0].pieces);
+  assert.equal(letters.length, 4);
+  assert.ok(letters.every((l) => /^[A-D]$/.test(l)), '정답 순서가 A~D 글자');
+  assert.ok(html.split('class="page ans"')[1].includes(letters.join(' → ')));
+  const noAns = P.buildSoloPrintHtml(steps, { title: 'x', includeAnswers: false, showBank: false }, t);
+  assert.ok(!noAns.includes('class="page ans"'));
+  assert.ok(!noAns.includes('class="bank"'));
+  assert.equal(P.buildSoloPrintHtml([{ t: 'intro', title: 'x', text: '' }], { title: 'x', includeAnswers: true, showBank: true }, t), null, '인쇄할 문제가 없으면 null');
+  // 인쇄할 수 있는 종류는 전부 렌더된다
+  for (const ty of P.PRINTABLE_STEP_TYPES) assert.ok(typeof ty === 'string');
+
+  console.log('글 블록 확인 통과 — 현재완료 빈칸 2문제, 줄 순서 2문제, 인쇄 HTML', Math.round(html.length / 1024) + 'KB');
+} finally {
+  await server.close();
+}

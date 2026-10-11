@@ -1,6 +1,7 @@
 import { GAME_CATALOG } from '../gameCatalog';
 import { MATERIALS_CATALOG } from '../materialsCatalog';
 import { STEP_KINDS } from '../soloEdit';
+import { PRINTABLE_STEP_TYPES } from '../soloPrint';
 import type { GameType, LessonSlide } from '../types';
 import type { SoloStep } from '../soloLessons';
 import type { BlockCategory, BlockDef } from './types';
@@ -39,11 +40,13 @@ const SOLO_CONCEPT: Partial<Record<SoloStep['t'], string>> = {
   watch: 'videoListen',
   roleplay: 'roleplay',
   lyricBlank: 'clozeListen',
+  gapType: 'clozeListen',
+  lineOrder: 'lineOrder',
   test: 'test',
 };
 
 /** 개별수업 문제 중 서버가 채점하는 것 */
-const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick', 'test'];
+const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick', 'gapType', 'lineOrder', 'test'];
 
 const gameBlocks: BlockDef[] = GAME_CATALOG.map((g) => ({
   id: `${PRACTICE_GAMES.includes(g.type) ? 'practice' : 'game'}.${g.type}`,
@@ -111,7 +114,8 @@ const soloBlocks: BlockDef[] = STEP_KINDS.filter((k) => k.t !== 'intro').map((k)
   role: 'main',
   category: (['quiz'].includes(k.group) ? 'practice' : k.group === 'video' ? 'media' : 'learn') as BlockCategory,
   icon: k.icon,
-  uses: ['solo', 'homework'],
+  // 인쇄할 수 있는 문제 종류는 인쇄에도 쓴다(soloPrint.ts 가 같은 문제로 시트를 만든다)
+  uses: PRINTABLE_STEP_TYPES.includes(k.t) ? ['solo', 'homework', 'print'] : ['solo', 'homework'],
   status: 'ready',
   nameKey: `soloEdit.stepType_${k.t}`,
   soloStep: k.t,

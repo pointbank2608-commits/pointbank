@@ -30,6 +30,8 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'translatePick', icon: 'g_translate', group: 'grammar' },
   { t: 'pickCorrect', icon: 'rule', group: 'grammar' },
   { t: 'unscramble', icon: 'reorder', group: 'grammar' },
+  { t: 'gapType', icon: 'format_underlined', group: 'quiz' },
+  { t: 'lineOrder', icon: 'low_priority', group: 'grammar' },
   { t: 'fadeRead', icon: 'mic', group: 'speak' },
   { t: 'sayPick', icon: 'forum', group: 'speak' },
   { t: 'roleplay', icon: 'theater_comedy', group: 'speak' },
@@ -99,6 +101,10 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, itemId: SPEAKING_ITEMS[0].id };
     case 'rainbowStructure':
       return { t, itemId: STRUCTURE_ITEMS[0].id };
+    case 'gapType':
+      return { t, sentence: '', word: '', ko: '', length: 0, first: '' };
+    case 'lineOrder':
+      return { t, lines: ['', '', ''], pieces: ['', '', ''] };
     case 'test':
       return { t, title: '', scope: 'lesson', timed: true, items: [] };
   }
@@ -155,6 +161,26 @@ export function normalizeStep(step: SoloStep): SoloStep {
       const sentence = step.sentence.trim().replace(/\s+/g, ' ');
       const same = [...step.words].sort().join(' ') === sentence.split(' ').sort().join(' ');
       return { ...step, sentence, words: same && step.words.length > 0 ? step.words : wordsOfSentence(sentence) };
+    }
+    case 'gapType': {
+      const word = step.word.trim();
+      return { ...step, word, length: word.length, first: word[0] ?? '' };
+    }
+    case 'lineOrder': {
+      const lines = step.lines.map((l) => l.trim().replace(/\s+/g, ' ')).filter(Boolean);
+      const same = [...step.pieces].map((x) => x.trim()).sort().join('|') === [...lines].sort().join('|');
+      let pieces = lines;
+      if (same) pieces = step.pieces.map((x) => x.trim());
+      else {
+        for (let i = 0; i < 6; i++) {
+          const s2 = shuffle(lines);
+          if (s2.join('|') !== lines.join('|')) {
+            pieces = s2;
+            break;
+          }
+        }
+      }
+      return { ...step, lines, pieces };
     }
     case 'test':
       return {
@@ -237,6 +263,10 @@ export function stepSummary(step: SoloStep): string {
       return SPEAKING_ITEMS.find((i) => i.id === step.itemId)?.englishAnswer ?? '';
     case 'rainbowStructure':
       return STRUCTURE_ITEMS.find((i) => i.id === step.itemId)?.sentence ?? '';
+    case 'gapType':
+      return step.sentence;
+    case 'lineOrder':
+      return step.lines[0] ?? '';
     case 'test':
       return step.title || `${step.items.length}`;
   }
@@ -332,6 +362,15 @@ export function stepProblems(step: SoloStep): string[] {
       if (step.lines.length < 2) p.push('rpShort');
       if (!step.lines.some((l) => l.who === 'me')) p.push('rpNoMe');
       if (step.lines.some((l) => blank(l.en))) p.push('rpEmpty');
+      break;
+    case 'gapType':
+      if (!step.sentence.includes('_____')) p.push('blankMissing');
+      if (blank(step.word)) p.push('wordEmpty');
+      if (step.clip && (!step.clip.videoId.trim() || step.clip.end <= step.clip.start)) p.push('clipRange');
+      break;
+    case 'lineOrder':
+      if (step.lines.filter((l) => !blank(l)).length < 3) p.push('lineShort');
+      if (new Set(step.lines.map((l) => l.trim().toLowerCase())).size < step.lines.length) p.push('lineDup');
       break;
     case 'test':
       if (step.items.length === 0) p.push('testEmpty');

@@ -9,7 +9,12 @@ import ParentReport from './ParentReport';
 import StatCard from './StatCard';
 
 /** 학습 카드에 보이는 능력(순서 고정). 기록이 없으면 "아직 기록이 없어요". */
-const SKILLS = [SKILL.meaning, SKILL.picture, SKILL.listen, SKILL.spelling, SKILL.context, SKILL.sentence, SKILL.content] as const;
+const SKILLS = [
+  SKILL.meaning, SKILL.picture, SKILL.spelling, SKILL.context, SKILL.pos,
+  SKILL.listen, SKILL.dictation, SKILL.content,
+  SKILL.readSentence, SKILL.situation,
+  SKILL.sentence, SKILL.correct,
+] as const;
 
 const LABEL_STYLE: Record<SkillLabel, string> = {
   good: 'bg-emerald-100 text-emerald-800',

@@ -121,7 +121,7 @@ export default function StatCard({ name, className, days, sheet }: { name: strin
               <div className="flex items-center gap-2">
                 <GradeBadge grade={a.grade} size="sm" />
                 <span className="flex-1 text-base font-bold">{t(`studentHw.ability_${a.key}`)}</span>
-                {a.key === 'reading' && <span className="text-xs text-white/60">{t('studentHw.readingSoon')}</span>}
+                {a.key === 'reading' && a.rate === null && <span className="text-xs text-white/60">{t('studentHw.readingSoon')}</span>}
               </div>
               {a.subs.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-1.5 pl-1">

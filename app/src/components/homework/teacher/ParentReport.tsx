@@ -62,7 +62,7 @@ export default function ParentReport({ card, sheet, onBack }: { card: LearningCa
         const g = a.grade;
         const badge = `<span class="g" style="background:${g ? GRADE_BG[g] : '#e6e8ee'}">${g ?? '?'}</span>`;
         const subs = a.subs.map((s) => `<span class="sub">${esc(t(subLabelKey(s.key)))} <b>${s.grade ?? '?'}</b></span>`).join('');
-        const note = a.key === 'reading' ? `<span class="sub muted">${esc(t('studentHw.readingSoon'))}</span>` : '';
+        const note = a.key === 'reading' && a.rate === null ? `<span class="sub muted">${esc(t('studentHw.readingSoon'))}</span>` : '';
         return `<div class="ab">${badge}<div><div class="abn">${esc(t(`studentHw.ability_${a.key}`))}</div><div>${subs}${note}</div></div></div>`;
       })
       .join('');

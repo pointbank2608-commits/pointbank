@@ -67,7 +67,7 @@ function PosBadge({ pos }: { pos: string }) {
   );
 }
 
-const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble'];
+const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder'];
 
 export default function SoloPlayer({
   steps,
@@ -348,6 +348,11 @@ export default function SoloPlayer({
     await submit(typed.map((n) => step.words[n]).join(' '), () => setTyped([]));
   }
 
+  async function checkLineOrder() {
+    if (!step || step.t !== 'lineOrder') return;
+    await submit(typed.map((n) => step.pieces[n]).join(' '), () => setTyped([]));
+  }
+
   async function checkText() {
     if (!text.trim()) return;
     await submit(text.trim(), () => {
@@ -417,7 +422,7 @@ export default function SoloPlayer({
 
   const isQuestion = QUESTION.includes(step.t);
   const answered = phase === 'right' || phase === 'shown';
-  const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation');
+  const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType');
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#16213e] text-white">
@@ -1025,6 +1030,93 @@ export default function SoloPlayer({
             <p className="text-xl font-bold">{t('solo.correctQ')}</p>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
             {answered && step.why && <p className="text-center text-lg text-white/80">💡 {step.why}</p>}
+          </>
+        )}
+
+        {step.t === 'gapType' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.gapQ')}</p>
+            {step.clip && (
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+                <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
+                {t('solo.listenLine')}
+              </button>
+            )}
+            <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
+            <p className="font-mono text-2xl tracking-[0.3em] text-white/60" aria-label={t('solo.lettersHint', { n: step.length })}>
+              {hintFirst ? `${step.first}${'_'.repeat(Math.max(0, step.length - 1))}` : '_'.repeat(step.length)}
+            </p>
+            {!answered && (
+              <form
+                className="flex w-full flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void checkText();
+                }}
+              >
+                <input
+                  ref={inputRef}
+                  autoFocus
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                />
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                  {t('solo.check')}
+                </button>
+              </form>
+            )}
+          </>
+        )}
+
+        {step.t === 'lineOrder' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.lineOrderQ')}</p>
+            {step.clip && (
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+                <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
+                {t('solo.listenLine')}
+              </button>
+            )}
+            <ol className="flex min-h-20 w-full flex-col gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
+              {typed.length === 0 && <li className="text-center text-base text-white/50">{t('solo.lineOrderEmpty')}</li>}
+              {typed.map((n, k) => (
+                <li key={k}>
+                  <button type="button" disabled={answered} onClick={() => setTyped((a) => a.filter((_, j) => j !== k))} className="flex w-full items-center gap-2 rounded-xl bg-white px-3 py-2 text-left text-xl font-bold text-deep-navy">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-deep-navy text-base text-white">{k + 1}</span>
+                    {step.pieces[n]}
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div className="flex w-full flex-col gap-2">
+              {step.pieces.map((p, n) => (
+                <button
+                  key={n}
+                  type="button"
+                  disabled={typed.includes(n) || answered || busy}
+                  onClick={() => setTyped((a) => [...a, n])}
+                  className="rounded-xl bg-white/90 px-4 py-3 text-left text-xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            {!answered && (
+              <div className="flex w-full gap-3">
+                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-white/15`}>
+                  {t('solo.erase')}
+                </button>
+                <button type="button" onClick={() => void checkLineOrder()} disabled={typed.length !== step.pieces.length || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                  {t('solo.check')}
+                </button>
+              </div>
+            )}
           </>
         )}
 

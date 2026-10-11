@@ -7,7 +7,8 @@
  *  - 큰 능력: 등급이 있는 세부 능력들의 문제 수 가중 평균. 하나도 없으면 "?".
  *  - 전체 기록이 모자라면(채점 30개 미만 또는 끝낸 활동 3개 미만) 모든 등급을 "?"로 — 근거 없는 등급을 만들지 않는다.
  *  - 꾸준함: 받은 숙제 완료율(3개 이상), 틀린 문제 다시 풀어 맞힌 비율(5번 이상), 통장 숙제 검사 완료율(3번 이상).
- *  - 읽기는 아직 재는 활동이 없어 늘 "?"(재는 활동이 생기면 SKILL 을 여기에 더한다).
+ *  - 개별수업·복습·시험의 처음 답도 같은 능력으로 들어온다(서버 060_solo_stats.sql 이 단계 종류별 이름표로 합침).
+ *    읽기는 개별수업의 문장 해석 고르기·상황 표현 고르기에서 처음으로 재진다(숙제에는 아직 읽기 문제가 없다).
  *  - 다른 학생과 비교하지 않는다. 비교는 지난 기간의 나(단순 정답률, 8개 이상일 때만).
  */
 import type { LearningCard } from '../homework';
@@ -48,10 +49,10 @@ export interface StatSheet {
 }
 
 const ABILITY_SKILLS: Record<Exclude<AbilityStat['key'], 'habit'>, string[]> = {
-  vocab: [SKILL.meaning, SKILL.picture, SKILL.spelling, SKILL.context],
-  listening: [SKILL.listen, SKILL.content],
-  reading: [],
-  sentence: [SKILL.sentence],
+  vocab: [SKILL.meaning, SKILL.picture, SKILL.spelling, SKILL.context, SKILL.pos],
+  listening: [SKILL.listen, SKILL.dictation, SKILL.content],
+  reading: [SKILL.readSentence, SKILL.situation],
+  sentence: [SKILL.sentence, SKILL.correct],
 };
 
 function combine(subs: SubStat[]): { rate: number | null; grade: Grade | null } {

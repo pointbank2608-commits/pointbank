@@ -68,6 +68,8 @@ export interface LearningCard {
   wrong_words: { word: string; count: number; skills: string[] }[];
   recent: { id: string; title: string; created_at: string; kind: string; status: 'none' | 'doing' | 'done'; score: number | null; total: number | null }[];
   passbook_homework: { done: number; missing: number };
+  /** 개별수업(오늘의 수업·숙제·복습·시험)에서 온 채점 수와 끝낸 수업 수(060 이후 서버만 준다) */
+  solo?: { graded: number; finished: number };
 }
 
 export interface CreateHomeworkArgs {

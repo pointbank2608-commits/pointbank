@@ -357,6 +357,43 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
           {step.clip && <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />}
         </div>
       );
+    case 'gapType':
+      return (
+        <div className="space-y-4">
+          {text(t('soloEdit.sentenceBlank'), step.sentence, 'sentence', { area: true, hint: t('soloEdit.blankHint') })}
+          {text(t('soloEdit.answerWord'), step.word, 'word', { hint: t('soloEdit.answerWordHint') })}
+          {text(t('soloEdit.ko'), step.ko, 'ko')}
+          {step.clip ? (
+            <div className="space-y-2">
+              <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />
+              <button type="button" onClick={() => set({ clip: undefined })} className="font-label-md text-label-md text-error hover:underline">
+                {t('soloEdit.clipRemove')}
+              </button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => set({ clip: { videoId: '', start: 0, end: 5 } })} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10">
+              + {t('soloEdit.clipAdd')}
+            </button>
+          )}
+        </div>
+      );
+    case 'lineOrder':
+      return (
+        <div className="space-y-4">
+          <Field title={t('soloEdit.linesInOrder')} hint={t('soloEdit.linesInOrderHint')}>
+            <textarea value={step.lines.join('\n')} rows={6} onChange={(e) => set({ lines: e.target.value.split('\n') })} className={input} />
+          </Field>
+          <button type="button" onClick={() => set({ pieces: wordsOfLines(step.lines) })} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10">
+            {t('soloEdit.reshuffleLines')}
+          </button>
+          <ol className="list-decimal space-y-1 rounded-lg bg-surface-container-low py-2 pl-8 pr-3 font-caption text-caption text-on-surface-variant">
+            {step.pieces.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ol>
+          {step.clip && <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />}
+        </div>
+      );
     case 'sayPick':
       return (
         <div className="space-y-4">
@@ -460,6 +497,17 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
         </div>
       );
   }
+}
+
+/** 줄 목록을 섞어 보여 줄 조각으로(원래 순서와 달라지게) */
+function wordsOfLines(lines: string[]): string[] {
+  const l = lines.map((x) => x.trim()).filter(Boolean);
+  if (l.length < 2) return l;
+  for (let i = 0; i < 8; i++) {
+    const s2 = [...l].sort(() => Math.random() - 0.5);
+    if (s2.join('|') !== l.join('|')) return s2;
+  }
+  return l;
 }
 
 function swap<T>(arr: T[], a: number, b: number): T[] {

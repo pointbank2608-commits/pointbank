@@ -155,6 +155,29 @@ try {
     assert.deepEqual(sf.strengths.map((x) => x.key).slice(0, 1), ['vocab.meaning']);
     assert.deepEqual(sf.focus.map((x) => x.key), ['listening.word']);
   });
+  await test('스탯: 개별수업 능력(읽기·품사·받아쓰기·맞는 문장)이 능력별 세부 항목으로 들어온다', () => {
+    const sk = (skill, n, correct, weighted) => ({ skill, n, correct, weighted, prev_n: 0, prev_correct: 0 });
+    const s = stats.buildStatSheet(
+      baseCard({ skills: [sk('reading.sentence', 10, 9, 0.9), sk('reading.situation', 8, 8, 1), sk('vocab.pos', 9, 6, 0.67), sk('listening.dictation', 8, 7, 0.88), sk('sentence.correct', 8, 5, 0.6)] }),
+    );
+    const ab = (k) => s.abilities.find((a) => a.key === k);
+    assert.equal(ab('reading').grade, 'S');
+    assert.equal(ab('vocab').subs.find((x) => x.key === 'vocab.pos').grade, 'C');
+    assert.equal(ab('listening').subs.find((x) => x.key === 'listening.dictation').grade, 'A');
+    assert.equal(ab('sentence').subs.find((x) => x.key === 'sentence.correct').grade, 'C');
+  });
+  await test('스탯: 서버(060 SQL)의 단계 → 능력 이름표가 앱의 세부 능력 목록과 같다', async () => {
+    const fs = await import('node:fs');
+    // 가장 나중 파일의 정의가 서버에 적용된 것이다(060 에서 만들고 062 에서 새 단계 종류를 더함)
+    const files = ['060_solo_stats.sql', '062_solo_skill_text_blocks.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
+    const sql = fs.readFileSync(new URL('../../../supabase/' + files[files.length - 1], import.meta.url), 'utf8');
+    const from = sql.indexOf('create or replace function public.solo_step_skill');
+    const to = sql.indexOf('$$;', sql.indexOf('$$', from) + 2);
+    const body = sql.slice(from, to);
+    const fromSql = new Set([...body.matchAll(/'((?:vocab|listening|reading|sentence)\.[a-z]+)'/g)].map((m) => m[1]));
+    const fromApp = new Set(stats.buildStatSheet(baseCard()).abilities.flatMap((a) => a.subs.map((x) => x.key)).filter((k) => k.includes('.') && !k.startsWith('habit.')));
+    assert.deepEqual([...fromSql].sort(), [...fromApp].sort());
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

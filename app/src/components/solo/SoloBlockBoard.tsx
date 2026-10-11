@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { kindOf, STEP_KINDS } from '../../lib/soloEdit';
+import { PRINTABLE_STEP_TYPES } from '../../lib/soloPrint';
 import { WORD_BLOCK_TYPES } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
 import { buildBoard, formatMinutes, sameStepSource, type BoardBlock } from '../../lib/soloBoard';
@@ -27,6 +28,10 @@ export interface BoardActions {
   capacity: (b: BoardBlock) => number;
   /** 수업 맨 끝에 시험 블록 넣기 */
   testAddEnd: () => void;
+  /** 그룹 끝에 글(가사·대사)로 만든 블록 넣기 */
+  textAdd: (gi: number) => void;
+  /** 이 블록의 문제를 인쇄 */
+  blockPrint: (b: BoardBlock) => void;
 }
 
 export default function SoloBlockBoard({
@@ -61,7 +66,11 @@ export default function SoloBlockBoard({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-primary-fixed/25 px-4 py-3">
         <span className="font-label-md text-label-md font-bold text-deep-navy">{t('soloBoard.summary', { groups: board.groups.filter((g) => g.intro !== null).length, blocks: blockCount, steps: board.totalSteps })}</span>
         <span className="font-caption text-caption text-on-surface-variant">{t('soloBoard.estimate', { n: est })}</span>
-        <button type="button" onClick={actions.testAddEnd} className="ml-auto flex items-center gap-1 rounded-full bg-secondary-container/70 px-3 py-1 font-label-md text-label-md text-on-secondary-container hover:bg-secondary-container">
+        <button type="button" onClick={() => actions.textAdd(Math.max(0, board.groups.length - 1))} className="ml-auto flex items-center gap-1 rounded-full bg-tertiary-fixed/70 px-3 py-1 font-label-md text-label-md text-deep-navy hover:bg-tertiary-fixed">
+          <span className="material-symbols-outlined text-[18px]">lyrics</span>
+          {t('soloText.addButton')}
+        </button>
+        <button type="button" onClick={actions.testAddEnd} className="flex items-center gap-1 rounded-full bg-secondary-container/70 px-3 py-1 font-label-md text-label-md text-on-secondary-container hover:bg-secondary-container">
           <span className="material-symbols-outlined text-[18px]">assignment_turned_in</span>
           {t('soloTest.addButton')}
         </button>
@@ -168,6 +177,12 @@ export default function SoloBlockBoard({
                     <button type="button" onClick={() => actions.blockOpen(b)} className="rounded-full bg-primary/10 px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/20">
                       {t('soloBoard.openQuestions')}
                     </button>
+                    {(PRINTABLE_STEP_TYPES as string[]).includes(b.type) && (
+                      <button type="button" onClick={() => actions.blockPrint(b)} className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
+                        <span className="material-symbols-outlined text-[16px]">print</span>
+                        {t('soloPrint.blockButton')}
+                      </button>
+                    )}
                     {isTest && (
                       <button type="button" onClick={() => actions.blockRegen(b)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
                         {t('soloTest.regenButton')}
@@ -252,6 +267,20 @@ export default function SoloBlockBoard({
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                actions.textAdd(paletteFor);
+                setPaletteFor(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-xl bg-tertiary-fixed/60 px-3 py-2.5 text-left hover:bg-tertiary-fixed"
+            >
+              <span className="material-symbols-outlined text-[24px] text-deep-navy">lyrics</span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-label-md text-label-md font-bold text-deep-navy">{t('soloText.addButton')}</span>
+                <span className="block font-caption text-caption text-on-surface-variant">{t('soloText.addHint')}</span>
+              </span>
+            </button>
             <button
               type="button"
               onClick={() => {
