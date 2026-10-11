@@ -12,10 +12,11 @@ import type { FullCardItem, WordBankEntry } from './types';
  *  단어(그림 중심): intro · meet · pickWord · pickMeaning · listenPick · spell
  *  단어(쓰기 중심, 중학생용): meet · pickMeaning · typeWord · fillBlank · dictation
  *  문법: intro · rule · example · translatePick · pickCorrect · unscramble
+ *  시험 블록: test — 문제 여러 개를 한 단계에 담는다(문항별 제한 시간, 끝에 한 번에 채점, 058 SQL)
  */
-export type SoloStep =
-  | { t: 'intro'; title: string; text: string; imageUrl?: string }
-  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
+
+/** 시험 블록 안에 넣을 수 있는 문제 모양(채점되는 단계) */
+export type SoloQuestionStep =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[]; answer: number }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[]; answer: number }
@@ -23,20 +24,35 @@ export type SoloStep =
   | { t: 'typeWord'; word: string; meaning: string; imageUrl: string | null; length: number; first: string }
   | { t: 'fillBlank'; sentence: string; meaning: string; options: string[]; answer: number }
   | { t: 'dictation'; word: string; length: number }
-  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
-  | { t: 'example'; sentence: string; ko: string }
   | { t: 'translatePick'; sentence: string; options: string[]; answer: number }
   | { t: 'pickCorrect'; options: string[]; answer: number; why: string }
   | { t: 'unscramble'; sentence: string; words: string[]; clip?: SoloClip }
+  | { t: 'sayPick'; situation: string; options: string[]; answer: number; imageUrl?: string }
+  | { t: 'pickPos'; word: string; sentence?: string; options: string[]; answer: number };
+
+/** 시험 영역(성적표에 영역별로 나온다) */
+export type TestArea = 'vocab' | 'listening' | 'spelling' | 'sentence';
+
+/** 시험 문제 하나 = 문제 모양 + 영역 + 제한 시간(초) */
+export type SoloTestItem = SoloQuestionStep & { area: TestArea; sec: number };
+
+/** 시험 범위 — 1단계는 "이 수업에서 배운 것"만 */
+export type TestScope = 'lesson';
+
+export type SoloStep =
+  | SoloQuestionStep
+  | { t: 'intro'; title: string; text: string; imageUrl?: string }
+  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
+  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
+  | { t: 'example'; sentence: string; ko: string }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number }
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
-  | { t: 'sayPick'; situation: string; options: string[]; answer: number; imageUrl?: string }
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
-  | { t: 'pickPos'; word: string; sentence?: string; options: string[]; answer: number };
+  | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloTestItem[] };
 
 /** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
 export interface RoleplayLine {
@@ -53,10 +69,8 @@ export interface SoloClip {
   end: number;
 }
 
-/** 학생에게 가는 모양(정답 없음) */
-export type SoloPublicStep =
-  | { t: 'intro'; title: string; text: string; imageUrl?: string }
-  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
+/** 학생에게 가는 문제 모양(정답 없음) */
+export type SoloPublicQuestion =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[] }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[] }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[] }
@@ -64,20 +78,29 @@ export type SoloPublicStep =
   | { t: 'typeWord'; meaning: string; imageUrl: string | null; length: number; first: string }
   | { t: 'fillBlank'; sentence: string; meaning: string; options: string[] }
   | { t: 'dictation'; word: string; length: number }
-  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
-  | { t: 'example'; sentence: string; ko: string }
   | { t: 'translatePick'; sentence: string; options: string[] }
   | { t: 'pickCorrect'; options: string[]; why: string }
   | { t: 'unscramble'; words: string[]; clip?: SoloClip }
+  | { t: 'sayPick'; situation: string; options: string[]; imageUrl?: string }
+  | { t: 'pickPos'; word: string; sentence?: string; options: string[] };
+
+export type SoloPublicTestItem = SoloPublicQuestion & { area: TestArea; sec: number };
+
+/** 학생에게 가는 모양(정답 없음) */
+export type SoloPublicStep =
+  | SoloPublicQuestion
+  | { t: 'intro'; title: string; text: string; imageUrl?: string }
+  | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
+  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
+  | { t: 'example'; sentence: string; ko: string }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[] }
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
-  | { t: 'sayPick'; situation: string; options: string[]; imageUrl?: string }
   | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
-  | { t: 'pickPos'; word: string; sentence?: string; options: string[] };
+  | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloPublicTestItem[] };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
@@ -538,6 +561,16 @@ export function soloCorrectText(step: SoloStep): string | null {
 
 export function toPublicStep(step: SoloStep): SoloPublicStep {
   switch (step.t) {
+    case 'test':
+      return {
+        t: 'test',
+        title: step.title,
+        scope: step.scope,
+        timed: step.timed,
+        items: step.items.map((it) => ({ ...(toPublicStep(it) as SoloPublicQuestion), area: it.area, sec: it.sec })),
+      };
+    case 'lyricBlank':
+      return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
     case 'pickWord':
       return { t: step.t, imageUrl: step.imageUrl, meaning: step.meaning, options: step.options };
     case 'pickMeaning':
@@ -556,8 +589,6 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       return { t: step.t, options: step.options, why: step.why };
     case 'unscramble':
       return { t: step.t, words: step.words, clip: step.clip };
-    case 'lyricBlank':
-      return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
     case 'sayPick':
       return { t: step.t, situation: step.situation, options: step.options, imageUrl: step.imageUrl };
     case 'pickPos':

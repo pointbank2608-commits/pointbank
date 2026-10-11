@@ -7,6 +7,8 @@ import RainbowStructure from '../rainbow/RainbowStructure';
 import { COMMON_SFX, playSfx } from '../../lib/gameSfx';
 import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
+import type { TestResult } from '../../lib/soloTest';
+import SoloTestRunner from './SoloTestRunner';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -24,6 +26,8 @@ export interface SoloPlayerApi {
   reveal(step: number): Promise<string | null>;
   /** 따라 부른 녹음 보내기(보호자 동의가 있는 학생만) — 실패하면 false */
   record?(step: number, blob: Blob, seconds: number, sub?: number): Promise<boolean>;
+  /** 시험 블록 답안을 한 번에 내고 채점 결과 받기 */
+  submitTest(step: number, answers: (string | null)[]): Promise<TestResult>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
@@ -96,6 +100,12 @@ export default function SoloPlayer({
   /** 틀렸거나 "모르겠어요"를 누른 단계 번호 — 끝 화면에서 다시 볼 것으로 보여 준다 */
   const [missed, setMissed] = useState<Set<number>>(new Set());
   const markMissed = (i: number) => setMissed((cur) => (cur.has(i) ? cur : new Set(cur).add(i)));
+  /** 시험 블록에서 틀린 낱말(시험은 문제 여러 개가 한 단계라 낱말로 모은다) */
+  const [testMissed, setTestMissed] = useState<string[]>([]);
+  const markMissedWord = (it: object) => {
+    const w = 'word' in it && typeof it.word === 'string' ? it.word.trim() : '';
+    if (w) setTestMissed((cur) => (cur.includes(w) ? cur : [...cur, w]));
+  };
   const [error, setError] = useState(false);
   const [typed, setTyped] = useState<number[]>([]);
   const [text, setText] = useState('');
@@ -364,8 +374,9 @@ export default function SoloPlayer({
       const w = s?.word?.trim();
       if (w && !out.includes(w)) out.push(w);
     }
+    for (const w of testMissed) if (!out.includes(w)) out.push(w);
     return out.slice(0, 10);
-  }, [missed, steps]);
+  }, [missed, steps, testMissed]);
 
   const percent = useMemo(() => (steps.length ? Math.round((Math.min(idx, steps.length) / steps.length) * 100) : 0), [idx, steps.length]);
 
@@ -748,6 +759,22 @@ export default function SoloPlayer({
           );
         })()}
 
+        {step.t === 'test' && (
+          <SoloTestRunner
+            key={idx}
+            step={step}
+            onSubmit={async (answers) => {
+              const r = await api.submitTest(idx, answers);
+              setStats((st) => ({ ...st, right: st.right + r.score }));
+              r.items.forEach((it, k) => {
+                if (!it.correct) markMissedWord(step.items[k]);
+              });
+              return r;
+            }}
+            onDone={goOn}
+          />
+        )}
+
         {step.t === 'intro' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
             {step.imageUrl ? <Picture url={step.imageUrl} wide /> : <div className="text-6xl">{/^\d+\.\s/.test(step.title) ? '⏱️' : '📚'}</div>}
@@ -1056,7 +1083,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && (
+        {step.t !== 'intro' && step.t !== 'test' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && (
           <button
             type="button"
             disabled={busy}

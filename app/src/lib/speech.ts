@@ -22,6 +22,36 @@ export function speak(text: string) {
   window.speechSynthesis.speak(utter);
 }
 
+/**
+ * speak 와 같지만 다 읽으면 끝나는 Promise 를 돌려준다(시험의 듣기 문제가 읽는 동안 시계를 멈추려고).
+ * 음성이 없거나 끝 신호가 오지 않아도 글자 수로 어림한 시간 뒤에는 끝난다.
+ */
+export function speakAsync(text: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      resolve();
+      return;
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      resolve();
+    };
+    const timer = window.setTimeout(finish, 1500 + text.length * 120);
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.85;
+    const voice = voices.find((v) => v.lang.startsWith('en'));
+    if (voice) utter.voice = voice;
+    utter.onend = finish;
+    utter.onerror = finish;
+    window.speechSynthesis.speak(utter);
+  });
+}
+
 /** 여러 문장을 차례대로 읽는다(문법 예문 "모두 읽기"). 앞에서 읽던 건 멈추고 새로 시작한다. */
 export function speakSequence(texts: string[]) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;

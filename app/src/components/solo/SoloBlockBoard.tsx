@@ -25,6 +25,8 @@ export interface BoardActions {
   blockOpen: (b: BoardBlock) => void;
   blockAdd: (gi: number, type: SoloStep['t']) => void;
   capacity: (b: BoardBlock) => number;
+  /** 수업 맨 끝에 시험 블록 넣기 */
+  testAddEnd: () => void;
 }
 
 export default function SoloBlockBoard({
@@ -59,6 +61,10 @@ export default function SoloBlockBoard({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-primary-fixed/25 px-4 py-3">
         <span className="font-label-md text-label-md font-bold text-deep-navy">{t('soloBoard.summary', { groups: board.groups.filter((g) => g.intro !== null).length, blocks: blockCount, steps: board.totalSteps })}</span>
         <span className="font-caption text-caption text-on-surface-variant">{t('soloBoard.estimate', { n: est })}</span>
+        <button type="button" onClick={actions.testAddEnd} className="ml-auto flex items-center gap-1 rounded-full bg-secondary-container/70 px-3 py-1 font-label-md text-label-md text-on-secondary-container hover:bg-secondary-container">
+          <span className="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+          {t('soloTest.addButton')}
+        </button>
         {Math.abs(est - minutes) >= 3 && (
           <button type="button" onClick={() => actions.setMinutes(est)} className="font-caption text-caption text-primary hover:underline">
             {t('soloBoard.matchMinutes', { n: est })}
@@ -121,6 +127,8 @@ export default function SoloBlockBoard({
               const k = kindOf(b.type);
               const bad = [...problemIndexes].some((p) => p >= b.start && p <= b.end);
               const isIntro = b.type === 'intro';
+              const isTest = b.type === 'test';
+              const test = isTest ? (steps[b.start] as Extract<SoloStep, { t: 'test' }>) : null;
               const cap = actions.capacity(b);
               const canRegen = (WORD_BLOCK_TYPES as readonly string[]).includes(b.type) && lessonWordCount >= 4;
               return (
@@ -129,6 +137,7 @@ export default function SoloBlockBoard({
                     <span className={`material-symbols-outlined shrink-0 text-[24px] ${bad ? 'text-error' : 'text-primary'}`}>{bad ? 'error' : k.icon}</span>
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-label-md text-label-md font-bold text-on-surface">{t(`soloEdit.stepType_${b.type}`)}</div>
+                      {test && <div className="truncate font-caption text-caption text-on-surface-variant">{test.title} · {t('soloTest.boardInfo', { count: test.items.length })}{test.timed ? ` · ${t('soloTest.timedShort')}` : ''}</div>}
                       {b.words.length > 0 && <div className="truncate font-caption text-caption text-on-surface-variant">{b.words.join(' · ')}{b.count > b.words.length ? ' …' : ''}</div>}
                       {(WORD_BLOCK_TYPES as readonly string[]).includes(b.type) && (
                         <div className="mt-0.5 flex items-center gap-1 font-caption text-caption">
@@ -145,7 +154,7 @@ export default function SoloBlockBoard({
                         </div>
                       )}
                     </div>
-                    {!isIntro && (
+                    {!isIntro && !isTest && (
                       <span className="flex shrink-0 items-center gap-1 font-caption text-caption text-on-surface-variant">
                         <button type="button" onClick={() => actions.blockCount(b, b.count - 1)} disabled={b.count <= 1} aria-label={t('soloEdit.blockFewer')} className="rounded-full border border-outline-variant px-1.5 leading-5 hover:border-primary disabled:opacity-30">−</button>
                         <span className="min-w-[3.2rem] text-center tabular-nums text-on-surface">{t('soloBoard.questions', { n: b.count })}</span>
@@ -159,6 +168,11 @@ export default function SoloBlockBoard({
                     <button type="button" onClick={() => actions.blockOpen(b)} className="rounded-full bg-primary/10 px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/20">
                       {t('soloBoard.openQuestions')}
                     </button>
+                    {isTest && (
+                      <button type="button" onClick={() => actions.blockRegen(b)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
+                        {t('soloTest.regenButton')}
+                      </button>
+                    )}
                     {canRegen && (
                       <button type="button" onClick={() => actions.blockRegen(b)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
                         {b.source && b.source !== 'mixed' && !sameStepSource(b.source, board.lessonSource) ? t('soloBoard.revertLesson') : t('soloBoard.regen')}
@@ -238,6 +252,20 @@ export default function SoloBlockBoard({
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                actions.blockAdd(paletteFor, 'test');
+                setPaletteFor(null);
+              }}
+              className="flex w-full items-center gap-2 rounded-xl bg-secondary-container/60 px-3 py-2.5 text-left hover:bg-secondary-container"
+            >
+              <span className="material-symbols-outlined text-[24px] text-on-secondary-container">assignment_turned_in</span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-label-md text-label-md font-bold text-on-secondary-container">{t('soloTest.addButton')}</span>
+                <span className="block font-caption text-caption text-on-surface-variant">{t('soloTest.addHint')}</span>
+              </span>
+            </button>
             <div>
               <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t('soloEdit.addBlockGroup')}</div>
               {lessonWordCount < 4 && <p className="mb-1 font-caption text-caption text-on-surface-variant">{t('soloEdit.addBlockNeed')}</p>}
@@ -260,7 +288,7 @@ export default function SoloBlockBoard({
               </div>
             </div>
             {(['learn', 'quiz', 'speak', 'grammar', 'video'] as const).map((grp) => {
-              const list = STEP_KINDS.filter((k) => k.group === grp && k.t !== 'intro' && !(WORD_BLOCK_TYPES as readonly string[]).includes(k.t));
+              const list = STEP_KINDS.filter((k) => k.group === grp && k.t !== 'intro' && k.t !== 'test' && !(WORD_BLOCK_TYPES as readonly string[]).includes(k.t));
               if (list.length === 0) return null;
               return (
                 <div key={grp}>

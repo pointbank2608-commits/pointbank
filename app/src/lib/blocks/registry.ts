@@ -39,10 +39,11 @@ const SOLO_CONCEPT: Partial<Record<SoloStep['t'], string>> = {
   watch: 'videoListen',
   roleplay: 'roleplay',
   lyricBlank: 'clozeListen',
+  test: 'test',
 };
 
 /** 개별수업 문제 중 서버가 채점하는 것 */
-const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick'];
+const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick', 'test'];
 
 const gameBlocks: BlockDef[] = GAME_CATALOG.map((g) => ({
   id: `${PRACTICE_GAMES.includes(g.type) ? 'practice' : 'game'}.${g.type}`,

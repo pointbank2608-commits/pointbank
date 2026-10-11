@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type { SoloPublicStep, SoloStep } from './soloLessons';
 import type { PoolWord } from './soloReview';
+import type { TestResult } from './soloTest';
 
 /** 개별수업 서버 연동(047_solo_lessons.sql) — 선생님 쪽(RLS·함수)과 학생 쪽(기기 열쇠 함수). */
 
@@ -175,6 +176,29 @@ export const soloAdvance = (token: string, assignment: string, step: number, uns
 export async function soloReveal(token: string, assignment: string, step: number): Promise<string | null> {
   const r = await rpc<{ answer: string | null }>('solo_reveal', { p_token: token, p_assignment: assignment, p_step: step });
   return r.answer ?? null;
+}
+
+/** 시험 블록 답안을 한 번에 내고 채점 결과를 받는다(058). 이미 낸 시험이면 처음 결과를 그대로 돌려준다. */
+export const soloTestSubmit = (token: string, assignment: string, step: number, answers: (string | null)[]) =>
+  rpc<TestResult>('solo_test_submit', { p_token: token, p_assignment: assignment, p_step: step, p_answers: answers });
+
+export interface SoloTestSummaryRow {
+  assignment_id: string;
+  step_index: number;
+  score: number;
+  total: number;
+  by_area: TestResult['by_area'];
+  created_at: string;
+}
+
+/** (선생님) 이 수업의 시험 결과 — 학생(낸 수업)마다, 시험 블록마다 한 줄. 058 을 안 돌렸으면 빈 목록. */
+export async function fetchSoloTestSummary(lessonId: string): Promise<SoloTestSummaryRow[]> {
+  const { data, error } = await supabase.rpc('solo_test_summary', { p_lesson: lessonId });
+  if (error) {
+    if (/solo_test_summary/.test(error.message) || error.code === 'PGRST202') return [];
+    throw error;
+  }
+  return (data ?? []) as SoloTestSummaryRow[];
 }
 
 /* ---------------- 녹음 보관·학부모 공유(051) ---------------- */

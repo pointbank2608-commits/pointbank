@@ -12,6 +12,8 @@ import {
   fetchSoloAssignmentCounts,
   fetchSoloLessons,
   fetchSoloStatus,
+  fetchSoloTestSummary,
+  type SoloTestSummaryRow,
   renameSoloLesson,
   rewardSoloLesson,
   type SoloLesson,
@@ -380,6 +382,8 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
   const [rewarding, setRewarding] = useState(false);
   const [tick, setTick] = useState(0);
   const hasSing = lesson.steps.some((st) => st.t === 'lineSing' || st.t === 'fadeRead' || st.t === 'roleplay');
+  const hasTest = lesson.steps.some((st) => st.t === 'test');
+  const [tests, setTests] = useState<SoloTestSummaryRow[]>([]);
 
   useEffect(() => {
     if (!academy?.id) return;
@@ -395,17 +399,19 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
 
   useEffect(() => {
     let alive = true;
-    const load = () =>
-      fetchSoloStatus(lesson.id)
+    const load = () => {
+      if (hasTest) fetchSoloTestSummary(lesson.id).then((r) => alive && setTests(r), () => undefined);
+      return fetchSoloStatus(lesson.id)
         .then((r) => alive && setRows(r))
         .catch((e) => alive && notify(e instanceof Error ? e.message : String(e), 'error'));
+    };
     void load();
     const timer = window.setInterval(load, 15000);
     return () => {
       alive = false;
       window.clearInterval(timer);
     };
-  }, [lesson.id, notify, tick]);
+  }, [lesson.id, notify, tick, hasTest]);
 
   const waiting = (rows ?? []).filter((r) => r.finished_at && !r.rewarded);
   const rewardedCount = (rows ?? []).filter((r) => r.rewarded).length;
@@ -495,6 +501,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                     <th className="pb-2 pr-3">{t('solo.colProgress')}</th>
                     <th className="pb-2 pr-3">{t('solo.colRight')}</th>
                     <th className="pb-2 pr-3">{t('solo.colUnsure')}</th>
+                    {hasTest && <th className="pb-2 pr-3">{t('soloTest.colTest')}</th>}
                     {hasSing && <th className="pb-2" />}
                   </tr>
                 </thead>
@@ -519,6 +526,25 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                       <td className="py-2 pr-3 font-caption text-caption text-on-surface">
                         {r.unsure_count > 0 ? t('solo.unsureAt', { steps: r.unsure_steps.join(', ') }) : '-'}
                       </td>
+                      {hasTest && (
+                        <td className="py-2 pr-3 font-caption text-caption text-on-surface">
+                          {(() => {
+                            const mine = tests.filter((x) => x.assignment_id === r.assignment_id);
+                            if (mine.length === 0) return '-';
+                            return mine.map((x) => (
+                              <div key={x.step_index} title={Object.entries(x.by_area ?? {}).map(([a, v]) => `${t(`soloTest.area_${a}`)} ${v?.right}/${v?.total}`).join(' · ')}>
+                                <b className="tabular-nums">{x.score}/{x.total}</b>
+                                <span className="ml-1 text-on-surface-variant">
+                                  {Object.entries(x.by_area ?? {})
+                                    .filter(([, v]) => v && v.total > 0 && v.right < v.total)
+                                    .map(([a, v]) => `${t(`soloTest.area_${a}`)} ${v?.right}/${v?.total}`)
+                                    .join(' · ')}
+                                </span>
+                              </div>
+                            ));
+                          })()}
+                        </td>
+                      )}
                       {hasSing && (
                         <td className="py-2">
                           <button type="button" onClick={() => onRecords(r)} className="whitespace-nowrap rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/10">

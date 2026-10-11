@@ -6,13 +6,14 @@ import { wordListToCards } from '../../lib/gameFromWords';
 import { createSoloLesson, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
 import { addGroup, buildBoard, groupInsertAt, lessonSourceOf, moveGroup, removeGroup, stepSource, updateGroup, withSource, type BoardBlock } from '../../lib/soloBoard';
 import type { WordList } from '../../lib/types';
-import { kindOf, lessonProblems, newStep, normalizeStep, STEP_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
+import { kindOf, lessonProblems, newStep, normalizeStep, PALETTE_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
 import { buildWordBlock, WORD_BLOCK_TYPES, type WordBlockType } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
 import SoloBlockBoard, { type BoardActions } from './SoloBlockBoard';
 import SoloPasteWords from './SoloPasteWords';
 import SoloPreview from './SoloPreview';
 import SoloStepForm from './SoloStepForm';
+import SoloTestBlockModal from './SoloTestBlockModal';
 
 /**
  * 개별수업 편집기 — 내 수업 만들기처럼 왼쪽에 단계 목록, 오른쪽에 고치는 칸.
@@ -53,6 +54,8 @@ export default function SoloLessonEditor({
   const [asking, setAsking] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
+  /** 시험 블록 만들기 창: at = 넣을 자리, replace = 다시 만들 시험 블록 위치 */
+  const [testModal, setTestModal] = useState<{ at: number; replace?: number } | null>(null);
 
   // 되돌리기: 구조를 바꿀 땐 바로, 글자 고치기는 0.8초 안이면 한 번으로 묶어 기록
   const past = useRef<SoloStep[][]>([]);
@@ -249,6 +252,10 @@ export default function SoloLessonEditor({
   }
   function regenerateRun(ri: number) {
     const r = runs[ri];
+    if (r.t === 'test') {
+      setTestModal({ at: r.start, replace: r.start });
+      return;
+    }
     if (!isWordBlock(r.t)) return;
     const made = buildWordBlock(r.t as WordBlockType, lessonWords);
     if (made.length === 0) {
@@ -280,6 +287,24 @@ export default function SoloLessonEditor({
     setSel(at);
     setPaletteOpen(false);
   }
+  /** 시험 블록을 넣거나(at) 바꾼다(replace) */
+  function placeTest(test: SoloStep) {
+    if (!testModal) return;
+    const next = [...steps];
+    if (testModal.replace !== undefined) next.splice(testModal.replace, 1, test);
+    else next.splice(testModal.at, 0, test);
+    commit(next);
+    setSel(testModal.replace ?? testModal.at);
+    setTestModal(null);
+    setPaletteOpen(false);
+    notify(t('soloTest.created', { count: (test as { items: unknown[] }).items.length }));
+  }
+  /** 지금 고른 블록 뒤(없으면 맨 끝)에 시험 블록 */
+  function openTestAfterSel() {
+    const ri = runIndexOf(sel);
+    setTestModal({ at: ri >= 0 ? runs[ri].end + 1 : steps.length });
+  }
+
   /** 이 수업의 같은 종류 단계에서 이미 쓴 낱말(영어, 소문자) */
   const meaningToWord = new Map(lessonWords.map((w) => [w.meaning, w.word.toLowerCase()]));
   const keyOf = (s: SoloStep): string => {
@@ -353,6 +378,7 @@ export default function SoloLessonEditor({
     },
     groupAdd: (title) => commit(addGroup(steps, title)),
     blockCount: (b, n) => {
+      if (b.type === 'test') return;
       const ri = runAt(b);
       if (ri >= 0) setRunCount(ri, n);
     },
@@ -394,6 +420,10 @@ export default function SoloLessonEditor({
     },
     blockAdd: (gi, type) => {
       const at = groupInsertAt(steps, gi);
+      if (type === 'test') {
+        setTestModal({ at });
+        return;
+      }
       if (isWordBlock(type)) {
         const made = buildWordBlock(type as WordBlockType, lessonWords);
         if (made.length === 0) {
@@ -414,6 +444,7 @@ export default function SoloLessonEditor({
       setBoard(false);
     },
     capacity: (b) => runCapacity(b.type, b.count),
+    testAddEnd: () => setTestModal({ at: steps.length }),
   };
 
   function validate(): SoloStep[] | null {
@@ -575,7 +606,7 @@ export default function SoloLessonEditor({
                         </button>
                         {r.t !== 'intro' && (
                           <span className="flex shrink-0 items-center">
-                            {canWordBlocks && isWordBlock(r.t) && (
+                            {((canWordBlocks && isWordBlock(r.t)) || r.t === 'test') && (
                               <button type="button" onClick={() => regenerateRun(ri)} title={t('soloEdit.blockRegen')} aria-label={t('soloEdit.blockRegen')} className={btn}>
                                 <span className="material-symbols-outlined text-[18px]">autorenew</span>
                               </button>
@@ -636,6 +667,10 @@ export default function SoloLessonEditor({
             </button>
             {paletteOpen && (
               <div className="absolute bottom-full left-2 right-2 z-10 mb-2 max-h-[60vh] space-y-2 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest p-3 shadow-xl">
+                <button type="button" onClick={openTestAfterSel} className="flex w-full items-center gap-2 rounded-lg bg-secondary-container/60 px-3 py-2 text-left font-label-md text-label-md font-bold text-on-secondary-container hover:bg-secondary-container">
+                  <span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+                  {t('soloTest.addButton')}
+                </button>
                 <button type="button" onClick={() => setPasteOpen(true)} className="flex w-full items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-left font-label-md text-label-md font-bold text-primary hover:bg-primary/20">
                   <span className="material-symbols-outlined text-[20px]">auto_fix_high</span>
                   {t('soloEdit.pasteOpen')}
@@ -662,7 +697,7 @@ export default function SoloLessonEditor({
                   <div key={g}>
                     <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t(`soloEdit.group_${g}`)}</div>
                     <div className="grid grid-cols-2 gap-1">
-                      {STEP_KINDS.filter((k) => k.group === g).map((k) => (
+                      {PALETTE_KINDS.filter((k) => k.group === g).map((k) => (
                         <button key={k.t} type="button" onClick={() => add(k.t)} className="flex items-center gap-1.5 rounded-lg border border-outline-variant/50 px-2 py-1.5 text-left font-label-md text-label-md text-on-surface hover:border-primary hover:bg-primary/5">
                           <span className="material-symbols-outlined text-[18px] text-primary">{k.icon}</span>
                           <span className="truncate">{t(`soloEdit.stepType_${k.t}`)}</span>
@@ -755,6 +790,14 @@ export default function SoloLessonEditor({
         </div>
       )}
 
+      {testModal && (
+        <SoloTestBlockModal
+          steps={steps}
+          current={testModal.replace !== undefined && steps[testModal.replace]?.t === 'test' ? (steps[testModal.replace] as Extract<SoloStep, { t: 'test' }>) : undefined}
+          onCreate={placeTest}
+          onClose={() => setTestModal(null)}
+        />
+      )}
       {pasteOpen && <SoloPasteWords hasSteps={steps.length > 0} onAdd={addMany} onClose={() => setPasteOpen(false)} />}
       {preview && <SoloPreview steps={steps.map(normalizeStep)} startAt={sel} onClose={() => setPreview(false)} />}
     </div>

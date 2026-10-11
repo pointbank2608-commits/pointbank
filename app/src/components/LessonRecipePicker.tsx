@@ -9,6 +9,9 @@ import { loadWordBank } from '../lib/wordBankCache';
 import type { LessonSlide } from '../lib/types';
 import { GrammarPickerPanel } from './LessonSlideSorter';
 import CurriculumGrammarSets from './CurriculumGrammarSets';
+import CurriculumWordSets from './CurriculumWordSets';
+import { setToCards } from '../lib/curriculumWords';
+import type { WordBankEntry } from '../lib/types';
 import { GRAMMAR_POINTS } from '../lib/grammar';
 import { useToast } from '../context/ToastContext';
 import { generateShadowScript } from '../lib/api';
@@ -54,6 +57,8 @@ export default function LessonRecipePicker({
   const videoTabChip = (on: boolean) => `flex items-center gap-1.5 rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`;
   const { notify } = useToast();
   const [busy, setBusy] = useState(false);
+  // 교과과정 단어·문법은 길어서 기본은 접어 두고, 분류 이름 옆의 펼치기 버튼으로 연다
+  const [curOpen, setCurOpen] = useState<{ word: boolean; grammar: boolean }>({ word: false, grammar: false });
   // 영상 수업: 이미 단어장을 골라 뒀을 때 그 단어장을 계속 쓸지(기본은 영상 낱말로 새로 만든다)
   const [keepMyList, setKeepMyList] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
@@ -79,6 +84,24 @@ export default function LessonRecipePicker({
       if (slides.length === 0) return;
       const extra = recipe.id === 'grammar' && grammarId ? grammarPoint(grammarId)?.name : recipe.id === 'reading' ? reading.title.trim() : recipe.id === 'video' ? (clip ? `${clip.series} · ${clip.title}` : video.title.trim()) : '';
       onApply(slides, extra ? `${t(`recipes.${recipe.id}Name`)} · ${extra}` : t(`recipes.${recipe.id}Name`));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** 교과과정 단어: 고른 묶음의 낱말로 단어장을 만들고 단어 수업을 채운다 */
+  async function applyWordEntries(title: string, entries: WordBankEntry[]) {
+    setBusy(true);
+    try {
+      const cards = setToCards(entries);
+      if (cards.length < 5 || !makeWordList || !(await makeWordList(cards, title))) {
+        notify(t('recipes.setFailed'), 'error');
+        return;
+      }
+      const recipe = LESSON_RECIPES.find((r) => r.id === 'vocab');
+      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
+      const slides = recipe ? await recipe.build({ ...common, hasWords: true }) : [];
+      if (slides.length) onApply(slides, `${t('recipes.vocabName')} · ${title}`);
     } finally {
       setBusy(false);
     }
@@ -186,7 +209,21 @@ export default function LessonRecipePicker({
           <p className="font-caption text-caption text-on-surface-variant">{t('recipes.setsHint')}</p>
           {(['word', 'grammar', 'video'] as const).map((kind) => (
             <div key={kind} className="space-y-2">
-              {kind === 'grammar' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="font-label-md text-label-md font-bold text-deep-navy">{t(`recipes.setsGroup_${kind}`)}</div>
+                {(kind === 'word' || kind === 'grammar') && (
+                  <button
+                    type="button"
+                    aria-expanded={curOpen[kind]}
+                    onClick={() => setCurOpen((o) => ({ ...o, [kind]: !o[kind] }))}
+                    className={`flex items-center gap-1 rounded-full border px-3 py-1 font-label-md text-label-md transition-colors ${curOpen[kind] ? 'border-primary bg-primary text-on-primary' : 'border-primary text-primary hover:bg-primary/10'}`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{curOpen[kind] ? 'expand_less' : 'expand_more'}</span>
+                    {t(curOpen[kind] ? `recipes.cur_collapse_${kind}` : `recipes.cur_expand_${kind}`)}
+                  </button>
+                )}
+              </div>
+              {kind === 'grammar' && curOpen.grammar && (
                 <CurriculumGrammarSets
                   disabled={busy}
                   onPick={(grammarId) => {
@@ -197,7 +234,7 @@ export default function LessonRecipePicker({
                   }}
                 />
               )}
-              <div className="font-label-md text-label-md font-bold text-deep-navy">{t(`recipes.setsGroup_${kind}`)}</div>
+              {kind === 'word' && curOpen.word && <CurriculumWordSets disabled={busy} onPick={(title, entries) => void applyWordEntries(title, entries)} />}
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 {LESSON_SETS.filter((s) => s.kind === kind).map((s) => (
                   <button

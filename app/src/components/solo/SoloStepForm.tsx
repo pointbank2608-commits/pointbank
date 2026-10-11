@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { uploadLessonSlideImage } from '../../lib/api';
-import { lettersOf, wordsOfSentence } from '../../lib/soloEdit';
-import type { RoleplayLine, SoloClip, SoloStep } from '../../lib/soloLessons';
+import { lettersOf, stepProblems, stepSummary, wordsOfSentence } from '../../lib/soloEdit';
+import type { RoleplayLine, SoloClip, SoloStep, SoloTestItem } from '../../lib/soloLessons';
 import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
 import { POS_HINT_KO, SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
@@ -197,6 +197,8 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
   );
 
   switch (step.t) {
+    case 'test':
+      return <TestForm step={step} academyId={academyId} onChange={onChange} />;
     case 'intro':
       return (
         <div className="space-y-4">
@@ -464,4 +466,71 @@ function swap<T>(arr: T[], a: number, b: number): T[] {
   const x = [...arr];
   [x[a], x[b]] = [x[b], x[a]];
   return x;
+}
+
+/* ---------------- 시험 블록: 제목·제한 시간 + 문제 목록(문제를 누르면 그 문제를 고친다) ---------------- */
+
+function TestForm({ step, academyId, onChange }: { step: Extract<SoloStep, { t: 'test' }>; academyId: string; onChange: (s: SoloStep) => void }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState<number | null>(null);
+  const setItems = (items: SoloTestItem[]) => onChange({ ...step, items });
+  return (
+    <div className="space-y-4">
+      <Field title={t('soloEdit.title')}>
+        <input value={step.title} onChange={(e) => onChange({ ...step, title: e.target.value })} className={input} />
+      </Field>
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={step.timed} onChange={(e) => onChange({ ...step, timed: e.target.checked })} className="h-4 w-4" />
+        <span className="font-label-md text-label-md text-on-surface">{t('soloTest.timedLabel')}</span>
+      </label>
+      <Field title={t('soloTest.itemsLabel', { count: step.items.length })} hint={t('soloTest.itemsHint')}>
+        <ol className="space-y-1.5">
+          {step.items.map((it, i) => {
+            const bad = stepProblems(it).length > 0;
+            return (
+              <li key={i} className={`rounded-lg border ${bad ? 'border-error' : 'border-outline-variant/50'}`}>
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <span className="w-6 shrink-0 text-center font-caption text-caption tabular-nums text-on-surface-variant">{i + 1}</span>
+                  <span className="shrink-0 rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption text-on-surface-variant">{t(`soloTest.area_${it.area}`)}</span>
+                  <button type="button" onClick={() => setOpen(open === i ? null : i)} className="min-w-0 flex-1 text-left">
+                    <span className="block truncate font-label-md text-label-md text-on-surface">{t(`soloEdit.stepType_${it.t}`)}</span>
+                    <span className="block truncate font-caption text-caption text-on-surface-variant">{stepSummary(it)}</span>
+                  </button>
+                  {step.timed && (
+                    <label className="flex shrink-0 items-center gap-1 font-caption text-caption text-on-surface-variant">
+                      <input
+                        type="number"
+                        min={5}
+                        max={300}
+                        value={it.sec}
+                        onChange={(e) => setItems(step.items.map((x, j) => (j === i ? { ...x, sec: Number(e.target.value) || x.sec } : x)))}
+                        aria-label={t('soloTest.secondsLabel')}
+                        className="w-14 rounded-lg border border-outline-variant bg-surface-container-low px-1 py-0.5 text-center text-sm tabular-nums"
+                      />
+                      {t('soloTest.secUnit')}
+                    </label>
+                  )}
+                  <button type="button" disabled={i === 0} onClick={() => setItems(swap(step.items, i, i - 1))} className="rounded p-0.5 text-on-surface-variant hover:bg-surface-container-low disabled:opacity-30" aria-label={t('soloEdit.moveUp')}>
+                    <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+                  </button>
+                  <button type="button" onClick={() => setItems(step.items.filter((_, j) => j !== i))} className="rounded p-0.5 text-on-surface-variant hover:bg-surface-container-low hover:text-error" aria-label={t('common.delete')}>
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                </div>
+                {open === i && (
+                  <div className="border-t border-outline-variant/40 p-3">
+                    <SoloStepForm
+                      step={it}
+                      academyId={academyId}
+                      onChange={(ns) => setItems(step.items.map((x, j) => (j === i ? ({ ...(ns as SoloTestItem), area: x.area, sec: x.sec } as SoloTestItem) : x)))}
+                    />
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </Field>
+    </div>
+  );
 }

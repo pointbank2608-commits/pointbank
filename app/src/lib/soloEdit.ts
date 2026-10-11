@@ -38,7 +38,12 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'watch', icon: 'smart_display', group: 'video' },
   { t: 'lyricBlank', icon: 'lyrics', group: 'video' },
   { t: 'lineSing', icon: 'mic_external_on', group: 'video' },
+  // 시험 블록은 빈 칸으로 넣지 않고 "시험 블록 추가" 창에서 만든다(팔레트의 일반 목록에서는 뺀다)
+  { t: 'test', icon: 'assignment_turned_in', group: 'quiz' },
 ];
+
+/** 단계 추가 팔레트의 일반 목록에 보이는 종류(시험 블록은 전용 버튼으로) */
+export const PALETTE_KINDS = STEP_KINDS.filter((k) => k.t !== 'test');
 
 export const kindOf = (t: SoloStep['t']): StepKind => STEP_KINDS.find((k) => k.t === t) ?? STEP_KINDS[0];
 
@@ -94,6 +99,8 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, itemId: SPEAKING_ITEMS[0].id };
     case 'rainbowStructure':
       return { t, itemId: STRUCTURE_ITEMS[0].id };
+    case 'test':
+      return { t, title: '', scope: 'lesson', timed: true, items: [] };
   }
 }
 
@@ -149,6 +156,11 @@ export function normalizeStep(step: SoloStep): SoloStep {
       const same = [...step.words].sort().join(' ') === sentence.split(' ').sort().join(' ');
       return { ...step, sentence, words: same && step.words.length > 0 ? step.words : wordsOfSentence(sentence) };
     }
+    case 'test':
+      return {
+        ...step,
+        items: step.items.map((it) => ({ ...(normalizeStep(it) as typeof it), area: it.area, sec: Math.max(5, Math.min(300, Math.round(it.sec) || 20)) })),
+      };
     default:
       return step;
   }
@@ -225,6 +237,8 @@ export function stepSummary(step: SoloStep): string {
       return SPEAKING_ITEMS.find((i) => i.id === step.itemId)?.englishAnswer ?? '';
     case 'rainbowStructure':
       return STRUCTURE_ITEMS.find((i) => i.id === step.itemId)?.sentence ?? '';
+    case 'test':
+      return step.title || `${step.items.length}`;
   }
 }
 
@@ -318,6 +332,10 @@ export function stepProblems(step: SoloStep): string[] {
       if (step.lines.length < 2) p.push('rpShort');
       if (!step.lines.some((l) => l.who === 'me')) p.push('rpNoMe');
       if (step.lines.some((l) => blank(l.en))) p.push('rpEmpty');
+      break;
+    case 'test':
+      if (step.items.length === 0) p.push('testEmpty');
+      if (step.items.some((it) => stepProblems(it).length > 0)) p.push('testItemBad');
       break;
   }
   if (step.t === 'lyricBlank' && step.clip.end <= step.clip.start) p.push('clipRange');

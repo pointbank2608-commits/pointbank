@@ -50,17 +50,6 @@ export const LESSON_SETS: LessonSet[] = [
   { id: 'w-weather', kind: 'word', icon: 'partly_cloudy_day', minutes: 30, ko: '날씨와 자연', en: 'Weather & nature', koDesc: '해·비·눈·산·강 10개', enDesc: '10 weather and nature words', pick: [{ category: '자연/날씨' }] },
   { id: 'w-feeling', kind: 'word', icon: 'mood', minutes: 30, ko: '기분', en: 'Feelings', koDesc: '행복해·슬퍼·화나 같은 기분 10개', enDesc: '10 feeling words', pick: [{ category: '감정' }], pos: '형용사', exclude: ['favorite', 'sorry'] },
   { id: 'w-action', kind: 'word', icon: 'directions_run', minutes: 30, ko: '움직이는 말', en: 'Action words', koDesc: '달리다·먹다·앉다 같은 동작 10개', enDesc: '10 action verbs', pick: [{ category: '동작', subs: ['생활', '이동', '손으로 하는 동작'] }], pos: '동사' },
-  // ---- 문법 10 ----
-  { id: 'g-this-is', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'This is / That is', en: 'This is / That is', koDesc: '가까운 것, 먼 것 소개하기', enDesc: 'Introducing near and far things', grammarId: 'this-is' },
-  { id: 'g-a-an', kind: 'grammar', icon: 'rule', minutes: 30, ko: '관사 a / an', en: 'Articles a / an', koDesc: '하나일 때 a, 모음 소리 앞에서 an', enDesc: 'a / an', grammarId: 'a-an' },
-  { id: 'g-plural', kind: 'grammar', icon: 'rule', minutes: 30, ko: '여러 개 (복수형)', en: 'Plural nouns', koDesc: '-s, -es 붙이기', enDesc: 'Adding -s and -es', grammarId: 'plural' },
-  { id: 'g-i-am', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'I am ~', en: 'I am ~', koDesc: '나를 소개하는 말', enDesc: 'Talking about yourself', grammarId: 'i-am' },
-  { id: 'g-he-she-is', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'He is / She is', en: 'He is / She is', koDesc: '다른 사람 소개하기', enDesc: 'Talking about other people', grammarId: 'he-she-is' },
-  { id: 'g-i-like', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'I like ~', en: 'I like ~', koDesc: '좋아하는 것 말하기', enDesc: 'Saying what you like', grammarId: 'i-like' },
-  { id: 'g-i-have', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'I have ~', en: 'I have ~', koDesc: '가지고 있는 것 말하기', enDesc: 'Saying what you have', grammarId: 'i-have' },
-  { id: 'g-i-want', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'I want ~', en: 'I want ~', koDesc: '갖고 싶은 것 말하기', enDesc: 'Saying what you want', grammarId: 'i-want' },
-  { id: 'g-i-can', kind: 'grammar', icon: 'rule', minutes: 30, ko: 'I can ~ / Can you ~?', en: 'I can ~ / Can you ~?', koDesc: '할 수 있는 것 말하고 묻기', enDesc: 'Saying and asking what you can do', grammarId: 'i-can' },
-  { id: 'g-lets', kind: 'grammar', icon: 'rule', minutes: 30, ko: "Let's ~", en: "Let's ~", koDesc: '같이 하자고 제안하기', enDesc: 'Making suggestions', grammarId: 'lets' },
   // ---- 영상 5 ----
   { id: 'v-donuts', kind: 'video', icon: 'movie', minutes: 45, ko: 'Peppa Makes Donuts', en: 'Peppa Makes Donuts', koDesc: '도넛 공장 견학 — have to', enDesc: 'A donut factory visit', clipTitle: 'Peppa Makes Donuts' },
   { id: 'v-morning', kind: 'video', icon: 'movie', minutes: 45, ko: "Peppa's Morning Rush", en: "Peppa's Morning Rush", koDesc: '바쁜 아침 — 명령문', enDesc: 'A busy morning', clipTitle: "Peppa's Morning Rush" },

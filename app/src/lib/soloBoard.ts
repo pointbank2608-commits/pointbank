@@ -89,6 +89,8 @@ const SECONDS: Partial<Record<SoloStep['t'], number>> = {
   rainbowStructure: 120,
 };
 export const stepSeconds = (t: SoloStep['t']): number => SECONDS[t] ?? 20;
+/** 문제 하나의 예상 시간 — 시험 블록은 안에 든 문제들의 제한 시간 합 */
+export const secondsOf = (s: SoloStep): number => (s.t === 'test' ? s.items.reduce((n, it) => n + it.sec + 4, 0) + 20 : stepSeconds(s.t));
 
 const wordOf = (s: SoloStep): string => {
   if ('word' in s && typeof s.word === 'string') return s.word;
@@ -121,14 +123,14 @@ export function buildBoard(steps: SoloStep[]): Board {
       if (last && last.type === s.t && s.t !== 'intro') {
         last.end = i;
         last.count += 1;
-        last.seconds += stepSeconds(s.t);
+        last.seconds += secondsOf(s);
         if (isEdited(s)) last.edited += 1;
         if (!sameSource(last.source, stepSource(s))) last.source = 'mixed';
         const w = wordOf(s);
         if (w && last.words.length < 4 && !last.words.includes(w)) last.words.push(w);
       } else {
         const w = wordOf(s);
-        blocks.push({ type: s.t, start: i, end: i, count: 1, edited: isEdited(s) ? 1 : 0, words: w ? [w] : [], seconds: stepSeconds(s.t), source: stepSource(s) });
+        blocks.push({ type: s.t, start: i, end: i, count: 1, edited: isEdited(s) ? 1 : 0, words: w ? [w] : [], seconds: secondsOf(s), source: stepSource(s) });
       }
     }
     return blocks;
@@ -159,7 +161,7 @@ export function buildBoard(steps: SoloStep[]): Board {
       seconds: blocks.reduce((n, x) => n + x.seconds, 0),
     });
   });
-  return { lessonSource: lessonSourceOf(steps), head, groups, totalSteps: steps.length, totalSeconds: steps.reduce((n, s) => n + stepSeconds(s.t), 0) };
+  return { lessonSource: lessonSourceOf(steps), head, groups, totalSteps: steps.length, totalSeconds: steps.reduce((n, s) => n + secondsOf(s), 0) };
 }
 
 /** 수업의 기본 단어장 — 문제에 가장 많이 붙은 출처(없으면 null) */
