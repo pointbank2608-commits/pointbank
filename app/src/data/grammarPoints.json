@@ -782,6 +782,50 @@
     ]
   },
   {
+    "id": "how-are-you",
+    "level": 1,
+    "band": "entry",
+    "grade": "초3",
+    "name": "안부 묻고 답하기 (How are you?)",
+    "pattern": "**How are you?** — **I'm** [ ].",
+    "explain": "안부를 묻고 내 기분을 말해요.",
+    "examples": [
+      "**How are you?** — **I'm** fine.",
+      "**I'm** happy.",
+      "**I'm** hungry.",
+      "**I'm** tired.",
+      "**How are you** today?"
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "친구나 선생님께 인사하며 안부를 물을 때",
+      "내 기분을 말할 때"
+    ],
+    "detail": [
+      "How are you?는 \"잘 지내요?\"라는 인사예요.",
+      "대답은 I'm 다음에 기분을 말해요: fine(괜찮은), happy(행복한), tired(피곤한), hungry(배고픈)"
+    ],
+    "translations": [
+      "어떻게 지내? — 잘 지내.",
+      "나는 행복해.",
+      "나는 배고파.",
+      "나는 피곤해.",
+      "오늘 어때?"
+    ],
+    "tip": "How are you?에는 I'm + 기분!",
+    "rule": [
+      "How are you? → I'm + 기분 말"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "How you are?",
+        "right": "**How are** you?",
+        "why": "묻는 말은 How are you? 순서예요"
+      }
+    ]
+  },
+  {
     "id": "is-it",
     "level": 2,
     "band": "entry",
@@ -1588,6 +1632,189 @@
     ]
   },
   {
+    "id": "these-those",
+    "level": 2,
+    "band": "grow",
+    "grade": "초4",
+    "name": "These are / Those are (여러 개 가리키기)",
+    "pattern": "**These are** [ ]s. / **Those are** [ ]s.",
+    "explain": "여러 개를 가리킬 때는 these(가까이), those(멀리)를 써요.",
+    "examples": [
+      "**These are** apples.",
+      "**Those are** birds.",
+      "**These are** my shoes.",
+      "**Those are** your books.",
+      "**Are these** your pencils?"
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "여러 개를 가리키며 소개할 때"
+    ],
+    "detail": [
+      "하나일 때는 This is / That is, 여러 개일 때는 These are / Those are예요.",
+      "these = 가까이 있는 여러 개, those = 멀리 있는 여러 개",
+      "뒤에 오는 말도 -s를 붙여 여러 개로 말해요."
+    ],
+    "translations": [
+      "이것들은 사과예요.",
+      "저것들은 새예요.",
+      "이것들은 내 신발이에요.",
+      "저것들은 네 책이야.",
+      "이것들은 네 연필이니?"
+    ],
+    "tip": "여러 개면 These are / Those are!",
+    "rule": [
+      "this → these, that → those",
+      "is → are"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "These is apples.",
+        "right": "These **are** apples.",
+        "why": "these는 여러 개라서 are"
+      },
+      {
+        "wrong": "Those are a bird.",
+        "right": "Those are **birds**.",
+        "why": "여러 개면 -s"
+      }
+    ]
+  },
+  {
+    "id": "apostrophe-s",
+    "level": 2,
+    "band": "grow",
+    "grade": "초4",
+    "name": "누구의 것 ('s)",
+    "pattern": "[이름]**'s** [ ].",
+    "explain": "'s를 붙이면 \"~의\"라는 뜻이에요.",
+    "examples": [
+      "This is **Tom's** bag.",
+      "That is **Mina's** hat.",
+      "**My mom's** name is Jisu.",
+      "It is **the dog's** ball.",
+      "Whose pencil is this? — It's **Ben's**."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "누구의 물건인지 말할 때"
+    ],
+    "detail": [
+      "사람이나 동물 이름 뒤에 's를 붙이면 \"~의\"라는 뜻이 돼요.",
+      "Tom's bag = 톰의 가방",
+      "Whose ~?에는 이름's로 대답해요."
+    ],
+    "translations": [
+      "이건 톰의 가방이야.",
+      "저건 미나의 모자야.",
+      "우리 엄마의 이름은 지수야.",
+      "그건 강아지의 공이야.",
+      "이건 누구 연필이야? — 벤의 거야."
+    ],
+    "tip": "누구의? → 이름 뒤에 's!",
+    "rule": [
+      "이름 + 's + 물건 = ~의 물건"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "This is Tom bag.",
+        "right": "This is **Tom's** bag.",
+        "why": "\"~의\"는 's를 붙여요"
+      }
+    ]
+  },
+  {
+    "id": "date-months",
+    "level": 2,
+    "band": "grow",
+    "grade": "초4",
+    "name": "날짜 말하기 (월·일)",
+    "pattern": "**What's the date** today? — **It's** [월] [날짜].",
+    "explain": "달 이름과 날짜(순서를 나타내는 수)로 날짜를 말해요.",
+    "examples": [
+      "**What's the date** today?",
+      "**It's** May 5th.",
+      "**My birthday is** in October.",
+      "**It's** March 1st.",
+      "**Today is** June 10th."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "오늘 날짜나 생일을 말할 때"
+    ],
+    "detail": [
+      "월 이름: January, February, March, April, May, June, July, August, September, October, November, December",
+      "날짜는 first(1일), second(2일), third(3일), fourth(4일)처럼 순서를 나타내는 말로 해요. 숫자 뒤에 st, nd, rd, th를 붙여 써요.",
+      "월만 말할 때는 in + 월: My birthday is in October."
+    ],
+    "translations": [
+      "오늘 며칠이야?",
+      "5월 5일이야.",
+      "내 생일은 10월이야.",
+      "3월 1일이야.",
+      "오늘은 6월 10일이야."
+    ],
+    "tip": "날짜는 first, second, third… 순서로!",
+    "rule": [
+      "It's + 월 + 날짜(서수)",
+      "월만 말할 땐 in + 월"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "It's May five.",
+        "right": "It's May **5th** (fifth).",
+        "why": "날짜는 순서를 나타내는 말로 해요"
+      }
+    ]
+  },
+  {
+    "id": "can-i-may-i",
+    "level": 2,
+    "band": "grow",
+    "grade": "초4",
+    "name": "부탁·허락 (Can I ~? / May I ~?)",
+    "pattern": "**Can I** [동사] …? / **May I** [동사] …?",
+    "explain": "내가 해도 되는지 허락을 구할 때 써요.",
+    "examples": [
+      "**Can I** have some water?",
+      "**May I** come in?",
+      "**Can I** use your pencil?",
+      "**May I** go to the bathroom?",
+      "**Yes, you can.** / **Sorry, you can't.**"
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "허락을 구할 때",
+      "정중하게 부탁할 때"
+    ],
+    "detail": [
+      "Can I ~?는 친구나 가족에게, May I ~?는 선생님처럼 어른께 정중하게 허락을 구할 때 써요.",
+      "대답: Yes, you can. / Yes, of course. / Sorry, you can't."
+    ],
+    "translations": [
+      "물 좀 마셔도 될까요?",
+      "들어가도 될까요?",
+      "네 연필 써도 돼?",
+      "화장실에 가도 될까요?",
+      "응, 돼. / 미안, 안 돼."
+    ],
+    "tip": "어른께는 May I ~?, 친구에게는 Can I ~?",
+    "rule": [
+      "Can / May + I + 동사원형 ~?"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "May I to come in?",
+        "right": "May I **come** in?",
+        "why": "May I 다음에는 to 없이 동사를 써요"
+      }
+    ]
+  },
+  {
     "id": "and-but",
     "level": 3,
     "band": "entry",
@@ -1946,6 +2173,250 @@
         "wrong": "You should drinks water.",
         "right": "You should **drink** water.",
         "why": "should 뒤에는 동사원형"
+      }
+    ]
+  },
+  {
+    "id": "directions",
+    "level": 3,
+    "band": "grow",
+    "grade": "초5",
+    "name": "길 묻고 알려 주기",
+    "pattern": "**Where is** the [ ]? — **Go straight.** / **Turn left.**",
+    "explain": "장소가 어디인지 묻고 길을 알려 줘요.",
+    "examples": [
+      "**Where is** the library?",
+      "**Go straight** and **turn left**.",
+      "**It's next to** the bank.",
+      "**Turn right** at the corner.",
+      "**How can I get to** the museum?"
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "길을 물을 때",
+      "길을 알려 줄 때"
+    ],
+    "detail": [
+      "Where is ~?로 장소를 묻고, How can I get to ~?로 가는 방법을 물어요.",
+      "길 안내 말: Go straight(쭉 가세요), Turn left(왼쪽으로 도세요), Turn right(오른쪽으로 도세요)",
+      "위치 말: next to(~ 옆에), in front of(~ 앞에), behind(~ 뒤에), between(~ 사이에)"
+    ],
+    "translations": [
+      "도서관이 어디예요?",
+      "쭉 가다가 왼쪽으로 도세요.",
+      "은행 옆에 있어요.",
+      "모퉁이에서 오른쪽으로 도세요.",
+      "박물관에 어떻게 가나요?"
+    ],
+    "tip": "길은 Go straight, Turn left/right!",
+    "rule": [
+      "Where is the + 장소?",
+      "How can I get to + 장소?",
+      "Go straight / Turn left / Turn right"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "How can I get the library?",
+        "right": "How can I get **to** the library?",
+        "why": "장소로 \"가는\" 것이라 to가 필요해요"
+      }
+    ]
+  },
+  {
+    "id": "jobs-future",
+    "level": 3,
+    "band": "grow",
+    "grade": "초5",
+    "name": "직업·장래희망 (What do you want to be?)",
+    "pattern": "**What do you want to be?** — **I want to be** a [ ].",
+    "explain": "되고 싶은 직업을 묻고 답해요.",
+    "examples": [
+      "**What do you want to be?**",
+      "**I want to be** a teacher.",
+      "**I want to be** a doctor.",
+      "**She wants to be** a singer.",
+      "**He is** a firefighter."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "장래희망을 묻고 답할 때",
+      "직업을 소개할 때"
+    ],
+    "detail": [
+      "want to be 다음에 직업 이름을 써요.",
+      "직업 이름 앞에는 a 또는 an: a teacher, an artist",
+      "3인칭(he, she) 이야기는 wants to be!"
+    ],
+    "translations": [
+      "넌 뭐가 되고 싶니?",
+      "나는 선생님이 되고 싶어.",
+      "나는 의사가 되고 싶어.",
+      "그녀는 가수가 되고 싶어 해.",
+      "그는 소방관이야."
+    ],
+    "tip": "되고 싶다 = want to be!",
+    "rule": [
+      "I want to be + a/an + 직업",
+      "He/She wants to be + a/an + 직업"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I want be a doctor.",
+        "right": "I want **to be** a doctor.",
+        "why": "want 다음에는 to be"
+      },
+      {
+        "wrong": "She want to be a singer.",
+        "right": "She **wants** to be a singer.",
+        "why": "3인칭 단수는 -s"
+      }
+    ]
+  },
+  {
+    "id": "how-do-you",
+    "level": 3,
+    "band": "grow",
+    "grade": "초5",
+    "name": "방법·수단 말하기 (How do you go ~? — By bus.)",
+    "pattern": "**How do you** go to [ ]? — **By** [ ]. / I **walk**.",
+    "explain": "무엇을 타고, 어떻게 가는지 말해요.",
+    "examples": [
+      "**How do you** go to school?",
+      "**By** bus.",
+      "**I go** to school **by** bike.",
+      "**I walk** to school.",
+      "**She goes** to school **by** subway."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "무엇을 타고 가는지 말할 때"
+    ],
+    "detail": [
+      "by + 탈것: by bus, by car, by bike, by subway, by train",
+      "걸어갈 때는 by를 쓰지 않고 walk 또는 on foot",
+      "by 다음에는 a/the를 붙이지 않아요."
+    ],
+    "translations": [
+      "너는 학교에 어떻게 가니?",
+      "버스로요.",
+      "나는 자전거를 타고 학교에 가.",
+      "나는 걸어서 학교에 가.",
+      "그녀는 지하철로 학교에 가."
+    ],
+    "tip": "탈것 앞에는 by, a/the는 빼요!",
+    "rule": [
+      "How do you go to + 장소? → I go by + 탈것",
+      "걸어서 = walk / on foot"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I go to school by a bus.",
+        "right": "I go to school **by bus**.",
+        "why": "by 다음에는 a를 쓰지 않아요"
+      }
+    ]
+  },
+  {
+    "id": "countable-uncountable",
+    "level": 3,
+    "band": "grow",
+    "grade": "초5",
+    "name": "셀 수 있는 것 / 셀 수 없는 것 (some / any)",
+    "pattern": "a/an + [하나] · [여러 개]-s · **some** + [셀 수 없는 것]",
+    "explain": "하나씩 셀 수 있는 것과 셀 수 없는 것을 다르게 말해요.",
+    "examples": [
+      "I have **an apple**.",
+      "I have **two apples**.",
+      "I need **some water**.",
+      "Do you have **any milk**?",
+      "There isn't **any juice**."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "있는지 없는지 말하거나 물을 때",
+      "양을 말할 때"
+    ],
+    "detail": [
+      "apple, book처럼 하나, 둘 셀 수 있으면 a/an을 쓰고 여러 개는 -s를 붙여요.",
+      "water, milk, juice처럼 셀 수 없는 것은 a/an도 -s도 안 써요. 양을 말할 때는 some을 써요.",
+      "물어볼 때, 아니라고 할 때는 some 대신 any를 써요."
+    ],
+    "translations": [
+      "나는 사과 한 개가 있어.",
+      "나는 사과 두 개가 있어.",
+      "나는 물이 좀 필요해.",
+      "너 우유 있니?",
+      "주스가 하나도 없어."
+    ],
+    "tip": "셀 수 없는 건 some, 아니라고 하면 any!",
+    "rule": [
+      "셀 수 있음: a/an + 하나, 여러 개 → -s",
+      "셀 수 없음: some + 물질 (-s 안 붙임)",
+      "의문문·부정문: some → any"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I need a water.",
+        "right": "I need **some** water.",
+        "why": "water는 셀 수 없어요"
+      },
+      {
+        "wrong": "I don't have some juice.",
+        "right": "I don't have **any** juice.",
+        "why": "아니라고 할 때는 any"
+      }
+    ]
+  },
+  {
+    "id": "object-pronouns",
+    "level": 3,
+    "band": "grow",
+    "grade": "초5",
+    "name": "~을/~에게 (me / him / her / us / them)",
+    "pattern": "[동사] **me / him / her / us / them**",
+    "explain": "동사 뒤에서는 I → me, he → him처럼 모양이 바뀌어요.",
+    "examples": [
+      "Mom loves **me**.",
+      "I like **him**.",
+      "Please help **us**.",
+      "I see **them**.",
+      "Can you call **her**?"
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "사람을 가리키며 \"~을, ~에게\"라고 말할 때"
+    ],
+    "detail": [
+      "I → me, you → you, he → him, she → her, it → it, we → us, they → them",
+      "동사 바로 뒤에 올 때는 이 모양을 써요.",
+      "I like he.처럼 말하면 어색해요. I like him."
+    ],
+    "translations": [
+      "엄마는 나를 사랑해.",
+      "나는 그를 좋아해.",
+      "우리를 도와줘.",
+      "나는 그들을 봐.",
+      "그녀에게 전화해 줄래?"
+    ],
+    "tip": "동사 뒤에는 me, him, her, us, them!",
+    "rule": [
+      "동사 + me / you / him / her / it / us / them"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I like she.",
+        "right": "I like **her**.",
+        "why": "동사 뒤에서는 her"
+      },
+      {
+        "wrong": "Help I, please.",
+        "right": "Help **me**, please.",
+        "why": "동사 뒤에서는 me"
       }
     ]
   },
@@ -2398,6 +2869,102 @@
         "wrong": "I think is fun math.",
         "right": "I think **math is fun**.",
         "why": "I think 뒤에는 문장 순서 그대로"
+      }
+    ]
+  },
+  {
+    "id": "whats-wrong",
+    "level": 4,
+    "band": "bridge",
+    "grade": "초6",
+    "name": "아플 때 말하기 (What's wrong? — I have a ~.)",
+    "pattern": "**What's wrong?** — **I have a** [ ]. / **You should** [동사].",
+    "explain": "어디가 아픈지 묻고 조언해요.",
+    "examples": [
+      "**What's wrong?**",
+      "**I have a** headache.",
+      "**I have a** cold.",
+      "**You should** see a doctor.",
+      "**You should** get some rest."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "아플 때 말하고 조언할 때"
+    ],
+    "detail": [
+      "What's wrong?은 \"어디 아프니?\", \"무슨 일이니?\"라는 뜻이에요.",
+      "아픈 곳은 I have a + 증상(headache 두통, toothache 치통, cold 감기, fever 열, stomachache 복통)",
+      "조언은 You should + 동사: 하는 게 좋아"
+    ],
+    "translations": [
+      "무슨 일이야?",
+      "나는 머리가 아파.",
+      "나는 감기에 걸렸어.",
+      "너는 병원에 가 보는 게 좋겠어.",
+      "너는 좀 쉬는 게 좋겠어."
+    ],
+    "tip": "아프면 I have a ~, 조언은 You should ~!",
+    "rule": [
+      "What's wrong? → I have a + 증상",
+      "You should + 동사원형"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "You should to rest.",
+        "right": "You should **rest**.",
+        "why": "should 다음에는 동사 그대로"
+      }
+    ]
+  },
+  {
+    "id": "adverb-ly",
+    "level": 4,
+    "band": "bridge",
+    "grade": "초6",
+    "name": "어떻게? (부사 -ly)",
+    "pattern": "[동사] + [부사]: run **fast**, speak **slowly**",
+    "explain": "동작이 어떻게 이루어지는지 말하는 말이에요.",
+    "examples": [
+      "She speaks **slowly**.",
+      "He runs **fast**.",
+      "They sing **beautifully**.",
+      "Please walk **quietly**.",
+      "I can swim **well**."
+    ],
+    "slots": null,
+    "stage": "elementary",
+    "usage": [
+      "어떻게 하는지 말할 때"
+    ],
+    "detail": [
+      "형용사 뒤에 -ly를 붙이면 \"어떻게\"를 말하는 부사가 돼요: slow → slowly, quiet → quietly, happy → happily",
+      "모양이 그대로인 것도 있어요: fast(빨리), hard(열심히), late(늦게)",
+      "good의 부사는 well이에요."
+    ],
+    "translations": [
+      "그녀는 천천히 말해.",
+      "그는 빨리 달려.",
+      "그들은 아름답게 노래해.",
+      "조용히 걸어 주세요.",
+      "나는 수영을 잘해."
+    ],
+    "tip": "동작을 꾸미려면 -ly나 well!",
+    "rule": [
+      "형용사 + ly → 부사 (slow → slowly)",
+      "fast, hard, late는 그대로",
+      "good → well"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She speaks slow.",
+        "right": "She speaks **slowly**.",
+        "why": "동사를 꾸미는 말은 부사"
+      },
+      {
+        "wrong": "I can swim good.",
+        "right": "I can swim **well**.",
+        "why": "good의 부사는 well"
       }
     ]
   },
@@ -3202,6 +3769,517 @@
     "tip": "How 뒤에 붙는 말만 바꾸면 여러 질문이 돼요."
   },
   {
+    "id": "m-be-verb",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "be동사 (am / are / is)",
+    "pattern": "I **am** … / You **are** … / He **is** …",
+    "explain": "주어에 따라 am, are, is를 골라 써요. 부정은 not, 의문은 be동사를 앞으로 보내요.",
+    "examples": [
+      "I **am** a student.",
+      "They **are not** at home.",
+      "**Is** she your sister?",
+      "We **are** in the same class.",
+      "**Are** you ready?"
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "\"~이다, ~에 있다\"를 말할 때",
+      "이름·직업·상태를 소개할 때"
+    ],
+    "detail": [
+      "be동사는 \"~이다\", \"~(에) 있다\"라는 뜻이에요.",
+      "주어가 바뀌면 모양이 바뀌어요: I am / You are / He is.",
+      "줄임말: I'm, you're, he's, isn't, aren't"
+    ],
+    "translations": [
+      "나는 학생이야.",
+      "그들은 집에 없어.",
+      "그녀는 네 언니니?",
+      "우리는 같은 반이야.",
+      "준비됐니?"
+    ],
+    "tip": "be동사는 주어 따라 am·are·is!",
+    "rule": [
+      "I → am, you/we/they/복수 → are, he/she/it/단수 → is",
+      "부정: be동사 + not (isn't, aren't, I'm not)",
+      "의문: Be동사 + 주어 ~? (Are you ~?)"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She are my friend.",
+        "right": "She **is** my friend.",
+        "why": "she는 is"
+      },
+      {
+        "wrong": "You is kind.",
+        "right": "You **are** kind.",
+        "why": "you는 are"
+      }
+    ]
+  },
+  {
+    "id": "m-general-verb",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "일반동사 현재 (do / does, 3인칭 -s)",
+    "pattern": "I **like** … / She **likes** … / **Do** you …? / She **doesn't** …",
+    "explain": "be동사가 아닌 동사는 3인칭 단수에서 -s를 붙이고, 부정·의문은 do/does를 써요.",
+    "examples": [
+      "He **plays** soccer every day.",
+      "She **doesn't** like carrots.",
+      "**Do** you **walk** to school?",
+      "My brother **watches** TV after dinner.",
+      "**Does** she **study** English?"
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "습관·사실을 말할 때",
+      "좋아하는 것·하는 일을 말할 때"
+    ],
+    "detail": [
+      "he, she, it(3인칭 단수)일 때 동사에 -s를 붙여요: play → plays",
+      "-s, -sh, -ch, -x, -o로 끝나면 -es: watch → watches, go → goes",
+      "자음 + y로 끝나면 y를 i로 바꾸고 -es: study → studies",
+      "부정·의문에서는 does가 -s를 가져가서 동사는 원형이에요."
+    ],
+    "translations": [
+      "그는 매일 축구를 해.",
+      "그녀는 당근을 좋아하지 않아.",
+      "너는 학교에 걸어가니?",
+      "내 남동생은 저녁 먹고 TV를 봐.",
+      "그녀는 영어를 공부하니?"
+    ],
+    "tip": "does가 나오면 동사는 원래 모양!",
+    "rule": [
+      "3인칭 단수 현재: 동사 + -s/-es (likes, watches, studies)",
+      "부정: don't / doesn't + 동사원형",
+      "의문: Do / Does + 주어 + 동사원형 ~?"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She doesn't likes carrots.",
+        "right": "She doesn't **like** carrots.",
+        "why": "does가 있으면 동사는 원형"
+      },
+      {
+        "wrong": "Does he plays soccer?",
+        "right": "Does he **play** soccer?",
+        "why": "Does 뒤에는 동사원형"
+      }
+    ]
+  },
+  {
+    "id": "m-noun-count",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "명사 (셀 수 있는 / 셀 수 없는)",
+    "pattern": "a/an + [단수] · [복수]-s/es · much + [셀 수 없는]",
+    "explain": "명사는 셀 수 있는지에 따라 관사·복수형·수량 표현이 달라져요.",
+    "examples": [
+      "I have **three books**.",
+      "There is **a lot of water** in the bottle.",
+      "How **many** children are there?",
+      "How **much** milk do you need?",
+      "The **children** are playing."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "수량을 말하거나 물을 때",
+      "복수형과 관사를 고를 때"
+    ],
+    "detail": [
+      "셀 수 있으면 many / a few, 셀 수 없으면 much / a little",
+      "water, milk, money, information, advice 같은 말은 셀 수 없어요.",
+      "child → children, man → men, woman → women, tooth → teeth"
+    ],
+    "translations": [
+      "나는 책이 세 권 있어.",
+      "병에 물이 많이 있어.",
+      "아이들이 몇 명 있니?",
+      "우유가 얼마나 필요하니?",
+      "아이들이 놀고 있어."
+    ],
+    "tip": "셀 수 있나? 없나?부터 확인!",
+    "rule": [
+      "셀 수 있는 명사: a/an(단수), -s/-es(복수), many, a few",
+      "셀 수 없는 명사: a/an·복수형 불가, much, a little",
+      "불규칙 복수: man → men, child → children, foot → feet"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I need many water.",
+        "right": "I need **much** water. / **a lot of** water.",
+        "why": "water는 셀 수 없어요"
+      },
+      {
+        "wrong": "There are three childs.",
+        "right": "There are three **children**.",
+        "why": "child의 복수형은 불규칙"
+      }
+    ]
+  },
+  {
+    "id": "m-wh-questions",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "의문사 의문문 (who / what / when / where / why / how / which)",
+    "pattern": "**Wh-word** + [be / do] + 주어 …?",
+    "explain": "알고 싶은 정보에 맞는 의문사로 문장을 시작해요.",
+    "examples": [
+      "**Where** do you live?",
+      "**What** is your favorite subject?",
+      "**Who** is that boy?",
+      "**Why** are you late?",
+      "**Which** do you like, tea or coffee?"
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "모르는 정보를 물을 때"
+    ],
+    "detail": [
+      "Yes/No로 대답하지 않고 정보를 말해요.",
+      "의문사 다음에 의문문 순서(be/do + 주어)가 와요.",
+      "whose(누구의), what time(몇 시)도 같은 방식이에요."
+    ],
+    "translations": [
+      "너는 어디에 사니?",
+      "네가 가장 좋아하는 과목은 뭐니?",
+      "저 소년은 누구니?",
+      "너 왜 늦었니?",
+      "차와 커피 중에 어느 걸 좋아하니?"
+    ],
+    "tip": "의문사 + 의문문 순서!",
+    "rule": [
+      "who(누구) · what(무엇) · when(언제) · where(어디서) · why(왜) · how(어떻게) · which(어느 것)",
+      "의문사 + be동사/do + 주어 ~?",
+      "의문사가 주어면 평서문 순서: Who broke the window?"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "Where you live?",
+        "right": "Where **do** you live?",
+        "why": "일반동사 의문문에는 do가 필요해요"
+      },
+      {
+        "wrong": "What you are doing?",
+        "right": "What **are you** doing?",
+        "why": "의문사 다음은 be동사 + 주어 순서"
+      }
+    ]
+  },
+  {
+    "id": "m-there-be",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "There is / There are",
+    "pattern": "**There is** a [단수] … / **There are** [복수] …",
+    "explain": "무엇이 어디에 있는지 말할 때 써요.",
+    "examples": [
+      "**There is** a cat on the sofa.",
+      "**There are** three bananas in the bowl.",
+      "**Is there** a park near here?",
+      "**There aren't** any chairs in the room.",
+      "**Are there** any questions?"
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "무엇이 있는지 알려 줄 때",
+      "장소를 소개할 때"
+    ],
+    "detail": [
+      "뒤에 오는 명사가 단수면 is, 복수면 are예요.",
+      "there는 \"거기에\"가 아니라 \"~이 있다\"를 만드는 말이에요."
+    ],
+    "translations": [
+      "소파 위에 고양이가 있어.",
+      "그릇에 바나나가 세 개 있어.",
+      "이 근처에 공원이 있나요?",
+      "방에 의자가 하나도 없어.",
+      "질문 있나요?"
+    ],
+    "tip": "There is/are 뒤 명사 보고 고르기!",
+    "rule": [
+      "There is + 단수·셀 수 없는 명사",
+      "There are + 복수 명사",
+      "부정: There isn't / aren't, 의문: Is there ~? / Are there ~?"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "There is two books on the desk.",
+        "right": "There **are** two books on the desk.",
+        "why": "뒤의 명사가 복수라서 are"
+      },
+      {
+        "wrong": "There are a pen.",
+        "right": "There **is** a pen.",
+        "why": "단수라서 is"
+      }
+    ]
+  },
+  {
+    "id": "m-future",
+    "level": 5,
+    "band": "grow",
+    "grade": "중1",
+    "name": "미래 표현 (will / be going to)",
+    "pattern": "I **will** [동사] … / I **am going to** [동사] …",
+    "explain": "앞으로 할 일이나 계획을 말해요.",
+    "examples": [
+      "I **will** call you tomorrow.",
+      "It **will** rain this afternoon.",
+      "We **are going to** visit Busan next week.",
+      "She **is not going to** join the club.",
+      "**Will** you help me?"
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "앞으로 할 일을 말할 때",
+      "부탁·제안(Will you ~?)할 때"
+    ],
+    "detail": [
+      "will은 말하는 순간 정한 일이나 예상에, be going to는 이미 정해 둔 계획에 잘 어울려요.",
+      "tomorrow, next week 같은 말과 같이 써요."
+    ],
+    "translations": [
+      "내일 전화할게.",
+      "오늘 오후에 비가 올 거야.",
+      "우리는 다음 주에 부산을 방문할 거야.",
+      "그녀는 그 동아리에 가입하지 않을 거야.",
+      "나를 도와줄래?"
+    ],
+    "tip": "미래는 will + 동사원형!",
+    "rule": [
+      "will + 동사원형: 지금 정한 일·예측",
+      "be going to + 동사원형: 미리 정한 계획",
+      "부정: will not (won't), am/is/are not going to"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I will to go there.",
+        "right": "I will **go** there.",
+        "why": "will 뒤는 동사원형"
+      },
+      {
+        "wrong": "She will goes home.",
+        "right": "She will **go** home.",
+        "why": "will 뒤에는 -s를 안 붙여요"
+      }
+    ]
+  },
+  {
+    "id": "m-adj-adv",
+    "level": 5,
+    "band": "grow",
+    "grade": "중1",
+    "name": "형용사와 부사 (빈도부사 위치)",
+    "pattern": "형용사 → 명사를 꾸밈 / 부사 → 동사·형용사를 꾸밈",
+    "explain": "형용사는 명사를, 부사는 동사·형용사·다른 부사를 꾸며요.",
+    "examples": [
+      "She is a **kind** teacher.",
+      "He speaks **quietly**.",
+      "The movie was **very** exciting.",
+      "I **always** eat breakfast.",
+      "He is **never** late."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "사람·사물의 모습을 설명할 때",
+      "얼마나 자주 하는지 말할 때"
+    ],
+    "detail": [
+      "형용사는 \"어떤\", 부사는 \"어떻게·얼마나·언제\"를 말해요.",
+      "-ly로 끝나는 부사가 많지만 fast, hard, late처럼 모양이 같은 것도 있어요."
+    ],
+    "translations": [
+      "그녀는 친절한 선생님이야.",
+      "그는 조용히 말해.",
+      "그 영화는 정말 신나는 영화였어.",
+      "나는 항상 아침을 먹어.",
+      "그는 절대 늦지 않아."
+    ],
+    "tip": "빈도부사: be동사 뒤, 일반동사 앞!",
+    "rule": [
+      "형용사: 명사 앞, be동사 뒤",
+      "부사: 동사 뒤(어떻게), 형용사 앞(얼마나)",
+      "빈도부사(always, usually, often, sometimes, never): be동사 뒤, 일반동사 앞"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I eat always breakfast.",
+        "right": "I **always** eat breakfast.",
+        "why": "빈도부사는 일반동사 앞"
+      },
+      {
+        "wrong": "He drives careful.",
+        "right": "He drives **carefully**.",
+        "why": "동사를 꾸미는 말은 부사"
+      }
+    ]
+  },
+  {
+    "id": "m-reflexive",
+    "level": 5,
+    "band": "grow",
+    "grade": "중1",
+    "name": "재귀대명사 (myself / yourself …)",
+    "pattern": "I hurt **myself**. · by **myself** · Enjoy **yourself**!",
+    "explain": "주어 자신을 가리키거나 \"스스로\"를 강조할 때 써요.",
+    "examples": [
+      "I cut **myself** yesterday.",
+      "She looked at **herself** in the mirror.",
+      "He did it **by himself**.",
+      "Enjoy **yourself**!",
+      "They taught **themselves** English."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "주어와 목적어가 같은 사람일 때",
+      "혼자서 했다고 말할 때"
+    ],
+    "detail": [
+      "동작이 주어 자신에게 돌아올 때 재귀대명사를 써요.",
+      "by oneself는 \"혼자서, 스스로\"라는 뜻이에요.",
+      "복수는 -selves: ourselves, yourselves, themselves"
+    ],
+    "translations": [
+      "나는 어제 (나 자신을) 베었어.",
+      "그녀는 거울 속 자기 자신을 봤어.",
+      "그는 그것을 혼자 힘으로 했어.",
+      "즐겁게 보내!",
+      "그들은 영어를 독학했어."
+    ],
+    "tip": "주어 = 목적어면 -self!",
+    "rule": [
+      "I → myself, you → yourself(yourselves), he → himself, she → herself, it → itself, we → ourselves, they → themselves",
+      "동작이 주어 자신에게 돌아올 때 (hurt myself)",
+      "by oneself = 혼자서, 스스로"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "He hurt him.",
+        "right": "He hurt **himself**.",
+        "why": "자기 자신이면 himself"
+      },
+      {
+        "wrong": "Enjoy you!",
+        "right": "Enjoy **yourself**!",
+        "why": "자기 자신에게 돌아오니 재귀대명사"
+      }
+    ]
+  },
+  {
+    "id": "m-conj-coordinating",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "등위접속사 (and / but / or / so)",
+    "pattern": "[문장] **and / but / or / so** [문장]",
+    "explain": "같은 종류의 말이나 문장을 이어 줘요.",
+    "examples": [
+      "I like dogs **and** cats.",
+      "He is smart **but** lazy.",
+      "Do you want tea **or** coffee?",
+      "It was raining, **so** we stayed home.",
+      "She studied hard, **and** she passed the test."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "말이나 문장을 이을 때"
+    ],
+    "detail": [
+      "두 말이 같은 종류일 때 이어요.",
+      "문장을 이을 때 앞에 쉼표(,)를 쓰기도 해요."
+    ],
+    "translations": [
+      "나는 개와 고양이를 좋아해.",
+      "그는 똑똑하지만 게을러.",
+      "차를 마실래, 커피를 마실래?",
+      "비가 와서 우리는 집에 있었어.",
+      "그녀는 열심히 공부했고 시험에 합격했어."
+    ],
+    "tip": "더하면 and, 반대면 but, 선택은 or, 결과는 so!",
+    "rule": [
+      "and: 더하기",
+      "but: 반대·대조",
+      "or: 선택",
+      "so: 결과(그래서)"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I was hungry, but I ate a sandwich.",
+        "right": "I was hungry, **so** I ate a sandwich.",
+        "why": "결과를 말할 때는 so"
+      }
+    ]
+  },
+  {
+    "id": "m-prep-place",
+    "level": 5,
+    "band": "entry",
+    "grade": "중1",
+    "name": "장소·방향 전치사 (in / on / at / to / from)",
+    "pattern": "**in** the room · **on** the table · **at** the station",
+    "explain": "장소와 방향은 전치사로 정확히 말해요.",
+    "examples": [
+      "The book is **on** the desk.",
+      "She is **in** the kitchen.",
+      "I'll meet you **at** the bus stop.",
+      "He walks **to** school.",
+      "The cat is **under** the chair."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "어디에 있는지, 어디로 가는지 말할 때"
+    ],
+    "detail": [
+      "in은 \"안\", on은 \"표면 위\", at은 \"한 지점\"이에요.",
+      "to는 가는 방향, from은 출발점이에요.",
+      "under(아래), behind(뒤), in front of(앞), next to(옆), between(사이)"
+    ],
+    "translations": [
+      "책은 책상 위에 있어.",
+      "그녀는 부엌에 있어.",
+      "버스 정류장에서 만나.",
+      "그는 학교에 걸어가.",
+      "고양이가 의자 아래에 있어."
+    ],
+    "tip": "in 안, on 위, at 한 지점!",
+    "rule": [
+      "in: 안(넓은 공간·안쪽)",
+      "on: 위(표면에 닿아서)",
+      "at: 한 지점(정류장·학교 등)",
+      "to: ~로(방향) / from: ~에서(출발)"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I live at Seoul.",
+        "right": "I live **in** Seoul.",
+        "why": "도시·나라 안에서는 in"
+      },
+      {
+        "wrong": "He goes to home.",
+        "right": "He goes **home**.",
+        "why": "home 앞에는 to를 안 써요"
+      }
+    ]
+  },
+  {
     "id": "m-present-perfect",
     "stage": "middle",
     "level": 6,
@@ -3846,6 +4924,96 @@
     "tip": "one of 뒤에는 꼭 복수명사!"
   },
   {
+    "id": "m-comparative-emphasis",
+    "level": 6,
+    "band": "grow",
+    "grade": "중2",
+    "name": "비교급 강조 (much / even / far / still)",
+    "pattern": "**much** bigger than · **even** better",
+    "explain": "비교급 앞에서 \"훨씬\"을 나타내요.",
+    "examples": [
+      "This bag is **much** heavier than that one.",
+      "Today is **even** hotter than yesterday.",
+      "She runs **far** faster than I do.",
+      "This book is **a lot** more interesting.",
+      "My score is **still** higher than yours."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "차이가 크다고 강조할 때"
+    ],
+    "detail": [
+      "비교급을 강조할 때는 very가 아니라 much, even, far, still, a lot을 써요.",
+      "원급을 강조할 때는 very, so, really를 써요."
+    ],
+    "translations": [
+      "이 가방은 저것보다 훨씬 무거워.",
+      "오늘은 어제보다 훨씬 더 더워.",
+      "그녀는 나보다 훨씬 빨리 달려.",
+      "이 책은 훨씬 더 흥미로워.",
+      "내 점수는 여전히 네 점수보다 높아."
+    ],
+    "tip": "비교급엔 very 말고 much!",
+    "rule": [
+      "비교급 강조: much, even, far, still, a lot",
+      "원급 강조: very, so, really",
+      "비교급 + than …"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "This is very bigger than that.",
+        "right": "This is **much** bigger than that.",
+        "why": "비교급 앞에 very는 쓰지 않아요"
+      }
+    ]
+  },
+  {
+    "id": "m-if-conditional",
+    "level": 6,
+    "band": "grow",
+    "grade": "중2",
+    "name": "조건 if (현재형으로 미래 말하기)",
+    "pattern": "**If** + 현재, **will** + 동사원형",
+    "explain": "\"~하면 ~할 거야\"라는 조건과 결과를 말해요.",
+    "examples": [
+      "**If** it rains tomorrow, we **will** stay home.",
+      "**If** you study hard, you **will** pass the test.",
+      "I **will** call you **if** I am free.",
+      "**If** you don't hurry, you **will** miss the bus.",
+      "**Unless** you hurry, you will be late."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "조건과 결과를 말할 때"
+    ],
+    "detail": [
+      "if가 이끄는 조건절은 미래의 일이어도 현재형으로 써요.",
+      "unless는 \"if ~ not\"과 같은 뜻이에요."
+    ],
+    "translations": [
+      "내일 비가 오면 우리는 집에 있을 거야.",
+      "열심히 공부하면 시험에 합격할 거야.",
+      "시간이 되면 너에게 전화할게.",
+      "서두르지 않으면 버스를 놓칠 거야.",
+      "서두르지 않으면 늦을 거야."
+    ],
+    "tip": "if절엔 will 금지, 현재형!",
+    "rule": [
+      "If + 주어 + 현재형, 주어 + will + 동사원형",
+      "if절에서는 미래 의미라도 현재형",
+      "unless = if ~ not"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "If it will rain tomorrow, we will stay home.",
+        "right": "If it **rains** tomorrow, we will stay home.",
+        "why": "if절에는 will을 쓰지 않고 현재형"
+      }
+    ]
+  },
+  {
     "id": "m-relative-what",
     "stage": "middle",
     "level": 7,
@@ -4385,6 +5553,143 @@
       "산은 눈으로 덮여 있다."
     ],
     "tip": "be interested in처럼 짝지어진 전치사는 통째로 외우세요."
+  },
+  {
+    "id": "m-indefinite-pronouns",
+    "level": 7,
+    "band": "grow",
+    "grade": "중3",
+    "name": "부정대명사 (one / another / the other / some / others)",
+    "pattern": "one …, **the other** … / **some** …, **others** …",
+    "explain": "정해지지 않은 것을 가리키는 대명사를 구분해요.",
+    "examples": [
+      "I have two pens. One is red, and **the other** is blue.",
+      "This shirt is too small. Please show me **another** one.",
+      "There are five cats. One is white, and **the others** are black.",
+      "**Some** like tea, and **others** like coffee.",
+      "I lost my pen, so I need **one**."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "여럿 중 하나·나머지를 가리킬 때"
+    ],
+    "detail": [
+      "둘 중 하나를 말하고 나머지 하나는 the other예요.",
+      "셋 이상이면 하나(one), 또 다른 하나(another), 나머지 전부(the others)로 말해요.",
+      "one은 앞에 나온 명사(a/an이 붙은 것) 대신 쓰는 말이에요."
+    ],
+    "translations": [
+      "나는 펜이 두 개 있어. 하나는 빨강, 나머지 하나는 파랑이야.",
+      "이 셔츠는 너무 작아요. 다른 걸 보여 주세요.",
+      "고양이가 다섯 마리 있어. 한 마리는 흰색이고 나머지는 검정이야.",
+      "어떤 사람들은 차를, 다른 사람들은 커피를 좋아해.",
+      "펜을 잃어버려서 하나 필요해."
+    ],
+    "tip": "둘 중 나머지 = the other, 또 다른 하나 = another!",
+    "rule": [
+      "one(하나) → the other(둘 중 나머지 하나)",
+      "one → another(또 다른 하나) → the others(나머지 전부)",
+      "some ~, others ~ (일부는 ~, 다른 일부는 ~)"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I have two pens. One is red, and another is blue.",
+        "right": "I have two pens. One is red, and **the other** is blue.",
+        "why": "둘 중 나머지 하나는 the other"
+      }
+    ]
+  },
+  {
+    "id": "m-reported-speech",
+    "level": 7,
+    "band": "grow",
+    "grade": "중3",
+    "name": "간접화법 기초 (He said that ~)",
+    "pattern": "He said **that** [주어] [동사 과거] …",
+    "explain": "다른 사람이 한 말을 전달할 때 써요.",
+    "examples": [
+      "She said that she **was** tired.",
+      "He told me that he **liked** soccer.",
+      "Tom said that he **would** come.",
+      "She said she **had** finished her homework.",
+      "They said that they **couldn't** come."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "남이 한 말을 전달할 때"
+    ],
+    "detail": [
+      "말한 때가 과거라면 전하는 말의 시제도 한 칸 과거로 바꿔요: am → was, will → would",
+      "I, my 같은 말은 말한 사람에 맞게 바꿔요.",
+      "said 뒤에 듣는 사람이 오면 told로 써요: He told me that ~"
+    ],
+    "translations": [
+      "그녀는 피곤하다고 말했어.",
+      "그는 나에게 축구를 좋아한다고 말했어.",
+      "톰은 올 거라고 말했어.",
+      "그녀는 숙제를 끝냈다고 말했어.",
+      "그들은 올 수 없다고 말했어."
+    ],
+    "tip": "전달할 땐 시제를 한 칸 과거로!",
+    "rule": [
+      "said (that) + 주어 + 동사: 시제를 한 단계 과거로",
+      "I → he/she, 시간·장소 말도 바뀜 (today → that day, here → there)",
+      "say to → tell: He told me that ~"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She said me that she was tired.",
+        "right": "She **told** me that she was tired.",
+        "why": "듣는 사람이 나오면 tell"
+      }
+    ]
+  },
+  {
+    "id": "m-relative-whose",
+    "level": 7,
+    "band": "grow",
+    "grade": "중3",
+    "name": "관계대명사 whose (~의)",
+    "pattern": "[명사] **whose** [명사] …",
+    "explain": "\"~의\"라는 소유 관계를 이어 줘요.",
+    "examples": [
+      "I know a girl **whose** father is a pilot.",
+      "This is the house **whose** roof is red.",
+      "He is the boy **whose** bike was stolen.",
+      "She has a friend **whose** name is Mina.",
+      "I met a man **whose** dog is very smart."
+    ],
+    "slots": null,
+    "stage": "middle",
+    "usage": [
+      "\"~의 …가 …인 사람/것\"을 한 문장으로 말할 때"
+    ],
+    "detail": [
+      "whose는 앞 명사의 \"~의\"를 대신해요: the girl + her father → the girl whose father",
+      "사람뿐 아니라 사물에도 쓸 수 있어요.",
+      "whose 바로 뒤에는 명사가 와요."
+    ],
+    "translations": [
+      "나는 아버지가 조종사인 여자아이를 알아.",
+      "이것은 지붕이 빨간 집이야.",
+      "그는 자전거를 도둑맞은 소년이야.",
+      "그녀에게는 이름이 미나인 친구가 있어.",
+      "나는 개가 아주 똑똑한 남자를 만났어."
+    ],
+    "tip": "~의 → whose + 명사!",
+    "rule": [
+      "whose + 명사: 소유격 관계대명사",
+      "선행사 = 사람·사물 모두 가능"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I know a girl who father is a pilot.",
+        "right": "I know a girl **whose** father is a pilot.",
+        "why": "\"~의\"라서 whose"
+      }
+    ]
   },
   {
     "id": "pos-overview",
@@ -6131,6 +7436,58 @@
     "slots": null
   },
   {
+    "id": "h-tense-agreement",
+    "level": 11,
+    "band": "grow",
+    "grade": "고1",
+    "name": "시제 일치와 화법 전환",
+    "pattern": "주절 과거 → 종속절 과거 / 과거완료",
+    "explain": "주절이 과거면 종속절의 시제도 맞춰요. 단, 변하지 않는 사실은 현재형을 써요.",
+    "examples": [
+      "He said that he **was** busy.",
+      "She told me that she **had seen** the movie.",
+      "The teacher said that the earth **goes** around the sun.",
+      "He said that World War II **ended** in 1945.",
+      "I thought that he **would** come."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "남의 말·생각을 전달할 때",
+      "시제를 문법 문제에서 고를 때"
+    ],
+    "detail": [
+      "주절이 과거(said, thought)면 종속절은 한 칸 과거로: 현재 → 과거, 과거 → 과거완료, will → would",
+      "변하지 않는 진리·현재의 습관·역사적 사실은 시제 일치를 하지 않아요.",
+      "화법을 바꿀 때는 인칭, 시간(today → that day), 장소(here → there)도 바뀌어요."
+    ],
+    "translations": [
+      "그는 바쁘다고 말했다.",
+      "그녀는 그 영화를 봤다고 나에게 말했다.",
+      "선생님은 지구가 태양 둘레를 돈다고 말씀하셨다.",
+      "그는 제2차 세계대전이 1945년에 끝났다고 말했다.",
+      "나는 그가 올 거라고 생각했다."
+    ],
+    "tip": "주절이 과거면 한 칸 뒤로, 진리는 그대로!",
+    "rule": [
+      "주절이 과거면 종속절은 과거 또는 과거완료",
+      "예외: 현재의 습관·불변의 진리 → 현재형, 역사적 사실 → 과거형",
+      "화법 전환: 인칭·시간·장소 표현도 바뀜"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I thought that he will come.",
+        "right": "I thought that he **would** come.",
+        "why": "주절이 과거면 will → would"
+      },
+      {
+        "wrong": "He said that the earth went around the sun.",
+        "right": "He said that the earth **goes** around the sun.",
+        "why": "불변의 진리는 현재형"
+      }
+    ]
+  },
+  {
     "id": "h-inf-subject-tense",
     "stage": "high",
     "level": 12,
@@ -6350,6 +7707,55 @@
     ],
     "tip": "\"with + 명사\" 다음 말은 그 명사가 하는지(-ing) 당하는지(p.p.)만 보면 돼요.",
     "slots": null
+  },
+  {
+    "id": "h-emotion-participle",
+    "level": 12,
+    "band": "grow",
+    "grade": "고1",
+    "name": "감정 분사 (exciting / excited)",
+    "pattern": "[사물] is **exciting** · [사람] is **excited**",
+    "explain": "감정을 일으키면 -ing, 감정을 느끼면 -ed를 써요.",
+    "examples": [
+      "The game was **exciting**.",
+      "The students were **excited** about the trip.",
+      "I was **bored** with the long speech.",
+      "The news was **surprising**.",
+      "She was **disappointed** at the result."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "감정을 나타내는 분사를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "감정을 \"주는\" 쪽은 현재분사(-ing), 감정을 \"느끼는\" 쪽은 과거분사(-ed)예요.",
+      "excite, bore, surprise, interest, disappoint, satisfy, tire 같은 동사가 대표적이에요."
+    ],
+    "translations": [
+      "그 경기는 흥미진진했다.",
+      "학생들은 소풍에 대해 들떠 있었다.",
+      "나는 긴 연설이 지루했다.",
+      "그 소식은 놀라웠다.",
+      "그녀는 그 결과에 실망했다."
+    ],
+    "tip": "주는 쪽 -ing, 느끼는 쪽 -ed!",
+    "rule": [
+      "감정을 일으키면 -ing: exciting, boring, surprising",
+      "감정을 느끼면 -ed: excited, bored, surprised"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I am boring with this class.",
+        "right": "I am **bored** with this class.",
+        "why": "내가 지루함을 느끼니 -ed"
+      },
+      {
+        "wrong": "The story was very interested.",
+        "right": "The story was very **interesting**.",
+        "why": "이야기가 흥미를 주니 -ing"
+      }
+    ]
   },
   {
     "id": "h-relative-nonrestrictive",
@@ -6601,6 +8007,107 @@
     "slots": null
   },
   {
+    "id": "h-conj-vs-prep",
+    "level": 13,
+    "band": "grow",
+    "grade": "고1",
+    "name": "접속사 vs 전치사 (although / despite · because / because of)",
+    "pattern": "**although** + 절 / **despite** + 명사(구)",
+    "explain": "뒤에 문장이 오는지, 명사가 오는지에 따라 접속사와 전치사를 구분해요.",
+    "examples": [
+      "**Although** it was raining, we went out.",
+      "**Despite** the rain, we went out.",
+      "We stayed home **because of** the storm.",
+      "I fell asleep **during** the movie.",
+      "He waited **while** she was shopping."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "접속사와 전치사를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "뒤에 \"주어 + 동사\"가 오면 접속사, 명사(구)나 -ing가 오면 전치사를 써요.",
+      "같은 뜻이라도 짝이 있어요: although ↔ despite / in spite of, because ↔ because of, while ↔ during"
+    ],
+    "translations": [
+      "비가 오고 있었지만 우리는 밖에 나갔다.",
+      "비에도 불구하고 우리는 밖에 나갔다.",
+      "우리는 폭풍 때문에 집에 있었다.",
+      "나는 영화를 보는 동안 잠이 들었다.",
+      "그는 그녀가 쇼핑하는 동안 기다렸다."
+    ],
+    "tip": "뒤에 문장이면 접속사, 명사면 전치사!",
+    "rule": [
+      "절(주어+동사) 앞 → 접속사: although, because, while, if, when",
+      "명사(구) 앞 → 전치사: despite, in spite of, because of, during",
+      "전치사 뒤 동사는 -ing"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "Despite it was raining, we went out.",
+        "right": "**Although** it was raining, we went out.",
+        "why": "뒤에 절(주어+동사)이 오면 접속사"
+      },
+      {
+        "wrong": "We stayed home because the storm.",
+        "right": "We stayed home **because of** the storm.",
+        "why": "명사 앞은 because of"
+      }
+    ]
+  },
+  {
+    "id": "h-relative-what-that",
+    "level": 13,
+    "band": "grow",
+    "grade": "고1",
+    "name": "관계대명사 what vs that (선행사 유무)",
+    "pattern": "**what** = the thing(s) which",
+    "explain": "what은 선행사를 품고 있고, that은 선행사 뒤에서 형용사절을 이끌어요.",
+    "examples": [
+      "**What** I need is a quiet room.",
+      "This is the book **that** I bought yesterday.",
+      "I know **that** he is honest.",
+      "Tell me **what** you want.",
+      "She showed me **what** she had made."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "what, that, which를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "what 앞에는 선행사가 없고, what 뒤에는 주어나 목적어가 빠진 불완전한 문장이 와요.",
+      "접속사 that 뒤에는 완전한 문장이 와요.",
+      "that/which는 앞에 선행사(명사)가 있어요."
+    ],
+    "translations": [
+      "내게 필요한 것은 조용한 방이다.",
+      "이것이 내가 어제 산 책이다.",
+      "나는 그가 정직하다는 것을 안다.",
+      "네가 원하는 것을 말해 줘.",
+      "그녀는 자신이 만든 것을 나에게 보여 주었다."
+    ],
+    "tip": "선행사 없으면 what, 뒤가 완전하면 that!",
+    "rule": [
+      "what: 선행사를 포함 (~하는 것), 명사절, 뒤가 불완전한 문장",
+      "that/which: 선행사가 앞에 있음, 형용사절",
+      "접속사 that: 뒤에 완전한 문장"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "This is the thing what I want.",
+        "right": "This is **what** I want. / This is the thing **that** I want.",
+        "why": "what은 선행사를 포함해요"
+      },
+      {
+        "wrong": "I know what he is honest.",
+        "right": "I know **that** he is honest.",
+        "why": "뒤가 완전한 문장이면 that"
+      }
+    ]
+  },
+  {
     "id": "h-subjunctive-past-perfect",
     "stage": "high",
     "level": 14,
@@ -6807,6 +8314,58 @@
     "slots": null
   },
   {
+    "id": "h-subjunctive-demand",
+    "level": 14,
+    "band": "bridge",
+    "grade": "고2",
+    "name": "요구·제안 동사 + that + (should) 동사원형",
+    "pattern": "suggest / insist / demand that + 주어 + (should) 동사원형",
+    "explain": "요구·제안·주장·명령의 동사 다음 that절에는 동사원형을 써요.",
+    "examples": [
+      "The doctor suggested that he **take** a rest.",
+      "She insisted that we **(should) go** home early.",
+      "The teacher demanded that everyone **be** quiet.",
+      "It is important that he **be** on time.",
+      "They recommended that she **apply** for the job."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "요구·제안 동사가 이끄는 that절의 동사 형태를 고를 때"
+    ],
+    "detail": [
+      "suggest, propose, recommend, insist, demand, require, order 다음 that절의 동사는 (should +) 동사원형이에요.",
+      "주어가 3인칭 단수여도, 시제가 과거여도 -s나 과거형으로 바꾸지 않아요.",
+      "It is important / necessary / essential that ~ 에서도 같아요.",
+      "단, insist가 \"사실을 주장\"하면 평범한 시제를 써요: He insisted that he was innocent."
+    ],
+    "translations": [
+      "의사는 그가 휴식을 취해야 한다고 제안했다.",
+      "그녀는 우리가 일찍 집에 가야 한다고 주장했다.",
+      "선생님은 모두가 조용히 하라고 요구했다.",
+      "그가 제시간에 오는 것이 중요하다.",
+      "그들은 그녀가 그 일에 지원해 보라고 권했다."
+    ],
+    "tip": "요구·제안 뒤 that절은 동사원형!",
+    "rule": [
+      "suggest, propose, insist, demand, require, recommend, order + that절",
+      "that절 동사: (should +) 동사원형",
+      "insist가 사실을 말하면 직설법"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "The doctor suggested that he takes a rest.",
+        "right": "The doctor suggested that he **take** a rest.",
+        "why": "제안 동사 다음 that절은 동사원형"
+      },
+      {
+        "wrong": "I demand that he is here.",
+        "right": "I demand that he **be** here.",
+        "why": "요구 동사 다음 that절은 동사원형"
+      }
+    ]
+  },
+  {
     "id": "h-inversion",
     "stage": "high",
     "level": 15,
@@ -6962,5 +8521,359 @@
     ],
     "tip": "주어와 동사 사이의 말을 괄호로 묶고 읽으면 수 일치가 보여요.",
     "slots": null
+  },
+  {
+    "id": "h-article-noun",
+    "level": 15,
+    "band": "grow",
+    "grade": "고1",
+    "name": "관사·명사 어법 (가산·불가산, 관사)",
+    "pattern": "a/an · **the** · 무관사 / 셀 수 있는·없는 명사",
+    "explain": "관사와 명사의 수를 문맥에 맞게 골라요.",
+    "examples": [
+      "She gave me **some advice**.",
+      "I saw **a** man. **The** man was carrying a bag.",
+      "**The** sun rises in the east.",
+      "He is **the** tallest boy in our class.",
+      "This is **the** first time I have been here."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "관사나 명사의 단·복수를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "처음 나온 것은 a/an, 이미 나왔거나 하나로 정해진 것은 the를 써요.",
+      "불가산 명사(information, advice, furniture, news, homework 등)는 a/an을 붙이거나 복수형으로 쓰지 않아요.",
+      "최상급·서수·유일한 것 앞에는 the를 써요."
+    ],
+    "translations": [
+      "그녀는 나에게 조언을 해 주었다.",
+      "나는 한 남자를 보았다. 그 남자는 가방을 들고 있었다.",
+      "해는 동쪽에서 뜬다.",
+      "그는 우리 반에서 가장 키가 큰 소년이다.",
+      "여기 오는 것은 이번이 처음이다."
+    ],
+    "tip": "advice·information은 셀 수 없다, 최상급엔 the!",
+    "rule": [
+      "처음 나온 가산 단수 → a/an, 이미 나온/특정한 것 → the",
+      "불가산 명사: a/an·복수형 불가",
+      "유일한 것·최상급·서수 앞 → the"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She gave me an advice.",
+        "right": "She gave me **some advice**.",
+        "why": "advice는 셀 수 없어서 an도 -s도 안 돼요"
+      },
+      {
+        "wrong": "He is tallest boy.",
+        "right": "He is **the** tallest boy.",
+        "why": "최상급 앞에는 the"
+      }
+    ]
+  },
+  {
+    "id": "h-quantifiers",
+    "level": 15,
+    "band": "grow",
+    "grade": "고1",
+    "name": "수량 표현 (many / much / (a) few / (a) little)",
+    "pattern": "many·(a) few + 복수 · much·(a) little + 셀 수 없는",
+    "explain": "셀 수 있는지에 따라, 그리고 긍정·부정의 느낌에 따라 수량 표현이 달라져요.",
+    "examples": [
+      "He has **few** friends in this town.",
+      "I have **a little** time left.",
+      "There isn't **much** water in the bottle.",
+      "**Many** students were absent.",
+      "She has **a few** close friends."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "수량 표현을 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "셀 수 있는 명사에는 many, (a) few를, 셀 수 없는 명사에는 much, (a) little을 써요.",
+      "a few / a little은 \"조금 있다(긍정)\", few / little은 \"거의 없다(부정)\"의 느낌이에요.",
+      "a lot of / lots of / plenty of는 둘 다 쓸 수 있어요."
+    ],
+    "translations": [
+      "그는 이 도시에 친구가 거의 없다.",
+      "나는 시간이 조금 남아 있다.",
+      "병에 물이 많이 없다.",
+      "많은 학생들이 결석했다.",
+      "그녀에게는 가까운 친구가 몇 명 있다."
+    ],
+    "tip": "셀 수 있나? few/a few, 없나? little/a little!",
+    "rule": [
+      "셀 수 있는 명사: many, a few(조금 있는), few(거의 없는)",
+      "셀 수 없는 명사: much, a little(조금 있는), little(거의 없는)",
+      "a lot of / lots of / plenty of: 둘 다 가능"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I have a few water.",
+        "right": "I have **a little** water.",
+        "why": "water는 셀 수 없는 명사"
+      },
+      {
+        "wrong": "He has little friends.",
+        "right": "He has **few** friends.",
+        "why": "friends는 셀 수 있는 명사"
+      }
+    ]
+  },
+  {
+    "id": "h-pronoun-reference",
+    "level": 15,
+    "band": "grow",
+    "grade": "고1",
+    "name": "대명사 어법 (it / one / that / those / 재귀)",
+    "pattern": "it vs one · that/those vs it/them",
+    "explain": "앞에 나온 말을 대신하는 대명사를 알맞게 골라요.",
+    "examples": [
+      "I lost my pen, so I have to buy **one**.",
+      "I bought a bag, but I lost **it**.",
+      "The weather of Seoul is colder than **that** of Busan.",
+      "The books on this shelf are older than **those** on that shelf.",
+      "She taught **herself** to play the piano."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "대명사를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "it은 앞에 나온 바로 그것을, one은 같은 종류의 다른 것 하나를 가리켜요.",
+      "비교 문장에서 앞의 명사를 반복하지 않으려고 that(단수), those(복수)를 써요.",
+      "목적어가 주어와 같은 사람이면 재귀대명사(-self)를 써요."
+    ],
+    "translations": [
+      "나는 펜을 잃어버려서 하나 사야 한다.",
+      "나는 가방을 샀지만 그것을 잃어버렸다.",
+      "서울의 날씨는 부산의 날씨보다 더 춥다.",
+      "이 선반의 책들은 저 선반의 책들보다 더 오래되었다.",
+      "그녀는 혼자서 피아노 치는 법을 익혔다."
+    ],
+    "tip": "특정한 그것 = it, 같은 종류 하나 = one!",
+    "rule": [
+      "it: 앞에 나온 \"바로 그것\"(특정 대상)",
+      "one: 같은 종류의 \"아무거나 하나\"",
+      "that / those: 비교 문장에서 앞의 명사 반복",
+      "목적어가 주어와 같으면 재귀대명사"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "The weather of Seoul is colder than Busan.",
+        "right": "The weather of Seoul is colder than **that of** Busan.",
+        "why": "weather끼리 비교해야 해요"
+      },
+      {
+        "wrong": "I lost my pen, so I have to buy it.",
+        "right": "I lost my pen, so I have to buy **one**.",
+        "why": "새로 사는 것은 같은 종류의 다른 것"
+      }
+    ]
+  },
+  {
+    "id": "h-parallelism",
+    "level": 15,
+    "band": "bridge",
+    "grade": "고2",
+    "name": "병렬 구조 (A, B, and C의 형태 맞추기)",
+    "pattern": "A, B, **and** C — 같은 모양끼리",
+    "explain": "and, but, or로 이어진 말은 같은 문법 형태로 맞춰요.",
+    "examples": [
+      "She likes **swimming**, **reading**, and **cooking**.",
+      "He decided **to leave** early and **(to) take** a taxi.",
+      "The task was **not only difficult but also boring**.",
+      "You can either **stay** here or **come** with us.",
+      "I want something **cheap** and **useful**."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "등위접속사로 이어진 말의 형태를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "동사끼리, 명사끼리, to부정사끼리, -ing끼리 형태를 같게 맞춰요.",
+      "not only A but also B, both A and B, either A or B에서도 A와 B의 형태가 같아야 해요."
+    ],
+    "translations": [
+      "그녀는 수영, 독서, 요리를 좋아한다.",
+      "그는 일찍 떠나서 택시를 타기로 결정했다.",
+      "그 일은 어려울 뿐만 아니라 지루하기도 했다.",
+      "너는 여기 머물거나 우리와 함께 가도 된다.",
+      "나는 싸고 유용한 것을 원한다."
+    ],
+    "tip": "and 앞뒤는 같은 모양!",
+    "rule": [
+      "동사끼리, 명사끼리, to부정사끼리, -ing끼리 형태를 같게",
+      "not only A but also B: A와 B의 형태 일치",
+      "both A and B / either A or B / neither A nor B"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "She likes swimming, to read, and cooking.",
+        "right": "She likes **swimming, reading, and cooking**.",
+        "why": "-ing끼리 맞춰요"
+      },
+      {
+        "wrong": "He is not only smart but also works hard.",
+        "right": "He is not only smart but also **hard-working**.",
+        "why": "형용사끼리 맞춰요"
+      }
+    ]
+  },
+  {
+    "id": "h-adj-adv-usage",
+    "level": 15,
+    "band": "grow",
+    "grade": "고1",
+    "name": "형용사·부사 어법 (보어 자리·hard / hardly)",
+    "pattern": "감각동사 + **형용사** / 동사 + **부사**",
+    "explain": "동사 뒤에 형용사가 올지 부사가 올지, 비슷하게 생긴 부사의 뜻을 구분해요.",
+    "examples": [
+      "The soup **smells good**.",
+      "She looks **happy**.",
+      "He works **hard**.",
+      "I **hardly** know him.",
+      "The teacher spoke **clearly**."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "형용사·부사를 고르는 어법 문제를 풀 때"
+    ],
+    "detail": [
+      "be, become, seem, look, feel, sound, taste, smell 뒤에는 형용사가 와요.",
+      "동사·형용사·부사를 꾸밀 때는 부사를 써요.",
+      "모양이 비슷하지만 뜻이 다른 부사: hard(열심히) / hardly(거의 ~않다), late(늦게) / lately(최근에)"
+    ],
+    "translations": [
+      "그 수프는 냄새가 좋다.",
+      "그녀는 행복해 보인다.",
+      "그는 열심히 일한다.",
+      "나는 그를 거의 모른다.",
+      "선생님은 또렷하게 말씀하셨다."
+    ],
+    "tip": "감각동사 뒤는 형용사, hardly는 '거의 ~않다'!",
+    "rule": [
+      "2형식 동사 + 형용사",
+      "동사·형용사·부사 꾸밈 → 부사",
+      "hard / hardly, late / lately처럼 뜻이 다른 부사"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "The soup smells well.",
+        "right": "The soup smells **good**.",
+        "why": "감각동사 뒤는 형용사"
+      },
+      {
+        "wrong": "He studied hardly.",
+        "right": "He studied **hard**.",
+        "why": "hardly는 \"거의 ~않다\""
+      }
+    ]
+  },
+  {
+    "id": "h-ellipsis-insertion",
+    "level": 15,
+    "band": "bridge",
+    "grade": "고2",
+    "name": "생략·삽입·동격",
+    "pattern": "When **(he is)** tired · A, **B**, is … · I think",
+    "explain": "반복되거나 뻔한 말은 생략하고, 부연 설명은 끼워 넣어요.",
+    "examples": [
+      "**When tired**, he drinks coffee.",
+      "Mr. Kim, **my English teacher**, is very kind.",
+      "She is, **I think**, the best player in the club.",
+      "**Though young**, she was very brave.",
+      "Some like tea, and **others coffee**."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "생략·삽입이 있는 긴 문장을 읽을 때"
+    ],
+    "detail": [
+      "부사절(when, if, though)의 \"주어 + be동사\"는 주절의 주어와 같으면 생략할 수 있어요.",
+      "대등한 두 문장에서 반복되는 말은 생략해요(공통 구문).",
+      "콤마나 대시 사이에 부연 설명(삽입, 동격)이 끼어들어도 문장의 뼈대는 그대로예요."
+    ],
+    "translations": [
+      "피곤할 때 그는 커피를 마신다.",
+      "나의 영어 선생님이신 김 선생님은 매우 친절하시다.",
+      "그녀는, 내 생각에, 동아리에서 가장 훌륭한 선수이다.",
+      "비록 어렸지만 그녀는 매우 용감했다.",
+      "어떤 사람들은 차를, 다른 사람들은 커피를 좋아한다."
+    ],
+    "tip": "빠진 말은 문맥으로 되살려서 읽기!",
+    "rule": [
+      "부사절의 \"주어 + be\"는 주절 주어와 같으면 생략 가능",
+      "반복되는 말은 생략(공통·갭핑)",
+      "삽입: 콤마·대시로 부연 설명",
+      "동격: 명사 + 콤마 + 명사(구)"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "When was tired, he drank coffee.",
+        "right": "When **(he was) tired**, he drank coffee.",
+        "why": "주어 없이 was만 남길 수 없어요"
+      }
+    ]
+  },
+  {
+    "id": "h-negation",
+    "level": 15,
+    "band": "bridge",
+    "grade": "고2",
+    "name": "부정 구문 (부분부정·전체부정·준부정)",
+    "pattern": "**not all** / **not always** · **hardly** / **seldom**",
+    "explain": "부정하는 말이 들어간 문장의 정확한 뜻을 구분해요.",
+    "examples": [
+      "**Not all** students like math.",
+      "Rich people are **not always** happy.",
+      "**Neither** of the answers is correct.",
+      "He **hardly** ever goes out.",
+      "I **can't help** laughing."
+    ],
+    "slots": null,
+    "stage": "high",
+    "usage": [
+      "부정 표현이 들어간 문장을 해석하고 고칠 때"
+    ],
+    "detail": [
+      "not과 all, every, always, both가 같이 오면 \"모두/항상 ~인 것은 아니다\"(부분부정)예요.",
+      "none, no one, neither, never는 전체를 부정해요.",
+      "hardly, scarcely, seldom, rarely, little, few는 이미 부정의 뜻이라 not과 같이 쓰지 않아요."
+    ],
+    "translations": [
+      "모든 학생이 수학을 좋아하는 것은 아니다.",
+      "부자라고 항상 행복한 것은 아니다.",
+      "두 답 모두 맞지 않다.",
+      "그는 거의 외출하지 않는다.",
+      "나는 웃지 않을 수 없다."
+    ],
+    "tip": "not all = 모두는 아니다, 전체부정 = none/neither!",
+    "rule": [
+      "부분부정: not + all/every/always/both/necessarily",
+      "전체부정: none, no one, neither, never, nobody",
+      "준부정: hardly, scarcely, seldom, rarely, little, few",
+      "cannot help -ing = ~하지 않을 수 없다"
+    ],
+    "pitfalls": [
+      {
+        "wrong": "He hardly doesn't go out.",
+        "right": "He **hardly** goes out.",
+        "why": "hardly는 이미 부정의 뜻"
+      },
+      {
+        "wrong": "I don't know neither.",
+        "right": "I don't know **either**. / I know **neither**.",
+        "why": "부정어를 두 번 쓰지 않아요"
+      }
+    ]
   }
 ]

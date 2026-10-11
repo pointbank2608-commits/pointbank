@@ -8,6 +8,8 @@ import { findSetClip, LESSON_SETS, lessonSetDesc, lessonSetName, pickSetWords, t
 import { loadWordBank } from '../lib/wordBankCache';
 import type { LessonSlide } from '../lib/types';
 import { GrammarPickerPanel } from './LessonSlideSorter';
+import CurriculumGrammarSets from './CurriculumGrammarSets';
+import { GRAMMAR_POINTS } from '../lib/grammar';
 import { useToast } from '../context/ToastContext';
 import { generateShadowScript } from '../lib/api';
 import { fetchVideoClips } from '../lib/videoClips';
@@ -184,6 +186,17 @@ export default function LessonRecipePicker({
           <p className="font-caption text-caption text-on-surface-variant">{t('recipes.setsHint')}</p>
           {(['word', 'grammar', 'video'] as const).map((kind) => (
             <div key={kind} className="space-y-2">
+              {kind === 'grammar' && (
+                <CurriculumGrammarSets
+                  disabled={busy}
+                  onPick={(grammarId) => {
+                    const p = GRAMMAR_POINTS.find((g) => g.id === grammarId);
+                    if (!p) return;
+                    // 교과과정 문법 항목 → 문법 수업 세트와 같은 방식으로 만든다
+                    void applySet({ id: `cg-${p.id}`, kind: 'grammar', icon: 'rule', minutes: 30, ko: p.name, en: p.name, koDesc: p.explain, enDesc: p.explain, grammarId: p.id });
+                  }}
+                />
+              )}
               <div className="font-label-md text-label-md font-bold text-deep-navy">{t(`recipes.setsGroup_${kind}`)}</div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 {LESSON_SETS.filter((s) => s.kind === kind).map((s) => (

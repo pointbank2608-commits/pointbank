@@ -2221,6 +2221,11 @@ const ko = {
   recipes: {
     setsTab: '수업 세트',
     recipesTab: '직접 고르기',
+    cgTitle: "교과과정 문법",
+    cgNew: "초등·중등·고등 교과 순서",
+    cgHint: "학교급과 학년을 고르고, 단원별로 문법을 골라 수업을 만들어요. 아래의 기존 \"문법 수업\"과 비교해 보세요. NEW 표시는 새로 보강한 항목이에요(검수 전 초안).",
+    cgAllGrades: "전체 학년",
+    cgCount: "문법 항목 모두 {{count}}개",
     setsHint: '미리 만들어 둔 수업이에요. 누르면 단어장과 슬라이드가 한 번에 채워져요. 만든 뒤 자유롭게 고쳐도 돼요.',
     setsGroup_word: '단어 수업',
     setsGroup_grammar: '문법 수업',

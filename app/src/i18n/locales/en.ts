@@ -2225,6 +2225,11 @@ const en: Ko = {
   recipes: {
     setsTab: 'Ready-made lessons',
     recipesTab: 'Choose yourself',
+    cgTitle: "Curriculum grammar",
+    cgNew: "Elementary → middle → high",
+    cgHint: "Pick a school level and grade, then a grammar point by unit to build a lesson. Compare with the older \"Grammar lessons\" below. NEW marks newly added items (drafts, not yet reviewed).",
+    cgAllGrades: "All grades",
+    cgCount: "{{count}} grammar points in total",
     setsHint: 'These lessons are made in advance. Tap one to fill the word list and slides at once, then edit freely.',
     setsGroup_word: 'Word lessons',
     setsGroup_grammar: 'Grammar lessons',
