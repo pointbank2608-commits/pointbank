@@ -29,6 +29,9 @@ import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToC
 import { useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
+import BlockLibraryPanel from './BlockLibraryPanel';
+import type { BlockDef } from '../lib/blocks/types';
+import { newHelper, type HelperType } from '../lib/slideHelpers';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
@@ -161,7 +164,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
+type AddMode = 'library' | 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -425,6 +428,43 @@ export default function LessonSlideSorter({
     setAddMode(null);
   }
 
+  /** 블록 보관함에서 고른 블록을 슬라이드로 — 입력이 필요한 블록은 기존 입력 화면으로 이어 주고, 게임·인쇄물은 바로 넣는다 */
+  function pickBlock(block: BlockDef) {
+    if (block.category === 'helper') {
+      // 보조 블록은 지금 고른 슬라이드에 붙인다
+      const type = block.id.replace('helper.', '') as HelperType;
+      const target = selectedId ? slides.find((s) => s.id === selectedId) : null;
+      if (!target || !['title', 'timer', 'scoreboard'].includes(type)) return;
+      updateSlide(target.id, { helpers: [...(target.helpers ?? []), newHelper(type)] });
+      notify(t('curriculum.library.helperAdded', { name: t(`curriculum.helpers.name_${type}`) }));
+      setAddMode(null);
+      return;
+    }
+    const ref = block.slide;
+    if (!ref) return;
+    if (ref.kind === 'game' && ref.gameType) {
+      addGameSlide(ref.gameType);
+      return;
+    }
+    if (ref.kind === 'material') {
+      if (ref.materialId === 'worksheet' || ref.materialId === 'library') {
+        setAddMode('material'); // 워크시트는 유형을 고르는 화면으로
+      } else if (ref.materialId === 'phonics') {
+        addMaterialSlide('phonics', undefined, undefined, null, { phonicsTab: 'phonicsBlank' });
+        setAddMode(null);
+      } else if (ref.materialId) {
+        addMaterialSlide(ref.materialId);
+      }
+      return;
+    }
+    const direct: Partial<Record<LessonSlide['kind'], AddMode>> = {
+      canvas: 'canvas', image: 'image', video: 'video', web: 'web', study: 'study', wordshow: 'wordshow', attendance: 'attendance',
+      grammar: 'grammar', reading: 'reading', shadow: 'shadow', qna: 'qna', drill: 'drill', rainbow: 'rainbow',
+    };
+    const mode = direct[ref.kind];
+    if (mode) setAddMode(mode);
+  }
+
   function addGameSlide(gameType: GameSlide['gameType']) {
     addSlide({ id: uid(), kind: 'game', gameType });
     // 추가하자마자 그 게임의 설정 화면을 보여준다(게임 내용을 바로 고르고 고칠 수 있게).
@@ -505,7 +545,7 @@ export default function LessonSlideSorter({
           // 헷갈린다(2026-09-26 사용자 피드백) — 항상 "추가 중" 상태로 연다. 닫기는 패널의 닫기 버튼으로.
           onClick={() => {
             setReplaceTargetId(null);
-            setAddMode((m) => m ?? 'canvas');
+            setAddMode((m) => m ?? 'library');
           }}
           aria-pressed={!!addMode && !replaceTargetId}
           className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 py-3 font-label-md text-label-md transition-colors lg:w-full ${
@@ -529,7 +569,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
+              {(['library', 'canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -549,6 +589,10 @@ export default function LessonSlideSorter({
                 {replaceTargetId ? t('curriculum.slides.cancelReplace') : t('curriculum.slides.closeAddPanel')}
               </button>
             </div>
+
+            {addMode === 'library' && (
+              <BlockLibraryPanel canAttachHelper={!!selectedId && !replaceTargetId} onPick={pickBlock} />
+            )}
 
             {addMode === 'image' && (
               <GameImagePicker

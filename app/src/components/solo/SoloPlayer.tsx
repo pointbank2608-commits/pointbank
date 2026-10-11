@@ -28,6 +28,8 @@ export interface SoloPlayerApi {
   record?(step: number, blob: Blob, seconds: number, sub?: number): Promise<boolean>;
   /** 시험 블록 답안을 한 번에 내고 채점 결과 받기 */
   submitTest(step: number, answers: (string | null)[]): Promise<TestResult>;
+  /** 시험에서 틀린 문제만 다시 풀기(복습 수업으로) — 없으면 버튼이 안 보인다 */
+  retryTest?(step: number, wrong: number[]): Promise<void>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
@@ -772,6 +774,7 @@ export default function SoloPlayer({
               return r;
             }}
             onDone={goOn}
+            onRetry={api.retryTest ? (wrong) => api.retryTest!(idx, wrong) : undefined}
           />
         )}
 

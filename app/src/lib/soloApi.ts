@@ -182,6 +182,13 @@ export async function soloReveal(token: string, assignment: string, step: number
 export const soloTestSubmit = (token: string, assignment: string, step: number, answers: (string | null)[]) =>
   rpc<TestResult>('solo_test_submit', { p_token: token, p_assignment: assignment, p_step: step, p_answers: answers });
 
+/** 시험에서 틀린 문제만으로 복습 수업을 만든다(059) → 새 복습의 assignment id. 틀린 문제가 없으면 empty. */
+export async function soloStartTestRetry(token: string, assignment: string, step: number, name: string, intro: string): Promise<{ id: string } | { empty: true }> {
+  const r = await rpc<{ assignment?: string; empty?: boolean }>('solo_start_test_retry', { p_token: token, p_assignment: assignment, p_step: step, p_name: name, p_intro: intro });
+  if (r.empty || !r.assignment) return { empty: true };
+  return { id: r.assignment };
+}
+
 export interface SoloTestSummaryRow {
   assignment_id: string;
   step_index: number;

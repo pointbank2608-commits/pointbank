@@ -22,12 +22,15 @@ export default function SoloTestRunner({
   step,
   onSubmit,
   onDone,
+  onRetry,
 }: {
   step: TestStep;
   /** 답안 내기 → 채점 결과(이미 낸 시험이면 처음 결과) */
   onSubmit: (answers: (string | null)[]) => Promise<TestResult>;
   /** 결과를 보고 다음으로 */
   onDone: () => void;
+  /** 틀린 문제(번호)만 다시 풀기 */
+  onRetry?: (wrong: number[]) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const items = step.items;
@@ -83,7 +86,7 @@ export default function SoloTestRunner({
   }
 
   if (phase === 'result' && result) {
-    return <TestResultView items={items} answers={answers} result={result} onDone={onDone} />;
+    return <TestResultView items={items} answers={answers} result={result} onDone={onDone} onRetry={onRetry} />;
   }
 
   const item = items[pos];
@@ -360,8 +363,34 @@ function TestItemView({
 
 /* ---------------- 결과(성적표) ---------------- */
 
-function TestResultView({ items, answers, result, onDone }: { items: SoloPublicTestItem[]; answers: (string | null)[]; result: TestResult; onDone: () => void }) {
+function TestResultView({
+  items,
+  answers,
+  result,
+  onDone,
+  onRetry,
+}: {
+  items: SoloPublicTestItem[];
+  answers: (string | null)[];
+  result: TestResult;
+  onDone: () => void;
+  onRetry?: (wrong: number[]) => Promise<void>;
+}) {
   const { t } = useTranslation();
+  const wrong = result.items.map((x, i) => (x.correct ? -1 : i)).filter((i) => i >= 0);
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState(false);
+  async function retry() {
+    if (!onRetry || retrying) return;
+    setRetrying(true);
+    setRetryError(false);
+    try {
+      await onRetry(wrong);
+    } catch {
+      setRetryError(true);
+      setRetrying(false);
+    }
+  }
   const pct = result.total ? Math.round((result.score / result.total) * 100) : 0;
   const areas = useMemo(() => TEST_AREAS.filter((a) => result.by_area[a]?.total), [result]);
 
@@ -421,6 +450,16 @@ function TestResultView({ items, answers, result, onDone }: { items: SoloPublicT
           );
         })}
       </div>
+
+      {onRetry && wrong.length > 0 && (
+        <div className="w-full rounded-2xl bg-white/10 p-4 text-center">
+          <p className="mb-2 text-lg font-bold">{t('soloTest.retryTitle', { count: wrong.length })}</p>
+          <button type="button" disabled={retrying} onClick={() => void retry()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            {retrying ? t('common.loading') : t('soloTest.retryButton', { count: wrong.length })}
+          </button>
+          {retryError && <p className="mt-2 text-base text-warm-yellow">{t('soloTest.retryError')}</p>}
+        </div>
+      )}
 
       <ol className="w-full space-y-2">
         {items.map((it, i) => {

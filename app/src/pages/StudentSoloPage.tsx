@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
 import FinishPanel from '../components/solo/FinishPanel';
-import { SoloError, soloAdvance, soloAnswer, soloHelp, soloOpen, soloRecordSave, soloReveal, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
+import { SoloError, soloAdvance, soloAnswer, soloHelp, soloOpen, soloRecordSave, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
 
 const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
@@ -52,8 +52,12 @@ export default function StudentSoloPage() {
       reveal: (step) => soloReveal(token, assignmentId, step),
       record: (step, blob, seconds, sub) => soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
       submitTest: (step, answers) => soloTestSubmit(token, assignmentId, step, answers),
+      retryTest: async (step, wrong) => {
+        const r = await soloStartTestRetry(token, assignmentId, step, t('soloTest.retryName'), t('soloTest.retryIntro', { count: wrong.length }));
+        if ('id' in r) navigate(`/s/lesson/${r.id}`);
+      },
     };
-  }, [token, assignmentId]);
+  }, [token, assignmentId, navigate, t]);
 
   if (error) {
     return (

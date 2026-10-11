@@ -121,7 +121,9 @@ export default function BlockOptionsPanel({
             </p>
           ) : (
             <p className="rounded-lg bg-surface-container-lowest px-3 py-2 font-body-md text-body-md text-on-surface">
-              {t('curriculum.blockOptions.useLesson', { name: lessonListName || t('curriculum.slides.lessonWordList'), count: lessonCards.length })}
+              {lessonListName
+                ? t('curriculum.blockOptions.useLesson', { name: lessonListName, count: lessonCards.length })
+                : t('curriculum.blockOptions.useLessonNone', { count: lessonCards.length })}
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">

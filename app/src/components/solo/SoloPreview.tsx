@@ -1,10 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { gradeSoloLocal, soloCorrectText, toPublicStep, type SoloStep } from '../../lib/soloLessons';
 import { gradeTestLocal } from '../../lib/soloTest';
 import SoloPlayer, { type SoloPlayerApi } from './SoloPlayer';
 
 /** 학생 화면 미리보기(기록은 남지 않는다) — 목록의 "미리보기"와 편집기가 같이 쓴다. 저장 전 단계도 미리볼 수 있다. */
-export default function SoloPreview({ steps, onClose, startAt = 0 }: { steps: SoloStep[]; onClose: () => void; startAt?: number }) {
+export default function SoloPreview({ steps: lessonSteps, onClose, startAt = 0 }: { steps: SoloStep[]; onClose: () => void; startAt?: number }) {
+  const { t } = useTranslation();
+  // "틀린 것 다시 풀기"를 누르면 미리보기 안에서 틀린 문제만으로 된 복습을 이어서 보여 준다(서버의 059 와 같은 모양)
+  const [retry, setRetry] = useState<{ key: number; steps: SoloStep[] } | null>(null);
+  const steps = retry?.steps ?? lessonSteps;
   const api = useMemo<SoloPlayerApi>(
     () => ({
       answer: async (step, value) => gradeSoloLocal(steps[step], value) ?? true,
@@ -14,13 +19,22 @@ export default function SoloPreview({ steps, onClose, startAt = 0 }: { steps: So
         const s = steps[step];
         return gradeTestLocal(s && s.t === 'test' ? s.items : [], answers);
       },
+      retryTest: async (step, wrong) => {
+        const s = steps[step];
+        if (!s || s.t !== 'test') return;
+        const items = wrong.map((i) => s.items[i]).filter(Boolean).map(({ area: _a, sec: _s, ...q }) => q as SoloStep);
+        setRetry((cur) => ({
+          key: (cur?.key ?? 0) + 1,
+          steps: [{ t: 'intro', title: t('soloTest.retryName'), text: t('soloTest.retryIntro', { count: items.length }) }, ...items],
+        }));
+      },
     }),
-    [steps],
+    [steps, t],
   );
   const pub = useMemo(() => steps.map(toPublicStep), [steps]);
   return (
     <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#16213e]">
-      <SoloPlayer steps={pub} startAt={startAt} api={api} onExit={onClose} preview />
+      <SoloPlayer key={retry?.key ?? 0} steps={pub} startAt={retry ? 0 : startAt} api={api} onExit={onClose} preview />
     </div>
   );
 }

@@ -73,7 +73,8 @@ function makeSets(prefix: string, title: string, list: WordBankEntry[]): WordSet
   const chunks = chunkWords(list);
   return chunks.map((entries, i) => ({
     id: `${prefix}-${i + 1}`,
-    title: chunks.length > 1 ? `${title} ${i + 1}` : title,
+    // "DAY 3 · 2/5", "동물 2/3"처럼 몇 번째인지 보이게
+    title: chunks.length > 1 ? (prefix.startsWith('day-') ? `${title} · ${i + 1}/${chunks.length}` : `${title} ${i + 1}/${chunks.length}`) : title,
     entries,
   }));
 }
