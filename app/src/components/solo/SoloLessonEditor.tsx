@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
+import { fetchWordLists } from '../../lib/api';
+import { wordListToCards } from '../../lib/gameFromWords';
 import { createSoloLesson, updateSoloLesson, type SoloLesson } from '../../lib/soloApi';
+import { addGroup, buildBoard, groupInsertAt, moveGroup, removeGroup, updateGroup, type BoardBlock } from '../../lib/soloBoard';
+import type { WordList } from '../../lib/types';
 import { kindOf, lessonProblems, newStep, normalizeStep, STEP_KINDS, stepProblems, stepRuns, stepSummary, wordsFromSteps } from '../../lib/soloEdit';
 import { buildWordBlock, WORD_BLOCK_TYPES, type WordBlockType } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
+import SoloBlockBoard, { type BoardActions } from './SoloBlockBoard';
 import SoloPasteWords from './SoloPasteWords';
 import SoloPreview from './SoloPreview';
 import SoloStepForm from './SoloStepForm';
@@ -40,6 +45,9 @@ export default function SoloLessonEditor({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(startWithPaste);
   const [view, setView] = useState<'blocks' | 'steps'>('blocks');
+  /** 블록 보드(수업 전체를 그룹·블록 카드로) / 문제 고치기 — 기본은 보드 */
+  const [board, setBoard] = useState(true);
+  const [wordLists, setWordLists] = useState<WordList[] | null>(null);
   const [openRuns, setOpenRuns] = useState<Set<number>>(new Set());
   const [problems, setProblems] = useState<{ index: number; keys: string[] }[]>([]);
   const [asking, setAsking] = useState(false);
@@ -116,6 +124,22 @@ export default function SoloLessonEditor({
     window.addEventListener('beforeunload', h);
     return () => window.removeEventListener('beforeunload', h);
   }, [dirty]);
+
+  // 보드에서 "이 블록만 다른 단어장"으로 다시 만들 때 쓸 단어장
+  useEffect(() => {
+    if (!board || wordLists !== null) return;
+    if (!lesson.class_id) {
+      setWordLists([]);
+      return;
+    }
+    let alive = true;
+    fetchWordLists(academyId, lesson.class_id)
+      .then((l) => alive && setWordLists(l))
+      .catch(() => alive && setWordLists([]));
+    return () => {
+      alive = false;
+    };
+  }, [board, wordLists, academyId, lesson.class_id]);
 
   const step = steps[sel];
   const problemSet = new Set(problems.map((p) => p.index));
@@ -231,7 +255,11 @@ export default function SoloLessonEditor({
       notify(t('soloEdit.blockRegenEmpty'), 'error');
       return;
     }
-    if (!window.confirm(t('soloEdit.blockRegenConfirm', { count: r.end - r.start + 1, made: made.length }))) return;
+    const editedN = steps.slice(r.start, r.end + 1).filter((x) => (x as { edited?: boolean }).edited).length;
+    const msg = editedN > 0
+      ? t('soloBoard.regenEditedConfirm', { count: r.end - r.start + 1, made: made.length, edited: editedN })
+      : t('soloEdit.blockRegenConfirm', { count: r.end - r.start + 1, made: made.length });
+    if (!window.confirm(msg)) return;
     const next = [...steps.slice(0, r.start), ...made, ...steps.slice(r.end + 1)];
     commit(next);
     setSel(r.start);
@@ -297,8 +325,90 @@ export default function SoloLessonEditor({
     });
 
   function edit(s: SoloStep) {
-    commit(steps.map((x, j) => (j === sel ? s : x)), { field: sel });
+    // 선생님이 손으로 고친 문제는 표시해 둔다 — 블록을 다시 만들 때 사라진다고 경고하려고
+    commit(steps.map((x, j) => (j === sel ? ({ ...s, edited: true } as unknown as SoloStep) : x)), { field: sel });
   }
+
+  /* ---------- 블록 보드 ---------- */
+  const runAt = (b: BoardBlock) => runs.findIndex((r) => r.start === b.start);
+  const boardActions: BoardActions = {
+    setMinutes: (n) => {
+      setMinutes(Math.max(3, Math.round(n)));
+      setDirty(true);
+    },
+    groupUpdate: (intro, patch) => commit(updateGroup(steps, intro, patch)),
+    groupMove: (gi, dir) => commit(moveGroup(steps, gi, dir)),
+    groupRemove: (gi) => {
+      const g = buildBoard(steps).groups[gi];
+      if (!g) return;
+      const count = g.end - g.start + 1;
+      if (steps.length - count < 1) return;
+      if (g.blocks.length > 0 && !window.confirm(t('soloBoard.groupDeleteConfirm', { name: g.title || t('soloBoard.ungrouped'), count }))) return;
+      commit(removeGroup(steps, gi));
+      setSel(0);
+    },
+    groupAdd: (title) => commit(addGroup(steps, title)),
+    blockCount: (b, n) => {
+      const ri = runAt(b);
+      if (ri >= 0) setRunCount(ri, n);
+    },
+    blockMove: (b, dir) => {
+      const ri = runAt(b);
+      // 맨 앞 수업 소개 화면(0번 줄) 위로는 못 간다
+      if (ri < 0 || ri + dir < 1) return;
+      moveRun(ri, dir);
+    },
+    blockCopy: (b) => {
+      const ri = runAt(b);
+      if (ri >= 0) duplicateRun(ri);
+    },
+    blockRemove: (b) => {
+      const ri = runAt(b);
+      if (ri >= 0) removeRun(ri);
+    },
+    blockRegen: (b) => {
+      const ri = runAt(b);
+      if (ri >= 0) regenerateRun(ri);
+    },
+    blockPickList: (b, listId) => {
+      const list = wordLists?.find((w) => w.id === listId);
+      if (!list || !isWordBlock(b.type)) return;
+      const made = buildWordBlock(b.type as WordBlockType, wordListToCards(list));
+      if (made.length === 0) {
+        notify(t('soloBoard.listTooFew'), 'error');
+        return;
+      }
+      if (b.edited > 0 && !window.confirm(t('soloBoard.pickListConfirm', { name: list.name, edited: b.edited }))) return;
+      const take = made.slice(0, Math.max(1, b.count));
+      commit([...steps.slice(0, b.start), ...take, ...steps.slice(b.end + 1)]);
+      notify(t('soloBoard.listApplied', { name: list.name, count: take.length }));
+    },
+    blockOpen: (b) => {
+      setSel(b.start);
+      setBoard(false);
+    },
+    blockAdd: (gi, type) => {
+      const at = groupInsertAt(steps, gi);
+      if (isWordBlock(type)) {
+        const made = buildWordBlock(type as WordBlockType, lessonWords);
+        if (made.length === 0) {
+          notify(t('soloEdit.blockRegenEmpty'), 'error');
+          return;
+        }
+        const next = [...steps];
+        next.splice(at, 0, ...made);
+        commit(next);
+        return;
+      }
+      // 낱말로 만들 수 없는 종류는 빈 문제를 하나 넣고 바로 고치게 한다
+      const next = [...steps];
+      next.splice(at, 0, newStep(type));
+      commit(next);
+      setSel(at);
+      setBoard(false);
+    },
+    capacity: (b) => runCapacity(b.type, b.count),
+  };
 
   function validate(): SoloStep[] | null {
     const normalized = steps.map(normalizeStep);
@@ -365,6 +475,14 @@ export default function SoloLessonEditor({
           {t('soloEdit.minutesUnit')}
         </label>
         <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setBoard((b) => !b)}
+            className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md ${board ? 'bg-primary text-on-primary' : 'border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">{board ? 'edit_note' : 'dashboard'}</span>
+            {board ? t('soloBoard.toQuestions') : t('soloBoard.toBoard')}
+          </button>
           <button type="button" onClick={undo} disabled={past.current.length === 0} aria-label={t('soloEdit.undo')} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low disabled:opacity-30">
             <span className="material-symbols-outlined">undo</span>
           </button>
@@ -395,7 +513,7 @@ export default function SoloLessonEditor({
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* 왼쪽: 단계 목록 */}
-        <aside className="flex max-h-[34vh] shrink-0 flex-col border-b border-outline-variant/40 bg-surface-container-low/50 lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r">
+        <aside className={`${board ? 'hidden' : 'flex'} max-h-[34vh] shrink-0 flex-col border-b border-outline-variant/40 bg-surface-container-low/50 lg:max-h-none lg:w-72 lg:border-b-0 lg:border-r`}>
           <div className="flex items-center gap-1 border-b border-outline-variant/40 px-2 py-1.5">
             <div className="flex rounded-full bg-surface-container p-0.5" role="radiogroup" aria-label={t('soloEdit.viewLabel')}>
               {(['blocks', 'steps'] as const).map((v) => (
@@ -554,9 +672,22 @@ export default function SoloLessonEditor({
 
         {/* 오른쪽: 고치는 칸 */}
         <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-          {step ? (
+          {board ? (
+            <SoloBlockBoard
+              steps={steps}
+              minutes={minutes}
+              lessonWordCount={lessonWords.length}
+              wordLists={wordLists}
+              problemIndexes={problemSet}
+              actions={boardActions}
+            />
+          ) : step ? (
             <div className="mx-auto max-w-2xl space-y-5">
               <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => setBoard(true)} className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
+                  <span className="material-symbols-outlined text-[18px]">dashboard</span>
+                  {t('soloBoard.backToBoard')}
+                </button>
                 <span className="material-symbols-outlined text-[24px] text-primary">{kindOf(step.t).icon}</span>
                 <h2 className="flex-1 font-title-md text-title-md font-bold text-deep-navy">
                   {sel + 1}. {t(`soloEdit.stepType_${step.t}`)}
