@@ -162,7 +162,9 @@ export default function SoloBlockAssembler({
         const cap = capOf(type, idxs.length);
         for (const k of evenIndexes(idxs.length, cap)) keepIdx.add(idxs[k]);
       }
-      const steps = l.steps.filter((s, i) => s.t === 'intro' || keepIdx.has(i));
+      const kept = l.steps.filter((s, i) => s.t === 'intro' || keepIdx.has(i));
+      // 표준 50분 흐름의 "단계 나눔" 화면: 그 단계의 활동이 모두 빠졌으면 나눔 화면도 지운다(첫 소개는 항상 남긴다)
+      const steps = kept.filter((s, i) => s.t !== 'intro' || i === 0 || (kept[i + 1] !== undefined && kept[i + 1].t !== 'intro'));
       const non = steps.filter((s) => s.t !== 'intro').length;
       const origin = l.steps.filter((s) => s.t !== 'intro').length || 1;
       return { ...l, steps, minutes: Math.max(5, Math.round((l.minutes * non) / origin)) };

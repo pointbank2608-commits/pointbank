@@ -330,19 +330,25 @@ export type SoloWordStyle = 'picture' | 'writing';
  * 한 DAY(50낱말)를 perLesson 개씩 나눠 개별수업 여러 개로 만든다. 마지막 조각이 3개 이하면 앞 조각에 합친다.
  * style: picture = 그림 중심(초등), writing = 쓰기 중심(중학생).
  */
-export function buildSoloDayLessons(
-  bank: WordBankEntry[],
-  opts: { day: number; perLesson: number; style: SoloWordStyle; baseName: string },
-): { name: string; steps: SoloStep[]; minutes: number }[] {
-  const all = moe800Words(bank, opts.day);
-  if (all.length < 4) return [];
-  const per = Math.max(4, opts.perLesson);
+export function moe800Chunks(bank: WordBankEntry[], day: number, perLesson: number): { all: FullCardItem[]; chunks: FullCardItem[][] } {
+  const all = moe800Words(bank, day);
+  if (all.length < 4) return { all, chunks: [] };
+  const per = Math.max(4, perLesson);
   const chunks: FullCardItem[][] = [];
   for (let i = 0; i < all.length; i += per) chunks.push(all.slice(i, i + per));
   if (chunks.length > 1 && chunks[chunks.length - 1].length <= 3) {
     const last = chunks.pop() ?? [];
     chunks[chunks.length - 1].push(...last);
   }
+  return { all, chunks };
+}
+
+export function buildSoloDayLessons(
+  bank: WordBankEntry[],
+  opts: { day: number; perLesson: number; style: SoloWordStyle; baseName: string },
+): { name: string; steps: SoloStep[]; minutes: number }[] {
+  const { all, chunks } = moe800Chunks(bank, opts.day, opts.perLesson);
+  if (chunks.length === 0) return [];
   return chunks.map((chunk, i) => {
     const name = chunks.length > 1 ? `${opts.baseName} (${i + 1}/${chunks.length})` : opts.baseName;
     const steps = opts.style === 'writing' ? buildSoloWritingSteps(name, chunk, all) : buildSoloWordSteps(name, chunk, all);

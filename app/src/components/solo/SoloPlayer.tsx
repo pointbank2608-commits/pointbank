@@ -723,11 +723,11 @@ export default function SoloPlayer({
 
         {step.t === 'intro' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
-            {step.imageUrl ? <Picture url={step.imageUrl} wide /> : <div className="text-6xl">📚</div>}
+            {step.imageUrl ? <Picture url={step.imageUrl} wide /> : <div className="text-6xl">{/^\d+\.\s/.test(step.title) ? '⏱️' : '📚'}</div>}
             <h1 className="text-3xl font-bold">{step.title}</h1>
             <p className="max-w-sm text-xl text-white/85">{/^\d+$/.test(step.text) ? t('solo.introText', { count: Number(step.text) || 0 }) : step.text}</p>
             <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} bg-warm-yellow px-10 text-deep-navy`}>
-              {t('solo.start')}
+              {t(/^\d+\.\s/.test(step.title) ? 'solo.startStage' : 'solo.start')}
             </button>
           </div>
         )}
