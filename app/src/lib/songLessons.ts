@@ -395,12 +395,47 @@ const uid = () => crypto.randomUUID();
 const game = (gameType: Extract<LessonSlide, { kind: 'game' }>['gameType'], templateId?: string): LessonSlide =>
   templateId ? { id: uid(), kind: 'game', gameType, templateId } : { id: uid(), kind: 'game', gameType };
 
+/** 칠판 글자 크기(cqh = 무대 높이 %)를 칸 크기에 맞춰 가장 크게 — 글이 길면 줄어들어 겹치지 않는다 */
+function fitFont(text: string, wBox: number, hBox: number, maxFs: number, minFs = 4): number {
+  const wCqh = wBox * (16 / 9); // 가로 칸 폭을 cqh 로
+  for (let fs = maxFs; fs > minFs; fs -= 0.5) {
+    let lines = 0;
+    for (const para of text.split(String.fromCharCode(10))) {
+      let em = 0;
+      for (const ch of para) em += /[ㄱ-힣]/.test(ch) ? 1 : ch === ' ' ? 0.35 : 0.62;
+      lines += Math.max(1, Math.ceil((em * fs) / wCqh));
+    }
+    if (lines * fs * 1.4 <= hBox) return fs;
+  }
+  return minFs;
+}
+
+function textBox(text: string, x: number, y: number, w: number, h: number, maxFs: number, opts: { title?: boolean; bold?: boolean; color?: string } = {}) {
+  const base = themeTextDefaults('green', opts.title ? 'title' : 'body');
+  return {
+    ...newTextElement({ x, y, w, h, ...base, bold: opts.bold ?? base.bold, fontSize: fitFont(text, w, h, maxFs), ...(opts.color ? { color: opts.color } : {}) }),
+    text,
+  };
+}
+
 function textSlide(title: string, body: string, subtitle?: string): LessonSlide {
   const slide = newCanvasSlide('green');
   slide.elements = [
-    newTextElement({ x: 6, y: 8, w: 88, h: 18, ...themeTextDefaults('green', 'title'), text: title }),
-    { ...newTextElement({ x: 8, y: subtitle ? 32 : 30, w: 84, h: subtitle ? 50 : 56, ...themeTextDefaults('green'), bold: false }), text: body },
-    ...(subtitle ? [{ ...newTextElement({ x: 8, y: 84, w: 84, h: 10, ...themeTextDefaults('green'), bold: false }), text: subtitle }] : []),
+    textBox(title, 6, 6, 88, 22, 15, { title: true }),
+    textBox(body, 8, 32, 84, subtitle ? 44 : 60, 9, { bold: false }),
+    ...(subtitle ? [textBox(subtitle, 8, 80, 84, 14, 6, { bold: false })] : []),
+  ];
+  return slide;
+}
+
+/** 곡 첫 화면: 제목 / 가수 / 대상·주제 / 배울 문법을 줄마다 따로 놓아 겹치지 않게 */
+function songTitleSlide(song: SongLesson): LessonSlide {
+  const slide = newCanvasSlide('green');
+  slide.elements = [
+    textBox(`♪ ${song.title}`, 6, 8, 88, 28, 14, { title: true }),
+    textBox(song.artist, 8, 40, 84, 10, 8, { bold: false }),
+    textBox(`${song.levelNote} · ${song.themes.join(' · ')}`, 8, 54, 84, 12, 7, { bold: false }),
+    textBox(song.points.join('   ·   '), 8, 74, 84, 18, 6.5, { bold: false, color: '#fde68a' }),
   ];
   return slide;
 }
@@ -424,7 +459,7 @@ export async function buildSongLesson(song: SongLesson, ctx: SongBuildContext, l
   if (!ctx.keepWordList && ctx.makeWordList) hasWords = await ctx.makeWordList(words, `${song.title} · ${song.artist}`);
 
   const slides: LessonSlide[] = [];
-  slides.push(textSlide(`♪ ${song.title}`, `${song.artist}\n${song.levelNote} · ${song.themes.join(' · ')}`, song.points.join('   ·   ')));
+  slides.push(songTitleSlide(song));
   slides.push(
     textSlide(
       'Before we listen',
