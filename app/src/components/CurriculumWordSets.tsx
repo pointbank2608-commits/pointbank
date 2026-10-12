@@ -202,7 +202,6 @@ function BulkListMaker({
         <span className="font-caption text-caption text-on-surface-variant">{t('recipes.bulkSort')}</span>
         <button type="button" onClick={() => setSort('progress')} className={chip(sort === 'progress')}>{t('recipes.bulkSortProgress')}</button>
         <button type="button" onClick={() => setSort('alpha')} className={chip(sort === 'alpha')}>{t('recipes.bulkSortAlpha')}</button>
-        <button type="button" disabled title={t('recipes.bulkFreqSoon')} className={`${chip(false)} opacity-50`}>{t('recipes.bulkSortFreq')}</button>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-caption text-caption text-on-surface-variant">{t('recipes.bulkPerLabel')}</span>

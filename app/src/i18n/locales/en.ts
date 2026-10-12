@@ -2303,8 +2303,6 @@ const en: Ko = {
     bulkSort: 'Sort',
     bulkSortProgress: 'By progress',
     bulkSortAlpha: 'Alphabetical',
-    bulkSortFreq: 'By frequency',
-    bulkFreqSoon: 'A frequency list is coming',
     bulkPerLabel: 'Words per list',
     bulkPer: '{{n}} each',
     bulkRange: 'Lists to make',

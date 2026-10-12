@@ -2297,8 +2297,6 @@ const ko = {
     bulkSort: '정렬',
     bulkSortProgress: '진도순',
     bulkSortAlpha: '알파벳순',
-    bulkSortFreq: '빈도수순',
-    bulkFreqSoon: '빈도 목록을 준비하는 중이에요',
     bulkPerLabel: '단어장 하나에',
     bulkPer: '{{n}}개씩',
     bulkRange: '만들 묶음 번호',
