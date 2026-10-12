@@ -26,7 +26,7 @@ import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
-import { useWordBankEnriched } from '../lib/wordBankCache';
+import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
 import BlockLibraryPanel from './BlockLibraryPanel';
@@ -164,7 +164,7 @@ function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
   return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
 }
 
-type AddMode = 'library' | 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
+type AddMode = 'library' | 'wordset' | 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
@@ -195,6 +195,49 @@ export default function LessonSlideSorter({
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
   const [addMode, setAddMode] = useState<AddMode>(null);
+  const { profile: teacher } = useAuth();
+  // "단어장으로 단어 수업 더하기" — 수업 단어장은 그대로 두고, 고른 단어장으로 단어 소개·카드·게임 슬라이드를 묶음으로 넣는다
+  const [setListId, setSetListId] = useState('');
+  const [setBusy, setSetBusy] = useState(false);
+
+  async function addWordSet() {
+    const list = wordLists.find((wl) => wl.id === setListId);
+    if (!list || setBusy) return;
+    const words = wordListToCards(list);
+    if (words.length === 0) return;
+    setSetBusy(true);
+    try {
+      const made: LessonSlide[] = [
+        { id: uid(), kind: 'wordshow', boardTheme: 'green', words, ownWordListId: list.id },
+        { id: uid(), kind: 'study', words, ownWordListId: list.id },
+      ];
+      // 게임은 이 단어장으로 내용을 만들어 붙인다(수업 단어장이 바뀌어도 건드리지 않게 ownWordListId 를 남긴다)
+      if (teacher) {
+        const enriched = enrichCards(words, await loadWordBank());
+        for (const gameType of ['matchup', 'quiz'] as const) {
+          const content = buildGameContent(gameType, enriched);
+          if (!content) continue;
+          const tpl = await createGameTemplate({
+            academyId,
+            classId,
+            gameType,
+            name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list.name),
+            items: content.items,
+            config: content.config,
+            teacherId: teacher.id,
+          });
+          made.push({ id: uid(), kind: 'game', gameType, templateId: tpl.id, ownWordListId: list.id });
+        }
+      }
+      placeSlides(made);
+      setAddMode(null);
+      notify(t('curriculum.slides.wordSet.addedToast', { count: made.length, name: list.name }));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setSetBusy(false);
+    }
+  }
   const [videoDraft, setVideoDraft] = useState('');
   const [webDraft, setWebDraft] = useState({ url: '', title: '' });
   const [worksheetDraftTab, setWorksheetDraftTab] = useState(WORKSHEET_TAB_CATALOG[0]?.tab ?? 'list');
@@ -569,7 +612,7 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['library', 'canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
+              {(['library', 'wordset', 'canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -660,6 +703,44 @@ export default function LessonSlideSorter({
                   setAddMode(null);
                 }}
               />
+            )}
+
+            {addMode === 'wordset' && (
+              <div className="space-y-3">
+                <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.slides.wordSet.intro')}</p>
+                <select
+                  value={setListId}
+                  onChange={(e) => setSetListId(e.target.value)}
+                  aria-label={t('curriculum.slides.wordSet.pick')}
+                  className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
+                >
+                  <option value="">{t('curriculum.slides.wordSet.pick')}</option>
+                  {wordLists.filter((wl) => !wl.group_name).map((wl) => (
+                    <option key={wl.id} value={wl.id}>
+                      {wl.name} ({wl.items.length})
+                    </option>
+                  ))}
+                  {[...new Set(wordLists.map((wl) => wl.group_name).filter((g): g is string => !!g))].map((g) => (
+                    <optgroup key={g} label={g}>
+                      {wordLists.filter((wl) => wl.group_name === g).map((wl) => (
+                        <option key={wl.id} value={wl.id}>
+                          {wl.name} ({wl.items.length})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.wordSet.what')}</p>
+                <button
+                  type="button"
+                  disabled={!setListId || setBusy}
+                  onClick={() => void addWordSet()}
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  {setBusy ? t('common.loading') : t('curriculum.slides.wordSet.add')}
+                </button>
+              </div>
             )}
 
             {addMode === 'wordshow' && (

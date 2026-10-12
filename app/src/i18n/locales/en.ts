@@ -4083,7 +4083,15 @@ const en: Ko = {
     slides: {
       addSlide: 'Add slide',
       closeAddPanel: 'Close',
-      addMode: {
+      wordSet: {
+      intro: 'Keeps the lesson word list as it is and adds word intro, flashcards, matchup and quiz slides for the list you pick.',
+      pick: 'Choose a word list',
+      what: 'Slides added: word intro → flashcards → matchup → quiz (games are built from this list automatically)',
+      add: 'Add word lesson',
+      addedToast: 'Added {{count}} slides for "{{name}}".',
+    },
+    addMode: {
+      wordset: 'Word lesson from a list',
         library: "Block library",
         rainbow: "Rainbow Grammar (colors)",
         drill: 'Say it differently (pattern drill)',
