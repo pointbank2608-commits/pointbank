@@ -134,7 +134,7 @@ export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fill
 /** 글자로 답하는 단계 */
 export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'] as const;
 
-function shuffle<T>(arr: T[]): T[] {
+export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -144,7 +144,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /** 정답 하나 + 풀의 다른 값으로 보기 만들기(정답 자리는 무작위) */
-function options<T>(correct: T, pool: T[], n = 4): { list: T[]; answer: number } {
+export function options<T>(correct: T, pool: T[], n = 4): { list: T[]; answer: number } {
   const others = shuffle(pool.filter((x) => x !== correct)).slice(0, n - 1);
   const list = shuffle([correct, ...others]);
   return { list, answer: list.indexOf(correct) };

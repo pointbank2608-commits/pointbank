@@ -348,6 +348,19 @@ try {
       assert.ok(!s2.some((x) => x.kind === 'video'));
     }
   });
+  const popSolo = await server.ssrLoadModule('/src/lib/soloPopSongs.ts');
+  await test('팝송 개별수업: 모든 곡이 가사 없이 단계가 만들어지고, 고르기 정답 번호가 보기 범위 안에 있다', () => {
+    const CHOICE = ['pickWord', 'pickMeaning', 'listenPick', 'translatePick', 'pickCorrect', 'sayPick', 'pickPos'];
+    for (const song of songs.SONG_LESSONS) {
+      const l = popSolo.buildSoloPopSongLesson(song);
+      assert.equal(l.steps[0].t, 'intro', song.id);
+      assert.ok(l.steps.length >= 15, song.id + ' 단계 수 ' + l.steps.length);
+      assert.ok(l.steps.some((x) => x.t === 'meet') && l.steps.some((x) => x.t === 'rule') && l.steps.some((x) => x.t === 'unscramble'), song.id);
+      assert.equal(l.steps.some((x) => x.t === 'watch'), song.videoId !== null, song.id + ' 영상');
+      for (const st of l.steps) if (CHOICE.includes(st.t)) assert.ok(st.answer >= 0 && st.answer < st.options.length, song.id + ' ' + st.t);
+      assert.ok(l.minutes >= 10);
+    }
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

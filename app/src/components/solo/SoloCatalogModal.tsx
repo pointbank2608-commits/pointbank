@@ -26,6 +26,8 @@ import VideoClipLibrary from '../VideoClipLibrary';
 import { loadWordBank } from '../../lib/wordBankCache';
 import SoloBlockAssembler from './SoloBlockAssembler';
 import { extractYoutubeId } from '../../lib/youtube';
+import { SONG_LESSONS } from '../../lib/songLessons';
+import { buildSoloPopSongLesson } from '../../lib/soloPopSongs';
 
 /**
  * 새 개별수업 만들기 — 세 갈래로 시작한다(2026-10-11 정돈).
@@ -45,7 +47,7 @@ type Purpose = 'word' | 'grammar' | 'talk' | 'rainbow' | 'video';
 
 interface Entry {
   key: string;
-  type: 'word' | 'talk' | 'grammar' | 'rainbow';
+  type: 'word' | 'talk' | 'grammar' | 'rainbow' | 'song';
   icon: string;
   title: string;
   desc: string;
@@ -173,6 +175,19 @@ export default function SoloCatalogModal({
           const l = buildSoloPosLesson(n, t(`solo.posLesson_${n}`));
           return { lessons: [l], level: t('solo.rainbowLevel'), source: `pos-${n}` };
         },
+      });
+    }
+    for (const song of SONG_LESSONS) {
+      list.push({
+        key: `song-${song.id}`,
+        type: 'song',
+        icon: 'music_note',
+        title: `♪ ${song.title}`,
+        desc: `${song.artist} · ${song.levelNote} · ${song.points.slice(0, 2).join(' · ')}`,
+        minutes: 15,
+        haystack: `팝송 노래 song ${song.title} ${song.artist} ${song.themes.join(' ')} ${song.points.join(' ')}`,
+        levels: song.levels,
+        build: async () => ({ lessons: [buildSoloPopSongLesson(song)], level: song.levelNote, source: `solo-song-${song.id}` }),
       });
     }
     for (const k of ['speak', 'structure'] as const) {
@@ -560,6 +575,13 @@ export default function SoloCatalogModal({
     } else {
       body = (
         <div className="space-y-4">
+        <Section title={t('solo.popSongsTitle')} hint={t('solo.popSongsHint')}>
+          <div className={grid}>
+            {visible.filter((e) => e.type === 'song').map((e) => (
+              <EntryCard key={e.key} e={e} />
+            ))}
+          </div>
+        </Section>
         <div className="space-y-2 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
           <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.clipTitle')}</div>
           <p className="font-caption text-caption text-on-surface-variant">{t('solo.clipHint')}</p>
