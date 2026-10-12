@@ -407,9 +407,9 @@ export default function SoloCatalogModal({
     );
   } else if (view.id === 'home') {
     const big = [
+      { id: 'scratch' as const, icon: 'construction', title: t('solo.cat_scratch'), desc: t('solo.cat_scratchDesc') },
       { id: 'purposes' as const, icon: 'category', title: t('solo.cat_byPurpose'), desc: t('solo.cat_byPurposeDesc') },
       { id: 'topics' as const, icon: 'interests', title: t('solo.cat_byTopic'), desc: t('solo.cat_byTopicDesc') },
-      { id: 'scratch' as const, icon: 'construction', title: t('solo.cat_scratch'), desc: t('solo.cat_scratchDesc') },
     ];
     body = (
       <div className="grid gap-3">

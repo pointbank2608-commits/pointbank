@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { kindOf, STEP_KINDS } from '../../lib/soloEdit';
+import { kindOf } from '../../lib/soloEdit';
 import { PRINTABLE_STEP_TYPES } from '../../lib/soloPrint';
 import { WORD_BLOCK_TYPES } from '../../lib/soloLessons';
 import type { SoloStep } from '../../lib/soloLessons';
 import { buildBoard, formatMinutes, sameStepSource, type BoardBlock } from '../../lib/soloBoard';
 import type { BlockStatsData } from '../../lib/soloBlockStats';
 import SoloBlockStatsLine from './SoloBlockStatsLine';
+import SoloBlockLibrary from './SoloBlockLibrary';
 import type { WordList } from '../../lib/types';
 
 /**
@@ -65,6 +66,15 @@ export default function SoloBlockBoard({
   const board = useMemo(() => buildBoard(steps), [steps]);
   const [paletteFor, setPaletteFor] = useState<number | null>(null);
   const [newGroup, setNewGroup] = useState('');
+  const emptyLesson = board.groups.length > 0 && board.groups.every((g) => g.blocks.every((b) => b.type === 'intro'));
+  const [autoOpened, setAutoOpened] = useState(false);
+  useEffect(() => {
+    // 빈 수업(소개 화면뿐)에서는 "무엇을 넣을까요?"가 바로 보이게 보관함을 한 번 연다
+    if (emptyLesson && !autoOpened) {
+      setAutoOpened(true);
+      setPaletteFor(Math.max(0, board.groups.length - 1));
+    }
+  }, [emptyLesson, autoOpened, board.groups.length]);
   const est = formatMinutes(board.totalSeconds);
   const blockCount = board.groups.reduce((n, g) => n + g.blocks.filter((b) => b.type !== 'intro').length, 0);
   const iconBtn = 'rounded p-1 text-on-surface-variant hover:bg-surface-container hover:text-primary disabled:opacity-30';
@@ -76,7 +86,11 @@ export default function SoloBlockBoard({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-primary-fixed/25 px-4 py-3">
         <span className="font-label-md text-label-md font-bold text-deep-navy">{t('soloBoard.summary', { groups: board.groups.filter((g) => g.intro !== null).length, blocks: blockCount, steps: board.totalSteps })}</span>
         <span className="font-caption text-caption text-on-surface-variant">{t('soloBoard.estimate', { n: est })}</span>
-        <button type="button" onClick={() => actions.textAdd(Math.max(0, board.groups.length - 1))} className="ml-auto flex items-center gap-1 rounded-full bg-tertiary-fixed/70 px-3 py-1 font-label-md text-label-md text-deep-navy hover:bg-tertiary-fixed">
+        <button type="button" onClick={() => setPaletteFor(Math.max(0, board.groups.length - 1))} className="ml-auto flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container">
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          {t('soloLib.addButton')}
+        </button>
+        <button type="button" onClick={() => actions.textAdd(Math.max(0, board.groups.length - 1))} className="flex items-center gap-1 rounded-full bg-tertiary-fixed/70 px-3 py-1 font-label-md text-label-md text-deep-navy hover:bg-tertiary-fixed">
           <span className="material-symbols-outlined text-[18px]">lyrics</span>
           {t('soloText.addButton')}
         </button>
@@ -268,106 +282,20 @@ export default function SoloBlockBoard({
         </button>
       </div>
 
-      {/* 블록 보관함 */}
+      {/* 블록 보관함 — 단체수업의 "블록 보관함"과 같은 방식(범주 칩·검색·카드) */}
       {paletteFor !== null && (
-        <div className="fixed inset-0 z-[66] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" onClick={() => setPaletteFor(null)}>
-          <div className="max-h-[80vh] w-full max-w-lg space-y-3 overflow-y-auto rounded-2xl bg-surface-container-lowest p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2">
-              <h3 className="flex-1 font-title-md text-title-md font-bold text-deep-navy">{t('soloBoard.paletteTitle')}</h3>
-              <button type="button" onClick={() => setPaletteFor(null)} aria-label={t('common.close')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                actions.grammarAdd(paletteFor);
-                setPaletteFor(null);
-              }}
-              className="flex w-full items-center gap-2 rounded-xl bg-primary-fixed/60 px-3 py-2.5 text-left hover:bg-primary-fixed"
-            >
-              <span className="material-symbols-outlined text-[24px] text-deep-navy">spellcheck</span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-label-md text-label-md font-bold text-deep-navy">{t('soloGrammar.addButton')}</span>
-                <span className="block font-caption text-caption text-on-surface-variant">{t('soloGrammar.addHint')}</span>
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                actions.textAdd(paletteFor);
-                setPaletteFor(null);
-              }}
-              className="flex w-full items-center gap-2 rounded-xl bg-tertiary-fixed/60 px-3 py-2.5 text-left hover:bg-tertiary-fixed"
-            >
-              <span className="material-symbols-outlined text-[24px] text-deep-navy">lyrics</span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-label-md text-label-md font-bold text-deep-navy">{t('soloText.addButton')}</span>
-                <span className="block font-caption text-caption text-on-surface-variant">{t('soloText.addHint')}</span>
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                actions.blockAdd(paletteFor, 'test');
-                setPaletteFor(null);
-              }}
-              className="flex w-full items-center gap-2 rounded-xl bg-secondary-container/60 px-3 py-2.5 text-left hover:bg-secondary-container"
-            >
-              <span className="material-symbols-outlined text-[24px] text-on-secondary-container">assignment_turned_in</span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-label-md text-label-md font-bold text-on-secondary-container">{t('soloTest.addButton')}</span>
-                <span className="block font-caption text-caption text-on-surface-variant">{t('soloTest.addHint')}</span>
-              </span>
-            </button>
-            <div>
-              <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t('soloEdit.addBlockGroup')}</div>
-              {lessonWordCount < 4 && <p className="mb-1 font-caption text-caption text-on-surface-variant">{t('soloEdit.addBlockNeed')}</p>}
-              <div className="grid grid-cols-2 gap-1.5">
-                {WORD_BLOCK_TYPES.map((bt) => (
-                  <button
-                    key={bt}
-                    type="button"
-                    disabled={lessonWordCount < 4}
-                    onClick={() => {
-                      actions.blockAdd(paletteFor, bt);
-                      setPaletteFor(null);
-                    }}
-                    className="flex items-center gap-1.5 rounded-lg border border-outline-variant/50 px-2 py-1.5 text-left font-label-md text-label-md text-on-surface hover:border-primary hover:bg-primary/5 disabled:opacity-40"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-primary">{kindOf(bt).icon}</span>
-                    <span className="truncate">{t(`soloEdit.stepType_${bt}`)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            {(['learn', 'quiz', 'speak', 'grammar', 'video'] as const).map((grp) => {
-              const list = STEP_KINDS.filter((k) => k.group === grp && k.t !== 'intro' && k.t !== 'test' && !(WORD_BLOCK_TYPES as readonly string[]).includes(k.t));
-              if (list.length === 0) return null;
-              return (
-                <div key={grp}>
-                  <div className="mb-1 font-caption text-caption font-bold text-on-surface-variant">{t(`soloEdit.group_${grp}`)}</div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {list.map((k) => (
-                      <button
-                        key={k.t}
-                        type="button"
-                        onClick={() => {
-                          actions.blockAdd(paletteFor, k.t);
-                          setPaletteFor(null);
-                        }}
-                        className="flex items-center gap-1.5 rounded-lg border border-outline-variant/50 px-2 py-1.5 text-left font-label-md text-label-md text-on-surface hover:border-primary hover:bg-primary/5"
-                      >
-                        <span className="material-symbols-outlined text-[18px] text-primary">{k.icon}</span>
-                        <span className="truncate">{t(`soloEdit.stepType_${k.t}`)}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <SoloBlockLibrary
+          groups={board.groups.map((g, gi) => ({ gi, title: g.title }))}
+          initialGroup={Math.min(paletteFor, Math.max(0, board.groups.length - 1))}
+          lessonWordCount={lessonWordCount}
+          onAddType={(gi, type) => actions.blockAdd(gi, type)}
+          onMake={(gi, maker) => {
+            if (maker === 'grammar') actions.grammarAdd(gi);
+            else if (maker === 'text') actions.textAdd(gi);
+            else actions.blockAdd(gi, 'test');
+          }}
+          onClose={() => setPaletteFor(null)}
+        />
       )}
     </div>
   );
