@@ -202,6 +202,52 @@ export async function fetchHomeworkTransactions(
   );
 }
 
+/** 숙제 도장: 학생이 온라인 숙제·개별수업 숙제를 끝낸 기록(날짜별). 통장 포인트와 별개로 끝낸 것만으로 도장이 찍힌다. */
+export interface HomeworkStamp {
+  /** YYYY-MM-DD (이 기기 날짜 기준) */
+  day: string;
+  title: string;
+}
+
+export async function fetchHomeworkStamps(studentId: string, from: string, to: string): Promise<HomeworkStamp[]> {
+  const start = new Date(`${from}T00:00:00`).toISOString();
+  const end = new Date(`${to}T23:59:59`).toISOString();
+  const out: HomeworkStamp[] = [];
+  const dayOf = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const a = await supabase
+    .from('homework_attempts')
+    .select('finished_at, homework_assignments(title)')
+    .eq('student_id', studentId)
+    .not('finished_at', 'is', null)
+    .gte('finished_at', start)
+    .lte('finished_at', end);
+  if (!a.error) {
+    for (const r of (a.data ?? []) as unknown as { finished_at: string; homework_assignments: { title: string } | { title: string }[] | null }[]) {
+      const asg = Array.isArray(r.homework_assignments) ? r.homework_assignments[0] : r.homework_assignments;
+      out.push({ day: dayOf(r.finished_at), title: asg?.title ?? '' });
+    }
+  }
+  // 개별수업 숙제(053 이후 kind 칸) — 칸이 없으면 조용히 건너뛴다
+  const b = await supabase
+    .from('solo_assignments')
+    .select('finished_at, solo_lessons(name)')
+    .eq('student_id', studentId)
+    .eq('kind', 'homework')
+    .not('finished_at', 'is', null)
+    .gte('finished_at', start)
+    .lte('finished_at', end);
+  if (!b.error) {
+    for (const r of (b.data ?? []) as unknown as { finished_at: string; solo_lessons: { name: string } | { name: string }[] | null }[]) {
+      const l = Array.isArray(r.solo_lessons) ? r.solo_lessons[0] : r.solo_lessons;
+      out.push({ day: dayOf(r.finished_at), title: l?.name ?? '' });
+    }
+  }
+  return out;
+}
+
 /** 특정 반의 "오늘" 거래 전부. 카드별 오늘 적립액과 오늘 내역을 한 번에 채운다. */
 export async function fetchTransactionsSince(
   classId: string,

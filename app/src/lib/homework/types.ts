@@ -69,6 +69,8 @@ export interface HwItemConfig {
   game?: HwGameKind;
   sheets?: HwSheetKind[];
   legacy?: boolean;
+  /** 유치원 친구용 화면(큰 버튼·목소리 안내·도장) */
+  kids?: boolean;
 }
 
 export interface HwItemDraft {

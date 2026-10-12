@@ -4,7 +4,7 @@ import { fetchCurriculumLessons, fetchStudentsOfClass, fetchWordLists } from '..
 import { wordListToCards } from '../../../lib/gameFromWords';
 import { createHomework, teacherErrorKey } from '../../../lib/homework';
 import { fetchClassWrongCards, useBuildLabels } from '../../../lib/homework/teacherHelpers';
-import { buildItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
+import { buildItems, buildKidsItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
 import type { HwPlan } from '../../../lib/homework/types';
 import type { CurriculumLesson, FullCardItem, Student, WordList } from '../../../lib/types';
 import type { VideoClip } from '../../../lib/videoClips';
@@ -67,6 +67,9 @@ export default function HomeworkWizard({
   const [missingLessonWords, setMissingLessonWords] = useState(false);
 
   const [minutes, setMinutes] = useState<HwDuration | null>(10);
+  // 유치원 친구용: 큰 버튼·목소리 안내·도장, 문장을 듣고 따라 읽기만 한다
+  const [kids, setKids] = useState(false);
+  const [kidsLines, setKidsLines] = useState(5);
   const [custom, setCustom] = useState(false);
   const [plan, setPlan] = useState<HwPlan>(EMPTY_PLAN);
   const [seed, setSeed] = useState(0);
@@ -130,9 +133,10 @@ export default function HomeworkWizard({
       s = (s * 9301 + 49297) % 233280;
       return s / 233280;
     };
+    if (kids) return buildKidsItems(cards, kidsLines, labels.shadowing, clipSource, rng);
     return buildItems(cards, plan, labels, clipSource, rng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, plan, labels, clip, seed]);
+  }, [cards, plan, labels, clip, seed, kids, kidsLines]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
   const canNext = [targetIds.length > 0, cards.length >= 2 || !!clip, items.length > 0, items.length > 0][step];
@@ -383,6 +387,32 @@ export default function HomeworkWizard({
 
       {step === 2 && (
         <div className="space-y-4">
+          <button
+            type="button"
+            aria-pressed={kids}
+            onClick={() => setKids((v) => !v)}
+            className={`flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left ${on(kids)}`}
+          >
+            <span className="material-symbols-outlined text-[36px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {kids ? 'check_circle' : 'child_care'}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-title-md text-title-md font-bold text-deep-navy">{t('studentHw.kidsOption')}</span>
+              <span className="block text-base text-on-surface-variant">{t('studentHw.kidsOptionDesc')}</span>
+            </span>
+          </button>
+          {kids && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-base font-bold text-deep-navy">{t('studentHw.kidsLinesLabel')}</span>
+              {[3, 5, 8, 10].map((n) => (
+                <button key={n} type="button" aria-pressed={kidsLines === n} onClick={() => setKidsLines(n)} className={`min-h-11 rounded-full border-2 px-4 text-base font-bold ${on(kidsLines === n)}`}>
+                  {t('studentHw.kidsLinesN', { n })}
+                </button>
+              ))}
+              {!clip && cards.length > 0 && !cards.some((c) => c.example) && <p className="w-full text-sm text-on-surface-variant">{t('studentHw.kidsNoExamples')}</p>}
+            </div>
+          )}
+          {!kids && (
           <div className="grid grid-cols-3 gap-2">
             {([5, 10, 15] as HwDuration[]).map((m) => (
               <button
@@ -400,7 +430,9 @@ export default function HomeworkWizard({
               </button>
             ))}
           </div>
+          )}
           <ItemSummary items={items} />
+          {!kids && (
           <details
             open={custom}
             onToggle={(e) => {
@@ -438,6 +470,7 @@ export default function HomeworkWizard({
               )}
             </div>
           </details>
+          )}
         </div>
       )}
 

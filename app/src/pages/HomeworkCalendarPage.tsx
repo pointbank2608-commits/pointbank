@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { fetchClasses, fetchHomeworkTransactions, fetchStudentById } from '../lib/api';
+import { fetchClasses, fetchHomeworkStamps, fetchHomeworkTransactions, fetchStudentById, type HomeworkStamp as StampRow } from '../lib/api';
+import { HomeworkStamp } from '../components/homework/HomeworkStamp';
 import { dateKey } from '../lib/format';
 import type { ClassRow, Student, Transaction } from '../lib/types';
 
@@ -36,6 +37,7 @@ export default function HomeworkCalendarPage() {
   const [student, setStudent] = useState<Student | null>(null);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [txs, setTxs] = useState<Transaction[]>([]);
+  const [stamps, setStamps] = useState<StampRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +63,9 @@ export default function HomeworkCalendarPage() {
   useEffect(() => {
     if (!studentId) return;
     setLoading(true);
+    fetchHomeworkStamps(studentId, from, to)
+      .then(setStamps)
+      .catch(() => setStamps([]));
     fetchHomeworkTransactions(studentId, from, to)
       .then(setTxs)
       .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'))
@@ -75,8 +80,22 @@ export default function HomeworkCalendarPage() {
       if (t.delta > 0) m.set(day, 'done');
       else if (t.delta < 0 && current !== 'done') m.set(day, 'missing');
     }
+    // 온라인 숙제를 끝낸 날은 도장이 찍힌 완료 — 통장에서 포인트를 안 줘도 완료로 센다
+    for (const sRow of stamps) {
+      if (sRow.day.startsWith(`${year}-${pad(month)}-`)) m.set(Number(sRow.day.slice(8, 10)), 'done');
+    }
     return m;
-  }, [txs]);
+  }, [txs, stamps, year, month]);
+
+  const stampTitlesByDay = useMemo(() => {
+    const m = new Map<number, string[]>();
+    for (const sRow of stamps) {
+      if (!sRow.day.startsWith(`${year}-${pad(month)}-`)) continue;
+      const d = Number(sRow.day.slice(8, 10));
+      m.set(d, [...(m.get(d) ?? []), sRow.title].filter(Boolean));
+    }
+    return m;
+  }, [stamps, year, month]);
 
   const doneDays = [...statusByDay.values()].filter((s) => s === 'done').length;
   const missingDays = [...statusByDay.values()].filter((s) => s === 'missing').length;
@@ -178,6 +197,10 @@ export default function HomeworkCalendarPage() {
                 {t('homework.done')}
               </span>
               <span className="flex items-center gap-1.5">
+                <HomeworkStamp size={22} label="OK" />
+                {t('homework.stampLegend')}
+              </span>
+              <span className="flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
                   <span className="material-symbols-outlined text-[14px]">close</span>
                 </span>
@@ -217,7 +240,11 @@ export default function HomeworkCalendarPage() {
                       >
                         {day}
                       </span>
-                      {status !== 'none' && (
+                      {stampTitlesByDay.has(day) || stamps.some((x) => x.day === `${year}-${pad(month)}-${pad(day)}`) ? (
+                        <span title={(stampTitlesByDay.get(day) ?? []).join('\n')} className="flex items-center justify-center">
+                          <HomeworkStamp size={40} label="OK" />
+                        </span>
+                      ) : status !== 'none' && (
                         <span
                           className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                             status === 'done'

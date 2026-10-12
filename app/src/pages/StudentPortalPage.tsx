@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import ReviewSection from '../components/solo/ReviewSection';
+import StudentStampCalendar from '../components/homework/StudentStampCalendar';
 import {
   codeFromUrl,
   formatPhone,
@@ -232,6 +233,8 @@ function HomeView({
       </section>
 
       {savedToken() && <ReviewSection token={savedToken() as string} />}
+
+      {savedToken() && <StudentStampCalendar token={savedToken() as string} />}
 
       <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
         <h2 className="mb-3 flex items-center gap-2 text-xl font-bold">

@@ -111,6 +111,15 @@ export async function studentHome(token: string): Promise<PortalHome> {
   return rpc<PortalHome>('student_home', { p_token: token });
 }
 
+/** 학생이 끝낸 숙제(날짜별 도장) — 068 student_stamps */
+export interface PortalStamp {
+  day: string;
+  title: string;
+}
+export async function studentStamps(token: string, from: string, to: string): Promise<PortalStamp[]> {
+  return rpc<PortalStamp[]>('student_stamps', { p_token: token, p_from: from, p_to: to });
+}
+
 export async function studentLogout(token: string): Promise<void> {
   try {
     await supabase.rpc('student_logout', { p_token: token });

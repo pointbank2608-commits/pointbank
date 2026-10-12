@@ -361,6 +361,24 @@ try {
       assert.ok(l.minutes >= 10);
     }
   });
+  await test('유치원 친구용 숙제: 쉐도잉 활동 하나(kids 표시, 문제 없음), 예문이 있는 낱말을 먼저 문장으로 만든다', () => {
+    const cards = [
+      { id: '1', word: 'apple', meaning: '사과', imageUrl: null, example: 'I like apples.', exampleKo: '나는 사과를 좋아해요.' },
+      { id: '2', word: 'cat', meaning: '고양이', imageUrl: null },
+      { id: '3', word: 'dog', meaning: '강아지', imageUrl: null, example: 'The dog runs.' },
+    ];
+    const items = build.buildKidsItems(cards, 2, '따라 읽기');
+    assert.equal(items.length, 1);
+    assert.equal(items[0].kind, 'shadowing');
+    assert.equal(items[0].config.kids, true);
+    assert.equal(items[0].content.questions.length, 0);
+    assert.equal(items[0].content.lines.length, 2);
+    assert.ok(items[0].content.lines.every((l) => /\s/.test(l.en)), '예문이 있는 낱말이 먼저');
+    const all = build.buildKidsItems(cards, 9, '따라 읽기');
+    assert.equal(all[0].content.lines.length, 3);
+    assert.ok(all[0].content.lines.some((l) => l.en === 'cat' && l.ko === '고양이'), '예문이 없으면 낱말 자체');
+    assert.deepEqual(build.buildKidsItems([], 5, 'x'), []);
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

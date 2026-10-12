@@ -183,6 +183,33 @@ export interface BuildLabels {
   shadowing: string;
 }
 
+/**
+ * 유치원 친구용 숙제(2026-10-12): 영상 장면(있으면)이나 낱말의 예문을 한 문장씩 "듣고 → 따라 읽기" 한다.
+ * 문제·채점이 없고 활동 하나(쉐도잉)만 나온다. 예문이 없는 낱말은 낱말 자체를 한 줄로 읽는다.
+ */
+export function buildKidsItems(cards: FullCardItem[], count: number, label: string, clip: ClipSource | null = null, rng: Rng = Math.random): HwItemDraft[] {
+  const n = Math.max(1, count);
+  if (clip) {
+    const lines: HwShadowLine[] = parseShadowText(clip.script)
+      .slice(0, n)
+      .map((l) => ({ s: l.start, e: l.end, en: l.en.replace(/\*\*/g, ''), ko: l.ko || undefined, speaker: l.speaker }));
+    if (lines.length === 0) return [];
+    return [{ kind: 'shadowing', title: label, config: { kids: true }, content: { videoId: clip.youtube_id, clipId: clip.id, lines, questions: [] } }];
+  }
+  const pool = cards.filter((c) => clean(c.word) && clean(c.meaning));
+  // 예문이 있는 낱말을 먼저, 모자라면 낱말 자체로 채운다
+  const withExample = shuffleWith(pool.filter((c) => clean(c.example)), rng);
+  const without = shuffleWith(pool.filter((c) => !clean(c.example)), rng);
+  const lines: HwShadowLine[] = [...withExample, ...without].slice(0, n).map((c) => ({
+    s: 0,
+    e: 0,
+    en: clean(c.example) || clean(c.word),
+    ko: clean(c.example) ? clean(c.exampleKo) || clean(c.meaning) : clean(c.meaning),
+  }));
+  if (lines.length === 0) return [];
+  return [{ kind: 'shadowing', title: label, config: { kids: true }, content: { lines, questions: [] } }];
+}
+
 /** 활동 구성 → 활동 목록. 쉐도잉 → 단어 퀴즈 → 워크시트 → 게임 순서. 만들 수 없는 활동은 빠진다. */
 export function buildItems(cards: FullCardItem[], plan: HwPlan, labels: BuildLabels, clip: ClipSource | null = null, rng: Rng = Math.random): HwItemDraft[] {
   const pool = cards.filter((c) => clean(c.word) && clean(c.meaning));

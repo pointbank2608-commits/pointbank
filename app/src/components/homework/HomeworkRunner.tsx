@@ -6,6 +6,8 @@ import MatchupGame from './MatchupGame';
 import QuestionCard from './QuestionCard';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
+import KidsShadowing, { KidsFrame, KidsIntro, StarFriend } from './KidsHomework';
+import { StampCelebration } from './HomeworkStamp';
 
 const SFX_CORRECT = 4015;
 const SFX_WRONG = 4025;
@@ -48,6 +50,8 @@ export default function HomeworkRunner({
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const shownAt = useRef(performance.now());
+  // 유치원 친구용: 활동이 모두 쉐도잉이고 kids 표시가 있을 때
+  const kids = items.length > 0 && items.every((it) => it.config.kids && it.kind === 'shadowing');
 
   const total = useMemo(() => items.reduce((n, it) => n + it.content.questions.length, 0), [items]);
   const answeredCount = useMemo(() => items.reduce((n, it) => n + it.content.questions.filter((_, qi) => answers.has(answerKey(it.id, qi))).length, 0), [items, answers]);
@@ -161,6 +165,18 @@ export default function HomeworkRunner({
   }
 
   // ---------- 화면 ----------
+  if (kids && phase.k === 'intro') {
+    const started = doneItems.size > 0;
+    return (
+      <KidsIntro
+        title={title || t('studentHw.defaultTitle')}
+        studentName={studentName}
+        count={items.reduce((n, it) => n + (it.content.lines?.length ?? 0), 0)}
+        resumed={started}
+        onStart={() => openItem(firstOpenItem())}
+      />
+    );
+  }
   if (phase.k === 'intro') {
     const started = answeredCount > 0 || doneItems.size > 0;
     return (
@@ -188,6 +204,17 @@ export default function HomeworkRunner({
     );
   }
 
+  if (kids && phase.k === 'finishing' && !phase.error) {
+    return (
+      <KidsFrame>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <StarFriend size={120} cheer />
+          <p className="text-2xl font-bold">{t('studentHw.finishing')}</p>
+        </div>
+      </KidsFrame>
+    );
+  }
+
   if (phase.k === 'finishing') {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
@@ -206,6 +233,20 @@ export default function HomeworkRunner({
     );
   }
 
+  if (kids && phase.k === 'done') {
+    return (
+      <KidsFrame>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+          <StampCelebration kids />
+          <div className="mt-2 flex items-center gap-2">
+            <StarFriend size={72} cheer />
+            <span className="text-xl font-bold">{t('studentHw.kidsSeeYou')}</span>
+          </div>
+        </div>
+      </KidsFrame>
+    );
+  }
+
   if (phase.k === 'done') {
     const ratio = phase.total ? phase.score / phase.total : 1;
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1;
@@ -216,6 +257,7 @@ export default function HomeworkRunner({
     };
     return (
       <div className="flex flex-1 flex-col items-center gap-4 p-5 text-center">
+        <StampCelebration />
         <div className="flex gap-2 pt-2" aria-label={t('studentHw.starsN', { n: stars })}>
           {[1, 2, 3].map((s) => (
             <span key={s} className="material-symbols-outlined text-[52px]" style={{ color: s <= stars ? '#fcd34d' : 'rgba(255,255,255,0.2)', fontVariationSettings: "'FILL' 1" }}>
@@ -265,8 +307,9 @@ export default function HomeworkRunner({
   } else if (phase.k === 'item') {
     const it = items[phase.i];
     if (it.kind === 'shadowing' && phase.sub === 'lines') {
+      const Shadow = kids ? KidsShadowing : ShadowingActivity;
       content = (
-        <ShadowingActivity
+        <Shadow
           item={it}
           startLine={shadowLinesDone.get(it.id) ?? 0}
           onLineDone={(line, listens, repeats) => void api.progress(it.id, 'shadow_line', { line, listens, repeats }).catch(() => undefined)}
@@ -315,7 +358,7 @@ export default function HomeworkRunner({
 
   return (
     <div className="flex flex-1 flex-col">
-      {header}
+      {!kids && header}
       {content}
       {feedback && <FeedbackBar result={feedback} onNext={afterFeedback} />}
     </div>
