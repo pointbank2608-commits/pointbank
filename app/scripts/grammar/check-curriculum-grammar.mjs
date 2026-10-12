@@ -56,9 +56,9 @@ try {
     console.log('  학교급별:', JSON.stringify(per));
   });
 
-  await test('새로 보강한 39개 항목이 모두 있고 필수 칸을 갖췄다', () => {
+  await test('새로 보강한 41개 항목이 모두 있고 필수 칸을 갖췄다', () => {
     const byId = new Map(points.map((p) => [p.id, p]));
-    assert.equal(cg.NEW_CURRICULUM_IDS.size, 39);
+    assert.equal(cg.NEW_CURRICULUM_IDS.size, 41);
     for (const id of cg.NEW_CURRICULUM_IDS) {
       const p = byId.get(id);
       assert.ok(p, `${id} 없음`);

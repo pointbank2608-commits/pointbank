@@ -8875,5 +8875,109 @@
         "why": "부정어를 두 번 쓰지 않아요"
       }
     ]
+  },
+  {
+    "id": "as-long-as",
+    "stage": "middle",
+    "level": 6,
+    "band": "bridge",
+    "grade": "중2",
+    "name": "as long as (~하기만 하면)",
+    "pattern": "I'm happy **as long as** [you are here].",
+    "explain": "\"~하기만 한다면\"이라고 조건을 걸 때 as long as 뒤에 문장을 붙여요.",
+    "rule": [
+      "as long as + 주어 + 동사 = ~하기만 하면, ~하는 동안은",
+      "\"이것만 지켜지면 괜찮아\"라는 조건을 걸 때 써요",
+      "조건 안에서는 미래도 현재형으로 써요 (will love ✗ → love ✓)"
+    ],
+    "examples": [
+      "I don't care **as long as** you love me.",
+      "You can stay here **as long as** you keep quiet.",
+      "I'm happy **as long as** I have you.",
+      "**As long as** it doesn't rain, we will go to the park.",
+      "You can borrow my book **as long as** you take care of it."
+    ],
+    "pitfalls": [
+      {
+        "wrong": "As long as you will love me, I will be happy.",
+        "right": "**As long as** you love me, I will be happy.",
+        "why": "조건을 말하는 부분에서는 will 대신 현재형을 써요"
+      },
+      {
+        "wrong": "As long as you love me, but I don't care.",
+        "right": "**As long as** you love me, I don't care.",
+        "why": "as long as 와 but 을 같이 쓰지 않아요"
+      }
+    ],
+    "slots": null,
+    "usage": [
+      "\"이것만 지켜 주면 괜찮아\"라는 조건을 걸 때",
+      "\"~하는 동안은 해도 돼\"라고 허락하거나 약속할 때"
+    ],
+    "detail": [
+      "as long as 는 if 와 비슷하지만 \"그것만 지켜진다면\"이라는 조건을 더 강하게 말해요.",
+      "as long as + 주어 + 동사(현재형) 뒤에 하고 싶은 말을 이어요.",
+      "문장 앞에 오면 쉼표를 찍고, 뒤에 오면 쉼표 없이 이어요."
+    ],
+    "translations": [
+      "네가 나를 사랑하기만 하면 난 상관없어.",
+      "조용히 하기만 하면 여기 있어도 돼.",
+      "너만 있으면 난 행복해.",
+      "비만 오지 않으면 공원에 갈 거야.",
+      "잘 아껴 주기만 하면 내 책을 빌려 가도 돼."
+    ],
+    "tip": "\"네가 ~하기만 하면 괜찮아!\" — 조건을 거는 as long as."
+  },
+  {
+    "id": "so-that-purpose",
+    "stage": "middle",
+    "level": 7,
+    "band": "grow",
+    "grade": "중3",
+    "name": "so that (~하도록 / ~하려고)",
+    "pattern": "I spoke slowly **so that** [everyone could understand].",
+    "explain": "\"~하도록, ~하려고\"처럼 목적을 말할 때 so that 뒤에 문장을 붙여요.",
+    "rule": [
+      "so that + 주어 + (can / could / will 등) + 동사 = ~하도록, ~하려고",
+      "so 만 쓰면 결과(그래서), so that 은 목적(~하도록)이에요",
+      "같은 뜻으로 to부정사(in order to)를 쓸 수도 있어요"
+    ],
+    "examples": [
+      "I spoke slowly **so that** everyone could understand.",
+      "She studied hard **so that** she could pass the test.",
+      "He turned on the light **so that** he could read.",
+      "I wrote it down **so that** I won't forget.",
+      "We left early **so that** we wouldn't be late."
+    ],
+    "pitfalls": [
+      {
+        "wrong": "I studied hard so that to pass the test.",
+        "right": "I studied hard **so that** I could pass the test. / I studied hard **to** pass the test.",
+        "why": "so that 뒤에는 문장(주어 + 동사)이 와요. to부정사를 바로 붙이지 않아요"
+      },
+      {
+        "wrong": "I hid it so that no one know.",
+        "right": "I hid it **so that** no one knows.",
+        "why": "주어 뒤의 동사 형태를 맞춰요 (no one + knows)"
+      }
+    ],
+    "slots": null,
+    "usage": [
+      "\"무엇을 하려고 그렇게 했는지\" 목적을 말할 때",
+      "이유보다 \"~하도록\"이라는 의도를 강조할 때"
+    ],
+    "detail": [
+      "so that + 주어 + 동사: 앞의 행동을 하는 목적이 뒤에 와요.",
+      "뒤에 can / could / will / would 가 자주 같이 나와요.",
+      "말할 때는 that 을 생략하고 so 만 쓰기도 해요."
+    ],
+    "translations": [
+      "모두가 알아들을 수 있도록 천천히 말했다.",
+      "그녀는 시험에 합격하려고 열심히 공부했다.",
+      "그는 책을 읽으려고 불을 켰다.",
+      "잊지 않도록 적어 뒀어.",
+      "늦지 않으려고 일찍 출발했다."
+    ],
+    "tip": "\"so that + 문장\" = 목적! (~하도록, ~하려고)"
   }
 ]

@@ -5,6 +5,7 @@
  * 가사 원문은 저장하지 않는다 — 화면 안에서만 쓰고, 고른 낱말·뜻만 단어장에 담긴다.
  */
 import { BASIC_PHRASES } from './basicPhrases';
+import { MORE_PHRASES } from './basicPhrasesMore';
 import type { WordBankEntry } from './types';
 import { lemmas } from './videoLesson';
 import { IDIOM_PARTS_OF_SPEECH } from './wordBankCategories';
@@ -71,6 +72,8 @@ const IRREGULAR: Record<string, string> = {
 const NO_LEMMA = new Set(['news', 'always', 'sometimes', 'perhaps', 'yes', 'us', 'this', 'his', 'thus', 'plus', 'across', 'whose', 'gas', 'bus', 'lens', 'series']);
 const BE_FORMS = new Set(['be', 'am', 'is', 'are', 'was', 'were', 'been', 'being']);
 const POSSESSIVE = new Set(['my', 'your', 'his', 'her', 'our', 'their', 'its']);
+/** a friend of mine / yours / his … 의 mine 자리 */
+const POSSESSIVE_PRONOUN = new Set(['mine', 'yours', 'his', 'hers', 'ours', 'theirs']);
 const WILDCARD = new Set(['someone', 'somebody', 'something', 'sb', 'sth', 'oneself']);
 const SECTION_LABEL = /^(?:verse|chorus|pre-?chorus|bridge|intro|outro|hook|refrain|interlude|post-?chorus)\b[\s\d:.\-–]*$/i;
 
@@ -122,6 +125,7 @@ function baseForms(w: string): string[] {
 
 function tokenMatches(lyric: string, p: string): boolean {
   if (p === "one's") return POSSESSIVE.has(lyric);
+  if (p === 'mine') return POSSESSIVE_PRONOUN.has(lyric);
   if (p === 'be') return BE_FORMS.has(lyric);
   if (lyric === p) return true;
   if (POSSESSIVE.has(p) && POSSESSIVE.has(lyric)) return true;
@@ -151,6 +155,9 @@ function phraseTokens(phrase: string): string[] {
     .replace(/[?!.,;:~…()]/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
+    // 가사 쪽과 같은 방식으로 줄임말을 푼다: I'm → i, you're → you, what's → what (n't 는 가사에서도 건너뛴다)
+    .filter((t) => !t.endsWith("n't"))
+    .map((t) => (t === "one's" ? t : t.replace(/'(?:s|re|ll|ve|d|m)$/, '')))
     .map((t) => (WILDCARD.has(t) ? '*' : t));
   while (toks[0] === '*') toks.shift();
   while (toks[toks.length - 1] === '*') toks.pop();
@@ -190,7 +197,7 @@ export function extractLyricVocab(source: string, bank: WordBankEntry[]): LyricV
     list.push(e);
     byWord.set(lower, list);
   }
-  for (const [phrase, meaning] of BASIC_PHRASES) {
+  for (const [phrase, meaning] of [...BASIC_PHRASES, ...MORE_PHRASES]) {
     const pat = phraseTokens(phrase);
     const key = pat.join(' ');
     if (pat.length < 2 || seenPhrase.has(key)) continue;

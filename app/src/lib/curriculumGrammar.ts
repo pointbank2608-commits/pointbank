@@ -33,7 +33,7 @@ export const UNITS: CurriculumUnit[] = [
   { id: 'daily', ko: '일상 의사소통', en: 'Everyday communication', ids: ['weather', 'jobs-future', 'whats-wrong', 'sequence', 'i-think'] },
   { id: 'place', ko: '위치·장소·길', en: 'Places & directions', ids: ['prepositions', 'there-is', 'directions', 'm-there-be', 'm-prep-place', 'm-prep-time'] },
   { id: 'compare', ko: '비교', en: 'Comparison', ids: ['comparative', 'superlative', 'm-comparison', 'm-comparative-emphasis', 'm-superlative-one-of', 'h-comparison-advanced'] },
-  { id: 'conj', ko: '접속사·문장 잇기', en: 'Conjunctions', ids: ['and-but', 'because', 'so', 'm-conj-coordinating', 'm-conj-when-if-that', 'm-because-although', 'm-if-conditional', 'h-conj-vs-prep', 'h-correlative', 'h-noun-clause'] },
+  { id: 'conj', ko: '접속사·문장 잇기', en: 'Conjunctions', ids: ['and-but', 'because', 'so', 'm-conj-coordinating', 'm-conj-when-if-that', 'm-because-although', 'as-long-as', 'so-that-purpose', 'm-if-conditional', 'h-conj-vs-prep', 'h-correlative', 'h-noun-clause'] },
   { id: 'verbals', ko: 'to부정사·동명사', en: 'Infinitives & gerunds', ids: ['m-to-inf-noun', 'm-gerund', 'm-to-inf-adj-adv', 'm-gerund-vs-inf', 'm-it-to', 'm-too-enough-so', 'h-inf-subject-tense', 'h-gerund-idioms'] },
   { id: 'participle', ko: '분사', en: 'Participles', ids: ['m-participle', 'h-emotion-participle', 'h-participle-clause', 'h-with-absolute'] },
   { id: 'patterns', ko: '문장 형식', en: 'Sentence patterns', ids: ['m-dative', 'm-linking-verbs', 'm-object-complement', 'm-causative', 'm-perception'] },
@@ -49,6 +49,7 @@ export const UNITS: CurriculumUnit[] = [
 /** 2026-10-12에 교과과정에 맞춰 새로 보강한 항목(검수 전 초안) — 화면에서 "NEW"로 표시한다 */
 export const NEW_CURRICULUM_IDS = new Set<string>([
   'how-are-you', 'these-those', 'apostrophe-s', 'date-months', 'can-i-may-i', 'directions', 'jobs-future', 'how-do-you', 'countable-uncountable', 'object-pronouns', 'whats-wrong', 'adverb-ly',
+  'as-long-as', 'so-that-purpose',
   'm-be-verb', 'm-general-verb', 'm-noun-count', 'm-wh-questions', 'm-there-be', 'm-future', 'm-adj-adv', 'm-reflexive', 'm-conj-coordinating', 'm-prep-place', 'm-comparative-emphasis', 'm-if-conditional', 'm-indefinite-pronouns', 'm-reported-speech', 'm-relative-whose',
   'h-tense-agreement', 'h-article-noun', 'h-quantifiers', 'h-pronoun-reference', 'h-parallelism', 'h-conj-vs-prep', 'h-adj-adv-usage', 'h-ellipsis-insertion', 'h-negation', 'h-emotion-participle', 'h-relative-what-that', 'h-subjunctive-demand',
 ]);

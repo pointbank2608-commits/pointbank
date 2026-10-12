@@ -1495,6 +1495,15 @@ const ko = {
     selectAll: '모두 선택',
     deselectAll: '모두 해제',
     addButton: '선택한 {{count}}개 단어장에 담기',
+    summaryGrammar: '단어 {{words}}개 · 숙어 {{phrases}}개 · 문법 {{grammar}}개를 찾았어요. 필요한 것만 체크하세요.',
+    grammarTitle: '문법 (이 노래로 가르칠 수 있는 것)',
+    grammarNote: '쉬운 문법부터 보여 줘요. 이번 수업에서 쓸 문법만 체크하면 단어장에 문법 항목으로 담기고, 수업 자료 인쇄물에도 들어가요. 자동으로 찾은 것이라 맞는 줄인지 확인해 주세요.',
+    grammarMore: '설명·틀리기 쉬운 것 보기',
+    handoutTitlePlaceholder: '수업 자료 제목 (예: As Long As You Love Me)',
+    handoutButton: '수업 자료 인쇄',
+    handoutHint: '고른 단어·숙어·문법으로 표와 문법 카드가 있는 수업 자료를 만들어요. 줄 해석은 가사 뒤에 "| 해석"을 붙여 넣은 줄만 들어가요.',
+    handoutNothing: '인쇄할 단어·숙어·문법을 먼저 체크해 주세요.',
+    popupBlocked: '팝업이 막혀 있어요. 이 사이트의 팝업을 허용해 주세요.',
   },
 
   flashcardStudy: {

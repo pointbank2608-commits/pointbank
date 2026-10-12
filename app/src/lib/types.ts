@@ -566,6 +566,8 @@ export interface WordListItem {
   partOfSpeech?: string | null;
   /** 파닉스에서 담았을 때만(phonics_bank.pattern_marked 복사, 예: "r{ai}n") — 수업 카드의 규칙 글자 강조·파닉스 워크시트가 쓴다. */
   patternMarked?: string | null;
+  /** 노래 가사에서 담은 문법 항목이면 문법 라이브러리의 id(grammarPoints.json) — 이 문법으로 수업·문법 슬라이드를 이을 때 쓴다. */
+  grammarId?: string | null;
 }
 
 /** 단어장(단어 + 뜻) 또는 문장 목록(영어 문장 + 해석, 066) — 같은 표를 쓰고 항목 모양(word/meaning)은 같다 */

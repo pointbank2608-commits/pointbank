@@ -1479,6 +1479,15 @@ const en: Ko = {
   },
 
   lyricsPicker: {
+    summaryGrammar: 'Found {{words}} words, {{phrases}} idioms and {{grammar}} grammar points. Check what you need.',
+    grammarTitle: 'Grammar (what this song can teach)',
+    grammarNote: 'Easier grammar first. Check the grammar for this lesson: it is added to the word list and included in the printed handout. These are found automatically, so check the lines.',
+    grammarMore: 'Show explanation and common mistakes',
+    handoutTitlePlaceholder: 'Handout title (e.g. As Long As You Love Me)',
+    handoutButton: 'Print lesson handout',
+    handoutHint: 'Makes a handout with a vocabulary table and grammar cards from what you checked. Translations are only included for lines pasted with "| translation".',
+    handoutNothing: 'Check some words, idioms or grammar to print first.',
+    popupBlocked: 'Pop-ups are blocked. Please allow pop-ups for this site.',
     tab: 'Build a word list from song lyrics',
     intro: 'Paste song lyrics and we will find the words and phrases in them. The lyrics themselves are not saved — only the words and meanings you pick go into the list.',
     placeholder: 'Paste the English lyrics here. Timestamps like [0:12] or "| translation" are fine.',

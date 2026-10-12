@@ -243,6 +243,56 @@ try {
     const items = sl.newSentenceItems([{ id: 'a', word: 'the cat  is cute', meaning: '', image_url: null, category: null }], parsed, () => 'n');
     assert.deepEqual(items.map((i) => i.word), ['I like apples.', 'hello world']);
   });
+  // ---- 노래 가사: 숙어 확장·문법 찾기(2026-10-12) ----
+  const lw = await server.ssrLoadModule('/src/lib/lyricWords.ts');
+  const lg = await server.ssrLoadModule('/src/lib/lyricGrammar.ts');
+  const lh = await server.ssrLoadModule('/src/lib/lyricHandout.ts');
+  const gram = await server.ssrLoadModule('/src/lib/grammar.ts');
+  const SONG = [
+    "Although she has always been a friend of mine, I'm leaving my life in your hands",
+    "I can't read it all in a glance",
+    "I don't care who you are, where you're from",
+    "As long as you love me, we are meant to be",
+    "I tried to hide it so that no one knows",
+    "They are running and the light was shining",
+    "People say that I am blind",
+  ].join('\n');
+  await test('가사 숙어: a friend of mine·in a glance·as long as·meant to be·줄임말 표현을 찾는다', () => {
+    const v = lw.extractLyricVocab(SONG, []);
+    const keys = v.phrases.map((p) => p.phrase.toLowerCase());
+    for (const want of ['a friend of mine', 'in a glance', 'as long as', 'so that']) {
+      assert.ok(keys.includes(want), want + ' 없음: ' + keys.join(' | '));
+    }
+    assert.ok(v.phrases.length >= 6, '숙어 수 ' + v.phrases.length);
+  });
+  await test('가사 문법: although·has been·be+ing·as long as·간접의문문·so that 을 찾고 라이브러리 항목에 잇는다', () => {
+    const g = lg.extractLyricGrammar(SONG);
+    const ids = g.map((x) => x.id);
+    for (const want of ['m-because-although', 'm-present-perfect', 'present-progressive', 'as-long-as', 'm-indirect-question', 'so-that-purpose']) {
+      assert.ok(ids.includes(want), want + ' 없음: ' + ids.join(','));
+    }
+    const pp = g.find((x) => x.id === 'm-present-perfect');
+    assert.ok(/has always been/.test(pp.hits[0].match), pp.hits[0].match);
+    // 쉬운 것부터(level 오름차순)
+    for (let i = 1; i < g.length; i++) assert.ok(g[i - 1].point.level <= g[i].point.level);
+  });
+  await test('가사 문법 규칙의 id 는 모두 문법 라이브러리에 있다', () => {
+    const ids = new Set(gram.GRAMMAR_POINTS.map((p) => p.id));
+    for (const id of lg.LYRIC_GRAMMAR_RULE_IDS) assert.ok(ids.has(id), id);
+  });
+  await test('수업 자료(인쇄물): 표·문법 카드·줄별 포인트가 만들어지고 가사 해석은 붙여 넣은 줄만 들어간다', () => {
+    const src = "As long as you love me, we are meant to be | 네가 나를 사랑하기만 하면 우린 운명이야" + '\n' + "I tried to hide it so that no one knows";
+    const grammar = lg.extractLyricGrammar(src).filter((x) => ['as-long-as', 'so-that-purpose'].includes(x.id));
+    const html = lh.buildLyricHandoutHtml({
+      title: 'Test song',
+      source: src,
+      rows: [{ word: 'as long as', pos: '숙어', meaning: '~하기만 하면', example: '', line: 'As long as you love me, we are meant to be' }],
+      grammar,
+    });
+    assert.ok(html.includes('UNIT 1') && html.includes('UNIT 2') && html.includes('UNIT 3'));
+    assert.ok(html.includes('네가 나를 사랑하기만 하면 우린 운명이야'));
+    assert.ok(!html.includes('<script'));
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });
