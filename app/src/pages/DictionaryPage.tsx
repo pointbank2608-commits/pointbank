@@ -4,7 +4,7 @@ import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
 import WordSelectionBar from '../components/WordSelectionBar';
 import { fetchWordBank } from '../lib/api';
-import { buildCurriculumWords, type WordSchoolId } from '../lib/curriculumWords';
+import { buildCurriculumWords, chunkWords, type WordSchoolId } from '../lib/curriculumWords';
 import { speak } from '../lib/speech';
 import type { FullCardItem, WordBankEntry } from '../lib/types';
 import {
@@ -176,6 +176,7 @@ export default function DictionaryPage() {
   const [currBand, setCurrBand] = useState('');
   const [currUnit, setCurrUnit] = useState('all');
   const [currSet, setCurrSet] = useState('all');
+  const [currSort, setCurrSort] = useState<'progress' | 'alpha'>('progress');
   const [limit, setLimit] = useState<{ key: string; count: number }>({ key: '', count: PAGE_SIZE });
   const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
   const [studying, setStudying] = useState(false);
@@ -228,16 +229,19 @@ export default function DictionaryPage() {
   const school = schools.find((x) => x.id === currSchool) ?? null;
   const band = school?.bands.find((b) => b.id === currBand) ?? school?.bands[0] ?? null;
   const unit = band?.units.find((u) => u.id === currUnit) ?? null;
-  const unitSets = unit ? unit.sets : [];
-  const pickedSet = unitSets.find((x) => x.id === currSet) ?? null;
-  const currEntries = useMemo(() => {
+  // 정렬(진도순 = 사전이 정한 순서, 알파벳순)을 한 뒤 10개씩 묶는다 — 묶음 칩도 정렬 기준을 따른다
+  const sortedAll = useMemo(() => {
     if (!band) return [] as WordBankEntry[];
-    const sets = unit ? (pickedSet ? [pickedSet] : unit.sets) : band.units.flatMap((u) => u.sets);
-    return sets.flatMap((x) => x.entries);
-  }, [band, unit, pickedSet]);
+    const list = (unit ? [unit] : band.units).flatMap((u) => u.sets.flatMap((x) => x.entries));
+    return currSort === 'alpha' ? [...list].sort((a, b) => a.word.toLowerCase().localeCompare(b.word.toLowerCase(), 'en')) : list;
+  }, [band, unit, currSort]);
+  const unitSets = useMemo(() => (unit ? chunkWords(sortedAll) : []), [unit, sortedAll]);
+  const pickedSetIdx = currSet === 'all' ? -1 : Number(currSet);
+  const pickedSet = pickedSetIdx >= 0 && pickedSetIdx < unitSets.length ? unitSets[pickedSetIdx] : null;
+  const currEntries = pickedSet ?? sortedAll;
   const currTitle =
     band && school
-      ? `${school.ko} ${band.label}${unit ? ` · ${unit.label}` : ''}${pickedSet ? ` ${unitSets.indexOf(pickedSet) * 10 + 1}~${unitSets.indexOf(pickedSet) * 10 + pickedSet.entries.length}` : ''}`
+      ? `${school.ko} ${band.label}${unit ? ` · ${unit.label}` : ''}${pickedSet ? ` ${pickedSetIdx * 10 + 1}~${pickedSetIdx * 10 + pickedSet.length}` : ''}${currSort === 'alpha' ? ` (${t('dictionary.sortAlpha')})` : ''}`
       : '';
   const useCurr = curr && tab === 'word';
 
@@ -267,7 +271,7 @@ export default function DictionaryPage() {
   const hasMoe800 = useMemo(() => tabEntries.some((e) => e.moe800_day != null), [tabEntries]);
 
   // 필터가 바뀌면 "더 보기"로 늘려둔 개수는 처음(PAGE_SIZE)으로 돌아간다.
-  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}|${useCurr}|${band?.id}|${currUnit}|${currSet}`;
+  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}|${useCurr}|${band?.id}|${currUnit}|${currSet}|${currSort}`;
   const visibleCount = limit.key === filterKey ? limit.count : PAGE_SIZE;
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -382,6 +386,15 @@ export default function DictionaryPage() {
           {useCurr && (
             <div className="space-y-2 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
               <p className="font-caption text-caption text-on-surface-variant">{t('dictionary.curriculumHint')}</p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-caption text-caption text-on-surface-variant">{t('dictionary.sortLabel')}</span>
+                <button type="button" onClick={() => { setCurrSort('progress'); setCurrSet('all'); }} className={chipClass(currSort === 'progress', 'secondary')}>
+                  {t('dictionary.sortProgress')}
+                </button>
+                <button type="button" onClick={() => { setCurrSort('alpha'); setCurrSet('all'); }} className={chipClass(currSort === 'alpha', 'secondary')}>
+                  {t('dictionary.sortAlpha')}
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {schools.map((sc) => (
                   <button key={sc.id} type="button" onClick={() => { setCurrSchool(sc.id); setCurrBand(''); setCurrUnit('all'); setCurrSet('all'); }} className={chipClass(school?.id === sc.id)}>
@@ -417,8 +430,8 @@ export default function DictionaryPage() {
                     {t('dictionary.allCategory')}
                   </button>
                   {unitSets.map((x, i) => (
-                    <button key={x.id} type="button" onClick={() => setCurrSet(x.id)} className={chipClass(pickedSet?.id === x.id, 'tertiary')}>
-                      {i * 10 + 1}~{i * 10 + x.entries.length}
+                    <button key={i} type="button" onClick={() => setCurrSet(String(i))} className={chipClass(pickedSetIdx === i, 'tertiary')}>
+                      {i * 10 + 1}~{i * 10 + x.length}
                     </button>
                   ))}
                 </div>
