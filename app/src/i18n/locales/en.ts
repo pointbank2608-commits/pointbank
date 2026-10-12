@@ -2282,6 +2282,11 @@ const en: Ko = {
     importedToast: "Imported \"{{name}}\".",
   },
   recipes: {
+    levelLabel: 'Level',
+    levelHint: 'Pick a level to see only the sets, recipes and songs for it. "All" is fine to start.',
+    levelHintUpper: 'For middle and high school, curriculum words and grammar and song lessons come first.',
+    levelNoSets: 'No ready-made lessons for this level yet. Pick curriculum words/grammar or a song lesson above.',
+    setsGroup_song: 'Song lessons',
     setsTab: 'Ready-made lessons',
     recipesTab: 'Choose yourself',
     cur_expand_word: "Show curriculum words (elementary / middle / high)",
@@ -4471,6 +4476,25 @@ const en: Ko = {
       loop: 'Loop segment',
       playSegment: '▶ Play this segment',
     },
+  },
+
+  songs: {
+    back: '← Song list',
+    words: 'Key words and phrases',
+    grammar: 'Grammar to teach with this song',
+    activity: 'Suggested activity',
+    openVideo: 'Open the official video (new tab)',
+    noVideo: 'No official video link yet. Add a video slide to the lesson yourself.',
+    openLyrics: 'View lyrics (licensed lyrics site search, new tab)',
+    pasteTitle: 'Paste lyrics to add reading and cloze listening (optional)',
+    pasteHint: 'Paste the English lyrics you copied to add lyric reading, cloze listening and sentence unscramble. Pasted lyrics are used only inside this lesson and are left out of share links.',
+    pastePlaceholder: 'Paste the English lyrics here. [min:sec] timestamps or "| translation" are fine.',
+    draftNote: 'This is a draft before review. Please check the lyrics, words and grammar before class.',
+    draft: 'Draft',
+    build: 'Make a lesson with this song',
+    building: 'Building the lesson…',
+    none: 'No songs for this level yet.',
+    upperOnly: 'Not suitable for elementary classes; best for middle school and above.',
   },
 
   gameAdmin: {

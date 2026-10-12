@@ -28,7 +28,7 @@ export const UNITS: CurriculumUnit[] = [
   { id: 'modal', ko: '조동사·부탁·의무', en: 'Modals & requests', ids: ['i-can', 'can-i-may-i', 'want-to', 'have-to-should', 'm-modals', 'm-have-to', 'h-modal-perfect'] },
   { id: 'noun', ko: '명사·관사·대명사', en: 'Nouns, articles & pronouns', ids: ['a-an', 'plural', 'apostrophe-s', 'possessive', 'countable-uncountable', 'object-pronouns', 'm-pronoun-case', 'm-noun-count', 'm-reflexive', 'm-indefinite-pronouns', 'h-article-noun', 'h-quantifiers', 'h-pronoun-reference'] },
   { id: 'describe', ko: '꾸미는 말(형용사·부사)', en: 'Adjectives & adverbs', ids: ['adj-noun', 'describe', 'frequency', 'adverb-ly', 'm-adj-adv', 'h-adj-adv-usage'] },
-  { id: 'tense', ko: '시제', en: 'Tenses', ids: ['present-progressive', 'past-be', 'past-regular', 'past-irregular', 'did-you', 'future', 'm-present-vs-progressive', 'm-past', 'm-future', 'm-present-perfect', 'm-past-progressive', 'm-past-perfect', 'm-reported-speech', 'h-tense-agreement'] },
+  { id: 'tense', ko: '시제', en: 'Tenses', ids: ['present-progressive', 'past-be', 'past-regular', 'past-irregular', 'did-you', 'future', 'm-present-vs-progressive', 'm-past', 'm-future', 'm-present-perfect', 'm-past-progressive', 'm-past-perfect', 'used-to', 'm-reported-speech', 'h-tense-agreement'] },
   { id: 'question', ko: '의문문·묻고 답하기', en: 'Questions', ids: ['wh-questions', 'how-many', 'time-day', 'date-months', 'how-do-you', 'm-wh-questions', 'm-how-questions', 'm-tag-questions', 'm-indirect-question'] },
   { id: 'daily', ko: '일상 의사소통', en: 'Everyday communication', ids: ['weather', 'jobs-future', 'whats-wrong', 'sequence', 'i-think'] },
   { id: 'place', ko: '위치·장소·길', en: 'Places & directions', ids: ['prepositions', 'there-is', 'directions', 'm-there-be', 'm-prep-place', 'm-prep-time'] },
@@ -49,7 +49,7 @@ export const UNITS: CurriculumUnit[] = [
 /** 2026-10-12에 교과과정에 맞춰 새로 보강한 항목(검수 전 초안) — 화면에서 "NEW"로 표시한다 */
 export const NEW_CURRICULUM_IDS = new Set<string>([
   'how-are-you', 'these-those', 'apostrophe-s', 'date-months', 'can-i-may-i', 'directions', 'jobs-future', 'how-do-you', 'countable-uncountable', 'object-pronouns', 'whats-wrong', 'adverb-ly',
-  'as-long-as', 'so-that-purpose',
+  'as-long-as', 'so-that-purpose', 'used-to',
   'm-be-verb', 'm-general-verb', 'm-noun-count', 'm-wh-questions', 'm-there-be', 'm-future', 'm-adj-adv', 'm-reflexive', 'm-conj-coordinating', 'm-prep-place', 'm-comparative-emphasis', 'm-if-conditional', 'm-indefinite-pronouns', 'm-reported-speech', 'm-relative-whose',
   'h-tense-agreement', 'h-article-noun', 'h-quantifiers', 'h-pronoun-reference', 'h-parallelism', 'h-conj-vs-prep', 'h-adj-adv-usage', 'h-ellipsis-insertion', 'h-negation', 'h-emotion-participle', 'h-relative-what-that', 'h-subjunctive-demand',
 ]);

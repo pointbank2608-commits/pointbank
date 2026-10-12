@@ -18,6 +18,9 @@ import { generateShadowScript } from '../lib/api';
 import { fetchVideoClips } from '../lib/videoClips';
 import { parseShadowText, toShadowSource } from '../lib/shadowLines';
 import { extractYoutubeId } from '../lib/youtube';
+import { LESSON_LEVELS, levelMatches, useLessonLevel } from '../lib/lessonLevel';
+import { buildSongLesson, SONG_LESSONS, type SongLesson } from '../lib/songLessons';
+import SongLessonPicker from './SongLessonPicker';
 
 /**
  * 새 수업 만들기의 "레시피로 시작하기"(2026-09-27). 수업 종류를 고르면 슬라이드가 순서대로 채워진다.
@@ -63,6 +66,13 @@ export default function LessonRecipePicker({
   const [keepMyList, setKeepMyList] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
   const [open, setOpen] = useState(true);
+  // 수업 대상(초등·중등·고등) — 처음에 고르면 그 대상의 세트·레시피·노래만 보인다
+  const [level, setLevel] = useLessonLevel();
+  const upper = level === 'middle' || level === 'high';
+  useEffect(() => {
+    // 중·고등은 미리 만든 초등 세트가 없으니 교과과정 단어·문법을 바로 펼쳐 둔다
+    if (upper) setCurOpen({ word: true, grammar: true });
+  }, [upper]);
 
   async function apply(recipe: LessonRecipe, clip?: VideoClip) {
     setBusy(true);
@@ -145,6 +155,20 @@ export default function LessonRecipePicker({
     }
   }
 
+  /** 팝송 수업: 우리가 쓴 소개·단어·문법·활동으로 슬라이드를 채운다(가사는 선생님이 붙여 넣은 때만, 그 수업 안에서만) */
+  async function applySong(song: SongLesson, lyrics: string) {
+    setBusy(true);
+    try {
+      const slides = await buildSongLesson(song, { makeWordList, makeUnscrambleFromSentences, makeGameFromWords }, lyrics);
+      if (slides.length) onApply(slides, `${song.title} · ${song.artist}`);
+      else notify(t('recipes.setFailed'), 'error');
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const autoDone = useRef<string | null>(null);
   useEffect(() => {
     if (!autoClip || autoDone.current === autoClip.id) return;
@@ -193,6 +217,18 @@ export default function LessonRecipePicker({
         </div>
       )}
 
+      <div className="space-y-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-label-md text-label-md font-bold text-deep-navy">{t('recipes.levelLabel')}</span>
+          {LESSON_LEVELS.map((l) => (
+            <button key={l.id} type="button" onClick={() => setLevel(l.id)} aria-pressed={level === l.id} className={videoTabChip(level === l.id)}>
+              {i18n.language.startsWith('ko') ? l.ko : l.en}
+            </button>
+          ))}
+        </div>
+        <p className="font-caption text-caption text-on-surface-variant">{t(upper ? 'recipes.levelHintUpper' : 'recipes.levelHint')}</p>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => setTab('sets')} className={videoTabChip(tab === 'sets')}>
           <span className="material-symbols-outlined text-[18px]">inventory_2</span>
@@ -207,7 +243,7 @@ export default function LessonRecipePicker({
       {tab === 'sets' && !picked && (
         <div className="space-y-4">
           <p className="font-caption text-caption text-on-surface-variant">{t('recipes.setsHint')}</p>
-          {(['word', 'grammar', 'video'] as const).map((kind) => (
+          {(upper ? (['song', 'grammar', 'word', 'video'] as const) : (['word', 'grammar', 'song', 'video'] as const)).map((kind) => (
             <div key={kind} className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="font-label-md text-label-md font-bold text-deep-navy">{t(`recipes.setsGroup_${kind}`)}</div>
@@ -225,6 +261,8 @@ export default function LessonRecipePicker({
               </div>
               {kind === 'grammar' && curOpen.grammar && (
                 <CurriculumGrammarSets
+                  key={`g-${level}`}
+                  initialSchool={level === 'all' ? 'elementary' : level}
                   disabled={busy}
                   onPick={(grammarId) => {
                     const p = GRAMMAR_POINTS.find((g) => g.id === grammarId);
@@ -234,9 +272,26 @@ export default function LessonRecipePicker({
                   }}
                 />
               )}
-              {kind === 'word' && curOpen.word && <CurriculumWordSets disabled={busy} onPick={(title, entries) => void applyWordEntries(title, entries)} />}
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                {LESSON_SETS.filter((s) => s.kind === kind).map((s) => (
+              {kind === 'word' && curOpen.word && (
+                <CurriculumWordSets
+                  key={`w-${level}`}
+                  initialSchool={level === 'all' ? 'elementary' : level}
+                  disabled={busy}
+                  onPick={(title, entries) => void applyWordEntries(title, entries)}
+                />
+              )}
+              {kind === 'song' ? (
+                <SongLessonPicker
+                  key={`s-${level}`}
+                  songs={SONG_LESSONS.filter((s) => levelMatches(level, s.levels, ['middle']))}
+                  busy={busy}
+                  onBuild={(song, lyrics) => void applySong(song, lyrics)}
+                />
+              ) : level !== 'all' && LESSON_SETS.filter((s) => s.kind === kind && levelMatches(level, s.levels)).length === 0 ? (
+                kind !== 'grammar' && <p className="font-caption text-caption text-on-surface-variant">{t('recipes.levelNoSets')}</p>
+              ) : null}
+              <div className={`grid gap-2 sm:grid-cols-2 xl:grid-cols-4 ${kind === 'song' ? 'hidden' : ''}`}>
+                {LESSON_SETS.filter((s) => s.kind === kind && levelMatches(level, s.levels)).map((s) => (
                   <button
                     key={s.id}
                     type="button"
@@ -260,7 +315,7 @@ export default function LessonRecipePicker({
 
       {tab === 'recipes' && !picked ? (
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          {LESSON_RECIPES.map((r) => {
+          {LESSON_RECIPES.filter((r) => levelMatches(level, r.levels, ['elementary', 'middle', 'high'])).map((r) => {
             const locked = r.needsWords && !hasWords;
             return (
               <button

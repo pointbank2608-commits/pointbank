@@ -5,6 +5,7 @@ import { loadWordBank } from './wordBankCache';
 import { buildVideoLessonParts, markBingoWords } from './videoLesson';
 import type { FullCardItem, GameType, LessonSlide, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
+import type { LessonLevel } from './lessonLevel';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -39,6 +40,8 @@ export interface LessonRecipe {
   minutes: number;
   /** 단어장이 있어야 하는 레시피 */
   needsWords: boolean;
+  /** 어느 대상용인지(없으면 모두) — 수업 만들기의 "대상" 고르기가 거른다 */
+  levels?: LessonLevel[];
   input?: RecipeInput;
   /** 미리보기용 슬라이드 아이콘 */
   preview: string[];
@@ -77,6 +80,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     icon: 'spellcheck',
     minutes: 40,
     needsWords: true,
+    levels: ['elementary'],
     preview: ['how_to_reg', 'menu_book', 'style', 'sync_alt', 'print'],
     build: async () => [
       attendance(),

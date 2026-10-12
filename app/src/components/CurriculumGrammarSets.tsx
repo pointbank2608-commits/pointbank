@@ -7,10 +7,19 @@ import { GRAMMAR_POINTS, grammarLevelTag, plainText } from '../lib/grammar';
  * 교과과정 문법 — 새 수업 만들기의 "수업 세트" 안. 학교급(초등·중등·고등·기초 개념) → 학년 → 단원 순으로 항목을 고르면
  * 그 문법으로 수업(문법 칠판 + 문장 배열하기)이 바로 만들어진다. 기존 "문법 수업" 10개와 나란히 두고 비교할 수 있다.
  */
-export default function CurriculumGrammarSets({ disabled, onPick }: { disabled: boolean; onPick: (grammarId: string) => void }) {
+export default function CurriculumGrammarSets({
+  disabled,
+  onPick,
+  initialSchool = 'elementary',
+}: {
+  disabled: boolean;
+  onPick: (grammarId: string) => void;
+  /** 수업 만들기의 "대상"에 맞춰 처음 보일 학교급 */
+  initialSchool?: SchoolId;
+}) {
   const { t, i18n } = useTranslation();
   const ko = i18n.language.startsWith('ko');
-  const [school, setSchool] = useState<SchoolId>('elementary');
+  const [school, setSchool] = useState<SchoolId>(initialSchool);
   const [grade, setGrade] = useState<string | null>(null);
 
   const grades = useMemo(() => curriculumFor(school), [school]);

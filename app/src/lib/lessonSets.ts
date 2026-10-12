@@ -1,6 +1,7 @@
 import { entryInCategory } from './wordBankCategories';
 import type { FullCardItem, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
+import type { LessonLevel } from './lessonLevel';
 
 /**
  * 수업 세트(2026-10-07) — 옷가게 마네킹처럼 "미리 만들어 둔 수업". 레시피(수업 종류)에 내용(단어 묶음·문법 항목·영상 장면)을
@@ -15,6 +16,8 @@ export interface LessonSet {
   kind: LessonSetKind;
   icon: string;
   minutes: number;
+  /** 어느 대상용인지 — 없으면 초등(미리 만든 세트는 모두 초등 체험형) */
+  levels?: LessonLevel[];
   ko: string;
   en: string;
   koDesc: string;

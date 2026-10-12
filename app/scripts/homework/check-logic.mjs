@@ -293,6 +293,61 @@ try {
     assert.ok(html.includes('네가 나를 사랑하기만 하면 우린 운명이야'));
     assert.ok(!html.includes('<script'));
   });
+  // ---- 팝송 수업 컬렉션·수업 대상(2026-10-12) ----
+  const songs = await server.ssrLoadModule('/src/lib/songLessons.ts');
+  const lvl = await server.ssrLoadModule('/src/lib/lessonLevel.ts');
+  await test('팝송 수업 데이터: 문법 id 가 라이브러리에 있고, 영상 id 형식·문장 길이·대상 값이 맞다', () => {
+    const gids = new Set(gram.GRAMMAR_POINTS.map((p) => p.id));
+    assert.ok(songs.SONG_LESSONS.length >= 8);
+    const ids = new Set();
+    for (const s of songs.SONG_LESSONS) {
+      assert.ok(!ids.has(s.id), '중복 id ' + s.id);
+      ids.add(s.id);
+      assert.ok(s.levels.length > 0 && s.levels.every((l) => ['elementary', 'middle', 'high'].includes(l)), s.id + ' levels');
+      for (const g of s.grammarIds) assert.ok(gids.has(g), s.id + ' 문법 ' + g);
+      if (s.videoId !== null) assert.match(s.videoId, /^[A-Za-z0-9_-]{11}$/, s.id + ' videoId');
+      assert.ok(s.words.length >= 5 && s.words.length <= 8, s.id + ' 단어 수');
+      for (const w of s.words) assert.ok(w.word && w.meaning && w.example && w.exampleKo, s.id + ' ' + w.word);
+      for (const sent of s.sentences) {
+        const n = sent.split(' ').filter(Boolean).length;
+        assert.ok(n >= 3 && n <= 8, s.id + ' 문장 낱말 수: ' + sent);
+      }
+      assert.ok(s.warmup.length >= 1 && s.comprehension.length >= 1 && s.activity.frame && s.draft === true, s.id);
+      // 가사를 담지 않는다: 한 필드가 지나치게 길면(가사 덩어리 의심) 막는다
+      for (const text of [s.intro, ...s.sentences, ...s.words.map((w) => w.example)]) assert.ok(text.length < 400, s.id + ' 너무 긴 글');
+      assert.ok(songs.lyricsSearchUrl(s).startsWith('https://genius.com/search?q='));
+    }
+  });
+  await test('수업 대상: 필터가 전체면 모두, 아니면 대상이 들어 있는 것만(대상이 없으면 초등으로 본다)', () => {
+    assert.equal(lvl.levelMatches('all', ['high']), true);
+    assert.equal(lvl.levelMatches('middle', ['middle', 'high']), true);
+    assert.equal(lvl.levelMatches('elementary', ['middle']), false);
+    assert.equal(lvl.levelMatches('elementary', undefined), true);
+    assert.equal(lvl.levelMatches('high', undefined), false);
+  });
+  await test('팝송 수업 만들기: 가사 없이도 제목·질문·영상·Q&A·단어·문법·활동 슬라이드가 순서대로 만들어진다', async () => {
+    const song = songs.SONG_LESSONS.find((s) => s.id === 'count-on-me');
+    const made = [];
+    const slides = await songs.buildSongLesson(song, {
+      makeWordList: async (words) => {
+        made.push(words.length);
+        return true;
+      },
+      makeUnscrambleFromSentences: async () => 'tpl-unscramble',
+      makeGameFromWords: async () => 'tpl-quiz',
+    });
+    const kinds = slides.map((x) => x.kind);
+    assert.deepEqual(kinds.slice(0, 4), ['canvas', 'canvas', 'video', 'qna']);
+    assert.ok(kinds.includes('wordshow') && kinds.includes('grammar') && kinds.filter((k) => k === 'game').length >= 3);
+    assert.equal(made[0], song.words.length);
+    assert.equal(slides.filter((x) => x.kind === 'reading').length, 0, '가사를 붙여 넣지 않으면 읽기 슬라이드는 없다');
+    // 영상이 없는 곡(디즈니 계열)은 영상 슬라이드를 만들지 않는다
+    const none = songs.SONG_LESSONS.find((s) => s.videoId === null);
+    if (none) {
+      const s2 = await songs.buildSongLesson(none, {});
+      assert.ok(!s2.some((x) => x.kind === 'video'));
+    }
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

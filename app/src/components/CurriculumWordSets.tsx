@@ -8,11 +8,20 @@ import { loadWordBank } from '../lib/wordBankCache';
  * 교과과정 단어 — 새 수업 만들기의 "수업 세트" 안. 학교급(초등·중등·고등) → 학년군(교육부 800 DAY·Lv.1~4·중학·고등) → 주제 순으로 짠
  * 단어 묶음(10개)을 고르면 단어장과 단어 수업이 한 번에 만들어진다. 기존 "단어 수업"(그림 있는 낱말 15세트)은 그대로 둔다.
  */
-export default function CurriculumWordSets({ disabled, onPick }: { disabled: boolean; onPick: (title: string, entries: WordBankEntry[]) => void }) {
+export default function CurriculumWordSets({
+  disabled,
+  onPick,
+  initialSchool = 'elementary',
+}: {
+  disabled: boolean;
+  onPick: (title: string, entries: WordBankEntry[]) => void;
+  /** 수업 만들기의 "대상"에 맞춰 처음 보일 학교급 */
+  initialSchool?: WordSchoolId;
+}) {
   const { t, i18n } = useTranslation();
   const ko = i18n.language.startsWith('ko');
   const [bank, setBank] = useState<WordBankEntry[] | null>(null);
-  const [school, setSchool] = useState<WordSchoolId>('elementary');
+  const [school, setSchool] = useState<WordSchoolId>(initialSchool);
   const [bandId, setBandId] = useState<string | null>(null);
   const [unitId, setUnitId] = useState<string | null>(null);
 
