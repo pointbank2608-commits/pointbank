@@ -4,6 +4,7 @@ import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
 import WordSelectionBar from '../components/WordSelectionBar';
 import { fetchWordBank } from '../lib/api';
+import { buildCurriculumWords, type WordSchoolId } from '../lib/curriculumWords';
 import { speak } from '../lib/speech';
 import type { FullCardItem, WordBankEntry } from '../lib/types';
 import {
@@ -169,6 +170,12 @@ export default function DictionaryPage() {
   // 교육부 지정 초등 800 목록(DAY 1~16)으로 모아 보기
   const [moe800, setMoe800] = useState(false);
   const [moeDay, setMoeDay] = useState<number | 'all'>('all');
+  // 교과과정 단어(초등·중등·고등 → 학년군 → 주제 → 10개 묶음) — 숙제·암기용으로 묶음 단위로 고른다
+  const [curr, setCurr] = useState(false);
+  const [currSchool, setCurrSchool] = useState<WordSchoolId>('elementary');
+  const [currBand, setCurrBand] = useState('');
+  const [currUnit, setCurrUnit] = useState('all');
+  const [currSet, setCurrSet] = useState('all');
   const [limit, setLimit] = useState<{ key: string; count: number }>({ key: '', count: PAGE_SIZE });
   const [lightbox, setLightbox] = useState<WordBankEntry | null>(null);
   const [studying, setStudying] = useState(false);
@@ -217,8 +224,26 @@ export default function DictionaryPage() {
     return [...ordered, ...extras];
   }, [tabEntries]);
 
+  const schools = useMemo(() => (curr && entries ? buildCurriculumWords(entries) : []), [curr, entries]);
+  const school = schools.find((x) => x.id === currSchool) ?? null;
+  const band = school?.bands.find((b) => b.id === currBand) ?? school?.bands[0] ?? null;
+  const unit = band?.units.find((u) => u.id === currUnit) ?? null;
+  const unitSets = unit ? unit.sets : [];
+  const pickedSet = unitSets.find((x) => x.id === currSet) ?? null;
+  const currEntries = useMemo(() => {
+    if (!band) return [] as WordBankEntry[];
+    const sets = unit ? (pickedSet ? [pickedSet] : unit.sets) : band.units.flatMap((u) => u.sets);
+    return sets.flatMap((x) => x.entries);
+  }, [band, unit, pickedSet]);
+  const currTitle =
+    band && school
+      ? `${school.ko} ${band.label}${unit ? ` · ${unit.label}` : ''}${pickedSet ? ` ${unitSets.indexOf(pickedSet) * 10 + 1}~${unitSets.indexOf(pickedSet) * 10 + pickedSet.entries.length}` : ''}`
+      : '';
+  const useCurr = curr && tab === 'word';
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    if (useCurr) return currEntries.filter((e) => !q || e.word.toLowerCase().includes(q) || e.meaning.toLowerCase().includes(q));
     return tabEntries
       .filter((e) => {
         if (category !== 'all' && !entryInCategory(e, category)) return false;
@@ -237,12 +262,12 @@ export default function DictionaryPage() {
           ? (a.moe800_no ?? 0) - (b.moe800_no ?? 0) || a.sense_number - b.sense_number
           : a.word.toLowerCase().localeCompare(b.word.toLowerCase(), 'en') || a.sense_number - b.sense_number,
       );
-  }, [tabEntries, query, category, subcategory, level, partOfSpeech, moe800, moeDay]);
+  }, [tabEntries, query, category, subcategory, level, partOfSpeech, moe800, moeDay, useCurr, currEntries]);
 
   const hasMoe800 = useMemo(() => tabEntries.some((e) => e.moe800_day != null), [tabEntries]);
 
   // 필터가 바뀌면 "더 보기"로 늘려둔 개수는 처음(PAGE_SIZE)으로 돌아간다.
-  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}`;
+  const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}|${useCurr}|${band?.id}|${currUnit}|${currSet}`;
   const visibleCount = limit.key === filterKey ? limit.count : PAGE_SIZE;
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -254,6 +279,7 @@ export default function DictionaryPage() {
     setPartOfSpeech('all');
     setMoe800(false);
     setMoeDay('all');
+    setCurr(false);
   }
 
   function changeCategory(next: string) {
@@ -327,12 +353,17 @@ export default function DictionaryPage() {
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.listLabel')}</div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={() => { setMoe800(false); setMoeDay('all'); }} className={chipClass(!moe800, 'tertiary')}>
+                <button type="button" onClick={() => { setMoe800(false); setMoeDay('all'); setCurr(false); }} className={chipClass(!moe800 && !curr, 'tertiary')}>
                   {t('dictionary.allCategory')}
                 </button>
-                <button type="button" onClick={() => setMoe800(true)} className={chipClass(moe800, 'tertiary')}>
+                <button type="button" onClick={() => { setMoe800(true); setCurr(false); }} className={chipClass(moe800, 'tertiary')}>
                   {t('dictionary.moe800')}
                 </button>
+                {tab === 'word' && (
+                  <button type="button" onClick={() => { setCurr(true); setMoe800(false); setMoeDay('all'); }} className={chipClass(curr, 'tertiary')}>
+                    {t('dictionary.curriculum')}
+                  </button>
+                )}
               </div>
               {moe800 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -348,7 +379,53 @@ export default function DictionaryPage() {
               )}
             </div>
           )}
-          {usedLevels.length > 0 && (
+          {useCurr && (
+            <div className="space-y-2 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
+              <p className="font-caption text-caption text-on-surface-variant">{t('dictionary.curriculumHint')}</p>
+              <div className="flex flex-wrap gap-2">
+                {schools.map((sc) => (
+                  <button key={sc.id} type="button" onClick={() => { setCurrSchool(sc.id); setCurrBand(''); setCurrUnit('all'); setCurrSet('all'); }} className={chipClass(school?.id === sc.id)}>
+                    {sc.ko} <span className="opacity-70">{sc.count}</span>
+                  </button>
+                ))}
+              </div>
+              {school && school.bands.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {school.bands.map((b) => (
+                    <button key={b.id} type="button" title={b.hint} onClick={() => { setCurrBand(b.id); setCurrUnit('all'); setCurrSet('all'); }} className={chipClass(band?.id === b.id, 'secondary')}>
+                      {b.label} <span className="opacity-70">{b.count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {band && (
+                <div className="flex flex-wrap gap-1.5">
+                  <button type="button" onClick={() => { setCurrUnit('all'); setCurrSet('all'); }} className={chipClass(!unit, 'tertiary')}>
+                    {t('dictionary.allCategory')}
+                  </button>
+                  {band.units.map((u) => (
+                    <button key={u.id} type="button" onClick={() => { setCurrUnit(u.id); setCurrSet('all'); }} className={chipClass(unit?.id === u.id, 'tertiary')}>
+                      {u.label} <span className="opacity-70">{u.count}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {unit && unitSets.length > 1 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-caption text-caption text-on-surface-variant">{t('dictionary.curriculumSetLabel')}</span>
+                  <button type="button" onClick={() => setCurrSet('all')} className={chipClass(!pickedSet, 'tertiary')}>
+                    {t('dictionary.allCategory')}
+                  </button>
+                  {unitSets.map((x, i) => (
+                    <button key={x.id} type="button" onClick={() => setCurrSet(x.id)} className={chipClass(pickedSet?.id === x.id, 'tertiary')}>
+                      {i * 10 + 1}~{i * 10 + x.entries.length}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {!useCurr && usedLevels.length > 0 && (
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.levelLabel')}</div>
               <div className="flex flex-wrap gap-2">
@@ -370,6 +447,7 @@ export default function DictionaryPage() {
             </div>
           )}
 
+          {!useCurr && (
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.categoryLabel')}</div>
             <div className="flex flex-wrap gap-2">
@@ -384,7 +462,9 @@ export default function DictionaryPage() {
             </div>
           </div>
 
-          {usedSubcategories.length > 0 && (
+          )}
+
+          {!useCurr && usedSubcategories.length > 0 && (
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.subcategoryLabel')}</div>
               <div className="flex flex-wrap gap-2">
@@ -400,6 +480,7 @@ export default function DictionaryPage() {
             </div>
           )}
 
+          {!useCurr && (
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.partOfSpeechLabel')}</div>
             <div className="flex flex-wrap gap-2">
@@ -418,6 +499,7 @@ export default function DictionaryPage() {
               ))}
             </div>
           </div>
+          )}
         </div>
       )}
 
@@ -518,7 +600,7 @@ export default function DictionaryPage() {
 
       {lightbox && <ImageLightbox entry={lightbox} onClose={() => setLightbox(null)} />}
 
-      <WordSelectionBar words={selectedList} onClear={() => setSelected({})} />
+      <WordSelectionBar words={selectedList} onClear={() => setSelected({})} homeworkTitle={useCurr ? currTitle : ''} />
 
       {studying && (
         <FlashcardStudy

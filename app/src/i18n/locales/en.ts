@@ -1446,6 +1446,9 @@ const en: Ko = {
   },
 
   dictionary: {
+    curriculum: 'Curriculum words',
+    curriculumHint: 'Pick school level, grade band, topic, then a set of 10. Select the whole list and use the bar below to assign vocabulary homework.',
+    curriculumSetLabel: 'Sets of 10',
     listLabel: 'List',
     moe800: 'MOE Elementary 800',
     moeDay: 'DAY {{n}}',
@@ -1470,6 +1473,8 @@ const en: Ko = {
   },
 
   selectionBar: {
+    homework: 'Assign as homework',
+    homeworkDefaultTitle: '{{count}} picked words',
     hint: 'Tap the circle at the top-left of a card to pick words and turn them into printables right away.',
     selectWord: 'Select {{word}}',
     selectAll: 'Select all in this list',
@@ -3372,6 +3377,8 @@ const en: Ko = {
     src_wordlist: 'Word list',
     src_video: 'Video scene',
     src_wrong: 'Past mistakes',
+    src_picked: 'Words picked in the dictionary',
+    usePickedWords: 'Make homework with these {{count}} words',
     lessonNoWords: 'This lesson has no word list, so there are no words to make homework from. Pick a word list or another lesson below.',
     noLessons: 'No lesson with a word list yet. Pick from "Word list".',
     noWordLists: 'This class has no word lists. Make one in My word lists first.',

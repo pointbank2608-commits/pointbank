@@ -12,7 +12,7 @@ import { enrichCards, loadWordBank } from '../../../lib/wordBankCache';
 import VideoClipLibrary from '../../VideoClipLibrary';
 import HomeworkPreview from './HomeworkPreview';
 
-type Source = 'lesson' | 'wordlist' | 'video' | 'wrong';
+type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked';
 
 const STEPS = ['target', 'source', 'time', 'confirm'] as const;
 
@@ -28,6 +28,7 @@ export default function HomeworkWizard({
   initialCards,
   initialTitle,
   initialLessonId,
+  pickedCards,
   onCancel,
   onCreated,
 }: {
@@ -40,6 +41,8 @@ export default function HomeworkWizard({
   initialTitle?: string;
   /** 내 수업 카드의 "숙제 내기"에서 넘어올 때: 이 수업의 단어장으로 미리 채운다 */
   initialLessonId?: string;
+  /** 단어 사전·파닉스에서 고른 낱말로 바로 숙제를 낼 때 */
+  pickedCards?: FullCardItem[];
   onCancel: () => void;
   onCreated: (hw: { id: string; code: string }) => void;
 }) {
@@ -52,14 +55,14 @@ export default function HomeworkWizard({
   const [title, setTitle] = useState(initialTitle ?? '');
   const [due, setDue] = useState('');
 
-  const [source, setSource] = useState<Source>(initialCards?.length ? 'wrong' : 'lesson');
+  const [source, setSource] = useState<Source>(pickedCards?.length ? 'picked' : initialCards?.length ? 'wrong' : 'lesson');
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const [wrongCards, setWrongCards] = useState<FullCardItem[] | null>(initialCards ?? null);
   const [lessonId, setLessonId] = useState('');
   const [wordListId, setWordListId] = useState('');
   const [clip, setClip] = useState<VideoClip | null>(null);
-  const [cards, setCards] = useState<FullCardItem[]>(initialCards ?? []);
+  const [cards, setCards] = useState<FullCardItem[]>(initialCards ?? pickedCards ?? []);
   const [sourceName, setSourceName] = useState(initialTitle ?? '');
   const [missingLessonWords, setMissingLessonWords] = useState(false);
 
@@ -245,10 +248,10 @@ export default function HomeworkWizard({
 
       {step === 1 && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            {(['lesson', 'wordlist', 'video', 'wrong'] as Source[]).map((s) => (
+          <div className={`grid grid-cols-2 gap-2 ${pickedCards?.length ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
+            {((pickedCards?.length ? ['picked', 'lesson', 'wordlist', 'video', 'wrong'] : ['lesson', 'wordlist', 'video', 'wrong']) as Source[]).map((s) => (
               <button key={s} type="button" className={`${big} flex-col text-center ${on(source === s)}`} onClick={() => setSource(s)} aria-pressed={source === s}>
-                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay' }[s]}</span>
+                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay', picked: 'checklist' }[s]}</span>
                 {t(`studentHw.src_${s}`)}
               </button>
             ))}
@@ -303,6 +306,31 @@ export default function HomeworkWizard({
                 ))}
               </div>
             ))}
+
+          {source === 'picked' && pickedCards && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-1.5">
+                {pickedCards.slice(0, 40).map((c) => (
+                  <span key={c.id} className="rounded-full bg-primary/10 px-3 py-1 text-base text-deep-navy">
+                    {c.word}
+                  </span>
+                ))}
+                {pickedCards.length > 40 && <span className="text-base text-on-surface-variant">+{pickedCards.length - 40}</span>}
+              </div>
+              <button
+                type="button"
+                className={`${big} ${on(sourceName === (initialTitle ?? '') && cards === pickedCards)}`}
+                onClick={() => {
+                  setCards(pickedCards);
+                  setSourceName(initialTitle ?? '');
+                  setClip(null);
+                }}
+              >
+                <span className="material-symbols-outlined">checklist</span>
+                {t('studentHw.usePickedWords', { count: pickedCards.length })}
+              </button>
+            </div>
+          )}
 
           {source === 'video' && (
             <div className="space-y-2">

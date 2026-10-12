@@ -1442,6 +1442,9 @@ const ko = {
   },
 
   dictionary: {
+    curriculum: '교과과정 단어',
+    curriculumHint: '학교급 → 학년군 → 주제 → 10개씩 묶음 순서로 골라요. 묶음을 고른 뒤 "지금 목록 전체 선택"을 누르면 아래 바에서 단어 숙제를 낼 수 있어요.',
+    curriculumSetLabel: '10개씩',
     listLabel: '목록',
     moe800: '교육부 초등 800',
     moeDay: 'DAY {{n}}',
@@ -1466,6 +1469,8 @@ const ko = {
   },
 
   selectionBar: {
+    homework: '숙제로 내기',
+    homeworkDefaultTitle: '고른 단어 {{count}}개',
     hint: '카드 왼쪽 위 동그라미를 눌러 단어를 고르면, 바로 인쇄물을 만들 수 있어요.',
     selectWord: '{{word}} 선택',
     selectAll: '지금 목록 전체 선택',
@@ -3368,6 +3373,8 @@ const ko = {
     src_wordlist: '단어장',
     src_video: '영상 장면',
     src_wrong: '지난 오답',
+    src_picked: '사전에서 고른 단어',
+    usePickedWords: '이 단어 {{count}}개로 숙제 만들기',
     lessonNoWords: '이 수업에는 단어장이 연결돼 있지 않아 숙제로 만들 낱말이 없어요. 아래에서 단어장이나 다른 수업을 골라 주세요.',
     noLessons: '단어장이 연결된 수업이 아직 없어요. "단어장"에서 골라 주세요.',
     noWordLists: '이 반 단어장이 없어요. 내 단어장에서 먼저 만들어 주세요.',

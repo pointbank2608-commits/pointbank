@@ -17,7 +17,7 @@ import { useClasses } from '../lib/useClasses';
 
 type Panel =
   | { k: 'none' }
-  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string }
+  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
   | { k: 'recommend'; studentIds: string[] };
 
 /**
@@ -104,8 +104,15 @@ export default function HomeworkPage() {
   const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
   // 내 수업 카드의 "숙제 내기"에서 넘어온 경우: 그 수업으로 마법사를 한 번만 연다
   useEffect(() => {
-    const st = location.state as { fromLessonId?: string } | null;
-    if (!st?.fromLessonId || !classId) return;
+    const st = location.state as { fromLessonId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string } | null;
+    if (!classId) return;
+    // 단어 사전·파닉스에서 고른 낱말로 숙제 내기
+    if (st?.pickedCards?.length) {
+      setPanel({ k: 'wizard', pickedCards: st.pickedCards, title: st.pickedTitle });
+      navigate(location.pathname, { replace: true, state: null });
+      return;
+    }
+    if (!st?.fromLessonId) return;
     setPanel({ k: 'wizard', lessonId: st.fromLessonId });
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, classId, navigate]);
@@ -139,8 +146,9 @@ export default function HomeworkPage() {
 
       {panel.k === 'wizard' && classId && academy?.id && (
         <HomeworkWizard
-          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}-${panel.lessonId ?? ''}`}
+          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}-${panel.lessonId ?? ''}-${panel.pickedCards?.length ?? 0}`}
           initialLessonId={panel.lessonId}
+          pickedCards={panel.pickedCards}
           academyId={academy.id}
           classId={classId}
           className={className}
