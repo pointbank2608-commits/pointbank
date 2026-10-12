@@ -37,8 +37,10 @@ export function useGameTemplates(params: {
   gameType: GameType;
   defaultItems: () => GameItem[];
   defaultConfig?: () => GameTemplateConfig;
+  /** 불러올 목록 종류 — 문장 게임은 'sentence'(문장 목록, 066), 나머지는 단어장 */
+  listKind?: 'word' | 'sentence';
 }) {
-  const { gameType, defaultItems, defaultConfig } = params;
+  const { gameType, defaultItems, defaultConfig, listKind = 'word' } = params;
   const { academy, profile, isStaff, session } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
@@ -120,13 +122,13 @@ export function useGameTemplates(params: {
     }
     setWordListsLoading(true);
     try {
-      setWordLists(await fetchWordLists(academy.id, classId));
+      setWordLists(await fetchWordLists(academy.id, classId, listKind));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
       setWordListsLoading(false);
     }
-  }, [academy?.id, classId, notify]);
+  }, [academy?.id, classId, notify, listKind]);
 
   useEffect(() => {
     void reloadWordLists();

@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { createGameTemplate, uploadLessonSlideImage } from '../lib/api';
+import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { useWordBankEnriched } from '../lib/wordBankCache';
@@ -1861,15 +1861,21 @@ function GameSlideEditor({
   const { notify } = useToast();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  // "지금 단어장으로 만들기"로 템플릿을 새로 만들면 게임 화면을 다시 그려 그 템플릿을 연다.
+  // 게임 내용을 새로 만들면 게임 화면을 다시 그려 그 템플릿을 연다.
   const [reloadKey, setReloadKey] = useState(0);
+  const autoDone = useRef<Set<string>>(new Set());
+  const templateRef = useRef(slide.templateId);
+  templateRef.current = slide.templateId;
+  /** 문장 게임(문장 배열하기)은 내 단어장의 "문장 목록"으로도 바꿀 수 있다(066) */
+  const [sentenceLists, setSentenceLists] = useState<WordList[]>([]);
   const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
   const GamePage = game ? GAME_PAGES[game.path] : undefined;
   const cards = useWordBankEnriched(rawCards);
 
   const content = useMemo(() => buildGameContent(slide.gameType, cards), [slide.gameType, cards]);
 
-  async function createNow() {
+  /** 수업 단어장으로 이 게임의 내용을 만들어 슬라이드에 붙인다 — 슬라이드를 고르면 자동으로 한 번 하고, 단어장이 바뀌면 다시 한다. */
+  async function createFromLesson(reason: 'first' | 'changed') {
     if (!profile || !content || creating) return;
     setCreating(true);
     try {
@@ -1882,9 +1888,69 @@ function GameSlideEditor({
         config: content.config,
         teacherId: profile.id,
       });
-      onUpdate({ templateId: tpl.id });
+      onUpdate({ templateId: tpl.id, autoWordListId: wordListId, ownWordListId: undefined });
       setReloadKey((k) => k + 1);
-      notify(t('curriculum.slides.gameContentCreated'));
+      notify(t(reason === 'changed' ? 'curriculum.slides.gameContentRemade' : 'curriculum.slides.gameContentCreated'));
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  // 슬라이드를 고르면 수업 단어장으로 게임 내용을 바로 만들어 둔다(따로 "만들기"를 누를 필요 없음).
+  // 이 블록만 다른 단어장을 골라 둔 슬라이드는 건드리지 않고, 수업 단어장이 바뀌었으면 새 단어장으로 다시 만든다.
+  useEffect(() => {
+    if (!content || !profile || creating) return;
+    if (slide.ownWordListId && slide.templateId) return;
+    const stale = !!slide.templateId && !!slide.autoWordListId && slide.autoWordListId !== wordListId;
+    if (slide.templateId && !stale) return;
+    const key = `${slide.id}:${slide.gameType}:${wordListId}`;
+    if (autoDone.current.has(key)) return;
+    autoDone.current.add(key);
+    void createFromLesson(stale ? 'changed' : 'first');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slide.id, slide.gameType, slide.templateId, slide.autoWordListId, slide.ownWordListId, wordListId, content, profile]);
+
+  // 문장 목록(문장 배열하기만)
+  useEffect(() => {
+    if (slide.gameType !== 'unscramble' || !academyId) {
+      setSentenceLists([]);
+      return;
+    }
+    let alive = true;
+    (classId ? fetchWordLists(academyId, classId, 'sentence') : fetchAllWordLists(academyId, 'sentence'))
+      .then((l) => alive && setSentenceLists(l))
+      .catch(() => alive && setSentenceLists([]));
+    return () => {
+      alive = false;
+    };
+  }, [academyId, classId, slide.gameType]);
+
+  async function useSentenceList(listId: string) {
+    const list = sentenceLists.find((l) => l.id === listId);
+    if (!list || !profile || creating) return;
+    const items = list.items
+      .filter((i) => i.word.trim().split(/\s+/).filter(Boolean).length >= 2)
+      .map((i) => ({ id: i.id, label: i.word.trim() }));
+    if (items.length === 0) {
+      notify(t('wordLists.sentence.needSentences'), 'error');
+      return;
+    }
+    setCreating(true);
+    try {
+      const tpl = await createGameTemplate({
+        academyId,
+        classId,
+        gameType: slide.gameType,
+        name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list.name),
+        items,
+        config: {},
+        teacherId: profile.id,
+      });
+      onUpdate({ templateId: tpl.id, ownWordListId: list.id, autoWordListId: undefined });
+      setReloadKey((k) => k + 1);
+      notify(t('curriculum.blockOptions.madeToast', { name: list.name }));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -1898,7 +1964,11 @@ function GameSlideEditor({
     () => ({
       classId,
       templateId: slide.templateId,
-      onSelect: (id: string | null) => onUpdate({ templateId: id ?? undefined }),
+      onSelect: (id: string | null) => {
+        // 우리가 방금 붙인 내용을 게임 화면이 다시 알려 주는 경우는 그대로 둔다
+        if (id === (templateRef.current ?? null)) return;
+        onUpdate({ templateId: id ?? undefined, autoWordListId: undefined });
+      },
     }),
     // templateId 는 처음 열 때만 쓴다 — 선택할 때마다 새 값으로 다시 그리지 않게 뺀다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1921,16 +1991,27 @@ function GameSlideEditor({
         </button>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
-          {content && (
-            <button
-              type="button"
+          {creating && (
+            <span className="inline-flex items-center gap-1 font-caption text-caption text-on-surface-variant">
+              <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+              {t('curriculum.slides.gameContentCreating')}
+            </span>
+          )}
+          {sentenceLists.length > 0 && (
+            <select
+              value=""
               disabled={creating}
-              onClick={() => void createNow()}
-              className="inline-flex items-center gap-1 rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
+              onChange={(e) => e.target.value && void useSentenceList(e.target.value)}
+              aria-label={t('curriculum.slides.useSentenceList')}
+              className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-sm text-on-surface outline-none focus:border-primary"
             >
-              <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-              {creating ? t('curriculum.slides.gameContentCreating') : t('curriculum.slides.gameContentCreateNow')}
-            </button>
+              <option value="">{t('curriculum.slides.useSentenceList')}</option>
+              {sentenceLists.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name} ({l.items.length})
+                </option>
+              ))}
+            </select>
           )}
         </div>
         {pickerOpen && (
@@ -1963,7 +2044,7 @@ function GameSlideEditor({
       </div>
       <p className="flex items-center gap-1 px-1 font-caption text-caption text-on-surface-variant">
         <span className="material-symbols-outlined text-[16px] text-primary">info</span>
-        {t('curriculum.slides.gameEmbedHint')}
+        {t('curriculum.slides.gameEmbedHint')} {t('curriculum.slides.gameAutoHint')}
       </p>
       {GamePage ? (
         <div className="game-embed rounded-xl bg-background p-3 md:p-4">

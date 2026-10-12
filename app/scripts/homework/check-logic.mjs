@@ -234,6 +234,15 @@ try {
     // 시험 블록·정보 블록은 능력 숫자를 안 붙인다
     assert.equal(bs.blockPerformance(data, saved, [{ t: 'test' }], { ...block, type: 'test', start: 0, end: 0 }).klass, null);
   });
+  // ---- 문장 목록(066) ----
+  const sl = await server.ssrLoadModule('/src/lib/sentenceLists.ts');
+  await test('문장 목록: 한 줄에 영어 문장 | 해석, 번호·빈 줄·영어 없는 줄·중복은 뺀다', () => {
+    const parsed = sl.parseSentenceLines('1. I like apples. | 나는 사과를 좋아해요.\n\n- The cat is cute\t고양이는 귀여워요\n3)\nhello world\nI like apples.  |  또 같은 문장\n안녕하세요');
+    assert.deepEqual(parsed.map((p) => p.sentence), ['I like apples.', 'The cat is cute', 'hello world']);
+    assert.deepEqual(parsed.map((p) => p.meaning), ['나는 사과를 좋아해요.', '고양이는 귀여워요', '']);
+    const items = sl.newSentenceItems([{ id: 'a', word: 'the cat  is cute', meaning: '', image_url: null, category: null }], parsed, () => 'n');
+    assert.deepEqual(items.map((i) => i.word), ['I like apples.', 'hello world']);
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

@@ -21,6 +21,7 @@ import type {
   WordBankEntry,
   WordList,
   WordListItem,
+  WordListKind,
 } from './types';
 
 /** Supabase 응답에서 에러를 던지고 데이터만 돌려준다. */
@@ -888,22 +889,29 @@ export function fixLegacyImageUrls<T>(value: T): T {
 /* ---------------- 선생님이 만드는 단어장(word_lists) ---------------- */
 
 /** 이 반(또는 학원 공용) 단어장 목록. game_templates 의 반/학원 스코프 조회와 같은 패턴. */
-export async function fetchWordLists(academyId: string, classId: string): Promise<WordList[]> {
-  return fixLegacyImageUrls(unwrap(
+/** 단어장/문장 목록 거르기 — kind 칸이 없던 때(066 전) 행은 모두 단어장. 'all' 은 둘 다. */
+export const wordListKindOf = (l: { kind?: WordListKind | null }): WordListKind => (l.kind === 'sentence' ? 'sentence' : 'word');
+const onlyKind = (rows: WordList[], kind: WordListKind | 'all'): WordList[] => (kind === 'all' ? rows : rows.filter((l) => wordListKindOf(l) === kind));
+
+/** 반(+학원 공용)의 목록, 만든 것이 최신순. 기본은 단어장만 — 문장 목록은 kind 로 따로 부른다. */
+export async function fetchWordLists(academyId: string, classId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
+  const rows = fixLegacyImageUrls(unwrap(
     await supabase
       .from('word_lists')
       .select('*')
       .eq('academy_id', academyId)
       .or(`class_id.eq.${classId},class_id.is.null`)
-      .order('created_at'),
-  ));
+      .order('created_at', { ascending: false }),
+  )) as WordList[];
+  return onlyKind(rows, kind);
 }
 
 /** 반 구분 없이 이 학원의 단어장을 전부 불러온다 ("내 단어장"의 "전체" 탭). */
-export async function fetchAllWordLists(academyId: string): Promise<WordList[]> {
-  return fixLegacyImageUrls(unwrap(
-    await supabase.from('word_lists').select('*').eq('academy_id', academyId).order('created_at'),
-  ));
+export async function fetchAllWordLists(academyId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
+  const rows = fixLegacyImageUrls(unwrap(
+    await supabase.from('word_lists').select('*').eq('academy_id', academyId).order('created_at', { ascending: false }),
+  )) as WordList[];
+  return onlyKind(rows, kind);
 }
 
 export async function createWordList(params: {
@@ -912,6 +920,8 @@ export async function createWordList(params: {
   name: string;
   items: WordListItem[];
   teacherId: string;
+  /** 문장 목록이면 'sentence'(066 이후). 단어장은 칸을 안 보내 066 전에도 만들어진다. */
+  kind?: WordListKind;
 }): Promise<WordList> {
   return unwrap(
     await supabase
@@ -922,6 +932,7 @@ export async function createWordList(params: {
         name: params.name,
         items: params.items,
         created_by: params.teacherId,
+        ...(params.kind === 'sentence' ? { kind: 'sentence' } : {}),
       })
       .select()
       .single(),
@@ -1137,6 +1148,7 @@ export async function restoreDeletedWordList(rev: ContentRevision): Promise<Word
     created_by: d.created_by ?? null,
     created_at: d.created_at,
     updated_at: d.updated_at ?? new Date().toISOString(),
+    ...(d.kind === 'sentence' ? { kind: 'sentence' } : {}),
   };
   const first = await supabase.from('word_lists').insert(row).select().single();
   if (!first.error) return first.data as WordList;

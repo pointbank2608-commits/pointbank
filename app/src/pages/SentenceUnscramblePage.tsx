@@ -10,6 +10,7 @@ import ImportFromClass from '../components/ImportFromClass';
 import SentenceUnscramble from '../components/SentenceUnscramble';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
+import WordListPicker from '../components/WordListPicker';
 import type { GameItem, GameTemplateConfig } from '../lib/types';
 
 function uid(): string {
@@ -26,7 +27,7 @@ function wordCount(label: string): number {
 
 export default function SentenceUnscramblePage() {
   const { t } = useTranslation();
-  const g = useGameTemplates({ gameType: 'unscramble', defaultItems });
+  const g = useGameTemplates({ gameType: 'unscramble', defaultItems, listKind: 'sentence' });
   const {
     isStaff,
     classes,
@@ -56,6 +57,8 @@ export default function SentenceUnscramblePage() {
     importFromClass,
     reload,
     roster,
+    wordLists,
+    wordListsLoading,
   } = g;
   const { notify } = useToast();
 
@@ -90,6 +93,19 @@ export default function SentenceUnscramblePage() {
     if (!label || !selected) return;
     if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
     setNewItemLabel('');
+  }
+
+  /** 문장 목록(내 단어장 > 문장 만들기)에서 불러오기 — 이미 있는 문장은 건너뛴다 */
+  async function importSentences(labels: string[]) {
+    if (!selected) return;
+    const have = new Set(selected.items.map((i) => i.label.trim().toLowerCase()));
+    const fresh = labels.map((l) => l.trim()).filter((l) => {
+      const key = l.toLowerCase();
+      if (!l || have.has(key)) return false;
+      have.add(key);
+      return true;
+    });
+    if (fresh.length > 0) await persistItems([...selected.items, ...fresh.map((label) => ({ id: uid(), label }))]);
   }
 
   async function removeItem(itemId: string) {
@@ -337,8 +353,36 @@ export default function SentenceUnscramblePage() {
                   })}
                 </div>
 
+              <div className="flex gap-2 py-2">
+                <input
+                  type="text"
+                  placeholder={t('gameUnscramble.newSentencePlaceholder')}
+                  value={newItemLabel}
+                  onChange={(e) => setNewItemLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void addItem();
+                  }}
+                  className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                />
+                <button
+                  onClick={() => void addItem()}
+                  className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
+                >
+                  {t('gameAdmin.addParticipant')}
+                </button>
+              </div>
+
                 {editorOpen && (
                   <div>
+                    <div className="mb-3 flex flex-wrap items-start gap-2 [&>*]:min-w-[220px] [&>*]:flex-none">
+                      <WordListPicker
+                        variant="label"
+                        kind="sentence"
+                        wordLists={wordLists}
+                        loading={wordListsLoading}
+                        onImportLabels={(labels) => void importSentences(labels)}
+                      />
+                    </div>
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="font-caption text-caption text-on-surface-variant mb-2">
                       {t('gameUnscramble.editorHint')}
@@ -375,24 +419,6 @@ export default function SentenceUnscramblePage() {
                         {t('gameAdmin.clearAll')}
                       </button>
                     )}
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text"
-                        placeholder={t('gameUnscramble.newSentencePlaceholder')}
-                        value={newItemLabel}
-                        onChange={(e) => setNewItemLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addItem();
-                        }}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                      />
-                      <button
-                        onClick={() => void addItem()}
-                        className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                      >
-                        {t('gameAdmin.addParticipant')}
-                      </button>
-                    </div>
                   </div>
                 )}
               </div>

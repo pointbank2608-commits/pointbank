@@ -9,7 +9,7 @@ function uid(): string {
   return crypto.randomUUID();
 }
 
-type Props =
+type PropsBase =
   | { variant: 'label'; wordLists: WordList[]; loading: boolean; onImportLabels: (labels: string[]) => void }
   | { variant: 'pairs'; wordLists: WordList[]; loading: boolean; onImportPairs: (pairs: MatchPair[]) => void }
   | { variant: 'image'; wordLists: WordList[]; loading: boolean; onImportImage: (items: ImageQuizItem[]) => void }
@@ -18,6 +18,9 @@ type Props =
   | { variant: 'truefalse'; wordLists: WordList[]; loading: boolean; onImportStatements: (statements: TrueFalseStatement[]) => void }
   | { variant: 'groupsort'; wordLists: WordList[]; loading: boolean; onImportGroups: (groups: GroupSortGroup[]) => void }
   | { variant: 'slots'; wordLists: WordList[]; loading: boolean; onImportSlots: (items: SlottedLabel[]) => void };
+
+/** kind 'sentence' 는 문장 게임에서 쓴다(066) — 글자만 "문장 목록"으로 바뀌고, wordLists 는 부르는 쪽이 문장 목록만 넘긴다. */
+type Props = PropsBase & { kind?: 'word' | 'sentence' };
 
 /**
  * 선생님이 미리 만들어둔 단어장(WordListsPage 에서 관리)을 게임 항목으로 그대로 불러오는 패널.
@@ -42,6 +45,7 @@ export default function WordListPicker(props: Props) {
   const [field, setField] = useState<'word' | 'meaning'>('word');
   const [direction, setDirection] = useState<QuizDirection>('wordToMeaning');
   const showDirectionToggle = props.variant === 'quiz' || props.variant === 'truefalse';
+  const sentence = props.kind === 'sentence';
 
   const usable =
     props.variant === 'image'
@@ -87,7 +91,7 @@ export default function WordListPicker(props: Props) {
         }`}
       >
         <span className="material-symbols-outlined text-xl">library_books</span>
-        {open ? t('wordListPicker.close') : t('wordListPicker.open')}
+        {open ? t(sentence ? 'wordListPicker.closeSentence' : 'wordListPicker.close') : t(sentence ? 'wordListPicker.openSentence' : 'wordListPicker.open')}
       </button>
 
       {open && (
@@ -101,7 +105,7 @@ export default function WordListPicker(props: Props) {
                   field === 'word' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
                 }`}
               >
-                {t('wordListPicker.fieldWord')}
+                {t(sentence ? 'wordListPicker.fieldSentence' : 'wordListPicker.fieldWord')}
               </button>
               <button
                 type="button"
@@ -110,7 +114,7 @@ export default function WordListPicker(props: Props) {
                   field === 'meaning' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
                 }`}
               >
-                {t('wordListPicker.fieldMeaning')}
+                {t(sentence ? 'wordListPicker.fieldSentenceMeaning' : 'wordListPicker.fieldMeaning')}
               </button>
             </div>
           )}
@@ -159,7 +163,7 @@ export default function WordListPicker(props: Props) {
                   ? t('wordListPicker.emptyTooFewForQuiz')
                   : props.variant === 'groupsort' && wordLists.length > 0
                     ? t('wordListPicker.emptyTooFewCategories')
-                    : t('wordListPicker.emptyNone')}
+                    : t(sentence ? 'wordListPicker.emptyNoneSentence' : 'wordListPicker.emptyNone')}
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">

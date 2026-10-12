@@ -190,7 +190,7 @@ export default function CurriculumPage() {
         items: words.map((w) => ({ id: uid(), word: w.word, meaning: w.meaning, image_url: null, category: null })),
         teacherId: profile.id,
       });
-      setWordLists((prev) => [...prev, list]);
+      setWordLists((prev) => [list, ...prev]);
       setWordListId(list.id);
       notify(t('curriculum.aiExtractSuccess', { count: words.length }));
     } catch (err) {
@@ -410,7 +410,7 @@ export default function CurriculumPage() {
         })),
         teacherId: profile.id,
       });
-      setWordLists((prev) => [...prev, list]);
+      setWordLists((prev) => [list, ...prev]);
       setWordListId(list.id);
       notify(t(announce ? 'recipes.videoWordListMade' : 'recipes.wordListSaved', { count: words.length, name: listName }));
       return true;
@@ -854,7 +854,7 @@ export default function CurriculumPage() {
                 defaultName={t('curriculum.wordListTools.defaultName', { name: name.trim() || t('curriculum.wordListTools.untitled') })}
                 onClose={() => setWordListModal(null)}
                 onCreated={(list) => {
-                  setWordLists((prev) => [...prev, list]);
+                  setWordLists((prev) => [list, ...prev]);
                   setWordListId(list.id);
                   setWordListModal({ listId: list.id });
                 }}

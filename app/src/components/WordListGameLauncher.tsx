@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
-import { prepareWordListGame, WORD_LIST_GAMES, type WordListGame } from '../lib/wordListLaunch';
+import { prepareWordListGame, SENTENCE_LIST_GAMES, WORD_LIST_GAMES, type WordListGame } from '../lib/wordListLaunch';
 import type { ClassRow, WordList } from '../lib/types';
 
 export default function WordListGameLauncher({ list, classes, selectedClassId, isPaid, busy, error, onClose, onLaunch }: {
@@ -11,7 +11,9 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
   onLaunch: (game: WordListGame, classId: string) => void;
 }) {
   const { t } = useTranslation();
-  const [game, setGame] = useState<WordListGame>('wheel');
+  // 문장 목록은 문장 게임만, 단어장은 단어 게임만
+  const games: readonly WordListGame[] = list.kind === 'sentence' ? SENTENCE_LIST_GAMES : WORD_LIST_GAMES;
+  const [game, setGame] = useState<WordListGame>(games[0]);
   const [classId, setClassId] = useState(() => {
     const preferred = list.class_id ?? selectedClassId;
     return classes.some((row) => row.id === preferred) ? preferred! : classes[0]?.id ?? '';
@@ -40,7 +42,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
           <fieldset>
             <legend className="mb-2 font-semibold">{t('classroomUx.chooseGame')}</legend>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {WORD_LIST_GAMES.map((type) => {
+              {games.map((type) => {
                 const entry = GAME_CATALOG.find((item) => item.type === type)!;
                 const locked = !isPaid && !isFreeTierGame(type);
                 return <button key={type} type="button" disabled={locked} aria-pressed={game === type} onClick={() => setGame(type)}
@@ -53,7 +55,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
           </fieldset>
         </fieldset>
         <p aria-live="polite" className="mt-4 text-sm text-on-surface-variant">
-          {prepared.ready ? t('classroomUx.usableWords', { count: prepared.count }) : t('classroomUx.needWords')}
+          {prepared.ready ? t('classroomUx.usableWords', { count: prepared.count }) : t(list.kind === 'sentence' ? 'wordLists.sentence.needSentences' : 'classroomUx.needWords')}
         </p>
         {error && <p role="alert" className="mt-3 rounded-xl bg-error-container p-3 text-on-error-container">{t('classroomUx.launchFailed')}</p>}
         <button type="button" disabled={busy || !canLaunch} onClick={() => onLaunch(game, classId)} className="mt-5 min-h-12 w-full rounded-xl bg-primary px-5 py-3 font-bold text-on-primary disabled:opacity-50">

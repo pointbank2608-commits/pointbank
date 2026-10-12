@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
+import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareWordListGame, type WordListGame } from '../lib/wordListLaunch';
 import ClassChipRow from '../components/ClassChipRow';
@@ -15,6 +16,7 @@ import {
   createGameTemplate,
   deleteWordList,
   fetchAllWordLists,
+  wordListKindOf,
   fetchDeletedWordLists,
   fetchPhonicsBank,
   fetchWordBank,
@@ -509,6 +511,8 @@ export default function WordListsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
+  /** 새로 만들 것: 단어장 / 문장 목록(066) */
+  const [newKind, setNewKind] = useState<'word' | 'sentence'>('word');
   const [viewAll, setViewAll] = useState(false);
   const [studyingListId, setStudyingListId] = useState<string | null>(null);
   const [printListId, setPrintListId] = useState<string | null>(null);
@@ -539,7 +543,7 @@ export default function WordListsPage() {
     }
     setLoading(true);
     try {
-      setLists(viewAll ? await fetchAllWordLists(academy.id) : await fetchWordLists(academy.id, selectedId as string));
+      setLists(viewAll ? await fetchAllWordLists(academy.id, 'all') : await fetchWordLists(academy.id, selectedId as string, 'all'));
       try {
         setDeletedLists(await fetchDeletedWordLists(academy.id, viewAll ? null : (selectedId as string)));
       } catch {
@@ -570,10 +574,12 @@ export default function WordListsPage() {
         name: newName.trim(),
         items: [],
         teacherId: profile.id,
+        kind: newKind,
       });
-      setLists((prev) => [...prev, created]);
+      // 만든 것이 맨 위(최신순)
+      setLists((prev) => [{ ...created, kind: newKind }, ...prev]);
       setOpenId(created.id);
-    }, t('wordLists.createdToast'));
+    }, t(newKind === 'sentence' ? 'wordLists.sentence.createdToast' : 'wordLists.createdToast'));
     if (ok) {
       setNewName('');
       setNewScope('class');
@@ -658,28 +664,36 @@ export default function WordListsPage() {
               key={list.id}
               className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              {/* 제목은 한 줄로 줄이고(길면 …), "게임하기" 버튼은 늘 같은 자리에 맞춘다 */}
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12.5rem_auto] lg:items-center">
                 <button
                   type="button"
                   onClick={() => setOpenId((prev) => (prev === list.id ? null : list.id))}
-                  className="flex items-center gap-2 font-title-md text-title-md text-deep-navy"
+                  className="flex min-w-0 items-center gap-2 text-left font-title-md text-title-md text-deep-navy"
                 >
-                  <span className="material-symbols-outlined">{openId === list.id ? 'expand_less' : 'expand_more'}</span>
-                  {list.name}
-                  <span className="font-caption text-caption text-on-surface-variant">
+                  <span className="material-symbols-outlined shrink-0">{openId === list.id ? 'expand_less' : 'expand_more'}</span>
+                  <span className="min-w-0 truncate" title={list.name}>{list.name}</span>
+                  {wordListKindOf(list) === 'sentence' && (
+                    <span className="shrink-0 rounded-full bg-tertiary-container/70 px-2 py-0.5 font-caption text-caption text-on-surface">
+                      {t('wordLists.sentence.badge')}
+                    </span>
+                  )}
+                  <span className="shrink-0 font-caption text-caption text-on-surface-variant">
                     ({list.items.length})
                     {list.class_id === null && ` · ${t('wordLists.academyWide')}`}
                     {list.class_id !== null && viewAll && ` · ${classNameOf(list.class_id)}`}
                   </span>
                 </button>
-                <span className="flex flex-wrap items-center gap-3">
+                <span className="flex">
                   {list.items.length > 0 && <button type="button"
                     onClick={() => { setLaunchError(false); setLaunchListId(list.id); }}
-                    className="flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 py-2 font-semibold text-on-primary hover:bg-primary-container">
+                    className="flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 font-semibold text-on-primary hover:bg-primary-container">
                     <span aria-hidden className="material-symbols-outlined">play_circle</span>
                     {t('classroomUx.launch')}
                   </button>}
-                  {list.items.length > 0 && (
+                </span>
+                <span className="flex flex-wrap items-center gap-3">
+                  {list.items.length > 0 && wordListKindOf(list) === 'word' && (
                     <button
                       type="button"
                       onClick={() => setPrintListId((prev) => (prev === list.id ? null : list.id))}
@@ -726,7 +740,7 @@ export default function WordListsPage() {
                   </button>
                 </span>
               </div>
-              {printListId === list.id && (
+              {printListId === list.id && wordListKindOf(list) === 'word' && (
                 <div className="mt-3 rounded-lg bg-surface-container-low p-3">
                   <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('wordLists.printHint')}</div>
                   <MaterialsLaunchButtons
@@ -735,10 +749,17 @@ export default function WordListsPage() {
                 </div>
               )}
               {openId === list.id && (
-                <WordListEditor
-                  list={list}
-                  onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
-                />
+                wordListKindOf(list) === 'sentence' ? (
+                  <SentenceListEditor
+                    list={list}
+                    onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
+                  />
+                ) : (
+                  <WordListEditor
+                    list={list}
+                    onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
+                  />
+                )
               )}
             </div>
           ))}
@@ -753,10 +774,13 @@ export default function WordListsPage() {
         <div>
           {showCreateForm ? (
             <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
+                {t(newKind === 'sentence' ? 'wordLists.sentence.kindSentence' : 'wordLists.sentence.kindWord')}
+              </span>
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder={t('wordLists.namePlaceholder')}
+                placeholder={t(newKind === 'sentence' ? 'wordLists.sentence.namePlaceholder' : 'wordLists.namePlaceholder')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleCreate();
                 }}
@@ -798,13 +822,22 @@ export default function WordListsPage() {
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setShowCreateForm(true)}
-              className="px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors"
-            >
-              + {t('wordLists.createButton')}
-            </button>
+            <div className="flex flex-wrap gap-2">
+              {(['word', 'sentence'] as const).map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  onClick={() => {
+                    setNewKind(kind);
+                    setShowCreateForm(true);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-low"
+                >
+                  <span className="material-symbols-outlined text-[18px]">{kind === 'sentence' ? 'notes' : 'library_books'}</span>
+                  + {t(kind === 'sentence' ? 'wordLists.sentence.createSentence' : 'wordLists.sentence.createWord')}
+                </button>
+              ))}
+            </div>
           )}
         </div>
       )}

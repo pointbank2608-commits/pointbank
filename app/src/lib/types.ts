@@ -568,12 +568,17 @@ export interface WordListItem {
   patternMarked?: string | null;
 }
 
+/** 단어장(단어 + 뜻) 또는 문장 목록(영어 문장 + 해석, 066) — 같은 표를 쓰고 항목 모양(word/meaning)은 같다 */
+export type WordListKind = 'word' | 'sentence';
+
 export interface WordList {
   id: string;
   academy_id: string;
   /** null 이면 학원 전체 공용 */
   class_id: string | null;
   name: string;
+  /** 없으면(066 전) 단어장 */
+  kind?: WordListKind;
   items: WordListItem[];
   created_by: string | null;
   created_at: string;
@@ -609,6 +614,10 @@ export interface GameSlide {
   /** 편집 화면에서 미리 만들어/골라 둔 게임 콘텐츠(game_templates.id). 발표 중엔 이 템플릿을
    * 그대로 연다 — 없으면 그 게임 페이지가 반의 첫 템플릿을 연다. */
   templateId?: string;
+  /** 게임 내용을 자동으로 만들 때 쓴 수업 단어장(id) — 수업 단어장이 바뀌면 이 슬라이드의 게임 내용도 새로 만든다. */
+  autoWordListId?: string;
+  /** "이 블록만 다른 단어장"으로 만든 경우 그 단어장(id) — 있으면 수업 단어장이 바뀌어도 건드리지 않는다. */
+  ownWordListId?: string;
 }
 
 /** 워크시트 탭별 세부 옵션(WorksheetPrintPage.tsx 의 listShow/tracingShow/showAnswerKey/

@@ -2,7 +2,9 @@ import { buildQuizQuestions } from './quizFromWordList';
 import type { GameItem, GameTemplateConfig, WordListItem } from './types';
 
 export const WORD_LIST_GAMES = ['wheel', 'flashcards', 'matchup', 'quiz', 'gameshowquiz'] as const;
-export type WordListGame = typeof WORD_LIST_GAMES[number];
+/** 문장 목록(066)으로 바로 만들 수 있는 문장 게임 */
+export const SENTENCE_LIST_GAMES = ['unscramble'] as const;
+export type WordListGame = typeof WORD_LIST_GAMES[number] | typeof SENTENCE_LIST_GAMES[number];
 export function normalizedWord(text: string): string {
   return text.normalize('NFKC').trim().toLocaleLowerCase();
 }
@@ -18,6 +20,11 @@ export function prepareWordListGame(source: WordListItem[], game: WordListGame):
     seen.add(key);
     return true;
   }).map((item) => ({ ...item, word: item.word.trim(), meaning: item.meaning.trim() }));
+  if (game === 'unscramble') {
+    // 문장 배열하기는 낱말이 2개 이상인 문장만 나온다(SentenceUnscramblePage 의 playableItems 와 같은 기준)
+    const items = words.filter((item) => item.word.split(/\s+/).filter(Boolean).length >= 2).map((item) => ({ id: item.id, label: item.word }));
+    return { items, config: {}, count: items.length, ready: items.length > 0 };
+  }
   if (game === 'wheel') {
     const labels = new Set<string>();
     const items = words.filter((item) => {

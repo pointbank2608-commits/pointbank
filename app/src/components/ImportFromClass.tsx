@@ -14,6 +14,8 @@ export default function ImportFromClass({ candidates, offerRosterSwap, onImport 
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  // 목록이 길어 편집 화면이 밀리므로 기본은 접어 둔다(펼치면 그대로 고르기)
+  const [open, setOpen] = useState(false);
 
   if (candidates.length === 0) return null;
 
@@ -39,10 +41,19 @@ export default function ImportFromClass({ candidates, offerRosterSwap, onImport 
 
   return (
     <div className="mb-4">
-      <div className="font-caption text-caption text-on-surface-variant mb-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="mb-2 flex items-center gap-1 font-caption text-caption text-on-surface-variant hover:text-primary"
+      >
+        <span className="material-symbols-outlined text-[18px]">{open ? 'expand_less' : 'expand_more'}</span>
+        {open ? t('gameAdmin.importFromClassHide') : t('gameAdmin.importFromClassToggle', { count: candidates.length })}
+      </button>
+      {open && <div className="font-caption text-caption text-on-surface-variant mb-2">
         {t('gameAdmin.importFromClassLabel')}
-      </div>
-      <div className="flex flex-col gap-1.5">
+      </div>}
+      {open && <div className="flex flex-col gap-1.5">
         {candidates.map((c) => (
           <div key={c.templateId}>
             <button
@@ -77,7 +88,7 @@ export default function ImportFromClass({ candidates, offerRosterSwap, onImport 
             )}
           </div>
         ))}
-      </div>
+      </div>}
     </div>
   );
 }
