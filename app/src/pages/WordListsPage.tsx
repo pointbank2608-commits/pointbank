@@ -6,6 +6,7 @@ import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareWordListGame, type WordListGame } from '../lib/wordListLaunch';
 import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
+import LyricsWordPicker from '../components/LyricsWordPicker';
 import MaterialsLaunchButtons from '../components/MaterialsLaunchButtons';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -194,7 +195,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [failedSave, setFailedSave] = useState<{ items: WordListItem[]; onSuccess?: () => void } | null>(null);
-  const [tab, setTab] = useState<'manual' | 'dictionary' | 'category'>('manual');
+  const [tab, setTab] = useState<'manual' | 'dictionary' | 'category' | 'lyrics'>('manual');
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [query, setQuery] = useState('');
@@ -210,6 +211,9 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
     if (tab === 'category') {
       if (dictionary === null) fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
       if (phonics === null) fetchPhonicsBank().then(setPhonics).catch(() => setPhonics([]));
+    }
+    if (tab === 'lyrics' && dictionary === null) {
+      fetchWordBank().then(setDictionary).catch(() => setDictionary([]));
     }
   }, [tab, dictionary, phonics]);
 
@@ -245,13 +249,20 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
     void persist([...list.items, { id: uid(), ...draft }]);
   }
 
-  function addManyFromEntries(entries: (WordBankEntry | PhonicsBankEntry)[]) {
+  function addDrafts(drafts: Omit<WordListItem, 'id'>[]) {
     const existing = new Set(list.items.map((i) => `${i.word}::${i.meaning}`));
-    const fresh = entries
-      .map(toWordListDraft)
-      .filter((d) => !existing.has(`${d.word}::${d.meaning}`));
+    const fresh = drafts.filter((d) => {
+      const key = `${d.word}::${d.meaning}`;
+      if (existing.has(key)) return false;
+      existing.add(key);
+      return true;
+    });
     if (fresh.length === 0) return;
     void persist([...list.items, ...fresh.map((d) => ({ id: uid(), ...d }))]);
+  }
+
+  function addManyFromEntries(entries: (WordBankEntry | PhonicsBankEntry)[]) {
+    addDrafts(entries.map(toWordListDraft));
   }
 
   function removeItem(id: string) {
@@ -322,7 +333,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
         </div>
       )}
 
-      <div className="flex bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
+      <div className="flex flex-wrap max-w-full bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
         <button
           type="button"
           onClick={() => setTab('manual')}
@@ -349,6 +360,16 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
           }`}
         >
           {t('wordLists.tabCategory')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('lyrics')}
+          className={`flex items-center gap-1 px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+            tab === 'lyrics' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+          }`}
+        >
+          <span className="material-symbols-outlined text-base">music_note</span>
+          {t('lyricsPicker.tab')}
         </button>
       </div>
 
@@ -408,6 +429,8 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
             </div>
           )}
         </div>
+      ) : tab === 'lyrics' ? (
+        <LyricsWordPicker dictionary={dictionary} existingKeys={existingKeys} onAdd={addDrafts} />
       ) : (
         <div>
           {dictionary === null || phonics === null ? (

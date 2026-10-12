@@ -4,15 +4,21 @@ import { GRAMMAR_POINTS } from '../../lib/grammar';
 import { curriculumFor, SCHOOLS, type SchoolId } from '../../lib/curriculumGrammar';
 import { buildFixErrorSteps, fixErrorItems, pitfallCount } from '../../lib/grammarBlocks';
 import type { SoloStep } from '../../lib/soloLessons';
+import { buildCondWriteSteps, buildOrderWriteSteps, sentencesForPointIds, writeSentenceCount } from '../../lib/writeBlocks';
 import SoloPrintModal from './SoloPrintModal';
 
+type Kind = 'fix' | 'order' | 'cond';
+
 /**
- * 문법 항목으로 어법 오류 고치기 블록 만들기 — 학교급·학년·단원에서 문법 항목을 고르면, 그 항목들의 검수된
- * "틀리기 쉬운 문장 → 고친 문장"으로 문제를 만든다(AI 없음). 화면에서 풀거나 인쇄할 수 있다.
+ * 문법 항목으로 쓰기·고치기 블록 만들기 — 학교급·학년·단원에서 문법 항목을 고르면, 그 항목들의 검수된 자료로 문제를 만든다(AI 없음):
+ *  - 어법 오류 고치기: "틀리기 쉬운 문장 → 고친 문장"(pitfalls)
+ *  - 단어 배열 영작·조건 영작: 예문과 우리말 해석(translations)
+ * 화면에서 풀거나 인쇄할 수 있다.
  */
 export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }: { lessonName: string; onCreate: (steps: SoloStep[]) => void; onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const ko = i18n.language.startsWith('ko');
+  const [kind, setKind] = useState<Kind>('fix');
   const [school, setSchool] = useState<SchoolId>('middle');
   const [gradeIdx, setGradeIdx] = useState(0);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -22,8 +28,17 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
   const grades = useMemo(() => curriculumFor(school, GRAMMAR_POINTS), [school]);
   const grade = grades[Math.min(gradeIdx, Math.max(0, grades.length - 1))];
   const ids = useMemo(() => [...picked], [picked]);
-  const steps = useMemo(() => buildFixErrorSteps(ids, count), [ids, count]);
-  const available = useMemo(() => fixErrorItems(GRAMMAR_POINTS.filter((p) => picked.has(p.id))).length, [picked]);
+  const itemsOf = (p: (typeof GRAMMAR_POINTS)[number]): number => (kind === 'fix' ? pitfallCount(p) : writeSentenceCount(p));
+
+  const steps = useMemo(() => {
+    if (kind === 'fix') return buildFixErrorSteps(ids, count);
+    const sentences = sentencesForPointIds(ids);
+    return kind === 'order' ? buildOrderWriteSteps(sentences, count) : buildCondWriteSteps(sentences, count);
+  }, [kind, ids, count]);
+  const available = useMemo(
+    () => (kind === 'fix' ? fixErrorItems(GRAMMAR_POINTS.filter((p) => picked.has(p.id))).length : sentencesForPointIds(ids).length),
+    [kind, picked, ids],
+  );
 
   const toggle = (id: string) =>
     setPicked((cur) => {
@@ -43,6 +58,7 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
     });
 
   const chip = (on: boolean) => `rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'}`;
+  const kindName = t(`soloGrammar.kind_${kind}`);
 
   return (
     <div className="fixed inset-0 z-[67] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" onClick={onClose}>
@@ -54,7 +70,18 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <p className="font-body-md text-body-md text-on-surface-variant">{t('soloGrammar.intro')}</p>
+
+        <div>
+          <div className="mb-1.5 font-label-md text-label-md font-bold text-on-surface">{t('soloText.kindLabel')}</div>
+          <div className="flex flex-wrap gap-2">
+            {(['fix', 'order', 'cond'] as const).map((k) => (
+              <button key={k} type="button" onClick={() => setKind(k)} className={chip(kind === k)}>
+                {t(`soloGrammar.kind_${k}`)}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 font-caption text-caption text-on-surface-variant">{t(`soloGrammar.intro_${kind}`)}</p>
+        </div>
 
         <div className="flex flex-wrap gap-2">
           {SCHOOLS.map((s) => (
@@ -82,7 +109,7 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
         <div className="max-h-[34vh] space-y-3 overflow-y-auto rounded-xl border border-outline-variant/50 p-3">
           {grade && grade.units.length === 0 && <p className="font-caption text-caption text-on-surface-variant">{t('soloGrammar.noUnits')}</p>}
           {grade?.units.map(({ unit, points }) => {
-            const usable = points.filter((p) => pitfallCount(p) > 0);
+            const usable = points.filter((p) => itemsOf(p) > 0);
             if (usable.length === 0) return null;
             const allOn = usable.every((p) => picked.has(p.id));
             return (
@@ -97,7 +124,7 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
                       <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
                         <input type="checkbox" checked={picked.has(p.id)} onChange={() => toggle(p.id)} className="h-4 w-4" />
                         <span className="min-w-0 flex-1 truncate">{p.name}</span>
-                        <span className="shrink-0 font-caption text-caption text-on-surface-variant">{t('soloGrammar.itemCount', { n: pitfallCount(p) })}</span>
+                        <span className="shrink-0 font-caption text-caption text-on-surface-variant">{t('soloGrammar.itemCount', { n: itemsOf(p) })}</span>
                       </label>
                     </li>
                   ))}
@@ -125,17 +152,31 @@ export default function SoloGrammarBlockModal({ lessonName, onCreate, onClose }:
         ) : (
           <div className="rounded-xl bg-primary-fixed/25 px-4 py-3">
             <div className="font-label-md text-label-md font-bold text-deep-navy">
-              {t('soloGrammar.preview', { count: steps.length, points: picked.size })}
+              {t('soloGrammar.preview', { name: kindName, count: steps.length, points: picked.size })}
               {available > steps.length && <span className="ml-2 font-caption text-caption font-normal text-on-surface-variant">{t('soloGrammar.moreAvailable', { n: available })}</span>}
             </div>
             <ol className="mt-1.5 list-decimal space-y-0.5 pl-6 font-caption text-caption text-on-surface">
-              {steps.slice(0, 4).map((s, i) =>
-                s.t === 'fixError' ? (
-                  <li key={i} className="truncate">
-                    <span className="text-error line-through">{s.wrong}</span> → <b>{s.right}</b>
-                  </li>
-                ) : null,
-              )}
+              {steps.slice(0, 4).map((s, i) => {
+                if (s.t === 'fixError')
+                  return (
+                    <li key={i} className="truncate">
+                      <span className="text-error line-through">{s.wrong}</span> → <b>{s.right}</b>
+                    </li>
+                  );
+                if (s.t === 'orderWrite')
+                  return (
+                    <li key={i} className="truncate">
+                      {s.ko} → <b>{s.answer}</b>
+                    </li>
+                  );
+                if (s.t === 'condWrite')
+                  return (
+                    <li key={i} className="truncate">
+                      {s.ko} <span className="text-on-surface-variant">({s.conditions.length}{t('soloGrammar.condUnit')})</span> → <b>{s.model}</b>
+                    </li>
+                  );
+                return null;
+              })}
             </ol>
             {steps.length > 4 && <div className="mt-0.5 pl-6 font-caption text-caption text-on-surface-variant">… {t('soloText.more', { n: steps.length - 4 })}</div>}
           </div>

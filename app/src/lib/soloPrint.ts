@@ -25,6 +25,8 @@ export const PRINTABLE_STEP_TYPES: SoloStep['t'][] = [
   'gapType',
   'lineOrder',
   'fixError',
+  'orderWrite',
+  'condWrite',
 ];
 
 export const isPrintableStep = (s: SoloStep): boolean => PRINTABLE_STEP_TYPES.includes(s.t);
@@ -113,6 +115,20 @@ function render(step: SoloStep, no: number, t: PrintT, origin: string): Rendered
       return {
         body: `<div class="q">${n}<span class="inst-inline">${esc(t('soloPrint.lineOrderAsk'))}</span><div class="pieces">${rows}</div><div class="order">${slots}</div></div>`,
         answer: letters.join(' → '),
+      };
+    }
+    case 'orderWrite': {
+      const chips = step.words.map((w) => `<span class="chip">${esc(w)}</span>`).join('');
+      return {
+        body: `<div class="q">${n}<span class="sent">${esc(step.ko)}</span><div class="chips">${chips}</div><div class="line"></div></div>`,
+        answer: esc(step.answer),
+      };
+    }
+    case 'condWrite': {
+      const conds = step.conditions.map((c, i) => `<div class="cond">${i + 1}. ${esc(c.text)}</div>`).join('');
+      return {
+        body: `<div class="q">${n}<span class="sent">${esc(step.ko)}</span><div class="condbox"><b>${esc(t('soloPrint.condTitle'))}</b>${conds}</div><div class="line"></div><div class="line"></div></div>`,
+        answer: esc(step.model),
       };
     }
     case 'fixError':
@@ -211,6 +227,9 @@ h1 { margin: 0; font-size: 21px; border: 2px solid #1e4b7a; color: #1e4b7a; bord
 .sent { font-size: 16px; font-weight: 600; }
 .sent.big { font-size: 22px; }
 .sent.wrong { color: #8a1c1c; }
+.condbox { margin: 2mm 0 2mm 10mm; border: 1px solid #999; border-radius: 6px; padding: 2mm 4mm; font-size: 13.5px; }
+.condbox b { display: block; margin-bottom: 1mm; }
+.cond { margin: 0.5mm 0; }
 .why { font-size: 12.5px; color: #555; font-weight: 400; }
 .blank { display: inline-block; border-bottom: 1.4px solid #000; height: 1.1em; vertical-align: baseline; margin: 0 1mm; }
 .ko { margin: 0.8mm 0 0 10mm; color: #555; font-size: 12.5px; }

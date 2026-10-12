@@ -169,7 +169,7 @@ try {
   await test('스탯: 서버(060 SQL)의 단계 → 능력 이름표가 앱의 세부 능력 목록과 같다', async () => {
     const fs = await import('node:fs');
     // 가장 나중 파일의 정의가 서버에 적용된 것이다(060 에서 만들고 062 에서 새 단계 종류를 더함)
-    const files = ['060_solo_stats.sql', '062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
+    const files = ['060_solo_stats.sql', '062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql', '065_solo_write_blocks.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
     const sql = fs.readFileSync(new URL('../../../supabase/' + files[files.length - 1], import.meta.url), 'utf8');
     const from = sql.indexOf('create or replace function public.solo_step_skill');
     const to = sql.indexOf('$$;', sql.indexOf('$$', from) + 2);
@@ -183,7 +183,7 @@ try {
   await test('블록 정답률: 앱의 단계 → 능력 이름표가 서버(062 SQL)와 같다', async () => {
     const fs = await import('node:fs');
     // solo_step_skill 을 다시 정의한 가장 나중 파일이 적용본(062, 064 …)
-    const files = ['062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
+    const files = ['062_solo_skill_text_blocks.sql', '064_solo_fix_error.sql', '065_solo_write_blocks.sql'].filter((f) => fs.existsSync(new URL('../../../supabase/' + f, import.meta.url)));
     let sql = '';
     for (const f of files) {
       const t = fs.readFileSync(new URL('../../../supabase/' + f, import.meta.url), 'utf8');
@@ -225,6 +225,12 @@ try {
     const few = bs.blockPerformance({ ...data, steps: [{ step: 1, students: 1, n: 3, correct: 3 }], skills: [] }, saved, saved, block);
     assert.equal(few.lesson.label, null);
     assert.equal(few.klass, null);
+    // 능력 이름표가 없는 채점 블록(조건 영작)은 "이 수업 정답률"도 만들지 않는다
+    const cw = [{ t: 'intro' }, { t: 'condWrite' }];
+    const cwBlock = { type: 'condWrite', start: 1, end: 1, count: 1, edited: 0, words: [], seconds: 60, source: null };
+    const cwPerf = bs.blockPerformance({ ...data, steps: [{ step: 1, students: 3, n: 3, correct: 3 }] }, cw, cw, cwBlock);
+    assert.equal(cwPerf.lesson, null);
+    assert.equal(cwPerf.klass, null);
     // 시험 블록·정보 블록은 능력 숫자를 안 붙인다
     assert.equal(bs.blockPerformance(data, saved, [{ t: 'test' }], { ...block, type: 'test', start: 0, end: 0 }).klass, null);
   });

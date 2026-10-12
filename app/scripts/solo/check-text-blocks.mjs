@@ -160,13 +160,59 @@ try {
   const alt2 = { t: 'fixError', wrong: "I don't know neither.", right: "I don't know either. / I know neither.", why: '', ko: '' };
   assert.equal(L.gradeSoloLocal(alt2, 'I know neither.'), true);
   assert.equal(L.gradeSoloLocal(alt2, "I don't know either"), true);
+  // 8) 영작 블록: 단어 배열 영작·조건 영작(문법 예문 + 해석, 또는 해석이 있는 가사 줄)
+  const W = await server.ssrLoadModule('/src/lib/writeBlocks.ts');
+  const sents = W.sentencesForPointIds(withPit.slice(0, 12).map((g) => g.id));
+  assert.ok(sents.length >= 8, '해석이 있는 예문이 충분하다');
+  assert.ok(sents.every((x) => x.ko && !/\*\*/.test(x.en)), '해석이 있고 강조 표시가 없다');
+  const ow = W.buildOrderWriteSteps(sents, 6);
+  assert.equal(ow.length, 6);
+  for (const o of ow) {
+    assert.equal(o.t, 'orderWrite');
+    assert.deepEqual(E.stepProblems(o), [], `검사 통과: ${o.answer}`);
+    assert.deepEqual([...o.words].map((w) => w.toLowerCase()).sort(), W.wordTokens(o.answer).map((w) => w.toLowerCase()).sort(), '주어진 낱말 = 정답의 낱말');
+    const op = L.toPublicStep(o);
+    assert.ok(!('answer' in op) && op.ko === o.ko, 'orderWrite: answer 가 빠져야 한다');
+    assert.equal(L.gradeSoloLocal(o, o.answer.toLowerCase().replace(/[.!?]+$/, '')), true);
+    assert.equal(L.gradeSoloLocal(o, o.words.join(' ')) === true && o.words.join(' ') !== W.wordTokens(o.answer).join(' ') ? true : false, false, '섞인 순서 그대로는 틀리다');
+  }
+  const cw = W.buildCondWriteSteps(sents, 6);
+  for (const c of cw) {
+    assert.equal(c.t, 'condWrite');
+    assert.deepEqual(E.stepProblems(c), [], `검사 통과: ${c.model}`);
+    assert.ok(c.conditions.some((x) => typeof x.min === 'number') && c.conditions.some((x) => x.words && x.words.length), '단어 수와 낱말 조건이 있다');
+    const cp = L.toPublicStep(c);
+    assert.ok(!('model' in cp) && cp.conditions.length === c.conditions.length, 'condWrite: model 이 빠져야 한다');
+    assert.equal(L.gradeSoloLocal(c, c.model), true, '예시 답은 자기 조건을 통과한다');
+    assert.equal(L.gradeSoloLocal(c, 'Hi.'), false, '조건을 못 지키면 틀리다');
+    assert.equal(L.gradeSoloLocal(c, '   '), false);
+  }
+  // 조건 하나씩
+  const cond = { text: '7단어', min: 7, max: 7 };
+  assert.equal(L.checkCondition(cond, 'I want to learn English very much'), true);
+  assert.equal(L.checkCondition(cond, 'I want to learn English'), false);
+  assert.equal(L.checkCondition({ text: 'x', words: ['want', 'wants'] }, 'She wants it.'), true);
+  assert.equal(L.checkCondition({ text: 'x', words: ['want'] }, 'She wanted it.'), false, '낱말 전체가 같아야 한다');
+  assert.equal(L.checkCondition({ text: 'a lot of', words: ['a lot of'] }, 'I have a lot of books'), true, '낱말 묶음');
+  assert.equal(L.checkCondition({ text: '틀 안내' }, 'anything'), null, '검사할 게 없으면 null');
+  assert.equal(L.conditionsMet([{ text: '틀 안내' }], 'anything'), true);
+  assert.equal(L.conditionsMet([{ text: '틀 안내' }], ''), false);
+  // 해석이 있는 가사 줄
+  const tl = X.parseTextSource(['[0:10-0:14] I have been waiting for you | 널 기다려 왔어', '[0:14-0:18] Hello | 안녕'].join('\n')).lines;
+  assert.equal(W.sentencesFromLines(tl).length, 1, '3낱말 이상 + 해석 있는 줄만');
+  // 인쇄
+  const whtml = P.buildSoloPrintHtml([...ow, ...cw], { title: '영작', includeAnswers: true, showBank: false }, (k) => k);
+  assert.ok(whtml.includes('soloPrint.condTitle') && whtml.includes('inst_orderWrite') && whtml.includes('inst_condWrite'));
+  assert.equal((whtml.match(/class="no"/g) ?? []).length, ow.length + cw.length);
+  assert.ok(whtml.split('class="page ans"')[1].includes(cw[0].model.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/</g, '&lt;')), '정답지에 예시 답');
+
   // 인쇄
   const fhtml = P.buildSoloPrintHtml(fix, { title: '오류 고치기', includeAnswers: true, showBank: false }, t);
   assert.equal((fhtml.match(/class="no"/g) ?? []).length, fix.length);
   assert.ok(fhtml.includes('inst_fixError'));
   assert.ok(fhtml.split('class="page ans"')[1].includes(fix[0].right.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')), '정답지에 고친 문장');
 
-  console.log('글 블록 확인 통과 — 현재완료 빈칸 2문제, 줄 순서 2문제, 오류 고치기 ' + fix.length + '문제, 인쇄 HTML', Math.round(html.length / 1024) + 'KB');
+  console.log('글 블록 확인 통과 — 현재완료 빈칸 2문제, 줄 순서 2문제, 오류 고치기 ' + fix.length + '문제, 영작 ' + ow.length + '+' + cw.length + '문제, 인쇄 HTML', Math.round(html.length / 1024) + 'KB');
 } finally {
   await server.close();
 }

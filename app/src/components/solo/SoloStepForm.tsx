@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { uploadLessonSlideImage } from '../../lib/api';
 import { lettersOf, stepProblems, stepSummary, wordsOfSentence } from '../../lib/soloEdit';
-import type { RoleplayLine, SoloClip, SoloStep, SoloTestItem } from '../../lib/soloLessons';
+import type { RoleplayLine, SoloClip, SoloStep, SoloTestItem, WriteCondition } from '../../lib/soloLessons';
 import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
 import { POS_HINT_KO, SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
@@ -357,6 +357,54 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
           {step.clip && <ClipField clip={step.clip} onChange={(clip) => set({ clip })} />}
         </div>
       );
+    case 'orderWrite':
+      return (
+        <div className="space-y-4">
+          {text(t('soloEdit.writeKo'), step.ko, 'ko', { area: true, hint: t('soloEdit.writeKoHint') })}
+          {text(t('soloEdit.writeAnswer'), step.answer, 'answer', { area: true, hint: t('soloEdit.writeAnswerHint') })}
+          <p className="rounded-lg bg-surface-container-low px-3 py-2 font-caption text-caption text-on-surface-variant">
+            {t('soloEdit.writeWords')}: {step.words.join(' · ') || '—'}
+          </p>
+        </div>
+      );
+    case 'condWrite': {
+      const setCond = (i: number, patch: Partial<WriteCondition>) => set({ conditions: step.conditions.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
+      const numOr = (v: string): number | undefined => (v.trim() === '' || Number.isNaN(Number(v)) ? undefined : Math.max(0, Math.round(Number(v))));
+      return (
+        <div className="space-y-4">
+          {text(t('soloEdit.writeKo'), step.ko, 'ko', { area: true, hint: t('soloEdit.writeKoHint') })}
+          {text(t('soloEdit.condModel'), step.model, 'model', { area: true, hint: t('soloEdit.condModelHint') })}
+          <Field title={t('soloEdit.condList')} hint={t('soloEdit.condListHint')}>
+            <div className="space-y-2">
+              {step.conditions.map((c, i) => (
+                <div key={i} className="space-y-1.5 rounded-lg border border-outline-variant/50 p-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 shrink-0 text-center font-caption text-caption text-on-surface-variant">{i + 1}</span>
+                    <input value={c.text} onChange={(e) => setCond(i, { text: e.target.value })} className={input} placeholder={t('soloEdit.condText')} />
+                    <button type="button" onClick={() => set({ conditions: step.conditions.filter((_, j) => j !== i) })} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-error" aria-label={t('common.delete')}>
+                      <span className="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-[1fr_5rem_5rem] gap-2 pl-7">
+                    <input
+                      value={(c.words ?? []).join(', ')}
+                      onChange={(e) => setCond(i, { words: e.target.value.split(',').map((w) => w.trim()).filter(Boolean) })}
+                      className={input}
+                      placeholder={t('soloEdit.condWords')}
+                    />
+                    <input type="number" min={0} value={c.min ?? ''} onChange={(e) => setCond(i, { min: numOr(e.target.value) })} className={input} placeholder={t('soloEdit.condMin')} />
+                    <input type="number" min={0} value={c.max ?? ''} onChange={(e) => setCond(i, { max: numOr(e.target.value) })} className={input} placeholder={t('soloEdit.condMax')} />
+                  </div>
+                </div>
+              ))}
+              <button type="button" onClick={() => set({ conditions: [...step.conditions, { text: '' }] })} className="font-label-md text-label-md text-primary hover:underline">
+                + {t('soloEdit.condAdd')}
+              </button>
+            </div>
+          </Field>
+        </div>
+      );
+    }
     case 'fixError':
       return (
         <div className="space-y-4">

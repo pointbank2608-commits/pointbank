@@ -33,6 +33,8 @@ export const STEP_KINDS: StepKind[] = [
   { t: 'gapType', icon: 'format_underlined', group: 'quiz' },
   { t: 'lineOrder', icon: 'low_priority', group: 'grammar' },
   { t: 'fixError', icon: 'spellcheck', group: 'grammar' },
+  { t: 'orderWrite', icon: 'translate', group: 'grammar' },
+  { t: 'condWrite', icon: 'rule_settings', group: 'grammar' },
   { t: 'fadeRead', icon: 'mic', group: 'speak' },
   { t: 'sayPick', icon: 'forum', group: 'speak' },
   { t: 'roleplay', icon: 'theater_comedy', group: 'speak' },
@@ -108,6 +110,10 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, lines: ['', '', ''], pieces: ['', '', ''] };
     case 'fixError':
       return { t, wrong: '', right: '', why: '', ko: '' };
+    case 'orderWrite':
+      return { t, ko: '', words: [], answer: '' };
+    case 'condWrite':
+      return { t, ko: '', conditions: [{ text: '', words: [] }], model: '' };
     case 'test':
       return { t, title: '', scope: 'lesson', timed: true, items: [] };
   }
@@ -169,6 +175,33 @@ export function normalizeStep(step: SoloStep): SoloStep {
       const word = step.word.trim();
       return { ...step, word, length: word.length, first: word[0] ?? '' };
     }
+    case 'orderWrite': {
+      const answer = step.answer.trim().replace(/\s+/g, ' ');
+      const first = answer.split(/\s+\/\s+/)[0] ?? '';
+      const toks = first.split(/\s+/).map((w) => w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, '')).filter(Boolean);
+      const same = [...step.words].map((w) => w.toLowerCase()).sort().join('|') === [...toks].map((w) => w.toLowerCase()).sort().join('|');
+      let words = toks;
+      if (same) words = step.words;
+      else {
+        for (let i = 0; i < 6; i++) {
+          const s2 = shuffle(toks);
+          if (s2.join('|') !== toks.join('|')) {
+            words = s2;
+            break;
+          }
+        }
+      }
+      return { ...step, ko: step.ko.trim(), answer, words };
+    }
+    case 'condWrite':
+      return {
+        ...step,
+        ko: step.ko.trim(),
+        model: step.model.trim(),
+        conditions: step.conditions
+          .map((c) => ({ ...c, text: c.text.trim(), words: (c.words ?? []).map((w) => w.trim()).filter(Boolean) }))
+          .filter((c) => c.text || (c.words && c.words.length > 0) || typeof c.min === 'number' || typeof c.max === 'number'),
+      };
     case 'fixError':
       return { ...step, wrong: step.wrong.trim().replace(/\s+/g, ' '), right: step.right.trim().replace(/\s+/g, ' ') };
     case 'lineOrder': {
@@ -274,6 +307,9 @@ export function stepSummary(step: SoloStep): string {
       return step.lines[0] ?? '';
     case 'fixError':
       return step.wrong;
+    case 'orderWrite':
+    case 'condWrite':
+      return step.ko;
     case 'test':
       return step.title || `${step.items.length}`;
   }
@@ -374,6 +410,17 @@ export function stepProblems(step: SoloStep): string[] {
       if (!step.sentence.includes('_____')) p.push('blankMissing');
       if (blank(step.word)) p.push('wordEmpty');
       if (step.clip && (!step.clip.videoId.trim() || step.clip.end <= step.clip.start)) p.push('clipRange');
+      break;
+    case 'orderWrite':
+      if (blank(step.ko)) p.push('koEmpty');
+      if (blank(step.answer)) p.push('answerEmpty');
+      else if (step.answer.split(/\s+\/\s+/)[0].trim().split(/\s+/).length < 3) p.push('writeShort');
+      break;
+    case 'condWrite':
+      if (blank(step.ko)) p.push('koEmpty');
+      if (blank(step.model)) p.push('modelEmpty');
+      if (step.conditions.length === 0 || step.conditions.some((c) => blank(c.text))) p.push('condEmpty');
+      if (step.conditions.some((c) => typeof c.min === 'number' && typeof c.max === 'number' && c.min > c.max)) p.push('condRange');
       break;
     case 'fixError':
       if (blank(step.wrong) || blank(step.right)) p.push('fixEmpty');

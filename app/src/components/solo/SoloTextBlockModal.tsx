@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import type { SoloStep } from '../../lib/soloLessons';
 import { stepSummary } from '../../lib/soloEdit';
 import { buildGapItems, buildGapSteps, buildLineOrderSteps, GRAMMAR_TARGETS, parseTextSource, videoIdOf } from '../../lib/textBlocks';
+import { buildCondWriteSteps, buildOrderWriteSteps, sentencesFromLines } from '../../lib/writeBlocks';
 import SoloPrintModal from './SoloPrintModal';
 
-type Kind = 'gap' | 'order';
+type Kind = 'gap' | 'order' | 'write' | 'cond';
 
 /**
  * 글(가사·대사·지문)로 블록 만들기 — 붙여 넣은 글에서 가사·대사 빈칸 또는 줄 순서 문제를 한 번에 만든다.
@@ -31,6 +32,11 @@ export default function SoloTextBlockModal({ lessonName, onCreate, onClose }: { 
   const made = useMemo(() => {
     if (parsed.lines.length === 0) return { steps: [] as SoloStep[], matched: 0 };
     if (kind === 'order') return { steps: buildLineOrderSteps(parsed.lines, lineCount, ctx), matched: 0 };
+    if (kind === 'write' || kind === 'cond') {
+      const sentences = sentencesFromLines(parsed.lines);
+      const built = kind === 'write' ? buildOrderWriteSteps(sentences, count) : buildCondWriteSteps(sentences, count);
+      return { steps: built, matched: sentences.length };
+    }
     const req =
       target === 'custom'
         ? { words: customWords.split(/[,\n]/) }
@@ -43,7 +49,16 @@ export default function SoloTextBlockModal({ lessonName, onCreate, onClose }: { 
 
   const chip = (on: boolean) => `rounded-full px-4 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'}`;
   const field = 'w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary';
-  const blockName = kind === 'gap' ? (level === 'hard' ? t('soloEdit.stepType_gapType') : t('soloText.kindGap')) : t('soloEdit.stepType_lineOrder');
+  const blockName =
+    kind === 'gap'
+      ? level === 'hard'
+        ? t('soloEdit.stepType_gapType')
+        : t('soloText.kindGap')
+      : kind === 'order'
+        ? t('soloEdit.stepType_lineOrder')
+        : kind === 'write'
+          ? t('soloEdit.stepType_orderWrite')
+          : t('soloEdit.stepType_condWrite');
 
   return (
     <div className="fixed inset-0 z-[67] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" onClick={onClose}>
@@ -80,6 +95,12 @@ export default function SoloTextBlockModal({ lessonName, onCreate, onClose }: { 
             </button>
             <button type="button" onClick={() => setKind('order')} className={chip(kind === 'order')}>
               {t('soloText.kindOrder')}
+            </button>
+            <button type="button" onClick={() => setKind('write')} className={chip(kind === 'write')}>
+              {t('soloText.kindWrite')}
+            </button>
+            <button type="button" onClick={() => setKind('cond')} className={chip(kind === 'cond')}>
+              {t('soloText.kindCond')}
             </button>
           </div>
         </div>
@@ -126,6 +147,18 @@ export default function SoloTextBlockModal({ lessonName, onCreate, onClose }: { 
               )}
             </label>
           </div>
+        ) : kind === 'write' || kind === 'cond' ? (
+          <div className="space-y-2">
+            <p className="font-caption text-caption text-on-surface-variant">{kind === 'write' ? t('soloText.writeHint') : t('soloText.condHint')}</p>
+            <div className="mb-1.5 font-label-md text-label-md font-bold text-on-surface">{t('soloText.countLabel')}</div>
+            <div className="flex flex-wrap gap-2">
+              {[5, 8, 10, 15].map((n) => (
+                <button key={n} type="button" onClick={() => setCount(n)} className={chip(count === n)}>
+                  {t('soloText.countN', { n })}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <div>
             <div className="mb-1.5 font-label-md text-label-md font-bold text-on-surface">{t('soloText.lineCountLabel')}</div>
@@ -143,7 +176,9 @@ export default function SoloTextBlockModal({ lessonName, onCreate, onClose }: { 
         {parsed.lines.length === 0 ? (
           <p className="rounded-xl bg-surface-container-low px-4 py-3 font-caption text-caption text-on-surface-variant">{t('soloText.empty')}</p>
         ) : made.steps.length === 0 ? (
-          <p className="rounded-xl bg-error/10 px-4 py-3 font-caption text-caption text-error">{kind === 'gap' ? t('soloText.noneGap') : t('soloText.noneOrder')}</p>
+          <p className="rounded-xl bg-error/10 px-4 py-3 font-caption text-caption text-error">
+            {kind === 'gap' ? t('soloText.noneGap') : kind === 'order' ? t('soloText.noneOrder') : t('soloText.noneWrite')}
+          </p>
         ) : (
           <div className="rounded-xl bg-primary-fixed/25 px-4 py-3">
             <div className="font-label-md text-label-md font-bold text-deep-navy">{t('soloText.preview', { name: blockName, count: made.steps.length })}</div>

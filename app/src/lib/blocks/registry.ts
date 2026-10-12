@@ -43,11 +43,13 @@ const SOLO_CONCEPT: Partial<Record<SoloStep['t'], string>> = {
   gapType: 'clozeListen',
   lineOrder: 'lineOrder',
   fixError: 'errorFix',
+  orderWrite: 'sentenceWrite',
+  condWrite: 'sentenceWrite',
   test: 'test',
 };
 
 /** 개별수업 문제 중 서버가 채점하는 것 */
-const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick', 'gapType', 'lineOrder', 'fixError', 'test'];
+const SOLO_GRADED: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'pickPos', 'spell', 'typeWord', 'fillBlank', 'dictation', 'translatePick', 'pickCorrect', 'unscramble', 'lyricBlank', 'sayPick', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite', 'test'];
 
 const gameBlocks: BlockDef[] = GAME_CATALOG.map((g) => ({
   id: `${PRACTICE_GAMES.includes(g.type) ? 'practice' : 'game'}.${g.type}`,

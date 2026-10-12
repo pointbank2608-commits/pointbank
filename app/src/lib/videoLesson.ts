@@ -11,7 +11,7 @@ const SKIP_POS = new Set(['대명사', '전치사', '접속사', '관사', '조�
 const STOP = new Set(['the', 'and', 'you', 'are', 'was', 'have', 'has', 'his', 'her', 'she', 'they', 'this', 'that', 'what', 'there', 'some', 'very', 'too', 'not', 'yes', 'yay', 'wow', 'okay', 'oh']);
 
 /** 낱말 꼴 → 사전 표제어 후보(복수·과거·진행·3인칭) */
-function lemmas(w: string): string[] {
+export function lemmas(w: string): string[] {
   const out = [w];
   if (w.endsWith('ies')) out.push(`${w.slice(0, -3)}y`);
   if (w.endsWith('es')) out.push(w.slice(0, -2));

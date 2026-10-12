@@ -9,6 +9,7 @@ import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS,
 import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
 import type { TestResult } from '../../lib/soloTest';
 import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
+import { checkCondition, looseNorm } from '../../lib/soloLessons';
 import SoloTestRunner from './SoloTestRunner';
 
 /**
@@ -20,7 +21,7 @@ import SoloTestRunner from './SoloTestRunner';
  */
 export interface SoloPlayerApi {
   /** 답 내기 → 맞았는지 */
-  answer(step: number, value: string): Promise<boolean>;
+  answer(step: number, value: string): Promise<boolean | { ok: boolean; model?: string | null }>;
   /** 단계를 끝냈다고 알리기(모르겠어요면 unsure) → 정답 글자(모르겠어요일 때) */
   advance(step: number, unsure: boolean): Promise<{ answer: string | null }>;
   /** 두 번 틀린 뒤 정답 보기 */
@@ -68,7 +69,7 @@ function PosBadge({ pos }: { pos: string }) {
   );
 }
 
-const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError'];
+const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'];
 
 export default function SoloPlayer({
   steps,
@@ -241,6 +242,8 @@ export default function SoloPlayer({
   // 어법 오류 고치기: 고친 낱말(칸 번호 → 글)과 지금 고치는 칸
   const [fixEdits, setFixEdits] = useState<Record<number, string>>({});
   const [fixOpen, setFixOpen] = useState<number | null>(null);
+  // 조건 영작을 맞혔을 때 서버가 돌려준 예시 답
+  const [modelNote, setModelNote] = useState<string | null>(null);
 
   // 새 단계로 올 때: 상태 비우고, 소리 나는 단계는 자동으로 읽어 준다
   useEffect(() => {
@@ -263,6 +266,7 @@ export default function SoloPlayer({
     setRpPeek(false);
     setFixEdits({});
     setFixOpen(null);
+    setModelNote(null);
     attempts.current = 0;
     if (!step) return;
     if (step.t === 'fadeRead') speak(step.sentence);
@@ -318,8 +322,10 @@ export default function SoloPlayer({
 
   /** 답을 서버에 내고 맞았는지에 따라 단계 상태를 바꾼다 */
   async function submit(value: string, onWrong?: () => void) {
-    const ok = await guard(() => api.answer(idx, value));
-    if (ok === null) return;
+    const res = await guard(() => api.answer(idx, value));
+    if (res === null) return;
+    const ok = typeof res === 'boolean' ? res : res.ok;
+    if (typeof res !== 'boolean' && res.model) setModelNote(res.model);
     attempts.current += 1;
     if (ok) {
       setPhase('right');
@@ -1081,6 +1087,126 @@ export default function SoloPlayer({
                   {t('solo.check')}
                 </button>
               </form>
+            )}
+          </>
+        )}
+
+        {step.t === 'orderWrite' && (() => {
+          // 주어진 낱말 칸을 눌러 아래 글칸에 이어 붙이거나 직접 써도 된다. 이미 쓴 낱말은 흐려진다.
+          const left = new Map<string, number>();
+          for (const w of looseNorm(text).split(' ').filter(Boolean)) left.set(w, (left.get(w) ?? 0) + 1);
+          return (
+            <>
+              <p className="text-xl font-bold">{t('solo.writeQ')}</p>
+              <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
+              <p className="text-center text-base text-white/70">{t('solo.writeBank')}</p>
+              <div className="flex w-full flex-wrap justify-center gap-2">
+                {step.words.map((w, n) => {
+                  const key = looseNorm(w);
+                  const have = left.get(key) ?? 0;
+                  // 같은 낱말이 여러 번 나와도 쓴 만큼만 흐려진다
+                  const seenBefore = step.words.slice(0, n).filter((x) => looseNorm(x) === key).length;
+                  const used = have > seenBefore;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      disabled={answered || busy}
+                      onClick={() => setText((cur) => `${cur.trim() ? `${cur.trim()} ` : ''}${w}`)}
+                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${used ? 'bg-white/20 text-white/40' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5]'}`}
+                    >
+                      {w}
+                    </button>
+                  );
+                })}
+              </div>
+              {!answered && (
+                <form
+                  className="flex w-full flex-col gap-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void checkText();
+                  }}
+                >
+                  <input
+                    ref={inputRef}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    autoComplete="off"
+                    autoCapitalize="sentences"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    placeholder={t('solo.writePlaceholder')}
+                    className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                  />
+                  <div className="flex w-full gap-3">
+                    <button type="button" onClick={() => setText((cur) => cur.trim().split(/\s+/).slice(0, -1).join(' '))} disabled={!text.trim()} className={`${btn} flex-1 bg-white/15`}>
+                      {t('solo.erase')}
+                    </button>
+                    <button type="submit" disabled={!text.trim() || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                      {t('solo.check')}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
+          );
+        })()}
+
+        {step.t === 'condWrite' && (
+          <>
+            <p className="text-xl font-bold">{t('solo.condQ')}</p>
+            <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
+            <ul className="w-full space-y-1.5 rounded-2xl bg-white/5 px-4 py-3 text-left text-lg" aria-label={t('solo.condTitle')}>
+              <li className="text-base font-bold text-white/70">{t('solo.condTitle')}</li>
+              {step.conditions.map((c, i) => {
+                const r = text.trim() ? checkCondition(c, text) : null;
+                return (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className={`material-symbols-outlined mt-0.5 shrink-0 text-[20px] ${r === true ? 'text-emerald-300' : r === false ? 'text-warm-yellow' : 'text-white/40'}`}>
+                      {r === true ? 'check_circle' : r === false ? 'radio_button_unchecked' : 'circle'}
+                    </span>
+                    <span className={r === true ? 'text-white' : 'text-white/85'}>{c.text}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {!answered && (
+              <form
+                className="flex w-full flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void checkText();
+                }}
+              >
+                <textarea
+                  value={text}
+                  rows={2}
+                  onChange={(e) => setText(e.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="sentences"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder={t('solo.writePlaceholder')}
+                  className="w-full rounded-2xl bg-white px-4 py-3 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                />
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                  {t('solo.check')}
+                </button>
+              </form>
+            )}
+            {phase === 'right' && (
+              <div className="w-full rounded-2xl bg-white/10 px-4 py-3 text-center">
+                <p className="text-base text-white/70">{t('solo.condYours')}</p>
+                <p className="text-xl font-bold">{text}</p>
+                {modelNote && (
+                  <>
+                    <p className="mt-2 text-base text-white/70">{t('solo.condModel')}</p>
+                    <p className="text-xl font-bold text-emerald-200">{modelNote}</p>
+                  </>
+                )}
+                <p className="mt-2 text-sm text-white/60">{t('solo.condTeacher')}</p>
+              </div>
             )}
           </>
         )}

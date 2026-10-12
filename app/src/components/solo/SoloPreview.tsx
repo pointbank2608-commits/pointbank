@@ -12,7 +12,12 @@ export default function SoloPreview({ steps: lessonSteps, onClose, startAt = 0 }
   const steps = retry?.steps ?? lessonSteps;
   const api = useMemo<SoloPlayerApi>(
     () => ({
-      answer: async (step, value) => gradeSoloLocal(steps[step], value) ?? true,
+      answer: async (step, value) => {
+        const s = steps[step];
+        const ok = gradeSoloLocal(s, value) ?? true;
+        // 서버(065)처럼 조건 영작을 맞히면 예시 답을 같이 보여 준다
+        return s && s.t === 'condWrite' && ok ? { ok, model: s.model } : ok;
+      },
       advance: async (step, unsure) => ({ answer: unsure ? soloCorrectText(steps[step]) : null }),
       reveal: async (step) => soloCorrectText(steps[step]),
       submitTest: async (step, answers) => {

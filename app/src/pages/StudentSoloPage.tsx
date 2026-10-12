@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
 import FinishPanel from '../components/solo/FinishPanel';
-import { SoloError, soloAdvance, soloAnswer, soloHelp, soloOpen, soloRecordSave, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
+import { SoloError, soloAdvance, soloAnswerFull, soloHelp, soloOpen, soloRecordSave, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
 
 const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
@@ -44,7 +44,7 @@ export default function StudentSoloPage() {
   const api = useMemo<SoloPlayerApi | null>(() => {
     if (!token || !assignmentId) return null;
     return {
-      answer: (step, value) => soloAnswer(token, assignmentId, step, value),
+      answer: (step, value) => soloAnswerFull(token, assignmentId, step, value),
       advance: async (step, unsure) => {
         const r = await soloAdvance(token, assignmentId, step, unsure);
         return { answer: r.answer };

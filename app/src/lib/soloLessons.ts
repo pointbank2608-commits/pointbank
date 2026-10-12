@@ -54,11 +54,27 @@ export type SoloStep =
   | { t: 'rainbowStructure'; itemId: string }
   /** 가사·대사 빈칸 쓰기 — 문장 속 빈칸에 들어갈 낱말을 직접 쓴다(어려운 판). 영상 구간이 있으면 그 줄을 들려 준다. */
   | { t: 'gapType'; sentence: string; word: string; ko: string; length: number; first: string; clip?: SoloClip }
+  /** 단어 배열 영작 — 우리말 뜻(ko)을 보고 주어진 낱말(words, 섞임)로 영어 문장을 쓴다. answer 는 정답(여럿이면 " / ") */
+  | { t: 'orderWrite'; ko: string; words: string[]; answer: string }
+  /** 조건 영작 — 우리말을 조건(conditions)에 맞게 영작한다. 조건은 낱말·단어 수만 자동 검사하고, 예시 답(model)은 풀고 나서 보여 준다 */
+  | { t: 'condWrite'; ko: string; conditions: WriteCondition[]; model: string }
   /** 어법 오류 고치기 — 틀린 문장(wrong)을 학생이 고쳐 쓴다. right 가 정답(대소문자·문장부호는 무시). why 는 이유 설명. */
   | { t: 'fixError'; wrong: string; right: string; why: string; ko: string }
   /** 줄 순서 맞추기 — lines 는 정답 순서, pieces 는 학생에게 보이는 섞인 순서 */
   | { t: 'lineOrder'; lines: string[]; pieces: string[]; clip?: SoloClip }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloTestItem[] };
+
+/**
+ * 조건 영작의 조건 하나. text 는 학생에게 보이는 말. words(어느 하나 포함)·min/max(단어 수)가 있으면 자동 검사하고,
+ * 없으면 안내만 한다(예: "문장 틀: …"). 서버 solo_cond_ok 와 같은 규칙.
+ */
+export interface WriteCondition {
+  text: string;
+  /** 이 중 하나가 문장에 낱말(또는 낱말 묶음)로 들어 있어야 한다 */
+  words?: string[];
+  min?: number;
+  max?: number;
+}
 
 /** 역할극 한 줄 — me 는 학생, other 는 상대(점원·의사 등, 소리로 읽어 준다) */
 export interface RoleplayLine {
@@ -109,12 +125,14 @@ export type SoloPublicStep =
   | { t: 'gapType'; sentence: string; ko: string; length: number; first: string; clip?: SoloClip }
   | { t: 'lineOrder'; pieces: string[]; clip?: SoloClip }
   | { t: 'fixError'; wrong: string; why: string; ko: string }
+  | { t: 'orderWrite'; ko: string; words: string[] }
+  | { t: 'condWrite'; ko: string; conditions: WriteCondition[] }
   | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloPublicTestItem[] };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
 /** 글자로 답하는 단계 */
-export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError'] as const;
+export const SOLO_TEXT_TYPES = ['spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'] as const;
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -568,6 +586,38 @@ export function fixAccepts(right: string, value: string): boolean {
   });
 }
 
+/** 단어 수(문장부호·대소문자 무시) */
+export function wordCount(s: string): number {
+  const n = looseNorm(s);
+  return n ? n.split(' ').length : 0;
+}
+
+/** 조건 하나의 자동 검사: true/false, 자동 검사할 게 없으면 null */
+export function checkCondition(c: WriteCondition, value: string): boolean | null {
+  const v = ` ${looseNorm(value)} `;
+  const n = wordCount(value);
+  let any = false;
+  if (c.words && c.words.length > 0) {
+    any = true;
+    if (!c.words.some((w) => w.trim() && v.includes(` ${looseNorm(w)} `))) return false;
+  }
+  if (typeof c.min === 'number') {
+    any = true;
+    if (n < c.min) return false;
+  }
+  if (typeof c.max === 'number') {
+    any = true;
+    if (n > c.max) return false;
+  }
+  return any ? true : null;
+}
+
+/** 조건 영작: 자동 검사할 수 있는 조건을 모두 만족하면 맞다(검사할 게 없으면 뭔가 썼으면 맞다) */
+export function conditionsMet(conditions: WriteCondition[], value: string): boolean {
+  if (!looseNorm(value)) return false;
+  return conditions.every((c) => checkCondition(c, value) !== false);
+}
+
 /** 어법 오류 고치기 채점용: 대소문자·문장부호·여는따옴표 모양을 무시한다(서버 solo_norm_loose 와 같은 규칙) */
 export function looseNorm(s: string): string {
   return s.toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']+/g, ' ').trim();
@@ -580,6 +630,8 @@ export function gradeSoloLocal(step: SoloStep, value: string): boolean | null {
   if (step.t === 'unscramble') return norm(step.sentence) === norm(value);
   if (step.t === 'lineOrder') return norm(step.lines.join(' ')) === norm(value);
   if (step.t === 'fixError') return fixAccepts(step.right, value);
+  if (step.t === 'orderWrite') return fixAccepts(step.answer, value);
+  if (step.t === 'condWrite') return conditionsMet(step.conditions, value);
   return null;
 }
 
@@ -592,6 +644,8 @@ export function soloCorrectText(step: SoloStep): string | null {
   if (step.t === 'unscramble') return step.sentence;
   if (step.t === 'lineOrder') return step.lines.join(' / ');
   if (step.t === 'fixError') return step.right;
+  if (step.t === 'orderWrite') return step.answer;
+  if (step.t === 'condWrite') return step.model;
   return null;
 }
 
@@ -613,6 +667,10 @@ export function toPublicStep(step: SoloStep): SoloPublicStep {
       return { t: step.t, pieces: step.pieces, clip: step.clip };
     case 'fixError':
       return { t: step.t, wrong: step.wrong, why: step.why, ko: step.ko };
+    case 'orderWrite':
+      return { t: step.t, ko: step.ko, words: step.words };
+    case 'condWrite':
+      return { t: step.t, ko: step.ko, conditions: step.conditions };
     case 'pickWord':
       return { t: step.t, imageUrl: step.imageUrl, meaning: step.meaning, options: step.options };
     case 'pickMeaning':

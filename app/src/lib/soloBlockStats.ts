@@ -42,6 +42,7 @@ export function soloStepSkill(step: Pick<SoloStep, 't'> & { imageUrl?: string | 
       return 'reading.situation';
     case 'unscramble':
     case 'lineOrder':
+    case 'orderWrite':
       return 'sentence.order';
     case 'pickCorrect':
     case 'fixError':
@@ -66,7 +67,13 @@ export function blockPerformance(data: BlockStatsData | null, saved: SoloStep[],
   const out: BlockPerformance = { lesson: null, klass: null };
   if (!data) return out;
 
-  let aligned = true;
+  const first = steps[block.start];
+  const skill = first && block.type !== 'test' ? soloStepSkill(first as Pick<SoloStep, 't'> & { imageUrl?: string | null }) : null;
+  // 능력 이름표가 없는 채점 블록(조건 영작: 조건을 통과해도 뜻이 맞는다는 증명은 못 한다)은 "정답률"을 만들지 않는다.
+  // 시험 블록은 안에 든 문제가 따로 채점되므로 예외.
+  const countsAsAccuracy = block.type === 'test' || skill !== null;
+
+  let aligned = countsAsAccuracy;
   for (let i = block.start; i <= block.end; i++) {
     if (!saved[i] || saved[i].t !== steps[i]?.t) {
       aligned = false;
@@ -85,8 +92,6 @@ export function blockPerformance(data: BlockStatsData | null, saved: SoloStep[],
     }
   }
 
-  const first = steps[block.start];
-  const skill = first && block.type !== 'test' ? soloStepSkill(first as Pick<SoloStep, 't'> & { imageUrl?: string | null }) : null;
   if (skill) {
     const s = data.skills.find((x) => x.skill === skill);
     if (s && s.n > 0) {

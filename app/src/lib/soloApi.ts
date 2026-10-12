@@ -171,6 +171,33 @@ export async function soloAnswer(token: string, assignment: string, step: number
   return !!r.correct;
 }
 
+/** soloAnswer + 조건 영작을 맞혔을 때 돌려주는 예시 답(065 전 서버면 model 이 없다) */
+export async function soloAnswerFull(token: string, assignment: string, step: number, value: string): Promise<{ ok: boolean; model: string | null }> {
+  const r = await rpc<{ correct: boolean; model?: string | null }>('solo_answer', { p_token: token, p_assignment: assignment, p_step: step, p_value: value });
+  return { ok: !!r.correct, model: r.model ?? null };
+}
+
+export interface SoloWrittenAnswer {
+  assignment_id: string;
+  student_name: string;
+  step_index: number;
+  step_type: string;
+  value: string | null;
+  correct: boolean | null;
+  attempts: number;
+  answered_at: string;
+}
+
+/** (선생님) 이 수업에서 학생이 쓴 글(조건 영작·단어 배열 영작) — 065 를 안 돌렸으면 빈 목록 */
+export async function fetchSoloWrittenAnswers(lessonId: string): Promise<SoloWrittenAnswer[]> {
+  const { data, error } = await supabase.rpc('solo_written_answers', { p_lesson: lessonId });
+  if (error) {
+    if (/solo_written_answers/.test(error.message) || error.code === 'PGRST202') return [];
+    throw error;
+  }
+  return (data ?? []) as SoloWrittenAnswer[];
+}
+
 export const soloAdvance = (token: string, assignment: string, step: number, unsure: boolean) =>
   rpc<{ answer: string | null; done: boolean }>('solo_advance', { p_token: token, p_assignment: assignment, p_step: step, p_unsure: unsure });
 

@@ -13,6 +13,8 @@ import {
   fetchSoloLessons,
   fetchSoloStatus,
   fetchSoloTestSummary,
+  fetchSoloWrittenAnswers,
+  type SoloWrittenAnswer,
   type SoloTestSummaryRow,
   renameSoloLesson,
   rewardSoloLesson,
@@ -384,6 +386,8 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
   const hasSing = lesson.steps.some((st) => st.t === 'lineSing' || st.t === 'fadeRead' || st.t === 'roleplay');
   const hasTest = lesson.steps.some((st) => st.t === 'test');
   const [tests, setTests] = useState<SoloTestSummaryRow[]>([]);
+  const writeSteps = lesson.steps.map((st, i) => ({ st, i })).filter((x) => x.st.t === 'condWrite' || x.st.t === 'orderWrite');
+  const [written, setWritten] = useState<SoloWrittenAnswer[]>([]);
 
   useEffect(() => {
     if (!academy?.id) return;
@@ -401,6 +405,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
     let alive = true;
     const load = () => {
       if (hasTest) fetchSoloTestSummary(lesson.id).then((r) => alive && setTests(r), () => undefined);
+      if (writeSteps.length > 0) fetchSoloWrittenAnswers(lesson.id).then((r) => alive && setWritten(r), () => undefined);
       return fetchSoloStatus(lesson.id)
         .then((r) => alive && setRows(r))
         .catch((e) => alive && notify(e instanceof Error ? e.message : String(e), 'error'));
@@ -411,7 +416,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
       alive = false;
       window.clearInterval(timer);
     };
-  }, [lesson.id, notify, tick, hasTest]);
+  }, [lesson.id, notify, tick, hasTest, writeSteps.length]);
 
   const waiting = (rows ?? []).filter((r) => r.finished_at && !r.rewarded);
   const rewardedCount = (rows ?? []).filter((r) => r.rewarded).length;
@@ -557,6 +562,44 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                 </tbody>
               </table>
             </div>
+            {writeSteps.length > 0 && (
+              <div className="space-y-3 rounded-xl border border-outline-variant/50 p-3">
+                <div>
+                  <div className="font-label-md text-label-md font-bold text-deep-navy">{t('soloText.writtenTitle')}</div>
+                  <p className="font-caption text-caption text-on-surface-variant">{t('soloText.writtenHint')}</p>
+                </div>
+                {writeSteps.map(({ st, i }) => {
+                  const mine = written.filter((w) => w.step_index === i);
+                  const ko = st.t === 'condWrite' || st.t === 'orderWrite' ? st.ko : '';
+                  const model = st.t === 'condWrite' ? st.model : st.t === 'orderWrite' ? st.answer : '';
+                  return (
+                    <div key={i} className="space-y-1 rounded-lg bg-surface-container-low p-2">
+                      <div className="font-label-md text-label-md text-on-surface">
+                        <span className="mr-2 rounded-full bg-surface-container px-1.5 py-0.5 font-caption text-caption tabular-nums text-on-surface-variant">{i + 1}</span>
+                        {ko}
+                      </div>
+                      <div className="font-caption text-caption text-on-surface-variant">
+                        {t('soloText.writtenModel')}: <b className="text-on-surface">{model}</b>
+                      </div>
+                      {mine.length === 0 ? (
+                        <div className="font-caption text-caption text-on-surface-variant">{t('soloText.writtenNone')}</div>
+                      ) : (
+                        <ul className="space-y-0.5">
+                          {mine.map((w) => (
+                            <li key={w.assignment_id} className="flex flex-wrap items-baseline gap-x-2 font-caption text-caption">
+                              <b className="text-on-surface">{w.student_name}</b>
+                              <span className="min-w-0 flex-1 text-on-surface">{w.value}</span>
+                              <span className={w.correct ? 'text-secondary' : 'text-error'}>{w.correct ? t('soloText.writtenPassed') : t('soloText.writtenFailed')}</span>
+                              <span className="text-on-surface-variant">{t('soloText.writtenAttempts', { n: w.attempts })}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
       </div>
