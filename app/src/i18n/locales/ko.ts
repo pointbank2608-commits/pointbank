@@ -1580,6 +1580,19 @@ const ko = {
     openWordLists: '내 단어장 열기 →',
   },
   wordLists: {
+    groups: {
+      none: '그룹 없음',
+      new: '+ 새 그룹…',
+      move: '그룹으로 옮기기',
+      newPrompt: '새 그룹 이름',
+      renamePrompt: '그룹 이름 바꾸기',
+      movedToast: '그룹을 바꿨어요.',
+      renamedToast: '그룹 이름을 바꿨어요.',
+      ungroup: '그룹 풀기',
+      ungroupConfirm: '"{{name}}" 그룹을 풀까요? 단어장은 지워지지 않고 그룹만 없어져요.',
+      ungroupedToast: '그룹을 풀었어요.',
+      count: '단어장 {{n}}개',
+    },
     sentence: {
       createWord: '단어장 만들기',
       createSentence: '문장 만들기',
@@ -2584,6 +2597,7 @@ const ko = {
     add: '등록',
   },
   solo: {
+    levelHintUpper: '중·고등은 교과과정 문법과 품사·무지개 문법 수업을 먼저 보여 줘요. 교육부 800 단어 수업은 초등 대상이에요.',
     editLesson: '고치기',
     track_rainbow: "무지개 문법",
     rainbowHint: "품사·역할 색으로 문장을 말하고 구조를 읽어요. 문장은 미리 검수한 샘플이에요.",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
@@ -16,6 +16,9 @@ import {
   createGameTemplate,
   deleteWordList,
   fetchAllWordLists,
+  setWordListGroup,
+  renameWordListGroup,
+  ungroupWordLists,
   wordListKindOf,
   fetchDeletedWordLists,
   fetchPhonicsBank,
@@ -508,6 +511,50 @@ export default function WordListsPage() {
   const [historyList, setHistoryList] = useState<WordList | null>(null);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
+  /** 펼쳐 둔 그룹(기본은 모두 접힘) */
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const groupNames = useMemo(() => [...new Set(lists.map((l) => l.group_name).filter((g): g is string => !!g))], [lists]);
+  // 같은 그룹은 붙여서(처음 나온 자리에), 그룹 없는 것은 그대로
+  const orderedLists = useMemo(() => {
+    const out: WordList[] = [];
+    const done = new Set<string>();
+    for (const l of lists) {
+      if (!l.group_name) out.push(l);
+      else if (!done.has(l.group_name)) {
+        done.add(l.group_name);
+        out.push(...lists.filter((x) => x.group_name === l.group_name));
+      }
+    }
+    return out;
+  }, [lists]);
+
+  async function handleSetGroup(list: WordList, value: string) {
+    let next: string | null = value === '' ? null : value;
+    if (value === '__new__') {
+      const name = prompt(t('wordLists.groups.newPrompt'), '');
+      if (!name?.trim()) return;
+      next = name.trim();
+    }
+    const ok = await run(() => setWordListGroup(list.id, next), t('wordLists.groups.movedToast'));
+    if (ok) setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, group_name: next } : l)));
+  }
+
+  async function handleRenameGroup(name: string) {
+    const next = prompt(t('wordLists.groups.renamePrompt'), name);
+    if (!next?.trim() || next.trim() === name || !academy?.id) return;
+    const to = next.trim();
+    const ok = await run(() => renameWordListGroup(academy.id, name, to), t('wordLists.groups.renamedToast'));
+    if (ok) {
+      setLists((prev) => prev.map((l) => (l.group_name === name ? { ...l, group_name: to } : l)));
+      setOpenGroups((prev) => new Set([...prev].map((g) => (g === name ? to : g))));
+    }
+  }
+
+  async function handleUngroup(name: string) {
+    if (!academy?.id || !confirm(t('wordLists.groups.ungroupConfirm', { name }))) return;
+    const ok = await run(() => ungroupWordLists(academy.id, name), t('wordLists.groups.ungroupedToast'));
+    if (ok) setLists((prev) => prev.map((l) => (l.group_name === name ? { ...l, group_name: null } : l)));
+  }
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
@@ -659,10 +706,32 @@ export default function WordListsPage() {
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
       ) : (
         <div className="space-y-3">
-          {lists.map((list) => (
+          {orderedLists.map((list, idx) => {
+            const g = list.group_name ?? null;
+            const startsGroup = !!g && (idx === 0 || orderedLists[idx - 1].group_name !== g);
+            const groupOpen = !g || openGroups.has(g);
+            const count = g ? orderedLists.filter((x) => x.group_name === g).length : 0;
+            return (
+            <Fragment key={list.id}>
+            {startsGroup && g && (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl bg-primary-fixed/30 px-4 py-2.5">
+                <button
+                  type="button"
+                  aria-expanded={groupOpen}
+                  onClick={() => setOpenGroups((prev) => { const n = new Set(prev); if (n.has(g)) n.delete(g); else n.add(g); return n; })}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left font-title-md text-title-md text-deep-navy"
+                >
+                  <span className="material-symbols-outlined">{groupOpen ? 'folder_open' : 'folder'}</span>
+                  <span className="min-w-0 truncate">{g}</span>
+                  <span className="shrink-0 font-caption text-caption text-on-surface-variant">{t('wordLists.groups.count', { n: count })}</span>
+                </button>
+                <button type="button" onClick={() => void handleRenameGroup(g)} className="font-label-md text-label-md text-primary hover:underline">{t('wordLists.rename')}</button>
+                <button type="button" onClick={() => void handleUngroup(g)} className="font-label-md text-label-md text-on-surface-variant hover:underline">{t('wordLists.groups.ungroup')}</button>
+              </div>
+            )}
+            {groupOpen && (
             <div
-              key={list.id}
-              className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)]"
+              className={`bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${g ? 'ml-4 border-l-4 border-primary/30' : ''}`}
             >
               {/* 제목은 한 줄로 줄이고(길면 …), "게임하기" 버튼은 늘 같은 자리에 맞춘다 */}
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12.5rem_auto] lg:items-center">
@@ -732,6 +801,19 @@ export default function WordListsPage() {
                   >
                     {t('wordLists.rename')}
                   </button>
+                  <select
+                    value={list.group_name ?? ''}
+                    onChange={(e) => void handleSetGroup(list, e.target.value)}
+                    aria-label={t('wordLists.groups.move')}
+                    title={t('wordLists.groups.move')}
+                    className="max-w-[9rem] rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1 text-sm text-on-surface-variant outline-none focus:border-primary"
+                  >
+                    <option value="">{t('wordLists.groups.none')}</option>
+                    {groupNames.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                    <option value="__new__">{t('wordLists.groups.new')}</option>
+                  </select>
                   <button
                     onClick={() => void handleDelete(list)}
                     className="font-label-md text-label-md text-error hover:underline"
@@ -762,7 +844,10 @@ export default function WordListsPage() {
                 )
               )}
             </div>
-          ))}
+            )}
+            </Fragment>
+            );
+          })}
 
           {lists.length === 0 && (
             <div className="text-center py-10 font-body-md text-on-surface-variant">{t('wordLists.empty')}</div>

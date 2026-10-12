@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { grammarLevelTag } from '../../lib/grammar';
+import { LESSON_LEVELS, levelMatches, useLessonLevel, type LessonLevel } from '../../lib/lessonLevel';
 import { LESSON_SETS, pickSetWords } from '../../lib/lessonSets';
 import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
 import { buildSoloPosLesson } from '../../lib/soloPosLessons';
@@ -51,6 +52,8 @@ interface Entry {
   minutes: number;
   /** 검색에 쓰는 글 */
   haystack: string;
+  /** 어느 대상용인지 */
+  levels: LessonLevel[];
   build: () => Promise<{ lessons: BatchLesson[]; level: string; source: string } | null>;
 }
 
@@ -90,6 +93,8 @@ export default function SoloCatalogModal({
   const { notify } = useToast();
   const ko = i18n.language.startsWith('ko');
   const [view, setView] = useState<View>({ id: 'home' });
+  // 수업 대상(단체수업 만들기와 같은 선택을 기억해 쓴다)
+  const [level, setLevel] = useLessonLevel();
   const [busy, setBusy] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   /** 수업 길이: 기본(약 15분) / 표준 50분 흐름(단계마다 시간이 있는 한 차시 수업) */
@@ -124,6 +129,7 @@ export default function SoloCatalogModal({
         desc: ko ? set.koDesc : set.enDesc,
         minutes: 15,
         haystack: `${set.ko} ${set.en} ${set.koDesc} ${set.enDesc}`,
+        levels: ['elementary'],
         build: async () => {
           const words = pickSetWords(set, await loadWordBank());
           if (words.length < 4) return null;
@@ -144,6 +150,7 @@ export default function SoloCatalogModal({
         desc: ko ? sc.koDesc : sc.enDesc,
         minutes: 20,
         haystack: `${sc.ko} ${sc.en} ${sc.koDesc} ${sc.enDesc}`,
+        levels: ['elementary', 'middle'],
         build: async () => {
           const bank = await loadWordBank();
           const lesson = (standard ? buildStandardTopicLesson(sc, bank, i18n.language) : null) ?? buildSoloScenarioLesson(sc, bank, i18n.language);
@@ -161,6 +168,7 @@ export default function SoloCatalogModal({
         desc: t(`solo.posLessonDesc_${n}`),
         minutes: 15,
         haystack: `품사 명사 동사 형용사 부사 전치사 접속사 관사 part of speech ${t(`solo.posLesson_${n}`)}`,
+        levels: ['elementary', 'middle', 'high'],
         build: async () => {
           const l = buildSoloPosLesson(n, t(`solo.posLesson_${n}`));
           return { lessons: [l], level: t('solo.rainbowLevel'), source: `pos-${n}` };
@@ -176,6 +184,7 @@ export default function SoloCatalogModal({
         desc: t(`rainbow.modeHint_${k}`),
         minutes: 10,
         haystack: `무지개 rainbow ${t(`rainbow.mode_${k}`)}`,
+        levels: ['middle', 'high'],
         build: async () => ({ lessons: [buildSoloRainbowLesson(k, t(`rainbow.mode_${k}`))], level: t('solo.rainbowLevel'), source: `rainbow-${k}` }),
       });
     }
@@ -188,6 +197,7 @@ export default function SoloCatalogModal({
         desc: grammarLevelTag(p),
         minutes: 15,
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
+        levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
           lessons: [standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
           level: grammarLevelTag(p),
@@ -197,6 +207,7 @@ export default function SoloCatalogModal({
     }
     return list;
   }, [ko, i18n.language, t, standard]);
+  const visible = useMemo(() => entries.filter((e) => levelMatches(level, e.levels)), [entries, level]);
 
   const byKey = useMemo(() => new Map(entries.map((e) => [e.key, e])), [entries]);
 
@@ -271,11 +282,13 @@ export default function SoloCatalogModal({
   const grammarGroups = useMemo(() => {
     const map = new Map<string, typeof SOLO_GRAMMAR_POINTS>();
     for (const p of SOLO_GRAMMAR_POINTS) {
+      const stageLevels: LessonLevel[] = p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'];
+      if (!levelMatches(level, stageLevels)) continue;
       const key = p.stage === 'elementary' ? `L${p.level}` : `G${p.level}`;
       map.set(key, [...(map.get(key) ?? []), p]);
     }
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, []);
+  }, [level]);
   async function makeGrammarAll(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
     setBusy(label);
     try {
@@ -347,7 +360,7 @@ export default function SoloCatalogModal({
 
   /* ---------- 화면 ---------- */
   const q = query.trim().toLowerCase();
-  const results = q ? entries.filter((e) => `${e.title} ${e.haystack}`.toLowerCase().includes(q)) : [];
+  const results = q ? visible.filter((e) => `${e.title} ${e.haystack}`.toLowerCase().includes(q)) : [];
 
   let body: ReactNode;
   if (pending) {
@@ -426,6 +439,7 @@ export default function SoloCatalogModal({
     if (p === 'word') {
       body = (
         <div className="space-y-5">
+          {level !== 'middle' && level !== 'high' ? (
           <div className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/20 p-3">
             <div className="font-label-md text-label-md font-bold text-on-surface">{t('solo.moe800Title')}</div>
             <p className="font-caption text-caption text-on-surface-variant">{t('solo.moe800Hint')}</p>
@@ -468,9 +482,10 @@ export default function SoloCatalogModal({
             </div>
             <p className="font-caption text-caption text-on-surface-variant">{t(`solo.styleHint_${style}`)}</p>
           </div>
+          ) : null}
           <Section title={t('solo.cat_wordTopics')} hint={t('solo.cat_wordTopicsHint')}>
             <div className={grid}>
-              {entries.filter((e) => e.type === 'word').map((e) => (
+              {visible.filter((e) => e.type === 'word').map((e) => (
                 <EntryCard key={e.key} e={e} />
               ))}
             </div>
@@ -526,7 +541,7 @@ export default function SoloCatalogModal({
       body = (
         <Section title={t('solo.purpose_talk')} hint={t('solo.talkHint')}>
           <div className={grid}>
-            {entries.filter((e) => e.type === 'talk').map((e) => (
+            {visible.filter((e) => e.type === 'talk').map((e) => (
               <EntryCard key={e.key} e={e} />
             ))}
           </div>
@@ -536,7 +551,7 @@ export default function SoloCatalogModal({
       body = (
         <Section title={t('solo.purpose_rainbow')} hint={t('solo.rainbowHint')}>
           <div className={grid}>
-            {entries.filter((e) => e.type === 'rainbow').map((e) => (
+            {visible.filter((e) => e.type === 'rainbow').map((e) => (
               <EntryCard key={e.key} e={e} />
             ))}
           </div>
@@ -579,7 +594,7 @@ export default function SoloCatalogModal({
     body = (
       <div className="space-y-5">
         {TOPICS.map((tp) => {
-          const items = tp.refs.map((r) => byKey.get(r)).filter((e): e is Entry => !!e);
+          const items = tp.refs.map((r) => byKey.get(r)).filter((e): e is Entry => !!e && levelMatches(level, e.levels));
           if (items.length === 0) return null;
           return (
             <Section key={tp.id} title={t(`solo.topic_${tp.id}`)}>
@@ -675,6 +690,20 @@ export default function SoloCatalogModal({
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
+
+        {!pending && (
+          <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('recipes.levelLabel')}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-label-md text-label-md font-bold text-on-surface">{t('recipes.levelLabel')}</span>
+              {LESSON_LEVELS.map((l) => (
+                <button key={l.id} type="button" role="radio" aria-checked={level === l.id} onClick={() => setLevel(l.id)} className={chip(level === l.id)}>
+                  {ko ? l.ko : l.en}
+                </button>
+              ))}
+            </div>
+            <p className="font-caption text-caption text-on-surface-variant">{t(level === 'middle' || level === 'high' ? 'solo.levelHintUpper' : 'recipes.levelHint')}</p>
+          </div>
+        )}
 
         {!pending && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.lengthTitle')}>

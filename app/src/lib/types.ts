@@ -581,6 +581,8 @@ export interface WordList {
   name: string;
   /** 없으면(066 전) 단어장 */
   kind?: WordListKind;
+  /** 단어장 그룹 이름(067) — 없거나 null 이면 그룹 없음 */
+  group_name?: string | null;
   items: WordListItem[];
   created_by: string | null;
   created_at: string;

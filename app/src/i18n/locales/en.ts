@@ -1584,6 +1584,19 @@ const en: Ko = {
     openWordLists: 'Open my word lists →',
   },
   wordLists: {
+    groups: {
+      none: 'No group',
+      new: '+ New group…',
+      move: 'Move to group',
+      newPrompt: 'New group name',
+      renamePrompt: 'Rename group',
+      movedToast: 'Group updated.',
+      renamedToast: 'Group renamed.',
+      ungroup: 'Ungroup',
+      ungroupConfirm: 'Ungroup "{{name}}"? The word lists are kept; only the group goes away.',
+      ungroupedToast: 'Group removed.',
+      count: '{{n}} lists',
+    },
     sentence: {
       createWord: 'New word list',
       createSentence: 'New sentence list',
@@ -2588,6 +2601,7 @@ const en: Ko = {
     add: 'Add',
   },
   solo: {
+    levelHintUpper: 'For middle and high school, curriculum grammar and parts-of-speech / rainbow grammar lessons come first. The 800-word DAY lessons are for elementary.',
     editLesson: 'Edit',
     track_rainbow: "Rainbow grammar",
     rainbowHint: "Say sentences and read their structure with part-of-speech / role colors. Sentences are reviewed samples.",

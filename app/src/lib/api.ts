@@ -922,6 +922,8 @@ export async function createWordList(params: {
   teacherId: string;
   /** 문장 목록이면 'sentence'(066 이후). 단어장은 칸을 안 보내 066 전에도 만들어진다. */
   kind?: WordListKind;
+  /** 그룹 이름(067 이후) — 없으면 칸을 안 보낸다 */
+  groupName?: string | null;
 }): Promise<WordList> {
   return unwrap(
     await supabase
@@ -933,6 +935,7 @@ export async function createWordList(params: {
         items: params.items,
         created_by: params.teacherId,
         ...(params.kind === 'sentence' ? { kind: 'sentence' } : {}),
+        ...(params.groupName ? { group_name: params.groupName } : {}),
       })
       .select()
       .single(),
@@ -956,6 +959,24 @@ export async function renameWordList(id: string, name: string) {
     .from('word_lists')
     .update({ name, updated_at: new Date().toISOString() })
     .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/** 단어장을 그룹에 넣거나(이름) 빼기(null) — 067 */
+export async function setWordListGroup(id: string, group: string | null) {
+  const { error } = await supabase.from('word_lists').update({ group_name: group }).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+/** 그룹 이름 바꾸기 */
+export async function renameWordListGroup(academyId: string, from: string, to: string) {
+  const { error } = await supabase.from('word_lists').update({ group_name: to }).eq('academy_id', academyId).eq('group_name', from);
+  if (error) throw new Error(error.message);
+}
+
+/** 그룹 풀기(단어장은 그대로, 그룹 없음으로) */
+export async function ungroupWordLists(academyId: string, group: string) {
+  const { error } = await supabase.from('word_lists').update({ group_name: null }).eq('academy_id', academyId).eq('group_name', group);
   if (error) throw new Error(error.message);
 }
 

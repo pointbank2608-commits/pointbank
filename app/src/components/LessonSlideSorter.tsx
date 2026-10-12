@@ -2848,10 +2848,19 @@ function WordListSelect({
         className="w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
       >
         <option value="">{t('curriculum.wordListPlaceholder')}</option>
-        {wordLists.map((wl) => (
+        {wordLists.filter((wl) => !wl.group_name).map((wl) => (
           <option key={wl.id} value={wl.id}>
             {wl.name} ({wl.items.length})
           </option>
+        ))}
+        {[...new Set(wordLists.map((wl) => wl.group_name).filter((g): g is string => !!g))].map((g) => (
+          <optgroup key={g} label={g}>
+            {wordLists.filter((wl) => wl.group_name === g).map((wl) => (
+              <option key={wl.id} value={wl.id}>
+                {wl.name} ({wl.items.length})
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
       {onManage && (
