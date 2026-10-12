@@ -34,6 +34,7 @@ export default function LessonRecipePicker({
   makeWordList,
   makeUnscrambleFromSentences,
   makeGameFromWords,
+  makeBulkLists,
   onApply,
   autoClip,
 }: {
@@ -45,6 +46,8 @@ export default function LessonRecipePicker({
   makeWordList?: RecipeContext['makeWordList'];
   makeUnscrambleFromSentences?: RecipeContext['makeUnscrambleFromSentences'];
   makeGameFromWords?: RecipeContext['makeGameFromWords'];
+  /** 교과과정 단어를 정렬·개수로 나눠 단어장 여러 개를 그룹에 저장한다 */
+  makeBulkLists?: (lists: { name: string; entries: WordBankEntry[] }[], group: string) => Promise<number>;
   onApply: (slides: LessonSlide[], suggestedName: string) => void;
   /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
   autoClip?: VideoClip | null;
@@ -277,6 +280,7 @@ export default function LessonRecipePicker({
                   key={`w-${level}`}
                   initialSchool={level === 'all' ? 'elementary' : level}
                   disabled={busy}
+                  onBulk={makeBulkLists}
                   onPick={(title, entries) => void applyWordEntries(title, entries)}
                 />
               )}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
+import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
 import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
@@ -788,6 +789,24 @@ export default function CurriculumPage() {
                     })
                   }
                   makeWordList={(words, listName) => saveWordsAsList(words, listName, true)}
+                  makeBulkLists={async (lists, group) => {
+                    // 번호가 작은 것이 맨 위에 오도록(최신순 목록) 뒤에서부터 만든다
+                    const made: WordList[] = [];
+                    for (const l of [...lists].reverse()) {
+                      made.push(
+                        await createWordList({
+                          academyId: academy.id,
+                          classId: formClassId ?? staffClassId,
+                          name: l.name,
+                          groupName: group,
+                          items: setToCards(l.entries).map((w) => ({ id: uid(), word: w.word, meaning: w.meaning, image_url: w.imageUrl, category: w.category ?? null, partOfSpeech: w.partOfSpeech ?? null })),
+                          teacherId: profile.id,
+                        }),
+                      );
+                    }
+                    setWordLists((prev) => [...[...made].reverse(), ...prev]);
+                    return made.length;
+                  }}
                   makeGameFromWords={async (gameType, words, listName) => {
                     const content = buildGameContent(gameType, words);
                     if (!content) return null;
