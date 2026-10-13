@@ -4,6 +4,7 @@ import { LAST_PAGE_KEY } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import AcademyCodeButton from '../components/AcademyCodeButton';
+import MaterialsPenButton from '../components/MaterialsPenButton';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
@@ -294,6 +295,7 @@ function AppLayoutInner() {
           <PlanRouteGuard />
           <Outlet />
         </div>
+        {pathname.startsWith('/materials') && <MaterialsPenButton />}
       </main>
     </div>
   );

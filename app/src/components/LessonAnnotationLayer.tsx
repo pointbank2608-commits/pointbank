@@ -17,6 +17,8 @@ interface Stroke {
 
 interface Props {
   onClose: () => void;
+  /** 위쪽에서 비울 높이(px) — 발표 진행바가 있으면 52, 자료실 화면에서는 0 */
+  top?: number;
 }
 
 // 흰색: 초록·검은 칠판 배경에서도 잘 보이게(2026-10-11 사용자 요청)
@@ -25,7 +27,7 @@ const WIDTHS = [3, 6, 11];
 
 /** 수업 중 이미지·워크시트 위에만 잠깐 쓰는 판서 레이어. 선은 서버에 저장하지 않고 현재
  * 활동 안에서만 유지한다. 좌표를 비율로 저장해 전체화면 전환이나 창 크기 변경에도 모양을 지킨다. */
-export default function LessonAnnotationLayer({ onClose }: Props) {
+export default function LessonAnnotationLayer({ onClose, top = 52 }: Props) {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const activeStrokeRef = useRef<Stroke | null>(null);
@@ -135,7 +137,7 @@ export default function LessonAnnotationLayer({ onClose }: Props) {
   }
 
   return (
-    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 top-[52px] z-40">
+    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40" style={{ top }}>
       <canvas
         ref={canvasRef}
         className="pointer-events-auto h-full w-full cursor-crosshair touch-none"
