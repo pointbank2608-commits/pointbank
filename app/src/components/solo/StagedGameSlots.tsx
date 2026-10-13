@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import type { StagedGame } from '../../lib/soloCurriculum';
+import { SOLO_GAME_TYPES, type SoloGameType } from '../../lib/soloLessons';
 
 interface Row {
   id: string;
   name: string;
-  gameType: 'matchup' | 'anagram';
+  gameType: SoloGameType;
 }
 
 /**
@@ -32,11 +33,11 @@ export default function StagedGameSlots({
       .from('game_templates')
       .select('id,name,class_id,game_type')
       .eq('academy_id', academyId)
-      .in('game_type', ['matchup', 'anagram'])
+      .in('game_type', SOLO_GAME_TYPES)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (!alive) return;
-        const list = (data ?? []) as { id: string; name: string; class_id: string | null; game_type: 'matchup' | 'anagram' }[];
+        const list = (data ?? []) as { id: string; name: string; class_id: string | null; game_type: SoloGameType }[];
         setRows(list.filter((r) => r.class_id === null || r.class_id === classId).map((r) => ({ id: r.id, name: r.name, gameType: r.game_type })));
       });
     return () => {

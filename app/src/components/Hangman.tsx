@@ -15,6 +15,8 @@ interface Props {
   onRenameTemplate?: (name: string) => void;
   onAddItem?: () => void;
   onRemoveItem?: (itemId?: string) => void;
+  /** 개별수업: 마지막 낱말까지 끝나면 맞힌 개수와 함께 한 번 알린다(다시 하기 버튼은 숨긴다) */
+  onComplete?: (score: number, total: number) => void;
 }
 
 type Status = 'playing' | 'won' | 'lost';
@@ -46,7 +48,7 @@ interface Snapshot {
 }
 
 const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
-  { items, maxAttempts, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
+  { items, maxAttempts, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, onComplete },
   ref,
 ) {
   const { t } = useTranslation();
@@ -171,6 +173,20 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (order.length > 0 && pos >= order.length) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onComplete(score, order.length);
+      }
+    } else {
+      doneRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos, order.length]);
 
   if (items.length === 0) {
     return (
@@ -314,9 +330,11 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
                   </div>
                 </div>
               </div>
-              <button onClick={restart} className={pill}>
-                {t('gameHangman.restartButton')}
-              </button>
+              {!onComplete && (
+                <button onClick={restart} className={pill}>
+                  {t('gameHangman.restartButton')}
+                </button>
+              )}
             </div>
           </div>
           {sidePanel}

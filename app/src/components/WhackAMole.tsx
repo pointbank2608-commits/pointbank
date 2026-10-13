@@ -12,6 +12,8 @@ interface Props {
   /** 시간 제한(초). 0·없음 = 제한 없이 문제를 한 바퀴 돌면 끝. 켜면 첫 두더지를 칠 때 시작하고, 문제를 다 풀어도
    * 시간이 남으면 다시 섞어 계속 나온다(2026-09-28). */
   timeLimit?: number;
+  /** 개별수업: 한 바퀴(또는 시간)가 끝나면 맞힌 수·놓친 수와 함께 한 번 알린다(다시 하기 버튼은 숨긴다) */
+  onComplete?: (hits: number, misses: number) => void;
 }
 
 const HOLE_COUNT = 9;
@@ -50,7 +52,7 @@ interface Snapshot {
   holes: (MatchPair | null)[];
 }
 
-const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning', timeLimit = 0 }, ref) {
+const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning', timeLimit = 0, onComplete }, ref) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [pos, setPos] = useState(0);
@@ -146,6 +148,20 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
   // 새 두더지들이 튀어나올 때(문제마다) 뿅, 다 끝나면 결과 소리
   const roundDone = timed ? timeUp : order.length > 0 && pos >= order.length;
   useStepSounds(pos, pairs.length >= 2 && roundDone, sfx.popUp, timed ? undefined : sfx.finish);
+
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (roundDone) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onComplete(hits, misses);
+      }
+    } else {
+      doneRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundDone]);
 
   if (pairs.length < 2) {
     return (
@@ -259,9 +275,11 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameWhackamole.restartButton')}
-        </button>
+        {!onComplete && (
+          <button onClick={restart} className={pill}>
+            {t('gameWhackamole.restartButton')}
+          </button>
+        )}
       </div>
     );
   }

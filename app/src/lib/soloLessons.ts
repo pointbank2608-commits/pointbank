@@ -101,10 +101,10 @@ export interface SoloClip {
 }
 
 /** 개별수업에서 혼자 할 수 있는 게임 종류(템플릿을 그대로 읽어 온다) */
-export type SoloGameType = 'matchup' | 'anagram';
+export type SoloGameType = 'matchup' | 'anagram' | 'whackamole' | 'wordsearch' | 'hangman';
 
 /** 개별수업 게임 단계에서 고를 수 있는 종류(편집 칸의 선택 목록) */
-export const SOLO_GAME_TYPES: SoloGameType[] = ['matchup', 'anagram'];
+export const SOLO_GAME_TYPES: SoloGameType[] = ['matchup', 'anagram', 'whackamole', 'wordsearch', 'hangman'];
 
 /** 학생에게 가는 문제 모양(정답 없음) */
 export type SoloPublicQuestion = SoloPublicQuestionBase & { tip?: string };

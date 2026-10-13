@@ -1,6 +1,6 @@
 import { plainText, type GrammarPoint } from './grammar';
 import { buildFixErrorSteps } from './grammarBlocks';
-import { buildSoloGrammarLesson, buildWordBlock, evenIndexes, type SoloStep } from './soloLessons';
+import { buildSoloGrammarLesson, buildWordBlock, evenIndexes, type SoloGameType, type SoloStep } from './soloLessons';
 import { buildTestStep } from './soloTest';
 import { buildCondWriteSteps, buildOrderWriteSteps, sentencesFromPoints } from './writeBlocks';
 import type { FullCardItem } from './types';
@@ -18,7 +18,7 @@ import type { FullCardItem } from './types';
  */
 /** 3단계 틀의 "게임" 자리에 넣는 선생님의 게임 템플릿(없으면 그 자리는 빠른 문제) */
 export interface StagedGame {
-  gameType: 'matchup' | 'anagram';
+  gameType: SoloGameType;
   templateId: string;
   title: string;
 }

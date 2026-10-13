@@ -194,10 +194,11 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
       .then(({ data }) => {
         if (!alive) return;
         const rows = (data ?? []) as { id: string; name: string; class_id: string | null; config: { pairs?: unknown[] } | null; items: unknown[] | null }[];
+        const byItems = step.gameType !== 'matchup' && step.gameType !== 'whackamole';
         setList(
           rows
             .filter((r) => r.class_id === null || r.class_id === classId)
-            .map((r) => ({ id: r.id, name: r.name, class_id: r.class_id, pairs: step.gameType === 'anagram' ? (r.items?.length ?? 0) : (r.config?.pairs?.length ?? 0) })),
+            .map((r) => ({ id: r.id, name: r.name, class_id: r.class_id, pairs: byItems ? (r.items?.length ?? 0) : (r.config?.pairs?.length ?? 0) })),
         );
       });
     return () => {
@@ -232,7 +233,7 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
             <option value="">{t('soloEdit.gameTemplatePick')}</option>
             {list.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name} ({t(step.gameType === 'anagram' ? 'soloEdit.gameWords' : 'soloEdit.gamePairs', { count: r.pairs })})
+                {r.name} ({t(step.gameType === 'matchup' || step.gameType === 'whackamole' ? 'soloEdit.gamePairs' : 'soloEdit.gameWords', { count: r.pairs })})
               </option>
             ))}
           </select>

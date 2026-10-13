@@ -19,6 +19,8 @@ interface Props {
   onRenameTemplate?: (name: string) => void;
   onAddItem?: () => void;
   onRemoveItem?: (itemId?: string) => void;
+  /** 개별수업: 단어를 모두 찾으면 한 번 알린다(다시 하기 버튼은 숨긴다) */
+  onComplete?: () => void;
 }
 
 interface Cell {
@@ -144,6 +146,7 @@ export default function WordSearch({
   onRenameTemplate,
   onAddItem,
   onRemoveItem,
+  onComplete,
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
@@ -235,6 +238,20 @@ export default function WordSearch({
   }
 
   const finished = foundIds.size === placements.length;
+
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (placements.length > 0 && finished) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onComplete();
+      }
+    } else {
+      doneRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished, placements.length]);
 
   function restart() {
     if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
@@ -363,9 +380,11 @@ export default function WordSearch({
             <div className="font-title-md text-title-md text-deep-navy">{t('gameWordSearch.finishedTitle')}</div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameWordSearch.restartButton')}
-        </button>
+        {!onComplete && (
+          <button onClick={restart} className={pill}>
+            {t('gameWordSearch.restartButton')}
+          </button>
+        )}
       </div>
     );
   }
