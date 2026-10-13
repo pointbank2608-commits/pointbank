@@ -201,6 +201,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
       {catalogOpen && classId && (
         <SoloCatalogModal
           academyId={academyId}
+          classId={classId}
           onClose={() => setCatalogOpen(false)}
           onBatch={async (lessons, level, source) => {
             try {

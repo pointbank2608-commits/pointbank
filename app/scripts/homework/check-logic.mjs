@@ -433,6 +433,23 @@ try {
     const t = l.steps.find((x) => x.t === 'test');
     assert.ok(t && t.items.length > 0, 'final test exists');
   });
+  await test('curriculum 3-stage lesson: chosen game templates replace the quick-question game slots', () => {
+    const mk = (i) => ({ id: 'w' + i, word: 'word' + String.fromCharCode(97 + i), meaning: 'm' + i, imageUrl: null, example: 'I like word ' + i + ' very much.', partOfSpeech: '명사' });
+    const cards = Array.from({ length: 8 }, (_, i) => mk(i));
+    const games = [
+      { gameType: 'matchup', templateId: 't1', title: 'M' },
+      null,
+      { gameType: 'anagram', templateId: 't3', title: 'A' },
+    ];
+    const l = staged.buildStagedWordLesson('t', cards, { games });
+    const g = l.steps.filter((x) => x.t === 'game');
+    assert.deepEqual(g.map((x) => x.templateId), ['t1', 't3']);
+    const plain = staged.buildStagedWordLesson('t', cards);
+    assert.equal(plain.steps.filter((x) => x.t === 'game').length, 0);
+    const point = gram.GRAMMAR_POINTS.find((p) => (p.pitfalls?.length ?? 0) >= 2 && p.examples.length >= 4);
+    const gl = staged.buildStagedGrammarLesson(point, { games: [games[0], games[0], games[2]] });
+    assert.equal(gl.steps.filter((x) => x.t === 'game').length, 3);
+  });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
     const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));

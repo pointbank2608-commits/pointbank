@@ -19,7 +19,8 @@ import {
   type SoloWordStyle,
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
-import { buildStagedGrammarLesson, buildStagedWordLesson } from '../../lib/soloCurriculum';
+import { buildStagedGrammarLesson, buildStagedWordLesson, type StagedGame } from '../../lib/soloCurriculum';
+import StagedGameSlots from './StagedGameSlots';
 import { buildStandardGrammarLesson, buildStandardTopicLesson, buildStandardVideoLesson, buildStandardWordLesson } from '../../lib/soloStandard';
 import { withSource } from '../../lib/soloBoard';
 import type { VideoClip } from '../../lib/videoClips';
@@ -82,11 +83,13 @@ const PURPOSES: { id: Purpose; icon: string }[] = [
 
 export default function SoloCatalogModal({
   academyId,
+  classId,
   onClose,
   onBatch,
   onScratch,
 }: {
   academyId: string;
+  classId?: string | null;
   onClose: () => void;
   onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
   /** 빈 수업으로 시작(편집기가 바로 열린다) */
@@ -122,6 +125,9 @@ export default function SoloCatalogModal({
   };
   const standard = mode === 'standard';
   const stages = mode === 'stages';
+  /** 3단계 틀의 게임 자리 3곳에 넣을 템플릿(안 고르면 빠른 문제) */
+  const [gameSlots, setGameSlots] = useState<(StagedGame | null)[]>([null, null, null]);
+  const stagedOpts = { games: gameSlots };
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
 
@@ -143,7 +149,7 @@ export default function SoloCatalogModal({
           const words = pickSetWords(set, await loadWordBank());
           if (words.length < 4) return null;
           if (stages) {
-            const st = buildStagedWordLesson(title, words);
+            const st = buildStagedWordLesson(title, words, stagedOpts);
             if (st) return { lessons: [{ ...st, steps: withSource(st.steps, { name: title }) }], level: 'Level 1', source: `${set.id}-stages` };
           }
           if (standard) {
@@ -225,14 +231,14 @@ export default function SoloCatalogModal({
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
         levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
-          lessons: [stages ? buildStagedGrammarLesson(p) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
+          lessons: [stages ? buildStagedGrammarLesson(p, stagedOpts) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
           level: grammarLevelTag(p),
           source: `solo-grammar-${p.id}${stages ? '-stages' : standard ? '-std' : ''}`,
         }),
       });
     }
     return list;
-  }, [ko, i18n.language, t, standard, stages]);
+  }, [ko, i18n.language, t, standard, stages, gameSlots]);
   const visible = useMemo(() => entries.filter((e) => levelMatches(level, e.levels)), [entries, level]);
 
   const byKey = useMemo(() => new Map(entries.map((e) => [e.key, e])), [entries]);
@@ -267,7 +273,7 @@ export default function SoloCatalogModal({
         const { chunks } = moe800Chunks(bank, day, Math.max(6, per));
         const st = chunks.flatMap((chunk, i) => {
           const name = chunks.length > 1 ? `${baseName} (${i + 1}/${chunks.length})` : baseName;
-          const l = buildStagedWordLesson(name, chunk);
+          const l = buildStagedWordLesson(name, chunk, stagedOpts);
           return l ? [{ ...l, steps: withSource(l.steps, { name: baseName }) }] : [];
         });
         if (st.length > 0) lessons = st;
@@ -760,6 +766,7 @@ export default function SoloCatalogModal({
             <p className="font-caption text-caption text-on-surface-variant">{t(`solo.lengthHint_${mode}`)}</p>
           </div>
         )}
+        {!pending && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
 
         {!pending && (
         <div className="relative">

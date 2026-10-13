@@ -16,6 +16,19 @@ import type { FullCardItem } from './types';
  * 아직 임시인 것: "게임"은 학생 혼자 하는 개인 게임 블록이 생기기 전이라 문장·낱말 빠르게 맞히기로 채운다(나중에 교체).
  * 합격선(다음 단계로 넘어가는 조건)과 "왜 틀렸는지" 팁은 다음 작업이다.
  */
+/** 3단계 틀의 "게임" 자리에 넣는 선생님의 게임 템플릿(없으면 그 자리는 빠른 문제) */
+export interface StagedGame {
+  gameType: 'matchup' | 'anagram';
+  templateId: string;
+  title: string;
+}
+export interface StagedOptions {
+  /** 기본·심화·총정리 순서의 세 자리 */
+  games?: (StagedGame | null)[];
+}
+
+const gameStep = (g: StagedGame): SoloStep => ({ t: 'game', gameType: g.gameType, templateId: g.templateId, title: g.title });
+
 interface Built {
   name: string;
   steps: SoloStep[];
@@ -56,7 +69,8 @@ const pitfallLine = (p: { wrong: string; right: string }): string =>
 export const STAGED_MIN_WORDS = 6;
 
 /** 문법 항목 하나 → 3단계 수업 */
-export function buildStagedGrammarLesson(point: GrammarPoint): Built {
+export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOptions = {}): Built {
+  const G = opts.games ?? [];
   const base = buildSoloGrammarLesson(point);
   const steps: SoloStep[] = [{ t: 'intro', title: point.name, text: point.tip ?? point.explain }];
   const examples = point.examples.map((e, i) => ({ sentence: plainText(e).trim(), ko: cleanKo((point.translations ?? [])[i] ?? '') })).filter((x) => x.sentence);
@@ -73,7 +87,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint): Built {
   steps.push(part('문제 풀기', '배운 것을 확인해요'));
   steps.push(...pick(questions('translatePick'), 3), ...pick(questions('pickCorrect'), 2));
   steps.push(part('게임', '문장을 조립하며 한 번 더 익혀요'));
-  steps.push(...pick(questions('unscramble'), 3));
+  steps.push(...(G[0] ? [gameStep(G[0])] : pick(questions('unscramble'), 3)));
 
   // ── 2. 심화 개념 ──
   steps.push(stage(2, '심화 개념', 12, '쓰임과 틀리기 쉬운 것을 배워요'));
@@ -100,7 +114,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint): Built {
   const sents = sentencesFromPoints([point]);
   steps.push(...buildOrderWriteSteps(sents, 3), ...buildCondWriteSteps(sents, 1));
   steps.push(part('게임', '소리 내어 말하며 한 번 더 익혀요'));
-  steps.push(...pick(questions('fadeRead'), 3));
+  steps.push(...(G[1] ? [gameStep(G[1])] : pick(questions('fadeRead'), 3)));
 
   // ── 3. 총정리 ──
   steps.push(stage(3, '총정리와 최종 테스트', 12, '한 줄로 정리하고 시험을 봐요'));
@@ -112,7 +126,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint): Built {
     steps.push(test);
   }
   steps.push(part('게임', '마지막으로 빠르게 확인해요'));
-  steps.push(...pick(shuffle([...questions('translatePick'), ...questions('pickCorrect'), ...questions('unscramble')]), 4));
+  steps.push(...(G[2] ? [gameStep(G[2])] : pick(shuffle([...questions('translatePick'), ...questions('pickCorrect'), ...questions('unscramble')]), 4)));
 
   const tipText = point.tip ?? point.explain;
   const withTips = steps.map((st) =>
@@ -126,7 +140,8 @@ export function buildStagedGrammarLesson(point: GrammarPoint): Built {
 /* ---------------- 단어·숙어·표현 ---------------- */
 
 /** 낱말 묶음(6개 이상) → 3단계 수업 */
-export function buildStagedWordLesson(title: string, words: FullCardItem[]): Built | null {
+export function buildStagedWordLesson(title: string, words: FullCardItem[], opts: StagedOptions = {}): Built | null {
+  const G = opts.games ?? [];
   const usable = words.filter((w) => w.word.trim() && w.meaning.trim());
   if (usable.length < STAGED_MIN_WORDS) return null;
   const steps: SoloStep[] = [{ t: 'intro', title, text: `${usable.length}` }];
@@ -138,7 +153,7 @@ export function buildStagedWordLesson(title: string, words: FullCardItem[]): Bui
   steps.push(part('문제 풀기', '뜻과 소리를 확인해요'));
   steps.push(...pick(buildWordBlock('pickWord', usable), 5), ...pick(buildWordBlock('pickMeaning', usable), 4), ...pick(buildWordBlock('listenPick', usable), 4));
   steps.push(part('게임', '빠르게 맞혀 봐요'));
-  steps.push(...pick(shuffle([...buildWordBlock('pickWord', usable), ...buildWordBlock('listenPick', usable)]), 6));
+  steps.push(...(G[0] ? [gameStep(G[0])] : pick(shuffle([...buildWordBlock('pickWord', usable), ...buildWordBlock('listenPick', usable)]), 6)));
 
   // ── 2. 심화 개념 ──
   steps.push(stage(2, '심화 개념', 12, '문장 속 쓰임과 철자를 익혀요'));
@@ -148,7 +163,7 @@ export function buildStagedWordLesson(title: string, words: FullCardItem[]): Bui
   steps.push(part('문제 풀기', '문장 속 낱말과 철자를 확인해요'));
   steps.push(...pick(buildWordBlock('pickPos', usable), 4), ...pick(buildWordBlock('fillBlank', usable), 5), ...pick(buildWordBlock('spell', usable), 4), ...pick(buildWordBlock('typeWord', usable), 4));
   steps.push(part('게임', '잘 듣고 써 봐요'));
-  steps.push(...pick(buildWordBlock('dictation', usable), 5));
+  steps.push(...(G[1] ? [gameStep(G[1])] : pick(buildWordBlock('dictation', usable), 5)));
 
   // ── 3. 총정리 ──
   steps.push(stage(3, '총정리와 최종 테스트', 12, '한 번에 정리하고 시험을 봐요'));
@@ -167,7 +182,7 @@ export function buildStagedWordLesson(title: string, words: FullCardItem[]): Bui
     steps.push(test);
   }
   steps.push(part('게임', '마지막으로 빠르게 확인해요'));
-  steps.push(...pick(shuffle([...buildWordBlock('pickWord', usable), ...buildWordBlock('listenPick', usable), ...buildWordBlock('pickMeaning', usable)]), 6));
+  steps.push(...(G[2] ? [gameStep(G[2])] : pick(shuffle([...buildWordBlock('pickWord', usable), ...buildWordBlock('listenPick', usable), ...buildWordBlock('pickMeaning', usable)]), 6)));
 
   return { name: `${title} (3단계)`, steps, minutes: totalMinutes(steps) };
 }
