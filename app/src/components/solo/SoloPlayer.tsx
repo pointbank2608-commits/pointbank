@@ -77,6 +77,25 @@ const GRADED = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translate
 const isStage = (steps: SoloPublicStep[], i: number): boolean => i > 0 && steps[i].t === 'intro' && /^\d+\.\s/.test((steps[i] as { title: string }).title);
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'];
 
+/**
+ * 큰 화면(전자칠판·데스크톱)에서는 수업 화면이 위쪽 구석에 작게 붙어 비어 보이므로, 화면 크기에 맞춰 글자·버튼·그림을 같이 키운다.
+ * 폭 640px·높이 약 700px 정도를 한 화면 기준으로 보고 최대 1.7배까지만 키운다(작은 화면은 그대로 1배).
+ */
+function useStageZoom(): number {
+  const calc = () => {
+    if (typeof window === 'undefined') return 1;
+    const z = Math.min(window.innerWidth / 640, (window.innerHeight - 80) / 620);
+    return Math.round(Math.max(1, Math.min(1.7, z)) * 20) / 20;
+  };
+  const [zoom, setZoom] = useState(calc);
+  useEffect(() => {
+    const on = () => setZoom(calc());
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, []);
+  return zoom;
+}
+
 export default function SoloPlayer({
   steps,
   startAt = 0,
@@ -140,6 +159,7 @@ export default function SoloPlayer({
   const [nonce, setNonce] = useState(0);
 
   const step = steps[idx];
+  const zoom = useStageZoom();
 
   // 노래·영상 단계가 쓰는 유튜브 플레이어(수업 하나에 영상 하나) — 한 번만 만들고 구간만 바꿔 튼다
   const videoId = useMemo(() => {
@@ -496,6 +516,7 @@ export default function SoloPlayer({
     const title = String((steps[result.start] as { title: string }).title).replace(/^\d+\.\s*/, '');
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+        <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
         <div className="solo-pop text-7xl">{passed ? '🎉' : '💪'}</div>
         <h1 className="text-3xl font-bold">{t('solo.groupResult', { title })}</h1>
         <p className="text-5xl font-bold tabular-nums text-warm-yellow">{sc.pct}%</p>
@@ -514,6 +535,7 @@ export default function SoloPlayer({
             </button>
           )}
         </div>
+        </div>
       </div>
     );
   }
@@ -522,6 +544,7 @@ export default function SoloPlayer({
     const missedAll = Object.keys(credit).map(Number).filter((i) => !credit[i]).sort((a, b) => a - b);
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+        <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
         <div className="solo-pop text-7xl">🎉</div>
         <h1 className="text-4xl font-bold">{t('solo.finishTitle')}</h1>
         {learned > 0 && <p className="text-2xl font-bold text-warm-yellow">{t('solo.finishLearned', { count: learned })}</p>}
@@ -552,6 +575,7 @@ export default function SoloPlayer({
         <button type="button" onClick={onExit} className={`${btn} bg-warm-yellow text-deep-navy`}>
           {preview ? t('solo.closePreview') : t('solo.backHome')}
         </button>
+        </div>
       </div>
     );
   }
@@ -619,7 +643,7 @@ export default function SoloPlayer({
         </div>
       )}
 
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center gap-5 px-5 pb-6 pt-2">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-5 px-5 pb-6 pt-2" style={{ zoom }}>
         {/* 노래·영상 플레이어: 수업 안에서 계속 켜 두고, 영상이 필요한 단계에서만 보여 준다 */}
         {videoId && (
           <div
