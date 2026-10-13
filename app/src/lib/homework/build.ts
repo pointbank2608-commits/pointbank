@@ -137,10 +137,54 @@ export function matchupQs(cards: FullCardItem[], rng: Rng): HwQuestion[] {
 }
 
 /** 쉐도잉 뒤 내용 확인: 질문마다 장면의 다른 질문들의 답을 오답 보기로 */
-export function contentQs(questions: { q: string; a: string; qKo?: string; aKo?: string }[], rng: Rng): HwQuestion[] {
+export interface ClipQuestion {
+  q: string;
+  a: string;
+  qKo?: string;
+  aKo?: string;
+  /** 답이 나오는 장면의 시간(초) — 수업 묶음을 다시 맞춘 뒤에만 있다 */
+  time?: number;
+}
+
+const STOP = new Set(['that', 'this', 'with', 'from', 'they', 'them', 'have', 'been', 'will', 'would', 'there', 'their', 'what', 'when', 'where', 'which', 'your', 'about', 'because']);
+const wordsOf = (text: string): string[] => (text.toLowerCase().match(/[a-z']+/g) ?? []).filter((w) => w.length >= 4 && !STOP.has(w));
+
+/**
+ * 쉐도잉 숙제에 실제로 들어간 대사 범위 안에서 답이 나오는 질문만 남긴다 — 숙제 길이(5·10분)에 맞춰 대사를 앞에서 자르는데
+ * 질문은 장면 전체에서 뽑아서 "읽지도 않은 내용이 문제로 나오는" 일이 있었다(2026-10-13 제보).
+ * 질문에 장면 시간이 있으면 그 시간이 들어간 대사 범위 안인지로, 없으면 답의 낱말이 들어간 대사에 나오는지로 가린다.
+ * 어느 쪽도 확인할 수 없는 질문은 뺀다. 반환은 원래 순서 번호와 함께(통계용 contentId).
+ */
+export function questionsWithin(questions: ClipQuestion[], lines: HwShadowLine[]): { q: ClipQuestion; index: number }[] {
+  if (lines.length === 0) return [];
+  const start = Math.min(...lines.map((l) => l.s));
+  const end = Math.max(...lines.map((l) => l.e));
+  const text = ' ' + lines.map((l) => l.en.toLowerCase()).join(' ') + ' ';
+  const out: { q: ClipQuestion; index: number }[] = [];
+  questions.forEach((q, index) => {
+    if (typeof q.time === 'number') {
+      if (q.time >= start - 2 && q.time <= end + 2) out.push({ q, index });
+      return;
+    }
+    const toks = [...new Set(wordsOf(q.a))];
+    if (toks.length === 0) return;
+    // 변화형(stays → stay, wanted → want)도 같은 낱말로 본다
+    const stem = (w: string) => {
+      const r = w.replace(/(ing|ed|es|s)$/, '');
+      return r.length >= 3 ? r : w;
+    };
+    const hit = toks.filter((w) => text.includes(w) || text.includes(stem(w))).length;
+    if (hit / toks.length >= 0.6) out.push({ q, index });
+  });
+  return out;
+}
+
+/** 오답 보기는 장면 전체 질문의 답에서도 가져온다(문제로 나가지는 않는다) */
+export function contentQs(questions: ClipQuestion[], rng: Rng, only?: { q: ClipQuestion; index: number }[]): HwQuestion[] {
   if (questions.length < 2) return [];
-  return questions.map((x, i) => {
-    const wrong = questions.filter((_, j) => j !== i).map((y) => y.a);
+  const asked = only ?? questions.map((q, index) => ({ q, index }));
+  return asked.map(({ q: x, index: i }) => {
+    const wrong = questions.filter((_, j) => j !== i && questions[j].a !== x.a).map((y) => y.a);
     const choices = shuffleWith([x.a, ...wrong].slice(0, 4), rng);
     return {
       id: uid(),
@@ -171,7 +215,7 @@ export interface ClipSource {
   youtube_id: string;
   title: string;
   script: string;
-  pack?: { questions?: { q: string; a: string; qKo?: string; aKo?: string }[] } | null;
+  pack?: { questions?: ClipQuestion[] } | null;
 }
 
 export interface BuildLabels {
@@ -237,7 +281,7 @@ export function buildItems(cards: FullCardItem[], plan: HwPlan, labels: BuildLab
         kind: 'shadowing',
         title: labels.shadowing,
         config: {},
-        content: { videoId: clip.youtube_id, ...(clip.id ? { clipId: clip.id } : {}), lines, questions: plan.contentCheck ? contentQs(clip.pack?.questions ?? [], rng) : [] },
+        content: { videoId: clip.youtube_id, ...(clip.id ? { clipId: clip.id } : {}), lines, questions: plan.contentCheck ? contentQs(clip.pack?.questions ?? [], rng, questionsWithin(clip.pack?.questions ?? [], lines)) : [] },
       });
     }
   }

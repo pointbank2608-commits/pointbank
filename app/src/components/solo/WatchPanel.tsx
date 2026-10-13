@@ -215,7 +215,7 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
             .filter((th) => th.unread > 0)
             .map((th) => (
               <button key={th.assignment_id} type="button" onClick={() => setChatWith({ assignmentId: th.assignment_id, name: th.name })} className="rounded-full bg-white px-3 py-1 font-label-md text-label-md text-deep-navy shadow-sm hover:bg-primary-fixed">
-                {th.name} · {th.unread}
+                {th.name}{th.is_homework ? ` (${t('solo.chat_homeworkTag')})` : ''} · {th.unread}
               </button>
             ))}
         </div>

@@ -2948,6 +2948,7 @@ const ko = {
     saidItFirst: '따라 말했어요',
     helpResolved: '도와줬어요',
     whyTip: '알아 두기',
+    chat_homeworkTag: '숙제',
     groupResult: '{{title}} 결과',
     groupScore: '처음 답 {{right}}/{{total}}개 맞혔어요 ({{pct}}%)',
     passLineText: '합격선 {{pct}}%',

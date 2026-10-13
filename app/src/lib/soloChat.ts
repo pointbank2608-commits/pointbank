@@ -22,6 +22,8 @@ export const TEACHER_QUICK = ['잠깐만 기다려 줘', '지금 갈게', '잘�
 export interface StudentChatState {
   mode: ChatMode;
   academy_id?: string;
+  /** 숙제 대화의 대화 번호(선생님 쪽이 같은 번호로 연다) */
+  thread?: string;
   unread?: number;
   messages?: ChatMessage[];
   error?: string;
@@ -42,6 +44,11 @@ export async function studentChatSend(token: string, assignment: string, body: s
   return rpc('solo_chat_send', { p_token: token, p_assignment: assignment, p_body: body, p_quick: quick });
 }
 
+/** 숙제 화면(2차, 073) — 숙제 열쇠로 대화 읽기·보내기 */
+export const hwChatState = (token: string, mark = false) => rpc<StudentChatState>('hw_chat_state', { p_token: token, p_mark: mark });
+export const hwChatSend = (token: string, body: string, quick: boolean) =>
+  rpc<{ ok?: boolean; error?: string }>('hw_chat_send', { p_token: token, p_body: body, p_quick: quick });
+
 /* ---------------- 선생님 ---------------- */
 
 export interface ChatThread {
@@ -50,6 +57,8 @@ export interface ChatThread {
   name: string;
   lesson_name: string;
   class_id: string | null;
+  /** 숙제 대화면 true(073 이후) */
+  is_homework?: boolean;
   unread: number;
   last_body: string;
   last_sender: 'student' | 'teacher';

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   STUDENT_QUICK,
+  hwChatSend,
+  hwChatState,
   openPingChannel,
   studentChannelName,
   studentChatSend,
@@ -16,7 +18,7 @@ import {
  * 버튼을 눌러야 아래에서 올라오는 작은 창이 열린다. 반이 "끔"이면 아무것도 그리지 않는다.
  * 빠른 문장만 되는 반(유치원)은 문장 버튼만 보이고 입력칸이 없다.
  */
-export default function SoloChat({ token, assignment }: { token: string; assignment: string }) {
+export default function SoloChat({ token, assignment, homework = false }: { token: string; assignment?: string; homework?: boolean }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<ChatMode>('off');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -30,6 +32,8 @@ export default function SoloChat({ token, assignment }: { token: string; assignm
   const academyRef = useRef<string | null>(null);
   const teacherPing = useRef<ReturnType<typeof openPingChannel> | null>(null);
   const lastSeen = useRef(0);
+  /** 대화 번호 — 개별수업은 수업 진행 번호, 숙제는 서버가 알려 준다 */
+  const [threadId, setThreadId] = useState<string | null>(homework ? null : assignment ?? null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   openRef.current = open;
@@ -37,7 +41,8 @@ export default function SoloChat({ token, assignment }: { token: string; assignm
   const refresh = useCallback(
     async (mark = false) => {
       try {
-        const st = await studentChatState(token, assignment, mark);
+        const st = homework ? await hwChatState(token, mark) : await studentChatState(token, assignment as string, mark);
+        if (st.thread) setThreadId(st.thread);
         if (st.error) {
           setMode('off');
           return;
@@ -59,23 +64,23 @@ export default function SoloChat({ token, assignment }: { token: string; assignm
         setMode('off');
       }
     },
-    [token, assignment],
+    [token, assignment, homework],
   );
 
   // 처음 읽기 + 신호 구독 + 느린 예비 확인(30초)
   useEffect(() => {
     void refresh();
-    const ch = openPingChannel(studentChannelName(assignment), () => void refresh(openRef.current));
+    const ch = threadId ? openPingChannel(studentChannelName(threadId), () => void refresh(openRef.current)) : null;
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') void refresh(openRef.current);
     }, 30000);
     return () => {
-      ch.close();
+      ch?.close();
       teacherPing.current?.close();
       teacherPing.current = null;
       window.clearInterval(timer);
     };
-  }, [assignment, refresh]);
+  }, [threadId, refresh]);
 
   useEffect(() => {
     if (open) {
@@ -94,7 +99,7 @@ export default function SoloChat({ token, assignment }: { token: string; assignm
     setBusy(true);
     setError(null);
     try {
-      const r = await studentChatSend(token, assignment, b, quick);
+      const r = homework ? await hwChatSend(token, b, quick) : await studentChatSend(token, assignment as string, b, quick);
       if (r.error) {
         setError(t(`solo.chat_err_${r.error}`, { defaultValue: t('solo.chat_err_unknown') }));
         return;

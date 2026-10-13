@@ -404,6 +404,25 @@ try {
     assert.equal(items[0].content.videoId, 'abcdefghijk');
     assert.equal(build.estimateMinutes(items), 8);
   });
+  await test('shadowing homework: content questions only come from the lines that were actually included', () => {
+    const lines = [
+      { s: 10, e: 14, en: 'Hello, my name is Polly the baby.' },
+      { s: 14, e: 18, en: 'I need to stay in the hospital.' },
+    ];
+    const qs = [
+      { q: 'q1', a: 'Her name is Polly.', time: 11 },
+      { q: 'q2', a: 'She stays in the hospital.' },
+      { q: 'q3', a: 'They wash their hands with soap.', time: 95 },
+      { q: 'q4', a: 'The garden is very beautiful.' },
+    ];
+    const within = build.questionsWithin(qs, lines);
+    assert.deepEqual(within.map((x) => x.index), [0, 1]);
+    const made = build.contentQs(qs, () => 0.5, within);
+    assert.equal(made.length, 2);
+    // 오답 보기는 장면 전체의 다른 답에서도 가져온다
+    assert.ok(made[0].choices.length >= 3);
+    assert.equal(build.questionsWithin(qs, []).length, 0);
+  });
   const staged = await server.ssrLoadModule('/src/lib/soloCurriculum.ts');
   const stageNos = (steps) => steps.filter((x) => x.t === 'intro' && /^\d+\. /.test(x.title)).map((x) => Number(x.title.split('.')[0]));
   await test('curriculum 3-stage lesson (grammar): three numbered stages, lecture cards, questions, a test and games, in order', () => {

@@ -2952,6 +2952,7 @@ const en: Ko = {
     saidItFirst: 'I said it',
     helpResolved: 'Got help',
     whyTip: 'Good to know',
+    chat_homeworkTag: 'homework',
     groupResult: '{{title}} — result',
     groupScore: 'First tries: {{right}}/{{total}} right ({{pct}}%)',
     passLineText: 'Pass line {{pct}}%',
