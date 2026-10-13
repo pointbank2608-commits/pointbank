@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { uploadLessonSlideImage } from '../../lib/api';
 import { lettersOf, stepProblems, stepSummary, wordsOfSentence } from '../../lib/soloEdit';
-import type { RoleplayLine, SoloClip, SoloStep, SoloTestItem, WriteCondition } from '../../lib/soloLessons';
+import { SOLO_GAME_TYPES, type RoleplayLine, type SoloClip, type SoloStep, type SoloTestItem, type WriteCondition } from '../../lib/soloLessons';
 import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
 import { POS_HINT_KO, SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
@@ -187,14 +187,18 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
     let alive = true;
     void supabase
       .from('game_templates')
-      .select('id,name,class_id,config')
+      .select('id,name,class_id,config,items')
       .eq('academy_id', academyId)
       .eq('game_type', step.gameType)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (!alive) return;
-        const rows = (data ?? []) as { id: string; name: string; class_id: string | null; config: { pairs?: unknown[] } | null }[];
-        setList(rows.filter((r) => r.class_id === null || r.class_id === classId).map((r) => ({ id: r.id, name: r.name, class_id: r.class_id, pairs: r.config?.pairs?.length ?? 0 })));
+        const rows = (data ?? []) as { id: string; name: string; class_id: string | null; config: { pairs?: unknown[] } | null; items: unknown[] | null }[];
+        setList(
+          rows
+            .filter((r) => r.class_id === null || r.class_id === classId)
+            .map((r) => ({ id: r.id, name: r.name, class_id: r.class_id, pairs: step.gameType === 'anagram' ? (r.items?.length ?? 0) : (r.config?.pairs?.length ?? 0) })),
+        );
       });
     return () => {
       alive = false;
@@ -202,6 +206,15 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
   }, [academyId, classId, step.gameType]);
   return (
     <div className="space-y-4">
+      <Field title={t('soloEdit.gameKind')}>
+        <select value={step.gameType} onChange={(e) => onChange({ ...step, gameType: e.target.value as typeof step.gameType, templateId: '' })} className={input}>
+          {SOLO_GAME_TYPES.map((g) => (
+            <option key={g} value={g}>
+              {t(`soloEdit.gameKind_${g}`)}
+            </option>
+          ))}
+        </select>
+      </Field>
       <Field title={t('soloEdit.gameTemplate')} hint={t('soloEdit.gameTemplateHint')}>
         {list === null ? (
           <p className="text-sm text-on-surface-variant">{t('common.loading')}</p>
@@ -219,7 +232,7 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
             <option value="">{t('soloEdit.gameTemplatePick')}</option>
             {list.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name} ({t('soloEdit.gamePairs', { count: r.pairs })})
+                {r.name} ({t(step.gameType === 'anagram' ? 'soloEdit.gameWords' : 'soloEdit.gamePairs', { count: r.pairs })})
               </option>
             ))}
           </select>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -17,6 +17,8 @@ interface Props {
   onEditItem?: (id: string, label: string) => void;
   onAddItem?: () => void;
   onRemoveItem?: (itemId?: string) => void;
+  /** 개별수업: 마지막 낱말까지 끝나면 맞힌 개수와 함께 한 번 알린다(다시 하기 버튼은 숨긴다) */
+  onComplete?: (score: number, total: number) => void;
 }
 
 interface Tile {
@@ -70,6 +72,7 @@ export default function Anagram({
   onEditItem,
   onAddItem,
   onRemoveItem,
+  onComplete,
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
@@ -127,6 +130,20 @@ export default function Anagram({
       setPlaced([]);
     }
   }, [itemKey]);
+
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (items.length > 0 && order.length > 0 && pos >= order.length) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onComplete(score, order.length);
+      }
+    } else {
+      doneRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos, order.length, items.length]);
 
   const sfx = useGameSfx('anagram');
   useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);
@@ -195,9 +212,11 @@ export default function Anagram({
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameAnagram.restartButton')}
-        </button>
+        {!onComplete && (
+          <button onClick={restart} className={pill}>
+            {t('gameAnagram.restartButton')}
+          </button>
+        )}
       </div>
     );
   }
