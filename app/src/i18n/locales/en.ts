@@ -2791,6 +2791,8 @@ const en: Ko = {
     length_standard: 'Standard 50-minute flow',
     lengthHint_basic: 'A short lesson that practises one thing lightly.',
     lengthHint_standard: 'Words → grammar/expressions → speaking → writing → game, filling one class period. Each stage shows its number and time. Applies to word, grammar and daily-conversation lessons.',
+    length_stages: 'Curriculum 3 stages',
+    lengthHint_stages: 'Three stages: basics → deeper concepts → review and final test. Each stage runs lecture cards → practice questions → game. Applies to words (6 or more) and grammar.',
     clipTitle: 'Make from a video-library scene (50-minute flow)',
     clipHint: 'Watch the scene → key words → sentence pattern → say the lines → write.',
     clipMake: 'Make a solo lesson from this scene',

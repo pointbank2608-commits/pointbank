@@ -19,6 +19,7 @@ import {
   type SoloWordStyle,
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
+import { buildStagedGrammarLesson, buildStagedWordLesson } from '../../lib/soloCurriculum';
 import { buildStandardGrammarLesson, buildStandardTopicLesson, buildStandardVideoLesson, buildStandardWordLesson } from '../../lib/soloStandard';
 import { withSource } from '../../lib/soloBoard';
 import type { VideoClip } from '../../lib/videoClips';
@@ -99,22 +100,28 @@ export default function SoloCatalogModal({
   const [level, setLevel] = useLessonLevel();
   const [busy, setBusy] = useState<string | null>(null);
   const [query, setQuery] = useState('');
-  /** 수업 길이: 기본(약 15분) / 표준 50분 흐름(단계마다 시간이 있는 한 차시 수업) */
-  const [standard, setStandardState] = useState<boolean>(() => {
+  /** 수업 구성: 기본(약 15분) / 표준 50분 흐름 / 교과과정 3단계(기본 → 심화 → 총정리, 2026-10-13) */
+  type LengthMode = 'basic' | 'standard' | 'stages';
+  const [mode, setModeState] = useState<LengthMode>(() => {
     try {
-      return localStorage.getItem('classbank.soloStandard') === '1';
+      const m = localStorage.getItem('classbank.soloMode');
+      if (m === 'basic' || m === 'standard' || m === 'stages') return m;
+      return localStorage.getItem('classbank.soloStandard') === '1' ? 'standard' : 'basic';
     } catch {
-      return false;
+      return 'basic';
     }
   });
-  const setStandard = (on: boolean) => {
-    setStandardState(on);
+  const setMode = (m: LengthMode) => {
+    setModeState(m);
     try {
-      localStorage.setItem('classbank.soloStandard', on ? '1' : '0');
+      localStorage.setItem('classbank.soloMode', m);
+      localStorage.setItem('classbank.soloStandard', m === 'standard' ? '1' : '0');
     } catch {
       /* 저장 못 해도 이번 화면에서는 동작한다 */
     }
   };
+  const standard = mode === 'standard';
+  const stages = mode === 'stages';
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
 
@@ -135,6 +142,10 @@ export default function SoloCatalogModal({
         build: async () => {
           const words = pickSetWords(set, await loadWordBank());
           if (words.length < 4) return null;
+          if (stages) {
+            const st = buildStagedWordLesson(title, words);
+            if (st) return { lessons: [{ ...st, steps: withSource(st.steps, { name: title }) }], level: 'Level 1', source: `${set.id}-stages` };
+          }
           if (standard) {
             const std = buildStandardWordLesson(title, words);
             if (std) return { lessons: [{ ...std, steps: withSource(std.steps, { name: title }) }], level: 'Level 1', source: `${set.id}-std` };
@@ -214,14 +225,14 @@ export default function SoloCatalogModal({
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
         levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
-          lessons: [standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
+          lessons: [stages ? buildStagedGrammarLesson(p) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
           level: grammarLevelTag(p),
-          source: `solo-grammar-${p.id}${standard ? '-std' : ''}`,
+          source: `solo-grammar-${p.id}${stages ? '-stages' : standard ? '-std' : ''}`,
         }),
       });
     }
     return list;
-  }, [ko, i18n.language, t, standard]);
+  }, [ko, i18n.language, t, standard, stages]);
   const visible = useMemo(() => entries.filter((e) => levelMatches(level, e.levels)), [entries, level]);
 
   const byKey = useMemo(() => new Map(entries.map((e) => [e.key, e])), [entries]);
@@ -251,7 +262,16 @@ export default function SoloCatalogModal({
       const bank = await loadWordBank();
       const baseName = t('solo.moe800Name', { day });
       let lessons = buildSoloDayLessons(bank, { day, perLesson: per, style, baseName }).map((l) => ({ ...l, steps: withSource(l.steps, { name: baseName }) }));
-      if (standard) {
+      if (stages) {
+        // 교과과정 3단계: 나눈 낱말 묶음마다 한 차시(낱말 6개 이상)
+        const { chunks } = moe800Chunks(bank, day, Math.max(6, per));
+        const st = chunks.flatMap((chunk, i) => {
+          const name = chunks.length > 1 ? `${baseName} (${i + 1}/${chunks.length})` : baseName;
+          const l = buildStagedWordLesson(name, chunk);
+          return l ? [{ ...l, steps: withSource(l.steps, { name: baseName }) }] : [];
+        });
+        if (st.length > 0) lessons = st;
+      } else if (standard) {
         // 표준 50분 흐름: 나눈 낱말 묶음마다 한 차시(낱말 6개 이상)
         const { chunks } = moe800Chunks(bank, day, Math.max(6, per));
         const std = chunks.flatMap((chunk, i) => {
@@ -265,7 +285,7 @@ export default function SoloCatalogModal({
         notify(t('solo.moe800Missing'), 'error');
         return;
       }
-      setPending({ title: t('solo.moe800Name', { day }), lessons, level: t('solo.moe800Level'), source: `solo-moe800-d${day}-${standard ? 'std' : style}-${per}` });
+      setPending({ title: t('solo.moe800Name', { day }), lessons, level: t('solo.moe800Level'), source: `solo-moe800-d${day}-${stages ? 'stages' : standard ? 'std' : style}-${per}` });
     } finally {
       setBusy(null);
     }
@@ -731,20 +751,13 @@ export default function SoloCatalogModal({
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.lengthTitle')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.lengthTitle')}</span>
-              {([false, true] as const).map((on) => (
-                <button
-                  key={String(on)}
-                  type="button"
-                  role="radio"
-                  aria-checked={standard === on}
-                  onClick={() => setStandard(on)}
-                  className={chip(standard === on)}
-                >
-                  {t(on ? 'solo.length_standard' : 'solo.length_basic')}
+              {(['basic', 'standard', 'stages'] as const).map((m) => (
+                <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)} className={chip(mode === m)}>
+                  {t(`solo.length_${m}`)}
                 </button>
               ))}
             </div>
-            <p className="font-caption text-caption text-on-surface-variant">{t(standard ? 'solo.lengthHint_standard' : 'solo.lengthHint_basic')}</p>
+            <p className="font-caption text-caption text-on-surface-variant">{t(`solo.lengthHint_${mode}`)}</p>
           </div>
         )}
 

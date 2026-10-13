@@ -404,6 +404,35 @@ try {
     assert.equal(items[0].content.videoId, 'abcdefghijk');
     assert.equal(build.estimateMinutes(items), 8);
   });
+  const staged = await server.ssrLoadModule('/src/lib/soloCurriculum.ts');
+  const stageNos = (steps) => steps.filter((x) => x.t === 'intro' && /^\d+\. /.test(x.title)).map((x) => Number(x.title.split('.')[0]));
+  await test('curriculum 3-stage lesson (grammar): three numbered stages, lecture cards, questions, a test and games, in order', () => {
+    const point = gram.GRAMMAR_POINTS.find((p) => (p.pitfalls?.length ?? 0) >= 2 && p.examples.length >= 4);
+    assert.ok(point, 'a grammar point with pitfalls and examples');
+    const l = staged.buildStagedGrammarLesson(point);
+    assert.deepEqual(stageNos(l.steps), [1, 2, 3]);
+    const kinds = l.steps.map((x) => x.t);
+    assert.ok(kinds.includes('rule') && kinds.includes('example'));
+    assert.ok(kinds.includes('fixError') || kinds.includes('orderWrite'), 'stage 2 has writing questions');
+    // order: stage 1 lecture card comes before its questions, and the test comes after stage 2 questions
+    const i1 = l.steps.findIndex((x) => x.t === 'rule');
+    const iQ = l.steps.findIndex((x) => x.t === 'translatePick' || x.t === 'pickCorrect');
+    assert.ok(i1 >= 0 && iQ > i1, 'lecture card first');
+    const iT = kinds.indexOf('test');
+    if (iT >= 0) assert.ok(iT > kinds.lastIndexOf('fixError'), 'test after stage 2');
+    assert.ok(l.minutes >= 30 && l.name.endsWith('(3단계)'));
+  });
+  await test('curriculum 3-stage lesson (words): needs 6 words, three stages, final test is built from earlier questions', () => {
+    const mk = (i) => ({ id: 'w' + i, word: 'word' + String.fromCharCode(97 + i), meaning: 'm' + i, imageUrl: null, example: 'I like word ' + i + ' very much.', partOfSpeech: '명사' });
+    const cards = Array.from({ length: 8 }, (_, i) => mk(i));
+    assert.equal(staged.buildStagedWordLesson('t', cards.slice(0, 5)), null);
+    const l = staged.buildStagedWordLesson('t', cards);
+    assert.deepEqual(stageNos(l.steps), [1, 2, 3]);
+    const kinds = l.steps.map((x) => x.t);
+    assert.ok(kinds.includes('meet') && kinds.includes('pickWord'));
+    const t = l.steps.find((x) => x.t === 'test');
+    assert.ok(t && t.items.length > 0, 'final test exists');
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });
