@@ -3143,6 +3143,8 @@ const en: Ko = {
     pasteOpen: "Paste words to auto-build",
     pasteTitle: "Auto-build steps from words",
     pasteHint: "One word per line. Add a meaning (apple 사과) to use it; otherwise meaning, picture and example come from the dictionary.",
+    pastePickTitle: "Take words from My word lists or the dictionary",
+    pastePickHint: "Pick a word list, or pick words in the dictionary and press add. The words land in the box below with their meaning, picture and example, and you can still edit them there.",
     pasteStyle: "Style",
     pasteStyle_picture: "Picture-based",
     pasteStyle_writing: "Writing-based",

@@ -3139,6 +3139,8 @@ const ko = {
     pasteOpen: "단어 붙여넣어서 자동으로 만들기",
     pasteTitle: "단어로 단계 자동 만들기",
     pasteHint: "한 줄에 단어 하나씩 붙여넣으세요. 뜻을 같이 쓰면(apple 사과) 그 뜻을 쓰고, 영어만 쓰면 사전에서 뜻·그림·예문을 찾아요.",
+    pastePickTitle: "내 단어장·단어 사전에서 가져오기",
+    pastePickHint: "단어장을 고르거나 사전에서 단어를 골라 \"추가\"를 누르면 아래 글칸에 낱말이 들어와요. 그 낱말의 뜻·그림·예문이 그대로 쓰이고, 글칸에서 더 고칠 수도 있어요.",
     pasteStyle: "방식",
     pasteStyle_picture: "그림 중심",
     pasteStyle_writing: "쓰기 중심",

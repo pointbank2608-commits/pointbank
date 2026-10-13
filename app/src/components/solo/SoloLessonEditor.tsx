@@ -875,7 +875,7 @@ export default function SoloLessonEditor({
           onClose={() => setTestModal(null)}
         />
       )}
-      {pasteOpen && <SoloPasteWords hasSteps={steps.length > 0} onAdd={addMany} onClose={() => setPasteOpen(false)} />}
+      {pasteOpen && <SoloPasteWords academyId={academyId} hasSteps={steps.length > 0} onAdd={addMany} onClose={() => setPasteOpen(false)} />}
       {preview && previewSnap && <SoloPreview steps={previewSnap.steps} startAt={previewSnap.at} onClose={() => setPreview(false)} />}
     </div>
   );

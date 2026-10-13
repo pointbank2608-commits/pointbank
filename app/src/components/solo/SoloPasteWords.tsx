@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { fetchAllWordLists } from '../../lib/api';
 import { loadWordBank } from '../../lib/wordBankCache';
+import DictionaryPicker from '../DictionaryPicker';
+import WordListPicker from '../WordListPicker';
+import type { WordList } from '../../lib/types';
 import { buildSoloWordSteps, buildSoloWritingSteps, type SoloStep, type SoloWordStyle } from '../../lib/soloLessons';
 import type { FullCardItem } from '../../lib/types';
 
@@ -25,9 +29,55 @@ export function parseWordLines(text: string): { word: string; meaning: string }[
  * 단어를 붙여넣으면 사전에서 뜻·그림·예문을 찾아 단어 학습 단계(만나기·고르기·쓰기)를 자동으로 채운다.
  * 사전에 없는 단어는 붙여넣은 뜻을 쓰고, 뜻도 없으면 건너뛴다(어떤 단어가 빠졌는지 알려 준다).
  */
-export default function SoloPasteWords({ hasSteps, onAdd, onClose }: { hasSteps: boolean; onAdd: (steps: SoloStep[]) => void; onClose: () => void }) {
+export default function SoloPasteWords({
+  academyId,
+  hasSteps,
+  onAdd,
+  onClose,
+}: {
+  academyId?: string;
+  hasSteps: boolean;
+  onAdd: (steps: SoloStep[]) => void;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
+  // 내 단어장·단어 사전에서 고른 낱말(그 카드의 뜻·그림·예문을 그대로 쓴다). 글칸에도 낱말을 보여 줘서 고칠 수 있다.
+  const [picked, setPicked] = useState<Record<string, FullCardItem>>({});
+  const [wordLists, setWordLists] = useState<WordList[]>([]);
+  const [listsLoading, setListsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!academyId) {
+      setListsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    fetchAllWordLists(academyId)
+      .then((l) => !cancelled && setWordLists(l))
+      .catch(() => undefined)
+      .finally(() => !cancelled && setListsLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [academyId]);
+
+  function importCards(cards: FullCardItem[]) {
+    const have = new Set(parseWordLines(text).map((p) => p.word.toLowerCase()));
+    const next = { ...picked };
+    const lines: string[] = [];
+    for (const c of cards) {
+      const w = c.word.trim();
+      if (!w || !/^[A-Za-z]/.test(w)) continue;
+      next[w.toLowerCase()] = c;
+      if (have.has(w.toLowerCase())) continue;
+      have.add(w.toLowerCase());
+      // 뜻이 한글로 시작할 때만 같이 적는다(아니면 낱말만 — 뜻은 고른 카드에서 가져온다)
+      lines.push(/^[가-힣]/.test(c.meaning.trim()) ? `${w} ${c.meaning.trim()}` : w);
+    }
+    setPicked(next);
+    if (lines.length > 0) setText((cur) => (cur.trim() ? `${cur.replace(/\s+$/, '')}\n` : '') + lines.join('\n'));
+  }
   const [style, setStyle] = useState<SoloWordStyle>('picture');
   const [busy, setBusy] = useState(false);
   const [skipped, setSkipped] = useState<string[]>([]);
@@ -48,6 +98,11 @@ export default function SoloPasteWords({ hasSteps, onAdd, onClose }: { hasSteps:
       const cards: FullCardItem[] = [];
       const miss: string[] = [];
       for (const p of parsed) {
+        const pk = picked[p.word.toLowerCase()];
+        if (pk && (p.meaning || pk.meaning)) {
+          cards.push({ ...pk, word: p.word, meaning: p.meaning || pk.meaning });
+          continue;
+        }
         const e = byWord.get(p.word.toLowerCase());
         const meaning = p.meaning || e?.meaning || '';
         if (!meaning) {
@@ -89,6 +144,12 @@ export default function SoloPasteWords({ hasSteps, onAdd, onClose }: { hasSteps:
           </button>
         </div>
         <p className="font-caption text-caption text-on-surface-variant">{t('soloEdit.pasteHint')}</p>
+        <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low/60 p-3">
+          <div className="font-label-md text-label-md font-bold text-deep-navy">{t('soloEdit.pastePickTitle')}</div>
+          <p className="font-caption text-caption text-on-surface-variant">{t('soloEdit.pastePickHint')}</p>
+          <WordListPicker variant="full" wordLists={wordLists} loading={listsLoading} onImportFull={importCards} />
+          <DictionaryPicker variant="full" onImportFull={importCards} />
+        </div>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
