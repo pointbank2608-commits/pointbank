@@ -1400,6 +1400,12 @@ export default function SoloPlayer({
             {t('solo.answerIs')} <span className="font-bold">{shownAnswer ?? ''}</span>
           </Banner>
         )}
+        {isQuestion && (phase === 'shown' || (phase === 'wrong1' && wrong.length >= 2)) && (step as { tip?: string }).tip && (
+          <div className="w-full rounded-2xl bg-white/10 px-4 py-3 text-center text-lg text-white/90">
+            <span className="mr-2 font-bold text-warm-yellow">{t('solo.whyTip')}</span>
+            {(step as { tip?: string }).tip}
+          </div>
+        )}
         {error && <p className="text-center text-lg text-warm-yellow" role="alert">{t('solo.error')}</p>}
 
         {isQuestion && answered && (

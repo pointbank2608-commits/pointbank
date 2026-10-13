@@ -16,7 +16,8 @@ import type { FullCardItem, WordBankEntry } from './types';
  */
 
 /** 시험 블록 안에 넣을 수 있는 문제 모양(채점되는 단계) */
-export type SoloQuestionStep =
+export type SoloQuestionStep = SoloQuestionBase & { tip?: string };
+type SoloQuestionBase =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[]; answer: number }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[]; answer: number }
@@ -100,7 +101,8 @@ export type SoloGameType = 'matchup' | 'anagram';
 export const SOLO_GAME_TYPES: SoloGameType[] = ['matchup', 'anagram'];
 
 /** 학생에게 가는 문제 모양(정답 없음) */
-export type SoloPublicQuestion =
+export type SoloPublicQuestion = SoloPublicQuestionBase & { tip?: string };
+type SoloPublicQuestionBase =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[] }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[] }
   | { t: 'listenPick'; word: string; options: string[]; images: (string | null)[] }
@@ -256,7 +258,32 @@ export function evenIndexes(n: number, k: number): number[] {
  * 수업의 낱말 전체로 활동 블록 하나(같은 종류 단계 묶음)를 만든다. 낱말이 모자라거나 그 활동에 맞는 낱말이 없으면 빈 배열.
  * 보기는 같은 낱말 목록에서 뽑는다.
  */
+/** 낱말 문제에 붙일 팁 — "apple = 사과 (명사) · 예: I eat an apple." */
+const TIP_TYPES: SoloStep['t'][] = ['pickWord', 'pickMeaning', 'listenPick', 'spell', 'typeWord', 'fillBlank', 'dictation', 'pickPos'];
+export function addWordTips(steps: SoloStep[], words: FullCardItem[]): SoloStep[] {
+  const byWord = new Map<string, FullCardItem>();
+  const byMeaning = new Map<string, FullCardItem>();
+  for (const w of words) {
+    if (!w.word.trim() || !w.meaning.trim()) continue;
+    byWord.set(w.word.trim().toLowerCase(), w);
+    byMeaning.set(w.meaning.trim(), w);
+  }
+  return steps.map((st) => {
+    if (!TIP_TYPES.includes(st.t) || (st as { tip?: string }).tip) return st;
+    const any = st as { word?: string; meaning?: string };
+    const card = (any.word ? byWord.get(any.word.trim().toLowerCase()) : undefined) ?? (any.meaning ? byMeaning.get(any.meaning.trim()) : undefined);
+    if (!card) return st;
+    const pos = card.partOfSpeech ? ` (${card.partOfSpeech})` : '';
+    const ex = card.example && card.example.trim() ? ` · ${card.example.trim()}` : '';
+    return { ...st, tip: `${card.word} = ${card.meaning}${pos}${ex}` } as SoloStep;
+  });
+}
+
 export function buildWordBlock(type: WordBlockType, words: FullCardItem[]): SoloStep[] {
+  return addWordTips(buildWordBlockRaw(type, words), words);
+}
+
+function buildWordBlockRaw(type: WordBlockType, words: FullCardItem[]): SoloStep[] {
   const usable = words.filter((w) => w.word.trim() && w.meaning.trim());
   if (usable.length < 4) return [];
   const wordsOnly = usable.map((w) => w.word);
@@ -659,6 +686,12 @@ export function soloCorrectText(step: SoloStep): string | null {
 }
 
 export function toPublicStep(step: SoloStep): SoloPublicStep {
+  const pub = toPublicStepBase(step);
+  const tip = (step as { tip?: string }).tip;
+  return tip && step.t !== 'test' ? ({ ...pub, tip } as SoloPublicStep) : pub;
+}
+
+function toPublicStepBase(step: SoloStep): SoloPublicStep {
   switch (step.t) {
     case 'test':
       return {

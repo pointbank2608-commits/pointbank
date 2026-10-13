@@ -2932,6 +2932,7 @@ const en: Ko = {
     saidIt: 'I said it',
     saidItFirst: 'I said it',
     helpResolved: 'Got help',
+    whyTip: 'Good to know',
     chat_open: 'Talk to the teacher',
     chat_title: 'Chat with your teacher',
     chat_new: 'New message from your teacher',

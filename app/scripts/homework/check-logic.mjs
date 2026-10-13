@@ -433,6 +433,19 @@ try {
     const t = l.steps.find((x) => x.t === 'test');
     assert.ok(t && t.items.length > 0, 'final test exists');
   });
+  const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
+  await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
+    const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));
+    const steps = solo.buildWordBlock('pickWord', cards);
+    assert.ok(steps.length > 0);
+    for (const s of steps) assert.ok(typeof s.tip === 'string' && s.tip.includes(' = '), 'tip missing');
+    const pub = solo.toPublicStep(steps[0]);
+    assert.equal(pub.tip, steps[0].tip);
+    const g = gram.GRAMMAR_POINTS.find((p) => (p.pitfalls?.length ?? 0) >= 2 && p.examples.length >= 4);
+    const gl = staged.buildStagedGrammarLesson(g);
+    const q = gl.steps.filter((x) => x.t === 'translatePick' || x.t === 'unscramble' || x.t === 'pickCorrect');
+    assert.ok(q.length > 0 && q.every((x) => typeof x.tip === 'string' && x.tip.length > 0));
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

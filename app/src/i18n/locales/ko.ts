@@ -2928,6 +2928,7 @@ const ko = {
     saidIt: '따라 말했어요',
     saidItFirst: '따라 말했어요',
     helpResolved: '도와줬어요',
+    whyTip: '알아 두기',
     chat_open: '선생님께 말하기',
     chat_title: '선생님과 대화',
     chat_new: '선생님 메시지가 왔어요',

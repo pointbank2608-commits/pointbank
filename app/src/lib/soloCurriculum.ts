@@ -114,7 +114,13 @@ export function buildStagedGrammarLesson(point: GrammarPoint): Built {
   steps.push(part('게임', '마지막으로 빠르게 확인해요'));
   steps.push(...pick(shuffle([...questions('translatePick'), ...questions('pickCorrect'), ...questions('unscramble')]), 4));
 
-  return { name: `${point.name} (3단계)`, steps, minutes: totalMinutes(steps) };
+  const tipText = point.tip ?? point.explain;
+  const withTips = steps.map((st) =>
+    (st.t === 'translatePick' || st.t === 'unscramble' || st.t === 'orderWrite' || st.t === 'pickCorrect') && !(st as { tip?: string }).tip && tipText
+      ? ({ ...st, tip: tipText } as SoloStep)
+      : st,
+  );
+  return { name: `${point.name} (3단계)`, steps: withTips, minutes: totalMinutes(withTips) };
 }
 
 /* ---------------- 단어·숙어·표현 ---------------- */
