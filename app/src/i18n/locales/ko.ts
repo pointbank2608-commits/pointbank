@@ -5085,6 +5085,12 @@ const ko = {
   },
 
   nav: {
+    showCodes: '학원 코드 보기',
+    hideCodes: '코드 닫기',
+    studentCodeLabel: '학생 로그인 학원 코드',
+    inviteCodeLabel: '선생님 초대 코드',
+    codeCopy: '{{label}} 복사',
+    codeHint: '학생은 학원 코드 + 이름 + 학부모 전화번호로 로그인하고, 다른 선생님은 초대 코드로 합류해요.',
     homework: '숙제',
     videoLibrary: '영상 라이브러리',
     help: '도움말·문의',

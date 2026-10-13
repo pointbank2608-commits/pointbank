@@ -3,6 +3,7 @@ import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
 import { LAST_PAGE_KEY } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import AcademyCodeButton from '../components/AcademyCodeButton';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
@@ -110,16 +111,7 @@ function AppLayoutInner() {
         </div>
       </Link>
 
-      {isStaff && (
-        <Link
-          to="/board"
-          onClick={() => setMobileOpen(false)}
-          className="mb-6 mx-4 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md py-3 px-4 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors"
-        >
-          <span className="material-symbols-outlined">add</span>
-          {t('nav.addPoints')}
-        </Link>
-      )}
+      {isStaff && <AcademyCodeButton />}
 
       <ul className="flex-1 flex flex-col gap-1 px-2">
         {navItems.map((item) => {

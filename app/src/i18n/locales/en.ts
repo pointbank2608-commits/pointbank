@@ -5091,6 +5091,12 @@ const en: Ko = {
   },
 
   nav: {
+    showCodes: 'Show academy codes',
+    hideCodes: 'Hide codes',
+    studentCodeLabel: 'Student login academy code',
+    inviteCodeLabel: 'Teacher invite code',
+    codeCopy: 'Copy {{label}}',
+    codeHint: 'Students sign in with the academy code, name and parent phone number. Other teachers join with the invite code.',
     homework: 'Homework',
     videoLibrary: 'Video library',
     help: 'Help & support',
