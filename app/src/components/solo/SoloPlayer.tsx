@@ -83,6 +83,7 @@ export default function SoloPlayer({
   canRecord = false,
   finishExtra,
   onHelp,
+  onHelpDone,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
@@ -95,6 +96,8 @@ export default function SoloPlayer({
   finishExtra?: ReactNode;
   /** "선생님 도와주세요" — 주면 위쪽에 버튼이 보인다(학생 화면만) */
   onHelp?: (step: number) => Promise<void>;
+  /** 선생님이 와서 알려 준 뒤 학생이 "도와줬어요"를 누를 때 — 서버의 도움 요청도 같이 닫는다 */
+  onHelpDone?: () => Promise<void>;
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
@@ -459,20 +462,30 @@ export default function SoloPlayer({
         {onHelp && (
           <button
             type="button"
-            disabled={helpSent}
             onClick={async () => {
+              if (helpSent) {
+                // 선생님이 와서 알려 줬다 → 버튼을 되돌리고 서버의 도움 요청도 닫는다(실패해도 화면은 되돌린다)
+                setHelpSent(false);
+                try {
+                  await onHelpDone?.();
+                } catch {
+                  /* 서버가 못 닫아도 선생님이 현황판에서 닫을 수 있다 */
+                }
+                return;
+              }
               setHelpSent(true);
               try {
                 await onHelp(idx);
               } catch {
                 setHelpSent(false);
               }
-              window.setTimeout(() => setHelpSent(false), 90000);
             }}
-            className="flex items-center gap-1 rounded-full border border-white/30 px-3 py-1.5 text-sm font-bold text-white/90 hover:bg-white/10 disabled:opacity-70"
+            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold hover:bg-white/10 ${
+              helpSent ? 'border-warm-yellow bg-warm-yellow/15 text-warm-yellow' : 'border-white/30 text-white/90'
+            }`}
           >
-            <span className="material-symbols-outlined text-[18px]">back_hand</span>
-            {helpSent ? t('solo.helpSent') : t('solo.help')}
+            <span className="material-symbols-outlined text-[18px]">{helpSent ? 'check_circle' : 'back_hand'}</span>
+            {helpSent ? t('solo.helpResolved') : t('solo.help')}
           </button>
         )}
       </header>

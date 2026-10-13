@@ -7,9 +7,11 @@ import {
   clearSoloHelp,
   createSoloLesson,
   fetchSoloAttention,
+  fetchSoloLive,
   fetchSoloReviews,
   fetchStudentWords,
   type SoloAttentionRow,
+  type SoloLiveRow,
   type SoloReviewRow,
 } from '../../lib/soloApi';
 import { buildSoloWordSteps } from '../../lib/soloLessons';
@@ -26,6 +28,9 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
   const { notify } = useToast();
   const [attention, setAttention] = useState<SoloAttentionRow[]>([]);
   const [reviews, setReviews] = useState<SoloReviewRow[]>([]);
+  // 지금 개별수업을 하고 있는 학생(071) — 함수가 없으면 이 구역만 숨긴다
+  const [live, setLive] = useState<SoloLiveRow[]>([]);
+  const [liveUnavailable, setLiveUnavailable] = useState(false);
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   /** 057 을 아직 안 돌렸으면 서버 함수가 없다 — 패널을 조용히 숨긴다 */
@@ -38,6 +43,13 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
       setUnavailable(true);
     }
   }, []);
+  const loadLive = useCallback(async () => {
+    try {
+      setLive(await fetchSoloLive(classId));
+    } catch {
+      setLiveUnavailable(true);
+    }
+  }, [classId]);
   const loadReviews = useCallback(async () => {
     try {
       setReviews(await fetchSoloReviews(7));
@@ -49,8 +61,12 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
   useEffect(() => {
     void loadAttention();
     void loadReviews();
+    void loadLive();
     const a = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void loadAttention();
+      if (document.visibilityState === 'visible') {
+        void loadAttention();
+        void loadLive();
+      }
     }, 10000);
     const r = window.setInterval(() => {
       if (document.visibilityState === 'visible') void loadReviews();
@@ -59,7 +75,7 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
       window.clearInterval(a);
       window.clearInterval(r);
     };
-  }, [loadAttention, loadReviews]);
+  }, [loadAttention, loadReviews, loadLive]);
 
   if (unavailable) return null;
 
@@ -127,6 +143,11 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
     struggling: 'bg-surface-container-high text-on-surface',
   };
   const unchecked = reviews.filter((r) => r.finished_at && !r.checked_at);
+  const ago = (iso: string) => {
+    const sec = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (sec < 45) return t('solo.watch_justNow');
+    return t('solo.watch_minAgo', { n: Math.max(1, Math.round(sec / 60)) });
+  };
   const when = (iso: string) => new Date(iso).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 
   return (
@@ -136,6 +157,46 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
         <h3 className="font-label-md text-label-md font-bold text-deep-navy">{t('solo.watch_title')}</h3>
         <span className="font-caption text-caption text-on-surface-variant">{t('solo.watch_live')}</span>
       </div>
+
+      {!liveUnavailable && (
+        <div className="space-y-1.5">
+          <div className="font-caption text-caption font-bold text-on-surface-variant">{t('solo.watch_liveTitle', { count: live.length })}</div>
+          {live.length === 0 ? (
+            <p className="rounded-lg bg-surface-container-low px-3 py-2 font-caption text-caption text-on-surface-variant">{t('solo.watch_liveNone')}</p>
+          ) : (
+            <ul className="grid gap-1.5 sm:grid-cols-2">
+              {live.map((r) => {
+                const pct = r.total > 0 ? Math.round((Math.min(r.progress, r.total) / r.total) * 100) : 0;
+                return (
+                  <li key={r.assignment_id} className="space-y-1 rounded-lg border border-outline-variant/50 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[18px] text-primary">person</span>
+                      <span className="font-label-md text-label-md font-bold text-on-surface">{r.name}</span>
+                      {r.help && <span className="rounded-full bg-error px-2 py-0.5 font-caption text-caption font-bold text-on-error">{t('solo.watch_reason_help')}</span>}
+                      <span className="ml-auto font-caption text-caption text-on-surface-variant">{ago(r.last_at)}</span>
+                    </div>
+                    <div className="truncate font-caption text-caption text-on-surface">
+                      {r.lesson_name}
+                      {r.kind !== 'lesson' && ` (${t(`solo.watch_kind_${r.kind}`)})`}
+                    </div>
+                    <div className="truncate font-caption text-caption text-on-surface-variant">
+                      {[r.stage_title, r.step_type ? t(`soloEdit.stepType_${r.step_type}`, { defaultValue: '' }) : ''].filter(Boolean).join(' · ') || t('solo.watch_starting')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-container">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="font-caption text-caption tabular-nums text-on-surface-variant">
+                        {Math.min(r.progress + 1, r.total)}/{r.total}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       {attention.length === 0 ? (
         <p className="rounded-lg bg-surface-container-low px-3 py-2 font-caption text-caption text-on-surface-variant">{t('solo.watch_none')}</p>

@@ -431,6 +431,9 @@ export async function soloStartReview(token: string, name: string, minutes: numb
 }
 
 /** 학생: 선생님 도와주세요 */
+/** 학생이 "도와줬어요"를 눌러 도움 요청을 직접 닫는다(070) */
+export const soloHelpDone = (token: string, assignment: string) => rpc<{ ok: boolean }>('solo_help_done', { p_token: token, p_assignment: assignment });
+
 export const soloHelp = (token: string, assignment: string, step: number) => rpc<{ ok: boolean }>('solo_help', { p_token: token, p_assignment: assignment, p_step: step });
 
 export interface SoloAttentionRow {
@@ -452,6 +455,27 @@ export async function fetchSoloAttention(): Promise<SoloAttentionRow[]> {
   const { data, error } = await supabase.rpc('solo_attention');
   if (error) throw new Error(error.message);
   return (data ?? []) as SoloAttentionRow[];
+}
+
+/** 선생님: 지금 개별수업을 하고 있는 학생과 어느 단계인지(071) */
+export interface SoloLiveRow {
+  assignment_id: string;
+  student_id: string;
+  name: string;
+  lesson_name: string;
+  kind: 'lesson' | 'homework' | 'review';
+  progress: number;
+  total: number;
+  step_type: string | null;
+  stage_title: string | null;
+  last_at: string;
+  help: boolean;
+}
+
+export async function fetchSoloLive(classId: string | null, minutes = 20): Promise<SoloLiveRow[]> {
+  const { data, error } = await supabase.rpc('solo_live', { p_class: classId, p_minutes: minutes });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SoloLiveRow[];
 }
 
 export async function clearSoloHelp(assignmentId: string): Promise<void> {
