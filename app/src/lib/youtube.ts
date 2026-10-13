@@ -32,6 +32,7 @@ export interface YoutubePlayer {
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   setPlaybackRate: (rate: number) => void;
   getCurrentTime: () => number;
+  getDuration?: () => number;
   destroy: () => void;
 }
 

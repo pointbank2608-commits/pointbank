@@ -71,6 +71,8 @@ export interface HwItemConfig {
   legacy?: boolean;
   /** 유치원 친구용 화면(큰 버튼·목소리 안내·도장) */
   kids?: boolean;
+  /** 영상 하나를 끝까지 보면 끝나는 활동(유치원 영상 보기 숙제) */
+  watch?: boolean;
 }
 
 export interface HwItemDraft {

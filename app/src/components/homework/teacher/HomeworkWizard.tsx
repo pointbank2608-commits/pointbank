@@ -4,15 +4,17 @@ import { fetchCurriculumLessons, fetchStudentsOfClass, fetchWordLists } from '..
 import { wordListToCards } from '../../../lib/gameFromWords';
 import { createHomework, teacherErrorKey } from '../../../lib/homework';
 import { fetchClassWrongCards, useBuildLabels } from '../../../lib/homework/teacherHelpers';
-import { buildItems, buildKidsItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
+import { buildItems, buildKidsItems, buildWatchItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
 import type { HwPlan } from '../../../lib/homework/types';
 import type { CurriculumLesson, FullCardItem, Student, WordList } from '../../../lib/types';
 import type { VideoClip } from '../../../lib/videoClips';
+import { parseShadowText } from '../../../lib/shadowLines';
+import { extractYoutubeId } from '../../../lib/youtube';
 import { enrichCards, loadWordBank } from '../../../lib/wordBankCache';
 import VideoClipLibrary from '../../VideoClipLibrary';
 import HomeworkPreview from './HomeworkPreview';
 
-type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked';
+type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked' | 'watch';
 
 const STEPS = ['target', 'source', 'time', 'confirm'] as const;
 
@@ -62,6 +64,24 @@ export default function HomeworkWizard({
   const [lessonId, setLessonId] = useState('');
   const [wordListId, setWordListId] = useState('');
   const [clip, setClip] = useState<VideoClip | null>(null);
+  // 내 유튜브 링크 + 대사표(선생님이 붙여 넣은 글 — 이 숙제 안에만 저장된다)
+  const [customUrl, setCustomUrl] = useState('');
+  const [customTitle, setCustomTitle] = useState('');
+  const [customScript, setCustomScript] = useState('');
+  const [customError, setCustomError] = useState<string | null>(null);
+  // 유치원 영상 보기: 유튜브 링크 3~6개
+  const [watchRows, setWatchRows] = useState<{ url: string; title: string }[]>([
+    { url: '', title: '' },
+    { url: '', title: '' },
+    { url: '', title: '' },
+  ]);
+  const watchVideos = useMemo(
+    () => watchRows.flatMap((r) => {
+      const id = extractYoutubeId(r.url);
+      return id ? [{ id, title: r.title }] : [];
+    }),
+    [watchRows],
+  );
   const [cards, setCards] = useState<FullCardItem[]>(initialCards ?? pickedCards ?? []);
   const [sourceName, setSourceName] = useState(initialTitle ?? '');
   const [missingLessonWords, setMissingLessonWords] = useState(false);
@@ -123,11 +143,51 @@ export default function HomeworkWizard({
     );
   }
 
+  function applyCustomVideo() {
+    const id = extractYoutubeId(customUrl);
+    if (!id) {
+      setCustomError(t('studentHw.customVideoBadUrl'));
+      return;
+    }
+    // 시간이 적힌 줄이 있어야 문장마다 그 구간을 틀 수 있다(유튜브 "스크립트 표시"·SRT 를 붙여 넣으면 시간이 같이 온다)
+    const lines = parseShadowText(customScript).filter((l) => l.en.trim().split(/\s+/).length >= 2 && l.end > l.start);
+    if (lines.length < 2) {
+      setCustomError(t('studentHw.customVideoBadScript'));
+      return;
+    }
+    setCustomError(null);
+    const name = customTitle.trim() || t('studentHw.customVideoDefaultName');
+    // id 를 비워 두면 숙제에 "라이브러리 장면" 표시가 안 붙는다(관리자가 내려도 영향 없음)
+    setClip({
+      id: '',
+      series: '',
+      title: name,
+      summary: '',
+      youtube_id: id,
+      channel: '',
+      start_sec: 0,
+      end_sec: 0,
+      level: 1,
+      tags: [],
+      script: customScript,
+      words: [],
+      pack: {} as VideoClip['pack'],
+      sort_order: 0,
+      hidden: false,
+      hidden_reason: null,
+      hidden_at: null,
+      created_at: '',
+    });
+    setSourceName(name);
+    setCards([]);
+  }
+
   useEffect(() => {
     if (minutes && !custom) setPlan(presetPlan(minutes, cards, !!clip));
   }, [minutes, custom, cards, clip]);
 
   const items = useMemo(() => {
+    if (source === 'watch') return buildWatchItems(watchVideos, t('studentHw.watchItemLabel'));
     let s = seed * 9301 + 49297;
     const rng = () => {
       s = (s * 9301 + 49297) % 233280;
@@ -136,10 +196,11 @@ export default function HomeworkWizard({
     if (kids) return buildKidsItems(cards, kidsLines, labels.shadowing, clipSource, rng);
     return buildItems(cards, plan, labels, clipSource, rng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, plan, labels, clip, seed, kids, kidsLines]);
+  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
-  const canNext = [targetIds.length > 0, cards.length >= 2 || !!clip, items.length > 0, items.length > 0][step];
+  const sourceOk = source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
+  const canNext = [targetIds.length > 0, sourceOk, items.length > 0, items.length > 0][step];
   const finalTitle = title.trim() || sourceName || t('studentHw.defaultTitle');
 
   async function create() {
@@ -252,10 +313,10 @@ export default function HomeworkWizard({
 
       {step === 1 && (
         <div className="space-y-4">
-          <div className={`grid grid-cols-2 gap-2 ${pickedCards?.length ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
-            {((pickedCards?.length ? ['picked', 'lesson', 'wordlist', 'video', 'wrong'] : ['lesson', 'wordlist', 'video', 'wrong']) as Source[]).map((s) => (
-              <button key={s} type="button" className={`${big} flex-col text-center ${on(source === s)}`} onClick={() => setSource(s)} aria-pressed={source === s}>
-                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay', picked: 'checklist' }[s]}</span>
+          <div className={`grid grid-cols-2 gap-2 ${pickedCards?.length ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}>
+            {((pickedCards?.length ? ['picked', 'lesson', 'wordlist', 'video', 'wrong', 'watch'] : ['lesson', 'wordlist', 'video', 'wrong', 'watch']) as Source[]).map((s) => (
+              <button key={s} type="button" className={`${big} flex-col text-center ${on(source === s)}`} onClick={() => { setSource(s); if (s === 'watch') setSourceName(t('studentHw.watchDefaultName')); }} aria-pressed={source === s}>
+                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay', picked: 'checklist', watch: 'smart_display' }[s]}</span>
                 {t(`studentHw.src_${s}`)}
               </button>
             ))}
@@ -336,6 +397,43 @@ export default function HomeworkWizard({
             </div>
           )}
 
+          {source === 'watch' && (
+            <div className="space-y-3">
+              <p className="rounded-xl bg-primary/10 px-4 py-3 text-base text-deep-navy">{t('studentHw.watchIntro')}</p>
+              {watchRows.map((r, i) => {
+                const ok = !!extractYoutubeId(r.url);
+                return (
+                  <div key={i} className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                    <label className="relative block">
+                      <input
+                        className={`${input} pr-10`}
+                        value={r.url}
+                        onChange={(e) => setWatchRows((rows) => rows.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
+                        placeholder={t('studentHw.watchUrl', { n: i + 1 })}
+                      />
+                      {r.url.trim() && (
+                        <span className={`material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 ${ok ? 'text-emerald-600' : 'text-error'}`}>{ok ? 'check_circle' : 'error'}</span>
+                      )}
+                    </label>
+                    <input
+                      className={input}
+                      value={r.title}
+                      onChange={(e) => setWatchRows((rows) => rows.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
+                      placeholder={t('studentHw.watchTitleOptional')}
+                    />
+                  </div>
+                );
+              })}
+              {watchRows.length < 6 && (
+                <button type="button" onClick={() => setWatchRows((rows) => [...rows, { url: '', title: '' }])} className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant px-4 font-label-md text-label-md">
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  {t('studentHw.watchAdd')}
+                </button>
+              )}
+              <p className="text-sm text-on-surface-variant">{t('studentHw.watchAdNote')}</p>
+            </div>
+          )}
+
           {source === 'video' && (
             <div className="space-y-2">
               {clip && (
@@ -345,6 +443,39 @@ export default function HomeworkWizard({
                 </div>
               )}
               <VideoClipLibrary onPick={pickClip} pickLabel={t('studentHw.pickClip')} />
+              <details className="rounded-xl border border-outline-variant" open={!!customUrl || !!customScript}>
+                <summary className="flex min-h-12 cursor-pointer items-center gap-2 px-4 font-label-md text-label-md text-on-surface">
+                  <span className="material-symbols-outlined">add_link</span>
+                  {t('studentHw.customVideoTitle')}
+                </summary>
+                <div className="space-y-2 p-4 pt-0">
+                  <p className="text-sm text-on-surface-variant">{t('studentHw.customVideoHint')}</p>
+                  <input className={input} value={customUrl} onChange={(e) => setCustomUrl(e.target.value)} placeholder={t('studentHw.customVideoUrl')} />
+                  <input className={input} value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} placeholder={t('studentHw.customVideoName')} />
+                  <textarea
+                    className={`${input} min-h-36 py-2 font-mono text-sm`}
+                    value={customScript}
+                    onChange={(e) => setCustomScript(e.target.value)}
+                    placeholder={t('studentHw.customVideoScript')}
+                    rows={6}
+                  />
+                  {customError && (
+                    <p className="rounded-lg bg-error-container px-3 py-2 text-sm text-on-error-container" role="alert">
+                      {customError}
+                    </p>
+                  )}
+                  <p className="text-sm text-on-surface-variant">{t('studentHw.customVideoCopyright')}</p>
+                  <button
+                    type="button"
+                    disabled={!customUrl.trim() || !customScript.trim()}
+                    onClick={applyCustomVideo}
+                    className="flex min-h-12 items-center gap-2 rounded-full bg-primary px-5 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
+                  >
+                    <span className="material-symbols-outlined">movie</span>
+                    {t('studentHw.customVideoUse')}
+                  </button>
+                </div>
+              </details>
             </div>
           )}
 
@@ -385,7 +516,14 @@ export default function HomeworkWizard({
         </div>
       )}
 
-      {step === 2 && (
+      {step === 2 && source === 'watch' && (
+        <div className="space-y-3">
+          <p className="rounded-2xl bg-primary/10 px-4 py-4 text-lg font-bold text-deep-navy">{t('studentHw.watchStep3', { count: watchVideos.length })}</p>
+          <ItemSummary items={items} />
+        </div>
+      )}
+
+      {step === 2 && source !== 'watch' && (
         <div className="space-y-4">
           <button
             type="button"
@@ -538,7 +676,7 @@ export function ItemSummary({ items }: { items: ReturnType<typeof buildItems> })
             <span className="material-symbols-outlined text-[20px] text-primary">{{ quiz: 'quiz', worksheet: 'description', game: 'sports_esports', shadowing: 'record_voice_over' }[it.kind]}</span>
             <span className="flex-1">{it.title}</span>
             <span className="tabular-nums text-on-surface-variant">
-              {it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : ''}
+              {it.config.watch ? t('studentHw.watchOne') : it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : ''}
               {it.kind === 'shadowing' && it.content.questions.length ? ' + ' : ''}
               {it.content.questions.length ? t('studentHw.questionCount', { count: it.content.questions.length }) : ''}
             </span>
@@ -546,7 +684,9 @@ export function ItemSummary({ items }: { items: ReturnType<typeof buildItems> })
         ))}
       </ul>
       <div className="border-t border-outline-variant/40 pt-1.5 text-base font-bold text-deep-navy">
-        {t('studentHw.totalSummary', { count: countQuestions(items), minutes: estimateMinutes(items) })}
+        {items.every((it) => it.config.watch)
+          ? t('studentHw.watchTotal', { count: items.length, minutes: estimateMinutes(items) })
+          : t('studentHw.totalSummary', { count: countQuestions(items), minutes: estimateMinutes(items) })}
       </div>
     </div>
   );

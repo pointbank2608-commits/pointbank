@@ -6,7 +6,7 @@ import MatchupGame from './MatchupGame';
 import QuestionCard from './QuestionCard';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
-import KidsShadowing, { KidsFrame, KidsIntro, StarFriend } from './KidsHomework';
+import KidsShadowing, { KidsFrame, KidsIntro, KidsWatch, StarFriend } from './KidsHomework';
 import { StampCelebration } from './HomeworkStamp';
 
 const SFX_CORRECT = 4015;
@@ -171,7 +171,8 @@ export default function HomeworkRunner({
       <KidsIntro
         title={title || t('studentHw.defaultTitle')}
         studentName={studentName}
-        count={items.reduce((n, it) => n + (it.content.lines?.length ?? 0), 0)}
+        count={items.every((it) => it.config.watch) ? items.length : items.reduce((n, it) => n + (it.content.lines?.length ?? 0), 0)}
+        videos={items.every((it) => it.config.watch)}
         resumed={started}
         onStart={() => openItem(firstOpenItem())}
       />
@@ -306,7 +307,9 @@ export default function HomeworkRunner({
     content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
-    if (it.kind === 'shadowing' && phase.sub === 'lines') {
+    if (it.config.watch) {
+      content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} onDone={() => void completeItem(phase.i)} />;
+    } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
       const Shadow = kids ? KidsShadowing : ShadowingActivity;
       content = (
         <Shadow

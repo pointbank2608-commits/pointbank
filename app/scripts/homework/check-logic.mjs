@@ -379,6 +379,31 @@ try {
     assert.ok(all[0].content.lines.some((l) => l.en === 'cat' && l.ko === '고양이'), '예문이 없으면 낱말 자체');
     assert.deepEqual(build.buildKidsItems([], 5, 'x'), []);
   });
+  await test('custom youtube homework: empty id gets no clipId and script lines become shadowing lines', () => {
+    const script = '[0:01-0:03] Hello there my friend | a' + String.fromCharCode(10) + '[0:04-0:06] I like apples very much | b';
+    const clip = { id: '', youtube_id: 'abcdefghijk', title: 'mine', script, pack: {} };
+    const kids = build.buildKidsItems([], 5, 'read along', clip);
+    assert.equal(kids.length, 1);
+    assert.equal(kids[0].content.videoId, 'abcdefghijk');
+    assert.ok(!('clipId' in kids[0].content));
+    assert.equal(kids[0].content.lines.length, 2);
+    const plan = { ...build.EMPTY_PLAN, shadowLines: 5, contentCheck: true };
+    const labels = { quiz: 'q', worksheet: 'w', matchup: 'm', anagram: 'a', spelling: 's', shadowing: 'sh' };
+    const normal = build.buildItems([], plan, labels, clip);
+    assert.equal(normal[0].kind, 'shadowing');
+    assert.ok(!('clipId' in normal[0].content));
+    assert.equal(normal[0].content.questions.length, 0);
+  });
+  await test('kindergarten watch homework: one item per video, kids+watch config, no questions, about 4 min each', () => {
+    const items = build.buildWatchItems([{ id: 'abcdefghijk', title: '' }, { id: 'lmnopqrstuv', title: 'Song' }], 'Video');
+    assert.equal(items.length, 2);
+    assert.ok(items.every((it) => it.kind === 'shadowing' && it.config.kids === true && it.config.watch === true));
+    assert.ok(items.every((it) => it.content.questions.length === 0 && it.content.lines.length === 0));
+    assert.equal(items[0].title, 'Video 1');
+    assert.equal(items[1].title, 'Song');
+    assert.equal(items[0].content.videoId, 'abcdefghijk');
+    assert.equal(build.estimateMinutes(items), 8);
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });

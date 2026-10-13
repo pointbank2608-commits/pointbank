@@ -2,7 +2,8 @@ import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../context/ToastContext';
-import { fetchPersonalLinks, homeworkUrl, personalHomeworkUrl, teacherErrorKey, type HomeworkOverviewRow, type PersonalLink } from '../../../lib/homework';
+import { fetchHomeworkItems, fetchPersonalLinks, homeworkUrl, personalHomeworkUrl, teacherErrorKey, type HomeworkOverviewRow, type PersonalLink } from '../../../lib/homework';
+import { fetchStudentCode, studentLink } from '../../../lib/studentPortal';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -18,6 +19,43 @@ export default function HomeworkSharePanel({ hw }: { hw: Pick<HomeworkOverviewRo
   const url = homeworkUrl(hw.code);
   const title = hw.title || t('studentHw.defaultTitle');
   const isCustom = hw.kind === 'custom';
+  // 유치원 친구용 숙제는 PIN 대신 학생 포털(학원 코드 + 이름 + 학부모 휴대폰 번호)로 들어간다
+  const [kids, setKids] = useState(false);
+  const [portalUrl, setPortalUrl] = useState<string | null>(null);
+  const [portalQr, setPortalQr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchHomeworkItems(hw.id)
+      .then((items) => {
+        if (cancelled) return;
+        setKids(items.length > 0 && items.every((i) => (i.config as { kids?: boolean }).kids === true));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [hw.id]);
+
+  useEffect(() => {
+    if (!kids) return;
+    let cancelled = false;
+    void fetchStudentCode()
+      .then(async (code) => {
+        const link = code ? studentLink(code) : `${window.location.origin}/s`;
+        const dataUrl = await QRCode.toDataURL(link, { margin: 1, width: 360, errorCorrectionLevel: 'M' });
+        if (!cancelled) {
+          setPortalUrl(link);
+          setPortalQr(dataUrl);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPortalUrl(`${window.location.origin}/s`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [kids]);
 
   useEffect(() => {
     if (isCustom) return;
@@ -71,6 +109,40 @@ img{width:38mm;height:38mm;margin:2mm auto;display:block}
   }
 
   const btn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
+  if (kids) {
+    const portalMessage = t('studentHw.kidsShareMessage', { title, url: portalUrl ?? `${window.location.origin}/s` });
+    return (
+      <div className="flex flex-wrap items-start gap-6 border-t border-outline-variant/40 p-4">
+        {portalQr && (
+          <figure className="flex flex-col items-center gap-1">
+            <img src={portalQr} alt={t('studentHw.kidsPortalQrAlt')} className="h-44 w-44 rounded-lg bg-white p-1" />
+            <figcaption className="text-sm text-on-surface-variant">{t('studentHw.kidsPortalQr')}</figcaption>
+          </figure>
+        )}
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="rounded-xl bg-primary/10 px-4 py-3 text-base text-deep-navy">
+            <div className="mb-1 flex items-center gap-2 font-bold">
+              <span className="material-symbols-outlined text-[20px]">child_care</span>
+              {t('studentHw.kidsShareTitle')}
+            </div>
+            <p>{t('studentHw.kidsShareBody')}</p>
+          </div>
+          {portalUrl && <div className="break-all text-base text-primary">{portalUrl}</div>}
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void copy(portalMessage, t('studentHw.copiedMessage'))} className={`${btn} bg-primary text-on-primary`}>
+              <span className="material-symbols-outlined text-[18px]">chat</span>
+              {t('studentHw.copyMessage')}
+            </button>
+            <button type="button" onClick={() => void copy(portalUrl ?? `${window.location.origin}/s`, t('studentHw.copiedLink'))} className={`${btn} border border-outline-variant text-on-surface`}>
+              <span className="material-symbols-outlined text-[18px]">link</span>
+              {t('studentHw.copyLink')}
+            </button>
+          </div>
+          <p className="text-sm text-on-surface-variant">{t('studentHw.kidsShareNeed')}</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-wrap items-start gap-6 border-t border-outline-variant/40 p-4">
       {!isCustom && qr && (

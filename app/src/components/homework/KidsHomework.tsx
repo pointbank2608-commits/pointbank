@@ -4,6 +4,7 @@ import type { HwItem } from '../../lib/homework/types';
 import { playSfx } from '../../lib/gameSfx';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
+import { useYoutubeWatch } from '../../lib/useYoutubeWatch';
 
 /**
  * 유치원 친구용 숙제 화면(2026-10-12) — 글을 읽지 못해도 할 수 있게: 큰 버튼, 큰 글자, 목소리로 안내, 한 화면에 할 일 하나.
@@ -47,12 +48,15 @@ export function KidsIntro({
   title,
   studentName,
   count,
+  videos = false,
   resumed,
   onStart,
 }: {
   title: string;
   studentName?: string;
   count: number;
+  /** 개수가 문장이 아니라 영상일 때 */
+  videos?: boolean;
   resumed: boolean;
   onStart: () => void;
 }) {
@@ -67,7 +71,7 @@ export function KidsIntro({
         <StarFriend size={140} />
         {studentName && <div className="text-3xl font-bold">{t('studentHw.kidsHello', { name: studentName })}</div>}
         <div className="rounded-3xl bg-white/90 px-6 py-4 text-2xl font-bold shadow-md">{title}</div>
-        <div className="text-xl text-deep-navy/70">{t('studentHw.kidsCount', { count })}</div>
+        <div className="text-xl text-deep-navy/70">{t(videos ? 'studentHw.kidsVideoCount' : 'studentHw.kidsCount', { count })}</div>
         {resumed && <div className="rounded-full bg-[#51cf66] px-5 py-1.5 text-lg font-bold text-white">{t('studentHw.resumeNote')}</div>}
         <button
           type="button"
@@ -244,6 +248,134 @@ export default function KidsShadowing({
             {last ? t('studentHw.kidsDoneLast') : t('studentHw.kidsDone')}
           </button>
         </div>
+      </div>
+    </KidsFrame>
+  );
+}
+
+/**
+ * 영상 하나를 끝까지 보는 화면 — 큰 "보자!" 버튼 하나, 화면을 누르면 멈춤/재생, 크게 보기, 끝나면 저절로 다음.
+ * 건너뛰기 막대는 없다(유튜브 컨트롤을 껐다). 끝(ENDED)이 와야 이 활동이 끝난다.
+ */
+export function KidsWatch({ item, index, total, onDone }: { item: HwItem; index: number; total: number; onDone: () => void }) {
+  const { t } = useTranslation();
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const [started, setStarted] = useState(false);
+  const [full, setFull] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const doneRef = useRef(onDone);
+  doneRef.current = onDone;
+  const w = useYoutubeWatch(item.content.videoId, () => {
+    setFinished(true);
+    playSfx(4015);
+    window.setTimeout(() => doneRef.current(), 900);
+  });
+
+  // 크게 보기: 전체화면 API 가 있으면 쓰고, 없으면(아이폰) 화면 가득 덮는다
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFull(false);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  useEffect(
+    () => () => {
+      if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    },
+    [],
+  );
+
+  async function toggleFull() {
+    const next = !full;
+    setFull(next);
+    try {
+      if (next) await boxRef.current?.requestFullscreen?.();
+      else if (document.fullscreenElement) await document.exitFullscreen();
+    } catch {
+      /* 전체화면을 못 쓰는 기기는 화면 가득 덮기만 한다 */
+    }
+  }
+
+  function start() {
+    setStarted(true);
+    w.play();
+  }
+
+  return (
+    <KidsFrame>
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="flex items-center justify-center gap-2" aria-label={t('studentHw.kidsVideoN', { n: index + 1, total })}>
+          {Array.from({ length: total }, (_, i) => (
+            <span
+              key={i}
+              className={`material-symbols-outlined text-[34px] ${i < index ? 'text-[#ffc83d]' : i === index ? 'hw-bob text-[#ff8fa3]' : 'text-deep-navy/20'}`}
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              star
+            </span>
+          ))}
+        </div>
+        <div className="text-center text-2xl font-bold">{item.title}</div>
+
+        <div
+          ref={boxRef}
+          className={`relative overflow-hidden bg-black shadow-lg ${full ? 'fixed inset-0 z-[80] rounded-none' : 'mx-auto aspect-video w-full max-w-3xl rounded-[2rem] border-4 border-white'}`}
+        >
+          <div id={w.elementId} className="absolute inset-0 h-full w-full" />
+          {/* 영상 위 투명 막: 누르면 멈춤/재생(유튜브 화면의 링크·추천이 눌리지 않게 막는다) */}
+          {started && !finished && !w.failed && (
+            <button type="button" aria-label={w.playing ? t('studentHw.kidsPause') : t('studentHw.kidsResume')} onClick={() => (w.playing ? w.pause() : w.play())} className="absolute inset-0 z-[1] bg-transparent" />
+          )}
+          {started && !w.playing && !finished && !w.failed && (
+            <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/30">
+              <span className="material-symbols-outlined text-[96px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
+                play_circle
+              </span>
+            </div>
+          )}
+          {!started && !w.failed && (
+            <button
+              type="button"
+              disabled={!w.ready}
+              onClick={start}
+              className="kids-btn absolute inset-0 z-[3] m-auto flex h-24 w-72 items-center justify-center gap-3 rounded-[2rem] bg-[#ff6b6b] text-4xl font-bold text-white disabled:opacity-60"
+            >
+              <span className="material-symbols-outlined text-[48px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                play_arrow
+              </span>
+              {w.ready ? t('studentHw.kidsWatch') : t('common.loading')}
+            </button>
+          )}
+          {finished && (
+            <div className="absolute inset-0 z-[4] flex items-center justify-center bg-black/50">
+              <StarFriend size={140} cheer />
+            </div>
+          )}
+          {w.failed && (
+            <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-3 bg-black/80 p-6 text-center text-white">
+              <p className="text-lg">{t('studentHw.kidsWatchFailed')}</p>
+            </div>
+          )}
+          {/* 진행 막대 + 크게 보기 */}
+          {started && (
+            <div className="absolute inset-x-0 bottom-0 z-[5] flex items-center gap-3 bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-6">
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/30">
+                <div className="h-full rounded-full bg-[#ffc83d] transition-all" style={{ width: `${Math.round(w.progress * 100)}%` }} />
+              </div>
+              <button type="button" onClick={() => void toggleFull()} aria-label={full ? t('studentHw.kidsSmall') : t('studentHw.kidsBig')} className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-deep-navy">
+                <span className="material-symbols-outlined">{full ? 'fullscreen_exit' : 'fullscreen'}</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {w.failed && (
+          <button type="button" onClick={onDone} className="kids-btn mx-auto min-h-16 w-full max-w-sm rounded-[2rem] bg-[#51cf66] text-2xl font-bold text-white">
+            {t('studentHw.kidsSkipFailed')}
+          </button>
+        )}
+        <p className="text-center text-base text-deep-navy/60">{t('studentHw.kidsWatchHint')}</p>
       </div>
     </KidsFrame>
   );

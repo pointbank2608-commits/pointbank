@@ -194,7 +194,7 @@ export function buildKidsItems(cards: FullCardItem[], count: number, label: stri
       .slice(0, n)
       .map((l) => ({ s: l.start, e: l.end, en: l.en.replace(/\*\*/g, ''), ko: l.ko || undefined, speaker: l.speaker }));
     if (lines.length === 0) return [];
-    return [{ kind: 'shadowing', title: label, config: { kids: true }, content: { videoId: clip.youtube_id, clipId: clip.id, lines, questions: [] } }];
+    return [{ kind: 'shadowing', title: label, config: { kids: true }, content: { videoId: clip.youtube_id, ...(clip.id ? { clipId: clip.id } : {}), lines, questions: [] } }];
   }
   const pool = cards.filter((c) => clean(c.word) && clean(c.meaning));
   // 예문이 있는 낱말을 먼저, 모자라면 낱말 자체로 채운다
@@ -208,6 +208,19 @@ export function buildKidsItems(cards: FullCardItem[], count: number, label: stri
   }));
   if (lines.length === 0) return [];
   return [{ kind: 'shadowing', title: label, config: { kids: true }, content: { lines, questions: [] } }];
+}
+
+/**
+ * 유치원 영상 보기 숙제(2026-10-13): 유튜브 영상 몇 개를 끝까지 보면 끝난다. 문제·채점·대사표가 없다.
+ * 활동 하나 = 영상 하나(쉐도잉 종류에 watch 표시만 붙여 서버·SQL 변경 없이 쓴다 — 문제가 0개라 item_complete 만 보내면 끝난다).
+ */
+export function buildWatchItems(videos: { id: string; title: string }[], label: string): HwItemDraft[] {
+  return videos.map((v, i) => ({
+    kind: 'shadowing' as const,
+    title: v.title.trim() || `${label} ${i + 1}`,
+    config: { kids: true, watch: true },
+    content: { videoId: v.id, lines: [], questions: [] },
+  }));
 }
 
 /** 활동 구성 → 활동 목록. 쉐도잉 → 단어 퀴즈 → 워크시트 → 게임 순서. 만들 수 없는 활동은 빠진다. */
@@ -224,7 +237,7 @@ export function buildItems(cards: FullCardItem[], plan: HwPlan, labels: BuildLab
         kind: 'shadowing',
         title: labels.shadowing,
         config: {},
-        content: { videoId: clip.youtube_id, clipId: clip.id, lines, questions: plan.contentCheck ? contentQs(clip.pack?.questions ?? [], rng) : [] },
+        content: { videoId: clip.youtube_id, ...(clip.id ? { clipId: clip.id } : {}), lines, questions: plan.contentCheck ? contentQs(clip.pack?.questions ?? [], rng) : [] },
       });
     }
   }
@@ -324,7 +337,8 @@ export function presetPlan(minutes: HwDuration, cards: FullCardItem[], hasClip: 
 export function estimateMinutes(items: HwItemDraft[]): number {
   let sec = 0;
   for (const it of items) {
-    if (it.kind === 'shadowing') sec += (it.content.lines?.length ?? 0) * 45;
+    if (it.config.watch) sec += 240;
+    else if (it.kind === 'shadowing') sec += (it.content.lines?.length ?? 0) * 45;
     for (const q of it.content.questions)
       sec += q.style === 'match' ? 12 : q.style === 'sentence' ? 40 : q.style === 'letters' ? 30 : q.style === 'spell' ? 35 : q.style === 'blank' ? 30 : q.style === 'content' ? 25 : 20;
   }
