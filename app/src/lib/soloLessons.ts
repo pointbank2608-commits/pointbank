@@ -16,6 +16,12 @@ import type { FullCardItem, WordBankEntry } from './types';
  */
 
 /** 시험 블록 안에 넣을 수 있는 문제 모양(채점되는 단계) */
+/** 그룹 합격선 — 그룹을 끝낼 때 처음 답 정답률을 보여 준다. gate 면 합격해야(틀린 것을 다시 풀어서라도) 다음 그룹으로 간다. */
+export interface SoloPass {
+  pct: number;
+  gate: boolean;
+}
+
 export type SoloQuestionStep = SoloQuestionBase & { tip?: string };
 type SoloQuestionBase =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
@@ -42,7 +48,7 @@ export type TestScope = 'lesson';
 
 export type SoloStep =
   | SoloQuestionStep
-  | { t: 'intro'; title: string; text: string; imageUrl?: string }
+  | { t: 'intro'; title: string; text: string; imageUrl?: string; pass?: SoloPass }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
   | { t: 'example'; sentence: string; ko: string }
@@ -121,7 +127,7 @@ export type SoloPublicTestItem = SoloPublicQuestion & { area: TestArea; sec: num
 /** 학생에게 가는 모양(정답 없음) */
 export type SoloPublicStep =
   | SoloPublicQuestion
-  | { t: 'intro'; title: string; text: string; imageUrl?: string }
+  | { t: 'intro'; title: string; text: string; imageUrl?: string; pass?: SoloPass }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
   | { t: 'example'; sentence: string; ko: string }

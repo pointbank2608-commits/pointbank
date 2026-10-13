@@ -16,7 +16,7 @@ import type { WordList } from '../../lib/types';
  */
 export interface BoardActions {
   setMinutes: (n: number) => void;
-  groupUpdate: (intro: number, patch: { title?: string; minutes?: number | null }) => void;
+  groupUpdate: (intro: number, patch: { title?: string; minutes?: number | null; pass?: { pct: number; gate: boolean } | null }) => void;
   groupMove: (gi: number, dir: -1 | 1) => void;
   groupRemove: (gi: number) => void;
   groupAdd: (title: string) => void;
@@ -137,6 +137,25 @@ export default function SoloBlockBoard({
                 />
                 {t('soloBoard.minutesUnit')}
               </label>
+              <select
+                value={g.pass ? `${g.pass.gate ? 'gate' : 'ref'}-${g.pass.pct}` : 'none'}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === 'none') return actions.groupUpdate(g.intro as number, { pass: null });
+                  const [mode, pct] = v.split('-');
+                  actions.groupUpdate(g.intro as number, { pass: { pct: Number(pct), gate: mode === 'gate' } });
+                }}
+                aria-label={t('soloBoard.passLine')}
+                className={`${field} w-auto`}
+              >
+                <option value="none">{t('soloBoard.passNone')}</option>
+                {[60, 70, 80, 90].map((p) => (
+                  <option key={`r${p}`} value={`ref-${p}`}>{t('soloBoard.passRef', { pct: p })}</option>
+                ))}
+                {[60, 70, 80, 90].map((p) => (
+                  <option key={`g${p}`} value={`gate-${p}`}>{t('soloBoard.passGate', { pct: p })}</option>
+                ))}
+              </select>
               <span className="font-caption text-caption text-on-surface-variant">{t('soloBoard.groupEstimate', { n: formatMinutes(g.seconds) })}</span>
               <span className="flex items-center">
                 <button type="button" disabled={gi <= (board.groups[0].intro === null ? 1 : 0)} onClick={() => actions.groupMove(gi, -1)} aria-label={t('soloBoard.groupUp')} className={iconBtn}>

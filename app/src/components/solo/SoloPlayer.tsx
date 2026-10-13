@@ -7,7 +7,7 @@ import RainbowSpeaking from '../rainbow/RainbowSpeaking';
 import RainbowStructure from '../rainbow/RainbowStructure';
 import { COMMON_SFX, playSfx } from '../../lib/gameSfx';
 import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
-import type { SoloClip, SoloPublicStep } from '../../lib/soloLessons';
+import type { SoloClip, SoloPass, SoloPublicStep } from '../../lib/soloLessons';
 import type { TestResult } from '../../lib/soloTest';
 import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
 import { checkCondition, looseNorm } from '../../lib/soloLessons';
@@ -72,6 +72,9 @@ function PosBadge({ pos }: { pos: string }) {
   );
 }
 
+/** 그룹 합격선·다시 풀기에서 점수로 치는 문제(조건 영작은 뜻을 서버가 못 가려서 뺀다) */
+const GRADED = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos', 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite'];
+const isStage = (steps: SoloPublicStep[], i: number): boolean => i > 0 && steps[i].t === 'intro' && /^\d+\.\s/.test((steps[i] as { title: string }).title);
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'];
 
 export default function SoloPlayer({
@@ -128,6 +131,13 @@ export default function SoloPlayer({
   const attempts = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const [helpSent, setHelpSent] = useState(false);
+  /** 문제마다 "처음 답이 맞았는지"(다시 풀기에서 처음 답이 맞으면 다시 점수로 친다) — 그룹 합격선과 틀린 것 다시 풀기가 쓴다 */
+  const [credit, setCredit] = useState<Record<number, boolean>>({});
+  /** 그룹 결과 화면(합격선이 있는 그룹을 끝냈을 때) */
+  const [result, setResult] = useState<{ start: number; end: number } | null>(null);
+  /** 틀린 것 다시 풀기: 풀 단계 번호 줄과 지금 위치, 끝나면 돌아갈 곳 */
+  const [retry, setRetry] = useState<{ queue: number[]; pos: number; back: { start: number; end: number } | null } | null>(null);
+  const [nonce, setNonce] = useState(0);
 
   const step = steps[idx];
 
@@ -283,7 +293,7 @@ export default function SoloPlayer({
     if (step.t === 'example') speak(step.sentence);
     if (step.t === 'pickPos') speak(step.sentence ?? step.word);
     if (step.t === 'translatePick') speak(step.sentence);
-  }, [idx, step]);
+  }, [idx, step, nonce]);
 
   const guard = useCallback(async <T,>(fn: () => Promise<T>): Promise<T | null> => {
     setBusy(true);
@@ -314,6 +324,7 @@ export default function SoloPlayer({
     const r = await guard(() => api.advance(idx, unsure));
     if (r === null) return;
     if (unsure) {
+      markCredit(idx, false);
       markMissed(idx);
       setStats((s) => ({ ...s, unsure: s.unsure + 1 }));
       setAdvanced(true);
@@ -324,7 +335,71 @@ export default function SoloPlayer({
     goOn();
   }
 
+  /** 이 단계의 처음 답을 적는다 — 다시 풀기 중이면 이번 첫 답이 맞을 때 점수를 되찾고, 아니면 처음 한 번만 적는다 */
+  function markCredit(i: number, ok: boolean) {
+    if (!GRADED.includes(steps[i]?.t)) return;
+    setCredit((c) => (retry ? { ...c, [i]: ok || c[i] === true } : i in c ? c : { ...c, [i]: ok }));
+  }
+
+  /** i 번 단계가 속한 그룹(숫자로 시작하는 나눔 화면 ~ 다음 나눔 전) */
+  function groupAt(i: number): { start: number; end: number; pass: SoloPass } | null {
+    let a = i;
+    while (a > 0 && !isStage(steps, a)) a--;
+    if (!isStage(steps, a)) return null;
+    const pass = (steps[a] as { pass?: SoloPass }).pass;
+    if (!pass) return null;
+    let b = a + 1;
+    while (b < steps.length && !isStage(steps, b)) b++;
+    return { start: a, end: b - 1, pass };
+  }
+
+  /** 그룹의 점수 — 이번에 푼(기록이 있는) 문제만 센다 */
+  function scoreOf(g: { start: number; end: number }) {
+    const idxs: number[] = [];
+    for (let i = g.start + 1; i <= g.end; i++) if (GRADED.includes(steps[i].t) && i in credit) idxs.push(i);
+    const right = idxs.filter((i) => credit[i]).length;
+    return { total: idxs.length, right, missed: idxs.filter((i) => !credit[i]), pct: idxs.length ? Math.round((right / idxs.length) * 100) : 100 };
+  }
+
+  function jumpTo(i: number) {
+    setIdx(i);
+    setNonce((n) => n + 1);
+  }
+
+  /** 틀린 것 다시 풀기 시작 */
+  function startRetry(queue: number[], back: { start: number; end: number } | null) {
+    if (queue.length === 0) return;
+    setResult(null);
+    setFinished(false);
+    setRetry({ queue, pos: 0, back });
+    jumpTo(queue[0]);
+  }
+
+  /** 그룹(또는 수업)을 다음으로 넘긴다 */
+  function leaveGroup(g: { end: number }) {
+    setResult(null);
+    if (g.end + 1 >= steps.length) setFinished(true);
+    else jumpTo(g.end + 1);
+  }
+
   function goOn() {
+    if (retry) {
+      if (retry.pos + 1 < retry.queue.length) {
+        setRetry({ ...retry, pos: retry.pos + 1 });
+        jumpTo(retry.queue[retry.pos + 1]);
+        return;
+      }
+      const back = retry.back;
+      setRetry(null);
+      if (back) setResult(back);
+      else setFinished(true);
+      return;
+    }
+    const g = groupAt(idx);
+    if (g && idx === g.end && scoreOf(g).total > 0) {
+      setResult({ start: g.start, end: g.end });
+      return;
+    }
     if (idx + 1 >= steps.length) setFinished(true);
     else setIdx(idx + 1);
   }
@@ -336,6 +411,7 @@ export default function SoloPlayer({
     const ok = typeof res === 'boolean' ? res : res.ok;
     if (typeof res !== 'boolean' && res.model) setModelNote(res.model);
     attempts.current += 1;
+    if (attempts.current === 1) markCredit(idx, ok);
     if (ok) {
       setPhase('right');
       setStats((s) => ({ ...s, right: s.right + 1 }));
@@ -413,7 +489,37 @@ export default function SoloPlayer({
 
   const percent = useMemo(() => (steps.length ? Math.round((Math.min(idx, steps.length) / steps.length) * 100) : 0), [idx, steps.length]);
 
+  if (result) {
+    const sc = scoreOf(result);
+    const pass = (steps[result.start] as { pass?: SoloPass }).pass as SoloPass;
+    const passed = sc.pct >= pass.pct;
+    const title = String((steps[result.start] as { title: string }).title).replace(/^\d+\.\s*/, '');
+    return (
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+        <div className="solo-pop text-7xl">{passed ? '🎉' : '💪'}</div>
+        <h1 className="text-3xl font-bold">{t('solo.groupResult', { title })}</h1>
+        <p className="text-5xl font-bold tabular-nums text-warm-yellow">{sc.pct}%</p>
+        <p className="text-xl text-white/85">{t('solo.groupScore', { right: sc.right, total: sc.total, pct: sc.pct })}</p>
+        <p className="text-lg text-white/70">{t('solo.passLineText', { pct: pass.pct })}</p>
+        <p className="max-w-sm text-xl font-bold">{passed ? t('solo.passedMsg') : pass.gate ? t('solo.notPassedGate') : t('solo.notPassedRef')}</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          {sc.missed.length > 0 && (
+            <button type="button" onClick={() => startRetry(sc.missed, result)} className={`${btn} ${passed || !pass.gate ? 'bg-white/15 text-white' : 'bg-warm-yellow text-deep-navy'}`}>
+              {t('solo.retryMissed', { count: sc.missed.length })}
+            </button>
+          )}
+          {(passed || !pass.gate) && (
+            <button type="button" onClick={() => leaveGroup(result)} className={`${btn} bg-warm-yellow px-8 text-deep-navy`}>
+              {t('solo.continueNext')}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (finished) {
+    const missedAll = Object.keys(credit).map(Number).filter((i) => !credit[i]).sort((a, b) => a - b);
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
         <div className="solo-pop text-7xl">🎉</div>
@@ -436,6 +542,11 @@ export default function SoloPlayer({
               ))}
             </div>
           </div>
+        )}
+        {missedAll.length > 0 && (
+          <button type="button" onClick={() => startRetry(missedAll, null)} className={`${btn} bg-white/15 text-white`}>
+            {t('solo.retryAllMissed', { count: missedAll.length })}
+          </button>
         )}
         {finishExtra}
         <button type="button" onClick={onExit} className={`${btn} bg-warm-yellow text-deep-navy`}>
@@ -494,6 +605,11 @@ export default function SoloPlayer({
         {headerExtra}
       </header>
 
+      {retry && (
+        <div className="-mt-1 flex justify-center px-4 pb-1">
+          <span className="rounded-full bg-warm-yellow px-4 py-1 text-base font-bold text-deep-navy">{t('solo.retryChip', { n: retry.pos + 1, of: retry.queue.length })}</span>
+        </div>
+      )}
       {activity && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
           <span className="rounded-full bg-white/10 px-4 py-1 text-base font-bold text-white/80">

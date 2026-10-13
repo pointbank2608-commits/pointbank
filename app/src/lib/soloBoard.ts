@@ -1,4 +1,4 @@
-import type { SoloStep } from './soloLessons';
+import type { SoloPass, SoloStep } from './soloLessons';
 
 /**
  * 개별수업의 "블록 보드"(BLOCK_SPEC §2, 4단계) — 저장된 문제 목록(steps)을 그룹 > 블록 > 문제로 읽는다.
@@ -41,6 +41,8 @@ export interface BoardGroup {
   minutes: number | null;
   /** 단계 나눔 본문에서 시간을 뺀 안내 글 */
   hint: string;
+  /** 합격선(없으면 null) */
+  pass: SoloPass | null;
   start: number;
   end: number;
   blocks: BoardBlock[];
@@ -147,7 +149,7 @@ export function buildBoard(steps: SoloStep[]): Board {
   const loose0 = head === null ? 0 : 1;
   if (firstBound > loose0) {
     const blocks = makeBlocks(loose0, firstBound - 1);
-    groups.push({ intro: null, no: null, title: '', minutes: null, hint: '', start: loose0, end: firstBound - 1, blocks, seconds: blocks.reduce((n, b) => n + b.seconds, 0) });
+    groups.push({ intro: null, no: null, title: '', minutes: null, hint: '', pass: null, start: loose0, end: firstBound - 1, blocks, seconds: blocks.reduce((n, b) => n + b.seconds, 0) });
   }
   bounds.forEach((b, k) => {
     const end = (bounds[k + 1] ?? steps.length) - 1;
@@ -161,6 +163,7 @@ export function buildBoard(steps: SoloStep[]): Board {
       title: m ? m[2] : intro.title,
       minutes: mm ? Number(mm[1]) : null,
       hint: mm ? mm[2] : intro.text ?? '',
+      pass: (steps[b] as { pass?: SoloPass }).pass ?? null,
       start: b,
       end,
       blocks,
@@ -207,12 +210,15 @@ const stageStep = (no: number, title: string, minutes: number | null, hint: stri
 });
 
 /** 그룹 이름·목표 시간·안내를 고친다 */
-export function updateGroup(steps: SoloStep[], intro: number, patch: { title?: string; minutes?: number | null; hint?: string }): SoloStep[] {
+export function updateGroup(steps: SoloStep[], intro: number, patch: { title?: string; minutes?: number | null; hint?: string; pass?: SoloPass | null }): SoloStep[] {
   const board = buildBoard(steps);
   const g = board.groups.find((x) => x.intro === intro);
   if (!g) return steps;
   const next = [...steps];
-  next[intro] = stageStep(g.no ?? 1, patch.title ?? g.title, patch.minutes === undefined ? g.minutes : patch.minutes, patch.hint ?? g.hint);
+  const made = stageStep(g.no ?? 1, patch.title ?? g.title, patch.minutes === undefined ? g.minutes : patch.minutes, patch.hint ?? g.hint) as Extract<SoloStep, { t: 'intro' }>;
+  const old = steps[intro] as Extract<SoloStep, { t: 'intro' }>;
+  const pass = patch.pass === undefined ? old.pass : patch.pass ?? undefined;
+  next[intro] = { ...made, ...(old.imageUrl ? { imageUrl: old.imageUrl } : {}), ...(pass ? { pass } : {}) };
   return renumber(next);
 }
 

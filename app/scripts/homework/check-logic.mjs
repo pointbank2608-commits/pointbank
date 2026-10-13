@@ -446,6 +446,28 @@ try {
     const q = gl.steps.filter((x) => x.t === 'translatePick' || x.t === 'unscramble' || x.t === 'pickCorrect');
     assert.ok(q.length > 0 && q.every((x) => typeof x.tip === 'string' && x.tip.length > 0));
   });
+  const sboard = await server.ssrLoadModule('/src/lib/soloBoard.ts');
+  await test('group pass line: stored on the stage intro, survives rename/minutes/renumber, and can be cleared', () => {
+    const base = [
+      { t: 'intro', title: 'Lesson', text: '2' },
+      { t: 'intro', title: '1. Basics', text: '10분 · go' },
+      { t: 'meet', word: 'a', meaning: 'x', imageUrl: null, example: null },
+      { t: 'intro', title: '2. Deep', text: '12분 · go' },
+      { t: 'meet', word: 'b', meaning: 'y', imageUrl: null, example: null },
+    ];
+    let steps = sboard.updateGroup(base, 1, { pass: { pct: 80, gate: true } });
+    assert.deepEqual(steps[1].pass, { pct: 80, gate: true });
+    let b = sboard.buildBoard(steps);
+    assert.deepEqual(b.groups[0].pass, { pct: 80, gate: true });
+    assert.equal(b.groups[1].pass, null);
+    steps = sboard.updateGroup(steps, 1, { title: 'Renamed', minutes: 7 });
+    assert.deepEqual(steps[1].pass, { pct: 80, gate: true });
+    assert.ok(steps[1].title.endsWith('Renamed') && steps[1].text.startsWith('7'));
+    steps = sboard.renumber(steps);
+    assert.deepEqual(steps[1].pass, { pct: 80, gate: true });
+    steps = sboard.updateGroup(steps, 1, { pass: null });
+    assert.equal(steps[1].pass, undefined);
+  });
   // ---- 직접 만들기 슬라이드 효과 순서(2026-10-05) ----
   const motion = await server.ssrLoadModule('/src/lib/canvasMotion.ts');
   const el = (id, m) => ({ id, type: 'text', x: 0, y: 0, w: 10, h: 10, text: id, fontSize: 5, color: '#000', bold: false, align: 'left', font: 'sans', motion: m });
