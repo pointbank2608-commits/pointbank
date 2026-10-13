@@ -17,6 +17,7 @@ export interface StepKind {
 export const STEP_KINDS: StepKind[] = [
   { t: 'intro', icon: 'flag', group: 'learn' },
   { t: 'meet', icon: 'style', group: 'learn' },
+  { t: 'game', icon: 'sports_esports', group: 'quiz' },
   { t: 'rule', icon: 'menu_book', group: 'grammar' },
   { t: 'example', icon: 'record_voice_over', group: 'grammar' },
   { t: 'pickWord', icon: 'image_search', group: 'quiz' },
@@ -62,6 +63,8 @@ export function newStep(t: SoloStep['t']): SoloStep {
       return { t, title: '', text: '' };
     case 'meet':
       return { t, word: '', meaning: '', imageUrl: null, example: null };
+    case 'game':
+      return { t, gameType: 'matchup', templateId: '', title: '' };
     case 'pickWord':
       return { t, imageUrl: null, meaning: '', options: ['', '', '', ''], answer: 0 };
     case 'pickMeaning':
@@ -269,6 +272,8 @@ export function stepSummary(step: SoloStep): string {
   switch (step.t) {
     case 'intro':
       return step.title || step.text;
+    case 'game':
+      return step.title || '';
     case 'meet':
     case 'dictation':
     case 'typeWord':
@@ -331,6 +336,9 @@ export function stepProblems(step: SoloStep): string[] {
       break;
     case 'meet':
       if (blank(step.word) || blank(step.meaning)) p.push('wordMeaning');
+      break;
+    case 'game':
+      if (blank(step.templateId)) p.push('gameTemplateEmpty');
       break;
     case 'pickWord':
       if (blank(step.meaning) && !step.imageUrl) p.push('promptEmpty');

@@ -9,6 +9,8 @@ export type MatchupStyle = 'trays' | 'tags';
 interface Props {
   pairs: MatchPair[];
   boardStyle?: MatchupStyle;
+  /** 개별수업: 모두 맞히면 틀린 횟수와 함께 한 번 알린다(다시 하기 버튼은 숨긴다) */
+  onComplete?: (wrongCount: number) => void;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -20,7 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays' }, ref) {
+const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays', onComplete }, ref) {
   const { t } = useTranslation();
   const [leftOrder, setLeftOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [rightOrder, setRightOrder] = useState<MatchPair[]>(() => shuffle(pairs));
@@ -68,6 +70,17 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
       setPrevSnapshot(null);
     },
   }));
+
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (pairs.length >= 2 && matchedIds.size === pairs.length && !doneRef.current) {
+      doneRef.current = true;
+      onComplete(wrongCount);
+    }
+    if (matchedIds.size === 0) doneRef.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchedIds, pairs.length]);
 
   const sfx = useGameSfx('matchup');
   useStepSounds(0, pairs.length >= 2 && matchedIds.size === pairs.length, undefined, sfx.finish);
@@ -169,7 +182,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
       <h2>{t('gameMatchup.finishedTitle')}</h2>
       <p>{t('classroomUx.matchProgress', { matched: matchedIds.size, total: pairs.length })}</p>
       <p>{t('gameMatchup.wrongCountLabel', { count: wrongCount })}</p>
-      <button type="button" onClick={restart} className="matchup-clay__action">{t('gameMatchup.restartButton')}</button>
+      {!onComplete && <button type="button" onClick={restart} className="matchup-clay__action">{t('gameMatchup.restartButton')}</button>}
     </div>;
   }
 

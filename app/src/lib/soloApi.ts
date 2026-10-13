@@ -164,6 +164,15 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   return data;
 }
 
+/** 학생이 개별수업 안에서 읽는 선생님의 게임 템플릿(069) — 같은 학원·같은 반 것만 온다 */
+export interface SoloGameTemplate {
+  game_type: string;
+  name: string;
+  items: unknown[];
+  config: Record<string, unknown>;
+}
+export const soloGameTemplate = (token: string, templateId: string) => rpc<SoloGameTemplate>('student_game_template', { p_token: token, p_template: templateId });
+
 export const soloOpen = (token: string, assignment: string) => rpc<SoloOpenResult>('solo_open', { p_token: token, p_assignment: assignment });
 
 export async function soloAnswer(token: string, assignment: string, step: number, value: string): Promise<boolean> {

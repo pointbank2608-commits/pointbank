@@ -66,6 +66,7 @@ export const isStageIntro = (steps: SoloStep[], i: number): boolean => i > 0 && 
 const SECONDS: Partial<Record<SoloStep['t'], number>> = {
   intro: 8,
   meet: 40,
+  game: 120,
   pickWord: 25,
   pickMeaning: 25,
   listenPick: 25,

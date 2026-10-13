@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
 import FinishPanel from '../components/solo/FinishPanel';
-import { SoloError, soloAdvance, soloAnswerFull, soloHelp, soloOpen, soloRecordSave, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
+import { SoloError, soloAdvance, soloAnswerFull, soloHelp, soloOpen, soloRecordSave, soloGameTemplate, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
 
 const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
@@ -50,6 +50,7 @@ export default function StudentSoloPage() {
         return { answer: r.answer };
       },
       reveal: (step) => soloReveal(token, assignmentId, step),
+      gameTemplate: (templateId) => soloGameTemplate(token, templateId).catch(() => null),
       record: (step, blob, seconds, sub) => soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
       submitTest: (step, answers) => soloTestSubmit(token, assignmentId, step, answers),
       retryTest: async (step, wrong) => {

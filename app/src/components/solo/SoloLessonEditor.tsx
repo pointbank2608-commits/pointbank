@@ -834,7 +834,7 @@ export default function SoloLessonEditor({
                 <p className="font-caption text-caption text-on-surface-variant">{t('soloEdit.fillHint')}</p>
               )}
 
-              <SoloStepForm key={`${sel}-${step.t}`} step={step} academyId={academyId} onChange={edit} />
+              <SoloStepForm key={`${sel}-${step.t}`} step={step} academyId={academyId} classId={lesson.class_id} onChange={edit} />
 
               <div className="rounded-xl bg-surface-container-low p-3 font-caption text-caption text-on-surface-variant">{t(`soloEdit.stepHelp_${step.t}`)}</div>
             </div>

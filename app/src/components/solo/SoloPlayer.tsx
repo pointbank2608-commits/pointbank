@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import SoloGameStep from './SoloGameStep';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 import RainbowSpeaking from '../rainbow/RainbowSpeaking';
@@ -32,6 +33,8 @@ export interface SoloPlayerApi {
   submitTest(step: number, answers: (string | null)[]): Promise<TestResult>;
   /** 시험에서 틀린 문제만 다시 풀기(복습 수업으로) — 없으면 버튼이 안 보인다 */
   retryTest?(step: number, wrong: number[]): Promise<void>;
+  /** 게임 단계가 쓰는 선생님의 게임 템플릿(069) — 못 읽으면 null */
+  gameTemplate?(templateId: string): Promise<{ game_type: string; name: string; items: unknown[]; config: Record<string, unknown> } | null>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
@@ -809,6 +812,10 @@ export default function SoloPlayer({
               {t(/^\d+\.\s/.test(step.title) ? 'solo.startStage' : 'solo.start')}
             </button>
           </div>
+        )}
+
+        {step.t === 'game' && (
+          <SoloGameStep key={`${idx}-${step.templateId}`} step={step} load={api.gameTemplate} busy={busy} onDone={() => void next()} />
         )}
 
         {step.t === 'meet' && (

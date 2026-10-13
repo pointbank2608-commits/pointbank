@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { gradeSoloLocal, soloCorrectText, toPublicStep, type SoloStep } from '../../lib/soloLessons';
 import { gradeTestLocal } from '../../lib/soloTest';
@@ -20,6 +21,11 @@ export default function SoloPreview({ steps: lessonSteps, onClose, startAt = 0 }
       },
       advance: async (step, unsure) => ({ answer: unsure ? soloCorrectText(steps[step]) : null }),
       reveal: async (step) => soloCorrectText(steps[step]),
+      // 선생님 미리보기: 로그인한 선생님이 직접 읽는다(RLS 로 자기 학원 것만)
+      gameTemplate: async (templateId) => {
+        const { data } = await supabase.from('game_templates').select('game_type,name,items,config').eq('id', templateId).maybeSingle();
+        return data ? { game_type: data.game_type as string, name: data.name as string, items: (data.items ?? []) as unknown[], config: (data.config ?? {}) as Record<string, unknown> } : null;
+      },
       submitTest: async (step, answers) => {
         const s = steps[step];
         return gradeTestLocal(s && s.t === 'test' ? s.items : [], answers);

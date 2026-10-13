@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { uploadLessonSlideImage } from '../../lib/api';
@@ -8,6 +8,7 @@ import type { WordBankEntry } from '../../lib/types';
 import { extractYoutubeId } from '../../lib/youtube';
 import { POS_HINT_KO, SPEAKING_ITEMS, STRUCTURE_ITEMS } from '../../lib/rainbow';
 import { loadWordBank } from '../../lib/wordBankCache';
+import { supabase } from '../../lib/supabase';
 
 const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary';
 const label = 'mb-1 block font-caption text-caption text-on-surface-variant';
@@ -178,7 +179,60 @@ function ClipField({ clip, onChange }: { clip: SoloClip; onChange: (c: SoloClip)
 
 /* ---------------- 단계 종류별 편집 칸 ---------------- */
 
-export default function SoloStepForm({ step, academyId, onChange }: { step: SoloStep; academyId: string; onChange: (s: SoloStep) => void }) {
+/** 게임 단계: 선생님이 만든 매치업 템플릿 하나를 고른다(학원 공용이거나 이 수업 반 것만 학생이 읽을 수 있다) */
+function GameTemplateField({ academyId, classId, step, onChange }: { academyId: string; classId: string | null; step: Extract<SoloStep, { t: 'game' }>; onChange: (s: SoloStep) => void }) {
+  const { t } = useTranslation();
+  const [list, setList] = useState<{ id: string; name: string; class_id: string | null; pairs: number }[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void supabase
+      .from('game_templates')
+      .select('id,name,class_id,config')
+      .eq('academy_id', academyId)
+      .eq('game_type', step.gameType)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (!alive) return;
+        const rows = (data ?? []) as { id: string; name: string; class_id: string | null; config: { pairs?: unknown[] } | null }[];
+        setList(rows.filter((r) => r.class_id === null || r.class_id === classId).map((r) => ({ id: r.id, name: r.name, class_id: r.class_id, pairs: r.config?.pairs?.length ?? 0 })));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [academyId, classId, step.gameType]);
+  return (
+    <div className="space-y-4">
+      <Field title={t('soloEdit.gameTemplate')} hint={t('soloEdit.gameTemplateHint')}>
+        {list === null ? (
+          <p className="text-sm text-on-surface-variant">{t('common.loading')}</p>
+        ) : list.length === 0 ? (
+          <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 text-sm text-on-surface">{t('soloEdit.gameTemplateNone')}</p>
+        ) : (
+          <select
+            value={step.templateId}
+            onChange={(e) => {
+              const row = list.find((x) => x.id === e.target.value);
+              onChange({ ...step, templateId: e.target.value, title: step.title || row?.name || '' });
+            }}
+            className={input}
+          >
+            <option value="">{t('soloEdit.gameTemplatePick')}</option>
+            {list.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({t('soloEdit.gamePairs', { count: r.pairs })})
+              </option>
+            ))}
+          </select>
+        )}
+      </Field>
+      <Field title={t('soloEdit.gameTitle')}>
+        <input value={step.title} onChange={(e) => onChange({ ...step, title: e.target.value })} className={input} />
+      </Field>
+    </div>
+  );
+}
+
+export default function SoloStepForm({ step, academyId, classId = null, onChange }: { step: SoloStep; academyId: string; classId?: string | null; onChange: (s: SoloStep) => void }) {
   const { t } = useTranslation();
   const set = (patch: Partial<SoloStep>) => onChange({ ...step, ...patch } as SoloStep);
   const text = (title: string, value: string, key: string, opts?: { area?: boolean; hint?: string; placeholder?: string }) => (
@@ -228,6 +282,8 @@ export default function SoloStepForm({ step, academyId, onChange }: { step: Solo
           {image(step.imageUrl)}
         </div>
       );
+    case 'game':
+      return <GameTemplateField academyId={academyId} classId={classId} step={step} onChange={onChange} />;
     case 'pickWord':
       return (
         <div className="space-y-4">
