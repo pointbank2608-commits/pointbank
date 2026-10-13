@@ -7,6 +7,7 @@ import AdminVideosPage from './pages/AdminVideosPage';
 import VideoLibraryPage from './pages/VideoLibraryPage';
 import HomeworkPage from './pages/HomeworkPage';
 import HomeworkStudentPage from './pages/HomeworkStudentPage';
+import StudentAppIdentity from './components/StudentAppIdentity';
 import StudentPortalPage from './pages/StudentPortalPage';
 import StudentSoloPage from './pages/StudentSoloPage';
 import SharedRecordingPage from './pages/SharedRecordingPage';
@@ -105,11 +106,14 @@ export default function App() {
   // 학생용 페이지(Classbank Student): 학원 코드 + 이름 + 학부모 전화번호로 로그인. 선생님 로그인과 따로.
   if (pathname === '/s' || pathname.startsWith('/s/')) {
     return (
+      <>
+        <StudentAppIdentity />
       <Routes>
         <Route path="/s" element={<StudentPortalPage />} />
         <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
+      </>
     );
   }
   // 학부모가 링크로 보는 아이의 녹음(로그인 없음, 만료·닫힘이 있는 무작위 열쇠)

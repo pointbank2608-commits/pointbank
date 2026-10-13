@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import SoloChat from '../components/solo/SoloChat';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
 import FinishPanel from '../components/solo/FinishPanel';
@@ -81,6 +82,7 @@ export default function StudentSoloPage() {
       onHelp={async (step) => {
         await soloHelp(token as string, assignmentId as string, step);
       }}
+      headerExtra={<SoloChat token={token as string} assignment={assignmentId as string} />}
       onHelpDone={async () => {
         await soloHelpDone(token as string, assignmentId as string);
       }}

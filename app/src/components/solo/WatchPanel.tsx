@@ -15,6 +15,8 @@ import {
   type SoloReviewRow,
 } from '../../lib/soloApi';
 import { buildSoloWordSteps } from '../../lib/soloLessons';
+import { fetchChatMode, fetchChatThreads, openPingChannel, setChatMode, teacherChannelName, type ChatMode, type ChatThread } from '../../lib/soloChat';
+import ChatDrawer from './ChatDrawer';
 import type { FullCardItem } from '../../lib/types';
 
 /**
@@ -31,6 +33,11 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
   // 지금 개별수업을 하고 있는 학생(071) — 함수가 없으면 이 구역만 숨긴다
   const [live, setLive] = useState<SoloLiveRow[]>([]);
   const [liveUnavailable, setLiveUnavailable] = useState(false);
+  // 선생님 ↔ 학생 채팅(072) — 함수가 없으면 이 기능만 숨긴다
+  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [chatUnavailable, setChatUnavailable] = useState(false);
+  const [chatMode, setChatModeState] = useState<ChatMode>('off');
+  const [chatWith, setChatWith] = useState<{ assignmentId: string; name: string } | null>(null);
   const [open, setOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   /** 057 을 아직 안 돌렸으면 서버 함수가 없다 — 패널을 조용히 숨긴다 */
@@ -50,6 +57,13 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
       setLiveUnavailable(true);
     }
   }, [classId]);
+  const loadThreads = useCallback(async () => {
+    try {
+      setThreads(await fetchChatThreads());
+    } catch {
+      setChatUnavailable(true);
+    }
+  }, []);
   const loadReviews = useCallback(async () => {
     try {
       setReviews(await fetchSoloReviews(7));
@@ -62,20 +76,44 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
     void loadAttention();
     void loadReviews();
     void loadLive();
+    void loadThreads();
+    // 학생이 메시지를 보내면 신호로 바로 새로 읽는다(10초 확인은 예비)
+    const ping = openPingChannel(teacherChannelName(academyId), () => void loadThreads());
     const a = window.setInterval(() => {
       if (document.visibilityState === 'visible') {
         void loadAttention();
         void loadLive();
+        void loadThreads();
       }
     }, 10000);
     const r = window.setInterval(() => {
       if (document.visibilityState === 'visible') void loadReviews();
     }, 60000);
     return () => {
+      ping.close();
       window.clearInterval(a);
       window.clearInterval(r);
     };
-  }, [loadAttention, loadReviews, loadLive]);
+  }, [loadAttention, loadReviews, loadLive, loadThreads, academyId]);
+
+  useEffect(() => {
+    if (!classId) {
+      setChatModeState('off');
+      return;
+    }
+    void fetchChatMode(classId).then(setChatModeState).catch(() => undefined);
+  }, [classId]);
+
+  async function changeChatMode(m: ChatMode) {
+    if (!classId) return;
+    setChatModeState(m);
+    try {
+      await setChatMode(classId, m);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : String(e), 'error');
+      void fetchChatMode(classId).then(setChatModeState);
+    }
+  }
 
   if (unavailable) return null;
 
@@ -156,7 +194,32 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
         <span className="material-symbols-outlined text-[22px] text-primary">support_agent</span>
         <h3 className="font-label-md text-label-md font-bold text-deep-navy">{t('solo.watch_title')}</h3>
         <span className="font-caption text-caption text-on-surface-variant">{t('solo.watch_live')}</span>
+        {!chatUnavailable && classId && (
+          <label className="ml-auto flex items-center gap-1.5 font-caption text-caption text-on-surface-variant">
+            <span className="material-symbols-outlined text-[18px]">chat</span>
+            {t('solo.chat_modeLabel')}
+            <select value={chatMode} onChange={(e) => void changeChatMode(e.target.value as ChatMode)} className="rounded-lg border border-outline-variant bg-surface-container-low px-2 py-1 text-sm text-on-surface">
+              <option value="off">{t('solo.chat_mode_off')}</option>
+              <option value="quick">{t('solo.chat_mode_quick')}</option>
+              <option value="free">{t('solo.chat_mode_free')}</option>
+            </select>
+          </label>
+        )}
       </div>
+
+      {!chatUnavailable && threads.some((th) => th.unread > 0) && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-warm-yellow/25 px-3 py-2">
+          <span className="material-symbols-outlined text-[20px] text-deep-navy">mark_unread_chat_alt</span>
+          <span className="font-label-md text-label-md font-bold text-deep-navy">{t('solo.chat_newMessages', { count: threads.reduce((n, th) => n + th.unread, 0) })}</span>
+          {threads
+            .filter((th) => th.unread > 0)
+            .map((th) => (
+              <button key={th.assignment_id} type="button" onClick={() => setChatWith({ assignmentId: th.assignment_id, name: th.name })} className="rounded-full bg-white px-3 py-1 font-label-md text-label-md text-deep-navy shadow-sm hover:bg-primary-fixed">
+                {th.name} · {th.unread}
+              </button>
+            ))}
+        </div>
+      )}
 
       {!liveUnavailable && (
         <div className="space-y-1.5">
@@ -174,6 +237,21 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
                       <span className="font-label-md text-label-md font-bold text-on-surface">{r.name}</span>
                       {r.help && <span className="rounded-full bg-error px-2 py-0.5 font-caption text-caption font-bold text-on-error">{t('solo.watch_reason_help')}</span>}
                       <span className="ml-auto font-caption text-caption text-on-surface-variant">{ago(r.last_at)}</span>
+                      {!chatUnavailable && chatMode !== 'off' && (
+                        <button
+                          type="button"
+                          onClick={() => setChatWith({ assignmentId: r.assignment_id, name: r.name })}
+                          aria-label={t('solo.chat_teacherTitle', { name: r.name })}
+                          className="relative flex h-8 w-8 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">chat</span>
+                          {(threads.find((th) => th.assignment_id === r.assignment_id)?.unread ?? 0) > 0 && (
+                            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-on-error">
+                              {threads.find((th) => th.assignment_id === r.assignment_id)?.unread}
+                            </span>
+                          )}
+                        </button>
+                      )}
                     </div>
                     <div className="truncate font-caption text-caption text-on-surface">
                       {r.lesson_name}
@@ -295,6 +373,7 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
           )}
         </div>
       )}
+      {chatWith && <ChatDrawer assignmentId={chatWith.assignmentId} name={chatWith.name} onClose={() => setChatWith(null)} onChanged={() => void loadThreads()} />}
     </section>
   );
 }

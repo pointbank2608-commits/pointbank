@@ -1,0 +1,18 @@
+{
+  "name": "클래스뱅크 학생",
+  "short_name": "학생 클래스뱅크",
+  "description": "선생님이 내 준 수업과 숙제를 하는 학생용 앱",
+  "start_url": "/s",
+  "id": "/s",
+  "scope": "/s",
+  "display": "standalone",
+  "background_color": "#16213e",
+  "theme_color": "#16213e",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon-student-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-student-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-student-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-student-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

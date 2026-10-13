@@ -84,6 +84,7 @@ export default function SoloPlayer({
   finishExtra,
   onHelp,
   onHelpDone,
+  headerExtra,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
@@ -98,6 +99,8 @@ export default function SoloPlayer({
   onHelp?: (step: number) => Promise<void>;
   /** 선생님이 와서 알려 준 뒤 학생이 "도와줬어요"를 누를 때 — 서버의 도움 요청도 같이 닫는다 */
   onHelpDone?: () => Promise<void>;
+  /** 위쪽 줄 도움 버튼 옆에 붙는 것(선생님 채팅 버튼 등) */
+  headerExtra?: ReactNode;
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
@@ -488,6 +491,7 @@ export default function SoloPlayer({
             {helpSent ? t('solo.helpResolved') : t('solo.help')}
           </button>
         )}
+        {headerExtra}
       </header>
 
       {activity && (
