@@ -210,7 +210,8 @@ export type GameType =
   | 'shopping'
   | 'treasuredig'
   | 'fourclues'
-  | 'catchsentence';
+  | 'catchsentence'
+  | 'lastbox';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -338,6 +339,9 @@ export interface GameTemplateConfig {
   shopScene?: 'market' | 'clothes' | 'stationery' | 'toys' | 'words';
   /** 보물 땅파기 전용: 팀 수(2~4, 기본 3)와 모래 언덕 수(12/20/30, 기본 20). */
   digTeams?: number;
+  /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
+  boxTeams?: number;
+  boxCount?: number;
   /** 문장 잡기 전용: 팀 수(2~4)·단계(1~5)·문장이 보이거나 움직이는 시간(초). */
   catchTeams?: number;
   catchLevel?: number;

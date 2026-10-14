@@ -502,6 +502,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.catchsentenceName',
     descKey: 'gamesList.catchsentenceDesc',
   },
+  {
+    // 마지막 박스 챌린지(2026-10-14, PPT "Chain Reaction"): 박스를 1~3개씩 읽다가 마지막 박스를 읽은 학생이 돌림판을 돌려 팀과 듣기·말하기·쓰기 도전을 한다.
+    type: 'lastbox',
+    number: 41,
+    category: 'speaking',
+    minItems: 1,
+    icon: 'redeem',
+    path: '/games/lastbox',
+    cover: '/covers/game-lastbox.jpg',
+    nameKey: 'gamesList.lastboxName',
+    descKey: 'gamesList.lastboxDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

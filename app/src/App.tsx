@@ -83,6 +83,7 @@ import ShoppingPage from './pages/ShoppingPage';
 import TreasureDigPage from './pages/TreasureDigPage';
 import FourCluesPage from './pages/FourCluesPage';
 import CatchSentencePage from './pages/CatchSentencePage';
+import LastBoxPage from './pages/LastBoxPage';
 import LiveJoinPage from './pages/LiveJoinPage';
 import CvcWorkbookPage from './pages/CvcWorkbookPage';
 import WordSearchPage from './pages/WordSearchPage';
@@ -279,6 +280,7 @@ export default function App() {
             <Route path="/games/treasuredig" element={<TreasureDigPage />} />
             <Route path="/games/fourclues" element={<FourCluesPage />} />
             <Route path="/games/catchsentence" element={<CatchSentencePage />} />
+            <Route path="/games/lastbox" element={<LastBoxPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -326,6 +328,7 @@ export default function App() {
             <Route path="/games/treasuredig" element={<TreasureDigPage />} />
             <Route path="/games/fourclues" element={<FourCluesPage />} />
             <Route path="/games/catchsentence" element={<CatchSentencePage />} />
+            <Route path="/games/lastbox" element={<LastBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

@@ -32,6 +32,7 @@ export const GAME_SFX = {
   labeleddiagram: { pick: 6001, correct: 4015, wrong: 4025, finish: 5037 },
   imagequiz: { reveal: 4041, correct: 4015, wrong: 4025, finish: 5037 },
   shopping: { reveal: 4041, pick: 6001, correct: 4015, wrong: 4025, finish: 5037 },
+  lastbox: { read: 6001, spin: 2020, stop: 4041, flip: 1013, win: 4015, lose: 4025 },
   catchsentence: { show: 4041, hide: 2015, reveal: 5037, correct: 4015 },
   fourclues: { flip: 4041, correct: 4015, wrong: 4025, reveal: 2020, finish: 5037 },
   treasuredig: { pick: 6001, correct: 4015, wrong: 4025, dig: 3096, find: 4041, treasure: 5037 },
