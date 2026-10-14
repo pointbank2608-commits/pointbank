@@ -70,6 +70,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.bingoDesc',
   },
   {
+    // 미스터리 박스 인쇄물(2026-10-14) — 문제 카드 + 보상 카드 28장
+    id: 'mysterybox',
+    path: '/materials/mystery-box',
+    icon: 'redeem',
+    cover: '/covers/game-mysterybox.jpg',
+    nameKey: 'materials.mysteryBoxName',
+    descKey: 'materials.mysteryBoxDesc',
+  },
+  {
     id: 'worksheet',
     path: '/materials/worksheet',
     icon: 'description',

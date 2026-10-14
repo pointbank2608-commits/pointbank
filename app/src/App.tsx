@@ -84,6 +84,8 @@ import TreasureDigPage from './pages/TreasureDigPage';
 import FourCluesPage from './pages/FourCluesPage';
 import CatchSentencePage from './pages/CatchSentencePage';
 import LastBoxPage from './pages/LastBoxPage';
+import MysteryBoxPage from './pages/MysteryBoxPage';
+import MysteryBoxPrintPage from './pages/MysteryBoxPrintPage';
 import LiveJoinPage from './pages/LiveJoinPage';
 import CvcWorkbookPage from './pages/CvcWorkbookPage';
 import WordSearchPage from './pages/WordSearchPage';
@@ -234,6 +236,7 @@ export default function App() {
             <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />
             <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />
             <Route path="/materials/bingo" element={<BingoPage />} />
+            <Route path="/materials/mystery-box" element={<MysteryBoxPrintPage />} />
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
             <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />
@@ -281,6 +284,7 @@ export default function App() {
             <Route path="/games/fourclues" element={<FourCluesPage />} />
             <Route path="/games/catchsentence" element={<CatchSentencePage />} />
             <Route path="/games/lastbox" element={<LastBoxPage />} />
+            <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (
@@ -329,6 +333,7 @@ export default function App() {
             <Route path="/games/fourclues" element={<FourCluesPage />} />
             <Route path="/games/catchsentence" element={<CatchSentencePage />} />
             <Route path="/games/lastbox" element={<LastBoxPage />} />
+            <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>
         )}

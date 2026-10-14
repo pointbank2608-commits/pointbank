@@ -514,6 +514,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.lastboxName',
     descKey: 'gamesList.lastboxDesc',
   },
+  {
+    // 미스터리 박스(2026-10-14, PPT "Super Mario Mystery Box" 방식만 참고): 문제를 맞히면 미스터리 박스를 받고, 가질지 다른 팀에 줄지 정한 뒤 열어 점수를 받거나 잃는다.
+    type: 'mysterybox',
+    number: 42,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'redeem',
+    path: '/games/mysterybox',
+    cover: '/covers/game-mysterybox.jpg',
+    nameKey: 'gamesList.mysteryboxName',
+    descKey: 'gamesList.mysteryboxDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

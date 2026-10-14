@@ -211,7 +211,8 @@ export type GameType =
   | 'treasuredig'
   | 'fourclues'
   | 'catchsentence'
-  | 'lastbox';
+  | 'lastbox'
+  | 'mysterybox';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -339,6 +340,10 @@ export interface GameTemplateConfig {
   shopScene?: 'market' | 'clothes' | 'stationery' | 'toys' | 'words';
   /** 보물 땅파기 전용: 팀 수(2~4, 기본 3)와 모래 언덕 수(12/20/30, 기본 20). */
   digTeams?: number;
+  /** 미스터리 박스 전용: 상자 칸 수(20·28, 기본 28). 팀 수는 boxTeams 를 같이 쓴다. */
+  mysteryBlocks?: number;
+  /** 미스터리 박스 진행 방식: mushroom 낱말 3개 중 하나를 골라 버섯(−1·+1·+3) 공개(기본) / quiz 문제를 맞히면 박스를 받는 방식. */
+  mysteryMode?: 'mushroom' | 'quiz';
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;
