@@ -1,4 +1,4 @@
-import { normalizeRuns, paintRuns, rangeAll, runSegments, runStyle, shiftRuns, stripField, type RunBase, type TextRun } from '../lib/canvasRuns';
+import { normalizeRuns, paintRuns, rangeAll, runSegments, runStyle, scaleRunSize, shiftRuns, stripField, type RunBase, type TextRun } from '../lib/canvasRuns';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -427,6 +427,19 @@ export default function CanvasSlideEditor({
       if (detail.handled) return;
     }
     updateTexts((el) => ({ color, runs: stripField(el.runs, 'color') }));
+  }
+
+  /** 글자 크기: 글상자를 고치는 중이고 글자를 골라 두었으면 고른 글자만 factor 배, 아니면 글상자 전체 */
+  function applyTextSize(factor: number) {
+    if (editingId) {
+      const detail = { size: factor, handled: false };
+      window.dispatchEvent(new CustomEvent(CANVAS_FORMAT_EVENT, { detail }));
+      if (detail.handled) {
+        notify(t('curriculum.canvas.sizeAfterEdit'));
+        return;
+      }
+    }
+    updateTexts((el) => ({ fontSize: Math.min(60, Math.max(2, +(el.fontSize * factor).toFixed(2))) }));
   }
 
   /** 굵게·기울임·밑줄: 글상자를 고치는 중이고 글자를 골라 두었으면 고른 글자만 켜고 끄고, 아니면 글상자 전체 */
@@ -1051,11 +1064,11 @@ export default function CanvasSlideEditor({
               ))}
             </select>
             <div className="flex items-center">
-              <button type="button" className={iconBtn()} onClick={() => updateTexts((el) => ({ fontSize: Math.max(2, +(el.fontSize / 1.15).toFixed(2)) }))} title={t('curriculum.canvas.smaller')}>
+              <button type="button" className={iconBtn()} onPointerDown={(e) => editingId && e.preventDefault()} onMouseDown={(e) => editingId && e.preventDefault()} onClick={() => applyTextSize(1 / 1.15)} title={t('curriculum.canvas.smaller')}>
                 <span className="material-symbols-outlined text-[20px]">text_decrease</span>
               </button>
               <span className="w-8 text-center font-caption text-caption tabular-nums text-on-surface-variant">{sameSize ? Math.round(selected.fontSize * 4) : '–'}</span>
-              <button type="button" className={iconBtn()} onClick={() => updateTexts((el) => ({ fontSize: Math.min(60, +(el.fontSize * 1.15).toFixed(2)) }))} title={t('curriculum.canvas.bigger')}>
+              <button type="button" className={iconBtn()} onPointerDown={(e) => editingId && e.preventDefault()} onMouseDown={(e) => editingId && e.preventDefault()} onClick={() => applyTextSize(1.15)} title={t('curriculum.canvas.bigger')}>
                 <span className="material-symbols-outlined text-[20px]">text_increase</span>
               </button>
             </div>
@@ -1451,15 +1464,21 @@ function TextEditBox({
       setRuns((r) => paintRuns(r, s, en, { color: d.color }, ta.value.length, baseRef.current));
     }
     function onFormat(e: Event) {
-      const d = (e as CustomEvent<{ field: 'bold' | 'italic' | 'underline'; handled: boolean }>).detail;
+      const d = (e as CustomEvent<{ field?: 'bold' | 'italic' | 'underline'; size?: number; handled: boolean }>).detail;
       const ta = ref.current;
       if (!ta || !d) return;
       const s = ta.selectionStart ?? 0;
       const en = ta.selectionEnd ?? 0;
       if (s === en) return;
       d.handled = true;
-      const on = !rangeAll(runsRef.current, baseRef.current, s, en, d.field);
-      setRuns((r) => paintRuns(r, s, en, { [d.field]: on }, ta.value.length, baseRef.current));
+      if (typeof d.size === 'number') {
+        const factor = d.size;
+        setRuns((r) => scaleRunSize(r, s, en, factor, ta.value.length, baseRef.current));
+        return;
+      }
+      const field = d.field as 'bold' | 'italic' | 'underline';
+      const on = !rangeAll(runsRef.current, baseRef.current, s, en, field);
+      setRuns((r) => paintRuns(r, s, en, { [field]: on }, ta.value.length, baseRef.current));
     }
     window.addEventListener(CANVAS_COLOR_EVENT, onColor);
     window.addEventListener(CANVAS_FORMAT_EVENT, onFormat);
@@ -1474,7 +1493,7 @@ function TextEditBox({
   return (
     <div className="relative h-full w-full" style={{ background: fill, borderRadius: style.borderRadius }}>
       <div ref={mirrorRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden" style={{ ...style, background: 'transparent' }}>
-        {runSegments(value, runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
+        {runSegments(value, runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run, { ignoreSize: true })}>{seg.text}</span> : seg.text))}
         {'\u200b'}
       </div>
       <textarea

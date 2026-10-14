@@ -515,6 +515,21 @@ try {
     assert.equal(feat.featureOfPath('/results/homework/123'), null);
     assert.equal(feat.featureOfPath('/board'), null);
   });
+  await test('text size runs: scale a range keeping relative sizes, back to 1 clears, em style', () => {
+    const base = { color: '#111111', bold: false, italic: false };
+    let runs = runsLib.scaleRunSize([], 2, 6, 1.5, 12, base);
+    assert.deepEqual(runs, [{ start: 2, end: 6, size: 1.5 }]);
+    // 겹쳐서 한 번 더 키우면 겹친 부분만 더 커지고 비율이 유지된다
+    runs = runsLib.scaleRunSize(runs, 4, 8, 2, 12, base);
+    assert.deepEqual(runs.map((r) => [r.start, r.end, r.size]), [[2, 4, 1.5], [4, 6, 3], [6, 8, 2]]);
+    // 1배로 돌아오면 구간이 사라진다
+    assert.deepEqual(runsLib.scaleRunSize([{ start: 2, end: 6, size: 1.5 }], 2, 6, 1 / 1.5, 12, base), []);
+    // 너무 커지거나 작아지지 않는다
+    const big = runsLib.scaleRunSize([], 0, 3, 100, 5, base);
+    assert.equal(big[0].size, 4);
+    assert.equal(runsLib.runStyle({ start: 0, end: 1, size: 1.5 }).fontSize, '1.5em');
+    assert.equal(runsLib.runStyle({ start: 0, end: 1, size: 1.5 }, { ignoreSize: true }).fontSize, undefined);
+  });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
     const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));

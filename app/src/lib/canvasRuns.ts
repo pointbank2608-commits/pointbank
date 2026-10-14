@@ -15,9 +15,14 @@ export interface TextRun {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  /** 글상자 글자 크기에 곱하는 배수(1 = 같은 크기, 2026-10-14) */
+  size?: number;
 }
 
-export type RunField = 'color' | 'bold' | 'italic' | 'underline';
+export const RUN_SIZE_MIN = 0.4;
+export const RUN_SIZE_MAX = 4;
+
+export type RunField = 'color' | 'bold' | 'italic' | 'underline' | 'size';
 export type RunPatch = Partial<Pick<TextRun, RunField>>;
 /** 글상자 전체 서식(구간이 이 값과 같으면 구간이 필요 없다) */
 export interface RunBase {
@@ -27,7 +32,7 @@ export interface RunBase {
   underline?: boolean;
 }
 
-const FIELDS: RunField[] = ['color', 'bold', 'italic', 'underline'];
+const FIELDS: RunField[] = ['color', 'bold', 'italic', 'underline', 'size'];
 const sameColor = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 /** 구간에서 글상자 전체 서식과 같은 칸을 지운다 */
@@ -37,6 +42,7 @@ function stripToBase(r: TextRun, base?: RunBase): TextRun {
   if (r.bold !== undefined && !(base && r.bold === base.bold)) out.bold = r.bold;
   if (r.italic !== undefined && !(base && r.italic === base.italic)) out.italic = r.italic;
   if (r.underline !== undefined && !(base && r.underline === !!base.underline)) out.underline = r.underline;
+  if (r.size !== undefined && Math.abs(r.size - 1) > 0.001) out.size = Math.max(RUN_SIZE_MIN, Math.min(RUN_SIZE_MAX, +r.size.toFixed(3)));
   return out;
 }
 
@@ -87,14 +93,39 @@ export function paintRuns(runs: TextRun[] | undefined, start: number, end: numbe
 }
 
 /** 글자 하나의 실제 서식(구간이 없는 칸은 글상자 전체 서식) */
-export function effectiveAt(runs: TextRun[] | undefined, base: RunBase, index: number): Required<RunBase> {
+export function effectiveAt(runs: TextRun[] | undefined, base: RunBase, index: number): Required<RunBase> & { size: number } {
   const r = (runs ?? []).find((x) => x.start <= index && index < x.end);
   return {
     color: r?.color ?? base.color,
     bold: r?.bold ?? base.bold,
     italic: r?.italic ?? base.italic,
     underline: r?.underline ?? !!base.underline,
+    size: r?.size ?? 1,
   };
+}
+
+/** [start, end) 구간의 글자 크기를 factor 배로 키우거나 줄인다 — 구간마다 이미 다른 크기면 서로의 비율은 그대로 둔다 */
+export function scaleRunSize(runs: TextRun[] | undefined, start: number, end: number, factor: number, len: number, base: RunBase): TextRun[] {
+  const a = Math.min(start, end);
+  const b = Math.max(start, end);
+  const existing = normalizeRuns(runs, len);
+  const points = new Set<number>([0, len, a, b]);
+  for (const r of existing) {
+    points.add(r.start);
+    points.add(r.end);
+  }
+  const xs = [...points].filter((p) => p >= 0 && p <= len).sort((p, q) => p - q);
+  const out: TextRun[] = [];
+  for (let i = 0; i + 1 < xs.length; i++) {
+    const s = xs[i];
+    const e = xs[i + 1];
+    if (e <= s) continue;
+    const cover = existing.find((r) => r.start <= s && r.end >= e);
+    const fmt: TextRun = { start: s, end: e, ...(cover ? Object.fromEntries(FIELDS.filter((f) => cover[f] !== undefined).map((f) => [f, cover[f]])) : {}) };
+    if (s >= a && e <= b) fmt.size = Math.max(RUN_SIZE_MIN, Math.min(RUN_SIZE_MAX, (fmt.size ?? 1) * factor));
+    out.push(fmt);
+  }
+  return normalizeRuns(out, len, base);
 }
 
 /** 고른 범위의 모든 글자가 그 서식(굵게 등)이면 true — 토글할 때 "모두 켜져 있으면 끄고, 아니면 켠다" */
@@ -153,11 +184,12 @@ export function runSegments(text: string, runs: TextRun[] | undefined): { text: 
 }
 
 /** 구간 한 조각의 CSS(없는 칸은 글상자 전체 서식을 그대로 물려받는다) */
-export function runStyle(run: TextRun): CSSProperties {
+export function runStyle(run: TextRun, opts: { ignoreSize?: boolean } = {}): CSSProperties {
   const style: CSSProperties = {};
   if (run.color !== undefined) style.color = run.color;
   if (run.bold !== undefined) style.fontWeight = run.bold ? 700 : 400;
   if (run.italic !== undefined) style.fontStyle = run.italic ? 'italic' : 'normal';
   if (run.underline !== undefined) style.textDecoration = run.underline ? 'underline' : 'none';
+  if (run.size !== undefined && !opts.ignoreSize) style.fontSize = `${run.size}em`;
   return style;
 }

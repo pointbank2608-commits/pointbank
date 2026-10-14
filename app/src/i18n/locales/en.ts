@@ -4575,6 +4575,7 @@ const en: Ko = {
       bold: 'Bold',
       italic: 'Italic',
       underline: 'Underline',
+      sizeAfterEdit: 'Size changed for the selected text. You will see it when you finish editing.',
       align_left: 'Align left',
       align_center: 'Align center',
       align_right: 'Align right',

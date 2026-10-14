@@ -4570,6 +4570,7 @@ const ko = {
       bold: '굵게',
       italic: '기울임',
       underline: '밑줄',
+      sizeAfterEdit: '고른 글자의 크기를 바꿨어요. 글 고치기를 마치면 바뀐 모습으로 보여요.',
       align_left: '왼쪽 정렬',
       align_center: '가운데 정렬',
       align_right: '오른쪽 정렬',
