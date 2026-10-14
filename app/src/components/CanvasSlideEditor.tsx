@@ -6,12 +6,14 @@ import { uploadLessonSlideImage } from '../lib/api';
 import { BOARD_THEMES, boardTheme, preloadBoardFonts, type BoardTheme } from '../lib/boardThemes';
 import { isLineShape, MARK_SHAPES, newCoverElement, newMarkElement, newShapeElement, PAIRED_CHARS, SHAPE_KINDS, SPECIAL_CHAR_GROUPS } from '../lib/canvasMarks';
 import { buildMotionPlan, DEFAULT_MOTION, effectIcon, effectsFor, type MotionPlan } from '../lib/canvasMotion';
+import { STICKER_GROUPS } from '../lib/canvasStickers';
 import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement, FullCardItem } from '../lib/types';
 import {
   CANVAS_FONTS,
   CanvasBackground,
   CanvasElementContent,
   CanvasMarkContent,
+  CanvasShapeContent,
   CanvasStageBox,
   MotionLayer,
   canvasElementBoxStyle,
@@ -190,7 +192,7 @@ export default function CanvasSlideEditor({
   const [uploading, setUploading] = useState(false);
   const [wordsOpen, setWordsOpen] = useState(false);
   // 특수 문자 · 그려지는 표시 패널(2026-10-05)
-  const [panel, setPanel] = useState<'chars' | 'shapes' | null>(null);
+  const [panel, setPanel] = useState<'chars' | 'shapes' | 'stickers' | 'layers' | null>(null);
   // 효과 창 · 효과 미리 보기(숫자가 바뀌면 다시 재생)
   const [motionOpen, setMotionOpen] = useState(false);
   const [preview, setPreview] = useState<{ ids: string[]; n: number } | null>(null);
@@ -399,6 +401,35 @@ export default function CanvasSlideEditor({
     if (sel.length === 0) return;
     const rest = slideRef.current.elements.filter((el) => !selectedIds.includes(el.id));
     setElements(dir === 'front' ? [...rest, ...sel] : [...sel, ...rest]);
+  }
+
+  /** 레이어 목록: 한 칸 앞(+1)·뒤(-1)로 — 배열 뒤쪽이 앞(위)이다 */
+  function moveLayer(id: string, dir: 1 | -1) {
+    const els = [...slideRef.current.elements];
+    const i = els.findIndex((el) => el.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= els.length) return;
+    [els[i], els[j]] = [els[j], els[i]];
+    setElements(els);
+  }
+  function toggleLockOne(id: string) {
+    setElements(slideRef.current.elements.map((el) => (el.id === id ? { ...el, locked: !el.locked } : el)));
+  }
+  function removeOne(id: string) {
+    const el = slideRef.current.elements.find((x) => x.id === id);
+    if (!el) return;
+    if (el.locked) {
+      notify(t('curriculum.canvas.lockedNote'), 'error');
+      return;
+    }
+    setElements(slideRef.current.elements.filter((x) => x.id !== id));
+    if (selectedId === id) setSelectedId(null);
+    setMultiIds((m) => m.filter((x) => x !== id));
+    setEditingId(null);
+  }
+  function addSticker(emoji: string) {
+    addElement(newTextElement({ ...themeTextDefaults(slide.theme), text: emoji, x: 42, y: 30, w: 16, h: 28, fontSize: 18, align: 'center', bold: false }));
+    setPanel(null);
   }
 
   /** 고른 요소 모두에 같은 값을(잠긴 것은 건드리지 않는다) */
@@ -885,6 +916,24 @@ export default function CanvasSlideEditor({
           <span className="material-symbols-outlined text-[18px]">special_character</span>
           {t('curriculum.canvas.addChar')}
         </button>
+        <button
+          type="button"
+          className={`${btnIdle} ${panel === 'stickers' ? '!bg-secondary-container' : ''}`}
+          aria-expanded={panel === 'stickers'}
+          onClick={() => setPanel((p) => (p === 'stickers' ? null : 'stickers'))}
+        >
+          <span className="material-symbols-outlined text-[18px]">add_reaction</span>
+          {t('curriculum.canvas.addSticker')}
+        </button>
+        <button
+          type="button"
+          className={`${btnIdle} ${panel === 'layers' ? '!bg-secondary-container' : ''}`}
+          aria-expanded={panel === 'layers'}
+          onClick={() => setPanel((p) => (p === 'layers' ? null : 'layers'))}
+        >
+          <span className="material-symbols-outlined text-[18px]">layers</span>
+          {t('curriculum.canvas.layersTitle')}
+        </button>
         <button type="button" className={btnIdle} disabled={!selected} onClick={() => copySelected()} title="Ctrl+C">
           <span className="material-symbols-outlined text-[18px]">content_copy</span>
           {t('curriculum.canvas.copy')}
@@ -990,6 +1039,73 @@ export default function CanvasSlideEditor({
             </button>
             <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.coverHint')}</span>
           </div>
+        </div>
+      )}
+
+      {panel === 'stickers' && (
+        <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg bg-surface-container-lowest p-2 shadow-sm">
+          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.stickersHint')}</p>
+          {STICKER_GROUPS.map((g) => (
+            <div key={g.id} className="flex flex-wrap items-center gap-1">
+              <span className="w-12 shrink-0 font-caption text-caption text-on-surface-variant">{t(`curriculum.canvas.sticker_${g.id}`)}</span>
+              {g.items.map((e) => (
+                <button key={e} type="button" onClick={() => addSticker(e)} className="flex h-11 w-11 items-center justify-center rounded-lg text-[26px] hover:bg-secondary-container/50">
+                  {e}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {panel === 'layers' && (
+        <div className="max-h-72 space-y-1 overflow-y-auto rounded-lg bg-surface-container-lowest p-2 shadow-sm">
+          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.layersHint')}</p>
+          {slide.elements.length === 0 && <p className="py-3 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.layerEmpty')}</p>}
+          {[...slide.elements].reverse().map((el, ri) => {
+            const idx = slide.elements.length - 1 - ri;
+            const on = selectedIds.includes(el.id);
+            const name =
+              el.type === 'text'
+                ? el.text.trim().split(/\n/)[0].slice(0, 22) || t('curriculum.canvas.addText')
+                : el.type === 'image'
+                  ? t('curriculum.canvas.imageLabel')
+                  : el.type === 'shape'
+                    ? el.label?.trim().slice(0, 16) || t(`curriculum.canvas.shape_${el.shape}`)
+                    : t(`curriculum.canvas.mark_${el.shape}`);
+            const icon = el.type === 'text' ? 'title' : el.type === 'image' ? 'image' : el.type === 'shape' ? 'category' : 'ink_highlighter';
+            return (
+              <div
+                key={el.id}
+                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 ${on ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(el.id);
+                    setMultiIds([]);
+                    setEditingId(null);
+                  }}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-on-surface-variant">{icon}</span>
+                  <span className="truncate text-sm text-on-surface">{name}</span>
+                </button>
+                <button type="button" disabled={idx === slide.elements.length - 1} onClick={() => moveLayer(el.id, 1)} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-surface-container disabled:opacity-30" title={t('curriculum.canvas.layerFront')}>
+                  <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+                </button>
+                <button type="button" disabled={idx === 0} onClick={() => moveLayer(el.id, -1)} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-surface-container disabled:opacity-30" title={t('curriculum.canvas.layerBack')}>
+                  <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
+                </button>
+                <button type="button" onClick={() => toggleLockOne(el.id)} className={`flex h-8 w-8 items-center justify-center rounded-full hover:bg-surface-container ${el.locked ? 'text-primary' : 'text-on-surface-variant'}`} title={t('curriculum.canvas.layerLock')} aria-pressed={!!el.locked}>
+                  <span className="material-symbols-outlined text-[18px]">{el.locked ? 'lock' : 'lock_open'}</span>
+                </button>
+                <button type="button" onClick={() => removeOne(el.id)} className="flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant hover:bg-error/10 hover:text-error" title={t('curriculum.canvas.layerDelete')}>
+                  <span className="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -1115,6 +1231,62 @@ export default function CanvasSlideEditor({
             <button type="button" className={iconBtn(selected.fit === 'cover')} onClick={() => updateEl(selected.id, { fit: 'cover' })} title={t('curriculum.canvas.fitCover')}>
               <span className="material-symbols-outlined text-[20px]">crop</span>
             </button>
+            <select
+              value={selected.filter ?? ''}
+              onChange={(e) => updateEl(selected.id, { filter: (e.target.value || undefined) as CanvasImageElement['filter'] })}
+              aria-label={t('curriculum.canvas.filterTitle')}
+              className="h-8 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface"
+            >
+              <option value="">{t('curriculum.canvas.filter_none')}</option>
+              {(['gray', 'sepia', 'bright', 'dark', 'contrast', 'soft'] as const).map((f) => (
+                <option key={f} value={f}>
+                  {t(`curriculum.canvas.filter_${f}`)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selected.mask ?? ''}
+              onChange={(e) => updateEl(selected.id, { mask: (e.target.value || undefined) as CanvasImageElement['mask'] })}
+              aria-label={t('curriculum.canvas.maskTitle')}
+              className="h-8 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface"
+            >
+              <option value="">{t('curriculum.canvas.mask_none')}</option>
+              <option value="round">{t('curriculum.canvas.mask_round')}</option>
+              <option value="circle">{t('curriculum.canvas.mask_circle')}</option>
+            </select>
+            <details className="relative">
+              <summary className="flex h-8 cursor-pointer list-none items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface">
+                <span className="material-symbols-outlined text-[18px]">crop_free</span>
+                {t('curriculum.canvas.cropTitle')}
+              </summary>
+              <div className="absolute left-0 top-9 z-20 w-60 space-y-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-3 shadow-lg">
+                {(['t', 'r', 'b', 'l'] as const).map((side) => {
+                  const crop = selected.crop ?? { t: 0, r: 0, b: 0, l: 0 };
+                  const label = { t: 'cropTop', r: 'cropRight', b: 'cropBottom', l: 'cropLeft' }[side];
+                  return (
+                    <label key={side} className="flex items-center gap-2 text-sm text-on-surface">
+                      <span className="w-14 shrink-0">{t(`curriculum.canvas.${label}`)}</span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={45}
+                        step={1}
+                        value={crop[side]}
+                        onChange={(e) => {
+                          const next = { ...crop, [side]: Number(e.target.value) };
+                          updateEl(selected.id, { crop: next.t || next.r || next.b || next.l ? next : undefined });
+                        }}
+                        className="flex-1 accent-[#2765a8]"
+                      />
+                      <span className="w-8 text-right tabular-nums">{crop[side]}%</span>
+                    </label>
+                  );
+                })}
+                <button type="button" onClick={() => updateEl(selected.id, { crop: undefined })} className="font-label-md text-label-md text-primary underline">
+                  {t('curriculum.canvas.cropReset')}
+                </button>
+              </div>
+            </details>
             <ElementActions onFront={() => reorder('front')} onBack={() => reorder('back')} onDuplicate={duplicateSelected} onDelete={removeSelected} iconBtn={iconBtn} />
           </>
         )}
@@ -1153,6 +1325,13 @@ export default function CanvasSlideEditor({
             />
             <span className="w-9 tabular-nums">{Math.round((primary.opacity ?? 1) * 100)}%</span>
           </label>
+          <span className="h-6 w-px bg-outline-variant/50" />
+          <button type="button" className={iconBtn(!!primary.flipX)} aria-pressed={!!primary.flipX} onClick={() => patchSelected({ flipX: !primary.flipX })} title={t('curriculum.canvas.flipH')}>
+            <span className="material-symbols-outlined text-[20px]">flip</span>
+          </button>
+          <button type="button" className={iconBtn(!!primary.flipY)} aria-pressed={!!primary.flipY} onClick={() => patchSelected({ flipY: !primary.flipY })} title={t('curriculum.canvas.flipV')}>
+            <span className="material-symbols-outlined rotate-90 text-[20px]">flip</span>
+          </button>
           <span className="h-6 w-px bg-outline-variant/50" />
           <button
             type="button"
@@ -1257,7 +1436,7 @@ export default function CanvasSlideEditor({
         </div>
         {slide.elements.map((el) => {
           const isSel = selectedIds.includes(el.id);
-          const isEditing = el.id === editingId && el.type === 'text';
+          const isEditing = el.id === editingId && (el.type === 'text' || (el.type === 'shape' && !isLineShape(el.shape)));
           const info = plan.byId.get(el.id);
           const previewing = !!preview && preview.ids.includes(el.id) && !!el.motion;
           return (
@@ -1270,9 +1449,18 @@ export default function CanvasSlideEditor({
               onPointerMove={onDragMove}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
-              onDoubleClick={() => el.type === 'text' && !el.locked && setEditingId(el.id)}
+              onDoubleClick={() => (el.type === 'text' || (el.type === 'shape' && !isLineShape(el.shape))) && !el.locked && setEditingId(el.id)}
             >
-              {isEditing ? (
+              {isEditing && el.type === 'shape' ? (
+                <ShapeLabelEdit
+                  el={el}
+                  onDone={(label) => {
+                    updateEl(el.id, { label: label.trim() ? label : undefined } as Partial<CanvasShapeElement>);
+                    setEditingId(null);
+                    stageRef.current?.focus({ preventScroll: true });
+                  }}
+                />
+              ) : isEditing ? (
                 <TextEditBox el={el as CanvasTextElement} onDone={(text, runs) => {
                   const cur = el as CanvasTextElement;
                   const base: RunBase = { color: cur.color, bold: cur.bold, italic: !!cur.italic, underline: !!cur.underline };
@@ -1517,6 +1705,45 @@ function TextEditBox({
   );
 }
 
+/** 도형 안 글자 고치기 — 도형 위에 가운데 정렬 입력칸을 올린다(끝내면 도형 안에 그대로 보인다) */
+function ShapeLabelEdit({ el, onDone }: { el: CanvasShapeElement; onDone: (label: string) => void }) {
+  const [value, setValue] = useState(el.label ?? '');
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+    ref.current?.select();
+  }, []);
+  return (
+    <div className="relative h-full w-full">
+      <CanvasShapeContent el={el} hideLabel />
+      <textarea
+        ref={ref}
+        value={value}
+        maxLength={80}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => document.hasFocus() && onDone(value)}
+        onPointerDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Escape' || (e.key === 'Enter' && !e.shiftKey)) {
+            e.preventDefault();
+            onDone(value);
+          }
+        }}
+        className="absolute inset-0 h-full w-full resize-none overflow-hidden border-0 bg-transparent text-center outline-none"
+        style={{
+          color: el.labelColor ?? '#1f2937',
+          fontSize: `${el.labelSize ?? 5}cqh`,
+          fontWeight: el.labelBold === false ? 400 : 700,
+          lineHeight: 1.2,
+          padding: '0.8cqh',
+          paddingTop: `calc(50% - ${(el.labelSize ?? 5) * 0.6}cqh)`,
+        }}
+      />
+    </div>
+  );
+}
+
 const MARK_COLORS = ['#e11d48', '#f97316', '#eab308', '#16a34a', '#2563eb', '#7c3aed', '#1f2937', '#ffffff'];
 const SHAPE_COLORS = ['#e11d48', '#f97316', '#fbbf24', '#16a34a', '#2563eb', '#7c3aed', '#1f2937', '#ffffff', '#fde68a', '#dbeafe', '#dcfce7', '#fce7f3'];
 
@@ -1592,6 +1819,33 @@ function ShapeTools({ el, iconBtn, onChange }: { el: CanvasShapeElement; iconBtn
           </option>
         ))}
       </select>
+      {!line && (
+        <>
+          <span className="mx-1 h-6 w-px bg-outline-variant/50" />
+          <input
+            value={el.label ?? ''}
+            maxLength={40}
+            onChange={(e) => onChange({ label: e.target.value || undefined })}
+            placeholder={t('curriculum.canvas.shapeLabelPlaceholder')}
+            aria-label={t('curriculum.canvas.shapeLabel')}
+            className="h-8 w-36 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-sm text-on-surface outline-none focus:border-primary"
+          />
+          {el.label && (
+            <>
+              {['#1f2937', '#ffffff', '#e11d48', '#2563eb', '#16a34a'].map((c) => (
+                <ColorDot key={`l${c}`} color={c} active={(el.labelColor ?? '#1f2937') === c} onClick={() => onChange({ labelColor: c })} />
+              ))}
+              <Stepper
+                label={t('curriculum.canvas.labelSize')}
+                icon="format_size"
+                onLess={() => onChange({ labelSize: Math.max(1.5, +((el.labelSize ?? 5) / 1.15).toFixed(2)) })}
+                onMore={() => onChange({ labelSize: Math.min(30, +((el.labelSize ?? 5) * 1.15).toFixed(2)) })}
+                iconBtn={iconBtn}
+              />
+            </>
+          )}
+        </>
+      )}
       {el.shape === 'roundrect' && (
         <Stepper label={t('curriculum.canvas.radius')} icon="rounded_corner" onLess={() => onChange({ radius: Math.max(0, (el.radius ?? 4) - 1) })} onMore={() => onChange({ radius: Math.min(30, (el.radius ?? 4) + 1) })} iconBtn={iconBtn} />
       )}

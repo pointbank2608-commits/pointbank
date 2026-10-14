@@ -4,7 +4,7 @@ import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { MARK_PATHS } from '../lib/canvasMarks';
 import { buildMotionPlan } from '../lib/canvasMotion';
 import { useSyncedSubState } from '../lib/presentSync';
-import type { CanvasElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement } from '../lib/types';
+import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement } from '../lib/types';
 
 /** "직접 만들기" 슬라이드를 그리는 공용 렌더러 — 썸네일·편집 미리보기·발표 화면이 전부 이걸 쓴다.
  * 무대(16:9)에 container-type:size 를 걸고 글자 크기를 cqh(무대 높이 %)로 줘서, 어느 크기로
@@ -19,8 +19,27 @@ export function canvasElementBoxStyle(el: CanvasElement): CSSProperties {
     top: `${el.y}%`,
     width: `${el.w}%`,
     height: `${el.h}%`,
-    transform: el.rotate ? `rotate(${el.rotate}deg)` : undefined,
+    transform: [el.rotate ? `rotate(${el.rotate}deg)` : '', el.flipX ? 'scaleX(-1)' : '', el.flipY ? 'scaleY(-1)' : ''].filter(Boolean).join(' ') || undefined,
   };
+}
+
+/** 그림 필터·자르기·모양 — 상자 크기는 그대로 두고 보이는 부분만 바뀐다 */
+const IMAGE_FILTERS: Record<NonNullable<CanvasImageElement['filter']>, string> = {
+  gray: 'grayscale(1)',
+  sepia: 'sepia(0.85)',
+  bright: 'brightness(1.25) saturate(1.1)',
+  dark: 'brightness(0.7)',
+  contrast: 'contrast(1.35)',
+  soft: 'blur(1.5px) saturate(1.1)',
+};
+export function imageEffectStyle(el: CanvasImageElement): CSSProperties {
+  const style: CSSProperties = {};
+  if (el.filter) style.filter = IMAGE_FILTERS[el.filter];
+  const c = el.crop;
+  if (c && (c.t || c.r || c.b || c.l)) style.clipPath = `inset(${c.t}% ${c.r}% ${c.b}% ${c.l}%)`;
+  if (el.mask === 'circle') style.borderRadius = '50%';
+  else if (el.mask === 'round') style.borderRadius = '4cqh';
+  return style;
 }
 
 export function canvasTextStyle(el: CanvasTextElement): CSSProperties {
@@ -111,7 +130,34 @@ const SHAPE_PATHS: Record<string, string> = {
 };
 
 /** 도형 하나 — 네모·원과 선·화살표 선은 CSS 로(화살촉이 늘어나지 않게), 나머지는 SVG */
-export function CanvasShapeContent({ el }: { el: CanvasShapeElement }) {
+/** 도형 + (있으면) 도형 안 글자 */
+export function CanvasShapeContent({ el, hideLabel = false }: { el: CanvasShapeElement; hideLabel?: boolean }) {
+  const showLabel = !hideLabel && !!el.label && el.shape !== 'line' && el.shape !== 'arrow';
+  if (!showLabel) return <ShapeBody el={el} />;
+  return (
+    <div className="relative h-full w-full">
+      <ShapeBody el={el} />
+      <div
+        className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden text-center"
+        style={{
+          padding: '0.8cqh',
+          color: el.labelColor ?? '#1f2937',
+          fontSize: `${el.labelSize ?? 5}cqh`,
+          fontWeight: el.labelBold === false ? 400 : 700,
+          lineHeight: 1.2,
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'break-word',
+          // 도형을 뒤집어도 글자는 거울처럼 뒤집히지 않게 되돌린다
+          transform: `${el.flipX ? 'scaleX(-1) ' : ''}${el.flipY ? 'scaleY(-1)' : ''}`.trim() || undefined,
+        }}
+      >
+        {el.label}
+      </div>
+    </div>
+  );
+}
+
+function ShapeBody({ el }: { el: CanvasShapeElement }) {
   const sw = el.strokeWidth;
   if (el.shape === 'line' || el.shape === 'arrow') {
     const c = el.stroke ?? '#1f2937';
@@ -178,7 +224,7 @@ export function CanvasElementContent({ el, placeholder }: { el: CanvasElement; p
   if (el.type === 'mark') body = <CanvasMarkContent el={el} />;
   else if (el.type === 'shape') body = <CanvasShapeContent el={el} />;
   else if (el.type === 'image') {
-    body = <img src={el.url} alt="" draggable={false} className="pointer-events-none h-full w-full select-none" style={{ objectFit: el.fit }} />;
+    body = <img src={el.url} alt="" draggable={false} className="pointer-events-none h-full w-full select-none" style={{ objectFit: el.fit, ...imageEffectStyle(el) }} />;
   } else {
     const empty = !el.text.trim();
     body = (

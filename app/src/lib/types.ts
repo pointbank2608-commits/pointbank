@@ -710,6 +710,9 @@ export interface CanvasElementBase {
   group?: string;
   /** 발표 중 나타나거나 사라지는 효과(없으면 처음부터 보임) */
   motion?: CanvasMotion | null;
+  /** 좌우·위아래 뒤집기(2026-10-14) */
+  flipX?: boolean;
+  flipY?: boolean;
 }
 
 /** 발표 중 효과(2026-10-05) — 파워포인트처럼 순서대로. click: 클릭할 때마다 새 단계 · with: 앞 효과와 함께 · auto: 앞 효과가 끝나면 */
@@ -747,6 +750,12 @@ export interface CanvasImageElement extends CanvasElementBase {
   /** 직접 올린 이미지만 있다(lesson-slide-images). 사전 그림은 없음. */
   path?: string;
   fit: 'contain' | 'cover';
+  /** 그림 필터(없으면 원본) */
+  filter?: 'gray' | 'sepia' | 'bright' | 'dark' | 'contrast' | 'soft';
+  /** 그림 모양 자르기: 둥근 모서리·원 */
+  mask?: 'round' | 'circle';
+  /** 가장자리 자르기(상자 크기 대비 %, 0~45) */
+  crop?: { t: number; r: number; b: number; l: number };
 }
 /** 그려지는 표시(2026-10-05) — 체크·동그라미·X·화살표·밑줄·별·네모. 손으로 그린 듯한 선이고, 기본 효과는 "그려지기" */
 export type CanvasMarkShape = 'check' | 'circle' | 'cross' | 'arrow' | 'underline' | 'star' | 'box';
@@ -771,6 +780,12 @@ export interface CanvasShapeElement extends CanvasElementBase {
   dash: 'solid' | 'dashed' | 'dotted';
   /** 둥근 네모의 모서리 둥글기(무대 높이 %) */
   radius?: number;
+  /** 도형 안 글자(2026-10-14, 선·화살표 선 제외) */
+  label?: string;
+  labelColor?: string;
+  /** 무대 높이 대비 % */
+  labelSize?: number;
+  labelBold?: boolean;
 }
 export type CanvasElement = CanvasTextElement | CanvasImageElement | CanvasMarkElement | CanvasShapeElement;
 export interface CanvasSlide {
