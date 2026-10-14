@@ -472,7 +472,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     number: 38,
     category: 'vocabulary',
     minItems: 1,
-    icon: 'archaeology',
+    icon: 'savings',
     path: '/games/treasuredig',
     cover: '/covers/game-treasuredig.jpg',
     nameKey: 'gamesList.treasuredigName',
