@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -40,6 +41,7 @@ export default function ResultsPage() {
   const [resetting, setResetting] = useState(false);
   // 선생님: 포인트 결과 / 학생 스탯(Classbank Student) 두 보기
   const [view, setView] = useState<'points' | 'stats'>('points');
+  const statsOpen = useFeature('solo') || useFeature('homework');
 
   // 학생이면 본인 행을 강조하기 위해 자기 students.id 를 알아둔다.
   useEffect(() => {
@@ -119,7 +121,7 @@ export default function ResultsPage() {
   const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
   const maxBalance = Math.max(1, ...ranked.map((r) => r.balance));
 
-  const viewTabs = isStaff ? (
+  const viewTabs = isStaff && statsOpen ? (
     <div className="flex gap-2" role="tablist" aria-label={t('results.viewTabs')}>
       {(['points', 'stats'] as const).map((v) => (
         <button
@@ -139,7 +141,7 @@ export default function ResultsPage() {
     </div>
   ) : null;
 
-  if (isStaff && view === 'stats') {
+  if (isStaff && statsOpen && view === 'stats') {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">

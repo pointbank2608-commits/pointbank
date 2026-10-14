@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +11,7 @@ import { fetchStudentCode } from '../lib/studentPortal';
 export default function AcademyCodeButton() {
   const { t } = useTranslation();
   const { academy } = useAuth();
+  const studentAreaOpen = useFeature('solo') || useFeature('homework');
   const [open, setOpen] = useState(false);
   const [studentCode, setStudentCode] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -69,8 +71,8 @@ export default function AcademyCodeButton() {
       </button>
       {open && (
         <div className="mt-2 space-y-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest p-3 shadow-sm">
-          {studentCode !== null && row('student', t('nav.studentCodeLabel'), studentCode)}
-          {studentCode === null && !failed && <p className="font-caption text-caption text-on-surface-variant">{t('common.loading')}</p>}
+          {studentAreaOpen && studentCode !== null && row('student', t('nav.studentCodeLabel'), studentCode)}
+          {studentAreaOpen && studentCode === null && !failed && <p className="font-caption text-caption text-on-surface-variant">{t('common.loading')}</p>}
           {invite && row('invite', t('nav.inviteCodeLabel'), invite)}
           <p className="font-caption text-caption text-on-surface-variant">{t('nav.codeHint')}</p>
         </div>

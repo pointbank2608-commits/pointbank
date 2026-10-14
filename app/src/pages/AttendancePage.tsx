@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -36,6 +37,7 @@ function timeOnly(iso: string): string {
 
 export default function AttendancePage() {
   const { academy, profile, isPaid } = useAuth();
+  const studentAreaOpen = useFeature('solo') || useFeature('homework');
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reload: reloadClasses, reorder } = useClasses(academy?.id);
@@ -322,7 +324,7 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      {selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
+      {studentAreaOpen && selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
 
       <p className="font-caption text-caption text-on-surface-variant">{t('attendance.title')} · {t('attendance.hint')}</p>
 

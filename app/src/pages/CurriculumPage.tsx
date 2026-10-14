@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import { setToCards } from '../lib/curriculumWords';
@@ -56,14 +57,17 @@ export default function CurriculumPage() {
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
+  const soloOpen = useFeature('solo');
+  const homeworkOpen = useFeature('homework');
   // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
-  const [mode, setMode] = useState<'group' | 'solo'>(() => {
+  const [mode, setModeRaw] = useState<'group' | 'solo'>(() => {
     try {
       return localStorage.getItem('classbank.lessonMode') === 'solo' ? 'solo' : 'group';
     } catch {
       return 'group';
     }
   });
+  const setMode = setModeRaw;
   const changeMode = (m: 'group' | 'solo') => {
     setMode(m);
     try {
@@ -605,7 +609,7 @@ export default function CurriculumPage() {
 
       <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
 
-      {!showForm && (
+      {!showForm && soloOpen && (
         <div className="flex flex-wrap gap-2" role="tablist">
           {(['group', 'solo'] as const).map((m) => (
             <button
@@ -623,9 +627,9 @@ export default function CurriculumPage() {
         </div>
       )}
 
-      {mode === 'solo' && !showForm && academy?.id && <SoloLessonsPanel academyId={academy.id} classId={staffClassId ?? null} />}
+      {soloOpen && mode === 'solo' && !showForm && academy?.id && <SoloLessonsPanel academyId={academy.id} classId={staffClassId ?? null} />}
 
-      {(mode === 'group' || showForm) && (
+      {(mode === 'group' || showForm || !soloOpen) && (
       <>
       {!showForm && draft && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-warm-yellow bg-warm-yellow/20 px-4 py-3">
@@ -1096,6 +1100,7 @@ export default function CurriculumPage() {
               >
                 ▶ {t('curriculum.startButton')}
               </button>
+              {homeworkOpen && (
               <button
                 type="button"
                 onClick={() => navigate('/homework', { state: { fromLessonId: lesson.id } })}
@@ -1104,6 +1109,7 @@ export default function CurriculumPage() {
                 <span className="material-symbols-outlined text-[18px]">edit_note</span>
                 {t('curriculum.homeworkButton')}
               </button>
+              )}
             </div>
           );
         })}

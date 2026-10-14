@@ -874,6 +874,22 @@ export async function adminSetAcademyPlan(academyId: string, plan: 'free' | 'pai
   if (error) throw new Error(error.message);
 }
 
+/** 학원별 기능 열기·닫기(074) — 관리자만. 읽기·쓰기 모두 서버 함수라 조치 기록(admin_actions)이 남는다 */
+export interface AcademyFeatures {
+  group: boolean;
+  solo: boolean;
+  homework: boolean;
+}
+export async function adminAcademyFeatures(academyId: string): Promise<AcademyFeatures> {
+  const { data, error } = await supabase.rpc('admin_academy_features', { p_academy: academyId });
+  if (error) throw new Error(error.message);
+  return data as AcademyFeatures;
+}
+export async function adminSetAcademyFeatures(academyId: string, f: AcademyFeatures): Promise<void> {
+  const { error } = await supabase.rpc('admin_set_academy_features', { p_academy: academyId, p_group: f.group, p_solo: f.solo, p_homework: f.homework });
+  if (error) throw new Error(error.message);
+}
+
 /** 로그인한 본인의 비밀번호를 바꾼다. 현재 비밀번호는 필요 없다 —
  * 이미 유효한 세션으로 로그인돼 있어야 호출 가능한 API. */
 export async function changeMyPassword(newPassword: string): Promise<void> {

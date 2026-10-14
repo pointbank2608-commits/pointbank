@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getGameCatalogEntry, isFreeTierGame } from '../lib/gameCatalog';
+import { featureOfPath, featureOpen } from '../lib/features';
 import { isPathBlockedForFree } from '../lib/planLimits';
 import type { GameType } from '../lib/types';
 
@@ -12,10 +13,20 @@ import type { GameType } from '../lib/types';
  * 바뀔 때마다 검사만 한다. */
 export default function PlanRouteGuard() {
   const { t } = useTranslation();
-  const { isPaid, isStaff } = useAuth();
+  const { isPaid, isStaff, academy } = useAuth();
   const { notify } = useToast();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+
+  // 관리자가 이 학원에서 닫아 둔 기능(단체수업·숙제)은 들어가지 못한다
+  useEffect(() => {
+    const key = featureOfPath(pathname);
+    if (key && !featureOpen(academy, key)) {
+      notify(t('features.closedToast'), 'error');
+      navigate(isStaff ? '/dashboard' : '/me', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, academy]);
 
   useEffect(() => {
     if (isPaid) return;

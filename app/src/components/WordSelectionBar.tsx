@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,7 @@ export default function WordSelectionBar({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
+  const homeworkOpen = useFeature('homework');
   if (words.length === 0) return null;
 
   return (
@@ -47,6 +49,7 @@ export default function WordSelectionBar({
           <span className="material-symbols-outlined text-[18px]">library_add</span>
           {t('addToWordList.button')}
         </button>
+        {homeworkOpen && (
         <button
           type="button"
           onClick={() => navigate('/homework', { state: { pickedCards: words, pickedTitle: homeworkTitle || t('selectionBar.homeworkDefaultTitle', { count: words.length }) } })}
@@ -55,6 +58,7 @@ export default function WordSelectionBar({
           <span className="material-symbols-outlined text-[18px]">assignment</span>
           {t('selectionBar.homework')}
         </button>
+        )}
         <MaterialsLaunchButtons words={words} phonics={phonics} />
         {adding && <AddToWordListModal words={words} onClose={() => setAdding(false)} onDone={onClear} />}
       </div>

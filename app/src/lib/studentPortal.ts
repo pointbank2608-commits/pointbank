@@ -36,6 +36,8 @@ export interface PortalLesson {
 }
 
 export interface PortalHome {
+  /** 선생님이 닫은 기능이면 false(074 이후 서버가 준다) */
+  features?: { solo?: boolean; homework?: boolean };
   name: string;
   lessons: PortalLesson[];
   academy: string;

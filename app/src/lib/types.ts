@@ -15,6 +15,8 @@ export interface Academy {
   /** 019 결제 컬럼 — 결제 실패 횟수·유료 만료일(원장 화면 결제 안내 띠에 쓴다) */
   billing_failure_count?: number;
   plan_expires_at?: string | null;
+  /** 학원별 기능 열기·닫기(074) — 적지 않은 칸은 기본값(lib/features.ts) */
+  features?: Partial<Record<'group' | 'solo' | 'homework', boolean>> | null;
 }
 
 export interface Profile {

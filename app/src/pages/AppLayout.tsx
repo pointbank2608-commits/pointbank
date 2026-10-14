@@ -1,3 +1,4 @@
+import { useFeature } from '../lib/features';
 import { useState, useEffect } from 'react';
 import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
 import { LAST_PAGE_KEY } from '../lib/support';
@@ -54,6 +55,8 @@ function AppLayoutInner() {
   // 전체화면 버튼은 브라우저 전체화면만 켜고 끈다.
   const { runner } = useLessonRunner();
   const isPresenting = runner != null;
+  const groupOpen = useFeature('group');
+  const homeworkOpen = useFeature('homework');
 
   const ROLE_LABEL: Record<string, string> = {
     owner: t('nav.roleOwner'),
@@ -65,15 +68,15 @@ function AppLayoutInner() {
   const navItems: NavItem[] = isStaff
     ? [
         { to: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
-        { to: '/curriculum', label: t('nav.curriculum'), icon: 'auto_stories' },
+        ...(groupOpen ? [{ to: '/curriculum', label: t('nav.curriculum'), icon: 'auto_stories' }] : []),
         { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
-        { to: '/homework', label: t('nav.homework'), icon: 'assignment' },
+        ...(homeworkOpen ? [{ to: '/homework', label: t('nav.homework'), icon: 'assignment' }] : []),
         { to: '/board', label: t('nav.board'), icon: 'payments' },
         { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
         { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
         { to: '/phonics', label: t('nav.phonics'), icon: 'spellcheck' },
         { to: '/grammar', label: t('nav.grammar'), icon: 'rule' },
-        { to: '/videos', label: t('nav.videoLibrary'), icon: 'video_library' },
+        ...(groupOpen ? [{ to: '/videos', label: t('nav.videoLibrary'), icon: 'video_library' }] : []),
         { to: '/wordlists', label: t('nav.wordLists'), icon: 'library_books' },
         { to: '/materials', label: t('nav.classroomMaterials'), icon: 'print' },
         { to: '/results', label: t('nav.reports'), icon: 'assessment' },

@@ -148,4 +148,4 @@ export interface HwSubmitResult {
 }
 
 /** 학생 화면의 오류 종류(서버 코드 → 쉬운 문구) */
-export type HwErrorKind = 'not_found' | 'closed' | 'past_due' | 'bad_login' | 'locked' | 'network' | 'incomplete' | 'unknown';
+export type HwErrorKind = 'not_found' | 'feature_closed' | 'closed' | 'past_due' | 'bad_login' | 'locked' | 'network' | 'incomplete' | 'unknown';

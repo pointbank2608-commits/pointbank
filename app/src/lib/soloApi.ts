@@ -132,7 +132,7 @@ export interface SoloOpenResult {
   steps: SoloPublicStep[];
 }
 
-export type SoloStudentError = 'expired' | 'not_found' | 'network' | 'unknown';
+export type SoloStudentError = 'expired' | 'feature_closed' | 'not_found' | 'network' | 'unknown';
 
 export class SoloError extends Error {
   kind: SoloStudentError;
@@ -146,6 +146,7 @@ function toError(err: unknown): SoloError {
   const msg = String((err as { message?: string })?.message ?? err ?? '');
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return new SoloError('network');
   if (/Failed to fetch|NetworkError|Load failed|network/i.test(msg)) return new SoloError('network');
+  if (msg.includes('feature_closed')) return new SoloError('feature_closed');
   if (msg.includes('expired')) return new SoloError('expired');
   if (msg.includes('not_found')) return new SoloError('not_found');
   return new SoloError('unknown');

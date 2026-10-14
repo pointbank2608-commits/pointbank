@@ -4,8 +4,11 @@ import { Link, useParams } from 'react-router-dom';
 import {
   adminAcademyContent,
   adminRestoreRevision,
+  adminAcademyFeatures,
+  adminSetAcademyFeatures,
   adminSetAcademyPlan,
   adminSnapshotAcademy,
+  type AcademyFeatures,
   type AdminAcademyContent,
 } from '../lib/api';
 import { adminAcademyDetail, adminLog, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
@@ -24,6 +27,8 @@ export default function AdminAcademyDetailPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [content, setContent] = useState<AdminAcademyContent | null | undefined>(undefined);
+  /** 074 전이면 null(칸을 숨긴다) */
+  const [features, setFeatures] = useState<AcademyFeatures | null>(null);
 
   const load = useCallback(() => {
     adminAcademyDetail(id)
@@ -34,6 +39,26 @@ export default function AdminAcademyDetailPage() {
       .catch((e) => setMsg(String((e as { message?: string })?.message ?? e)));
   }, [id]);
   useEffect(load, [load]);
+  useEffect(() => {
+    adminAcademyFeatures(id)
+      .then(setFeatures)
+      .catch(() => setFeatures(null));
+  }, [id]);
+
+  async function toggleFeature(key: keyof AcademyFeatures) {
+    if (!features) return;
+    const next = { ...features, [key]: !features[key] };
+    setBusy(true);
+    try {
+      await adminSetAcademyFeatures(id, next);
+      setFeatures(next);
+      setMsg(t('adminOps.saved'));
+    } catch (e) {
+      setMsg(String((e as { message?: string })?.message ?? e));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const loadContent = useCallback(() => {
     setBusy(true);
@@ -135,6 +160,34 @@ export default function AdminAcademyDetailPage() {
             ))}
           </div>
         </section>
+
+        {features && (
+          <section className={box}>
+            <h2 className="font-title-md text-title-md">{t('adminOps.featuresTitle')}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminOps.featuresHint')}</p>
+            <ul className="space-y-2 pt-1">
+              {(['group', 'solo', 'homework'] as const).map((k) => (
+                <li key={k} className="flex items-center gap-3 rounded-lg border border-outline-variant/50 px-3 py-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-label-md text-label-md font-bold text-on-surface">{t(`adminOps.feature_${k}`)}</div>
+                    <div className="font-caption text-caption text-on-surface-variant">{t(`adminOps.featureDesc_${k}`)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={features[k]}
+                    disabled={busy}
+                    onClick={() => void toggleFeature(k)}
+                    className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${features[k] ? 'bg-primary' : 'bg-outline-variant'}`}
+                  >
+                    <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${features[k] ? 'left-[22px]' : 'left-0.5'}`} />
+                  </button>
+                  <span className="w-12 text-sm font-bold">{features[k] ? t('adminOps.featureOpen') : t('adminOps.featureClosed')}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className={box}>
           <h2 className="font-title-md text-title-md">{t('adminOps.billing')}</h2>

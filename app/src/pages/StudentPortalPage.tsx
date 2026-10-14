@@ -185,6 +185,8 @@ function HomeView({
   }
   if (!home) return <div className={`${shell} items-center justify-center text-lg text-white/70`}>{t('common.loading')}</div>;
 
+  const soloClosed = home.features?.solo === false;
+  const hwClosed = home.features?.homework === false;
   const firstOpenId = (home.lessons ?? []).find((l) => !l.done)?.id ?? null;
   const open = home.homework.filter((h) => !h.done);
   const done = home.homework.filter((h) => h.done);
@@ -206,7 +208,8 @@ function HomeView({
           <span className="material-symbols-outlined text-[24px] text-warm-yellow">school</span>
           {t('studentPortal.todayLesson')}
         </h2>
-        {(home.lessons ?? []).length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
+        {soloClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
+        {!soloClosed && (home.lessons ?? []).length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
         <ul className="mt-3 flex flex-col gap-3">
           {(home.lessons ?? []).map((l) => (
             <li key={l.id}>
@@ -241,7 +244,8 @@ function HomeView({
           <span className="material-symbols-outlined text-[24px] text-warm-yellow">edit_note</span>
           {t('studentPortal.homework')}
         </h2>
-        {home.homework.length === 0 && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
+        {hwClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
+        {!hwClosed && home.homework.length === 0 && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
         <ul className="flex flex-col gap-3">
           {[...open, ...done].map((h) => (
             <li key={h.access}>

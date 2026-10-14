@@ -43,6 +43,7 @@ function toError(err: unknown): HwError {
   const msg = String((err as { message?: string })?.message ?? err ?? '');
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return new HwError('network');
   if (/Failed to fetch|NetworkError|Load failed|network/i.test(msg)) return new HwError('network');
+  if (msg.includes('feature_closed')) return new HwError('feature_closed');
   for (const k of ['not_found', 'closed', 'past_due', 'bad_login', 'locked', 'incomplete'] as const) if (msg.includes(k)) return new HwError(k);
   return new HwError('unknown');
 }

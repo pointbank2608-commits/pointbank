@@ -500,6 +500,21 @@ try {
     const segs = runsLib.runSegments('hello world', [{ start: 6, end: 11, color: '#e11d48' }]);
     assert.deepEqual(segs.map((x) => [x.text, x.run && x.run.color]), [['hello ', null], ['world', '#e11d48']]);
   });
+  const feat = await server.ssrLoadModule('/src/lib/features.ts');
+  await test('academy features: defaults (group open, solo/homework closed), explicit flags win, unknown academy is not closed', () => {
+    assert.equal(feat.featureOpen(null, 'solo'), true);
+    assert.equal(feat.featureOpen({ features: {} }, 'group'), true);
+    assert.equal(feat.featureOpen({ features: {} }, 'solo'), false);
+    assert.equal(feat.featureOpen({ features: {} }, 'homework'), false);
+    assert.equal(feat.featureOpen({ features: { solo: true, homework: false } }, 'solo'), true);
+    assert.equal(feat.featureOpen({ features: { group: false } }, 'group'), false);
+    assert.equal(feat.featureOfPath('/curriculum'), 'group');
+    assert.equal(feat.featureOfPath('/curriculum/abc/slide/1'), 'group');
+    assert.equal(feat.featureOfPath('/homework'), 'homework');
+    // 통장 숙제 캘린더(룰 5)는 막지 않는다
+    assert.equal(feat.featureOfPath('/results/homework/123'), null);
+    assert.equal(feat.featureOfPath('/board'), null);
+  });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
     const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));

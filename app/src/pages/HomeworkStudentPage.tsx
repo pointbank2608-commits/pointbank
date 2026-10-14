@@ -285,6 +285,7 @@ function LoginStep({ info, onLogin }: { info: HwOpenInfo; onLogin: (name: string
 
 const ERROR_ICON: Record<HwErrorKind, string> = {
   not_found: 'search_off',
+  feature_closed: 'lock_clock',
   closed: 'lock',
   past_due: 'event_busy',
   bad_login: 'person_off',
