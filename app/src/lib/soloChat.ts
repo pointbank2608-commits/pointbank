@@ -76,6 +76,27 @@ export async function fetchChatMode(classId: string): Promise<ChatMode> {
   return m === 'quick' || m === 'free' ? m : 'off';
 }
 
+/* ---------------- 반 전체 공지(076) ---------------- */
+
+export interface ClassNotice {
+  text: string;
+  until: string;
+}
+
+export const studentNotice = (token: string) => rpc<ClassNotice | null>('solo_notice', { p_token: token });
+export const hwNotice = (token: string) => rpc<ClassNotice | null>('hw_notice', { p_token: token });
+export const setClassNotice = (classId: string, text: string, minutes: number) =>
+  rpc<void>('class_notice_set', { p_class: classId, p_text: text, p_minutes: minutes });
+
+/** 선생님 쪽: 지금 떠 있는 반 공지(없거나 지났으면 null). 076 전이면 오류 */
+export async function fetchClassNotice(classId: string): Promise<ClassNotice | null> {
+  const { data, error } = await supabase.from('classes').select('notice_text,notice_until').eq('id', classId).maybeSingle();
+  if (error) throw new Error(error.message);
+  const row = data as { notice_text: string | null; notice_until: string | null } | null;
+  if (!row?.notice_text || !row.notice_until || new Date(row.notice_until).getTime() <= Date.now()) return null;
+  return { text: row.notice_text, until: row.notice_until };
+}
+
 /* ---------------- 실시간 신호(글 없이 "새 메시지" 알림만) ---------------- */
 
 export const studentChannelName = (assignment: string) => `solo-chat-${assignment}`;

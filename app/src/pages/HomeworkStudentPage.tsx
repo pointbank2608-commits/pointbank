@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import HomeworkRunner from '../components/homework/HomeworkRunner';
 import SoloChat from '../components/solo/SoloChat';
+import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
+import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
 import {
   enqueue,
@@ -407,6 +409,9 @@ function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state:
   return (
     <div className={shell}>
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+        <div className="px-4 pt-3">
+          <ClassNoticeBanner load={() => hwNotice(token)} />
+        </div>
         <HomeworkRunner
           title={state.title}
           studentName={state.name}

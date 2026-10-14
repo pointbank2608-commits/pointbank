@@ -17,6 +17,7 @@ import {
 import { buildSoloWordSteps } from '../../lib/soloLessons';
 import { fetchChatMode, fetchChatThreads, openPingChannel, setChatMode, teacherChannelName, type ChatMode, type ChatThread } from '../../lib/soloChat';
 import ChatDrawer from './ChatDrawer';
+import ClassNoticePanel from './ClassNoticePanel';
 import type { FullCardItem } from '../../lib/types';
 
 /**
@@ -206,6 +207,8 @@ export default function WatchPanel({ academyId, classId }: { academyId: string; 
           </label>
         )}
       </div>
+
+      {classId && <ClassNoticePanel classId={classId} />}
 
       {!chatUnavailable && threads.some((th) => th.unread > 0) && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg bg-warm-yellow/25 px-3 py-2">

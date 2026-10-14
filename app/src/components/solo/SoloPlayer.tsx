@@ -8,6 +8,8 @@ import RainbowStructure from '../rainbow/RainbowStructure';
 import { COMMON_SFX, playSfx } from '../../lib/gameSfx';
 import { POS_HINT_KO, posFromKo, RAINBOW_THEME, SPEAKING_ITEMS, STRUCTURE_ITEMS, type StructureItem } from '../../lib/rainbow';
 import type { SoloClip, SoloPass, SoloPublicStep } from '../../lib/soloLessons';
+import type { ClassNotice } from '../../lib/soloChat';
+import ClassNoticeBanner from './ClassNoticeBanner';
 import type { TestResult } from '../../lib/soloTest';
 import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
 import { checkCondition, looseNorm } from '../../lib/soloLessons';
@@ -111,6 +113,7 @@ export default function SoloPlayer({
   onHelp,
   onHelpDone,
   headerExtra,
+  noticeLoader,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
@@ -127,6 +130,8 @@ export default function SoloPlayer({
   onHelpDone?: () => Promise<void>;
   /** 위쪽 줄 도움 버튼 옆에 붙는 것(선생님 채팅 버튼 등) */
   headerExtra?: ReactNode;
+  /** 반 전체 공지를 읽는 함수(학생 화면만) — 주면 위쪽에 공지 띠가 뜬다 */
+  noticeLoader?: () => Promise<ClassNotice | null>;
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
@@ -678,6 +683,11 @@ export default function SoloPlayer({
         {headerExtra}
       </header>
 
+      {noticeLoader && (
+        <div className="px-4 pb-2">
+          <ClassNoticeBanner load={noticeLoader} />
+        </div>
+      )}
       {retry && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
           <span className="rounded-full bg-warm-yellow px-4 py-1 text-base font-bold text-deep-navy">{t('solo.retryChip', { n: retry.pos + 1, of: retry.queue.length })}</span>

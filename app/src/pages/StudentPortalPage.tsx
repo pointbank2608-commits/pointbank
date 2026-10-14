@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import ReviewSection from '../components/solo/ReviewSection';
 import StudentStampCalendar from '../components/homework/StudentStampCalendar';
+import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
+import { studentNotice } from '../lib/soloChat';
 import {
   codeFromUrl,
   formatPhone,
@@ -202,6 +204,8 @@ function HomeView({
           {t('studentPortal.logout')}
         </button>
       </header>
+
+      {savedToken() && <ClassNoticeBanner load={() => studentNotice(savedToken() as string)} />}
 
       <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
         <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
