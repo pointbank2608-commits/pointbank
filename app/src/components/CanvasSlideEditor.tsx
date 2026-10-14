@@ -1,3 +1,4 @@
+import { normalizeRuns, paintRuns, shiftRuns, colorSegments, type TextRun } from '../lib/canvasRuns';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -42,6 +43,8 @@ const HANDLE_POS: Record<Handle, React.CSSProperties> = {
 const MIN_SIZE = 3;
 /** 특수 문자 패널 → 고치는 중인 글상자 */
 const CANVAS_INSERT_EVENT = 'classbank-canvas-insert';
+/** 글상자를 고치는 중 고른 글자에만 색을 칠하라는 신호(detail.handled 가 true 가 되면 처리된 것) */
+const CANVAS_COLOR_EVENT = 'classbank-canvas-color';
 const SNAP = 1.2;
 
 function uid() {
@@ -409,6 +412,19 @@ export default function CanvasSlideEditor({
     setElements(
       slideRef.current.elements.map((el) => (selectedIds.includes(el.id) && el.type === 'text' && !el.locked ? { ...el, ...fn(el) } : el)),
     );
+  }
+
+  /**
+   * 글자 색: 글상자를 고치는 중이고 글자를 골라 두었으면 고른 글자만, 아니면 글상자 전체(구간 색은 지운다).
+   * 고치는 중에는 입력칸이 포커스를 잃지 않게 버튼이 mousedown 을 막고(ColorDot keepFocus) 신호로 입력칸에 알린다.
+   */
+  function applyTextColor(color: string) {
+    if (editingId) {
+      const detail = { color, handled: false };
+      window.dispatchEvent(new CustomEvent(CANVAS_COLOR_EVENT, { detail }));
+      if (detail.handled) return;
+    }
+    updateTexts(() => ({ color, runs: undefined }));
   }
 
   function toggleLock() {
@@ -1048,9 +1064,9 @@ export default function CanvasSlideEditor({
             <span className="mx-1 h-6 w-px bg-outline-variant/50" />
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.textColor')}>format_color_text</span>
             {TEXT_COLORS.map((c) => (
-              <ColorDot key={c} color={c} active={selected.color === c} onClick={() => updateTexts(() => ({ color: c }))} />
+              <ColorDot key={c} color={c} active={selected.color === c} keepFocus={!!editingId} onClick={() => applyTextColor(c)} />
             ))}
-            <CustomColor value={selected.color} onChange={(c) => updateTexts(() => ({ color: c }))} />
+            <CustomColor value={selected.color} keepFocus={!!editingId} onChange={(c) => applyTextColor(c)} />
             <span className="mx-1 h-6 w-px bg-outline-variant/50" />
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant" title={t('curriculum.canvas.fill')}>format_color_fill</span>
             {FILL_COLORS.map((c) => (
@@ -1228,8 +1244,13 @@ export default function CanvasSlideEditor({
               onDoubleClick={() => el.type === 'text' && !el.locked && setEditingId(el.id)}
             >
               {isEditing ? (
-                <TextEditBox el={el as CanvasTextElement} onDone={(text) => {
-                  if (text !== (el as CanvasTextElement).text) updateEl(el.id, { text } as Partial<CanvasTextElement>);
+                <TextEditBox el={el as CanvasTextElement} onDone={(text, runs) => {
+                  const cur = el as CanvasTextElement;
+                  const next = normalizeRuns(runs, text.length, cur.color);
+                  const prev = normalizeRuns(cur.runs, cur.text.length, cur.color);
+                  if (text !== cur.text || JSON.stringify(next) !== JSON.stringify(prev)) {
+                    updateEl(el.id, { text, runs: next.length > 0 ? next : undefined } as Partial<CanvasTextElement>);
+                  }
                   setEditingId(null);
                   stageRef.current?.focus({ preventScroll: true });
                 }} onGrow={(px) => {
@@ -1304,19 +1325,38 @@ function TextEditBox({
   onGrow,
 }: {
   el: CanvasTextElement;
-  onDone: (text: string) => void;
+  onDone: (text: string, runs: TextRun[]) => void;
   /** 글이 상자보다 길어졌을 때 필요한 높이(px) — 편집기가 상자 높이를 늘린다. */
   onGrow: (px: number) => void;
 }) {
-  const [value, setValue] = useState(el.text);
+  const [value, setValueRaw] = useState(el.text);
+  const [runs, setRuns] = useState<TextRun[]>(() => normalizeRuns(el.runs, el.text.length));
+  const valueRef = useRef(el.text);
+  const runsRef = useRef(runs);
+  runsRef.current = runs;
+  /** 글을 바꾸면 색 구간도 같이 밀리게 한다 */
+  const setValue = (next: string) => {
+    setRuns((r) => shiftRuns(r, valueRef.current, next));
+    valueRef.current = next;
+    setValueRaw(next);
+  };
   const ref = useRef<HTMLTextAreaElement>(null);
+  const mirrorRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const ta = ref.current;
     if (!ta) return;
     // 보기 화면처럼 글을 세로 가운데에 — 입력을 마칠 때 글이 아래로 "뛰는" 것처럼 보이지 않게.
     ta.style.paddingTop = '';
     ta.style.paddingBottom = '';
+    const syncMirror = () => {
+      const m = mirrorRef.current;
+      if (m) {
+        m.style.paddingTop = ta.style.paddingTop;
+        m.style.paddingBottom = ta.style.paddingBottom;
+      }
+    };
     if (ta.scrollHeight > ta.clientHeight + 2) {
+      syncMirror();
       onGrow(ta.scrollHeight);
       return;
     }
@@ -1331,6 +1371,7 @@ function TextEditBox({
       ta.style.paddingTop = `${padTop + extra / 2}px`;
       ta.style.paddingBottom = `${padBottom + extra / 2}px`;
     }
+    syncMirror();
   });
   useEffect(() => {
     const ta = ref.current;
@@ -1376,21 +1417,48 @@ function TextEditBox({
     window.addEventListener(CANVAS_INSERT_EVENT, onInsert);
     return () => window.removeEventListener(CANVAS_INSERT_EVENT, onInsert);
   }, []);
+  // 글자 색 버튼: 입력칸에서 고른 글자만 칠한다(고른 글자가 없으면 처리하지 않아 글상자 전체 색으로 간다)
+  useEffect(() => {
+    function onColor(e: Event) {
+      const d = (e as CustomEvent<{ color: string; handled: boolean }>).detail;
+      const ta = ref.current;
+      if (!ta || !d) return;
+      const s = ta.selectionStart ?? 0;
+      const en = ta.selectionEnd ?? 0;
+      if (s === en) return;
+      d.handled = true;
+      setRuns((r) => paintRuns(r, s, en, d.color, ta.value.length, el.color));
+    }
+    window.addEventListener(CANVAS_COLOR_EVENT, onColor);
+    return () => window.removeEventListener(CANVAS_COLOR_EVENT, onColor);
+  }, [el.color]);
   const style = canvasTextStyle(el);
+  const fill = el.fill ?? 'rgba(255,255,255,0.35)';
+  // 입력칸 글자는 투명하게 두고, 같은 글꼴로 색을 입힌 글을 바로 뒤에 겹쳐 보여 준다(색 구간이 입력 중에도 보이게)
   return (
-    <textarea
-      ref={ref}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => onDone(value)}
-      onPointerDown={(e) => e.stopPropagation()}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === 'Escape') onDone(value);
-      }}
-      className="h-full w-full resize-none overflow-hidden border-0 outline-none"
-      style={{ ...style, background: el.fill ?? 'rgba(255,255,255,0.35)' }}
-    />
+    <div className="relative h-full w-full" style={{ background: fill, borderRadius: style.borderRadius }}>
+      <div ref={mirrorRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden" style={{ ...style, background: 'transparent' }}>
+        {colorSegments(value, runs).map((seg, i) => (seg.color ? <span key={i} style={{ color: seg.color }}>{seg.text}</span> : seg.text))}
+        {'\u200b'}
+      </div>
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => {
+          // 색 고르기 창이 떠서 창 자체가 포커스를 잃은 경우에는 편집을 끝내지 않는다
+          if (typeof document !== 'undefined' && !document.hasFocus()) return;
+          onDone(value, runsRef.current);
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Escape') onDone(value, runsRef.current);
+        }}
+        className="relative h-full w-full resize-none overflow-hidden border-0 outline-none"
+        style={{ ...style, background: 'transparent', color: 'transparent', caretColor: el.color }}
+      />
+    </div>
   );
 }
 
@@ -1606,10 +1674,12 @@ function MotionPanel({
   );
 }
 
-function ColorDot({ color, active, onClick }: { color: string | null; active: boolean; onClick: () => void }) {
+function ColorDot({ color, active, onClick, keepFocus = false }: { color: string | null; active: boolean; onClick: () => void; keepFocus?: boolean }) {
   return (
     <button
       type="button"
+      onPointerDown={keepFocus ? (e) => e.preventDefault() : undefined}
+      onMouseDown={keepFocus ? (e) => e.preventDefault() : undefined}
       onClick={onClick}
       className={`relative h-6 w-6 shrink-0 overflow-hidden rounded-full border ${active ? 'border-primary ring-2 ring-primary/50' : 'border-outline-variant'}`}
       style={{ background: color ?? '#ffffff' }}
@@ -1620,9 +1690,11 @@ function ColorDot({ color, active, onClick }: { color: string | null; active: bo
   );
 }
 
-function CustomColor({ value, onChange }: { value: string; onChange: (c: string) => void }) {
+function CustomColor({ value, onChange, keepFocus = false }: { value: string; onChange: (c: string) => void; keepFocus?: boolean }) {
   return (
-    <label className="relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]">
+    <label
+      onMouseDown={keepFocus ? (e) => e.preventDefault() : undefined}
+      className="relative flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-outline-variant bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)]">
       <input
         type="color"
         value={/^#[0-9a-f]{6}$/i.test(value) ? value : '#000000'}

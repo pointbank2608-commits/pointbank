@@ -469,6 +469,31 @@ try {
     const gl = staged.buildStagedGrammarLesson(point, { games: [games[0], games[0], games[2]] });
     assert.equal(gl.steps.filter((x) => x.t === 'game').length, 3);
   });
+  const runsLib = await server.ssrLoadModule('/src/lib/canvasRuns.ts');
+  await test('text color runs: paint a range, shift with edits, and merge/clear correctly', () => {
+    const base = '#111111';
+    let runs = runsLib.paintRuns([], 5, 9, '#e11d48', 20, base);
+    assert.deepEqual(runs, [{ start: 5, end: 9, color: '#e11d48' }]);
+    // 겹쳐 칠하면 가운데만 바뀌고 양쪽은 남는다
+    runs = runsLib.paintRuns(runs, 6, 8, '#2563eb', 20, base);
+    assert.deepEqual(runs, [
+      { start: 5, end: 6, color: '#e11d48' },
+      { start: 6, end: 8, color: '#2563eb' },
+      { start: 8, end: 9, color: '#e11d48' },
+    ]);
+    // 기본색으로 칠하면 그 구간의 색이 지워진다
+    runs = runsLib.paintRuns(runs, 5, 9, base, 20, base);
+    assert.deepEqual(runs, []);
+    // 글을 앞에 더하면 구간이 밀린다
+    const r1 = [{ start: 5, end: 9, color: '#e11d48' }];
+    assert.deepEqual(runsLib.shiftRuns(r1, 'hello world foo', 'XX hello world foo'), [{ start: 8, end: 12, color: '#e11d48' }]);
+    // 구간 안에 글을 더하면 같은 색으로 이어진다
+    assert.deepEqual(runsLib.shiftRuns([{ start: 2, end: 6, color: '#e11d48' }], 'abcdefgh', 'abcdZefgh'), [{ start: 2, end: 7, color: '#e11d48' }]);
+    // 구간을 통째로 지우면 구간도 사라진다
+    assert.deepEqual(runsLib.shiftRuns([{ start: 2, end: 4, color: '#e11d48' }], 'abcdefgh', 'abefgh'), []);
+    const segs = runsLib.colorSegments('hello world', [{ start: 6, end: 11, color: '#e11d48' }]);
+    assert.deepEqual(segs.map((x) => [x.text, x.color]), [['hello ', null], ['world', '#e11d48']]);
+  });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
     const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));

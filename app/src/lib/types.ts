@@ -734,6 +734,8 @@ export interface CanvasTextElement extends CanvasElementBase {
   font: 'sans' | 'round' | 'kids' | 'hand';
   /** 글상자 배경색(없으면 투명) */
   fill?: string | null;
+  /** 글 일부만 색이 다른 구간(글자 위치 범위, 2026-10-14) — 없으면 글 전체가 color */
+  runs?: { start: number; end: number; color: string }[];
 }
 export interface CanvasImageElement extends CanvasElementBase {
   type: 'image';

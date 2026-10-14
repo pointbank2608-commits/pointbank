@@ -1,3 +1,4 @@
+import { colorSegments } from '../lib/canvasRuns';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { MARK_PATHS } from '../lib/canvasMarks';
@@ -181,7 +182,11 @@ export function CanvasElementContent({ el, placeholder }: { el: CanvasElement; p
     const empty = !el.text.trim();
     body = (
       <div className="flex h-full w-full flex-col justify-center" style={{ ...canvasTextStyle(el), ...(empty && placeholder ? { color: '#9ca3af' } : {}) }}>
-        <div data-text-body>{empty ? placeholder ?? '' : el.text}</div>
+        <div data-text-body>
+          {empty
+            ? placeholder ?? ''
+            : colorSegments(el.text, el.runs).map((seg, i) => (seg.color ? <span key={i} style={{ color: seg.color }}>{seg.text}</span> : seg.text))}
+        </div>
       </div>
     );
   }
