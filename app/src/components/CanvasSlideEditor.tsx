@@ -1336,7 +1336,9 @@ function TextEditBox({
   runsRef.current = runs;
   /** 글을 바꾸면 색 구간도 같이 밀리게 한다 */
   const setValue = (next: string) => {
-    setRuns((r) => shiftRuns(r, valueRef.current, next));
+    // 갱신 함수는 나중에 실행되므로 이전 글은 지금 따로 잡아 둔다(ref 를 그 안에서 읽으면 이미 새 글이다)
+    const prev = valueRef.current;
+    setRuns((r) => shiftRuns(r, prev, next));
     valueRef.current = next;
     setValueRaw(next);
   };
