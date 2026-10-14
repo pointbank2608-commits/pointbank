@@ -84,6 +84,7 @@ import TreasureDigPage from './pages/TreasureDigPage';
 import FourCluesPage from './pages/FourCluesPage';
 import CatchSentencePage from './pages/CatchSentencePage';
 import LastBoxPage from './pages/LastBoxPage';
+import RemotePage from './pages/RemotePage';
 import MysteryBoxPage from './pages/MysteryBoxPage';
 import MysteryBoxPrintPage from './pages/MysteryBoxPrintPage';
 import LiveJoinPage from './pages/LiveJoinPage';
@@ -149,6 +150,18 @@ export default function App() {
         <Route path="/share/:token" element={<SharedLessonPage />} />
       </Routes>
     );
+  }
+
+  // 선생님 폰 리모컨 — 로그인한 선생님 계정이어야 한다(로그인 전이면 같은 주소에서 로그인 화면을 보여 준다)
+  if (pathname.startsWith('/remote/')) {
+    if (!loading && !session) return <AuthPage />;
+    if (!loading && session && profile) {
+      return (
+        <Routes>
+          <Route path="/remote/:id" element={<RemotePage />} />
+        </Routes>
+      );
+    }
   }
 
   if (loading) {

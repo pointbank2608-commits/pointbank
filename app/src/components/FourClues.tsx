@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteSecret } from '../lib/remote';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 /**
@@ -131,6 +132,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   const [shakeIdx, setShakeIdx] = useState<number | null>(null);
   const [pulse, setPulse] = useState<number | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [peek, setPeek] = useState(false);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
     timers.current.push(window.setTimeout(fn, ms));
@@ -157,7 +159,10 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   const word = items.length > 0 && order.length > 0 ? (items[order[pos % order.length]]?.label ?? '') : '';
   const wordInfo = info[word.trim().toLowerCase()];
   const clues = useMemo(() => (word ? buildClues(word, wordInfo, t as never) : []), [word, wordInfo, t]);
+  useEffect(() => setPeek(false), [pos, round, phase]);
   const teamName = (i: number) => t('gameFourClues.teamName', { name: TEAM_NAMES[i] });
+  // 선생님 폰 리모컨에는 지금 낱말(정답)을 알려 준다 — 칠판에는 안 보이고 폰에서만 눌러서 본다
+  useRemoteSecret(word && phase === 'play' ? { title: t('gameFourClues.remoteSecretTitle'), text: word, sub: wordInfo?.meaning ?? undefined } : null);
 
   function snap() {
     setSnapshot({ scores: [...scores], turn, openCount, locked: [...locked], pos, phase, round, guesser });
@@ -169,6 +174,12 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
       if (!lockedList.includes(c)) return c;
     }
     return from;
+  }
+
+  /** 선생님도 낱말을 모를 때 — 눌러서 3초만 정답을 본다(판정용) */
+  function peekAnswer() {
+    setPeek(true);
+    later(() => setPeek(false), 3000);
   }
 
   function openNext() {
@@ -389,11 +400,23 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
             <button type="button" onClick={judgeWrong} className={btn} style={{ ...fs, background: '#f43f5e' }}>
               ✗ {t('gameFourClues.judgeWrong')}
             </button>
+            <button type="button" onClick={peekAnswer} className={btn} style={{ ...fs, background: '#64748b' }}>
+              👀 {t('gameFourClues.peek')}
+            </button>
             {openCount < MAX_CLUES && (
               <button type="button" onClick={openNext} className={btn} style={{ ...fs, background: '#6366f1' }}>
                 {t('gameFourClues.nextClue')}
               </button>
             )}
+          </div>
+        )}
+
+        {/* 선생님용 정답 엿보기 — 3초 뒤 저절로 가려진다 */}
+        {peek && phase === 'play' && (
+          <div className="absolute left-1/2 top-[12%] z-40 -translate-x-1/2 rounded-[1.4cqw] bg-slate-900/90 px-[2.4cqw] py-[0.8cqw] text-center text-white shadow-xl">
+            <div className="text-slate-300" style={{ fontSize: 'clamp(10px,1.3cqw,18px)' }}>{t('gameFourClues.peekTitle')}</div>
+            <div className="font-black" style={{ fontSize: 'clamp(18px,3.4cqw,46px)' }}>{word}</div>
+            {wordInfo?.meaning && <div className="text-amber-200" style={{ fontSize: 'clamp(11px,1.7cqw,24px)' }}>{wordInfo.meaning}</div>}
           </div>
         )}
 

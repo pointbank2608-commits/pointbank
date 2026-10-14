@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import OnlineClassPanel from './OnlineClassPanel';
+import { RemoteBridge, RemotePanel, loadRemoteId } from './RemoteControl';
 import { useTranslation } from 'react-i18next';
 import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
@@ -38,6 +39,8 @@ export default function LessonRunnerBar() {
   const [annotationOpen, setAnnotationOpen] = useState(false);
   const [keysOpen, setKeysOpen] = useState(false);
   const [onlineOpen, setOnlineOpen] = useState(false);
+  const [remoteOpen, setRemoteOpen] = useState(false);
+  const [remoteId, setRemoteId] = useState<string | null>(() => loadRemoteId());
 
   useEffect(() => {
     setAnnotationOpen(false);
@@ -147,6 +150,17 @@ export default function LessonRunnerBar() {
       </div>
       <button
         type="button"
+        onClick={() => setRemoteOpen((v) => !v)}
+        className={`relative flex h-8 shrink-0 items-center gap-1 rounded-full px-2 transition-colors ${remoteOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
+        aria-label={t('remote.title')}
+        title={t('remote.title')}
+      >
+        <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
+        <span className="hidden font-caption text-caption lg:inline">{t('remote.button')}</span>
+        {remoteId && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
+      </button>
+      <button
+        type="button"
         onClick={() => setOnlineOpen((v) => !v)}
         className={`relative flex h-8 shrink-0 items-center gap-1 rounded-full px-2 transition-colors ${onlineOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
         aria-label={t('online.title')}
@@ -182,6 +196,8 @@ export default function LessonRunnerBar() {
       </button>
     </div>
     {onlineOpen && <OnlineClassPanel onClose={() => setOnlineOpen(false)} />}
+    {remoteId && <RemoteBridge id={remoteId} />}
+    {remoteOpen && <RemotePanel id={remoteId} onChange={setRemoteId} onClose={() => setRemoteOpen(false)} />}
     {keysOpen && (
       <div className="no-print fixed inset-0 z-40 flex items-start justify-end p-4 pt-16" onClick={() => setKeysOpen(false)}>
         <div
