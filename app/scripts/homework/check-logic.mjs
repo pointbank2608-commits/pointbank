@@ -470,29 +470,35 @@ try {
     assert.equal(gl.steps.filter((x) => x.t === 'game').length, 3);
   });
   const runsLib = await server.ssrLoadModule('/src/lib/canvasRuns.ts');
-  await test('text color runs: paint a range, shift with edits, and merge/clear correctly', () => {
-    const base = '#111111';
-    let runs = runsLib.paintRuns([], 5, 9, '#e11d48', 20, base);
+  await test('text format runs: paint color/bold on a range, merge fields, shift with edits, toggle by range', () => {
+    const base = { color: '#111111', bold: false, italic: false };
+    let runs = runsLib.paintRuns([], 5, 9, { color: '#e11d48' }, 20, base);
     assert.deepEqual(runs, [{ start: 5, end: 9, color: '#e11d48' }]);
-    // 겹쳐 칠하면 가운데만 바뀌고 양쪽은 남는다
-    runs = runsLib.paintRuns(runs, 6, 8, '#2563eb', 20, base);
+    // 굵게를 겹쳐 칠하면 색은 그대로 두고 굵게 칸만 더해진다
+    runs = runsLib.paintRuns(runs, 7, 12, { bold: true }, 20, base);
     assert.deepEqual(runs, [
-      { start: 5, end: 6, color: '#e11d48' },
-      { start: 6, end: 8, color: '#2563eb' },
-      { start: 8, end: 9, color: '#e11d48' },
+      { start: 5, end: 7, color: '#e11d48' },
+      { start: 7, end: 9, color: '#e11d48', bold: true },
+      { start: 9, end: 12, bold: true },
     ]);
-    // 기본색으로 칠하면 그 구간의 색이 지워진다
-    runs = runsLib.paintRuns(runs, 5, 9, base, 20, base);
-    assert.deepEqual(runs, []);
+    // 기본 서식으로 되돌리면 그 구간 칸이 지워진다
+    const cleared = runsLib.paintRuns(runs, 5, 12, { color: '#111111', bold: false }, 20, base);
+    assert.deepEqual(cleared, []);
+    // 굵게 토글: 일부만 굵으면 "모두 켜기", 모두 굵으면 "끄기"
+    assert.equal(runsLib.rangeAll(runs, base, 5, 12, 'bold'), false);
+    assert.equal(runsLib.rangeAll(runs, base, 7, 12, 'bold'), true);
     // 글을 앞에 더하면 구간이 밀린다
     const r1 = [{ start: 5, end: 9, color: '#e11d48' }];
     assert.deepEqual(runsLib.shiftRuns(r1, 'hello world foo', 'XX hello world foo'), [{ start: 8, end: 12, color: '#e11d48' }]);
-    // 구간 안에 글을 더하면 같은 색으로 이어진다
-    assert.deepEqual(runsLib.shiftRuns([{ start: 2, end: 6, color: '#e11d48' }], 'abcdefgh', 'abcdZefgh'), [{ start: 2, end: 7, color: '#e11d48' }]);
+    // 구간 안에 글을 더하면 같은 서식으로 이어진다
+    assert.deepEqual(runsLib.shiftRuns([{ start: 2, end: 6, bold: true }], 'abcdefgh', 'abcdZefgh'), [{ start: 2, end: 7, bold: true }]);
     // 구간을 통째로 지우면 구간도 사라진다
     assert.deepEqual(runsLib.shiftRuns([{ start: 2, end: 4, color: '#e11d48' }], 'abcdefgh', 'abefgh'), []);
-    const segs = runsLib.colorSegments('hello world', [{ start: 6, end: 11, color: '#e11d48' }]);
-    assert.deepEqual(segs.map((x) => [x.text, x.color]), [['hello ', null], ['world', '#e11d48']]);
+    // 글상자 전체를 바꿀 때는 그 칸의 구간 서식을 지운다
+    assert.deepEqual(runsLib.stripField([{ start: 0, end: 3, color: '#e11d48', bold: true }], 'color'), [{ start: 0, end: 3, bold: true }]);
+    assert.equal(runsLib.stripField([{ start: 0, end: 3, bold: true }], 'bold'), undefined);
+    const segs = runsLib.runSegments('hello world', [{ start: 6, end: 11, color: '#e11d48' }]);
+    assert.deepEqual(segs.map((x) => [x.text, x.run && x.run.color]), [['hello ', null], ['world', '#e11d48']]);
   });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {

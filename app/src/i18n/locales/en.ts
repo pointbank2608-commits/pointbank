@@ -4557,6 +4557,7 @@ const en: Ko = {
       bigger: 'Bigger text',
       bold: 'Bold',
       italic: 'Italic',
+      underline: 'Underline',
       align_left: 'Align left',
       align_center: 'Align center',
       align_right: 'Align right',

@@ -1,4 +1,4 @@
-import { colorSegments } from '../lib/canvasRuns';
+import { runSegments, runStyle } from '../lib/canvasRuns';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { MARK_PATHS } from '../lib/canvasMarks';
@@ -30,6 +30,7 @@ export function canvasTextStyle(el: CanvasTextElement): CSSProperties {
     color: el.color,
     fontWeight: el.bold ? 700 : 400,
     fontStyle: el.italic ? 'italic' : 'normal',
+    textDecoration: el.underline ? 'underline' : undefined,
     textAlign: el.align,
     lineHeight: 1.25,
     whiteSpace: 'pre-wrap',
@@ -185,7 +186,7 @@ export function CanvasElementContent({ el, placeholder }: { el: CanvasElement; p
         <div data-text-body>
           {empty
             ? placeholder ?? ''
-            : colorSegments(el.text, el.runs).map((seg, i) => (seg.color ? <span key={i} style={{ color: seg.color }}>{seg.text}</span> : seg.text))}
+            : runSegments(el.text, el.runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
         </div>
       </div>
     );

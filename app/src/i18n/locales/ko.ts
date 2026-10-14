@@ -4552,6 +4552,7 @@ const ko = {
       bigger: '글자 크게',
       bold: '굵게',
       italic: '기울임',
+      underline: '밑줄',
       align_left: '왼쪽 정렬',
       align_center: '가운데 정렬',
       align_right: '오른쪽 정렬',

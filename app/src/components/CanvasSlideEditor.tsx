@@ -1,4 +1,4 @@
-import { normalizeRuns, paintRuns, shiftRuns, colorSegments, type TextRun } from '../lib/canvasRuns';
+import { normalizeRuns, paintRuns, rangeAll, runSegments, runStyle, shiftRuns, stripField, type RunBase, type TextRun } from '../lib/canvasRuns';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -45,6 +45,8 @@ const MIN_SIZE = 3;
 const CANVAS_INSERT_EVENT = 'classbank-canvas-insert';
 /** 글상자를 고치는 중 고른 글자에만 색을 칠하라는 신호(detail.handled 가 true 가 되면 처리된 것) */
 const CANVAS_COLOR_EVENT = 'classbank-canvas-color';
+/** 고른 글자에만 굵게·기울임·밑줄을 켜고 끄라는 신호(detail.handled 가 true 가 되면 처리된 것) */
+const CANVAS_FORMAT_EVENT = 'classbank-canvas-format';
 const SNAP = 1.2;
 
 function uid() {
@@ -424,7 +426,20 @@ export default function CanvasSlideEditor({
       window.dispatchEvent(new CustomEvent(CANVAS_COLOR_EVENT, { detail }));
       if (detail.handled) return;
     }
-    updateTexts(() => ({ color, runs: undefined }));
+    updateTexts((el) => ({ color, runs: stripField(el.runs, 'color') }));
+  }
+
+  /** 굵게·기울임·밑줄: 글상자를 고치는 중이고 글자를 골라 두었으면 고른 글자만 켜고 끄고, 아니면 글상자 전체 */
+  function applyTextFormat(field: 'bold' | 'italic' | 'underline') {
+    if (editingId) {
+      const detail = { field, handled: false };
+      window.dispatchEvent(new CustomEvent(CANVAS_FORMAT_EVENT, { detail }));
+      if (detail.handled) return;
+    }
+    updateTexts((el) => {
+      const on = !(field === 'underline' ? el.underline : field === 'bold' ? el.bold : el.italic);
+      return { [field]: on, runs: stripField(el.runs, field) } as Partial<CanvasTextElement>;
+    });
   }
 
   function toggleLock() {
@@ -1044,17 +1059,18 @@ export default function CanvasSlideEditor({
                 <span className="material-symbols-outlined text-[20px]">text_increase</span>
               </button>
             </div>
-            <button type="button" className={iconBtn(selected.bold)} onClick={() => {
-              const v = !selected.bold;
-              updateTexts(() => ({ bold: v }));
+            <button type="button" className={iconBtn(selected.bold)} onPointerDown={(e) => editingId && e.preventDefault()} onMouseDown={(e) => editingId && e.preventDefault()} onClick={() => {
+              applyTextFormat('bold');
             }} title={t('curriculum.canvas.bold')}>
               <span className="material-symbols-outlined text-[20px]">format_bold</span>
             </button>
-            <button type="button" className={iconBtn(!!selected.italic)} onClick={() => {
-              const v = !selected.italic;
-              updateTexts(() => ({ italic: v }));
+            <button type="button" className={iconBtn(!!selected.italic)} onPointerDown={(e) => editingId && e.preventDefault()} onMouseDown={(e) => editingId && e.preventDefault()} onClick={() => {
+              applyTextFormat('italic');
             }} title={t('curriculum.canvas.italic')}>
               <span className="material-symbols-outlined text-[20px]">format_italic</span>
+            </button>
+            <button type="button" className={iconBtn(!!selected.underline)} onPointerDown={(e) => editingId && e.preventDefault()} onMouseDown={(e) => editingId && e.preventDefault()} onClick={() => applyTextFormat('underline')} title={t('curriculum.canvas.underline')}>
+              <span className="material-symbols-outlined text-[20px]">format_underlined</span>
             </button>
             {(['left', 'center', 'right'] as const).map((a) => (
               <button key={a} type="button" className={iconBtn(selected.align === a)} onClick={() => updateTexts(() => ({ align: a }))} title={t(`curriculum.canvas.align_${a}`)}>
@@ -1246,8 +1262,9 @@ export default function CanvasSlideEditor({
               {isEditing ? (
                 <TextEditBox el={el as CanvasTextElement} onDone={(text, runs) => {
                   const cur = el as CanvasTextElement;
-                  const next = normalizeRuns(runs, text.length, cur.color);
-                  const prev = normalizeRuns(cur.runs, cur.text.length, cur.color);
+                  const base: RunBase = { color: cur.color, bold: cur.bold, italic: !!cur.italic, underline: !!cur.underline };
+                  const next = normalizeRuns(runs, text.length, base);
+                  const prev = normalizeRuns(cur.runs, cur.text.length, base);
                   if (text !== cur.text || JSON.stringify(next) !== JSON.stringify(prev)) {
                     updateEl(el.id, { text, runs: next.length > 0 ? next : undefined } as Partial<CanvasTextElement>);
                   }
@@ -1334,6 +1351,8 @@ function TextEditBox({
   const valueRef = useRef(el.text);
   const runsRef = useRef(runs);
   runsRef.current = runs;
+  const baseRef = useRef<RunBase>({ color: el.color, bold: el.bold, italic: !!el.italic, underline: !!el.underline });
+  baseRef.current = { color: el.color, bold: el.bold, italic: !!el.italic, underline: !!el.underline };
   /** 글을 바꾸면 색 구간도 같이 밀리게 한다 */
   const setValue = (next: string) => {
     // 갱신 함수는 나중에 실행되므로 이전 글은 지금 따로 잡아 둔다(ref 를 그 안에서 읽으면 이미 새 글이다)
@@ -1429,18 +1448,33 @@ function TextEditBox({
       const en = ta.selectionEnd ?? 0;
       if (s === en) return;
       d.handled = true;
-      setRuns((r) => paintRuns(r, s, en, d.color, ta.value.length, el.color));
+      setRuns((r) => paintRuns(r, s, en, { color: d.color }, ta.value.length, baseRef.current));
+    }
+    function onFormat(e: Event) {
+      const d = (e as CustomEvent<{ field: 'bold' | 'italic' | 'underline'; handled: boolean }>).detail;
+      const ta = ref.current;
+      if (!ta || !d) return;
+      const s = ta.selectionStart ?? 0;
+      const en = ta.selectionEnd ?? 0;
+      if (s === en) return;
+      d.handled = true;
+      const on = !rangeAll(runsRef.current, baseRef.current, s, en, d.field);
+      setRuns((r) => paintRuns(r, s, en, { [d.field]: on }, ta.value.length, baseRef.current));
     }
     window.addEventListener(CANVAS_COLOR_EVENT, onColor);
-    return () => window.removeEventListener(CANVAS_COLOR_EVENT, onColor);
-  }, [el.color]);
+    window.addEventListener(CANVAS_FORMAT_EVENT, onFormat);
+    return () => {
+      window.removeEventListener(CANVAS_COLOR_EVENT, onColor);
+      window.removeEventListener(CANVAS_FORMAT_EVENT, onFormat);
+    };
+  }, []);
   const style = canvasTextStyle(el);
   const fill = el.fill ?? 'rgba(255,255,255,0.35)';
   // 입력칸 글자는 투명하게 두고, 같은 글꼴로 색을 입힌 글을 바로 뒤에 겹쳐 보여 준다(색 구간이 입력 중에도 보이게)
   return (
     <div className="relative h-full w-full" style={{ background: fill, borderRadius: style.borderRadius }}>
       <div ref={mirrorRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden" style={{ ...style, background: 'transparent' }}>
-        {colorSegments(value, runs).map((seg, i) => (seg.color ? <span key={i} style={{ color: seg.color }}>{seg.text}</span> : seg.text))}
+        {runSegments(value, runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
         {'\u200b'}
       </div>
       <textarea

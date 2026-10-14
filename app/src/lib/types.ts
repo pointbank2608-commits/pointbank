@@ -734,8 +734,10 @@ export interface CanvasTextElement extends CanvasElementBase {
   font: 'sans' | 'round' | 'kids' | 'hand';
   /** 글상자 배경색(없으면 투명) */
   fill?: string | null;
-  /** 글 일부만 색이 다른 구간(글자 위치 범위, 2026-10-14) — 없으면 글 전체가 color */
-  runs?: { start: number; end: number; color: string }[];
+  /** 밑줄(글 전체) */
+  underline?: boolean;
+  /** 글 일부만 서식(색·굵게·기울임·밑줄)이 다른 구간(글자 위치 범위, 2026-10-14) — 없으면 글 전체가 같다 */
+  runs?: { start: number; end: number; color?: string; bold?: boolean; italic?: boolean; underline?: boolean }[];
 }
 export interface CanvasImageElement extends CanvasElementBase {
   type: 'image';
