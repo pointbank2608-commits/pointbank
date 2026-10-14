@@ -70,6 +70,7 @@ const LABEL_GAMES = new Set<GameType>([
   'airplane',
   'treasuredig',
   'fourclues',
+  'catchsentence',
 ]);
 
 export interface GameContent {

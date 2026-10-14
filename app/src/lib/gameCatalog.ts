@@ -490,6 +490,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.fourcluesName',
     descKey: 'gamesList.fourcluesDesc',
   },
+  {
+    // 문장 잡기(2026-10-14, PPT "Catch the Sentence" 5단계): 문장이 잠깐 나타났다 사라지거나 섞인 낱말이 날아다니면 받아 쓴다.
+    type: 'catchsentence',
+    number: 40,
+    category: 'sentence',
+    minItems: 1,
+    icon: 'visibility',
+    path: '/games/catchsentence',
+    cover: '/covers/game-catchsentence.jpg',
+    nameKey: 'gamesList.catchsentenceName',
+    descKey: 'gamesList.catchsentenceDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

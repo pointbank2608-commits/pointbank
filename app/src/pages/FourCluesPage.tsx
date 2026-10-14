@@ -422,19 +422,28 @@ export default function FourCluesPage() {
                     <div className="pt-3 flex flex-wrap gap-6">
                       <div>
                         <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameFourClues.teamsLabel')}</div>
-                        <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
-                          {[2, 3, 4].map((n) => (
-                            <button
-                              key={n}
-                              type="button"
-                              onClick={() => void commitConfig({ clueTeams: n })}
-                              className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-                                teams === n ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
+                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
+                          <button
+                            type="button"
+                            disabled={teams <= 2}
+                            onClick={() => void commitConfig({ clueTeams: Math.max(2, teams - 1) })}
+                            className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40"
+                            aria-label="-"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">
+                            {t('common.teamsCount', { n: teams })}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={teams >= 8}
+                            onClick={() => void commitConfig({ clueTeams: Math.min(8, teams + 1) })}
+                            className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40"
+                            aria-label="+"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     </div>

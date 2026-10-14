@@ -42,8 +42,8 @@ function makeLayout(count: number, cols: number): Layout {
 }
 
 const FINDS: Find[] = ['crab', 'worm', 'starfish', 'boot', 'bottle', 'shell'];
-const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b'];
-const TEAM_NAMES_FALLBACK = ['A', 'B', 'C', 'D'];
+const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5a4', '#78716c'];
+const TEAM_NAMES_FALLBACK = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const IMG = (name: string) => `/skins/dig/${name}.webp`;
 
 const SCORE_TREASURE = 3;
@@ -104,7 +104,7 @@ const STYLE = `
 
 const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, teams, mounds }, ref) {
   const { t } = useTranslation();
-  const teamCount = Math.min(4, Math.max(2, teams));
+  const teamCount = Math.min(8, Math.max(2, teams));
   const moundCount = Math.max(6, mounds);
   // 칸 수가 딱 맞게(빈 칸 없이) 장면 가득 — 12=4×3, 20=5×4, 30=6×5
   const cols = moundCount <= 12 ? 4 : moundCount <= 20 ? 5 : 6;

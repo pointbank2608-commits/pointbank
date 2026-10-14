@@ -33,8 +33,8 @@ interface Clue {
   image?: string;
 }
 
-const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b'];
-const TEAM_NAMES = ['A', 'B', 'C', 'D'];
+const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5a4', '#78716c'];
+const TEAM_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const IMG = (n: string) => `/skins/clues/${n}.webp`;
 const MAX_CLUES = 4;
 const BONUS_POINTS = 1;
@@ -116,7 +116,7 @@ const FOUR = [0, 1, 2, 3];
 
 const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, teams, info }, ref) {
   const { t } = useTranslation();
-  const teamCount = Math.min(4, Math.max(2, teams));
+  const teamCount = Math.min(8, Math.max(2, teams));
   const itemKey = items.map((i) => i.id).join(',');
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
