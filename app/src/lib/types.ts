@@ -207,7 +207,9 @@ export type GameType =
   | 'winlosequiz'
   | 'watermelon'
   | 'quizshow'
-  | 'shopping';
+  | 'shopping'
+  | 'treasuredig'
+  | 'fourclues';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -333,6 +335,11 @@ export interface GameTemplateConfig {
   /** 장보기 전용: market 통째로 그린 식품 마트 그림(물건이 정해져 있어 준비가 필요 없다) / words 내 단어장 가게(shopItems).
    * 없으면 shopItems 가 있을 때 words, 아니면 market. */
   shopScene?: 'market' | 'clothes' | 'stationery' | 'toys' | 'words';
+  /** 보물 땅파기 전용: 팀 수(2~4, 기본 3)와 모래 언덕 수(12/20/30, 기본 20). */
+  digTeams?: number;
+  /** 단서 네 개 전용: 팀 수(2~4, 기본 3). */
+  clueTeams?: number;
+  digMounds?: number;
   /** 장보기 전용: list 목록 외우고 담기(기본) / dish 요리 재료 담기 / event 특별한 날 장보기. */
   shopMode?: 'list' | 'dish' | 'event';
   /** 장보기 전용: 쇼핑 목록에 넣을 물건 수(기본 6). */

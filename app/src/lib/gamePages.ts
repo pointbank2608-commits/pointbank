@@ -36,6 +36,8 @@ import WinLoseQuizPage from '../pages/WinLoseQuizPage';
 import WatermelonPage from '../pages/WatermelonPage';
 import QuizShowPage from '../pages/QuizShowPage';
 import ShoppingPage from '../pages/ShoppingPage';
+import TreasureDigPage from '../pages/TreasureDigPage';
+import FourCluesPage from '../pages/FourCluesPage';
 
 /** 게임 경로(gameCatalog 의 path) → 그 게임 페이지 컴포넌트. 커리큘럼 게임 슬라이드 편집 화면이
  * 게임 설정 화면을 그대로 띄울 때 쓴다. 새 게임을 추가하면 App.tsx 라우트와 함께 여기도 한 줄. */
@@ -77,4 +79,6 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/watermelon': WatermelonPage,
   '/games/quizshow': QuizShowPage,
   '/games/shopping': ShoppingPage,
+  '/games/treasuredig': TreasureDigPage,
+  '/games/fourclues': FourCluesPage,
 };

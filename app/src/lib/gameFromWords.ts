@@ -68,6 +68,8 @@ const LABEL_GAMES = new Set<GameType>([
   'crossword',
   'mazechase',
   'airplane',
+  'treasuredig',
+  'fourclues',
 ]);
 
 export interface GameContent {

@@ -466,6 +466,30 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.shoppingName',
     descKey: 'gamesList.shoppingDesc',
   },
+  {
+    // 보물 땅파기(2026-10-14, PPT "Buried Bells" 방식만 참고): 언덕을 골라 단어 카드에 답하면 땅을 파고, 한 곳에 보물이 묻혀 있다.
+    type: 'treasuredig',
+    number: 38,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'archaeology',
+    path: '/games/treasuredig',
+    cover: '/covers/game-treasuredig.jpg',
+    nameKey: 'gamesList.treasuredigName',
+    descKey: 'gamesList.treasuredigDesc',
+  },
+  {
+    // 단서 네 개(2026-10-14, PPT "4 Words 1 Question" 방식만 참고): 단서 카드를 하나씩 열며 비밀 낱말을 맞히고 그 낱말로 질문을 만든다.
+    type: 'fourclues',
+    number: 39,
+    category: 'vocabulary',
+    minItems: 1,
+    icon: 'manage_search',
+    path: '/games/fourclues',
+    cover: '/covers/game-fourclues.jpg',
+    nameKey: 'gamesList.fourcluesName',
+    descKey: 'gamesList.fourcluesDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
