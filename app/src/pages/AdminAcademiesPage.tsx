@@ -3,7 +3,17 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { adminAcademyRows, type AdminAcademyRow as OpsRow } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
-import { adminSetAcademyPlan, changeMyPassword, deleteAcademyAsAdmin, fetchAdminAcademies } from '../lib/api';
+import {
+  adminAcademiesFeatures,
+  adminSetAcademyFeatures,
+  adminSetAcademyPlan,
+  adminSetFeaturesBulk,
+  changeMyPassword,
+  deleteAcademyAsAdmin,
+  fetchAdminAcademies,
+  type AcademyFeatures,
+} from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import i18n from '../i18n';
 import type { AdminAcademyRow } from '../lib/types';
 
@@ -18,7 +28,39 @@ function fmtDate(iso: string): string {
 export default function AdminAcademiesPage() {
   const { t } = useTranslation();
   const { notify, run } = useToast();
+  const { academy: myAcademy } = useAuth();
   const [rows, setRows] = useState<AdminAcademyRow[]>([]);
+  /** 학원별 기능 열기·닫기(075 전이면 비어 있고 칸을 숨긴다) */
+  const [feat, setFeat] = useState<Map<string, AcademyFeatures>>(new Map());
+  const loadFeat = useCallback(() => {
+    adminAcademiesFeatures()
+      .then(setFeat)
+      .catch(() => setFeat(new Map()));
+  }, []);
+  useEffect(loadFeat, [loadFeat]);
+  async function toggleFeat(academyId: string, key: keyof AcademyFeatures) {
+    const cur = feat.get(academyId);
+    if (!cur) return;
+    const next = { ...cur, [key]: !cur[key] };
+    setFeat((m) => new Map(m).set(academyId, next));
+    try {
+      await adminSetAcademyFeatures(academyId, next);
+    } catch (err) {
+      setFeat((m) => new Map(m).set(academyId, cur));
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    }
+  }
+  async function bulk(open: boolean) {
+    const msg = open ? t('admin.featBulkOpenConfirm') : t('admin.featBulkCloseConfirm');
+    if (!confirm(msg)) return;
+    try {
+      const n = await adminSetFeaturesBulk(open, open, myAcademy?.id ?? null);
+      notify(t('admin.featBulkDone', { count: n }));
+      loadFeat();
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+    }
+  }
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -174,6 +216,18 @@ export default function AdminAcademiesPage() {
             ))}
             <span className="font-caption text-caption text-on-surface-variant">{t('adminOps.shownCount', { n: shown.length })}</span>
           </div>
+          {feat.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <span className="font-label-md text-label-md font-bold text-on-surface">{t('admin.featBulkTitle')}</span>
+              <button type="button" onClick={() => void bulk(false)} className="rounded-full border border-error px-3 py-1 font-label-md text-label-md text-error hover:bg-error/5">
+                {t('admin.featBulkClose')}
+              </button>
+              <button type="button" onClick={() => void bulk(true)} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary/5">
+                {t('admin.featBulkOpen')}
+              </button>
+              <span className="font-caption text-caption text-on-surface-variant">{t('admin.featBulkHint')}</span>
+            </div>
+          )}
           <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -185,6 +239,7 @@ export default function AdminAcademiesPage() {
                   <th className="px-4 py-3 font-medium">{t('admin.colStudent')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.colJoinedAt')}</th>
                   <th className="px-4 py-3 font-medium">{t('admin.colPlan')}</th>
+                  {feat.size > 0 && <th className="px-4 py-3 font-medium">{t('admin.colFeatures')}</th>}
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -249,6 +304,32 @@ export default function AdminAcademiesPage() {
                         </button>
                       </div>
                     </td>
+                    {feat.size > 0 && (
+                      <td className="px-4 py-3">
+                        {feat.get(r.academy_id) ? (
+                          <div className="flex gap-1.5">
+                            {([['group', 'featShortGroup'], ['solo', 'featShortSolo'], ['homework', 'featShortHomework']] as const).map(([k, label]) => {
+                              const on = feat.get(r.academy_id)![k];
+                              return (
+                                <button
+                                  key={k}
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={on}
+                                  title={t(`adminOps.feature_${k}`)}
+                                  onClick={() => void toggleFeat(r.academy_id, k)}
+                                  className={`rounded-full px-2.5 py-1 font-label-md text-label-md transition-colors ${on ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant line-through'}`}
+                                >
+                                  {t(`admin.${label}`)}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-on-surface-variant">–</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <button
                         disabled={busyId === r.academy_id}

@@ -890,6 +890,20 @@ export async function adminSetAcademyFeatures(academyId: string, f: AcademyFeatu
   if (error) throw new Error(error.message);
 }
 
+/** 관리자 학원 목록용 — 모든 학원의 기능 열기·닫기(075) */
+export async function adminAcademiesFeatures(): Promise<Map<string, AcademyFeatures>> {
+  const { data, error } = await supabase.rpc('admin_academies_features');
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as { academy_id: string; grp: boolean; solo: boolean; homework: boolean }[];
+  return new Map(rows.map((r) => [r.academy_id, { group: r.grp, solo: r.solo, homework: r.homework }]));
+}
+/** p_except(내 학원)를 뺀 모든 학원의 개별수업·숙제를 한꺼번에 열거나 닫는다 — 바꾼 학원 수를 돌려준다 */
+export async function adminSetFeaturesBulk(solo: boolean, homework: boolean, exceptAcademyId: string | null): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_set_features_bulk', { p_solo: solo, p_homework: homework, p_except: exceptAcademyId });
+  if (error) throw new Error(error.message);
+  return Number(data ?? 0);
+}
+
 /** 로그인한 본인의 비밀번호를 바꾼다. 현재 비밀번호는 필요 없다 —
  * 이미 유효한 세션으로 로그인돼 있어야 호출 가능한 API. */
 export async function changeMyPassword(newPassword: string): Promise<void> {
