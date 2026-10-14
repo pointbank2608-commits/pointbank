@@ -13,7 +13,6 @@ import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
-import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { FullCardItem, GameItem, UndoHandle } from '../lib/types';
 
@@ -65,7 +64,6 @@ export default function CatchSentencePage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,

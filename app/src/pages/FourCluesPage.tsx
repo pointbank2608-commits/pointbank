@@ -64,7 +64,6 @@ export default function FourCluesPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,

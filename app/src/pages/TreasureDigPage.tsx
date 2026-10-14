@@ -66,7 +66,6 @@ export default function TreasureDigPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
     openInOtherGame,
