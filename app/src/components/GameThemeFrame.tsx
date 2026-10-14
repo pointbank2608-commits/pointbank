@@ -10,6 +10,11 @@ import { TEAM_ORDER_EVENT, isShowOrderOn, loadTeamOrder, saveTeamOrder, setShowO
 
 interface Props {
   gameType?: GameType;
+  /**
+   * 공용 배경만 따로 지정(2026-10-14). 옛 게임 9종은 gameType 을 주면 classroom-play 스타일이 같이 입혀져
+   * 모양이 바뀌므로, 배경만 붙이고 싶을 때 이 값을 쓴다.
+   */
+  bg?: GameType;
   className?: string;
   children: ReactNode;
   /**
@@ -82,7 +87,7 @@ export function useGamePlay() {
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
  * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ gameType, className, children, onRestart, onUndo, roster }: Props) {
+export default function GameThemeFrame({ gameType, bg, className, children, onRestart, onUndo, roster }: Props) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -124,8 +129,9 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
   const [restartOpen, setRestartOpen] = useState(false);
-  const bgUrl = useGameBackground(gameType);
-  const veil = (gameType && BG_VEIL[gameType]) ?? 0.2;
+  const bgType = bg ?? gameType;
+  const bgUrl = useGameBackground(bgType);
+  const veil = (bgType && BG_VEIL[bgType]) ?? 0.2;
   const [fullscreenError, setFullscreenError] = useState(false);
 
   useEffect(() => {
