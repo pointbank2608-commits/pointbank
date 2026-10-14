@@ -153,10 +153,15 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamCount, moundCount, itemKey]);
 
-  const word = useMemo(() => {
-    if (items.length === 0 || order.length === 0) return '';
-    return items[order[cardPos % order.length]]?.label ?? '';
+  // 항목은 단어 또는 문장 — "영어 문장 | 해석" 꼴이면 해석은 눌러서 본다(문법 수업용)
+  const { word, ko } = useMemo(() => {
+    if (items.length === 0 || order.length === 0) return { word: '', ko: '' };
+    const raw = items[order[cardPos % order.length]]?.label ?? '';
+    const cut = raw.indexOf(' | ');
+    return cut >= 0 ? { word: raw.slice(0, cut).trim(), ko: raw.slice(cut + 3).trim() } : { word: raw.trim(), ko: '' };
   }, [items, order, cardPos]);
+  const [showKo, setShowKo] = useState(false);
+  useEffect(() => setShowKo(false), [cardPos, selected]);
 
   const finds = useMemo(() => shuffle(FINDS.filter((f) => f !== 'starfish' && f !== 'boot')), [round]);
   const teamName = (i: number) => t('gameTreasureDig.teamName', { name: TEAM_NAMES_FALLBACK[i] });
@@ -484,10 +489,34 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
               </div>
               <div
                 className="mb-3 break-words font-bold text-deep-navy"
-                style={{ fontSize: word.length > 14 ? 'clamp(20px,3.6cqw,44px)' : 'clamp(28px,6cqw,80px)' }}
+                style={{
+                  fontSize:
+                    word.length > 60
+                      ? 'clamp(16px,2.6cqw,34px)'
+                      : word.length > 30
+                        ? 'clamp(18px,3.2cqw,42px)'
+                        : word.length > 14
+                          ? 'clamp(20px,4cqw,52px)'
+                          : 'clamp(28px,6cqw,80px)',
+                }}
               >
                 {word || t('gameTreasureDig.noWordCard')}
               </div>
+              {ko && (
+                <div className="mb-3">
+                  {showKo ? (
+                    <div className="font-body-md text-body-md text-on-surface-variant">{ko}</div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowKo(true)}
+                      className="rounded-full bg-amber-100 px-4 py-1.5 font-label-md text-label-md text-amber-900 hover:bg-amber-200"
+                    >
+                      {t('gameTreasureDig.showKo')}
+                    </button>
+                  )}
+                </div>
+              )}
               {word && (
                 <button
                   type="button"

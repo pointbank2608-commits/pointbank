@@ -38,7 +38,7 @@ export function useGameTemplates(params: {
   defaultItems: () => GameItem[];
   defaultConfig?: () => GameTemplateConfig;
   /** 불러올 목록 종류 — 문장 게임은 'sentence'(문장 목록, 066), 나머지는 단어장 */
-  listKind?: 'word' | 'sentence';
+  listKind?: 'word' | 'sentence' | 'all';
 }) {
   const { gameType, defaultItems, defaultConfig, listKind = 'word' } = params;
   const { academy, profile, isStaff, session } = useAuth();

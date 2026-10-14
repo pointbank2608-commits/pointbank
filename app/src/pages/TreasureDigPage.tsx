@@ -15,7 +15,7 @@ import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, UndoHandle } from '../lib/types';
+import type { FullCardItem, GameItem, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -35,6 +35,8 @@ export default function TreasureDigPage() {
     gameType: 'treasuredig',
     defaultItems,
     defaultConfig: () => ({ digTeams: DEFAULT_TEAMS, digMounds: DEFAULT_MOUNDS }),
+    // 단어장과 문장 목록을 둘 다 불러온다 — 문법 수업은 문장으로 쓴다
+    listKind: 'all',
   });
   const {
     isStaff,
@@ -107,6 +109,12 @@ export default function TreasureDigPage() {
     if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
       notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
     }
+  }
+
+  /** 문장 목록의 문장(+해석)을 "영어 | 해석" 한 줄로 담는다 */
+  async function addSentences(cards: FullCardItem[]) {
+    const labels = cards.map((c) => (c.meaning.trim() ? `${c.word.trim()} | ${c.meaning.trim()}` : c.word.trim())).filter(Boolean);
+    await addItemsBulk(labels);
   }
 
   async function removeItem(itemId: string) {
@@ -335,9 +343,16 @@ export default function TreasureDigPage() {
                     </div>
                     <WordListPicker
                       variant="label"
-                      wordLists={wordLists}
+                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
                       loading={wordListsLoading}
                       onImportLabels={(labels) => void addItemsBulk(labels)}
+                    />
+                    <WordListPicker
+                      variant="full"
+                      kind="sentence"
+                      wordLists={wordLists.filter((l) => l.kind === 'sentence')}
+                      loading={wordListsLoading}
+                      onImportFull={(cards) => void addSentences(cards)}
                     />
                     <DictionaryPicker
                       variant="label"
@@ -376,10 +391,13 @@ export default function TreasureDigPage() {
                           {t('gameAdmin.clearAll')}
                         </button>
                       )}
+                      <div className="mt-3 rounded-lg bg-tertiary-container/40 px-3 py-2 font-caption text-caption text-on-surface">
+                        {t('gameTreasureDig.sentenceHint')}
+                      </div>
                       <div className="flex gap-2 mt-3">
                         <input
                           type="text"
-                          placeholder={t('gameAdmin.newParticipantPlaceholder')}
+                          placeholder={t('gameTreasureDig.itemPlaceholder')}
                           value={newItemLabel}
                           onChange={(e) => setNewItemLabel(e.target.value)}
                           onKeyDown={(e) => {
