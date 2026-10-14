@@ -36,6 +36,41 @@ interface Props {
   onUndo?: () => void;
 }
 
+/** 자기 장면을 이미 그리는 게임(새 게임·장보기)은 공용 배경을 깔지 않는다 */
+const OWN_SCENE: GameType[] = ['shopping', 'treasuredig', 'fourclues', 'catchsentence', 'lastbox', 'mysterybox'];
+
+/** 글자가 많은 게임은 배경 위에 흰 막을 더 두껍게 덮는다(읽기 쉽게) */
+const BG_VEIL: Partial<Record<GameType, number>> = {
+  quiz: 0.4, truefalse: 0.4, spellword: 0.35, wordsearch: 0.4, mathgen: 0.4,
+  unscramble: 0.35, anagram: 0.3, groupsort: 0.35, rankorder: 0.3, gameshowquiz: 0.3, winlosequiz: 0.3, watermelon: 0.3,
+  // 가운데가 어두운 편인 배경(분석: 가운데 평균 밝기 170 이하)은 막을 더 두껍게
+  imagequiz: 0.55, crossword: 0.5, typeanswer: 0.5, twodice: 0.4, popcorn: 0.4, passball: 0.35, mazechase: 0.35, matchup: 0.3, labeleddiagram: 0.15,
+};
+
+/**
+ * 게임 배경(2026-10-14) — /skins/bg/<게임>.webp 가 있으면 게임 화면 뒤에 깐다. 파일이 없으면 아무것도 안 한다
+ * (CURSOR_GAME_BACKGROUNDS.md 참고). 있는지는 이미지를 미리 받아 보고 안다.
+ */
+function useGameBackground(gameType?: GameType): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!gameType || OWN_SCENE.includes(gameType)) {
+      setUrl(null);
+      return;
+    }
+    let alive = true;
+    const u = `/skins/bg/${gameType}.webp?v=1`;
+    const img = new Image();
+    img.onload = () => alive && setUrl(u);
+    img.onerror = () => alive && setUrl(null);
+    img.src = u;
+    return () => {
+      alive = false;
+    };
+  }, [gameType]);
+  return url;
+}
+
 const GamePlayContext = createContext({ fullscreen: false, itemsHidden: false });
 
 export function useGamePlay() {
@@ -89,6 +124,8 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
   const [restartOpen, setRestartOpen] = useState(false);
+  const bgUrl = useGameBackground(gameType);
+  const veil = (gameType && BG_VEIL[gameType]) ?? 0.2;
   const [fullscreenError, setFullscreenError] = useState(false);
 
   useEffect(() => {
@@ -320,6 +357,18 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
+        {bgUrl && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              borderRadius: 'inherit',
+              backgroundImage: `linear-gradient(rgba(255,252,243,${veil}), rgba(255,252,243,${veil})), url(${bgUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        )}
         <div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
           <button
             type="button"
@@ -467,7 +516,7 @@ export default function GameThemeFrame({ gameType, className, children, onRestar
         )}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
-        <div ref={stageRef} className={fill ? 'game-fs-stage' : undefined}>
+        <div ref={stageRef} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1 }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
             style={!fill && naturalSize.h > 0
