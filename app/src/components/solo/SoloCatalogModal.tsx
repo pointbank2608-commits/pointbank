@@ -19,7 +19,8 @@ import {
   type SoloWordStyle,
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
-import { buildStagedGrammarLesson, buildStagedWordLesson, type StagedGame } from '../../lib/soloCurriculum';
+import { buildStagedGrammarLesson, buildStagedWordLesson, DEFAULT_STAGED_PASS, type StagedGame } from '../../lib/soloCurriculum';
+import type { SoloPass } from '../../lib/soloLessons';
 import StagedGameSlots from './StagedGameSlots';
 import { buildStandardGrammarLesson, buildStandardTopicLesson, buildStandardVideoLesson, buildStandardWordLesson } from '../../lib/soloStandard';
 import { withSource } from '../../lib/soloBoard';
@@ -127,7 +128,9 @@ export default function SoloCatalogModal({
   const stages = mode === 'stages';
   /** 3단계 틀의 게임 자리 3곳에 넣을 템플릿(안 고르면 빠른 문제) */
   const [gameSlots, setGameSlots] = useState<(StagedGame | null)[]>([null, null, null]);
-  const stagedOpts = { games: gameSlots };
+  /** 3단계 틀의 기본·심화 그룹 합격선(null = 없음) */
+  const [stagePass, setStagePass] = useState<SoloPass | null>(DEFAULT_STAGED_PASS);
+  const stagedOpts = { games: gameSlots, pass: stagePass };
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
 
@@ -238,7 +241,7 @@ export default function SoloCatalogModal({
       });
     }
     return list;
-  }, [ko, i18n.language, t, standard, stages, gameSlots]);
+  }, [ko, i18n.language, t, standard, stages, gameSlots, stagePass]);
   const visible = useMemo(() => entries.filter((e) => levelMatches(level, e.levels)), [entries, level]);
 
   const byKey = useMemo(() => new Map(entries.map((e) => [e.key, e])), [entries]);
@@ -767,6 +770,26 @@ export default function SoloCatalogModal({
           </div>
         )}
         {!pending && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
+        {!pending && stages && (
+          <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.stagePassTitle')}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.stagePassTitle')}</span>
+              {([
+                ['none', null],
+                ['ref', { pct: 70, gate: false }],
+                ['gate', { pct: 70, gate: true }],
+              ] as const).map(([k, v]) => {
+                const on = k === 'none' ? stagePass === null : stagePass !== null && stagePass.gate === (k === 'gate');
+                return (
+                  <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setStagePass(v)} className={chip(on)}>
+                    {t(`solo.stagePass_${k}`)}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="font-caption text-caption text-on-surface-variant">{t('solo.stagePassHint')}</p>
+          </div>
+        )}
 
         {!pending && (
         <div className="relative">

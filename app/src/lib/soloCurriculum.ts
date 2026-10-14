@@ -1,6 +1,6 @@
 import { plainText, type GrammarPoint } from './grammar';
 import { buildFixErrorSteps } from './grammarBlocks';
-import { buildSoloGrammarLesson, buildWordBlock, evenIndexes, type SoloGameType, type SoloStep } from './soloLessons';
+import { buildSoloGrammarLesson, buildWordBlock, evenIndexes, type SoloGameType, type SoloPass, type SoloStep } from './soloLessons';
 import { buildTestStep } from './soloTest';
 import { buildCondWriteSteps, buildOrderWriteSteps, sentencesFromPoints } from './writeBlocks';
 import type { FullCardItem } from './types';
@@ -25,7 +25,12 @@ export interface StagedGame {
 export interface StagedOptions {
   /** 기본·심화·총정리 순서의 세 자리 */
   games?: (StagedGame | null)[];
+  /** 기본·심화 그룹에 붙일 합격선(없으면 기본값 "참고만 70%", null 이면 합격선 없음) — 총정리는 최종 테스트가 따로 있어 붙이지 않는다 */
+  pass?: SoloPass | null;
 }
+
+export const DEFAULT_STAGED_PASS: SoloPass = { pct: 70, gate: false };
+const passOf = (o: StagedOptions): SoloPass | null => (o.pass === undefined ? DEFAULT_STAGED_PASS : o.pass);
 
 const gameStep = (g: StagedGame): SoloStep => ({ t: 'game', gameType: g.gameType, templateId: g.templateId, title: g.title });
 
@@ -47,7 +52,12 @@ function shuffle<T>(arr: T[]): T[] {
 const pick = <T,>(arr: T[], n: number): T[] => (arr.length <= n ? arr : evenIndexes(arr.length, n).map((i) => arr[i]));
 
 /** 그룹 나눔 화면(번호·제목·시간) */
-const stage = (no: number, title: string, minutes: number, hint: string): SoloStep => ({ t: 'intro', title: `${no}. ${title}`, text: `${minutes}분 · ${hint}` });
+const stage = (no: number, title: string, minutes: number, hint: string, pass?: SoloPass | null): SoloStep => ({
+  t: 'intro',
+  title: `${no}. ${title}`,
+  text: `${minutes}분 · ${hint}`,
+  ...(pass ? { pass } : {}),
+});
 
 /** 그룹 안의 작은 구역 이름(번호 없는 안내 화면) — 강의 / 문제 / 게임 */
 const part = (title: string, text: string): SoloStep => ({ t: 'intro', title, text });
@@ -80,7 +90,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   const questions = (t: SoloStep['t']) => base.steps.filter((s) => s.t === t);
 
   // ── 1. 기본 개념 ──
-  steps.push(stage(1, '기본 개념', 10, '규칙과 예문을 카드로 배워요'));
+  steps.push(stage(1, '기본 개념', 10, '규칙과 예문을 카드로 배워요', passOf(opts)));
   steps.push(part('강의', '카드를 한 장씩 넘기며 배워요'));
   steps.push({ t: 'rule', title: point.name, pattern: plainText(point.pattern), explain: point.explain, lines: usage.slice(0, 3), tip: '' });
   for (const e of examples.slice(0, 3)) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
@@ -90,7 +100,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   steps.push(...(G[0] ? [gameStep(G[0])] : pick(questions('unscramble'), 3)));
 
   // ── 2. 심화 개념 ──
-  steps.push(stage(2, '심화 개념', 12, '쓰임과 틀리기 쉬운 것을 배워요'));
+  steps.push(stage(2, '심화 개념', 12, '쓰임과 틀리기 쉬운 것을 배워요', passOf(opts)));
   steps.push(part('강의', '더 자세히, 틀리기 쉬운 것까지 배워요'));
   const deep = detail.length > 0 ? detail : ruleLines;
   if (deep.length > 0) {
@@ -147,7 +157,7 @@ export function buildStagedWordLesson(title: string, words: FullCardItem[], opts
   const steps: SoloStep[] = [{ t: 'intro', title, text: `${usable.length}` }];
 
   // ── 1. 기본 개념 ──
-  steps.push(stage(1, '기본 개념', 10, '낱말을 만나고 뜻을 익혀요'));
+  steps.push(stage(1, '기본 개념', 10, '낱말을 만나고 뜻을 익혀요', passOf(opts)));
   steps.push(part('강의', '낱말 카드를 한 장씩 넘기며 만나요'));
   steps.push(...buildWordBlock('meet', usable));
   steps.push(part('문제 풀기', '뜻과 소리를 확인해요'));
@@ -156,7 +166,7 @@ export function buildStagedWordLesson(title: string, words: FullCardItem[], opts
   steps.push(...(G[0] ? [gameStep(G[0])] : pick(shuffle([...buildWordBlock('pickWord', usable), ...buildWordBlock('listenPick', usable)]), 6)));
 
   // ── 2. 심화 개념 ──
-  steps.push(stage(2, '심화 개념', 12, '문장 속 쓰임과 철자를 익혀요'));
+  steps.push(stage(2, '심화 개념', 12, '문장 속 쓰임과 철자를 익혀요', passOf(opts)));
   steps.push(part('강의', '문장 속에서 어떻게 쓰이는지 봐요'));
   const withExample = usable.filter((w) => w.example && w.example.trim().split(/\s+/).length >= 3 && w.example.trim().split(/\s+/).length <= 10);
   for (const w of pick(shuffle(withExample), 5)) steps.push({ t: 'example', sentence: (w.example as string).trim(), ko: '' });

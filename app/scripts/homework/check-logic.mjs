@@ -530,6 +530,20 @@ try {
     assert.equal(runsLib.runStyle({ start: 0, end: 1, size: 1.5 }).fontSize, '1.5em');
     assert.equal(runsLib.runStyle({ start: 0, end: 1, size: 1.5 }, { ignoreSize: true }).fontSize, undefined);
   });
+  await test('curriculum 3-stage lesson: default pass line (reference 70%) on stages 1-2 only; options override', () => {
+    const mk = (i) => ({ id: 'w' + i, word: 'word' + String.fromCharCode(97 + i), meaning: 'm' + i, imageUrl: null, example: 'I like word ' + i + ' very much.', partOfSpeech: '명사' });
+    const cards = Array.from({ length: 8 }, (_, i) => mk(i));
+    const stagesOf = (l) => l.steps.filter((x) => x.t === 'intro' && /^\d+\. /.test(x.title));
+    const def = stagesOf(staged.buildStagedWordLesson('t', cards));
+    assert.deepEqual(def.map((x) => x.pass ?? null), [{ pct: 70, gate: false }, { pct: 70, gate: false }, null]);
+    const none = stagesOf(staged.buildStagedWordLesson('t', cards, { pass: null }));
+    assert.deepEqual(none.map((x) => x.pass ?? null), [null, null, null]);
+    const gate = stagesOf(staged.buildStagedWordLesson('t', cards, { pass: { pct: 80, gate: true } }));
+    assert.deepEqual(gate.map((x) => x.pass ?? null), [{ pct: 80, gate: true }, { pct: 80, gate: true }, null]);
+    const point = gram.GRAMMAR_POINTS.find((p) => (p.pitfalls?.length ?? 0) >= 2 && p.examples.length >= 4);
+    const gl = stagesOf(staged.buildStagedGrammarLesson(point));
+    assert.deepEqual(gl.map((x) => x.pass ?? null), [{ pct: 70, gate: false }, { pct: 70, gate: false }, null]);
+  });
   const solo = await server.ssrLoadModule('/src/lib/soloLessons.ts');
   await test('wrong-answer tips: word questions carry a tip and the student-facing step keeps it', () => {
     const cards = ['apple', 'banana', 'cat', 'dog', 'egg', 'fish'].map((w, i) => ({ id: 'c' + i, word: w, meaning: 'm' + i, imageUrl: null, example: 'I see a ' + w + ' today.', partOfSpeech: '명사' }));

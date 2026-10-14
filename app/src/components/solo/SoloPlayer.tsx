@@ -74,6 +74,10 @@ function PosBadge({ pos }: { pos: string }) {
 
 /** 그룹 합격선·다시 풀기에서 점수로 치는 문제(조건 영작은 뜻을 서버가 못 가려서 뺀다) */
 const GRADED = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos', 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite'];
+/** 강의 카드처럼 "읽고 넘기는" 단계 — 이전 카드로 돌아갈 수 있다 */
+const CARD_TYPES = ['rule', 'example', 'meet'];
+/** 이만큼 지난 뒤 다음 그룹이 시작될 때 쉬는 화면을 보여 준다 */
+const BREAK_AFTER_MS = 8 * 60 * 1000;
 const isStage = (steps: SoloPublicStep[], i: number): boolean => i > 0 && steps[i].t === 'intro' && /^\d+\.\s/.test((steps[i] as { title: string }).title);
 const QUESTION = [...CHOICE, 'spell', 'typeWord', 'dictation', 'unscramble', 'gapType', 'lineOrder', 'fixError', 'orderWrite', 'condWrite'];
 
@@ -157,6 +161,10 @@ export default function SoloPlayer({
   /** 틀린 것 다시 풀기: 풀 단계 번호 줄과 지금 위치, 끝나면 돌아갈 곳 */
   const [retry, setRetry] = useState<{ queue: number[]; pos: number; back: { start: number; end: number } | null } | null>(null);
   const [nonce, setNonce] = useState(0);
+  /** 쉬는 화면: 다음에 들어갈 그룹 나눔 화면의 번호(없으면 null) */
+  const [breakNext, setBreakNext] = useState<number | null>(null);
+  const lastBreakAt = useRef(Date.now());
+  const touchX = useRef<number | null>(null);
 
   const step = steps[idx];
   const zoom = useStageZoom();
@@ -395,11 +403,25 @@ export default function SoloPlayer({
     jumpTo(queue[0]);
   }
 
+  /** 새 그룹(번호 있는 나눔 화면)에 들어갈 때 오래 했으면 먼저 잠깐 쉬게 한다 */
+  function enterStep(i: number) {
+    if (i > 0 && isStage(steps, i) && Date.now() - lastBreakAt.current >= BREAK_AFTER_MS) {
+      setBreakNext(i);
+      return;
+    }
+    jumpTo(i);
+  }
+
   /** 그룹(또는 수업)을 다음으로 넘긴다 */
   function leaveGroup(g: { end: number }) {
     setResult(null);
     if (g.end + 1 >= steps.length) setFinished(true);
-    else jumpTo(g.end + 1);
+    else enterStep(g.end + 1);
+  }
+
+  /** 강의 카드에서 이전 카드로(서버 기록은 바꾸지 않는다 — 읽기만 하는 카드라서) */
+  function goBackCard() {
+    if (idx > 0 && CARD_TYPES.includes(steps[idx - 1].t) && CARD_TYPES.includes(step?.t ?? '')) jumpTo(idx - 1);
   }
 
   function goOn() {
@@ -421,7 +443,7 @@ export default function SoloPlayer({
       return;
     }
     if (idx + 1 >= steps.length) setFinished(true);
-    else setIdx(idx + 1);
+    else enterStep(idx + 1);
   }
 
   /** 답을 서버에 내고 맞았는지에 따라 단계 상태를 바꾼다 */
@@ -540,6 +562,33 @@ export default function SoloPlayer({
     );
   }
 
+  if (breakNext !== null && !finished && !result) {
+    const nextTitle = String((steps[breakNext] as { title: string }).title).replace(/^\d+\.\s*/, '');
+    const mins = Math.max(1, Math.round((Date.now() - lastBreakAt.current) / 60000));
+    return (
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+        <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
+          <div className="solo-pop text-7xl">☕</div>
+          <h1 className="text-3xl font-bold">{t('solo.breakTitle')}</h1>
+          <p className="max-w-sm text-xl text-white/85">{t('solo.breakText', { min: mins })}</p>
+          <p className="text-lg text-warm-yellow">{t('solo.breakNext', { title: nextTitle })}</p>
+          <button
+            type="button"
+            onClick={() => {
+              lastBreakAt.current = Date.now();
+              const i = breakNext;
+              setBreakNext(null);
+              jumpTo(i);
+            }}
+            className={`${btn} bg-warm-yellow px-10 text-deep-navy`}
+          >
+            {t('solo.breakGo')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (finished) {
     const missedAll = Object.keys(credit).map(Number).filter((i) => !credit[i]).sort((a, b) => a - b);
     return (
@@ -643,7 +692,23 @@ export default function SoloPlayer({
         </div>
       )}
 
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-5 px-5 pb-6 pt-2" style={{ zoom }}>
+      <main
+        className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-5 px-5 pb-6 pt-2"
+        style={{ zoom }}
+        onTouchStart={(e) => {
+          touchX.current = e.touches[0]?.clientX ?? null;
+        }}
+        onTouchEnd={(e) => {
+          const x0 = touchX.current;
+          touchX.current = null;
+          const x1 = e.changedTouches[0]?.clientX;
+          if (x0 === null || x1 === undefined || !step) return;
+          const dx = x1 - x0;
+          if (Math.abs(dx) < 70 || !CARD_TYPES.includes(step.t)) return;
+          if (dx > 0) goBackCard();
+          else if (step.t === 'rule' || step.t === 'example') void next();
+        }}
+      >
         {/* 노래·영상 플레이어: 수업 안에서 계속 켜 두고, 영상이 필요한 단계에서만 보여 준다 */}
         {videoId && (
           <div
@@ -1570,6 +1635,35 @@ export default function SoloPlayer({
           </button>
         )}
         {preview && <p className="text-sm text-white/50">{t('solo.previewNote')}</p>}
+        {CARD_TYPES.includes(step.t) && (() => {
+          let a = idx;
+          while (a > 0 && CARD_TYPES.includes(steps[a - 1].t)) a--;
+          let b = idx;
+          while (b + 1 < steps.length && CARD_TYPES.includes(steps[b + 1].t)) b++;
+          const total = b - a + 1;
+          if (total < 2) return null;
+          return (
+            <div className="flex w-full items-center justify-center gap-3 text-white/70">
+              <button
+                type="button"
+                onClick={goBackCard}
+                disabled={idx === a}
+                aria-label={t('solo.cardPrev')}
+                className="flex min-h-11 items-center gap-1 rounded-full border border-white/25 px-4 text-base font-bold disabled:opacity-30"
+              >
+                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                {t('solo.cardPrev')}
+              </button>
+              <span className="text-base tabular-nums" aria-label={t('solo.cardPos', { n: idx - a + 1, of: total })}>
+                {total <= 12
+                  ? Array.from({ length: total }, (_, i) => (
+                      <span key={i} className={`mx-0.5 inline-block h-2.5 w-2.5 rounded-full ${i === idx - a ? 'bg-warm-yellow' : 'bg-white/25'}`} />
+                    ))
+                  : t('solo.cardPos', { n: idx - a + 1, of: total })}
+              </span>
+            </div>
+          );
+        })()}
       </main>
     </div>
   );
