@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteActions } from '../lib/remote';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 /**
@@ -208,6 +209,22 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
       setSnapshot(null);
     },
   }));
+
+  useRemoteActions(
+    phase === 'ready'
+      ? [{ id: 'show', label: t('gameCatchSentence.show'), tone: 'primary', run: startShow }]
+      : phase === 'hidden'
+        ? [
+            { id: 'again', label: t('gameCatchSentence.again'), tone: 'neutral', run: startShow },
+            { id: 'reveal', label: t('gameCatchSentence.reveal'), tone: 'primary', run: reveal },
+          ]
+        : phase === 'reveal'
+          ? [
+              ...scores.map((_, i) => ({ id: `t${i}`, label: `${teamName(i)} +1`, tone: 'team' as const, color: TEAM_COLORS[i], run: () => giveTeam(i) })),
+              { id: 'next', label: t('gameCatchSentence.next'), tone: 'primary' as const, run: next },
+            ]
+          : [],
+  );
 
   if (items.length === 0) {
     return (

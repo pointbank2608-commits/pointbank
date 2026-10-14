@@ -6,7 +6,10 @@ import {
   createRemoteSession,
   deleteRemoteSession,
   fetchRemoteSession,
+  getRemoteActions,
   getRemoteSecret,
+  runRemoteAction,
+  subscribeRemoteActions,
   publishRemoteState,
   remoteUrl,
   subscribeRemote,
@@ -40,6 +43,7 @@ function saveRemoteId(id: string | null) {
 export function RemoteBridge({ id }: { id: string }) {
   const { runner, goTo, exit } = useLessonRunner();
   const secret = useSyncExternalStore(subscribeRemoteSecret, getRemoteSecret, getRemoteSecret);
+  const actions = useSyncExternalStore(subscribeRemoteActions, getRemoteActions, getRemoteActions);
   const act = useRef({ goTo, exit });
   act.current = { goTo, exit };
   const lastSeq = useRef<number | null>(null);
@@ -53,17 +57,19 @@ export function RemoteBridge({ id }: { id: string }) {
         stepIndex: runner.stepIndex,
         steps: runner.steps.map((s) => ({ label: s.label, kind: s.kind, icon: s.icon })),
         secret,
+        actions,
+        classId: runner.classId ?? null,
         ended: false,
         at: Date.now(),
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [id, runner, secret]);
+  }, [id, runner, secret, actions]);
 
   // 수업이 끝나면 폰에도 알린다(이 컴포넌트가 사라질 때)
   useEffect(() => {
     return () => {
-      void publishRemoteState(id, { lessonName: '', stepIndex: 0, steps: [], secret: null, ended: true, at: Date.now() });
+      void publishRemoteState(id, { lessonName: '', stepIndex: 0, steps: [], secret: null, actions: [], classId: null, ended: true, at: Date.now() });
     };
   }, [id]);
 
@@ -84,6 +90,8 @@ export function RemoteBridge({ id }: { id: string }) {
         act.current.goTo(cmd.arg);
       } else if (cmd.name === 'exit') {
         act.current.exit();
+      } else if (cmd.name === 'action' && cmd.id) {
+        runRemoteAction(cmd.id);
       }
     }
     void fetchRemoteSession(id).then((row) => {

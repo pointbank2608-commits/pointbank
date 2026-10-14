@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteActions } from '../lib/remote';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 /**
@@ -280,6 +281,33 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
       setSnapshot(null);
     },
   }));
+
+  // 선생님 폰 리모컨 버튼
+  useRemoteActions(
+    phase === 'pick'
+      ? [
+          {
+            id: 'random',
+            label: t('gameTreasureDig.randomPick'),
+            tone: 'primary',
+            run: () => {
+              const free = Array.from({ length: moundCount }, (_, i) => i).filter((i) => !dug[i]);
+              if (free.length > 0) pickMound(free[Math.floor(Math.random() * free.length)]);
+            },
+          },
+        ]
+      : phase === 'question'
+        ? [
+            { id: 'right', label: t('gameTreasureDig.judgeRight'), tone: 'good', run: judgeRight },
+            { id: 'wrong', label: t('gameTreasureDig.judgeWrong'), tone: 'bad', run: judgeWrong },
+            { id: 'other', label: t('gameTreasureDig.pickAnother'), tone: 'neutral', run: cancelPick },
+          ]
+        : phase === 'result'
+          ? [{ id: 'next', label: t('gameTreasureDig.nextTurn', { team: teamName((turn + 1) % teamCount) }), tone: 'primary', run: nextTurn }]
+          : phase === 'roundEnd'
+            ? [{ id: 'round', label: t('gameTreasureDig.nextRound', { team: teamName((turn + 1) % teamCount) }), tone: 'primary', run: nextRound }]
+            : [],
+  );
 
   const rows = Math.ceil(moundCount / cols);
 

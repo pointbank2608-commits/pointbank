@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteActions } from '../lib/remote';
 import { buildChallenge, parsePool, type Challenge, type ChallengeSkill } from '../lib/lastBoxChallenges';
 import type { GameItem, UndoHandle } from '../lib/types';
 
@@ -287,6 +288,28 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
       setSnapshot(null);
     },
   }));
+
+  useRemoteActions(
+    phase === 'board'
+      ? [
+          { id: 'read', label: t('gameLastBox.readNext'), tone: 'primary', run: () => readBox(cursor) },
+          ...(readNow > 0 ? [{ id: 'pass', label: t('gameLastBox.pass', { next: teamNo((turn + 1) % teamCount) }), tone: 'neutral' as const, run: passTurn }] : []),
+        ]
+      : phase === 'wheel'
+        ? [{ id: 'spin', label: t('gameLastBox.spinLabel'), tone: 'primary', run: clickWheel }]
+        : phase === 'challenge' && needChoose
+          ? (['listening', 'speaking', 'writing'] as ChallengeSkill[]).map((k) => ({ id: `skill-${k}`, label: t(`gameLastBox.skill_${k}`), tone: 'primary' as const, run: () => openChallenge(k) }))
+          : phase === 'challenge' && challenge && !resolved
+            ? [
+                { id: 'success', label: t('gameLastBox.success', { n: teamNo(turn) }), tone: 'good', run: () => finish('win') },
+                { id: 'fail', label: t('gameLastBox.fail'), tone: 'bad', run: () => finish('lose') },
+                { id: 'answer', label: t('gameLastBox.showAnswer'), tone: 'neutral', run: () => setShowAnswer(true) },
+                { id: 'another', label: t('gameLastBox.another'), tone: 'neutral', run: () => openChallenge(challenge.skill, challenge.kind) },
+              ]
+            : phase === 'challenge' && resolved
+              ? [{ id: 'nextRound', label: t('gameLastBox.nextRound', { n: teamNo(turn) }), tone: 'primary', run: nextRound }]
+              : [],
+  );
 
   if (items.length === 0) {
     return (

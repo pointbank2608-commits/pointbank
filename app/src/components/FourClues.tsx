@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
-import { useRemoteSecret } from '../lib/remote';
+import { useRemoteActions, useRemoteSecret } from '../lib/remote';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 /**
@@ -281,6 +281,23 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
       setSnapshot(null);
     },
   }));
+
+  useRemoteActions(
+    phase === 'play'
+      ? [
+          { id: 'right', label: t('gameFourClues.judgeRight', { n: pointsFor(openCount) }), tone: 'good', run: judgeRight },
+          { id: 'wrong', label: t('gameFourClues.judgeWrong'), tone: 'bad', run: judgeWrong },
+          ...(openCount < MAX_CLUES ? [{ id: 'clue', label: t('gameFourClues.nextClue'), tone: 'primary' as const, run: openNext }] : []),
+        ]
+      : phase === 'bonus'
+        ? [
+            { id: 'bonusYes', label: t('gameFourClues.bonusYes', { n: BONUS_POINTS }), tone: 'good', run: () => bonus(true) },
+            { id: 'bonusSkip', label: t('gameFourClues.bonusSkip'), tone: 'neutral', run: () => bonus(false) },
+          ]
+        : boxOpen
+          ? [{ id: 'next', label: t('gameFourClues.nextRound'), tone: 'primary', run: nextRound }]
+          : [],
+  );
 
   if (items.length === 0) {
     return (

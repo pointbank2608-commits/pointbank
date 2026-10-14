@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteActions } from '../lib/remote';
 import { blockLabel } from '../lib/mysteryBox';
 import type { GameItem, UndoHandle } from '../lib/types';
 
@@ -199,6 +200,37 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
       setSnapshot(null);
     },
   }));
+
+  useRemoteActions(
+    phase === 'board'
+      ? [
+          {
+            id: 'random',
+            label: t('gameTreasureDig.randomPick'),
+            tone: 'primary',
+            run: () => {
+              const free = Array.from({ length: blockCount }, (_, i) => i).filter((i) => !opened.includes(i));
+              if (free.length > 0) pickBlock(free[Math.floor(Math.random() * free.length)]);
+            },
+          },
+        ]
+      : phase === 'pick'
+        ? [
+            ...scores.flatMap((_, team) =>
+              [0, 1, 2].map((wi) => ({
+                id: `c${team}-${wi}`,
+                label: `${TEAM_NAMES[team]} → ${wi + 1}${choice[team] === wi ? ' ✓' : ''}`,
+                tone: 'team' as const,
+                color: TEAM_COLORS[team],
+                run: () => choose(team, wi),
+              })),
+            ),
+            { id: 'reveal', label: t('gameMysteryBox.mushReveal'), tone: 'primary' as const, run: reveal },
+          ]
+        : phase === 'reveal' && flipped.every(Boolean)
+          ? [{ id: 'next', label: t('gameMysteryBox.mushNext'), tone: 'primary', run: next }]
+          : [],
+  );
 
   if (items.length === 0) {
     return (

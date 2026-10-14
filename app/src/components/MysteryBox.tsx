@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { useRemoteActions } from '../lib/remote';
 import { applyReward, blockLabel, isGood, rewardDeck, type Reward } from '../lib/mysteryBox';
 import type { GameItem, UndoHandle } from '../lib/types';
 
@@ -206,6 +207,43 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
       setSnapshot(null);
     },
   }));
+
+  const otherTeams = scores.map((_, i) => i).filter((i) => i !== turn);
+  const targetTeams = scores.map((_, i) => i).filter((i) => i !== recv);
+  useRemoteActions(
+    phase === 'board'
+      ? [
+          {
+            id: 'random',
+            label: t('gameTreasureDig.randomPick'),
+            tone: 'primary',
+            run: () => {
+              const free = Array.from({ length: blockCount }, (_, i) => i).filter((i) => !opened.includes(i));
+              if (free.length > 0) pickBlock(free[Math.floor(Math.random() * free.length)]);
+            },
+          },
+        ]
+      : phase === 'question'
+        ? [
+            { id: 'right', label: t('gameMysteryBox.right'), tone: 'good', run: () => judge(true) },
+            { id: 'wrong', label: t('gameMysteryBox.wrong'), tone: 'bad', run: () => judge(false) },
+          ]
+        : phase === 'box'
+          ? [
+              { id: 'keep', label: t('gameMysteryBox.keep'), tone: 'good', run: keep },
+              { id: 'give', label: t('gameMysteryBox.give'), tone: 'primary', run: () => setPhase('give') },
+            ]
+          : phase === 'give'
+            ? [
+                ...otherTeams.map((i) => ({ id: `give${i}`, label: teamName(i), tone: 'team' as const, color: TEAM_COLORS[i], run: () => openBox(i) })),
+                { id: 'back', label: t('gameMysteryBox.back'), tone: 'neutral' as const, run: () => setPhase('box') },
+              ]
+            : phase === 'target' && lastReward
+              ? targetTeams.map((i) => ({ id: `target${i}`, label: `${teamName(i)} (${scores[i]})`, tone: 'team' as const, color: TEAM_COLORS[i], run: () => settle(recv, lastReward, i) }))
+              : phase === 'done'
+                ? [{ id: 'next', label: t('gameMysteryBox.next', { team: teamName((turn + 1) % teamCount) }), tone: 'primary', run: finishTurn }]
+                : [],
+  );
 
   if (items.length === 0) {
     return (
