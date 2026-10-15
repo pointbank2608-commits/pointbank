@@ -21,6 +21,8 @@ export interface LibraryLesson {
   needsWords: boolean;
   /** 번역 키: lessonLibrary.<id>Name / Desc / Steps */
   key: string;
+  /** 문장 은행 상황 id — 레벨을 고르면 이 상황의 레벨별 문장으로 연습 게임을 더한다 */
+  situation?: string;
 }
 
 export const LESSON_LIBRARY: LibraryLesson[] = [
@@ -34,6 +36,7 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     games: ['airport'],
     needsWords: false,
     key: 'airport',
+    situation: 'travel',
   },
   {
     id: 'restaurant',
@@ -45,6 +48,7 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     games: ['restaurant'],
     needsWords: false,
     key: 'restaurant',
+    situation: 'food',
   },
   {
     id: 'icecream',
@@ -56,6 +60,7 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     games: ['icecream'],
     needsWords: false,
     key: 'icecream',
+    situation: 'food',
   },
   {
     id: 'doctor',
@@ -67,6 +72,7 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     games: ['doctor'],
     needsWords: false,
     key: 'doctor',
+    situation: 'doctor',
   },
   {
     id: 'lightning',
@@ -78,5 +84,6 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     games: ['lightning'],
     needsWords: false,
     key: 'lightning',
+    situation: 'weather',
   },
 ];

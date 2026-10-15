@@ -1272,6 +1272,9 @@ const en: Ko = {
   },
 
   lessonLibrary: {
+    levelLabel: 'Sentence level',
+    levelNone: 'Default',
+    levelHint: 'Pick a level to add a Lightning Luck practice with sentences of that level for this lesson’s situation (sentence bank). The Lightning Luck lesson uses them instead of the default weather sentences. Sentences are drafts.',
     open: 'Lesson library',
     title: 'Lesson library',
     intro: 'Not sure how to use a game? Take a ready-made lesson. "Save to my lessons" makes it a lesson in your class that you can edit or start right away. The original stays unchanged.',

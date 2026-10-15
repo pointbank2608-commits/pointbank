@@ -4,6 +4,7 @@ import { createCurriculumLesson, createGameTemplate } from '../lib/api';
 import { LESSON_LIBRARY, type LibraryLesson } from '../lib/lessonLibrary';
 import { LESSON_RECIPES } from '../lib/lessonRecipes';
 import { buildGameContent, wordListToCards } from '../lib/gameFromWords';
+import { BANK_LEVELS, bankSentences, type BankLevel } from '../data/sentenceBank';
 import { useToast } from '../context/ToastContext';
 import type { ClassRow, CurriculumLesson, LessonSlide, WordList } from '../lib/types';
 
@@ -31,6 +32,8 @@ export default function LessonLibraryModal({ academyId, teacherId, classes, defa
   const [classId, setClassId] = useState<string>(defaultClassId ?? classes[0]?.id ?? '');
   const [wordListId, setWordListId] = useState('');
   const [saving, setSaving] = useState(false);
+  // 레벨을 고르면 문장 은행의 그 레벨 문장으로 연습 게임(번개 피하기)을 더한다
+  const [level, setLevel] = useState<BankLevel | null>(null);
   const [saved, setSaved] = useState<CurriculumLesson | null>(null);
 
   const listsForClass = wordLists.filter((w) => w.class_id == null || w.class_id === classId);
@@ -50,6 +53,34 @@ export default function LessonLibraryModal({ academyId, teacherId, classes, defa
       const name = t(`lessonLibrary.${picked.key}Name`);
       const slides: LessonSlide[] = await recipe.build({ t, hasWords: !!wordList, makeUnscramble: async () => null });
       const cards = wordList ? wordListToCards(wordList) : [];
+      // 레벨 문장: 이 수업의 상황에서 고른 레벨의 문장으로 번개 피하기 게임 내용을 만든다
+      let levelTemplateId: string | null = null;
+      if (level && picked.situation) {
+        const sentences = bankSentences(picked.situation, level);
+        if (sentences.length > 0) {
+          const tpl = await createGameTemplate({
+            academyId,
+            classId,
+            gameType: 'lightning',
+            name: `${name} · ${t(`sentenceBank.level_${level}`)}`,
+            items: sentences.map((s) => ({ id: crypto.randomUUID(), label: s.ko ? `${s.en} | ${s.ko}` : s.en })),
+            config: { lightningPlayers: 8, lightningMin: 4, lightningMax: 12 },
+            teacherId,
+          });
+          levelTemplateId = tpl.id;
+        }
+      }
+      if (levelTemplateId) {
+        const own = slides.findIndex((s) => s.kind === 'game' && s.gameType === 'lightning' && !s.templateId);
+        if (own >= 0) {
+          // 번개 피하기 수업은 기본 날씨 문장 대신 그 레벨 문장을 쓴다
+          slides[own] = { ...(slides[own] as Extract<LessonSlide, { kind: 'game' }>), templateId: levelTemplateId };
+        } else {
+          const firstGame = slides.findIndex((s) => s.kind === 'game');
+          const extra: LessonSlide = { id: crypto.randomUUID(), kind: 'game', gameType: 'lightning', templateId: levelTemplateId };
+          slides.splice(firstGame >= 0 ? firstGame + 1 : slides.length, 0, extra);
+        }
+      }
       // 게임 블록은 내용(game_templates)을 같이 만들어 연결한다 — 그래야 수정·복사해도 그대로 열린다
       const withGames: LessonSlide[] = [];
       for (const slide of slides) {
@@ -176,6 +207,31 @@ export default function LessonLibraryModal({ academyId, teacherId, classes, defa
 
                 {!saved ? (
                   <>
+                    {picked.situation && (
+                      <div>
+                        <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('lessonLibrary.levelLabel')}</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setLevel(null)}
+                            className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${level === null ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}
+                          >
+                            {t('lessonLibrary.levelNone')}
+                          </button>
+                          {BANK_LEVELS.map((lv) => (
+                            <button
+                              key={lv}
+                              type="button"
+                              onClick={() => setLevel(lv)}
+                              className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${level === lv ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'}`}
+                            >
+                              {t(`sentenceBank.level_${lv}`)}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="mt-1 font-caption text-caption text-on-surface-variant">{t('lessonLibrary.levelHint')}</div>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-4">
                       <div>
                         <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('lessonLibrary.classLabel')}</label>
