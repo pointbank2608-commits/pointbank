@@ -5660,6 +5660,7 @@ const en: Ko = {
     editQuestionsButton: '✏️ Edit questions',
     needAtLeastOneQuestion: 'You need at least one fully-filled-out question before you can start.',
     openInOtherGameLabel: 'Open with another game',
+    printWorksheet: 'Print worksheet',
     howToPlayTitle: 'About this game & how to play',
     importFromClassLabel: 'Import from another class',
     importFromClassToggle: 'Import from another class ({{count}})',

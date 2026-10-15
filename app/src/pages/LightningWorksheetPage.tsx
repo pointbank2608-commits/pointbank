@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { usePresenting } from '../context/LessonRunnerContext';
-import { LIGHTNING_SAMPLES } from '../lib/lightningLuck';
+import { LIGHTNING_SAMPLES, samplesFromLabels } from '../lib/lightningLuck';
 
 /**
  * 번개 피하기 워크시트(2026-10-16) — ① 읽기 카드(오려 쓰기) ② 서바이벌 기록지 ③ 빈칸 채우기 ④ 내가 번개를 맞으면?(그림+문장).
@@ -33,8 +33,14 @@ export default function LightningWorksheetPage() {
   const [seed, setSeed] = useState(1);
   const [ko, setKo] = useState(true);
   const [answers, setAnswers] = useState(false);
-  const samples = LIGHTNING_SAMPLES;
+  // 게임에서 넘어왔다면 그 게임에 넣은 문장으로 인쇄한다(없으면 기본 문장 12개)
+  const passed = (location.state as { lightningItems?: string[] } | null)?.lightningItems;
+  const samples = useMemo(() => {
+    const own = passed ? samplesFromLabels(passed) : [];
+    return own.length > 0 ? own : LIGHTNING_SAMPLES;
+  }, [passed]);
   const wordBox = useMemo(() => shuffled(samples.map((s) => s.blank), seed), [seed, samples]);
+  const fillSamples = samples.slice(0, 12);
 
   const head = (title: string, sub: string) => (
     <div className="mb-[4mm] flex items-end justify-between border-b-[0.7mm] pb-[2mm]" style={{ borderColor: INDIGO }}>
@@ -53,7 +59,7 @@ export default function LightningWorksheetPage() {
       <div className="mx-auto w-full max-w-[186mm]">
         {head(t('materials.lightning.cardsTitle'), t('materials.lightning.cardsSub'))}
         <div className="grid grid-cols-2 gap-[3mm]" style={{ gridAutoRows: '36mm' }}>
-          {samples.map((s, i) => (
+          {samples.slice(0, 12).map((s, i) => (
             <div key={i} className="print-card relative flex flex-col items-center justify-center overflow-hidden rounded-[3.4mm] border-[0.6mm] border-dashed bg-indigo-50 p-[2.4mm] text-center" style={{ borderColor: INDIGO }}>
               <span className="absolute left-[2mm] top-[1mm] text-[3mm] font-bold text-slate-400">✂</span>
               <span className="absolute right-[2mm] top-[1mm] text-[4mm]">⚡</span>
@@ -104,12 +110,12 @@ export default function LightningWorksheetPage() {
       <div className="mx-auto w-full max-w-[186mm]">
         {head(t('materials.lightning.fillTitle'), t('materials.lightning.fillSub'))}
         <div className="mb-[4mm] flex flex-wrap justify-center gap-[2mm] rounded-[3mm] bg-indigo-50 p-[3mm]">
-          {wordBox.map((w) => (
+          {wordBox.slice(0, 12).map((w) => (
             <span key={w} className="rounded-full border-[0.4mm] bg-white px-[3mm] py-[0.8mm] text-[4.4mm] font-bold" style={{ borderColor: INDIGO }}>{w}</span>
           ))}
         </div>
         <div className="space-y-[2.6mm]">
-          {samples.map((s, i) => {
+          {fillSamples.map((s, i) => {
             const parts = s.en.split(new RegExp(`(${s.blank})`, 'i'));
             return (
               <div key={i} className="flex items-baseline gap-[3mm] text-[5.4mm]">

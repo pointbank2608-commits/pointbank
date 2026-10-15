@@ -274,6 +274,7 @@ export default function LightningLuckPage() {
       <GameInfoPanel
         description={t('gameLightning.infoDescription')}
         steps={t('gameLightning.infoSteps', { returnObjects: true }) as string[]}
+        worksheetState={selected ? { lightningItems: selected.items.map((i) => i.label) } : undefined}
       />
 
       {loading ? (

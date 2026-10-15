@@ -5656,6 +5656,7 @@ const ko = {
     editQuestionsButton: '✏️ 문제 수정하기',
     needAtLeastOneQuestion: '보기를 모두 채운 문제가 1개 이상 있어야 시작할 수 있어요.',
     openInOtherGameLabel: '다른 게임으로 열기',
+    printWorksheet: '워크시트 인쇄',
     howToPlayTitle: '게임 소개 및 방법',
     importFromClassLabel: '다른 반에서 가져오기',
     importFromClassToggle: '다른 반에서 가져오기 ({{count}})',

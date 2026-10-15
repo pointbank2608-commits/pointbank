@@ -23,3 +23,18 @@ export const LIGHTNING_SAMPLES: LightningSample[] = [
   { en: 'Wear a raincoat.', ko: '우비를 입어요.', blank: 'raincoat' },
   { en: 'The storm is over.', ko: '폭풍이 지나갔어요.', blank: 'storm' },
 ];
+
+/** 게임 항목(`영어 | 해석`)을 워크시트 문장으로 — 빈칸은 가장 긴 낱말(4글자 이상)로 정한다 */
+export function samplesFromLabels(labels: string[]): LightningSample[] {
+  const out: LightningSample[] = [];
+  for (const raw of labels) {
+    const cut = raw.indexOf(' | ');
+    const en = (cut >= 0 ? raw.slice(0, cut) : raw).trim();
+    const ko = cut >= 0 ? raw.slice(cut + 3).trim() : '';
+    const words = en.split(/\s+/).map((w) => w.replace(/[^A-Za-z'’-]/g, '')).filter((w) => w.length >= 4);
+    if (!en || words.length === 0) continue;
+    const blank = words.reduce((a, b) => (b.length > a.length ? b : a));
+    out.push({ en, ko, blank });
+  }
+  return out;
+}
