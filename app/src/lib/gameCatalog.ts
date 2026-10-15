@@ -574,6 +574,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.doctorName',
     descKey: 'gamesList.doctorDesc',
   },
+  {
+    // 번개 피하기(2026-10-16, PPT "Bad Luck Billy"): 모두 서서 같은 글을 차례로 읽다가 번개가 칠 때 읽던 학생이 아웃, 마지막까지 선 학생이 승리.
+    type: 'lightning',
+    number: 47,
+    category: 'speaking',
+    minItems: 1,
+    icon: 'thunderstorm',
+    path: '/games/lightning',
+    cover: '/covers/game-lightning.jpg',
+    nameKey: 'gamesList.lightningName',
+    descKey: 'gamesList.lightningDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

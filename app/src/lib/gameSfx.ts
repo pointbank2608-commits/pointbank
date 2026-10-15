@@ -34,6 +34,7 @@ export const GAME_SFX = {
   shopping: { reveal: 4041, pick: 6001, correct: 4015, wrong: 4025, finish: 5037 },
   mysterybox: { pick: 6001, correct: 4015, wrong: 4025, open: 4041, good: 5037, bad: 5042, boom: 3091 },
   doctor: { reveal: 4041, correct: 4015, wrong: 4025, line: 1013 },
+  lightning: { clouds: 2020, go: 6001, pass: 1013, strike: 4025, win: 5037 },
   icecream: { line: 1013, pick: 6001, scoop: 4041, done: 5037 },
   restaurant: { line: 1013, pick: 6001, done: 5037 },
   airport: { reveal: 4041, spin: 2020, stop: 4041, box: 1013, correct: 4015, finish: 5037 },

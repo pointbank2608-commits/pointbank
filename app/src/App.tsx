@@ -83,6 +83,7 @@ import ShoppingPage from './pages/ShoppingPage';
 import TreasureDigPage from './pages/TreasureDigPage';
 import FourCluesPage from './pages/FourCluesPage';
 import CatchSentencePage from './pages/CatchSentencePage';
+import LightningLuckPage from './pages/LightningLuckPage';
 import LastBoxPage from './pages/LastBoxPage';
 import RemotePage from './pages/RemotePage';
 import AirportPage from './pages/AirportPage';
@@ -313,6 +314,7 @@ export default function App() {
             <Route path="/games/restaurant" element={<RestaurantPage />} />
             <Route path="/games/icecream" element={<IceCreamPage />} />
             <Route path="/games/doctor" element={<DoctorPage />} />
+            <Route path="/games/lightning" element={<LightningLuckPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
@@ -366,6 +368,7 @@ export default function App() {
             <Route path="/games/restaurant" element={<RestaurantPage />} />
             <Route path="/games/icecream" element={<IceCreamPage />} />
             <Route path="/games/doctor" element={<DoctorPage />} />
+            <Route path="/games/lightning" element={<LightningLuckPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>

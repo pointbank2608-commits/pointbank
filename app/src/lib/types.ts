@@ -216,7 +216,8 @@ export type GameType =
   | 'airport'
   | 'restaurant'
   | 'icecream'
-  | 'doctor';
+  | 'doctor'
+  | 'lightning';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -360,6 +361,12 @@ export interface GameTemplateConfig {
   iceCreamKo?: boolean;
   /** 병원 롤플레이 전용: 우리말 해석을 처음부터 보여 주기 */
   doctorKo?: boolean;
+  /** 번개 피하기 전용: 학생 수(2~40)와 번개가 치기까지의 최소·최대 초 */
+  lightningPlayers?: number;
+  lightningMin?: number;
+  lightningMax?: number;
+  /** 번개 피하기 캐릭터: sheep|boy|girl|umbrella|zeus|mermaid */
+  lightningChar?: string;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;

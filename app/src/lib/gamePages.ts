@@ -39,6 +39,7 @@ import ShoppingPage from '../pages/ShoppingPage';
 import TreasureDigPage from '../pages/TreasureDigPage';
 import FourCluesPage from '../pages/FourCluesPage';
 import CatchSentencePage from '../pages/CatchSentencePage';
+import LightningLuckPage from '../pages/LightningLuckPage';
 import LastBoxPage from '../pages/LastBoxPage';
 import AirportPage from '../pages/AirportPage';
 import RestaurantPage from '../pages/RestaurantPage';
@@ -94,5 +95,6 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/restaurant': RestaurantPage,
   '/games/icecream': IceCreamPage,
   '/games/doctor': DoctorPage,
+  '/games/lightning': LightningLuckPage,
   '/games/mysterybox': MysteryBoxPage,
 };

@@ -73,6 +73,7 @@ const LABEL_GAMES = new Set<GameType>([
   'catchsentence',
   'lastbox',
   'mysterybox',
+  'lightning',
 ]);
 
 export interface GameContent {
