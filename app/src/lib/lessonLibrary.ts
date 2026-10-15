@@ -57,4 +57,15 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     needsWords: false,
     key: 'icecream',
   },
+  {
+    id: 'doctor',
+    recipeId: 'doctor',
+    icon: 'medical_services',
+    cover: '/covers/game-doctor.jpg',
+    minutes: 40,
+    levels: ['elementary'],
+    games: ['doctor'],
+    needsWords: false,
+    key: 'doctor',
+  },
 ];

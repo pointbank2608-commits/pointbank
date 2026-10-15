@@ -562,6 +562,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.icecreamName',
     descKey: 'gamesList.icecreamDesc',
   },
+  {
+    // 병원 롤플레이(2026-10-15, PPT "ESL Let's Go to the Doctor"): 아픈 곳 낱말 8개 → 짝 맞추기 → What's the problem? → 진료실 대화(의사·환자, Switch!).
+    type: 'doctor',
+    number: 46,
+    category: 'roleplay',
+    minItems: 999,
+    icon: 'medical_services',
+    path: '/games/doctor',
+    cover: '/covers/game-doctor.jpg',
+    nameKey: 'gamesList.doctorName',
+    descKey: 'gamesList.doctorDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

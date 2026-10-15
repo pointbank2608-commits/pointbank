@@ -233,6 +233,54 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     },
   },
   {
+    // 병원 롤플레이 수업(2026-10-15): 워밍업 질문 → 게임(낱말·짝 맞추기·What's the problem?·진료실) → 낱말 카드·짝 맞추기·문제 쓰기·역할 카드 워크시트 → 마무리
+    id: 'doctor',
+    icon: 'medical_services',
+    minutes: 40,
+    needsWords: false,
+    preview: ['medical_services', 'forum', 'sports_esports', 'description', 'print'],
+    build: async (ctx) => {
+      const green = (title: string, lines: string[], size = 5) => {
+        const slide = newCanvasSlide('green');
+        slide.elements = [
+          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
+          ...lines.map((text, i) => ({
+            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
+            text,
+            fontSize: size,
+          })),
+        ];
+        return slide;
+      };
+      const sheet = (tab: string, seconds?: number): LessonSlide => ({
+        id: uid(),
+        kind: 'material',
+        materialId: 'doctor',
+        worksheetTab: tab,
+        boardTheme: 'whiteboard',
+        ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
+      });
+      return [
+        titleSlide("Let's Go to the Doctor", ctx.t('recipes.doctorSubtitle')),
+        {
+          ...green('Warm Up Questions', [
+            '1. Have you ever been to the doctor?',
+            '2. How do you feel today?',
+            '3. What do you do when you have a cold?',
+            '4. Would you like to be a doctor?',
+          ]),
+          helpers: [timerHelper(180)],
+        },
+        game('doctor'),
+        sheet('words'),
+        sheet('match', 300),
+        sheet('problem'),
+        sheet('cards'),
+        green('Exit Ticket', ['What’s the problem?', 'I have a headache.', 'Take some medicine and rest.'], 5.6),
+      ];
+    },
+  },
+  {
     id: 'grammar',
     icon: 'rule',
     minutes: 30,

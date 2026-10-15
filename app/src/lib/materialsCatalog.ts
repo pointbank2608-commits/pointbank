@@ -88,6 +88,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.airportDesc',
   },
   {
+    // 병원 워크시트(2026-10-15) — 낱말 카드·짝 맞추기·What's the problem?·역할 카드
+    id: 'doctor',
+    path: '/materials/doctor',
+    icon: 'medical_services',
+    cover: '/covers/game-doctor.jpg',
+    nameKey: 'materials.doctorName',
+    descKey: 'materials.doctorDesc',
+  },
+  {
     // 아이스크림 가게 워크시트(2026-10-15) — 메뉴판·대화 빈칸·내 아이스크림 주문서·점원/손님 카드와 주문 카드
     id: 'icecream',
     path: '/materials/icecream',
