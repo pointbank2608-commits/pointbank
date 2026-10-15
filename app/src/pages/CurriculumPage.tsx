@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
+import LessonLibraryModal from '../components/LessonLibraryModal';
 import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
@@ -58,6 +59,7 @@ export default function CurriculumPage() {
   const { notify, run } = useToast();
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const soloOpen = useFeature('solo');
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const homeworkOpen = useFeature('homework');
   // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
   const [mode, setModeRaw] = useState<'group' | 'solo'>(() => {
@@ -600,6 +602,24 @@ export default function CurriculumPage() {
 
   return (
     <div className="space-y-6">
+      {libraryOpen && academy?.id && profile && (
+        <LessonLibraryModal
+          academyId={academy.id}
+          teacherId={profile.id}
+          classes={classes}
+          defaultClassId={staffClassId ?? null}
+          wordLists={wordLists}
+          onClose={() => setLibraryOpen(false)}
+          onSaved={(lesson) => {
+            if (lesson.class_id === staffClassId) setLessons((prev) => [...prev, lesson]);
+          }}
+          onEdit={(lesson) => {
+            if (lesson.class_id && lesson.class_id !== staffClassId) selectClass(lesson.class_id);
+            openEditForm(lesson);
+          }}
+          onStart={(lesson) => void handleStart(lesson)}
+        />
+      )}
       <div>
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy mb-1.5">
           {t('curriculum.pageTitle')}
@@ -665,14 +685,25 @@ export default function CurriculumPage() {
       )}
 
       {!showForm ? (
-        <button
-          type="button"
-          onClick={openCreateForm}
-          disabled={!staffClassId}
-          className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
-        >
-          + {t('curriculum.createButton')}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={openCreateForm}
+            disabled={!staffClassId}
+            className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
+          >
+            + {t('curriculum.createButton')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            disabled={!staffClassId}
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-primary text-primary hover:bg-primary/10 font-label-md text-label-md transition-colors disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[20px]">local_library</span>
+            {t('lessonLibrary.open')}
+          </button>
+        </div>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
           <h3 className="font-title-md text-title-md text-on-surface">
