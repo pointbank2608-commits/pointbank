@@ -8,6 +8,7 @@ import TreasureDig from '../components/TreasureDig';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
+import SentenceBankPicker from '../components/SentenceBankPicker';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
@@ -353,6 +354,7 @@ export default function TreasureDigPage() {
                       loading={wordListsLoading}
                       onImportFull={(cards) => void addSentences(cards)}
                     />
+                    <SentenceBankPicker onImportLabels={(labels) => void addItemsBulk(labels)} />
                     <DictionaryPicker
                       variant="label"
                       onImportLabels={(labels) => void addItemsBulk(labels)}
