@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useNotices } from '../components/NoticeCenter';
-import { FAQ, FAQ_CATEGORIES, type FaqCategory } from '../data/faq';
+import { FAQ, FAQ_CATEGORIES, type FaqCategory, type FaqItem } from '../data/faq';
+import { suggestFaq } from '../lib/ticketMatch';
 import {
   createTicket,
+  fetchFaqEntries,
+  fetchMyLessonNames,
   fetchMyTickets,
   fetchTicketMessages,
   markTicketSeen,
@@ -43,9 +46,25 @@ export default function HelpPage() {
   }, []);
 
   const q = query.trim().toLowerCase();
+  const [extraFaq, setExtraFaq] = useState<FaqItem[]>([]);
+  useEffect(() => {
+    void fetchFaqEntries().then((list) =>
+      setExtraFaq(
+        list.map((r) => ({
+          id: `db-${r.id}`,
+          category: (FAQ_CATEGORIES.includes(r.category as FaqCategory) ? r.category : 'start') as FaqCategory,
+          q: { ko: r.q_ko, en: r.q_en ?? r.q_ko },
+          a: { ko: r.a_ko, en: r.a_en ?? r.a_ko },
+          link: r.link ?? undefined,
+        })),
+      ),
+    );
+  }, []);
+  const allFaq = useMemo(() => [...extraFaq, ...FAQ], [extraFaq]);
+
   const faqs = useMemo(
-    () => FAQ.filter((f) => (!cat || f.category === cat) && (!q || f.q[lang].toLowerCase().includes(q) || f.a[lang].toLowerCase().includes(q))),
-    [cat, q, lang],
+    () => allFaq.filter((f) => (!cat || f.category === cat) && (!q || f.q[lang].toLowerCase().includes(q) || f.a[lang].toLowerCase().includes(q))),
+    [allFaq, cat, q, lang],
   );
 
   const current = tickets?.find((tk) => tk.id === openTicketId) ?? null;
@@ -133,6 +152,7 @@ export default function HelpPage() {
         <p className="font-caption text-caption text-on-surface-variant">{t('help.contactHint')}</p>
         {writing && (
           <TicketForm
+            faqs={allFaq}
             onDone={(tk) => {
               setWriting(false);
               if (tk) {
@@ -178,14 +198,25 @@ export function StatusPill({ status }: { status: SupportTicket['status'] }) {
   return <span className={`shrink-0 rounded-full px-2.5 py-0.5 font-caption text-caption font-bold ${cls}`}>{t(`help.status_${status}`)}</span>;
 }
 
-function TicketForm({ onDone }: { onDone: (tk: SupportTicket | null) => void }) {
-  const { t } = useTranslation();
+function TicketForm({ onDone, faqs }: { onDone: (tk: SupportTicket | null) => void; faqs: FaqItem[] }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'ko';
   const [category, setCategory] = useState<TicketCategory>('howto');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lessons, setLessons] = useState<Array<{ id: string; name: string }>>([]);
+  const [lessonId, setLessonId] = useState('');
+  useEffect(() => {
+    void fetchMyLessonNames().then(setLessons);
+  }, []);
+  const suggestion = useMemo(
+    () => (subject.trim().length + body.trim().length < 6 ? null : suggestFaq(`${subject} ${body}`, faqs.map((f) => ({ id: f.id, q: f.q.ko, a: f.a.ko })), 0.35)),
+    [subject, body, faqs],
+  );
+  const suggested = suggestion ? faqs.find((f) => f.id === suggestion.faq.id) ?? null : null;
 
   async function submit() {
     if (!subject.trim() || !body.trim()) return;
@@ -193,7 +224,7 @@ function TicketForm({ onDone }: { onDone: (tk: SupportTicket | null) => void }) 
     setError(null);
     try {
       const path = file ? await uploadSupportAttachment(file) : null;
-      const tk = await createTicket({ category, subject: subject.trim(), body: body.trim(), attachmentPath: path });
+      const tk = await createTicket({ category, subject: subject.trim(), body: body.trim(), attachmentPath: path, attachedLessonId: lessonId || null });
       onDone(tk);
     } catch (e) {
       const msg = String((e as { message?: string })?.message ?? e);
@@ -240,6 +271,36 @@ function TicketForm({ onDone }: { onDone: (tk: SupportTicket | null) => void }) 
         </label>
         <span className="font-caption text-caption text-on-surface-variant">{t('help.attachHint')}</span>
       </div>
+      {suggested && (
+        <div className="space-y-1 rounded-lg border border-primary/30 bg-primary-fixed/20 p-3">
+          <div className="font-label-md text-label-md font-bold text-deep-navy">{t('help.suggestTitle')}</div>
+          <div className="font-body-sm text-body-sm font-bold">{suggested.q[lang]}</div>
+          <p className="whitespace-pre-line font-body-sm text-body-sm text-on-surface-variant">{suggested.a[lang]}</p>
+          {suggested.link && (
+            <Link to={suggested.link} className="font-label-md text-label-md text-primary hover:underline">
+              {t('help.suggestGo')}
+            </Link>
+          )}
+        </div>
+      )}
+      {lessons.length > 0 && (
+        <label className="flex flex-wrap items-center gap-2 font-caption text-caption text-on-surface-variant">
+          <span className="font-label-md text-label-md">{t('help.attachLesson')}</span>
+          <select
+            value={lessonId}
+            onChange={(ev) => setLessonId(ev.target.value)}
+            className="max-w-[260px] rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1 text-sm"
+          >
+            <option value="">{t('help.attachLessonNone')}</option>
+            {lessons.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+          <span>{t('help.attachLessonHint')}</span>
+        </label>
+      )}
       {error && <p className="font-caption text-caption text-error">{error}</p>}
       <div className="flex gap-2">
         <button

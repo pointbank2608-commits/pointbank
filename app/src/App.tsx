@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import AdminTodayPage from './pages/AdminTodayPage';
 import AdminAcademyDetailPage from './pages/AdminAcademyDetailPage';
 import AdminSupportPage from './pages/AdminSupportPage';
+import AdminInboxPage from './pages/AdminInboxPage';
 import AdminNoticesPage from './pages/AdminNoticesPage';
 import AdminVideosPage from './pages/AdminVideosPage';
 import VideoLibraryPage from './pages/VideoLibraryPage';
@@ -213,6 +214,7 @@ export default function App() {
           <Route path="/admin" element={<AdminTodayPage />} />
           <Route path="/admin/academies" element={<AdminAcademiesPage />} />
           <Route path="/admin/academies/:id" element={<AdminAcademyDetailPage />} />
+          <Route path="/admin/inbox" element={<AdminInboxPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />
           <Route path="/admin/videos" element={<AdminVideosPage />} />

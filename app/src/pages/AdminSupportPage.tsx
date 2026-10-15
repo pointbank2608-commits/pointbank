@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import { adminTickets, type AdminTicketRow, type SupportTicket, type TicketStatus } from '../lib/support';
+import { adminTicketLesson, adminTickets, type AdminTicketRow, type AttachedLessonSummary, type SupportTicket, type TicketStatus } from '../lib/support';
 import { StatusPill, TicketThread } from './HelpPage';
 
 /**
@@ -59,6 +59,7 @@ export default function AdminSupportPage() {
           {open.page_url && <div>{t('adminOps.page')}: {open.page_url}</div>}
           {open.user_agent && <div className="truncate">{t('adminOps.browser')}: {open.user_agent}</div>}
         </div>
+        <AttachedLesson ticketId={open.id} />
         <ReplyTemplates />
         <TicketThread
           ticket={ticket}
@@ -178,6 +179,56 @@ function ReplyTemplates() {
           {t('adminOps.addTemplate')}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** 선생님이 문의에 직접 첨부한 수업만 읽기 전용 요약으로 본다(눌렀을 때만 읽고 조치 기록에 남음) */
+function AttachedLesson({ ticketId }: { ticketId: string }) {
+  const { t } = useTranslation();
+  const [state, setState] = useState<'idle' | 'loading' | 'none' | AttachedLessonSummary>('idle');
+
+  async function load() {
+    setState('loading');
+    try {
+      const r = await adminTicketLesson(ticketId);
+      setState(r ?? 'none');
+    } catch {
+      setState('none');
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl rounded-xl bg-surface-container-lowest p-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-label-md text-label-md font-bold">{t('adminInbox.attachedLesson')}</span>
+        {state === 'idle' && (
+          <button type="button" onClick={() => void load()} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary">
+            {t('adminInbox.viewLesson')}
+          </button>
+        )}
+        {state === 'loading' && <span className="text-on-surface-variant">{t('common.loading')}</span>}
+        {state === 'none' && <span className="font-caption text-caption text-on-surface-variant">{t('adminInbox.noLesson')}</span>}
+      </div>
+      {typeof state === 'object' && (
+        <div className="mt-2 space-y-1 font-body-sm text-body-sm">
+          <div className="font-bold">
+            {state.name}
+            {state.level ? ` · ${state.level}` : ''}
+          </div>
+          <div className="text-on-surface-variant">
+            {t('adminInbox.wordList')}: {state.word_list ?? '-'} · {t('adminInbox.slideCount', { n: state.slides.length })}
+          </div>
+          <ol className="list-decimal space-y-0.5 pl-5">
+            {state.slides.map((sl, i) => (
+              <li key={i}>
+                <span className="font-label-md text-label-md">{sl.kind}</span>
+                {sl.title ? <span className="text-on-surface-variant"> · {sl.title}</span> : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }

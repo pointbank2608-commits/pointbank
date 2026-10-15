@@ -120,6 +120,7 @@ export async function createTicket(params: {
   subject: string;
   body: string;
   attachmentPath: string | null;
+  attachedLessonId?: string | null;
 }): Promise<SupportTicket> {
   const { data, error } = await supabase
     .from('support_tickets')
@@ -128,6 +129,7 @@ export async function createTicket(params: {
       subject: params.subject,
       page_url: lastPageBeforeHelp(),
       user_agent: navigator.userAgent.slice(0, 400),
+      ...(params.attachedLessonId ? { attached_lesson_id: params.attachedLessonId } : {}),
     })
     .select('*')
     .single();
@@ -295,4 +297,74 @@ export async function adminEndAnnouncement(id: string): Promise<void> {
 export async function adminAnnouncementReadCount(id: string): Promise<number> {
   const { count } = await supabase.from('announcement_reads').select('announcement_id', { count: 'exact', head: true }).eq('announcement_id', id);
   return count ?? 0;
+}
+
+/* ---------------- 승인함·FAQ 승격·수업 첨부(079) ---------------- */
+export interface AdminInboxRow {
+  id: string;
+  academy_id: string | null;
+  academy_name: string | null;
+  user_name: string | null;
+  category: TicketCategory;
+  subject: string;
+  first_body: string | null;
+  has_lesson: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function adminInbox(): Promise<AdminInboxRow[]> {
+  const { data, error } = await supabase.rpc('admin_inbox');
+  if (error) throw error;
+  return (data ?? []) as AdminInboxRow[];
+}
+
+export async function adminBulkReply(ticketIds: string[], body: string): Promise<number> {
+  const { data, error } = await supabase.rpc('admin_bulk_reply', { p_ticket_ids: ticketIds, p_body: body });
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
+export interface AttachedLessonSummary {
+  name: string;
+  level: string | null;
+  word_list: string | null;
+  updated_at: string;
+  slides: Array<{ kind: string; title: string }>;
+}
+
+/** 선생님이 문의에 직접 첨부한 수업의 읽기 전용 요약(열람은 조치 기록에 남음). 첨부가 없으면 null */
+export async function adminTicketLesson(ticketId: string): Promise<AttachedLessonSummary | null> {
+  const { data, error } = await supabase.rpc('admin_ticket_lesson', { p_ticket: ticketId });
+  if (error) throw error;
+  return (data ?? null) as AttachedLessonSummary | null;
+}
+
+export interface FaqEntryRow {
+  id: string;
+  category: string;
+  q_ko: string;
+  a_ko: string;
+  q_en: string | null;
+  a_en: string | null;
+  link: string | null;
+}
+
+/** 관리자가 올린 FAQ(079 전이면 빈 목록) */
+export async function fetchFaqEntries(): Promise<FaqEntryRow[]> {
+  const { data, error } = await supabase.from('faq_entries').select('*').eq('published', true).order('created_at', { ascending: false });
+  if (error) return [];
+  return (data ?? []) as FaqEntryRow[];
+}
+
+export async function adminCreateFaq(e: { category: string; q_ko: string; a_ko: string; source_ticket?: string | null }): Promise<void> {
+  const { error } = await supabase.from('faq_entries').insert(e);
+  if (error) throw error;
+}
+
+/** 문의에 첨부할 수 있는 내 수업 목록(이름만) */
+export async function fetchMyLessonNames(): Promise<Array<{ id: string; name: string }>> {
+  const { data, error } = await supabase.from('curriculum_lessons').select('id, name').order('updated_at', { ascending: false }).limit(60);
+  if (error) return [];
+  return (data ?? []) as Array<{ id: string; name: string }>;
 }

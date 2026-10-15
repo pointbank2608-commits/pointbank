@@ -37,6 +37,7 @@ export default function AdminLayout() {
             [
               ['/admin', 'today', 'task_alt'],
               ['/admin/academies', 'academies', 'school'],
+              ['/admin/inbox', 'inbox', 'inbox'],
               ['/admin/support', 'support', 'support_agent'],
               ['/admin/notices', 'notices', 'campaign'],
               ['/admin/videos', 'videos', 'video_library'],
