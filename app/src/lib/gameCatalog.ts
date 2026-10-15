@@ -550,6 +550,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.restaurantName',
     descKey: 'gamesList.restaurantDesc',
   },
+  {
+    // 아이스크림 가게 롤플레이(2026-10-15, PPT "ESL Ice Cream Shop Role Play"): 메뉴 → 주문(크기·담기·맛·토핑으로 아이스크림 쌓기) → 대화 기억하기 → 짝 연습.
+    type: 'icecream',
+    number: 45,
+    category: 'roleplay',
+    minItems: 999,
+    icon: 'icecream',
+    path: '/games/icecream',
+    cover: '/covers/game-icecream.jpg',
+    nameKey: 'gamesList.icecreamName',
+    descKey: 'gamesList.icecreamDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

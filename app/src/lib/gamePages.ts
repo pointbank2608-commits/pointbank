@@ -42,6 +42,7 @@ import CatchSentencePage from '../pages/CatchSentencePage';
 import LastBoxPage from '../pages/LastBoxPage';
 import AirportPage from '../pages/AirportPage';
 import RestaurantPage from '../pages/RestaurantPage';
+import IceCreamPage from '../pages/IceCreamPage';
 import MysteryBoxPage from '../pages/MysteryBoxPage';
 
 /** 게임 경로(gameCatalog 의 path) → 그 게임 페이지 컴포넌트. 커리큘럼 게임 슬라이드 편집 화면이
@@ -90,5 +91,6 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/lastbox': LastBoxPage,
   '/games/airport': AirportPage,
   '/games/restaurant': RestaurantPage,
+  '/games/icecream': IceCreamPage,
   '/games/mysterybox': MysteryBoxPage,
 };

@@ -214,7 +214,8 @@ export type GameType =
   | 'lastbox'
   | 'mysterybox'
   | 'airport'
-  | 'restaurant';
+  | 'restaurant'
+  | 'icecream';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -354,6 +355,8 @@ export interface GameTemplateConfig {
   restaurantLevels?: string[];
   /** 레스토랑 롤플레이 전용: 우리말 해석을 처음부터 보여 주기 */
   restaurantKo?: boolean;
+  /** 아이스크림 가게 전용: 우리말 해석을 처음부터 보여 주기 */
+  iceCreamKo?: boolean;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;

@@ -87,8 +87,10 @@ import LastBoxPage from './pages/LastBoxPage';
 import RemotePage from './pages/RemotePage';
 import AirportPage from './pages/AirportPage';
 import RestaurantPage from './pages/RestaurantPage';
+import IceCreamPage from './pages/IceCreamPage';
 import AirportWorksheetPage from './pages/AirportWorksheetPage';
 import RestaurantWorksheetPage from './pages/RestaurantWorksheetPage';
+import IceCreamWorksheetPage from './pages/IceCreamWorksheetPage';
 import MysteryBoxPage from './pages/MysteryBoxPage';
 import MysteryBoxPrintPage from './pages/MysteryBoxPrintPage';
 import LiveJoinPage from './pages/LiveJoinPage';
@@ -256,6 +258,7 @@ export default function App() {
             <Route path="/materials/mystery-box" element={<MysteryBoxPrintPage />} />
             <Route path="/materials/airport" element={<AirportWorksheetPage />} />
             <Route path="/materials/restaurant" element={<RestaurantWorksheetPage />} />
+            <Route path="/materials/icecream" element={<IceCreamWorksheetPage />} />
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
             <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />
@@ -305,6 +308,7 @@ export default function App() {
             <Route path="/games/lastbox" element={<LastBoxPage />} />
             <Route path="/games/airport" element={<AirportPage />} />
             <Route path="/games/restaurant" element={<RestaurantPage />} />
+            <Route path="/games/icecream" element={<IceCreamPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
@@ -356,6 +360,7 @@ export default function App() {
             <Route path="/games/lastbox" element={<LastBoxPage />} />
             <Route path="/games/airport" element={<AirportPage />} />
             <Route path="/games/restaurant" element={<RestaurantPage />} />
+            <Route path="/games/icecream" element={<IceCreamPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>

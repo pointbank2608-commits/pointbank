@@ -185,6 +185,54 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     },
   },
   {
+    // 아이스크림 가게 롤플레이 수업(2026-10-15): 워밍업 질문 → 게임(메뉴·주문하기·기억하기·짝 연습) → 메뉴판·대화 빈칸·주문서·카드 워크시트 → 마무리
+    id: 'icecream',
+    icon: 'icecream',
+    minutes: 40,
+    needsWords: false,
+    preview: ['icecream', 'forum', 'sports_esports', 'description', 'print'],
+    build: async (ctx) => {
+      const green = (title: string, lines: string[], size = 5) => {
+        const slide = newCanvasSlide('green');
+        slide.elements = [
+          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
+          ...lines.map((text, i) => ({
+            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
+            text,
+            fontSize: size,
+          })),
+        ];
+        return slide;
+      };
+      const sheet = (tab: string, seconds?: number): LessonSlide => ({
+        id: uid(),
+        kind: 'material',
+        materialId: 'icecream',
+        worksheetTab: tab,
+        boardTheme: 'whiteboard',
+        ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
+      });
+      return [
+        titleSlide('Ice Cream Shop', ctx.t('recipes.icecreamSubtitle')),
+        {
+          ...green('Warm Up Questions', [
+            '1. What flavours of ice cream do you like?',
+            '2. Do you prefer a cone or a tub?',
+            '3. What is your favorite topping?',
+            '4. When do you eat ice cream?',
+          ]),
+          helpers: [timerHelper(180)],
+        },
+        game('icecream'),
+        sheet('menu'),
+        sheet('dialogue', 300),
+        sheet('order'),
+        sheet('cards'),
+        green('Exit Ticket', ['What can I get for you?', 'Can I get a large ice cream in a cone, please?', 'Blueberry, raspberry and lemon, please.'], 5.2),
+      ];
+    },
+  },
+  {
     id: 'grammar',
     icon: 'rule',
     minutes: 30,

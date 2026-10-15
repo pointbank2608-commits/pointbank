@@ -88,6 +88,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.airportDesc',
   },
   {
+    // 아이스크림 가게 워크시트(2026-10-15) — 메뉴판·대화 빈칸·내 아이스크림 주문서·점원/손님 카드와 주문 카드
+    id: 'icecream',
+    path: '/materials/icecream',
+    icon: 'icecream',
+    cover: '/covers/game-icecream.jpg',
+    nameKey: 'materials.iceCreamName',
+    descKey: 'materials.iceCreamDesc',
+  },
+  {
     // 레스토랑 롤플레이 워크시트(2026-10-15) — 메뉴판·주문 대화 빈칸·주문서·짝 연습 카드
     id: 'restaurant',
     path: '/materials/restaurant',
