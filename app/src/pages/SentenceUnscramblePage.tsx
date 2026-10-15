@@ -11,6 +11,7 @@ import SentenceUnscramble from '../components/SentenceUnscramble';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import WordListPicker from '../components/WordListPicker';
+import SentenceBankPicker from '../components/SentenceBankPicker';
 import type { GameItem, GameTemplateConfig } from '../lib/types';
 
 function uid(): string {
@@ -382,6 +383,7 @@ export default function SentenceUnscramblePage() {
                         loading={wordListsLoading}
                         onImportLabels={(labels) => void importSentences(labels)}
                       />
+                      <SentenceBankPicker withKo={false} onImportLabels={(labels) => void importSentences(labels)} />
                     </div>
                     <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
                     <div className="font-caption text-caption text-on-surface-variant mb-2">

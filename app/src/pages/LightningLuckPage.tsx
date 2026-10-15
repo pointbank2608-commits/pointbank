@@ -8,6 +8,7 @@ import LightningLuck, { LIGHTNING_DEFAULTS } from '../components/LightningLuck';
 import type { CharKind } from '../components/LightningChars';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
+import SentenceBankPicker from '../components/SentenceBankPicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -354,6 +355,7 @@ export default function LightningLuckPage() {
                       loading={wordListsLoading}
                       onImportFull={(cards) => void addSentences(cards)}
                     />
+                    <SentenceBankPicker onImportLabels={(labels) => void addItemsBulk(labels)} />
                     <DictionaryPicker
                       variant="label"
                       onImportLabels={(labels) => void addItemsBulk(labels)}

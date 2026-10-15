@@ -7,6 +7,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import CatchSentence, { CATCH_DEFAULT_SECONDS, type CatchLevel } from '../components/CatchSentence';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
+import SentenceBankPicker from '../components/SentenceBankPicker';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
@@ -361,6 +362,7 @@ export default function CatchSentencePage() {
                       loading={wordListsLoading}
                       onImportFull={(cards) => void addSentences(cards)}
                     />
+                    <SentenceBankPicker onImportLabels={(labels) => void addItemsBulk(labels)} />
                     <DictionaryPicker
                       variant="label"
                       onImportLabels={(labels) => void addItemsBulk(labels)}
