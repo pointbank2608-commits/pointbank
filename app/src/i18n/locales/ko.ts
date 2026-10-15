@@ -1361,6 +1361,12 @@ const ko = {
     selectAll: '이 목록 모두 선택',
     clearAll: '선택 해제',
     add: '{{n}}개 담기',
+    edit: '문장 고치기',
+    listNamePlaceholder: '저장할 문장 목록 이름 (비우면 상황·레벨)',
+    saveAsList: '내 문장 목록으로 저장 ({{n}}개)',
+    saving: '저장 중…',
+    savedToast: '"{{name}}" 문장 목록에 {{count}}개를 저장했어요. 내 단어장에서 볼 수 있어요.',
+    reviewHint: '✎를 눌러 문장과 해석을 고친 뒤 담거나 저장하세요. 고친 문장은 은행 원본을 바꾸지 않고 내 게임·내 문장 목록에만 적용돼요.',
   },
   gameLightning: {
     studentClassTitle: '{{className}} 번개 피하기',

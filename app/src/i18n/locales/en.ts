@@ -1364,6 +1364,12 @@ const en: Ko = {
     selectAll: 'Select all in this list',
     clearAll: 'Clear selection',
     add: 'Add {{n}}',
+    edit: 'Edit sentence',
+    listNamePlaceholder: 'Name for the saved list (blank = situation · level)',
+    saveAsList: 'Save as my sentence list ({{n}})',
+    saving: 'Saving…',
+    savedToast: 'Saved {{count}} sentences to "{{name}}". Find it in My word lists.',
+    reviewHint: 'Tap ✎ to fix a sentence or its translation before adding or saving. Edits only change your game or list, not the bank.',
   },
   gameLightning: {
     studentClassTitle: '{{className}} Lightning Luck',

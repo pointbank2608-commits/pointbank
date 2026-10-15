@@ -355,7 +355,7 @@ export default function LightningLuckPage() {
                       loading={wordListsLoading}
                       onImportFull={(cards) => void addSentences(cards)}
                     />
-                    <SentenceBankPicker onImportLabels={(labels) => void addItemsBulk(labels)} />
+                    <SentenceBankPicker classId={staffClassId} onImportLabels={(labels) => void addItemsBulk(labels)} />
                     <DictionaryPicker
                       variant="label"
                       onImportLabels={(labels) => void addItemsBulk(labels)}
