@@ -9,6 +9,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import AcademyCodeButton from '../components/AcademyCodeButton';
 import MaterialsPenButton from '../components/MaterialsPenButton';
 import CoachTip from '../components/CoachTip';
+import DeletionBanner from '../components/DeletionBanner';
 import { TrialBanner, TrialModal } from '../components/TrialNotice';
 import SosButton from '../components/SosButton';
 import BrandMark from '../components/BrandMark';
@@ -302,6 +303,7 @@ function AppLayoutInner() {
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
+          {isStaff && <DeletionBanner />}
           {isStaff && <TrialBanner />}
           {isStaff && <CoachTip />}
           {isStaff && <TrialModal />}

@@ -73,7 +73,11 @@ Deno.serve(async (req: Request) => {
       .lte('next_billing_at', today);
     if (dueError) throw new Error(dueError.message);
 
-    for (const academy of dueAcademies ?? []) {
+    // 삭제를 요청한 학원(14일 유예 중)은 청구하지 않는다
+    const { data: deleting } = await supabaseAdmin.from('academy_deletion_requests').select('academy_id');
+    const skipIds = new Set((deleting ?? []).map((r: { academy_id: string }) => r.academy_id));
+
+    for (const academy of (dueAcademies ?? []).filter((a: { id: string }) => !skipIds.has(a.id))) {
       try {
         if (academy.plan_status === 'pending_cancel') {
           await supabaseAdmin

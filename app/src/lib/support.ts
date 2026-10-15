@@ -380,3 +380,10 @@ export async function adminExtendTrial(academyId: string, days: number): Promise
   if (error) throw error;
   return String(data);
 }
+
+/** 유예가 끝난 학원 삭제를 처리한다(관리자 화면을 열 때 같이 부른다 — pg_cron 을 등록했다면 이미 처리돼 0) */
+export async function adminPurgeDeletions(): Promise<number> {
+  const { data, error } = await supabase.rpc('purge_due_deletions');
+  if (error) return 0;
+  return Number(data ?? 0);
+}

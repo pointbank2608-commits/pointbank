@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import AccountDataSection from '../components/AccountDataSection';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -485,6 +486,8 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      <AccountDataSection />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   adminAcademyRows,
   adminErrorSummary,
+  adminPurgeDeletions,
   adminTickets,
   adminToday,
   type AdminAcademyRow,
@@ -40,6 +41,7 @@ export default function AdminTodayPage() {
 
   useEffect(() => {
     void adminErrorSummary(24).then(setErrors);
+    void adminPurgeDeletions();
   }, []);
 
   const now = Date.now();

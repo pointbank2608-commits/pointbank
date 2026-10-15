@@ -205,6 +205,10 @@
 
 `App.tsx`가 화면 101개를 `lazyPage(() => import('./pages/X'))`로 불러온다(`lib/lazyPage.ts`). 레이아웃(`AppLayout`·`AdminLayout`)만 처음부터 들어 있고, 본문 `<Outlet />`은 `Suspense`(`PageLoading`)로 감싸 사이드바는 그대로 둔 채 본문만 로딩 표시를 보인다. 메인 번들 4.3MB 한 덩어리 → 첫 화면 약 330KB + 공용 조각(i18n 630KB·supabase 200KB·문법 데이터 250KB). 배포 직후 옛 탭이 사라진 조각을 못 받으면 한 번만 자동 새로고침(`classbank.chunkReloadAt`). **새 화면을 만들 때는 `import X from './pages/X'`가 아니라 `lazyPage`로 등록할 것.** 남은 개선 후보: 언어별 i18n 분리(ko/en 한 번에 630KB), 문법 JSON 지연 로딩.
 
+### 셀프 탈퇴·데이터 내보내기 (2026-10-17, `supabase/081a~d` 순서대로 하나씩 → `081_check.sql`)
+
+설정 맨 아래 "계정·데이터"(`AccountDataSection`). ① **내려받기**: 반·학생·포인트 내역·단어장·수업·게임 내용을 JSON 한 파일로(`lib/account.ts`, RLS 범위). ② **원장의 학원 삭제 요청**: 학원 이름을 입력해 확인 → `academy_deletion_requests`에 기록, **14일 유예**(그 안에는 설정에서 취소, 모든 화면 위 `DeletionBanner`로 남은 날 안내). 유예가 지나면 `purge_due_deletions()`가 학원(연쇄 삭제)·소속 계정(auth.users)·그 계정의 문의를 지운다 — 관리자 "오늘 할 일"을 열 때 같이 불리고, pg_cron 등록(081c 맨 아래 주석)을 해 두면 매일 자동. 삭제 대기 중인 학원은 `charge-subscriptions`가 청구를 건너뛴다. ③ **선생님은 내 계정만 바로 삭제**(`delete_my_teacher_account`, 만든 수업·단어장은 학원에 남음). **한계**: Storage 에 올린 파일(문의 캡처·게임 사진)은 SQL 로 안 지워진다 — 관리자가 따로 정리. 결제 환불 정산은 별도.
+
 ## 요금제·결제·환불 (2026-10-03 사용자 결정, 아직 코드 미반영)
 
 KCP 카드사 심사 10곳 모두 완료(BC카드만 정기결제 불가 — 사전 통보받음, `BillingPage`에 안내 있음). KCP 답변: **결제 금액을 바꾸거나 추가해도 카드사 재심사는 없다**(금액은 우리 서버가 빌링키 결제마다 정해 보냄 — `_shared/portoneCharge.ts`의 `amountKrw`, 지금은 `BASE_FEE_KRW` 9,900 정액). 지금 코드·약관은 `plan: free|paid` + 월 9,900원 정액이고, 아래는 **바꿀 목표**다.
