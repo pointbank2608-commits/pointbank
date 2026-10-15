@@ -228,6 +228,25 @@ export async function adminToday(): Promise<AdminToday | null> {
   return data as AdminToday | null;
 }
 
+export interface AdminErrorRow {
+  fingerprint: string;
+  message: string;
+  page: string | null;
+  sample_stack: string | null;
+  events: number;
+  users: number;
+  academies: number;
+  first_seen: string;
+  last_seen: string;
+}
+
+/** 최근 오류(같은 오류끼리 묶음). 078 전이면 빈 목록 */
+export async function adminErrorSummary(hours = 24): Promise<AdminErrorRow[]> {
+  const { data, error } = await supabase.rpc('admin_error_summary', { p_hours: hours });
+  if (error) return [];
+  return (data ?? []) as AdminErrorRow[];
+}
+
 export async function adminAcademyRows(): Promise<AdminAcademyRow[]> {
   const { data, error } = await supabase.rpc('admin_academy_rows');
   if (error) throw error;

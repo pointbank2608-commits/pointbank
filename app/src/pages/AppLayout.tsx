@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import AcademyCodeButton from '../components/AcademyCodeButton';
 import MaterialsPenButton from '../components/MaterialsPenButton';
+import CoachTip from '../components/CoachTip';
+import SosButton from '../components/SosButton';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
@@ -251,7 +253,7 @@ function AppLayoutInner() {
         <span className="font-title-md text-title-md text-primary truncate">
           {academy?.name ?? t('common.brand')}
         </span>
-        {isStaff ? <NotificationBell /> : <div className="w-9" aria-hidden />}
+        {isStaff ? (<div className="flex items-center gap-1"><SosButton /><NotificationBell /></div>) : (<div className="w-9" aria-hidden />)}
       </header>
 
       {/* 모바일 드로어 */}
@@ -277,6 +279,7 @@ function AppLayoutInner() {
         {/* 데스크톱 상단바 */}
         <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
           <LanguageToggle />
+          {isStaff && <SosButton />}
           {isStaff && <NotificationBell />}
           <Link
             to={isStaff ? '/settings' : homeTo}
@@ -296,6 +299,7 @@ function AppLayoutInner() {
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
+          {isStaff && <CoachTip />}
           <Outlet />
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}

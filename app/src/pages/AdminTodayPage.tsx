@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { adminAcademyRows, adminTickets, adminToday, type AdminAcademyRow, type AdminTicketRow, type AdminToday } from '../lib/support';
+import {
+  adminAcademyRows,
+  adminErrorSummary,
+  adminTickets,
+  adminToday,
+  type AdminAcademyRow,
+  type AdminErrorRow,
+  type AdminTicketRow,
+  type AdminToday,
+} from '../lib/support';
 import { StatusPill } from './HelpPage';
 
 /**
@@ -13,6 +22,7 @@ export default function AdminTodayPage() {
   const [today, setToday] = useState<AdminToday | null>(null);
   const [rows, setRows] = useState<AdminAcademyRow[]>([]);
   const [tickets, setTickets] = useState<AdminTicketRow[]>([]);
+  const [errors, setErrors] = useState<AdminErrorRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,6 +37,10 @@ export default function AdminTodayPage() {
         setError(/admin_today|function/i.test(msg) ? t('adminOps.needSetup') : msg);
       });
   }, [t]);
+
+  useEffect(() => {
+    void adminErrorSummary(24).then(setErrors);
+  }, []);
 
   const now = Date.now();
   const billing = rows.filter(
@@ -70,6 +84,24 @@ export default function AdminTodayPage() {
             <span className="min-w-0 flex-1 truncate font-label-md text-label-md">{tk.subject}</span>
             <span className="shrink-0 font-caption text-caption text-on-surface-variant">{tk.academy_name}</span>
           </Link>
+        ))}
+      </Section>
+
+      <Section title={t('adminOps.errorsTitle')} empty={t('adminOps.errorsNone')} count={errors.length}>
+        {errors.slice(0, 10).map((e) => (
+          <div key={e.fingerprint} className="rounded-lg px-3 py-2 hover:bg-surface-container-low">
+            <div className="flex items-center gap-3">
+              <span className="min-w-0 flex-1 truncate font-label-md text-label-md" title={e.message}>
+                {e.message}
+              </span>
+              <span className="shrink-0 font-caption text-caption tabular-nums text-on-surface-variant">
+                {t('adminOps.errorsCount', { events: e.events, users: e.users, academies: e.academies })}
+              </span>
+            </div>
+            <div className="truncate font-caption text-caption text-on-surface-variant">
+              {e.page ?? '-'} · {new Date(e.last_seen).toLocaleString()}
+            </div>
+          </div>
         ))}
       </Section>
 

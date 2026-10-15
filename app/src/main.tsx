@@ -7,6 +7,10 @@ import App from './App';
 import InstallBanner from './components/InstallBanner';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import AppErrorBoundary from './components/AppErrorBoundary';
+import { installErrorReporter } from './lib/errorReporter';
+
+installErrorReporter();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,7 +18,9 @@ createRoot(document.getElementById('root')!).render(
       <ToastProvider>
         <AuthProvider>
           <InstallBanner />
-          <App />
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
