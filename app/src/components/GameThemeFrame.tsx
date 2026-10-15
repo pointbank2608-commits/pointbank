@@ -42,7 +42,7 @@ interface Props {
 }
 
 /** 자기 장면을 이미 그리는 게임(새 게임·장보기)은 공용 배경을 깔지 않는다 */
-const OWN_SCENE: GameType[] = ['shopping', 'treasuredig', 'fourclues', 'catchsentence', 'lastbox', 'mysterybox'];
+const OWN_SCENE: GameType[] = ['shopping', 'treasuredig', 'fourclues', 'catchsentence', 'lastbox', 'mysterybox', 'airport'];
 
 /** 글자가 많은 게임은 배경 위에 흰 막을 더 두껍게 덮는다(읽기 쉽게) */
 const BG_VEIL: Partial<Record<GameType, number>> = {

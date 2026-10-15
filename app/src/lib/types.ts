@@ -212,7 +212,8 @@ export type GameType =
   | 'fourclues'
   | 'catchsentence'
   | 'lastbox'
-  | 'mysterybox';
+  | 'mysterybox'
+  | 'airport';
 
 /** 대회 퀴즈쇼 문제 종류 — 4지선다 / O·X / 주관식(철자 쓰기) / 부저(먼저 누른 사람이 말로 답). */
 export type LiveQuestionKind = 'choice' | 'ox' | 'text' | 'buzzer';
@@ -344,6 +345,10 @@ export interface GameTemplateConfig {
   mysteryBlocks?: number;
   /** 미스터리 박스 진행 방식: mushroom 낱말 3개 중 하나를 골라 버섯(−1·+1·+3) 공개(기본) / quiz 문제를 맞히면 박스를 받는 방식. */
   mysteryMode?: 'mushroom' | 'quiz';
+  /** 공항 롤플레이 전용: 돌림판·대화 연습에 쓰는 장소(checkin·security·gate, 기본 셋 다) */
+  airportPlaces?: string[];
+  /** 공항 롤플레이 전용: 우리말 해석을 처음부터 보여 주기 */
+  airportKo?: boolean;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;

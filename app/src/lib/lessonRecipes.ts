@@ -6,6 +6,7 @@ import { buildVideoLessonParts, markBingoWords } from './videoLesson';
 import type { FullCardItem, GameType, LessonSlide, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
 import type { LessonLevel } from './lessonLevel';
+import { newHelper } from './slideHelpers';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -89,6 +90,50 @@ export const LESSON_RECIPES: LessonRecipe[] = [
       game('matchup'),
       { id: uid(), kind: 'material', materialId: 'phonics', phonicsTab: 'phonicsBlank' },
     ],
+  },
+  {
+    // 공항 롤플레이 수업(2026-10-15): PPT 한 편을 단체수업 흐름으로 — 워밍업 질문 → 게임(낱말·순서·대화 연습·내 차례·전광판) → 워크시트
+    id: 'airport',
+    icon: 'flight',
+    minutes: 40,
+    needsWords: false,
+    preview: ['flight', 'forum', 'sports_esports', 'description', 'print'],
+    build: async (ctx) => {
+      const green = (title: string, lines: string[], size = 5) => {
+        const slide = newCanvasSlide('green');
+        slide.elements = [
+          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
+          ...lines.map((text, i) => ({
+            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
+            text,
+            fontSize: size,
+          })),
+        ];
+        return slide;
+      };
+      return [
+        titleSlide('Airport Role Play', ctx.t('recipes.airportSubtitle')),
+        {
+          ...green('Warm Up Questions', [
+            '1. Have you travelled on a plane before?',
+            '2. Do you prefer travelling by plane, train, or car? Why?',
+            '3. Would you like to be a pilot?',
+            '4. If you could fly anywhere in the world, where would you go?',
+          ]),
+          // 보조 블록: 짝과 이야기하는 시간 3분
+          helpers: [{ ...newHelper('timer'), seconds: 180 }],
+        },
+        game('airport'),
+        { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cloze', boardTheme: 'whiteboard', helpers: [{ ...newHelper('timer'), seconds: 300 }] },
+        { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'board', boardTheme: 'whiteboard', helpers: [{ ...newHelper('timer'), seconds: 180 }] },
+        { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cards', boardTheme: 'whiteboard' },
+        green('Exit Ticket', [
+          'Can I check in please?',
+          'Please put your bags into the tray.',
+          'Can I see your boarding pass and passport please?',
+        ], 5.6),
+      ];
+    },
   },
   {
     id: 'grammar',

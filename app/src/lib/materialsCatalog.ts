@@ -79,6 +79,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.mysteryBoxDesc',
   },
   {
+    // 공항 롤플레이 워크시트(2026-10-15) — 대본 빈칸·순서 맞추기·전광판 읽기·역할 카드
+    id: 'airport',
+    path: '/materials/airport',
+    icon: 'flight',
+    cover: '/covers/game-airport.jpg',
+    nameKey: 'materials.airportName',
+    descKey: 'materials.airportDesc',
+  },
+  {
     id: 'worksheet',
     path: '/materials/worksheet',
     icon: 'description',

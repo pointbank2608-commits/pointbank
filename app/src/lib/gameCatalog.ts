@@ -526,6 +526,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.mysteryboxName',
     descKey: 'gamesList.mysteryboxDesc',
   },
+  {
+    // 공항 롤플레이(2026-10-15, PPT "ESL Airport Role Play Lesson for Beginners"): 낱말 → 가는 순서 → 대본 연습 → 돌림판·상자로 장소·역할 정해 대화 → 전광판 읽기.
+    type: 'airport',
+    number: 43,
+    category: 'roleplay',
+    minItems: 999,
+    icon: 'flight',
+    path: '/games/airport',
+    cover: '/covers/game-airport.jpg',
+    nameKey: 'gamesList.airportName',
+    descKey: 'gamesList.airportDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {
