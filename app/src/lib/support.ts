@@ -368,3 +368,15 @@ export async function fetchMyLessonNames(): Promise<Array<{ id: string; name: st
   if (error) return [];
   return (data ?? []) as Array<{ id: string; name: string }>;
 }
+
+/** 체험 종료일(관리자 화면용 — 관리자는 academies 를 직접 읽을 수 있다) */
+export async function adminAcademyTrial(academyId: string): Promise<string | null> {
+  const { data } = await supabase.from('academies').select('trial_ends_at').eq('id', academyId).maybeSingle();
+  return (data as { trial_ends_at?: string | null } | null)?.trial_ends_at ?? null;
+}
+
+export async function adminExtendTrial(academyId: string, days: number): Promise<string> {
+  const { data, error } = await supabase.rpc('admin_extend_trial', { p_academy_id: academyId, p_days: days });
+  if (error) throw error;
+  return String(data);
+}

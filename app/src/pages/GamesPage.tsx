@@ -13,7 +13,7 @@ type ViewMode = 'library' | 'all';
 
 export default function GamesPage() {
   const { t } = useTranslation();
-  const { academy, isStaff, session, isPaid } = useAuth();
+  const { academy, isStaff, session, hasFullAccess } = useAuth();
   const [activeCategory, setActiveCategory] = useState<GameCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('library');
   const [query, setQuery] = useState('');
@@ -162,7 +162,7 @@ export default function GamesPage() {
           </div>}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {games.map((g) => {
-              const locked = isStaff && !isPaid && !isFreeTierGame(g.type);
+              const locked = isStaff && !hasFullAccess && !isFreeTierGame(g.type);
               // 왕관 배지: 유료 전용 게임이면 항상 붙인다(유료 회원도 "이건 유료 기능이구나"를 느끼도록 —
               // 캔바 프리미엄 템플릿의 왕관 표시와 같은 목적). locked 여부와 별개로, 무료 4종만 안 붙는다.
               const isPremiumGame = !isFreeTierGame(g.type);

@@ -7,6 +7,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import AcademyCodeButton from '../components/AcademyCodeButton';
 import MaterialsPenButton from '../components/MaterialsPenButton';
 import CoachTip from '../components/CoachTip';
+import { TrialBanner, TrialModal } from '../components/TrialNotice';
 import SosButton from '../components/SosButton';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
@@ -36,7 +37,7 @@ export default function AppLayout() {
 }
 
 function AppLayoutInner() {
-  const { academy, profile, pointUnit, isStaff, isPaid, signOut } = useAuth();
+  const { academy, profile, pointUnit, isStaff, isPaid, trial, signOut } = useAuth();
   const { t } = useTranslation();
   const { pathname } = useLocation();
   // 도움말·문의를 열기 전 마지막 페이지(문의에 자동으로 붙는다)
@@ -171,10 +172,10 @@ function AppLayoutInner() {
                 <span className="truncate">{profile?.display_name}</span>
                 <span
                   className={`shrink-0 rounded-full px-1.5 py-0.5 font-caption text-caption ${
-                    isPaid ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'
+                    isPaid || trial.active ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'
                   }`}
                 >
-                  {isPaid ? t('settings.planPaidBadge') : t('settings.planFreeBadge')}
+                  {isPaid ? t('settings.planPaidBadge') : trial.active ? t('trial.badge', { n: (trial.daysLeft ?? 0) + 1 }) : t('settings.planFreeBadge')}
                 </span>
               </p>
               <p className="font-caption text-caption text-on-surface-variant truncate">
@@ -299,7 +300,9 @@ function AppLayoutInner() {
         <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
+          {isStaff && <TrialBanner />}
           {isStaff && <CoachTip />}
+          {isStaff && <TrialModal />}
           <Outlet />
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}

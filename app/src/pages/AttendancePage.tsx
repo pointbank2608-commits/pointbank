@@ -36,7 +36,7 @@ function timeOnly(iso: string): string {
 }
 
 export default function AttendancePage() {
-  const { academy, profile, isPaid } = useAuth();
+  const { academy, profile, hasFullAccess } = useAuth();
   const studentAreaOpen = useFeature('solo') || useFeature('homework');
   const { notify, run } = useToast();
   const { t } = useTranslation();
@@ -115,7 +115,7 @@ export default function AttendancePage() {
 
   async function handleAddClass() {
     if (!academy?.id) return;
-    if (!isPaid && classes.length >= FREE_CLASS_LIMIT) {
+    if (!hasFullAccess && classes.length >= FREE_CLASS_LIMIT) {
       notify(t('attendance.freeClassLimitToast'), 'error');
       return;
     }
@@ -129,7 +129,7 @@ export default function AttendancePage() {
 
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
-    if (!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT) {
+    if (!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT) {
       notify(t('attendance.freeStudentLimitToast'), 'error');
       return;
     }
@@ -262,14 +262,14 @@ export default function AttendancePage() {
         <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
         <button
           onClick={() => void handleAddClass()}
-          disabled={!isPaid && classes.length >= FREE_CLASS_LIMIT}
-          title={!isPaid && classes.length >= FREE_CLASS_LIMIT ? t('attendance.freeClassLimitToast') : undefined}
+          disabled={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT}
+          title={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT ? t('attendance.freeClassLimitToast') : undefined}
           className="flex items-center gap-1 px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           {t('settings.addClass')}
         </button>
-        {!isPaid && classes.length >= FREE_CLASS_LIMIT && (
+        {!hasFullAccess && classes.length >= FREE_CLASS_LIMIT && (
           <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
             {t('plan.upgradeCta')}
           </Link>
@@ -285,9 +285,9 @@ export default function AttendancePage() {
             <div className="mt-1 flex items-center gap-2">
               <button
                 onClick={() => void handleAddStudent()}
-                disabled={!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT}
+                disabled={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT}
                 title={
-                  !isPaid && academyStudentCount >= FREE_STUDENT_LIMIT
+                  !hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT
                     ? t('attendance.freeStudentLimitToast')
                     : undefined
                 }
@@ -295,7 +295,7 @@ export default function AttendancePage() {
               >
                 {t('board.addStudent')}
               </button>
-              {!isPaid && academyStudentCount >= FREE_STUDENT_LIMIT && (
+              {!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT && (
                 <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
                   {t('plan.upgradeCta')}
                 </Link>

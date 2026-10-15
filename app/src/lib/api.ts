@@ -1364,12 +1364,13 @@ export async function fetchBillingHistory(academyId: string): Promise<BillingHis
 
 /** 포트원으로 카드(빌링키) 발급이 끝난 뒤 호출 — 서버(Edge Function)가 호출자 본인의
  * academy_id를 직접 확인하므로 academyId를 body로 넘기지 않는다. */
-export async function registerBillingKey(billingKey: string): Promise<void> {
-  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string }>('register-billing-key', {
+export async function registerBillingKey(billingKey: string): Promise<{ scheduledAt: string | null }> {
+  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string; scheduled?: string }>('register-billing-key', {
     body: { billingKey },
   });
   if (error) throw new Error(error.message);
   if (data?.error) throw new Error(data.error);
+  return { scheduledAt: data?.scheduled ?? null };
 }
 
 export async function cancelBilling(action: 'cancel' | 'resume'): Promise<void> {

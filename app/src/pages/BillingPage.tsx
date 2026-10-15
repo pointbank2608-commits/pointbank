@@ -47,12 +47,14 @@ export default function BillingPage() {
   async function handleRegisterCard() {
     if (!academy) return;
     setBusy(true);
+    let scheduledAt: string | null = null;
     const ok = await run(async () => {
       const billingKey = await issueBillingKey(academy.name);
-      await registerBillingKey(billingKey);
-    }, t('billing.cardRegisteredToast'));
+      scheduledAt = (await registerBillingKey(billingKey)).scheduledAt;
+    });
     setBusy(false);
     if (ok) {
+      notify(scheduledAt ? t('billing.trialScheduledToast', { date: scheduledAt }) : t('billing.cardRegisteredToast'));
       await refresh();
       await load();
     }

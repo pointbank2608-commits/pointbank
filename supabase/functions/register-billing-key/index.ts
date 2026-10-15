@@ -63,6 +63,33 @@ Deno.serve(async (req: Request) => {
       .from('academy_billing_keys')
       .upsert({ academy_id: academyId, billing_key: billingKey, customer_uid: academyId, updated_at: new Date().toISOString() });
 
+    // 무료 체험이 남아 있으면 지금은 결제하지 않고, 체험이 끝난 다음 날 첫 결제가 되도록 예약한다
+    // (체험 중에 구독해도 체험 일수가 줄지 않게 — 미루는 이유를 없앤다).
+    const { data: acad } = await supabaseAdmin
+      .from('academies')
+      .select('plan, trial_ends_at')
+      .eq('id', academyId)
+      .maybeSingle();
+    const todayKst = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+    if (acad?.plan === 'free' && acad.trial_ends_at && acad.trial_ends_at >= todayKst) {
+      const first = new Date(`${acad.trial_ends_at}T00:00:00Z`);
+      first.setUTCDate(first.getUTCDate() + 1);
+      const firstDate = first.toISOString().slice(0, 10);
+      const { error: schedError } = await supabaseAdmin
+        .from('academies')
+        .update({
+          plan: 'paid',
+          plan_status: 'active',
+          plan_started_at: new Date().toISOString(),
+          billing_cycle_day: first.getUTCDate(),
+          next_billing_at: firstDate,
+          billing_failure_count: 0,
+        })
+        .eq('id', academyId);
+      if (schedError) throw new Error(schedError.message);
+      return json({ ok: true, scheduled: firstDate });
+    }
+
     // 카드 등록 직후 첫 결제를 바로 시도한다 — 성공해야만 유료 플랜으로 전환한다.
     const result = await chargeAcademy(supabaseAdmin, academyId, billingKey, academyId);
     const today = new Date();

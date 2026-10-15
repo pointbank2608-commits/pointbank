@@ -11,7 +11,7 @@ import {
   type AcademyFeatures,
   type AdminAcademyContent,
 } from '../lib/api';
-import { adminAcademyDetail, adminLog, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
+import { adminAcademyDetail, adminAcademyTrial, adminExtendTrial, adminLog, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
 import { StatusPill } from './HelpPage';
 
 /**
@@ -26,6 +26,21 @@ export default function AdminAcademyDetailPage() {
   const [until, setUntil] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [trialEnds, setTrialEnds] = useState<string | null>(null);
+  useEffect(() => {
+    void adminAcademyTrial(id).then(setTrialEnds);
+  }, [id]);
+  async function extendTrial(days: number) {
+    setBusy(true);
+    try {
+      setTrialEnds(await adminExtendTrial(id, days));
+      setMsg(t('adminOps.saved'));
+    } catch (err) {
+      setMsg(String((err as { message?: string })?.message ?? err));
+    } finally {
+      setBusy(false);
+    }
+  }
   const [content, setContent] = useState<AdminAcademyContent | null | undefined>(undefined);
   /** 074 전이면 null(칸을 숨긴다) */
   const [features, setFeatures] = useState<AcademyFeatures | null>(null);
@@ -195,6 +210,14 @@ export default function AdminAcademyDetailPage() {
             <div>{t('adminOps.expires', { date: a.plan_expires_at ?? '–' })}</div>
             <div>{t('adminOps.nextBilling', { date: a.next_billing_at ?? '–' })}</div>
             <div>{a.card_last4 ? t('adminOps.card', { brand: a.card_brand ?? '', last4: a.card_last4 }) : t('adminOps.noCard')}</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+            <span>{t('adminOps.trialEnds', { date: trialEnds ?? '–' })}</span>
+            {[7, 14].map((d) => (
+              <button key={d} type="button" disabled={busy} onClick={() => void extendTrial(d)} className="rounded-full border border-primary px-3 py-0.5 font-label-md text-label-md text-primary disabled:opacity-50">
+                {t('adminOps.trialExtend', { n: d })}
+              </button>
+            ))}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <button type="button" disabled={busy} onClick={extend30} className="rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary disabled:opacity-50">

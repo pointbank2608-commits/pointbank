@@ -496,7 +496,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
 }
 
 export default function WordListsPage() {
-  const { academy, profile, isPaid } = useAuth();
+  const { academy, profile, hasFullAccess } = useAuth();
   const navigate = useNavigate();
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
@@ -637,7 +637,7 @@ export default function WordListsPage() {
   async function handleLaunch(game: WordListGame, classId: string) {
     const list = lists.find((item) => item.id === launchListId);
     if (launchBusyRef.current || !list || !academy || !profile || !classes.some((row) => row.id === classId)) return;
-    if (!isPaid && !isFreeTierGame(game)) return;
+    if (!hasFullAccess && !isFreeTierGame(game)) return;
     const prepared = prepareWordListGame(list.items, game);
     if (!prepared.ready) return;
     launchBusyRef.current = true;
@@ -975,7 +975,7 @@ export default function WordListsPage() {
 
       {launchListId && lists.find((item) => item.id === launchListId) && (
         <WordListGameLauncher list={lists.find((item) => item.id === launchListId)!}
-          classes={classes} selectedClassId={selectedId} isPaid={isPaid}
+          classes={classes} selectedClassId={selectedId} isPaid={hasFullAccess}
           busy={launchBusy} error={launchError}
           onClose={() => { if (!launchBusyRef.current) setLaunchListId(null); }}
           onLaunch={(game, classId) => void handleLaunch(game, classId)} />

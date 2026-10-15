@@ -11,6 +11,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import type { Academy, Profile } from '../lib/types';
+import { trialInfo, type TrialInfo } from '../lib/trial';
 
 interface AuthValue {
   /** 세션/프로필을 처음 확인하는 중인지 */
@@ -21,6 +22,10 @@ interface AuthValue {
   isStaff: boolean;
   isAdmin: boolean;
   isPaid: boolean;
+  /** 무료 체험 상태(080) */
+  trial: TrialInfo;
+  /** 유료이거나 체험 중 — 기능 열림·한도 판단은 이 값을 쓴다(결제 화면만 isPaid) */
+  hasFullAccess: boolean;
   pointUnit: string;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -110,6 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isStaff: profile?.role === 'owner' || profile?.role === 'teacher',
       isAdmin: profile?.role === 'admin',
       isPaid: academy?.plan === 'paid',
+      trial: trialInfo(academy),
+      hasFullAccess: academy?.plan === 'paid' || trialInfo(academy).active,
       pointUnit: academy?.point_unit ?? t('common.pointsFallback'),
       refresh: loadProfile,
       signOut,

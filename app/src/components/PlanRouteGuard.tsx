@@ -13,7 +13,7 @@ import type { GameType } from '../lib/types';
  * 바뀔 때마다 검사만 한다. */
 export default function PlanRouteGuard() {
   const { t } = useTranslation();
-  const { isPaid, isStaff, academy } = useAuth();
+  const { hasFullAccess, isStaff, academy } = useAuth();
   const { notify } = useToast();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export default function PlanRouteGuard() {
   }, [pathname, academy]);
 
   useEffect(() => {
-    if (isPaid) return;
+    if (hasFullAccess) return;
 
     const gameMatch = pathname.match(/^\/games\/([^/]+)/);
     const gameType = gameMatch?.[1] as GameType | undefined;
@@ -40,7 +40,7 @@ export default function PlanRouteGuard() {
       navigate(isStaff ? '/dashboard' : '/me', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, isPaid]);
+  }, [pathname, hasFullAccess]);
 
   return null;
 }
