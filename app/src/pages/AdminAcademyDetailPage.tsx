@@ -11,7 +11,7 @@ import {
   type AcademyFeatures,
   type AdminAcademyContent,
 } from '../lib/api';
-import { adminAcademyDetail, adminAcademyTrial, adminExtendTrial, adminLog, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
+import { adminAcademyDetail, adminAcademyTrial, adminExtendTrial, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
 import { StatusPill } from './HelpPage';
 
 /**
@@ -97,7 +97,6 @@ export default function AdminAcademyDetailPage() {
     setBusy(true);
     try {
       await adminSetAcademyPlan(id, plan, untilDate);
-      await adminLog(id, plan === 'paid' ? 'set_paid' : 'set_free', { until: untilDate });
       setMsg(t('adminOps.saved'));
       load();
     } catch (e) {

@@ -143,7 +143,7 @@ export default function AdminAcademiesPage() {
   }
 
   async function handleChangePassword() {
-    if (newPassword.length < 6) {
+    if (newPassword.length < 12 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
       notify(t('admin.passwordTooShort'), 'error');
       return;
     }

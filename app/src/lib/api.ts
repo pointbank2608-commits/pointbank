@@ -859,7 +859,7 @@ export async function fetchAdminAcademies(): Promise<AdminAcademyRow[]> {
 }
 
 export async function deleteAcademyAsAdmin(academyId: string) {
-  const { error } = await supabase.from('academies').delete().eq('id', academyId);
+  const { error } = await supabase.rpc('admin_delete_academy', { p_academy_id: academyId });
   if (error) throw new Error(error.message);
 }
 
