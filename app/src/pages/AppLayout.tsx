@@ -1,4 +1,6 @@
 import { useFeature } from '../lib/features';
+import { Suspense } from 'react';
+import PageLoading from '../components/PageLoading';
 import { useState, useEffect } from 'react';
 import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
 import { LAST_PAGE_KEY } from '../lib/support';
@@ -224,7 +226,7 @@ function AppLayoutInner() {
         <LessonRunnerBar />
         <PresentZoomArea>
           <PlanRouteGuard />
-          <Outlet />
+          <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
         </PresentZoomArea>
       </div>
     );
@@ -303,7 +305,7 @@ function AppLayoutInner() {
           {isStaff && <TrialBanner />}
           {isStaff && <CoachTip />}
           {isStaff && <TrialModal />}
-          <Outlet />
+          <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}
       </main>

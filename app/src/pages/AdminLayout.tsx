@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { Suspense } from 'react';
+import PageLoading from '../components/PageLoading';
 import { NavLink, Outlet } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
@@ -60,7 +62,7 @@ export default function AdminLayout() {
         </div>
       </nav>
       <main className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-margin-desktop">
-        <Outlet />
+        <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
       </main>
     </div>
   );
