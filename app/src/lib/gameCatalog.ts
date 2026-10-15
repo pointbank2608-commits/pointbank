@@ -538,6 +538,18 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.airportName',
     descKey: 'gamesList.airportDesc',
   },
+  {
+    // 레스토랑 롤플레이(2026-10-15, PPT "Ordering Food at a Restaurant"): 메뉴 → 서버·손님 주문 대화 → 짝 연습(Switch!). 피자 카페·타코 식당·카페 단계 3·4.
+    type: 'restaurant',
+    number: 44,
+    category: 'roleplay',
+    minItems: 999,
+    icon: 'restaurant',
+    path: '/games/restaurant',
+    cover: '/covers/game-restaurant.jpg',
+    nameKey: 'gamesList.restaurantName',
+    descKey: 'gamesList.restaurantDesc',
+  },
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

@@ -35,4 +35,15 @@ export const LESSON_LIBRARY: LibraryLesson[] = [
     needsWords: false,
     key: 'airport',
   },
+  {
+    id: 'restaurant',
+    recipeId: 'restaurant',
+    icon: 'restaurant',
+    cover: '/covers/game-restaurant.jpg',
+    minutes: 40,
+    levels: ['elementary', 'middle'],
+    games: ['restaurant'],
+    needsWords: false,
+    key: 'restaurant',
+  },
 ];

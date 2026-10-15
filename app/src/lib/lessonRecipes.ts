@@ -3,7 +3,7 @@ import { createGameTemplate } from './api';
 import { grammarPoint, sentencesForUnscramble } from './grammar';
 import { loadWordBank } from './wordBankCache';
 import { buildVideoLessonParts, markBingoWords } from './videoLesson';
-import type { FullCardItem, GameType, LessonSlide, WordBankEntry } from './types';
+import type { FullCardItem, GameType, LessonSlide, SlideHelper, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
 import type { LessonLevel } from './lessonLevel';
 import { newHelper } from './slideHelpers';
@@ -50,6 +50,7 @@ export interface LessonRecipe {
 }
 
 const uid = () => crypto.randomUUID();
+const timerHelper = (seconds: number): SlideHelper => ({ ...newHelper('timer'), type: 'timer', seconds } as SlideHelper);
 const attendance = (): LessonSlide => ({ id: uid(), kind: 'attendance', boardTheme: 'green' });
 const wordshow = (): LessonSlide => ({ id: uid(), kind: 'wordshow', boardTheme: 'green' });
 const study = (): LessonSlide => ({ id: uid(), kind: 'study' });
@@ -121,10 +122,10 @@ export const LESSON_RECIPES: LessonRecipe[] = [
             '4. If you could fly anywhere in the world, where would you go?',
           ]),
           // 보조 블록: 짝과 이야기하는 시간 3분
-          helpers: [{ ...newHelper('timer'), seconds: 180 }],
+          helpers: [timerHelper(180)],
         },
         game('airport'),
-        { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cloze', boardTheme: 'whiteboard', helpers: [{ ...newHelper('timer'), seconds: 300 }] },
+        { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cloze', boardTheme: 'whiteboard', helpers: [timerHelper(300)] },
         { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'board', boardTheme: 'whiteboard', helpers: [{ ...newHelper('timer'), seconds: 180 }] },
         { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cards', boardTheme: 'whiteboard' },
         green('Exit Ticket', [
@@ -132,6 +133,54 @@ export const LESSON_RECIPES: LessonRecipe[] = [
           'Please put your bags into the tray.',
           'Can I see your boarding pass and passport please?',
         ], 5.6),
+      ];
+    },
+  },
+  {
+    // 레스토랑 롤플레이 수업(2026-10-15): 워밍업 질문 → 게임(메뉴·주문하기·짝 연습) → 메뉴판·대화 빈칸·주문서·카드 워크시트 → 마무리
+    id: 'restaurant',
+    icon: 'restaurant',
+    minutes: 40,
+    needsWords: false,
+    preview: ['restaurant', 'forum', 'sports_esports', 'description', 'print'],
+    build: async (ctx) => {
+      const green = (title: string, lines: string[], size = 5) => {
+        const slide = newCanvasSlide('green');
+        slide.elements = [
+          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
+          ...lines.map((text, i) => ({
+            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
+            text,
+            fontSize: size,
+          })),
+        ];
+        return slide;
+      };
+      const sheet = (tab: string, seconds?: number): LessonSlide => ({
+        id: uid(),
+        kind: 'material',
+        materialId: 'restaurant',
+        worksheetTab: tab,
+        boardTheme: 'whiteboard',
+        ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
+      });
+      return [
+        titleSlide('Ordering Food', ctx.t('recipes.restaurantSubtitle')),
+        {
+          ...green('Warm Up Questions', [
+            '1. Have you ever eaten at a restaurant?',
+            '2. What is your favorite food?',
+            '3. What do you like to drink?',
+            '4. Would you like to work in a restaurant?',
+          ]),
+          helpers: [timerHelper(180)],
+        },
+        game('restaurant'),
+        sheet('menu'),
+        sheet('dialogue', 300),
+        sheet('pad'),
+        sheet('cards'),
+        green('Exit Ticket', ['Are you ready to order?', 'I would like a salad, please.', 'What would you like to drink?'], 5.6),
       ];
     },
   },

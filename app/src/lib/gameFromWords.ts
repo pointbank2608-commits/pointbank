@@ -94,6 +94,7 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
     return { items: words.map((w) => ({ id: w.id, label: w.word })), config: { shopItems, shopScene: 'market' } };
   }
   // 공항 롤플레이는 대본·그림이 내장돼 있어 수업 단어와 상관없이 만들어진다(낱말 칸이 비면 PPT의 공항 낱말 5개).
+  if (gameType === 'restaurant') return { items: [], config: { restaurantLevels: ['pizza', 'taco', 'cafe', 'cafe2'] } };
   if (gameType === 'airport') return { items: [], config: { airportPlaces: ['checkin', 'security', 'gate'] } };
   if (words.length === 0) return null;
   const labelItems: GameItem[] = words.map((w) => ({ id: w.id, label: w.word }));

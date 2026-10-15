@@ -88,6 +88,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.airportDesc',
   },
   {
+    // 레스토랑 롤플레이 워크시트(2026-10-15) — 메뉴판·주문 대화 빈칸·주문서·짝 연습 카드
+    id: 'restaurant',
+    path: '/materials/restaurant',
+    icon: 'restaurant',
+    cover: '/covers/game-restaurant.jpg',
+    nameKey: 'materials.restaurantName',
+    descKey: 'materials.restaurantDesc',
+  },
+  {
     id: 'worksheet',
     path: '/materials/worksheet',
     icon: 'description',
