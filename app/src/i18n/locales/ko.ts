@@ -4907,6 +4907,8 @@ const ko = {
     slideCount: "슬라이드 {{n}}장",
   },
   adminOps: {
+    prevPage: "이전",
+    nextPage: "다음",
     trialEnds: "체험 종료일: {{date}}",
     trialExtend: "체험 +{{n}}일",
     errorsTitle: "최근 24시간 오류",

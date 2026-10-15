@@ -387,3 +387,63 @@ export async function adminPurgeDeletions(): Promise<number> {
   if (error) return 0;
   return Number(data ?? 0);
 }
+
+/* ---------------- 관리자 목록 서버 페이지네이션(083) ---------------- */
+export interface AdminSearchRow {
+  academy_id: string;
+  name: string;
+  point_unit: string;
+  created_at: string;
+  plan: 'free' | 'paid';
+  plan_status: string;
+  plan_expires_at: string | null;
+  billing_failure_count: number;
+  owner_email: string | null;
+  owner_name: string | null;
+  owner_count: number;
+  teacher_count: number;
+  student_count: number;
+  last_active_at: string | null;
+  total: number;
+}
+
+export type AdminAcademyFilter = 'all' | 'paid' | 'free' | 'new' | 'billing' | 'dormant';
+export const ADMIN_PAGE_SIZE = 50;
+
+export async function adminAcademySearch(query: string, filter: AdminAcademyFilter, page: number): Promise<AdminSearchRow[]> {
+  const { data, error } = await supabase.rpc('admin_academy_search', {
+    p_query: query,
+    p_filter: filter,
+    p_limit: ADMIN_PAGE_SIZE,
+    p_offset: page * ADMIN_PAGE_SIZE,
+  });
+  if (error) throw error;
+  return ((data ?? []) as AdminSearchRow[]).map((r) => ({ ...r, total: Number(r.total) }));
+}
+
+export interface AdminTotals {
+  academies: number;
+  teachers: number;
+  students: number;
+}
+
+export async function adminTotals(): Promise<AdminTotals | null> {
+  const { data, error } = await supabase.rpc('admin_totals');
+  if (error) return null;
+  return (data ?? null) as AdminTotals | null;
+}
+
+export interface AdminTodayLists {
+  billing_total: number;
+  billing: Array<{ academy_id: string; name: string; billing_failure_count: number; plan_status: string; plan_expires_at: string | null }>;
+  fresh_total: number;
+  fresh: Array<{ academy_id: string; name: string; created_at: string; student_count: number; lesson_count: number }>;
+  dormant_total: number;
+  dormant: Array<{ academy_id: string; name: string; last_active_at: string | null }>;
+}
+
+export async function adminTodayLists(): Promise<AdminTodayLists | null> {
+  const { data, error } = await supabase.rpc('admin_today_lists');
+  if (error) throw error;
+  return (data ?? null) as AdminTodayLists | null;
+}

@@ -897,6 +897,14 @@ export async function adminAcademiesFeatures(): Promise<Map<string, AcademyFeatu
   const rows = (data ?? []) as { academy_id: string; grp: boolean; solo: boolean; homework: boolean }[];
   return new Map(rows.map((r) => [r.academy_id, { group: r.grp, solo: r.solo, homework: r.homework }]));
 }
+/** 지금 보이는 학원들(최대 100곳)의 기능 열기·닫기(083) */
+export async function adminAcademiesFeaturesFor(ids: string[]): Promise<Map<string, AcademyFeatures>> {
+  if (ids.length === 0) return new Map();
+  const { data, error } = await supabase.rpc('admin_academies_features_for', { p_ids: ids });
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as { academy_id: string; grp: boolean; solo: boolean; homework: boolean }[];
+  return new Map(rows.map((r) => [r.academy_id, { group: r.grp, solo: r.solo, homework: r.homework }]));
+}
 /** p_except(내 학원)를 뺀 모든 학원의 개별수업·숙제를 한꺼번에 열거나 닫는다 — 바꾼 학원 수를 돌려준다 */
 export async function adminSetFeaturesBulk(solo: boolean, homework: boolean, exceptAcademyId: string | null): Promise<number> {
   const { data, error } = await supabase.rpc('admin_set_features_bulk', { p_solo: solo, p_homework: homework, p_except: exceptAcademyId });

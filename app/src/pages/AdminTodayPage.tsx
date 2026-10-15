@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
-  adminAcademyRows,
+  adminTodayLists,
   adminErrorSummary,
   adminPurgeDeletions,
   adminTickets,
   adminToday,
-  type AdminAcademyRow,
+  type AdminTodayLists,
   type AdminErrorRow,
   type AdminTicketRow,
   type AdminToday,
@@ -21,16 +21,16 @@ import { StatusPill } from './HelpPage';
 export default function AdminTodayPage() {
   const { t } = useTranslation();
   const [today, setToday] = useState<AdminToday | null>(null);
-  const [rows, setRows] = useState<AdminAcademyRow[]>([]);
+  const [lists, setLists] = useState<AdminTodayLists | null>(null);
   const [tickets, setTickets] = useState<AdminTicketRow[]>([]);
   const [errors, setErrors] = useState<AdminErrorRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([adminToday(), adminAcademyRows(), adminTickets('open')])
+    Promise.all([adminToday(), adminTodayLists(), adminTickets('open')])
       .then(([td, r, tk]) => {
         setToday(td);
-        setRows(r);
+        setLists(r);
         setTickets(tk);
       })
       .catch((e) => {
@@ -44,15 +44,9 @@ export default function AdminTodayPage() {
     void adminPurgeDeletions();
   }, []);
 
-  const now = Date.now();
-  const billing = rows.filter(
-    (r) =>
-      r.billing_failure_count > 0 ||
-      r.plan_status === 'pending_cancel' ||
-      (r.plan === 'paid' && r.plan_expires_at && Date.parse(r.plan_expires_at) - now <= 7 * 86_400_000),
-  );
-  const fresh = rows.filter((r) => now - Date.parse(r.created_at) <= 7 * 86_400_000);
-  const dormantPaid = rows.filter((r) => r.plan === 'paid' && (!r.last_active_at || now - Date.parse(r.last_active_at) > 14 * 86_400_000));
+  const billing = lists?.billing ?? [];
+  const fresh = lists?.fresh ?? [];
+  const dormantPaid = lists?.dormant ?? [];
 
   const card = (label: string, value: number | undefined, to: string, alert = false) => (
     <Link
@@ -107,7 +101,7 @@ export default function AdminTodayPage() {
         ))}
       </Section>
 
-      <Section title={t('adminOps.billingTitle')} empty={t('adminOps.noneNow')} count={billing.length}>
+      <Section title={t('adminOps.billingTitle')} empty={t('adminOps.noneNow')} count={lists?.billing_total ?? 0}>
         {billing.map((r) => (
           <AcademyLine key={r.academy_id} row={r}>
             {r.billing_failure_count > 0
@@ -119,7 +113,7 @@ export default function AdminTodayPage() {
         ))}
       </Section>
 
-      <Section title={t('adminOps.newAcademies')} empty={t('adminOps.noneNow')} count={fresh.length}>
+      <Section title={t('adminOps.newAcademies')} empty={t('adminOps.noneNow')} count={lists?.fresh_total ?? 0}>
         {fresh.map((r) => (
           <AcademyLine key={r.academy_id} row={r}>
             {t('adminOps.newLine', { students: r.student_count, lessons: r.lesson_count })}
@@ -127,7 +121,7 @@ export default function AdminTodayPage() {
         ))}
       </Section>
 
-      <Section title={t('adminOps.dormantPaid')} empty={t('adminOps.noneNow')} count={dormantPaid.length}>
+      <Section title={t('adminOps.dormantPaid')} empty={t('adminOps.noneNow')} count={lists?.dormant_total ?? 0}>
         {dormantPaid.map((r) => (
           <AcademyLine key={r.academy_id} row={r}>
             {r.last_active_at ? t('adminOps.lastActive', { date: new Date(r.last_active_at).toLocaleDateString() }) : t('adminOps.neverActive')}
@@ -150,7 +144,7 @@ function Section({ title, count, empty, children }: { title: string; count: numb
   );
 }
 
-function AcademyLine({ row, children }: { row: AdminAcademyRow; children: React.ReactNode }) {
+function AcademyLine({ row, children }: { row: { academy_id: string; name: string }; children: React.ReactNode }) {
   return (
     <Link to={`/admin/academies/${row.academy_id}`} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-container-low">
       <span className="min-w-0 flex-1 truncate font-label-md text-label-md">{row.name}</span>

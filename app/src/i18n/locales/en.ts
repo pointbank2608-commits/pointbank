@@ -4910,6 +4910,8 @@ const en: Ko = {
     slideCount: "{{n}} slides",
   },
   adminOps: {
+    prevPage: "Previous",
+    nextPage: "Next",
     trialEnds: "Trial ends: {{date}}",
     trialExtend: "Trial +{{n}} days",
     errorsTitle: "Errors in the last 24 hours",

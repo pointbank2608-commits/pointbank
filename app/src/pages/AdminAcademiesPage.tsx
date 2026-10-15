@@ -1,21 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { adminAcademyRows, type AdminAcademyRow as OpsRow } from '../lib/support';
+import { ADMIN_PAGE_SIZE, adminAcademySearch, adminTotals, type AdminAcademyFilter, type AdminSearchRow, type AdminTotals } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import {
-  adminAcademiesFeatures,
+  adminAcademiesFeaturesFor,
   adminSetAcademyFeatures,
   adminSetAcademyPlan,
   adminSetFeaturesBulk,
   changeMyPassword,
   deleteAcademyAsAdmin,
-  fetchAdminAcademies,
   type AcademyFeatures,
 } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import i18n from '../i18n';
-import type { AdminAcademyRow } from '../lib/types';
 
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'ko-KR', {
@@ -29,15 +27,17 @@ export default function AdminAcademiesPage() {
   const { t } = useTranslation();
   const { notify, run } = useToast();
   const { academy: myAcademy } = useAuth();
-  const [rows, setRows] = useState<AdminAcademyRow[]>([]);
+  const [rows, setRows] = useState<AdminSearchRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [totals, setTotals] = useState<AdminTotals | null>(null);
   /** 학원별 기능 열기·닫기(075 전이면 비어 있고 칸을 숨긴다) */
   const [feat, setFeat] = useState<Map<string, AcademyFeatures>>(new Map());
-  const loadFeat = useCallback(() => {
-    adminAcademiesFeatures()
+  const loadFeat = useCallback((ids: string[]) => {
+    adminAcademiesFeaturesFor(ids)
       .then(setFeat)
       .catch(() => setFeat(new Map()));
   }, []);
-  useEffect(loadFeat, [loadFeat]);
   async function toggleFeat(academyId: string, key: keyof AcademyFeatures) {
     const cur = feat.get(academyId);
     if (!cur) return;
@@ -56,7 +56,7 @@ export default function AdminAcademiesPage() {
     try {
       const n = await adminSetFeaturesBulk(open, open, myAcademy?.id ?? null);
       notify(t('admin.featBulkDone', { count: n }));
-      loadFeat();
+      loadFeat(rows.map((r) => r.academy_id));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     }
@@ -71,46 +71,42 @@ export default function AdminAcademiesPage() {
   // 검색·필터(오늘 할 일에서 ?filter=billing|new|paid 로 들어올 수 있다)
   const [params] = useSearchParams();
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<string>(params.get('filter') ?? 'all');
-  const [ops, setOps] = useState<Map<string, OpsRow>>(new Map());
+  const [debounced, setDebounced] = useState('');
+  const [filter, setFilter] = useState<AdminAcademyFilter>((params.get('filter') as AdminAcademyFilter) ?? 'all');
+
   useEffect(() => {
-    adminAcademyRows()
-      .then((r) => setOps(new Map(r.map((x) => [x.academy_id, x]))))
-      .catch(() => {});
+    const h = window.setTimeout(() => setDebounced(query.trim()), 300);
+    return () => window.clearTimeout(h);
+  }, [query]);
+  useEffect(() => {
+    setPage(0);
+  }, [debounced, filter]);
+  useEffect(() => {
+    void adminTotals().then(setTotals);
   }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setRows(await fetchAdminAcademies());
+      const list = await adminAcademySearch(debounced, filter, page);
+      setRows(list);
+      setTotal(list[0]?.total ?? 0);
+      loadFeat(list.map((r) => r.academy_id));
     } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
+      notify(err instanceof Error ? err.message : String((err as { message?: string })?.message ?? err), 'error');
     } finally {
       setLoading(false);
     }
-  }, [notify]);
+  }, [debounced, filter, page, notify, loadFeat]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const shown = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const now = Date.now();
-    return rows.filter((r) => {
-      const o = ops.get(r.academy_id);
-      if (q && !(r.name.toLowerCase().includes(q) || (o?.owner_email ?? '').toLowerCase().includes(q) || (o?.owner_name ?? '').toLowerCase().includes(q))) return false;
-      if (filter === 'paid') return r.plan === 'paid';
-      if (filter === 'free') return r.plan !== 'paid';
-      if (filter === 'new') return now - Date.parse(r.created_at) <= 7 * 86_400_000;
-      if (filter === 'billing')
-        return !!o && (o.billing_failure_count > 0 || o.plan_status === 'pending_cancel' || (o.plan === 'paid' && !!o.plan_expires_at && Date.parse(o.plan_expires_at) - now <= 7 * 86_400_000));
-      if (filter === 'dormant') return !o?.last_active_at || now - Date.parse(o.last_active_at) > 14 * 86_400_000;
-      return true;
-    });
-  }, [rows, ops, query, filter]);
+  const shown = rows;
+  const pageCount = Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE));
 
-  async function handlePlanToggle(row: AdminAcademyRow) {
+  async function handlePlanToggle(row: AdminSearchRow) {
     const nextPlan = row.plan === 'paid' ? 'free' : 'paid';
     const until = nextPlan === 'paid' ? (untilDrafts[row.academy_id] || null) : null;
     setBusyId(row.academy_id);
@@ -127,7 +123,7 @@ export default function AdminAcademiesPage() {
     }
   }
 
-  async function handleDelete(row: AdminAcademyRow) {
+  async function handleDelete(row: AdminSearchRow) {
     const typed = prompt(t('admin.deleteConfirmPrompt', { name: row.name }));
     if (typed !== row.name) {
       if (typed !== null) notify(t('admin.deleteMismatch'), 'error');
@@ -160,39 +156,26 @@ export default function AdminAcademiesPage() {
     }
   }
 
-  const totals = rows.reduce(
-    (acc, r) => ({
-      academies: acc.academies + 1,
-      teachers: acc.teachers + r.owner_count + r.teacher_count,
-      students: acc.students + r.student_count,
-    }),
-    { academies: 0, teachers: 0, students: 0 },
-  );
-
   return (
     <div className="space-y-6">
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('admin.pageTitle')}
       </h2>
 
-      {loading ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
-      ) : rows.length === 0 ? (
-        <div className="text-center py-16 font-body-md text-on-surface-variant">{t('admin.emptyAcademies')}</div>
-      ) : (
+      {(
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statAcademies')}</div>
-              <div className="font-display-lg text-[28px] text-on-surface">{totals.academies}</div>
+              <div className="font-display-lg text-[28px] text-on-surface">{totals?.academies ?? '–'}</div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statTeachers')}</div>
-              <div className="font-display-lg text-[28px] text-on-surface">{totals.teachers}</div>
+              <div className="font-display-lg text-[28px] text-on-surface">{totals?.teachers ?? '–'}</div>
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statStudents')}</div>
-              <div className="font-display-lg text-[28px] text-on-surface">{totals.students}</div>
+              <div className="font-display-lg text-[28px] text-on-surface">{totals?.students ?? '–'}</div>
             </div>
           </div>
 
@@ -208,13 +191,13 @@ export default function AdminAcademiesPage() {
               <button
                 key={f}
                 type="button"
-                onClick={() => setFilter(f)}
+                onClick={() => setFilter(f as AdminAcademyFilter)}
                 className={`rounded-full px-3 py-1.5 font-label-md text-label-md ${filter === f ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant'}`}
               >
                 {t(`adminOps.filter_${f}`)}
               </button>
             ))}
-            <span className="font-caption text-caption text-on-surface-variant">{t('adminOps.shownCount', { n: shown.length })}</span>
+            <span className="font-caption text-caption text-on-surface-variant">{loading ? t('common.loading') : t('adminOps.shownCount', { n: total })}</span>
           </div>
           {feat.size > 0 && (
             <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
@@ -251,11 +234,9 @@ export default function AdminAcademiesPage() {
                         {r.name}
                       </Link>
                       <div className="font-caption text-caption text-on-surface-variant">
-                        {ops.get(r.academy_id)?.owner_email ?? ''}
-                        {ops.get(r.academy_id)?.last_active_at
-                          ? ` · ${t('adminOps.lastActive', { date: new Date(ops.get(r.academy_id)!.last_active_at!).toLocaleDateString() })}`
-                          : ''}
-                        {(ops.get(r.academy_id)?.billing_failure_count ?? 0) > 0 ? ` · ⚠ ${t('adminOps.failures', { n: ops.get(r.academy_id)!.billing_failure_count })}` : ''}
+                        {r.owner_email ?? ''}
+                        {r.last_active_at ? ` · ${t('adminOps.lastActive', { date: new Date(r.last_active_at).toLocaleDateString() })}` : ''}
+                        {r.billing_failure_count > 0 ? ` · ⚠ ${t('adminOps.failures', { n: r.billing_failure_count })}` : ''}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{r.point_unit}</td>
@@ -343,6 +324,27 @@ export default function AdminAcademiesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              disabled={page === 0 || loading}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              className="rounded-full border border-outline-variant px-4 py-1.5 font-label-md text-label-md disabled:opacity-40"
+            >
+              {t('adminOps.prevPage')}
+            </button>
+            <span className="font-caption text-caption tabular-nums text-on-surface-variant">
+              {page + 1} / {pageCount}
+            </span>
+            <button
+              type="button"
+              disabled={page + 1 >= pageCount || loading}
+              onClick={() => setPage((p) => p + 1)}
+              className="rounded-full border border-outline-variant px-4 py-1.5 font-label-md text-label-md disabled:opacity-40"
+            >
+              {t('adminOps.nextPage')}
+            </button>
           </div>
         </>
       )}
