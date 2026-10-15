@@ -97,6 +97,15 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.doctorDesc',
   },
   {
+    // 번개 피하기 워크시트(2026-10-16) — 읽기 카드·서바이벌 기록지·빈칸 채우기·내가 번개를 맞으면?
+    id: 'lightning',
+    path: '/materials/lightning',
+    icon: 'thunderstorm',
+    cover: '/covers/game-lightning.jpg',
+    nameKey: 'materials.lightningName',
+    descKey: 'materials.lightningDesc',
+  },
+  {
     // 아이스크림 가게 워크시트(2026-10-15) — 메뉴판·대화 빈칸·내 아이스크림 주문서·점원/손님 카드와 주문 카드
     id: 'icecream',
     path: '/materials/icecream',

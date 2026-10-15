@@ -281,6 +281,54 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     },
   },
   {
+    // 번개 피하기 수업(2026-10-16): 워밍업 질문 → 게임(날씨 문장 12개) → 읽기 카드·빈칸·그림·기록지 워크시트 → 마무리
+    id: 'lightning',
+    icon: 'thunderstorm',
+    minutes: 30,
+    needsWords: false,
+    preview: ['thunderstorm', 'forum', 'sports_esports', 'description', 'print'],
+    build: async (ctx) => {
+      const green = (title: string, lines: string[], size = 5) => {
+        const slide = newCanvasSlide('green');
+        slide.elements = [
+          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
+          ...lines.map((text, i) => ({
+            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
+            text,
+            fontSize: size,
+          })),
+        ];
+        return slide;
+      };
+      const sheet = (tab: string, seconds?: number): LessonSlide => ({
+        id: uid(),
+        kind: 'material',
+        materialId: 'lightning',
+        worksheetTab: tab,
+        boardTheme: 'whiteboard',
+        ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
+      });
+      return [
+        titleSlide('Lightning Luck', ctx.t('recipes.lightningSubtitle')),
+        {
+          ...green('Warm Up Questions', [
+            '1. What is the weather like today?',
+            '2. Do you like rainy days?',
+            '3. Are you afraid of thunder?',
+            '4. What do you do on a rainy day?',
+          ]),
+          helpers: [timerHelper(180)],
+        },
+        game('lightning'),
+        sheet('cards'),
+        sheet('fill', 300),
+        sheet('draw', 300),
+        sheet('score'),
+        green('Exit Ticket', ['It is raining.', 'Take an umbrella.', 'The storm is over.'], 5.6),
+      ];
+    },
+  },
+  {
     id: 'grammar',
     icon: 'rule',
     minutes: 30,

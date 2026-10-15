@@ -91,6 +91,7 @@ import RestaurantPage from './pages/RestaurantPage';
 import IceCreamPage from './pages/IceCreamPage';
 import DoctorPage from './pages/DoctorPage';
 import DoctorWorksheetPage from './pages/DoctorWorksheetPage';
+import LightningWorksheetPage from './pages/LightningWorksheetPage';
 import AirportWorksheetPage from './pages/AirportWorksheetPage';
 import RestaurantWorksheetPage from './pages/RestaurantWorksheetPage';
 import IceCreamWorksheetPage from './pages/IceCreamWorksheetPage';
@@ -263,6 +264,7 @@ export default function App() {
             <Route path="/materials/restaurant" element={<RestaurantWorksheetPage />} />
             <Route path="/materials/icecream" element={<IceCreamWorksheetPage />} />
             <Route path="/materials/doctor" element={<DoctorWorksheetPage />} />
+            <Route path="/materials/lightning" element={<LightningWorksheetPage />} />
             <Route path="/materials/worksheet" element={<WorksheetPrintPage />} />
             <Route path="/materials/library" element={<WorksheetLibraryPage />} />
             <Route path="/materials/phonics" element={<PhonicsWorksheetLibraryPage />} />

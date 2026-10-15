@@ -133,6 +133,17 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   const [pulse, setPulse] = useState<number | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [peek, setPeek] = useState(false);
+  // 새 낱말은 첫 카드도 물음표로 시작해 잠깐 뒤 뒤집어 보여 준다(선생님 제안 2026-10-16)
+  const [firstShown, setFirstShown] = useState(false);
+  useEffect(() => {
+    setFirstShown(false);
+    const id = window.setTimeout(() => {
+      setFirstShown(true);
+      playSfx(GAME_SFX.fourclues.flip);
+    }, 800);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos, round, itemKey]);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
     timers.current.push(window.setTimeout(fn, ms));
@@ -360,7 +371,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
         <div className="absolute flex items-center justify-between" style={{ left: '22%', width: '56%', top: '39%', height: '38%' }}>
           {FOUR.map((i) => {
             const clue = clues[i];
-            const opened = i < openCount || phase === 'reveal';
+            const opened = (i === 0 ? firstShown && openCount >= 1 : i < openCount) || phase === 'reveal';
             return (
               <div
                 key={i}

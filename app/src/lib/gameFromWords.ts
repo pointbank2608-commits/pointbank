@@ -1,3 +1,4 @@
+import { LIGHTNING_SAMPLES } from './lightningLuck';
 import i18n from '../i18n';
 import { buildContestQuestions, contestRoundNames } from './liveQuiz';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from './quizFromWordList';
@@ -95,6 +96,13 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
     return { items: words.map((w) => ({ id: w.id, label: w.word })), config: { shopItems, shopScene: 'market' } };
   }
   // 공항 롤플레이는 대본·그림이 내장돼 있어 수업 단어와 상관없이 만들어진다(낱말 칸이 비면 PPT의 공항 낱말 5개).
+  if (gameType === 'lightning' && words.length === 0) {
+    // 수업 단어가 없으면 날씨·폭풍 기본 문장 12개로 시작한다
+    return {
+      items: LIGHTNING_SAMPLES.map((s) => ({ id: crypto.randomUUID(), label: `${s.en} | ${s.ko}` })),
+      config: { lightningPlayers: 8, lightningMin: 4, lightningMax: 12 },
+    };
+  }
   if (gameType === 'doctor') return { items: [], config: {} };
   if (gameType === 'icecream') return { items: [], config: {} };
   if (gameType === 'restaurant') return { items: [], config: { restaurantLevels: ['pizza', 'taco', 'cafe', 'cafe2'] } };
