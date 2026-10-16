@@ -38,6 +38,7 @@ export default function LessonRunnerBar() {
   const [pointsOpen, setPointsOpen] = useState(false);
   const [annotationOpen, setAnnotationOpen] = useState(false);
   const [keysOpen, setKeysOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [onlineOpen, setOnlineOpen] = useState(false);
   const [remoteOpen, setRemoteOpen] = useState(false);
   const [remoteId, setRemoteId] = useState<string | null>(() => loadRemoteId());
@@ -107,6 +108,23 @@ export default function LessonRunnerBar() {
           <span className="hidden sm:inline font-label-md text-label-md">{t('curriculum.play.annotation')}</span>
         </button>
       )}
+      <div className="relative shrink-0">
+        <button
+          type="button"
+          onClick={() => setMoreOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={moreOpen}
+          className={`flex h-8 items-center gap-1 rounded-full px-2.5 transition-colors ${moreOpen ? 'bg-white text-deep-navy' : 'hover:bg-white/15'}`}
+          aria-label={t('curriculum.play.more')}
+          title={t('curriculum.play.more')}
+        >
+          <span className="material-symbols-outlined text-[20px]">more_horiz</span>
+          <span className="hidden font-label-md text-label-md sm:inline">{t('curriculum.play.more')}</span>
+        </button>
+        {moreOpen && (
+          <>
+            <div className="fixed inset-0 z-30" onClick={() => setMoreOpen(false)} aria-hidden />
+            <div role="menu" className="absolute right-0 top-full z-40 mt-2 flex w-max max-w-[90vw] flex-col items-start gap-2 rounded-2xl bg-deep-navy p-3 text-white shadow-xl ring-1 ring-white/20">
       <div className="flex shrink-0 items-center rounded-full bg-white/10">
         <button
           type="button"
@@ -145,7 +163,7 @@ export default function LessonRunnerBar() {
           title={t('curriculum.play.fitScreenHint')}
         >
           <span className="material-symbols-outlined text-[20px]">fit_screen</span>
-          <span className="hidden font-caption text-caption lg:inline">{t('curriculum.play.fitScreen')}</span>
+          <span className="font-caption text-caption">{t('curriculum.play.fitScreen')}</span>
         </button>
       </div>
       <button
@@ -156,7 +174,7 @@ export default function LessonRunnerBar() {
         title={t('remote.title')}
       >
         <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
-        <span className="hidden font-caption text-caption lg:inline">{t('remote.button')}</span>
+        <span className="font-caption text-caption">{t('remote.button')}</span>
         {remoteId && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
       </button>
       <button
@@ -167,26 +185,32 @@ export default function LessonRunnerBar() {
         title={t('online.title')}
       >
         <span className="material-symbols-outlined text-[20px]">cast_for_education</span>
-        <span className="hidden font-caption text-caption lg:inline">{t('online.button')}</span>
+        <span className="font-caption text-caption">{t('online.button')}</span>
         {runner.view && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
       </button>
       <button
         type="button"
         onClick={() => setKeysOpen((v) => !v)}
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${keysOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
+        className={`flex h-8 shrink-0 items-center gap-1 rounded-full px-2 transition-colors ${keysOpen ? 'bg-white/25' : 'hover:bg-white/15'}`}
         aria-label={t('curriculum.play.keysTitle')}
         title={t('curriculum.play.keysTitle')}
       >
         <span className="material-symbols-outlined text-[20px]">help</span>
+        <span className="font-caption text-caption">{t('curriculum.play.keysTitle')}</span>
       </button>
       <button
         type="button"
         onClick={toggleFullscreen}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/15"
+        className="flex h-8 shrink-0 items-center gap-1 rounded-full px-2 transition-colors hover:bg-white/15"
         aria-label={t(isFullscreen ? 'curriculum.play.exitFullscreen' : 'curriculum.play.enterFullscreen')}
       >
         <span className="material-symbols-outlined text-[20px]">{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</span>
+        <span className="font-caption text-caption">{t(isFullscreen ? 'curriculum.play.exitFullscreen' : 'curriculum.play.enterFullscreen')}</span>
       </button>
+            </div>
+          </>
+        )}
+      </div>
       <button
         type="button"
         onClick={exit}

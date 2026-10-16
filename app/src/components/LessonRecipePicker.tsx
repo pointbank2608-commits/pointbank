@@ -220,6 +220,30 @@ export default function LessonRecipePicker({
         </div>
       )}
 
+      {(() => {
+        const sample = LESSON_SETS.find((x) => x.kind === 'word');
+        if (!sample) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-warm-yellow bg-warm-yellow/20 p-4">
+            <span className="material-symbols-outlined text-[28px] text-deep-navy" aria-hidden>
+              bolt
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="font-label-md text-label-md font-bold text-deep-navy">{t('recipes.sampleTitle')}</div>
+              <div className="font-caption text-caption text-on-surface-variant">{t('recipes.sampleDesc')}</div>
+            </div>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void applySet(sample)}
+              className="min-h-12 rounded-full bg-primary px-5 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-50"
+            >
+              {t('recipes.sampleButton')}
+            </button>
+          </div>
+        );
+      })()}
+
       <div className="space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-label-md text-label-md font-bold text-deep-navy">{t('recipes.levelLabel')}</span>

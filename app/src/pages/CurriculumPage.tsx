@@ -611,8 +611,10 @@ export default function CurriculumPage() {
   useEffect(() => {
     const p = pendingFocus.current;
     if (!p || loading || staffClassId !== p.focusClassId) return;
-    pendingFocus.current = null;
     const lesson = p.startLessonId ? lessons.find((l) => l.id === p.startLessonId) : null;
+    // 수업 목록이 아직 안 불러와졌으면(반을 막 골라서) 그 수업이 나타날 때까지 기다린다.
+    if (p.startLessonId && !lesson) return;
+    pendingFocus.current = null;
     if (lesson) requestStart(lesson);
     else openCreateForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -623,7 +625,7 @@ export default function CurriculumPage() {
   useEffect(() => {
     const st = location.state as { wrapUp?: WrapUpInfo } | null;
     if (st?.wrapUp) {
-      setWrapUp({ ...st.wrapUp, className: classes.find((c) => c.id === st.wrapUp?.classId)?.name });
+      setWrapUp(st.wrapUp);
       navigate('/curriculum', { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -655,7 +657,7 @@ export default function CurriculumPage() {
           }}
         />
       )}
-      {wrapUp && <LessonWrapUp info={wrapUp} onClose={() => setWrapUp(null)} />}
+      {wrapUp && <LessonWrapUp info={{ ...wrapUp, className: classes.find((c) => c.id === wrapUp.classId)?.name }} onClose={() => setWrapUp(null)} />}
       {libraryOpen && academy?.id && profile && (
         <LessonLibraryModal
           academyId={academy.id}
@@ -1145,17 +1147,17 @@ export default function CurriculumPage() {
               >
                 ▶ {t('curriculum.startButton')}
               </button>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => openEditForm(lesson)}
-                  className="flex min-h-12 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-primary px-3 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+                  className="flex min-h-12 min-w-[7rem] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-primary px-3 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
                 >
                   <span className="material-symbols-outlined text-[18px]">edit</span>
                   {t('curriculum.editButton')}
                 </button>
                 <MoreMenu
-                  className="min-w-0 flex-1 basis-0"
+                  className="min-w-[7rem] flex-1"
                   triggerLabel={t('curriculum.moreButton')}
                   items={[
                     ...(homeworkOpen

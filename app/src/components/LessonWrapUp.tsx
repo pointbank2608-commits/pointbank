@@ -40,14 +40,15 @@ export default function LessonWrapUp({ info, onClose }: { info: WrapUpInfo; onCl
     };
   }, [info.classId]);
 
+  const wordsKey = info.words.slice(0, 8).join(', ');
   useEffect(() => {
-    const words = info.words.slice(0, 8).join(', ');
+    const words = wordsKey;
     setNote(
       words
         ? t('wrapUp.noteWithWords', { cls: info.className ?? '', lesson: info.lessonName, words })
         : t('wrapUp.noteNoWords', { cls: info.className ?? '', lesson: info.lessonName }),
     );
-  }, [info, t]);
+  }, [wordsKey, info.className, info.lessonName, t]);
 
   async function copy() {
     try {

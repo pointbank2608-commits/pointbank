@@ -65,7 +65,7 @@ export default function TodayLessons({ academyId }: { academyId: string }) {
           {cards.map(({ cls, lesson }) => (
             <li key={cls.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-outline-variant/60 p-4">
               <span className="w-14 shrink-0 font-title-md text-title-md text-deep-navy">{cls.schedule ? shortTime(cls.schedule.time) : ''}</span>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-[12rem] flex-1">
                 <div className="font-title-md text-title-md text-on-surface">{cls.name}</div>
                 <div className="font-body-md text-body-md text-on-surface-variant">
                   {lesson ? `${lesson.name}${cls.schedule ? ` · ${cls.schedule.minutes}${t('todayLessons.min')}` : ''}` : t('todayLessons.noLesson')}
