@@ -16,12 +16,22 @@ export const FAQ_CATEGORIES: FaqCategory[] = ['start', 'lesson', 'games', 'words
 
 export const FAQ: FaqItem[] = [
   {
+    id: 'start-menu',
+    category: 'start',
+    q: { ko: '메뉴 이름이 바뀐 것 같아요. 예전 메뉴는 어디 있나요?', en: 'The menu names look different. Where did the old menus go?' },
+    a: {
+      ko: '대시보드 → 오늘 / 게임 센터 → 자료 안의 게임 / 수업 자료실 → 자료 안의 활동지(인쇄) / 내 단어장 → 자료 안의 단어장 / 단어 사전 → 자료 안의 그림 사전 / 영상 라이브러리 → 자료 안의 수업 영상 / 학생관리 → 우리 반 안의 학생·출석 / 포인트 뱅크 → 우리 반 안의 칭찬 통장 / 리포트 → 우리 반 안의 기록 / 설정·도움말·요금제 → 더보기',
+      en: 'Dashboard → Today / Game Center → Games (under Library) / Classroom Materials → Worksheets (under Library) / My Word Lists → Word Lists (under Library) / Word Dictionary → Picture Dictionary (under Library) / Video library → Lesson Videos (under Library) / Student Management → Students & Attendance (under My Class) / Point Bank → Praise Passbook (under My Class) / Reports → Records (under My Class) / Settings, Help, Plan → More',
+    },
+    link: '/dashboard',
+  },
+  {
     id: 'start-first',
     category: 'start',
     q: { ko: '처음인데 무엇부터 하면 되나요?', en: 'I am new. Where do I start?' },
     a: {
-      ko: '① 학생관리에서 반을 만들고 ② 내 단어장에서 단어장을 하나 만든 뒤 ③ 내 수업 → 새 수업 만들기에서 "레시피로 시작하기"를 고르세요. 슬라이드가 순서대로 채워지고, "발표하기"만 누르면 수업이 시작돼요. 대시보드의 "처음 시작하기" 체크리스트를 따라가도 돼요.',
-      en: 'Create a class in Students, make one word list, then go to My Lessons → New lesson and pick a recipe. Slides fill in automatically — just press Present. The "Getting started" checklist on the dashboard walks you through it.',
+      ko: '① 학생·출석에서 반을 만들고 ② 내 단어장에서 단어장을 하나 만든 뒤 ③ 내 수업 → 새 수업 만들기에서 "추천 수업"을 고르세요. 슬라이드가 순서대로 채워지고, "수업 시작"만 누르면 수업이 시작돼요. 오늘 화면의 "처음 시작하기" 체크리스트를 따라가도 돼요.',
+      en: 'Create a class in Students, make one word list, then go to My Lessons → New lesson and pick a suggested lesson. Slides fill in automatically — just press Start lesson. The "Getting started" checklist on the Today screen walks you through it.',
     },
     link: '/curriculum',
   },
@@ -142,7 +152,7 @@ export const FAQ: FaqItem[] = [
     category: 'games',
     q: { ko: '학생들이 휴대폰으로 참여하는 퀴즈는 어떻게 하나요?', en: 'How do students join a quiz on their phones?' },
     a: {
-      ko: '게임 센터의 "대회 퀴즈쇼"에서 단어장으로 대회를 만들고 "대회 열기"를 누르면 QR 코드와 번호가 나와요. 학생은 휴대폰 카메라로 찍고 닉네임만 넣으면 돼요(로그인 없음). 이상한 닉네임은 ✕로 내보낼 수 있어요.',
+      ko: '게임 메뉴의 "대회 퀴즈쇼"에서 단어장으로 대회를 만들고 "대회 열기"를 누르면 QR 코드와 번호가 나와요. 학생은 휴대폰 카메라로 찍고 닉네임만 넣으면 돼요(로그인 없음). 이상한 닉네임은 ✕로 내보낼 수 있어요.',
       en: 'Open "Contest Quiz Show" in the game center, build a contest from a word list and press "Open". Students scan the QR code and enter a nickname — no login. Remove unsuitable nicknames with ✕.',
     },
     link: '/games/quizshow',
@@ -161,7 +171,7 @@ export const FAQ: FaqItem[] = [
     category: 'words',
     q: { ko: '워크시트는 어디서 만드나요?', en: 'Where do I make worksheets?' },
     a: {
-      ko: '수업 자료실에서 워크시트·플래시카드·빙고·메모리 카드를 A4로 인쇄할 수 있어요. 수업 안에서는 "수업 자료실" 슬라이드로 넣으면 발표 중 바로 인쇄할 수 있어요. 단어를 사전 주제(동물·음식 등)에서 고를 수도 있어요.',
+      ko: '활동지(인쇄)에서 워크시트·플래시카드·빙고·메모리 카드를 A4로 인쇄할 수 있어요. 수업 안에서는 "활동지(인쇄)" 슬라이드로 넣으면 발표 중 바로 인쇄할 수 있어요. 단어를 사전 주제(동물·음식 등)에서 고를 수도 있어요.',
       en: 'Printables (A4) are in Materials: worksheets, flashcards, bingo and memory cards. In a lesson, add a Materials slide to print during class. Words can also come from a dictionary topic.',
     },
     link: '/materials',
@@ -210,7 +220,7 @@ export const FAQ: FaqItem[] = [
     category: 'homework',
     q: { ko: '학생 스탯과 학부모 리포트는 어디서 보나요?', en: 'Where are student stats and the parent report?' },
     a: {
-      ko: '세 곳에서 같은 창이 열려요. ① 리포트 메뉴의 [학생 스탯] 탭(반 학생이 이름순으로 한 줄씩) ② 학생관리에서 학생 이름 옆 [스탯] 버튼 ③ 숙제 결과의 [학습 카드]. 창 안에는 스탯 카드(전체 등급과 어휘·듣기·읽기·문장·꾸준함 5가지 그래프), 자세히 보기, 학부모 리포트 탭이 있어요. 등급은 S+·S·A·B·C이고, 문제가 8개 미만인 능력이나 기록이 적은 학생은 "?"로 보여요(읽기는 아직 재는 숙제가 없어 늘 "?"). 학생끼리 순위는 없고 지난 기간의 그 학생과만 비교해요. 학부모 리포트는 A4 한 장으로 인쇄하거나 카톡용 글로 복사할 수 있고, 선생님 한마디는 자동 문장을 고쳐서 보내세요.',
+      ko: '세 곳에서 같은 창이 열려요. ① 기록 메뉴의 [학생 스탯] 탭(반 학생이 이름순으로 한 줄씩) ② 학생·출석에서 학생 이름 옆 [스탯] 버튼 ③ 숙제 결과의 [학습 카드]. 창 안에는 스탯 카드(전체 등급과 어휘·듣기·읽기·문장·꾸준함 5가지 그래프), 자세히 보기, 학부모 리포트 탭이 있어요. 등급은 S+·S·A·B·C이고, 문제가 8개 미만인 능력이나 기록이 적은 학생은 "?"로 보여요(읽기는 아직 재는 숙제가 없어 늘 "?"). 학생끼리 순위는 없고 지난 기간의 그 학생과만 비교해요. 학부모 리포트는 A4 한 장으로 인쇄하거나 카톡용 글로 복사할 수 있고, 선생님 한마디는 자동 문장을 고쳐서 보내세요.',
       en: 'The same window opens from three places: the [Student stats] tab in Reports, the [Stats] button beside a student in Students, and [Learning card] in homework results. It has a stat card (grade S+ to C and a 5-ability chart), details, and a parent report you can print on A4 or copy as text. Abilities with fewer than 8 questions show "?". No rankings — only compared with that student’s own previous period.',
     },
     link: '/results',
@@ -230,7 +240,7 @@ export const FAQ: FaqItem[] = [
     category: 'points',
     q: { ko: '수업 중에 포인트는 어떻게 주나요?', en: 'How do I give points during class?' },
     a: {
-      ko: '발표 바의 "포인트 주기"에서 여러 학생을 골라 한 번에 줄 수 있어요. 포인트 뱅크 화면에서는 학생 카드의 버튼으로 주고 뺄 수 있어요. 숙제 완료·미제출 버튼은 숙제 캘린더에도 기록돼요.',
+      ko: '수업 바의 "포인트 주기"에서 여러 학생을 골라 한 번에 줄 수 있어요. 칭찬 통장 화면에서는 학생 카드의 버튼으로 주고 뺄 수 있어요. 숙제 완료·미제출 버튼은 숙제 캘린더에도 기록돼요.',
       en: 'Use "Give points" on the presenting bar to reward several students at once, or the buttons on student cards in the Point Bank. Homework buttons also record to the homework calendar.',
     },
     link: '/board',
@@ -249,7 +259,7 @@ export const FAQ: FaqItem[] = [
     category: 'billing',
     q: { ko: '무료와 유료는 무엇이 다른가요?', en: 'What is the difference between free and paid?' },
     a: {
-      ko: '무료로는 일부 게임과 기본 기능을 쓸 수 있고, 유료에서는 모든 게임·단어 사전·파닉스·문법·수업 자료실·내 수업을 쓸 수 있어요. 설정 → 결제에서 바꿀 수 있어요.',
+      ko: '무료로는 일부 게임과 기본 기능을 쓸 수 있고, 유료에서는 모든 게임·그림 사전·파닉스·문법·활동지(인쇄)·내 수업을 쓸 수 있어요. 설정 → 결제에서 바꿀 수 있어요.',
       en: 'Free includes some games and basics; paid unlocks all games, dictionary, phonics, grammar, printables and My Lessons. Change it in Settings → Billing.',
     },
     link: '/settings/billing',

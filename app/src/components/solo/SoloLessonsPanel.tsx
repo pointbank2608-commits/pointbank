@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import MoreMenu from '../MoreMenu';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -153,44 +154,31 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
                       {l.level ? ` · ${l.level}` : ''}
                     </div>
                   </div>
-                  <button type="button" onClick={() => void rename(l)} aria-label={t('solo.rename')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-primary">
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
-                  </button>
-                  <button type="button" onClick={() => void remove(l)} aria-label={t('common.delete')} className="rounded p-1 text-on-surface-variant hover:bg-surface-container-low hover:text-error">
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
-                  </button>
                 </div>
                 <div className="font-caption text-caption text-on-surface-variant">
                   {c ? t('solo.assignedCount', { total: c.total, done: c.done }) : t('solo.notAssigned')}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'homework' })} className="flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
+                  <button type="button" onClick={() => setAssigning({ lesson: l, kind: 'homework' })} className="flex items-center gap-1 min-h-11 rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary hover:bg-primary-container">
                     <span className="material-symbols-outlined text-[16px]">edit_note</span>
                     {t('solo.assignHomework')}
                   </button>
-                  <button type="button" onClick={() => setStatusOf(l)} className="rounded-full border border-outline-variant px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
+                  <button type="button" onClick={() => setStatusOf(l)} className="min-h-11 rounded-full border border-outline-variant px-3 py-1.5 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary">
                     {t('solo.status')}
                   </button>
-                  <button type="button" onClick={() => setEditing(l)} className="flex items-center gap-1 rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
+                  <button type="button" onClick={() => setEditing(l)} className="flex items-center gap-1 min-h-11 rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10">
                     <span className="material-symbols-outlined text-[16px]">edit</span>
                     {t('solo.editLesson')}
                   </button>
-                  <details className="relative">
-                    <summary
-                      className="flex cursor-pointer list-none items-center rounded-full border border-outline-variant px-2 py-1.5 text-on-surface-variant hover:border-primary hover:text-primary [&::-webkit-details-marker]:hidden"
-                      aria-label={t('solo.more')}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">more_horiz</span>
-                    </summary>
-                    <div className="absolute left-0 top-full z-10 mt-1 w-48 space-y-0.5 rounded-xl border border-outline-variant bg-surface-container-lowest p-1.5 shadow-lg">
-                      <button type="button" onClick={(e) => { (e.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open'); setPreview(l); }} className="block w-full rounded-lg px-3 py-2 text-left font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
-                        {t('solo.preview')}
-                      </button>
-                      <button type="button" onClick={(e) => { (e.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open'); setAssigning({ lesson: l, kind: 'lesson' }); }} className="block w-full rounded-lg px-3 py-2 text-left font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
-                        {t('solo.assign')}
-                      </button>
-                    </div>
-                  </details>
+                  <MoreMenu
+                    triggerLabel={t('solo.more')}
+                    items={[
+                      { key: 'preview', label: t('solo.preview'), icon: 'visibility', onSelect: () => setPreview(l) },
+                      { key: 'assign', label: t('solo.assign'), icon: 'today', onSelect: () => setAssigning({ lesson: l, kind: 'lesson' }) },
+                      { key: 'rename', label: t('solo.rename'), icon: 'edit', onSelect: () => void rename(l) },
+                      { key: 'delete', label: t('common.delete'), icon: 'delete', danger: true, onSelect: () => void remove(l) },
+                    ]}
+                  />
                 </div>
               </div>
             );
@@ -492,7 +480,7 @@ function StatusModal({ lesson, onClose, onRecords }: { lesson: SoloLesson; onClo
                           </option>
                         ))}
                       </select>
-                      <button type="button" disabled={rewarding} onClick={() => void give()} className="rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary disabled:opacity-40">
+                      <button type="button" disabled={rewarding} onClick={() => void give()} className="min-h-11 rounded-full bg-primary px-4 py-1.5 font-label-md text-label-md text-on-primary disabled:opacity-40">
                         {t('solo.rewardGive')}
                       </button>
                     </div>

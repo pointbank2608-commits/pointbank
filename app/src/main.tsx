@@ -9,8 +9,10 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import { installErrorReporter } from './lib/errorReporter';
+import { applyFontScale, getFontScale } from './lib/fontScale';
 
 installErrorReporter();
+applyFontScale(getFontScale());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
-import { GAME_CATALOG, type GameCategory } from '../lib/gameCatalog';
+import { GAME_CATALOG, GAME_MOMENTS } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
@@ -132,7 +132,6 @@ function slideOptionsFromState(o: WorksheetOptionsState): WorksheetSlideOptions 
   };
 }
 
-const CATEGORY_ORDER: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking', 'roleplay'];
 
 function uid(): string {
   return crypto.randomUUID();
@@ -943,9 +942,10 @@ export default function LessonSlideSorter({
 
             {addMode === 'game' && (
               <div className="space-y-2">
-                {CATEGORY_ORDER.map((cat) => (
+                {GAME_MOMENTS.map((cat) => (
                   <div key={cat} className="flex flex-wrap gap-1.5">
-                    {GAME_CATALOG.filter((g) => g.category === cat).map((g) => (
+                    <span className="w-full font-caption text-caption text-on-surface-variant">{t(`gameMoment.${cat}`)}</span>
+                    {GAME_CATALOG.filter((g) => g.moment === cat).map((g) => (
                       <button
                         key={g.type}
                         type="button"
@@ -2097,9 +2097,10 @@ function GameSlideEditor({
         </div>
         {pickerOpen && (
           <div className="w-full space-y-2 border-t border-outline-variant/40 pt-3">
-            {CATEGORY_ORDER.map((cat) => (
+            {GAME_MOMENTS.map((cat) => (
               <div key={cat} className="flex flex-wrap gap-1.5">
-                {GAME_CATALOG.filter((g) => g.category === cat).map((g) => (
+                <span className="w-full font-caption text-caption text-on-surface-variant">{t(`gameMoment.${cat}`)}</span>
+                {GAME_CATALOG.filter((g) => g.moment === cat).map((g) => (
                   <button
                     key={g.type}
                     type="button"

@@ -9,6 +9,10 @@ import type { GameType } from './types';
  */
 export type GameCategory = 'simple' | 'vocabulary' | 'sentence' | 'listening' | 'reading' | 'speaking' | 'roleplay';
 
+/** 수업의 순간 — 선생님이 "지금 수업에 뭐가 필요하지?"로 고르는 6칸(+기타). 게임 목록·수업 만들기의 게임 고르기가 같이 쓴다. */
+export type GameMoment = 'warmup' | 'learn' | 'practice' | 'speak' | 'team' | 'wrapup' | 'other';
+export const GAME_MOMENTS: GameMoment[] = ['warmup', 'learn', 'practice', 'speak', 'team', 'wrapup', 'other'];
+
 export interface GameCatalogEntry {
   type: GameType;
   /**
@@ -16,7 +20,10 @@ export interface GameCatalogEntry {
    * 문자열이 실제 식별자다 — DB에는 번호가 저장되지 않으니 순서를 바꿔도 데이터는 안 깨진다.
    */
   number: number;
+  /** 옛 분류(호환용) — 새 화면은 moment 를 쓴다. */
   category: GameCategory;
+  /** 수업의 순간(필수). */
+  moment: GameMoment;
   /** 이 게임이 필요로 하는 최소 항목 개수. 모자라면 각 게임이 반복/샘플링으로 자동 보정한다. */
   minItems: number;
   icon: string;
@@ -39,6 +46,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'wheel',
     number: 1,
+    moment: 'warmup',
     category: 'simple',
     minItems: 1,
     icon: 'target',
@@ -51,6 +59,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'ladder',
     number: 2,
+    moment: 'warmup',
     category: 'simple',
     minItems: 2,
     icon: 'alt_route',
@@ -63,6 +72,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'order',
     number: 3,
+    moment: 'warmup',
     category: 'simple',
     minItems: 2,
     icon: 'sports_baseball',
@@ -74,6 +84,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'bomb',
     number: 4,
+    moment: 'warmup',
     category: 'simple',
     minItems: 1,
     icon: 'bolt',
@@ -86,6 +97,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'timer',
     number: 5,
+    moment: 'warmup',
     category: 'simple',
     minItems: 1,
     icon: 'timer',
@@ -97,6 +109,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'tictactoe',
     number: 6,
+    moment: 'team',
     category: 'simple',
     minItems: 1,
     icon: 'grid_3x3',
@@ -108,6 +121,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'saveorgive',
     number: 7,
+    moment: 'team',
     category: 'simple',
     minItems: 1,
     icon: 'redeem',
@@ -119,6 +133,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'findmissing',
     number: 8,
+    moment: 'practice',
     category: 'simple',
     minItems: 2,
     icon: 'search',
@@ -130,6 +145,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'baskin31',
     number: 9,
+    moment: 'team',
     category: 'simple',
     minItems: 1,
     icon: 'icecream',
@@ -141,6 +157,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'connect4',
     number: 10,
+    moment: 'team',
     category: 'simple',
     minItems: 1,
     icon: 'grid_on',
@@ -152,6 +169,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'popcorn',
     number: 11,
+    moment: 'warmup',
     category: 'simple',
     minItems: 1,
     icon: 'casino',
@@ -163,6 +181,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'passball',
     number: 12,
+    moment: 'warmup',
     category: 'simple',
     minItems: 1,
     icon: 'sports_volleyball',
@@ -174,6 +193,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'twodice',
     number: 13,
+    moment: 'team',
     category: 'simple',
     minItems: 1,
     icon: 'casino',
@@ -185,6 +205,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'quiz',
     number: 14,
+    moment: 'wrapup',
     category: 'vocabulary',
     // 퀴즈는 항목(단어) 리스트가 아니라 질문+보기 구조라 다른 게임에서 "퀴즈로 열기"가
     // 성립하지 않는다 — 실제 항목 개수로는 절대 못 채울 값을 넣어 후보에서 자연히 빠지게 한다.
@@ -198,6 +219,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'hangman',
     number: 15,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 1,
     icon: 'abc',
@@ -210,6 +232,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'truefalse',
     number: 16,
+    moment: 'wrapup',
     category: 'vocabulary',
     // 퀴즈와 마찬가지로 문장+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -222,6 +245,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'matchup',
     number: 17,
+    moment: 'practice',
     category: 'vocabulary',
     // 단어+뜻 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -234,6 +258,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'whackamole',
     number: 18,
+    moment: 'practice',
     category: 'vocabulary',
     // 단어+뜻 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -246,6 +271,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'flashcards',
     number: 19,
+    moment: 'learn',
     category: 'vocabulary',
     // 앞/뒤 카드 짝 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -258,6 +284,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'anagram',
     number: 20,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 1,
     icon: 'shuffle',
@@ -269,6 +296,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'groupsort',
     number: 21,
+    moment: 'practice',
     category: 'vocabulary',
     // 그룹(이름+소속 항목) 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -281,6 +309,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'unscramble',
     number: 22,
+    moment: 'practice',
     category: 'sentence',
     // 문장(여러 단어)이 통째로 하나의 항목이라 다른 게임(칸에 짧은 단어를 넣는 식)과는
     // 안 맞아 다른 게임으로 열기에서 빠진다.
@@ -294,6 +323,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'typeanswer',
     number: 23,
+    moment: 'practice',
     category: 'vocabulary',
     // 질문/빈칸+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -306,6 +336,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'spellword',
     number: 24,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 1,
     icon: 'edit',
@@ -317,6 +348,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'rankorder',
     number: 25,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 2,
     icon: 'sort',
@@ -328,6 +360,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'wordsearch',
     number: 26,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 2,
     icon: 'grid_view',
@@ -339,6 +372,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'crossword',
     number: 27,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 2,
     icon: 'border_all',
@@ -350,6 +384,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'mathgen',
     number: 28,
+    moment: 'other',
     // 단어 리스트가 아니라 설정값으로 문제를 매번 새로 만들어내는 유일한 게임이라
     // 다른 카테고리에 안 맞는다 — 특정 콘텐츠 없이도 쓸 수 있는 범용 도구라는 점에서 simple로 분류.
     category: 'simple',
@@ -364,6 +399,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'mazechase',
     number: 29,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 2,
     icon: 'directions_run',
@@ -375,6 +411,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'airplane',
     number: 30,
+    moment: 'practice',
     category: 'vocabulary',
     minItems: 2,
     icon: 'flight',
@@ -386,6 +423,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'labeleddiagram',
     number: 31,
+    moment: 'learn',
     category: 'vocabulary',
     // 배경 이미지 위 핀 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -398,6 +436,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'imagequiz',
     number: 32,
+    moment: 'wrapup',
     category: 'vocabulary',
     // 사진+정답 구조라 공용 items 모델과 안 맞아 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -410,6 +449,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'gameshowquiz',
     number: 33,
+    moment: 'team',
     category: 'vocabulary',
     // 퀴즈와 마찬가지로 질문+보기 구조라 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -422,6 +462,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'winlosequiz',
     number: 34,
+    moment: 'team',
     category: 'vocabulary',
     // 퀴즈와 마찬가지로 질문+보기 구조라 다른 게임으로 열기에서 빠진다.
     minItems: 999,
@@ -434,6 +475,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   {
     type: 'watermelon',
     number: 35,
+    moment: 'practice',
     category: 'sentence',
     minItems: 2,
     icon: 'nutrition',
@@ -446,6 +488,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 대회 퀴즈쇼(2026-09-26): 학생이 휴대폰으로 QR 입장해 답하는 실시간 대회. 질문 구조라 다른 게임으로 열기에서 빠진다.
     type: 'quizshow',
     number: 36,
+    moment: 'wrapup',
     category: 'vocabulary',
     minItems: 999,
     icon: 'emoji_events',
@@ -458,6 +501,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 장보기(2026-10-02): 진열대의 단어 그림을 카트에 담으며 a / an / some 으로 말한다. 그림이 있는 낱말이 필요해 다른 게임으로 열기에서 빠진다.
     type: 'shopping',
     number: 37,
+    moment: 'speak',
     category: 'roleplay',
     minItems: 999,
     icon: 'shopping_cart',
@@ -470,6 +514,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 보물 땅파기(2026-10-14, PPT "Buried Bells" 방식만 참고): 언덕을 골라 단어 카드에 답하면 땅을 파고, 한 곳에 보물이 묻혀 있다.
     type: 'treasuredig',
     number: 38,
+    moment: 'team',
     category: 'vocabulary',
     minItems: 1,
     icon: 'savings',
@@ -482,6 +527,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 단서 네 개(2026-10-14, PPT "4 Words 1 Question" 방식만 참고): 단서 카드를 하나씩 열며 비밀 낱말을 맞히고 그 낱말로 질문을 만든다.
     type: 'fourclues',
     number: 39,
+    moment: 'team',
     category: 'vocabulary',
     minItems: 1,
     icon: 'manage_search',
@@ -494,6 +540,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 문장 잡기(2026-10-14, PPT "Catch the Sentence" 5단계): 문장이 잠깐 나타났다 사라지거나 섞인 낱말이 날아다니면 받아 쓴다.
     type: 'catchsentence',
     number: 40,
+    moment: 'practice',
     category: 'sentence',
     minItems: 1,
     icon: 'visibility',
@@ -506,6 +553,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 마지막 박스 챌린지(2026-10-14, PPT "Chain Reaction"): 박스를 1~3개씩 읽다가 마지막 박스를 읽은 학생이 돌림판을 돌려 팀과 듣기·말하기·쓰기 도전을 한다.
     type: 'lastbox',
     number: 41,
+    moment: 'speak',
     category: 'speaking',
     minItems: 1,
     icon: 'redeem',
@@ -518,6 +566,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 미스터리 박스(2026-10-14, PPT "Super Mario Mystery Box" 방식만 참고): 문제를 맞히면 미스터리 박스를 받고, 가질지 다른 팀에 줄지 정한 뒤 열어 점수를 받거나 잃는다.
     type: 'mysterybox',
     number: 42,
+    moment: 'team',
     category: 'vocabulary',
     minItems: 1,
     icon: 'redeem',
@@ -530,6 +579,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 공항 롤플레이(2026-10-15, PPT "ESL Airport Role Play Lesson for Beginners"): 낱말 → 가는 순서 → 대본 연습 → 돌림판·상자로 장소·역할 정해 대화 → 전광판 읽기.
     type: 'airport',
     number: 43,
+    moment: 'speak',
     category: 'roleplay',
     minItems: 999,
     icon: 'flight',
@@ -542,6 +592,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 레스토랑 롤플레이(2026-10-15, PPT "Ordering Food at a Restaurant"): 메뉴 → 서버·손님 주문 대화 → 짝 연습(Switch!). 피자 카페·타코 식당·카페 단계 3·4.
     type: 'restaurant',
     number: 44,
+    moment: 'speak',
     category: 'roleplay',
     minItems: 999,
     icon: 'restaurant',
@@ -554,6 +605,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 아이스크림 가게 롤플레이(2026-10-15, PPT "ESL Ice Cream Shop Role Play"): 메뉴 → 주문(크기·담기·맛·토핑으로 아이스크림 쌓기) → 대화 기억하기 → 짝 연습.
     type: 'icecream',
     number: 45,
+    moment: 'speak',
     category: 'roleplay',
     minItems: 999,
     icon: 'icecream',
@@ -566,6 +618,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 병원 롤플레이(2026-10-15, PPT "ESL Let's Go to the Doctor"): 아픈 곳 낱말 8개 → 짝 맞추기 → What's the problem? → 진료실 대화(의사·환자, Switch!).
     type: 'doctor',
     number: 46,
+    moment: 'speak',
     category: 'roleplay',
     minItems: 999,
     icon: 'medical_services',
@@ -578,6 +631,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     // 번개 피하기(2026-10-16, PPT "Bad Luck Billy"): 모두 서서 같은 글을 차례로 읽다가 번개가 칠 때 읽던 학생이 아웃, 마지막까지 선 학생이 승리.
     type: 'lightning',
     number: 47,
+    moment: 'speak',
     category: 'speaking',
     minItems: 1,
     icon: 'thunderstorm',

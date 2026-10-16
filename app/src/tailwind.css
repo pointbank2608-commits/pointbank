@@ -70,49 +70,59 @@
   --spacing-gutter: 24px;
 
   /* ---- 폰트 패밀리 (Hanken Grotesk 본문 / Quicksand 제목) ---- */
-  --font-body-md: 'Hanken Grotesk', sans-serif;
-  --font-title-md: 'Quicksand', sans-serif;
-  --font-display-lg: 'Quicksand', sans-serif;
-  --font-caption: 'Hanken Grotesk', sans-serif;
-  --font-headline-lg-mobile: 'Quicksand', sans-serif;
-  --font-headline-lg: 'Quicksand', sans-serif;
-  --font-label-md: 'Hanken Grotesk', sans-serif;
-  --font-body-lg: 'Hanken Grotesk', sans-serif;
+  --font-body-md: 'Hanken Grotesk', 'Noto Sans KR', sans-serif;
+  --font-title-md: 'Quicksand', 'Noto Sans KR', sans-serif;
+  --font-display-lg: 'Quicksand', 'Noto Sans KR', sans-serif;
+  --font-caption: 'Hanken Grotesk', 'Noto Sans KR', sans-serif;
+  --font-headline-lg-mobile: 'Quicksand', 'Noto Sans KR', sans-serif;
+  --font-headline-lg: 'Quicksand', 'Noto Sans KR', sans-serif;
+  --font-label-md: 'Hanken Grotesk', 'Noto Sans KR', sans-serif;
+  --font-body-lg: 'Hanken Grotesk', 'Noto Sans KR', sans-serif;
 
   /* ---- 폰트 크기(줄간격/자간/굵기 포함) ---- */
-  --text-body-md: 16px;
-  --text-body-md--line-height: 24px;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5rem;
   --text-body-md--font-weight: 400;
 
-  --text-title-md: 20px;
-  --text-title-md--line-height: 28px;
+  --text-title-md: 1.25rem;
+  --text-title-md--line-height: 1.75rem;
   --text-title-md--font-weight: 600;
 
-  --text-display-lg: 48px;
-  --text-display-lg--line-height: 56px;
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 3.5rem;
   --text-display-lg--letter-spacing: -0.02em;
   --text-display-lg--font-weight: 700;
 
-  --text-caption: 12px;
-  --text-caption--line-height: 16px;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
   --text-caption--font-weight: 500;
 
-  --text-headline-lg-mobile: 24px;
-  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile: 1.5rem;
+  --text-headline-lg-mobile--line-height: 2rem;
   --text-headline-lg-mobile--font-weight: 600;
 
-  --text-headline-lg: 32px;
-  --text-headline-lg--line-height: 40px;
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 2.5rem;
   --text-headline-lg--font-weight: 600;
 
-  --text-label-md: 14px;
-  --text-label-md--line-height: 20px;
+  --text-label-md: 0.875rem;
+  --text-label-md--line-height: 1.25rem;
   --text-label-md--letter-spacing: 0.01em;
   --text-label-md--font-weight: 600;
 
-  --text-body-lg: 18px;
-  --text-body-lg--line-height: 28px;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
   --text-body-lg--font-weight: 400;
+}
+
+/* 글자 크기 설정(보통·크게·아주 크게): 글자 토큰이 rem 이라 루트 크기만 바꾸면 함께 커진다. */
+@layer base {
+  html[data-font-scale='large'] {
+    font-size: 112.5%;
+  }
+  html[data-font-scale='xlarge'] {
+    font-size: 125%;
+  }
 }
 
 /* 링크는 기본적으로 밑줄 없이, 부모 글자색을 그대로 따른다.

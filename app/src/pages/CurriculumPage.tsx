@@ -29,6 +29,7 @@ import {
   type ContentRevision,
 } from '../lib/api';
 import LessonHistoryModal from '../components/LessonHistoryModal';
+import MoreMenu from '../components/MoreMenu';
 import { useClasses } from '../lib/useClasses';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
@@ -1069,46 +1070,6 @@ export default function CurriculumPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex shrink-0 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => openEditForm(lesson)}
-                    className="text-on-surface-variant hover:text-primary"
-                    aria-label={t('curriculum.editButton') ?? ''}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShareLesson(lesson)}
-                    className="text-on-surface-variant hover:text-primary"
-                    aria-label={t('lessonShare.button')}
-                    title={t('lessonShare.button')}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">share</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHistoryLesson(lesson)}
-                    className="text-on-surface-variant hover:text-primary"
-                    aria-label={t('curriculum.history.button')}
-                    title={t('curriculum.history.button')}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">history</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCopyLesson(lesson)}
-                    className="text-on-surface-variant hover:text-primary"
-                    aria-label={t('curriculum.copy.button')}
-                    title={t('curriculum.copy.button')}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">content_copy</span>
-                  </button>
-                  <button type="button" onClick={() => handleDelete(lesson)} className="text-on-surface-variant hover:text-error">
-                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
-                </div>
               </div>
 
               {wl && (
@@ -1127,20 +1088,33 @@ export default function CurriculumPage() {
               <button
                 type="button"
                 onClick={() => void handleStart(lesson)}
-                className="w-full px-4 py-2 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
               >
                 ▶ {t('curriculum.startButton')}
               </button>
-              {homeworkOpen && (
-              <button
-                type="button"
-                onClick={() => navigate('/homework', { state: { fromLessonId: lesson.id } })}
-                className="flex w-full items-center justify-center gap-1.5 rounded-full border border-primary px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
-              >
-                <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                {t('curriculum.homeworkButton')}
-              </button>
-              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => openEditForm(lesson)}
+                  className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-primary px-4 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+                >
+                  <span className="material-symbols-outlined text-[18px]">edit</span>
+                  {t('curriculum.editButton')}
+                </button>
+                <MoreMenu
+                  className="flex-1"
+                  triggerLabel={t('curriculum.moreButton')}
+                  items={[
+                    ...(homeworkOpen
+                      ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id } }) }]
+                      : []),
+                    { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
+                    { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },
+                    { key: 'history', label: t('curriculum.history.button'), icon: 'history', onSelect: () => setHistoryLesson(lesson) },
+                    { key: 'delete', label: t('common.delete'), icon: 'delete', danger: true, onSelect: () => void handleDelete(lesson) },
+                  ]}
+                />
+              </div>
             </div>
           );
         })}

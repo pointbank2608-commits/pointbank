@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
  * 다시 안 뜬다. 새 안내 = `TIPS`에 한 줄 + `coach.<id>Title/Body` 번역.
  */
 const TIPS: Record<string, string> = {
+  '/dashboard': 'menuMoved',
   '/wordlists': 'wordlists',
   '/curriculum': 'curriculum',
   '/games': 'games',

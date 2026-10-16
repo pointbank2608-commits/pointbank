@@ -5,16 +5,14 @@ import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG, isFreeTierGame, type GameCategory } from '../lib/gameCatalog';
-
-const CATEGORIES: GameCategory[] = ['simple', 'vocabulary', 'sentence', 'listening', 'reading', 'speaking', 'roleplay'];
+import { GAME_CATALOG, GAME_MOMENTS, isFreeTierGame, type GameCatalogEntry, type GameMoment } from '../lib/gameCatalog';
 
 type ViewMode = 'library' | 'all';
 
 export default function GamesPage() {
   const { t } = useTranslation();
   const { academy, isStaff, session, hasFullAccess } = useAuth();
-  const [activeCategory, setActiveCategory] = useState<GameCategory | 'all'>('all');
+  const [activeCategory, setActiveCategory] = useState<GameMoment | 'all'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('library');
   const [query, setQuery] = useState('');
   const [libraryError, setLibraryError] = useState(false);
@@ -50,14 +48,13 @@ export default function GamesPage() {
   const librarySet = new Set(libraryTypes ?? []);
 
   const byCategory = GAME_CATALOG.filter((g) =>
-    (activeCategory === 'all' || g.category === activeCategory) &&
+    (activeCategory === 'all' || g.moment === activeCategory) &&
     `${t(g.nameKey)} ${t(g.descKey)}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   const games = showLibrary ? byCategory.filter((g) => librarySet.has(g.type)) : byCategory;
-  const usedCategories = CATEGORIES.filter((cat) =>
-    (showLibrary ? GAME_CATALOG.filter((g) => librarySet.has(g.type)) : GAME_CATALOG).some(
-      (g) => g.category === cat,
-    ),
-  );
+  const pool = showLibrary ? GAME_CATALOG.filter((g) => librarySet.has(g.type)) : GAME_CATALOG;
+  const usedCategories = GAME_MOMENTS.filter((m) => pool.some((g) => g.moment === m));
+  const momentCount = (m: GameMoment) => pool.filter((g) => g.moment === m).length;
+  const grouped = activeCategory === 'all' && !query.trim();
 
   const libraryEmpty = showLibrary && libraryLoaded && (libraryTypes?.length ?? 0) === 0;
 
@@ -132,7 +129,7 @@ export default function GamesPage() {
             <button
               type="button"
               onClick={() => setActiveCategory('all')}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+              className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                 activeCategory === 'all'
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
@@ -145,13 +142,13 @@ export default function GamesPage() {
                 key={cat}
                 type="button"
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full font-label-md text-label-md transition-all ${
+                className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                   activeCategory === cat
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
                 }`}
               >
-                {t(`gameCategory.${cat}`)}
+                {t(`gameMoment.${cat}`)} {momentCount(cat)}
               </button>
             ))}
           </div>
@@ -160,70 +157,77 @@ export default function GamesPage() {
             <p>{t('classroomUx.noGames')}</p>
             <button type="button" onClick={() => { setQuery(''); setActiveCategory('all'); }} className="mt-3 min-h-11 rounded-lg px-4 text-primary underline">{t('classroomUx.clearFilters')}</button>
           </div>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {games.map((g) => {
-              const locked = isStaff && !hasFullAccess && !isFreeTierGame(g.type);
-              // 왕관 배지: 유료 전용 게임이면 항상 붙인다(유료 회원도 "이건 유료 기능이구나"를 느끼도록 —
-              // 캔바 프리미엄 템플릿의 왕관 표시와 같은 목적). locked 여부와 별개로, 무료 4종만 안 붙는다.
-              const isPremiumGame = !isFreeTierGame(g.type);
+          {grouped ? (
+            GAME_MOMENTS.map((m) => {
+              const list = games.filter((g) => g.moment === m);
+              if (list.length === 0) return null;
               return (
-                <Link
-                  key={g.type}
-                  to={locked ? '/settings/billing' : g.path}
-                  className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
-                >
-                  <div className="relative h-36 overflow-hidden">
-                    {g.cover ? (
-                      <img
-                        src={g.cover}
-                        alt=""
-                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
-                      />
-                    ) : (
-                      <div
-                        className={`w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
-                      >
-                        <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{g.icon}</span>
-                      </div>
-                    )}
-                    <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
-                      <span className="material-symbols-outlined">{g.icon}</span>
-                    </div>
-                    {locked ? (
-                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[16px] text-inverse-on-surface">lock</span>
-                      </div>
-                    ) : (
-                      <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
-                        <span className="font-caption text-caption text-inverse-on-surface tabular-nums">{g.number}</span>
-                      </div>
-                    )}
-                    {isPremiumGame && (
-                      <div
-                        className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-inverse-surface/70 text-[13px] leading-none backdrop-blur-sm"
-                        title={t('gamesList.premiumBadge')}
-                      >
-                        👑
-                      </div>
-                    )}
+                <section key={m} className="space-y-3">
+                  <h3 className="font-title-md text-title-md text-deep-navy">
+                    {t(`gameMoment.${m}`)} <span className="text-on-surface-variant">{list.length}</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {list.map((g) => (
+                      <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
+                    ))}
                   </div>
-                  <div className="p-5">
-                    <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <h3 className="min-w-0 font-title-md text-title-md text-on-surface">{t(g.nameKey)}</h3>
-                      {locked && (
-                        <span className="shrink-0 whitespace-nowrap rounded-full bg-tertiary-container px-2 py-0.5 font-caption text-caption text-on-tertiary-container">
-                          {t('gamesList.lockedBadge')}
-                        </span>
-                      )}
-                    </div>
-                    <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
-                  </div>
-                </Link>
+                </section>
               );
-            })}
-          </div>
+            })
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {games.map((g) => (
+                <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>
+  );
+}
+
+function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <Link
+      to={locked ? '/settings/billing' : g.path}
+      className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
+    >
+      <div className="relative h-36 overflow-hidden">
+        {g.cover ? (
+          <img
+            src={g.cover}
+            alt=""
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
+          />
+        ) : (
+          <div
+            className={`w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ${locked ? 'grayscale opacity-60' : ''}`}
+          >
+            <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{g.icon}</span>
+          </div>
+        )}
+        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
+          <span className="material-symbols-outlined">{g.icon}</span>
+        </div>
+        {locked && (
+          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
+            <span className="material-symbols-outlined text-[16px] text-inverse-on-surface">lock</span>
+          </div>
+        )}
+      </div>
+      <div className="p-5">
+        <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h3 className="min-w-0 font-title-md text-title-md text-on-surface">{t(g.nameKey)}</h3>
+          {locked && (
+            <span className="shrink-0 whitespace-nowrap rounded-full bg-tertiary-container px-2 py-0.5 font-caption text-caption text-on-tertiary-container">
+              {t('gamesList.lockedBadge')}
+            </span>
+          )}
+        </div>
+        <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
+      </div>
+    </Link>
   );
 }

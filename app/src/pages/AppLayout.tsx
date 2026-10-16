@@ -1,4 +1,3 @@
-import { useFeature } from '../lib/features';
 import { Suspense } from 'react';
 import PageLoading from '../components/PageLoading';
 import { useState, useEffect } from 'react';
@@ -13,6 +12,7 @@ import DeletionBanner from '../components/DeletionBanner';
 import { TrialBanner, TrialModal } from '../components/TrialNotice';
 import SosButton from '../components/SosButton';
 import BrandMark from '../components/BrandMark';
+import FontSizeToggle from '../components/FontSizeToggle';
 import LanguageToggle from '../components/LanguageToggle';
 import LessonRunnerBar from '../components/LessonRunnerBar';
 import PlanRouteGuard from '../components/PlanRouteGuard';
@@ -21,7 +21,7 @@ import PrintBrandFooter from '../components/PrintBrandFooter';
 import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider, useLessonRunner } from '../context/LessonRunnerContext';
-import { FREE_BLOCKED_PATHS } from '../lib/planLimits';
+import StaffNav from '../components/StaffNav';
 
 interface NavItem {
   to: string;
@@ -61,8 +61,6 @@ function AppLayoutInner() {
   // 전체화면 버튼은 브라우저 전체화면만 켜고 끈다.
   const { runner } = useLessonRunner();
   const isPresenting = runner != null;
-  const groupOpen = useFeature('group');
-  const homeworkOpen = useFeature('homework');
 
   const ROLE_LABEL: Record<string, string> = {
     owner: t('nav.roleOwner'),
@@ -70,27 +68,11 @@ function AppLayoutInner() {
     student: t('nav.roleStudent'),
   };
 
-  // 선생님은 대시보드에서 출석부·포인트 뱅크·게임·리포트로 들어간다. 학생은 자기 통장과 게임만.
-  const navItems: NavItem[] = isStaff
-    ? [
-        { to: '/dashboard', label: t('nav.dashboard'), icon: 'dashboard' },
-        ...(groupOpen ? [{ to: '/curriculum', label: t('nav.curriculum'), icon: 'auto_stories' }] : []),
-        { to: '/attendance', label: t('nav.attendance'), icon: 'calendar_today' },
-        ...(homeworkOpen ? [{ to: '/homework', label: t('nav.homework'), icon: 'assignment' }] : []),
-        { to: '/board', label: t('nav.board'), icon: 'payments' },
-        { to: '/games', label: t('nav.gameCenter'), icon: 'sports_esports' },
-        { to: '/dictionary', label: t('nav.dictionary'), icon: 'menu_book' },
-        { to: '/phonics', label: t('nav.phonics'), icon: 'spellcheck' },
-        { to: '/grammar', label: t('nav.grammar'), icon: 'rule' },
-        ...(groupOpen ? [{ to: '/videos', label: t('nav.videoLibrary'), icon: 'video_library' }] : []),
-        { to: '/wordlists', label: t('nav.wordLists'), icon: 'library_books' },
-        { to: '/materials', label: t('nav.classroomMaterials'), icon: 'print' },
-        { to: '/results', label: t('nav.reports'), icon: 'assessment' },
-      ]
-    : [
-        { to: '/me', label: t('nav.myBoard'), icon: 'account_balance_wallet' },
-        { to: '/games', label: t('nav.games'), icon: 'sports_esports' },
-      ];
+  // 선생님 메뉴는 StaffNav(5개 묶음)가 그린다. 학생은 자기 통장과 게임만.
+  const studentNavItems: NavItem[] = [
+    { to: '/me', label: t('nav.myBoard'), icon: 'account_balance_wallet' },
+    { to: '/games', label: t('nav.games'), icon: 'sports_esports' },
+  ];
 
   const homeTo = isStaff ? '/dashboard' : '/me';
 
@@ -123,43 +105,22 @@ function AppLayoutInner() {
 
       {isStaff && <AcademyCodeButton />}
 
-      <ul className="flex-1 flex flex-col gap-1 px-2">
-        {navItems.map((item) => {
-          // 사전·파닉스·단어장·자료실·내 커리큘럼은 전체가 유료 전용이라(FREE_BLOCKED_PATHS),
-          // 메뉴 단계에서부터 왕관을 붙인다. 리포트(/results)는 무료 플랜에도 연다. 무료 선생님에겐
-          // "여긴 유료 기능"이라는 업그레이드 유도, 유료 선생님에겐 "나는 이 유료 기능을 쓰고 있다"는
-          // 확인 — 둘 다에게 항상 보인다(게임별 잠금은 GamesPage.tsx 카드에서 따로, 이 배지와 같은
-          // 이유로 유·무료 모두에게 표시).
-          const isPremiumPage = FREE_BLOCKED_PATHS.includes(item.to);
-          return (
+      {isStaff ? (
+        <StaffNav onNavigate={() => setMobileOpen(false)} />
+      ) : (
+        <ul className="flex-1 flex flex-col gap-1 px-2">
+          {studentNavItems.map((item) => (
             <li key={item.to}>
               <NavLink to={item.to} onClick={() => setMobileOpen(false)} className={navLinkClass}>
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="flex-1 truncate">{item.label}</span>
-                {isPremiumPage && (
-                  <span className="shrink-0 text-[13px] leading-none" title={t('nav.premiumPageBadge')}>
-                    👑
-                  </span>
-                )}
               </NavLink>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
 
       <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
-        {isStaff && (
-          <NavLink to="/help" onClick={() => setMobileOpen(false)} className={navLinkClass}>
-            <span className="material-symbols-outlined">support_agent</span>
-            {t('nav.help')}
-          </NavLink>
-        )}
-        {isStaff && (
-          <NavLink to="/settings" onClick={() => setMobileOpen(false)} className={navLinkClass}>
-            <span className="material-symbols-outlined">settings</span>
-            {t('nav.settings')}
-          </NavLink>
-        )}
         {isStaff ? (
           // 선생님은 플랜 배지를 눌러 결제 화면으로 바로 갈 수 있다(Claude 등 SaaS의 "이름 · 플랜" 패턴 참고).
           <Link
@@ -200,7 +161,8 @@ function AppLayoutInner() {
             </div>
           </div>
         )}
-        <div className="px-4">
+        <div className="flex flex-col gap-2 px-4">
+          <FontSizeToggle />
           <LanguageToggle />
         </div>
         <button
@@ -282,6 +244,7 @@ function AppLayoutInner() {
         <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
         <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+          <FontSizeToggle showLabel />
           <LanguageToggle />
           {isStaff && <SosButton />}
           {isStaff && <NotificationBell />}
