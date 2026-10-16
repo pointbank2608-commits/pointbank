@@ -66,8 +66,8 @@ export default function ProductMock() {
           </div>
         </div>
       </div>
-      <img src="/skins/chain/pencil.webp" alt="" aria-hidden width={74} height={88} className="pointer-events-none absolute right-1 top-0 h-[88px] w-auto rotate-12" />
-      <img src="/skins/chain/megaphone.webp" alt="" aria-hidden width={72} height={72} className="pointer-events-none absolute bottom-0 left-0 h-[72px] w-auto -rotate-12" />
+      <img src="/landing/char-teacher.webp" alt="" aria-hidden width={374} height={700} className="pointer-events-none absolute -left-4 bottom-0 h-[170px] w-auto drop-shadow-md sm:-left-8 sm:h-[210px]" />
+      <img src="/landing/char-boy.webp" alt="" aria-hidden width={429} height={700} className="pointer-events-none absolute -right-3 top-0 h-[120px] w-auto drop-shadow-md sm:-right-6 sm:h-[150px]" />
       <img src="/skins/dig/starfish.webp" alt="" aria-hidden width={56} height={56} className="pointer-events-none absolute bottom-1 right-2 h-14 w-auto" />
     </div>
   );

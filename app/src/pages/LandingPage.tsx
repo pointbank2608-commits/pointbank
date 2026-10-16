@@ -27,7 +27,6 @@ export default function LandingPage() {
 
   const gameCount = GAME_CATALOG.length;
   const stripGames = ['wheel', 'ladder', 'hangman', 'matchup', 'treasuredig', 'quizshow', 'airport', 'icecream'] as const;
-  const pets = ['dog', 'cat', 'rabbit', 'bear', 'pig'] as const;
   const tagTones = ['bg-tag-today text-tag-today-ink', 'bg-tag-lesson text-tag-lesson-ink', 'bg-tag-library text-tag-library-ink', 'bg-tag-class text-tag-class-ink', 'bg-tag-more text-tag-more-ink'];
 
   const pains = [
@@ -148,16 +147,9 @@ export default function LandingPage() {
                   {t('landing.seePricing')}
                 </a>
               </div>
-              <div className="flex gap-3 overflow-hidden pt-2" aria-hidden>
-                {pets.map((p, i) => (
-                  <img
-                    key={p}
-                    src={`/landing/${p}.webp`}
-                    alt=""
-                    width={84}
-                    height={84}
-                    className={`h-[84px] w-[84px] shrink-0 rounded-[24px] object-cover shadow-card ${i % 2 === 0 ? '-rotate-3' : 'rotate-2'} ${i === 4 ? 'hidden sm:block' : ''}`}
-                  />
+              <div className="flex items-end gap-4 pt-2" aria-hidden>
+                {(['girl', 'kids-cheer', 'kid-read'] as const).map((c) => (
+                  <img key={c} src={`/landing/char-${c}.webp`} alt="" loading="lazy" className="h-[110px] w-auto drop-shadow-md" />
                 ))}
               </div>
             </div>
