@@ -1,3 +1,4 @@
+import BackButton from '../components/BackButton';
 import { useFeature } from '../lib/features';
 import QuickLessonWizard from '../components/QuickLessonWizard';
 import StartCheck, { startCheckSkipped } from '../components/StartCheck';
@@ -809,6 +810,7 @@ export default function CurriculumPage() {
         </div>
       ) : (
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
+          <BackButton onClick={handleCancel} to={t('curriculum.backToList')} />
           <h3 className="font-title-md text-title-md text-on-surface">
             {t(editingId ? 'curriculum.editFormTitle' : 'curriculum.createFormTitle')}
           </h3>

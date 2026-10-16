@@ -1,6 +1,7 @@
+import BackButton from '../components/BackButton';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchWordBank } from '../lib/api';
 import type { MaterialsHandoffState } from '../lib/materialsHandoff';
 import {
@@ -148,12 +149,7 @@ export default function WorksheetLibraryPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/materials"
-        className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
-      >
-        {t('materials.backToMaterials')}
-      </Link>
+      <BackButton path="/materials" to={t('materials.backToMaterials')} />
 
       <div>
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy mb-1.5">

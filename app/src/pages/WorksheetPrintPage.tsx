@@ -1,6 +1,7 @@
+import BackButton from '../components/BackButton';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AskAnswerScreen from '../components/AskAnswerScreen';
 import ClassChipRow from '../components/ClassChipRow';
 import MaterialsWordPicker from '../components/MaterialsWordPicker';
@@ -235,12 +236,7 @@ export default function WorksheetPrintPage() {
         </PresentPrintBar>
       ) : (
       <>
-      <Link
-        to="/materials"
-        className="no-print inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
-      >
-        {t('materials.backToMaterials')}
-      </Link>
+      <BackButton path="/materials" to={t('materials.backToMaterials')} />
 
       <h2 className="no-print font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('materials.worksheetName')}

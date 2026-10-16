@@ -2387,7 +2387,7 @@ const en: Ko = {
   materials: {
     pageTitle: 'Worksheets (print)',
     pageSubtitle: 'Turn your word lists into printable materials for offline, screen-free class time.',
-    backToMaterials: '← Worksheets (print)',
+    backToMaterials: 'Worksheets (print)',
     flashcardsName: 'Flashcard Printer',
     flashcardsDesc: 'Print large word cards, 2 to 12 per A4 page. Show or hide the picture, word, and meaning.',
     launch: {
@@ -5197,6 +5197,7 @@ const en: Ko = {
     pageSubtitle: 'Gather games, videos and worksheets in order, then just press "▶ Start lesson" in class.',
     moreButton: 'More',
     createButton: 'New lesson',
+    backToList: 'My lessons',
     createFormTitle: 'New lesson',
     editFormTitle: 'Edit lesson',
     editButton: 'Edit',
@@ -6003,7 +6004,7 @@ const en: Ko = {
 
   homework: {
     stampLegend: 'Homework stamp (online homework done)',
-    backToResults: '← Records',
+    backToResults: 'Records',
     title: "{{name}}'s Homework Calendar",
     prevMonth: 'Previous month',
     nextMonth: 'Next month',

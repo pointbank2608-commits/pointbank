@@ -1,6 +1,7 @@
+import BackButton from '../components/BackButton';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchClasses, fetchMyBalance, fetchStudentById, fetchTransactions } from '../lib/api';
@@ -72,12 +73,7 @@ export default function StudentHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/results"
-        className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
-      >
-        {t('homework.backToResults')}
-      </Link>
+      <BackButton path="/results" to={t('homework.backToResults')} />
 
       {!student ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>

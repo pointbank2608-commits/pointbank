@@ -2384,7 +2384,7 @@ const ko = {
   materials: {
     pageTitle: '활동지(인쇄)',
     pageSubtitle: '인쇄해서 오프라인으로 수업할 수 있는 자료를 단어 목록에서 바로 만들어보세요.',
-    backToMaterials: '← 활동지(인쇄)',
+    backToMaterials: '활동지(인쇄)',
     flashcardsName: '플래시카드 인쇄',
     flashcardsDesc: '단어 카드를 A4에 2~12장씩 크게 인쇄해요. 그림·단어·뜻을 골라서 보이거나 숨길 수 있어요.',
     launch: {
@@ -5194,6 +5194,7 @@ const ko = {
     pageSubtitle: '게임·영상·활동지를 순서대로 모아 두고, 수업 시간에 "▶ 수업 시작"만 누르세요.',
     moreButton: '더보기',
     createButton: '새 수업 만들기',
+    backToList: '수업 목록',
     createFormTitle: '새 수업 만들기',
     editFormTitle: '수업 수정',
     editButton: '고치기',
@@ -5998,7 +5999,7 @@ const ko = {
 
   homework: {
     stampLegend: '숙제 도장 (온라인 숙제 완료)',
-    backToResults: '← 기록',
+    backToResults: '기록',
     title: '{{name}} 숙제 캘린더',
     prevMonth: '이전 달',
     nextMonth: '다음 달',

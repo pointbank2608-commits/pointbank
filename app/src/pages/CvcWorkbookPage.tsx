@@ -1,6 +1,7 @@
+import BackButton from '../components/BackButton';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { CvcUnitPages, CvcUnitPicker } from '../components/worksheets/CvcWorkbookSheets';
 import { usePresenting } from '../context/LessonRunnerContext';
@@ -34,9 +35,7 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
         <PresentPrintBar canPrint={units.length > 0} emptyHint={t('materials.cvc.pickUnit')} />
       ) : (
         <div className="no-print space-y-4">
-          <Link to="/materials" className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
-            {t('materials.backToMaterials')}
-          </Link>
+          <BackButton path="/materials" to={t('materials.backToMaterials')} />
           <div>
             <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{t(book === 'cvc' ? 'materials.cvcWorkbookName' : 'materials.longVowelWorkbookName')}</h1>
             <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t(book === 'cvc' ? 'materials.cvc.intro' : 'materials.cvc.longIntro')}</p>
