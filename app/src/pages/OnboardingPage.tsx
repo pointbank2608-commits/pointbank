@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { createSampleStarter } from '../lib/sampleStarter';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
@@ -69,7 +70,13 @@ export default function OnboardingPage() {
     setError(null);
     try {
       if (choice === 'owner') {
-        await createAcademy(academyName, pointUnit, ownerName);
+        const academyId = await createAcademy(academyName, pointUnit, ownerName);
+        // 첫 수업 1분 체험: 샘플 반·샘플 수업을 만들어 둔다(실패해도 가입은 계속).
+        try {
+          if (session?.user.id) await createSampleStarter(academyId, session.user.id, i18n.language);
+        } catch {
+          /* 샘플은 덤이라 못 만들어도 괜찮다 */
+        }
       } else if (choice === 'teacher') {
         await joinAsTeacher(inviteCode, teacherName);
       }
