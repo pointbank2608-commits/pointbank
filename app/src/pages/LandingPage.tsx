@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import SpinWheel from '../components/SpinWheel';
+import ProductMock from '../components/landing/ProductMock';
+import { GAME_CATALOG, getGameCatalogEntry } from '../lib/gameCatalog';
 
 function CheckIcon() {
   return (
@@ -23,14 +25,10 @@ export default function LandingPage() {
     { id: '5', label: 'peach' },
   ];
 
-  const mockSlides = [
-    { icon: 'style', label: t('landing.mockSlide1') },
-    { icon: 'flip', label: t('landing.mockSlide2') },
-    { icon: 'casino', label: t('landing.mockSlide3') },
-    { icon: 'emoji_events', label: t('landing.mockSlide4') },
-    { icon: 'print', label: t('landing.mockSlide5') },
-    { icon: 'stars', label: t('landing.mockSlide6') },
-  ];
+  const gameCount = GAME_CATALOG.length;
+  const stripGames = ['wheel', 'ladder', 'hangman', 'matchup', 'treasuredig', 'quizshow', 'airport', 'icecream'] as const;
+  const pets = ['dog', 'cat', 'rabbit', 'bear', 'pig'] as const;
+  const tagTones = ['bg-tag-today text-tag-today-ink', 'bg-tag-lesson text-tag-lesson-ink', 'bg-tag-library text-tag-library-ink', 'bg-tag-class text-tag-class-ink', 'bg-tag-more text-tag-more-ink'];
 
   const pains = [
     { n: '01', title: t('landing.pain1Title'), desc: t('landing.pain1Desc'), image: '/covers/landing-pain-1.jpg' },
@@ -51,7 +49,7 @@ export default function LandingPage() {
 
   const everything = [
     { icon: 'co_present', title: t('landing.allLessonTitle'), desc: t('landing.allLessonDesc') },
-    { icon: 'sports_esports', title: t('landing.allGameTitle'), desc: t('landing.allGameDesc') },
+    { icon: 'sports_esports', title: t('landing.allGameTitle', { count: gameCount }), desc: t('landing.allGameDesc') },
     { icon: 'emoji_events', title: t('landing.allContestTitle'), desc: t('landing.allContestDesc') },
     { icon: 'print', title: t('landing.allPrintTitle'), desc: t('landing.allPrintDesc') },
     { icon: 'auto_stories', title: t('landing.allWordsTitle'), desc: t('landing.allWordsDesc') },
@@ -85,121 +83,92 @@ export default function LandingPage() {
 
   return (
     <div className="landing bg-background text-on-background antialiased">
-      <header className="sticky top-0 z-50 border-b border-[#2a241c]/8 bg-[#fff8ee]/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-outline-variant/40 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-[76px] max-w-container-max items-center justify-between px-margin-mobile md:px-margin-desktop">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
             <BrandMark className="h-11 w-11 shrink-0 drop-shadow-sm" />
-            <span className="landing-logo text-[20px] text-[#3d2e22] sm:text-[23px] md:text-[28px]">
+            <span className="landing-logo whitespace-nowrap text-[20px] text-deep-navy sm:text-[23px] md:text-[28px]">
               {t('common.brand')}
             </span>
           </Link>
           <div className="flex shrink-0 items-center gap-2 md:gap-3">
-            <LanguageToggle className="bg-[#efe6d8]" />
+            <LanguageToggle className="bg-surface-container" />
             <Link
               to="/login"
-              className="hidden rounded-full border border-[#3d2e22]/18 px-4 py-2 font-label-md text-[16px] text-[#3d2e22] transition hover:bg-[#efe6d8] sm:inline-flex"
+              className="hidden rounded-full border border-deep-navy/20 px-4 py-2 font-label-md text-[16px] text-deep-navy transition hover:bg-surface-container sm:inline-flex"
             >
               {t('landing.login')}
             </Link>
             <Link
               to="/login"
-              className="inline-flex rounded-full bg-[#3d2e22] px-4 py-2.5 font-label-md text-[16px] text-[#fff8ee] transition hover:bg-[#2a241c] md:px-5"
+              className="inline-flex rounded-full bg-deep-navy px-4 py-2.5 font-label-md text-[16px] text-white transition hover:bg-primary md:px-5"
             >
-              {t('landing.startFree')}
+              {t('landing.startShort')}
             </Link>
           </div>
         </div>
       </header>
 
       <main>
-        <section className="relative overflow-hidden">
-          <div className="landing-hero-media relative">
-            <img
-              src="/covers/landing-hero.jpg"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#fff8ee]/18 via-transparent to-[#2a241c]/20" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#2a241c]/80 via-[#2a241c]/42 to-transparent" />
-            <div className="relative mx-auto grid h-full min-h-[inherit] max-w-container-max items-center gap-10 px-margin-mobile py-16 md:grid-cols-[1.05fr_0.95fr] md:px-margin-desktop md:py-20">
-              <div className="space-y-7 text-white">
-                <div className="flex flex-wrap gap-2">
-                  <div className="inline-flex items-center rounded-full bg-white/14 px-4 py-1.5 font-label-md text-[15px] text-white backdrop-blur-sm">
-                    {t('landing.heroEyebrow')}
-                  </div>
-                  <div className="inline-flex items-center rounded-full bg-warm-yellow px-4 py-1.5 font-label-md text-[15px] text-deep-navy">
-                    {t('landing.heroBadge')}
-                  </div>
+        <section className="relative overflow-hidden bg-background">
+          <div className="mx-auto grid max-w-container-max items-center gap-10 px-margin-mobile py-14 md:px-margin-desktop md:py-20 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="min-w-0 space-y-7">
+              <div className="flex flex-wrap gap-2">
+                <div className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-1.5 font-label-md text-[15px] text-on-surface-variant">
+                  {t('landing.heroEyebrow')}
                 </div>
-                <h1 className="landing-display text-[42px] leading-[1.2] text-white md:text-[64px] md:leading-[1.16]">
-                  {t('landing.heroLine1')}
-                  <br />
-                  {t('landing.heroLine2')} <span className="text-warm-yellow">{t('landing.heroLine3')}</span>
-                </h1>
-                <p className="max-w-xl text-[19px] leading-8 text-white/86 md:text-[21px] md:leading-9">{t('landing.heroDesc')}</p>
-                <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center">
-                  <Link
-                    to="/login"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-warm-yellow px-8 py-4 font-title-md text-[18px] text-deep-navy transition hover:bg-tertiary-fixed-dim"
-                  >
-                    {t('landing.startFree')}
-                    <span className="material-symbols-outlined text-[22px]">arrow_forward</span>
-                  </Link>
-                </div>
-                <div className="flex flex-col gap-2 text-[16px] text-white/82 sm:flex-row sm:flex-wrap sm:gap-x-5 md:text-[17px]">
-                  {[t('landing.heroCheck1'), t('landing.heroCheck2'), t('landing.heroCheck3')].map((c) => (
-                    <span key={c} className="inline-flex items-center gap-2">
-                      <CheckIcon />
-                      {c}
-                    </span>
-                  ))}
+                <div className="inline-flex items-center rounded-full bg-warm-yellow px-4 py-1.5 font-label-md text-[15px] text-deep-navy">
+                  {t('landing.heroBadge')}
                 </div>
               </div>
-
-              <div className="relative">
-                <div className="overflow-hidden rounded-[28px] bg-surface-container-lowest/95 shadow-[0_24px_60px_rgba(8,20,36,0.35)] backdrop-blur-sm">
-                  <div className="space-y-4 p-5 md:p-6">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-title-md text-[18px] text-deep-navy">{t('landing.mockLessonTitle')}</div>
-                        <div className="text-[15px] text-on-surface-variant">{t('landing.mockLessonSub')}</div>
-                      </div>
-                      <div className="rounded-full bg-warm-yellow px-3 py-1.5 font-label-md text-[15px] text-deep-navy">
-                        {t('landing.mockBadge')}
-                      </div>
-                    </div>
-                    <ol className="grid grid-cols-2 gap-2">
-                      {mockSlides.map((s, i) => (
-                        <li key={s.label} className="flex items-center gap-2.5 rounded-2xl bg-surface-container-low px-3 py-2.5">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-                            <span className="material-symbols-outlined text-[18px]">{s.icon}</span>
-                          </span>
-                          <span className="min-w-0 text-[15px] leading-5 text-on-surface">
-                            <span className="mr-1 text-outline">{i + 1}</span>
-                            {s.label}
-                          </span>
-                        </li>
-                      ))}
-                    </ol>
-                    <div className="flex items-center justify-center gap-2 rounded-2xl bg-primary py-3 font-label-md text-[16px] text-on-primary">
-                      <span className="material-symbols-outlined text-[20px]">play_arrow</span>
-                      {t('landing.mockPresent')}
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -bottom-5 -left-2 rounded-2xl border border-white/70 bg-white px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.12)] md:-left-6">
-                  <div className="text-[14px] text-outline">{t('landing.mockFloatTitle')}</div>
-                  <div className="font-label-md text-[15px] text-deep-navy">{t('landing.mockFloatDone')}</div>
-                </div>
+              <h1 className="landing-display text-[40px] leading-[1.2] text-deep-navy md:text-[60px] md:leading-[1.15]">
+                {t('landing.heroLine1')}
+                <br />
+                {t('landing.heroLine2')}{' '}
+                <span className="bg-warm-yellow/70 px-1">{t('landing.heroLine3')}</span>
+              </h1>
+              <p className="max-w-xl text-[19px] leading-8 text-on-surface-variant md:text-[21px] md:leading-9">{t('landing.heroDesc')}</p>
+              <div className="flex flex-col gap-2 text-[17px] text-on-surface">
+                {[t('landing.heroCheck1', { count: gameCount }), t('landing.heroCheck2'), t('landing.heroCheck3')].map((c) => (
+                  <span key={c} className="inline-flex items-center gap-2.5">
+                    <CheckIcon />
+                    {c}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center">
+                <Link
+                  to="/login"
+                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-deep-navy px-8 font-title-md text-[18px] text-white transition hover:bg-primary"
+                >
+                  {t('landing.startFree')}
+                  <span className="material-symbols-outlined text-[22px]">arrow_forward</span>
+                </Link>
+                <a href="#pricing" className="inline-flex min-h-14 items-center justify-center px-2 font-label-md text-[17px] text-primary underline underline-offset-4">
+                  {t('landing.seePricing')}
+                </a>
+              </div>
+              <div className="flex gap-3 overflow-hidden pt-2" aria-hidden>
+                {pets.map((p, i) => (
+                  <img
+                    key={p}
+                    src={`/landing/${p}.webp`}
+                    alt=""
+                    width={84}
+                    height={84}
+                    className={`h-[84px] w-[84px] shrink-0 rounded-[24px] object-cover shadow-card ${i % 2 === 0 ? '-rotate-3' : 'rotate-2'} ${i === 4 ? 'hidden sm:block' : ''}`}
+                  />
+                ))}
               </div>
             </div>
+            <ProductMock />
           </div>
         </section>
 
-        <section className="bg-[#12263d]">
+        <section className="bg-tag-today/50">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-soft-mint">{t('landing.painEyebrow')}</p>
-            <h2 className="landing-display mb-12 max-w-3xl text-[32px] text-white md:text-[48px]">{t('landing.painTitle')}</h2>
+            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.painEyebrow')}</p>
+            <h2 className="landing-display mb-12 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">{t('landing.painTitle')}</h2>
             <div className="grid gap-5 md:grid-cols-3">
               {pains.map((p) => (
                 <article key={p.n} className="landing-pain-card relative aspect-[3/4] overflow-hidden rounded-[28px]">
@@ -216,18 +185,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#fff8ee]">
+        <section className="bg-background">
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
             <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.flowEyebrow')}</p>
             <h2 className="landing-display mb-10 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">{t('landing.flowTitle')}</h2>
             <div className="grid gap-5 md:grid-cols-3">
               {flow.map((s) => (
-                <div key={s.n} className="rounded-[28px] bg-white p-7 shadow-[0_8px_30px_rgba(30,75,122,0.06)]">
+                <div key={s.n} className="rounded-[28px] bg-white p-7 shadow-card">
                   <div className="mb-5 flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary font-title-md text-[18px] text-on-primary">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-deep-navy font-title-md text-[18px] text-white">
                       {s.n}
                     </span>
-                    <span className="material-symbols-outlined text-[28px] text-primary">{s.icon}</span>
+                    <span className={`flex h-11 w-11 items-center justify-center rounded-full ${tagTones[Number(s.n) - 1]}`}>
+                      <span className="material-symbols-outlined text-[26px]">{s.icon}</span>
+                    </span>
                   </div>
                   <h3 className="landing-display mb-3 text-[26px] text-deep-navy">{s.title}</h3>
                   <p className="text-[17px] leading-8 text-on-surface-variant">{s.desc}</p>
@@ -240,7 +211,7 @@ export default function LandingPage() {
         {showcases.map((sc, i) => (
           <section key={sc.title} className={i % 2 === 0 ? '' : 'bg-surface-container-lowest'}>
             <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-              <div className={`overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)] ${i % 2 === 0 ? '' : 'md:order-2'}`}>
+              <div className={`overflow-hidden rounded-[28px] shadow-card ${i % 2 === 0 ? '' : 'md:order-2'}`}>
                 <img src={sc.image} alt="" className="aspect-[4/3] w-full object-cover" />
               </div>
               <div className={i % 2 === 0 ? '' : 'md:order-1'}>
@@ -252,16 +223,32 @@ export default function LandingPage() {
           </section>
         ))}
 
+        <section className="bg-surface-container-lowest">
+          <div className="mx-auto max-w-container-max px-margin-mobile py-16 md:px-margin-desktop md:py-20">
+            <h2 className="landing-display mb-3 text-[32px] text-deep-navy md:text-[44px]">{t('landing.gamesStripTitle', { count: gameCount })}</h2>
+            <p className="mb-8 max-w-2xl text-[19px] leading-9 text-on-surface-variant">{t('landing.gamesStripDesc')}</p>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {stripGames.map((g) => (
+                <div key={g} className="overflow-hidden rounded-[24px] bg-surface-container-lowest shadow-card">
+                  <img src={`/landing/games/${g}.webp`} alt="" loading="lazy" width={480} height={320} className="aspect-[3/2] w-full object-cover" />
+                  <div className="px-4 py-3 font-label-md text-[16px] text-on-surface">{t(getGameCatalogEntry(g)?.nameKey ?? '')}</div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-5 text-[16px] text-outline">{t('landing.gamesStripNote')}</p>
+          </div>
+        </section>
+
         <section>
           <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-            <div className="flex h-[320px] items-center justify-center overflow-hidden rounded-[28px] bg-background shadow-[0_16px_48px_rgba(30,75,122,0.08)]">
+            <div className="flex h-[320px] items-center justify-center overflow-hidden rounded-[28px] bg-background shadow-card">
               <div className="origin-center scale-[0.68]" style={{ width: 420, height: 420 }}>
                 <SpinWheel items={wheelItems} />
               </div>
             </div>
             <div>
               <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.show3Eyebrow')}</div>
-              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.show3Title')}</h2>
+              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.show3Title', { count: gameCount })}</h2>
               <p className="text-[19px] leading-9 text-on-surface-variant">{t('landing.show3Desc')}</p>
             </div>
           </div>
@@ -271,12 +258,12 @@ export default function LandingPage() {
           <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
             <h2 className="landing-display mb-10 text-center text-[32px] text-deep-navy md:text-[48px]">{t('landing.allTitle')}</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
-              {everything.map((s) => (
+              {everything.map((s, i) => (
                 <div
                   key={s.title}
-                  className="flex flex-col items-center gap-2 rounded-[24px] bg-background p-6 text-center shadow-[0_8px_30px_rgba(30,75,122,0.06)]"
+                  className="flex flex-col items-center gap-2 rounded-[24px] bg-background p-6 text-center shadow-card"
                 >
-                  <div className="mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-soft-mint/50 text-primary">
+                  <div className={`mb-1 flex h-12 w-12 items-center justify-center rounded-full ${tagTones[i % 5]}`}>
                     <span className="material-symbols-outlined">{s.icon}</span>
                   </div>
                   <div className="font-title-md text-[18px] text-on-surface">{s.title}</div>
@@ -287,7 +274,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-[#12263d]">
+        <section className="bg-deep-navy">
           <div className="mx-auto max-w-container-max px-margin-mobile py-16 text-center md:px-margin-desktop md:py-20">
             <p className="mb-3 font-label-md text-[16px] tracking-wide text-soft-mint">{t('landing.placeEyebrow')}</p>
             <h2 className="landing-display mx-auto mb-4 max-w-3xl text-[30px] text-white md:text-[44px]">{t('landing.placeTitle')}</h2>
@@ -316,7 +303,7 @@ export default function LandingPage() {
               </div>
               <p className="mt-5 text-[16px] leading-7 text-outline">{t('landing.feature4Hint')}</p>
             </div>
-            <div className="overflow-hidden rounded-[28px] shadow-[0_16px_48px_rgba(30,75,122,0.12)]">
+            <div className="overflow-hidden rounded-[28px] shadow-card">
               <img src="/covers/landing-feature-homework.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
             </div>
           </div>
@@ -357,7 +344,7 @@ export default function LandingPage() {
             {plans.map((p) => (
               <div
                 key={p.name}
-                className={`rounded-[24px] p-8 shadow-[0_8px_30px_rgba(30,75,122,0.06)] ${
+                className={`rounded-[24px] p-8 shadow-card ${
                   p.paid ? 'bg-deep-navy text-white' : 'bg-surface-container-lowest text-on-surface'
                 }`}
               >

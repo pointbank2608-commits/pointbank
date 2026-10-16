@@ -240,7 +240,7 @@ export default function QuizShowPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-3">
+    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3">
       <label className="font-label-md text-label-md text-on-surface-variant block">{t('gameAdmin.nameFieldLabel')}</label>
       <input
         value={newName}
@@ -317,7 +317,7 @@ export default function QuizShowPage() {
             {createForm}
 
             {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('liveQuiz.settingsTitle', { count: draft.length })}</h4>
                   <div className="flex flex-wrap items-center gap-3">

@@ -174,7 +174,7 @@ export default function WorksheetLibraryPage() {
                 key={tp.name}
                 type="button"
                 onClick={() => openTopic(tp.name)}
-                className="rounded-xl bg-surface-container-lowest p-4 text-left shadow-[0_4px_20px_rgba(39,101,168,0.08)] transition-all hover:-translate-y-1 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-primary"
+                className="rounded-xl bg-surface-container-lowest p-4 text-left shadow-card transition-all hover:-translate-y-1 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-primary"
               >
                 <div className="mb-3 flex gap-1.5">
                   {tp.preview.map((e) => (
@@ -193,7 +193,7 @@ export default function WorksheetLibraryPage() {
 
       {entries && category && (
         <>
-          <section className="space-y-4 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+          <section className="space-y-4 rounded-xl bg-surface-container-lowest p-5 shadow-card">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <button

@@ -26,7 +26,7 @@ export default function GameInfoPanel({ description, steps, worksheetState }: Pr
   if (presenting) return null;
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl shadow-card overflow-hidden">
       <div className="flex items-center gap-2 pr-4">
       <button
         type="button"

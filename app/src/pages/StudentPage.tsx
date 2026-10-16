@@ -68,7 +68,7 @@ export default function StudentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-primary text-on-primary rounded-xl p-6 md:p-8 relative overflow-hidden shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-primary text-on-primary rounded-xl p-6 md:p-8 relative overflow-hidden shadow-card">
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -110,7 +110,7 @@ export default function StudentPage() {
             {fmtDay(dateKey())}
           </span>
         </h3>
-        <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl shadow-card overflow-hidden">
           {todayTx.length === 0 ? (
             <div className="text-center py-8 font-body-md text-on-surface-variant">
               {t('student.noTodayHistory', { unit: pointUnit })}
@@ -142,7 +142,7 @@ export default function StudentPage() {
             {t('student.countSuffix', { count: history.length })}
           </span>
         </h3>
-        <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl shadow-card overflow-hidden">
           {history.length === 0 ? (
             <div className="text-center py-8 font-body-md text-on-surface-variant">{t('student.noHistory')}</div>
           ) : (

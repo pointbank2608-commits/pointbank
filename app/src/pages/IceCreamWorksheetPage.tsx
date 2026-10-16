@@ -254,7 +254,7 @@ export default function IceCreamWorksheetPage() {
       {presenting ? (
         <PresentPrintBar canPrint onReshuffle={reshuffle} />
       ) : (
-        <div className="no-print bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+        <div className="no-print bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <div className="flex flex-wrap gap-6">
             <div>
               <div className="font-caption text-caption text-on-surface-variant mb-2">{t('materials.iceCream.kindLabel')}</div>

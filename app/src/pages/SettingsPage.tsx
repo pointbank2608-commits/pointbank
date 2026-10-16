@@ -211,7 +211,7 @@ export default function SettingsPage() {
 
       <Link
         to="/settings/billing"
-        className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] transition-colors hover:bg-surface-container-low"
+        className="flex items-center justify-between gap-3 rounded-xl bg-surface-container-lowest p-5 shadow-card transition-colors hover:bg-surface-container-low"
       >
         <div>
           <h4 className="font-title-md text-title-md text-on-surface">{t('settings.billingTitle')}</h4>
@@ -228,7 +228,7 @@ export default function SettingsPage() {
         </span>
       </Link>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
         <h4 className="font-title-md text-title-md text-on-surface">{t('settings.myNameTitle')}</h4>
         <div>
           <label htmlFor="myname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
@@ -256,7 +256,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.logoTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-4">{t('settings.logoHint')}</p>
         <div className="flex items-center gap-4">
@@ -295,7 +295,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.watermarkTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-4">{t('settings.watermarkHint')}</p>
         <label className="flex cursor-pointer items-center gap-3 font-label-md text-label-md text-on-surface">
@@ -309,7 +309,7 @@ export default function SettingsPage() {
         </label>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
         <h4 className="font-title-md text-title-md text-on-surface">{t('settings.academyTitle')}</h4>
         <div>
           <label htmlFor="aname" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">
@@ -342,7 +342,7 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.presetsTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-3">
           {t('settings.presetsHintBefore')}
@@ -412,7 +412,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-3">{t('settings.classManageTitle')}</h4>
         {classes.length === 0 ? (
           <div className="font-body-md text-body-md text-on-surface-variant mb-3">{t('settings.noClasses')}</div>
@@ -490,12 +490,12 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.studentLoginTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant">{t('settings.studentLoginHint')}</p>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.inviteTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-3">
           {t('settings.inviteHint')}

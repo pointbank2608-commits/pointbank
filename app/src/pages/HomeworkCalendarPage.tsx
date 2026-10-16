@@ -166,20 +166,20 @@ export default function HomeworkCalendarPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.completionRate')}</div>
               <div className="font-display-lg text-[28px] text-secondary">
                 {completionRate == null ? '–' : `${completionRate}%`}
               </div>
             </div>
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.done')}</div>
               <div className="font-display-lg text-[28px] text-on-surface">
                 {doneDays}
                 {t('homework.daySuffix')}
               </div>
             </div>
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('homework.missing')}</div>
               <div className="font-display-lg text-[28px] text-error">
                 {missingDays}
@@ -188,7 +188,7 @@ export default function HomeworkCalendarPage() {
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-card">
             <div className="flex items-center gap-4 mb-5 font-caption text-caption text-on-surface-variant">
               <span className="flex items-center gap-1.5">
                 <span className="w-5 h-5 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">

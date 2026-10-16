@@ -343,7 +343,7 @@ export default function AttendancePage() {
           )}
         </div>
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-4 md:p-6 overflow-x-auto">
+        <div className="bg-surface-container-lowest rounded-xl shadow-card p-4 md:p-6 overflow-x-auto">
           <table className="w-full text-center border-collapse">
             <thead>
               <tr className="font-caption text-caption text-on-surface-variant">

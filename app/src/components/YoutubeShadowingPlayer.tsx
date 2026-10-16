@@ -165,7 +165,7 @@ export default function YoutubeShadowingPlayer({ videoUrl, fit = false, start, e
         </div>
       )}
 
-      <div className={`flex flex-wrap items-end rounded-xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${fit ? 'shrink-0 gap-3 px-3 py-2' : 'gap-4 p-4'}`}>
+      <div className={`flex flex-wrap items-end rounded-xl bg-surface-container-lowest shadow-card ${fit ? 'shrink-0 gap-3 px-3 py-2' : 'gap-4 p-4'}`}>
         <div>
           <label className="mb-1 block font-caption text-caption text-on-surface-variant">
             {t('curriculum.player.startSec')}

@@ -88,7 +88,7 @@ export default function MysteryBoxPrintPage() {
 
       <div className="no-print space-y-4">
         <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
-        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <div className="flex flex-wrap gap-6">
             <div>
               <div className="font-caption text-caption text-on-surface-variant mb-2">{t('materials.mysteryBox.kindLabel')}</div>

@@ -94,7 +94,7 @@ export default function PassbookCard({
 
   return (
     <div
-      className={`relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] p-5 ${
+      className={`relative bg-surface-container-lowest rounded-xl shadow-card p-5 ${
         locked ? 'opacity-70' : ''
       }`}
     >

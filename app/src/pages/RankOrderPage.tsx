@@ -219,7 +219,7 @@ export default function RankOrderPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
       <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
         <span aria-hidden="true">💬</span>
         <span>{t('gameAdmin.createHelp')}</span>
@@ -343,7 +343,7 @@ export default function RankOrderPage() {
             {createForm}
 
             {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameRankOrder.settingsTitle')}</h4>
                   <button

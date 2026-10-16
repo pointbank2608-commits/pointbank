@@ -277,7 +277,7 @@ export default function WheelPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
       <div>
         <label className="font-label-md text-label-md text-on-surface-variant block mb-1.5">{t('gameAdmin.visibilityLabel')}</label>
         <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
@@ -403,7 +403,7 @@ export default function WheelPage() {
             {createForm}
 
             {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameWheel.settingsTitle')}</h4>
                   <button

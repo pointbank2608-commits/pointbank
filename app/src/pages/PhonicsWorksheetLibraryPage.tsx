@@ -391,7 +391,7 @@ export default function PhonicsWorksheetLibraryPage() {
 
         {entries && (
           <>
-            <section className="space-y-4 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <section className="space-y-4 rounded-xl bg-surface-container-lowest p-5 shadow-card">
               <div>
                 <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('phonics.stepLabel')}</div>
                 <div className="flex flex-wrap gap-2">
@@ -558,7 +558,7 @@ export default function PhonicsWorksheetLibraryPage() {
       {/* 작업 영역: 고른 워크시트의 옵션·미리보기·인쇄 */}
       <div ref={workspaceRef} className="scroll-mt-4 print:mt-0">
         {hasWork && (
-          <div className="no-print mb-4 space-y-3 rounded-xl bg-surface-container-lowest p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+          <div className="no-print mb-4 space-y-3 rounded-xl bg-surface-container-lowest p-5 shadow-card">
             <h3 className="font-title-md text-title-md text-deep-navy">
               {t('materials.phonicsLibrary.printTitle')} · {cards.find((c) => c.tab === tab)?.name}
             </h3>

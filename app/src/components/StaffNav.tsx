@@ -10,9 +10,17 @@ interface Props {
   onNavigate?: () => void;
 }
 
-const ROW = 'flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md transition-all';
-const ON = 'bg-secondary-container text-on-secondary-container font-bold';
-const OFF = 'text-on-surface-variant hover:bg-soft-mint/20';
+const ROW = 'flex items-center gap-3 px-3 py-2.5 rounded-xl font-label-md text-label-md transition-all';
+const OFF = 'text-on-surface-variant hover:bg-surface-container';
+
+/** 묶음별 색 태그 — Tailwind 가 클래스를 찾을 수 있게 전부 적어 둔다(문자열 조립 금지). */
+const TAG = {
+  today: { chip: 'bg-tag-today text-tag-today-ink', row: 'bg-tag-today text-tag-today-ink font-bold', child: 'bg-tag-today/60 text-tag-today-ink font-bold' },
+  lesson: { chip: 'bg-tag-lesson text-tag-lesson-ink', row: 'bg-tag-lesson text-tag-lesson-ink font-bold', child: 'bg-tag-lesson/60 text-tag-lesson-ink font-bold' },
+  library: { chip: 'bg-tag-library text-tag-library-ink', row: 'bg-tag-library text-tag-library-ink font-bold', child: 'bg-tag-library/60 text-tag-library-ink font-bold' },
+  class: { chip: 'bg-tag-class text-tag-class-ink', row: 'bg-tag-class text-tag-class-ink font-bold', child: 'bg-tag-class/60 text-tag-class-ink font-bold' },
+  more: { chip: 'bg-tag-more text-tag-more-ink', row: 'bg-tag-more text-tag-more-ink font-bold', child: 'bg-tag-more/60 text-tag-more-ink font-bold' },
+} as const;
 
 /** 선생님 메뉴: 묶음 5개 행 + 지금 화면이 속한 묶음만 펼친 항목 목록. NavLink 대신 Link 를 써서 같은 주소가 겹쳐 선택돼 보이지 않게 한다. */
 export default function StaffNav({ onNavigate }: Props) {
@@ -42,9 +50,11 @@ export default function StaffNav({ onNavigate }: Props) {
               to={g.children[0].to}
               onClick={onNavigate}
               aria-expanded={single ? undefined : isActive}
-              className={`${ROW} ${isActive ? ON : OFF}`}
+              className={`${ROW} ${isActive ? TAG[g.id].row : OFF}`}
             >
-              <span className="material-symbols-outlined">{g.icon}</span>
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${TAG[g.id].chip}`}>
+                <span className="material-symbols-outlined text-[22px]">{g.icon}</span>
+              </span>
               <span className="flex-1 truncate">{t(g.labelKey)}</span>
               {single && lockedPath(g.children[0].to) && lock}
               {!single && (
@@ -64,7 +74,7 @@ export default function StaffNav({ onNavigate }: Props) {
                         onClick={onNavigate}
                         aria-current={on ? 'page' : undefined}
                         className={`flex items-center gap-2.5 rounded-lg py-2.5 pl-12 pr-4 font-label-md text-label-md transition-all ${
-                          on ? 'bg-primary-fixed/50 font-bold text-deep-navy' : OFF
+                          on ? TAG[g.id].child : OFF
                         }`}
                       >
                         <span className="material-symbols-outlined text-[18px]">{c.icon}</span>

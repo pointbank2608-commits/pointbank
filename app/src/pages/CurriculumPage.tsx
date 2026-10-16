@@ -598,6 +598,23 @@ export default function CurriculumPage() {
     }
   }
 
+  // 오늘 화면의 "수업 만들기" 카드: 반이 정해지면 빠른 만들기 창을 연다.
+  const wantQuick = useRef(false);
+  useEffect(() => {
+    const st = location.state as { openQuick?: boolean } | null;
+    if (st?.openQuick) {
+      wantQuick.current = true;
+      navigate('/curriculum', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+  useEffect(() => {
+    if (wantQuick.current && staffClassId) {
+      wantQuick.current = false;
+      setQuickOpen(true);
+    }
+  }, [staffClassId, location.key]);
+
   // 오늘 화면 카드에서 넘어온 경우: 그 반을 고르고, 수업이 있으면 바로 시작하거나 새 수업 만들기를 연다.
   const pendingFocus = useRef<{ focusClassId?: string; startLessonId?: string } | null>(null);
   useEffect(() => {
@@ -791,7 +808,7 @@ export default function CurriculumPage() {
           </button>
         </div>
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <h3 className="font-title-md text-title-md text-on-surface">
             {t(editingId ? 'curriculum.editFormTitle' : 'curriculum.createFormTitle')}
           </h3>
@@ -1139,7 +1156,7 @@ export default function CurriculumPage() {
           return (
             <div
               key={lesson.id}
-              className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-3"
+              className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

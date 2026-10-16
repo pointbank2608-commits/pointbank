@@ -90,7 +90,7 @@ export default function BillingPage() {
         {t('settings.billingTitle')}
       </h2>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-4">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-title-md text-title-md text-on-surface">{t('billing.currentPlanTitle')}</h4>
           <span
@@ -163,7 +163,7 @@ export default function BillingPage() {
         )}
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="mb-3 font-title-md text-title-md text-on-surface">{t('billing.historyTitle')}</h4>
         {history.length === 0 ? (
           <p className="font-body-md text-body-md text-on-surface-variant">{t('billing.historyEmpty')}</p>

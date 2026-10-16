@@ -11,7 +11,7 @@ import {
   requestAcademyDeletion,
 } from '../lib/account';
 
-const card = 'bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-3';
+const card = 'bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3';
 
 /** 설정 맨 아래 "계정·데이터" — 데이터 내려받기, 원장은 학원 삭제 요청(14일 유예), 선생님은 내 계정 삭제 */
 export default function AccountDataSection() {

@@ -731,7 +731,7 @@ export default function WordListsPage() {
             )}
             {groupOpen && (
             <div
-              className={`bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${g ? 'ml-4 border-l-4 border-primary/30' : ''}`}
+              className={`bg-surface-container-lowest rounded-xl p-4 shadow-card ${g ? 'ml-4 border-l-4 border-primary/30' : ''}`}
             >
               {/* 제목은 한 줄로 줄이고(길면 …), "게임하기" 버튼은 늘 같은 자리에 맞춘다 */}
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12.5rem_auto] lg:items-center">
@@ -858,7 +858,7 @@ export default function WordListsPage() {
       {selectedId && !viewAll && (
         <div>
           {showCreateForm ? (
-            <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-2">
+            <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
                 {t(newKind === 'sentence' ? 'wordLists.sentence.kindSentence' : 'wordLists.sentence.kindWord')}
               </span>

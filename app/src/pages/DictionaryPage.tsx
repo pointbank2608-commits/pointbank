@@ -556,7 +556,7 @@ export default function DictionaryPage() {
           )}
 
           {filtered.length === 0 ? (
-            <div className="rounded-xl bg-surface-container-lowest py-16 text-center shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="rounded-xl bg-surface-container-lowest py-16 text-center shadow-card">
               <div className="mb-3 text-5xl">🔍</div>
               <div className="font-body-md text-body-md text-on-surface-variant">{t('dictionary.noResults')}</div>
             </div>
@@ -565,7 +565,7 @@ export default function DictionaryPage() {
               {visible.map((entry) => (
                 <div
                   key={entry.id}
-                  className={`relative rounded-xl bg-surface-container-lowest p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] ${
+                  className={`relative rounded-xl bg-surface-container-lowest p-4 shadow-card ${
                     selected[entry.id] ? 'ring-2 ring-secondary' : ''
                   }`}
                 >

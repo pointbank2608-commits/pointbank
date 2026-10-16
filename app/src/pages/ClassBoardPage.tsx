@@ -400,7 +400,7 @@ export default function ClassBoardPage() {
       </div>
 
       {!locked && selectedIds.size > 0 && (
-        <div className="bg-surface-container-lowest rounded-xl p-4 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-wrap items-center gap-3">
+        <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-3">
           <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
             {t('board.bulkGiveLabel', { count: selectedIds.size })}
           </span>

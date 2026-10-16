@@ -19,7 +19,7 @@ export default function MaterialsPage() {
           <Link
             key={m.id}
             to={m.path}
-            className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
+            className="group relative bg-surface-container-lowest rounded-xl shadow-card overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
           >
             <div className="relative h-36 overflow-hidden">
               {m.cover ? (

@@ -42,7 +42,7 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
             <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t(book === 'cvc' ? 'materials.cvc.intro' : 'materials.cvc.longIntro')}</p>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] space-y-3">
+          <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="font-title-md text-title-md text-on-surface">{t('materials.cvc.pickTitle')}</h2>
               <div className="flex gap-2">

@@ -85,22 +85,19 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-gutter">
-      {/* 웰컴 배너 */}
-      <div className="bg-primary text-on-primary rounded-xl p-6 md:p-8 relative overflow-hidden shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
-        <div className="relative z-10">
+      {/* 인사 카드 */}
+      <div className="relative overflow-hidden rounded-[28px] bg-tag-today p-6 text-tag-today-ink shadow-card md:p-8">
+        <div className="relative z-10 pr-20">
           <h2 className="font-headline-lg-mobile md:font-headline-lg">
             {t('dashboard.greeting', { hello, name, emoji: sun })}
           </h2>
-          <p className="font-body-lg text-primary-fixed opacity-90 mt-1">
+          <p className="mt-1 font-body-lg">
             {loading
               ? t('dashboard.loadingToday')
               : t('dashboard.summaryLine', { day: fmtDay(today), classCount, studentCount })}
           </p>
         </div>
-        <div
-          className="absolute right-0 top-0 w-64 h-full opacity-20 pointer-events-none"
-          style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, #FFD54F 0%, transparent 60%)' }}
-        />
+        <img src="/skins/chain/star.webp" alt="" aria-hidden width={64} height={64} className="pointer-events-none absolute right-5 top-1/2 h-16 w-16 -translate-y-1/2 rotate-6" />
       </div>
 
       {academy?.id && <TodayLessons academyId={academy.id} />}
@@ -108,20 +105,9 @@ export default function DashboardPage() {
       {academy?.id && <OnboardingChecklist academyId={academy.id} />}
 
       {/* bento 그리드 */}
-      <section className="rounded-2xl border border-primary/15 bg-surface-container-lowest p-5 shadow-sm sm:p-7">
-        <h2 className="text-xl font-bold text-deep-navy">{t('classroomUx.lessonTitle')}</h2>
-        <p className="mt-2 text-on-surface-variant">{t('classroomUx.lessonHint')}</p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link to="/wordlists" className="flex min-h-12 items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary">
-            <span aria-hidden className="material-symbols-outlined">menu_book</span>{t('classroomUx.openWordLists')}
-          </Link>
-          <Link to="/games" className="flex min-h-12 items-center rounded-xl border border-outline-variant px-5 py-3 font-semibold text-primary">{t('classroomUx.browseGames')}</Link>
-        </div>
-      </section>
-
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
         {/* 오늘 할 일 */}
-        <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <div className="md:col-span-8 bg-surface-container-lowest rounded-xl p-6 shadow-card">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-title-md text-title-md text-on-surface">{t('dashboard.todo')}</h3>
             <Link to="/results" className="text-primary font-label-md text-label-md hover:bg-surface-container-low px-3 py-1 rounded-full transition-colors">
@@ -169,13 +155,13 @@ export default function DashboardPage() {
         </div>
 
         {/* 학급 통계 */}
-        <div className="md:col-span-4 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col">
+        <div className="md:col-span-4 bg-surface-container-lowest rounded-xl p-6 shadow-card flex flex-col">
           <h3 className="font-title-md text-title-md text-on-surface mb-6">{t('dashboard.classStats')}</h3>
           <div className="flex-1 flex flex-col justify-center items-center py-4">
             <div
               className="relative w-32 h-32 rounded-full mb-6 flex items-center justify-center"
               style={{
-                background: `conic-gradient(#90f1dd ${attendanceRate * 3.6}deg, #e8eff7 0deg)`,
+                background: `conic-gradient(#90f1dd ${attendanceRate * 3.6}deg, #f6ebd6 0deg)`,
               }}
             >
               <div className="absolute inset-[10px] rounded-full bg-surface-container-lowest flex items-center justify-center">
@@ -209,7 +195,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 알림 */}
-        <div className="md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <div className="md:col-span-6 bg-surface-container-lowest rounded-xl p-6 shadow-card">
           <h3 className="font-title-md text-title-md text-on-surface mb-4">{t('dashboard.notifications')}</h3>
           {classCount === 0 ? (
             <div className="bg-error-container text-on-error-container rounded-lg p-4">
@@ -236,7 +222,7 @@ export default function DashboardPage() {
         <div className="md:col-span-6 grid grid-cols-2 gap-4">
           <Link
             to="/attendance"
-            className="bg-surface-container-lowest p-5 rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
+            className="bg-surface-container-lowest p-5 rounded-xl shadow-card flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 rounded-full bg-soft-mint text-deep-navy flex items-center justify-center">
               <span className="material-symbols-outlined">calendar_today</span>
@@ -245,7 +231,7 @@ export default function DashboardPage() {
           </Link>
           <Link
             to="/games"
-            className="bg-surface-container-lowest p-5 rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
+            className="bg-surface-container-lowest p-5 rounded-xl shadow-card flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 rounded-full bg-warm-yellow/30 text-tertiary-container flex items-center justify-center">
               <span className="material-symbols-outlined">sports_esports</span>
@@ -254,7 +240,7 @@ export default function DashboardPage() {
           </Link>
           <Link
             to="/board"
-            className="bg-surface-container-lowest p-5 rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
+            className="bg-surface-container-lowest p-5 rounded-xl shadow-card flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
               <span className="material-symbols-outlined">payments</span>
@@ -263,7 +249,7 @@ export default function DashboardPage() {
           </Link>
           <Link
             to="/settings"
-            className="bg-surface-container-lowest p-5 rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
+            className="bg-surface-container-lowest p-5 rounded-xl shadow-card flex flex-col items-center justify-center gap-2 hover:-translate-y-0.5 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
               <span className="material-symbols-outlined">settings</span>

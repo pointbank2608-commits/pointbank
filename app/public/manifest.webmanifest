@@ -1,11 +1,11 @@
 {
-  "name": "클래스뱅크 · 포인트 통장",
+  "name": "클래스뱅크 · 영어 수업 도구",
   "short_name": "클래스뱅크",
-  "description": "학원용 포인트 통장 · 출석 · 미니게임",
+  "description": "초등 영어 수업 도구 · 단어장 하나로 게임과 활동지가 바로",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
-  "background_color": "#eaf5ff",
+  "background_color": "#fff8ec",
   "theme_color": "#2765a8",
   "orientation": "portrait-primary",
   "icons": [

@@ -54,7 +54,7 @@ export default function AuthPage() {
         <div className="flex justify-end">
           <LanguageToggle />
         </div>
-        <div className="bg-surface-container-lowest rounded-xl shadow-[0_8px_30px_rgba(39,101,168,0.12)] border border-surface-container-highest p-8">
+        <div className="bg-surface-container-lowest rounded-xl shadow-card border border-surface-container-highest p-8">
           <div className="flex items-center gap-3 mb-6">
             <BrandMark className="h-10 w-10" />
             <div>

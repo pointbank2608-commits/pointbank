@@ -165,15 +165,15 @@ export default function AdminAcademiesPage() {
       {(
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statAcademies')}</div>
               <div className="font-display-lg text-[28px] text-on-surface">{totals?.academies ?? '–'}</div>
             </div>
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statTeachers')}</div>
               <div className="font-display-lg text-[28px] text-on-surface">{totals?.teachers ?? '–'}</div>
             </div>
-            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
               <div className="font-caption text-caption text-on-surface-variant mb-1">{t('admin.statStudents')}</div>
               <div className="font-display-lg text-[28px] text-on-surface">{totals?.students ?? '–'}</div>
             </div>
@@ -200,7 +200,7 @@ export default function AdminAcademiesPage() {
             <span className="font-caption text-caption text-on-surface-variant">{loading ? t('common.loading') : t('adminOps.shownCount', { n: total })}</span>
           </div>
           {feat.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 shadow-card">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('admin.featBulkTitle')}</span>
               <button type="button" onClick={() => void bulk(false)} className="rounded-full border border-error px-3 py-1 font-label-md text-label-md text-error hover:bg-error/5">
                 {t('admin.featBulkClose')}
@@ -211,7 +211,7 @@ export default function AdminAcademiesPage() {
               <span className="font-caption text-caption text-on-surface-variant">{t('admin.featBulkHint')}</span>
             </div>
           )}
-          <div className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-x-auto">
+          <div className="bg-surface-container-lowest rounded-xl shadow-card overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="font-caption text-caption text-on-surface-variant border-b border-surface-container">
@@ -349,7 +349,7 @@ export default function AdminAcademiesPage() {
         </>
       )}
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-[0_4px_20px_rgba(39,101,168,0.08)] max-w-[420px] space-y-4">
+      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card max-w-[420px] space-y-4">
         <h4 className="font-title-md text-title-md text-on-surface">{t('admin.changePasswordTitle')}</h4>
         <div>
           <label htmlFor="new-pw" className="font-label-md text-label-md text-on-surface-variant block mb-1.5">

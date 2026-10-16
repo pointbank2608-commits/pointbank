@@ -9,6 +9,17 @@ import { GAME_CATALOG, GAME_MOMENTS, isFreeTierGame, type GameCatalogEntry, type
 
 type ViewMode = 'library' | 'all';
 
+/** 칸 소제목 앞 색 점(Tailwind 가 찾을 수 있게 전부 적어 둔다) */
+const MOMENT_DOT: Record<GameMoment, string> = {
+  warmup: 'bg-clay-yellow',
+  learn: 'bg-clay-sky',
+  practice: 'bg-clay-mint',
+  speak: 'bg-clay-coral',
+  team: 'bg-tag-library-ink',
+  wrapup: 'bg-deep-navy',
+  other: 'bg-outline',
+};
+
 export default function GamesPage() {
   const { t } = useTranslation();
   const { academy, isStaff, session, hasFullAccess } = useAuth();
@@ -110,7 +121,7 @@ export default function GamesPage() {
       ) : showLibrary && !libraryLoaded ? (
         <p role="status" className="py-16 text-center text-on-surface-variant">{t('common.loading')}</p>
       ) : libraryEmpty ? (
-        <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)]">
+        <div className="text-center py-16 bg-surface-container-lowest rounded-xl shadow-card">
           <div className="text-5xl mb-3">📚</div>
           <div className="font-body-md text-body-md text-on-surface-variant mb-4">{t('gamesList.libraryEmpty')}</div>
           {isStaff && (
@@ -131,7 +142,7 @@ export default function GamesPage() {
               onClick={() => setActiveCategory('all')}
               className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                 activeCategory === 'all'
-                  ? 'bg-primary text-on-primary shadow-sm'
+                  ? 'bg-warm-yellow text-deep-navy shadow-sm'
                   : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
               }`}
             >
@@ -144,7 +155,7 @@ export default function GamesPage() {
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                   activeCategory === cat
-                    ? 'bg-primary text-on-primary shadow-sm'
+                    ? 'bg-warm-yellow text-deep-navy shadow-sm'
                     : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
                 }`}
               >
@@ -163,7 +174,8 @@ export default function GamesPage() {
               if (list.length === 0) return null;
               return (
                 <section key={m} className="space-y-3">
-                  <h3 className="font-title-md text-title-md text-deep-navy">
+                  <h3 className="flex items-center gap-2 font-title-md text-title-md text-deep-navy">
+                    <span className={`h-3 w-3 rounded-full ${MOMENT_DOT[m]}`} aria-hidden />
                     {t(`gameMoment.${m}`)} <span className="text-on-surface-variant">{list.length}</span>
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -192,7 +204,7 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
   return (
     <Link
       to={locked ? '/settings/billing' : g.path}
-      className="group relative bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_rgba(39,101,168,0.08)] overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
+      className="group relative bg-surface-container-lowest rounded-xl shadow-card overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
     >
       <div className="relative h-36 overflow-hidden">
         {g.cover ? (
