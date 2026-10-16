@@ -684,9 +684,9 @@ export default function CurriculumPage() {
           defaultClassId={staffClassId ?? null}
           wordLists={wordLists}
           onClose={() => setQuickOpen(false)}
-          onDone={(lesson, list, action) => {
+          onDone={(lesson, lists, action) => {
             setQuickOpen(false);
-            if (list) setWordLists((prev) => [list, ...prev]);
+            if (lists.length > 0) setWordLists((prev) => [...[...lists].reverse(), ...prev]);
             if (lesson.class_id && lesson.class_id !== staffClassId) selectClass(lesson.class_id);
             else setLessons((prev) => [lesson, ...prev]);
             if (action === 'start') pendingFocus.current = { focusClassId: lesson.class_id ?? undefined, startLessonId: lesson.id };

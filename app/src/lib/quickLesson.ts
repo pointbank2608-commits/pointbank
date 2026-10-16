@@ -1,6 +1,7 @@
-import { createGameTemplate } from './api';
+import { createGameTemplate, createWordList } from './api';
+import { makeUnscrambleTemplate } from './lessonRecipes';
 import { buildGameContent, canBuildFromWords, lessonGameTemplateName } from './gameFromWords';
-import type { FullCardItem, GameType, LessonSlide, WordBankEntry } from './types';
+import type { FullCardItem, GameType, LessonSlide, WordBankEntry, WordList } from './types';
 
 /** 질문 3개 수업 만들기 — 규칙 기반(AI 없음)으로 "분"에 맞는 수업 구성을 만든다. */
 export type QuickMinutes = 20 | 40 | 50;
@@ -157,4 +158,128 @@ export function parsePastedWords(text: string, bank: WordBankEntry[]): FullCardI
     });
   }
   return cards;
+}
+
+/* ---------------- 수업 종류(질문 2) ---------------- */
+
+/** 가르칠 것의 종류 — 종류마다 이미 있는 수업 구성(레시피·노래·영상 수업)을 그대로 쓴다. */
+export type QuickKind = 'vocab' | 'grammar' | 'phonics' | 'situation' | 'video' | 'song';
+export const QUICK_KINDS: { id: QuickKind; icon: string }[] = [
+  { id: 'vocab', icon: 'abc' },
+  { id: 'grammar', icon: 'rule' },
+  { id: 'phonics', icon: 'spellcheck' },
+  { id: 'situation', icon: 'forum' },
+  { id: 'video', icon: 'movie' },
+  { id: 'song', icon: 'music_note' },
+];
+
+/** 상황 표현 — 역할극 수업(레시피 있음) */
+export const ROLEPLAY_SITUATIONS = ['airport', 'restaurant', 'icecream', 'doctor', 'lightning', 'shopping'] as const;
+export type RoleplaySituation = (typeof ROLEPLAY_SITUATIONS)[number];
+
+/** 단어 수업의 진행 방식 */
+export type VocabStyle = 'normal' | 'contest' | 'review';
+
+export interface QuickHelpers {
+  makeWordList: (words: FullCardItem[], name: string) => Promise<boolean>;
+  makeUnscramble: (grammarId: string) => Promise<string | null>;
+  makeUnscrambleFromSentences: (sentences: string[], name: string) => Promise<string | null>;
+  makeGameFromWords: (gameType: GameType, words: FullCardItem[], name: string) => Promise<string | null>;
+  /** 레시피가 만든 단어장들(맨 뒤가 가장 최근) */
+  createdLists: () => WordList[];
+}
+
+/** 수업 레시피·노래·영상 수업이 요구하는 "만들어 주는 함수"를 (학원·반·선생님)에 맞춰 만든다. */
+export function createQuickHelpers(p: { academyId: string; classId: string; teacherId: string; t: (k: string, o?: Record<string, unknown>) => string }): QuickHelpers {
+  const lists: WordList[] = [];
+  return {
+    createdLists: () => lists,
+    makeWordList: async (words, name) => {
+      try {
+        lists.push(
+          await createWordList({
+            academyId: p.academyId,
+            classId: p.classId,
+            name,
+            items: words.map((w) => ({
+              id: crypto.randomUUID(),
+              word: w.word,
+              meaning: w.meaning,
+              image_url: w.imageUrl,
+              category: w.category ?? null,
+              partOfSpeech: w.partOfSpeech ?? null,
+              patternMarked: w.patternMarked ?? null,
+            })),
+            teacherId: p.teacherId,
+          }),
+        );
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    makeUnscramble: (grammarId) =>
+      makeUnscrambleTemplate({
+        grammarId,
+        academyId: p.academyId,
+        classId: p.classId,
+        teacherId: p.teacherId,
+        name: (pointName) => p.t('grammar.gameTemplateName', { name: pointName }),
+      }).catch(() => null),
+    makeUnscrambleFromSentences: async (sentences, name) => {
+      try {
+        const tpl = await createGameTemplate({
+          academyId: p.academyId,
+          classId: p.classId,
+          gameType: 'unscramble',
+          name,
+          items: sentences.map((label) => ({ id: crypto.randomUUID(), label })),
+          teacherId: p.teacherId,
+        });
+        return tpl.id;
+      } catch {
+        return null;
+      }
+    },
+    makeGameFromWords: async (gameType, words, name) => {
+      const content = buildGameContent(gameType, words);
+      if (!content) return null;
+      try {
+        const tpl = await createGameTemplate({ academyId: p.academyId, classId: p.classId, gameType, name, items: content.items, config: content.config, teacherId: p.teacherId, });
+        return tpl.id;
+      } catch {
+        return null;
+      }
+    },
+  };
+}
+
+/** 문장 은행의 상황 문장으로 연습 수업: 문장 배열하기 · 문장 잡기 · 번개 피하기 */
+export async function buildSentenceBankSlides(p: {
+  sentences: { en: string; ko: string }[];
+  academyId: string;
+  classId: string;
+  teacherId: string;
+  name: string;
+}): Promise<LessonSlide[]> {
+  const slides: LessonSlide[] = [{ id: crypto.randomUUID(), kind: 'attendance', boardTheme: 'green' }];
+  const make = async (gameType: GameType, label: (s: { en: string; ko: string }) => string) => {
+    try {
+      const tpl = await createGameTemplate({
+        academyId: p.academyId,
+        classId: p.classId,
+        gameType,
+        name: p.name,
+        items: p.sentences.map((s) => ({ id: crypto.randomUUID(), label: label(s) })),
+        teacherId: p.teacherId,
+      });
+      slides.push({ id: crypto.randomUUID(), kind: 'game', gameType, templateId: tpl.id });
+    } catch {
+      slides.push({ id: crypto.randomUUID(), kind: 'game', gameType });
+    }
+  };
+  await make('unscramble', (s) => s.en);
+  await make('catchsentence', (s) => (s.ko ? `${s.en} | ${s.ko}` : s.en));
+  await make('lightning', (s) => (s.ko ? `${s.en} | ${s.ko}` : s.en));
+  return slides;
 }
