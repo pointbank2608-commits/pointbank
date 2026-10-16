@@ -1,4 +1,5 @@
 import { useFeature } from '../lib/features';
+import QuickLessonWizard from '../components/QuickLessonWizard';
 import StartCheck, { startCheckSkipped } from '../components/StartCheck';
 import LessonWrapUp, { type WrapUpInfo } from '../components/LessonWrapUp';
 import { useEffect, useRef, useState } from 'react';
@@ -622,6 +623,7 @@ export default function CurriculumPage() {
 
   // 수업을 마치고 돌아오면 마무리 화면
   const [wrapUp, setWrapUp] = useState<WrapUpInfo | null>(null);
+  const [quickOpen, setQuickOpen] = useState(false);
   useEffect(() => {
     const st = location.state as { wrapUp?: WrapUpInfo } | null;
     if (st?.wrapUp) {
@@ -654,6 +656,25 @@ export default function CurriculumPage() {
             const l = checkLesson;
             setCheckLesson(null);
             void handleStart(l);
+          }}
+        />
+      )}
+      {quickOpen && academy?.id && profile && (
+        <QuickLessonWizard
+          academyId={academy.id}
+          teacherId={profile.id}
+          classes={classes}
+          defaultClassId={staffClassId ?? null}
+          wordLists={wordLists}
+          onClose={() => setQuickOpen(false)}
+          onDone={(lesson, list, action) => {
+            setQuickOpen(false);
+            if (list) setWordLists((prev) => [list, ...prev]);
+            if (lesson.class_id && lesson.class_id !== staffClassId) selectClass(lesson.class_id);
+            else setLessons((prev) => [lesson, ...prev]);
+            if (action === 'start') pendingFocus.current = { focusClassId: lesson.class_id ?? undefined, startLessonId: lesson.id };
+            else if (action === 'edit') openEditForm(lesson);
+            else notify(t('quickLesson.saved'));
           }}
         />
       )}
@@ -742,6 +763,15 @@ export default function CurriculumPage() {
 
       {!showForm ? (
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setQuickOpen(true)}
+            disabled={!staffClassId}
+            className="flex min-h-12 items-center gap-1.5 rounded-full bg-warm-yellow px-5 font-label-md text-label-md text-deep-navy shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[20px]">bolt</span>
+            {t('quickLesson.open')}
+          </button>
           <button
             type="button"
             onClick={openCreateForm}

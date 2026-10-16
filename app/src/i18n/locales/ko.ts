@@ -6251,6 +6251,20 @@ const ko = {
     remote: '수업 중 위쪽 "리모컨"을 켜면 폰으로 슬라이드를 넘길 수 있어요.', skip: '다음부터 이 점검 건너뛰기', start: '수업 시작', cancel: '취소',
   },
 
+  quickLesson: {
+    open: '3가지만 답하고 수업 만들기', title: '수업 빨리 만들기', subtitle: '질문 3개에 답하면 수업 구성이 나와요. 마음에 안 드는 줄은 "바꾸기"로 바꾸세요.',
+    q1: '어느 반이에요?', q2: '무엇으로 수업할까요?', q3: '몇 분 수업이에요?', min: '분', close: '닫기',
+    source_paste: '교재 단어 붙여넣기', source_mine: '내 단어장', source_topic: '추천 주제',
+    pastePlaceholder: '한 줄에 하나씩 붙여 넣으세요.\napple 사과\nbanana 바나나\ncat (뜻은 비워도 사전에서 채워요)',
+    pasteHint: '단어 {{count}}개 · 4개 이상이면 만들 수 있어요. 뜻이 없으면 사전에서 찾아 채워요.',
+    noLists: '이 반에서 쓸 수 있는 단어장이 아직 없어요. "교재 단어 붙여넣기"나 "추천 주제"를 써 보세요.', pickList: '단어장 고르기',
+    planTitle: '이렇게 구성했어요 · 총 {{minutes}}분', swap: '바꾸기',
+    slot_warmup: '워밍업', slot_learn: '새 단어', slot_practice: '연습', slot_team: '팀 대결', slot_wrapup: '마무리', slot_sheet: '활동지',
+    learnDesc: '단어 소개 카드 + 카드로 외우기', sheetDesc: '선 잇기 활동지 인쇄',
+    startNow: '지금 시작', saveOnly: '저장해 두기', editMore: '자세히 편집', making: '만드는 중…',
+    pastedName: '교재 단어 {{date}}', lessonName: '{{list}} 수업', failed: '수업을 만들지 못했어요. 잠시 뒤 다시 해 주세요.', saved: '수업을 저장했어요.',
+  },
+
   nav: {
     showCodes: '학원 코드 보기',
     hideCodes: '코드 닫기',

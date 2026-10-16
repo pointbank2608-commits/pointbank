@@ -6256,6 +6256,20 @@ const en: Ko = {
     remote: 'Turn on "Remote" in the top bar to flip slides from your phone.', skip: 'Skip this check next time', start: 'Start lesson', cancel: 'Cancel',
   },
 
+  quickLesson: {
+    open: 'Answer 3 questions, get a lesson', title: 'Quick lesson', subtitle: 'Answer 3 questions and a lesson plan appears. Use "Swap" to change any row.',
+    q1: 'Which class?', q2: 'What will you teach?', q3: 'How many minutes?', min: ' min', close: 'Close',
+    source_paste: 'Paste textbook words', source_mine: 'My word list', source_topic: 'Suggested topic',
+    pastePlaceholder: 'One per line.\napple (meaning)\nbanana\ncat (meanings are filled in from the dictionary)',
+    pasteHint: '{{count}} words · need at least 4. Missing meanings are filled in from the dictionary.',
+    noLists: 'No word lists for this class yet. Try "Paste textbook words" or "Suggested topic".', pickList: 'Pick a word list',
+    planTitle: 'Here is the plan · {{minutes}} min', swap: 'Swap',
+    slot_warmup: 'Warm-up', slot_learn: 'New words', slot_practice: 'Practice', slot_team: 'Team battle', slot_wrapup: 'Wrap-up', slot_sheet: 'Worksheet',
+    learnDesc: 'Word intro cards + flashcards', sheetDesc: 'Print a matching worksheet',
+    startNow: 'Start now', saveOnly: 'Save for later', editMore: 'Edit in detail', making: 'Making…',
+    pastedName: 'Textbook words {{date}}', lessonName: '{{list}} lesson', failed: 'Could not make the lesson. Please try again in a moment.', saved: 'Lesson saved.',
+  },
+
   nav: {
     showCodes: 'Show academy codes',
     hideCodes: 'Hide codes',
