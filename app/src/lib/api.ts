@@ -58,6 +58,11 @@ export async function renameClass(classId: string, name: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function setClassSchedule(classId: string, schedule: ClassRow['schedule']) {
+  const { error } = await supabase.from('classes').update({ schedule }).eq('id', classId);
+  if (error) throw new Error(error.message);
+}
+
 export async function deleteClass(classId: string) {
   const { error } = await supabase.from('classes').delete().eq('id', classId);
   if (error) throw new Error(error.message);

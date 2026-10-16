@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import TodayLessons from '../components/TodayLessons';
 import { PENDING_SHARE_KEY } from './SharedLessonPage';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -101,6 +102,8 @@ export default function DashboardPage() {
           style={{ backgroundImage: 'radial-gradient(circle at 70% 30%, #FFD54F 0%, transparent 60%)' }}
         />
       </div>
+
+      {academy?.id && <TodayLessons academyId={academy.id} />}
 
       {academy?.id && <OnboardingChecklist academyId={academy.id} />}
 

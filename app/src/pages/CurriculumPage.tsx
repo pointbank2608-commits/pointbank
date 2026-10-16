@@ -1,4 +1,5 @@
 import { useFeature } from '../lib/features';
+import LessonWrapUp, { type WrapUpInfo } from '../components/LessonWrapUp';
 import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import { setToCards } from '../lib/curriculumWords';
@@ -588,6 +589,38 @@ export default function CurriculumPage() {
     }
   }
 
+  // 오늘 화면 카드에서 넘어온 경우: 그 반을 고르고, 수업이 있으면 바로 시작하거나 새 수업 만들기를 연다.
+  const pendingFocus = useRef<{ focusClassId?: string; startLessonId?: string } | null>(null);
+  useEffect(() => {
+    const st = location.state as { focusClassId?: string; startLessonId?: string } | null;
+    if (st?.focusClassId) {
+      pendingFocus.current = st;
+      selectClass(st.focusClassId);
+      navigate('/curriculum', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+  useEffect(() => {
+    const p = pendingFocus.current;
+    if (!p || loading || staffClassId !== p.focusClassId) return;
+    pendingFocus.current = null;
+    const lesson = p.startLessonId ? lessons.find((l) => l.id === p.startLessonId) : null;
+    if (lesson) void handleStart(lesson);
+    else openCreateForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, staffClassId, lessons]);
+
+  // 수업을 마치고 돌아오면 마무리 화면
+  const [wrapUp, setWrapUp] = useState<WrapUpInfo | null>(null);
+  useEffect(() => {
+    const st = location.state as { wrapUp?: WrapUpInfo } | null;
+    if (st?.wrapUp) {
+      setWrapUp({ ...st.wrapUp, className: classes.find((c) => c.id === st.wrapUp?.classId)?.name });
+      navigate('/curriculum', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+
   const sortedLessons = (() => {
     const q = lessonQuery.trim().toLowerCase();
     const list = q ? lessons.filter((l) => l.name.toLowerCase().includes(q)) : [...lessons];
@@ -603,6 +636,7 @@ export default function CurriculumPage() {
 
   return (
     <div className="space-y-6">
+      {wrapUp && <LessonWrapUp info={wrapUp} onClose={() => setWrapUp(null)} />}
       {libraryOpen && academy?.id && profile && (
         <LessonLibraryModal
           academyId={academy.id}

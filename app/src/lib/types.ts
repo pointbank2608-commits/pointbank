@@ -34,6 +34,8 @@ export interface ClassRow {
   academy_id: string;
   name: string;
   sort_order: number;
+  /** 수업 요일·시간(084a). 없으면 null/undefined. */
+  schedule?: { days: number[]; time: string; minutes: number } | null;
   created_at: string;
 }
 

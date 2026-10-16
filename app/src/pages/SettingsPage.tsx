@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import ClassScheduleEditor from '../components/ClassScheduleEditor';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AccountDataSection from '../components/AccountDataSection';
@@ -13,6 +14,7 @@ import {
   fetchPresets,
   removeAcademyLogo,
   renameClass,
+  setClassSchedule,
   rotateInviteCode,
   updateAcademy,
   updateMyDisplayName,
@@ -123,6 +125,8 @@ export default function SettingsPage() {
       await loadPresets();
     }
   }
+
+  const [scheduleFor, setScheduleFor] = useState<string | null>(null);
 
   async function addClass() {
     if (!academy?.id || !newClassName.trim()) return;
@@ -417,10 +421,24 @@ export default function SettingsPage() {
             {classes.map((c) => (
               <div
                 key={c.id}
-                className="flex items-center justify-between py-2.5 border-b border-surface-container last:border-0"
+                className="py-2.5 border-b border-surface-container last:border-0"
               >
-                <span className="font-label-md text-label-md text-on-surface">{c.name}</span>
-                <span className="flex gap-4">
+                <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 font-label-md text-label-md text-on-surface">
+                  {c.name}
+                  <span className="block font-caption text-caption text-on-surface-variant">
+                    {c.schedule
+                      ? t('classSchedule.summary', { days: c.schedule.days.map((d) => t(`classSchedule.day${d}`)).join('·'), time: c.schedule.time, minutes: c.schedule.minutes })
+                      : t('classSchedule.none')}
+                  </span>
+                </span>
+                <span className="flex shrink-0 gap-4">
+                  <button
+                    onClick={() => setScheduleFor(scheduleFor === c.id ? null : c.id)}
+                    className="font-label-md text-label-md text-primary hover:underline"
+                  >
+                    {t('classSchedule.edit')}
+                  </button>
                   <button
                     onClick={() => void handleRenameClass(c.id, c.name)}
                     className="font-label-md text-label-md text-primary hover:underline"
@@ -434,6 +452,21 @@ export default function SettingsPage() {
                     {t('settings.deleteClass')}
                   </button>
                 </span>
+                </div>
+                {scheduleFor === c.id && (
+                  <ClassScheduleEditor
+                    value={c.schedule}
+                    onCancel={() => setScheduleFor(null)}
+                    onSave={(next) => {
+                      void run(() => setClassSchedule(c.id, next), t('classSchedule.saved')).then(async (ok) => {
+                        if (ok) {
+                          setScheduleFor(null);
+                          await reloadClasses();
+                        }
+                      });
+                    }}
+                  />
+                )}
               </div>
             ))}
           </div>

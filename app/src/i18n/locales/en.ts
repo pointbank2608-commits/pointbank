@@ -6224,6 +6224,29 @@ const en: Ko = {
 
   fontScale: { label: 'Text size', normal: 'Normal', large: 'Large', xlarge: 'Extra large' },
 
+  classSchedule: {
+    days: 'Class days', time: 'Start time', minutes: 'Minutes', save: 'Save', clear: 'Clear schedule', cancel: 'Close',
+    edit: 'Schedule', none: 'Set days and time to see classes on the Today screen',
+    day0: 'Sun', day1: 'Mon', day2: 'Tue', day3: 'Wed', day4: 'Thu', day5: 'Fri', day6: 'Sat',
+    saved: 'Class schedule saved.', summary: '{{days}} {{time}} · {{minutes}} min',
+  },
+
+  todayLessons: {
+    title: '{{count}} lessons today', noneToday: 'No classes scheduled today.', noSchedule: 'Set class days and times and today\'s lessons will show up here.',
+    setSchedule: 'Set in Settings', min: ' min', noLesson: 'No lesson yet', ready: 'Ready', needLesson: 'Needs a lesson',
+    start: 'Start', create: 'Create lesson',
+  },
+
+  wrapUp: {
+    title: 'Great job today', done: 'You finished {{lesson}} with {{cls}}.', attendance: 'Attendance', attendanceValue: '{{present}} of {{total}}',
+    openAttendance: 'Check attendance', praise: 'Praise passbook', praiseHint: 'Give points to students who did well.', openBoard: 'Open passbook',
+    homework: 'Homework', homeworkHint: 'You can assign homework from this lesson.', openHomework: 'Assign homework',
+    noteLabel: 'Note for parents (auto-written · edit before sending)',
+    noteWithWords: 'Today {{cls}} did "{{lesson}}". Words we learned: {{words}}. Please have them say them once more at home.',
+    noteNoWords: 'Today {{cls}} did "{{lesson}}". Please have them practice at home.',
+    copy: 'Copy for chat', copied: 'Note copied.', copyFailed: 'Could not copy. Please select the text and copy it.', close: 'Close',
+  },
+
   nav: {
     showCodes: 'Show academy codes',
     hideCodes: 'Hide codes',

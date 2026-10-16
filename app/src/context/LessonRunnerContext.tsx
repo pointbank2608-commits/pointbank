@@ -42,6 +42,10 @@ interface RunnerState {
   steps: RunnerStep[];
   stepIndex: number;
   returnToEdit?: boolean;
+  /** 수업을 시작한 시각(ms) — 마무리 화면의 수업 분 */
+  startedAt: number;
+  /** 수업 낱말(마무리 화면 알림장 문구용) */
+  words: string[];
   /** 학생 따라보기에 올릴 수업 묶음(슬라이드 + 수업 단어) — 시작할 때 만들어 둔다 */
   viewSnapshot?: LessonViewSnapshot;
   /** 켜 둔 학생 따라보기(온라인 수업) */
@@ -305,6 +309,8 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         steps,
         stepIndex: startIndex,
         returnToEdit: !!opts?.returnToEdit,
+        startedAt: Date.now(),
+        words: (wordList?.items ?? []).map((i) => i.word),
         viewSnapshot: { slides: effectiveSlides(lesson), words: materialsWords },
       });
       try {
@@ -346,8 +352,13 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
     const back = runner?.returnToEdit
       ? { reopenLessonId: runner.lessonId, reopenSlideId: runner.steps[runner.stepIndex]?.slideId }
       : undefined;
+    // 편집 화면으로 돌아가는 게 아니면 "마무리" 화면을 띄운다.
+    const wrapUp =
+      runner && !runner.returnToEdit
+        ? { lessonName: runner.lessonName, classId: runner.classId, minutes: Math.max(1, Math.round((Date.now() - runner.startedAt) / 60000)), words: runner.words }
+        : undefined;
     setRunner(null);
-    navigate('/curriculum', back ? { state: back } : undefined);
+    navigate('/curriculum', back ? { state: back } : wrapUp ? { state: { wrapUp } } : undefined);
   }, [navigate, runner]);
 
   // 발표 리모컨(클리커)·키보드: PageDown/PageUp 으로 다음/이전 슬라이드. 슬라이드 안에서 단계가 있는

@@ -6219,6 +6219,29 @@ const ko = {
 
   fontScale: { label: '글자 크기', normal: '보통', large: '크게', xlarge: '아주 크게' },
 
+  classSchedule: {
+    days: '수업 요일', time: '시작 시간', minutes: '수업 분', save: '저장', clear: '요일·시간 지우기', cancel: '닫기',
+    edit: '요일·시간', none: '요일·시간을 정하면 오늘 화면에 수업이 떠요',
+    day0: '일', day1: '월', day2: '화', day3: '수', day4: '목', day5: '금', day6: '토',
+    saved: '수업 요일·시간을 저장했어요.', summary: '{{days}} {{time}} · {{minutes}}분',
+  },
+
+  todayLessons: {
+    title: '오늘 수업 {{count}}개', noneToday: '오늘은 수업이 없는 날이에요.', noSchedule: '반마다 수업 요일·시간을 적어 두면 오늘 수업이 여기에 떠요.',
+    setSchedule: '설정에서 정하기', min: '분', noLesson: '오늘 수업이 아직 없어요', ready: '준비됨', needLesson: '만들기 필요',
+    start: '시작', create: '수업 만들기',
+  },
+
+  wrapUp: {
+    title: '수고하셨어요', done: '{{cls}} {{lesson}} 수업을 마쳤어요.', attendance: '출석', attendanceValue: '{{total}}명 중 {{present}}명',
+    openAttendance: '출석 확인하기', praise: '칭찬 통장', praiseHint: '잘한 친구에게 포인트를 주세요.', openBoard: '통장 열기',
+    homework: '숙제', homeworkHint: '이 수업으로 숙제를 낼 수 있어요.', openHomework: '숙제 내기',
+    noteLabel: '알림장 문구 (자동 작성 · 고쳐서 쓰세요)',
+    noteWithWords: '오늘 {{cls}} 수업은 "{{lesson}}"를 했어요. 배운 낱말: {{words}}. 집에서 한 번 더 말해 보게 해 주세요.',
+    noteNoWords: '오늘 {{cls}} 수업은 "{{lesson}}"를 했어요. 집에서 한 번 더 말해 보게 해 주세요.',
+    copy: '카톡용으로 복사', copied: '알림장 문구를 복사했어요.', copyFailed: '복사하지 못했어요. 글을 직접 선택해 복사해 주세요.', close: '닫기',
+  },
+
   nav: {
     showCodes: '학원 코드 보기',
     hideCodes: '코드 닫기',
