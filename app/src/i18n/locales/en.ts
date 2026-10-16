@@ -6247,6 +6247,11 @@ const en: Ko = {
     copy: 'Copy for chat', copied: 'Note copied.', copyFailed: 'Could not copy. Please select the text and copy it.', close: 'Close',
   },
 
+  startCheck: {
+    title: 'Quick check before you start', sound: 'Can you hear the sound?', soundTest: 'Test sound', fullscreen: 'The lesson goes fullscreen. Press "End lesson" when you finish.',
+    remote: 'Turn on "Remote" in the top bar to flip slides from your phone.', skip: 'Skip this check next time', start: 'Start lesson', cancel: 'Cancel',
+  },
+
   nav: {
     showCodes: 'Show academy codes',
     hideCodes: 'Hide codes',

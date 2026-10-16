@@ -6242,6 +6242,11 @@ const ko = {
     copy: '카톡용으로 복사', copied: '알림장 문구를 복사했어요.', copyFailed: '복사하지 못했어요. 글을 직접 선택해 복사해 주세요.', close: '닫기',
   },
 
+  startCheck: {
+    title: '시작 전 점검', sound: '소리가 들려요?', soundTest: '소리 테스트', fullscreen: '시작하면 전체화면으로 바뀌어요. 끝낼 때는 "수업 끝내기"를 누르세요.',
+    remote: '수업 중 위쪽 "리모컨"을 켜면 폰으로 슬라이드를 넘길 수 있어요.', skip: '다음부터 이 점검 건너뛰기', start: '수업 시작', cancel: '취소',
+  },
+
   nav: {
     showCodes: '학원 코드 보기',
     hideCodes: '코드 닫기',

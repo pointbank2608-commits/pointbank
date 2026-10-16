@@ -47,7 +47,7 @@ export default function MoreMenu({ triggerLabel, items, className = '' }: Props)
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-full border border-outline-variant px-4 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-outline-variant px-3 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary"
       >
         <span className="material-symbols-outlined text-[18px]" aria-hidden>
           more_horiz

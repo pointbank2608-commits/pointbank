@@ -1,4 +1,5 @@
 import { useFeature } from '../lib/features';
+import StartCheck, { startCheckSkipped } from '../components/StartCheck';
 import LessonWrapUp, { type WrapUpInfo } from '../components/LessonWrapUp';
 import { useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
@@ -579,6 +580,13 @@ export default function CurriculumPage() {
   /** "발표하기" — 캔바의 "발표하기"처럼 슬라이드쇼 시작과 동시에 풀스크린으로 들어간다.
    * requestFullscreen 은 클릭 이벤트 핸들러 안에서(비동기 대기 없이) 바로 불러야 사용자 제스처로
    * 인정된다 — start() 가 내부에서 navigate 를 하지만 동기 호출이라 문제없다. */
+  // 시작 전 점검 — "다음부터 건너뛰기"를 켰으면 바로 시작한다.
+  const [checkLesson, setCheckLesson] = useState<CurriculumLesson | null>(null);
+  function requestStart(lesson: CurriculumLesson) {
+    if (startCheckSkipped()) void handleStart(lesson);
+    else setCheckLesson(lesson);
+  }
+
   async function handleStart(lesson: CurriculumLesson, startSlideId?: string) {
     const wordList = wordLists.find((wl) => wl.id === lesson.word_list_id) ?? null;
     start(lesson, wordList, lesson.class_id ?? staffClassId ?? null, startSlideId ? { startSlideId } : undefined);
@@ -605,7 +613,7 @@ export default function CurriculumPage() {
     if (!p || loading || staffClassId !== p.focusClassId) return;
     pendingFocus.current = null;
     const lesson = p.startLessonId ? lessons.find((l) => l.id === p.startLessonId) : null;
-    if (lesson) void handleStart(lesson);
+    if (lesson) requestStart(lesson);
     else openCreateForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, staffClassId, lessons]);
@@ -636,6 +644,17 @@ export default function CurriculumPage() {
 
   return (
     <div className="space-y-6">
+      {checkLesson && (
+        <StartCheck
+          lessonName={checkLesson.name}
+          onClose={() => setCheckLesson(null)}
+          onStart={() => {
+            const l = checkLesson;
+            setCheckLesson(null);
+            void handleStart(l);
+          }}
+        />
+      )}
       {wrapUp && <LessonWrapUp info={wrapUp} onClose={() => setWrapUp(null)} />}
       {libraryOpen && academy?.id && profile && (
         <LessonLibraryModal
@@ -1121,7 +1140,7 @@ export default function CurriculumPage() {
 
               <button
                 type="button"
-                onClick={() => void handleStart(lesson)}
+                onClick={() => requestStart(lesson)}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
               >
                 ▶ {t('curriculum.startButton')}
@@ -1130,13 +1149,13 @@ export default function CurriculumPage() {
                 <button
                   type="button"
                   onClick={() => openEditForm(lesson)}
-                  className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-primary px-4 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+                  className="flex min-h-12 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-primary px-3 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
                 >
                   <span className="material-symbols-outlined text-[18px]">edit</span>
                   {t('curriculum.editButton')}
                 </button>
                 <MoreMenu
-                  className="flex-1"
+                  className="min-w-0 flex-1 basis-0"
                   triggerLabel={t('curriculum.moreButton')}
                   items={[
                     ...(homeworkOpen
