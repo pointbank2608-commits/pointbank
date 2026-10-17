@@ -1,3 +1,4 @@
+import { GAME_META } from '../lib/gameMeta';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -24,7 +25,21 @@ export default function GamesPage() {
   const { t } = useTranslation();
   const { academy, isStaff, session, hasFullAccess } = useAuth();
   const [activeCategory, setActiveCategory] = useState<GameMoment | 'all'>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('library');
+  // 첫 방문은 전체 게임부터 보여 준다(내 라이브러리는 아직 몇 개 안 돼 게임이 적어 보인다) — 한 번 고르면 기억한다
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    try {
+      return localStorage.getItem('classbank.gamesView') === 'library' ? 'library' : 'all';
+    } catch {
+      return 'all';
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('classbank.gamesView', viewMode);
+    } catch {
+      /* 저장 못 해도 화면은 정상 */
+    }
+  }, [viewMode]);
   const [query, setQuery] = useState('');
   const [libraryError, setLibraryError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -201,6 +216,7 @@ export default function GamesPage() {
 
 function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
   const { t } = useTranslation();
+  const meta = GAME_META[g.type];
   return (
     <Link
       to={locked ? '/settings/billing' : g.path}
@@ -239,6 +255,14 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
           )}
         </div>
         <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
+        {meta && (
+          <div className="mt-3 flex flex-wrap gap-1.5 font-caption text-caption">
+            <span className="rounded-full bg-surface-container px-2 py-0.5 text-on-surface-variant">{t('gameMeta.minutes', { n: meta.minutes })}</span>
+            <span className="rounded-full bg-surface-container px-2 py-0.5 text-on-surface-variant">{t(`gameMeta.play_${meta.play}`)}</span>
+            {meta.paper && <span className="rounded-full bg-tertiary-container/60 px-2 py-0.5 text-on-tertiary-container">{t('gameMeta.paper')}</span>}
+            {meta.phone && <span className="rounded-full bg-tertiary-container/60 px-2 py-0.5 text-on-tertiary-container">{t('gameMeta.phone')}</span>}
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -372,6 +372,18 @@ export default function CurriculumPage() {
   // 영상 라이브러리 메뉴의 "이 장면으로 수업 만들기"(2026-10-03) — 새 수업을 열고 레시피가 그 장면으로 채운다
   const [autoClip, setAutoClip] = useState<VideoClip | null>(null);
   const clipHandled = useRef<string | null>(null);
+  // 오늘 화면의 "샘플로 1분 체험하기"(2026-10-17) — 새 수업 창을 열고 샘플 단어 수업을 바로 채운다
+  const [autoSample, setAutoSample] = useState(false);
+  const sampleHandled = useRef<string | null>(null);
+  useEffect(() => {
+    const st = location.state as { createSample?: boolean } | null;
+    if (!st?.createSample || loading || sampleHandled.current === location.key) return;
+    sampleHandled.current = location.key;
+    navigate('/curriculum', { replace: true });
+    openCreateForm();
+    setAutoSample(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key, loading]);
   useEffect(() => {
     const st = location.state as { createFromClipId?: string } | null;
     if (!st?.createFromClipId || loading || clipHandled.current === location.key) return;
@@ -785,24 +797,26 @@ export default function CurriculumPage() {
             type="button"
             onClick={() => setQuickOpen(true)}
             disabled={!staffClassId}
-            className="flex min-h-12 items-center gap-1.5 rounded-full bg-warm-yellow px-5 font-label-md text-label-md text-deep-navy shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="flex min-h-12 items-center gap-1.5 rounded-full bg-primary px-6 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-[20px]">bolt</span>
             {t('quickLesson.open')}
+            <span className="rounded-full bg-white/25 px-2 py-0.5 text-[11px]">{t('quickLesson.recommended')}</span>
           </button>
+          {/* 직접 구성·완성 수업은 보조 버튼 — 처음에는 "간편하게 만들기"만 눈에 띄게 둔다 */}
           <button
             type="button"
             onClick={openCreateForm}
             disabled={!staffClassId}
-            className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
+            className="min-h-12 rounded-full border border-outline-variant px-5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:opacity-50"
           >
-            + {t('curriculum.createButton')}
+            {t('curriculum.createButton')}
           </button>
           <button
             type="button"
             onClick={() => setLibraryOpen(true)}
             disabled={!staffClassId}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-primary text-primary hover:bg-primary/10 font-label-md text-label-md transition-colors disabled:opacity-50"
+            className="flex min-h-12 items-center gap-1.5 rounded-full border border-outline-variant px-5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-[20px]">local_library</span>
             {t('lessonLibrary.open')}
@@ -916,6 +930,7 @@ export default function CurriculumPage() {
               <div className="mb-4">
                 <LessonRecipePicker
                   autoClip={autoClip}
+                  autoSample={autoSample}
                   hasWords={(wordLists.find((wl) => wl.id === wordListId)?.items.length ?? 0) > 0}
                   wordListName={wordLists.find((wl) => wl.id === wordListId)?.name}
                   onManageWordList={openWordListModal}

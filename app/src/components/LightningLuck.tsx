@@ -4,7 +4,7 @@ import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
 import { useRemoteActions } from '../lib/remote';
 import type { GameItem, UndoHandle } from '../lib/types';
-import Character, { CHARS, type CharKind } from './LightningChars';
+import { CHARS, LT_IMG, charImage, type CharKind } from './LightningChars';
 
 /**
  * 번개 피하기(2026-10-16) — PPT "Bad Luck Billy" 방식만 참고한 학급 서바이벌 게임(캐릭터·그림·소리는 우리 것).
@@ -67,81 +67,6 @@ const STYLE = `
 @keyframes lt-chip { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
 @media (prefers-reduced-motion: reduce) { .lt-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
-
-function Cloud({ fill, className, style }: { fill: string; className?: string; style?: React.CSSProperties }) {
-  return (
-    <svg viewBox="0 0 160 90" className={className} style={style} aria-hidden="true">
-      <g fill={fill}>
-        <circle cx="40" cy="52" r="26" />
-        <circle cx="78" cy="38" r="34" />
-        <circle cx="118" cy="52" r="26" />
-        <rect x="36" y="52" width="86" height="26" rx="13" />
-      </g>
-    </svg>
-  );
-}
-
-type Mood = 'happy' | 'worried' | 'shocked' | 'cheer';
-
-/** 빌리 — 폭신한 양 친구. 표정 넷: 웃음 / 걱정 / 감전(까맣게 그을림) / 환호 */
-function Billy({ mood, className, style }: { mood: Mood; className?: string; style?: React.CSSProperties }) {
-  const shocked = mood === 'shocked';
-  const wool = shocked ? '#4b4b55' : '#fffaf0';
-  const face = shocked ? '#1f1f26' : '#7a5a45';
-  return (
-    <svg viewBox="0 0 140 160" className={className} style={style} aria-hidden="true">
-      {/* 다리 */}
-      <rect x="48" y="118" width="12" height="30" rx="6" fill={face} />
-      <rect x="80" y="118" width="12" height="30" rx="6" fill={face} />
-      {/* 몸 털뭉치 */}
-      <g fill={wool} stroke={shocked ? '#2a2a33' : '#e7dcc6'} strokeWidth="2">
-        <circle cx="38" cy="86" r="24" />
-        <circle cx="102" cy="86" r="24" />
-        <circle cx="52" cy="108" r="24" />
-        <circle cx="88" cy="108" r="24" />
-        <circle cx="70" cy="90" r="34" />
-        {shocked && (
-          <>
-            <path d="M22 62 L10 40 L34 54Z" />
-            <path d="M118 62 L130 40 L106 54Z" />
-            <path d="M56 54 L50 28 L70 50Z" />
-            <path d="M84 54 L92 28 L74 50Z" />
-          </>
-        )}
-      </g>
-      {/* 얼굴 */}
-      <ellipse cx="70" cy="62" rx="26" ry="28" fill={face} />
-      <ellipse cx="42" cy="58" rx="9" ry="14" fill={face} transform="rotate(-25 42 58)" />
-      <ellipse cx="98" cy="58" rx="9" ry="14" fill={face} transform="rotate(25 98 58)" />
-      {shocked ? (
-        <>
-          <circle cx="60" cy="58" r="8" fill="#fff" />
-          <circle cx="80" cy="58" r="8" fill="#fff" />
-          <circle cx="60" cy="58" r="3" fill="#111" />
-          <circle cx="80" cy="58" r="3" fill="#111" />
-          <ellipse cx="70" cy="78" rx="7" ry="9" fill="#fff" />
-        </>
-      ) : (
-        <>
-          <circle cx="60" cy="58" r="5" fill="#fff" />
-          <circle cx="80" cy="58" r="5" fill="#fff" />
-          <circle cx={mood === 'worried' ? 61 : 60} cy="59" r="2.6" fill="#222" />
-          <circle cx={mood === 'worried' ? 81 : 80} cy="59" r="2.6" fill="#222" />
-          {mood === 'worried' ? (
-            <>
-              <path d="M52 47 L66 51" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-              <path d="M88 47 L74 51" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-              <path d="M60 78 Q65 72 70 78 T80 78" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-              <path d="M104 40 q6 10 0 16 q-6 -6 0 -16Z" fill="#8bd3ff" />
-            </>
-          ) : (
-            <path d="M58 74 Q70 88 82 74" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" />
-          )}
-        </>
-      )}
-    </svg>
-  );
-}
 
 const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ items, players, minSec, maxSec, char = 'sheep', onChar }, ref) {
   const { t } = useTranslation();
@@ -319,7 +244,6 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   }
 
   const stormy = phase === 'clouds' || phase === 'struck';
-  const mood: Mood = phase === 'struck' ? 'shocked' : phase === 'clouds' ? 'worried' : phase === 'won' ? 'cheer' : 'happy';
   const paper =
     'rounded-[1.6cqw] border-[0.35cqw] border-amber-300 bg-[#fffbe8] px-[2cqw] py-[1cqw] font-bold text-deep-navy shadow-xl';
   const fs = (len: number) => (len > 60 ? 'clamp(14px,2.6cqw,34px)' : len > 36 ? 'clamp(16px,3.4cqw,46px)' : len > 18 ? 'clamp(20px,4.6cqw,60px)' : 'clamp(26px,7cqw,92px)');
@@ -341,7 +265,8 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
                 char === c.id ? 'bg-indigo-600 text-white' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
               }`}
             >
-              {c.emoji} {t(`gameLightning.char_${c.id}`)}
+              <img src={charImage(c.id, false)} alt="" draggable={false} className="mr-1.5 inline-block h-7 w-auto align-middle" />
+              {t(`gameLightning.char_${c.id}`)}
             </button>
           ))}
         </div>
@@ -352,34 +277,30 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
         style={{
           aspectRatio: '16 / 9',
           containerType: 'size',
-          background: stormy ? 'linear-gradient(#2b2f4a 0%, #4a4f73 55%, #6b7099 100%)' : 'linear-gradient(#8fd3ff 0%, #c8ecff 60%, #e9f8d7 100%)',
-          transition: 'background .6s',
+          background: `#8fd3ff url(${LT_IMG('scene-day')}) center / cover no-repeat`,
         }}
       >
-        {/* 땅 */}
-        <div className="absolute inset-x-0 bottom-0 h-[16%]" style={{ background: stormy ? '#3c5a3a' : '#7ccf6a' }} />
+        {/* 폭풍 장면은 맑은 장면 위에서 서서히 짙어진다 */}
+        <div
+          className="absolute inset-0"
+          style={{ background: `#2b2f4a url(${LT_IMG('scene-storm')}) center / cover no-repeat`, opacity: stormy ? 1 : 0, transition: 'opacity .9s' }}
+        />
 
-        {/* 구름 */}
-        {!stormy && (
-          <>
-            <Cloud fill="#fff" className="lt-anim absolute left-[8%] top-[4%] w-[16cqw]" style={{ animation: 'lt-drift 9s ease-in-out infinite' }} />
-            <Cloud fill="#fff" className="lt-anim absolute right-[10%] top-[10%] w-[12cqw]" style={{ animation: 'lt-drift 11s ease-in-out infinite reverse' }} />
-          </>
-        )}
+        {/* 몰려오는 먹구름 */}
         {stormy && (
-          <div key={runId} className="absolute inset-x-0 top-0 h-[34%]">
+          <div key={runId} className="absolute inset-x-0 top-[-4%] h-[34%]">
             {[
-              { l: '-4%', w: 30, dir: 'l', d: 0 },
-              { l: '22%', w: 28, dir: 'r', d: 0.2 },
-              { l: '46%', w: 32, dir: 'l', d: 0.1 },
-              { l: '70%', w: 30, dir: 'r', d: 0.3 },
+              { l: '-8%', w: 34, dir: 'l', d: 0, img: 'cloud-dark-1' },
+              { l: '20%', w: 32, dir: 'r', d: 0.2, img: 'cloud-dark-2' },
+              { l: '44%', w: 36, dir: 'l', d: 0.1, img: 'cloud-dark-1' },
+              { l: '68%', w: 34, dir: 'r', d: 0.3, img: 'cloud-dark-2' },
             ].map((c, i) => (
               <div
                 key={i}
                 className="lt-anim absolute top-0"
                 style={{ left: c.l, width: `${c.w}cqw`, animation: `lt-in-${c.dir} ${CLOUD_IN_MS / 1000}s ${c.d}s ease-out both` }}
               >
-                <Cloud fill={i % 2 ? '#3a3e5e' : '#2e3150'} className="lt-anim w-full" style={{ animation: 'lt-rumble .5s linear infinite' }} />
+                <img src={LT_IMG(c.img)} alt="" draggable={false} className="lt-anim w-full" style={{ animation: 'lt-rumble .5s linear infinite', filter: 'drop-shadow(0 1.2cqw 1cqw rgba(0,0,0,.35))' }} />
               </div>
             ))}
           </div>
@@ -422,38 +343,41 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
         {/* 번개 */}
         {phase === 'struck' && (
           <>
-            <svg
+            <img
               key={`b-${runId}`}
-              viewBox="0 0 100 200"
-              className="lt-anim absolute z-20 h-[62%] w-[10cqw]"
-              style={{ left: '45%', top: '8%', transformOrigin: 'top', animation: 'lt-bolt 1.1s both' }}
-              aria-hidden="true"
-            >
-              <polygon points="62,0 24,92 50,92 30,200 86,70 58,70 80,0" fill="#fde047" stroke="#fff" strokeWidth="3" />
-            </svg>
+              src={LT_IMG('bolt')}
+              alt=""
+              draggable={false}
+              className="lt-anim absolute z-20"
+              style={{ left: '43%', top: '6%', height: '62%', transformOrigin: 'top', animation: 'lt-bolt 1.1s both', filter: 'drop-shadow(0 0 1.6cqw #fde047)' }}
+            />
             <div key={`f-${runId}`} className="lt-anim pointer-events-none absolute inset-0 z-30 bg-white" style={{ animation: 'lt-flash .9s both' }} />
           </>
         )}
 
-        {/* 빌리 */}
-        <div className="absolute bottom-[3%] left-1/2 z-10 w-[17cqw] -translate-x-1/2">
-          {(() => {
-            const figProps = {
-              mood,
-              className: 'lt-anim w-full',
-              style: {
-                animation:
-                  phase === 'struck' ? 'lt-shake .7s both' : phase === 'clouds' ? 'lt-worry .6s ease-in-out infinite' : phase === 'won' ? 'lt-hop .8s ease-in-out infinite' : undefined,
-              } as React.CSSProperties,
-            };
-            return char === 'sheep' ? <Billy {...figProps} /> : <Character kind={char} {...figProps} />;
-          })()}
+        {/* 캐릭터 — 평소 모습과 번개 맞은 모습이 따로 있다 */}
+        <div className="absolute bottom-[3%] left-1/2 z-10 -translate-x-1/2" style={{ height: '50cqh' }}>
+          <img
+            key={`${char}-${phase === 'struck'}`}
+            src={charImage(char, phase === 'struck')}
+            alt=""
+            draggable={false}
+            className="lt-anim h-full w-auto object-contain"
+            style={{
+              filter: 'drop-shadow(0 1.2cqw 1.2cqw rgba(0,0,0,.3))',
+              animation:
+                phase === 'struck' ? 'lt-shake .7s both' : phase === 'clouds' ? 'lt-worry .6s ease-in-out infinite' : phase === 'won' ? 'lt-hop .8s ease-in-out infinite' : undefined,
+            }}
+          />
           {phase === 'struck' &&
             [0, 1, 2].map((i) => (
-              <span
+              <img
                 key={i}
-                className="lt-anim absolute top-[8%] h-[2.4cqw] w-[2.4cqw] rounded-full bg-slate-400/80"
-                style={{ left: `${30 + i * 18}%`, animation: `lt-smoke 1.6s ${i * 0.25}s ease-out infinite` }}
+                src={LT_IMG('smoke')}
+                alt=""
+                draggable={false}
+                className="lt-anim absolute top-[2%] w-[4.5cqw]"
+                style={{ left: `${22 + i * 22}%`, animation: `lt-smoke 1.8s ${i * 0.3}s ease-out infinite` }}
               />
             ))}
         </div>
@@ -461,7 +385,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
         {/* 승리 */}
         {phase === 'won' && (
           <div className="lt-anim absolute left-1/2 top-[26%] z-20 -translate-x-1/2 text-center" style={{ animation: 'lt-pop .6s both' }}>
-            <div className="text-[9cqw] leading-none">🏆</div>
+            <img src={LT_IMG('trophy')} alt="" draggable={false} className="mx-auto h-[16cqw] w-auto" style={{ filter: 'drop-shadow(0 1cqw 1cqw rgba(0,0,0,.3))' }} />
             <div className="mt-[0.6cqw] rounded-full bg-amber-300 px-[3cqw] py-[0.8cqw] font-black text-amber-950 shadow-xl" style={{ fontSize: 'clamp(18px,4.4cqw,60px)' }}>
               {t('gameLightning.winnerLine', { n: winner + 1 })}
             </div>

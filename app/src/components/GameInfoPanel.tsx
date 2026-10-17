@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
 import { worksheetPathForGame } from '../lib/gameWorksheets';
+import { demoForGame } from '../lib/gameDemos';
 
 interface Props {
   description: string;
@@ -20,6 +21,7 @@ export default function GameInfoPanel({ description, steps, worksheetState }: Pr
   const embed = useGameEmbed();
   // 수업 만들기 안(embed)에서는 편집 화면을 떠나게 하는 링크를 숨긴다
   const worksheetPath = embed ? null : worksheetPathForGame(location.pathname);
+  const demoSrc = demoForGame(location.pathname);
   const [open, setOpen] = useState(false);
   const presenting = usePresenting();
 
@@ -41,6 +43,15 @@ export default function GameInfoPanel({ description, steps, worksheetState }: Pr
           {open ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
         </span>
       </button>
+      {demoSrc && !open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="shrink-0 rounded-full border border-primary px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+        >
+          ▶ {t('gameAdmin.watchDemo')}
+        </button>
+      )}
       {worksheetPath && (
         <Link
           to={worksheetPath}
@@ -53,6 +64,19 @@ export default function GameInfoPanel({ description, steps, worksheetState }: Pr
       </div>
       {open && (
         <div className="px-5 pb-5 space-y-3">
+          {demoSrc && (
+            <video
+              key={demoSrc}
+              src={demoSrc}
+              className="w-full max-w-[640px] rounded-xl border border-outline-variant/40 shadow-card"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              preload="metadata"
+            />
+          )}
           <p className="font-body-md text-body-md text-on-surface-variant">{description}</p>
           <ol className="list-decimal list-inside space-y-1.5 font-body-md text-sm text-on-surface-variant">
             {steps.map((step, i) => (

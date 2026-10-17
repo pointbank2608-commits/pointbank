@@ -1,3 +1,4 @@
+import { sampleWord } from '../lib/sampleWords';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -22,7 +23,7 @@ function uid(): string {
 }
 
 function defaultItems(): GameItem[] {
-  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: i18n.t('gameSpellWord.defaultItem', { n }) }));
+  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: sampleWord(n) }));
 }
 
 const DEFAULT_PREVIEW_SECONDS = 3;

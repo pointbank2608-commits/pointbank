@@ -7,6 +7,9 @@ import {
   EMPTY_ORDER,
   FLAVOURS,
   REMEMBER_LINES,
+  configureShop,
+  type ShopMenu,
+  type ShopCurrency,
   SHOP_LINES,
   SIZES,
   STYLES,
@@ -26,6 +29,8 @@ import {
 
 interface Props {
   showKo: boolean;
+  menu?: ShopMenu;
+  currency?: ShopCurrency;
 }
 
 type Step = 'menu' | 'order' | 'remember' | 'practice';
@@ -124,8 +129,9 @@ function cardOrder(): Order {
   };
 }
 
-export default function IceCreamShop({ showKo: showKoProp }: Props) {
+export default function IceCreamShop({ showKo: showKoProp, menu = 'full', currency = '£' }: Props) {
   const { t } = useTranslation();
+  configureShop({ menu, currency });
   const [step, setStep] = useState<Step>('menu');
   const [showKo, setShowKo] = useState(showKoProp);
   const timers = useRef<number[]>([]);

@@ -1,3 +1,4 @@
+import { sampleWord } from '../lib/sampleWords';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -14,7 +15,6 @@ import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
-import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { FullCardItem, GameItem, UndoHandle } from '../lib/types';
 
@@ -23,7 +23,7 @@ function uid(): string {
 }
 
 function defaultItems(): GameItem[] {
-  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: i18n.t('gameTreasureDig.defaultItem', { n }) }));
+  return [1, 2, 3, 4, 5].map((n) => ({ id: uid(), label: sampleWord(n) }));
 }
 
 const DEFAULT_TEAMS = 3;

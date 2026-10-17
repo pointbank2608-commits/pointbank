@@ -36,6 +36,13 @@ export default function TodayLessons({ academyId }: { academyId: string }) {
   const groupOpen = useFeature('group');
   const [cards, setCards] = useState<Card[] | null>(null);
   const [hasSchedule, setHasSchedule] = useState(true);
+  const [sampleHidden, setSampleHidden] = useState(() => {
+    try {
+      return localStorage.getItem('classbank.sampleBanner.hide') === '1';
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     let alive = true;
@@ -94,10 +101,47 @@ export default function TodayLessons({ academyId }: { academyId: string }) {
 
   if (cards === null) return entries;
 
+  // 아직 만든 수업이 하나도 없는 선생님에게는 준비 없이 한 번 써 보는 길을 먼저 보여 준다(외부 평가: 첫 성공까지 할 일이 많다)
+  const noLessons = groupOpen && !sampleHidden && (cards.length > 0 ? cards.every((c) => !c.lesson) : !hasSchedule);
+  const sampleBanner = noLessons ? (
+    <div className="relative">
+    <button
+      type="button"
+      onClick={() => navigate('/curriculum', { state: { createSample: true } })}
+      className="flex w-full flex-wrap items-center gap-3 rounded-xl border border-warm-yellow bg-warm-yellow/25 p-4 pr-12 text-left shadow-card transition-transform hover:-translate-y-0.5"
+    >
+      <span className="material-symbols-outlined text-[30px] text-deep-navy" aria-hidden>
+        bolt
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-label-md text-label-md font-bold text-deep-navy">{t('todayEntry.sampleTitle')}</span>
+        <span className="block font-caption text-caption text-on-surface-variant">{t('todayEntry.sampleDesc')}</span>
+      </span>
+      <span className="rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary">{t('todayEntry.sampleButton')}</span>
+    </button>
+    <button
+      type="button"
+      onClick={() => {
+        setSampleHidden(true);
+        try {
+          localStorage.setItem('classbank.sampleBanner.hide', '1');
+        } catch {
+          /* 저장 못 해도 이번 화면에서는 숨는다 */
+        }
+      }}
+      className="absolute right-3 top-3 rounded-full p-1.5 text-on-surface-variant hover:bg-black/10"
+      aria-label={t('common.close')}
+    >
+      ✕
+    </button>
+    </div>
+  ) : null;
+
   const dateLabel = new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', weekday: 'short' });
 
   return (
     <div className="space-y-gutter">
+      {sampleBanner}
       {entries}
       <section className="rounded-[24px] border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-card sm:p-7">
         <div className="flex flex-wrap items-baseline justify-between gap-2">

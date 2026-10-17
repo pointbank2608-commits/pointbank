@@ -1,67 +1,95 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
-import SpinWheel from '../components/SpinWheel';
-import ProductMock from '../components/landing/ProductMock';
-import { GAME_CATALOG, getGameCatalogEntry } from '../lib/gameCatalog';
+import GamesDiagram from '../components/landing/GamesDiagram';
+import LandingDemo from '../components/landing/LandingDemo';
+import WorksheetCollage from '../components/landing/WorksheetCollage';
+import { GAME_CATALOG } from '../lib/gameCatalog';
 
-function CheckIcon() {
+/**
+ * 공개 랜딩(2026-10-17) — 외부 디자인 시안(docs/landing-pack)을 따라 다시 만들었다.
+ * 제목·설명·버튼·탭·표는 전부 실제 HTML 이고, 이미지는 클레이 일러스트(public/landing2)만 쓴다.
+ * 문구는 i18n `landing2.*`(요금·약관·사업자 정보는 기존 `landing.*` 그대로).
+ */
+
+/** `**강조**` 표기를 진한 블루 글자로 */
+function rich(text: string): ReactNode {
+  return text.split('**').map((part, i) =>
+    i % 2 === 1 ? (
+      <strong key={i} className="font-extrabold text-[var(--lp-blue)]">
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
+/** 줄 배열: 데스크톱에서는 줄바꿈, 모바일에서는 자연스럽게 이어 붙인다 */
+function Lines({ lines, className = '' }: { lines: string[]; className?: string }) {
   return (
-    <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[13px] font-bold text-on-secondary">
-      ✓
+    <>
+      {lines.map((l, i) => (
+        <span key={i} className={`md:block ${className}`}>
+          {rich(l)}
+          {i < lines.length - 1 ? ' ' : ''}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function CheckCircle({ size = 'md', solid = false }: { size?: 'sm' | 'md'; solid?: boolean }) {
+  const box = size === 'md' ? 'h-14 w-14' : 'h-10 w-10';
+  const tone = solid ? 'bg-[var(--lp-blue)] text-white' : 'bg-[var(--lp-sky)] text-[var(--lp-blue)]';
+  return (
+    <span className={`inline-flex ${box} shrink-0 items-center justify-center rounded-full ${tone}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" className={size === 'md' ? 'h-7 w-7' : 'h-5 w-5'} fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12.5l4.5 4.5L19 7.5" />
+      </svg>
     </span>
   );
 }
 
+function Arrow() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 5l7 7-7 7" />
+    </svg>
+  );
+}
+
+const iconTones = ['bg-[#e3eeff]', 'bg-[#fff1bd]', 'bg-[#ebe6ff]', 'bg-[#ffe6d6]', 'bg-[#ebe6ff]', 'bg-[#e3eeff]', 'bg-[#fff1bd]', 'bg-[#ffe6d6]'];
+const featureIcons = ['i-lesson', 'i-game', 'i-contest', 'i-print', 'i-book', 'i-video', 'i-online', 'i-class'];
+const typeIcons = [
+  // 뜻 고르기
+  <svg key="a" viewBox="0 0 32 32" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="6" y="4" width="20" height="24" rx="4" /><path d="M11 11h10M11 16h10M11 21h6" /></svg>,
+  // OX
+  <svg key="b" viewBox="0 0 48 32" className="h-9 w-[52px]" fill="none" strokeLinecap="round" aria-hidden="true"><circle cx="13" cy="16" r="11" fill="currentColor" /><circle cx="13" cy="16" r="5" fill="#eaf2ff" /><circle cx="35" cy="16" r="11" fill="currentColor" /><path d="M30.5 11.5l9 9M39.5 11.5l-9 9" stroke="#eaf2ff" strokeWidth="3" /></svg>,
+  // 철자 쓰기
+  <svg key="c" viewBox="0 0 32 32" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 26l1.5-6L21 6.5a3 3 0 014.5 4L12 24z M18.5 9l4.5 4.5" /></svg>,
+  // 스피드 부저
+  <svg key="d" viewBox="0 0 32 32" className="h-9 w-9" fill="currentColor" aria-hidden="true"><path d="M18 2L6 18h8l-2 12 14-18h-8z" /></svg>,
+];
+
 export default function LandingPage() {
   const { t } = useTranslation();
-
-  const wheelItems = [
-    { id: '1', label: 'apple' },
-    { id: '2', label: 'banana' },
-    { id: '3', label: 'grape' },
-    { id: '4', label: 'melon' },
-    { id: '5', label: 'peach' },
-  ];
-
   const gameCount = GAME_CATALOG.length;
-  const stripGames = ['wheel', 'ladder', 'hangman', 'matchup', 'treasuredig', 'quizshow', 'airport', 'icecream'] as const;
-  const tagTones = ['bg-tag-today text-tag-today-ink', 'bg-tag-lesson text-tag-lesson-ink', 'bg-tag-library text-tag-library-ink', 'bg-tag-class text-tag-class-ink', 'bg-tag-more text-tag-more-ink'];
+  const list = <T,>(key: string): T => t(key, { returnObjects: true }) as T;
 
-  const pains = [
-    { n: '01', title: t('landing.pain1Title'), desc: t('landing.pain1Desc'), image: '/covers/landing-pain-1.jpg' },
-    { n: '02', title: t('landing.pain2Title'), desc: t('landing.pain2Desc'), image: '/covers/landing-pain-2.jpg' },
-    { n: '03', title: t('landing.pain3Title'), desc: t('landing.pain3Desc'), image: '/covers/landing-pain-3.jpg' },
-  ];
+  const heroDesc = list<string[]>('landing2.hero.desc');
+  const heroBenefits = list<string[]>('landing2.hero.benefits');
+  const painCards = list<{ title: string[]; desc: string; alt: string }[]>('landing2.pain.cards');
+  const stepItems = list<{ title: string; desc: string[]; alt: string }[]>('landing2.steps.items');
+  const featureCards = list<{ title: string; desc: string[] }[]>('landing2.features.cards');
+  const compareRows = list<{ label: string; us: string; old: string }[]>('landing2.compare.rows');
+  const contestTypes = list<string[]>('landing2.contest.types');
 
-  const flow = [
-    { n: '1', icon: 'menu_book', title: t('landing.flow1Title'), desc: t('landing.flow1Desc') },
-    { n: '2', icon: 'library_add', title: t('landing.flow2Title'), desc: t('landing.flow2Desc') },
-    { n: '3', icon: 'co_present', title: t('landing.flow3Title'), desc: t('landing.flow3Desc') },
-  ];
-
-  const showcases = [
-    { eyebrow: t('landing.show1Eyebrow'), title: t('landing.show1Title'), desc: t('landing.show1Desc'), image: '/covers/game-quizshow.jpg' },
-    { eyebrow: t('landing.show2Eyebrow'), title: t('landing.show2Title'), desc: t('landing.show2Desc'), image: '/covers/material-cvcworkbook.jpg' },
-  ];
-
-  const everything = [
-    { icon: 'co_present', title: t('landing.allLessonTitle'), desc: t('landing.allLessonDesc') },
-    { icon: 'sports_esports', title: t('landing.allGameTitle', { count: gameCount }), desc: t('landing.allGameDesc') },
-    { icon: 'emoji_events', title: t('landing.allContestTitle'), desc: t('landing.allContestDesc') },
-    { icon: 'print', title: t('landing.allPrintTitle'), desc: t('landing.allPrintDesc') },
-    { icon: 'auto_stories', title: t('landing.allWordsTitle'), desc: t('landing.allWordsDesc') },
-    { icon: 'smart_display', title: t('landing.allVideoTitle'), desc: t('landing.allVideoDesc') },
-    { icon: 'videocam', title: t('landing.allOnlineTitle'), desc: t('landing.allOnlineDesc') },
-    { icon: 'account_balance_wallet', title: t('landing.allManageTitle'), desc: t('landing.allManageDesc') },
-  ];
-
-  const compareRows = [1, 2, 3, 4, 5].map((n) => [
-    t(`landing.compareRow${n}Label`),
-    t(`landing.compareRow${n}Off`),
-    t(`landing.compareRow${n}On`),
-  ]);
+  const painImages = ['pain1', 'pain2', 'pain3'];
+  const painBadge = ['bg-[#dce9ff] text-[#1d63f0]', 'bg-[#ffeeb0] text-[#a5700a]', 'bg-[#e6e0ff] text-[#5b44c9]'];
+  const stepImages = ['step1', 'step2', 'step3'];
 
   const plans = [
     {
@@ -80,27 +108,30 @@ export default function LandingPage() {
     },
   ];
 
+  const focus = 'focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[var(--lp-navy)]';
+  const primaryBtn = `inline-flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[var(--lp-blue)] px-9 text-[clamp(19px,2.2vw,24px)] font-extrabold text-white shadow-[0_18px_36px_-14px_rgba(29,99,240,.75)] transition hover:bg-[var(--lp-blue-dark)] ${focus}`;
+  const section = 'mx-auto w-full max-w-[1240px] px-5 sm:px-8';
+
   return (
-    <div className="landing bg-background text-on-background antialiased">
-      <header className="sticky top-0 z-50 border-b border-outline-variant/40 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-[76px] max-w-container-max items-center justify-between px-margin-mobile md:px-margin-desktop">
-          <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <BrandMark className="h-11 w-11 shrink-0 drop-shadow-sm" />
-            <span className="landing-logo whitespace-nowrap text-[20px] text-deep-navy sm:text-[23px] md:text-[28px]">
-              {t('common.brand')}
-            </span>
+    <div className="landing antialiased">
+      <a href="#main" className="sr-only z-[100] rounded-lg bg-white px-4 py-3 font-bold text-[var(--lp-navy)] focus:not-sr-only focus:absolute focus:left-4 focus:top-4">
+        {t('landing2.skip')}
+      </a>
+
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-[84px] w-full max-w-[1920px] items-center justify-between px-5 sm:px-8 lg:px-[4.2%]">
+          <Link to="/" className={`flex min-w-0 items-center gap-3 rounded-lg ${focus}`}>
+            <BrandMark className="h-10 w-10 shrink-0 md:h-12 md:w-12 lg:h-14 lg:w-14" />
+            <span className="landing-logo whitespace-nowrap text-[24px] font-black text-[var(--lp-navy)] md:text-[32px] lg:text-[36px]">{t('common.brand')}</span>
           </Link>
-          <div className="flex shrink-0 items-center gap-2 md:gap-3">
-            <LanguageToggle className="bg-surface-container" />
-            <Link
-              to="/login"
-              className="hidden rounded-full border border-deep-navy/20 px-4 py-2 font-label-md text-[16px] text-deep-navy transition hover:bg-surface-container sm:inline-flex"
-            >
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <LanguageToggle className="hidden bg-white/70 md:inline-flex" />
+            <Link to="/login" className={`rounded-lg px-3 py-2 text-[18px] font-semibold text-[var(--lp-navy)] hover:text-[var(--lp-blue)] ${focus}`}>
               {t('landing.login')}
             </Link>
             <Link
               to="/login"
-              className="inline-flex rounded-full bg-deep-navy px-4 py-2.5 font-label-md text-[16px] text-white transition hover:bg-primary md:px-5"
+              className={`inline-flex min-h-12 items-center rounded-xl border-2 border-[var(--lp-blue)] bg-white px-4 text-[17px] font-bold text-[var(--lp-blue)] transition hover:bg-[var(--lp-sky)] sm:px-6 sm:text-[18px] ${focus}`}
             >
               {t('landing.startShort')}
             </Link>
@@ -108,68 +139,88 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main>
-        <section className="relative overflow-hidden bg-background">
-          <div className="mx-auto grid max-w-container-max items-center gap-10 px-margin-mobile py-14 md:px-margin-desktop md:py-20 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="min-w-0 space-y-7">
-              <div className="flex flex-wrap gap-2">
-                <div className="inline-flex items-center rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-1.5 font-label-md text-[15px] text-on-surface-variant">
-                  {t('landing.heroEyebrow')}
-                </div>
-                <div className="inline-flex items-center rounded-full bg-warm-yellow px-4 py-1.5 font-label-md text-[15px] text-deep-navy">
-                  {t('landing.heroBadge')}
-                </div>
-              </div>
-              <h1 className="landing-display text-[40px] leading-[1.2] text-deep-navy md:text-[60px] md:leading-[1.15]">
-                {t('landing.heroLine1')}
-                <br />
-                {t('landing.heroLine2')}{' '}
-                <span className="bg-warm-yellow/70 px-1">{t('landing.heroLine3')}</span>
+      <main id="main">
+        {/* A. 첫 화면 — 시안(01_hero)의 그림판 위에 글자를 실제 HTML 로 얹는다. 데스크톱은 시안과 같은 비율(cqw)로 배치하고, 좁은 화면은 세로로 쌓는다 */}
+        <section className="relative bg-white">
+          <div className="relative mx-auto w-full max-w-[1920px] [container-type:inline-size]">
+            <div className="relative z-10 px-6 pb-8 pt-8 sm:px-10 lg:absolute lg:inset-0 lg:p-0">
+              <span className="inline-flex items-center rounded-full bg-[#e5eeff] px-5 py-2.5 text-[clamp(16px,2.4vw,20px)] font-bold text-[var(--lp-navy)] lg:absolute lg:left-[4.2cqw] lg:top-[5.5cqw] lg:h-[3.6cqw] lg:px-[2.2cqw] lg:py-0 lg:text-[1.5cqw]">
+                {t('landing2.hero.tag')}
+              </span>
+              <h1 className="lp-h mt-5 text-[clamp(46px,11.5vw,84px)] !leading-[1.1] lg:absolute lg:left-[3.9cqw] lg:top-[10.8cqw] lg:mt-0 lg:text-[6.1cqw] lg:!leading-[7.4cqw]">
+                <span className="block whitespace-nowrap">{t('landing2.hero.title1')}</span>
+                <span className="block whitespace-nowrap">
+                  <span className="text-[var(--lp-blue)]">{t('landing2.hero.title2a')}</span>
+                  {t('landing2.hero.title2b')}
+                </span>
               </h1>
-              <p className="max-w-xl text-[19px] leading-8 text-on-surface-variant md:text-[21px] md:leading-9">{t('landing.heroDesc')}</p>
-              <div className="flex flex-col gap-2 text-[17px] text-on-surface">
-                {[t('landing.heroCheck1', { count: gameCount }), t('landing.heroCheck2'), t('landing.heroCheck3')].map((c) => (
-                  <span key={c} className="inline-flex items-center gap-2.5">
-                    <CheckIcon />
-                    {c}
-                  </span>
-                ))}
-              </div>
-              <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center">
+              <p className="lp-p mt-6 max-w-[560px] text-[clamp(19px,3.6vw,25px)] font-medium text-[var(--lp-muted)] lg:absolute lg:left-[4.2cqw] lg:top-[28.7cqw] lg:mt-0 lg:max-w-none lg:text-[1.95cqw] lg:leading-[3.05cqw]">
+                <Lines lines={heroDesc} />
+              </p>
+              <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8 lg:static lg:mt-0">
                 <Link
                   to="/login"
-                  className="inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-deep-navy px-8 font-title-md text-[18px] text-white transition hover:bg-primary"
+                  className={`${primaryBtn} lg:absolute lg:left-[4.2cqw] lg:top-[38.6cqw] lg:h-[6.1cqw] lg:min-h-0 lg:w-[27.2cqw] lg:gap-[1.2cqw] lg:rounded-[0.9cqw] lg:px-0 lg:text-[2cqw]`}
                 >
-                  {t('landing.startFree')}
-                  <span className="material-symbols-outlined text-[22px]">arrow_forward</span>
+                  {t('landing2.hero.primary')}
+                  <Arrow />
                 </Link>
-                <a href="#pricing" className="inline-flex min-h-14 items-center justify-center px-2 font-label-md text-[17px] text-primary underline underline-offset-4">
-                  {t('landing.seePricing')}
+                <a
+                  href="#try"
+                  className={`inline-flex min-h-12 items-center gap-1 rounded-lg text-[clamp(18px,3vw,21px)] font-bold text-[var(--lp-blue)] underline decoration-2 underline-offset-[10px] hover:text-[var(--lp-blue-dark)] lg:absolute lg:left-[34.3cqw] lg:top-[39.6cqw] lg:min-h-0 lg:text-[1.55cqw] ${focus}`}
+                >
+                  {t('landing2.hero.secondary')}
+                  <Arrow />
                 </a>
               </div>
-              <div className="flex items-end gap-4 pt-2" aria-hidden>
-                {(['girl', 'kids-cheer', 'kid-read'] as const).map((c) => (
-                  <img key={c} src={`/landing/char-${c}.webp`} alt="" loading="lazy" className="h-[110px] w-auto drop-shadow-md" />
-                ))}
-              </div>
             </div>
-            <ProductMock />
+            {/* 그림판: 노트북·소품·마스코트·활동지. 좁은 화면에서는 오른쪽 그림 부분만 잘라 보여 준다 */}
+            <img
+              src="/landing2/hero-plate.webp"
+              alt=""
+              width={1536}
+              height={797}
+              fetchPriority="high"
+              className="block aspect-[4/3] w-full object-cover object-[74%_50%] sm:aspect-[16/9] lg:aspect-auto lg:h-auto lg:object-fill"
+            />
+            <p className="absolute bottom-[1%] right-3 text-[12px] text-[var(--lp-muted)] lg:right-[2.6cqw] lg:text-[0.85cqw]">{t('landing2.hero.mockNote')}</p>
+          </div>
+          <div className={`${section} pb-12 pt-4 lg:pb-14`}>
+            <ul className="mx-auto grid max-w-[960px] gap-4 sm:grid-cols-3">
+              {heroBenefits.map((b) => (
+                <li key={b} className="flex items-center justify-center gap-4 text-[clamp(18px,2vw,22px)] font-bold text-[var(--lp-navy)] sm:justify-start">
+                  <CheckCircle />
+                  {b}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        <section className="bg-tag-today/50">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.painEyebrow')}</p>
-            <h2 className="landing-display mb-12 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">{t('landing.painTitle')}</h2>
-            <div className="grid gap-5 md:grid-cols-3">
-              {pains.map((p) => (
-                <article key={p.n} className="landing-pain-card relative aspect-[3/4] overflow-hidden rounded-[28px]">
-                  <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b1726]/92 via-[#0b1726]/35 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-7">
-                    <div className="mb-4 font-label-md text-[16px] text-warm-yellow">{p.n}</div>
-                    <h3 className="landing-display mb-3 text-[26px] text-white">{p.title}</h3>
-                    <p className="text-[17px] leading-8 text-white/84">{p.desc}</p>
+        {/* B. 선생님의 어려움 */}
+        <section className="bg-[var(--lp-ivory)]">
+          <div className={`${section} py-20 md:py-28`}>
+            <div className="mx-auto max-w-[900px] text-center">
+              <p className="text-[clamp(18px,2vw,24px)] font-extrabold text-[var(--lp-blue)]">{t('landing2.pain.eyebrow')}</p>
+              <h2 className="lp-h mt-4 text-[clamp(36px,5.2vw,68px)]">
+                <Lines lines={list<string[]>('landing2.pain.title')} />
+              </h2>
+              <p className="lp-p mt-7 text-[clamp(17px,1.8vw,22px)] text-[var(--lp-muted)]">
+                <Lines lines={list<string[]>('landing2.pain.desc')} />
+              </p>
+            </div>
+            <div className="mt-14 grid gap-6 md:grid-cols-3">
+              {painCards.map((c, i) => (
+                <article key={i} className="lp-card relative flex flex-col overflow-hidden">
+                  <span className={`absolute left-6 top-6 z-10 flex h-14 w-14 items-center justify-center rounded-full text-[22px] font-black ${painBadge[i]}`}>0{i + 1}</span>
+                  <div className="bg-white px-4 pt-6">
+                    <img src={`/landing2/${painImages[i]}.webp`} alt={c.alt} loading="lazy" width={960} height={720} className="mx-auto aspect-[4/3] w-full object-contain mix-blend-multiply" />
+                  </div>
+                  <div className="flex-1 px-7 pb-9 pt-3">
+                    <h3 className="lp-h text-[clamp(25px,2.4vw,32px)] !leading-[1.3]">
+                      <Lines lines={c.title} />
+                    </h3>
+                    <p className="lp-p mt-4 text-[clamp(17px,1.5vw,19px)] text-[var(--lp-muted)]">{c.desc}</p>
                   </div>
                 </article>
               ))}
@@ -177,217 +228,282 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-background">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.flowEyebrow')}</p>
-            <h2 className="landing-display mb-10 max-w-3xl text-[32px] text-deep-navy md:text-[48px]">{t('landing.flowTitle')}</h2>
-            <div className="grid gap-5 md:grid-cols-3">
-              {flow.map((s) => (
-                <div key={s.n} className="rounded-[28px] bg-white p-7 shadow-card">
-                  <div className="mb-5 flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-deep-navy font-title-md text-[18px] text-white">
-                      {s.n}
+        {/* C. 3단계 */}
+        <section className="bg-[var(--lp-soft)]">
+          <div className={`${section} py-20 md:py-28`}>
+            <h2 className="lp-h text-center text-[clamp(36px,5.2vw,68px)]">{t('landing2.steps.title')}</h2>
+            <ol className="mt-14 grid gap-8 lg:grid-cols-3 lg:gap-10">
+              {stepItems.map((s, i) => (
+                <li key={i} className="lp-card relative px-6 pb-10 pt-8 text-center">
+                  <img src={`/landing2/${stepImages[i]}.webp`} alt={s.alt} loading="lazy" width={960} height={720} className="mx-auto aspect-[4/3] w-full max-w-[420px] object-contain mix-blend-multiply" />
+                  <span className="mx-auto mt-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#3f7dff] text-[28px] font-black text-white shadow-[0_12px_24px_-10px_rgba(63,125,255,.8)]">{i + 1}</span>
+                  <h3 className="lp-h mt-5 text-[clamp(28px,2.8vw,36px)]">{s.title}</h3>
+                  <p className="lp-p mx-auto mt-4 max-w-[360px] text-[clamp(17px,1.45vw,19px)] text-[var(--lp-muted)]">
+                    <Lines lines={s.desc} />
+                  </p>
+                  {i < 2 && (
+                    <span className="absolute -right-[26px] top-[28%] z-10 hidden h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--lp-blue)] shadow-md lg:flex" aria-hidden="true">
+                      <Arrow />
                     </span>
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-full ${tagTones[Number(s.n) - 1]}`}>
-                      <span className="material-symbols-outlined text-[26px]">{s.icon}</span>
-                    </span>
-                  </div>
-                  <h3 className="landing-display mb-3 text-[26px] text-deep-navy">{s.title}</h3>
-                  <p className="text-[17px] leading-8 text-on-surface-variant">{s.desc}</p>
-                </div>
+                  )}
+                </li>
               ))}
+            </ol>
+          </div>
+        </section>
+
+        {/* D. 실시간 보카 대회 */}
+        <section className="bg-white">
+          <div className="grid lg:grid-cols-[1.08fr_1fr]">
+            <div className="relative min-h-[380px] lg:min-h-[680px]">
+              <img src="/landing2/contest.webp" alt={t('landing2.contest.alt')} loading="lazy" width={896} height={1200} className="absolute inset-0 h-full w-full object-cover object-[50%_35%]" />
+            </div>
+            <div className="flex flex-col justify-center px-6 py-14 sm:px-12 lg:py-20 lg:pl-14 lg:pr-[max(2rem,calc((100vw-1240px)/2))]">
+              <p className="text-[clamp(18px,1.9vw,22px)] font-extrabold text-[var(--lp-blue)]">{t('landing2.contest.eyebrow')}</p>
+              <h2 className="lp-h mt-4 text-[clamp(38px,4.6vw,64px)]">
+                <Lines lines={list<string[]>('landing2.contest.title')} />
+              </h2>
+              <p className="lp-p mt-7 text-[clamp(18px,1.8vw,22px)] font-medium text-[var(--lp-ink)]">
+                <Lines lines={list<string[]>('landing2.contest.p1')} />
+              </p>
+              <hr className="my-6 border-[var(--lp-sky2)]" />
+              <p className="lp-p text-[clamp(18px,1.8vw,22px)] font-medium text-[var(--lp-ink)]">{rich(t('landing2.contest.p2'))}</p>
+              <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+                {contestTypes.map((ty, i) => (
+                  <li key={ty} className="flex min-h-[72px] items-center gap-4 rounded-2xl bg-[#e8f0ff] px-5 text-[clamp(18px,1.8vw,22px)] font-extrabold text-[var(--lp-navy)]">
+                    <span className="flex w-12 shrink-0 justify-center text-[var(--lp-blue)]">{typeIcons[i]}</span>
+                    {ty}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
 
-        {showcases.map((sc, i) => (
-          <section key={sc.title} className={i % 2 === 0 ? '' : 'bg-surface-container-lowest'}>
-            <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-              <div className={`overflow-hidden rounded-[28px] shadow-card ${i % 2 === 0 ? '' : 'md:order-2'}`}>
-                <img src={sc.image} alt="" className="aspect-[4/3] w-full object-cover" />
-              </div>
-              <div className={i % 2 === 0 ? '' : 'md:order-1'}>
-                <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{sc.eyebrow}</div>
-                <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{sc.title}</h2>
-                <p className="text-[19px] leading-9 text-on-surface-variant">{sc.desc}</p>
-              </div>
+        {/* E. 활동지·워크북 */}
+        <section className="overflow-hidden bg-white">
+          <div className="grid items-stretch lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="px-6 py-16 sm:px-8 md:py-24 lg:py-28 lg:pl-[max(2rem,calc((100vw-1240px)/2))] lg:pr-6">
+              <p className="text-[clamp(18px,1.9vw,22px)] font-extrabold text-[var(--lp-blue)]">{t('landing2.sheets.eyebrow')}</p>
+              <h2 className="lp-h mt-4 text-[clamp(38px,4.8vw,66px)]">
+                <Lines lines={list<string[]>('landing2.sheets.title')} />
+              </h2>
+              <p className="lp-p mt-7 text-[clamp(18px,1.8vw,22px)] font-medium text-[var(--lp-ink)]">
+                <Lines lines={list<string[]>('landing2.sheets.p1')} />
+              </p>
+              <p className="lp-p mt-6 text-[clamp(18px,1.8vw,22px)] font-medium text-[var(--lp-ink)]">
+                <Lines lines={list<string[]>('landing2.sheets.p2')} />
+              </p>
+              <span className="mt-9 inline-flex min-h-16 items-center gap-3 rounded-full bg-[var(--lp-blue)] px-7 text-[clamp(18px,1.9vw,22px)] font-extrabold text-white shadow-[0_16px_30px_-14px_rgba(29,99,240,.7)]">
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M7 9V3h10v6M6 18H4a1 1 0 01-1-1v-6a2 2 0 012-2h14a2 2 0 012 2v6a1 1 0 01-1 1h-2M7 14h10v7H7z" />
+                </svg>
+                {t('landing2.sheets.badge')}
+              </span>
             </div>
-          </section>
-        ))}
-
-        <section className="bg-surface-container-lowest">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-16 md:px-margin-desktop md:py-20">
-            <h2 className="landing-display mb-3 text-[32px] text-deep-navy md:text-[44px]">{t('landing.gamesStripTitle', { count: gameCount })}</h2>
-            <p className="mb-8 max-w-2xl text-[19px] leading-9 text-on-surface-variant">{t('landing.gamesStripDesc')}</p>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {stripGames.map((g) => (
-                <div key={g} className="overflow-hidden rounded-[24px] bg-surface-container-lowest shadow-card">
-                  <img src={`/landing/games/${g}.webp`} alt="" loading="lazy" width={480} height={320} className="aspect-[3/2] w-full object-cover" />
-                  <div className="px-4 py-3 font-label-md text-[16px] text-on-surface">{t(getGameCatalogEntry(g)?.nameKey ?? '')}</div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-5 text-[16px] text-outline">{t('landing.gamesStripNote')}</p>
+            <WorksheetCollage />
           </div>
         </section>
 
-        <section>
-          <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-            <div className="flex h-[320px] items-center justify-center overflow-hidden rounded-[28px] bg-background shadow-card">
-              <div className="origin-center scale-[0.68]" style={{ width: 420, height: 420 }}>
-                <SpinWheel items={wheelItems} />
-              </div>
+        {/* F. 단어장 재활용과 게임 */}
+        <section className="bg-[var(--lp-soft)]">
+          <div className={`${section} py-20 md:py-28`}>
+            <div className="mx-auto mb-14 max-w-[1000px] text-center">
+              <h2 className="lp-h text-[clamp(36px,5vw,66px)]">
+                <Lines lines={list<string[]>('landing2.games.title')} />
+              </h2>
+              <p className="lp-p mt-6 text-[clamp(17px,1.8vw,22px)] text-[var(--lp-muted)]">
+                <Lines lines={list<string[]>('landing2.games.desc')} />
+              </p>
             </div>
-            <div>
-              <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.show3Eyebrow')}</div>
-              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.show3Title', { count: gameCount })}</h2>
-              <p className="text-[19px] leading-9 text-on-surface-variant">{t('landing.show3Desc')}</p>
-            </div>
+            <GamesDiagram />
           </div>
         </section>
 
-        <section className="bg-surface-container-lowest">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop md:py-24">
-            <h2 className="landing-display mb-10 text-center text-[32px] text-deep-navy md:text-[48px]">{t('landing.allTitle')}</h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
-              {everything.map((s, i) => (
-                <div
-                  key={s.title}
-                  className="flex flex-col items-center gap-2 rounded-[24px] bg-background p-6 text-center shadow-card"
-                >
-                  <div className={`mb-1 flex h-12 w-12 items-center justify-center rounded-full ${tagTones[i % 5]}`}>
-                    <span className="material-symbols-outlined">{s.icon}</span>
-                  </div>
-                  <div className="font-title-md text-[18px] text-on-surface">{s.title}</div>
-                  <div className="text-[16px] leading-6 text-on-surface-variant">{s.desc}</div>
-                </div>
-              ))}
+        {/* G. 직접 체험 */}
+        <section id="try" className="scroll-mt-24 bg-white">
+          <div className={`${section} py-20 md:py-28`}>
+            <div className="mx-auto mb-10 max-w-[860px] text-center">
+              <p className="text-[clamp(18px,1.9vw,22px)] font-extrabold text-[var(--lp-blue)]">{t('landing2.demo.eyebrow')}</p>
+              <h2 className="lp-h mt-3 text-[clamp(36px,4.6vw,62px)]">{t('landing2.demo.title')}</h2>
+              <p className="lp-p mt-5 text-[clamp(17px,1.8vw,22px)] text-[var(--lp-muted)]">
+                <Lines lines={list<string[]>('landing2.demo.desc')} />
+              </p>
             </div>
+            <LandingDemo />
           </div>
         </section>
 
-        <section className="bg-deep-navy">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-16 text-center md:px-margin-desktop md:py-20">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-soft-mint">{t('landing.placeEyebrow')}</p>
-            <h2 className="landing-display mx-auto mb-4 max-w-3xl text-[30px] text-white md:text-[44px]">{t('landing.placeTitle')}</h2>
-            <p className="mx-auto max-w-2xl text-[19px] leading-9 text-white/80">{t('landing.placeDesc')}</p>
-          </div>
-        </section>
-
-        <section>
-          <div className="mx-auto grid max-w-container-max items-center gap-12 px-margin-mobile py-16 md:grid-cols-2 md:px-margin-desktop md:py-20">
-            <div>
-              <div className="mb-2 font-label-md text-[16px] tracking-wide text-primary">{t('landing.feature4Eyebrow')}</div>
-              <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.feature4Title')}</h2>
-              <p className="mb-8 text-[19px] leading-9 text-on-surface-variant">{t('landing.feature4Desc')}</p>
-              <div className="flex flex-col gap-2 rounded-[20px] bg-background p-4 sm:flex-row sm:items-center">
-                <div className="min-w-[7.5rem] font-label-md text-[16px] text-on-surface-variant">{t('landing.feature4DoneIf')}</div>
-                <div className="flex flex-1 flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-secondary-container px-3 py-1.5 font-label-md text-[16px] text-on-secondary-container">
-                    + {t('landing.feature4DoneBtn')}
+        {/* H. 전체 기능 */}
+        <section className="bg-[var(--lp-soft)]">
+          <div className={`${section} py-20 md:py-28`}>
+            <div className="mx-auto mb-14 max-w-[900px] text-center">
+              <h2 className="lp-h text-[clamp(34px,4.6vw,62px)]">
+                {t('landing2.features.title')} <span className="text-[var(--lp-blue)]">{t('landing2.features.brand')}</span>
+              </h2>
+              <p className="lp-p mt-5 text-[clamp(17px,1.8vw,22px)] text-[var(--lp-muted)]">{t('landing2.features.desc')}</p>
+            </div>
+            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {featureCards.map((f, i) => (
+                <li key={i} className="lp-card flex items-center gap-5 p-5 sm:flex-col sm:gap-0 sm:px-6 sm:pb-9 sm:pt-8 sm:text-center">
+                  <span className={`flex h-[84px] w-[84px] shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-[150px] sm:w-[150px] ${iconTones[i]}`}>
+                    <img src={`/landing2/${featureIcons[i]}.webp`} alt="" loading="lazy" className="h-[72%] w-[72%] object-contain" />
                   </span>
-                  <span className="text-outline">→</span>
-                  <span className="inline-flex items-center gap-1 font-label-md text-[16px] text-secondary">
-                    <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                    {t('landing.feature4DoneThen')}
-                  </span>
-                </div>
-              </div>
-              <p className="mt-5 text-[16px] leading-7 text-outline">{t('landing.feature4Hint')}</p>
-            </div>
-            <div className="overflow-hidden rounded-[28px] shadow-card">
-              <img src="/covers/landing-feature-homework.jpg" alt="" className="aspect-[4/3] w-full object-cover" />
-            </div>
+                  <div className="min-w-0 sm:mt-6">
+                    <h3 className="break-keep text-[clamp(20px,1.9vw,25px)] font-black leading-snug text-[var(--lp-navy)]">{t(f.title, { count: gameCount })}</h3>
+                    <p className="lp-p mt-2 text-[clamp(16px,1.4vw,18px)] text-[var(--lp-muted)]">
+                      <Lines lines={f.desc} />
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
-        <section className="bg-surface-container-lowest">
-          <div className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop">
-            <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.compareEyebrow')}</p>
-            <h2 className="landing-display mb-10 text-[32px] text-deep-navy md:text-[48px]">{t('landing.compareTitle')}</h2>
-            <div className="overflow-x-auto rounded-[24px] bg-background">
-              <table className="w-full min-w-[560px] border-collapse text-left">
+        {/* I. 교실 수업의 가치 */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#0a3a9c] via-[#0a2f84] to-[#0b2872] text-white">
+          <div className={`${section} relative z-10 pb-6 pt-20 text-center md:pt-24`}>
+            <p className="text-[clamp(18px,1.9vw,22px)] font-extrabold text-[#7fd0ff]">{t('landing2.classroom.eyebrow')}</p>
+            <h2 className="lp-h mt-4 !text-white text-[clamp(38px,5.4vw,72px)]">{t('landing2.classroom.title')}</h2>
+            <p className="lp-p mx-auto mt-7 max-w-[760px] text-[clamp(17px,1.8vw,22px)] text-white/90">
+              <Lines lines={list<string[]>('landing2.classroom.desc')} />
+            </p>
+          </div>
+          <div className="relative">
+            <img
+              src="/landing2/classroom.webp"
+              alt={t('landing2.classroom.alt')}
+              loading="lazy"
+              width={1376}
+              height={768}
+              className="block w-full [mask-image:linear-gradient(to_bottom,transparent_0%,#000_22%)]"
+            />
+          </div>
+        </section>
+
+        {/* J. 비교표 */}
+        <section className="bg-white">
+          <div className={`${section} py-20 md:py-28`}>
+            <h2 className="lp-h mx-auto max-w-[900px] text-center text-[clamp(34px,4.6vw,62px)]">
+              <span className="md:block">{list<string[]>('landing2.compare.title')[0]} </span>
+              <span className="text-[var(--lp-blue)] md:block">{list<string[]>('landing2.compare.title')[1]}</span>
+            </h2>
+
+            {/* 데스크톱·태블릿: 표 */}
+            <div className="mx-auto mt-14 hidden max-w-[1100px] md:block">
+              <table className="w-full border-separate border-spacing-0 overflow-visible rounded-3xl border border-[#e3e8f2] bg-white shadow-[0_22px_54px_-34px_rgba(25,60,140,.35)]">
                 <thead>
-                  <tr className="font-label-md text-[16px] text-on-surface-variant">
-                    <th className="px-5 py-4 font-medium" />
-                    <th className="px-5 py-4 font-medium">{t('landing.compareOffline')}</th>
-                    <th className="px-5 py-4 font-medium text-primary">{t('landing.compareUs')}</th>
+                  <tr>
+                    <th scope="col" className="w-[20%] rounded-tl-3xl bg-[#f0f2f6] px-6 py-7 text-center text-[21px] font-extrabold text-[var(--lp-navy)]">{t('landing2.compare.colItem')}</th>
+                    <th scope="col" className="relative w-[42%] bg-[var(--lp-blue)] px-6 py-8 text-center text-[clamp(24px,2.4vw,30px)] font-black text-white [box-shadow:0_-14px_0_0_var(--lp-blue)] rounded-t-2xl">{t('landing2.compare.colUs')}</th>
+                    <th scope="col" className="w-[38%] rounded-tr-3xl bg-[#f0f2f6] px-6 py-7 text-center text-[21px] font-extrabold text-[var(--lp-navy)]">{t('landing2.compare.colOld')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {compareRows.map((row) => (
-                    <tr key={row[0]} className="border-t border-surface-container">
-                      <td className="px-5 py-4 font-label-md text-[17px] text-on-surface">{row[0]}</td>
-                      <td className="px-5 py-4 text-[17px] text-on-surface-variant">{row[1]}</td>
-                      <td className="px-5 py-4 text-[17px] font-medium text-on-surface">{row[2]}</td>
-                    </tr>
-                  ))}
+                  {compareRows.map((r, i) => {
+                    const last = i === compareRows.length - 1;
+                    return (
+                      <tr key={r.label}>
+                        <th scope="row" className={`px-8 py-6 text-left text-[clamp(18px,1.8vw,22px)] font-extrabold text-[var(--lp-navy)] ${last ? '' : 'border-b border-[#e8ecf4]'}`}>{r.label}</th>
+                        <td className={`bg-[#eaf2ff] px-6 py-6 ${last ? 'rounded-b-2xl' : 'border-b border-[#d3e1fb]'} border-x-2 border-x-[var(--lp-blue)] ${last ? 'border-b-2 border-b-[var(--lp-blue)]' : ''}`}>
+                          <span className="flex items-center gap-4 text-[clamp(18px,1.8vw,22px)] font-extrabold text-[var(--lp-navy)]">
+                            <CheckCircle size="sm" solid />
+                            {r.us}
+                          </span>
+                        </td>
+                        <td className={`px-8 py-6 text-[clamp(17px,1.7vw,21px)] font-normal text-[#6a7590] ${last ? '' : 'border-b border-[#e8ecf4]'}`}>{r.old}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+
+            {/* 모바일: 항목별 카드 (클래스뱅크를 먼저) */}
+            <div className="mx-auto mt-10 grid max-w-[560px] gap-5 md:hidden">
+              {compareRows.map((r) => (
+                <div key={r.label} className="overflow-hidden rounded-3xl border border-[#dfe6f3] bg-white shadow-sm">
+                  <div className="px-5 pt-5 text-[20px] font-black text-[var(--lp-navy)]">{r.label}</div>
+                  <div className="m-3 flex items-start gap-3 rounded-2xl border-2 border-[var(--lp-blue)] bg-[#eaf2ff] p-4">
+                    <CheckCircle size="sm" solid />
+                    <div>
+                      <div className="text-[14px] font-extrabold text-[var(--lp-blue)]">{t('landing2.compare.colUs')}</div>
+                      <div className="mt-1 text-[19px] font-extrabold leading-snug text-[var(--lp-navy)]">{r.us}</div>
+                    </div>
+                  </div>
+                  <div className="mx-3 mb-4 rounded-2xl bg-[#f3f5f8] p-4">
+                    <div className="text-[14px] font-bold text-[#7b869e]">{t('landing2.compare.colOld')}</div>
+                    <div className="mt-1 text-[17px] leading-snug text-[#6a7590]">{r.old}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="mx-auto max-w-container-max px-margin-mobile py-20 md:px-margin-desktop">
-          <p className="mb-3 font-label-md text-[16px] tracking-wide text-primary">{t('landing.pricingEyebrow')}</p>
-          <h2 className="landing-display mb-4 text-[32px] text-deep-navy md:text-[48px]">{t('landing.pricingTitle')}</h2>
-          <p className="mb-10 text-[19px] leading-9 text-on-surface-variant">{t('landing.pricingDesc')}</p>
-          <div className="grid gap-6 md:grid-cols-2">
-            {plans.map((p) => (
-              <div
-                key={p.name}
-                className={`rounded-[24px] p-8 shadow-card ${
-                  p.paid ? 'bg-deep-navy text-white' : 'bg-surface-container-lowest text-on-surface'
-                }`}
-              >
-                <div className={`mb-2 font-label-md text-[18px] ${p.paid ? 'text-warm-yellow' : 'text-primary'}`}>{p.name}</div>
-                <div className="landing-display mb-1 text-[40px]">{p.price}</div>
-                <div className={`mb-6 min-h-[24px] text-[15px] ${p.paid ? 'text-white/70' : 'text-on-surface-variant'}`}>{p.sub}</div>
-                <ul className="space-y-3 text-[17px] leading-7">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex gap-2">
-                      <span aria-hidden className={p.paid ? 'text-warm-yellow' : 'text-primary'}>✓</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+        {/* K. 요금제 */}
+        <section id="pricing" className="bg-[var(--lp-soft)]">
+          <div className={`${section} py-20 md:py-28`}>
+            <p className="text-center text-[clamp(18px,1.9vw,22px)] font-extrabold text-[var(--lp-blue)]">{t('landing.pricingEyebrow')}</p>
+            <h2 className="lp-h mx-auto mt-3 max-w-[900px] text-center text-[clamp(32px,4.2vw,54px)]">{t('landing.pricingTitle')}</h2>
+            <p className="lp-p mx-auto mt-5 max-w-[760px] text-center text-[clamp(17px,1.7vw,21px)] text-[var(--lp-muted)]">{t('landing.pricingDesc')}</p>
+            <div className="mx-auto mt-12 grid max-w-[980px] gap-6 md:grid-cols-2">
+              {plans.map((p) => (
+                <div key={p.name} className={`rounded-[32px] p-8 md:p-10 ${p.paid ? 'bg-[var(--lp-navy)] text-white shadow-[0_30px_60px_-30px_rgba(11,31,77,.8)]' : 'lp-card text-[var(--lp-ink)]'}`}>
+                  <div className={`text-[20px] font-extrabold ${p.paid ? 'text-[#ffd54f]' : 'text-[var(--lp-blue)]'}`}>{p.name}</div>
+                  <div className="lp-h mt-2 !text-inherit text-[clamp(38px,4vw,50px)]" style={{ color: p.paid ? '#fff' : undefined }}>{p.price}</div>
+                  <div className={`mb-7 mt-1 min-h-[26px] text-[16px] ${p.paid ? 'text-white/75' : 'text-[var(--lp-muted)]'}`}>{p.sub}</div>
+                  <ul className="space-y-3.5 text-[clamp(17px,1.6vw,19px)] leading-7">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex gap-3">
+                        <span aria-hidden className={`font-black ${p.paid ? 'text-[#ffd54f]' : 'text-[var(--lp-blue)]'}`}>✓</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <p className="mx-auto mt-8 max-w-[900px] text-[15px] leading-7 text-[#6a7590]">{t('landing.pricingNote')}</p>
           </div>
-          <p className="mt-6 text-[15px] leading-7 text-outline">{t('landing.pricingNote')}</p>
         </section>
 
-        <section className="px-margin-mobile pb-20 md:px-margin-desktop">
-          <div className="relative mx-auto max-w-container-max overflow-hidden rounded-[32px] px-8 py-16 text-center md:px-14 md:py-20">
-            <img src="/covers/landing-cta.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-[#10233a]/72" />
-            <h2 className="landing-display relative z-10 mb-3 text-[32px] text-white md:text-[48px]">{t('landing.ctaTitle')}</h2>
-            <p className="relative z-10 mb-8 text-[19px] leading-8 text-white/84 md:text-[21px]">{t('landing.ctaDesc')}</p>
-            <Link
-              to="/login"
-              className="relative z-10 inline-flex rounded-full bg-warm-yellow px-8 py-4 font-title-md text-[18px] text-deep-navy transition hover:bg-tertiary-fixed-dim"
-            >
-              {t('landing.startFree')}
-            </Link>
+        {/* 마무리 체험 버튼 */}
+        <section className="bg-[var(--lp-soft)] pb-20 md:pb-28">
+          <div className={section}>
+            <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#e3eeff] via-[#f3f7ff] to-[#eef4ff] px-7 py-14 text-center md:px-16 md:py-20">
+              <img src="/landing2/m-trophy.webp" alt="" loading="lazy" className="pointer-events-none absolute bottom-0 left-[3%] hidden w-[150px] drop-shadow-xl lg:block" />
+              <img src="/landing2/m-cheer.webp" alt="" loading="lazy" className="pointer-events-none absolute bottom-0 right-[3%] hidden w-[150px] drop-shadow-xl lg:block" />
+              <h2 className="lp-h text-[clamp(32px,4.4vw,56px)]">{t('landing.ctaTitle')}</h2>
+              <p className="lp-p mx-auto mt-4 max-w-[640px] text-[clamp(17px,1.8vw,21px)] text-[var(--lp-muted)]">{t('landing.ctaDesc')}</p>
+              <Link to="/login" className={`${primaryBtn} mt-9`}>
+                {t('landing2.hero.primary')}
+                <Arrow />
+              </Link>
+            </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-outline-variant/40 py-10 text-center text-[15px] leading-6 text-outline">
+      <footer className="border-t border-[#e8ecf4] bg-white py-12 text-center text-[15px] leading-6 text-[#6a7590]">
+        <div className="mb-4 flex justify-center">
+          <LanguageToggle className="bg-[#f0f2f6]" />
+        </div>
         <p className="mb-4">{t('landing.footer')}</p>
-        <div className="mb-4 flex items-center justify-center gap-3">
-          <Link to="/terms" className="underline hover:text-on-surface-variant">
+        <div className="mb-5 flex items-center justify-center gap-5">
+          <Link to="/terms" className="underline hover:text-[var(--lp-navy)]">
             {t('landing.termsLink')}
           </Link>
-          <Link to="/privacy" className="underline hover:text-on-surface-variant">
+          <Link to="/privacy" className="underline hover:text-[var(--lp-navy)]">
             {t('landing.privacyLink')}
           </Link>
-          <Link to="/refund-policy" className="underline hover:text-on-surface-variant">
+          <Link to="/refund-policy" className="underline hover:text-[var(--lp-navy)]">
             {t('landing.refundLink')}
           </Link>
         </div>
-        <div className="mx-auto max-w-md space-y-1">
-          <p className="font-label-md text-[16px] text-on-surface-variant">{t('landing.bizName')}</p>
+        <div className="mx-auto max-w-md space-y-1 px-5">
+          <p className="text-[16px] font-bold text-[var(--lp-navy)]">{t('landing.bizName')}</p>
           <p>{t('landing.bizOwner')}</p>
           <p>{t('landing.bizNumber')}</p>
           <p>{t('landing.bizMailOrder')}</p>

@@ -5482,3 +5482,56 @@
   .hw-stamp-drop, .hw-stamp-ring, .hw-goodjob, .hw-confetti, .hw-bob, .hw-cheer, .kids-cloud { animation: none; }
   .hw-confetti-field, .hw-stamp-ring { display: none; }
 }
+/* ---- 랜딩 v2(2026-10-17, 디자인 시안 반영): 흰색·아이보리 바탕, 짙은 네이비 제목, 선명한 블루 강조 ---- */
+.landing {
+  --lp-navy: #0b1f4d;
+  --lp-blue: #1d63f0;
+  --lp-blue-dark: #174fc4;
+  --lp-sky: #eaf2ff;
+  --lp-sky2: #d6e6ff;
+  --lp-ivory: #ffffff;
+  --lp-soft: #f4f8ff;
+  --lp-ink: #1b2a4a;
+  --lp-muted: #4a5878;
+  background: var(--lp-ivory);
+  color: var(--lp-ink);
+}
+html:has(.landing) {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.landing) {
+    scroll-behavior: auto;
+  }
+  .landing .lp-shake {
+    animation: none !important;
+  }
+}
+.lp-h {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.16;
+  color: var(--lp-navy);
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.lp-p {
+  word-break: keep-all;
+  text-wrap: pretty;
+  line-height: 1.7;
+}
+.lp-card {
+  background: #fff;
+  border: 1px solid rgb(11 31 77 / 0.06);
+  border-radius: 32px;
+  box-shadow: 0 22px 54px -30px rgb(25 60 140 / 0.32);
+}
+@keyframes lp-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.lp-shake {
+  animation: lp-shake 0.35s;
+}

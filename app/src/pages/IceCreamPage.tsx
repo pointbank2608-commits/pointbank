@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import IceCreamShop from '../components/IceCreamShop';
+import type { ShopCurrency, ShopMenu } from '../lib/iceCreamShop';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
@@ -17,7 +18,7 @@ export default function IceCreamPage() {
   const g = useGameTemplates({
     gameType: 'icecream',
     defaultItems: () => [],
-    defaultConfig: () => ({ iceCreamKo: false }),
+    defaultConfig: () => ({ iceCreamKo: false, iceCreamMenu: 'basic', iceCreamCurrency: '$' }),
   });
   const {
     isStaff,
@@ -53,8 +54,11 @@ export default function IceCreamPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const ko = selected?.config.iceCreamKo ?? false;
+  // 이미 만든 템플릿은 예전 모습(PPT 9가지·£) 그대로, 새로 만든 것은 쉬운 메뉴·$로 시작한다
+  const menu = (selected?.config.iceCreamMenu ?? 'full') as ShopMenu;
+  const currency = (selected?.config.iceCreamCurrency ?? '£') as ShopCurrency;
 
-  async function commitConfig(patch: { iceCreamKo?: boolean }) {
+  async function commitConfig(patch: { iceCreamKo?: boolean; iceCreamMenu?: string; iceCreamCurrency?: string }) {
     if (!selected) return;
     const nextConfig = { ...selected.config, ...patch };
     setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
@@ -206,7 +210,7 @@ export default function IceCreamPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <IceCreamShop key={roundKey} showKo={ko} />
+            <IceCreamShop key={roundKey} showKo={ko} menu={menu} currency={currency} />
           </GameThemeFrame>
 
           <div className="space-y-4">
@@ -239,6 +243,40 @@ export default function IceCreamPage() {
                               }`}
                             >
                               {v ? t('gameIceCream.koOn') : t('gameIceCream.koOff')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameIceCream.menuLabel')}</div>
+                        <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
+                          {(['basic', 'full'] as const).map((v) => (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => void commitConfig({ iceCreamMenu: v })}
+                              className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                                menu === v ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                              }`}
+                            >
+                              {t(`gameIceCream.menu_${v}`)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameIceCream.currencyLabel')}</div>
+                        <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
+                          {(['$', '£'] as const).map((v) => (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => void commitConfig({ iceCreamCurrency: v })}
+                              className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
+                                currency === v ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
+                              }`}
+                            >
+                              {v}
                             </button>
                           ))}
                         </div>

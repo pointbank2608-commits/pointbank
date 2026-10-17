@@ -37,6 +37,7 @@ export default function LessonRecipePicker({
   makeBulkLists,
   onApply,
   autoClip,
+  autoSample,
 }: {
   hasWords: boolean;
   /** 지금 고른 수업 단어장 이름(영상 수업을 만들 때 계속 쓸지 고르는 안내에 보인다) */
@@ -51,6 +52,8 @@ export default function LessonRecipePicker({
   onApply: (slides: LessonSlide[], suggestedName: string) => void;
   /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
   autoClip?: VideoClip | null;
+  /** 오늘 화면의 "샘플로 1분 체험하기"로 왔을 때 — 열리자마자 샘플 단어 수업을 채운다 */
+  autoSample?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<'sets' | 'recipes'>('sets');
@@ -171,6 +174,16 @@ export default function LessonRecipePicker({
       setBusy(false);
     }
   }
+
+  const sampleDone = useRef(false);
+  useEffect(() => {
+    if (!autoSample || sampleDone.current) return;
+    const sample = LESSON_SETS.find((x) => x.kind === 'word');
+    if (!sample) return;
+    sampleDone.current = true;
+    void applySet(sample);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSample]);
 
   const autoDone = useRef<string | null>(null);
   useEffect(() => {

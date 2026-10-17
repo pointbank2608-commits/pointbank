@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { usePresenting } from '../context/LessonRunnerContext';
-import { FLAVOURS, REMEMBER_LINES, SIZES, STYLES, TOPPINGS, rememberSegments } from '../lib/iceCreamShop';
+import { FLAVOURS, configureShop, REMEMBER_LINES, SIZES, STYLES, TOPPINGS, rememberSegments } from '../lib/iceCreamShop';
 
 /**
  * 아이스크림 가게 워크시트(2026-10-15) — 게임(`/games/icecream`)과 같은 메뉴·대화로 만드는 인쇄물 4종.
@@ -26,6 +26,8 @@ function rng(seed: number) {
 }
 
 export default function IceCreamWorksheetPage() {
+  // 게임 설정(쉬운 메뉴·$)이 남아 있어도 인쇄물은 PPT 원본(9가지·£)으로
+  configureShop({ menu: 'full', currency: '£' });
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();

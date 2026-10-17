@@ -165,6 +165,9 @@ export default function DictionaryPage() {
   const [tab, setTab] = useState<'word' | 'idiom'>('word');
   const [category, setCategory] = useState<string>('all');
   const [subcategory, setSubcategory] = useState<string>('all');
+  // 카테고리 칩이 많아 단어 카드가 첫 화면에서 밀려나므로, 자주 쓰는 앞쪽만 먼저 보이고 나머지는 접어 둔다
+  const [showAllCats, setShowAllCats] = useState(false);
+  const CAT_PREVIEW = 10;
   const [level, setLevel] = useState<number | 'all'>('all');
   const [partOfSpeech, setPartOfSpeech] = useState<string>('all');
   // 교육부 지정 초등 800 목록(DAY 1~16)으로 모아 보기
@@ -467,11 +470,19 @@ export default function DictionaryPage() {
               <button type="button" onClick={() => changeCategory('all')} className={chipClass(category === 'all')}>
                 {t('dictionary.allCategory')}
               </button>
-              {usedCategories.map((cat) => (
+              {(showAllCats || usedCategories.length <= CAT_PREVIEW + 2
+                ? usedCategories
+                : usedCategories.filter((cat, i) => i < CAT_PREVIEW || cat === category)
+              ).map((cat) => (
                 <button key={cat} type="button" onClick={() => changeCategory(cat)} className={chipClass(category === cat)}>
                   {cat}
                 </button>
               ))}
+              {usedCategories.length > CAT_PREVIEW + 2 && (
+                <button type="button" onClick={() => setShowAllCats((v) => !v)} className={chipClass(false)}>
+                  {showAllCats ? t('dictionary.catFewer') : t('dictionary.catMore', { n: usedCategories.length - CAT_PREVIEW })}
+                </button>
+              )}
             </div>
           </div>
 

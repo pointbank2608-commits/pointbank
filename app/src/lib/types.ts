@@ -363,6 +363,9 @@ export interface GameTemplateConfig {
   restaurantKo?: boolean;
   /** 아이스크림 가게 전용: 우리말 해석을 처음부터 보여 주기 */
   iceCreamKo?: boolean;
+  /** 아이스크림 가게: 메뉴 수준(basic 쉬운 맛 6가지 / full PPT 9가지)과 가격 기호(£·$) */
+  iceCreamMenu?: string;
+  iceCreamCurrency?: string;
   /** 병원 롤플레이 전용: 우리말 해석을 처음부터 보여 주기 */
   doctorKo?: boolean;
   /** 번개 피하기 전용: 학생 수(2~40)와 번개가 치기까지의 최소·최대 초 */

@@ -208,6 +208,14 @@ export default function Popcorn({
         >
           <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('blue')}</div>
           <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.blue}</div>
+          <button
+            type="button"
+            onClick={() => setScores((prev) => ({ ...prev, blue: Math.max(0, prev.blue - 1) }))}
+            className="mt-1 rounded-full bg-black/15 px-2.5 py-0.5 font-caption text-[12px] font-bold hover:bg-black/25"
+            aria-label={t('gamePopcorn.minusOne')}
+          >
+            {t('gamePopcorn.minusOne')}
+          </button>
         </div>
         <div
           className={`rounded-full px-7 py-2.5 font-title-md text-[18px] font-bold shadow-sm ${
@@ -224,6 +232,14 @@ export default function Popcorn({
         >
           <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('red')}</div>
           <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.red}</div>
+          <button
+            type="button"
+            onClick={() => setScores((prev) => ({ ...prev, red: Math.max(0, prev.red - 1) }))}
+            className="mt-1 rounded-full bg-black/15 px-2.5 py-0.5 font-caption text-[12px] font-bold hover:bg-black/25"
+            aria-label={t('gamePopcorn.minusOne')}
+          >
+            {t('gamePopcorn.minusOne')}
+          </button>
         </div>
       </div>
 

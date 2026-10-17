@@ -58,6 +58,24 @@ export const TOPPINGS: ShopOption[] = [
   { id: 'sauce', name: 'chocolate sauce', ko: '초콜릿 소스', art: 'sauce-bottle' },
 ];
 
+/**
+ * 메뉴 수준·가격 표시 설정(2026-10-17, 외부 평가: "£1.99·pistachio·hundreds and thousands는 입문반에 부담").
+ * basic = 쉬운 맛 6가지만, full = PPT의 9가지. 가격 기호는 £(PPT 그대로) 또는 $.
+ * FLAVOURS·SIZES 는 앱 안에서 이 배열 하나를 같이 쓰므로 제자리에서 바꾼다 — 게임 화면은 그리기 전에 `configureShop`을 부르고,
+ * 같은 낱말을 쓰는 워크시트 페이지는 `configureShop({ menu: 'full', currency: '£' })`로 되돌린다.
+ */
+export type ShopMenu = 'basic' | 'full';
+export type ShopCurrency = '£' | '$';
+const ALL_FLAVOURS: Flavour[] = [...FLAVOURS];
+const BASIC_FLAVOUR_IDS = ['chocolate', 'vanilla', 'strawberry', 'lemon', 'blueberry', 'raspberry'];
+const BASE_PRICES: Record<string, string> = { small: '1.99', medium: '2.49', large: '2.99' };
+
+export function configureShop({ menu, currency }: { menu: ShopMenu; currency: ShopCurrency }) {
+  const list = menu === 'basic' ? ALL_FLAVOURS.filter((f) => BASIC_FLAVOUR_IDS.includes(f.id)) : ALL_FLAVOURS;
+  FLAVOURS.splice(0, FLAVOURS.length, ...list);
+  for (const s of SIZES) s.price = `${currency}${BASE_PRICES[s.id]}`;
+}
+
 export const NUMBER_WORD: Record<ScoopCount, string> = { 1: 'one', 2: 'two', 3: 'three' };
 
 /** "blueberry, raspberry and lemon" */

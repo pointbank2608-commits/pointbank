@@ -78,8 +78,13 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) { .cs-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
 
-const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level, seconds, onChange }, ref) {
+const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level: levelProp, seconds: secondsProp, onChange: onChangeProp }, ref) {
   const { t } = useTranslation();
+  // 저장할 곳이 없는 시범 화면(템플릿 만들기 전)에서도 단계·시간 칩이 보이고, 그 자리에서만 바뀐다
+  const [demo, setDemo] = useState<{ level?: CatchLevel; seconds?: number }>({});
+  const level = onChangeProp ? levelProp : (demo.level ?? levelProp);
+  const seconds = onChangeProp ? secondsProp : (demo.seconds ?? secondsProp);
+  const onChange = onChangeProp ?? ((patch: { level?: CatchLevel; seconds?: number }) => setDemo((d) => ({ ...d, ...patch })));
   const teamCount = Math.min(8, Math.max(2, teams));
   const itemKey = items.map((i) => i.id).join(',');
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
