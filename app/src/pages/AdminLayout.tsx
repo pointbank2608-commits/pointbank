@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import AdminMfaGate from '../components/AdminMfaGate';
 import { Suspense } from 'react';
 import PageLoading from '../components/PageLoading';
 import { NavLink, Outlet } from 'react-router-dom';
@@ -63,7 +64,7 @@ export default function AdminLayout() {
         </div>
       </nav>
       <main className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-margin-desktop">
-        <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
+        <AdminMfaGate><Suspense fallback={<PageLoading />}><Outlet /></Suspense></AdminMfaGate>
       </main>
     </div>
   );
