@@ -1,154 +1,189 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { Badge, DataState, PageHead, ReasonDialog, StatCard } from '../components/admin/AdminUi';
+import { IssueStatusBadge } from '../components/admin/labels';
 import {
-  adminTodayLists,
-  adminErrorSummary,
-  adminPurgeDeletions,
-  adminTickets,
-  adminToday,
-  type AdminTodayLists,
-  type AdminErrorRow,
-  type AdminTicketRow,
-  type AdminToday,
-} from '../lib/support';
-import { StatusPill } from './HelpPage';
+  adminIssueList, adminIssueSet, adminIssuesSync, adminOverview, adminPurgeDeletionsSafe, fmtKst, fmtWait, useAdminQuery,
+  type AdminIssue,
+} from '../lib/adminOps';
 
 /**
- * 관리자 "오늘 할 일"(2026-09-27) — 혼자 운영하려면 모든 학원을 훑는 게 아니라 손봐야 할 것만 먼저.
- * 새 문의 · 결제 문제(실패·해지 예정·곧 만료) · 새 학원 · 오래 안 들어온 유료 학원.
+ * 관리자 "오늘 할 일"(2026-10-18) — 위쪽은 지금 처리해야 하는 문제(우선순위순), 아래쪽은 가입·활동·구독 지표(처리할 일이 아니다).
+ * 문제 우선순위: 1 수업 진행을 막는 장애 → 2 결제·계정 상태 이상 → 3 응답 기한 지난 문의·확인할 오류 → 4 실패한 자동 작업 → 5 확인이 필요한 신규·체험 계정.
  */
+function issueHref(i: AdminIssue): string {
+  switch (i.kind) {
+    case 'error': return '/admin/system#errors';
+    case 'billing': return i.ref.academy_id ? `/admin/academies/${i.ref.academy_id}` : '/admin/billing';
+    case 'ticket': return i.ref.ticket_id ? `/admin/support?ticket=${i.ref.ticket_id}` : '/admin/support';
+    case 'job': return '/admin/system#jobs';
+    case 'account': return '/admin/academies?filter=unclassified';
+    default: return '/admin/academies?filter=trial';
+  }
+}
+
 export default function AdminTodayPage() {
-  const { t } = useTranslation();
-  const [today, setToday] = useState<AdminToday | null>(null);
-  const [lists, setLists] = useState<AdminTodayLists | null>(null);
-  const [tickets, setTickets] = useState<AdminTicketRow[]>([]);
-  const [errors, setErrors] = useState<AdminErrorRow[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language ?? 'ko';
+  const [showResolved, setShowResolved] = useState(false);
+  const [excludeTest, setExcludeTest] = useState(true);
+  const [resolving, setResolving] = useState<AdminIssue | null>(null);
 
-  useEffect(() => {
-    Promise.all([adminToday(), adminTodayLists(), adminTickets('open')])
-      .then(([td, r, tk]) => {
-        setToday(td);
-        setLists(r);
-        setTickets(tk);
-      })
-      .catch((e) => {
-        const msg = String((e as { message?: string })?.message ?? e);
-        setError(/admin_today|function/i.test(msg) ? t('adminOps.needSetup') : msg);
-      });
-  }, [t]);
-
-  useEffect(() => {
-    void adminErrorSummary(24).then(setErrors);
-    void adminPurgeDeletions();
+  const issues = useAdminQuery(async () => {
+    void adminPurgeDeletionsSafe();
+    await adminIssuesSync();
+    return adminIssueList(true);
   }, []);
+  const stats = useAdminQuery(() => adminOverview(excludeTest), [excludeTest]);
 
-  const billing = lists?.billing ?? [];
-  const fresh = lists?.fresh ?? [];
-  const dormantPaid = lists?.dormant ?? [];
+  const asof = stats.data?.asof ? fmtKst(stats.data.asof, lang) : '';
 
-  const card = (label: string, value: number | undefined, to: string, alert = false) => (
-    <Link
-      to={to}
-      className={`rounded-xl p-4 shadow-sm transition-transform hover:-translate-y-0.5 ${alert && value ? 'bg-error-container/50 ring-1 ring-error/40' : 'bg-surface-container-lowest'}`}
-    >
-      <div className="font-caption text-caption text-on-surface-variant">{label}</div>
-      <div className="text-[28px] font-bold tabular-nums text-on-surface">{value ?? '–'}</div>
-    </Link>
-  );
+  async function ack(i: AdminIssue) {
+    await adminIssueSet(i.id, 'acknowledged', null);
+    issues.reload();
+  }
+  async function reopen(i: AdminIssue) {
+    await adminIssueSet(i.id, 'open', null);
+    issues.reload();
+  }
 
-  return (
-    <div className="space-y-6">
-      <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy">{t('adminOps.todayTitle')}</h1>
-      {error && <p className="rounded-xl bg-error-container p-4 text-on-error-container">{error}</p>}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        {card(t('adminOps.newTickets'), today?.new_tickets, '/admin/support', true)}
-        {card(t('adminOps.billingIssues'), billing.length, '/admin/academies?filter=billing', true)}
-        {card(t('adminOps.signupsToday'), today?.signups_today, '/admin/academies?filter=new')}
-        {card(t('adminOps.paidCount'), today?.paid, '/admin/academies?filter=paid')}
-        {card(t('adminOps.active7d'), today?.active_7d, '/admin/academies')}
-      </div>
-      <p className="font-caption text-caption text-on-surface-variant">
-        {t('adminOps.summary', { academies: today?.academies ?? 0, signups7d: today?.signups_7d ?? 0 })}
-      </p>
-
-      <Section title={t('adminOps.waitingTickets')} empty={t('adminOps.noneNow')} count={tickets.length}>
-        {tickets.slice(0, 8).map((tk) => (
-          <Link key={tk.id} to={`/admin/support?ticket=${tk.id}`} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-container-low">
-            <StatusPill status={tk.status} />
-            <span className="min-w-0 flex-1 truncate font-label-md text-label-md">{tk.subject}</span>
-            <span className="shrink-0 font-caption text-caption text-on-surface-variant">{tk.academy_name}</span>
-          </Link>
-        ))}
-      </Section>
-
-      <Section title={t('adminOps.errorsTitle')} empty={t('adminOps.errorsNone')} count={errors.length}>
-        {errors.slice(0, 10).map((e) => (
-          <div key={e.fingerprint} className="rounded-lg px-3 py-2 hover:bg-surface-container-low">
-            <div className="flex items-center gap-3">
-              <span className="min-w-0 flex-1 truncate font-label-md text-label-md" title={e.message}>
-                {e.message}
-              </span>
-              <span className="shrink-0 font-caption text-caption tabular-nums text-on-surface-variant">
-                {t('adminOps.errorsCount', { events: e.events, users: e.users, academies: e.academies })}
-              </span>
-            </div>
-            <div className="truncate font-caption text-caption text-on-surface-variant">
-              {e.page ?? '-'} · {new Date(e.last_seen).toLocaleString()}
-            </div>
+  const row = (i: AdminIssue) => (
+    <li key={i.id} className="rounded-xl border border-outline-variant bg-white p-4 shadow-card">
+      <div className="flex flex-wrap items-start gap-3">
+        <Badge tone={i.severity === 1 ? 'bad' : i.severity <= 3 ? 'warn' : 'mute'} title={t(`adminV2.issue.sev_${i.severity}_desc`)}>
+          {t(`adminV2.issue.sev_${i.severity}`)}
+        </Badge>
+        <div className="min-w-[14rem] flex-1">
+          <div className="break-words font-label-md text-[16px] font-bold text-deep-navy">{i.title}</div>
+          {i.summary && <div className="mt-0.5 break-words font-caption text-[13px] text-on-surface-variant">{i.summary}</div>}
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-caption text-[12px] text-on-surface-variant">
+            {(i.academies_affected > 0 || i.users_affected > 0) && (
+              <span>{t('adminV2.issue.impact', { academies: i.academies_affected, users: i.users_affected })}</span>
+            )}
+            <span>{t('adminV2.issue.firstSeen')} {fmtKst(i.first_seen, lang)}</span>
+            <span>{t('adminV2.issue.lastSeen')} {fmtKst(i.last_seen, lang)}</span>
+            <span className="font-bold text-deep-navy">{t('adminV2.issue.waiting')} {fmtWait(i.wait_minutes, lang)}</span>
+            {i.recurrence_count > 0 && <span className="font-bold text-error">{t('adminV2.issue.recurCount', { n: i.recurrence_count })}</span>}
           </div>
-        ))}
-      </Section>
-
-      <Section title={t('adminOps.billingTitle')} empty={t('adminOps.noneNow')} count={lists?.billing_total ?? 0}>
-        {billing.map((r) => (
-          <AcademyLine key={r.academy_id} row={r}>
-            {r.billing_failure_count > 0
-              ? t('adminOps.failures', { n: r.billing_failure_count })
-              : r.plan_status === 'pending_cancel'
-                ? t('adminOps.pendingCancel')
-                : t('adminOps.expiresOn', { date: r.plan_expires_at })}
-          </AcademyLine>
-        ))}
-      </Section>
-
-      <Section title={t('adminOps.newAcademies')} empty={t('adminOps.noneNow')} count={lists?.fresh_total ?? 0}>
-        {fresh.map((r) => (
-          <AcademyLine key={r.academy_id} row={r}>
-            {t('adminOps.newLine', { students: r.student_count, lessons: r.lesson_count })}
-          </AcademyLine>
-        ))}
-      </Section>
-
-      <Section title={t('adminOps.dormantPaid')} empty={t('adminOps.noneNow')} count={lists?.dormant_total ?? 0}>
-        {dormantPaid.map((r) => (
-          <AcademyLine key={r.academy_id} row={r}>
-            {r.last_active_at ? t('adminOps.lastActive', { date: new Date(r.last_active_at).toLocaleDateString() }) : t('adminOps.neverActive')}
-          </AcademyLine>
-        ))}
-      </Section>
-    </div>
-  );
-}
-
-function Section({ title, count, empty, children }: { title: string; count: number; empty: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-xl bg-surface-container-lowest p-4 shadow-sm">
-      <div className="mb-2 flex items-center gap-2">
-        <h2 className="font-title-md text-title-md text-deep-navy">{title}</h2>
-        <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption tabular-nums">{count}</span>
+          {i.status === 'resolved' && (
+            <div className="mt-1.5 font-caption text-[12px] text-on-surface-variant">
+              {i.auto_resolved ? t('adminV2.issue.autoResolved') : t('adminV2.issue.resolvedNote')}
+              {i.resolution_note && !i.auto_resolved ? `: ${i.resolution_note}` : ''} · {fmtKst(i.resolved_at, lang)}
+            </div>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <IssueStatusBadge value={i.status} recurred={i.recurrence_count > 0 && i.status === 'open'} />
+          <div className="flex flex-wrap justify-end gap-1.5">
+            <Link to={issueHref(i)} className="rounded-full border border-primary px-3 py-1 font-label-md text-[13px] font-bold text-primary hover:bg-primary-fixed">
+              {t('adminV2.issue.open')}
+            </Link>
+            {i.status === 'open' && (
+              <button type="button" onClick={() => void ack(i)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-[13px] text-on-surface-variant hover:bg-surface-container-low">
+                {t('adminV2.issue.ack')}
+              </button>
+            )}
+            {i.status !== 'resolved' && (
+              <button type="button" onClick={() => setResolving(i)} className="rounded-full bg-primary px-3 py-1 font-label-md text-[13px] font-bold text-white hover:bg-primary-container">
+                {t('adminV2.issue.resolve')}
+              </button>
+            )}
+            {i.status === 'resolved' && (
+              <button type="button" onClick={() => void reopen(i)} className="rounded-full border border-outline-variant px-3 py-1 font-label-md text-[13px] text-on-surface-variant hover:bg-surface-container-low">
+                {t('adminV2.issue.reopen')}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-      {count === 0 ? <p className="font-caption text-caption text-on-surface-variant">{empty}</p> : <div className="space-y-0.5">{children}</div>}
-    </section>
+    </li>
   );
-}
 
-function AcademyLine({ row, children }: { row: { academy_id: string; name: string }; children: React.ReactNode }) {
+  const card = (label: string, value: number | undefined, to: string, opts?: { hint?: string; bad?: boolean }) => (
+    <StatCard label={label} value={stats.data ? (value ?? 0) : stats.status === 'error' ? '!' : '…'} to={to} hint={opts?.hint} tone={opts?.bad && value ? 'bad' : 'mute'} />
+  );
+  const o = stats.data;
+
   return (
-    <Link to={`/admin/academies/${row.academy_id}`} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-surface-container-low">
-      <span className="min-w-0 flex-1 truncate font-label-md text-label-md">{row.name}</span>
-      <span className="shrink-0 font-caption text-caption text-on-surface-variant">{children}</span>
-    </Link>
+    <div className="space-y-8">
+      <PageHead
+        title={t('adminV2.today.title')}
+        desc={t('adminV2.today.desc')}
+        right={
+          <button type="button" onClick={() => { issues.reload(); stats.reload(); }} className="flex items-center gap-1 rounded-full border border-outline-variant bg-white px-4 py-2 font-label-md text-label-md text-primary hover:bg-primary-fixed">
+            <span className="material-symbols-outlined text-[18px]" aria-hidden>refresh</span>
+            {t('adminV2.common.refresh')}
+          </button>
+        }
+      />
+
+      <section aria-labelledby="issues-h" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="issues-h" className="font-display-lg text-[22px] font-black text-deep-navy">{t('adminV2.today.issuesTitle')}</h2>
+          <label className="flex items-center gap-2 font-caption text-[13px] text-on-surface-variant">
+            <input type="checkbox" checked={showResolved} onChange={(e) => setShowResolved(e.target.checked)} className="h-4 w-4 accent-primary" />
+            {t('adminV2.today.showResolved')}
+          </label>
+        </div>
+        <DataState state={issues} empty={t('adminV2.today.issuesEmpty')} isEmpty={(d) => d.filter((i) => showResolved || i.status !== 'resolved').length === 0}>
+          {(list) => <ul className="space-y-2.5">{list.filter((i) => showResolved || i.status !== 'resolved').map(row)}</ul>}
+        </DataState>
+      </section>
+
+      <section aria-labelledby="stats-h" className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 id="stats-h" className="font-display-lg text-[22px] font-black text-deep-navy">{t('adminV2.today.statsTitle')}</h2>
+            <p className="font-caption text-[12px] text-on-surface-variant">
+              {t('adminV2.today.statsBasis')} {asof && `· ${t('adminV2.common.asOf', { time: asof })}`}
+            </p>
+          </div>
+          <label className="flex items-center gap-2 font-caption text-[13px] text-on-surface-variant">
+            <input type="checkbox" checked={excludeTest} onChange={(e) => setExcludeTest(e.target.checked)} className="h-4 w-4 accent-primary" />
+            {t('adminV2.today.excludeTest', { n: o?.test_academies ?? 0 })}
+          </label>
+        </div>
+        {stats.status === 'error' && !stats.data ? (
+          <DataState state={stats} empty="" isEmpty={() => false}>{() => null}</DataState>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {card(t('adminV2.today.signupsToday'), o?.signups_today, '/admin/academies?filter=today', { hint: t('adminV2.today.signupsTodayHint') })}
+              {card(t('adminV2.today.signups7d'), o?.signups_7d, '/admin/academies?filter=new7', { hint: t('adminV2.today.signups7dHint') })}
+              {card(t('adminV2.today.academies'), o?.academies, '/admin/academies')}
+              {card(t('adminV2.today.accounts'), o?.accounts, '/admin/academies', { hint: t('adminV2.today.accountsHint', { owners: o?.owners ?? 0, teachers: o?.teachers ?? 0 }) })}
+              {card(t('adminV2.today.students'), o?.students, '/admin/academies')}
+              {card(t('adminV2.today.active7d'), o?.active_7d, '/admin/academies?filter=active7', { hint: t('adminV2.today.active7dHint') })}
+              {card(t('adminV2.entitlement.trial'), o?.entitlement.trial, '/admin/academies?filter=trial', { hint: t('adminV2.today.trialEnding', { n: o?.trial_ending_3d ?? 0 }) })}
+              {card(t('adminV2.entitlement.full'), o?.entitlement.full, '/admin/academies?filter=paid', {
+                hint: t('adminV2.today.fullSplit', { sub: o?.source.subscription ?? 0, grant: (o?.source.admin ?? 0) + (o?.source.event ?? 0), un: o?.source.unclassified ?? 0 }),
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {card(t('adminV2.source.subscription'), o?.source.subscription, '/admin/academies?filter=subscription', { hint: t('adminV2.today.subscriptionHint') })}
+              {card(t('adminV2.today.grants'), (o?.source.admin ?? 0) + (o?.source.event ?? 0), '/admin/academies?filter=grant', { hint: t('adminV2.today.grantsHint', { n: o?.grants_expiring_7d ?? 0 }) })}
+              {card(t('adminV2.billingState.failed'), o?.billing.failed, '/admin/academies?filter=billing', { bad: true })}
+              {card(t('adminV2.billingState.cancel_scheduled'), o?.billing.cancel_scheduled, '/admin/academies?filter=billing')}
+            </div>
+          </>
+        )}
+      </section>
+
+      {resolving && (
+        <ReasonDialog
+          title={t('adminV2.issue.resolveTitle')}
+          body={<span className="break-words">{resolving.title}</span>}
+          confirmLabel={t('adminV2.issue.resolve')}
+          label={t('adminV2.issue.resolveReason')}
+          onClose={() => setResolving(null)}
+          onConfirm={async (note) => {
+            await adminIssueSet(resolving.id, 'resolved', note);
+            setResolving(null);
+            issues.reload();
+          }}
+        />
+      )}
+    </div>
   );
 }

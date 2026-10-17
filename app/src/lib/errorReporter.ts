@@ -43,8 +43,12 @@ function topFrame(stack: string): string {
   return line.replace(/:\d+:\d+/g, '').replace(/-[A-Za-z0-9_-]{6,}\.(js|mjs)/g, '.js').trim().slice(0, 160);
 }
 
+/** 개발 서버(localhost)에서 나는 오류가 운영 오류 목록에 섞이지 않게 한다(2026-10-18, /games/lightning 오류 조사에서 나온 원인 후보). */
+const IS_LOCAL_DEV = import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+
 export function reportClientError(err: unknown): void {
   try {
+    if (IS_LOCAL_DEV) return;
     const { message, stack } = normalize(err);
     if (!message || IGNORED.some((re) => re.test(message))) return;
     const page = window.location.pathname;

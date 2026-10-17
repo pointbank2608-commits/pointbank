@@ -45,7 +45,8 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    const today = new Date().toISOString().slice(0, 10);
+    // 한국 날짜 기준(UTC로 자르면 한국 오전 9시 전에 하루 전 날짜가 됨, 2026-10-18)
+    const today = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
     const results: Array<{ academyId: string; outcome: string }> = [];
 
     // 관리자가 이벤트용으로 기한부 유료 전환한 학원(admin_set_academy_plan의 p_until) —
@@ -68,7 +69,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: dueAcademies, error: dueError } = await supabaseAdmin
       .from('academies')
-      .select('id, plan_status, billing_failure_count')
+      .select('id, plan_status, billing_failure_count, next_billing_at')
       .eq('plan', 'paid')
       .lte('next_billing_at', today);
     if (dueError) throw new Error(dueError.message);
@@ -99,12 +100,30 @@ Deno.serve(async (req: Request) => {
           continue;
         }
 
-        const result = await chargeAcademy(supabaseAdmin, academy.id, keyRow.billing_key, keyRow.customer_uid);
+        // 같은 청구 기준일에 이미 성공한 청구가 있으면(배치 중복 실행·늦게 저장된 경우) 다시 결제하지 않고 다음 청구일만 맞춘다.
+        const dueDate = academy.next_billing_at ?? today;
+        const { data: already } = await supabaseAdmin
+          .from('billing_history')
+          .select('id')
+          .eq('academy_id', academy.id)
+          .eq('status', 'success')
+          .eq('period_start', dueDate)
+          .limit(1);
+        if (already && already.length > 0) {
+          await supabaseAdmin.from('academies').update({ next_billing_at: addOneMonth(dueDate), billing_failure_count: 0 }).eq('id', academy.id);
+          results.push({ academyId: academy.id, outcome: 'already_charged_skipped' });
+          continue;
+        }
+
+        const result = await chargeAcademy(supabaseAdmin, academy.id, keyRow.billing_key, keyRow.customer_uid, {
+          dueDate,
+          attempt: (academy.billing_failure_count ?? 0) + 1,
+        });
         const nextBillingDate = addOneMonth(today);
 
         await supabaseAdmin.from('billing_history').insert({
           academy_id: academy.id,
-          period_start: today,
+          period_start: dueDate,
           period_end: nextBillingDate,
           student_count: result.studentCount,
           amount_krw: result.amountKrw,
@@ -116,7 +135,7 @@ Deno.serve(async (req: Request) => {
         if (result.success) {
           await supabaseAdmin
             .from('academies')
-            .update({ next_billing_at: nextBillingDate, billing_failure_count: 0 })
+            .update({ next_billing_at: nextBillingDate, billing_failure_count: 0, plan_source: 'subscription' })
             .eq('id', academy.id);
           results.push({ academyId: academy.id, outcome: 'charged' });
         } else {

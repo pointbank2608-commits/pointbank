@@ -23,6 +23,9 @@ export async function chargeAcademy(
   academyId: string,
   billingKey: string,
   customerUid: string,
+  // 결제 번호를 "학원 + 청구 기준일(한국 날짜) + 시도 횟수"로 정해, 같은 청구를 두 번 요청해도 포트원이 중복을 막게 한다(2026-10-18).
+  // 예전에는 Date.now()를 써서 재실행하면 같은 청구가 두 번 결제될 수 있었다.
+  opts: { dueDate: string; attempt: number },
 ): Promise<ChargeResult> {
   const { count, error: countError } = await supabaseAdmin
     .from('students')
@@ -47,7 +50,7 @@ export async function chargeAcademy(
     };
   }
 
-  const paymentId = `sub_${academyId}_${Date.now()}`;
+  const paymentId = `sub_${academyId}_${opts.dueDate}_${opts.attempt}`;
   try {
     const res = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}/billing-key`, {
       method: 'POST',

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageHead, Badge } from '../components/admin/AdminUi';
+import { adminAcademySearchV2, fmtKst, type AcademyFilterKey } from '../lib/adminOps';
 import { adminAcademyRows, adminAnnouncementReadCount, adminCreateAnnouncement, adminEndAnnouncement, adminListAnnouncements, adminLog, type AdminAcademyRow, type Announcement, type AnnouncementAudience, type AnnouncementLevel } from '../lib/support';
 
 /**
@@ -23,6 +25,25 @@ export default function AdminNoticesPage() {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audCount, setAudCount] = useState<number | null>(null);
+  const [confirmSend, setConfirmSend] = useState(false);
+
+  // 보내기 전에 대상이 몇 곳인지 서버에서 센다(테스트 학원 제외). 특정 학원은 1곳.
+  useEffect(() => {
+    if (form.audience === 'academy') {
+      setAudCount(form.academy_id ? 1 : 0);
+      return;
+    }
+    const f: AcademyFilterKey = form.audience === 'all' ? 'all' : form.audience === 'paid' ? 'paid' : 'free';
+    let alive = true;
+    setAudCount(null);
+    adminAcademySearchV2({ query: '', filter: f, sort: 'created', dir: 'desc', excludeTest: true, page: 0 })
+      .then((r) => alive && setAudCount(r[0]?.total ?? 0))
+      .catch(() => alive && setAudCount(null));
+    return () => {
+      alive = false;
+    };
+  }, [form.audience, form.academy_id]);
 
   const load = async () => {
     try {
@@ -70,11 +91,13 @@ export default function AdminNoticesPage() {
 
   const input = 'w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none focus:border-primary';
   const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'}`;
-  const active = (a: Announcement) => Date.parse(a.starts_at) <= Date.now() && (!a.ends_at || Date.parse(a.ends_at) > Date.now());
+  const noticeState = (a: Announcement): 'scheduled' | 'live' | 'ended' =>
+    Date.parse(a.starts_at) > Date.now() ? 'scheduled' : !a.ends_at || Date.parse(a.ends_at) > Date.now() ? 'live' : 'ended';
+  const active = (a: Announcement) => noticeState(a) !== 'ended';
 
   return (
     <div className="space-y-5">
-      <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy">{t('adminOps.noticesTitle')}</h1>
+      <PageHead title={t('adminOps.noticesTitle')} desc={t('adminV2.notices.desc')} />
       <section className="space-y-3 rounded-xl bg-surface-container-lowest p-5 shadow-sm">
         <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t('adminOps.noticeTitle')} className={input} />
         <textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={4} placeholder={t('adminOps.noticeBody')} className={input} />
@@ -127,11 +150,23 @@ export default function AdminNoticesPage() {
         <button
           type="button"
           disabled={busy || !form.title.trim() || (form.audience === 'academy' && !form.academy_id)}
-          onClick={() => void send()}
+          onClick={() => setConfirmSend(true)}
           className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary disabled:opacity-40"
         >
           {busy ? t('common.loading') : t('adminOps.sendNotice')}
         </button>
+        <p role="status" className="font-caption text-[13px] font-bold text-deep-navy">
+          {audCount == null ? t('adminV2.notices.audienceUnknown') : t('adminV2.notices.audienceCount', { n: audCount })}
+        </p>
+        {confirmSend && (
+          <div role="alertdialog" aria-label={t('adminV2.notices.confirmTitle')} className="rounded-lg border border-primary/40 bg-primary-fixed/40 p-3">
+            <p className="font-label-md text-label-md font-bold text-deep-navy">{t('adminV2.notices.confirmBody', { n: audCount ?? 0, title: form.title.trim() })}</p>
+            <div className="mt-2 flex gap-2">
+              <button type="button" onClick={() => { setConfirmSend(false); void send(); }} className="rounded-full bg-deep-navy px-4 py-1.5 font-label-md text-label-md font-bold text-white">{t('adminV2.notices.confirmYes')}</button>
+              <button type="button" onClick={() => setConfirmSend(false)} className="rounded-full border border-outline-variant px-4 py-1.5 font-label-md text-label-md">{t('common.cancel')}</button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="space-y-2">
@@ -139,8 +174,9 @@ export default function AdminNoticesPage() {
         {list === null && <p className="text-on-surface-variant">{t('common.loading')}</p>}
         {list?.map((a) => (
           <div key={a.id} className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 shadow-sm">
-            <span className={`rounded-full px-2 py-0.5 font-caption text-caption ${active(a) ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}`}>
-              {active(a) ? t('adminOps.live') : t('adminOps.ended')}
+            <Badge tone={noticeState(a) === 'live' ? 'ok' : noticeState(a) === 'scheduled' ? 'warn' : 'mute'}>{t(`adminV2.notices.state_${noticeState(a)}`)}</Badge>
+            <span className="font-caption text-[12px] text-on-surface-variant">
+              {fmtKst(a.starts_at, 'ko')}{a.ends_at ? ` ~ ${fmtKst(a.ends_at, 'ko')}` : ''}
             </span>
             <span className="min-w-0 flex-1 truncate font-label-md text-label-md">{a.title}</span>
             <span className="font-caption text-caption text-on-surface-variant">

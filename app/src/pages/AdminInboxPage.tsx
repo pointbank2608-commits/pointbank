@@ -20,7 +20,7 @@ import { clusterTickets, suggestFaq, type FaqCandidate } from '../lib/ticketMatc
  *  ③ 초안이 없는 문의: 직접 답한다.
  * 초안은 AI가 아니라 글자 겹침으로 찾는다(lib/ticketMatch.ts) — 틀릴 수 있으니 보내기 전에 읽어 볼 것.
  */
-export default function AdminInboxPage() {
+export default function AdminInboxPage({ embedded = false }: { embedded?: boolean }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [rows, setRows] = useState<AdminInboxRow[] | null>(null);
@@ -57,10 +57,12 @@ export default function AdminInboxPage() {
 
   return (
     <div className="space-y-6">
+      {!embedded && (
       <div>
-        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy">{t('adminInbox.title')}</h1>
-        <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminInbox.hint')}</p>
-      </div>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy">{t('adminInbox.title')}</h1>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminInbox.hint')}</p>
+        </div>
+      )}
 
       {rows.length === 0 && <p className="rounded-xl bg-surface-container-lowest p-6 text-center text-on-surface-variant shadow-sm">{t('adminInbox.empty')}</p>}
 

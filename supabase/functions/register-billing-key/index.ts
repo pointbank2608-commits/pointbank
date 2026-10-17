@@ -79,6 +79,7 @@ Deno.serve(async (req: Request) => {
         .from('academies')
         .update({
           plan: 'paid',
+          plan_source: 'subscription',
           plan_status: 'active',
           plan_started_at: new Date().toISOString(),
           billing_cycle_day: first.getUTCDate(),
@@ -91,9 +92,9 @@ Deno.serve(async (req: Request) => {
     }
 
     // 카드 등록 직후 첫 결제를 바로 시도한다 — 성공해야만 유료 플랜으로 전환한다.
-    const result = await chargeAcademy(supabaseAdmin, academyId, billingKey, academyId);
     const today = new Date();
-    const periodStart = today.toISOString().slice(0, 10);
+    const periodStart = new Date(today.getTime() + 9 * 3600_000).toISOString().slice(0, 10); // 한국 날짜
+    const result = await chargeAcademy(supabaseAdmin, academyId, billingKey, academyId, { dueDate: periodStart, attempt: 1 });
     const nextBillingDate = new Date(today);
     nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
 
@@ -116,6 +117,7 @@ Deno.serve(async (req: Request) => {
       .from('academies')
       .update({
         plan: 'paid',
+        plan_source: 'subscription',
         plan_status: 'active',
         plan_started_at: today.toISOString(),
         billing_cycle_day: today.getDate(),

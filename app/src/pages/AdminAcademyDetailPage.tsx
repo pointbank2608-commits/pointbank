@@ -6,13 +6,19 @@ import {
   adminRestoreRevision,
   adminAcademyFeatures,
   adminSetAcademyFeatures,
-  adminSetAcademyPlan,
   adminSnapshotAcademy,
   type AcademyFeatures,
   type AdminAcademyContent,
 } from '../lib/api';
 import { adminAcademyDetail, adminAcademyTrial, adminExtendTrial, adminSaveNote, type AdminAcademyDetail } from '../lib/support';
 import { StatusPill } from './HelpPage';
+import { Badge, DataState, ReasonDialog } from '../components/admin/AdminUi';
+import { BillingBadge, EntitlementBadge, SourceBadge } from '../components/admin/labels';
+import {
+  adminActionDetail, adminActionLog, adminCancelDeletion, adminChangePlan, adminRequestDeletion, adminSetAcademyTest,
+  fmtKst, useAdminQuery, type AcademyRow,
+} from '../lib/adminOps';
+import { supabase } from '../lib/supabase';
 
 /**
  * 관리자 학원 상세(2026-09-27) — 원장·선생님 연락처, 사용량, 결제, 관리자 메모(학원은 못 봄), 요금제 조치,
@@ -41,6 +47,23 @@ export default function AdminAcademyDetailPage() {
       setBusy(false);
     }
   }
+  type PlanAsk = { title: string; plan: 'free' | 'paid'; until: string | null; source: 'admin' | 'event' };
+  const [planAsk, setPlanAsk] = useState<PlanAsk | null>(null);
+  const [testAsk, setTestAsk] = useState(false);
+  const [delAsk, setDelAsk] = useState<'request' | 'cancel' | null>(null);
+  const [rawId, setRawId] = useState<string | null>(null);
+  const [raw, setRaw] = useState<Record<string, unknown> | null>(null);
+  const facts = useAdminQuery(async () => {
+    const { data, error } = await supabase.from('admin_academy_rollup').select('*').eq('academy_id', id).maybeSingle();
+    if (error) throw error;
+    return (data ?? null) as AcademyRow | null;
+  }, [id, msg]);
+  const delReq = useAdminQuery(async () => {
+    const { data, error } = await supabase.from('academy_deletion_requests').select('requested_at, purge_after, cancelled_at').eq('academy_id', id).is('cancelled_at', null).maybeSingle();
+    if (error) throw error;
+    return (data ?? null) as { requested_at: string; purge_after: string } | null;
+  }, [id, msg]);
+  const log = useAdminQuery(() => adminActionLog(id, 30, 0), [id, msg]);
   const [content, setContent] = useState<AdminAcademyContent | null | undefined>(undefined);
   /** 074 전이면 null(칸을 숨긴다) */
   const [features, setFeatures] = useState<AcademyFeatures | null>(null);
@@ -92,24 +115,16 @@ export default function AdminAcademyDetailPage() {
     return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   }
 
-  async function setPlan(plan: 'free' | 'paid', untilDate: string | null) {
+  /** 요금제 변경은 사유를 받고 서버가 전/후 값을 조치 기록에 남긴다(086c). */
+  function setPlan(plan: 'free' | 'paid', untilDate: string | null, title: string, source: 'admin' | 'event' = 'admin') {
     if (!d) return;
-    setBusy(true);
-    try {
-      await adminSetAcademyPlan(id, plan, untilDate);
-      setMsg(t('adminOps.saved'));
-      load();
-    } catch (e) {
-      setMsg(String((e as { message?: string })?.message ?? e));
-    } finally {
-      setBusy(false);
-    }
+    setPlanAsk({ title, plan, until: untilDate, source });
   }
 
   function extend30() {
     const base = d?.academy.plan_expires_at ? new Date(d.academy.plan_expires_at) : new Date();
     const next = new Date(Math.max(base.getTime(), Date.now()) + 30 * 86_400_000);
-    void setPlan('paid', next.toISOString().slice(0, 10));
+    setPlan('paid', next.toISOString().slice(0, 10), t('adminV2.detail.ask_extend30'));
   }
 
   async function saveNote() {
@@ -137,6 +152,14 @@ export default function AdminAcademyDetailPage() {
         <span className={`rounded-full px-3 py-1 font-label-md text-label-md ${a.plan === 'paid' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'}`}>
           {a.plan === 'paid' ? t('admin.planPaid') : t('admin.planFree')}
         </span>
+        {facts.data && (
+          <>
+            <EntitlementBadge value={facts.data.entitlement} />
+            <SourceBadge value={facts.data.entitlement === 'full' ? facts.data.source : null} />
+            <BillingBadge value={facts.data.billing_state} />
+            {facts.data.is_test && <Badge tone="info">{t('adminV2.detail.testBadge')}</Badge>}
+          </>
+        )}
         {a.billing_failure_count > 0 && (
           <span className="rounded-full bg-error px-3 py-1 font-label-md text-label-md text-on-error">{t('adminOps.failures', { n: a.billing_failure_count })}</span>
         )}
@@ -223,18 +246,39 @@ export default function AdminAcademyDetailPage() {
               {t('adminOps.extend30')}
             </button>
             <input type="date" value={until} onChange={(e) => setUntil(e.target.value)} className="rounded-lg border border-outline-variant px-2 py-1 text-sm" />
-            <button type="button" disabled={busy || !until} onClick={() => void setPlan('paid', until)} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary disabled:opacity-40">
+            <button type="button" disabled={busy || !until} onClick={() => setPlan('paid', until, t('adminV2.detail.ask_until', { date: until }))} className="rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary disabled:opacity-40">
               {t('adminOps.paidUntil')}
             </button>
             {a.plan === 'paid' && (
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => confirm(t('adminOps.toFreeConfirm')) && void setPlan('free', null)}
+                onClick={() => setPlan('free', null, t('adminV2.detail.ask_free'))}
                 className="rounded-full border border-error px-3 py-1 font-label-md text-label-md text-error disabled:opacity-40"
               >
                 {t('admin.setFreeButton')}
               </button>
+            )}
+          </div>
+        </section>
+
+        <section className={box}>
+          <h2 className="font-title-md text-title-md">{t('adminV2.detail.safetyTitle')}</h2>
+          <p className="font-caption text-caption text-on-surface-variant">{t('adminV2.detail.testHint')}</p>
+          <button type="button" disabled={busy || !facts.data} onClick={() => setTestAsk(true)} className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary disabled:opacity-50">
+            {facts.data?.is_test ? t('adminV2.detail.testOff') : t('adminV2.detail.testOn')}
+          </button>
+          <div className="border-t border-outline-variant/50 pt-3">
+            {delReq.data ? (
+              <div className="space-y-2">
+                <p role="status" className="font-label-md text-label-md font-bold text-error">{t('adminV2.detail.delPending', { date: fmtKst(delReq.data.purge_after, 'ko') })}</p>
+                <button type="button" onClick={() => setDelAsk('cancel')} className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary">{t('adminV2.detail.delCancel')}</button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="font-caption text-caption text-on-surface-variant">{facts.data?.is_test ? t('adminV2.detail.delHintTest') : t('adminV2.detail.delHint')}</p>
+                <button type="button" onClick={() => setDelAsk('request')} className="rounded-full border border-error px-4 py-1.5 font-label-md text-label-md text-error">{t('adminV2.detail.delRequest')}</button>
+              </div>
             )}
           </div>
         </section>
@@ -428,18 +472,76 @@ export default function AdminAcademyDetailPage() {
           )}
         </section>
 
-        <section className={box}>
+        <section className={`${box} md:col-span-2`}>
           <h2 className="font-title-md text-title-md">{t('adminOps.actions')}</h2>
-          {d.actions.length === 0 && <p className="font-caption text-caption text-on-surface-variant">{t('adminOps.noneNow')}</p>}
-          {d.actions.map((x, i) => (
-            <div key={i} className="flex gap-2 font-caption text-caption text-on-surface-variant">
-              <span>{new Date(x.created_at).toLocaleString()}</span>
-              <span className="font-bold text-on-surface">{t(`adminOps.action_${x.action}`, { defaultValue: x.action })}</span>
-              {x.detail && Object.keys(x.detail).length > 0 && <span>{JSON.stringify(x.detail)}</span>}
-            </div>
-          ))}
+          <DataState state={log} empty={t('adminOps.noneNow')} compact>
+            {(rows) => (
+              <ul className="divide-y divide-outline-variant/40">
+                {rows.map((x) => (
+                  <li key={x.id} className="space-y-1 py-2 font-caption text-[13px]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="tabular-nums text-on-surface-variant">{fmtKst(x.created_at, 'ko')}</span>
+                      <b className="text-deep-navy">{t(`adminOps.action_${x.action}`, { defaultValue: x.action })}</b>
+                      <Badge tone={x.result === 'success' ? 'ok' : x.result === 'partial' ? 'warn' : 'bad'}>{t(`adminV2.detail.result_${x.result}`)}</Badge>
+                      <span className="text-on-surface-variant">{x.actor_email ?? ''}</span>
+                      <button type="button" className="ml-auto text-primary underline" onClick={() => { setRawId(x.id); setRaw(null); void adminActionDetail(x.id).then(setRaw); }}>{t('adminV2.detail.rawView')}</button>
+                    </div>
+                    {x.reason && <div className="break-words">{t('adminV2.detail.reasonIs')}: {x.reason}</div>}
+                    {(x.before || x.after) && (
+                      <div className="break-words text-on-surface-variant">
+                        {t('adminV2.detail.before')}: {x.before ? JSON.stringify(x.before) : '–'} → {t('adminV2.detail.after')}: {x.after ? JSON.stringify(x.after) : '–'}
+                      </div>
+                    )}
+                    {rawId === x.id && <pre className="max-h-48 overflow-auto rounded bg-surface-container-low p-2 text-[12px]">{raw ? JSON.stringify(raw, null, 2) : t('adminV2.common.loading')}</pre>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </DataState>
         </section>
       </div>
+      {planAsk && (
+        <ReasonDialog
+          title={planAsk.title}
+          body={t('adminV2.detail.planBody')}
+          confirmLabel={t('common.save')}
+          onClose={() => setPlanAsk(null)}
+          onConfirm={async (reason) => {
+            await adminChangePlan(id, planAsk.plan, planAsk.until, reason, planAsk.source);
+            setPlanAsk(null);
+            setMsg(t('adminOps.saved'));
+            load();
+          }}
+        />
+      )}
+      {testAsk && facts.data && (
+        <ReasonDialog
+          title={facts.data.is_test ? t('adminV2.detail.testOff') : t('adminV2.detail.testOn')}
+          body={t('adminV2.detail.testHint')}
+          confirmLabel={t('common.save')}
+          onClose={() => setTestAsk(false)}
+          onConfirm={async (reason) => {
+            await adminSetAcademyTest(id, !facts.data!.is_test, reason);
+            setTestAsk(false);
+            setMsg(t('adminOps.saved'));
+          }}
+        />
+      )}
+      {delAsk && (
+        <ReasonDialog
+          danger={delAsk === 'request'}
+          title={delAsk === 'request' ? t('adminV2.detail.delRequest') : t('adminV2.detail.delCancel')}
+          body={delAsk === 'request' ? (facts.data?.is_test ? t('adminV2.detail.delHintTest') : t('adminV2.detail.delHint')) : undefined}
+          confirmLabel={delAsk === 'request' ? t('adminV2.detail.delRequest') : t('adminV2.detail.delCancel')}
+          onClose={() => setDelAsk(null)}
+          onConfirm={async (reason) => {
+            if (delAsk === 'request') await adminRequestDeletion(id, reason);
+            else await adminCancelDeletion(id, reason);
+            setDelAsk(null);
+            setMsg(t('adminOps.saved'));
+          }}
+        />
+      )}
     </div>
   );
 }

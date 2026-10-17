@@ -13,7 +13,9 @@ import { lazyPage } from './lib/lazyPage';
 const AdminTodayPage = lazyPage(() => import('./pages/AdminTodayPage'));
 const AdminAcademyDetailPage = lazyPage(() => import('./pages/AdminAcademyDetailPage'));
 const AdminSupportPage = lazyPage(() => import('./pages/AdminSupportPage'));
-const AdminInboxPage = lazyPage(() => import('./pages/AdminInboxPage'));
+const AdminBillingPage = lazyPage(() => import('./pages/AdminBillingPage'));
+const AdminSystemPage = lazyPage(() => import('./pages/AdminSystemPage'));
+const AdminSettingsPage = lazyPage(() => import('./pages/AdminSettingsPage'));
 const AdminNoticesPage = lazyPage(() => import('./pages/AdminNoticesPage'));
 const AdminVideosPage = lazyPage(() => import('./pages/AdminVideosPage'));
 const AdminBrandPage = lazyPage(() => import('./pages/AdminBrandPage'));
@@ -221,7 +223,10 @@ function AppRoutes() {
           <Route path="/admin" element={<AdminTodayPage />} />
           <Route path="/admin/academies" element={<AdminAcademiesPage />} />
           <Route path="/admin/academies/:id" element={<AdminAcademyDetailPage />} />
-          <Route path="/admin/inbox" element={<AdminInboxPage />} />
+          <Route path="/admin/inbox" element={<Navigate to="/admin/support?view=review" replace />} />
+          <Route path="/admin/billing" element={<AdminBillingPage />} />
+          <Route path="/admin/system" element={<AdminSystemPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />
           <Route path="/admin/videos" element={<AdminVideosPage />} />
