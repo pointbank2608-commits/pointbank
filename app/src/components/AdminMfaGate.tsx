@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
@@ -25,8 +25,21 @@ export default function AdminMfaGate({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [canSkip, setCanSkip] = useState(false);
+  // 확인이 겹쳐 두 번 돌면 같은 이름의 인증 요소를 두 번 만들려다 "already exists" 오류가 난다 — 한 번에 하나만
+  const running = useRef(false);
 
   const check = useCallback(async () => {
+    if (running.current) return;
+    running.current = true;
+    try {
+      await checkOnce();
+    } finally {
+      running.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const checkOnce = useCallback(async () => {
     setError(null);
     const { data: aal, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalError || !aal) {
@@ -50,7 +63,7 @@ export default function AdminMfaGate({ children }: { children: ReactNode }) {
     for (const f of factors?.all ?? []) {
       if (f.factor_type === 'totp' && f.status !== 'verified') await supabase.auth.mfa.unenroll({ factorId: f.id });
     }
-    const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'classbank-admin' });
+    const { data, error: enrollError } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `classbank-admin-${Date.now()}` });
     if (enrollError || !data) {
       setError(enrollError?.message ?? t('adminMfa.unavailable'));
       setCanSkip(true);
