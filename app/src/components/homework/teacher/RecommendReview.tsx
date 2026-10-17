@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../context/ToastContext';
 import { fetchWordLists } from '../../../lib/api';
@@ -38,12 +38,14 @@ export default function RecommendReview({
   students,
   onClose,
   onSent,
+  onCommonReview,
 }: {
   academyId: string;
   classId: string;
   students: { id: string; name: string }[];
   onClose: () => void;
   onSent: (groupId: string) => void;
+  onCommonReview?: () => void;
 }) {
   const { t } = useTranslation();
   const { notify } = useToast();
@@ -54,6 +56,9 @@ export default function RecommendReview({
   const [common, setCommon] = useState<FullCardItem[]>([]);
   const [due, setDue] = useState('');
   const [sending, setSending] = useState(false);
+  const sendLock = useRef(false);
+  const requests = useRef(new Map<string, string>());
+  const group = useRef({ key: '', id: newId() });
 
   // 재료: 반의 가장 최근 단어장 + 반이 많이 틀린 낱말
   useEffect(() => {
@@ -88,12 +93,19 @@ export default function RecommendReview({
   const currentItems = useMemo(() => (row ? itemsOf(row) : []), [row]);
 
   async function send() {
+    if (sendLock.current) return;
+    sendLock.current = true;
     setSending(true);
-    const groupId = newId();
+    const groupKey = JSON.stringify([ready.map((r) => [r.studentId, itemsOf(r)]), due]);
+    if (group.current.key !== groupKey) group.current = { key: groupKey, id: newId() };
+    const groupId = group.current.id;
     let ok = 0;
     try {
       for (const r of ready) {
+        const key = `${groupId}:${r.studentId}`;
+        if (!requests.current.has(key)) requests.current.set(key, newId());
         await createHomework({
+          requestId: requests.current.get(key),
           classId,
           title: t('studentHw.recTitle', { name: r.name }),
           items: itemsOf(r),
@@ -111,6 +123,7 @@ export default function RecommendReview({
       notify(t(teacherErrorKey(e)), 'error');
       if (ok > 0) onSent(groupId);
     } finally {
+      sendLock.current = false;
       setSending(false);
     }
   }
@@ -156,7 +169,8 @@ export default function RecommendReview({
               {row.rec && (
                 <>
                   <div className={`rounded-xl px-4 py-3 text-base ${row.rec.personal ? 'bg-primary/10 text-deep-navy' : 'bg-surface-container-low text-on-surface'}`}>
-                    {row.rec.personal ? t('studentHw.recPersonal') : t('studentHw.recNotEnough')}
+                    {!currentItems.length ? t('studentHw.recEmpty', { defaultValue: '복습 자료가 부족해 활동을 만들지 못했습니다. 최근 수업으로 공통 복습을 만들어 주세요.' }) : row.rec.personal ? t('studentHw.recPersonal') : t('studentHw.recNotEnough')}
+                    {!currentItems.length && onCommonReview && <button type="button" onClick={onCommonReview} className="mt-2 block min-h-11 underline">{t('studentHw.recFallback')}</button>}
                   </div>
                   <div className="space-y-1">
                     <div className="font-label-md text-label-md text-on-surface">{t('studentHw.recWhy')}</div>

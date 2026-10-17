@@ -7,6 +7,7 @@ import { blankSentence, pickBlankDistractors } from '../liveQuiz';
 import { parseShadowText } from '../shadowLines';
 import type { FullCardItem } from '../types';
 import type { HwCard, HwItemDraft, HwPlan, HwQuestion, HwShadowLine } from './types';
+import { isMeaning } from './quality';
 
 export const GEN_VERSION = 'hw2-2026-10';
 
@@ -76,7 +77,7 @@ function choiceQ(c: FullCardItem, right: string, wrong: string[], rng: Rng, extr
 }
 
 export const meaningQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
-  choiceQ(c, clean(c.meaning), otherValues(pool, c, (x) => x.meaning, 3, rng), rng, { skill: SKILL.meaning, style: 'meaning', prompt: clean(c.word), speak: clean(c.word) });
+  isMeaning(c.meaning) ? choiceQ(c, clean(c.meaning), otherValues(pool.filter((x) => isMeaning(x.meaning)), c, (x) => x.meaning, 3, rng), rng, { skill: SKILL.meaning, style: 'meaning', prompt: clean(c.word), speak: clean(c.word) }) : null;
 
 export const reverseQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
   choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.meaning, style: 'reverse', prompt: clean(c.meaning) });

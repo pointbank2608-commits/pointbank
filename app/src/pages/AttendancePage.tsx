@@ -45,7 +45,9 @@ function timeOnly(iso: string): string {
 
 export default function AttendancePage() {
   const { academy, profile, hasFullAccess } = useAuth();
-  const studentAreaOpen = useFeature('solo') || useFeature('homework');
+  const soloOpen = useFeature('solo');
+  const homeworkOpen = useFeature('homework');
+  const studentAreaOpen = soloOpen || homeworkOpen;
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reload: reloadClasses, reorder } = useClasses(academy?.id);

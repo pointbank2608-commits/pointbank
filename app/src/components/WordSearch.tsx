@@ -214,6 +214,15 @@ export default function WordSearch({
   const sfx = useGameSfx('wordsearch');
   useStepSounds(0, placements.length > 0 && foundIds.size === placements.length, undefined, sfx.finish);
 
+  const finished = placements.length > 0 && foundIds.size === placements.length;
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (!onComplete) return;
+    if (finished) {
+      if (!doneRef.current) { doneRef.current = true; onComplete(); }
+    } else doneRef.current = false;
+  }, [finished, placements.length, onComplete]);
+
   if (placements.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -236,22 +245,6 @@ export default function WordSearch({
   if (grid.length === 0) {
     return null;
   }
-
-  const finished = foundIds.size === placements.length;
-
-  const doneRef = useRef(false);
-  useEffect(() => {
-    if (!onComplete) return;
-    if (placements.length > 0 && finished) {
-      if (!doneRef.current) {
-        doneRef.current = true;
-        onComplete();
-      }
-    } else {
-      doneRef.current = false;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished, placements.length]);
 
   function restart() {
     if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);

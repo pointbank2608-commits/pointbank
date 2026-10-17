@@ -42,7 +42,9 @@ export default function ResultsPage() {
   const [resetting, setResetting] = useState(false);
   // 선생님: 포인트 결과 / 학생 스탯(Classbank Student) 두 보기
   const [view, setView] = useState<'points' | 'stats'>('points');
-  const statsOpen = useFeature('solo') || useFeature('homework');
+  const soloOpen = useFeature('solo');
+  const homeworkOpen = useFeature('homework');
+  const statsOpen = soloOpen || homeworkOpen;
 
   // 학생이면 본인 행을 강조하기 위해 자기 students.id 를 알아둔다.
   useEffect(() => {

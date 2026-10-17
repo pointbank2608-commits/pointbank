@@ -9,6 +9,8 @@ export interface AnswerResult {
 
 /** 진행 화면이 서버(또는 미리보기)를 부르는 방법 */
 export interface RunnerApi {
+  cacheScope?: string;
+  uploadRecording?: (itemId: string, blob: Blob, duration: number) => Promise<string>;
   submit: (itemId: string, qIndex: number, response: string, ms: number) => Promise<AnswerResult>;
   progress: (itemId: string, event: 'shadow_line' | 'item_complete', meta: Record<string, unknown>) => Promise<void>;
   /** 끝내기. answers 가 오면(서버가 다시 채점한 결과) 결과 화면이 그걸 쓴다 */

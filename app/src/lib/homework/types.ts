@@ -66,6 +66,8 @@ export interface HwItemContent {
 }
 
 export interface HwItemConfig {
+  /** Versioned homework activity, while preserving the legacy item and player contracts. */
+  block?: import('./blocks').HomeworkBlock;
   game?: HwGameKind;
   sheets?: HwSheetKind[];
   legacy?: boolean;

@@ -4469,6 +4469,12 @@ const en: Ko = {
     stepHelp_test: 'A test made from the words and sentences in this lesson. Each question has a time limit, listening plays once, and everything is graded together at the end with area scores and answers. Open a question to edit it.',
   },
   studentHw: {
+    editBlocks: 'Edit content and order in the block editor',
+    importLesson: 'Save and import into homework',
+    activityCompletion: 'Activity completion',
+    recEmpty: 'There is not enough review material to create activities. Create a common review from a recent saved lesson.',
+    recFallback: 'Create common review from a recent lesson',
+    entryHelp: 'Homework codes and class QR links use name + PIN. The /s academy portal uses academy code, name and guardian phone. A personal QR opens that student’s homework directly.',
     pageTitle: 'Homework',
     pageIntro: 'Send online homework from the word lists and videos you used in class. Students join with a homework code (or a personal QR) plus their name and PIN — no sign-up. Grading and records are automatic, and you can review a tailored homework for each student before sending it.',
     needSetup: 'Homework is not set up yet. Run supabase/041_homework_v2.sql in the SQL Editor first.',

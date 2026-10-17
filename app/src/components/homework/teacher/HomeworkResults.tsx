@@ -5,6 +5,7 @@ import { closeHomework, deleteHomework, fetchHomeworkSummary, homeworkUrl, teach
 import type { FullCardItem } from '../../../lib/types';
 import { cardFromSnapshot } from '../../../lib/homework/teacherHelpers';
 import HomeworkRewardPanel from './HomeworkRewardPanel';
+import BlockResults from './BlockResults';
 
 const POLL_MS = 15000;
 
@@ -75,6 +76,7 @@ export default function HomeworkResults({
 
   return (
     <div className="space-y-4 border-t border-outline-variant/40 p-4">
+      <BlockResults assignmentId={hw.id} />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-base">
         <span>
           {t('studentHw.doneOf', { done: done.length, total: sum.target_count })}
@@ -123,7 +125,7 @@ export default function HomeworkResults({
                     </span>
                   )}
                 </td>
-                <td className="py-2 pr-3 tabular-nums">{s.status === 'none' ? '–' : `${s.correct} / ${totalQ}`}</td>
+                <td className="py-2 pr-3 tabular-nums">{s.status === 'none' ? '–' : totalQ === 0 ? t('studentHw.activityCompletion', { defaultValue: '활동 완료 확인' }) : `${s.correct} / ${totalQ}`}</td>
                 <td className="py-2 pr-3 tabular-nums">{s.minutes === null ? '–' : t('studentHw.minutes', { n: s.minutes })}</td>
                 <td className="py-2 pr-3 text-on-surface-variant">
                   {s.wrong_words.slice(0, 6).join(', ')}

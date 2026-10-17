@@ -5,6 +5,9 @@ import ClassChipRow from '../components/ClassChipRow';
 import HomeworkResults from '../components/homework/teacher/HomeworkResults';
 import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
 import HomeworkWizard from '../components/homework/teacher/HomeworkWizard';
+import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEditor';
+import { useFeature } from '../lib/features';
+import type { HwItemDraft } from '../lib/homework/types';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
 import PinManager from '../components/homework/teacher/PinManager';
 import RecommendReview from '../components/homework/teacher/RecommendReview';
@@ -17,6 +20,7 @@ import { useClasses } from '../lib/useClasses';
 
 type Panel =
   | { k: 'none' }
+  | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
   | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
   | { k: 'recommend'; studentIds: string[] };
 
@@ -25,8 +29,9 @@ type Panel =
  * → 선생님 확인 뒤 발송. 목록·결과 숫자는 서버가 집계한다.
  */
 export default function HomeworkPage() {
-  const { t } = useTranslation();
-  const { academy } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { academy, profile } = useAuth();
+  const homeworkOpen = useFeature('homework');
   const { notify } = useToast();
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
   const classId = selectedId ?? classes[0]?.id ?? null;
@@ -104,8 +109,9 @@ export default function HomeworkPage() {
   const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
   // 내 수업 카드의 "숙제 내기"에서 넘어온 경우: 그 수업으로 마법사를 한 번만 연다
   useEffect(() => {
-    const st = location.state as { fromLessonId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string } | null;
+    const st = location.state as { fromLessonId?: string; fromClassId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string } | null;
     if (!classId) return;
+    if (st?.fromClassId && classId !== st.fromClassId) { select(st.fromClassId); return; }
     // 단어 사전·파닉스에서 고른 낱말로 숙제 내기
     if (st?.pickedCards?.length) {
       setPanel({ k: 'wizard', pickedCards: st.pickedCards, title: st.pickedTitle });
@@ -113,9 +119,11 @@ export default function HomeworkPage() {
       return;
     }
     if (!st?.fromLessonId) return;
-    setPanel({ k: 'wizard', lessonId: st.fromLessonId });
+    setPanel({ k: 'editor', lessonId: st.fromLessonId });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, classId, navigate]);
+  }, [location.state, location.pathname, classId, navigate, select]);
+
+  if (!homeworkOpen) return <p className="p-6 text-on-surface-variant">{t('studentHw.err_feature_closed')}</p>;
 
   return (
     <div className="space-y-6">
@@ -126,6 +134,7 @@ export default function HomeworkPage() {
           <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{t('studentHw.pageIntro')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setPanel({ k: 'editor' })} disabled={!classId} className={`${headerBtn} bg-warm-yellow text-deep-navy disabled:opacity-40`}>{i18n.language.startsWith('en') ? 'Homework block editor' : '숙제 블록 편집기'}</button>
           <button type="button" onClick={() => setPinsOpen(true)} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">key</span>
             {t('studentHw.pinsButton')}
@@ -144,6 +153,15 @@ export default function HomeworkPage() {
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
 
+      {panel.k === 'editor' && classId && academy?.id && profile && <HomeworkBlockEditor
+        key={`${classId}-${panel.lessonId ?? ''}`} academyId={academy.id} classId={classId} ownerId={profile.id}
+        initialItems={panel.items} initialTitle={panel.title} lessonId={panel.lessonId}
+        startWithLessonImport={panel.importLesson}
+        initialStudentIds={panel.studentIds} initialDue={panel.due}
+        onClose={() => setPanel({ k: 'none' })}
+        onCreated={async (hw) => { setPanel({ k: 'none' }); await reload(); setShareId(hw.id); }}
+      />}
+
       {panel.k === 'wizard' && classId && academy?.id && (
         <HomeworkWizard
           key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}-${panel.lessonId ?? ''}-${panel.pickedCards?.length ?? 0}`}
@@ -156,6 +174,7 @@ export default function HomeworkPage() {
           initialCards={panel.cards}
           initialTitle={panel.title}
           onCancel={() => setPanel({ k: 'none' })}
+          onEdit={(items, title, studentIds, due) => setPanel({ k: 'editor', items, title, studentIds, due })}
           onCreated={async (hw) => {
             setPanel({ k: 'none' });
             notify(t('studentHw.created'));
@@ -171,6 +190,7 @@ export default function HomeworkPage() {
           classId={classId}
           students={students.filter((s) => panel.studentIds.includes(s.id)).map((s) => ({ id: s.id, name: s.name }))}
           onClose={() => setPanel({ k: 'none' })}
+          onCommonReview={() => setPanel({ k: 'editor', importLesson: true })}
           onSent={async () => {
             setPanel({ k: 'none' });
             await reload();

@@ -6,6 +6,7 @@ import MatchupGame from './MatchupGame';
 import QuestionCard from './QuestionCard';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
+import BlockActivity from './BlockActivity';
 import KidsShadowing, { KidsFrame, KidsIntro, KidsWatch, StarFriend } from './KidsHomework';
 import { StampCelebration } from './HomeworkStamp';
 
@@ -31,6 +32,7 @@ export default function HomeworkRunner({
   api,
   saveState,
   preview = false,
+  startImmediately = false,
 }: {
   title: string;
   studentName?: string;
@@ -42,19 +44,23 @@ export default function HomeworkRunner({
   api: RunnerApi;
   saveState: SaveState;
   preview?: boolean;
+  startImmediately?: boolean;
 }) {
   const { t } = useTranslation();
   const [answers, setAnswers] = useState(initialAnswers);
   const [doneItems, setDoneItems] = useState(finishedItems);
-  const [phase, setPhase] = useState<Phase>(() => (alreadyFinished ? { k: 'finishing' } : { k: 'intro' }));
+  const [phase, setPhase] = useState<Phase>(() => alreadyFinished ? { k: 'finishing' } : startImmediately && items.length ? { k: 'item', i: 0, sub: items[0].kind === 'shadowing' && items[0].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const shownAt = useRef(performance.now());
   // 유치원 친구용: 활동이 모두 쉐도잉이고 kids 표시가 있을 때
   const kids = items.length > 0 && items.every((it) => it.config.kids && it.kind === 'shadowing');
 
-  const total = useMemo(() => items.reduce((n, it) => n + it.content.questions.length, 0), [items]);
-  const answeredCount = useMemo(() => items.reduce((n, it) => n + it.content.questions.filter((_, qi) => answers.has(answerKey(it.id, qi))).length, 0), [items, answers]);
+  const damaged = items.some((it) => !it.content || !Array.isArray(it.content.questions) || (it.config.block && (it.config.block.schemaVersion !== 1 || !['study','recall','speak','sentence','video'].includes(it.config.block.type))));
+  const total = useMemo(() => items.reduce((n, it) => n + (it.content?.questions?.length ?? 0), 0), [items]);
+  const answeredCount = useMemo(() => items.reduce((n, it) => n + (it.content?.questions ?? []).filter((_, qi) => answers.has(answerKey(it.id, qi))).length, 0), [items, answers]);
+  const progressTotal = total + items.filter((it) => !it.content?.questions?.length).length;
+  const progressCount = answeredCount + items.filter((it) => !it.content?.questions?.length && doneItems.has(it.id)).length;
 
   // 이미 끝난 숙제를 다시 열면 결과 화면으로
   useEffect(() => {
@@ -75,13 +81,14 @@ export default function HomeworkRunner({
     shownAt.current = performance.now();
   }
 
-  async function completeItem(i: number) {
+  async function completeItem(i: number, meta: Record<string, unknown> = {}) {
     const it = items[i];
     setBusy(true);
     try {
-      await api.progress(it.id, 'item_complete', {});
-    } catch {
+      await api.progress(it.id, 'item_complete', meta);
+    } catch (e) {
       setBusy(false);
+      if (it.config.block) throw e;
       return;
     }
     setBusy(false);
@@ -146,11 +153,11 @@ export default function HomeworkRunner({
   const header = (
     <div className="sticky top-0 z-10 bg-[#16213e]/95 px-4 pb-2 pt-3 backdrop-blur">
       <div className="flex items-center gap-3">
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={total}>
-          <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${total ? (answeredCount / total) * 100 : 0}%` }} />
+        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuenow={progressCount} aria-valuemin={0} aria-valuemax={progressTotal}>
+          <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${progressTotal ? (progressCount / progressTotal) * 100 : 0}%` }} />
         </div>
         <span className="text-base font-bold tabular-nums">
-          {answeredCount} / {total}
+          {progressCount} / {progressTotal}
         </span>
       </div>
       <div className="mt-1 flex items-center justify-between text-sm text-white/70">
@@ -165,6 +172,7 @@ export default function HomeworkRunner({
   }
 
   // ---------- 화면 ----------
+  if (damaged) return <p role="alert" className="p-6 text-lg">지원하지 않는 블록 버전 또는 손상된 자료입니다. 선생님에게 알려 주세요. / Unsupported or damaged activity. Please contact your teacher.</p>;
   if (kids && phase.k === 'intro') {
     const started = doneItems.size > 0;
     return (
@@ -259,13 +267,13 @@ export default function HomeworkRunner({
     return (
       <div className="flex flex-1 flex-col items-center gap-4 p-5 text-center">
         <StampCelebration />
-        <div className="flex gap-2 pt-2" aria-label={t('studentHw.starsN', { n: stars })}>
+        {phase.total > 0 && <div className="flex gap-2 pt-2" aria-label={t('studentHw.starsN', { n: stars })}>
           {[1, 2, 3].map((s) => (
             <span key={s} className="material-symbols-outlined text-[52px]" style={{ color: s <= stars ? '#fcd34d' : 'rgba(255,255,255,0.2)', fontVariationSettings: "'FILL' 1" }}>
               star
             </span>
           ))}
-        </div>
+        </div>}
         <div className="text-2xl font-bold">{t('studentHw.doneTitle')}</div>
         {phase.total > 0 && (
           <div className="text-5xl font-bold tabular-nums">
@@ -307,7 +315,9 @@ export default function HomeworkRunner({
     content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
-    if (it.config.watch) {
+    if (it.config.block && it.config.block.completion !== 'answers') {
+      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onDone={(meta) => completeItem(phase.i, meta)} />;
+    } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} onDone={() => void completeItem(phase.i)} />;
     } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
       const Shadow = kids ? KidsShadowing : ShadowingActivity;

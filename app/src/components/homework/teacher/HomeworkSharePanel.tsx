@@ -145,6 +145,7 @@ img{width:38mm;height:38mm;margin:2mm auto;display:block}
   }
   return (
     <div className="flex flex-wrap items-start gap-6 border-t border-outline-variant/40 p-4">
+      <p className="w-full rounded-xl bg-surface-container-low p-3 text-base text-on-surface">{t('studentHw.entryHelp')}</p>
       {!isCustom && qr && (
         <figure className="flex flex-col items-center gap-1">
           <img src={qr} alt={t('studentHw.classQrAlt')} className="h-44 w-44 rounded-lg bg-white p-1" />

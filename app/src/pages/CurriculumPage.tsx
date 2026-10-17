@@ -836,6 +836,7 @@ export default function CurriculumPage() {
       {!showForm ? null : (
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <BackButton onClick={handleCancel} to={t('curriculum.backToList')} />
+          {homeworkOpen && <button type="button" className="min-h-11 rounded-xl bg-warm-yellow px-4 font-bold text-deep-navy" onClick={async () => { const saved = await saveLesson(); if (saved) navigate('/homework', { state: { fromLessonId: saved.id, fromClassId: saved.class_id ?? staffClassId } }); }}>{t('studentHw.importLesson', { defaultValue: '저장하고 숙제로 가져오기' })}</button>}
           <h3 className="font-title-md text-title-md text-on-surface">
             {t(editingId ? 'curriculum.editFormTitle' : 'curriculum.createFormTitle')}
           </h3>
@@ -1265,7 +1266,7 @@ export default function CurriculumPage() {
                     triggerLabel={t('curriculum.moreButton')}
                     items={[
                       ...(homeworkOpen
-                        ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id } }) }]
+                        ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id, fromClassId: lesson.class_id ?? staffClassId } }) }]
                         : []),
                       { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
                       { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },

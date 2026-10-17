@@ -11,7 +11,9 @@ import { fetchStudentCode } from '../lib/studentPortal';
 export default function AcademyCodeButton() {
   const { t } = useTranslation();
   const { academy } = useAuth();
-  const studentAreaOpen = useFeature('solo') || useFeature('homework');
+  const soloOpen = useFeature('solo');
+  const homeworkOpen = useFeature('homework');
+  const studentAreaOpen = soloOpen || homeworkOpen;
   const [open, setOpen] = useState(false);
   const [studentCode, setStudentCode] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);

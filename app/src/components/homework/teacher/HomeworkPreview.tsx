@@ -9,7 +9,7 @@ import type { RunnerApi } from '../runnerTypes';
  * 선생님 미리보기 — 학생 화면과 같은 HomeworkRunner 를 휴대폰 모양 안에서 그대로 돌린다.
  * 서버에 아무것도 저장하지 않고, 채점은 같은 규칙의 브라우저 채점(gradeLocal)으로 한다.
  */
-export default function HomeworkPreview({ title, items, studentName }: { title: string; items: HwItemDraft[]; studentName?: string }) {
+export default function HomeworkPreview({ title, items, studentName, startImmediately = false }: { title: string; items: HwItemDraft[]; studentName?: string; startImmediately?: boolean }) {
   const { t } = useTranslation();
   const [round, setRound] = useState(0);
   const withIds: HwItem[] = useMemo(() => items.map((it, i) => ({ ...it, id: `preview-${i}` })), [items]);
@@ -51,10 +51,11 @@ export default function HomeworkPreview({ title, items, studentName }: { title: 
             api={api}
             saveState="saved"
             preview
+            startImmediately={startImmediately}
           />
         </div>
       </div>
-      <button type="button" onClick={() => setRound((r) => r + 1)} className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant px-4 font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
+      <button type="button" onClick={() => setRound((r) => r + 1)} className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-4 font-label-md text-label-md text-on-surface hover:bg-surface-container-low">
         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
         {t('studentHw.previewRestart')}
       </button>

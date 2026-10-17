@@ -73,6 +73,7 @@ export interface LearningCard {
 }
 
 export interface CreateHomeworkArgs {
+  requestId?: string;
   classId: string;
   title: string;
   items: HwItemDraft[];
@@ -84,7 +85,8 @@ export interface CreateHomeworkArgs {
 }
 
 export async function createHomework(a: CreateHomeworkArgs): Promise<{ id: string; code: string }> {
-  return rpc('hw_create_v2', {
+  return rpc('hw_create_once', {
+    p_request: a.requestId ?? crypto.randomUUID(),
     p_class_id: a.classId,
     p_title: a.title,
     p_items: a.items,
@@ -144,7 +146,7 @@ export const personalHomeworkUrl = (access: string) => `${window.location.origin
 /** 서버 오류 → 화면 문구 키 */
 export function teacherErrorKey(err: unknown): string {
   const msg = String((err as { message?: string })?.message ?? err ?? '');
-  if (/homework_items|hw_create_v2|hw_reward|student_report_extras|function .* does not exist|Could not find the function|schema cache|PGRST202|student_learning_card|relation/i.test(msg)) return 'studentHw.needSetup';
+  if (/homework_items|hw_create_v2|hw_create_once|hw_reward|student_report_extras|function .* does not exist|Could not find the function|schema cache|PGRST202|student_learning_card|relation/i.test(msg)) return 'studentHw.needSetup';
   if (msg.includes('no_students')) return 'studentHw.errNoStudents';
   if (msg.includes('no_items')) return 'studentHw.errNoItems';
   return 'studentHw.errGeneric';

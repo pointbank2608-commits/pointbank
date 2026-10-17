@@ -2008,7 +2008,7 @@ function GameSlideEditor({
     };
   }, [academyId, classId, slide.gameType]);
 
-  async function useSentenceList(listId: string) {
+  async function applySentenceList(listId: string) {
     const list = sentenceLists.find((l) => l.id === listId);
     if (!list || !profile || creating) return;
     const items = list.items
@@ -2082,7 +2082,7 @@ function GameSlideEditor({
             <select
               value=""
               disabled={creating}
-              onChange={(e) => e.target.value && void useSentenceList(e.target.value)}
+              onChange={(e) => e.target.value && void applySentenceList(e.target.value)}
               aria-label={t('curriculum.slides.useSentenceList')}
               className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2.5 py-1.5 text-sm text-on-surface outline-none focus:border-primary"
             >

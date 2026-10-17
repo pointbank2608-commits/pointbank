@@ -119,7 +119,16 @@ export async function enqueue(token: string, op: QueuedOp): Promise<HwSubmitResu
   return flushed.results.get(op.clientId) ?? null;
 }
 
-export async function flush(token: string): Promise<{ ok: boolean; results: Map<string, HwSubmitResult | null>; error?: HwError }> {
+type FlushResult = { ok: boolean; results: Map<string, HwSubmitResult | null>; error?: HwError };
+const flushing = new Map<string, Promise<FlushResult>>();
+export function flush(token: string): Promise<FlushResult> {
+  const running = flushing.get(token);
+  if (running) return running;
+  const next = drain(token).finally(() => flushing.delete(token));
+  flushing.set(token, next);
+  return next;
+}
+async function drain(token: string): Promise<FlushResult> {
   const results = new Map<string, HwSubmitResult | null>();
   let q = readQueue(token);
   while (q.length) {
@@ -129,13 +138,14 @@ export async function flush(token: string): Promise<{ ok: boolean; results: Map<
       const err = e instanceof HwError ? e : toError(e);
       // 진행 기록이 아직 못 끝난 활동이면(incomplete) 그 기록만 버린다 — 학생이 다시 끝내면 된다
       if (err.kind === 'incomplete') {
-        q = q.slice(1);
+        q = readQueue(token).filter((op) => op.clientId !== q[0].clientId);
         writeQueue(token, q);
         continue;
       }
       return { ok: false, results, error: err };
     }
-    q = q.slice(1);
+    const sentId = q[0].clientId;
+    q = readQueue(token).filter((op) => op.clientId !== sentId);
     writeQueue(token, q);
   }
   return { ok: true, results };

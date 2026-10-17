@@ -6,6 +6,7 @@ import SoloChat from '../components/solo/SoloChat';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
+import { uploadRecording } from '../lib/homework/blockApi';
 import {
   enqueue,
   flush,
@@ -376,6 +377,8 @@ function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state:
 
   const api = useMemo<RunnerApi>(
     () => ({
+      cacheScope: token,
+      uploadRecording: (itemId, blob, duration) => uploadRecording(token, itemId, blob, duration),
       submit: (itemId, qIndex, response, ms) =>
         run(async () => {
           const r = await enqueue(token, { op: 'submit', clientId: newId(), itemId, qIndex, response, ms });

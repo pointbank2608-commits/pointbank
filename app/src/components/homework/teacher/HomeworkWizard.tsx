@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchCurriculumLessons, fetchStudentsOfClass, fetchWordLists } from '../../../lib/api';
 import { wordListToCards } from '../../../lib/gameFromWords';
 import { createHomework, teacherErrorKey } from '../../../lib/homework';
 import { fetchClassWrongCards, useBuildLabels } from '../../../lib/homework/teacherHelpers';
 import { buildItems, buildKidsItems, buildWatchItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
-import type { HwPlan } from '../../../lib/homework/types';
+import type { HwPlan, HwItemDraft } from '../../../lib/homework/types';
 import type { CurriculumLesson, FullCardItem, Student, WordList } from '../../../lib/types';
 import type { VideoClip } from '../../../lib/videoClips';
 import { parseShadowText } from '../../../lib/shadowLines';
@@ -33,6 +33,7 @@ export default function HomeworkWizard({
   pickedCards,
   onCancel,
   onCreated,
+  onEdit,
 }: {
   academyId: string;
   classId: string;
@@ -47,6 +48,7 @@ export default function HomeworkWizard({
   pickedCards?: FullCardItem[];
   onCancel: () => void;
   onCreated: (hw: { id: string; code: string }) => void;
+  onEdit?: (items: HwItemDraft[], title: string, studentIds: string[] | null, due: string) => void;
 }) {
   const { t } = useTranslation();
   const labels = useBuildLabels();
@@ -95,6 +97,8 @@ export default function HomeworkWizard({
   const [seed, setSeed] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const createLock = useRef(false);
+  const createRequest = useRef({ key: '', id: crypto.randomUUID() });
 
   useEffect(() => {
     void fetchStudentsOfClass(classId).then(setStudents).catch(() => setStudents([]));
@@ -204,10 +208,15 @@ export default function HomeworkWizard({
   const finalTitle = title.trim() || sourceName || t('studentHw.defaultTitle');
 
   async function create() {
+    if (createLock.current) return;
+    createLock.current = true;
     setBusy(true);
     setErr(null);
     try {
+      const key = JSON.stringify([classId, finalTitle, items, everyone, targetIds, due]);
+      if (createRequest.current.key !== key) createRequest.current = { key, id: crypto.randomUUID() };
       const hw = await createHomework({
+        requestId: createRequest.current.id,
         classId,
         title: finalTitle,
         items,
@@ -219,6 +228,7 @@ export default function HomeworkWizard({
     } catch (e) {
       setErr(t(teacherErrorKey(e)));
     } finally {
+      createLock.current = false;
       setBusy(false);
     }
   }
@@ -630,6 +640,7 @@ export default function HomeworkWizard({
             </button>
             <p className="text-sm text-on-surface-variant">{t('studentHw.previewNote')}</p>
           </div>
+          {onEdit && <button type="button" className="min-h-12 rounded-xl bg-warm-yellow px-5 font-bold text-deep-navy" onClick={() => onEdit(items, finalTitle, everyone ? null : targetIds, due)}>{t('studentHw.editBlocks')}</button>}
           <HomeworkPreview title={finalTitle} items={items} />
         </div>
       )}
