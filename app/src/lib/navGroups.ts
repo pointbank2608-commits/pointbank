@@ -13,6 +13,8 @@ export interface NavGroup {
   labelKey: string;
   icon: string;
   children: NavChild[];
+  /** 묶음 행을 눌렀을 때 가는 홈 화면(없으면 첫 항목). 이 주소에서는 묶음만 펼치고 항목은 선택하지 않는다 */
+  home?: string;
 }
 
 export const STAFF_NAV_GROUPS: NavGroup[] = [
@@ -32,6 +34,7 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
     id: 'library',
     labelKey: 'nav.group_library',
     icon: 'folder',
+    home: '/resources',
     children: [
       { to: '/games', labelKey: 'nav.gameCenter', icon: 'sports_esports' },
       { to: '/materials', labelKey: 'nav.classroomMaterials', icon: 'print' },
@@ -86,6 +89,10 @@ export function findActive(groups: NavGroup[], pathname: string): { group: NavGr
         best = { group, child };
       }
     }
+  }
+  if (!best) {
+    const home = groups.find((g) => g.home && pathMatches(pathname, g.home));
+    if (home) best = { group: home, child: { to: home.home as string, labelKey: home.labelKey, icon: home.icon } };
   }
   return best;
 }

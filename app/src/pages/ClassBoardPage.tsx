@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import ClassroomHeader from '../components/ClassroomHeader';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AddStudentModal from '../components/AddStudentModal';
@@ -315,6 +316,7 @@ export default function ClassBoardPage() {
 
   return (
     <div className="space-y-6">
+      <ClassroomHeader />
       <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

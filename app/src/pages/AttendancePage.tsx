@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import i18n from '../i18n';
 import ClassChipRow from '../components/ClassChipRow';
+import ClassroomHeader from '../components/ClassroomHeader';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
 import StudentLoginPanel from '../components/StudentLoginPanel';
 import AddStudentModal from '../components/AddStudentModal';
@@ -24,6 +25,13 @@ import {
 import { useClasses } from '../lib/useClasses';
 import { FREE_CLASS_LIMIT, FREE_STUDENT_LIMIT } from '../lib/planLimits';
 import type { Attendance, Student } from '../lib/types';
+
+const AVATAR_TONES = ['#cfe3ff', '#ffd9e6', '#d6f5e6', '#e4dcff', '#ffeaa8', '#cdeff2'];
+function avatarTone(name: string): string {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % AVATAR_TONES.length;
+  return AVATAR_TONES[h];
+}
 
 function pad(n: number): string {
   return String(n).padStart(2, '0');
@@ -161,6 +169,10 @@ export default function AttendancePage() {
     }
   }
 
+  const todayRef = new Date();
+  const isThisMonth = todayRef.getFullYear() === year && todayRef.getMonth() + 1 === month;
+  const todayDay = todayRef.getDate();
+  const weekdayLabel = (d: number) => new Date(year, month - 1, d).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'ko-KR', { weekday: 'short' });
   const map = useMemo(() => {
     const m = new Map<string, Attendance>(); // `${studentId}_${day}`
     for (const a of attendance) {
@@ -169,6 +181,7 @@ export default function AttendancePage() {
     }
     return m;
   }, [attendance]);
+  const presentToday = isThisMonth ? students.filter((s) => map.has(`${s.id}_${todayDay}`)).length : 0;
 
   function shiftMonth(delta: number) {
     let m = month + delta;
@@ -257,14 +270,15 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      <ClassroomHeader />
       <div className="flex flex-wrap items-center gap-2">
         <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
         <button
           onClick={() => void handleAddClass()}
           disabled={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT}
           title={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT ? t('attendance.freeClassLimitToast') : undefined}
-          className="flex items-center gap-1 px-4 py-2 rounded-full font-label-md text-label-md text-primary border border-dashed border-primary/50 hover:bg-surface-container-low transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          className="flex min-h-11 items-center gap-1 rounded-full border border-dashed border-primary/60 bg-white px-5 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           {t('settings.addClass')}
@@ -276,57 +290,76 @@ export default function AttendancePage() {
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-            {t('nav.attendance')}
-          </h2>
-          {selectedId && (
-            <div className="mt-1 flex items-center gap-2">
-              <button
-                onClick={() => void handleAddStudent()}
-                disabled={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT}
-                title={
-                  !hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT
-                    ? t('attendance.freeStudentLimitToast')
-                    : undefined
-                }
-                className="font-label-md text-label-md text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
-              >
-                {t('board.addStudent')}
-              </button>
-              {!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT && (
-                <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
-                  {t('plan.upgradeCta')}
-                </Link>
-              )}
+      {selectedId && students.length > 0 && (
+        <div className="rounded-[20px] bg-deep-navy px-2 py-5 shadow-card sm:px-4">
+          <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:divide-x sm:divide-white/20">
+            <div className="flex items-center gap-3.5 px-4 py-1 sm:px-6">
+              <span className="material-symbols-outlined text-[38px] text-[#7fb2ff]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>groups</span>
+              <div>
+                <div className="font-caption text-[13px] text-white/75">{t('attendanceV2.selectedClass')}</div>
+                <div className="font-display-lg text-[22px] font-extrabold text-white">{t('attendanceV2.people', { n: students.length })}</div>
+              </div>
             </div>
-          )}
+            <div className="flex items-center gap-3.5 px-4 py-1 sm:px-6">
+              <span className="material-symbols-outlined text-[38px] text-[#7fb2ff]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>event_available</span>
+              <div>
+                <div className="font-caption text-[13px] text-white/75">{t('attendanceV2.todayPresent')}</div>
+                <div className="font-display-lg text-[22px] font-extrabold text-white">{isThisMonth ? t('attendanceV2.people', { n: presentToday }) : '–'}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3.5 px-4 py-1 sm:px-6">
+              <span className="material-symbols-outlined text-[38px] text-[#7fb2ff]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>fact_check</span>
+              <div>
+                <div className="font-caption text-[13px] text-white/75">{t('attendanceV2.monthRecords')}</div>
+                <div className="font-display-lg text-[22px] font-extrabold text-white">{t('attendanceV2.times', { n: map.size })}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-sm px-2 py-1.5">
-          <button
-            onClick={() => shiftMonth(-1)}
-            className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-            aria-label={t('attendance.prevMonth')}
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <span className="font-title-md text-title-md text-on-surface px-3">
-            {t('attendance.monthLabel', { year, month })}
-          </span>
-          <button
-            onClick={() => shiftMonth(1)}
-            className="p-1.5 rounded-md hover:bg-surface-container-low text-on-surface-variant transition-colors"
-            aria-label={t('attendance.nextMonth')}
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {studentAreaOpen && selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
 
-      <p className="font-caption text-caption text-on-surface-variant">{t('attendance.title')} · {t('attendance.hint')}</p>
+      <section className="space-y-4 rounded-[20px] border border-outline-variant bg-white p-4 shadow-card sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display-lg text-[clamp(1.4rem,2.4vw,1.8rem)] font-black text-deep-navy">{t('nav.attendance')}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-[12px] border border-outline-variant bg-white px-1.5 py-1">
+              <button
+                onClick={() => shiftMonth(-1)}
+                className="rounded-md p-1.5 text-on-surface-variant transition-colors hover:bg-primary-fixed"
+                aria-label={t('attendance.prevMonth')}
+              >
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+              <span className="px-3 font-title-md text-[17px] font-bold text-deep-navy">{t('attendance.monthLabel', { year, month })}</span>
+              <button
+                onClick={() => shiftMonth(1)}
+                className="rounded-md p-1.5 text-on-surface-variant transition-colors hover:bg-primary-fixed"
+                aria-label={t('attendance.nextMonth')}
+              >
+                <span className="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+            {selectedId && (
+              <>
+                <button
+                  onClick={() => void handleAddStudent()}
+                  disabled={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT}
+                  title={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT ? t('attendance.freeStudentLimitToast') : undefined}
+                  className="flex min-h-11 items-center gap-1 rounded-[12px] border border-primary px-4 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {t('board.addStudent')}
+                </button>
+                {!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT && (
+                  <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
+                    {t('plan.upgradeCta')}
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+        </div>
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
@@ -343,26 +376,31 @@ export default function AttendancePage() {
           )}
         </div>
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl shadow-card p-4 md:p-6 overflow-x-auto">
-          <table className="w-full text-center border-collapse">
+        <div className="overflow-x-auto rounded-[14px] border border-outline-variant">
+          <table className="w-full border-collapse text-center">
             <thead>
-              <tr className="font-caption text-caption text-on-surface-variant">
-                <th className="text-left pb-3 pr-3 sticky left-0 bg-surface-container-lowest">{t('attendance.name')}</th>
-                {days.map((d) => (
-                  <th key={d} className="pb-3 px-1 min-w-[28px]">
-                    {d}
-                  </th>
-                ))}
-                <th className="pb-3 pl-2">{t('attendance.total')}</th>
+              <tr className="bg-primary-fixed/70 font-caption text-[13px] font-bold text-deep-navy">
+                <th className="sticky left-0 z-10 bg-[#e9f2ff] px-4 py-3 text-left">{t('attendance.name')}</th>
+                {days.map((d) => {
+                  const isToday = isThisMonth && d === todayDay;
+                  return (
+                    <th key={d} className={`min-w-[44px] px-1 py-3 ${isToday ? 'bg-primary text-white' : ''}`}>
+                      {d}
+                      <span className={`block text-[11px] font-semibold ${isToday ? 'text-white/85' : 'text-on-surface-variant'}`}>{weekdayLabel(d)}</span>
+                    </th>
+                  );
+                })}
+                <th className="px-3 py-3">{t('attendance.total')}</th>
               </tr>
             </thead>
             <tbody>
               {students.map((s) => {
                 const count = days.filter((d) => map.has(`${s.id}_${d}`)).length;
                 return (
-                  <tr key={s.id} className="border-t border-surface-container">
-                    <td className="text-left py-2 pr-3 font-label-md text-label-md text-on-surface whitespace-nowrap sticky left-0 bg-surface-container-lowest">
+                  <tr key={s.id} className="border-t border-outline-variant/70">
+                    <td className="sticky left-0 z-10 whitespace-nowrap bg-white px-4 py-2 text-left font-label-md text-[15px] font-bold text-deep-navy">
                       <div className="flex items-center gap-1">
+                        <span className="mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold text-deep-navy" style={{ background: avatarTone(s.name) }}>{s.name.slice(0, 1)}</span>
                         <span>{s.name}</span>
                         <button
                           onClick={() => void handleRenameStudent(s.id, s.name)}
@@ -392,23 +430,26 @@ export default function AttendancePage() {
                       const key = `${s.id}_${d}`;
                       const rec = map.get(key);
                       return (
-                        <td key={d} className="py-1 px-0.5">
+                        <td key={d} className={`px-0.5 py-1.5 ${isThisMonth && d === todayDay ? 'bg-primary-fixed/60' : ''}`}>
                           <button
                             disabled={busyKey === key}
                             title={cellTooltip(rec)}
+                            aria-label={t(rec ? 'attendanceV2.checkedAria' : 'attendanceV2.uncheckedAria', { name: s.name, day: d })}
                             onClick={() => void handleCellClick(s.id, s.name, d)}
-                            className={`w-6 h-6 rounded-full text-xs transition-colors ${
-                              rec
-                                ? 'bg-secondary text-on-secondary'
-                                : 'bg-surface-container-low hover:bg-surface-container text-transparent'
+                            className={`flex h-7 w-7 items-center justify-center rounded-[7px] border-2 transition-colors ${
+                              rec ? 'border-primary bg-primary text-white' : 'border-outline-variant bg-white hover:border-primary/60'
                             } disabled:opacity-50`}
                           >
-                            {rec ? '●' : ''}
+                            {rec && (
+                              <span className="material-symbols-outlined text-[18px]" aria-hidden>
+                                check
+                              </span>
+                            )}
                           </button>
                         </td>
                       );
                     })}
-                    <td className="py-2 pl-2 font-title-md text-title-md text-primary">{count}</td>
+                    <td className="px-3 py-2 font-title-md text-[17px] font-extrabold text-primary">{count}</td>
                   </tr>
                 );
               })}
@@ -416,6 +457,45 @@ export default function AttendancePage() {
           </table>
         </div>
       )}
+
+        <div className="flex flex-wrap items-center justify-between gap-2 font-body-md text-[14px] text-on-surface-variant">
+          <span className="flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden>info</span>
+            {t('attendance.hint')}
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-[5px] bg-primary text-white" aria-hidden>
+              <span className="material-symbols-outlined text-[15px]">check</span>
+            </span>
+            {t('attendanceV2.legendPresent')}
+            <span className="ml-2 h-5 w-5 rounded-[5px] border-2 border-outline-variant bg-white" aria-hidden />
+            {t('attendanceV2.legendNone')}
+          </span>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Link to="/board" className="flex items-center gap-4 rounded-[18px] bg-[#fff4c2] px-5 py-5 shadow-card transition hover:-translate-y-0.5">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#ffc531] text-white">
+            <span className="material-symbols-outlined text-[32px]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-title-md text-[19px] font-extrabold text-deep-navy">{t('attendanceV2.shortcutBoard')}</span>
+            <span className="block font-body-md text-[14px] text-deep-navy/75">{t('attendanceV2.shortcutBoardDesc')}</span>
+          </span>
+          <span className="material-symbols-outlined text-[28px] text-deep-navy" aria-hidden>chevron_right</span>
+        </Link>
+        <Link to="/results" className="flex items-center gap-4 rounded-[18px] bg-[#e6f1ff] px-5 py-5 shadow-card transition hover:-translate-y-0.5">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+            <span className="material-symbols-outlined text-[30px]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-title-md text-[19px] font-extrabold text-deep-navy">{t('attendanceV2.shortcutResults')}</span>
+            <span className="block font-body-md text-[14px] text-deep-navy/75">{t('attendanceV2.shortcutResultsDesc')}</span>
+          </span>
+          <span className="material-symbols-outlined text-[28px] text-deep-navy" aria-hidden>chevron_right</span>
+        </Link>
+      </div>
 
       {detail && (
         <div

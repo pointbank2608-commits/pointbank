@@ -36,7 +36,16 @@ academy = {'id': aid, 'name': '스프링 잉글리시', 'point_unit': '별', 'in
            'next_billing_at': None, 'card_brand': None, 'card_last4': None, 'trial_ends_at': None, 'features': {'group': True, 'solo': True, 'homework': True}}
 classes = [] if empty else [{'id': f'c{i}', 'academy_id': aid, 'name': f'{n}반', 'sort_order': i, 'schedule': None, 'created_at': '2026-10-01T00:00:00Z'} for i, n in enumerate(['A', 'B', 'C', 'D', 'E', 'F', 'G'])]
 students = [] if empty else [{'id': f's{i}', 'academy_id': aid, 'class_id': f'c{i % 7}', 'name': f'학생{i}', 'created_at': '2026-10-01T00:00:00Z'} for i in range(11)]
-tables = {'profiles': profile, 'academies': academy, 'classes': classes, 'students': students}
+import datetime
+_today = datetime.date.today()
+attendance = [] if empty else [{'id': f'a{i}-{d}', 'academy_id': aid, 'student_id': f's{i}', 'class_id': f'c{i % 7}', 'attended_on': (_today - datetime.timedelta(days=d)).isoformat(), 'checked_in_at': '2026-10-15T07:00:00Z', 'checked_out_at': None, 'created_at': '2026-10-15T07:00:00Z'}
+                               for i in range(11) for d in range(0, 6) if (i + d) % 3 != 0]
+def _lesson(i, name, kinds):
+    return {'id': f'l{i}', 'academy_id': aid, 'class_id': 'c0', 'name': name, 'level': None, 'word_list_id': None, 'video_url': None, 'created_at': '2026-10-10T00:00:00Z', 'updated_at': f'2026-10-1{i}T00:00:00Z',
+            'playlist': [{'id': f'sl{i}{j}', 'kind': k, **({'gameType': 'wheel'} if k == 'game' else {})} for j, k in enumerate(kinds)]}
+lessons = [] if empty else [_lesson(1, 'Animals · 동물 친구들', ['wordshow', 'game', 'game']), _lesson(2, 'Phonics · 짧은 모음 a', ['study', 'material']), _lesson(3, 'How much is it?', ['grammar', 'game']),
+                            _lesson(4, 'Weather · 오늘의 날씨', ['video', 'qna']), _lesson(5, 'My Body · 몸과 움직임', ['canvas']), _lesson(6, 'Food · 좋아하는 음식', ['reading', 'game'])]
+tables = {'profiles': profile, 'academies': academy, 'classes': classes, 'students': students, 'attendance': attendance, 'curriculum_lessons': lessons}
 
 
 def handle(route):

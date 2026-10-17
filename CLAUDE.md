@@ -371,6 +371,8 @@ KCP 카드사 심사 10곳 모두 완료(BC카드만 정기결제 불가 — 사
 
 ---
 
+**v2 시안 3장(2026-10-17, `Design_Kit_v2`)**: 수업 `/curriculum`은 파란 "추천 구성으로 만들기"·노란 "직접 구성하기" 배너 + 3열 수업 카드(`lib/lessonCover.ts`가 표지를 정함 — 수업에 든 첫 게임의 표지 그림, 없으면 활동 종류별 색 표지). **자료 홈 `/resources`**(`ResourcesHomePage`)가 새로 생겼고 사이드바 "자료" 행(`NavGroup.home`)이 여기로 간다 — 게임 `/games`·활동지 `/materials` 목록과 직접 링크는 그대로이며 이 화면은 길만 안내한다(무료 플랜 잠금 표시 포함). 우리 반 세 화면은 `ClassroomHeader`(제목·출석부/칭찬 통장/기록 탭)를 공유하고 출석부는 네이비 요약 띠·체크 상자 표·오늘 열 강조·하단 바로가기를 갖는다("미확인"은 저장 데이터로 구분할 수 없어 표시하지 않음). 시안 속 학습 그림·학생 이름은 예시라 가져오지 않았다.
+
 ## 디자인 개편 (2026-10-17, 경쟁 서비스 조사 → "크림 + 점토 + 제품 화면", 지시서 `docs/prompts/stage2-design-cream-clay.md`)
 
 경쟁(클래스카드·칭찬모아·ClassDojo·Kahoot 등)이 보라색에 몰려 있어서 네이비·민트·노랑 + 점토 그림으로 차별화한다. 토큰은 `app/src/tailwind.css` `@theme`: 바탕 `--color-background #FFF8EC`(크림)·표면/경계 따뜻한 갈색 계열, `rounded-lg/xl` = 12/16px, 카드 그림자는 **`shadow-card`**(파란 그림자 `shadow-[…rgba(39,101,168…)]` 금지), 메뉴 묶음 색 태그 `tag-today|lesson|library|class|more`(+`-ink`, 오늘 노랑·수업 파랑·자료 보라·우리 반 주황·더보기 회색)와 점토 포인트 `clay-*`. 사이드바(`StaffNav`)는 묶음마다 태그색 원 아이콘, 오늘 화면(`DashboardPage`)은 크림 노랑 인사 카드 → **큰 진입 카드 3개**(수업 시작·수업 만들기·활동지 인쇄, `TodayLessons`의 `EntryCard`; 수업 만들기는 `/curriculum`에 `state.openQuick`) → 오늘 수업. 랜딩(`LandingPage`)은 크림 히어로 + 코드로 그린 앱 목업(`components/landing/ProductMock.tsx` — **스크린샷 금지**, 실제 학원·학생 이름이 노출되지 않게) + 점토 소품(`/skins/**` 투명 WebP)·사전 동물 그림 줄(`/landing/*.webp`, 256px 축소본)·게임 표지 8장(`/landing/games/*.webp`); 어두운 구간은 "place" 한 곳만. 랜딩의 게임 수는 `GAME_CATALOG.length`로 센다(문구에 `{{count}}`). 제목 글꼴은 Noto Sans KR 800. 인쇄는 흰 종이(`@media print`에서 body 흰색). 소품은 `skins/clues/trophy.webp`처럼 자홍 배경 잔재가 남은 것이 있으니 쓰기 전에 눈으로 확인할 것. **아직: 점토 캐릭터 전용 새 일러스트, 실제 선생님 후기, 앱 안쪽 나머지 화면의 개별 다듬기.**

@@ -1,4 +1,5 @@
 import { useFeature } from '../lib/features';
+import ClassroomHeader from '../components/ClassroomHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -158,6 +159,7 @@ export default function ResultsPage() {
 
   return (
     <div className="space-y-6">
+      <ClassroomHeader />
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
           {t('results.title')}

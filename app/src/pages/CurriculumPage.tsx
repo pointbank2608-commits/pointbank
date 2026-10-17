@@ -37,6 +37,7 @@ import MoreMenu from '../components/MoreMenu';
 import { useClasses } from '../lib/useClasses';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
+import { lessonCover } from '../lib/lessonCover';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { extractYoutubeId } from '../lib/youtube';
 import { copyLessonToClass } from '../lib/copyLesson';
@@ -729,10 +730,51 @@ export default function CurriculumPage() {
       )}
       <div>
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy mb-1.5">
-          {t('curriculum.pageTitle')}
+          {t('nav.group_lesson')}
         </h2>
-        <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.pageSubtitle')}</p>
+        <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.v2Subtitle')}</p>
       </div>
+
+      {!showForm && (mode === 'group' || !soloOpen) && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setQuickOpen(true)}
+            disabled={!staffClassId}
+            className="relative flex min-h-[132px] items-center gap-5 overflow-hidden rounded-[22px] bg-gradient-to-r from-[#0b6bff] to-[#0a54e6] px-6 py-5 text-left text-white shadow-card transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-white text-primary">
+              <span className="material-symbols-outlined text-[40px]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+            </span>
+            <span className="relative z-10 block min-w-0 max-w-[60%]">
+              <span className="block font-display-lg text-[clamp(1.35rem,2.2vw,1.9rem)] font-black leading-tight">{t('curriculum.bannerQuick')}</span>
+              <span className="mt-1 flex items-center gap-1 font-body-md text-[15px] text-white/90">
+                {t('curriculum.bannerQuickDesc')}
+                <span className="material-symbols-outlined text-[20px]" aria-hidden>chevron_right</span>
+              </span>
+            </span>
+            <img src="/ui2/m-paper.webp" alt="" aria-hidden width={760} height={667} draggable={false} className="pointer-events-none absolute -bottom-1 right-3 h-[108%] w-auto max-w-[34%] select-none object-contain object-bottom" />
+          </button>
+          <button
+            type="button"
+            onClick={openCreateForm}
+            disabled={!staffClassId}
+            className="relative flex min-h-[132px] items-center gap-5 overflow-hidden rounded-[22px] bg-[#fff4c2] px-6 py-5 text-left shadow-card transition hover:-translate-y-0.5 disabled:opacity-50"
+          >
+            <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-full bg-[#ffc531] text-white">
+              <span className="material-symbols-outlined text-[40px]" aria-hidden>add</span>
+            </span>
+            <span className="relative z-10 block min-w-0 max-w-[60%]">
+              <span className="block font-display-lg text-[clamp(1.35rem,2.2vw,1.9rem)] font-black leading-tight text-deep-navy">{t('curriculum.bannerCreate')}</span>
+              <span className="mt-1 flex items-center gap-1 font-body-md text-[15px] text-deep-navy/75">
+                {t('curriculum.bannerCreateDesc')}
+                <span className="material-symbols-outlined text-[20px]" aria-hidden>chevron_right</span>
+              </span>
+            </span>
+            <img src="/ui2/m-wave.webp" alt="" aria-hidden loading="lazy" width={683} height={626} draggable={false} className="pointer-events-none absolute -bottom-1 right-3 h-[108%] w-auto max-w-[30%] select-none object-contain object-bottom" />
+          </button>
+        </div>
+      )}
 
       <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
 
@@ -791,38 +833,7 @@ export default function CurriculumPage() {
         </div>
       )}
 
-      {!showForm ? (
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setQuickOpen(true)}
-            disabled={!staffClassId}
-            className="flex min-h-12 items-center gap-1.5 rounded-full bg-primary px-6 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[20px]">bolt</span>
-            {t('quickLesson.open')}
-            <span className="rounded-full bg-white/25 px-2 py-0.5 text-[11px]">{t('quickLesson.recommended')}</span>
-          </button>
-          {/* 직접 구성·완성 수업은 보조 버튼 — 처음에는 "간편하게 만들기"만 눈에 띄게 둔다 */}
-          <button
-            type="button"
-            onClick={openCreateForm}
-            disabled={!staffClassId}
-            className="min-h-12 rounded-full border border-outline-variant px-5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:opacity-50"
-          >
-            {t('curriculum.createButton')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setLibraryOpen(true)}
-            disabled={!staffClassId}
-            className="flex min-h-12 items-center gap-1.5 rounded-full border border-outline-variant px-5 font-label-md text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[20px]">local_library</span>
-            {t('lessonLibrary.open')}
-          </button>
-        </div>
-      ) : (
+      {!showForm ? null : (
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <BackButton onClick={handleCancel} to={t('curriculum.backToList')} />
           <h3 className="font-title-md text-title-md text-on-surface">
@@ -1117,6 +1128,22 @@ export default function CurriculumPage() {
         <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.noLessons')}</div>
       )}
 
+      {!showForm && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display-lg text-[clamp(1.4rem,2.4vw,1.8rem)] font-black text-deep-navy">{t('curriculum.mineTitle')}</h2>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            disabled={!staffClassId}
+            className="flex min-h-11 items-center gap-2 rounded-full bg-primary-fixed px-5 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed-dim disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[20px]" aria-hidden>local_library</span>
+            {t('curriculum.browseLibrary')}
+            <span className="material-symbols-outlined text-[20px]" aria-hidden>chevron_right</span>
+          </button>
+        </div>
+      )}
+
       {lessons.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">
           <label className="relative min-w-[200px] flex-1 sm:max-w-xs">
@@ -1150,7 +1177,7 @@ export default function CurriculumPage() {
                     }
                   }}
                   className={`flex min-h-11 items-center gap-0.5 rounded-full pl-4 pr-3 font-label-md text-label-md transition-colors ${
-                    on ? 'bg-secondary-container text-on-secondary-container' : 'border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
+                    on ? 'bg-primary-fixed text-primary' : 'border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
                   }`}
                 >
                   {t(`curriculum.sort.${k}`)}
@@ -1173,66 +1200,80 @@ export default function CurriculumPage() {
           return (
             <div
               key={lesson.id}
-              className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3"
+              className="flex flex-col overflow-hidden rounded-[20px] border border-outline-variant bg-white shadow-card"
             >
-              <div className="flex items-start justify-between gap-2">
+              {(() => {
+                const cover = lessonCover(lesson);
+                return (
+                  <div className={`relative flex h-[150px] items-center justify-center overflow-hidden ${cover.tone}`}>
+                    {cover.image ? (
+                      <img src={cover.image} alt="" aria-hidden loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-outlined text-deep-navy/35" aria-hidden style={{ fontSize: 76, fontVariationSettings: "'FILL' 1" }}>
+                        {cover.icon}
+                      </span>
+                    )}
+                    {!lesson.class_id && (
+                      <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 font-caption text-caption font-bold text-deep-navy">
+                        {t('curriculum.sharedLessonBadge')}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+              <div className="flex flex-1 flex-col gap-2.5 p-4">
                 <div>
-                  <h3 className="font-title-md text-title-md text-on-surface">{lesson.name}</h3>
-                  {!lesson.class_id && (
-                    <span className="mt-1 inline-block rounded-full bg-tertiary-container px-2 py-0.5 font-caption text-caption text-on-tertiary-container">
-                      {t('curriculum.sharedLessonBadge')}
-                    </span>
-                  )}
-                  {lesson.level && (
-                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-caption text-caption">
-                      {lesson.level}
-                    </span>
+                  <h3 className="font-title-md text-[18px] font-extrabold leading-snug text-deep-navy">{lesson.name}</h3>
+                  <p className="mt-0.5 font-body-md text-[13px] text-on-surface-variant">
+                    {lessonCover(lesson)
+                      .tags.slice(0, 3)
+                      .map((k) => t(`curriculum.kindTag_${k}`))
+                      .join(' · ')}
+                    {lesson.level && ` · ${lesson.level}`}
+                  </p>
+                  {wl && (
+                    <p className="mt-0.5 truncate font-body-md text-[13px] text-on-surface-variant">
+                      {t('curriculum.wordListLabel')}: {wl.name} ({wl.items.length})
+                    </p>
                   )}
                 </div>
-              </div>
-
-              {wl && (
-                <div className="font-body-sm text-body-sm text-on-surface-variant">
-                  {t('curriculum.wordListLabel')}: {wl.name} ({wl.items.length})
+                {/* 슬라이드 아이콘 줄은 화면만 차지해서(2026-10-05 사용자 피드백) 장 수만 보여 준다.
+                    특정 슬라이드부터 발표는 편집 화면의 "이 슬라이드부터 발표"로 한다. */}
+                <div className="flex items-center gap-1.5 font-body-md text-[14px] font-semibold text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden>deployed_code</span>
+                  {t('curriculum.slideCount', { count: effectiveSlides(lesson).length })}
                 </div>
-              )}
-
-              {/* 슬라이드 아이콘 줄은 화면만 차지해서(2026-10-05 사용자 피드백) 장 수만 보여 준다.
-                  특정 슬라이드부터 발표는 편집 화면의 "이 슬라이드부터 발표"로 한다. */}
-              <div className="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
-                <span className="material-symbols-outlined text-[18px]">slideshow</span>
-                {t('curriculum.slideCount', { count: effectiveSlides(lesson).length })}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => requestStart(lesson)}
-                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
-              >
-                ▶ {t('curriculum.startButton')}
-              </button>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditForm(lesson)}
-                  className="flex min-h-12 min-w-[7rem] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-primary px-3 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
-                >
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
-                  {t('curriculum.editButton')}
-                </button>
-                <MoreMenu
-                  className="min-w-[7rem] flex-1"
-                  triggerLabel={t('curriculum.moreButton')}
-                  items={[
-                    ...(homeworkOpen
-                      ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id } }) }]
-                      : []),
-                    { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
-                    { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },
-                    { key: 'history', label: t('curriculum.history.button'), icon: 'history', onSelect: () => setHistoryLesson(lesson) },
-                    { key: 'delete', label: t('common.delete'), icon: 'delete', danger: true, onSelect: () => void handleDelete(lesson) },
-                  ]}
-                />
+                <div className="mt-auto flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => requestStart(lesson)}
+                    className="flex min-h-11 min-w-[6.5rem] flex-[1.4] items-center justify-center gap-1.5 rounded-[10px] bg-primary px-3 font-label-md text-[15px] font-bold text-on-primary transition-colors hover:bg-primary-container"
+                  >
+                    <span className="material-symbols-outlined text-[20px]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+                    {t('curriculum.startButton')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(lesson)}
+                    className="flex min-h-11 min-w-[4.5rem] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-outline-variant px-3 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed"
+                  >
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden>edit</span>
+                    {t('curriculum.editButton')}
+                  </button>
+                  <MoreMenu
+                    className="min-w-[4.5rem] flex-1"
+                    triggerLabel={t('curriculum.moreButton')}
+                    items={[
+                      ...(homeworkOpen
+                        ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id } }) }]
+                        : []),
+                      { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
+                      { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },
+                      { key: 'history', label: t('curriculum.history.button'), icon: 'history', onSelect: () => setHistoryLesson(lesson) },
+                      { key: 'delete', label: t('common.delete'), icon: 'delete', danger: true, onSelect: () => void handleDelete(lesson) },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
           );

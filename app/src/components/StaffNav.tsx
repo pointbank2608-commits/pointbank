@@ -39,7 +39,7 @@ export default function StaffNav({ onNavigate }: Props) {
         return (
           <li key={g.id}>
             <Link
-              to={g.children[0].to}
+              to={g.home ?? g.children[0].to}
               onClick={onNavigate}
               aria-expanded={single ? undefined : isActive}
               aria-current={single && isActive ? 'page' : undefined}
