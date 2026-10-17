@@ -365,6 +365,12 @@ KCP 카드사 심사 10곳 모두 완료(BC카드만 정기결제 불가 — 사
 
 ---
 
+## 전체 사이트 디자인 v3 (2026-10-17, 키트 `ClassBank_Full_Site_Design_Kit` — 앞의 "크림 + 점토" 개편을 대체)
+
+시안 2장(로그인·오늘 런처)을 기준으로 **네이비·블루·노랑 + 주황 책 캐릭터**로 바꿨다. 토큰(`tailwind.css` `@theme`): 바탕 `#F7F9FD`, 주 파랑 `primary #0866FF`(호버 `primary-container #0054DC`), 네이비 `deep-navy #102B50`(사이드바·통계 띠), 연파랑 `primary-fixed #E8F3FF`, 노랑 `warm-yellow #FFD24D`, 경계 `outline-variant #DEE8F5`, 그림자 `shadow-card`. 제목 글꼴은 Noto Sans KR 800. 앱 화면 대부분은 이 토큰만 바꿔서 따라온다(이전 크림 색을 직접 적은 곳은 거의 없다). 사이드바는 네이비(`AppLayout`·`StaffNav`, 폭 17.5rem, 활성 메뉴 = 파란 알약)이고 글자 크기·KO/EN은 데스크톱에서 위쪽 막대, 모바일에서는 서랍 안에 있다. 로그인(`AuthPage`)은 왼쪽 문구+삽화·오른쪽 흰 카드, 오늘 화면(`DashboardPage`+`TodayLessons`)은 큰 파란 "수업 시작" · 노란 "수업 만들기" · 연파랑 "활동지 인쇄" → 네이비 통계 띠(오늘 수업·등원·칭찬 포인트·지급 학생) → 빠른 실행·샘플 체험 → 오늘 수업 목록 → 시작하기 체크리스트 → 오늘 할 일·알림. 새 그림은 `public/ui2/`(`m-hero|paper|printer|pencil|wave`, `login-scene`; 구글 AI로 만든 뒤 `scripts/vocab/out/ui2/cut.py`로 자홍 배경 제거). 문구는 `dashV2.*`·`auth.hero*`·`nav.sidebarCheer`. 진행표와 화면별 확인 범위는 `docs/ui-redesign-progress.md`. 점검 도구: `MSYS_NO_PATHCONV=1 python app/scripts/demo/mock_app.py /경로 너비 높이 저장파일 [empty] [full]`(개발 서버 필요, 가짜 데이터라 운영 데이터에 접속하지 않는다). **아직**: 게임 47종·편집기·인쇄 미리보기·관리자·랜딩 등 토큰 밖 화면의 개별 확인, 표 밀도 다듬기.
+
+---
+
 ## 디자인 개편 (2026-10-17, 경쟁 서비스 조사 → "크림 + 점토 + 제품 화면", 지시서 `docs/prompts/stage2-design-cream-clay.md`)
 
 경쟁(클래스카드·칭찬모아·ClassDojo·Kahoot 등)이 보라색에 몰려 있어서 네이비·민트·노랑 + 점토 그림으로 차별화한다. 토큰은 `app/src/tailwind.css` `@theme`: 바탕 `--color-background #FFF8EC`(크림)·표면/경계 따뜻한 갈색 계열, `rounded-lg/xl` = 12/16px, 카드 그림자는 **`shadow-card`**(파란 그림자 `shadow-[…rgba(39,101,168…)]` 금지), 메뉴 묶음 색 태그 `tag-today|lesson|library|class|more`(+`-ink`, 오늘 노랑·수업 파랑·자료 보라·우리 반 주황·더보기 회색)와 점토 포인트 `clay-*`. 사이드바(`StaffNav`)는 묶음마다 태그색 원 아이콘, 오늘 화면(`DashboardPage`)은 크림 노랑 인사 카드 → **큰 진입 카드 3개**(수업 시작·수업 만들기·활동지 인쇄, `TodayLessons`의 `EntryCard`; 수업 만들기는 `/curriculum`에 `state.openQuick`) → 오늘 수업. 랜딩(`LandingPage`)은 크림 히어로 + 코드로 그린 앱 목업(`components/landing/ProductMock.tsx` — **스크린샷 금지**, 실제 학원·학생 이름이 노출되지 않게) + 점토 소품(`/skins/**` 투명 WebP)·사전 동물 그림 줄(`/landing/*.webp`, 256px 축소본)·게임 표지 8장(`/landing/games/*.webp`); 어두운 구간은 "place" 한 곳만. 랜딩의 게임 수는 `GAME_CATALOG.length`로 센다(문구에 `{{count}}`). 제목 글꼴은 Noto Sans KR 800. 인쇄는 흰 종이(`@media print`에서 body 흰색). 소품은 `skins/clues/trophy.webp`처럼 자홍 배경 잔재가 남은 것이 있으니 쓰기 전에 눈으로 확인할 것. **아직: 점토 캐릭터 전용 새 일러스트, 실제 선생님 후기, 앱 안쪽 나머지 화면의 개별 다듬기.**

@@ -59,12 +59,12 @@ export default function AcademyCodeButton() {
   );
 
   return (
-    <div className="mb-6 mx-4">
+    <div className="mx-4 mt-4">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
+        className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-white/20 bg-white/5 px-4 py-2.5 font-label-md text-[15px] font-semibold text-white/90 transition-colors hover:bg-white/15"
       >
         <span className="material-symbols-outlined">{open ? 'expand_less' : 'key'}</span>
         {open ? t('nav.hideCodes') : t('nav.showCodes')}

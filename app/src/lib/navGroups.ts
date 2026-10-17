@@ -19,19 +19,19 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
   {
     id: 'today',
     labelKey: 'nav.group_today',
-    icon: 'today',
+    icon: 'home',
     children: [{ to: '/dashboard', labelKey: 'nav.dashboard', icon: 'dashboard' }],
   },
   {
     id: 'lesson',
     labelKey: 'nav.group_lesson',
-    icon: 'auto_stories',
+    icon: 'play_circle',
     children: [{ to: '/curriculum', labelKey: 'nav.curriculum', icon: 'auto_stories', feature: 'group' }],
   },
   {
     id: 'library',
     labelKey: 'nav.group_library',
-    icon: 'inventory_2',
+    icon: 'folder',
     children: [
       { to: '/games', labelKey: 'nav.gameCenter', icon: 'sports_esports' },
       { to: '/materials', labelKey: 'nav.classroomMaterials', icon: 'print' },
@@ -56,7 +56,7 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
   {
     id: 'more',
     labelKey: 'nav.group_more',
-    icon: 'more_horiz',
+    icon: 'pending',
     children: [
       { to: '/settings', labelKey: 'nav.settings', icon: 'settings' },
       { to: '/help', labelKey: 'nav.help', icon: 'support_agent' },

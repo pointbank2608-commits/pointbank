@@ -77,42 +77,38 @@ function AppLayoutInner() {
   const homeTo = isStaff ? '/dashboard' : '/me';
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md transition-all ${
-      isActive
-        ? 'bg-secondary-container text-on-secondary-container font-bold'
-        : 'text-on-surface-variant hover:bg-soft-mint/20'
+    `flex items-center gap-3.5 px-4 py-3 rounded-[14px] font-label-md text-[17px] font-semibold transition-all ${
+      isActive ? 'bg-primary text-white shadow-[0_6px_16px_rgb(8_102_255/35%)]' : 'text-white/85 hover:bg-white/10'
     }`;
 
+  const displayName = profile?.display_name ?? '';
+  const roleLabel = ROLE_LABEL[profile?.role ?? ''] ?? '';
+  const planBadge = isPaid ? t('settings.planPaidBadge') : trial.active ? t('trial.badge', { n: (trial.daysLeft ?? 0) + 1 }) : t('settings.planFreeBadge');
+
+  // 네이비 사이드바(시안 02_dashboard_launcher_selected) — 로고·메뉴·마스코트·내 계정
   const sidebarContent = (
     <>
-      <Link to={homeTo} className="flex items-center gap-3 px-4 py-2 mb-6" onClick={() => setMobileOpen(false)}>
-        <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-          {academy?.logo_url ? (
-            <img src={academy.logo_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <BrandMark className="h-10 w-10" />
-          )}
-        </div>
+      <Link to={homeTo} className="flex items-center gap-3 px-6 pb-6 pt-1" onClick={() => setMobileOpen(false)}>
+        {academy?.logo_url ? (
+          <img src={academy.logo_url} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover" />
+        ) : (
+          <BrandMark className="h-10 w-12 shrink-0" />
+        )}
         <div className="min-w-0">
-          <h1 className="font-title-md text-title-md text-deep-navy leading-tight truncate">
-            {academy?.name ?? t('common.brand')}
-          </h1>
-          <p className="font-caption text-caption text-on-surface-variant">
-            {t('nav.pointUnitLabel', { unit: pointUnit })}
-          </p>
+          <h1 className="font-display-lg text-[22px] font-black leading-tight text-white">{t('common.brand')}</h1>
+          <p className="truncate font-caption text-[13px] leading-tight text-white/75">{academy?.name ?? ''}</p>
+          <p className="truncate font-caption text-[11px] leading-tight text-white/45">{t('nav.pointUnitLabel', { unit: pointUnit })}</p>
         </div>
       </Link>
-
-      {isStaff && <AcademyCodeButton />}
 
       {isStaff ? (
         <StaffNav onNavigate={() => setMobileOpen(false)} />
       ) : (
-        <ul className="flex-1 flex flex-col gap-1 px-2">
+        <ul className="flex flex-1 flex-col gap-1.5 px-4">
           {studentNavItems.map((item) => (
             <li key={item.to}>
               <NavLink to={item.to} onClick={() => setMobileOpen(false)} className={navLinkClass}>
-                <span className="material-symbols-outlined">{item.icon}</span>
+                <span className="material-symbols-outlined text-[28px]">{item.icon}</span>
                 <span className="flex-1 truncate">{item.label}</span>
               </NavLink>
             </li>
@@ -120,57 +116,57 @@ function AppLayoutInner() {
         </ul>
       )}
 
-      <div className="mt-auto px-2 pb-2 pt-4 border-t border-outline-variant/30 flex flex-col gap-2">
+      {isStaff && <AcademyCodeButton />}
+
+      <div className="mx-5 mb-4 mt-4 hidden text-center [@media(min-height:820px)]:block">
+        <img src="/ui2/m-pencil.webp" alt="" aria-hidden width={669} height={654} loading="lazy" draggable={false} className="mx-auto h-[7.5rem] w-auto select-none" />
+        <p className="mt-1 font-label-md text-[15px] text-white/90">{t('nav.sidebarCheer')}</p>
+      </div>
+
+      <div className="mt-auto flex flex-col gap-2 border-t border-white/15 px-4 pb-1 pt-4">
         {isStaff ? (
-          // 선생님은 플랜 배지를 눌러 결제 화면으로 바로 갈 수 있다(Claude 등 SaaS의 "이름 · 플랜" 패턴 참고).
+          // 선생님은 이름 줄을 눌러 결제 화면으로 바로 갈 수 있다(이름 · 역할, 플랜 배지).
           <Link
             to="/settings/billing"
             onClick={() => setMobileOpen(false)}
-            className="px-4 py-2 flex items-center gap-2 rounded-lg transition-colors hover:bg-soft-mint/20"
+            className="flex items-center gap-3 rounded-[14px] px-2 py-2 transition-colors hover:bg-white/10"
           >
-            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
-              {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4a9bff] font-title-md text-lg font-bold text-white">
+              {(displayName || t('common.avatarInitialFallback')).slice(0, 1)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
-                <span className="truncate">{profile?.display_name}</span>
-                <span
-                  className={`shrink-0 rounded-full px-1.5 py-0.5 font-caption text-caption ${
-                    isPaid || trial.active ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'
-                  }`}
-                >
-                  {isPaid ? t('settings.planPaidBadge') : trial.active ? t('trial.badge', { n: (trial.daysLeft ?? 0) + 1 }) : t('settings.planFreeBadge')}
-                </span>
+              <p className="truncate font-label-md text-[16px] font-bold text-white">
+                {displayName}
+                {roleLabel && <span className="font-semibold text-white/80"> · {roleLabel}</span>}
               </p>
-              <p className="font-caption text-caption text-on-surface-variant truncate">
-                {ROLE_LABEL[profile?.role ?? ''] ?? ''}
+              <p className="mt-0.5">
+                <span className="rounded-full bg-white/15 px-2 py-0.5 font-caption text-[11px] text-white/85">{planBadge}</span>
               </p>
             </div>
-            <span className="material-symbols-outlined shrink-0 text-base text-on-surface-variant">chevron_right</span>
+            <span className="material-symbols-outlined shrink-0 text-[22px] text-white/70">chevron_right</span>
           </Link>
         ) : (
-          <div className="px-4 py-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-sm shrink-0">
-              {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
+          <div className="flex items-center gap-3 px-2 py-2">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#4a9bff] font-title-md text-lg font-bold text-white">
+              {(displayName || t('common.avatarInitialFallback')).slice(0, 1)}
             </div>
             <div className="min-w-0">
-              <p className="font-label-md text-label-md text-on-surface truncate">{profile?.display_name}</p>
-              <p className="font-caption text-caption text-on-surface-variant">
-                {ROLE_LABEL[profile?.role ?? ''] ?? ''}
-              </p>
+              <p className="truncate font-label-md text-[16px] font-bold text-white">{displayName}</p>
+              <p className="font-caption text-caption text-white/70">{roleLabel}</p>
             </div>
           </div>
         )}
-        <div className="flex flex-col gap-2 px-4">
+        {/* 글자 크기·언어는 데스크톱에서는 위쪽 막대에 있다. 모바일 서랍에서만 여기에 둔다 */}
+        <div className="flex flex-col gap-2 px-2 md:hidden">
           <FontSizeToggle />
           <LanguageToggle />
         </div>
         <button
           type="button"
           onClick={() => void signOut()}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-soft-mint/20 transition-all text-left"
+          className="flex items-center gap-3 rounded-[14px] px-3 py-2.5 text-left font-label-md text-[15px] text-white/70 transition-all hover:bg-white/10 hover:text-white"
         >
-          <span className="material-symbols-outlined">logout</span>
+          <span className="material-symbols-outlined text-[22px]">logout</span>
           {t('nav.signOut')}
         </button>
       </div>
@@ -216,7 +212,7 @@ function AppLayoutInner() {
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
-        <span className="font-title-md text-title-md text-primary truncate">
+        <span className="font-title-md text-title-md text-deep-navy font-extrabold truncate">
           {academy?.name ?? t('common.brand')}
         </span>
         {isStaff ? (<div className="flex items-center gap-1"><SosButton /><NotificationBell /></div>) : (<div className="w-9" aria-hidden />)}
@@ -226,7 +222,7 @@ function AppLayoutInner() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 bg-inverse-surface/40 z-50" onClick={() => setMobileOpen(false)}>
           <nav
-            className="h-full w-72 max-w-[80vw] overflow-y-auto overscroll-contain bg-surface-container-low flex flex-col pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+            className="flex h-full w-[19rem] max-w-[86vw] flex-col overflow-y-auto overscroll-contain bg-deep-navy pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-[calc(1.5rem+env(safe-area-inset-top,0px))]"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}
@@ -236,14 +232,14 @@ function AppLayoutInner() {
 
       {/* 데스크톱 사이드바 */}
       {/* 화면 높이가 낮으면(작은 노트북·브라우저 창 축소) 하단 설정·로그아웃이 잘려서, 사이드바 자체를 스크롤되게 한다. */}
-      <nav className="no-print hidden md:flex flex-col h-[100dvh] w-64 fixed left-0 top-0 overflow-y-auto overscroll-contain bg-surface-container-low border-r border-outline-variant/30 py-6 z-30">
+      <nav className="no-print fixed left-0 top-0 z-30 hidden h-[100dvh] w-[17.5rem] flex-col overflow-y-auto overscroll-contain bg-deep-navy py-7 md:flex">
         {sidebarContent}
       </nav>
 
-      <main className="flex-1 min-w-0 md:ml-64 pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
+      <main className="flex-1 min-w-0 md:ml-[17.5rem] pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
         <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
-        <header className="no-print hidden md:flex items-center justify-end gap-3 h-20 px-margin-desktop bg-surface-container-lowest sticky top-0 z-20 shadow-sm">
+        <header className="no-print sticky top-0 z-20 hidden h-16 items-center justify-end gap-3 bg-background/90 px-margin-desktop backdrop-blur md:flex">
           <FontSizeToggle showLabel />
           <LanguageToggle />
           {isStaff && <SosButton />}
