@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import BrandMark from '../components/BrandMark';
+import BrandLogo from '../components/BrandLogo';
 import LanguageToggle from '../components/LanguageToggle';
 import { friendlyError, supabase } from '../lib/supabase';
 
@@ -55,12 +55,9 @@ export default function AuthPage() {
           <LanguageToggle />
         </div>
         <div className="bg-surface-container-lowest rounded-xl shadow-card border border-surface-container-highest p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <BrandMark className="h-10 w-10" />
-            <div>
-              <div className="font-title-md text-title-md text-deep-navy">{t('common.brand')}</div>
-              <div className="font-caption text-caption text-on-surface-variant">{t('auth.tagline')}</div>
-            </div>
+          <div className="mb-6">
+            <BrandLogo className="h-11 w-auto" />
+            <div className="mt-2 font-caption text-caption text-on-surface-variant">{t('auth.tagline')}</div>
           </div>
 
           <div className="flex bg-surface-container-low rounded-lg p-1 mb-6">

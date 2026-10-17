@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import BrandMark from '../components/BrandMark';
+import BrandLogo from '../components/BrandLogo';
 import LanguageToggle from '../components/LanguageToggle';
 import GamesDiagram from '../components/landing/GamesDiagram';
 import LandingDemo from '../components/landing/LandingDemo';
@@ -120,9 +120,8 @@ export default function LandingPage() {
 
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[84px] w-full max-w-[1920px] items-center justify-between px-5 sm:px-8 lg:px-[4.2%]">
-          <Link to="/" className={`flex min-w-0 items-center gap-3 rounded-lg ${focus}`}>
-            <BrandMark className="h-10 w-10 shrink-0 md:h-12 md:w-12 lg:h-14 lg:w-14" />
-            <span className="landing-logo whitespace-nowrap text-[24px] font-black text-[var(--lp-navy)] md:text-[32px] lg:text-[36px]">{t('common.brand')}</span>
+          <Link to="/" className={`flex min-w-0 items-center rounded-lg ${focus}`}>
+            <BrandLogo className="h-10 w-auto md:h-12 lg:h-[3.6rem]" />
           </Link>
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             <LanguageToggle className="hidden bg-white/70 md:inline-flex" />

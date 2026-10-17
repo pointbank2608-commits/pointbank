@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import BrandMark from '../components/BrandMark';
+import BrandLogo from '../components/BrandLogo';
 
 /**
  * 이용약관 — 로그인 없이도 봐야 한다(결제대행사 심사 봇, 방문자 전부). App.tsx의
@@ -12,8 +12,7 @@ export default function TermsPage() {
       <header className="border-b border-outline-variant/40">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-2.5 px-5">
           <Link to="/" className="flex items-center gap-2.5">
-            <BrandMark className="h-8 w-8 shrink-0" />
-            <span className="font-title-md text-title-md text-on-surface">클래스뱅크</span>
+            <BrandLogo className="h-9 w-auto" />
           </Link>
         </div>
       </header>

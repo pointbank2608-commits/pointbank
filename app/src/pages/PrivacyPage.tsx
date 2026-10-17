@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import BrandMark from '../components/BrandMark';
+import BrandLogo from '../components/BrandLogo';
 
 /** 개인정보처리방침 — TermsPage.tsx와 같은 이유로 비로그인 라우트에 둔다. */
 export default function PrivacyPage() {
@@ -8,8 +8,7 @@ export default function PrivacyPage() {
       <header className="border-b border-outline-variant/40">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-2.5 px-5">
           <Link to="/" className="flex items-center gap-2.5">
-            <BrandMark className="h-8 w-8 shrink-0" />
-            <span className="font-title-md text-title-md text-on-surface">클래스뱅크</span>
+            <BrandLogo className="h-9 w-auto" />
           </Link>
         </div>
       </header>

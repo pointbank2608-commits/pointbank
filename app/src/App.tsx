@@ -16,6 +16,7 @@ const AdminSupportPage = lazyPage(() => import('./pages/AdminSupportPage'));
 const AdminInboxPage = lazyPage(() => import('./pages/AdminInboxPage'));
 const AdminNoticesPage = lazyPage(() => import('./pages/AdminNoticesPage'));
 const AdminVideosPage = lazyPage(() => import('./pages/AdminVideosPage'));
+const AdminBrandPage = lazyPage(() => import('./pages/AdminBrandPage'));
 const VideoLibraryPage = lazyPage(() => import('./pages/VideoLibraryPage'));
 const HomeworkPage = lazyPage(() => import('./pages/HomeworkPage'));
 const HomeworkStudentPage = lazyPage(() => import('./pages/HomeworkStudentPage'));
@@ -223,6 +224,7 @@ function AppRoutes() {
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />
           <Route path="/admin/videos" element={<AdminVideosPage />} />
+          <Route path="/admin/brand" element={<AdminBrandPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
       </Routes>
