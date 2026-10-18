@@ -7,6 +7,7 @@ import { buildStatSheet } from '../../../lib/homework/stats';
 import AccessibleDialog from '../../AccessibleDialog';
 import ParentReport from './ParentReport';
 import StatCard from './StatCard';
+import { fetchGameGrowth, isGameLearningUnavailable, type GameGrowth } from '../../../lib/gameLearning';
 
 /** 학습 카드에 보이는 능력(순서 고정). 기록이 없으면 "아직 기록이 없어요". */
 const SKILLS = [
@@ -39,7 +40,10 @@ export default function LearningCardModal({
   initialView?: 'stat' | 'detail' | 'report';
 }) {
   const { t } = useTranslation();
+  const { i18n }=useTranslation();const en=i18n.language.startsWith('en');
   const [days, setDays] = useState<30 | 90>(30);
+  const [gameGrowth,setGameGrowth]=useState<GameGrowth|null>(null);
+  useEffect(()=>{let alive=true;setGameGrowth(null);fetchGameGrowth(studentId,days).then(r=>{if(alive)setGameGrowth(r);},e=>{if(!isGameLearningUnavailable(e))console.warn('Game learning summary unavailable');});return()=>{alive=false;};},[studentId,days]);
   const [card, setCard] = useState<LearningCard | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [view, setView] = useState<'stat' | 'detail' | 'report'>(initialView);
@@ -108,6 +112,11 @@ export default function LearningCardModal({
         {!card && !err && <p className="text-base text-on-surface-variant">{t('common.loading')}</p>}
 
         {card && sheet && view === 'stat' && <StatCard name={card.student.name} days={card.days} sheet={sheet} />}
+        {card && gameGrowth && view==='stat' && gameGrowth.measured>0 && <section className="space-y-2 rounded-2xl bg-primary/5 p-4" aria-label={en?'Game learning evidence':'게임으로 확인한 성장'}>
+          <h3 className="font-bold text-deep-navy">{en?'Game learning evidence':'게임으로 확인한 성장'}</h3>
+          <div className="grid gap-2 sm:grid-cols-3">{[[en?'Words answered correctly':'혼자 맞힌 낱말',gameGrowth.checked],[en?'Remembered after a day':'하루 뒤에도 기억',gameGrowth.remembered],[en?'Confirmed across skills':'다른 능력에서도 확인',gameGrowth.transferred]].map(([label,n])=><p key={label} className="rounded-xl bg-white p-3"><strong className="block text-2xl text-primary">{n}</strong>{label}</p>)}</div>
+          <p className="text-sm text-on-surface-variant">{en?`${gameGrowth.measured} first answers from game learning. Individual game checks count same-day repetitions separately as retries.`:`게임 학습의 처음 답 ${gameGrowth.measured}개가 근거입니다. 개별수업 게임 확인에서 같은 날 같은 낱말·능력을 반복하면 재도전으로 분리합니다.`}</p>
+        </section>}
         {card && sheet && view === 'report' && <ParentReport key={card.days} card={card} sheet={sheet} onBack={() => setView('stat')} />}
 
         {card && view === 'detail' && (

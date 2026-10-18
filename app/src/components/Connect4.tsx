@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -123,7 +124,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const dropTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dropTimer = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const win = findWin(marks);
   const winner = win?.team ?? null;
   const isDraw = !winner && marks.every((m) => m !== null);
@@ -131,7 +132,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
 
   useEffect(() => {
     return () => {
-      if (dropTimer.current) clearTimeout(dropTimer.current);
+      if (dropTimer.current) gameClock.clearTimeout(dropTimer.current);
     };
   }, []);
 
@@ -164,7 +165,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   }
 
   function newRound() {
-    if (dropTimer.current) clearTimeout(dropTimer.current);
+    if (dropTimer.current) gameClock.clearTimeout(dropTimer.current);
     setDropping(null);
     setColumns(pickColumnItems(items));
     setMarks(Array(ROWS * COLS).fill(null));
@@ -185,7 +186,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
     const team = turn;
     setPrevSnapshot({ marks, turn });
     setDropping({ col: c, row: targetRow, team });
-    dropTimer.current = setTimeout(() => {
+    dropTimer.current = gameClock.setTimeout(() => {
       playSfx(GAME_SFX.connect4.drop);
       setMarks((prev) => {
         const next = [...prev];

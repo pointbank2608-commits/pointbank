@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildReviewLesson, pickReviewWords, type PoolWord, type ReviewMode } from '../../lib/soloReview';
 import { soloReviewPool, soloStartReview, SoloError } from '../../lib/soloApi';
+import { startPersonalGame } from '../../lib/gameLearning';
 
 /**
  * 학생 홈의 "복습" — 표준 50분 흐름의 1단계(어제 수업 복습)와 2단계(누적 테스트)를 학생이 자기 자리에서 한다.
@@ -20,6 +21,16 @@ export default function ReviewSection({ token }: { token: string }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<ReviewMode | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [personalBusy,setPersonalBusy]=useState(false);
+  const { i18n }=useTranslation();const en=i18n.language.startsWith('en');
+
+  async function personal(){
+    if(personalBusy||busy)return;
+    setPersonalBusy(true);setMessage(null);
+    try {const r=await startPersonalGame(token);if(r.assignment)window.location.assign(`/s/lesson/${r.assignment}`);else setMessage(en?'Not enough learning history yet. Start your assigned lesson first.':'아직 학습 기록이 부족해요. 선생님이 내준 수업부터 시작해 주세요.');}
+    catch{setMessage(en?'Could not prepare your practice. Please retry later.':'맞춤 연습을 준비하지 못했어요. 잠시 뒤 다시 시도해 주세요.');}
+    finally{setPersonalBusy(false);}
+  }
 
   async function go(mode: Extract<ReviewMode, 'daily' | 'cumulative'>) {
     if (busy) return;
@@ -47,9 +58,10 @@ export default function ReviewSection({ token }: { token: string }) {
         {t('studentPortal.reviewTitle')}
       </h2>
       <p className="mb-3 text-sm text-white/70">{t('studentPortal.reviewHint')}</p>
+      <button type="button" disabled={personalBusy||!!busy} onClick={()=>void personal()} className={`${card} mb-3 w-full`}><span className="text-2xl">🎯</span><span><b className="block text-lg">{en?'Today’s personal warm-up':'오늘의 맞춤 시작 연습'}</b><span className="text-sm">{personalBusy?t('common.loading'):(en?'About 3 minutes · based on homework and lesson history':'약 3분 · 지난 숙제와 수업에서 필요한 연습')}</span></span></button>
       <div className="flex flex-col gap-3 sm:flex-row">
         {(['daily', 'cumulative'] as const).map((m) => (
-          <button key={m} type="button" disabled={busy !== null} onClick={() => void go(m)} className={card}>
+          <button key={m} type="button" disabled={busy !== null||personalBusy} onClick={() => void go(m)} className={card}>
             <span className="material-symbols-outlined text-[28px]">{m === 'daily' ? 'replay' : 'quiz'}</span>
             <span className="min-w-0 flex-1">
               <span className="block text-lg font-bold">{t(`studentPortal.review_${m}`)}</span>

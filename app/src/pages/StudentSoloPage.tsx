@@ -1,20 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+  answerGameCheck,
+  openGameCheck,
+  startPersonalGame,
+} from '../lib/gameLearning';
 import SoloChat from '../components/solo/SoloChat';
 import { studentNotice } from '../lib/soloChat';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
 import FinishPanel from '../components/solo/FinishPanel';
-import { SoloError, soloAdvance, soloAnswerFull, soloHelp, soloOpen, soloRecordSave, soloGameTemplate, soloHelpDone, soloReveal, soloStartTestRetry, soloTestSubmit, type SoloOpenResult } from '../lib/soloApi';
+import {
+  SoloError,
+  soloAdvance,
+  soloAnswerFull,
+  soloHelp,
+  soloOpen,
+  soloRecordSave,
+  soloGameTemplate,
+  soloHelpDone,
+  soloReveal,
+  soloStartTestRetry,
+  soloTestSubmit,
+  type SoloOpenResult,
+} from '../lib/soloApi';
 
-const shell = 'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
+const shell =
+  'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
 /** 학생이 "오늘의 수업" 하나를 혼자 하는 화면(/s/lesson/:id). 로그인 열쇠가 없거나 끝났으면 학생 홈으로 돌려보낸다. */
 export default function StudentSoloPage() {
   const { t } = useTranslation();
   const { assignmentId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [warmupBusy, setWarmupBusy] = useState(false);
+  const [warmupMessage, setWarmupMessage] = useState('');
   const token = savedToken();
   const [lesson, setLesson] = useState<SoloOpenResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +49,8 @@ export default function StudentSoloPage() {
     let alive = true;
     // 다시 배우기로 다른 수업으로 넘어갈 때 이전 화면(끝 화면)이 남지 않게 비운다
     setLesson(null);
+    setError(null);
+    setWarmupMessage('');
     soloOpen(token, assignmentId)
       .then((r) => alive && setLesson(r))
       .catch((e) => {
@@ -52,11 +76,23 @@ export default function StudentSoloPage() {
         return { answer: r.answer };
       },
       reveal: (step) => soloReveal(token, assignmentId, step),
-      gameTemplate: (templateId) => soloGameTemplate(token, templateId).catch(() => null),
-      record: (step, blob, seconds, sub) => soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
-      submitTest: (step, answers) => soloTestSubmit(token, assignmentId, step, answers),
+      gameTemplate: (templateId) =>
+        soloGameTemplate(token, templateId).catch(() => null),
+      gameCheckOpen: (step) => openGameCheck(token, assignmentId, step),
+      gameCheckAnswer: (step, question, value, request) =>
+        answerGameCheck(token, assignmentId, step, question, value, request),
+      record: (step, blob, seconds, sub) =>
+        soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
+      submitTest: (step, answers) =>
+        soloTestSubmit(token, assignmentId, step, answers),
       retryTest: async (step, wrong) => {
-        const r = await soloStartTestRetry(token, assignmentId, step, t('soloTest.retryName'), t('soloTest.retryIntro', { count: wrong.length }));
+        const r = await soloStartTestRetry(
+          token,
+          assignmentId,
+          step,
+          t('soloTest.retryName'),
+          t('soloTest.retryIntro', { count: wrong.length }),
+        );
         if ('id' in r) navigate(`/s/lesson/${r.id}`);
       },
     };
@@ -65,30 +101,103 @@ export default function StudentSoloPage() {
   if (error) {
     return (
       <div className={shell}>
-        <p className="text-xl font-bold">{t(`solo.err_${error}`, { defaultValue: t('solo.error') })}</p>
-        <button type="button" onClick={() => navigate('/s')} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy">
+        <p className="text-xl font-bold">
+          {t(`solo.err_${error}`, { defaultValue: t('solo.error') })}
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/s')}
+          className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy"
+        >
           {t('solo.backHome')}
         </button>
       </div>
     );
   }
-  if (!lesson || !api) return <div className={`${shell} text-lg text-white/70`}>{t('common.loading')}</div>;
+  if (!lesson || !api)
+    return (
+      <div className={`${shell} text-lg text-white/70`}>
+        {t('common.loading')}
+      </div>
+    );
   return (
     <SoloPlayer
+      key={assignmentId}
       steps={lesson.steps}
       startAt={lesson.done ? 0 : lesson.progress}
       api={api}
       canRecord={!!lesson.can_record}
-      onExit={() => navigate('/s')}
+      onExit={() => {
+        const back = (location.state as { returnAssignment?: string } | null)
+          ?.returnAssignment;
+        navigate(back ? `/s/lesson/${back}` : '/s');
+      }}
       onHelp={async (step) => {
         await soloHelp(token as string, assignmentId as string, step);
       }}
-      headerExtra={<SoloChat token={token as string} assignment={assignmentId as string} />}
+      headerExtra={
+        <>
+          <SoloChat
+            token={token as string}
+            assignment={assignmentId as string}
+          />
+          {!lesson.done && lesson.progress === 0 && !lesson.personal_review && (
+            <button
+              disabled={warmupBusy}
+              className="min-h-11 rounded-full bg-white/15 px-3 text-sm text-white"
+              onClick={async () => {
+                if (warmupBusy) return;
+                setWarmupBusy(true);
+                setWarmupMessage('');
+                try {
+                  const r = await startPersonalGame(
+                    token as string,
+                    assignmentId,
+                  );
+                  if (r.assignment)
+                    navigate(`/s/lesson/${r.assignment}`, {
+                      state: { returnAssignment: assignmentId },
+                    });
+                  else
+                    setWarmupMessage(
+                      t('solo.warmupEmpty', {
+                        defaultValue:
+                          '아직 복습할 기록이 적어요. 오늘 수업부터 시작해요.',
+                      }),
+                    );
+                } catch {
+                  setWarmupMessage(
+                    t('solo.warmupError', {
+                      defaultValue:
+                        '준비 연습을 불러오지 못했어요. 오늘 수업은 바로 시작할 수 있어요.',
+                    }),
+                  );
+                } finally {
+                  setWarmupBusy(false);
+                }
+              }}
+            >
+              {t('solo.warmupStart', { defaultValue: '지난 숙제 맞춤 몸풀기' })}
+            </button>
+          )}
+          {warmupMessage && (
+            <span role="status" className="text-sm text-warm-yellow">
+              {warmupMessage}
+            </span>
+          )}
+        </>
+      }
       noticeLoader={() => studentNotice(token as string)}
       onHelpDone={async () => {
         await soloHelpDone(token as string, assignmentId as string);
       }}
-      finishExtra={<FinishPanel token={token as string} assignment={assignmentId as string} onStarted={(id) => navigate(`/s/lesson/${id}`)} />}
+      finishExtra={
+        <FinishPanel
+          token={token as string}
+          assignment={assignmentId as string}
+          onStarted={(id) => navigate(`/s/lesson/${id}`)}
+        />
+      }
     />
   );
 }

@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -109,7 +110,7 @@ export default function SpellTheWord({
 
   function clearTimer() {
     if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
+      gameClock.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }
@@ -117,7 +118,7 @@ export default function SpellTheWord({
   function startPreview() {
     clearTimer();
     setPhase('preview');
-    timerRef.current = window.setTimeout(() => setPhase('input'), previewMs);
+    timerRef.current = gameClock.setTimeout(() => setPhase('input'), previewMs);
   }
 
   function typeChar(ch: string) {

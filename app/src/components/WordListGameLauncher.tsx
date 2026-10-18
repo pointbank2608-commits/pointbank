@@ -2,23 +2,23 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
-import { prepareWordListGame, SENTENCE_LIST_GAMES, WORD_LIST_GAMES, type WordListGame } from '../lib/wordListLaunch';
-import type { ClassRow, WordList } from '../lib/types';
+import { prepareClassroomGame } from '../lib/gameWorkspace';
+import type { ClassRow, GameType, WordList } from '../lib/types';
 
 export default function WordListGameLauncher({ list, classes, selectedClassId, isPaid, busy, error, onClose, onLaunch }: {
   list: WordList; classes: ClassRow[]; selectedClassId: string | null; isPaid: boolean;
   busy: boolean; error: boolean; onClose: () => void;
-  onLaunch: (game: WordListGame, classId: string) => void;
+  onLaunch: (game: GameType, classId: string) => void;
 }) {
   const { t } = useTranslation();
   // 문장 목록은 문장 게임만, 단어장은 단어 게임만
-  const games: readonly WordListGame[] = list.kind === 'sentence' ? SENTENCE_LIST_GAMES : WORD_LIST_GAMES;
-  const [game, setGame] = useState<WordListGame>(games[0]);
+  const games = GAME_CATALOG.filter((entry) => prepareClassroomGame(entry.type,list)).map((entry) => entry.type);
+  const [game, setGame] = useState<GameType>(games[0] || 'wheel');
   const [classId, setClassId] = useState(() => {
     const preferred = list.class_id ?? selectedClassId;
     return classes.some((row) => row.id === preferred) ? preferred! : classes[0]?.id ?? '';
   });
-  const prepared = useMemo(() => prepareWordListGame(list.items, game), [list.items, game]);
+  const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.length : 0 }; }, [list, game]);
   const canLaunch = prepared.ready && classes.some((row) => row.id === classId) && (isPaid || isFreeTierGame(game));
   return (
     <AccessibleDialog label={t('classroomUx.launchTitle')} onClose={() => { if (!busy) onClose(); }}>

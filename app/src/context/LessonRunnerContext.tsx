@@ -11,7 +11,7 @@ import { wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { grammarPoint } from '../lib/grammar';
-import type { CurriculumLesson, SlideHelper, WordList } from '../lib/types';
+import type { CurriculumLesson, GameType, SlideHelper, WordList } from '../lib/types';
 
 export interface RunnerStep {
   kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
@@ -53,6 +53,7 @@ interface RunnerState {
 }
 
 interface RunnerValue {
+  replaceGame: (type: GameType, templateId: string, state: Record<string, unknown>) => void;
   runner: RunnerState | null;
   /** 수업 준비 화면의 "▶ 내 수업하기" 버튼이 호출한다 — PPT의 "슬라이드 쇼 시작"과 같다.
    * wordList 는 lesson.word_list_id 로 미리 찾아둔 실제 단어장(호출부가 이미 목록을 들고 있어
@@ -251,6 +252,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           // 편집 화면에서 미리 만들어 둔 게임 콘텐츠(game_templates)를 그대로 연다 —
           // useGameTemplates 가 openTemplateId/openClassId 를 읽어 그 템플릿을 고른다.
           const navState: Record<string, unknown> = {};
+          navState.materialsWords = materialsWords;
           if (slide.templateId) navState.openTemplateId = slide.templateId;
           if (classId) navState.openClassId = classId;
           push({
@@ -339,6 +341,18 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
     if (!runner) return;
     goTo(runner.stepIndex + 1);
   }, [runner, goTo]);
+
+  const replaceGame = useCallback((type: GameType, templateId: string, state: Record<string, unknown>) => {
+    if (!runner || runner.steps[runner.stepIndex]?.kind !== 'game') throw new Error('not_game');
+    if (runner.view) throw new Error('stop_shared_view_first');
+    const game = GAME_CATALOG.find((entry) => entry.type === type);
+    if (!game) throw new Error('unknown_game');
+    const steps = runner.steps.map((step, index) => index === runner.stepIndex ? { ...step, path: game.path, label: t(game.nameKey), navState: { ...state, openTemplateId: templateId } } : step);
+    const slideId = runner.steps[runner.stepIndex].slideId;
+    const viewSnapshot = runner.viewSnapshot ? { ...runner.viewSnapshot, slides: runner.viewSnapshot.slides.map((slide) => slide.id === slideId && slide.kind === 'game' ? { ...slide, gameType:type, templateId } : slide) } : undefined;
+    setRunner({ ...runner, steps, viewSnapshot });
+    navigate(game.path, { state });
+  }, [runner, navigate, t]);
 
   const prev = useCallback(() => {
     if (!runner) return;
@@ -467,7 +481,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LessonRunnerContext.Provider
-      value={{ runner, start, next, prev, goTo, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
+      value={{ runner, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
     >
       <PresentSyncContext.Provider value={teacherSync}>
       {children}

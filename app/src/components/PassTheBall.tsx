@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
@@ -49,7 +50,7 @@ export default function PassTheBall({
   const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
   const [missionWord, setMissionWord] = useState<GameItem | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
@@ -57,7 +58,7 @@ export default function PassTheBall({
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
       stopMusicRef.current();
     };
   }, []);
@@ -90,7 +91,7 @@ export default function PassTheBall({
 
   function start() {
     if (phase === 'active' || items.length === 0) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
 
     setMissionWord(null);
@@ -99,7 +100,7 @@ export default function PassTheBall({
 
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;
-    timerRef.current = setTimeout(() => {
+    timerRef.current = gameClock.setTimeout(() => {
       const word = items[Math.floor(Math.random() * items.length)];
       setMissionWord(word);
       setPhase('revealed');
@@ -109,7 +110,7 @@ export default function PassTheBall({
   }
 
   function reset() {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
     setPhase('idle');
     setMissionWord(null);

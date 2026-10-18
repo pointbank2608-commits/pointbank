@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
@@ -108,7 +109,7 @@ export default function TimerMatch({
 
   useEffect(() => {
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
       stopMusicRef.current();
     };
   }, []);
@@ -144,20 +145,20 @@ export default function TimerMatch({
     stopMusicRef.current();
     setPhase('running');
     setElapsedMs(0);
-    startTimeRef.current = performance.now();
+    startTimeRef.current = gameClock.now();
     stopMusicRef.current = playMusic(music, { loop: true });
 
     const tick = () => {
-      setElapsedMs(performance.now() - startTimeRef.current);
-      rafRef.current = requestAnimationFrame(tick);
+      setElapsedMs(gameClock.now() - startTimeRef.current);
+      rafRef.current = gameClock.requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    rafRef.current = gameClock.requestAnimationFrame(tick);
   }
 
   function stop() {
     if (phase !== 'running') return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    const finalElapsed = performance.now() - startTimeRef.current;
+    if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
+    const finalElapsed = gameClock.now() - startTimeRef.current;
     setElapsedMs(finalElapsed);
     setPhase('stopped');
     stopMusicRef.current();
@@ -182,7 +183,7 @@ export default function TimerMatch({
   }
 
   function restartAll() {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
     stopMusicRef.current();
     setTurnIndex(0);
     setAttempts([]);

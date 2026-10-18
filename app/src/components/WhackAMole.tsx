@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -81,31 +82,31 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
 
   useEffect(() => {
     if (!timerOn || timeUp) return;
-    const id = window.setInterval(() => {
-      const left = Math.max(0, Math.ceil((endAt.current - Date.now()) / 1000));
+    const id = gameClock.setInterval(() => {
+      const left = Math.max(0, Math.ceil((endAt.current - gameClock.dateNow()) / 1000));
       setTimeLeft(left);
       if (left <= 0) {
         setTimeUp(true);
-        if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+        if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
       }
     }, 200);
-    return () => window.clearInterval(id);
+    return () => gameClock.clearInterval(id);
   }, [timerOn, timeUp]);
 
   // 시간 끝: "Time's up!" → 끝 멜로디 → "Great job!"
   useEffect(() => {
     if (!timeUp) return;
     playSfx(GAME_SFX.whackamole.timeUp);
-    const a = window.setTimeout(() => playSfx(GAME_SFX.whackamole.finish), 1000);
-    const b = window.setTimeout(() => playSfx(COMMON_SFX.praise), 2100);
+    const a = gameClock.setTimeout(() => playSfx(GAME_SFX.whackamole.finish), 1000);
+    const b = gameClock.setTimeout(() => playSfx(COMMON_SFX.praise), 2100);
     return () => {
-      window.clearTimeout(a);
-      window.clearTimeout(b);
+      gameClock.clearTimeout(a);
+      gameClock.clearTimeout(b);
     };
   }, [timeUp]);
 
   useEffect(() => {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     const next = shuffle(pairs);
     setOrder(next);
     setPos(0);
@@ -122,7 +123,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
 
   useEffect(() => {
     return () => {
-      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     };
   }, []);
 
@@ -130,7 +131,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     undo() {
       if (!prevSnapshot) return;
       if (flashTimer.current !== null) {
-        window.clearTimeout(flashTimer.current);
+        gameClock.clearTimeout(flashTimer.current);
         flashTimer.current = null;
       }
       setPos(prevSnapshot.pos);
@@ -194,7 +195,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
   }
 
   function restart() {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     const next = shuffle(pairs);
     setOrder(next);
     setPos(0);
@@ -229,7 +230,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     const choice = holes[hole];
     if (!choice || locked || !target) return;
     if (timed && !timerOn) {
-      endAt.current = Date.now() + timeLimit * 1000;
+      endAt.current = gameClock.dateNow() + timeLimit * 1000;
       setTimeLeft(timeLimit);
       setTimerOn(true);
     }
@@ -241,8 +242,8 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     setHitHole(hole);
     setHitKind(ok ? 'ok' : 'no');
     setLocked(true);
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => {
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    flashTimer.current = gameClock.setTimeout(() => {
       flashTimer.current = null;
       goNext();
     }, HIT_MS);

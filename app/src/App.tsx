@@ -1,3 +1,4 @@
+import GameWorkspace from './components/GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import StudentAppIdentity from './components/StudentAppIdentity';
 import { NoticeProvider } from './components/NoticeCenter';
@@ -287,53 +288,53 @@ function AppRoutes() {
             <Route path="/materials/cvc-workbook" element={<CvcWorkbookPage />} />
             <Route path="/materials/long-vowel-workbook" element={<CvcWorkbookPage key="long" book="long" />} />
             <Route path="/games" element={<GamesPage />} />
-            <Route path="/games/wheel" element={<WheelPage />} />
-            <Route path="/games/ladder" element={<LadderPage />} />
-            <Route path="/games/order" element={<OrderPage />} />
-            <Route path="/games/bomb" element={<BombPage />} />
-            <Route path="/games/timer" element={<TimerMatchPage />} />
-            <Route path="/games/tictactoe" element={<TicTacToePage />} />
-            <Route path="/games/saveorgive" element={<SaveOrGivePage />} />
-            <Route path="/games/findmissing" element={<FindMissingPage />} />
-            <Route path="/games/baskin31" element={<Baskin31Page />} />
-            <Route path="/games/connect4" element={<Connect4Page />} />
-            <Route path="/games/popcorn" element={<PopcornPage />} />
-            <Route path="/games/passball" element={<PassBallPage />} />
-            <Route path="/games/twodice" element={<TwoDicePage />} />
-            <Route path="/games/quiz" element={<QuizPage />} />
-            <Route path="/games/hangman" element={<HangmanPage />} />
-            <Route path="/games/truefalse" element={<TrueFalsePage />} />
-            <Route path="/games/matchup" element={<MatchupPage />} />
-            <Route path="/games/whackamole" element={<WhackAMolePage />} />
-            <Route path="/games/flashcards" element={<FlashcardsPage />} />
-            <Route path="/games/anagram" element={<AnagramPage />} />
-            <Route path="/games/groupsort" element={<GroupSortPage />} />
-            <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
-            <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
-            <Route path="/games/spellword" element={<SpellTheWordPage />} />
-            <Route path="/games/rankorder" element={<RankOrderPage />} />
-            <Route path="/games/wordsearch" element={<WordSearchPage />} />
-            <Route path="/games/crossword" element={<CrosswordPage />} />
-            <Route path="/games/mathgen" element={<MathGeneratorPage />} />
-            <Route path="/games/mazechase" element={<MazeChasePage />} />
-            <Route path="/games/airplane" element={<AirplanePage />} />
-            <Route path="/games/labeleddiagram" element={<LabeledDiagramPage />} />
-            <Route path="/games/imagequiz" element={<ImageQuizPage />} />
-            <Route path="/games/gameshowquiz" element={<GameShowQuizPage />} />
-            <Route path="/games/winlosequiz" element={<WinLoseQuizPage />} />
-            <Route path="/games/watermelon" element={<WatermelonPage />} />
-            <Route path="/games/quizshow" element={<QuizShowPage />} />
-            <Route path="/games/shopping" element={<ShoppingPage />} />
-            <Route path="/games/treasuredig" element={<TreasureDigPage />} />
-            <Route path="/games/fourclues" element={<FourCluesPage />} />
-            <Route path="/games/catchsentence" element={<CatchSentencePage />} />
-            <Route path="/games/lastbox" element={<LastBoxPage />} />
-            <Route path="/games/airport" element={<AirportPage />} />
-            <Route path="/games/restaurant" element={<RestaurantPage />} />
-            <Route path="/games/icecream" element={<IceCreamPage />} />
-            <Route path="/games/doctor" element={<DoctorPage />} />
-            <Route path="/games/lightning" element={<LightningLuckPage />} />
-            <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
+            <Route path="/games/wheel" element={<GameWorkspace><WheelPage /></GameWorkspace>} />
+            <Route path="/games/ladder" element={<GameWorkspace><LadderPage /></GameWorkspace>} />
+            <Route path="/games/order" element={<GameWorkspace><OrderPage /></GameWorkspace>} />
+            <Route path="/games/bomb" element={<GameWorkspace><BombPage /></GameWorkspace>} />
+            <Route path="/games/timer" element={<GameWorkspace><TimerMatchPage /></GameWorkspace>} />
+            <Route path="/games/tictactoe" element={<GameWorkspace><TicTacToePage /></GameWorkspace>} />
+            <Route path="/games/saveorgive" element={<GameWorkspace><SaveOrGivePage /></GameWorkspace>} />
+            <Route path="/games/findmissing" element={<GameWorkspace><FindMissingPage /></GameWorkspace>} />
+            <Route path="/games/baskin31" element={<GameWorkspace><Baskin31Page /></GameWorkspace>} />
+            <Route path="/games/connect4" element={<GameWorkspace><Connect4Page /></GameWorkspace>} />
+            <Route path="/games/popcorn" element={<GameWorkspace><PopcornPage /></GameWorkspace>} />
+            <Route path="/games/passball" element={<GameWorkspace><PassBallPage /></GameWorkspace>} />
+            <Route path="/games/twodice" element={<GameWorkspace><TwoDicePage /></GameWorkspace>} />
+            <Route path="/games/quiz" element={<GameWorkspace><QuizPage /></GameWorkspace>} />
+            <Route path="/games/hangman" element={<GameWorkspace><HangmanPage /></GameWorkspace>} />
+            <Route path="/games/truefalse" element={<GameWorkspace><TrueFalsePage /></GameWorkspace>} />
+            <Route path="/games/matchup" element={<GameWorkspace><MatchupPage /></GameWorkspace>} />
+            <Route path="/games/whackamole" element={<GameWorkspace><WhackAMolePage /></GameWorkspace>} />
+            <Route path="/games/flashcards" element={<GameWorkspace><FlashcardsPage /></GameWorkspace>} />
+            <Route path="/games/anagram" element={<GameWorkspace><AnagramPage /></GameWorkspace>} />
+            <Route path="/games/groupsort" element={<GameWorkspace><GroupSortPage /></GameWorkspace>} />
+            <Route path="/games/unscramble" element={<GameWorkspace><SentenceUnscramblePage /></GameWorkspace>} />
+            <Route path="/games/typeanswer" element={<GameWorkspace><TypeAnswerPage /></GameWorkspace>} />
+            <Route path="/games/spellword" element={<GameWorkspace><SpellTheWordPage /></GameWorkspace>} />
+            <Route path="/games/rankorder" element={<GameWorkspace><RankOrderPage /></GameWorkspace>} />
+            <Route path="/games/wordsearch" element={<GameWorkspace><WordSearchPage /></GameWorkspace>} />
+            <Route path="/games/crossword" element={<GameWorkspace><CrosswordPage /></GameWorkspace>} />
+            <Route path="/games/mathgen" element={<GameWorkspace><MathGeneratorPage /></GameWorkspace>} />
+            <Route path="/games/mazechase" element={<GameWorkspace><MazeChasePage /></GameWorkspace>} />
+            <Route path="/games/airplane" element={<GameWorkspace><AirplanePage /></GameWorkspace>} />
+            <Route path="/games/labeleddiagram" element={<GameWorkspace><LabeledDiagramPage /></GameWorkspace>} />
+            <Route path="/games/imagequiz" element={<GameWorkspace><ImageQuizPage /></GameWorkspace>} />
+            <Route path="/games/gameshowquiz" element={<GameWorkspace><GameShowQuizPage /></GameWorkspace>} />
+            <Route path="/games/winlosequiz" element={<GameWorkspace><WinLoseQuizPage /></GameWorkspace>} />
+            <Route path="/games/watermelon" element={<GameWorkspace><WatermelonPage /></GameWorkspace>} />
+            <Route path="/games/quizshow" element={<GameWorkspace><QuizShowPage /></GameWorkspace>} />
+            <Route path="/games/shopping" element={<GameWorkspace><ShoppingPage /></GameWorkspace>} />
+            <Route path="/games/treasuredig" element={<GameWorkspace><TreasureDigPage /></GameWorkspace>} />
+            <Route path="/games/fourclues" element={<GameWorkspace><FourCluesPage /></GameWorkspace>} />
+            <Route path="/games/catchsentence" element={<GameWorkspace><CatchSentencePage /></GameWorkspace>} />
+            <Route path="/games/lastbox" element={<GameWorkspace><LastBoxPage /></GameWorkspace>} />
+            <Route path="/games/airport" element={<GameWorkspace><AirportPage /></GameWorkspace>} />
+            <Route path="/games/restaurant" element={<GameWorkspace><RestaurantPage /></GameWorkspace>} />
+            <Route path="/games/icecream" element={<GameWorkspace><IceCreamPage /></GameWorkspace>} />
+            <Route path="/games/doctor" element={<GameWorkspace><DoctorPage /></GameWorkspace>} />
+            <Route path="/games/lightning" element={<GameWorkspace><LightningLuckPage /></GameWorkspace>} />
+            <Route path="/games/mysterybox" element={<GameWorkspace><MysteryBoxPage /></GameWorkspace>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
         ) : (

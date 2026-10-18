@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
+import { GameWorkspaceFrameControls } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import { usePresenting } from '../context/LessonRunnerContext';
 import AccessibleDialog from './AccessibleDialog';
@@ -87,7 +90,9 @@ export function useGamePlay() {
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
  * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ gameType, bg, className, children, onRestart, onUndo, roster }: Props) {
+export default function GameThemeFrame({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster }: Props) {
+  const workspace = useGameWorkspace();
+  const roster = workspace?.roster ?? suppliedRoster;
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -115,7 +120,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       setTeamOrder(null);
       return;
     }
-    const read = () => setTeamOrder(loadTeamOrder(roster));
+    const read = () => { setTeamOrder(loadTeamOrder(roster)); setShowOrder(isShowOrderOn()); };
     read();
     window.addEventListener(TEAM_ORDER_EVENT, read);
     return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
@@ -246,7 +251,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 저장은 "실제로 scaleRef가 렌더링되는 폭"(=무대 폭)으로 한다 — 안(w)은 화면보다
       // 콘텐츠가 얼마나 좁은지 잴 때만 쓰고, 축소 후 문서에 얼마만큼 공간을 예약할지는
       // scaleRef 자체의 폭(availW) 기준이어야 실제로 줄어드는 시각적 크기와 맞아떨어진다.
-      setNaturalSize({ w: availW, h });
+      setNaturalSize((old) => old.w === availW && Math.abs(old.h-h) < 0.5 ? old : { w: availW, h });
       const next = Math.min(availW / w, availH / h) * 0.96;
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
@@ -258,7 +263,9 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
     const stage = stageRef.current;
     const wrap = scaleRef.current;
     if (!stage || !wrap) return;
-    const ro = new ResizeObserver(fit);
+    let fitFrame = 0;
+    const scheduleFit = () => { if (!fitFrame) fitFrame = window.requestAnimationFrame(() => { fitFrame=0; fit(); }); };
+    const ro = new ResizeObserver(scheduleFit);
     ro.observe(stage);
     ro.observe(wrap);
     // wrap의 각 target도 관찰한다 — 예를 들어 전체화면에 막 들어간 시점엔 아직 로그인/권한
@@ -288,6 +295,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       timers.forEach((id) => window.clearTimeout(id));
       wrap.removeEventListener('load', fit, true);
       ro.disconnect();
+      if (fitFrame) window.cancelAnimationFrame(fitFrame);
       window.removeEventListener('resize', fit);
     };
   }, [fill]);
@@ -355,14 +363,15 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 부분만 잘라 페이지 폭을 고정한다(위아래 그림자는 그대로).
       { overflowX: 'clip' };
 
-  return (
+  const frame = (
     <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
       <div
         ref={containerRef}
-        data-game={gameType}
+        data-game={gameType ?? bg}
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
+        {workspace && fill && <GameWorkspaceFrameControls />}
         {bgUrl && (
           <div
             aria-hidden
@@ -393,7 +402,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
           {roster && roster.length > 0 && (
             <button
               type="button"
-              onClick={() => setTeamOrderOpen(true)}
+              onClick={() => workspace ? workspace.openTeams() : setTeamOrderOpen(true)}
               title={t('gamePlay.teamOrder')}
               aria-label={t('gamePlay.teamOrder')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
@@ -522,7 +531,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
         )}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
-        <div ref={stageRef} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1 }}>
+        <div ref={stageRef} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1 }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
             style={!fill && naturalSize.h > 0
@@ -560,4 +569,5 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       </div>
     </GamePlayContext.Provider>
   );
+  return workspace?.stage ? createPortal(frame, workspace.stage) : workspace ? null : frame;
 }

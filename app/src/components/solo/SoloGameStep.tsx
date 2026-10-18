@@ -8,17 +8,21 @@ import Hangman from '../Hangman';
 import Matchup from '../Matchup';
 import WhackAMole from '../WhackAMole';
 import WordSearch from '../WordSearch';
+import GameLearningCheck from './GameLearningCheck';
+import type { GameCheckSummary } from '../../lib/gameLearning';
 
 type GameStep = Extract<SoloStep, { t: 'game' }>;
 
 /**
  * 개별수업 "게임" 단계(2026-10-13) — 선생님이 만든 게임 템플릿을 학생이 혼자 한다.
- * 템플릿은 서버 창구(069 student_game_template)로 읽고, 끝나면 "다음"으로 완료를 알린다(서버 채점 없음 — 스탯에는 넣지 않는다).
+ * 게임 점수는 스탯에 넣지 않고, 게임 뒤 서버 채점 확인 문제(088a)로 학습 수행을 기록한다.
  * 지원: 매치업(단어↔뜻 짝)·애너그램(섞인 글자로 단어 만들기)·두더지잡기·워드서치·행맨. 다른 게임은 혼자 모드(완료 알림 + 다시 하기 숨김)를 만든 뒤 같은 자리에 하나씩 붙인다.
  */
-export default function SoloGameStep({ step, load, busy, onDone }: { step: GameStep; load: SoloPlayerApi['gameTemplate']; busy: boolean; onDone: () => void }) {
+export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex, preview }: { step: GameStep; load: SoloPlayerApi['gameTemplate']; busy: boolean; onDone: (summary?:GameCheckSummary) => void; api: SoloPlayerApi; stepIndex: number; preview?: boolean }) {
   const { t } = useTranslation();
+  const checkOpen=api.gameCheckOpen;
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [checking, setChecking] = useState(false);
   const [pairs, setPairs] = useState<MatchPair[]>([]);
   const [words, setWords] = useState<GameItem[]>([]);
   const [cfg, setCfg] = useState<{ maxAttempts: number; whackMode: 'wordToMeaning' | 'meaningToWord'; whackSeconds: number; searchStyle: 'board' | 'tiles' }>({
@@ -68,18 +72,21 @@ export default function SoloGameStep({ step, load, busy, onDone }: { step: GameS
         setState(ok ? 'ready' : 'failed');
       })
       .catch(() => alive && setState('failed'));
+    // 게임 시작 시 확인 문제를 고정한다. 준비 실패는 게임을 막지 않고 확인 화면에서 재시도한다.
+    if(step.measure !== false)void checkOpen?.(stepIndex).catch(()=>undefined);
     return () => {
       alive = false;
     };
-  }, [load, step.templateId, step.gameType]);
+  }, [load, step.templateId, step.gameType,step.measure,checkOpen,stepIndex]);
 
   const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
+  if (checking) return <GameLearningCheck api={api} step={stepIndex} onDone={onDone} preview={preview} />;
   if (state === 'loading') return <p className="text-lg text-white/70">{t('common.loading')}</p>;
   if (state === 'failed') {
     return (
       <>
         <p className="text-center text-lg text-white/85">{t('solo.gameFailed')}</p>
-        <button type="button" disabled={busy} onClick={onDone} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+        <button type="button" disabled={busy} onClick={()=>onDone()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
           {t('solo.gameSkip')}
         </button>
       </>
@@ -112,8 +119,8 @@ export default function SoloGameStep({ step, load, busy, onDone }: { step: GameS
                   ? t(step.gameType === 'hangman' ? 'solo.gameDoneHangman' : 'solo.gameDoneScore', { score: result.score, total: result.total })
                   : t('solo.gameDone', { count: result.wrong ?? 0 })}
           </p>
-          <button type="button" disabled={busy} onClick={onDone} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
-            {t('solo.next')}
+          <button type="button" disabled={busy} onClick={() => step.measure === false ? onDone() : setChecking(true)} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            {step.measure === false ? t('solo.next') : t('solo.gameCheckStart', {defaultValue:'혼자 확인하고 마치기'})}
           </button>
         </>
       )}

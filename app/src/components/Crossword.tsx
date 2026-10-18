@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
@@ -207,7 +208,7 @@ export default function Crossword({
   }
 
   useEffect(() => {
-    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     const next = buildCrossword(items);
     setPuzzle(next);
     setWordBank(shuffle(next.placements));
@@ -215,7 +216,7 @@ export default function Crossword({
     setSelectedWordId(null);
     setWrongSlotId(null);
     return () => {
-      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemKey]);
@@ -249,7 +250,7 @@ export default function Crossword({
   const finished = filledIds.size === puzzle.placements.length;
 
   function restart() {
-    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     const next = buildCrossword(items);
     setPuzzle(next);
     setWordBank(shuffle(next.placements));
@@ -274,8 +275,8 @@ export default function Crossword({
     } else {
       playSfx(sfx.wrong);
       setWrongSlotId(placement.id);
-      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
-      wrongTimer.current = window.setTimeout(() => setWrongSlotId(null), 400);
+      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+      wrongTimer.current = gameClock.setTimeout(() => setWrongSlotId(null), 400);
     }
   }
 

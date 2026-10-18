@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -86,12 +87,12 @@ export default function AirportRoleplay({ items, places, showKo: showKoProp }: P
   const [showKo, setShowKo] = useState(showKoProp);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
-    const id = window.setTimeout(fn, ms);
+    const id = gameClock.setTimeout(fn, ms);
     timers.current.push(id);
   };
   useEffect(() => {
     const list = timers.current;
-    return () => list.forEach((id) => window.clearTimeout(id));
+    return () => list.forEach((id) => gameClock.clearTimeout(id));
   }, []);
 
   /* ---------- 1 낱말 ---------- */
@@ -711,7 +712,7 @@ function Dialog({ place, hide, showKo, owners, top, bottom }: DialogProps) {
                   onClick={() => {
                     setPlaying(li);
                     speak(line.text);
-                    window.setTimeout(() => setPlaying((p) => (p === li ? null : p)), 900);
+                    gameClock.setTimeout(() => setPlaying((p) => (p === li ? null : p)), 900);
                   }}
                   className="block text-left"
                 >

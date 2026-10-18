@@ -69,9 +69,10 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
     };
 
     apply();
-    const ro = new ResizeObserver(apply);
+    let frame = 0;
+    const ro = new ResizeObserver(() => { if (!frame) frame=window.requestAnimationFrame(() => { frame=0; apply(); }); });
     ro.observe(wrap);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); if (frame) window.cancelAnimationFrame(frame); };
   }, [text, kind, fit, maxSize]);
 
   return (

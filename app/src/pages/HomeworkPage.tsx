@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
@@ -22,7 +22,7 @@ type Panel =
   | { k: 'none' }
   | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
   | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
-  | { k: 'recommend'; studentIds: string[] };
+  | { k: 'recommend'; studentIds: string[]; gamesOnly?: boolean; source?:{cards:FullCardItem[];name:string} };
 
 /**
  * 숙제(Classbank Student, 2026-10-05 2단계) — 수업 자료 → 온라인 숙제 → 서버 채점·학습 기록 → 학습 카드 → 맞춤 숙제 추천
@@ -38,6 +38,8 @@ export default function HomeworkPage() {
   const className = classes.find((c) => c.id === classId)?.name ?? '';
   const [list, setList] = useState<HomeworkOverviewRow[] | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
+  const [loadedClass,setLoadedClass]=useState('');
+  const loadSequence=useRef(0);
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,13 +51,17 @@ export default function HomeworkPage() {
   const [usage, setUsage] = useState<number | null>(null);
 
   const reload = useCallback(async () => {
+    const sequence=++loadSequence.current;
     if (!classId) return;
     try {
       const [hw, st] = await Promise.all([fetchHomeworkOverview(classId), fetchStudentsOfClass(classId)]);
+      if(sequence!==loadSequence.current)return;
       setList(hw);
       setStudents(st);
+      setLoadedClass(classId);
       setError(null);
     } catch (e) {
+      if(sequence!==loadSequence.current)return;
       setError(t(teacherErrorKey(e)));
       setList([]);
     }
@@ -102,16 +108,22 @@ export default function HomeworkPage() {
       return;
     }
     setCardStudent(null);
-    setPanel({ k: 'recommend', studentIds: use });
+    setPanel({ k: 'recommend', studentIds: use, gamesOnly:true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
   // 내 수업 카드의 "숙제 내기"에서 넘어온 경우: 그 수업으로 마법사를 한 번만 연다
   useEffect(() => {
-    const st = location.state as { fromLessonId?: string; fromClassId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string } | null;
+    const st = location.state as { fromLessonId?: string; fromClassId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string; personalGame?:{cards:FullCardItem[];name:string} } | null;
     if (!classId) return;
     if (st?.fromClassId && classId !== st.fromClassId) { select(st.fromClassId); return; }
+    if(st?.personalGame?.cards?.length){
+      if(loadedClass!==classId)return;
+      if(!students.length){notify(t('studentHw.noStudentsTeacher'),'error');navigate(location.pathname,{replace:true,state:null});return;}
+      setPanel({k:'recommend',gamesOnly:true,studentIds:students.map(s=>s.id),source:st.personalGame});
+      navigate(location.pathname,{replace:true,state:null});return;
+    }
     // 단어 사전·파닉스에서 고른 낱말로 숙제 내기
     if (st?.pickedCards?.length) {
       setPanel({ k: 'wizard', pickedCards: st.pickedCards, title: st.pickedTitle });
@@ -121,7 +133,7 @@ export default function HomeworkPage() {
     if (!st?.fromLessonId) return;
     setPanel({ k: 'editor', lessonId: st.fromLessonId });
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, classId, navigate, select]);
+  }, [location.state, location.pathname, classId, navigate, select,loadedClass,students,notify,t]);
 
   if (!homeworkOpen) return <p className="p-6 text-on-surface-variant">{t('studentHw.err_feature_closed')}</p>;
 
@@ -134,6 +146,7 @@ export default function HomeworkPage() {
           <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{t('studentHw.pageIntro')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button type="button" disabled={!classId||!students.length} onClick={()=>setPanel({k:'recommend',studentIds:students.map(s=>s.id),gamesOnly:true})} className={`${headerBtn} bg-deep-navy text-white`}>{i18n.language.startsWith('en')?'Personal game practice':'학생별 맞춤 게임'}</button>
           <button type="button" onClick={() => setPanel({ k: 'editor' })} disabled={!classId} className={`${headerBtn} bg-warm-yellow text-deep-navy disabled:opacity-40`}>{i18n.language.startsWith('en') ? 'Homework block editor' : '숙제 블록 편집기'}</button>
           <button type="button" onClick={() => setPinsOpen(true)} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">key</span>
@@ -186,6 +199,9 @@ export default function HomeworkPage() {
 
       {panel.k === 'recommend' && classId && academy?.id && (
         <RecommendReview
+          key={`${classId}-${panel.gamesOnly?'game':'review'}-${panel.studentIds.join(',')}`}
+          initialGamesOnly={panel.gamesOnly}
+          initialSource={panel.source}
           academyId={academy.id}
           classId={classId}
           students={students.filter((s) => panel.studentIds.includes(s.id)).map((s) => ({ id: s.id, name: s.name }))}

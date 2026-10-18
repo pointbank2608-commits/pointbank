@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -89,10 +90,10 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(window.setTimeout(fn, ms));
+    timers.current.push(gameClock.setTimeout(fn, ms));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current.forEach((id) => gameClock.clearTimeout(id));
     timers.current = [];
   };
   useEffect(() => clearTimers, []);

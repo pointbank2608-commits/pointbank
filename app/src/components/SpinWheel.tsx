@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
@@ -71,7 +72,7 @@ export default function SpinWheel({
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
   const uploadDurationsRef = useRef<Record<string, number>>({});
@@ -88,7 +89,7 @@ export default function SpinWheel({
   const tickAccumRef = useRef(0);
 
   useEffect(() => () => {
-    if (momentumRafRef.current !== null) cancelAnimationFrame(momentumRafRef.current);
+    if (momentumRafRef.current !== null) gameClock.cancelAnimationFrame(momentumRafRef.current);
   }, []);
 
   // 선생님이 회전음으로 파일을 업로드해뒀으면, 실제로 돌리기 전에 미리 길이를 읽어둔다
@@ -170,7 +171,7 @@ export default function SpinWheel({
 
   function stopMomentum() {
     if (momentumRafRef.current !== null) {
-      cancelAnimationFrame(momentumRafRef.current);
+      gameClock.cancelAnimationFrame(momentumRafRef.current);
       momentumRafRef.current = null;
     }
   }
@@ -192,7 +193,7 @@ export default function SpinWheel({
   function startMomentum(v0: number) {
     const sign = v0 >= 0 ? 1 : -1;
     let speed = Math.abs(v0);
-    let last = performance.now();
+    let last = gameClock.now();
     function step(now: number) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -206,9 +207,9 @@ export default function SpinWheel({
         finalizeSpin();
         return;
       }
-      momentumRafRef.current = requestAnimationFrame(step);
+      momentumRafRef.current = gameClock.requestAnimationFrame(step);
     }
-    momentumRafRef.current = requestAnimationFrame(step);
+    momentumRafRef.current = gameClock.requestAnimationFrame(step);
   }
 
   function handleWheelPointerDown(e: React.PointerEvent) {
@@ -223,7 +224,7 @@ export default function SpinWheel({
     draggingRef.current = true;
     didDragRef.current = false;
     lastAngleRef.current = angleFromPoint(e.clientX, e.clientY);
-    velocitySamplesRef.current = [{ t: performance.now(), angle: rotationRef.current }];
+    velocitySamplesRef.current = [{ t: gameClock.now(), angle: rotationRef.current }];
     tickAccumRef.current = 0;
     setResult(null);
     setUseCssTransition(false);
@@ -241,7 +242,7 @@ export default function SpinWheel({
     rotationRef.current += delta;
     setRotation(rotationRef.current);
     emitTicksForDelta(delta);
-    const now = performance.now();
+    const now = gameClock.now();
     const samples = velocitySamplesRef.current;
     samples.push({ t: now, angle: rotationRef.current });
     while (samples.length > 2 && now - samples[0].t > 120) samples.shift();
@@ -280,7 +281,7 @@ export default function SpinWheel({
 
   function spin() {
     if (spinning || count === 0) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMomentum();
     stopMusicRef.current();
 
@@ -313,7 +314,7 @@ export default function SpinWheel({
       stopMusicRef.current = playMusic(music, { loop: music.kind !== 'upload' });
     }
 
-    timerRef.current = setTimeout(() => {
+    timerRef.current = gameClock.setTimeout(() => {
       setSpinning(false);
       setUseCssTransition(false);
       const picked = items[targetIndex];

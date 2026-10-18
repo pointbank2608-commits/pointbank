@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
-import { prepareWordListGame, type WordListGame } from '../lib/wordListLaunch';
+import { prepareClassroomGame } from '../lib/gameWorkspace';
+import { wordListToCards } from '../lib/gameFromWords';
+import type { GameType } from '../lib/types';
 import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
 import LyricsWordPicker from '../components/LyricsWordPicker';
@@ -634,12 +636,12 @@ export default function WordListsPage() {
     }
   }
 
-  async function handleLaunch(game: WordListGame, classId: string) {
+  async function handleLaunch(game: GameType, classId: string) {
     const list = lists.find((item) => item.id === launchListId);
     if (launchBusyRef.current || !list || !academy || !profile || !classes.some((row) => row.id === classId)) return;
     if (!hasFullAccess && !isFreeTierGame(game)) return;
-    const prepared = prepareWordListGame(list.items, game);
-    if (!prepared.ready) return;
+    const prepared = prepareClassroomGame(game, list);
+    if (!prepared) return;
     launchBusyRef.current = true;
     setLaunchBusy(true);
     setLaunchError(false);
@@ -648,10 +650,10 @@ export default function WordListsPage() {
       const template = await createGameTemplate({
         academyId: academy.id, classId, gameType: game,
         name: `${list.name} · ${t(entry.nameKey)}`, items: prepared.items,
-        config: prepared.config, teacherId: profile.id,
+        config: { ...prepared.config, classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } }, teacherId: profile.id,
       });
       select(classId);
-      navigate(entry.path, { state: { openTemplateId: template.id } });
+      navigate(entry.path, { state: { openTemplateId: template.id, openClassId: classId } });
     } catch {
       setLaunchError(true);
     } finally {

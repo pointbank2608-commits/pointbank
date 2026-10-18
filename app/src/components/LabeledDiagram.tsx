@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DiagramPin } from '../lib/types';
@@ -95,7 +96,7 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
     } else {
       playSfx(sfx.wrong);
       setWrongPinId(pin.id);
-      window.setTimeout(() => setWrongPinId(null), 400);
+      gameClock.setTimeout(() => setWrongPinId(null), 400);
     }
   }
 

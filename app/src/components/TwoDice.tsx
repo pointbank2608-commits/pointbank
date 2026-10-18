@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ClayDie from './ClayDie';
@@ -90,11 +91,11 @@ export default function TwoDice({
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const [reshuffleOpen, setReshuffleOpen] = useState(false);
   const rollingRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     };
   }, []);
 
@@ -105,7 +106,7 @@ export default function TwoDice({
   }, [items]);
 
   const reshuffleBoard = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     setBoard(pickBoardItems(items));
     rollingRef.current = false;
     setTossKey(0);
@@ -167,17 +168,17 @@ export default function TwoDice({
     setTossKey((n) => n + 1);
     playSfx(GAME_SFX.twodice.shake);
     const rollingTeam = turn;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    timerRef.current = gameClock.setTimeout(() => {
       setDie1(d1);
       setDie2(d2);
       const idx = (d1 - 1) * SIZE + (d2 - 1);
       playSfx(GAME_SFX.twodice.roll);
       // 빈 칸을 차지하면 칩 놓는 소리(빙고가 되면 빙고 소리가 따로 난다)
-      if (!claimed[idx]) window.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
+      if (!claimed[idx]) gameClock.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
       setHighlightIndex(idx);
       const word = board[idx];
-      setHistory((prev) => [{ key: `${Date.now()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
+      setHistory((prev) => [{ key: `${gameClock.dateNow()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
       setClaimed((prev) => {
         if (prev[idx]) return prev;
         const next = { ...prev, [idx]: rollingTeam };

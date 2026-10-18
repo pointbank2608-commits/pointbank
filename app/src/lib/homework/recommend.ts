@@ -79,9 +79,14 @@ function weakestSkill(skills: Record<string, SkillStat>, now: number): { skill: 
 function questionsFor(skill: string, c: FullCardItem, pool: FullCardItem[], rng: Rng): HwQuestion[] {
   const pick = (...qs: (HwQuestion | null)[]) => qs.filter((q): q is HwQuestion => !!q);
   switch (skill) {
+    case SKILL.dictation: {
+      const q=spellQ(c);
+      return q?[{...q,prompt:'',imageUrl:null,style:'listen',speak:c.word,skill:SKILL.dictation}]:[];
+    }
     case SKILL.spelling:
       return pick(lettersQ(c, rng), spellQ(c));
     case SKILL.listen:
+    case SKILL.content:
       return pick(listenQ(c, pool, rng));
     case SKILL.picture:
       return pick(pictureQ(c, pool, rng) ?? reverseQ(c, pool, rng));
@@ -94,13 +99,13 @@ function questionsFor(skill: string, c: FullCardItem, pool: FullCardItem[], rng:
 }
 
 const reasonFor = (skill: string): ReasonKind =>
-  skill === SKILL.spelling ? 'wrong_spelling' : skill === SKILL.listen ? 'wrong_listen' : skill === SKILL.picture ? 'wrong_picture' : skill === SKILL.context ? 'wrong_context' : 'wrong_meaning';
+  skill === SKILL.spelling ? 'wrong_spelling' : (skill === SKILL.listen || skill === SKILL.dictation || skill === SKILL.content) ? 'wrong_listen' : skill === SKILL.picture ? 'wrong_picture' : skill === SKILL.context ? 'wrong_context' : 'wrong_meaning';
 
 function group(questions: HwQuestion[], labels: BuildLabels): HwItemDraft[] {
   const quiz = questions.filter((q) => q.qtype === 'choice' && q.style !== 'blank');
   const sheet = questions.filter((q) => q.style === 'blank');
   const letters = questions.filter((q) => q.style === 'letters');
-  const spell = questions.filter((q) => q.style === 'spell');
+  const spell = questions.filter((q) => q.qtype === 'text');
   const items: HwItemDraft[] = [];
   if (quiz.length) items.push({ kind: 'quiz', title: labels.quiz, config: {}, content: { questions: quiz } });
   if (sheet.length) items.push({ kind: 'worksheet', title: labels.worksheet, config: { sheets: ['blank'] }, content: { questions: sheet } });

@@ -98,6 +98,7 @@ export default function StatCard({ name, className, days, sheet }: { name: strin
         <GradeBadge grade={sheet.overall.grade} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="text-xs font-bold uppercase tracking-[0.2em] text-warm-yellow">Classbank Student</div>
+          <div className="text-xs text-white/70">{t('studentHw.overallGrowth',{defaultValue:'종합 성장 · 학습과 꾸준함'})}</div>
           <div className="truncate text-2xl font-black">{name}</div>
           <div className="text-sm text-white/70">
             {[className, t('studentHw.lastDays', { n: days })].filter(Boolean).join(' · ')}
@@ -129,6 +130,7 @@ export default function StatCard({ name, className, days, sheet }: { name: strin
                     <span key={s.key} className="inline-flex items-center gap-1 rounded-full bg-black/20 px-2 py-0.5 text-xs">
                       {t(subLabelKey(s.key))}
                       <b className="tabular-nums">{s.grade ?? '?'}</b>
+                      <span className="text-white/60">{s.n}</span>
                       <Delta s={s} />
                     </span>
                   ))}

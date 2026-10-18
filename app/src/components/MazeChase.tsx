@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -503,7 +504,7 @@ export default function MazeChase({
   }, [itemKey, pos, order]);
 
   function clearFlashes() {
-    flashTimers.current.forEach((id) => window.clearTimeout(id));
+    flashTimers.current.forEach((id) => gameClock.clearTimeout(id));
     flashTimers.current = [];
     setCaughtFlash(false);
     setWrongFlash(false);
@@ -530,7 +531,7 @@ export default function MazeChase({
       enemyRef.current = { ...layout.enemy };
       roundOverRef.current = false;
       playingRef.current = true;
-      immuneUntilRef.current = performance.now() + 700;
+      immuneUntilRef.current = gameClock.now() + 700;
     } else {
       playingRef.current = false;
     }
@@ -580,7 +581,7 @@ export default function MazeChase({
   useEffect(() => {
     if (items.length < 2) return;
     let raf = 0;
-    let lastTime = performance.now();
+    let lastTime = gameClock.now();
 
     function loop(now: number) {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
@@ -607,7 +608,7 @@ export default function MazeChase({
         }
 
         const waypoint =
-          performance.now() > immuneUntilRef.current
+          gameClock.now() > immuneUntilRef.current
             ? bfsNext(wall, enemyRef.current, playerRef.current)
             : null;
         if (waypoint) {
@@ -624,7 +625,7 @@ export default function MazeChase({
         }
 
         if (
-          performance.now() > immuneUntilRef.current &&
+          gameClock.now() > immuneUntilRef.current &&
           circlesOverlap(
             playerRef.current.x,
             playerRef.current.y,
@@ -636,10 +637,10 @@ export default function MazeChase({
         ) {
           playerRef.current = { ...startRef.current };
           enemyRef.current = { ...enemySpawnRef.current };
-          immuneUntilRef.current = performance.now() + 900;
+          immuneUntilRef.current = gameClock.now() + 900;
           playSfx(GAME_SFX.mazechase.wall);
           setCaughtFlash(true);
-          flashTimers.current.push(window.setTimeout(() => setCaughtFlash(false), 350));
+          flashTimers.current.push(gameClock.setTimeout(() => setCaughtFlash(false), 350));
         }
 
         for (const b of bubblesRef.current) {
@@ -649,7 +650,7 @@ export default function MazeChase({
               playSfx(GAME_SFX.mazechase.goal);
               setScore((s) => s + 1);
               flashTimers.current.push(
-                window.setTimeout(() => {
+                gameClock.setTimeout(() => {
                   setPos((p) => p + 1);
                 }, 450),
               );
@@ -657,7 +658,7 @@ export default function MazeChase({
               escapeChip(playerRef.current, b, wall);
               playSfx(GAME_SFX.mazechase.wrong);
               setWrongFlash(true);
-              flashTimers.current.push(window.setTimeout(() => setWrongFlash(false), 250));
+              flashTimers.current.push(gameClock.setTimeout(() => setWrongFlash(false), 250));
             }
             break;
           }
@@ -665,11 +666,11 @@ export default function MazeChase({
       }
 
       setTick((n) => n + 1);
-      raf = requestAnimationFrame(loop);
+      raf = gameClock.requestAnimationFrame(loop);
     }
 
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    raf = gameClock.requestAnimationFrame(loop);
+    return () => gameClock.cancelAnimationFrame(raf);
   }, [items.length]);
 
   useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.mazechase.finish);

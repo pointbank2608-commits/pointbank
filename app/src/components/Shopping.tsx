@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isGameSoundOn, playSfx, useGameSfx } from '../lib/gameSfx';
@@ -138,7 +139,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
   const listTotal = list.reduce((n, e) => n + e.quantity, 0);
 
   useEffect(() => () => {
-    if (peekTimer.current) window.clearTimeout(peekTimer.current);
+    if (peekTimer.current) gameClock.clearTimeout(peekTimer.current);
   }, []);
 
   // 목록 외우는 시간
@@ -148,8 +149,8 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       setPhase('shop');
       return;
     }
-    const id = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => window.clearTimeout(id);
+    const id = gameClock.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => gameClock.clearTimeout(id);
   }, [phase, secondsLeft, memorizeSeconds]);
 
   function startRound(nextMission = missionIndex) {
@@ -178,7 +179,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
     if (peeking) return;
     setPeeking(true);
     setPeeks((n) => n + 1);
-    peekTimer.current = window.setTimeout(() => setPeeking(false), 3000);
+    peekTimer.current = gameClock.setTimeout(() => setPeeking(false), 3000);
   }
 
   /** 누른 물건 그림이 진열대에서 카트로 날아가는 연출 */
@@ -208,15 +209,15 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
         step: 0,
       };
       const setStep = (step: 1 | 2) => setFlyers((list) => list.map((f) => (f.key === key ? { ...f, step } : f)));
-      window.setTimeout(() => setFlyers((list) => [...list, flyer]), delay);
-      window.setTimeout(() => setStep(1), delay + 30);
-      window.setTimeout(() => setStep(2), delay + 290);
-      window.setTimeout(() => {
+      gameClock.setTimeout(() => setFlyers((list) => [...list, flyer]), delay);
+      gameClock.setTimeout(() => setStep(1), delay + 30);
+      gameClock.setTimeout(() => setStep(2), delay + 290);
+      gameClock.setTimeout(() => {
         setFlyers((list) => list.filter((f) => f.key !== key));
         if (n > 0) playSfx(sfx.pick, 0.5);
       }, delay + 820);
     }
-    window.setTimeout(() => {
+    gameClock.setTimeout(() => {
       setArriving((ids) => {
         const k = ids.indexOf(item.id);
         return k < 0 ? ids : [...ids.slice(0, k), ...ids.slice(k + 1)];
@@ -231,7 +232,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       if (!entry) {
         setMisses((n) => n + 1);
         setWrongId(item.id);
-        window.setTimeout(() => setWrongId(null), 500);
+        gameClock.setTimeout(() => setWrongId(null), 500);
         playSfx(sfx.wrong);
         return;
       }
@@ -252,7 +253,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       playSfx(sfx.correct);
       say(sentence);
       if (list.every((e) => next.filter((x) => x === e.item.id).length >= e.quantity)) {
-        window.setTimeout(() => {
+        gameClock.setTimeout(() => {
           setPhase('done');
           playSfx(sfx.finish);
         }, 1100);

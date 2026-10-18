@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
@@ -76,7 +77,7 @@ export default function LadderBoard({
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const stopMusicRef = useRef<() => void>(() => {});
   const oneStopsRef = useRef<(() => void)[]>([]);
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const timersRef = useRef<ReturnType<typeof gameClock.setTimeout>[]>([]);
   const scaleOuterRef = useRef<HTMLDivElement>(null);
   const scaleContentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -235,8 +236,8 @@ export default function LadderBoard({
   }
 
   function revealPathEls(indices: number[], onDone: () => void) {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    gameClock.requestAnimationFrame(() => {
+      gameClock.requestAnimationFrame(() => {
         indices.forEach((i) => {
           const el = pathRefs.current[i];
           if (!el) return;
@@ -245,7 +246,7 @@ export default function LadderBoard({
         });
       });
     });
-    const timer = setTimeout(onDone, RUN_MS + 150);
+    const timer = gameClock.setTimeout(onDone, RUN_MS + 150);
     timersRef.current.push(timer);
   }
 

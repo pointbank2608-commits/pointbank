@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './matchup-clay.css';
@@ -38,7 +39,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   const flashTimer = useRef<number | null>(null);
 
   useEffect(() => {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
@@ -53,14 +54,14 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
 
   useEffect(() => {
     return () => {
-      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     };
   }, []);
 
   useImperativeHandle(ref, () => ({
     undo() {
       if (!prevSnapshot) return;
-      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
       setMatchedIds(prevSnapshot.matchedIds);
       setWrongCount(prevSnapshot.wrongCount);
       setSelectedLeft(null);
@@ -111,7 +112,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   }
 
   function restart() {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
@@ -136,8 +137,8 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     setWrongCount((c) => c + 1);
     setWrongPair({ left: leftId, right: rightId });
     setLocked(true);
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => {
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    flashTimer.current = gameClock.setTimeout(() => {
       setWrongPair(null);
       setSelectedLeft(null);
       setSelectedRight(null);

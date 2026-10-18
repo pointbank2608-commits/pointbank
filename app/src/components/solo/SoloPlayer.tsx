@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import SoloGameStep from './SoloGameStep';
+import type { GameCheckState, GameCheckAnswer, GameCheckSummary } from '../../lib/gameLearning';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 import RainbowSpeaking from '../rainbow/RainbowSpeaking';
@@ -37,6 +38,8 @@ export interface SoloPlayerApi {
   retryTest?(step: number, wrong: number[]): Promise<void>;
   /** 게임 단계가 쓰는 선생님의 게임 템플릿(069) — 못 읽으면 null */
   gameTemplate?(templateId: string): Promise<{ game_type: string; name: string; items: unknown[]; config: Record<string, unknown> } | null>;
+  gameCheckOpen?(step: number): Promise<GameCheckState>;
+  gameCheckAnswer?(step: number, question: number, value: string, request: string): Promise<GameCheckAnswer>;
 }
 
 type Phase = 'ask' | 'right' | 'wrong1' | 'shown';
@@ -141,6 +144,7 @@ export default function SoloPlayer({
   const [busy, setBusy] = useState(false);
   const [finished, setFinished] = useState(startAt >= steps.length && steps.length > 0);
   const [stats, setStats] = useState({ right: 0, unsure: 0 });
+  const [gameResults,setGameResults]=useState<Record<number,GameCheckSummary>>({});
   /** 틀렸거나 "모르겠어요"를 누른 단계 번호 — 끝 화면에서 다시 볼 것으로 보여 준다 */
   const [missed, setMissed] = useState<Set<number>>(new Set());
   const markMissed = (i: number) => setMissed((cur) => (cur.has(i) ? cur : new Set(cur).add(i)));
@@ -602,7 +606,7 @@ export default function SoloPlayer({
         <div className="solo-pop text-7xl">🎉</div>
         <h1 className="text-4xl font-bold">{t('solo.finishTitle')}</h1>
         {learned > 0 && <p className="text-2xl font-bold text-warm-yellow">{t('solo.finishLearned', { count: learned })}</p>}
-        <p className="text-xl text-white/80">{t('solo.finishStats', { right: stats.right, unsure: stats.unsure })}</p>
+        <p className="text-xl text-white/80">{t('solo.finishStats', { right: stats.right+Object.values(gameResults).reduce((n,r)=>n+r.right,0), unsure: stats.unsure })}</p>
         {review.length > 0 && (
           <div className="w-full max-w-md rounded-2xl bg-white/10 px-4 py-3 text-left">
             <div className="mb-2 text-base font-bold text-white/80">{t('solo.finishReview')}</div>
@@ -1047,7 +1051,7 @@ export default function SoloPlayer({
         )}
 
         {step.t === 'game' && (
-          <SoloGameStep key={`${idx}-${step.templateId}`} step={step} load={api.gameTemplate} busy={busy} onDone={() => void next()} />
+          <SoloGameStep key={`${idx}-${step.templateId}`} step={step} load={api.gameTemplate} busy={busy} api={api} stepIndex={idx} preview={preview} onDone={(summary) => {if(summary){setGameResults(old=>({...old,[idx]:summary}));summary.missed.forEach(word=>markMissedWord({word}));}void next();}} />
         )}
 
         {step.t === 'meet' && (

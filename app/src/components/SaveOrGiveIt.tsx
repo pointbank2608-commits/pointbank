@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -297,8 +298,8 @@ export default function SaveOrGiveIt({
 
   useEffect(() => {
     if (phase !== 'cracking') return;
-    const timer = window.setTimeout(() => setPhase('open'), BALL_CRACK_MS);
-    return () => window.clearTimeout(timer);
+    const timer = gameClock.setTimeout(() => setPhase('open'), BALL_CRACK_MS);
+    return () => gameClock.clearTimeout(timer);
   }, [phase]);
 
   function markCorrect() {

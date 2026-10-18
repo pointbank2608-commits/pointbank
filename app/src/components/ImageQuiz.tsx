@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -69,7 +70,7 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
   const sfx = useGameSfx('imagequiz');
   useStepSounds(pos, items.length > 0 && pos >= order.length, undefined, sfx.finish);
   function startUnblur(forPos: number) {
-    window.setTimeout(() => {
+    gameClock.setTimeout(() => {
       if (posRef.current === forPos) {
         setBlurred(false);
         playSfx(sfx.reveal, 0.6);

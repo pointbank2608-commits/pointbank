@@ -242,6 +242,10 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
       <Field title={t('soloEdit.gameTitle')}>
         <input value={step.title} onChange={(e) => onChange({ ...step, title: e.target.value })} className={input} />
       </Field>
+      <label className="flex min-h-12 items-center gap-3 rounded-xl bg-primary/10 p-3 text-on-surface">
+        <input type="checkbox" checked={step.measure !== false} onChange={e => onChange({...step,measure:e.target.checked})} />
+        {t('solo.gameCheckOption',{defaultValue:'게임 뒤 짧은 학습 확인을 하고 학생 스탯에 반영'})}
+      </label>
     </div>
   );
 }

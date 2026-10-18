@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -54,14 +55,14 @@ const SCREEN_FILL = { left: 0.095, top: 0.195, width: 0.805, height: 0.615 };
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
+    gameClock.setTimeout(resolve, ms);
   });
 }
 
 function nextFrame() {
   return new Promise<void>((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve());
+    gameClock.requestAnimationFrame(() => {
+      gameClock.requestAnimationFrame(() => resolve());
     });
   });
 }
@@ -158,9 +159,9 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
     const nextCount = count + n;
     // 부른 숫자 개수만큼 톡톡, 31을 부르면 벌칙 소리
     const taps = Math.min(n, targetCount - count);
-    for (let i = 0; i < taps; i++) window.setTimeout(() => playSfx(GAME_SFX.baskin31.count, 0.8), i * 110);
-    if (nextCount >= targetCount) window.setTimeout(() => playSfx(GAME_SFX.baskin31.penalty), taps * 110);
-    else window.setTimeout(() => playSfx(COMMON_SFX.yourTurn, 0.7), taps * 110 + 250);
+    for (let i = 0; i < taps; i++) gameClock.setTimeout(() => playSfx(GAME_SFX.baskin31.count, 0.8), i * 110);
+    if (nextCount >= targetCount) gameClock.setTimeout(() => playSfx(GAME_SFX.baskin31.penalty), taps * 110);
+    else gameClock.setTimeout(() => playSfx(COMMON_SFX.yourTurn, 0.7), taps * 110 + 250);
     setHead(head + n);
     setCountTick((k) => k + 1);
     if (nextCount >= targetCount) {

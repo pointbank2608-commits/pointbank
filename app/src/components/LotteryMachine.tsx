@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { isGameSoundOn } from '../lib/gameSfx';
 import { useTranslation } from 'react-i18next';
@@ -86,8 +87,8 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
   const chuteRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const flyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inFlyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flyTimerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
+  const inFlyTimerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const prevLen = useRef(drawnList.length);
 
   useEffect(() => {
@@ -99,10 +100,10 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
 
   useEffect(() => {
     if (!active) return;
-    const id = setInterval(() => {
+    const id = gameClock.setInterval(() => {
       setPositions((prev) => prev.map(() => randomPos()));
     }, 220);
-    return () => clearInterval(id);
+    return () => gameClock.clearInterval(id);
   }, [active]);
 
   // 공이 케이지 안에서 달그락거리는 효과음 — 배경음악(선생님이 고르는 설정)과 별개로,
@@ -123,7 +124,7 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
     if (drawnList.length === 0) {
       setDisplayedCount(0);
       setFlyer(null);
-      if (flyTimerRef.current) clearTimeout(flyTimerRef.current);
+      if (flyTimerRef.current) gameClock.clearTimeout(flyTimerRef.current);
     }
   }, [drawnList.length]);
 
@@ -153,7 +154,7 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
     const ey = slot.top + slot.height / 2 - wrap.top - BALL / 2;
     const label = drawnList[i]?.label ?? '';
     setFlyer({
-      key: Date.now(),
+      key: gameClock.dateNow(),
       index: i,
       label: label.length > 4 ? label.slice(0, 3) : label,
       color: colorFor(i),
@@ -162,8 +163,8 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
       dx: ex - sx,
       dy: ey - sy,
     });
-    if (flyTimerRef.current) clearTimeout(flyTimerRef.current);
-    flyTimerRef.current = setTimeout(() => {
+    if (flyTimerRef.current) gameClock.clearTimeout(flyTimerRef.current);
+    flyTimerRef.current = gameClock.setTimeout(() => {
       setDisplayedCount(i + 1);
       setFlyer(null);
     }, LOTTERY_FLY_MS);
@@ -181,9 +182,9 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
       const sy = input.top + input.height / 2 - wrap.top - BALL / 2;
       const dx = box.left + box.width * HOLE.cx - wrap.left - BALL / 2;
       const dy = box.top + box.height * HOLE.cy - wrap.top - BALL / 2;
-      if (inFlyTimerRef.current) clearTimeout(inFlyTimerRef.current);
-      setInFlyer({ key: Date.now(), color: colorFor(pool.length), sx, sy, dx: dx - sx, dy: dy - sy });
-      inFlyTimerRef.current = setTimeout(() => setInFlyer(null), 560);
+      if (inFlyTimerRef.current) gameClock.clearTimeout(inFlyTimerRef.current);
+      setInFlyer({ key: gameClock.dateNow(), color: colorFor(pool.length), sx, sy, dx: dx - sx, dy: dy - sy });
+      inFlyTimerRef.current = gameClock.setTimeout(() => setInFlyer(null), 560);
     }
     onAdd(label);
     setInputValue('');

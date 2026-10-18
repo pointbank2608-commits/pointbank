@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -96,8 +97,8 @@ export default function FindMissing({
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
+  const tickIntervalRef = useRef<ReturnType<typeof gameClock.setInterval> | null>(null);
   const stopTickRef = useRef<(() => void) | null>(null);
   const runIdRef = useRef(0);
   const cardEls = useRef(new Map<string, HTMLElement>());
@@ -107,7 +108,7 @@ export default function FindMissing({
 
   function stopTicking() {
     if (tickIntervalRef.current) {
-      clearInterval(tickIntervalRef.current);
+      gameClock.clearInterval(tickIntervalRef.current);
       tickIntervalRef.current = null;
     }
     if (stopTickRef.current) {
@@ -152,7 +153,7 @@ export default function FindMissing({
 
   function clearTimer() {
     if (timerRef.current) {
-      clearTimeout(timerRef.current);
+      gameClock.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }
@@ -182,8 +183,8 @@ export default function FindMissing({
     setInstant(true);
     setOffsets(next);
     let cancelled = false;
-    const play = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    const play = gameClock.requestAnimationFrame(() => {
+      gameClock.requestAnimationFrame(() => {
         if (cancelled) return;
         firstRectsRef.current = null;
         setInstant(false);
@@ -192,7 +193,7 @@ export default function FindMissing({
     });
     return () => {
       cancelled = true;
-      cancelAnimationFrame(play);
+      gameClock.cancelAnimationFrame(play);
     };
   }, [board, phase]);
 
@@ -217,12 +218,12 @@ export default function FindMissing({
     setPhase('shuffling');
     playShuffleSwish();
     clearTimer();
-    timerRef.current = setTimeout(() => {
+    timerRef.current = gameClock.setTimeout(() => {
       if (runId !== runIdRef.current) return;
       if (remaining > 1) {
         shuffleRound(next, remaining - 1, runId);
       } else {
-        timerRef.current = setTimeout(() => {
+        timerRef.current = gameClock.setTimeout(() => {
           if (runId !== runIdRef.current) return;
           setOffsets({});
           setPhase('hidden');
@@ -236,7 +237,7 @@ export default function FindMissing({
     hideSome(nextBoard);
     if (shuffleRef.current && nextBoard.length >= 2) {
       setPhase('shuffling');
-      timerRef.current = setTimeout(() => {
+      timerRef.current = gameClock.setTimeout(() => {
         if (runId !== runIdRef.current) return;
         shuffleRound(nextBoard, SHUFFLE_ROUNDS, runId);
       }, HIDE_PAUSE_MS);
@@ -271,7 +272,7 @@ export default function FindMissing({
     // 쓴다 — setState updater 안에서 다음 로직을 이어가면 React 배치 타이밍에 따라 ref/state가
     // 아직 안 갱신된 값을 참조하는 버그가 생길 수 있어서(과거에 겪은 패턴), 아예 분리해둔다.
     let secondsLeft = memorizeSeconds;
-    tickIntervalRef.current = setInterval(() => {
+    tickIntervalRef.current = gameClock.setInterval(() => {
       if (runId !== runIdRef.current) return;
       secondsLeft -= 1;
       setCountdown(Math.max(secondsLeft, 0));
@@ -539,11 +540,11 @@ function BigFlipCard({ label, onClose }: { label: string; onClose: () => void })
   const [shown, setShown] = useState(false);
   useEffect(() => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const a = window.setTimeout(() => setShown(true), 20);
-    const b = window.setTimeout(() => setFlipped(true), reduce ? 60 : 650);
+    const a = gameClock.setTimeout(() => setShown(true), 20);
+    const b = gameClock.setTimeout(() => setFlipped(true), reduce ? 60 : 650);
     return () => {
-      window.clearTimeout(a);
-      window.clearTimeout(b);
+      gameClock.clearTimeout(a);
+      gameClock.clearTimeout(b);
     };
   }, []);
   useEffect(() => {

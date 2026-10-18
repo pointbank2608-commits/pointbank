@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -71,7 +72,7 @@ export default function TimeBomb({
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const [minInput, setMinInput] = useState(String(minSec));
   const [maxInput, setMaxInput] = useState(String(maxSec));
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function TimeBomb({
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
       stopMusicRef.current();
     };
   }, []);
@@ -140,7 +141,7 @@ export default function TimeBomb({
   function start() {
     if (phase === 'active') return;
     if (mode === 'pass' && n < 2) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
 
     setHolderIndex(0);
@@ -150,7 +151,7 @@ export default function TimeBomb({
 
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;
-    timerRef.current = setTimeout(() => {
+    timerRef.current = gameClock.setTimeout(() => {
       setPhase('exploded');
       stopMusicRef.current();
       playMusic(resultSound);
@@ -164,7 +165,7 @@ export default function TimeBomb({
   }
 
   function reset() {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
     setPhase('idle');
     setCurrentWord(null);

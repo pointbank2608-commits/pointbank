@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -59,7 +60,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   const groupKey = groups.map((g) => `${g.id}:${g.items.map((it) => it.id).join(',')}`).join('|');
 
   useEffect(() => {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     setPool(shuffle(flatten(groups)));
     setPlaced(emptyBuckets(groups));
     setSelectedId(null);
@@ -70,7 +71,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
 
   useEffect(() => {
     return () => {
-      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     };
   }, []);
 
@@ -93,7 +94,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   const finished = pool.length === 0;
 
   function restart() {
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
     setPool(shuffle(flatten(groups)));
     setPlaced(emptyBuckets(groups));
     setSelectedId(null);
@@ -114,7 +115,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     if (!item) return;
     if (item.groupId === groupId) {
       playSfx(sfx.drop, 0.7);
-      window.setTimeout(() => playSfx(sfx.correct), 120);
+      gameClock.setTimeout(() => playSfx(sfx.correct), 120);
       setPool((prev) => prev.filter((it) => it.id !== selectedId));
       setPlaced((prev) => ({ ...prev, [groupId]: [...prev[groupId], item] }));
       setSelectedId(null);
@@ -124,8 +125,8 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     setWrongCount((c) => c + 1);
     setWrongGroupId(groupId);
     setLocked(true);
-    if (flashTimer.current !== null) window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => {
+    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    flashTimer.current = gameClock.setTimeout(() => {
       setWrongGroupId(null);
       setSelectedId(null);
       setLocked(false);

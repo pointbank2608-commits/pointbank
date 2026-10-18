@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -270,7 +271,7 @@ export default function Watermelon({ items, patternId }: Props) {
     worldRef.current = world;
     preloadWatermelonSfx();
     let raf = 0;
-    let last = performance.now();
+    let last = gameClock.now();
     const loop = (now: number) => {
       const dt = now - last;
       last = now;
@@ -286,11 +287,11 @@ export default function Watermelon({ items, patternId }: Props) {
       } else if (overflowBodies(world).length === 0) {
         overflowMs.current = 0;
       }
-      raf = requestAnimationFrame(loop);
+      raf = gameClock.requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+    raf = gameClock.requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(raf);
+      gameClock.cancelAnimationFrame(raf);
       destroyWatermelonWorld(world);
       worldRef.current = null;
     };
@@ -315,14 +316,14 @@ export default function Watermelon({ items, patternId }: Props) {
     if (isCompleteSentence(tokens, current.slots)) {
       const delay = agreement ? AGREE_MS : COMPLETE_HOLD_MS;
       const id = body.fruitData.id;
-      window.setTimeout(() => {
+      gameClock.setTimeout(() => {
         const live = worldRef.current;
         if (!live || overRef.current) return;
         const still = findFruit(live, id);
         if (!still) return;
         const stage = fruitStageForCount(tokens.length);
         setPopping({
-          id: `pop-${Date.now()}`,
+          id: `pop-${gameClock.dateNow()}`,
           x: still.position.x,
           y: still.position.y,
           r: stage.radius,
@@ -333,7 +334,7 @@ export default function Watermelon({ items, patternId }: Props) {
         playWatermelonSfx('pop');
         setScore((s) => s + pointsForComplete(current));
         removeFruit(live, still);
-        window.setTimeout(() => {
+        gameClock.setTimeout(() => {
           setPopping(null);
           setBurst(null);
         }, 700);
@@ -367,7 +368,7 @@ export default function Watermelon({ items, patternId }: Props) {
 
   function clearNudge() {
     if (nudgeTimer.current != null) {
-      window.clearInterval(nudgeTimer.current);
+      gameClock.clearInterval(nudgeTimer.current);
       nudgeTimer.current = null;
     }
   }
@@ -378,7 +379,7 @@ export default function Watermelon({ items, patternId }: Props) {
     event.currentTarget.setPointerCapture(event.pointerId);
     clearNudge();
     nudgeBy(dir);
-    nudgeTimer.current = window.setInterval(() => nudgeBy(dir), 70);
+    nudgeTimer.current = gameClock.setInterval(() => nudgeBy(dir), 70);
   }
 
   function drop() {
@@ -395,7 +396,7 @@ export default function Watermelon({ items, patternId }: Props) {
     const following = pickItem(poolRef.current, item.id);
     nextRef.current = following;
     setNextItem(following);
-    window.setTimeout(() => {
+    gameClock.setTimeout(() => {
       dropLock.current = false;
     }, 420);
   }

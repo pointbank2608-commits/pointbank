@@ -52,8 +52,8 @@ export type SoloStep =
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
   | { t: 'example'; sentence: string; ko: string }
-  /** 게임 — 선생님이 만든 게임 템플릿(templateId)을 학생 혼자 한다. 서버 채점 없음: 끝냈다는 기록만 남는다 */
-  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string }
+  /** 게임 점수 대신 게임 뒤 서버 확인 문제를 스탯에 반영한다. measure=false면 완료만 기록. */
+  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number }
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
@@ -131,7 +131,7 @@ export type SoloPublicStep =
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
   | { t: 'example'; sentence: string; ko: string }
-  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string }
+  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
   | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[] }
   | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }

@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -63,7 +64,7 @@ export default function DoctorVisit({ showKo: showKoProp }: Props) {
   const timers = useRef<number[]>([]);
   useEffect(() => {
     const l = timers.current;
-    return () => l.forEach((id) => window.clearTimeout(id));
+    return () => l.forEach((id) => gameClock.clearTimeout(id));
   }, []);
   function loadSet(i: number) {
     setSetIdx(i);
@@ -81,7 +82,7 @@ export default function DoctorVisit({ showKo: showKoProp }: Props) {
     } else {
       setWrong(id);
       playSfx(GAME_SFX.doctor.wrong);
-      timers.current.push(window.setTimeout(() => setWrong(null), 500));
+      timers.current.push(gameClock.setTimeout(() => setWrong(null), 500));
     }
   }
   const setDoneAll = done.size >= MATCH_SETS[setIdx].length;

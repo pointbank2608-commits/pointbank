@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
@@ -294,7 +295,7 @@ export default function Airplane({
   const flashTimers = useRef<number[]>([]);
 
   function clearFlashes() {
-    flashTimers.current.forEach((id) => window.clearTimeout(id));
+    flashTimers.current.forEach((id) => gameClock.clearTimeout(id));
     flashTimers.current = [];
     setWrongFlash(false);
   }
@@ -383,7 +384,7 @@ export default function Airplane({
   useEffect(() => {
     if (items.length < 2) return;
     let raf = 0;
-    let lastTime = performance.now();
+    let lastTime = gameClock.now();
 
     function loop(now: number) {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
@@ -448,13 +449,13 @@ export default function Airplane({
             setScore((s) => s + 1);
             flyersRef.current = flyersRef.current.filter((other) => other.id !== f.id);
             burstsRef.current.push({ id: `g-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
-            flashTimers.current.push(window.setTimeout(() => setPos((p) => p + 1), 420));
+            flashTimers.current.push(gameClock.setTimeout(() => setPos((p) => p + 1), 420));
           } else {
             burstsRef.current.push({ id: `h-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
             f.x = rand(140, 196);
             f.y = rand(16, 84);
             setWrongFlash(true);
-            flashTimers.current.push(window.setTimeout(() => setWrongFlash(false), 250));
+            flashTimers.current.push(gameClock.setTimeout(() => setWrongFlash(false), 250));
             if (iframeRef.current <= 0) {
               livesRef.current = Math.max(0, livesRef.current - 1);
               setLives(livesRef.current);
@@ -463,7 +464,7 @@ export default function Airplane({
                 roundOverRef.current = true;
                 setCrashed(true);
                 playSfx(GAME_SFX.airplane.crash);
-                window.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 900);
+                gameClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 900);
               } else playSfx(GAME_SFX.airplane.wrongHit);
             }
           }
@@ -477,11 +478,11 @@ export default function Airplane({
       });
 
       setTick((n) => n + 1);
-      raf = requestAnimationFrame(loop);
+      raf = gameClock.requestAnimationFrame(loop);
     }
 
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    raf = gameClock.requestAnimationFrame(loop);
+    return () => gameClock.cancelAnimationFrame(raf);
   }, [items.length]);
 
   useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.airplane.finish);

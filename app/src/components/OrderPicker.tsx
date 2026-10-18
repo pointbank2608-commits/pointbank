@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LotteryMachine, { LOTTERY_FLY_MS } from './LotteryMachine';
@@ -35,7 +36,7 @@ export default function OrderPicker({ pool, music, resultSound, onAdd }: Props) 
   const [order, setOrder] = useState<GameItem[] | null>(null);
   const [drawnCount, setDrawnCount] = useState(0);
   const [flying, setFlying] = useState(false);
-  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const timersRef = useRef<ReturnType<typeof gameClock.setTimeout>[]>([]);
 
   const canMix = pool.length >= 2;
   const drawnList = order ? order.slice(0, drawnCount) : [];
@@ -66,7 +67,7 @@ export default function OrderPicker({ pool, music, resultSound, onAdd }: Props) 
     setDrawnCount(nextCount);
     if (nextCount >= order.length) setPhase('idle');
     playMusic(resultSound);
-    const timer = setTimeout(() => setFlying(false), LOTTERY_FLY_MS);
+    const timer = gameClock.setTimeout(() => setFlying(false), LOTTERY_FLY_MS);
     timersRef.current.push(timer);
   }
 

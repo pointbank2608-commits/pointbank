@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -112,12 +113,12 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
   const [needChoose, setNeedChoose] = useState(false);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(window.setTimeout(fn, ms));
+    timers.current.push(gameClock.setTimeout(fn, ms));
   };
   const clearAll = () => {
-    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current.forEach((id) => gameClock.clearTimeout(id));
     timers.current = [];
-    if (raf.current) cancelAnimationFrame(raf.current);
+    if (raf.current) gameClock.cancelAnimationFrame(raf.current);
     raf.current = null;
   };
   useEffect(() => clearAll, []);
@@ -181,7 +182,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
   function tickFast() {
     angleRef.current = (angleRef.current + 11) % 360;
     setAngle(angleRef.current);
-    raf.current = requestAnimationFrame(tickFast);
+    raf.current = gameClock.requestAnimationFrame(tickFast);
   }
 
   function clickWheel() {
@@ -189,11 +190,11 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
     if (spin === 'idle') {
       setSpin('fast');
       playSfx(GAME_SFX.lastbox.spin);
-      raf.current = requestAnimationFrame(tickFast);
+      raf.current = gameClock.requestAnimationFrame(tickFast);
       return;
     }
     if (spin === 'fast') {
-      if (raf.current) cancelAnimationFrame(raf.current);
+      if (raf.current) gameClock.cancelAnimationFrame(raf.current);
       setSpin('stopping');
       const target = Math.floor(Math.random() * SLICES.length);
       const centerDeg = target * 45 + 22.5 + (Math.random() * 20 - 10);
@@ -201,13 +202,13 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
       const want = (((-centerDeg - start) % 360) + 360) % 360;
       const total = want + 360 * 3;
       const dur = 3200;
-      const t0 = performance.now();
+      const t0 = gameClock.now();
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / dur);
         const e = 1 - Math.pow(1 - p, 3);
         angleRef.current = (start + total * e) % 360;
         setAngle(angleRef.current);
-        if (p < 1) raf.current = requestAnimationFrame(step);
+        if (p < 1) raf.current = gameClock.requestAnimationFrame(step);
         else {
           setSpin('done');
           setSlice(target);
@@ -215,7 +216,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
           later(() => handleSlice(target), 900);
         }
       };
-      raf.current = requestAnimationFrame(step);
+      raf.current = gameClock.requestAnimationFrame(step);
     }
   }
 

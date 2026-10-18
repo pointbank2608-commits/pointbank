@@ -3632,6 +3632,11 @@ const ko = {
     add: '등록',
   },
   solo: {
+    gameCheckStart: '혼자 확인하고 마치기',
+    gameCheckOption: '게임 뒤 짧은 학습 확인을 하고 학생 스탯에 반영',
+    warmupStart: '지난 숙제 맞춤 몸풀기',
+    warmupEmpty: '아직 복습할 기록이 적어요. 오늘 수업부터 시작해요.',
+    warmupError: '준비 연습을 불러오지 못했어요. 오늘 수업은 바로 시작할 수 있어요.',
     levelHintUpper: '중·고등은 교과과정 문법과 품사·무지개 문법 수업을 먼저 보여 줘요. 교육부 800 단어 수업은 초등 대상이에요.',
     editLesson: '고치기',
     track_rainbow: "무지개 문법",
@@ -4225,7 +4230,7 @@ const ko = {
     pasteTitle: "단어로 단계 자동 만들기",
     pasteHint: "한 줄에 단어 하나씩 붙여넣으세요. 뜻을 같이 쓰면(apple 사과) 그 뜻을 쓰고, 영어만 쓰면 사전에서 뜻·그림·예문을 찾아요.",
     stepType_game: "게임(템플릿)",
-    stepHelp_game: "선생님이 만들어 둔 게임 템플릿(매치업·애너그램)을 학생이 혼자 해요. 끝내면 완료로 기록돼요. 점수는 스탯에 넣지 않아요.",
+    stepHelp_game: "선생님이 만든 게임을 혼자 해요. 게임 뒤 짧은 확인 문제의 처음 답을 스탯에 반영해요. 게임 점수와 속도는 스탯에 넣지 않아요.",
     gameTemplate: "게임 템플릿",
     gameTemplateHint: "학원 공용이거나 이 수업 반의 템플릿만 나와요. 게임 메뉴에서 먼저 만들어 두세요.",
     gameTemplateNone: "고를 수 있는 템플릿이 없어요. 게임 메뉴에서 이 종류의 게임을 먼저 만들어 주세요.",
@@ -4466,6 +4471,7 @@ const ko = {
     stepHelp_test: '수업에서 배운 낱말·문장으로 만든 시험이에요. 문제마다 제한 시간이 있고, 듣기는 한 번만 들려주며, 다 푼 뒤 한꺼번에 채점해 영역별 점수와 정답을 보여 줘요. 문제를 누르면 하나씩 고칠 수 있어요.',
   },
   studentHw: {
+    overallGrowth: '종합 성장 · 학습과 꾸준함',
     editBlocks: '블록 편집기에서 내용·순서 수정',
     importLesson: '저장하고 숙제로 가져오기',
     activityCompletion: '활동 완료 확인',

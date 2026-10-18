@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -136,7 +137,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
         play.status = 'lost';
         setStatus('lost');
         playSfx(GAME_SFX.hangman.lose);
-        window.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 1400);
+        gameClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 1400);
       } else playSfx(GAME_SFX.hangman.miss);
       return;
     }
@@ -146,7 +147,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       setStatus('won');
       setScore((s) => s + 1);
       playSfx(GAME_SFX.hangman.win);
-      window.setTimeout(() => playSfx(COMMON_SFX.praise), 1100);
+      gameClock.setTimeout(() => playSfx(COMMON_SFX.praise), 1100);
     } else playSfx(GAME_SFX.hangman.hit);
   }
 

@@ -3,6 +3,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
+/* Game preparation stays mounted in a native dialog; the live board is portalled to its stage. */
+.game-workspace-dialog { width: min(960px, 96vw); max-height: 92dvh; }
+.game-workspace-paused [data-game] .game-fs-content { pointer-events: none; }
+.game-workspace-paused [data-game] * { animation-play-state: paused !important; }
+.game-workspace-stage > [data-game] { min-height: 460px; }
+
 @theme {
   /* ---- 색상 (스티치 원본 그대로) ---- */
   --color-inverse-surface: #102b50;

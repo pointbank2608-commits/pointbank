@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
-import { usePresenting } from '../context/LessonRunnerContext';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
+import { prepareClassroomGame } from './gameWorkspace';
+import { wordListToCards } from './gameFromWords';
+import { useLessonRunner, usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
   createGameTemplate,
@@ -19,11 +22,12 @@ import {
   type ImportCandidate,
 } from './api';
 import { useClasses } from './useClasses';
-import type { GameItem, GameTemplate, GameTemplateConfig, GameType, WordList } from './types';
+import type { FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType, WordList } from './types';
 
 export type RosterScope = 'class' | 'academy';
 
 interface OpenState {
+  materialsWords?: FullCardItem[];
   openTemplateId?: string;
   openClassId?: string;
 }
@@ -47,8 +51,10 @@ export function useGameTemplates(params: {
   const navigate = useNavigate();
   const location = useLocation();
   const presenting = usePresenting();
+  const lessonRunner = useLessonRunner();
   /** 커리큘럼 편집 화면 안에 띄워진 경우(게임 슬라이드 상세) — 반·처음 템플릿이 슬라이드에서 온다. */
   const embed = useGameEmbed();
+  const workspace = useGameWorkspace();
   const embedRef = useRef(embed);
   embedRef.current = embed;
   /** "다른 게임으로 열기"·워크시트 다리·커리큘럼 발표에서 넘어온 템플릿 — 이게 있으면 이전 선택보다
@@ -99,6 +105,8 @@ export function useGameTemplates(params: {
   const [rosterLoading, setRosterLoading] = useState(false);
 
   useEffect(() => {
+    let active = true;
+    setRoster([]);
     if (!academy?.id || !classId) {
       setRoster([]);
       return;
@@ -106,27 +114,35 @@ export function useGameTemplates(params: {
     setRosterLoading(true);
     const fetcher = rosterScope === 'academy' ? fetchStudentsOfAcademy(academy.id) : fetchStudentsOfClass(classId);
     fetcher
-      .then((students) => setRoster(students.map((s) => ({ id: s.id, label: s.name }))))
+      .then((students) => { if (active) setRoster(students.map((s) => ({ id: s.id, label: s.name }))); })
       .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'))
-      .finally(() => setRosterLoading(false));
+      .finally(() => { if (active) setRosterLoading(false); });
+    return () => { active = false; };
   }, [academy?.id, classId, rosterScope, notify]);
 
   // 선생님이 이 반/학원에 만들어둔 단어장 목록 — WordListPicker 가 그대로 보여준다.
   const [wordLists, setWordLists] = useState<WordList[]>([]);
+  const [allWordLists, setAllWordLists] = useState<WordList[]>([]);
   const [wordListsLoading, setWordListsLoading] = useState(false);
+  const listSequence = useRef(0);
 
   const reloadWordLists = useCallback(async () => {
+    const sequence = ++listSequence.current;
+    setAllWordLists([]); setWordLists([]);
     if (!academy?.id || !classId) {
       setWordLists([]);
       return;
     }
     setWordListsLoading(true);
     try {
-      setWordLists(await fetchWordLists(academy.id, classId, listKind));
+      const lists = await fetchWordLists(academy.id, classId, 'all');
+      if (sequence !== listSequence.current) return;
+      setAllWordLists(lists);
+      setWordLists(listKind === 'all' ? lists : lists.filter((list) => (list.kind || 'word') === listKind));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
-      setWordListsLoading(false);
+      if (sequence === listSequence.current) setWordListsLoading(false);
     }
   }, [academy?.id, classId, notify, listKind]);
 
@@ -137,12 +153,15 @@ export function useGameTemplates(params: {
   const [templates, setTemplates] = useState<GameTemplate[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadedWorkspaceKey, setLoadedWorkspaceKey] = useState('');
+  const loadSequence = useRef(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
 
   const load = useCallback(async () => {
+    const sequence = ++loadSequence.current;
     if (!academy?.id || !classId) {
       setTemplates([]);
       setLoading(false);
@@ -151,6 +170,7 @@ export function useGameTemplates(params: {
     setLoading(true);
     try {
       const rows = await fetchGameTemplates(academy.id, classId, gameType);
+      if (sequence !== loadSequence.current) return;
       setTemplates(rows);
       // 한 번 반영한 openTemplateId 는 비워서, 나중에 선생님이 다른 템플릿을 고른 뒤 목록을 다시
       // 불러와도 선택이 도로 튀지 않게 한다.
@@ -165,7 +185,7 @@ export function useGameTemplates(params: {
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
-      setLoading(false);
+      if (sequence === loadSequence.current) { setLoadedWorkspaceKey(`${classId}:${gameType}`); setLoading(false); }
     }
   }, [academy?.id, classId, gameType, notify]);
 
@@ -318,6 +338,58 @@ export function useGameTemplates(params: {
     }
   }
 
+  async function useClassroomList(list: WordList) {
+    if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
+    if (!academy?.id || !profile || !classId) throw new Error('no_class');
+    const content = prepareClassroomGame(gameType, list);
+    if (!content) throw new Error('incompatible_content');
+    const existing = templates.find((tpl) => tpl.class_id === classId && tpl.config.classroomSource?.id === list.id && tpl.config.classroomSource.version === list.updated_at);
+    if (existing) { setSelectedId(existing.id); return; }
+    const tpl = await createGameTemplate({ academyId: academy.id, classId, gameType, name: list.name, teacherId: profile.id,
+      items: content.items, config: { ...defaultConfig?.(), ...content.config, classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } } });
+    // A late response from a previously selected class must not replace the current class's screen.
+    if (workspaceClass.current !== classId) return;
+    setTemplates((prev) => [...prev, tpl]); setSelectedId(tpl.id);
+  }
+  const workspaceClass = useRef(classId); workspaceClass.current = classId;
+  const lessonCards = (location.state as OpenState | null)?.materialsWords;
+  const classroomSource = selected?.config.classroomSource || (lessonCards?.length ? { id: `lesson:${lessonRunner.runner?.lessonId}`, name: lessonRunner.runner?.lessonName || '수업 자료', kind: (lessonCards.every((c) => c.word.trim().split(/\s+/).length >= 2) ? 'sentence' : 'word') as 'word'|'sentence', version: '', cards: lessonCards } : undefined);
+  const teamKey = ({ fourclues: 'clueTeams', catchsentence: 'catchTeams', lastbox: 'boxTeams', mysterybox: 'boxTeams', treasuredig: 'digTeams' } as Partial<Record<GameType, 'clueTeams'|'catchTeams'|'boxTeams'|'digTeams'>>)[gameType];
+  async function configureTeams(count: number) {
+    if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
+    if (!teamKey || !academy?.id || !profile || !classId) return;
+    const config = { ...(selected?.config || defaultConfig?.() || {}), [teamKey]: count };
+    if (selected) {
+      const { updateGameTemplate } = await import('./api');
+      await updateGameTemplate(selected.id, { config });
+      setTemplates((old) => old.map((tpl) => tpl.id === selected.id ? { ...tpl, config } : tpl));
+    } else {
+      const tpl = await createGameTemplate({ academyId:academy.id,classId,gameType,name:'이번 수업',items:defaultItems(),config,teacherId:profile.id });
+      setTemplates((old) => [...old,tpl]); setSelectedId(tpl.id);
+    }
+  }
+  async function switchClassroomGame(targetType: GameType) {
+    if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
+    if (!academy?.id || !profile || !classroomSource || !classId) throw new Error('no_source');
+    const source = classroomSource;
+    const content = prepareClassroomGame(targetType, source.cards, source.kind);
+    if (!content) throw new Error('incompatible_content');
+    const tpl = await createGameTemplate({ academyId: academy.id, classId, gameType: targetType, name: source.name, teacherId: profile.id, items: content.items, config: { ...content.config, classroomSource: structuredClone(source) } });
+    if (workspaceClass.current === classId) {
+      const state = { openTemplateId: tpl.id, openClassId: classId, materialsWords: source.cards };
+      if (presenting) lessonRunner.replaceGame(targetType, tpl.id, state);
+      else navigate(`/games/${targetType}`, { state });
+    }
+  }
+  // Refresh action closures each render. publish compares data identities before updating its state.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!workspace || !isStaff) return;
+    workspace.publish({ gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
+      selectClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
+      teamCount: teamKey ? (selected?.config[teamKey] || defaultConfig?.()[teamKey] || 2) : undefined, configureTeams });
+  });
+
   return {
     /** 커리큘럼 "발표하기" 중 — 페이지는 편집 UI(EditOnly)를 숨기고 재생 영역만 보여준다. */
     presenting,
@@ -325,7 +397,7 @@ export function useGameTemplates(params: {
     // 편집·퀴즈 편집 모드·돌림판 자동 생성)에만 쓰인다 — 발표 중엔 false 로 돌려줘서 35개 페이지를
     // 하나하나 고치지 않고도 편집이 전부 사라지게 한다. 데이터 로딩(classId 등)은 위에서 진짜
     // isStaff 로 이미 계산했으니 영향 없다.
-    isStaff: isStaff && !presenting,
+    isStaff: isStaff && (!presenting || !!workspace),
     academy,
     classes,
     noClasses,
@@ -345,7 +417,7 @@ export function useGameTemplates(params: {
     selected,
     selectedId,
     setSelectedId,
-    loading,
+    loading: loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`),
     showCreateForm,
     setShowCreateForm,
     submitting,

@@ -3,6 +3,7 @@ import type { SoloPublicStep, SoloStep } from './soloLessons';
 import type { PoolWord } from './soloReview';
 import type { TestResult } from './soloTest';
 import type { BlockStatsData } from './soloBlockStats';
+import { fetchGameLessonResults, isGameLearningUnavailable } from './gameLearning';
 
 /** 개별수업 서버 연동(047_solo_lessons.sql) — 선생님 쪽(RLS·함수)과 학생 쪽(기기 열쇠 함수). */
 
@@ -97,7 +98,11 @@ export async function assignSoloLesson(lessonId: string, studentIds: string[], d
 export async function fetchSoloStatus(lessonId: string): Promise<SoloStatusRow[]> {
   const { data, error } = await supabase.rpc('solo_status', { p_lesson: lessonId });
   if (error) throw new Error(error.message);
-  return (data ?? []) as SoloStatusRow[];
+  const rows=(data ?? []) as SoloStatusRow[];
+  try {
+    const games=await fetchGameLessonResults(lessonId);
+    return rows.map(row=>{const game=games.find(g=>g.assignment_id===row.assignment_id);return game?{...row,right_count:row.right_count+game.right_count,wrong_count:row.wrong_count+game.wrong_count}:row;});
+  } catch(e){if(!isGameLearningUnavailable(e))throw e;return rows;}
 }
 
 /** 끝낸 학생에게 통장 포인트를 한 번만 준다(053) */
@@ -125,6 +130,7 @@ export async function fetchSoloAssignmentCounts(lessonIds: string[]): Promise<Ma
 /* ---------------- 학생(기기 열쇠) ---------------- */
 
 export interface SoloOpenResult {
+  personal_review?: boolean;
   name: string;
   can_record?: boolean;
   progress: number;

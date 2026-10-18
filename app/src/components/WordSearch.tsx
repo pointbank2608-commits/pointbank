@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -172,14 +173,14 @@ export default function WordSearch({
   const itemKey = items.map((it) => `${it.id}:${it.label}`).join(',');
 
   useEffect(() => {
-    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     setPuzzle(buildPuzzle(items));
     setSelectedStart(null);
     setFoundIds(new Set());
     setFoundLines({});
     setWrongCells(null);
     return () => {
-      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemKey]);
@@ -247,7 +248,7 @@ export default function WordSearch({
   }
 
   function restart() {
-    if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
     setHoverCell(null);
     setJustFound(null);
     setAlreadyFound(null);
@@ -282,8 +283,8 @@ export default function WordSearch({
       // 마지막 단어면 끝 소리만(겹치지 않게)
       if (foundIds.size + 1 < placements.length) playSfx(sfx.found);
       setJustFound(match.id);
-      if (justFoundTimer.current !== null) window.clearTimeout(justFoundTimer.current);
-      justFoundTimer.current = window.setTimeout(() => setJustFound(null), 1200);
+      if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
+      justFoundTimer.current = gameClock.setTimeout(() => setJustFound(null), 1200);
     } else if (
       line &&
       placements.some((p) => {
@@ -299,15 +300,15 @@ export default function WordSearch({
       setWrongCells(null);
       setJustFound(null);
       setAlreadyFound(again.id);
-      if (justFoundTimer.current !== null) window.clearTimeout(justFoundTimer.current);
-      justFoundTimer.current = window.setTimeout(() => setAlreadyFound(null), 1500);
+      if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
+      justFoundTimer.current = gameClock.setTimeout(() => setAlreadyFound(null), 1500);
     } else {
       // 한 줄이 아니면(대각선이 아닌 비스듬한 두 칸) 두 칸만 흔든다
       const keys = new Set((line ?? [start, end]).map((c) => cellKey(c.row, c.col)));
       playSfx(sfx.wrong);
       setWrongCells(keys);
-      if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
-      wrongTimer.current = window.setTimeout(() => setWrongCells(null), 600);
+      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+      wrongTimer.current = gameClock.setTimeout(() => setWrongCells(null), 600);
     }
   }
 

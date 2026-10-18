@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import { loadTeamOrder, saveTeamOrder } from '../lib/teamOrder';
@@ -70,10 +70,10 @@ function useSlotSpin() {
  * 관여하지 않는 순수 진행 보조 도구로 만들었다 — 결과를 저장하지 않고(그때그때 새로 뽑는
  * 용도), 화면에 크게 띄워서 학생들에게 보여주는 게 목적이다.
  */
-export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]; onClose: () => void }) {
+export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number }) {
   const { t } = useTranslation();
   // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
-  const [saved] = useState(() => loadTeamOrder(roster));
+  const [saved] = useState(() => { const old=loadTeamOrder(roster); return fixedTeams ? { ...old, teamCount:fixedTeams, teamOf:Object.fromEntries(Object.entries(old.teamOf).map(([id,team])=>[id,team%fixedTeams])), order:old.mode==='team'?Array.from({length:fixedTeams},(_,i)=>`team-${i}`):old.order } : old; });
   const [mode, setMode] = useState<'individual' | 'team'>(saved.mode);
   const [teamCount, setTeamCount] = useState(saved.teamCount);
   const [teamOf, setTeamOf] = useState<Record<string, number>>(saved.teamOf);
@@ -196,6 +196,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
         </div>
 
         <div className="space-y-5 overflow-y-auto p-5">
+          {children}
           {roster.length === 0 ? (
             <div className="py-10 text-center font-body-md text-body-md text-on-surface-variant">
               {t('teamOrder.noRoster')}
@@ -233,7 +234,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                       <button
                         type="button"
                         onClick={() => changeTeamCount(teamCount - 1)}
-                        disabled={teamCount <= 2 || spinning}
+                        disabled={!!fixedTeams || teamCount <= 2 || spinning}
                         className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
                       >
                         −
@@ -242,7 +243,7 @@ export default function TeamOrderPanel({ roster, onClose }: { roster: GameItem[]
                       <button
                         type="button"
                         onClick={() => changeTeamCount(teamCount + 1)}
-                        disabled={teamCount >= 6 || spinning}
+                        disabled={!!fixedTeams || teamCount >= 6 || spinning}
                         className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-container-low text-on-surface disabled:opacity-30"
                       >
                         +

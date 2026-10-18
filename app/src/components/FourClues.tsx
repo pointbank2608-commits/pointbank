@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -137,21 +138,21 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   const [firstShown, setFirstShown] = useState(false);
   useEffect(() => {
     setFirstShown(false);
-    const id = window.setTimeout(() => {
+    const id = gameClock.setTimeout(() => {
       setFirstShown(true);
       playSfx(GAME_SFX.fourclues.flip);
     }, 800);
-    return () => window.clearTimeout(id);
+    return () => gameClock.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pos, round, itemKey]);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(window.setTimeout(fn, ms));
+    timers.current.push(gameClock.setTimeout(fn, ms));
   };
-  useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
+  useEffect(() => () => timers.current.forEach((id) => gameClock.clearTimeout(id)), []);
 
   useEffect(() => {
-    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current.forEach((id) => gameClock.clearTimeout(id));
     timers.current = [];
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
@@ -278,7 +279,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   useImperativeHandle(ref, () => ({
     undo() {
       if (!snapshot) return;
-      timers.current.forEach((id) => window.clearTimeout(id));
+      timers.current.forEach((id) => gameClock.clearTimeout(id));
       timers.current = [];
       setScores(snapshot.scores);
       setTurn(snapshot.turn);

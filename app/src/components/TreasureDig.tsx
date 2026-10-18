@@ -1,3 +1,4 @@
+import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -130,14 +131,14 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
   const timers = useRef<number[]>([]);
 
   function later(fn: () => void, ms: number) {
-    const id = window.setTimeout(fn, ms);
+    const id = gameClock.setTimeout(fn, ms);
     timers.current.push(id);
   }
-  useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
+  useEffect(() => () => timers.current.forEach((id) => gameClock.clearTimeout(id)), []);
 
   // 팀·언덕 수·단어가 바뀌면 처음부터 다시 묻는다.
   useEffect(() => {
-    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current.forEach((id) => gameClock.clearTimeout(id));
     timers.current = [];
     setDug({});
     setScores(Array(teamCount).fill(0));
@@ -267,7 +268,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
   useImperativeHandle(ref, () => ({
     undo() {
       if (!snapshot) return;
-      timers.current.forEach((id) => window.clearTimeout(id));
+      timers.current.forEach((id) => gameClock.clearTimeout(id));
       timers.current = [];
       setDug(snapshot.dug);
       setScores(snapshot.scores);
