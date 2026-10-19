@@ -164,6 +164,17 @@ try {
  await page.getByRole('checkbox',{name:'내 문장 모음에도 저장',exact:true}).waitFor();
  await page.waitForFunction(()=>Object.entries(sessionStorage).some(([k,v])=>k.startsWith('activity-draft:')&&k.endsWith(':wheel')&&JSON.parse(v).config.classroomSource.kind==='sentence'&&JSON.parse(v).items.some(i=>i.label==='I enjoy playing games.')));
  console.log('ok native unsent text recovery and word/sentence composition switch without loss');
+ await page.getByRole('button',{name:'닫기',exact:true}).first().click();
+ const returnLink=page.locator('[data-game-preparation]').getByRole('link',{name:'← 게임 목록',exact:true});
+ await returnLink.focus();await page.keyboard.press('Enter');await page.waitForURL('**/games');
+ await page.getByRole('link').filter({has:page.getByRole('heading',{name:'돌림판',exact:true})}).click();await page.waitForURL('**/games/wheel');
+ await page.waitForFunction(()=>document.querySelector('[data-game-preparation]')?.textContent.includes('새 문장 모음'));
+ await page.getByRole('button',{name:'게임 시작',exact:true}).waitFor({state:'visible'});
+ assert.equal(await page.getByRole('button',{name:'게임 시작',exact:true}).isEnabled(),true);
+ await page.setViewportSize({width:390,height:844});await returnLink.waitFor({state:'visible'});
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.screenshot({path:resolve(root,'../output/game-preparation-back-mobile.png'),fullPage:true});
+ console.log('ok preparation game-list link: keyboard navigation, content recovery after return and mobile visibility');
  assert.deepEqual(errors,[]);
 } catch(error){console.error('FAILED',error);if(page){console.error((await page.locator('body').innerText()).slice(-6500));await page.screenshot({path:resolve(root,'../output/game-focus-failure.png'),fullPage:true});}process.exitCode=1;}
 finally{await browser?.close();await server.close();}

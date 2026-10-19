@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { usePresenting } from '../context/LessonRunnerContext';
@@ -148,6 +148,7 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
   return <GameWorkspaceContext.Provider value={value}>
     <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
       {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
+        <Link to="/games" className={`${btn} inline-flex items-center`}>{t('gameAdmin.backToList')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div><button className={`${btn} bg-primary! text-white!`} disabled={!canStart || busy} onClick={start}>{t('flow.start')}</button></div>
         {capabilities.kinds.length ? materialButtons() : <p>{t('flow.noMaterialRequired')}</p>}
         <div className="flex flex-wrap gap-2"><button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>{capabilities.manualTurns && <button className={btn} onClick={() => setTeams(true)}>{t('flow.participation')}</button>}<button className={btn} onClick={() => setPanel('content')}>{t('flow.savedGames')}</button></div>
