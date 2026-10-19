@@ -41,6 +41,8 @@ export function useGameTemplates(params: {
   gameType: GameType;
   defaultItems: () => GameItem[];
   defaultConfig?: () => GameTemplateConfig;
+  /** Optional game-specific demo source for temporary activity integration. */
+  sampleCards?: () => FullCardItem[];
   /** 불러올 목록 종류 — 문장 게임은 'sentence'(문장 목록, 066), 나머지는 단어장 */
   listKind?: 'word' | 'sentence' | 'all';
 }) {

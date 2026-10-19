@@ -2073,6 +2073,8 @@ const en: Ko = {
     treasuredigDesc: 'Teams pick a sand mound, answer a word card, then dig with a shovel to find the hidden treasure.',
     fourcluesName: 'Four Clues',
     fourcluesDesc: 'Teams open clue cards one at a time to guess a secret word, then make a question with it.',
+    sentencesplashName: 'Sentence Splash',
+    sentencesplashDesc: 'Build English sentences with falling word bricks.',
     catchsentenceName: 'Catch the Sentence',
     catchsentenceDesc: 'A 5-level team game: a sentence flashes or scrambled words fly by — catch it and write it down.',
     lastboxName: 'Last Box Challenge',

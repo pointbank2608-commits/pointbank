@@ -78,6 +78,7 @@ const SaveOrGivePage = lazyPage(() => import('./pages/SaveOrGivePage'));
 const SentenceUnscramblePage = lazyPage(() => import('./pages/SentenceUnscramblePage'));
 const SettingsPage = lazyPage(() => import('./pages/SettingsPage'));
 const SpellTheWordPage = lazyPage(() => import('./pages/SpellTheWordPage'));
+const SentenceSplashPage = lazyPage(() => import('./pages/SentenceSplashPage'));
 const StudentHistoryPage = lazyPage(() => import('./pages/StudentHistoryPage'));
 const StudentPage = lazyPage(() => import('./pages/StudentPage'));
 const TicTacToePage = lazyPage(() => import('./pages/TicTacToePage'));
@@ -312,6 +313,7 @@ function AppRoutes() {
             <Route path="/games/unscramble" element={<GameWorkspace><SentenceUnscramblePage /></GameWorkspace>} />
             <Route path="/games/typeanswer" element={<GameWorkspace><TypeAnswerPage /></GameWorkspace>} />
             <Route path="/games/spellword" element={<GameWorkspace><SpellTheWordPage /></GameWorkspace>} />
+            <Route path="/games/sentencesplash" element={<GameWorkspace><SentenceSplashPage /></GameWorkspace>} />
             <Route path="/games/rankorder" element={<GameWorkspace><RankOrderPage /></GameWorkspace>} />
             <Route path="/games/wordsearch" element={<GameWorkspace><WordSearchPage /></GameWorkspace>} />
             <Route path="/games/crossword" element={<GameWorkspace><CrosswordPage /></GameWorkspace>} />
@@ -366,6 +368,7 @@ function AppRoutes() {
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
+            <Route path="/games/sentencesplash" element={<SentenceSplashPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />

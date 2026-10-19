@@ -2,6 +2,8 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
+> **Sentence Splash (2026-10-19):** 떨어지는 단어로 문장을 완성하는 48번 게임을 `/games/sentencesplash`에 추가했다. 기존 게임 화면·문장 목록·저장·수업 블록을 재사용하며 추가 SQL은 없다. 구현 파일·사용법·검증·제약은 [docs/sentence-splash-handoff.md](docs/sentence-splash-handoff.md)를 확인한다.
+
 > **선생님 매뉴얼 (2026-10-19):** [docs/manuals/README.md](docs/manuals/README.md)에 수업 만들기·숙제 내주기 매뉴얼의 PDF와 수정용 원본이 있다. 실제 메뉴 이름을 확인해 작성했으며, 메뉴·버튼이 바뀌면 원본과 PDF를 함께 갱신한다.
 
 > **Codex 인수인계 (2026-10-19, 학생 학습 게임):** 기존 스탯에 게임 확인 기록을 연결하고 맞춤 게임 숙제·개별수업·다음 수업 준비 연습으로 이어지는 변경은 [docs/claude-game-learning-handoff.md](docs/claude-game-learning-handoff.md)를 확인한다. 필요한 SQL은 **088a → 088b → 088_check** 순서다. 합성 DB/브라우저 검증은 완료했으며 운영 SQL 실행·커밋·배포는 하지 않았다.

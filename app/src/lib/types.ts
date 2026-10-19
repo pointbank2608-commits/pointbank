@@ -197,6 +197,7 @@ export type GameType =
   | 'anagram'
   | 'groupsort'
   | 'unscramble'
+  | 'sentencesplash'
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
@@ -288,6 +289,8 @@ export type MusicSelection =
   | { kind: 'upload'; path: string; name: string; url: string };
 
 export interface GameTemplateConfig {
+  /** Sentence Splash: time limit in seconds for each sentence. */
+  splashSeconds?: number;
   classroomSource?: { id: string; name: string; kind: 'word' | 'sentence'; version: string; cards: FullCardItem[] };
   /** 사다리 전용: 맨 아래 결과 라벨 (items 와 개수가 같아야 함). 없으면 items 를 그대로 재사용. */
   results?: GameItem[];

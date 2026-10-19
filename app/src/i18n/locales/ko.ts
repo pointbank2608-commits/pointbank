@@ -2070,6 +2070,8 @@ const ko = {
     treasuredigDesc: '모래 언덕을 골라 단어 카드에 답하고, 삽으로 땅을 파서 숨겨진 보물을 찾는 모둠 대결이에요.',
     fourcluesName: '단서 네 개',
     fourcluesDesc: '단서 카드를 하나씩 열며 비밀 낱말을 맞히고, 그 낱말로 질문까지 만드는 모둠 대결이에요.',
+    sentencesplashName: 'Sentence Splash',
+    sentencesplashDesc: '떨어지는 단어 벽돌로 영어 문장 완성하기',
     catchsentenceName: '문장 잡기',
     catchsentenceDesc: '문장이 잠깐 나타났다 사라지거나 섞인 낱말이 날아다니면 눈으로 잡아 종이에 받아 쓰는 5단계 모둠 게임이에요.',
     lastboxName: '마지막 박스 챌린지',

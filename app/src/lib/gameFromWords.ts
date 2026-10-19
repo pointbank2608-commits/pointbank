@@ -148,6 +148,10 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
       const liveQuestions = buildContestQuestions(words, contestRoundNames(i18n.t.bind(i18n) as (k: string, o?: Record<string, unknown>) => string));
       return liveQuestions.length > 0 ? { items: labelItems, config: { liveQuestions } } : null;
     }
+    case 'sentencesplash': {
+      const sentences = words.map(w => ({ id: w.id, label: (w.example || w.word).trim() })).filter(w => w.label.split(/\s+/u).length >= 2);
+      return sentences.length ? { items: sentences, config: { splashSeconds: 45 } } : null;
+    }
     case 'unscramble': {
       const sentences = words.filter((w) => w.example).map((w) => ({ id: w.id, label: w.example as string }));
       return sentences.length > 0 ? { items: sentences } : null;

@@ -1,0 +1,390 @@
+.splash-game {
+  color: #344563;
+  background: linear-gradient(145deg, #fffaf5, #faf5ff, #effaff);
+  border-radius: 24px;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+  min-width: 0;
+}
+.splash-game button {
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.splash-game button:focus-visible {
+  outline: 4px solid #5262bd;
+  outline-offset: 3px;
+}
+.splash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.splash-header h2 {
+  font-size: clamp(23px, 3vw, 34px);
+  font-weight: 900;
+  color: #5862a2;
+  margin: 0;
+}
+.splash-header p {
+  font-size: 14px;
+  margin: 5px 0 12px;
+}
+.splash-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.splash-pills span {
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #e7def8;
+  border-radius: 24px;
+  font-weight: 800;
+}
+.splash-message {
+  background: white;
+  border: 2px dashed #e0dcf1;
+  border-radius: 14px;
+  padding: 12px;
+  font-weight: 700;
+  min-height: 50px;
+  margin: 8px 0 12px;
+}
+.splash-play {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 10px;
+}
+.splash-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 3px solid white;
+  border-radius: 22px;
+  background: linear-gradient(#d7f5ff, #f8f1fa);
+  min-width: 0;
+}
+.splash-sun {
+  position: absolute;
+  right: 4%;
+  top: 9%;
+  font-size: 72px;
+  color: #f3b65c;
+  opacity: 0.6;
+}
+.splash-cloud {
+  position: absolute;
+  top: 22px;
+  left: 4%;
+  color: white;
+  font-size: 85px;
+  opacity: 0.8;
+}
+.splash-brick {
+  position: absolute;
+  z-index: 2;
+  background: var(--brick);
+  border: 2px solid #ffffffcc;
+  border-bottom: 5px solid #33446625;
+  border-radius: 12px;
+  box-shadow:
+    0 5px 0 #33446615,
+    0 8px 14px #33446620;
+  padding: 8px 14px;
+  color: #344563;
+  font-size: 18px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  line-height: 25px;
+  will-change: top;
+}
+.splash-brick:before,
+.splash-brick:after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 18%;
+  height: 9px;
+  background: var(--brick);
+  border: 2px solid #fff9;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+.splash-brick:before {
+  left: 22%;
+}
+.splash-brick:after {
+  right: 22%;
+}
+.splash-brick:hover {
+  filter: brightness(1.05);
+}
+.splash-wrong {
+  animation: splash-shake 0.35s ease;
+}
+.splash-drowned {
+  animation: splash-sink 0.6s ease forwards;
+}
+.splash-sea {
+  position: absolute;
+  z-index: 3;
+  bottom: 0;
+  inset-inline: 0;
+  height: 90px;
+  background: linear-gradient(#a4f0ec, #74d6e2, #5aa9d1);
+  border-top: 5px solid #b5f6ef;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  pointer-events: none;
+  font-size: 25px;
+}
+.splash-sea:before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -3%;
+  width: 106%;
+  height: 20px;
+  background: #b5f6ef;
+  border-radius: 50%;
+}
+.splash-sea span {
+  animation: splash-drift 4s ease-in-out infinite;
+}
+.splash-sea i {
+  position: absolute;
+  right: 30%;
+  color: white;
+  animation: splash-bubble 3s infinite;
+}
+.splash-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 3px solid white;
+  border-radius: 22px;
+  padding: 12px 5px;
+  background: linear-gradient(#fff4ed, #fff7fb);
+  min-width: 0;
+}
+.splash-timer strong {
+  font-size: 12px;
+  text-align: center;
+}
+.splash-timer b {
+  font-size: 29px;
+  color: #5966a3;
+}
+.splash-timer > span {
+  font-size: 13px;
+}
+.splash-track {
+  flex: 1;
+  width: 38px;
+  min-height: 140px;
+  margin: 10px 0;
+  border: 3px solid white;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #e4dcf7;
+  position: relative;
+}
+.splash-track > div {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(#b6a7f6, #ffc2d3, #ffdc98);
+  border-radius: 20px;
+}
+.splash-urgent b {
+  color: #a63858;
+}
+.splash-urgent .splash-track > div {
+  background: linear-gradient(#ffb3b9, #ed7f9f);
+}
+.splash-overlay {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: #eff8ffd9;
+  backdrop-filter: blur(2px);
+}
+.splash-modal {
+  background: #fffffff2;
+  border: 3px solid white;
+  border-radius: 24px;
+  padding: 20px 16px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 18px 40px #7a96ae36;
+}
+.splash-modal h3 {
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 900;
+  margin: 8px 0;
+}
+.splash-modal p {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.splash-result-icon {
+  font-size: 44px;
+}
+.splash-primary {
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: #7065bb;
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  width: 100%;
+  margin-top: 10px;
+}
+.splash-secondary {
+  min-height: 44px;
+  margin-top: 10px;
+  text-decoration: underline;
+}
+.splash-answer {
+  background: #fff1bf;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 21px;
+  font-weight: 800;
+}
+.splash-sentence {
+  margin-top: 12px;
+  background: linear-gradient(115deg, #fff7e5, #fff1fc);
+  border: 3px solid white;
+  border-radius: 18px;
+  padding: 12px;
+}
+.splash-sentence h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+.splash-sentence small {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.splash-slots {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.splash-slots > span {
+  flex: 1 1 80px;
+  min-width: 0;
+  min-height: 48px;
+  border: 2px dashed #d1c5e4;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.splash-slots .splash-filled {
+  background: #dcd1fa;
+  border: 2px solid white;
+  animation: splash-pop 0.25s ease;
+}
+.splash-slots .splash-next {
+  border-color: #cf7895;
+}
+.splash-note {
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+@keyframes splash-shake {
+  25%,
+  75% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+@keyframes splash-sink {
+  to {
+    transform: translateY(65px) rotate(12deg);
+    opacity: 0;
+  }
+}
+@keyframes splash-drift {
+  50% {
+    transform: translateX(8px);
+  }
+}
+@keyframes splash-bubble {
+  to {
+    transform: translateY(-35px);
+    opacity: 0;
+  }
+}
+@keyframes splash-pop {
+  from {
+    transform: scale(0.85);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@media (max-width: 600px) {
+  .splash-game {
+    padding: 9px;
+    border-radius: 18px;
+  }
+  .splash-play {
+    grid-template-columns: minmax(0, 1fr) 54px;
+    gap: 5px;
+  }
+  .splash-stage {
+    border-width: 2px;
+    border-radius: 15px;
+  }
+  .splash-timer {
+    border-width: 2px;
+    padding: 10px 2px;
+  }
+  .splash-timer strong {
+    font-size: 10px;
+  }
+  .splash-track {
+    width: 29px;
+  }
+  .splash-modal {
+    padding: 15px 9px;
+  }
+  .splash-result-icon {
+    font-size: 32px;
+  }
+  .splash-slots {
+    gap: 5px;
+  }
+  .splash-pills {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-game * {
+    animation: none !important;
+  }
+  .splash-brick {
+    will-change: auto;
+  }
+}

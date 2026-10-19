@@ -44,6 +44,12 @@ export interface GameCatalogEntry {
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
   {
+    type: 'sentencesplash', number: 48, moment: 'practice', category: 'sentence',
+    minItems: 1, icon: 'water', path: '/games/sentencesplash',
+    cover: '/covers/game-sentencesplash.svg',
+    nameKey: 'gamesList.sentencesplashName', descKey: 'gamesList.sentencesplashDesc',
+  },
+  {
     type: 'wheel',
     number: 1,
     moment: 'warmup',

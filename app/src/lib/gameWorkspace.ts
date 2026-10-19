@@ -9,6 +9,7 @@ import {
 
 const SENTENCE_GAMES = new Set<GameType>([
   "unscramble",
+  "sentencesplash",
   "catchsentence",
   "lightning",
   "lastbox",

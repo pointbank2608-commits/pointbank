@@ -13,6 +13,7 @@ export interface GameMeta {
 }
 
 export const GAME_META: Record<string, GameMeta> = {
+  sentencesplash: { minutes: 6, play: 'whole' },
   wheel: { minutes: 3, play: 'whole' },
   ladder: { minutes: 5, play: 'whole' },
   order: { minutes: 3, play: 'whole' },

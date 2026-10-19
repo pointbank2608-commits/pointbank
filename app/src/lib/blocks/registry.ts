@@ -20,6 +20,7 @@ const GAME_CONCEPT: Partial<Record<GameType, string>> = {
   quiz: 'meaningPick',
   spellword: 'spelling',
   unscramble: 'sentenceOrder',
+  sentencesplash: 'sentenceOrder',
   shopping: 'roleplay',
   typeanswer: 'typeWord',
 };
