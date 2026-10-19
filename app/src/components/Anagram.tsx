@@ -333,8 +333,7 @@ export default function Anagram({
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex w-full max-w-[560px] flex-col items-center">
-          {editable &&
-            (editingTemplateName ? (
+          {editable && !itemsHidden && (editingTemplateName ? (
               <input
                 autoFocus
                 value={templateNameDraft}

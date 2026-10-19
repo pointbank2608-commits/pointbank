@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -70,7 +71,7 @@ export default function PopcornPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:popcorn:newItemLabel');
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;

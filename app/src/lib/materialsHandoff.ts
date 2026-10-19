@@ -7,6 +7,9 @@ import type { FullCardItem, WorksheetSlideOptions, PhonicsSlideOptions } from '.
  */
 export interface MaterialsHandoffState {
   materialsWords?: FullCardItem[];
+  materialsOwnerId?: string;
+  materialsAcademyId?: string;
+  materialsKind?: 'word' | 'sentence';
   /** 워크시트 페이지가 처음 열 탭(주제별 워크시트에서 유형을 골라 넘어올 때, 또는 커리큘럼
    * 워크시트 슬라이드). */
   materialsTab?: string;

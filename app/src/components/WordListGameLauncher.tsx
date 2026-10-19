@@ -19,7 +19,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
     return classes.some((row) => row.id === preferred) ? preferred! : classes[0]?.id ?? '';
   });
   const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.length : 0 }; }, [list, game]);
-  const canLaunch = prepared.ready && classes.some((row) => row.id === classId) && (isPaid || isFreeTierGame(game));
+  const canLaunch = prepared.ready && (isPaid || isFreeTierGame(game));
   return (
     <AccessibleDialog label={t('classroomUx.launchTitle')} onClose={() => { if (!busy) onClose(); }}>
       <div className="p-5 sm:p-7">
@@ -30,15 +30,16 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
           </div>
           <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-lg px-3 text-on-surface-variant">{t('common.close')}</button>
         </div>
-        <p className="mt-3 leading-relaxed text-on-surface-variant">{t('classroomUx.launchHint')}</p>
+        <p className="mt-3 leading-relaxed text-on-surface-variant">{t('quick.listHint')}</p>
         <fieldset disabled={busy} className="mt-5 space-y-5 disabled:opacity-60">
           <label className="block font-semibold">
-            {t('classroomUx.chooseClass')}
+            {t('quick.optionalClass')}
             <select value={classId} onChange={(event) => setClassId(event.target.value)} className="mt-2 block min-h-11 w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-3">
+              <option value="">{t('quick.noClassNeeded')}</option>
               {classes.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
             </select>
           </label>
-          {classes.length === 0 && <p>{t('classroomUx.noClass')}</p>}
+
           <fieldset>
             <legend className="mb-2 font-semibold">{t('classroomUx.chooseGame')}</legend>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -59,7 +60,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
         </p>
         {error && <p role="alert" className="mt-3 rounded-xl bg-error-container p-3 text-on-error-container">{t('classroomUx.launchFailed')}</p>}
         <button type="button" disabled={busy || !canLaunch} onClick={() => onLaunch(game, classId)} className="mt-5 min-h-12 w-full rounded-xl bg-primary px-5 py-3 font-bold text-on-primary disabled:opacity-50">
-          {busy ? t('classroomUx.creating') : t('classroomUx.createAndPlay')}
+          {busy ? t('classroomUx.creating') : t('quick.start')}
         </button>
       </div>
     </AccessibleDialog>

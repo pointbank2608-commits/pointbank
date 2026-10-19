@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -164,6 +165,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key.length === 1 && isLatinLetter(e.key)) {

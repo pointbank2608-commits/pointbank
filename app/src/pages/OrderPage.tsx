@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -73,7 +74,7 @@ export default function OrderPage() {
 
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipant, setNewParticipant] = useRecoverableField('game:order:newParticipant');
 
   /** 아직 만든 목록이 없을 때, 빈 안내 문구 대신 실제로 돌아가는 예시 화면을 보여준다 —
    * 처음 온 선생님이 "아 이런 게임이구나" 하고 감으로 이해하게. 항목 수 고정(3개)이라

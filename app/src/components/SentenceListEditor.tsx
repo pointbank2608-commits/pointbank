@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRecoverableField } from '../lib/useRecoverableField';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { updateWordListItems } from '../lib/api';
@@ -12,21 +13,27 @@ import type { WordList, WordListItem } from '../lib/types';
 export default function SentenceListEditor({ list, onChange }: { list: WordList; onChange: (items: WordListItem[]) => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
-  const [sentence, setSentence] = useState('');
-  const [meaning, setMeaning] = useState('');
-  const [paste, setPaste] = useState('');
+  const [sentence, setSentence] = useRecoverableField(`sentence-list:${list.id}:sentence`);
+  const [meaning, setMeaning] = useRecoverableField(`sentence-list:${list.id}:meaning`);
+  const [paste, setPaste] = useRecoverableField(`sentence-list:${list.id}:paste`);
   const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
 
   async function save(next: WordListItem[], toast?: string) {
+    if (saving.current) return false;
+    saving.current = true;
     setBusy(true);
     try {
       await updateWordListItems(list.id, next);
       onChange(next);
       if (toast) notify(toast);
+      return true;
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
+      return false;
     } finally {
       setBusy(false);
+      saving.current = false;
     }
   }
 
@@ -36,9 +43,10 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
       if (sentence.trim()) notify(t('wordLists.sentence.nothingNew'));
       return;
     }
-    await save([...list.items, ...fresh]);
-    setSentence('');
-    setMeaning('');
+    if (await save([...list.items, ...fresh])) {
+      setSentence('');
+      setMeaning('');
+    }
   }
 
   async function addPasted() {
@@ -47,8 +55,7 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
       notify(t('wordLists.sentence.nothingNew'));
       return;
     }
-    await save([...list.items, ...fresh], t('wordLists.sentence.added', { count: fresh.length }));
-    setPaste('');
+    if (await save([...list.items, ...fresh], t('wordLists.sentence.added', { count: fresh.length }))) setPaste('');
   }
 
   const input =
@@ -64,6 +71,7 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
           onChange={(e) => setSentence(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && void addOne()}
           placeholder={t('wordLists.sentence.englishPlaceholder')}
+          aria-label={t('wordLists.sentence.englishPlaceholder')}
           className={`${input} min-w-[220px] flex-[2]`}
         />
         <input
@@ -71,6 +79,7 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
           onChange={(e) => setMeaning(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && void addOne()}
           placeholder={t('wordLists.sentence.meaningPlaceholder')}
+          aria-label={t('wordLists.sentence.meaningPlaceholder')}
           className={`${input} min-w-[160px] flex-1`}
         />
         <button
@@ -91,6 +100,7 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
           onChange={(e) => setPaste(e.target.value)}
           rows={5}
           placeholder={t('wordLists.sentence.pastePlaceholder')}
+          aria-label={t('wordLists.sentence.pasteTitle')}
           className={`${input} mt-2 w-full`}
         />
         <button

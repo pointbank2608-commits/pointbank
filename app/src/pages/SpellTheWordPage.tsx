@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -76,7 +77,7 @@ export default function SpellTheWordPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:spellword:newItemLabel');
   const previewSeconds = selected?.config.spellPreviewSeconds ?? DEFAULT_PREVIEW_SECONDS;
   const [previewInput, setPreviewInput] = useState(String(previewSeconds));
 

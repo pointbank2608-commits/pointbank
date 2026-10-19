@@ -1,3 +1,4 @@
+import { isActivityDraft, patchActivityDraft } from './quickActivity';
 import { supabase } from './supabase';
 import type {
   Academy,
@@ -501,7 +502,7 @@ export async function fetchGameTemplates(
       .select('*')
       .eq('academy_id', academyId)
       .eq('game_type', gameType)
-      .or(`class_id.eq.${classId},class_id.is.null`)
+      .or(classId ? `class_id.eq.${classId},class_id.is.null` : 'class_id.is.null')
       .order('created_at'),
   ));
 }
@@ -532,7 +533,16 @@ export async function createGameTemplate(params: {
   ) as GameTemplate;
 }
 
+async function updateTemporaryActivity(id: string, patch: Parameters<typeof patchActivityDraft>[1]) {
+  if (!isActivityDraft(id)) return false;
+  const { data } = await supabase.auth.getSession();
+  if (!data.session || !id.startsWith(`activity-draft:${data.session.user.id}:`)) throw new Error('activity_owner_changed');
+  patchActivityDraft(id, patch);
+  return true;
+}
+
 export async function updateGameTemplateItems(id: string, items: GameItem[]) {
+  if (await updateTemporaryActivity(id, { items })) return;
   const { error } = await supabase
     .from('game_templates')
     .update({ items, updated_at: new Date().toISOString() })
@@ -544,6 +554,7 @@ export async function updateGameTemplate(
   id: string,
   patch: { items?: GameItem[]; config?: GameTemplateConfig },
 ) {
+  if (await updateTemporaryActivity(id, patch)) return;
   const { error } = await supabase
     .from('game_templates')
     .update({ ...patch, updated_at: new Date().toISOString() })
@@ -552,6 +563,7 @@ export async function updateGameTemplate(
 }
 
 export async function renameGameTemplate(id: string, name: string) {
+  if (await updateTemporaryActivity(id, { name })) return;
   const { error } = await supabase
     .from('game_templates')
     .update({ name, updated_at: new Date().toISOString() })
@@ -577,7 +589,7 @@ export async function fetchClassLibraryTypes(academyId: string, classId: string)
     .from('game_templates')
     .select('game_type')
     .eq('academy_id', academyId)
-    .or(`class_id.eq.${classId},class_id.is.null`);
+    .or(classId ? `class_id.eq.${classId},class_id.is.null` : 'class_id.is.null');
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as { game_type: string }[];
   return Array.from(new Set(rows.map((r) => r.game_type)));
@@ -989,7 +1001,7 @@ export async function fetchWordLists(academyId: string, classId: string, kind: W
       .from('word_lists')
       .select('*')
       .eq('academy_id', academyId)
-      .or(`class_id.eq.${classId},class_id.is.null`)
+      .or(classId ? `class_id.eq.${classId},class_id.is.null` : 'class_id.is.null')
       .order('created_at', { ascending: false }),
   )) as WordList[];
   return onlyKind(rows, kind);
@@ -1083,7 +1095,7 @@ export async function fetchCurriculumLessons(academyId: string, classId: string)
       .from('curriculum_lessons')
       .select('*')
       .eq('academy_id', academyId)
-      .or(`class_id.eq.${classId},class_id.is.null`)
+      .or(classId ? `class_id.eq.${classId},class_id.is.null` : 'class_id.is.null')
       .order('created_at'),
   ));
 }
@@ -1183,7 +1195,7 @@ async function fetchDeletedRows(
     .eq('op', 'delete')
     .order('created_at', { ascending: false })
     .limit(50);
-  if (classId) query = query.or(`class_id.eq.${classId},class_id.is.null`);
+  if (classId) query = query.or(classId ? `class_id.eq.${classId},class_id.is.null` : 'class_id.is.null');
   const rows = unwrap(await query) as ContentRevision[];
   const seen = new Set<string>();
   return excludeLiveRows(table, rows.filter((r) => (seen.has(r.row_id) ? false : (seen.add(r.row_id), true))));
@@ -1392,4 +1404,17 @@ export async function cancelBilling(action: 'cancel' | 'resume'): Promise<void> 
   });
   if (error) throw new Error(error.message);
   if (data?.error) throw new Error(data.error);
+}
+
+/** Home and optional lesson picker: academy scope remains enforced by RLS. */
+export async function fetchAllCurriculumLessons(academyId: string): Promise<CurriculumLesson[]> {
+  return unwrap(await supabase.from('curriculum_lessons').select('*').eq('academy_id', academyId).order('updated_at', { ascending: false }));
+}
+/** Reject a concurrent edit rather than overwriting a teacher's playlist. */
+export async function appendActivityToLesson(lesson: CurriculumLesson, slide: LessonSlide) {
+  const { effectiveSlides } = await import('./lessonSlides');
+  const { data, error } = await supabase.from('curriculum_lessons')
+    .update({ playlist: [...effectiveSlides(lesson), slide], updated_at: new Date().toISOString() })
+    .eq('id', lesson.id).eq('academy_id', lesson.academy_id).eq('updated_at', lesson.updated_at).select('id');
+  if (error || !data?.length) throw new Error(error?.message || 'lesson_changed_retry');
 }

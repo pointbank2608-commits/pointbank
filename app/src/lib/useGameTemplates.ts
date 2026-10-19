@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { gamePreparation } from './gamePreparation';
+import { DRAFT_EVENT, draftId, isActivityDraft, readActivityDraft, writeActivityDraft, sampleActivityCards, readComposition, legacyActivityInput, rememberSourceUse, ownedQuickSource, type QuickActivitySource } from './quickActivity';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +12,7 @@ import { useLessonRunner, usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
   createGameTemplate,
+  createWordList,
   deleteGameTemplate,
   fetchGameTemplateById,
   fetchGameTemplates,
@@ -18,6 +21,7 @@ import {
   fetchStudentsOfAcademy,
   fetchStudentsOfClass,
   fetchWordLists,
+  fetchAllWordLists,
   renameGameTemplate,
   type ImportCandidate,
 } from './api';
@@ -30,6 +34,7 @@ interface OpenState {
   materialsWords?: FullCardItem[];
   openTemplateId?: string;
   openClassId?: string;
+  quickSource?: QuickActivitySource;
 }
 
 /**
@@ -41,7 +46,7 @@ export function useGameTemplates(params: {
   gameType: GameType;
   defaultItems: () => GameItem[];
   defaultConfig?: () => GameTemplateConfig;
-  /** Optional game-specific demo source for temporary activity integration. */
+  /** Optional game-specific demo source; never writes a saved game by itself. */
   sampleCards?: () => FullCardItem[];
   /** 불러올 목록 종류 — 문장 게임은 'sentence'(문장 목록, 066), 나머지는 단어장 */
   listKind?: 'word' | 'sentence' | 'all';
@@ -82,7 +87,7 @@ export function useGameTemplates(params: {
     }
   }, [classesError, reloadClasses]);
   /** 정말로 반이 하나도 없을 때만 true — 불러오는 중이거나, 수업 편집 화면(반이 레슨 반으로 정해짐)에선 false. */
-  const noClasses = isStaff && !classesLoading && !classesError && classes.length === 0 && !embed?.classId;
+  const noClasses = !workspace && isStaff && !classesLoading && !classesError && classes.length === 0 && !embed?.classId;
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
   const [studentClassName, setStudentClassName] = useState('');
 
@@ -99,7 +104,9 @@ export function useGameTemplates(params: {
     setStudentClassName(cls?.name ?? '');
   }, [isStaff, classes, studentClassId]);
 
-  const classId = embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
+  const [withoutClass, setWithoutClass] = useState(true);
+  const chooseClass = (id: string) => { setWithoutClass(!id); if (id) selectClass(id); };
+  const classId = !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
 
   // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
   const [rosterScope, setRosterScope] = useState<RosterScope>('class');
@@ -128,16 +135,17 @@ export function useGameTemplates(params: {
   const [wordListsLoading, setWordListsLoading] = useState(false);
   const listSequence = useRef(0);
 
+  const standalone = !!workspace && !embed && !presenting;
   const reloadWordLists = useCallback(async () => {
     const sequence = ++listSequence.current;
     setAllWordLists([]); setWordLists([]);
-    if (!academy?.id || !classId) {
+    if (!academy?.id) {
       setWordLists([]);
       return;
     }
     setWordListsLoading(true);
     try {
-      const lists = await fetchWordLists(academy.id, classId, 'all');
+      const lists = standalone ? await fetchAllWordLists(academy.id, 'all') : await fetchWordLists(academy.id, classId || '', 'all');
       if (sequence !== listSequence.current) return;
       setAllWordLists(lists);
       setWordLists(listKind === 'all' ? lists : lists.filter((list) => (list.kind || 'word') === listKind));
@@ -146,7 +154,7 @@ export function useGameTemplates(params: {
     } finally {
       if (sequence === listSequence.current) setWordListsLoading(false);
     }
-  }, [academy?.id, classId, notify, listKind]);
+  }, [academy?.id, classId, notify, listKind, standalone]);
 
   useEffect(() => {
     void reloadWordLists();
@@ -162,18 +170,57 @@ export function useGameTemplates(params: {
   const [newName, setNewName] = useState('');
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
 
+  const temporary = isStaff && !!workspace && !embed && !presenting;
+  const temporaryId = session?.user.id && academy?.id ? draftId(session.user.id, academy.id, gameType) : '';
+  function makeDraft(source?: OpenState['quickSource']): GameTemplate {
+    const kind = source?.kind || (listKind === 'sentence' ? 'sentence' : 'word');
+    const cards = source?.cards || params.sampleCards?.() || sampleActivityCards(kind);
+    const content = !source && gamePreparation(gameType).dedicated ? null : prepareClassroomGame(gameType, cards, kind);
+    if (source && !content) throw new Error('incompatible_content');
+    if (source?.id && session?.user.id && academy?.id) rememberSourceUse(session.user.id, academy.id, source.id);
+    const now = new Date().toISOString();
+    return { id: `${temporaryId}:${crypto.randomUUID()}`, academy_id: academy!.id, class_id: null, game_type: gameType,
+      name: source?.name || t('quick.sample'), created_by: profile?.id || null, created_at: now, updated_at: now,
+      items: content?.items || defaultItems(), config: { ...defaultConfig?.(), ...content?.config,
+        ...(content ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sample'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
+  }
+  function chooseDraft(draft: GameTemplate) {
+    writeActivityDraft(draft);
+    setTemplates(old => [draft, ...old.filter(row => !isActivityDraft(row.id))]);
+    setSelectedId(draft.id);
+  }
+  useEffect(() => {
+    const sync = (event: Event) => {
+      if ((event as CustomEvent).detail !== temporaryId) return;
+      const draft = readActivityDraft(temporaryId);
+      if (draft) setTemplates(old => old.map(row => row.id === draft.id ? draft : row));
+    };
+    window.addEventListener(DRAFT_EVENT, sync);
+    return () => window.removeEventListener(DRAFT_EVENT, sync);
+  }, [temporaryId]);
+
+  // Factories passed by game pages are often inline. Read their latest values
+  // without restarting the network load on every game edit.
+  const draftFactory = useRef(makeDraft); draftFactory.current = makeDraft;
+  const routeState = useRef(location.state); routeState.current = location.state;
+  const consumedSource = useRef('');
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current;
-    if (!academy?.id || !classId) {
+    if (!academy?.id || (!classId && !temporary)) {
       setTemplates([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const rows = await fetchGameTemplates(academy.id, classId, gameType);
+      const rows = await fetchGameTemplates(academy.id, classId || '', gameType);
       if (sequence !== loadSequence.current) return;
-      setTemplates(rows);
+      const source = ownedQuickSource((routeState.current as OpenState | null)?.quickSource, session?.user.id, academy?.id);
+      const hasNewSource = !!source && consumedSource.current !== location.key;
+      const draft = temporary && temporaryId ? (hasNewSource ? draftFactory.current(source) : readActivityDraft(temporaryId) || draftFactory.current()) : null;
+      consumedSource.current = location.key;
+      if (draft) writeActivityDraft(draft);
+      setTemplates(draft ? [draft, ...rows] : rows);
       // 한 번 반영한 openTemplateId 는 비워서, 나중에 선생님이 다른 템플릿을 고른 뒤 목록을 다시
       // 불러와도 선택이 도로 튀지 않게 한다.
       const openId = openTemplateIdRef.current;
@@ -181,15 +228,18 @@ export function useGameTemplates(params: {
       if (openFound) openTemplateIdRef.current = undefined;
       setSelectedId((prev) => {
         if (openFound) return openId as string;
+        if (hasNewSource && draft) return draft.id;
         if (prev && rows.some((r) => r.id === prev)) return prev;
-        return rows[0]?.id ?? null;
+        return draft?.id ?? rows[0]?.id ?? null;
       });
     } catch (err) {
+      if (sequence !== loadSequence.current) return;
+      if (temporary && temporaryId) chooseDraft(readActivityDraft(temporaryId) || draftFactory.current());
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
       if (sequence === loadSequence.current) { setLoadedWorkspaceKey(`${classId}:${gameType}`); setLoading(false); }
     }
-  }, [academy?.id, classId, gameType, notify]);
+  }, [academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key]);
 
   useEffect(() => {
     void load();
@@ -202,7 +252,7 @@ export function useGameTemplates(params: {
     if (embedRef.current) return; // 편집 화면 안에서는 주소가 커리큘럼 페이지라 읽을 게 없다.
     const state = location.state as OpenState | null;
     openTemplateIdRef.current = state?.openTemplateId;
-    if (isStaff && state?.openClassId && state.openClassId !== staffClassId) selectClass(state.openClassId);
+    if (isStaff && state?.openClassId) chooseClass(state.openClassId);
     const openId = state?.openTemplateId;
     if (openId && templates.some((r) => r.id === openId)) {
       openTemplateIdRef.current = undefined;
@@ -235,6 +285,7 @@ export function useGameTemplates(params: {
   async function handleDeleteTemplate(id?: string) {
     const target = id ? templates.find((tpl) => tpl.id === id) : selected;
     if (!target) return;
+    if (isActivityDraft(target.id)) { chooseDraft(makeDraft()); return; }
     if (!confirm(t('gameAdmin.deleteConfirm', { name: target.name }))) return;
     const ok = await run(() => deleteGameTemplate(target.id), t('gameAdmin.deletedToast'));
     if (ok) {
@@ -245,7 +296,7 @@ export function useGameTemplates(params: {
 
   /** explicitName을 주면(이름 입력 없이 바로 만들기 등) newName 상태와 무관하게 그 이름으로 만든다. */
   async function handleCreate(explicitName?: string) {
-    if (!academy?.id || !profile || !classId) return false;
+    if (!academy?.id || !profile) return false;
     const name = (explicitName ?? newName).trim();
     if (!name) {
       notify(t('gameAdmin.nameRequiredError'), 'error');
@@ -258,8 +309,8 @@ export function useGameTemplates(params: {
         classId: newScope === 'class' ? classId : null,
         gameType,
         name,
-        items: defaultItems(),
-        config: defaultConfig?.() ?? {},
+        items: selected && isActivityDraft(selected.id) ? structuredClone(selected.items) : defaultItems(),
+        config: selected && isActivityDraft(selected.id) ? structuredClone(selected.config) : defaultConfig?.() ?? {},
         teacherId: profile.id,
       });
       setTemplates((prev) => [...prev, tpl]);
@@ -320,6 +371,7 @@ export function useGameTemplates(params: {
 
   /** 지금 선택된 템플릿의 항목 리스트를 그대로, 다른 게임 종류의 새 템플릿으로 만들고 그 페이지로 이동한다. */
   async function openInOtherGame(targetType: GameType) {
+    if (temporary && classroomSource) { await switchClassroomGame(targetType); return; }
     if (!academy?.id || !profile || !selected) return;
     const carried: GameTemplateConfig = {};
     if (selected.config.music) carried.music = selected.config.music;
@@ -342,6 +394,7 @@ export function useGameTemplates(params: {
 
   async function useClassroomList(list: WordList) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
+    if (temporary) { chooseDraft(makeDraft({ cards: wordListToCards(list), kind: list.kind || 'word', name: list.name, id: list.id })); return; }
     if (!academy?.id || !profile || !classId) throw new Error('no_class');
     const content = prepareClassroomGame(gameType, list);
     if (!content) throw new Error('incompatible_content');
@@ -355,11 +408,20 @@ export function useGameTemplates(params: {
   }
   const workspaceClass = useRef(classId); workspaceClass.current = classId;
   const lessonCards = (location.state as OpenState | null)?.materialsWords;
-  const classroomSource = selected?.config.classroomSource || (lessonCards?.length ? { id: `lesson:${lessonRunner.runner?.lessonId}`, name: lessonRunner.runner?.lessonName || '수업 자료', kind: (lessonCards.every((c) => c.word.trim().split(/\s+/).length >= 2) ? 'sentence' : 'word') as 'word'|'sentence', version: '', cards: lessonCards } : undefined);
+  const inferredSource = useMemo(() => {
+    if (!selected || selected.config.classroomSource) return undefined;
+    const pairs = selected.config.pairs || selected.config.flashcards;
+    const cards: FullCardItem[] = pairs ? pairs.map(pair => ({ id: pair.id, word: pair.left, meaning: pair.right, imageUrl: null }))
+      : selected.items.filter(item => item.label.trim()).map(item => ({ id: item.id, word: item.label, meaning: '', imageUrl: null }));
+    return cards.length ? { id: `activity:${selected.id}`, name: selected.name, kind: (gameType === 'unscramble' || gameType === 'sentencesplash' ? 'sentence' : 'word') as 'word' | 'sentence', version: selected.updated_at, cards } : undefined;
+  }, [selected, gameType]);
+  const classroomSource = selected?.config.classroomSource || (lessonCards?.length ? { id: `lesson:${lessonRunner.runner?.lessonId}`, name: lessonRunner.runner?.lessonName || '수업 자료', kind: (lessonCards.every((c) => c.word.trim().split(/\s+/).length >= 2) ? 'sentence' : 'word') as 'word'|'sentence', version: '', cards: lessonCards } : undefined) || inferredSource;
   const teamKey = ({ fourclues: 'clueTeams', catchsentence: 'catchTeams', lastbox: 'boxTeams', mysterybox: 'boxTeams', treasuredig: 'digTeams' } as Partial<Record<GameType, 'clueTeams'|'catchTeams'|'boxTeams'|'digTeams'>>)[gameType];
   async function configureTeams(count: number) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
-    if (!teamKey || !academy?.id || !profile || !classId) return;
+    if (!teamKey || !academy?.id || !profile) return;
+    if (temporary && selected && isActivityDraft(selected.id)) { chooseDraft({ ...selected, config: { ...selected.config, [teamKey]: count } }); return; }
+    if (!classId) return;
     const config = { ...(selected?.config || defaultConfig?.() || {}), [teamKey]: count };
     if (selected) {
       const { updateGameTemplate } = await import('./api');
@@ -372,6 +434,10 @@ export function useGameTemplates(params: {
   }
   async function switchClassroomGame(targetType: GameType) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
+    if (temporary && classroomSource) {
+      if (!prepareClassroomGame(targetType, classroomSource.cards, classroomSource.kind)) throw new Error('incompatible_content');
+      navigate(`/games/${targetType}`, { state: { quickSource: { ownerId: session?.user.id, academyId: academy?.id, cards: classroomSource.cards, kind: classroomSource.kind, name: classroomSource.name, id: classroomSource.id } } }); return;
+    }
     if (!academy?.id || !profile || !classroomSource || !classId) throw new Error('no_source');
     const source = classroomSource;
     const content = prepareClassroomGame(targetType, source.cards, source.kind);
@@ -383,12 +449,44 @@ export function useGameTemplates(params: {
       else navigate(`/games/${targetType}`, { state });
     }
   }
+  async function beginMaterial(kind: 'word' | 'sentence') {
+    if (!temporary || !temporaryId) return;
+    const recovered = readComposition(temporaryId, kind);
+    if (recovered) { chooseDraft(recovered); return; }
+    const draft = makeDraft();
+    const legacy = session?.user.id && academy?.id ? legacyActivityInput(session.user.id, academy.id, kind) : null;
+    const restored = legacy && prepareClassroomGame(gameType, legacy, kind);
+    if (legacy && restored) { chooseDraft({ ...draft, items: restored.items, config: { ...defaultConfig?.(), ...restored.config, classroomSource:{ id:'composition', name:t(kind==='sentence'?'flow.newSentences':'flow.newWords'), kind, version:'',cards:legacy } } }); return; }
+    chooseDraft({ ...draft, name: t(kind === 'sentence' ? 'flow.newSentences' : 'flow.newWords'), items: [],
+      config: { ...defaultConfig?.(), pairs: [], flashcards: [], questions: [], statements: [], groups: [], typeAnswerEntries: [], imageQuizItems: [], liveQuestions: [],
+        classroomSource: { id: 'composition', name: t(kind === 'sentence' ? 'flow.newSentences' : 'flow.newWords'), kind, version: '', cards: [] } } });
+  }
+  const materialSaveLock = useRef(false);
+  const activeOwner = useRef(''); activeOwner.current = `${session?.user.id}:${academy?.id}`;
+  async function saveMaterial(name: string) {
+    if (materialSaveLock.current || !academy || !profile || !selected || !name.trim()) throw new Error('invalid_material');
+    materialSaveLock.current = true;
+    const ownerAtStart = activeOwner.current;
+    try {
+      const current = isActivityDraft(selected.id) ? readActivityDraft(selected.id) || selected : selected;
+      const source = current.config.classroomSource || classroomSource;
+      if (!source?.cards.length || !prepareClassroomGame(gameType, source.cards, source.kind)) throw new Error('invalid_content');
+      const list = await createWordList({ academyId: academy.id, teacherId: profile.id, classId: null, name: name.trim(), kind: source.kind,
+        items: source.cards.map(card => ({ id: card.id, word: card.word, meaning: card.meaning, image_url: card.imageUrl, category: card.category || null, partOfSpeech: card.partOfSpeech, patternMarked: card.patternMarked })) });
+      if (activeOwner.current !== ownerAtStart) throw new Error('owner_changed');
+      rememberSourceUse(session!.user.id, academy.id, list.id);
+      setAllWordLists(old => [list, ...old.filter(row => row.id !== list.id)]);
+      if (isActivityDraft(current.id)) chooseDraft({ ...current, config: { ...current.config, classroomSource: { ...source, id: list.id, name: list.name, version: list.updated_at } } });
+    } finally { materialSaveLock.current = false; }
+  }
   // Refresh action closures each render. publish compares data identities before updating its state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!workspace || !isStaff) return;
     workspace.publish({ gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
-      selectClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
+      selectClass: chooseClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
+      beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
+      saveActivity: async (name) => { if (!await handleCreate(name)) throw new Error('save_failed'); },
       teamCount: teamKey ? (selected?.config[teamKey] || defaultConfig?.()[teamKey] || 2) : undefined, configureTeams });
   });
 
@@ -404,7 +502,7 @@ export function useGameTemplates(params: {
     classes,
     noClasses,
     staffClassId,
-    selectClass,
+    selectClass: chooseClass,
     reorderClasses,
     studentClassName,
     classId,

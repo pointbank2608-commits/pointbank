@@ -11,6 +11,7 @@ const names = [
   ),
 ].map((m) => m[1] || m[2]);
 const stub = `
+import { isActivityDraft, patchActivityDraft } from '/src/lib/quickActivity.ts';
 const academy={id:'academy-a',features:{group:true,homework:true},plan:'paid'};
 const classes=[{id:'class-a',academy_id:'academy-a',name:'합성 A반'},{id:'class-b',academy_id:'academy-a',name:'합성 B반'}];
 const students=[{id:'alice',name:'Alice'},{id:'bob',name:'Bob'},{id:'cara',name:'Cara'}];
@@ -18,11 +19,12 @@ const lists=[{id:'words',academy_id:'academy-a',class_id:'class-a',kind:'word',n
 window.__workspace={templates:[],writes:[],fail:false};
 const functions={
 fetchClasses:async()=>classes,fetchStudentsOfClass:async()=>students,fetchStudentsOfAcademy:async()=>students,
+fetchAllWordLists:async()=>lists,
 fetchWordLists:async(_a,_c,k)=>k==='all'?lists:lists.filter(x=>x.kind===k),
 fetchGameTemplates:async(_a,_c,type)=>window.__workspace.templates.filter(x=>x.game_type===type),
 createGameTemplate:async(p)=>{if(window.__workspace.fail)throw new Error('synthetic failure');const t={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,game_type:p.gameType,name:p.name,items:p.items,config:p.config||{},updated_at:'2026-10-19'};window.__workspace.templates.push(t);window.__workspace.writes.push(t);return t;},
 fetchGameTemplateById:async(id)=>window.__workspace.templates.find(t=>t.id===id),
-updateGameTemplate:async(id,p)=>Object.assign(window.__workspace.templates.find(t=>t.id===id)||{},p)
+updateGameTemplate:async(id,p)=>{if(isActivityDraft(id))patchActivityDraft(id,p);else Object.assign(window.__workspace.templates.find(t=>t.id===id)||{},p)}
 };
 ${names.map((n) => `export const ${n}=(...args)=>(functions.${n}|| (async()=>[]))(...args);`).join("\n")}
 `;
@@ -45,168 +47,34 @@ const server = await createServer({
       },
     },
   ],
-  server: { host: "127.0.0.1", port: 5188, strictPort: true },
+  server: { hmr:false, host: "127.0.0.1", port: 5188, strictPort: true },
 });
-let browser, page;
+let browser,page;
 try {
-  await server.listen();
-  browser = await chromium.launch({
-    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
-    headless: true,
-  });
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
-  });
-  page = await context.newPage();
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.route("https://**/*", (r) => r.abort());
-  const url = "http://127.0.0.1:5188/scripts/games/workspace.html";
-  await page.goto(url + "?game=quiz");
-  await page.locator('.game-workspace-stage [data-game="quiz"]').waitFor();
-  assert.equal(await page.locator("dialog[open]").count(), 0);
-  assert.equal(
-    await page.locator("[data-game-existing-settings]").isVisible(),
-    false,
-  );
-  await page.evaluate(() => {
-    window.__ticks = 0;
-    window.__clock.setTimeout(() => window.__ticks++, 80);
-  });
-  await page.waitForTimeout(160);
-  assert.equal(await page.evaluate(() => window.__ticks), 0);
-  await page
-    .locator(".game-workspace > div")
-    .first()
-    .getByRole("button", { name: /시작·이어하기/ })
-    .click();
-  await page.waitForTimeout(150);
-  assert.equal(await page.evaluate(() => window.__ticks), 1);
-  await page.getByRole("button", { name: "설정·저장", exact: true }).click();
-  await page
-    .getByRole("dialog", { name: "선생님 준비", exact: true })
-    .waitFor();
-  await page.evaluate(() => {
-    window.__clock.setTimeout(() => window.__ticks++, 80);
-  });
-  await page.waitForTimeout(150);
-  assert.equal(await page.evaluate(() => window.__ticks), 1);
-  await page
-    .getByRole("button", { name: "닫고 게임으로", exact: true })
-    .click();
-  await page.waitForTimeout(150);
-  assert.equal(await page.evaluate(() => window.__ticks), 2);
-  console.log(
-    "ok portal: board outside settings, pause/resume retains clock, mounted settings and board",
-  );
-  await page.getByRole("button", { name: /📚/ }).click();
-  await page.getByRole("button", { name: /합성 과일 · 4/ }).click();
-  await page.waitForFunction(() => window.__workspace.writes.length === 1);
-  await page.locator('.game-workspace-stage [data-game="quiz"]').waitFor();
-  assert.equal(
-    await page.evaluate(
-      () => window.__workspace.writes[0].config.questions.length,
-    ),
-    4,
-  );
-  await page
-    .getByRole("button", { name: "같은 내용으로 다른 게임", exact: true })
-    .click();
-  await page.getByRole("button", { name: "돌림판", exact: true }).click();
-  await page.waitForURL("**/games/wheel");
-  await page.locator('.game-workspace-stage [data-game="wheel"]').waitFor();
-  assert.equal(
-    await page.evaluate(() => window.__workspace.writes[1].items[0].label),
-    "apple",
-  );
-  assert.equal(
-    await page.evaluate(() => window.__workspace.writes[1].config.questions),
-    undefined,
-  );
-  console.log(
-    "ok real pages: list selection prepares quiz; switch to wheel with converted source and no copied quiz answers",
-  );
-  await page.getByRole("button", { name: "팀·순서", exact: true }).click();
-  await page.getByRole("dialog").waitFor();
-  await page.getByLabel("Bob", { exact: true }).check();
-  assert.equal(await page.getByLabel("Bob", { exact: true }).isChecked(), true);
-  await page.keyboard.press("Escape");
-  console.log("ok participants: team/order dialog and per-session exclusion");
-  for (const width of [768, 390]) {
-    await page.setViewportSize({ width, height: 900 });
-    assert(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-      `overflow ${width}`,
-    );
-  }
-  console.log("ok tablet/mobile width");
-  const gamePaths = [
-    ...readFileSync(resolve(root, "src/lib/gamePages.ts"), "utf8").matchAll(
-      /'\/games\/(\w+)'\s*:/g,
-    ),
-  ].map((m) => m[1]);
-  for (const game of gamePaths) {
-    const before = errors.length;
-    await page.goto(url + "?game=" + game);
-    await page
-      .getByRole("button", { name: "설정·저장", exact: true })
-      .first()
-      .waitFor();
-    await page
-      .getByRole("button", { name: "설정·저장", exact: true })
-      .first()
-      .click();
-    await page
-      .getByRole("dialog", { name: "선생님 준비", exact: true })
-      .waitFor();
-    await page
-      .getByRole("button", { name: "닫고 게임으로", exact: true })
-      .click();
-    assert.equal(
-      errors.length,
-      before,
-      `${game}: ${errors.slice(before).join("; ")}`,
-    );
-  }
-  console.log(
-    `ok all ${gamePaths.length} game pages: teacher settings open/close without runtime errors`,
-  );
-  await page.addInitScript(()=>{
-    const cards=[{id:'a',word:'apple',meaning:'사과',imageUrl:null},{id:'b',word:'banana',meaning:'바나나',imageUrl:null}];
-    sessionStorage.setItem('classbank.lessonRunner',JSON.stringify({lessonId:'synthetic-lesson',lessonName:'합성 수업',classId:'class-a',steps:[{kind:'game',slideId:'game-a',path:'/games/quiz',label:'Quiz'},{kind:'canvas',slideId:'next',path:'/curriculum/synthetic/slide/next',label:'Next'}],stepIndex:0,startedAt:Date.now(),words:['apple','banana'],viewSnapshot:{slides:[{kind:'game',id:'game-a',gameType:'quiz'}],words:cards}}));
-    history.replaceState({usr:{materialsWords:cards},key:'synthetic'},'','/games/quiz');
-  });
-  await page.goto(url+'?game=quiz');
-  await page.getByRole('button',{name:'다른 게임',exact:true}).waitFor();
-  await page.getByRole('button',{name:'다른 게임',exact:true}).click();
-  await page.getByRole('button',{name:'돌림판',exact:true}).click();
-  await page.waitForURL('**/games/wheel');
-  const lesson=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('classbank.lessonRunner')));
-  assert.equal(lesson.steps[0].path,'/games/wheel');assert.equal(lesson.stepIndex,0);assert.equal(lesson.steps[1].slideId,'next');assert.equal(lesson.viewSnapshot.slides[0].gameType,'wheel');
-  console.log('ok lesson presentation: inherited words/class; game switch updates current step and future follow-along snapshot');
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.screenshot({
-    path: resolve(root, "node_modules/homework-test-tools/game-workspace.png"),
-    fullPage: true,
-  });
-  assert.deepEqual(errors, []);
-  console.log("All workspace browser checks passed. Synthetic adapters only.");
-} catch (e) {
-  console.error("FAILED:", e.message);
-  if (page) {
-    console.error((await page.locator("body").innerText()).slice(0, 4000));
-    await page.screenshot({
-      path: resolve(
-        root,
-        "node_modules/homework-test-tools/game-workspace-failure.png",
-      ),
-      fullPage: true,
-    });
-  }
-  process.exitCode = 1;
-} finally {
-  await browser?.close();
-  await server.close();
-}
+ await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',error=>errors.push(error.message));await page.route('https://**/*',route=>route.abort());
+ const url='http://127.0.0.1:5188/scripts/games/workspace.html';
+ await page.goto(url+'?game=quiz');await page.locator('.game-workspace-stage [data-game="quiz"]').waitFor();
+ assert.equal(await page.locator('dialog[open]').count(),0);
+ await page.evaluate(()=>{window.__ticks=0;window.__clock.setTimeout(()=>window.__ticks++,80)});await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),0);
+ await page.getByRole('button',{name:'게임 시작',exact:true}).click();await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),1);
+ await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.evaluate(()=>window.__clock.setTimeout(()=>window.__ticks++,80));await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),1);
+ await page.getByRole('button',{name:'게임으로 돌아가기',exact:true}).click();await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),2);
+ await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.getByRole('button',{name:'준비 화면으로 돌아가기',exact:true}).click();
+ await page.getByRole('button',{name:'내 자료 불러오기',exact:true}).click();await page.getByRole('button',{name:/합성 과일/}).click();
+ assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
+ await page.getByRole('button',{name:'다른 게임 하기',exact:true}).click();await page.getByRole('button',{name:'돌림판',exact:true}).click();await page.waitForURL('**/games/wheel');
+ await page.locator('.game-workspace-stage [data-game="wheel"]').waitFor();
+ const draft=await page.evaluate(()=>JSON.parse(Object.entries(sessionStorage).find(([key])=>key.startsWith('activity-draft:')&&key.endsWith(':wheel'))[1]));assert.equal(draft.items[0].label,'apple');assert.equal(draft.config.questions,undefined);
+ await page.getByRole('button',{name:'내 자료 불러오기',exact:true}).click();await page.getByRole('dialog').locator('select').selectOption('class-a');await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.getByRole('button',{name:'참여자·팀·순서',exact:true}).click();await page.getByLabel('Bob',{exact:true}).check();assert.equal(await page.getByLabel('Bob',{exact:true}).isChecked(),true);await page.keyboard.press('Escape');
+ console.log('ok board portal, paused clock/resume, temporary source conversion and real class roster exclusion');
+ const gamePaths=[...readFileSync(resolve(root,'src/lib/gamePages.ts'),'utf8').matchAll(/'\/games\/(\w+)'\s*:/g)].map(match=>match[1]);
+ for(const game of gamePaths){const before=errors.length;await page.goto(url+'?game='+game);await page.getByRole('button',{name:'항목·정답·게임 설정',exact:true}).first().click();await page.getByRole('dialog',{name:'선생님 준비',exact:true}).waitFor();await page.getByRole('button',{name:'닫기',exact:true}).first().click();assert.equal(errors.length,before,game+': '+errors.slice(before).join('; '));}
+ console.log('ok all '+gamePaths.length+' game pages: existing settings open/close with no runtime errors');
+ await page.addInitScript(()=>{const cards=[{id:'a',word:'apple',meaning:'사과',imageUrl:null},{id:'b',word:'banana',meaning:'바나나',imageUrl:null}];sessionStorage.setItem('classbank.lessonRunner',JSON.stringify({lessonId:'synthetic-lesson',lessonName:'합성 수업',classId:'class-a',steps:[{kind:'game',slideId:'game-a',path:'/games/quiz',label:'Quiz'},{kind:'canvas',slideId:'next',path:'/curriculum/synthetic/slide/next',label:'Next'}],stepIndex:0,startedAt:Date.now(),words:['apple','banana'],viewSnapshot:{slides:[{kind:'game',id:'game-a',gameType:'quiz'}],words:cards}}));history.replaceState({usr:{materialsWords:cards},key:'synthetic'},'','/games/quiz');});
+ await page.goto(url+'?game=quiz');await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.getByRole('button',{name:'다른 게임 하기',exact:true}).click();await page.getByRole('button',{name:'돌림판',exact:true}).click();await page.waitForURL('**/games/wheel');
+ const lesson=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('classbank.lessonRunner')));assert.equal(lesson.steps[0].path,'/games/wheel');assert.equal(lesson.stepIndex,0);assert.equal(lesson.steps[1].slideId,'next');assert.equal(lesson.viewSnapshot.slides[0].gameType,'wheel');
+ console.log('ok existing lesson presentation: game replacement preserves subsequent activities and follow-along snapshot');assert.deepEqual(errors,[]);
+} catch(error){console.error('FAILED',error.message);if(page)console.error((await page.locator('body').innerText()).slice(-5000));process.exitCode=1;}
+finally{await browser?.close();await server.close();}

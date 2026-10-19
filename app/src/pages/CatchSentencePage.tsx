@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -78,7 +79,7 @@ export default function CatchSentencePage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:catchsentence:newItemLabel');
   const teams = selected?.config.catchTeams ?? DEFAULT_TEAMS;
   const level = ((selected?.config.catchLevel as CatchLevel | undefined) ?? DEFAULT_LEVEL) as CatchLevel;
   const seconds = selected?.config.catchSeconds ?? CATCH_DEFAULT_SECONDS[level];

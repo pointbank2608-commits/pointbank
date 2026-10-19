@@ -1,88 +1,70 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import { useTranslation } from "react-i18next";
-import {
-  GameWorkspaceContext,
-  useGameWorkspace,
-  type GameWorkspaceBridge,
-} from "../context/GameWorkspaceContext";
-import { GAME_CATALOG } from "../lib/gameCatalog";
-import { prepareClassroomGame } from "../lib/gameWorkspace";
-import { pauseGameClock } from "../lib/gameClock";
-import TeamOrderPanel from "./TeamOrderPanel";
-import { useAuth } from "../context/AuthContext";
-import { isFreeTierGame } from "../lib/gameCatalog";
-import { usePresenting } from '../context/LessonRunnerContext';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge } from '../context/GameWorkspaceContext';
+import { useAuth } from '../context/AuthContext';
+import { usePresenting } from '../context/LessonRunnerContext';
+import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
+import { gamePreparation, isNativeGameReady } from '../lib/gamePreparation';
+import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
+import { isActivityDraft, sampleActivityCards } from '../lib/quickActivity';
+import { pauseGameClock } from '../lib/gameClock';
+import { loadTeamOrder, saveTeamOrder, TEAM_ORDER_EVENT, turnLabels } from '../lib/teamOrder';
 import { useFeature } from '../lib/features';
-import {
-  isShowOrderOn,
-  loadTeamOrder,
-  saveTeamOrder,
-  setShowOrderOn,
-  TEAM_ORDER_EVENT,
-} from "../lib/teamOrder";
+import TeamOrderPanel from './TeamOrderPanel';
+import AddActivityToLesson from './AddActivityToLesson';
 
-const btn =
-  "min-h-12 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40";
+type Panel = 'settings' | 'content' | 'games' | 'teacher' | null;
+const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
+const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 export default function GameWorkspace({ children }: { children: ReactNode }) {
-  const { i18n } = useTranslation();
-  const { hasFullAccess } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { hasFullAccess, session, academy } = useAuth();
   const presenting = usePresenting();
-  const navigate=useNavigate();const homeworkOpen=useFeature('homework');
-  const en = i18n.language.startsWith("en");
+  const groupOpen = useFeature('group');
+  const navigate = useNavigate();
   const [stage, setStage] = useState<HTMLDivElement | null>(null);
+  const [teacherToolsTarget, setTeacherToolsTarget] = useState<HTMLDivElement | null>(null);
   const [info, setInfo] = useState<GameWorkspaceBridge | null>(null);
   const bridge = useRef<GameWorkspaceBridge | null>(null);
-  const [panel, setPanel] = useState<"settings" | "content" | "games" | null>(
-    null,
-  );
+  const [panel, setPanel] = useState<Panel>(null);
+  const [playing, setPlaying] = useState(false);
   const [running, setRunning] = useState(false);
   const [teams, setTeams] = useState(false);
   const [absent, setAbsent] = useState<string[]>([]);
-  const [, setTurnRevision] = useState(0);
+  const [ordered, setOrdered] = useState(false);
+  const [participantText, setParticipantText] = useState('');
+  const [revision, setRevision] = useState(0);
   const [hasBoard, setHasBoard] = useState(false);
   const [busy, setBusy] = useState(false);
-  const actionLock = useRef(false);
-  const [error, setError] = useState("");
+  const lock = useRef(false);
+  const [error, setError] = useState('');
+  const [addLesson, setAddLesson] = useState(false);
+  const [activityName, setActivityName] = useState('');
+  const [saveOriginal, setSaveOriginal] = useState(false);
+  const [materialName, setMaterialName] = useState('');
   const dialog = useRef<HTMLDialogElement>(null);
   const owner = useRef(crypto.randomUUID());
-  const identity = `${info?.academyId}:${info?.classId}`;
-  const previous = useRef("");
+  const identity = `${session?.user.id}:${info?.academyId}:${info?.classId}`;
+  const participantKey = `classbank:participants:${session?.user.id}:${academy?.id}`;
+  const scope = `${session?.user.id}:${academy?.id}`;
+  const capabilities = gamePreparation(info?.gameType || 'wheel');
+  const source = info?.selected?.config.classroomSource;
+  const sourceKind = source?.kind || (capabilities.kinds[0] || 'word');
+  const sourceReady = !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
+  const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
+  const canStart = !!info && !info.loading && hasBoard && !!info.selected && isNativeGameReady(info.selected) && sourceReady;
   const publish = useCallback((next: GameWorkspaceBridge) => {
     bridge.current = next;
-    setInfo((old) =>
-      old &&
-        old.gameType === next.gameType && old.sharedView === next.sharedView &&
-      old.classId === next.classId &&
-      old.selected === next.selected &&
-      old.roster === next.roster &&
-      old.lists === next.lists &&
-      old.templates === next.templates &&
-      old.loading === next.loading &&
-      old.classes === next.classes
-        ? old
-        : next,
-    );
+    setInfo(old => old && old.gameType === next.gameType && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
   }, []);
+  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); }, [identity]);
+  useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
+  useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(() => {
-    setRunning(false);
-    setAbsent([]);
-    setPanel(null);
-  }, [identity]);
-  useEffect(() => {
-    const key = `${identity}:${info?.selected?.id}`;
-    if (previous.current !== key) {
-      previous.current = key;
-      setRunning(false);
-    }
-  }, [identity, info?.selected?.id]);
+    try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
+    setOrdered(false);
+  }, [participantKey]);
   useEffect(() => {
     const token = owner.current;
     pauseGameClock(token, !running || !!panel || teams);
@@ -90,441 +72,147 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
   }, [running, panel, teams]);
   useEffect(() => {
     if (!stage) return;
-    const check = () => setHasBoard(!!stage.querySelector("[data-game]"));
-    const observer = new MutationObserver(check);
-    observer.observe(stage, { childList: true, subtree: true });
-    check();
+    const check = () => setHasBoard(!!stage.querySelector('[data-game]'));
+    const observer = new MutationObserver(check); observer.observe(stage, { childList: true, subtree: true }); check();
     return () => observer.disconnect();
   }, [stage]);
   useEffect(() => {
-    const d = dialog.current;
-    if (!d) return;
-    if (panel && !d.open) d.showModal();
-    else if (!panel && d.open) d.close();
+    const d = dialog.current; if (!d) return;
+    if (panel && !d.open) d.showModal(); else if (!panel && d.open) d.close();
   }, [panel]);
   useEffect(() => {
-    const update = () => setTurnRevision((n) => n + 1);
+    const update = () => setRevision(value => value + 1);
     window.addEventListener(TEAM_ORDER_EVENT, update);
     return () => window.removeEventListener(TEAM_ORDER_EVENT, update);
   }, []);
   useEffect(() => {
-    if (running && !panel && !teams) return;
-    const stop = (e: KeyboardEvent) => {
-      if (e.key !== "Tab" && e.key !== "Escape") e.stopPropagation();
+    if (!playing || presenting) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden'; document.documentElement.dataset.gameFocus = 'true';
+    const chrome = Array.from(document.querySelectorAll<HTMLElement>('[data-app-chrome]'));
+    const previousInert = chrome.map(node => node.inert); chrome.forEach(node => { node.inert = true; });
+    return () => { document.body.style.overflow = previousOverflow; delete document.documentElement.dataset.gameFocus; chrome.forEach((node,index) => { node.inert = previousInert[index]; }); };
+  }, [playing, presenting]);
+  useEffect(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && playing && !panel && !teams && !addLesson) { event.preventDefault(); setPanel('teacher'); }
     };
-    document.addEventListener("keydown", stop, true);
-    return () => document.removeEventListener("keydown", stop, true);
-  }, [panel, teams, running]);
-  const roster = useMemo(
-    () => (info?.roster || []).filter((r) => !absent.includes(r.id)),
-    [info?.roster, absent],
-  );
-  const order = loadTeamOrder(roster);
-  async function action(fn: () => Promise<void>) {
-    if (actionLock.current) return;
-    actionLock.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      await fn();
-      setRunning(false);
-      setPanel(null);
-    } catch {
-      setError(
-        en
-          ? "Could not save. Your original material is unchanged. Retry."
-          : "구성을 저장하지 못했습니다. 원본 자료는 유지됩니다. 다시 시도해 주세요.",
-      );
-    } finally {
-      actionLock.current = false;
-      setBusy(false);
-    }
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [playing, panel, teams, addLesson]);
+  const allRoster = useMemo(() => info?.roster.length ? info.roster : (participantText.trim() ? participantText.split(/\r?\n/).map(name => name.trim()).filter(Boolean) : [t('flow.participant',{n:1}),t('flow.participant',{n:2})]).map((label,index) => ({ id:`temporary:${scope}:${index}`,label })), [info?.roster, participantText, scope, t]);
+  const roster = useMemo(() => allRoster.filter(row => !absent.includes(row.id)), [allRoster, absent]);
+  const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
+  const turnClick = useRef(0);
+  const advance = useCallback(() => {
+    const now = Date.now(); if (now - turnClick.current < 250 || order.order.length < 2) return;
+    turnClick.current = now; saveTeamOrder(roster, { ...order, turn:(order.turn + 1) % order.order.length }, scope);
+  }, [roster, order, scope]);
+  const labels = turnLabels(order, roster, n => t('teamOrder.teamLabel',{n}));
+  const turn = capabilities.manualTurns && ordered && labels ? { ...labels, advance } : null;
+  async function action(fn: () => Promise<void>, close = true) {
+    if (lock.current) return false;
+    lock.current = true; setBusy(true); setError('');
+    try { await fn(); if (close) setPanel(null); return true; }
+    catch { setError(t('flow.actionFailed')); return false; }
+    finally { lock.current = false; setBusy(false); }
   }
-  const value = useMemo(
-    () => ({
-      stage,
-      running,
-      hasSource: !!info?.sourceCards,
-      pause: () => setRunning(false),
-      panel,
-      publish,
-      roster,
-      openTeams: () => setTeams(true),
-      open: setPanel,
-      start: () => setRunning(true),
-    }),
-    [stage, running, panel, publish, roster, info?.sourceCards],
-  );
-  const className =
-    info?.classes.find((c) => c.id === info.classId)?.name ||
-    (en ? "Choose class" : "반 선택");
-  const contentName =
-    info?.selected?.config.classroomSource?.name ||
-    info?.selected?.name ||
-    (en ? "Sample game" : "샘플로 체험");
-  const controls = (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container-low p-3">
-      <button className={btn} onClick={() => setPanel("content")}>
-        📚 {contentName}
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          setPanel("content");
-        }}
-      >
-        👥 {className}
-      </button>
-      <button
-        className={btn}
-        disabled={!info?.roster.length}
-        onClick={() => setTeams(true)}
-      >
-        {en ? "Teams & turns" : "팀·순서"}
-      </button>
-      <button
-        className={`${btn} bg-primary! text-white!`}
-        disabled={info?.loading || !hasBoard}
-        onClick={() => setRunning((v) => !v)}
-      >
-        {running
-          ? info?.gameType === 'quizshow' ? (en ? 'Hide host screen' : '진행 화면 가리기') : en
-            ? "Pause"
-            : "잠깐 멈춤"
-          : en
-            ? "▶ Start / resume"
-            : "▶ 시작·이어하기"}
-      </button>
-      <button className={btn} onClick={() => setPanel("settings")}>
-        {en ? "Settings & save" : "설정·저장"}
-      </button>
-      {!!info?.sourceCards && (
-        <button className={btn} onClick={() => setPanel("games")}>
-          {en ? "Another game" : "같은 내용으로 다른 게임"}
-        </button>
-      )}
-      {roster.length > 0 && running && isShowOrderOn() && (
-        <div className="flex items-center gap-2">
-          <strong>
-            {en ? "Current turn" : "지금 차례"}:{" "}
-            {order.mode === "team"
-              ? `${en ? "Team" : "팀"} ${Number(order.order[order.turn]?.split("-")[1] || 0) + 1}`
-              : roster.find((r) => r.id === order.order[order.turn])?.label}
-          </strong>
-          <button
-            className={btn}
-            onClick={() =>
-              saveTeamOrder(roster, {
-                ...order,
-                turn: (order.turn + 1) % Math.max(1, order.order.length),
-              })
-            }
-          >
-            {en ? "Next" : "다음 차례"}
-          </button>
+  function start() {
+    if (!canStart) { setPanel('settings'); return; }
+    setPanel(null); setPlaying(true); setRunning(true);
+  }
+  function exitPlay() { setPlaying(false); setRunning(false); setPanel(null); }
+  async function startFromEditor() {
+    if (saveOriginal) {
+      if (!materialName.trim()) { setError(t('flow.nameRequired')); return; }
+      if (!await action(() => bridge.current!.saveMaterial(materialName.trim()), false)) return;
+      setSaveOriginal(false);
+    }
+    start();
+  }
+  async function begin(kind: 'word' | 'sentence') {
+    if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
+  }
+  const value = useMemo(() => ({ stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, capabilities.manualTurns]); // eslint-disable-line react-hooks/exhaustive-deps
+  const game = GAME_CATALOG.find(row => row.type === info?.gameType);
+  const contentName = source?.name || info?.selected?.name || t('quick.sample');
+  const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
+    {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
+    {includeLoad && <button className={btn} onClick={() => setPanel('content')}>{t('flow.loadMaterial')}</button>}
+    <button className={btn} disabled={busy || !!info?.sharedView} onClick={() => void action(() => bridge.current!.useSource({cards: sampleActivityCards(sourceKind),kind:sourceKind,name:t('quick.sample')}))}>{t('quick.sample')}</button>
+  </div>;
+  const reuse = <div className="flex flex-wrap gap-2">
+    {!!info?.sourceCards?.length && <><button className={btn} onClick={() => setPanel('games')}>{t('quick.otherGame')}</button><button className={btn} onClick={() => navigate('/materials/worksheet',{state:{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:info.sourceCards,materialsKind:sourceKind,materialsTab:'list'}})}>{t('quick.worksheet')}</button></>}
+    {!presenting && groupOpen && info?.selected && <button className={btn} onClick={() => { setPanel(null); setAddLesson(true); }}>{t('quick.addLesson')}</button>}
+  </div>;
+  return <GameWorkspaceContext.Provider value={value}>
+    <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
+      {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div><button className={`${btn} bg-primary! text-white!`} disabled={!canStart || busy} onClick={start}>{t('flow.start')}</button></div>
+        {capabilities.kinds.length ? materialButtons() : <p>{t('flow.noMaterialRequired')}</p>}
+        <div className="flex flex-wrap gap-2"><button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>{capabilities.manualTurns && <button className={btn} onClick={() => setTeams(true)}>{t('flow.participation')}</button>}<button className={btn} onClick={() => setPanel('content')}>{t('flow.savedGames')}</button></div>
+        {info && !canStart && !info.loading && <p role="status" className="text-error">{t(requirement.key,{count:requirement.count})}</p>}
+        {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
+        {reuse}
+      </header>}
+      {playing && !presenting && <div className="game-focus-controls flex shrink-0 flex-wrap items-center gap-2" data-play-controls>
+        <button className={btn} onClick={() => setPanel('teacher')}>{t('flow.teacherMenu')}</button>
+        <WorkspaceTurnIndicator />
+        {!running && <button className={`${btn} bg-primary! text-white!`} onClick={start}>{t('flow.resume')}</button>}
+      </div>}
+      <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
+        {!running && (playing || presenting) && <div className="game-ready-overlay absolute inset-x-3 top-20 z-30 mx-auto max-w-md rounded-2xl bg-deep-navy/95 p-5 text-center text-white shadow-lg">
+          <p className="text-xl font-bold">{t(playing ? 'flow.paused' : 'flow.ready')}</p>
+          {info && !canStart && !info.loading && <p className="mt-3" role="status">{t(requirement.key,{count:requirement.count})}</p>}
+          <button className={`${btn} mt-4`} onClick={canStart ? start : () => setPanel('settings')}>{t(canStart ? playing ? 'flow.resume' : 'flow.start' : 'flow.nativeEditor')}</button>
+        </div>}
+      </div>
+      <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t('flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
+        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.teacherMenu' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t(playing ? 'flow.backToPlay' : 'common.close')}</button></header>
+        {error && <p role="alert" className="bg-error-container p-4 text-on-error-container">{error}</p>}
+        {info?.sharedView && <p className="bg-amber-50 p-4">{t('flow.sharedView')}</p>}
+        <div hidden={panel !== 'teacher'} className="space-y-4 p-4">
+          <div ref={setTeacherToolsTarget} className="space-y-2" data-teacher-game-tools />
+          <button className={btn} onClick={() => setRunning(value => !value)}>{t(running ? 'flow.pause' : 'flow.resume')}</button>
+          <button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>
+          {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
+          <button className={btn} onClick={exitPlay}>{t('flow.backToPreparation')}</button>
+          {reuse}
         </div>
-      )}
-    </div>
-  );
-  return (
-    <GameWorkspaceContext.Provider value={value}>
-      <section
-        className="game-workspace relative space-y-3"
-        aria-label={en ? "Classroom game" : "수업 게임"}
-      >
-        {!presenting && controls}
-        <div
-          ref={setStage}
-          style={presenting ? { height: 'calc(100dvh - 100px)', minHeight: 320 } : undefined}
-          className={`game-workspace-stage relative min-h-[460px] ${!running || panel || teams ? "game-workspace-paused" : ""}`}
-        >
-          {!running && (
-            <div className="absolute inset-x-0 top-24 z-30 mx-auto max-w-lg rounded-2xl bg-deep-navy/95 p-6 text-center text-white shadow-lg">
-              <p className="text-xl font-bold">
-                {en ? "Ready when you are" : "자료와 팀을 확인하고 시작하세요"}
-              </p>
-              <p className="my-3">
-                {contentName} · {className}
-              </p>
-              <button className={btn} onClick={() => hasBoard ? setRunning(true) : setPanel('settings')}>
-              {hasBoard ? (en ? "▶ Start / resume" : "▶ 시작·이어하기") : (en ? 'Prepare game content' : '내용 확인·게임 준비')}
-              </button>
-            </div>
-          )}
-        </div>
-        <dialog
-          ref={dialog}
-          className="classroom-dialog game-workspace-dialog"
-          aria-label={en ? "Teacher preparation" : "선생님 준비"}
-          onCancel={(e) => {
-            e.preventDefault();
-            setPanel(null);
-          }}
-        >
-          <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white">
-            <div>
-              <h2 className="text-xl font-bold">
-                {en ? "Teacher preparation" : "선생님 준비 중"}
-              </h2>
-              <p>
-                {en
-                ? (info?.gameType === 'quizshow' ? 'Online participants continue on the server. This screen is visible on this display.' : "Game is paused. Content is visible on this display.")
-                : (info?.gameType === 'quizshow' ? '온라인 대회는 서버에서 계속 진행됩니다. 이 설정 화면은 현재 화면에 표시됩니다.' : "게임은 멈춰 있습니다. 이 설정 화면은 현재 화면에 표시됩니다.")}
-              </p>
-            </div>
-            <button className={btn} onClick={() => setPanel(null)}>
-              {en ? "Done / back to game" : "닫고 게임으로"}
-            </button>
-          </header>
-          {error && (
-            <p
-              role="alert"
-              className="bg-error-container p-4 text-on-error-container"
-            >
-              {error}
-            </p>
-          )}
-          {info?.sharedView && <p className="bg-amber-50 p-4 text-amber-950">{en ? 'Stop student follow-along before changing the lesson content or game.' : '학생 따라보기를 끈 뒤 자료·게임 구성을 변경해 주세요.'}</p>}
-          {panel === "content" && !info?.sharedView && (
-            <div className="space-y-4 p-4">
-              <label className="block">
-                {en ? "Class" : "수업할 반"}
-                <select
-                  className={btn}
-                  value={info?.classId || ""}
-                  disabled={
-                    busy ||
-                    (!hasFullAccess &&
-                      !isFreeTierGame(info?.gameType || "wheel"))
-                  }
-                  onChange={(e) => {
-                    setRunning(false);
-                    bridge.current?.selectClass(e.target.value);
-                  }}
-                >
-                  {info?.classes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p>
-                {en
-                  ? "Choose your vocabulary or sentence collection. Creates a game copy; does not edit the source."
-                  : "내 단어장·문장 모음을 고르면 게임용 구성으로 저장합니다. 원본 자료는 바뀌지 않습니다."}
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {info?.lists.map((list) => {
-                  const ready = !!prepareClassroomGame(info.gameType, list);
-                  return (
-                    <button
-                      key={list.id}
-                      className={`${btn} text-left`}
-                      disabled={busy || !ready}
-                      onClick={() =>
-                        void action(() => bridge.current!.useList(list))
-                      }
-                    >
-                      {list.name} · {list.items.length}{" "}
-                      {list.kind === "sentence"
-                        ? en
-                          ? "sentences"
-                          : "문장"
-                        : en
-                          ? "words"
-                          : "단어"}
-                      {!ready && (
-                        <small className="block">
-                          {en
-                            ? "Not compatible with this game"
-                            : "이 게임에 맞는 자료가 아닙니다"}
-                        </small>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              <h3 className="font-bold">
-                {en ? "Saved game configurations" : "저장한 게임 구성"}
-              </h3>
-              {info?.templates.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  className={`${btn} mr-2 mb-2`}
-                  onClick={() => {
-                    bridge.current?.selectTemplate(tpl.id);
-                    setPanel(null);
-                  }}
-                >
-                  {tpl.name}
-                </button>
-              ))}
-              {!info?.lists.length && (
-                <p>
-                  {en
-                    ? "No materials yet. Use the sample, or add content in Settings & save."
-                    : "아직 자료가 없습니다. 샘플을 체험하거나 설정·저장에서 내용을 직접 만들 수 있어요."}
-                </p>
-              )}
-            </div>
-          )}
-          {panel === "games" && !info?.sharedView && (
-            <div className="space-y-3 p-4">
-              {!presenting && homeworkOpen && info?.sourceCards?.length && info.sourceCards.every(c=>/^[a-z][a-z'-]*$/i.test(c.word.trim())) ? <button className={`${btn} bg-primary! text-white!`} onClick={()=>navigate('/homework',{state:{fromClassId:info.classId,personalGame:{cards:info.sourceCards,name:contentName}}})}>{en?'Use this material for personal homework / lessons':'이 자료로 맞춤 게임 숙제·개별수업 만들기'}</button> : null}
-              <p>
-                {en
-                  ? "Same content, class and teams. The next game starts a new round; scores are not merged."
-                  : "내용·반·팀은 유지합니다. 새 게임은 새 판으로 시작하고 이전 게임 점수는 합산하지 않습니다."}
-              </p>
-              {GAME_CATALOG.filter(
-                (g) =>
-                  g.type !== info?.gameType &&
-                  info?.sourceCards &&
-                  prepareClassroomGame(
-                    g.type,
-                    info.sourceCards,
-                    info.selected?.config.classroomSource?.kind,
-                  ),
-              ).map((g) => (
-                <button
-                  key={g.type}
-                  className={`${btn} m-1`}
-                  disabled={busy || (!hasFullAccess && !isFreeTierGame(g.type))}
-                  onClick={() =>
-                    void action(() => bridge.current!.switchGame(g.type))
-                  }
-                >
-                  {i18n.t(g.nameKey)}
-                </button>
-              ))}
-            </div>
-          )}
-          <div
-            hidden={panel !== "settings" || !!info?.sharedView}
-            className="p-4"
-            data-game-existing-settings
-          >
-            {children}
+        {panel === 'content' && !info?.sharedView && <div className="space-y-4 p-4">
+          {!!capabilities.kinds.length && materialButtons(false)}
+          <label className="block">{t('quick.optionalClass')}<select className={`${btn} ml-2`} value={info?.classId || ''} disabled={busy} onChange={event => bridge.current?.selectClass(event.target.value)}><option value="">{t('quick.noClassNeeded')}</option>{info?.classes.map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+          <p>{t('quick.listHint')}</p>
+          <div className="grid gap-2 sm:grid-cols-2">{[...(info?.lists || [])].sort((a,b)=>Number(!!prepareClassroomGame(info!.gameType,b))-Number(!!prepareClassroomGame(info!.gameType,a))).map(list => {const ready=!!prepareClassroomGame(info!.gameType,list);const requirement=classroomGameRequirement(info!.gameType,list.kind);return <button key={list.id} className={`${btn} text-left`} disabled={busy || !ready} onClick={()=>void action(()=>bridge.current!.useList(list))}>{list.name} · {t(list.kind==='sentence'?'flow.sentences':'flow.words')} · {t('quick.items',{count:list.items.length})}{!ready && <small className="block font-normal">{t(requirement.key,{count:requirement.count})}</small>}</button>;})}</div>
+          {!info?.lists.length && <p>{t('quick.emptyLists')}</p>}
+          <h3 className="font-bold">{t('flow.savedGames')}</h3>
+          {info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=><button key={row.id} className={`${btn} mr-2 mb-2`} onClick={()=>{bridge.current?.selectTemplate(row.id);setPanel(null);}}>{row.name}</button>)}
+        </div>}
+        {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
+        <div hidden={panel !== 'settings' || !!info?.sharedView} className="p-4" data-game-existing-settings>
+          <p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p>
+          {children}
+          <div className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
+            {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <label className="block">{t('flow.materialName')}<input className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
+            <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart || (saveOriginal&&!materialName.trim())} onClick={()=>void startFromEditor()}>{t('flow.startContent')}</button>
+            {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><label>{t('quick.activityName')}<input className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy || !activityName.trim()} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}
           </div>
-        </dialog>
-        {teams && (
-          <TeamOrderPanel
-            key={roster.map((r) => r.id).join(",")}
-            roster={roster}
-            fixedTeams={
-              info &&
-              [
-                "gameshowquiz",
-                "winlosequiz",
-                "connect4",
-                "tictactoe",
-                "twodice",
-                "baskin31",
-              ].includes(info.gameType)
-                ? 2
-                : undefined
-            }
-            onClose={async () => {
-              const next = loadTeamOrder(roster);
-              if (
-                next.mode === "team" &&
-                info?.teamCount !== undefined &&
-                next.teamCount !== info.teamCount
-              ) {
-                if (
-                  running &&
-                  !window.confirm(
-                    en
-                      ? "Changing team count starts a new round. Continue?"
-                      : "팀 수를 바꾸면 새 판으로 시작합니다. 계속할까요?",
-                  )
-                )
-                  return;
-                try {
-                  await bridge.current?.configureTeams(next.teamCount);
-                  setRunning(false);
-                } catch {
-                  setError(
-                    en
-                      ? "Could not save teams. Retry."
-                      : "팀 설정 저장 실패. 다시 시도하세요.",
-                  );
-                  return;
-                }
-              }
-              setShowOrderOn(true);
-              window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
-              setTurnRevision((n) => n + 1);
-              setTeams(false);
-            }}
-          >
-            {error && (
-              <p role="alert" className="text-error">
-                {error}
-              </p>
-            )}
-            <button
-              className={btn}
-              onClick={() => {
-                setShowOrderOn(false);
-                window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
-                setTeams(false);
-              }}
-            >
-              {en
-                ? "Free participation (no turns)"
-                : "자유 참여 · 차례 없이 진행"}
-            </button>
-            <p>
-              {en
-                ? "Exclude for this game session"
-                : "이번 진행에서 빠지는 학생"}
-            </p>
-            {info?.roster.map((r) => (
-              <label
-                key={r.id}
-                className="mr-3 inline-flex min-h-11 items-center gap-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={absent.includes(r.id)}
-                  onChange={(e) =>
-                    setAbsent((old) =>
-                      e.target.checked
-                        ? [...old, r.id]
-                        : old.filter((id) => id !== r.id),
-                    )
-                  }
-                />
-                {r.label}
-              </label>
-            ))}
-          </TeamOrderPanel>
-        )}
-      </section>
-    </GameWorkspaceContext.Provider>
-  );
+        </div>
+      </dialog>
+      {addLesson && info?.selected && <AddActivityToLesson activity={info.selected} onClose={()=>setAddLesson(false)} />}
+      {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);}}>
+        <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={ordered} onChange={event=>setOrdered(event.target.checked)} />{t('flow.showTurns')}</label>
+        {!info?.roster.length && <label className="block">{t('flow.temporaryParticipants')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3" value={participantText} onChange={event=>{setParticipantText(event.target.value);setAbsent([]);try{sessionStorage.setItem(participantKey,event.target.value);}catch{/* tab only */}}} /></label>}
+        <p>{t('flow.excludeParticipants')}</p>{allRoster.map(row=><label key={row.id} className="mr-3 inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={absent.includes(row.id)} onChange={event=>setAbsent(old=>event.target.checked?[...old,row.id]:old.filter(id=>id!==row.id))}/>{row.label}</label>)}
+      </TeamOrderPanel>}
+    </section>
+  </GameWorkspaceContext.Provider>;
 }
-
-/** Appears inside fullscreen/presented frames where the outer preparation bar is not visible. */
+export function WorkspaceTurnIndicator() {
+  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace?.turn)return null;
+  return <div className="flex min-w-0 flex-wrap items-center gap-2" data-current-next><button className={btn} aria-label={`${t('flow.current',{name:workspace.turn.current})} · ${t('flow.next',{name:workspace.turn.next})}`} onClick={workspace.openTeams}><strong>{t('flow.current',{name:workspace.turn.current})}</strong><span className="ml-3 font-normal text-on-surface-variant">{t('flow.next',{name:workspace.turn.next})}</span></button><button className={btn} onClick={workspace.turn.advance}>{t('flow.nextParticipant')}</button></div>;
+}
 export function GameWorkspaceFrameControls() {
-  const workspace = useGameWorkspace();
-  const { i18n } = useTranslation();
-  if (!workspace) return null;
-  const en = i18n.language.startsWith("en");
-  return (
-    <div className="relative z-30 flex flex-wrap gap-2 bg-white/95 p-2">
-      <button className={btn} onClick={() => workspace.open("content")}>
-        {en ? "Content / class" : "자료·반"}
-      </button>
-      <button className={btn} onClick={() => workspace.open("settings")}>
-        {en ? "Settings & save" : "설정·저장"}
-      </button>
-      {workspace.hasSource && <button className={btn} onClick={() => workspace.open('games')}>{en ? 'Another game' : '다른 게임'}</button>}
-      <button className={btn} onClick={workspace.running ? workspace.pause : workspace.start}>
-        {workspace.running ? (en ? 'Pause' : '잠깐 멈춤') : (en ? "Start / resume" : "시작·이어하기")}
-      </button>
-    </div>
-  );
+  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
+  return <div className="relative z-30 flex shrink-0 flex-wrap gap-2 bg-white/95 p-2"><button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button><WorkspaceTurnIndicator />{!workspace.running&&<button className={btn} onClick={workspace.start}>{t('flow.resume')}</button>}</div>;
 }

@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -78,7 +79,7 @@ export default function TimerMatchPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipant, setNewParticipant] = useRecoverableField('game:timer:newParticipant');
   const targetMs = selected?.config.targetMs ?? DEFAULT_TARGET_MS;
   const [targetInput, setTargetInput] = useState((targetMs / 1000).toFixed(2));
 

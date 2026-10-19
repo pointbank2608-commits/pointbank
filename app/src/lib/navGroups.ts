@@ -9,7 +9,7 @@ export interface NavChild {
 }
 
 export interface NavGroup {
-  id: 'today' | 'lesson' | 'library' | 'class' | 'more';
+  id: 'today' | 'games' | 'materials' | 'wordlists' | 'lesson' | 'library' | 'class' | 'more';
   labelKey: string;
   icon: string;
   children: NavChild[];
@@ -24,26 +24,14 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
     icon: 'home',
     children: [{ to: '/dashboard', labelKey: 'nav.dashboard', icon: 'dashboard' }],
   },
+  { id: 'games', labelKey: 'nav.gameCenter', icon: 'sports_esports', children: [{ to: '/games', labelKey: 'nav.gameCenter', icon: 'sports_esports' }] },
+  { id: 'materials', labelKey: 'nav.classroomMaterials', icon: 'print', children: [{ to: '/materials', labelKey: 'nav.classroomMaterials', icon: 'print' }] },
+  { id: 'wordlists', labelKey: 'nav.wordLists', icon: 'library_books', children: [{ to: '/wordlists', labelKey: 'nav.wordLists', icon: 'library_books' }] },
   {
     id: 'lesson',
     labelKey: 'nav.group_lesson',
     icon: 'play_circle',
     children: [{ to: '/curriculum', labelKey: 'nav.curriculum', icon: 'auto_stories', feature: 'group' }],
-  },
-  {
-    id: 'library',
-    labelKey: 'nav.group_library',
-    icon: 'folder',
-    home: '/resources',
-    children: [
-      { to: '/games', labelKey: 'nav.gameCenter', icon: 'sports_esports' },
-      { to: '/materials', labelKey: 'nav.classroomMaterials', icon: 'print' },
-      { to: '/wordlists', labelKey: 'nav.wordLists', icon: 'library_books' },
-      { to: '/dictionary', labelKey: 'nav.dictionary', icon: 'menu_book' },
-      { to: '/phonics', labelKey: 'nav.phonics', icon: 'spellcheck' },
-      { to: '/grammar', labelKey: 'nav.grammar', icon: 'rule' },
-      { to: '/videos', labelKey: 'nav.videoLibrary', icon: 'video_library', feature: 'group' },
-    ],
   },
   {
     id: 'class',
@@ -54,6 +42,18 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
       { to: '/board', labelKey: 'nav.board', icon: 'payments' },
       { to: '/homework', labelKey: 'nav.homework', icon: 'assignment', feature: 'homework' },
       { to: '/results', labelKey: 'nav.reports', icon: 'assessment' },
+    ],
+  },
+  {
+    id: 'library',
+    labelKey: 'nav.group_library',
+    icon: 'folder',
+    home: '/resources',
+    children: [
+      { to: '/dictionary', labelKey: 'nav.dictionary', icon: 'menu_book' },
+      { to: '/phonics', labelKey: 'nav.phonics', icon: 'spellcheck' },
+      { to: '/grammar', labelKey: 'nav.grammar', icon: 'rule' },
+      { to: '/videos', labelKey: 'nav.videoLibrary', icon: 'video_library', feature: 'group' },
     ],
   },
   {

@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -539,6 +540,7 @@ export default function MazeChase({
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
       const map: Record<string, 'up' | 'down' | 'left' | 'right'> = {
         ArrowUp: 'up',

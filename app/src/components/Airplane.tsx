@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -344,6 +345,7 @@ export default function Airplane({
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
       if (e.code === 'Space' || e.key === 'Enter') {
         e.preventDefault();
@@ -563,8 +565,7 @@ export default function Airplane({
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex w-full max-w-[1040px] flex-col items-center">
-          {editable &&
-            (editingTemplateName ? (
+          {editable && !itemsHidden && (editingTemplateName ? (
               <input
                 autoFocus
                 value={templateNameDraft}

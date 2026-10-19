@@ -103,7 +103,7 @@ export default function CurriculumPage() {
   const [loading, setLoading] = useState(true);
 
   async function reload() {
-    if (!academy?.id || !staffClassId) {
+    if (!academy?.id) {
       setWordLists([]);
       setLessons([]);
       setDeletedLessons([]);
@@ -113,13 +113,13 @@ export default function CurriculumPage() {
     setLoading(true);
     try {
       const [wl, ls] = await Promise.all([
-        fetchWordLists(academy.id, staffClassId),
-        fetchCurriculumLessons(academy.id, staffClassId),
+        fetchWordLists(academy.id, staffClassId || ''),
+        fetchCurriculumLessons(academy.id, staffClassId || ''),
       ]);
       setWordLists(wl);
       setLessons(ls);
       try {
-        setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId));
+        setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId || ''));
       } catch {
         setDeletedLessons([]);
       }
@@ -482,7 +482,7 @@ export default function CurriculumPage() {
 
   /** 저장만 하고 폼은 그대로 둔다 — 저장된 레슨을 돌려준다(실패하면 null). */
   async function saveLesson(): Promise<CurriculumLesson | null> {
-    if (!academy?.id || !profile || !staffClassId) return null;
+    if (!academy?.id || !profile) return null;
     if (!name.trim()) {
       notify(t('curriculum.nameRequiredError'), 'error');
       return null;
@@ -630,13 +630,13 @@ export default function CurriculumPage() {
   }, [staffClassId, location.key]);
 
   // 오늘 화면 카드에서 넘어온 경우: 그 반을 고르고, 수업이 있으면 바로 시작하거나 새 수업 만들기를 연다.
-  const pendingFocus = useRef<{ focusClassId?: string; startLessonId?: string } | null>(null);
+  const pendingFocus = useRef<{ focusClassId?: string | null; startLessonId?: string } | null>(null);
   useEffect(() => {
-    const st = location.state as { focusClassId?: string; startLessonId?: string } | null;
-    if (st?.focusClassId) {
-      pendingFocus.current = st;
-      selectClass(st.focusClassId);
-      navigate('/curriculum', { replace: true });
+    const st = location.state as { focusClassId?: string | null; startLessonId?: string; reopenLessonId?: string } | null;
+    if (st?.focusClassId || st?.startLessonId) {
+      if (st.startLessonId) pendingFocus.current = { ...st, focusClassId: st.focusClassId || staffClassId };
+      if (st.focusClassId) selectClass(st.focusClassId);
+      navigate('/curriculum', { replace: true, state: st.reopenLessonId ? { reopenLessonId: st.reopenLessonId } : undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);

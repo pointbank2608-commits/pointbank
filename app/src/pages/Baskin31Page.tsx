@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -76,7 +77,7 @@ export default function Baskin31Page() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:baskin31:newItemLabel');
   const targetCount = selected?.config.targetCount ?? DEFAULT_TARGET_COUNT;
   const [targetInput, setTargetInput] = useState(String(targetCount));
 

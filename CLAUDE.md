@@ -2,6 +2,8 @@
 
 이 파일을 **현재 진실**로 본다. 초기 히스토리·옛 결정 세부는 `handoff.md`. 설치/스키마 적용은 `README.md`.
 
+> **게임 우선 준비/집중 플레이 (2026-10-19):** 홈 자료 생성·내 단어·문장 필터·기존 항목 편집기 재사용·선택적 원본 저장·선생님 메뉴와 진행 보존을 구현했다. 게임별 범위·파일·검증·제약은 [진행 기록](docs/preparation-play-progress.md)을 확인한다. 추가 DB 변경은 없으며 사용자 요청으로 main 푸시·자동 배포를 진행한다.
+
 > **Sentence Splash (2026-10-19):** 떨어지는 단어로 문장을 완성하는 48번 게임을 `/games/sentencesplash`에 추가했다. 기존 게임 화면·문장 목록·저장·수업 블록을 재사용하며 추가 SQL은 없다. 구현 파일·사용법·검증·제약은 [docs/sentence-splash-handoff.md](docs/sentence-splash-handoff.md)를 확인한다.
 
 > **선생님 매뉴얼 (2026-10-19):** [docs/manuals/README.md](docs/manuals/README.md)에 수업 만들기·숙제 내주기 매뉴얼의 PDF와 수정용 원본이 있다. 실제 메뉴 이름을 확인해 작성했으며, 메뉴·버튼이 바뀌면 원본과 PDF를 함께 갱신한다.

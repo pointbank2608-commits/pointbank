@@ -11,8 +11,7 @@ import { useToast } from '../context/ToastContext';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { boardTheme as findBoardTheme, boardWorksheetCss } from '../lib/boardThemes';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import { createGameTemplate } from '../lib/api';
-import { buildGameContent } from '../lib/gameFromWords';
+import { prepareClassroomGame } from '../lib/gameWorkspace';
 import { handoffFromLocationState, wordsFromLocationState } from '../lib/materialsHandoff';
 import { useMaterialsWordLists } from '../lib/useMaterialsWordLists';
 import { buildQuizQuestions } from '../lib/quizFromWordList';
@@ -93,12 +92,14 @@ const TAB_GAME_BRIDGE: Partial<Record<Tab, GameType>> = {
 
 export default function WorksheetPrintPage() {
   const { t } = useTranslation();
-  const { academy, profile } = useAuth();
+  const { session, academy } = useAuth();
   const { notify } = useToast();
   const navigate = useNavigate();
   const { classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading } = useMaterialsWordLists();
   const location = useLocation();
-  const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(location.state));
+  const materialState = handoffFromLocationState(location.state);
+  const materialAllowed = !materialState.materialsOwnerId || (materialState.materialsOwnerId === session?.user.id && materialState.materialsAcademyId === academy?.id);
+  const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(materialAllowed ? location.state : null));
   const [bridgeBusy, setBridgeBusy] = useState(false);
   // 발표 중이면 편집 UI를 숨기고 인쇄만 — 단, 수업에 단어장이 없어 단어가 비어 있으면 막다른
   // 화면이 되지 않게 평소 화면(단어 고르기)을 그대로 보여준다.
@@ -137,7 +138,7 @@ export default function WorksheetPrintPage() {
     const handoff = handoffFromLocationState(location.state);
     const requested = handoff.materialsTab;
     const wo = handoff.materialsWorksheetOptions;
-    setWords(wordsFromLocationState(location.state));
+    setWords(wordsFromLocationState(materialAllowed ? location.state : null));
     setTab(requested && (TABS as string[]).includes(requested) ? (requested as Tab) : 'list');
     setShowAnswerKey(wo?.showAnswerKey ?? false);
     setIncludeAnswers(wo?.includeAnswers ?? true);
@@ -154,7 +155,7 @@ export default function WorksheetPrintPage() {
     });
     setShowAskScreen(false);
     setBoardThemeId(handoff.materialsBoardTheme ?? null);
-  }, [location.key, location.state]);
+  }, [location.key, location.state, materialAllowed]);
 
   const quiz = useMemo(
     () =>
@@ -170,33 +171,25 @@ export default function WorksheetPrintPage() {
   const canPreview = generated ? !generatedEmpty : tab === 'quiz' ? quiz.length > 0 : words.length > 0;
 
   const bridgeTarget = TAB_GAME_BRIDGE[tab];
+  const bridgeKind = bridgeTarget === 'unscramble' ? 'sentence' : handoffFromLocationState(location.state).materialsKind || 'word';
+  const bridgeWords = useMemo(() => bridgeTarget === 'unscramble'
+    ? words.map(word => ({ ...word, word: word.example || word.word })).filter(word => word.word.trim().split(/\s+/).length >= 2)
+    : words, [bridgeTarget, words]);
   const bridgeTemplate = useMemo(
-    () => (bridgeTarget ? buildGameContent(bridgeTarget, words) : null),
-    [bridgeTarget, words],
+    () => bridgeTarget ? prepareClassroomGame(bridgeTarget, bridgeWords, bridgeKind) : null,
+    [bridgeTarget, bridgeWords, bridgeKind],
   );
 
-  /** "게임 열기" — 지금 고른 단어로 그 게임의 새 템플릿을 만들어(useGameTemplates.ts의
-   * openInOtherGame과 같은 패턴) 바로 그 템플릿이 선택된 상태로 게임 페이지를 연다. */
+  /** Same source, temporary activity: choosing a game does not save teacher data. */
   async function handleOpenBridge() {
-    if (!academy?.id || !profile || !staffClassId || !bridgeTarget || !bridgeTemplate) return;
+    if (!bridgeTarget || !bridgeTemplate) return;
     setBridgeBusy(true);
     try {
-      const tpl = await createGameTemplate({
-        academyId: academy.id,
-        classId: staffClassId,
-        gameType: bridgeTarget,
-        name: t('materials.worksheet.screen.bridgeTemplateName'),
-        items: bridgeTemplate.items,
-        config: bridgeTemplate.config,
-        teacherId: profile.id,
-      });
-      const path = GAME_CATALOG.find((g) => g.type === bridgeTarget)?.path ?? `/games/${bridgeTarget}`;
-      navigate(path, { state: { openTemplateId: tpl.id } });
+      const path = GAME_CATALOG.find(g => g.type === bridgeTarget)?.path || `/games/${bridgeTarget}`;
+      navigate(path, { state: { quickSource: { ownerId: session?.user.id, academyId: academy?.id, cards: bridgeWords, kind: bridgeKind, name: t('materials.worksheet.screen.bridgeTemplateName') } } });
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
-    } finally {
-      setBridgeBusy(false);
-    }
+    } finally { setBridgeBusy(false); }
   }
 
   const emptyHint =

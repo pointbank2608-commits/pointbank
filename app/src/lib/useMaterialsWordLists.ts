@@ -15,15 +15,18 @@ export function useMaterialsWordLists() {
   const [wordListsLoading, setWordListsLoading] = useState(false);
 
   useEffect(() => {
-    if (!academy?.id || !staffClassId) {
-      setWordLists([]);
+    let active = true;
+    setWordLists([]);
+    if (!academy?.id) {
+      setWordListsLoading(false);
       return;
     }
     setWordListsLoading(true);
-    fetchWordLists(academy.id, staffClassId)
-      .then(setWordLists)
-      .catch(() => setWordLists([]))
-      .finally(() => setWordListsLoading(false));
+    fetchWordLists(academy.id, staffClassId || '')
+      .then(rows => { if (active) setWordLists(rows); })
+      .catch(() => { if (active) setWordLists([]); })
+      .finally(() => { if (active) setWordListsLoading(false); });
+    return () => { active = false; };
   }, [academy?.id, staffClassId]);
 
   return { isStaff, classes, staffClassId, selectClass, reorderClasses, wordLists, wordListsLoading };

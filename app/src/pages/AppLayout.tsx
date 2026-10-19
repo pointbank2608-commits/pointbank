@@ -200,7 +200,7 @@ function AppLayoutInner() {
           웹뷰 위에 겹쳐 그려지고 그 영역의 터치는 시스템이 가로채 버려서, 헤더가 화면 맨 위(y=0)에서
           시작하면 왼쪽 메뉴 버튼이 그 영역에 걸려 눌리지 않는다. safe-area-inset-top 만큼 아래로
           밀어서 실제 탭 영역이 상태 바 밖으로 나오게 한다. */}
-      <header
+      <header data-app-chrome
         className="no-print md:hidden fixed top-0 left-0 right-0 bg-surface-container-lowest shadow-sm flex items-center justify-between px-margin-mobile z-40 pt-[env(safe-area-inset-top,0px)]"
         style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))' }}
       >
@@ -232,14 +232,14 @@ function AppLayoutInner() {
 
       {/* 데스크톱 사이드바 */}
       {/* 화면 높이가 낮으면(작은 노트북·브라우저 창 축소) 하단 설정·로그아웃이 잘려서, 사이드바 자체를 스크롤되게 한다. */}
-      <nav className="no-print fixed left-0 top-0 z-30 hidden h-[100dvh] w-[17.5rem] flex-col overflow-y-auto overscroll-contain bg-deep-navy py-7 md:flex">
+      <nav data-app-chrome className="no-print fixed left-0 top-0 z-30 hidden h-[100dvh] w-[17.5rem] flex-col overflow-y-auto overscroll-contain bg-deep-navy py-7 md:flex">
         {sidebarContent}
       </nav>
 
-      <main className="flex-1 min-w-0 md:ml-[17.5rem] pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
+      <main data-app-main className="flex-1 min-w-0 md:ml-[17.5rem] pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
         <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
-        <header className="no-print sticky top-0 z-20 hidden h-16 items-center justify-end gap-3 bg-background/90 px-margin-desktop backdrop-blur md:flex">
+        <header data-app-chrome className="no-print sticky top-0 z-20 hidden h-16 items-center justify-end gap-3 bg-background/90 px-margin-desktop backdrop-blur md:flex">
           <FontSizeToggle showLabel />
           <LanguageToggle />
           {isStaff && <SosButton />}
@@ -259,13 +259,15 @@ function AppLayoutInner() {
             {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
           </Link>
         </header>
-        <div className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
+        <div data-app-content className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
+          <div data-app-chrome>
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
           {isStaff && <DeletionBanner />}
           {isStaff && <TrialBanner />}
           {isStaff && <CoachTip />}
           {isStaff && <TrialModal />}
+          </div>
           <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}

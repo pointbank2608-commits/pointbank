@@ -1,10 +1,11 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
-import GameThemeFrame, { useGamePlay } from '../components/GameThemeFrame';
+import GameThemeFrame, { useGamePlay, GameManagement } from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
@@ -113,7 +114,7 @@ export default function WheelPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:wheel:newItemLabel');
 
   // 선택된 돌림판이 바뀌면 플레이용 사본을 새로 받고, 결과 기록을 비운다.
   useEffect(() => {
@@ -377,7 +378,7 @@ export default function WheelPage() {
               onRemoveItem={(id) => void removeLastItem(id)}
             />
 
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+            <GameManagement><div className="flex flex-wrap items-center justify-center gap-4 mt-4">
               <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant cursor-pointer">
                 <input
                   type="checkbox"
@@ -394,7 +395,7 @@ export default function WheelPage() {
               )}
             </div>
 
-            <RecentResults recent={recent} />
+            <RecentResults recent={recent} /></GameManagement>
           </GameThemeFrame>
 
           <div className="space-y-4">

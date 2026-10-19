@@ -1,6 +1,7 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
@@ -15,7 +16,6 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
   createWordList,
-  createGameTemplate,
   deleteWordList,
   fetchAllWordLists,
   setWordListGroup,
@@ -203,8 +203,8 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
   const [saving, setSaving] = useState(false);
   const [failedSave, setFailedSave] = useState<{ items: WordListItem[]; onSuccess?: () => void } | null>(null);
   const [tab, setTab] = useState<'manual' | 'dictionary' | 'category' | 'lyrics'>('manual');
-  const [word, setWord] = useState('');
-  const [meaning, setMeaning] = useState('');
+  const [word, setWord] = useRecoverableField(`word-list:${list.id}:word`);
+  const [meaning, setMeaning] = useRecoverableField(`word-list:${list.id}:meaning`);
   const [query, setQuery] = useState('');
   const [dictionary, setDictionary] = useState<WordBankEntry[] | null>(null);
   const [phonics, setPhonics] = useState<PhonicsBankEntry[] | null>(null);
@@ -500,6 +500,8 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
 export default function WordListsPage() {
   const { academy, profile, hasFullAccess } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
   const [launchError, setLaunchError] = useState(false);
@@ -512,6 +514,8 @@ export default function WordListsPage() {
   const [deletedLists, setDeletedLists] = useState<ContentRevision[]>([]);
   const [historyList, setHistoryList] = useState<WordList | null>(null);
   const [loading, setLoading] = useState(true);
+  const listSequence=useRef(0);
+  const accountScope=useRef(''); accountScope.current=`${profile?.id}:${academy?.id}`;
   const [openId, setOpenId] = useState<string | null>(null);
   /** 펼쳐 둔 그룹(기본은 모두 접힘) */
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
@@ -520,15 +524,16 @@ export default function WordListsPage() {
   const orderedLists = useMemo(() => {
     const out: WordList[] = [];
     const done = new Set<string>();
-    for (const l of lists) {
+    const filtered = lists.filter(list => materialFilter === 'all' || wordListKindOf(list) === materialFilter);
+    for (const l of filtered) {
       if (!l.group_name) out.push(l);
       else if (!done.has(l.group_name)) {
         done.add(l.group_name);
-        out.push(...lists.filter((x) => x.group_name === l.group_name));
+        out.push(...filtered.filter((x) => x.group_name === l.group_name));
       }
     }
     return out;
-  }, [lists]);
+  }, [lists, materialFilter]);
 
   async function handleSetGroup(list: WordList, value: string) {
     let next: string | null = value === '' ? null : value;
@@ -563,6 +568,12 @@ export default function WordListsPage() {
   /** 새로 만들 것: 단어장 / 문장 목록(066) */
   const [newKind, setNewKind] = useState<'word' | 'sentence'>('word');
   const [viewAll, setViewAll] = useState(false);
+  useEffect(() => {
+    const kind = (location.state as { createMaterialKind?: 'word' | 'sentence' } | null)?.createMaterialKind;
+    if (kind) { setNewKind(kind); setShowCreateForm(true); setMaterialFilter(kind); setNewScope('academy'); }
+  }, [location.key, location.state]);
+  const createLock = useRef(false);
+  const [creating, setCreating] = useState(false);
   const [studyingListId, setStudyingListId] = useState<string | null>(null);
   const [printListId, setPrintListId] = useState<string | null>(null);
   const studyingList = lists.find((l) => l.id === studyingListId) ?? null;
@@ -585,37 +596,44 @@ export default function WordListsPage() {
   }, [dictionaryEntries]);
 
   async function load() {
-    if (!academy?.id || (!viewAll && !selectedId)) {
+    const sequence=++listSequence.current;
+    setLists([]);
+    if (!academy?.id) {
       setLists([]);
-      setLoading(false);
+      if(sequence===listSequence.current)setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      setLists(viewAll ? await fetchAllWordLists(academy.id, 'all') : await fetchWordLists(academy.id, selectedId as string, 'all'));
+      const rows=viewAll || !selectedId ? await fetchAllWordLists(academy.id, 'all') : await fetchWordLists(academy.id, selectedId, 'all');
+      if(sequence!==listSequence.current)return;
+      setLists(rows);
       try {
-        setDeletedLists(await fetchDeletedWordLists(academy.id, viewAll ? null : (selectedId as string)));
+        const deleted=await fetchDeletedWordLists(academy.id, viewAll ? null : selectedId);
+        if(sequence===listSequence.current)setDeletedLists(deleted);
       } catch {
-        setDeletedLists([]);
+        if(sequence===listSequence.current)setDeletedLists([]);
       }
     } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
+      if(sequence===listSequence.current)notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
-      setLoading(false);
+      if(sequence===listSequence.current)setLoading(false);
     }
   }
 
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [academy?.id, selectedId, viewAll]);
+  }, [academy?.id, profile?.id, selectedId, viewAll]);
 
   function classNameOf(classId: string): string {
     return classes.find((c) => c.id === classId)?.name ?? t('wordLists.unassignedClass');
   }
 
   async function handleCreate() {
-    if (!academy?.id || !profile || !selectedId || !newName.trim()) return;
+    if (!academy?.id || !profile || !newName.trim() || createLock.current) return;
+    createLock.current = true; setCreating(true);
+    const scopeAtStart=accountScope.current;
     const ok = await run(async () => {
       const created = await createWordList({
         academyId: academy.id,
@@ -625,11 +643,17 @@ export default function WordListsPage() {
         teacherId: profile.id,
         kind: newKind,
       });
+      if(accountScope.current!==scopeAtStart)return;
+      // A list request started before this insert must not erase the newly created row.
+      ++listSequence.current;
+      setLoading(false);
       // 만든 것이 맨 위(최신순)
       setLists((prev) => [{ ...created, kind: newKind }, ...prev]);
       setOpenId(created.id);
     }, t(newKind === 'sentence' ? 'wordLists.sentence.createdToast' : 'wordLists.createdToast'));
+    createLock.current = false; setCreating(false);
     if (ok) {
+      setMaterialFilter(newKind);
       setNewName('');
       setNewScope('class');
       setShowCreateForm(false);
@@ -638,7 +662,7 @@ export default function WordListsPage() {
 
   async function handleLaunch(game: GameType, classId: string) {
     const list = lists.find((item) => item.id === launchListId);
-    if (launchBusyRef.current || !list || !academy || !profile || !classes.some((row) => row.id === classId)) return;
+    if (launchBusyRef.current || !list || !academy || !profile) return;
     if (!hasFullAccess && !isFreeTierGame(game)) return;
     const prepared = prepareClassroomGame(game, list);
     if (!prepared) return;
@@ -647,13 +671,8 @@ export default function WordListsPage() {
     setLaunchError(false);
     try {
       const entry = GAME_CATALOG.find((item) => item.type === game)!;
-      const template = await createGameTemplate({
-        academyId: academy.id, classId, gameType: game,
-        name: `${list.name} · ${t(entry.nameKey)}`, items: prepared.items,
-        config: { ...prepared.config, classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } }, teacherId: profile.id,
-      });
-      select(classId);
-      navigate(entry.path, { state: { openTemplateId: template.id, openClassId: classId } });
+      if (classId) select(classId);
+      navigate(entry.path, { state: { openClassId: classId || undefined, quickSource: { ownerId: profile.id, academyId: academy.id, cards: wordListToCards(list), kind: list.kind || 'word', name: list.name, id: list.id } } });
     } catch {
       setLaunchError(true);
     } finally {
@@ -684,9 +703,81 @@ export default function WordListsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('wordLists.title')}
       </h2>
+            <div className="flex flex-wrap gap-2">
+              {(['word', 'sentence'] as const).map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  onClick={() => {
+                    setMaterialFilter(kind);
+                    setNewScope(selectedId ? 'class' : 'academy');
+                    setNewKind(kind);
+                    setShowCreateForm(true);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-low"
+                >
+                  <span className="material-symbols-outlined text-[18px]">{kind === 'sentence' ? 'notes' : 'library_books'}</span>
+                  {t(kind === 'sentence' ? 'flow.createSentences' : 'flow.createWords')}
+                </button>
+              ))}
+            </div>
+      </div>
+      {showCreateForm && (
+            <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
+                {t(newKind === 'sentence' ? 'wordLists.sentence.kindSentence' : 'wordLists.sentence.kindWord')}
+              </span>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder={t(newKind === 'sentence' ? 'wordLists.sentence.namePlaceholder' : 'wordLists.namePlaceholder')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void handleCreate();
+                }}
+                className="flex-1 min-w-[160px] bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              />
+              <div className="flex bg-surface-container-low rounded-lg p-1">
+                <button
+                  type="button"
+                  disabled={!selectedId}
+                  onClick={() => setNewScope('class')}
+                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                    newScope === 'class' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+                  }`}
+                >
+                  {t('gameAdmin.scopeClass')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewScope('academy')}
+                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+                    newScope === 'academy' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+                  }`}
+                >
+                  {t('gameAdmin.scopeAcademy')}
+                </button>
+              </div>
+              <button
+                type="button"
+                disabled={loading || creating || !newName.trim()}
+                onClick={() => void handleCreate()}
+                className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
+              >
+                {t(newKind === 'sentence' ? 'flow.createSentenceConfirm' : 'wordLists.createButton')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(false)}
+                className="px-4 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+      )}
       <p className="font-caption text-caption text-on-surface-variant">{t('wordLists.hint')}</p>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -703,6 +794,8 @@ export default function WordListsPage() {
         {!viewAll && <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />}
       </div>
       {viewAll && <p className="font-caption text-caption text-on-surface-variant">{t('wordLists.viewAllHint')}</p>}
+
+      <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>{(['all','word','sentence'] as const).map(kind => <button key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={materialFilter===kind} onClick={()=>setMaterialFilter(kind)}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}</div>
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
@@ -857,77 +950,6 @@ export default function WordListsPage() {
         </div>
       )}
 
-      {selectedId && !viewAll && (
-        <div>
-          {showCreateForm ? (
-            <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
-                {t(newKind === 'sentence' ? 'wordLists.sentence.kindSentence' : 'wordLists.sentence.kindWord')}
-              </span>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder={t(newKind === 'sentence' ? 'wordLists.sentence.namePlaceholder' : 'wordLists.namePlaceholder')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') void handleCreate();
-                }}
-                className="flex-1 min-w-[160px] bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-              />
-              <div className="flex bg-surface-container-low rounded-lg p-1">
-                <button
-                  type="button"
-                  onClick={() => setNewScope('class')}
-                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
-                    newScope === 'class' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
-                  }`}
-                >
-                  {t('gameAdmin.scopeClass')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNewScope('academy')}
-                  className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
-                    newScope === 'academy' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
-                  }`}
-                >
-                  {t('gameAdmin.scopeAcademy')}
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => void handleCreate()}
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
-              >
-                {t('wordLists.createButton')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 rounded-lg text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-low transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {(['word', 'sentence'] as const).map((kind) => (
-                <button
-                  key={kind}
-                  type="button"
-                  onClick={() => {
-                    setNewKind(kind);
-                    setShowCreateForm(true);
-                  }}
-                  className="flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-low"
-                >
-                  <span className="material-symbols-outlined text-[18px]">{kind === 'sentence' ? 'notes' : 'library_books'}</span>
-                  + {t(kind === 'sentence' ? 'wordLists.sentence.createSentence' : 'wordLists.sentence.createWord')}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {deletedLists.length > 0 && (
         <div className="rounded-xl border border-outline-variant/70 bg-surface-container-low/60 px-4 py-3">

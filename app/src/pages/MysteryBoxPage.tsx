@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -80,7 +81,7 @@ export default function MysteryBoxPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:mysterybox:newItemLabel');
   const teams = selected?.config.boxTeams ?? DEFAULT_TEAMS;
   const blocks = selected?.config.mysteryBlocks ?? DEFAULT_BLOCKS;
   const mode = selected?.config.mysteryMode ?? 'mushroom';

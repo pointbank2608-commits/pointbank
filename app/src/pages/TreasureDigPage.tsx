@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -80,7 +81,7 @@ export default function TreasureDigPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:treasuredig:newItemLabel');
   const teams = selected?.config.digTeams ?? DEFAULT_TEAMS;
   const mounds = selected?.config.digMounds ?? DEFAULT_MOUNDS;
 

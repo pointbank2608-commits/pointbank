@@ -315,8 +315,7 @@ export default function LadderBoard({
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
-      {editable &&
-        (editingTemplateName ? (
+      {editable && !itemsHidden && (editingTemplateName ? (
           <input
             autoFocus
             value={templateNameDraft}

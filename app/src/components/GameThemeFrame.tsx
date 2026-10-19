@@ -85,6 +85,13 @@ export function useGamePlay() {
   return useContext(GamePlayContext);
 }
 
+export function GameManagement({ children }: { children: ReactNode }) {
+  const { itemsHidden } = useGamePlay();
+  const workspace = useGameWorkspace();
+  if (workspace?.playing && workspace.teacherToolsTarget) return createPortal(<div data-game-management className="rounded-xl border p-3">{children}</div>, workspace.teacherToolsTarget);
+  return <div hidden={itemsHidden} data-game-management style={itemsHidden ? { display: 'none' } : { display: 'contents' }}>{children}</div>;
+}
+
 /**
  * 게임 플레이 영역을 감싸서 전체화면·다시하기·되돌리기·팀순서 버튼을 우측 상단에 얹는다.
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
@@ -107,7 +114,8 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
   // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
-  const fill = fullOn || presenting;
+  const fill = fullOn || presenting || !!workspace?.playing;
+  const [scrollContent, setScrollContent] = useState(false);
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
@@ -133,6 +141,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
   }
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
+  useEffect(() => { if (workspace?.playing) setItemsHidden(true); }, [workspace?.playing]);
   const [restartOpen, setRestartOpen] = useState(false);
   const bgType = bg ?? gameType;
   const bgUrl = useGameBackground(bgType);
@@ -146,11 +155,11 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       if (!on) setScale(1);
       // 전체화면으로 들어가면 반 전체가 보는 화면이 되니 항목 목록을 기본으로 숨긴다(정답이
       // 미리 보이지 않게). 전체화면을 나오면 다시 보이게 — 선생님은 버튼으로 언제든 뒤집을 수 있다.
-      setItemsHidden(on);
+      setItemsHidden(on || !!workspace?.playing || presenting);
     }
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
+  }, [workspace?.playing, presenting]);
 
   useLayoutEffect(() => {
     // 전체화면이 아닌 일반 화면에서도, 화면(뷰포트)보다 콘텐츠가 크면 스크롤 없이 한
@@ -256,7 +265,9 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      setScale(fill ? Math.min(5, Math.max(0.5, next)) : Math.min(1, Math.max(0.5, next)));
+      const scroll = fill && next < 0.75;
+      setScrollContent(scroll);
+      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(0.75, next)) : Math.min(1, Math.max(0.5, next)));
     }
 
     fit();
@@ -309,7 +320,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
     setFullscreenError(false);
     if (pseudoFs) {
       setPseudoFs(false);
-      setItemsHidden(false);
+      setItemsHidden(!!workspace?.playing || presenting);
       setScale(1);
       return;
     }
@@ -330,7 +341,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setPseudoFs(false);
-        setItemsHidden(false);
+        setItemsHidden(!!workspace?.playing || presenting);
         setScale(1);
       }
     }
@@ -339,7 +350,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
-  }, [pseudoFs]);
+  }, [pseudoFs, workspace?.playing, presenting]);
 
   const fullscreenStyle: CSSProperties = fill
     ? {
@@ -363,28 +374,8 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 부분만 잘라 페이지 폭을 고정한다(위아래 그림자는 그대로).
       { overflowX: 'clip' };
 
-  const frame = (
-    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
-      <div
-        ref={containerRef}
-        data-game={gameType ?? bg}
-        className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
-        style={fullscreenStyle}
-      >
-        {workspace && fill && <GameWorkspaceFrameControls />}
-        {bgUrl && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-0"
-            style={{
-              borderRadius: 'inherit',
-              backgroundImage: `linear-gradient(rgba(255,252,243,${veil}), rgba(255,252,243,${veil})), url(${bgUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-        )}
-        <div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
+  const toolbar = (
+<div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
           <button
             type="button"
             onClick={() => setItemsHidden((v) => !v)}
@@ -483,7 +474,30 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
             </button>
           )}
         </div>
-        {showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
+  );
+  const frame = (
+    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
+      <div
+        ref={containerRef}
+        data-game={gameType ?? bg}
+        className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
+        style={fullscreenStyle}
+      >
+        {workspace && (fullOn || presenting) && <GameWorkspaceFrameControls />}
+        {bgUrl && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              borderRadius: 'inherit',
+              backgroundImage: `linear-gradient(rgba(255,252,243,${veil}), rgba(255,252,243,${veil})), url(${bgUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        )}
+        {workspace?.playing ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
+        {!workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button
               type="button"
@@ -531,7 +545,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
         )}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
-        <div ref={stageRef} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1 }}>
+        <div ref={stageRef} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
             style={!fill && naturalSize.h > 0
@@ -544,7 +558,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
               style={{
                 width: fill ? '100%' : naturalSize.w > 0 ? naturalSize.w : '100%',
                 transform: `scale(${scale})`,
-                transformOrigin: fill ? 'center center' : 'top left',
+                transformOrigin: fill && !scrollContent ? 'center center' : 'top left',
               }}
             >
               {children}

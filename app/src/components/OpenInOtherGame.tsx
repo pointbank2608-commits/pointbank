@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import type { GameType } from '../lib/types';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
 
 interface Props {
   currentType: GameType;
@@ -16,9 +17,11 @@ export default function OpenInOtherGame({ currentType, itemCount, onOpen }: Prop
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const workspace = useGameWorkspace();
 
   const targets = GAME_CATALOG.filter((g) => g.type !== currentType && itemCount >= g.minItems);
-  if (targets.length === 0) return null;
+  // The workspace offers conversion-aware targets without creating saved copies.
+  if (workspace?.hasSource || targets.length === 0) return null;
 
   async function handleClick(target: GameType) {
     if (busy) return;

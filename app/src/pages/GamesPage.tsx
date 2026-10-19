@@ -1,7 +1,9 @@
+import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
+import { ownedQuickSource, type QuickActivitySource } from '../lib/quickActivity';
 import { GAME_META } from '../lib/gameMeta';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
@@ -23,23 +25,11 @@ const MOMENT_DOT: Record<GameMoment, string> = {
 
 export default function GamesPage() {
   const { t } = useTranslation();
+
   const { academy, isStaff, session, hasFullAccess } = useAuth();
   const [activeCategory, setActiveCategory] = useState<GameMoment | 'all'>('all');
-  // 첫 방문은 전체 게임부터 보여 준다(내 라이브러리는 아직 몇 개 안 돼 게임이 적어 보인다) — 한 번 고르면 기억한다
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    try {
-      return localStorage.getItem('classbank.gamesView') === 'library' ? 'library' : 'all';
-    } catch {
-      return 'all';
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem('classbank.gamesView', viewMode);
-    } catch {
-      /* 저장 못 해도 화면은 정상 */
-    }
-  }, [viewMode]);
+  // Main navigation always opens the complete catalogue. Saved games remain an explicit tab.
+  const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [query, setQuery] = useState('');
   const [libraryError, setLibraryError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -62,8 +52,8 @@ export default function GamesPage() {
     let active = true;
     setLibraryTypes(null);
     setLibraryError(false);
-    if (!academy?.id || !classId) return;
-    fetchClassLibraryTypes(academy.id, classId)
+    if (!academy?.id) { setLibraryTypes([]); return; }
+    fetchClassLibraryTypes(academy.id, classId || '')
       .then((types) => { if (active) setLibraryTypes(types); })
       .catch(() => { if (active) setLibraryError(true); });
     return () => { active = false; };
@@ -131,7 +121,7 @@ export default function GamesPage() {
           <p>{t('classroomUx.libraryFailed')}</p>
           <button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-lg bg-surface-container-lowest px-4">{t('classroomUx.reload')}</button>
         </div>
-      ) : showLibrary && !classId ? (
+      ) : showLibrary && !classId && !isStaff ? (
         <p className="rounded-xl bg-surface-container-lowest p-6">{t('classroomUx.noClass')}</p>
       ) : showLibrary && !libraryLoaded ? (
         <p role="status" className="py-16 text-center text-on-surface-variant">{t('common.loading')}</p>
@@ -216,10 +206,18 @@ export default function GamesPage() {
 
 function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
   const { t } = useTranslation();
+  const location = useLocation();
+  const { session, academy } = useAuth();
+  const source = ownedQuickSource((location.state as { quickSource?: QuickActivitySource } | null)?.quickSource, session?.user.id, academy?.id);
+  const compatible = !source || !!prepareClassroomGame(g.type, source.cards, source.kind);
   const meta = GAME_META[g.type];
   return (
     <Link
       to={locked ? '/settings/billing' : g.path}
+      state={source && compatible && !locked ? { quickSource: source } : undefined}
+      aria-disabled={!compatible}
+      onClick={e => { if (!compatible) e.preventDefault(); }}
+      tabIndex={compatible ? 0 : -1}
       className="group relative bg-surface-container-lowest rounded-xl shadow-card overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
     >
       <div className="relative h-36 overflow-hidden">
@@ -246,6 +244,7 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
         )}
       </div>
       <div className="p-5">
+        {!compatible && <p className="mb-2 text-sm text-error">{t(classroomGameRequirement(g.type, source?.kind).key, { count: classroomGameRequirement(g.type, source?.kind).count })}</p>}
         <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
           <h3 className="min-w-0 font-title-md text-title-md text-on-surface">{t(g.nameKey)}</h3>
           {locked && (

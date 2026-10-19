@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -72,7 +73,7 @@ export default function SentenceUnscramblePage() {
     ],
     [],
   );
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:unscramble:newItemLabel');
 
   const playableItems = (selected?.items ?? []).filter((i) => wordCount(i.label) >= 2);
 

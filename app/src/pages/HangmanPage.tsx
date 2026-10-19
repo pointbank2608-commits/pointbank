@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -76,7 +77,7 @@ export default function HangmanPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:hangman:newItemLabel');
   const maxAttempts = selected?.config.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
   const [maxAttemptsInput, setMaxAttemptsInput] = useState(String(maxAttempts));
 

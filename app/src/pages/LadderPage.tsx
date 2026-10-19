@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -88,7 +89,7 @@ export default function LadderPage() {
     () => [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameLadder.defaultResult', { n }) })),
     [],
   );
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipant, setNewParticipant] = useRecoverableField('game:ladder:newParticipant');
 
   const results = selected?.config.results ?? selected?.items ?? [];
 

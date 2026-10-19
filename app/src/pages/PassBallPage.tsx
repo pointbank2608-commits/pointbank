@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -78,7 +79,7 @@ export default function PassBallPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipant, setNewParticipant] = useRecoverableField('game:passball:newParticipant');
   const range = selected?.config.ballRange ?? DEFAULT_RANGE;
   const [minInput, setMinInput] = useState(String(range.min));
   const [maxInput, setMaxInput] = useState(String(range.max));

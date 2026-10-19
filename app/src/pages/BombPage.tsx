@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -92,7 +93,7 @@ export default function BombPage() {
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipant, setNewParticipant] = useRecoverableField('game:bomb:newParticipant');
   const [newWord, setNewWord] = useState('');
   const range = selected?.config.bombRange ?? DEFAULT_RANGE;
   const words = selected?.config.words ?? [];

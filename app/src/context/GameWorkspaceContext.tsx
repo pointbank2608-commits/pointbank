@@ -9,6 +9,11 @@ import type {
 } from "../lib/types";
 
 export interface GameWorkspaceBridge {
+  beginMaterial: (kind: 'word' | 'sentence') => Promise<void>;
+  saveMaterial: (name: string) => Promise<void>;
+  temporary: boolean;
+  useSource: (source: { cards: FullCardItem[]; kind: 'word' | 'sentence'; name: string }) => Promise<void>;
+  saveActivity: (name: string) => Promise<void>;
   sharedView: boolean;
   gameType: GameType;
   classId: string | null;
@@ -28,15 +33,19 @@ export interface GameWorkspaceBridge {
   sourceCards: FullCardItem[] | null;
 }
 export interface WorkspaceContextValue {
+  playing: boolean;
+  teacherToolsTarget: HTMLElement | null;
+  exitPlay: () => void;
+  turn: { current: string; next: string; advance: () => void } | null;
   hasSource: boolean;
   pause: () => void;
   openTeams: () => void;
   roster: GameItem[];
   stage: HTMLElement | null;
   running: boolean;
-  panel: "settings" | "content" | "games" | null;
+  panel: "settings" | "content" | "games" | "teacher" | null;
   publish: (bridge: GameWorkspaceBridge) => void;
-  open: (panel: "settings" | "content" | "games") => void;
+  open: (panel: "settings" | "content" | "games" | "teacher") => void;
   start: () => void;
 }
 export const GameWorkspaceContext = createContext<WorkspaceContextValue | null>(

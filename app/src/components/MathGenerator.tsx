@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MathOperation } from '../lib/types';
@@ -113,6 +114,7 @@ export default function MathGenerator({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
       if (e.key === 'Enter') {
         e.preventDefault();

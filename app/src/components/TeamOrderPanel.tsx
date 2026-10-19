@@ -70,14 +70,17 @@ function useSlotSpin() {
  * 관여하지 않는 순수 진행 보조 도구로 만들었다 — 결과를 저장하지 않고(그때그때 새로 뽑는
  * 용도), 화면에 크게 띄워서 학생들에게 보여주는 게 목적이다.
  */
-export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number }) {
+export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, scope = '' }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number; scope?: string }) {
   const { t } = useTranslation();
   // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
-  const [saved] = useState(() => { const old=loadTeamOrder(roster); return fixedTeams ? { ...old, teamCount:fixedTeams, teamOf:Object.fromEntries(Object.entries(old.teamOf).map(([id,team])=>[id,team%fixedTeams])), order:old.mode==='team'?Array.from({length:fixedTeams},(_,i)=>`team-${i}`):old.order } : old; });
+  const [saved] = useState(() => { const old=loadTeamOrder(roster, scope); return fixedTeams ? { ...old, teamCount:fixedTeams, teamOf:Object.fromEntries(Object.entries(old.teamOf).map(([id,team])=>[id,team%fixedTeams])), order:old.mode==='team'?Array.from({length:fixedTeams},(_,i)=>`team-${i}`):old.order } : old; });
   const [mode, setMode] = useState<'individual' | 'team'>(saved.mode);
   const [teamCount, setTeamCount] = useState(saved.teamCount);
   const [teamOf, setTeamOf] = useState<Record<string, number>>(saved.teamOf);
   const [order, setOrder] = useState<string[]>(saved.order);
+  const [turn, setTurn] = useState(saved.turn);
+  const [teamNames, setTeamNames] = useState<Record<string, string>>(saved.teamNames || {});
+  const currentId = useRef(saved.order[saved.turn]);
   const { spin, spinning } = useSlotSpin();
   const firstSave = useRef(true);
 
@@ -88,9 +91,13 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }
       firstSave.current = false;
       return;
     }
-    saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: 0 });
+    const currentIndex = order.indexOf(currentId.current);
+    const nextTurn = currentIndex >= 0 ? currentIndex : Math.min(turn, Math.max(0, order.length - 1));
+    currentId.current = order[nextTurn];
+    if (nextTurn !== turn) setTurn(nextTurn);
+    saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: nextTurn, teamNames }, scope);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, teamCount, teamOf, order, spinning]);
+  }, [mode, teamCount, teamOf, order, spinning, turn, teamNames]);
 
   /** 순서대로(섞지 않고) count개 팀에 고르게 나눠 담는다 — 팀 모드에 처음 들어가거나
    * 팀 수를 바꿀 때 쓰는 "일단 뭐라도 채워두는" 기본값. 실제 무작위 배정은
@@ -189,7 +196,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }
             type="button"
             onClick={onClose}
             className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
-            aria-label={t('common.cancel')}
+            aria-label={t('common.close')}
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -267,7 +274,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }
                       return (
                         <div key={team.index} className={`rounded-lg p-3 ${style.bg}`}>
                           <div className={`mb-1.5 font-label-md text-label-md ${style.text}`}>
-                            {t('teamOrder.teamLabel', { n: team.index + 1 })}
+                            <input aria-label={t('flow.teamName',{n:team.index+1})} className="max-w-full rounded-lg border bg-white px-3 py-2 text-deep-navy" value={teamNames[`team-${team.index}`] || ''} placeholder={t('teamOrder.teamLabel',{n:team.index+1})} onChange={event=>setTeamNames(old=>({...old,[`team-${team.index}`]:event.target.value}))} />
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {team.members.map((m) => (
@@ -313,7 +320,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }
                   {order.map((id, i) => {
                     const label =
                       mode === 'team'
-                        ? t('teamOrder.teamLabel', { n: Number(id.split('-')[1]) + 1 })
+                        ? teamNames[id] || t('teamOrder.teamLabel', { n: Number(id.split('-')[1]) + 1 })
                         : (roster.find((r) => r.id === id)?.label ?? '');
                     return (
                       <div
@@ -322,6 +329,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams }
                       >
                         <span className="w-7 text-center font-title-md text-title-md text-primary tabular-nums">{i + 1}</span>
                         <span className="flex-1 font-label-md text-label-md text-on-surface">{label}</span>
+                        <button className="min-h-11 rounded-lg border px-3 text-primary" aria-pressed={turn===i} onClick={()=>{currentId.current=id;setTurn(i);}}>{t('flow.startHere')}</button>
                         <button
                           type="button"
                           onClick={() => move(i, -1)}

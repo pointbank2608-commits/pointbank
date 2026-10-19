@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
-import { useGamePlay } from './GameThemeFrame';
+import { useGamePlay, GameManagement } from './GameThemeFrame';
 import i18n from '../i18n';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -214,7 +214,7 @@ export default function TimerMatch({
         className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className={`flex flex-col items-center ${editable && !itemsHidden ? '' : 'w-full'}`}>
-          {editable &&
+          {editable && !itemsHidden &&
             (editingTemplateName ? (
               <input
                 autoFocus
@@ -242,7 +242,7 @@ export default function TimerMatch({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <div className="mb-4 flex flex-wrap justify-center gap-2.5">
+      <GameManagement><div className="mb-4 flex flex-wrap justify-center gap-2.5">
         <div className="flex rounded-full bg-[#f3eee4] p-1">
           <button type="button" onClick={() => switchMode('practice')} className={mode === 'practice' ? tabOn : tabOff}>
             {t('gameTimer.modePractice')}
@@ -261,6 +261,7 @@ export default function TimerMatch({
         </div>
       </div>
 
+      </GameManagement>
       <div className="mb-3.5 font-label-md text-label-md font-bold text-on-surface-variant">
         {t('gameTimer.targetPrefix', { time: fmt(targetMs) })}
       </div>

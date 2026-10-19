@@ -11,17 +11,18 @@ export interface TeamOrderState {
   order: string[];
   /** 지금 차례(order 의 몇 번째인지) */
   turn: number;
+  teamNames?: Record<string, string>;
 }
 
 export const TEAM_ORDER_EVENT = 'classbank:teamorder';
 const SHOW_KEY = 'classbank.showOrder';
 
 /** 명단이 같으면 같은 열쇠 — 반 id 를 따로 받지 않아도 반마다 따로 저장된다. */
-function keyFor(roster: GameItem[]): string {
+function keyFor(roster: GameItem[], scope = ''): string {
   const ids = roster.map((r) => r.id).sort().join(',');
   let h = 5381;
   for (let i = 0; i < ids.length; i++) h = ((h << 5) + h + ids.charCodeAt(i)) >>> 0;
-  return `classbank.teamOrder.${h.toString(36)}`;
+  return `classbank.teamOrder.${scope ? scope + ':' : ''}${h.toString(36)}`;
 }
 
 export function defaultTeamOrder(roster: GameItem[]): TeamOrderState {
@@ -29,11 +30,11 @@ export function defaultTeamOrder(roster: GameItem[]): TeamOrderState {
 }
 
 /** 저장해 둔 것을 지금 명단에 맞춰 돌려준다(전학·새 학생이 있어도 깨지지 않게). 없으면 명단 순서 그대로. */
-export function loadTeamOrder(roster: GameItem[]): TeamOrderState {
+export function loadTeamOrder(roster: GameItem[], scope = ''): TeamOrderState {
   const base = defaultTeamOrder(roster);
   if (roster.length === 0) return base;
   try {
-    const raw = localStorage.getItem(keyFor(roster));
+    const raw = localStorage.getItem(keyFor(roster, scope));
     if (!raw) return base;
     const saved = JSON.parse(raw) as Partial<TeamOrderState>;
     const mode = saved.mode === 'team' ? 'team' : 'individual';
@@ -44,19 +45,21 @@ export function loadTeamOrder(roster: GameItem[]): TeamOrderState {
       teamOf[r.id] = typeof cur === 'number' && cur < teamCount ? cur : i % teamCount;
     });
     const valid = mode === 'team' ? Array.from({ length: teamCount }, (_, i) => `team-${i}`) : roster.map((r) => r.id);
-    const kept = (saved.order ?? []).filter((id) => valid.includes(id));
+    const kept = [...new Set((saved.order ?? []).filter((id) => valid.includes(id)))];
     const order = [...kept, ...valid.filter((id) => !kept.includes(id))];
-    const turn = Math.max(0, Math.min(order.length - 1, Number(saved.turn) || 0));
-    return { mode, teamCount, teamOf: mode === 'team' || saved.teamOf ? teamOf : {}, order, turn };
+    const current = saved.order?.[Number(saved.turn) || 0];
+    const currentIndex = current ? order.indexOf(current) : -1;
+    const turn = currentIndex >= 0 ? currentIndex : Math.max(0, Math.min(order.length - 1, Number(saved.turn) || 0));
+    return { mode, teamCount, teamOf: mode === 'team' || saved.teamOf ? teamOf : {}, order, turn, teamNames: saved.teamNames || {} };
   } catch {
     return base;
   }
 }
 
-export function saveTeamOrder(roster: GameItem[], state: TeamOrderState): void {
+export function saveTeamOrder(roster: GameItem[], state: TeamOrderState, scope = ''): void {
   if (roster.length === 0) return;
   try {
-    localStorage.setItem(keyFor(roster), JSON.stringify(state));
+    localStorage.setItem(keyFor(roster, scope), JSON.stringify(state));
   } catch {
     // 저장이 막힌 브라우저에서는 이번 화면에서만 유지된다
   }
@@ -77,4 +80,14 @@ export function setShowOrderOn(on: boolean): void {
   } catch {
     // 무시
   }
+}
+
+/** One source of truth for the compact indicator, including circular/one-person order. */
+export function turnLabels(state: TeamOrderState, roster: GameItem[], teamLabel: (n: number) => string) {
+  if (!state.order.length) return null;
+  const label = (id: string) => state.mode === 'team'
+    ? state.teamNames?.[id] || teamLabel(Number(id.split('-')[1]) + 1)
+    : roster.find(row => row.id === id)?.label || '';
+  const index = ((state.turn % state.order.length) + state.order.length) % state.order.length;
+  return { current: label(state.order[index]), next: label(state.order[(index + 1) % state.order.length]) };
 }

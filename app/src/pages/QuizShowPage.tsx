@@ -1,3 +1,4 @@
+import { isActivityDraft } from '../lib/quickActivity';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -264,7 +265,7 @@ export default function QuizShowPage() {
     </div>
   );
 
-  const hostClassId = staffClassId ?? classId ?? null;
+  const hostClassId = classId ?? null;
 
   return (
     <div className="space-y-6">
@@ -290,6 +291,7 @@ export default function QuizShowPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          {isActivityDraft(selected.id) && <p className="rounded-xl bg-primary/5 p-4">{t('quick.onlinePreview')}</p>}
           <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{selected.name}</h2>
 
           {isStaff && preview && playable.length > 0 && (
@@ -305,7 +307,8 @@ export default function QuizShowPage() {
                 title={selected.name}
                 questions={playable}
                 classId={hostClassId}
-                templateId={selected.id}
+                templateId={isActivityDraft(selected.id) ? null : selected.id}
+                preview={isActivityDraft(selected.id)}
                 speedBonus={speedBonus}
               />
             </GameThemeFrame>

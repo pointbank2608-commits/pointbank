@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -549,6 +550,7 @@ function BigFlipCard({ label, onClose }: { label: string; onClose: () => void })
   }, []);
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' || e.key === 'PageDown') {
         e.preventDefault();
         e.stopPropagation();

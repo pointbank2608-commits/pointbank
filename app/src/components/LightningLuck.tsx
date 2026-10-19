@@ -1,3 +1,4 @@
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -208,6 +209,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   // 스페이스·엔터: 구름 보내기 → 다음 사람 → 다음 문제 (PPT의 스페이스바 진행과 같다)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (!gameKeyboardAllowed(e)) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
       if (e.key !== ' ' && e.key !== 'Enter') return;

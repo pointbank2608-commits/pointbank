@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -77,7 +78,7 @@ export default function FourCluesPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:fourclues:newItemLabel');
   const teams = selected?.config.clueTeams ?? DEFAULT_TEAMS;
   // 단서(주제·예문·그림·뜻)는 사전에서 같은 낱말을 찾아 채운다
   const [info, setInfo] = useState<Record<string, ClueInfo>>({});

@@ -1,3 +1,4 @@
+import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -66,7 +67,7 @@ export default function AirportPage() {
 
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
-  const [newItemLabel, setNewItemLabel] = useState('');
+  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:airport:newItemLabel');
   const demoItems = useMemo<GameItem[]>(() => [], []);
   const places = ((selected?.config.airportPlaces as AirportPlaceId[] | undefined) ?? ALL_PLACES).filter((p) => ALL_PLACES.includes(p));
   const ko = selected?.config.airportKo ?? false;
