@@ -308,6 +308,8 @@ export interface GameTemplateConfig {
   classroomSource?: { id: string; name: string; kind: 'word' | 'sentence'; version: string; cards: FullCardItem[] };
   /** 사다리 전용: 맨 아래 결과 라벨 (items 와 개수가 같아야 함). 없으면 items 를 그대로 재사용. */
   results?: GameItem[];
+  /** Ladder bottom labels: legacy configurations keep their input order. */
+  ladderResultOrder?: 'input' | 'random';
   /** 시한폭탄 전용: 폭발까지 걸리는 시간(초)의 무작위 범위. */
   bombRange?: { min: number; max: number };
   /** 시한폭탄 전용: 폭탄이 넘어갈 때마다 무작위로 하나 보여주는 읽을 단어·문장 목록. */

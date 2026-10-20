@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import type { FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
 import { GAME_CATALOG } from './gameCatalog';
 import { prepareClassroomGame } from './gameWorkspace';
@@ -85,6 +86,7 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
 }
 export function guideProblem(template:GameTemplate): string | null {
   const type=template.game_type,c=template.config;
+  if(type==='ladder'&&c.results&&(c.results.length!==template.items.length||c.results.some(r=>!r.label.trim())))return 'ladderIncomplete';
   if(['feedmonster','sentencebridge','sentencetower'].includes(type)&&c.storybook){if(storyErrors(type as 'feedmonster',c.storybook).length)return 'story';}
   if(type==='watermelon'){
     const slots=getSentencePattern(c.watermelonPatternId||'svo').slots;
@@ -106,6 +108,7 @@ export function guideSample(type:GameType, template:GameTemplate):{items:GameIte
   if(type==='labeleddiagram')return {items:[],config:{...template.config,diagramImageUrl:'/word-bank-images/apple.webp',diagramPins:[{id:'sample-apple',label:'apple',x:.5,y:.5}]}};
   if(type==='watermelon')return {items:[{id:'sample-s',label:'I',slot:'subject'},{id:'sample-v',label:'like',slot:'verb'},{id:'sample-o',label:'apples',slot:'object'}],config:{...template.config,watermelonPatternId:'svo'}};
   if(['feedmonster','sentencebridge','sentencetower'].includes(type))return {items:[],config:{...template.config,storybook:storySample(type as 'feedmonster')}};
+  if(type==='ladder')return {items:Array.from({length:6},(_,i)=>({id:`sample-person-${i}`,label:i18n.t('gameLadder.defaultParticipant',{n:i+1})})),config:{...template.config,results:Array.from({length:6},(_,i)=>({id:`sample-result-${i}`,label:i<2?i18n.t('gameLadder.defaultResult',{n:i+1}):i18n.t('guide.ladder.miss')})),ladderResultOrder:'input'}};
   const cards=['apple','banana','cat','dog','book','sun'].map((word,i)=>({id:`sample-${i}`,word,meaning:['사과','바나나','고양이','강아지','책','해'][i],imageUrl:`/word-bank-images/${word}.webp`,category:i<2?'fruit':'other'}));
   const sentence=['unscramble','sentencesplash'].includes(type);
   const source=sentence?cards.map((c,i)=>({...c,word:['I like apples.','She has a cat.','They play soccer.','We read books.','He likes dogs.','You are happy.'][i]})):cards;

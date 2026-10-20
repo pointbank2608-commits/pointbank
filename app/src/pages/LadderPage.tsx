@@ -351,6 +351,7 @@ export default function LadderPage() {
             <LadderBoard key={roundKey}
               participants={selected.items}
               results={results}
+              resultOrder={selected.config.ladderResultOrder}
               music={LADDER_PROGRESS_MUSIC}
               resultSound={DEFAULT_RESULT_SOUND}
               editable={isStaff}

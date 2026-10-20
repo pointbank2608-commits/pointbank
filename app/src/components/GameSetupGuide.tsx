@@ -11,6 +11,8 @@ import { insertPhrase } from '../lib/storybook';
 import { SENTENCE_PATTERNS, getSentencePattern, slotLabelKey, type SentenceSlot } from '../lib/sentencePatterns';
 import type { FullCardItem, GameTemplate, WordList } from '../lib/types';
 import GameSourcePicker from './GameSourcePicker';
+import LadderResultSetup from './LadderResultSetup';
+import { ladderResultDraft, ladderSlots } from '../lib/ladderSetup';
 import GameImagePicker from './GameImagePicker';
 import { guideButton as button } from './GameCreateButton';
 
@@ -32,6 +34,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   const [towerStart,setTowerStart]=useRecoverableField(`guide:${info.gameType}:start`,info.selected?.config.storybook?.start||'I play.');
   const [source,setSource]=useState('');const selection=useRef({start:0,end:0});const launchConsumed=useRef('');
   const heading=useRef<HTMLHeadingElement>(null);
+  const resultSection=useRef<HTMLDivElement>(null);
   const [diagram,setDiagram]=useRecoverableField(`guide:${info.gameType}:diagram`,info.selected?.config.diagramImageUrl||'');
   const [pattern,setPattern]=useRecoverableField(`guide:${info.gameType}:pattern`,info.selected?.config.watermelonPatternId||'svo');
   const pendingRows=useRef<{kind:GuideKind;rows:string[][]}|null>(null);
@@ -41,6 +44,9 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   const steps=needsPeople?[0,1,2,3]:[0,1,3];
   let rows:string[][]=[];try{const stored=raw?JSON.parse(raw):null;rows=Array.isArray(stored)&&stored.every(r=>Array.isArray(r)&&r.every(s=>typeof s==='string'))?stored:[];}catch{/* recover malformed tab data safely */}
   const write=(next:string[][])=>setRaw(JSON.stringify(next));
+  const resultCount=rows.filter(r=>r[0]?.trim()).length;
+  const resultDraft=ladderResultDraft(extra,info.selected?.config.results);
+  if(!extra&&info.selected?.config.ladderResultOrder==='random')resultDraft.order='random';
   const seed=(template:GameTemplate)=>{const next=guideRows(template,kind);write(next.length?next:[['','']]);};
   async function importSource(cards:FullCardItem[],list?:WordList){
     if(!info.selected)return;
@@ -109,8 +115,15 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
         if(['quiz','online'].includes(family)&&rows.some(r=>r.some(Boolean)&&(!r[0]?.trim()||!r[1]?.trim()||!r.slice(2).some(s=>s.trim())||new Set(r.slice(1).filter(Boolean).map(s=>s.trim().toLowerCase())).size!==r.slice(1).filter(Boolean).length))){setError(t('guide.incomplete'));return;}
         const content=guideContent(info.gameType,rows,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart);
         if(info.gameType==='ladder'){
-          const results=extra.trim()?extra.split(/\r?\n/).map(s=>s.trim()).filter(Boolean):content.config.results?.map(i=>i.label)||[];
-          if(results.length!==content.items.length){setError(t('guide.incomplete'));return;}content.config.results=results.map((label,i)=>({id:`result-${i}`,label}));
+          const slots=ladderSlots(resultDraft,content.items.length);
+          const missing=slots.filter(s=>!s.miss&&!s.label.trim()).length;
+          if(missing){
+            setError(t('guide.ladder.missing',{count:missing}));
+            resultSection.current?.querySelector<HTMLInputElement>(`[data-ladder-result="${slots.findIndex(s=>!s.miss&&!s.label.trim())}"]`)?.focus();
+            return;
+          }
+          content.config.results=slots.map((slot,i)=>({id:`result-${i}`,label:slot.miss?t('guide.ladder.miss'):slot.label.trim()}));
+          content.config.ladderResultOrder=resultDraft.order;
         }
         if(info.gameType==='bomb')content.config.words=extra.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map((label,i)=>({id:`practice-${i}`,label}));
         const check=guideProblem({...info.selected,...content});if(check){setError(t(`guide.${check}`));return;}
@@ -155,7 +168,8 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
           <button className={`${button} mt-3`} aria-label={`${t('guide.remove')} ${i+1}`} onClick={()=>write(rows.filter((_,n)=>n!==i))}>{t('guide.remove')}</button>
         </fieldset>)}</div>{family!=='diagram'&&<button className={button} onClick={()=>write([...rows,columns.map(()=> '')])}>+ {t('guide.add')}</button>}
         <details><summary className="cursor-pointer py-3 font-bold text-primary">{t('guide.paste')}</summary><label className="block">{t('guide.pasteHint')}<textarea className="mt-2 min-h-32 w-full rounded-xl border p-3" value={paste} onChange={e=>setPaste(e.target.value)}/></label><button className={button} disabled={!paste.trim()} onClick={()=>{const next=paste.split(/\r?\n/).filter(s=>s.trim()).map(s=>s.split(/\t|\s*\|\s*/));write([...rows.filter(r=>r.some(s=>s.trim())),...next]);}}>{t('guide.applyPaste')}</button></details>
-        {['ladder','bomb'].includes(info.gameType)&&<label className="block font-bold">{t(info.gameType==='ladder'?'guide.ladderResults':'guide.bombWords')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3 font-normal" value={extra} placeholder={info.gameType==='ladder'?info.selected?.config.results?.map(i=>i.label).join('\n'):''} onChange={e=>setExtra(e.target.value)}/></label>}
+        {info.gameType==='ladder'&&<div ref={resultSection}><LadderResultSetup draft={resultDraft} count={resultCount} onChange={draft=>{setExtra(JSON.stringify(draft));setError('');}} /></div>}
+        {info.gameType==='bomb'&&<label className="block font-bold">{t('guide.bombWords')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3 font-normal" value={extra} onChange={e=>setExtra(e.target.value)}/></label>}
       </>}
       <button className={button} onClick={()=>setNative(v=>!v)}>{t('guide.native')}</button>
       {native&&<p>{t('guide.nativeReview')}</p>}
@@ -167,9 +181,11 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     </>}
     {step===3&&<><p>{t(kind==='sample'?'guide.sampleNotice':'guide.temporary')}</p>{info.gameType==='quizshow'&&<p className="rounded-xl bg-amber-50 p-4">{t('guide.online')}</p>}
       <div className="max-h-64 overflow-auto rounded-xl border p-3">{info.selected&&guideRows(info.selected,kind).map((r,i)=><p key={i} className="border-b py-2">{r.filter(s=>s&&!s.startsWith('/')).join(' · ')}</p>)}</div>
+      {info.gameType==='ladder'&&<div className="rounded-xl border p-3"><p className="font-bold">{t('guide.ladder.title')} · {t(info.selected?.config.ladderResultOrder==='random'?'guide.ladder.random':'guide.ladder.input')}</p><p className="whitespace-pre-wrap">{info.selected?.config.results?.map((r,i)=>`${i+1}. ${r.label}`).join('\n')}</p></div>}
       {problem&&<p role="alert">{t(`guide.${problem}`)}</p>}
       <button className={`${button} bg-primary! px-8! text-xl! text-white!`} disabled={busy||!canStart||!!problem} onClick={start}>▶ {t('guide.start')}</button><button className={button} onClick={()=>setStep(0)}>{t('guide.editMine')}</button><p>{t('guide.saveLater')}</p>
     </>}
+    {error&&step===1&&info.gameType==='ladder'&&<p className="rounded-xl bg-error-container p-3 font-bold">{error}</p>}
     <footer className="flex flex-wrap gap-3 border-t pt-4">{step>0&&<button className={button} disabled={busy} onClick={()=>{setStep(n=>n===3&&!needsPeople?1:Math.max(0,n-1));setError('');}}>{t('guide.back')}</button>}{(step===1||step===2)&&<button className={`${button} bg-primary! text-white!`} disabled={busy||info.loading} onClick={()=>void next()}>{t('guide.next')}</button>}</footer>
   </section>;
 }

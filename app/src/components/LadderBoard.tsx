@@ -1,3 +1,4 @@
+import { shuffledResultIds, type LadderResultOrder } from '../lib/ladderSetup';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import type { GameItem, MusicSelection } from '../lib/types';
 interface Props {
   participants: GameItem[];
   results: GameItem[];
+  resultOrder?: LadderResultOrder;
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
   /** true면 이름 인라인 수정 + 참가자/결과 목록 패널 + 사다리 +/- 를 보여준다(선생님용 실제 플레이 화면에서만). */
@@ -51,6 +53,7 @@ function plaqueStyle(index: number, emphasized = false): CSSProperties {
 export default function LadderBoard({
   participants,
   results,
+  resultOrder = 'input',
   music,
   resultSound,
   editable,
@@ -65,6 +68,11 @@ export default function LadderBoard({
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const n = participants.length;
+  const [resultIds, setResultIds] = useState(() => resultOrder === 'random' ? shuffledResultIds(results) : results.map(r => r.id));
+  const arrangedResults = resultOrder === 'input' ? results : [
+    ...resultIds.map(id => results.find(r => r.id === id)).filter((r): r is GameItem => !!r),
+    ...results.filter(r => !resultIds.includes(r.id)),
+  ];
   const [mode, setMode] = useState<Mode>('all');
   const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
   const [mapping, setMapping] = useState<number[] | null>(null);
@@ -230,6 +238,7 @@ export default function LadderBoard({
 
   function newLadder() {
     resetRunState();
+    setResultIds(resultOrder === 'random' ? shuffledResultIds(results) : results.map(r => r.id));
     const g = generateLadder(n);
     setGrid(g);
     setMapping(traceAll(g));
@@ -486,8 +495,8 @@ export default function LadderBoard({
           )}
         </div>
 
-        <div className="flex mt-4 items-stretch" style={{ width }}>
-          {results.map((r, i) => (
+        <div className="flex mt-4 items-stretch" style={{ width }} data-ladder-results>
+          {arrangedResults.map((r, i) => (
             <div key={r.id} style={{ width: COL_W }} className="flex-none flex items-center justify-center px-1.5">
               <div
                 className={`w-full rounded-2xl px-1.5 py-2.5 text-center font-title-md text-sm font-bold text-white [word-break:keep-all] transition-transform ${
@@ -517,11 +526,12 @@ export default function LadderBoard({
               revealed.has(i) && (
                 <div
                   key={p.id}
+                  data-ladder-outcome
                   className="flex items-center justify-center gap-3 bg-secondary-container/50 border border-secondary-container rounded-2xl px-5 py-3.5 font-title-md text-title-md"
                 >
                   <span className="text-on-surface">{p.label}</span>
                   <span className="text-on-surface-variant">→</span>
-                  <span className="text-secondary">{results[mapping[i]].label}</span>
+                  <span className="text-secondary">{arrangedResults[mapping[i]]?.label}</span>
                 </div>
               ),
           )}
