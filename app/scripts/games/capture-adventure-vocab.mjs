@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import {mkdirSync,writeFileSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createServer} from 'vite';
+import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),out=resolve(root,'../output/adventure');mkdirSync(out,{recursive:true});
+const server=await createServer({root,logLevel:'error',server:{host:'127.0.0.1',port:5190,strictPort:true,hmr:false}});await server.listen();
+const results=[],pass=s=>{results.push(s);console.log('PASS',s);};let browser;
+try{
+ const lib=await server.ssrLoadModule('/src/lib/adventureGames.ts');
+ const preparation=await server.ssrLoadModule('/src/lib/gamePreparation.ts');
+ const games=lib.ADVENTURE_TYPES;
+ for(const type of games){const c=lib.sampleAdventure(type);assert.deepEqual(lib.adventureErrors(type,c),[]);assert.ok(preparation.isNativeGameReady({game_type:type,config:{adventure:c},items:[]}));assert.deepEqual(lib.adventureErrors(type,JSON.parse(JSON.stringify(c))),[]);}
+ const repeat={id:'repeat',text:"I like what I like.",tokens:['I','like','what','I','like.']};assert.ok(lib.sentenceOrderCorrect(repeat,lib.sentencePieces(repeat).map(p=>p.id)));assert.ok(!lib.sentenceOrderCorrect(repeat,Array(5).fill('repeat:0')));
+ const c=lib.sampleAdventure('grammardetective'),item=c.cases[2];assert.equal(lib.detectiveSentence(item,Object.fromEntries(item.errors.map(r=>[r.id,r.replacement]))),item.correct);
+ assert.ok(!lib.correctionAccepted('they are happy',c.cases[1],c));c.caseSensitive=false;c.punctuationSensitive=false;assert.ok(lib.correctionAccepted('they are happy',c.cases[1],c));
+ const map=lib.sampleAdventure('treasurehunt');map.clues[0].wrong=[map.clues[0].answer];assert.ok(lib.adventureErrors('treasurehunt',map).length);
+ const claw=lib.sampleAdventure('wordclaw');claw.missions[0].tag='unknown';assert.ok(lib.adventureErrors('wordclaw',claw).length);
+ const vocab=lib.sampleAdventure('balloonpop');vocab.words.push({id:'synonym',word:'red apple',meaning:'사과',tags:[]});assert.ok(lib.adventureRounds('balloonpop',vocab)[0].accepted.includes('red apple'));
+ for(const type of ['grammardetective','sentencerocket','treasurehunt','wordclaw'])assert.equal(lib.adventureSource(type,[]),null);
+ pass('Seven configs, saved JSON, repeated token identity, multiple error ranges, accepted variants, explicit spatial/tag validation, synonyms and safe imports');
+ browser=await chromium.launch({channel:'chrome',headless:true});const errors=[];
+ async function open(type,viewport={width:1280,height:1000},touch=false,query=''){const ctx=await browser.newContext({viewport,hasTouch:touch,isMobile:touch});const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));if(query.includes('timed'))await page.clock.install();await page.goto(`http://127.0.0.1:5190/scripts/games/adventure.html?game=${type}${query}`);await page.getByRole('button',{name:'게임 시작',exact:true}).click({force:true});return{page,ctx};}
+ async function sort(page,sentence,touch=false){for(let i=0;i<sentence.tokens.length;i++){const buttons=page.locator('[data-piece]');if(await buttons.nth(i).getAttribute('data-piece-text')!==sentence.tokens[i]){const texts=await buttons.evaluateAll(nodes=>nodes.map(n=>n.dataset.pieceText));const j=texts.findIndex((text,k)=>k>i&&text===sentence.tokens[i]);assert.ok(j>=0);await buttons.nth(i)[touch?'tap':'click']({force:true});await buttons.nth(j)[touch?'tap':'click']({force:true});}}}
+ async function correct(page,type,round,touch=false){if(round.kind==='vocab')await page.locator(`[data-word="${round.word.word}"]`)[touch?'tap':'click']({force:true});else if(round.kind==='sentence'){await sort(page,round.sentence,touch);await page.getByRole('button',{name:type==='wordtrain'?'출발! 문장 확인':'연료 채우기 · 문장 확인',exact:true})[touch?'tap':'click']({force:true});}else if(round.kind==='case'){for(const r of round.item.errors){await page.locator('.ad-evidence button').filter({hasText:new RegExp('^'+round.item.incorrect.slice(r.start,r.end)+'$')}).filter({hasNot:page.locator('.is-fixed')}).all().then(async nodes=>{const node=await page.locator('.ad-evidence button:not(.is-fixed)').filter({hasText:new RegExp('^'+round.item.incorrect.slice(r.start,r.end)+'$')}).first();await node[touch?'tap':'click']({force:true});});await page.locator('.ad-choices').getByRole('button',{name:r.replacement,exact:true})[touch?'tap':'click']({force:true});}}else if(round.kind==='clue')await page.locator(`[data-target="${lib.targetKey(round.clue.answer)}"]`)[touch?'tap':'click']({force:true});else{const words=lib.sampleAdventure(type).words.filter(w=>w.tags.includes(round.mission.tag));for(const w of words){await page.locator(`[data-word="${w.word}"]`)[touch?'tap':'click']({force:true});await page.getByRole('button',{name:'집게 내리기',exact:true})[touch?'tap':'click']({force:true});await page.waitForTimeout(2350);}}await page.locator('.ad-review').waitFor();}
+
+ for(const type of ['balloonpop','wordfishing'])for(const [label,viewport,touch] of [['desktop',{width:1280,height:1000},false],['tablet',{width:820,height:1180},true],['mobile',{width:390,height:844},true]]){const {page,ctx}=await open(type,viewport,touch);await page.locator('.ad-game').screenshot({path:resolve(out,`${type}-${label}.png`)});const heights=await page.locator('.ad-word>span:last-of-type').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().height));assert.ok(heights.every(h=>h<35),'Sample words should fit on one line');await correct(page,type,lib.adventureRounds(type,lib.sampleAdventure(type))[0],touch);if(!touch)await page.locator('.ad-game').screenshot({path:resolve(out,`${type}-success.png`)});await ctx.close();}assert.deepEqual(errors,[]);
+}finally{await browser?.close();await server.close();}

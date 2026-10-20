@@ -43,6 +43,14 @@ export interface GameCatalogEntry {
  * 두 화면 모두에 자동 반영된다.
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
+  {type:'balloonpop',number:54,moment:'practice',category:'vocabulary',minItems:3,icon:'celebration',path:'/games/balloonpop',cover:'/skins/adventure/balloon.webp',nameKey:'gamesList.balloonpopName',descKey:'gamesList.balloonpopDesc'},
+  {type:'wordtrain',number:55,moment:'practice',category:'sentence',minItems:1,icon:'train',path:'/games/wordtrain',cover:'/skins/adventure/train.webp',nameKey:'gamesList.wordtrainName',descKey:'gamesList.wordtrainDesc'},
+  {type:'wordfishing',number:56,moment:'practice',category:'vocabulary',minItems:3,icon:'set_meal',path:'/games/wordfishing',cover:'/skins/adventure/fishing.webp',nameKey:'gamesList.wordfishingName',descKey:'gamesList.wordfishingDesc'},
+  {type:'sentencerocket',number:57,moment:'practice',category:'sentence',minItems:1,icon:'rocket_launch',path:'/games/sentencerocket',cover:'/skins/adventure/rocket.webp',nameKey:'gamesList.sentencerocketName',descKey:'gamesList.sentencerocketDesc'},
+  {type:'grammardetective',number:58,moment:'practice',category:'sentence',minItems:1,icon:'search',path:'/games/grammardetective',cover:'/skins/adventure/detective.webp',nameKey:'gamesList.grammardetectiveName',descKey:'gamesList.grammardetectiveDesc'},
+  {type:'treasurehunt',number:59,moment:'practice',category:'reading',minItems:1,icon:'map',path:'/games/treasurehunt',cover:'/skins/adventure/island.webp',nameKey:'gamesList.treasurehuntName',descKey:'gamesList.treasurehuntDesc'},
+  {type:'wordclaw',number:60,moment:'practice',category:'vocabulary',minItems:1,icon:'toys',path:'/games/wordclaw',cover:'/skins/adventure/arcade.webp',nameKey:'gamesList.wordclawName',descKey:'gamesList.wordclawDesc'},
+
   { type: 'feedmonster', number: 51, moment: 'practice', category: 'vocabulary', minItems: 3, icon: 'pets', path: '/games/feedmonster', cover: '/covers/game-feedmonster-v2.svg', nameKey: 'gamesList.feedmonsterName', descKey: 'gamesList.feedmonsterDesc' },
   { type: 'sentencebridge', number: 52, moment: 'practice', category: 'sentence', minItems: 5, icon: 'landscape', path: '/games/sentencebridge', cover: '/covers/game-sentencebridge-v2.svg', nameKey: 'gamesList.sentencebridgeName', descKey: 'gamesList.sentencebridgeDesc' },
   { type: 'sentencetower', number: 53, moment: 'learn', category: 'sentence', minItems: 1, icon: 'castle', path: '/games/sentencetower', cover: '/covers/game-sentencetower-v2.svg', nameKey: 'gamesList.sentencetowerName', descKey: 'gamesList.sentencetowerDesc' },

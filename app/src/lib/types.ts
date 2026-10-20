@@ -175,6 +175,13 @@ export interface BoardRow {
 /* ---------------- 미니게임 ---------------- */
 
 export type GameType =
+  | 'balloonpop'
+  | 'wordtrain'
+  | 'wordfishing'
+  | 'sentencerocket'
+  | 'grammardetective'
+  | 'treasurehunt'
+  | 'wordclaw'
   | 'feedmonster'
   | 'sentencebridge'
   | 'sentencetower'
@@ -294,6 +301,7 @@ export type MusicSelection =
   | { kind: 'upload'; path: string; name: string; url: string };
 
 export interface GameTemplateConfig {
+  adventure?: import('./adventureGames').AdventureConfig;
   storybook?: import('./storybook').StorybookConfig;
   /** Sentence Splash: time limit in seconds for each sentence. */
   splashSeconds?: number;

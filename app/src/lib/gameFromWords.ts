@@ -1,3 +1,4 @@
+import { ADVENTURE_TYPES, adventureSource, type AdventureType } from './adventureGames';
 import { LIGHTNING_SAMPLES } from './lightningLuck';
 import { storySample, vocabularyQuestions, storyErrors } from './storybook';
 import i18n from '../i18n';
@@ -92,6 +93,7 @@ export interface GameContent {
  * 단어장으로 만들 수 없는 게임(수박 문장·명칭 다이어그램·수학)이나 재료가 모자라면 null.
  */
 export function buildGameContent(gameType: GameType, words: FullCardItem[]): GameContent | null {
+  if ((ADVENTURE_TYPES as readonly string[]).includes(gameType)) { const adventure=adventureSource(gameType as AdventureType,words);return adventure?{items:[],config:{adventure}}:null; }
   if (gameType === 'feedmonster') {
     const storybook = { ...storySample('feedmonster'), mode: 'vocabulary' as const, questions: vocabularyQuestions(words) };
     return storyErrors('feedmonster', storybook).length ? null : { items: [], config: { storybook } };

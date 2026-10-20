@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+const dir=resolve(dirname(fileURLToPath(import.meta.url)),'../../../output/adventure');
+const cards=[['balloonpop-desktop','Balloon Pop · 풍선 터뜨리기'],['wordtrain-desktop','Word Train · 문장 기차'],['wordfishing-desktop','Word Fishing · 단어 낚시'],['sentencerocket-desktop','Sentence Rocket · 문장 로켓'],['grammardetective-desktop','Grammar Detective · 문법 탐정'],['treasurehunt-desktop','Treasure Hunt · 영어 보물찾기'],['wordclaw-desktop','Word Claw Machine · 단어 뽑기'],['sentencerocket-launch','문장을 완성하고 우주로 출발!']];
+const style='*{box-sizing:border-box}body{margin:0;padding:28px;background:#edf4fa;color:#173e66;font-family:system-ui}h1{margin:0;font-size:32px}header{margin-bottom:22px}header p{margin:7px 0;color:#4c718a}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}article{padding:12px;border-radius:20px;background:white;box-shadow:0 4px 15px #173e6615}h2{font-size:20px;margin:3px 8px 12px}img{display:block;width:100%;height:365px;object-fit:contain;border-radius:15px;background:#f5f8fb}';
+const body=`<header><h1>ClassBank · 새로운 영어 모험 7종</h1><p>실제 플레이 화면 · 교사 콘텐츠 저장 · 수업 연동 · 마우스·터치·키보드</p></header><div class="grid">${cards.map(([file,name])=>`<article><h2>${name}</h2><img alt="${name}" src="data:image/png;base64,${readFileSync(resolve(dir,file+'.png')).toString('base64')}"/></article>`).join('')}</div>`;
+const html=`<!doctype html><html lang="ko"><meta charset="utf-8"><title>ClassBank 7종 실제 플레이 화면</title><style>${style}</style>${body}</html>`;writeFileSync(resolve(dir,'gallery.html'),html);
+const browser=await chromium.launch({channel:'chrome',headless:true});try{const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});await page.setContent(html);await page.locator('img').last().waitFor();await page.evaluate(()=>Promise.all([...document.images].map(i=>i.decode())));await page.screenshot({path:resolve(dir,'overview.png'),fullPage:true});}finally{await browser.close();}

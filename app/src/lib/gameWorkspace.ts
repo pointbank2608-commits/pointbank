@@ -9,6 +9,7 @@ import {
 } from "./wordListLaunch";
 
 const SENTENCE_GAMES = new Set<GameType>([
+  "wordtrain",
   "unscramble",
   "sentencesplash",
   "catchsentence",

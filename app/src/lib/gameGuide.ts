@@ -4,6 +4,7 @@ import { prepareClassroomGame } from './gameWorkspace';
 import { gamePreparation, isNativeGameReady } from './gamePreparation';
 import { storySample, storyErrors, insertPhrase } from './storybook';
 import { getSentencePattern } from './sentencePatterns';
+import { ADVENTURE_TYPES, sampleAdventure, type AdventureType } from './adventureGames';
 
 export type GuideKind = 'sample' | 'word' | 'sentence' | 'names';
 export type GuideFamily = 'list' | 'sentence' | 'pairs' | 'quiz' | 'ox' | 'groups' | 'image' | 'builtin' | 'diagram' | 'slots' | 'monster' | 'bridge' | 'tower' | 'online';
@@ -29,6 +30,7 @@ export function guideCards(rows: string[][], previous: FullCardItem[] = []): Ful
 }
 export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   const c=template.config, family=guideFamily(template.game_type);
+  if(c.adventure){const a=c.adventure;switch(template.game_type){case 'balloonpop':case 'wordfishing':return a.words.map(w=>[w.word,w.meaning]);case 'wordtrain':case 'sentencerocket':return a.sentences.map(s=>[s.text,s.tokens.join(' | ')]);case 'grammardetective':return a.cases.map(s=>[s.incorrect,s.correct]);case 'treasurehunt':return a.clues.map(s=>[s.text]);case 'wordclaw':return a.missions.map(s=>[s.text,s.tag]);}}
   if(family==='pairs') return (template.game_type==='typeanswer'?c.typeAnswerEntries?.map(p=>({left:p.prompt,right:p.answer})):template.game_type==='flashcards'?c.flashcards:c.pairs||[] )?.map(p=>[p.left,p.right])||[];
   if(family==='quiz')return (c.questions||[]).map(q=>[q.question,q.choices[q.correctIndex]||'',...q.choices.filter((_,i)=>i!==q.correctIndex)]);
   if(family==='online')return (c.liveQuestions||[]).map(q=>[q.prompt,q.choices?.[q.correctIndex||0]||q.answer||'',...(q.choices?.filter((_,i)=>i!==q.correctIndex)||[])]);
@@ -100,6 +102,7 @@ export function guideProblem(template:GameTemplate): string | null {
   return isNativeGameReady(template)?null:'incomplete';
 }
 export function guideSample(type:GameType, template:GameTemplate):{items:GameItem[];config:GameTemplateConfig} {
+  if((ADVENTURE_TYPES as readonly string[]).includes(type))return {items:[],config:{...template.config,adventure:sampleAdventure(type as AdventureType)}};
   if(type==='labeleddiagram')return {items:[],config:{...template.config,diagramImageUrl:'/word-bank-images/apple.webp',diagramPins:[{id:'sample-apple',label:'apple',x:.5,y:.5}]}};
   if(type==='watermelon')return {items:[{id:'sample-s',label:'I',slot:'subject'},{id:'sample-v',label:'like',slot:'verb'},{id:'sample-o',label:'apples',slot:'object'}],config:{...template.config,watermelonPatternId:'svo'}};
   if(['feedmonster','sentencebridge','sentencetower'].includes(type))return {items:[],config:{...template.config,storybook:storySample(type as 'feedmonster')}};

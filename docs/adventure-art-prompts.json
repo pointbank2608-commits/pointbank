@@ -1,0 +1,98 @@
+{
+  "created": "2026-10-20",
+  "method": "Built-in imagegen. Original PNGs retained in generated_images; local exports are WebP. Transparent sprite atlas sliced to individual assets; no third party art or runtime image API.",
+  "balloon": {
+    "prompt": "Use case: illustration-story. Create an original premium children's English mini-game background, landscape 1536x1024, cute pastel hand-painted storybook gouache with finely rendered clouds, soft volumetric shading, gentle paper texture, beautiful warm light. Balloon meadow world: huge soft blue open sky occupying upper 75 percent, fluffy cream clouds framing corners, a smiling small sun upper right, distant rolling mint hills and a flowering meadow along bottom 25 percent. An adorable tiny white bunny with peach ears sits at bottom LEFT among flowers watching the sky. Keep central sky and middle 75% clear for animated word balloons and a separate UI overlay. Rainbow-tinted atmospheric distance and magical tiny sparkles, joyful educational game quality. Palette pink #FFC2D6 yellow #FFE6A7 mint #B9EAD5 sky #B8E7F5 lavender #D8C8FA. NO balloons (they will be interactive), no words, no letters, no cards, no interface, no watermark. Beautiful detailed 2D painted art matching a high-end children's picture book, not flat vector, not photorealistic.",
+    "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-9b8e3c3c-cd7d-4b6c-812f-1afafb9d8135.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  },
+  "backgrounds": {
+    "train": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Mint rolling hills under rainbow blue sky, flowering meadow railway along bottom, small friendly golden puppy train driver at far bottom LEFT in a colorful red locomotive facing right. Mostly open soft sky and distant green hills; railway straight horizontally. Spring adventure, pink yellow mint sky lavender palette.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-afd991db-fb4e-49bd-8a32-c65b67080947.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    "fishing": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Sunny turquoise ocean cutaway: surface at upper quarter, adorable child with yellow hat fishing from a small red boat at far upper LEFT, lighthouse on distant upper right coast. Clear turquoise underwater central 70 percent empty for interactive fish, delicate sun rays, beautiful coral and seaweed at lower corners only, bubbles. Do NOT draw fish or fishing line.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-7f6cff30-d3a2-41c4-9a65-188e53e5e240.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    "rocket": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Beautiful lavender and indigo space with pastel pink nebula clouds at lower corners, distant candy colored planets along outer edges, tiny sparkling stars. Adorable small puppy astronaut waves from bottom LEFT on a tiny moon, a large quiet central space for sentence blocks, magical adventurous soft lighting. No large central rocket.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-111e6928-0af9-4094-a952-955ed98a43bf.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    "detective": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Warm cozy storybook detective office, honey sunlight from left window, wooden bookshelves at far right, cream wall and empty calm middle area for case-file overlay. Adorable friendly beagle dog detective wearing brown deerstalker hat and cape, holding magnifying glass at bottom LEFT. Desk with tiny stationery at bottom border, thoughtful kind character, no letters.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-6ff0388f-7177-43a6-8dce-4c6d982e906d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    "island": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Top down treasure island surrounded by turquoise ocean with sandy pale golden broad EMPTY oval island filling 85 percent, sparse palms along far border, tiny pirate ship at far lower left offshore, adorable young pirate captain on ship, friendly pink octopus top right ocean, soft illustrated watercolor sea waves. Leave whole island empty for teacher placed trees rocks house and spatial targets. No roads no map markers no treasure chests in middle.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-51755979-ab1e-4c20-97a0-0862beb0b16f.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    "arcade": {
+      "prompt": "Original premium children's English game background, landscape 1536x1024. Finely painted pastel gouache storybook illustration, soft volumetric light, subtle paper texture, adorable 2D characters with big warm eyes. Detailed picture book quality, not flat vector. Keep middle 70 percent calm and open for large interactive game overlays. NO text, letters, buttons, words, watermark. Dreamy pastel pink arcade room, kawaii plush rabbit mascot waves at far bottom LEFT, adorable peach kitten at bottom RIGHT, glowing star garlands and soft lavender heart lights at edges. Middle 75 percent very calm light pink and lavender empty floor and wall for interactive claw machine overlay. Beautiful hand-painted soft toy detail, gold sparkles, no machines in center, no letters.",
+      "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-f9983c95-a2d4-4504-86ed-f6e3b72a3ef0.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    }
+  },
+  "trainEdit": {
+    "prompt": "Edit the provided storybook train background. Remove the entire large locomotive, puppy driver and smoke from the bottom left, replacing that region seamlessly with the same flowering green meadow, distant hills, blue sky and softly painted clouds. Preserve the straight horizontal railway at bottom. Preserve the sky rainbow and all original painted atmosphere. This is a background for a game that adds a separate animated train sprite at runtime, so the background must have NO locomotive, NO puppy, NO train carriages, NO smoke. Keep exactly the same image dimensions, soft gouache illustration style and composition. Do not add text or UI.",
+    "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-3c29f921-97d2-4b96-a46e-ae4f772f540d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+  },
+  "sprites": {
+    "prompt": "Use case: sprite atlas for children's interactive English game. Create ONE square 1536x1536 transparent PNG sprite sheet with exactly FOUR distinct fully separated cutout game sprites in a perfectly even 2 by 2 grid. Each sprite fits inside its own quadrant with generous empty padding. Nothing crosses the center horizontal or vertical divider. Top left quadrant: cheerful small red steam locomotive facing RIGHT with adorable golden puppy train driver in blue cap leaning out window, complete locomotive and wheels, NO rail or ground. Top right quadrant: cute pink and ivory rocket standing upright with tiny friendly puppy astronaut visible in circular cyan window, complete rocket with side fins, NO flame (flame will be animated). Bottom left quadrant: adorable young pirate child wearing brown tricorn hat with small star emblem, turquoise coat, red scarf, holding little treasure map, full body standing facing front three quarter. Bottom right quadrant: friendly beagle detective in brown deerstalker hat and cape holding brass magnifying glass, full body standing three quarter. Premium soft gouache picture-book style, finely painted fur, beautiful soft pastel highlights, warm expressive eyes, 2D hand painted not flat vector, no hard black outlines. TRUE TRANSPARENT BACKGROUND outside the four sprites, no checkerboard, no shadows on a floor, no scenery, no words, no letters, no labels, no watermark. Four large polished game-ready transparent illustrations, consistent high quality.",
+    "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-c77e7066-9da6-479c-a2e4-0ea4076d81ac.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "crops": {
+      "engine": [
+        0,
+        0,
+        735,
+        580
+      ],
+      "rocket-sprite": [
+        735,
+        0,
+        1254,
+        580
+      ],
+      "pirate": [
+        0,
+        580,
+        630,
+        1254
+      ],
+      "detective-sprite": [
+        630,
+        580,
+        1254,
+        1254
+      ]
+    }
+  },
+  "mascots": {
+    "prompt": "Create ONE transparent square 1536x1536 children's game sprite atlas, four separate illustrations in exactly even 2 by 2 grid with wide transparent margins in each quadrant, NOTHING overlaps dividers. Premium original soft hand-painted gouache picture book style with expressive warm eyes and beautiful fur detail, pastel palette. Top LEFT: adorable white bunny with peach ears, full body standing and holding a small golden star, smiling and cheering. Top RIGHT: adorable child explorer fisherman wearing yellow sun hat, turquoise shirt and red scarf, full body standing holding a little fishing rod upright, cheerful. Bottom LEFT: adorable peach kitten with pink bow, full body standing holding a lavender star plush toy, excited arcade mascot. Bottom RIGHT: single friendly golden fish, complete body with fins and tail facing LEFT, expressive large eye, softly shaded shimmering scales, no words. True transparent background, NO scenery, NO ground shadows, NO checkerboard, no letters no labels no text. Each complete sprite confined to own quadrant with at least 40 px padding; perfect game cutouts.",
+    "source": "Generated images are saved to C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55 as C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-b9903b65-a37e-4427-a8ce-43147fbedf5d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "crops": {
+      "bunny": [
+        0,
+        0,
+        627,
+        635
+      ],
+      "fisher": [
+        627,
+        0,
+        1254,
+        635
+      ],
+      "kitten": [
+        0,
+        635,
+        627,
+        1254
+      ],
+      "goldfish": [
+        627,
+        635,
+        1254,
+        1254
+      ]
+    }
+  }
+}

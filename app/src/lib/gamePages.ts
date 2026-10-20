@@ -1,3 +1,4 @@
+import { BalloonPopPage, WordTrainPage, WordFishingPage, SentenceRocketPage, GrammarDetectivePage, TreasureHuntPage, WordClawPage } from '../pages/AdventureGamePage';
 import type { ComponentType } from 'react';
 import { FeedMonsterPage, SentenceBridgePage, SentenceTowerPage } from '../pages/StorybookGamePage';
 import SentenceSplashPage from '../pages/SentenceSplashPage';
@@ -54,6 +55,13 @@ import MysteryBoxPage from '../pages/MysteryBoxPage';
 /** 게임 경로(gameCatalog 의 path) → 그 게임 페이지 컴포넌트. 커리큘럼 게임 슬라이드 편집 화면이
  * 게임 설정 화면을 그대로 띄울 때 쓴다. 새 게임을 추가하면 App.tsx 라우트와 함께 여기도 한 줄. */
 export const GAME_PAGES: Record<string, ComponentType> = {
+  '/games/balloonpop': BalloonPopPage,
+  '/games/wordtrain': WordTrainPage,
+  '/games/wordfishing': WordFishingPage,
+  '/games/sentencerocket': SentenceRocketPage,
+  '/games/grammardetective': GrammarDetectivePage,
+  '/games/treasurehunt': TreasureHuntPage,
+  '/games/wordclaw': WordClawPage,
   '/games/feedmonster': FeedMonsterPage,
   '/games/sentencebridge': SentenceBridgePage,
   '/games/sentencetower': SentenceTowerPage,

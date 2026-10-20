@@ -75,6 +75,13 @@ const QuizPage = lazyPage(() => import('./pages/QuizPage'));
 const RankOrderPage = lazyPage(() => import('./pages/RankOrderPage'));
 const ResultsPage = lazyPage(() => import('./pages/ResultsPage'));
 const SaveOrGivePage = lazyPage(() => import('./pages/SaveOrGivePage'));
+const BalloonPopPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.BalloonPopPage })));
+const WordTrainPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.WordTrainPage })));
+const WordFishingPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.WordFishingPage })));
+const SentenceRocketPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.SentenceRocketPage })));
+const GrammarDetectivePage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.GrammarDetectivePage })));
+const TreasureHuntPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.TreasureHuntPage })));
+const WordClawPage = lazyPage(() => import('./pages/AdventureGamePage').then(m => ({ default: m.WordClawPage })));
 const FeedMonsterPage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.FeedMonsterPage })));
 const SentenceBridgePage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.SentenceBridgePage })));
 const SentenceTowerPage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.SentenceTowerPage })));
@@ -315,6 +322,13 @@ function AppRoutes() {
             <Route path="/games/flashcards" element={<GameWorkspace><FlashcardsPage /></GameWorkspace>} />
             <Route path="/games/anagram" element={<GameWorkspace><AnagramPage /></GameWorkspace>} />
             <Route path="/games/groupsort" element={<GameWorkspace><GroupSortPage /></GameWorkspace>} />
+            <Route path="/games/balloonpop" element={<GameWorkspace><BalloonPopPage /></GameWorkspace>} />
+            <Route path="/games/wordtrain" element={<GameWorkspace><WordTrainPage /></GameWorkspace>} />
+            <Route path="/games/wordfishing" element={<GameWorkspace><WordFishingPage /></GameWorkspace>} />
+            <Route path="/games/sentencerocket" element={<GameWorkspace><SentenceRocketPage /></GameWorkspace>} />
+            <Route path="/games/grammardetective" element={<GameWorkspace><GrammarDetectivePage /></GameWorkspace>} />
+            <Route path="/games/treasurehunt" element={<GameWorkspace><TreasureHuntPage /></GameWorkspace>} />
+            <Route path="/games/wordclaw" element={<GameWorkspace><WordClawPage /></GameWorkspace>} />
             <Route path="/games/feedmonster" element={<GameWorkspace><FeedMonsterPage /></GameWorkspace>} />
             <Route path="/games/sentencebridge" element={<GameWorkspace><SentenceBridgePage /></GameWorkspace>} />
             <Route path="/games/sentencetower" element={<GameWorkspace><SentenceTowerPage /></GameWorkspace>} />
@@ -375,6 +389,13 @@ function AppRoutes() {
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
+            <Route path="/games/balloonpop" element={<BalloonPopPage />} />
+            <Route path="/games/wordtrain" element={<WordTrainPage />} />
+            <Route path="/games/wordfishing" element={<WordFishingPage />} />
+            <Route path="/games/sentencerocket" element={<SentenceRocketPage />} />
+            <Route path="/games/grammardetective" element={<GrammarDetectivePage />} />
+            <Route path="/games/treasurehunt" element={<TreasureHuntPage />} />
+            <Route path="/games/wordclaw" element={<WordClawPage />} />
             <Route path="/games/feedmonster" element={<FeedMonsterPage />} />
             <Route path="/games/sentencebridge" element={<SentenceBridgePage />} />
             <Route path="/games/sentencetower" element={<SentenceTowerPage />} />

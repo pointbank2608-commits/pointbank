@@ -13,6 +13,13 @@ export interface GameMeta {
 }
 
 export const GAME_META: Record<string, GameMeta> = {
+  balloonpop: {minutes:8,play:'whole'},
+  wordtrain: {minutes:8,play:'whole'},
+  wordfishing: {minutes:8,play:'whole'},
+  sentencerocket: {minutes:8,play:'whole'},
+  grammardetective: {minutes:8,play:'whole'},
+  treasurehunt: {minutes:8,play:'whole'},
+  wordclaw: {minutes:8,play:'whole'},
   feedmonster: { minutes: 5, play: 'whole' },
   sentencebridge: { minutes: 7, play: 'whole' },
   sentencetower: { minutes: 7, play: 'whole' },
