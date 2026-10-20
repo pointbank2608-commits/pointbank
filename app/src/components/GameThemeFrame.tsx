@@ -281,9 +281,12 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      const scroll = fill && next < 0.75;
+      // Ladder results add content after a reveal. Switching to scroll mode
+      // would reset scale to 1 and suddenly enlarge the board, hiding results.
+      const fitLadder = (gameType ?? bg) === 'ladder';
+      const scroll = fill && !fitLadder && next < 0.75;
       setScrollContent(scroll);
-      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(0.75, next)) : Math.min(1, Math.max(0.5, next)));
+      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(fitLadder ? 0.1 : 0.75, next)) : Math.min(1, Math.max(0.5, next)));
     }
 
     fit();
@@ -325,7 +328,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       if (fitFrame) window.cancelAnimationFrame(fitFrame);
       window.removeEventListener('resize', fit);
     };
-  }, [fill]);
+  }, [fill, gameType, bg]);
 
   function enterPseudo() {
     setPseudoFs(true);

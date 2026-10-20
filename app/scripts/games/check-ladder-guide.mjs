@@ -111,6 +111,31 @@ try {
  const saved=await page.evaluate(()=>structuredClone(window.__workspace.writes[0]));assert.deepEqual(saved.config.results,draft.config.results);assert.equal(saved.config.ladderResultOrder,'random');
  await page.locator('[data-game-preparation] summary').click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'사다리 저장 검증',exact:true}).click();await board.waitFor();assert.deepEqual((await board.locator(':scope > div').allTextContents()).sort(),labels.slice().sort());assert.deepEqual(errors,[]);
  console.log('ok shuffled endpoint matches revealed outcome; explicit save/reopen preserves results and placement mode');
+ // A short ladder must remain centered even when the frame scales the whole game down.
+ await page.setViewportSize({width:2048,height:809});await page.goto(fixture);await guide().getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();
+ const centered=async()=>{await page.waitForFunction(()=>{const el=document.querySelector('[data-ladder-stage]');if(!el)return false;const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return a.width>0&&Math.abs((a.left+a.right-b.left-b.right)/2)<3;});};
+ await centered();
+ await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.locator('[data-game-fullscreen="true"]').waitFor();await centered();
+ await page.screenshot({path:resolve(root,'../output/ladder-centered-wide.png'),fullPage:true});
+ await page.setViewportSize({width:1280,height:800});await centered();assert.deepEqual(errors,[]);console.log('ok six-column board centered in wide play/fullscreen and after resize');
+ const fitResults=async(width,height)=>{
+   await page.setViewportSize({width,height});await centered();
+   const svg=page.locator('[data-ladder-stage] svg');const before=await svg.boundingBox();
+   await page.getByRole('button',{name:'한 번에 결과 보기',exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll('[data-ladder-outcome]').length===6);
+   await page.waitForFunction(()=>{
+     const frame=document.querySelector('.game-fs[data-game="ladder"]');
+     const board=frame?.querySelector('[data-ladder-stage]');const outcomes=frame?.querySelector('[data-ladder-outcomes]');
+     if(!frame||!board||!outcomes)return false;
+     const a=board.getBoundingClientRect(),b=outcomes.getBoundingClientRect(),f=frame.getBoundingClientRect();
+     return a.top>=f.top&&b.bottom<=f.bottom&&a.left>=f.left&&a.right<=f.right;
+   });
+   const after=await svg.boundingBox();assert(after.width<=before.width*1.05,'result reveal must not enlarge the board');await centered();
+   await page.screenshot({path:resolve(root,`../output/ladder-results-fit-${width}.png`),fullPage:true});
+   await page.locator('[data-ladder-outcomes]').getByRole('button',{name:'다시하기',exact:true}).click();
+ };
+ await fitResults(3407,1346);await fitResults(2048,809);await fitResults(1280,800);await page.getByRole('button',{name:'전체화면 종료',exact:true}).click();await page.locator('[data-game-fullscreen="false"]').waitFor();await fitResults(2048,809);assert.deepEqual(errors,[]);console.log('ok reveal-all keeps board and all six outcomes within viewport without sudden enlargement in wide/laptop fullscreen and normal play');
+
 
 }catch(error){console.error(error);if(page){console.error((await page.locator('body').innerText()).slice(-7000));await page.screenshot({path:resolve(root,'../output/ladder-guide-failure.png'),fullPage:true});}process.exitCode=1;}
 finally{await browser?.close();await server.close();}

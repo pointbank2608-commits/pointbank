@@ -66,7 +66,7 @@ export default function LadderBoard({
   onRenameTemplate,
 }: Props) {
   const { t } = useTranslation();
-  const { itemsHidden } = useGamePlay();
+  const { itemsHidden, fullscreen } = useGamePlay();
   const n = participants.length;
   const [resultIds, setResultIds] = useState(() => resultOrder === 'random' ? shuffledResultIds(results) : results.map(r => r.id));
   const arrangedResults = resultOrder === 'input' ? results : [
@@ -175,7 +175,9 @@ export default function LadderBoard({
       const naturalH = content!.offsetHeight;
       setNaturalSize({ w: naturalW, h: naturalH });
       if (naturalW > 0 && availableWidth > 0) {
-        setScale(Math.min(2.2, Math.max(1, availableWidth / naturalW)));
+        // The presentation frame fits both the board and revealed results to the
+        // viewport. Scaling here as well inflates its measured height twice.
+        setScale(fullscreen ? 1 : Math.min(2.2, Math.max(1, availableWidth / naturalW)));
       }
     }
 
@@ -184,7 +186,7 @@ export default function LadderBoard({
     ro.observe(outer);
     ro.observe(content);
     return () => ro.disconnect();
-  }, [width, height, n]);
+  }, [width, height, n, fullscreen]);
 
   const paths = useMemo(() => {
     return participants.map((_, i) => {
@@ -383,6 +385,8 @@ export default function LadderBoard({
 
       <div ref={scaleOuterRef} className="w-full max-w-full overflow-x-auto pb-1">
         <div
+          className="mx-auto"
+          data-ladder-stage
           style={{
             width: naturalSize.w ? naturalSize.w * scale : undefined,
             height: naturalSize.h ? naturalSize.h * scale : undefined,
@@ -520,14 +524,14 @@ export default function LadderBoard({
       )}
 
       {mapping && revealed.size > 0 && (
-        <div className="flex flex-col gap-2.5 mt-6 w-full max-w-[460px]">
+        <div className="mt-4 grid w-full max-w-[960px] grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3" data-ladder-outcomes>
           {participants.map(
             (p, i) =>
               revealed.has(i) && (
                 <div
                   key={p.id}
                   data-ladder-outcome
-                  className="flex items-center justify-center gap-3 bg-secondary-container/50 border border-secondary-container rounded-2xl px-5 py-3.5 font-title-md text-title-md"
+                  className="flex min-w-0 flex-wrap items-center justify-center gap-2 bg-secondary-container/50 border border-secondary-container rounded-2xl px-3 py-2 font-title-md text-title-md [overflow-wrap:anywhere]"
                 >
                   <span className="text-on-surface">{p.label}</span>
                   <span className="text-on-surface-variant">→</span>
@@ -539,7 +543,7 @@ export default function LadderBoard({
             type="button"
             onClick={retry}
             disabled={busy}
-            className="mt-1 px-8 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
+            className="col-span-full mt-1 justify-self-center px-8 py-3 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
           >
             {t('gameLadder.retryButton')}
           </button>
