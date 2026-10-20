@@ -6,12 +6,12 @@ import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } fro
 
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
-const SENTENCES = new Set<GameType>(['unscramble','sentencesplash','catchsentence','lightning']);
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy']);
+const SENTENCES = new Set<GameType>(['unscramble','sentencesplash']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy','catchsentence','lightning']);
 const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','findmissing','popcorn','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
 export function gamePreparation(type: GameType) {
   return {
-    kinds: BUILTIN.has(type) || type === 'truefalse' || type === 'quizshow' ? [] : BOTH.has(type) ? ['word','sentence'] as const : SENTENCES.has(type) ? ['sentence'] as const : ['word'] as const,
+    kinds: BUILTIN.has(type) ? [] : BOTH.has(type) ? ['word','sentence'] as const : SENTENCES.has(type) ? ['sentence'] as const : ['word'] as const,
     manualTurns: MANUAL_TURNS.has(type),
     realtime: type === 'quizshow',
     dedicated: BUILTIN.has(type) || ['feedmonster','sentencebridge','sentencetower'].includes(type),

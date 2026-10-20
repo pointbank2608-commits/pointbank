@@ -9,6 +9,8 @@ import type {
 } from "../lib/types";
 
 export interface GameWorkspaceBridge {
+  applyGuide: (content: { items: GameItem[]; config: GameTemplate['config'] }) => Promise<void>;
+  sampleGuide: () => Promise<void>;
   renameActivity: () => Promise<void>;
   beginMaterial: (kind: 'word' | 'sentence') => Promise<void>;
   saveMaterial: (name: string) => Promise<void>;
@@ -49,9 +51,9 @@ export interface WorkspaceContextValue {
   roster: GameItem[];
   stage: HTMLElement | null;
   running: boolean;
-  panel: "settings" | "content" | "games" | "teacher" | "video" | null;
+  panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null;
   publish: (bridge: GameWorkspaceBridge) => void;
-  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | null) => void;
+  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null) => void;
   start: () => void;
 }
 export const GameWorkspaceContext = createContext<WorkspaceContextValue | null>(

@@ -1,3 +1,5 @@
+import GameSetupGuide from './GameSetupGuide';
+import { guideProblem } from '../lib/gameGuide';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,7 +19,7 @@ import { useFeature } from '../lib/features';
 import TeamOrderPanel from './TeamOrderPanel';
 import AddActivityToLesson from './AddActivityToLesson';
 
-type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | null;
+type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | 'guide' | null;
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 export default function GameWorkspace({ children }: { children: ReactNode }) {
@@ -36,6 +38,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const [info, setInfo] = useState<GameWorkspaceBridge | null>(null);
   const bridge = useRef<GameWorkspaceBridge | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
+  const [guideNative,setGuideNative]=useState(false);
+  const guideOpened=useRef('');
   const [playing, setPlaying] = useState(false);
   const [fullscreen,setFullscreen]=useState(false);
   const [running, setRunning] = useState(false);
@@ -56,7 +60,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const sampleFromId=useRef<string|null|undefined>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const owner = useRef(crypto.randomUUID());
-  const identity = `${session?.user.id}:${info?.academyId}:${info?.classId}`;
+  const identity = `${session?.user.id}:${info?.academyId}:${info?.classId}:${info?.gameType}`;
   const participantKey = `classbank:participants:${session?.user.id}:${academy?.id}`;
   const scope = `${session?.user.id}:${academy?.id}`;
   const capabilities = gamePreparation(info?.gameType || 'wheel');
@@ -64,7 +68,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const sourceKind = source?.kind || (capabilities.kinds[0] || 'word');
   const sourceReady = !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
-  const canStart = !!info && !info.loading && hasBoard && !!info.selected && isNativeGameReady(info.selected) && sourceReady;
+  const canStart = !!info && info.academyId===academy?.id && !info.loading && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
   const publish = useCallback((next: GameWorkspaceBridge) => {
     bridge.current = next;
     setInfo(old => old && old.gameType === next.gameType && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
@@ -72,6 +76,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
+  useEffect(()=>{if(!presenting&&info&&!info.loading&&info.temporary&&info.selected&&isActivityDraft(info.selected.id)&&guideOpened.current!==identity){guideOpened.current=identity;setPanel('guide');}},[info,identity,presenting]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
     setOrdered(false);
@@ -141,7 +146,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const readiness = [details?.count !== null && details?.count !== undefined ? t(`flow.count_${details.kind}`,{count:details.count}) : null,
     ordered && capabilities.manualTurns ? order.mode==='team' ? t('flow.count_teams',{count:order.teamCount}) : t('flow.count_participants',{count:roster.length}) : details?.teams ? t('flow.count_teams',{count:details.teams}) : null,
     canStart ? t('flow.readyComplete') : null].filter(Boolean).join(' · ');
-  const validation = info?.loading ? t('common.loading') : !canStart ? t(requirement.key,{count:requirement.count}) : '';
+  const validation = info?.loading ? t('common.loading') : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
   const game = GAME_CATALOG.find(row => row.type === info?.gameType);
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
@@ -162,10 +167,12 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
         <Link to="/games" className={`${btn} inline-flex items-center`}>{t('gameAdmin.backToList')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div></div>
-        {capabilities.kinds.length ? materialButtons() : <p>{t('flow.noMaterialRequired')}</p>}
+        <button className={`${btn} bg-primary! px-6! text-lg! text-white!`} disabled={!info||info.loading||!!info.sharedView} onClick={()=>setPanel('guide')}>{t('guide.title')}</button>
+        <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('guide.optional')}</summary><div className="space-y-3">{capabilities.kinds.length ? materialButtons() : <p>{t('flow.noMaterialRequired')}</p>}
         {demo && <button className={btn} onClick={()=>setPanel('video')}>▶ {t('flow.methodVideo')}</button>}
         <div className="flex flex-wrap gap-2"><button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>{capabilities.manualTurns && <button className={btn} onClick={() => setTeams(true)}>{t('flow.participation')}</button>}<button className={btn} onClick={() => setPanel('content')}>{t('flow.savedGames')}</button></div>
-        {info && !canStart && !info.loading && <p role="status" className="text-error">{t(requirement.key,{count:requirement.count})}</p>}
+        </div></details>
+        {info && !canStart && !info.loading && <p role="status" className="text-error">{validation}</p>}
         {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
         {reuse}
       </header>}
@@ -201,13 +208,14 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           {info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=><button key={row.id} className={`${btn} mr-2 mb-2`} onClick={()=>{bridge.current?.selectTemplate(row.id);setPanel(null);}}>{row.name}</button>)}
         </div>}
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
-        <div hidden={panel !== 'settings' || !!info?.sharedView} className="p-4" data-game-existing-settings>
+        {info && <GameSetupGuide info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} start={start} nativeVisible={setGuideNative} setParticipants={text=>{setParticipantText(text);setOrdered(!!text.trim());}} openTeams={()=>setTeams(true)} />}
+        <div hidden={(panel !== 'settings' && !(panel==='guide'&&guideNative)) || !!info?.sharedView} className="p-4" data-game-existing-settings>
           {info?.selected && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
           <p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p>
           {children}
-          <div className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
+          <div hidden={panel==='guide'} className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t(saveOriginal?'flow.saveAndPrepare':'flow.confirmContent')}</button>
             {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><p className="my-2 text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultGameName})}</p><label>{t('quick.activityName')}<input placeholder={defaultGameName} className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}

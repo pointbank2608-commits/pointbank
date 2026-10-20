@@ -1,3 +1,4 @@
+import GameCreateButton from '../components/GameCreateButton';
 import { GAME_BROWSE_GROUPS, gameBrowseGroup, type GameBrowseGroup } from '../lib/gameBrowse';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { ownedQuickSource, type QuickActivitySource } from '../lib/quickActivity';
@@ -82,6 +83,7 @@ export default function GamesPage() {
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
           {t('gamesList.title')}
         </h2>
+        <GameCreateButton />
 
         {isStaff && (
           <div className="flex bg-surface-container-low rounded-lg p-1">

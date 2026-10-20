@@ -1,6 +1,7 @@
 import { activityName } from './activityNames';
 import { GAME_CATALOG } from './gameCatalog';
 import { gamePreparation } from './gamePreparation';
+import { guideSample } from './gameGuide';
 import { DRAFT_EVENT, draftId, isActivityDraft, readActivityDraft, writeActivityDraft, sampleActivityCards, readComposition, legacyActivityInput, rememberSourceUse, ownedQuickSource, type QuickActivitySource } from './quickActivity';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -417,7 +418,7 @@ export function useGameTemplates(params: {
     return cards.length ? { id: `activity:${selected.id}`, name: selected.name, kind: (gameType === 'unscramble' || gameType === 'sentencesplash' ? 'sentence' : 'word') as 'word' | 'sentence', version: selected.updated_at, cards } : undefined;
   }, [selected, gameType]);
   const classroomSource = selected?.config.classroomSource || (lessonCards?.length ? { id: `lesson:${lessonRunner.runner?.lessonId}`, name: lessonRunner.runner?.lessonName || '수업 자료', kind: (lessonCards.every((c) => c.word.trim().split(/\s+/).length >= 2) ? 'sentence' : 'word') as 'word'|'sentence', version: '', cards: lessonCards } : undefined) || inferredSource;
-  const teamKey = ({ fourclues: 'clueTeams', catchsentence: 'catchTeams', lastbox: 'boxTeams', mysterybox: 'boxTeams', treasuredig: 'digTeams' } as Partial<Record<GameType, 'clueTeams'|'catchTeams'|'boxTeams'|'digTeams'>>)[gameType];
+  const teamKey = ({ fourclues: 'clueTeams', catchsentence: 'catchTeams', lastbox: 'boxTeams', mysterybox: 'boxTeams', treasuredig: 'digTeams', shufflefind:'shuffleTeams',telepathy:'telepathyTeams',saveorgive:'saveOrGiveTeamCount' } as Partial<Record<GameType, 'clueTeams'|'catchTeams'|'boxTeams'|'digTeams'|'shuffleTeams'|'telepathyTeams'|'saveOrGiveTeamCount'>>)[gameType];
   async function configureTeams(count: number) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
     if (!teamKey || !academy?.id || !profile) return;
@@ -485,6 +486,17 @@ export function useGameTemplates(params: {
   useEffect(() => {
     if (!workspace || !isStaff) return;
     workspace.publish({ gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
+      applyGuide: async (content) => {
+        if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
+        const draft = isActivityDraft(selected.id) ? selected : makeDraft();
+        // Native editors synchronize their local question state on selection changes.
+        // A fresh revision ID applies guided content without remounting the workspace.
+        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: structuredClone(content.config) });
+      },
+      sampleGuide: async () => {
+        if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
+        const draft=makeDraft();const content=guideSample(gameType,draft);chooseDraft({...draft,...content});
+      },
       selectClass: chooseClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
       renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
       saveActivity: async (name) => { if (!await handleCreate(name)) throw new Error('save_failed'); },

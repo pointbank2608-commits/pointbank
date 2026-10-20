@@ -1,3 +1,4 @@
+import GameCreateButton from '../components/GameCreateButton';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -41,6 +42,7 @@ export default function DashboardPage() {
     return () => { active = false; };
   }, [academy, session?.user.id, groupOpen, retry]);
   return <div className="space-y-7">
+    <div className="flex flex-wrap items-center justify-between gap-4"><GameCreateButton /></div>
     <header><h1 className="text-[clamp(1.7rem,3vw,2.5rem)] font-black tracking-tight text-deep-navy">{t('quick.title')}</h1><p className="mt-2 text-lg text-on-surface-variant">{t('quick.subtitle')}</p></header>
     <div className="grid gap-4 lg:grid-cols-3">
       <section className="rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/15 to-sky-50 p-6 sm:p-8 lg:col-span-2">
