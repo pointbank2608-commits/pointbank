@@ -63,10 +63,12 @@ export function layoutSplashBricks(
   measure: (s: string) => number,
 ) {
   const usable = Math.max(48, width - 20);
+  // 1) 줄 나누기: 왼쪽부터 채워 가며 넘치면 다음 줄로
   let x = 10,
     y = 20,
     rowHeight = 52;
-  const positions = bricks.map((brick) => {
+  const rows: Array<Array<SplashBrick & { x: number; y: number; width: number; height: number }>> = [[]];
+  for (const brick of bricks) {
     const measured = measure(brick.word);
     const w = Math.min(usable, Math.max(64, measured + 32));
     const h = Math.max(52, Math.ceil(measured / Math.max(1, w - 32)) * 25 + 24);
@@ -74,12 +76,32 @@ export function layoutSplashBricks(
       x = 10;
       y += rowHeight + 16;
       rowHeight = 52;
+      rows.push([]);
     }
-    const position = { ...brick, x, y, width: w, height: h };
+    rows[rows.length - 1].push({ ...brick, x, y, width: w, height: h });
     x += w + 12;
     rowHeight = Math.max(rowHeight, h);
-    return position;
-  });
+  }
+  // 2) 줄마다 화면 가로 전체에 고르게 펼친다(넓은 화면에서 벽돌이 왼쪽에만 몰리지 않게).
+  //    줄 높이(y)는 그대로라 모든 줄이 같은 거리만큼 떨어지는 성질과 겹치지 않는 보장은 변하지 않는다.
+  for (const row of rows) {
+    const n = row.length;
+    if (n === 0) continue;
+    const total = row.reduce((sum, b) => sum + b.width, 0);
+    const free = Math.max(0, width - 20 - total);
+    if (n === 1) {
+      row[0].x = 10 + free / 2;
+      continue;
+    }
+    const roomy = free / (n + 1);
+    const gap = roomy >= 12 ? roomy : free / (n - 1);
+    let cursor = roomy >= 12 ? 10 + gap : 10;
+    for (const b of row) {
+      b.x = Math.round(cursor);
+      cursor += b.width + gap;
+    }
+  }
+  const positions = rows.flat();
   const bottom = Math.max(72, ...positions.map((p) => p.y + p.height));
   const height = Math.max(360, bottom + 230);
   return { positions, height, fall: height - 90 - bottom };

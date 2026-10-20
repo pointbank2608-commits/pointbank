@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import LightningLuck, { LIGHTNING_DEFAULTS } from '../components/LightningLuck';
-import type { CharKind } from '../components/LightningChars';
+import { CHARS, charImage, type CharKind } from '../components/LightningChars';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import SentenceBankPicker from '../components/SentenceBankPicker';
@@ -441,6 +441,26 @@ export default function LightningLuckPage() {
                           <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">{t('gameLightning.secondsLabel', { n: maxSec })}</span>
                           <button type="button" disabled={maxSec >= 40} onClick={() => void commitConfig({ lightningMax: Math.min(40, maxSec + 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="+">＋</button>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameLightning.charLabel')}</div>
+                      <div className="flex flex-wrap gap-2" role="group" aria-label={t('gameLightning.charLabel')}>
+                        {CHARS.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            aria-pressed={char === c.id}
+                            onClick={() => void commitConfig({ lightningChar: c.id })}
+                            className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
+                              char === c.id ? 'bg-indigo-600 text-white' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
+                            }`}
+                          >
+                            <img src={charImage(c.id, false)} alt="" draggable={false} className="mr-1.5 inline-block h-7 w-auto align-middle" />
+                            {t(`gameLightning.char_${c.id}`)}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
