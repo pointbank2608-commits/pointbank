@@ -5,7 +5,10 @@ import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge } from
 import { useAuth } from '../context/AuthContext';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
-import { gamePreparation, isNativeGameReady } from '../lib/gamePreparation';
+import { activityName as defaultActivityName } from '../lib/activityNames';
+import { demoForGame } from '../lib/gameDemos';
+import { GameMethodVideo } from './GameInfoPanel';
+import { gamePreparation, gameReadyDetails, isNativeGameReady } from '../lib/gamePreparation';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { isActivityDraft, sampleActivityCards } from '../lib/quickActivity';
 import { pauseGameClock } from '../lib/gameClock';
@@ -14,10 +17,15 @@ import { useFeature } from '../lib/features';
 import TeamOrderPanel from './TeamOrderPanel';
 import AddActivityToLesson from './AddActivityToLesson';
 
-type Panel = 'settings' | 'content' | 'games' | 'teacher' | null;
+type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | null;
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 export default function GameWorkspace({ children }: { children: ReactNode }) {
+  const { isStaff } = useAuth();
+  // Student play retains its existing read-only game route.
+  return isStaff ? <TeacherGameWorkspace>{children}</TeacherGameWorkspace> : <>{children}</>;
+}
+function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
   const { hasFullAccess, session, academy } = useAuth();
   const presenting = usePresenting();
@@ -29,6 +37,7 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
   const bridge = useRef<GameWorkspaceBridge | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [playing, setPlaying] = useState(false);
+  const [fullscreen,setFullscreen]=useState(false);
   const [running, setRunning] = useState(false);
   const [teams, setTeams] = useState(false);
   const [absent, setAbsent] = useState<string[]>([]);
@@ -43,6 +52,8 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
   const [activityName, setActivityName] = useState('');
   const [saveOriginal, setSaveOriginal] = useState(false);
   const [materialName, setMaterialName] = useState('');
+  const [sampleRequested,setSampleRequested]=useState(false);
+  const sampleFromId=useRef<string|null|undefined>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const owner = useRef(crypto.randomUUID());
   const identity = `${session?.user.id}:${info?.academyId}:${info?.classId}`;
@@ -58,7 +69,7 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
     bridge.current = next;
     setInfo(old => old && old.gameType === next.gameType && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
   }, []);
-  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); }, [identity]);
+  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(() => {
@@ -93,13 +104,6 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
     const previousInert = chrome.map(node => node.inert); chrome.forEach(node => { node.inert = true; });
     return () => { document.body.style.overflow = previousOverflow; delete document.documentElement.dataset.gameFocus; chrome.forEach((node,index) => { node.inert = previousInert[index]; }); };
   }, [playing, presenting]);
-  useEffect(() => {
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && playing && !panel && !teams && !addLesson) { event.preventDefault(); setPanel('teacher'); }
-    };
-    document.addEventListener('keydown', onEscape);
-    return () => document.removeEventListener('keydown', onEscape);
-  }, [playing, panel, teams, addLesson]);
   const allRoster = useMemo(() => info?.roster.length ? info.roster : (participantText.trim() ? participantText.split(/\r?\n/).map(name => name.trim()).filter(Boolean) : [t('flow.participant',{n:1}),t('flow.participant',{n:2})]).map((label,index) => ({ id:`temporary:${scope}:${index}`,label })), [info?.roster, participantText, scope, t]);
   const roster = useMemo(() => allRoster.filter(row => !absent.includes(row.id)), [allRoster, absent]);
   const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
@@ -121,25 +125,33 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
     if (!canStart) { setPanel('settings'); return; }
     setPanel(null); setPlaying(true); setRunning(true);
   }
-  function exitPlay() { setPlaying(false); setRunning(false); setPanel(null); }
+  useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);setPlaying(true);setRunning(true);}},[sampleRequested,canStart,info?.selected]);
+  function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
   async function startFromEditor() {
     if (saveOriginal) {
-      if (!materialName.trim()) { setError(t('flow.nameRequired')); return; }
       if (!await action(() => bridge.current!.saveMaterial(materialName.trim()), false)) return;
       setSaveOriginal(false);
     }
-    start();
+    setPanel(null);
   }
   async function begin(kind: 'word' | 'sentence') {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
   }
-  const value = useMemo(() => ({ stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, capabilities.manualTurns]); // eslint-disable-line react-hooks/exhaustive-deps
+  const details = info?.selected ? gameReadyDetails(info.selected) : null;
+  const readiness = [details?.count !== null && details?.count !== undefined ? t(`flow.count_${details.kind}`,{count:details.count}) : null,
+    ordered && capabilities.manualTurns ? order.mode==='team' ? t('flow.count_teams',{count:order.teamCount}) : t('flow.count_participants',{count:roster.length}) : details?.teams ? t('flow.count_teams',{count:details.teams}) : null,
+    canStart ? t('flow.readyComplete') : null].filter(Boolean).join(' · ');
+  const validation = info?.loading ? t('common.loading') : !canStart ? t(requirement.key,{count:requirement.count}) : '';
   const game = GAME_CATALOG.find(row => row.type === info?.gameType);
-  const contentName = source?.name || info?.selected?.name || t('quick.sample');
+  const demo = game && demoForGame(game.path);
+  const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
+  const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
+  const value = useMemo(() => ({ fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns]); // eslint-disable-line react-hooks/exhaustive-deps
+  const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
-    {includeLoad && <button className={btn} onClick={() => setPanel('content')}>{t('flow.loadMaterial')}</button>}
-    <button className={btn} disabled={busy || !!info?.sharedView} onClick={() => void action(() => bridge.current!.useSource({cards: sampleActivityCards(sourceKind),kind:sourceKind,name:t('quick.sample')}))}>{t('quick.sample')}</button>
+    {includeLoad && <button className={btn} disabled={busy || !info || info.loading} onClick={() => setPanel('content')}>{t('flow.loadMaterial')}</button>}
+    <button className={btn} disabled={busy || !info || info.loading || !!info.sharedView} onClick={() => {sampleFromId.current=info?.selected?.id;void action(() => bridge.current!.useSource({cards: sampleActivityCards(sourceKind),kind:sourceKind,name:t('quick.sampleTitle')})).then(ok=>{if(ok)setSampleRequested(true);});}}>{t('quick.sample')}</button>
   </div>;
   const reuse = <div className="flex flex-wrap gap-2">
     {!!info?.sourceCards?.length && <><button className={btn} onClick={() => setPanel('games')}>{t('quick.otherGame')}</button><button className={btn} onClick={() => navigate('/materials/worksheet',{state:{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:info.sourceCards,materialsKind:sourceKind,materialsTab:'list'}})}>{t('quick.worksheet')}</button></>}
@@ -149,37 +161,36 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
     <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
       {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
         <Link to="/games" className={`${btn} inline-flex items-center`}>{t('gameAdmin.backToList')}</Link>
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div><button className={`${btn} bg-primary! text-white!`} disabled={!canStart || busy} onClick={start}>{t('flow.start')}</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div></div>
         {capabilities.kinds.length ? materialButtons() : <p>{t('flow.noMaterialRequired')}</p>}
+        {demo && <button className={btn} onClick={()=>setPanel('video')}>▶ {t('flow.methodVideo')}</button>}
         <div className="flex flex-wrap gap-2"><button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>{capabilities.manualTurns && <button className={btn} onClick={() => setTeams(true)}>{t('flow.participation')}</button>}<button className={btn} onClick={() => setPanel('content')}>{t('flow.savedGames')}</button></div>
         {info && !canStart && !info.loading && <p role="status" className="text-error">{t(requirement.key,{count:requirement.count})}</p>}
         {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
         {reuse}
       </header>}
-      {playing && !presenting && <div className="game-focus-controls flex shrink-0 flex-wrap items-center gap-2" data-play-controls>
+      {playing && !presenting && !fullscreen && <div className="game-focus-controls flex shrink-0 flex-wrap items-center gap-2" data-play-controls>
         <button className={btn} onClick={() => setPanel('teacher')}>{t('flow.teacherMenu')}</button>
         <WorkspaceTurnIndicator />
-        {!running && <button className={`${btn} bg-primary! text-white!`} onClick={start}>{t('flow.resume')}</button>}
+
       </div>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
-        {!running && (playing || presenting) && <div className="game-ready-overlay absolute inset-x-3 top-20 z-30 mx-auto max-w-md rounded-2xl bg-deep-navy/95 p-5 text-center text-white shadow-lg">
-          <p className="text-xl font-bold">{t(playing ? 'flow.paused' : 'flow.ready')}</p>
-          {info && !canStart && !info.loading && <p className="mt-3" role="status">{t(requirement.key,{count:requirement.count})}</p>}
-          <button className={`${btn} mt-4`} onClick={canStart ? start : () => setPanel('settings')}>{t(canStart ? playing ? 'flow.resume' : 'flow.start' : 'flow.nativeEditor')}</button>
-        </div>}
+
       </div>
-      <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t('flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
-        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.teacherMenu' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t(playing ? 'flow.backToPlay' : 'common.close')}</button></header>
+      <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
+        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t('common.close')}</button></header>
         {error && <p role="alert" className="bg-error-container p-4 text-on-error-container">{error}</p>}
         {info?.sharedView && <p className="bg-amber-50 p-4">{t('flow.sharedView')}</p>}
         <div hidden={panel !== 'teacher'} className="space-y-4 p-4">
           <div ref={setTeacherToolsTarget} className="space-y-2" data-teacher-game-tools />
-          <button className={btn} onClick={() => setRunning(value => !value)}>{t(running ? 'flow.pause' : 'flow.resume')}</button>
+          <button className={btn} onClick={() => setPanel(null)}>{t('flow.resume')}</button>
           <button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>
           {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
           <button className={btn} onClick={exitPlay}>{t('flow.backToPreparation')}</button>
+          <Link className={`${btn} inline-flex`} to="/games">{t('flow.chooseOtherGame')}</Link>
           {reuse}
         </div>
+        {panel === 'video' && demo && <div className="p-4"><GameMethodVideo src={demo} /></div>}
         {panel === 'content' && !info?.sharedView && <div className="space-y-4 p-4">
           {!!capabilities.kinds.length && materialButtons(false)}
           <label className="block">{t('quick.optionalClass')}<select className={`${btn} ml-2`} value={info?.classId || ''} disabled={busy} onChange={event => bridge.current?.selectClass(event.target.value)}><option value="">{t('quick.noClassNeeded')}</option>{info?.classes.map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
@@ -191,12 +202,15 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
         </div>}
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
         <div hidden={panel !== 'settings' || !!info?.sharedView} className="p-4" data-game-existing-settings>
-          <p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p>
+          {info?.selected && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
+            <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
+          </div>}
+          <p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p>
           {children}
           <div className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
-            {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <label className="block">{t('flow.materialName')}<input className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
-            <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart || (saveOriginal&&!materialName.trim())} onClick={()=>void startFromEditor()}>{t('flow.startContent')}</button>
-            {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><label>{t('quick.activityName')}<input className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy || !activityName.trim()} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}
+            {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
+            <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t(saveOriginal?'flow.saveAndPrepare':'flow.confirmContent')}</button>
+            {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><p className="my-2 text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultGameName})}</p><label>{t('quick.activityName')}<input placeholder={defaultGameName} className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}
           </div>
         </div>
       </dialog>
@@ -213,7 +227,23 @@ export function WorkspaceTurnIndicator() {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace?.turn)return null;
   return <div className="flex min-w-0 flex-wrap items-center gap-2" data-current-next><button className={btn} aria-label={`${t('flow.current',{name:workspace.turn.current})} · ${t('flow.next',{name:workspace.turn.next})}`} onClick={workspace.openTeams}><strong>{t('flow.current',{name:workspace.turn.current})}</strong><span className="ml-3 font-normal text-on-surface-variant">{t('flow.next',{name:workspace.turn.next})}</span></button><button className={btn} onClick={workspace.turn.advance}>{t('flow.nextParticipant')}</button></div>;
 }
-export function GameWorkspaceFrameControls() {
+export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen }: {fullscreen?:boolean;onExitFullscreen?:()=>void}) {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
-  return <div className="relative z-30 flex shrink-0 flex-wrap gap-2 bg-white/95 p-2"><button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button><WorkspaceTurnIndicator />{!workspace.running&&<button className={btn} onClick={workspace.start}>{t('flow.resume')}</button>}</div>;
+  return <div className="relative z-30 flex shrink-0 flex-wrap items-center gap-2 bg-white/95 p-2" data-frame-controls>
+    <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
+    {workspace.playing && <WorkspaceTurnIndicator />}
+    {fullscreen && <button className={`${btn} ml-auto`} onClick={onExitFullscreen}>{t('gamePlay.exitFullscreen')}</button>}
+  </div>;
+}
+export function GameWorkspaceStartOverlay() {
+  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace || workspace.running || workspace.panel)return null;
+  return <div className="game-start-overlay absolute inset-0 z-20 flex items-center justify-center bg-white/35 p-4" data-game-ready-overlay>
+    <div className="w-full max-w-lg rounded-3xl border border-white/80 bg-white/95 p-5 text-center shadow-xl sm:p-8">
+      <button aria-label={t(workspace.playing?'flow.resume':'flow.start')} className="min-h-20 rounded-2xl bg-primary px-8 py-4 text-2xl font-black text-white shadow-lg focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 sm:text-3xl" disabled={!workspace.canStart} onClick={workspace.start}>
+        <span aria-hidden>▶ </span>{t(workspace.playing?'flow.resume':'flow.start')}
+      </button>
+      <p className="mt-4 text-lg font-bold text-deep-navy" role="status">{workspace.readiness}</p>
+      {!!workspace.validation && <><p className="mt-3 text-error">{workspace.validation}</p><button className={`${btn} mt-3`} onClick={()=>workspace.open('settings')}>{t('flow.nativeEditor')}</button></>}
+    </div>
+  </div>;
 }

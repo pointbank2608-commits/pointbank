@@ -1,3 +1,4 @@
+import { GAME_BROWSE_GROUPS, gameBrowseGroup, type GameBrowseGroup } from '../lib/gameBrowse';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { ownedQuickSource, type QuickActivitySource } from '../lib/quickActivity';
 import { GAME_META } from '../lib/gameMeta';
@@ -8,12 +9,13 @@ import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG, GAME_MOMENTS, isFreeTierGame, type GameCatalogEntry, type GameMoment } from '../lib/gameCatalog';
+import { GAME_CATALOG, isFreeTierGame, type GameCatalogEntry } from '../lib/gameCatalog';
 
 type ViewMode = 'library' | 'all';
 
 /** 칸 소제목 앞 색 점(Tailwind 가 찾을 수 있게 전부 적어 둔다) */
-const MOMENT_DOT: Record<GameMoment, string> = {
+const MOMENT_DOT: Record<GameBrowseGroup, string> = {
+  sentence: 'bg-clay-sky',
   warmup: 'bg-clay-yellow',
   learn: 'bg-clay-sky',
   practice: 'bg-clay-mint',
@@ -27,7 +29,7 @@ export default function GamesPage() {
   const { t } = useTranslation();
 
   const { academy, isStaff, session, hasFullAccess } = useAuth();
-  const [activeCategory, setActiveCategory] = useState<GameMoment | 'all'>('all');
+  const [activeCategory, setActiveCategory] = useState<GameBrowseGroup | 'all'>('all');
   // Main navigation always opens the complete catalogue. Saved games remain an explicit tab.
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [query, setQuery] = useState('');
@@ -64,12 +66,12 @@ export default function GamesPage() {
   const librarySet = new Set(libraryTypes ?? []);
 
   const byCategory = GAME_CATALOG.filter((g) =>
-    (activeCategory === 'all' || g.moment === activeCategory) &&
+    (activeCategory === 'all' || gameBrowseGroup(g) === activeCategory) &&
     `${t(g.nameKey)} ${t(g.descKey)}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   const games = showLibrary ? byCategory.filter((g) => librarySet.has(g.type)) : byCategory;
   const pool = showLibrary ? GAME_CATALOG.filter((g) => librarySet.has(g.type)) : GAME_CATALOG;
-  const usedCategories = GAME_MOMENTS.filter((m) => pool.some((g) => g.moment === m));
-  const momentCount = (m: GameMoment) => pool.filter((g) => g.moment === m).length;
+  const usedCategories = GAME_BROWSE_GROUPS.filter((m) => pool.some((g) => gameBrowseGroup(g) === m));
+  const momentCount = (m: GameBrowseGroup) => pool.filter((g) => gameBrowseGroup(g) === m).length;
   const grouped = activeCategory === 'all' && !query.trim();
 
   const libraryEmpty = showLibrary && libraryLoaded && (libraryTypes?.length ?? 0) === 0;
@@ -174,8 +176,8 @@ export default function GamesPage() {
             <button type="button" onClick={() => { setQuery(''); setActiveCategory('all'); }} className="mt-3 min-h-11 rounded-lg px-4 text-primary underline">{t('classroomUx.clearFilters')}</button>
           </div>}
           {grouped ? (
-            GAME_MOMENTS.map((m) => {
-              const list = games.filter((g) => g.moment === m);
+            GAME_BROWSE_GROUPS.map((m) => {
+              const list = games.filter((g) => gameBrowseGroup(g) === m);
               if (list.length === 0) return null;
               return (
                 <section key={m} className="space-y-3">

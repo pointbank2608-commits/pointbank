@@ -9,6 +9,7 @@ import type {
 } from "../lib/types";
 
 export interface GameWorkspaceBridge {
+  renameActivity: () => Promise<void>;
   beginMaterial: (kind: 'word' | 'sentence') => Promise<void>;
   saveMaterial: (name: string) => Promise<void>;
   temporary: boolean;
@@ -33,6 +34,11 @@ export interface GameWorkspaceBridge {
   sourceCards: FullCardItem[] | null;
 }
 export interface WorkspaceContextValue {
+  fullscreen: boolean;
+  setFullscreen: (value: boolean) => void;
+  canStart: boolean;
+  readiness: string;
+  validation: string;
   playing: boolean;
   teacherToolsTarget: HTMLElement | null;
   exitPlay: () => void;
@@ -43,9 +49,9 @@ export interface WorkspaceContextValue {
   roster: GameItem[];
   stage: HTMLElement | null;
   running: boolean;
-  panel: "settings" | "content" | "games" | "teacher" | null;
+  panel: "settings" | "content" | "games" | "teacher" | "video" | null;
   publish: (bridge: GameWorkspaceBridge) => void;
-  open: (panel: "settings" | "content" | "games" | "teacher") => void;
+  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | null) => void;
   start: () => void;
 }
 export const GameWorkspaceContext = createContext<WorkspaceContextValue | null>(

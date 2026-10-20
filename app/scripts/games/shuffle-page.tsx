@@ -5,6 +5,7 @@ import { LessonRunnerProvider } from "../../src/context/LessonRunnerContext";
 import { GameEmbedContext } from "../../src/context/GameEmbedContext";
 import GameWorkspace from "../../src/components/GameWorkspace";
 import ShuffleFindPage from "../../src/pages/ShuffleFindPage";
+import TelepathyPage from "../../src/pages/TelepathyPage";
 import GamesPage from "../../src/pages/GamesPage";
 import { GAME_PAGES } from "../../src/lib/gamePages";
 import i18n from "../../src/i18n";
@@ -13,11 +14,13 @@ void i18n.changeLanguage("ko");
 function Fixture() {
   const q = new URLSearchParams(location.search);
   const mode = q.get("mode");
-  if (mode === "teacher") return <GameWorkspace><ShuffleFindPage /></GameWorkspace>;
+  const GamePage = q.get("game") === "telepathy" ? TelepathyPage : ShuffleFindPage;
+  const gamePath = q.get("game") === "telepathy" ? "/games/telepathy" : "/games/shufflefind";
+  if (mode === "teacher") return <GameWorkspace><GamePage /></GameWorkspace>;
   if (mode === "games") return <GamesPage />;
-  if (mode === "student") return <ShuffleFindPage />;
+  if (mode === "student") return <GamePage />;
   if (mode === "embed") {
-    const Page = GAME_PAGES["/games/shufflefind"];
+    const Page = GAME_PAGES[gamePath];
     return (
       <GameEmbedContext.Provider value={{ classId: "class-a", templateId: q.get("template") || undefined, onSelect: () => {} }}>
         <Page />

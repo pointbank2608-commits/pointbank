@@ -1,0 +1,58 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve,dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'vite';
+import { PGlite } from '../admin/node_modules/@electric-sql/pglite/dist/index.js';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
+globalThis.__titleRows={game_templates:[],word_lists:[]};
+const server=await createServer({root,logLevel:'error',server:{middlewareMode:true,hmr:false},appType:'custom',plugins:[{name:'name-transport',enforce:'pre',load(id){
+ if(id.replaceAll('\\','/').endsWith('/src/lib/supabase.ts'))return `export const supabase={from(table){
+ const filters=[];let inserted,patch;
+ const rows=()=>globalThis.__titleRows[table].filter(row=>filters.every(([k,v])=>row[k]===v));
+ const q={update(value){patch=value;return q},select(){return q},eq(k,v){filters.push([k,v]);return q},is(k,v){filters.push([k,v]);return q},insert(row){inserted={id:crypto.randomUUID(),...row};return q},single:async()=>{globalThis.__titleRows[table].push(inserted);return {data:inserted,error:null}},then(resolve){if(patch)for(const row of rows())Object.assign(row,patch);return Promise.resolve({data:rows(),error:null}).then(resolve)}};return q;}};`;
+}}]});
+const db=new PGlite();
+try{
+ const {activityName}=await server.ssrLoadModule('/src/lib/activityNames.ts');
+ assert.equal(activityName('  ','아이스크림 가게',['아이스크림 가게','아이스크림 가게 2']),'아이스크림 가게 3');
+ assert.equal(activityName('  My lesson  ','default',['My lesson']),'My lesson');
+ const {gameReadyDetails}=await server.ssrLoadModule('/src/lib/gamePreparation.ts');
+ assert.equal(gameReadyDetails({game_type:'wheel',items:[{id:'1',label:'apple'}],config:{questions:[],pairs:[],groups:[],catchTeams:8}}).count,1);
+ assert.equal(gameReadyDetails({game_type:'wheel',items:[],config:{catchTeams:8}}).teams,null);
+ assert.equal(gameReadyDetails({game_type:'timer',items:[{id:'1',label:'one'}],config:{}}).count,null);
+ const api=await server.ssrLoadModule('/src/lib/api.ts');
+ const input={academyId:'a',classId:null,teacherId:'teacher',gameType:'icecream',name:' ',items:[]};
+ const first=await api.createGameTemplate(input),second=await api.createGameTemplate({...input,name:''});
+ assert.equal(first.name,'아이스크림 가게');assert.equal(second.name,'아이스크림 가게 2');
+ assert.equal((await api.createGameTemplate({...input,name:'내 수업'})).name,'내 수업');
+ await api.renameGameTemplate(first.id,'변경한 이름');assert.equal(globalThis.__titleRows.game_templates.find(row=>row.id===first.id).name,'변경한 이름');
+ assert.equal((await api.createGameTemplate({...input,academyId:'b'})).name,'아이스크림 가게');
+ const words={academyId:'a',classId:null,teacherId:'teacher',name:'\t',items:[]};
+ assert.equal((await api.createWordList(words)).name,'새 단어장');
+ assert.equal((await api.createWordList({...words,name:undefined})).name,'새 단어장 2');
+ assert.equal((await api.createWordList({...words,kind:'sentence'})).name,'새 문장 모음');
+ assert(globalThis.__titleRows.word_lists.every(row=>row.class_id===null));
+ console.log('ok real creation API: blank/whitespace/omitted titles, numbered defaults, explicit titles, academy/scope separation');
+ await db.exec(`create table game_templates(id uuid default gen_random_uuid(),academy_id uuid not null,class_id uuid,game_type text,name text not null);
+ create table word_lists(id uuid default gen_random_uuid(),academy_id uuid not null,class_id uuid,kind text default 'word',name text not null);
+ create role title_teacher; grant usage on schema public to title_teacher; grant select,insert,update on game_templates,word_lists to title_teacher;
+ alter table game_templates enable row level security; alter table word_lists enable row level security;
+ create policy title_game_rls on game_templates to title_teacher using(academy_id=current_setting('test.academy')::uuid) with check(academy_id=current_setting('test.academy')::uuid);
+ create policy title_word_rls on word_lists to title_teacher using(academy_id=current_setting('test.academy')::uuid) with check(academy_id=current_setting('test.academy')::uuid);`);
+ await db.exec(readFileSync(resolve(root,'../supabase/089_optional_activity_names.sql'),'utf8'));
+ const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+ await db.exec(`set role title_teacher;set test.academy='${a}';`);
+ for(const name of ['',' ',null])await db.query(`insert into game_templates(academy_id,game_type,name) values($1,'icecream',$2)`,[a,name]);
+ assert.deepEqual((await db.query('select name from game_templates order by name')).rows.map(r=>r.name),['아이스크림 가게','아이스크림 가게 2','아이스크림 가게 3']);
+ await db.query(`insert into word_lists(academy_id,kind,name) values($1,'sentence',$2)`,[a,'  ']);
+ assert.equal((await db.query('select name from word_lists')).rows[0].name,'새 문장 모음');
+ await assert.rejects(db.query(`insert into game_templates(academy_id,game_type,name) values($1,'icecream','')`,[b]));
+ await db.exec(`set test.academy='${b}';`);
+ assert.equal((await db.query('select * from game_templates')).rows.length,0);
+ await db.query(`insert into game_templates(academy_id,game_type,name) values($1,'icecream','')`,[b]);
+ assert.equal((await db.query('select name from game_templates')).rows[0].name,'아이스크림 가게');
+ await db.exec('reset role');
+ assert.equal((await db.query("select prosecdef from pg_proc where proname='classbank_optional_activity_name'")).rows[0].prosecdef,false);
+ console.log('ok local PostgreSQL: optional blank-title defaults and numbering, NOT NULL compatibility, invoker rights and unchanged tenant RLS');
+}finally{await server.close();await db.close();}

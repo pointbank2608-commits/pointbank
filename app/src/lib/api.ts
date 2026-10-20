@@ -1,3 +1,6 @@
+import i18n from '../i18n';
+import { GAME_CATALOG } from './gameCatalog';
+import { activityName } from './activityNames';
 import { isActivityDraft, patchActivityDraft } from './quickActivity';
 import { supabase } from './supabase';
 import type {
@@ -29,6 +32,17 @@ import type {
 function unwrap<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
   return res.data as T;
+}
+
+async function resourceName(table: 'game_templates' | 'word_lists', params: { academyId: string; classId: string | null; name?: string; gameType?: string; kind?: string }) {
+  if (params.name?.trim()) return params.name.trim();
+  const entry = GAME_CATALOG.find(game => game.type === params.gameType);
+  const base = table === 'game_templates' ? (entry ? i18n.t(entry.nameKey) : i18n.t('flow.defaultActivity')) : i18n.t(params.kind === 'sentence' ? 'flow.defaultSentences' : 'flow.defaultWords');
+  let query = supabase.from(table).select('name').eq('academy_id', params.academyId);
+  query = params.classId ? query.eq('class_id',params.classId) : query.is('class_id',null);
+  if (params.gameType) query = query.eq('game_type',params.gameType);
+  const rows = unwrap(await query) as { name: string }[];
+  return activityName('', base, rows.map(row => row.name));
 }
 
 /* ---------------- 반 ---------------- */
@@ -511,11 +525,12 @@ export async function createGameTemplate(params: {
   academyId: string;
   classId: string | null;
   gameType: string;
-  name: string;
+  name?: string;
   items: GameItem[];
   teacherId: string;
   config?: GameTemplateConfig;
 }): Promise<GameTemplate> {
+  const name = await resourceName('game_templates', params);
   return unwrap(
     await supabase
       .from('game_templates')
@@ -523,7 +538,7 @@ export async function createGameTemplate(params: {
         academy_id: params.academyId,
         class_id: params.classId,
         game_type: params.gameType,
-        name: params.name,
+        name,
         items: params.items,
         config: params.config ?? {},
         created_by: params.teacherId,
@@ -1018,7 +1033,7 @@ export async function fetchAllWordLists(academyId: string, kind: WordListKind | 
 export async function createWordList(params: {
   academyId: string;
   classId: string | null;
-  name: string;
+  name?: string;
   items: WordListItem[];
   teacherId: string;
   /** 문장 목록이면 'sentence'(066 이후). 단어장은 칸을 안 보내 066 전에도 만들어진다. */
@@ -1026,13 +1041,14 @@ export async function createWordList(params: {
   /** 그룹 이름(067 이후) — 없으면 칸을 안 보낸다 */
   groupName?: string | null;
 }): Promise<WordList> {
+  const name = await resourceName('word_lists', params);
   return unwrap(
     await supabase
       .from('word_lists')
       .insert({
         academy_id: params.academyId,
         class_id: params.classId,
-        name: params.name,
+        name,
         items: params.items,
         created_by: params.teacherId,
         ...(params.kind === 'sentence' ? { kind: 'sentence' } : {}),

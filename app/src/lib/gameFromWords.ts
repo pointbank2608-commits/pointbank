@@ -1,4 +1,5 @@
 import { LIGHTNING_SAMPLES } from './lightningLuck';
+import { storySample, vocabularyQuestions, storyErrors } from './storybook';
 import i18n from '../i18n';
 import { buildContestQuestions, contestRoundNames } from './liveQuiz';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from './quizFromWordList';
@@ -76,6 +77,7 @@ const LABEL_GAMES = new Set<GameType>([
   'mysterybox',
   'lightning',
   'shufflefind',
+  'telepathy',
 ]);
 
 export interface GameContent {
@@ -90,6 +92,11 @@ export interface GameContent {
  * 단어장으로 만들 수 없는 게임(수박 문장·명칭 다이어그램·수학)이나 재료가 모자라면 null.
  */
 export function buildGameContent(gameType: GameType, words: FullCardItem[]): GameContent | null {
+  if (gameType === 'feedmonster') {
+    const storybook = { ...storySample('feedmonster'), mode: 'vocabulary' as const, questions: vocabularyQuestions(words) };
+    return storyErrors('feedmonster', storybook).length ? null : { items: [], config: { storybook } };
+  }
+  if (gameType === 'sentencebridge' || gameType === 'sentencetower') return null;
   // 장보기는 통째로 그린 마트 그림으로 시작하므로 단어가 없어도 만들어진다. 수업 단어 중 그림 있는 것은
   // 같이 담아 두어, 설정에서 "내 단어장 가게"로 바꾸면 바로 그 낱말로 가게가 된다.
   if (gameType === 'shopping') {

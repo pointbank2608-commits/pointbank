@@ -1,3 +1,4 @@
+import { activityName } from '../lib/activityNames';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +38,7 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
         teacherId: profile.id, gameType, name: activity?.name || source!.name, items: structuredClone(content.items), config: structuredClone({ ...content.config, ...(source ? { classroomSource: { id: 'temporary', name: source.name, kind: source.kind, version: '', cards: source.cards } } : {}) }) });
       const slide = { id: crypto.randomUUID(), kind: 'game' as const, gameType, templateId: template.id };
       const saved = lesson || await createCurriculumLesson({ academyId: academy.id, classId: null, teacherId: profile.id,
-        name: name.trim(), wordListId: null, videoUrl: null, level: null, playlist: [slide] });
+        name: activityName(name,t('flow.defaultLesson'),lessons?.map(row=>row.name)), wordListId: null, videoUrl: null, level: null, playlist: [slide] });
       if (lesson) await appendActivityToLesson(lesson, slide);
       navigate('/curriculum', { state: { focusClassId: saved.class_id, reopenLessonId: saved.id } });
       onClose();
@@ -52,10 +53,10 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
         <option value="new">{t('quick.newLesson')}</option>
         {lessons?.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}
       </select></label>
-      {target === 'new' && <label className="block">{t('quick.lessonName')}<input className="mt-2 min-h-12 w-full rounded-xl border p-3" value={name} onChange={e => setName(e.target.value)} /></label>}
+      {target === 'new' && <label className="block">{t('quick.lessonName')}<input placeholder={activityName('',t('flow.defaultLesson'),lessons?.map(row=>row.name))} className="mt-2 min-h-12 w-full rounded-xl border p-3" value={name} onChange={e => setName(e.target.value)} /></label>}
       {error && <p role="alert" className="text-error">{error}</p>}
       <div className="flex gap-3"><button className="min-h-12 rounded-xl border px-4" disabled={busy} onClick={onClose}>{t('common.close')}</button>
-        <button className="min-h-12 rounded-xl bg-primary px-4 font-bold text-white disabled:opacity-50" disabled={busy || !lessons || !target || (target === 'new' && !name.trim())} onClick={() => void add()}>{t(busy ? 'common.loading' : 'quick.addLesson')}</button></div>
+        <button className="min-h-12 rounded-xl bg-primary px-4 font-bold text-white disabled:opacity-50" disabled={busy || !lessons || !target} onClick={() => void add()}>{t(busy ? 'common.loading' : 'quick.addLesson')}</button></div>
     </div>
   </AccessibleDialog>;
 }

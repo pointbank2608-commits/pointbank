@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
-import { GameWorkspaceFrameControls } from './GameWorkspace';
+import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import { usePresenting } from '../context/LessonRunnerContext';
 import AccessibleDialog from './AccessibleDialog';
@@ -45,7 +45,7 @@ interface Props {
 }
 
 /** 자기 장면을 이미 그리는 게임(새 게임·장보기)은 공용 배경을 깔지 않는다 */
-const OWN_SCENE: GameType[] = ['sentencesplash', 'shopping', 'treasuredig', 'fourclues', 'catchsentence', 'lastbox', 'mysterybox', 'airport', 'restaurant', 'icecream', 'doctor', 'lightning', 'shufflefind'];
+const OWN_SCENE: GameType[] = ['feedmonster', 'sentencebridge', 'sentencetower', 'sentencesplash', 'shopping', 'treasuredig', 'fourclues', 'catchsentence', 'lastbox', 'mysterybox', 'airport', 'restaurant', 'icecream', 'doctor', 'lightning', 'shufflefind', 'telepathy'];
 
 /** 글자가 많은 게임은 배경 위에 흰 막을 더 두껍게 덮는다(읽기 쉽게) */
 const BG_VEIL: Partial<Record<GameType, number>> = {
@@ -115,6 +115,8 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
   const fill = fullOn || presenting || !!workspace?.playing;
+  const reportFullscreen=workspace?.setFullscreen;
+  useEffect(()=>{reportFullscreen?.(fullOn);return ()=>reportFullscreen?.(false);},[fullOn,reportFullscreen]);
   const [scrollContent, setScrollContent] = useState(false);
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
@@ -160,6 +162,18 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, [workspace?.playing, presenting]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const exitOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || document.querySelector('dialog[open]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (document.fullscreenElement === containerRef.current) void document.exitFullscreen().catch(()=>setFullscreenError(true));
+    };
+    document.addEventListener('keydown',exitOnEscape,true);
+    return ()=>document.removeEventListener('keydown',exitOnEscape,true);
+  },[isFullscreen]);
 
   useLayoutEffect(() => {
     // 전체화면이 아닌 일반 화면에서도, 화면(뷰포트)보다 콘텐츠가 크면 스크롤 없이 한
@@ -221,6 +235,8 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
 
       if (!fill && window.innerWidth < DESKTOP_BREAKPOINT) {
         setScale(1);
+        setNaturalSize(old => old.w || old.h ? { w:0, h:0 } : old);
+        setScrollContent(false);
         return;
       }
 
@@ -325,11 +341,13 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       return;
     }
     try {
+      if (!fullOn && workspace?.panel) workspace.open(null);
       if (document.fullscreenElement) await document.exitFullscreen();
       else if (containerRef.current?.requestFullscreen) await containerRef.current.requestFullscreen();
       else enterPseudo();
     } catch {
-      enterPseudo();
+      if (fullOn) setFullscreenError(true);
+      else enterPseudo();
     }
   }
 
@@ -351,6 +369,15 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       document.removeEventListener('keydown', onKey);
     };
   }, [pseudoFs, workspace?.playing, presenting]);
+
+  useEffect(()=>{
+    const exit = () => {
+      if(document.fullscreenElement===containerRef.current) void document.exitFullscreen().catch(()=>{});
+      setPseudoFs(false);
+    };
+    window.addEventListener('classbank:exit-game-fullscreen',exit);
+    return ()=>window.removeEventListener('classbank:exit-game-fullscreen',exit);
+  },[]);
 
   const fullscreenStyle: CSSProperties = fill
     ? {
@@ -480,10 +507,11 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       <div
         ref={containerRef}
         data-game={gameType ?? bg}
+        data-game-fullscreen={fullOn ? "true" : "false"}
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
-        {workspace && (fullOn || presenting) && <GameWorkspaceFrameControls />}
+        {workspace && (fullOn || presenting) && <GameWorkspaceFrameControls fullscreen={fullOn} onExitFullscreen={()=>void toggleFullscreen()} />}
         {bgUrl && (
           <div
             aria-hidden
@@ -545,6 +573,8 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
         )}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
+        <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>
+        <GameWorkspaceStartOverlay />
         <div ref={stageRef} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
@@ -564,6 +594,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
               {children}
             </div>
           </div>
+        </div>
         </div>
         {restartOpen && (
           <AccessibleDialog label={t('classroomUx.restartTitle')} onClose={() => setRestartOpen(false)}>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { usePresenting } from '../context/LessonRunnerContext';
@@ -11,6 +11,19 @@ interface Props {
   steps: string[];
   /** 워크시트 페이지로 넘길 상태(예: 이 게임에 넣은 문장) */
   worksheetState?: unknown;
+}
+
+export function GameMethodVideo({ src }: { src: string }) {
+  const { t } = useTranslation();
+  const [seconds, setSeconds] = useState<number | null>(null);
+  const [failed,setFailed]=useState(false);
+  useEffect(()=>{setSeconds(null);setFailed(false);},[src]);
+  return <div className="space-y-3">
+    <p className="font-bold">{seconds === null ? t('flow.methodVideo') : t('flow.methodVideoTimed',{seconds})}</p>
+    <video src={src} className="mx-auto w-full max-w-[640px] rounded-xl" controls playsInline preload="metadata" onError={()=>setFailed(true)}
+      onLoadedMetadata={event=>{const duration=event.currentTarget.duration;if(Number.isFinite(duration)&&duration>0)setSeconds(Math.round(duration));}} />
+    {failed && <p role="alert">{t('flow.videoFailed')}</p>}
+  </div>;
 }
 
 /** 게임 페이지 상단에 붙는 "게임 소개 및 방법" 접이식 패널. 게임 페이지가 전부 공유한다.
@@ -65,17 +78,7 @@ export default function GameInfoPanel({ description, steps, worksheetState }: Pr
       {open && (
         <div className="px-5 pb-5 space-y-3">
           {demoSrc && (
-            <video
-              key={demoSrc}
-              src={demoSrc}
-              className="w-full max-w-[640px] rounded-xl border border-outline-variant/40 shadow-card"
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls
-              preload="metadata"
-            />
+            <GameMethodVideo key={demoSrc} src={demoSrc} />
           )}
           <p className="font-body-md text-body-md text-on-surface-variant">{description}</p>
           <ol className="list-decimal list-inside space-y-1.5 font-body-md text-sm text-on-surface-variant">

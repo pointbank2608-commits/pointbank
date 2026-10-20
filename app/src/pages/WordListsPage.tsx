@@ -1,3 +1,4 @@
+import { activityName } from '../lib/activityNames';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -631,14 +632,14 @@ export default function WordListsPage() {
   }
 
   async function handleCreate() {
-    if (!academy?.id || !profile || !newName.trim() || createLock.current) return;
+    if (!academy?.id || !profile || createLock.current) return;
     createLock.current = true; setCreating(true);
     const scopeAtStart=accountScope.current;
     const ok = await run(async () => {
       const created = await createWordList({
         academyId: academy.id,
         classId: newScope === 'class' ? selectedId : null,
-        name: newName.trim(),
+        name: activityName(newName,t(newKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),lists.map(list=>list.name)),
         items: [],
         teacherId: profile.id,
         kind: newKind,
@@ -731,7 +732,10 @@ export default function WordListsPage() {
               <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
                 {t(newKind === 'sentence' ? 'wordLists.sentence.kindSentence' : 'wordLists.sentence.kindWord')}
               </span>
+              <label className="w-full text-sm font-semibold">{t('flow.nameOptional')}</label>
+              <p className="w-full text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:activityName('',t(newKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),lists.map(list=>list.name))})}</p>
               <input
+                aria-label={t('flow.nameOptional')}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t(newKind === 'sentence' ? 'wordLists.sentence.namePlaceholder' : 'wordLists.namePlaceholder')}
@@ -763,7 +767,7 @@ export default function WordListsPage() {
               </div>
               <button
                 type="button"
-                disabled={loading || creating || !newName.trim()}
+                disabled={loading || creating}
                 onClick={() => void handleCreate()}
                 className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors"
               >

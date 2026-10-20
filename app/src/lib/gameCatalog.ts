@@ -43,6 +43,16 @@ export interface GameCatalogEntry {
  * 두 화면 모두에 자동 반영된다.
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
+  { type: 'feedmonster', number: 51, moment: 'practice', category: 'vocabulary', minItems: 3, icon: 'pets', path: '/games/feedmonster', cover: '/covers/game-feedmonster.svg', nameKey: 'gamesList.feedmonsterName', descKey: 'gamesList.feedmonsterDesc' },
+  { type: 'sentencebridge', number: 52, moment: 'practice', category: 'sentence', minItems: 5, icon: 'landscape', path: '/games/sentencebridge', cover: '/covers/game-sentencebridge.svg', nameKey: 'gamesList.sentencebridgeName', descKey: 'gamesList.sentencebridgeDesc' },
+  { type: 'sentencetower', number: 53, moment: 'learn', category: 'sentence', minItems: 1, icon: 'castle', path: '/games/sentencetower', cover: '/covers/game-sentencetower.svg', nameKey: 'gamesList.sentencetowerName', descKey: 'gamesList.sentencetowerDesc' },
+  {
+    // 텔레파시(2026-10-20, PPT "Pokemon Telepathy Game"): 알에서 어떤 친구가 나올지 팀마다 미리 적고, 열어 보고 맞힌 팀이 점수를 얻는다.
+    type: 'telepathy', number: 50, moment: 'team', category: 'vocabulary',
+    minItems: 3, icon: 'psychology_alt', path: '/games/telepathy',
+    cover: '/covers/game-telepathy.jpg',
+    nameKey: 'gamesList.telepathyName', descKey: 'gamesList.telepathyDesc',
+  },
   {
     // 컵 속 친구 찾기(2026-10-20, PPT "Pokemon Shuffle"): 컵 아래 숨은 동물 친구를 섞기가 끝난 뒤 찾는다. 컵 아래 낱말·문장을 읽으며 고른다.
     type: 'shufflefind', number: 49, moment: 'speak', category: 'speaking',
@@ -563,6 +573,19 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     descKey: 'gamesList.catchsentenceDesc',
   },
   {
+    // 번개 피하기(2026-10-16, PPT "Bad Luck Billy"): 모두 서서 같은 글을 차례로 읽다가 번개가 칠 때 읽던 학생이 아웃, 마지막까지 선 학생이 승리.
+    type: 'lightning',
+    number: 47,
+    moment: 'practice',
+    category: 'sentence',
+    minItems: 1,
+    icon: 'thunderstorm',
+    path: '/games/lightning',
+    cover: '/covers/game-lightning.jpg',
+    nameKey: 'gamesList.lightningName',
+    descKey: 'gamesList.lightningDesc',
+  },
+  {
     // 마지막 박스 챌린지(2026-10-14, PPT "Chain Reaction"): 박스를 1~3개씩 읽다가 마지막 박스를 읽은 학생이 돌림판을 돌려 팀과 듣기·말하기·쓰기 도전을 한다.
     type: 'lastbox',
     number: 41,
@@ -640,19 +663,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.doctorName',
     descKey: 'gamesList.doctorDesc',
   },
-  {
-    // 번개 피하기(2026-10-16, PPT "Bad Luck Billy"): 모두 서서 같은 글을 차례로 읽다가 번개가 칠 때 읽던 학생이 아웃, 마지막까지 선 학생이 승리.
-    type: 'lightning',
-    number: 47,
-    moment: 'speak',
-    category: 'speaking',
-    minItems: 1,
-    icon: 'thunderstorm',
-    path: '/games/lightning',
-    cover: '/covers/game-lightning.jpg',
-    nameKey: 'gamesList.lightningName',
-    descKey: 'gamesList.lightningDesc',
-  },
+
 ];
 
 export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefined {

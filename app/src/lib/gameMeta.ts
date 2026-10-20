@@ -13,8 +13,12 @@ export interface GameMeta {
 }
 
 export const GAME_META: Record<string, GameMeta> = {
+  feedmonster: { minutes: 5, play: 'whole' },
+  sentencebridge: { minutes: 7, play: 'whole' },
+  sentencetower: { minutes: 7, play: 'whole' },
   sentencesplash: { minutes: 6, play: 'whole' },
   shufflefind: { minutes: 8, play: 'team' },
+  telepathy: { minutes: 10, play: 'team', paper: true },
   wheel: { minutes: 3, play: 'whole' },
   ladder: { minutes: 5, play: 'whole' },
   order: { minutes: 3, play: 'whole' },

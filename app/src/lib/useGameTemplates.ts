@@ -1,3 +1,5 @@
+import { activityName } from './activityNames';
+import { GAME_CATALOG } from './gameCatalog';
 import { gamePreparation } from './gamePreparation';
 import { DRAFT_EVENT, draftId, isActivityDraft, readActivityDraft, writeActivityDraft, sampleActivityCards, readComposition, legacyActivityInput, rememberSourceUse, ownedQuickSource, type QuickActivitySource } from './quickActivity';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -180,9 +182,9 @@ export function useGameTemplates(params: {
     if (source?.id && session?.user.id && academy?.id) rememberSourceUse(session.user.id, academy.id, source.id);
     const now = new Date().toISOString();
     return { id: `${temporaryId}:${crypto.randomUUID()}`, academy_id: academy!.id, class_id: null, game_type: gameType,
-      name: source?.name || t('quick.sample'), created_by: profile?.id || null, created_at: now, updated_at: now,
+      name: source?.name || t('quick.sampleTitle'), created_by: profile?.id || null, created_at: now, updated_at: now,
       items: content?.items || defaultItems(), config: { ...defaultConfig?.(), ...content?.config,
-        ...(content ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sample'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
+        ...(content ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sampleTitle'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
   }
   function chooseDraft(draft: GameTemplate) {
     writeActivityDraft(draft);
@@ -295,13 +297,11 @@ export function useGameTemplates(params: {
   }
 
   /** explicitName을 주면(이름 입력 없이 바로 만들기 등) newName 상태와 무관하게 그 이름으로 만든다. */
+  const createLock = useRef(false);
   async function handleCreate(explicitName?: string) {
-    if (!academy?.id || !profile) return false;
-    const name = (explicitName ?? newName).trim();
-    if (!name) {
-      notify(t('gameAdmin.nameRequiredError'), 'error');
-      return false;
-    }
+    if (!academy?.id || !profile || createLock.current) return false;
+    createLock.current = true;
+    const name = activityName(explicitName ?? newName, t(GAME_CATALOG.find(game => game.type === gameType)?.nameKey || 'flow.defaultActivity'), templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
     setSubmitting(true);
     const ok = await run(async () => {
       const tpl = await createGameTemplate({
@@ -316,6 +316,7 @@ export function useGameTemplates(params: {
       setTemplates((prev) => [...prev, tpl]);
       setSelectedId(tpl.id);
     }, t('gameAdmin.createdToast'));
+    createLock.current = false;
     setSubmitting(false);
     if (ok) {
       setNewName('');
@@ -464,14 +465,14 @@ export function useGameTemplates(params: {
   const materialSaveLock = useRef(false);
   const activeOwner = useRef(''); activeOwner.current = `${session?.user.id}:${academy?.id}`;
   async function saveMaterial(name: string) {
-    if (materialSaveLock.current || !academy || !profile || !selected || !name.trim()) throw new Error('invalid_material');
+    if (materialSaveLock.current || !academy || !profile || !selected) throw new Error('invalid_material');
     materialSaveLock.current = true;
     const ownerAtStart = activeOwner.current;
     try {
       const current = isActivityDraft(selected.id) ? readActivityDraft(selected.id) || selected : selected;
       const source = current.config.classroomSource || classroomSource;
       if (!source?.cards.length || !prepareClassroomGame(gameType, source.cards, source.kind)) throw new Error('invalid_content');
-      const list = await createWordList({ academyId: academy.id, teacherId: profile.id, classId: null, name: name.trim(), kind: source.kind,
+      const list = await createWordList({ academyId: academy.id, teacherId: profile.id, classId: null, name: activityName(name,t(source.kind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),allWordLists.map(list=>list.name)), kind: source.kind,
         items: source.cards.map(card => ({ id: card.id, word: card.word, meaning: card.meaning, image_url: card.imageUrl, category: card.category || null, partOfSpeech: card.partOfSpeech, patternMarked: card.patternMarked })) });
       if (activeOwner.current !== ownerAtStart) throw new Error('owner_changed');
       rememberSourceUse(session!.user.id, academy.id, list.id);
@@ -485,7 +486,7 @@ export function useGameTemplates(params: {
     if (!workspace || !isStaff) return;
     workspace.publish({ gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
       selectClass: chooseClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
-      beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
+      renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
       saveActivity: async (name) => { if (!await handleCreate(name)) throw new Error('save_failed'); },
       teamCount: teamKey ? (selected?.config[teamKey] || defaultConfig?.()[teamKey] || 2) : undefined, configureTeams });
   });

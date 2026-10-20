@@ -71,7 +71,7 @@ try {
   assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   assert.equal(await page.locator('[data-play-mode="play"]').count(),1);
-  await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.getByRole('button',{name:'준비 화면으로 돌아가기',exact:true}).click();
+  await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'준비 화면으로',exact:true}).click();
   console.log('ok no classes or vocabulary: sample matchup starts without database writes');
   await page.goto(url+'?game=matchup');
   await page.locator('.game-workspace-stage [data-game="matchup"]').waitFor();
@@ -89,9 +89,9 @@ try {
   await page.getByRole('button',{name:'내 자료 불러오기',exact:true}).click();
   await page.getByRole('button',{name:/합성 과일/}).click();
   assert.equal((await draft()).items.length,4);
-  await page.getByRole('button',{name:'항목·정답·게임 설정',exact:true}).click();
+  await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();
   await page.locator('[data-preparation-submit] summary').click();
-  await page.getByRole('textbox',{name:'저장할 활동 이름',exact:true}).fill('명시적 저장');
+  await page.getByRole('textbox',{name:'활동 이름 (선택)',exact:true}).fill('명시적 저장');
   await page.getByRole('button',{name:'내 활동으로 저장',exact:true}).click();
   await page.waitForFunction(()=>window.__workspace.writes.length===1);
   assert.equal(await page.evaluate(()=>window.__workspace.writes[0].items.length),4);
@@ -105,7 +105,7 @@ try {
   await page.getByRole('button',{name:'수업에 추가',exact:true}).click();
   assert.equal(await page.evaluate(()=>window.__workspace.lessons?.length||0),0);
   await page.getByLabel('추가할 수업 선택',{exact:true}).selectOption('new');
-  await page.getByRole('textbox',{name:'새 수업 이름',exact:true}).fill('선택한 새 수업');
+  await page.getByRole('textbox',{name:'수업 이름 (선택)',exact:true}).fill('선택한 새 수업');
   await page.getByRole('dialog').getByRole('button',{name:'수업에 추가',exact:true}).click();
   await page.waitForURL('**/curriculum');
   await page.locator('input[value="선택한 새 수업"]').waitFor();

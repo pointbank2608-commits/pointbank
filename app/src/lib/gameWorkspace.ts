@@ -14,6 +14,7 @@ const SENTENCE_GAMES = new Set<GameType>([
   "catchsentence",
   "lightning",
   "shufflefind",
+  "telepathy",
   "lastbox",
   "mysterybox",
   "treasuredig",

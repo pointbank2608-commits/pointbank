@@ -1,25 +1,40 @@
 import type { GameTemplate, GameType } from './types';
+import { storyErrors } from './storybook';
 import { GAME_CATALOG } from './gameCatalog';
 import { isLiveQuestionReady } from './liveQuiz';
 import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } from './sentencePatterns';
 
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
-const BUILTIN = new Set<GameType>(['timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
+const BUILTIN = new Set<GameType>(['sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['unscramble','sentencesplash','catchsentence','lightning']);
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy']);
 const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','findmissing','popcorn','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
 export function gamePreparation(type: GameType) {
   return {
     kinds: BUILTIN.has(type) || type === 'truefalse' || type === 'quizshow' ? [] : BOTH.has(type) ? ['word','sentence'] as const : SENTENCES.has(type) ? ['sentence'] as const : ['word'] as const,
     manualTurns: MANUAL_TURNS.has(type),
     realtime: type === 'quizshow',
-    dedicated: BUILTIN.has(type),
+    dedicated: BUILTIN.has(type) || ['feedmonster','sentencebridge','sentencetower'].includes(type),
   };
+}
+
+/** Counts describe the native configuration, not unfiltered source rows. */
+export function gameReadyDetails(template: GameTemplate) {
+  const { game_type: type, config: c, items } = template;
+  const questions = ['quiz','gameshowquiz','winlosequiz'].includes(type) ? c.questions : type==='truefalse' ? c.statements : type==='quizshow' ? c.liveQuestions : type==='typeanswer' ? c.typeAnswerEntries : type==='imagequiz' ? c.imageQuizItems : undefined;
+  const pairs = ['matchup','whackamole'].includes(type) ? c.pairs : type==='flashcards' ? c.flashcards : undefined;
+  const intrinsic = ['timer','airport','restaurant','doctor','icecream','shopping','mathgen','feedmonster','sentencebridge','sentencetower'].includes(type);
+  const count = intrinsic ? null : questions ? questions.length : pairs ? pairs.length : type==='labeleddiagram' ? c.diagramPins?.length || 0 : type==='groupsort' ? c.groups?.reduce((n,g)=>n+g.items.length,0) || 0 : items.length;
+  const kind = questions ? 'questions' : type === 'timer' ? 'participants' : SENTENCES.has(type) || c.classroomSource?.kind === 'sentence' ? 'sentences' : 'items';
+  const configuredTeams = ({catchsentence:c.catchTeams,treasuredig:c.digTeams,fourclues:c.clueTeams,lastbox:c.boxTeams,mysterybox:c.boxTeams,shufflefind:c.shuffleTeams,telepathy:c.telepathyTeams} as Partial<Record<GameType,number>>)[type];
+  const teams = configuredTeams || (['tictactoe','connect4','baskin31','gameshowquiz','winlosequiz'].includes(type) ? 2 : type === 'saveorgive' && c.saveOrGiveMode !== 'individual' ? c.saveOrGiveTeamCount || 2 : null);
+  return { count, kind, teams };
 }
 
 /** Validate the native config as well as converted sources before entering focus mode. */
 export function isNativeGameReady(template: GameTemplate): boolean {
   const { game_type: type, config: c, items } = template;
+  if (type === 'feedmonster' || type === 'sentencebridge' || type === 'sentencetower') return !!c.storybook && storyErrors(type, c.storybook).length === 0;
   if (type === 'labeleddiagram') return !!c.diagramImageUrl && !!c.diagramPins?.some(pin => pin.label.trim());
   if (type === 'mathgen') return c.mathOperations === undefined || c.mathOperations.length > 0;
   if (type === 'watermelon') {

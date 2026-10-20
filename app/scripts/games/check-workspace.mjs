@@ -58,9 +58,9 @@ try {
  assert.equal(await page.locator('dialog[open]').count(),0);
  await page.evaluate(()=>{window.__ticks=0;window.__clock.setTimeout(()=>window.__ticks++,80)});await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),0);
  await page.getByRole('button',{name:'게임 시작',exact:true}).click();await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),1);
- await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.evaluate(()=>window.__clock.setTimeout(()=>window.__ticks++,80));await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),1);
- await page.getByRole('button',{name:'게임으로 돌아가기',exact:true}).click();await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),2);
- await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.getByRole('button',{name:'준비 화면으로 돌아가기',exact:true}).click();
+ await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.evaluate(()=>window.__clock.setTimeout(()=>window.__ticks++,80));await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),1);
+ await page.getByRole('button',{name:'계속하기',exact:true}).click();await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.__ticks),2);
+ await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'준비 화면으로',exact:true}).click();
  await page.getByRole('button',{name:'내 자료 불러오기',exact:true}).click();await page.getByRole('button',{name:/합성 과일/}).click();
  assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  await page.getByRole('button',{name:'다른 게임 하기',exact:true}).click();await page.getByRole('button',{name:'돌림판',exact:true}).click();await page.waitForURL('**/games/wheel');
@@ -70,10 +70,10 @@ try {
  await page.getByRole('button',{name:'참여자·팀·순서',exact:true}).click();await page.getByLabel('Bob',{exact:true}).check();assert.equal(await page.getByLabel('Bob',{exact:true}).isChecked(),true);await page.keyboard.press('Escape');
  console.log('ok board portal, paused clock/resume, temporary source conversion and real class roster exclusion');
  const gamePaths=[...readFileSync(resolve(root,'src/lib/gamePages.ts'),'utf8').matchAll(/'\/games\/(\w+)'\s*:/g)].map(match=>match[1]);
- for(const game of gamePaths){const before=errors.length;await page.goto(url+'?game='+game);await page.getByRole('button',{name:'항목·정답·게임 설정',exact:true}).first().click();await page.getByRole('dialog',{name:'선생님 준비',exact:true}).waitFor();await page.getByRole('button',{name:'닫기',exact:true}).first().click();assert.equal(errors.length,before,game+': '+errors.slice(before).join('; '));}
+ for(const game of gamePaths){const before=errors.length;await page.goto(url+'?game='+game);await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();await page.getByRole('dialog',{name:'게임 준비',exact:true}).waitFor();await page.getByRole('button',{name:'닫기',exact:true}).first().click();assert.equal(errors.length,before,game+': '+errors.slice(before).join('; '));}
  console.log('ok all '+gamePaths.length+' game pages: existing settings open/close with no runtime errors');
  await page.addInitScript(()=>{const cards=[{id:'a',word:'apple',meaning:'사과',imageUrl:null},{id:'b',word:'banana',meaning:'바나나',imageUrl:null}];sessionStorage.setItem('classbank.lessonRunner',JSON.stringify({lessonId:'synthetic-lesson',lessonName:'합성 수업',classId:'class-a',steps:[{kind:'game',slideId:'game-a',path:'/games/quiz',label:'Quiz'},{kind:'canvas',slideId:'next',path:'/curriculum/synthetic/slide/next',label:'Next'}],stepIndex:0,startedAt:Date.now(),words:['apple','banana'],viewSnapshot:{slides:[{kind:'game',id:'game-a',gameType:'quiz'}],words:cards}}));history.replaceState({usr:{materialsWords:cards},key:'synthetic'},'','/games/quiz');});
- await page.goto(url+'?game=quiz');await page.getByRole('button',{name:'선생님 메뉴',exact:true}).click();await page.getByRole('button',{name:'다른 게임 하기',exact:true}).click();await page.getByRole('button',{name:'돌림판',exact:true}).click();await page.waitForURL('**/games/wheel');
+ await page.goto(url+'?game=quiz');await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'다른 게임 하기',exact:true}).click();await page.getByRole('button',{name:'돌림판',exact:true}).click();await page.waitForURL('**/games/wheel');
  const lesson=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('classbank.lessonRunner')));assert.equal(lesson.steps[0].path,'/games/wheel');assert.equal(lesson.stepIndex,0);assert.equal(lesson.steps[1].slideId,'next');assert.equal(lesson.viewSnapshot.slides[0].gameType,'wheel');
  console.log('ok existing lesson presentation: game replacement preserves subsequent activities and follow-along snapshot');assert.deepEqual(errors,[]);
 } catch(error){console.error('FAILED',error.message);if(page)console.error((await page.locator('body').innerText()).slice(-5000));process.exitCode=1;}

@@ -75,6 +75,9 @@ const QuizPage = lazyPage(() => import('./pages/QuizPage'));
 const RankOrderPage = lazyPage(() => import('./pages/RankOrderPage'));
 const ResultsPage = lazyPage(() => import('./pages/ResultsPage'));
 const SaveOrGivePage = lazyPage(() => import('./pages/SaveOrGivePage'));
+const FeedMonsterPage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.FeedMonsterPage })));
+const SentenceBridgePage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.SentenceBridgePage })));
+const SentenceTowerPage = lazyPage(() => import('./pages/StorybookGamePage').then(m => ({ default: m.SentenceTowerPage })));
 const SentenceUnscramblePage = lazyPage(() => import('./pages/SentenceUnscramblePage'));
 const SettingsPage = lazyPage(() => import('./pages/SettingsPage'));
 const SpellTheWordPage = lazyPage(() => import('./pages/SpellTheWordPage'));
@@ -97,6 +100,7 @@ const FourCluesPage = lazyPage(() => import('./pages/FourCluesPage'));
 const CatchSentencePage = lazyPage(() => import('./pages/CatchSentencePage'));
 const LightningLuckPage = lazyPage(() => import('./pages/LightningLuckPage'));
 const ShuffleFindPage = lazyPage(() => import('./pages/ShuffleFindPage'));
+const TelepathyPage = lazyPage(() => import('./pages/TelepathyPage'));
 const LastBoxPage = lazyPage(() => import('./pages/LastBoxPage'));
 const RemotePage = lazyPage(() => import('./pages/RemotePage'));
 const AirportPage = lazyPage(() => import('./pages/AirportPage'));
@@ -311,6 +315,9 @@ function AppRoutes() {
             <Route path="/games/flashcards" element={<GameWorkspace><FlashcardsPage /></GameWorkspace>} />
             <Route path="/games/anagram" element={<GameWorkspace><AnagramPage /></GameWorkspace>} />
             <Route path="/games/groupsort" element={<GameWorkspace><GroupSortPage /></GameWorkspace>} />
+            <Route path="/games/feedmonster" element={<GameWorkspace><FeedMonsterPage /></GameWorkspace>} />
+            <Route path="/games/sentencebridge" element={<GameWorkspace><SentenceBridgePage /></GameWorkspace>} />
+            <Route path="/games/sentencetower" element={<GameWorkspace><SentenceTowerPage /></GameWorkspace>} />
             <Route path="/games/unscramble" element={<GameWorkspace><SentenceUnscramblePage /></GameWorkspace>} />
             <Route path="/games/typeanswer" element={<GameWorkspace><TypeAnswerPage /></GameWorkspace>} />
             <Route path="/games/spellword" element={<GameWorkspace><SpellTheWordPage /></GameWorkspace>} />
@@ -338,6 +345,7 @@ function AppRoutes() {
             <Route path="/games/doctor" element={<GameWorkspace><DoctorPage /></GameWorkspace>} />
             <Route path="/games/lightning" element={<GameWorkspace><LightningLuckPage /></GameWorkspace>} />
             <Route path="/games/shufflefind" element={<GameWorkspace><ShuffleFindPage /></GameWorkspace>} />
+            <Route path="/games/telepathy" element={<GameWorkspace><TelepathyPage /></GameWorkspace>} />
             <Route path="/games/mysterybox" element={<GameWorkspace><MysteryBoxPage /></GameWorkspace>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
@@ -367,6 +375,9 @@ function AppRoutes() {
             <Route path="/games/flashcards" element={<FlashcardsPage />} />
             <Route path="/games/anagram" element={<AnagramPage />} />
             <Route path="/games/groupsort" element={<GroupSortPage />} />
+            <Route path="/games/feedmonster" element={<FeedMonsterPage />} />
+            <Route path="/games/sentencebridge" element={<SentenceBridgePage />} />
+            <Route path="/games/sentencetower" element={<SentenceTowerPage />} />
             <Route path="/games/unscramble" element={<SentenceUnscramblePage />} />
             <Route path="/games/typeanswer" element={<TypeAnswerPage />} />
             <Route path="/games/spellword" element={<SpellTheWordPage />} />
@@ -394,6 +405,7 @@ function AppRoutes() {
             <Route path="/games/doctor" element={<DoctorPage />} />
             <Route path="/games/lightning" element={<LightningLuckPage />} />
             <Route path="/games/shufflefind" element={<ShuffleFindPage />} />
+            <Route path="/games/telepathy" element={<TelepathyPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>

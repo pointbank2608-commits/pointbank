@@ -175,6 +175,9 @@ export interface BoardRow {
 /* ---------------- 미니게임 ---------------- */
 
 export type GameType =
+  | 'feedmonster'
+  | 'sentencebridge'
+  | 'sentencetower'
   | 'wheel'
   | 'ladder'
   | 'order'
@@ -199,6 +202,7 @@ export type GameType =
   | 'unscramble'
   | 'sentencesplash'
   | 'shufflefind'
+  | 'telepathy'
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
@@ -290,6 +294,7 @@ export type MusicSelection =
   | { kind: 'upload'; path: string; name: string; url: string };
 
 export interface GameTemplateConfig {
+  storybook?: import('./storybook').StorybookConfig;
   /** Sentence Splash: time limit in seconds for each sentence. */
   splashSeconds?: number;
   classroomSource?: { id: string; name: string; kind: 'word' | 'sentence'; version: string; cards: FullCardItem[] };
@@ -384,6 +389,11 @@ export interface GameTemplateConfig {
   shuffleCups?: number;
   shuffleSpeed?: string;
   shuffleRounds?: number;
+  /** 텔레파시 전용: 팀 수(2~6)·후보 수(3~4)·판 수(1~30)·적는 시간(초, 0=제한 없음) */
+  telepathyTeams?: number;
+  telepathyChoices?: number;
+  telepathyRounds?: number;
+  telepathySeconds?: number;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;
