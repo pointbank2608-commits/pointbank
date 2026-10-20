@@ -96,6 +96,7 @@ const TreasureDigPage = lazyPage(() => import('./pages/TreasureDigPage'));
 const FourCluesPage = lazyPage(() => import('./pages/FourCluesPage'));
 const CatchSentencePage = lazyPage(() => import('./pages/CatchSentencePage'));
 const LightningLuckPage = lazyPage(() => import('./pages/LightningLuckPage'));
+const ShuffleFindPage = lazyPage(() => import('./pages/ShuffleFindPage'));
 const LastBoxPage = lazyPage(() => import('./pages/LastBoxPage'));
 const RemotePage = lazyPage(() => import('./pages/RemotePage'));
 const AirportPage = lazyPage(() => import('./pages/AirportPage'));
@@ -336,6 +337,7 @@ function AppRoutes() {
             <Route path="/games/icecream" element={<GameWorkspace><IceCreamPage /></GameWorkspace>} />
             <Route path="/games/doctor" element={<GameWorkspace><DoctorPage /></GameWorkspace>} />
             <Route path="/games/lightning" element={<GameWorkspace><LightningLuckPage /></GameWorkspace>} />
+            <Route path="/games/shufflefind" element={<GameWorkspace><ShuffleFindPage /></GameWorkspace>} />
             <Route path="/games/mysterybox" element={<GameWorkspace><MysteryBoxPage /></GameWorkspace>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
@@ -391,6 +393,7 @@ function AppRoutes() {
             <Route path="/games/icecream" element={<IceCreamPage />} />
             <Route path="/games/doctor" element={<DoctorPage />} />
             <Route path="/games/lightning" element={<LightningLuckPage />} />
+            <Route path="/games/shufflefind" element={<ShuffleFindPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>

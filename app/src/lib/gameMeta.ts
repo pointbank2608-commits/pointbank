@@ -14,6 +14,7 @@ export interface GameMeta {
 
 export const GAME_META: Record<string, GameMeta> = {
   sentencesplash: { minutes: 6, play: 'whole' },
+  shufflefind: { minutes: 8, play: 'team' },
   wheel: { minutes: 3, play: 'whole' },
   ladder: { minutes: 5, play: 'whole' },
   order: { minutes: 3, play: 'whole' },

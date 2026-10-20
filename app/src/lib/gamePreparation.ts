@@ -6,7 +6,7 @@ import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } fro
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['unscramble','sentencesplash','catchsentence','lightning']);
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind']);
 const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','findmissing','popcorn','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
 export function gamePreparation(type: GameType) {
   return {

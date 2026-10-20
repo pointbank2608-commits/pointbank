@@ -44,6 +44,13 @@ export interface GameCatalogEntry {
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
   {
+    // 컵 속 친구 찾기(2026-10-20, PPT "Pokemon Shuffle"): 컵 아래 숨은 동물 친구를 섞기가 끝난 뒤 찾는다. 컵 아래 낱말·문장을 읽으며 고른다.
+    type: 'shufflefind', number: 49, moment: 'speak', category: 'speaking',
+    minItems: 3, icon: 'shuffle', path: '/games/shufflefind',
+    cover: '/covers/game-shufflefind.jpg',
+    nameKey: 'gamesList.shufflefindName', descKey: 'gamesList.shufflefindDesc',
+  },
+  {
     type: 'sentencesplash', number: 48, moment: 'practice', category: 'sentence',
     minItems: 1, icon: 'water', path: '/games/sentencesplash',
     cover: '/covers/game-sentencesplash.svg',

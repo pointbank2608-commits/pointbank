@@ -13,6 +13,7 @@ const SENTENCE_GAMES = new Set<GameType>([
   "sentencesplash",
   "catchsentence",
   "lightning",
+  "shufflefind",
   "lastbox",
   "mysterybox",
   "treasuredig",

@@ -6,6 +6,8 @@
 
 > **Sentence Splash (2026-10-19):** 떨어지는 단어로 문장을 완성하는 48번 게임을 `/games/sentencesplash`에 추가했다. 기존 게임 화면·문장 목록·저장·수업 블록을 재사용하며 추가 SQL은 없다. 구현 파일·사용법·검증·제약은 [docs/sentence-splash-handoff.md](docs/sentence-splash-handoff.md)를 확인한다.
 
+> **컵 속 친구 찾기 / Shuffle Find (2026-10-20):** PPT "Pokemon Shuffle"(포켓볼 셔플 맞히기) 방식만 참고한 49번 게임 `/games/shufflefind`(분류 말하기). 동물 친구가 컵 아래에 숨고 → 컵이 섞이고 → 팀이 컵 아래 **고정된 자리의 낱말·문장**을 소리 내어 읽으며 컵을 골라 열어 본다(맞으면 +1점, 팀 2~4개 차례 돌림·팀 1개는 찾은 횟수). 그림(컵·동물 6종·교실 장면·표지)과 효과음은 우리 것이다 — **원본의 포켓몬 그림·음악은 쓰지 않는다**(상업 서비스라 불가). 설정: `config.shuffleTeams`(1~4)·`shuffleCups`(3~5, 항목이 적으면 자동으로 줄임)·`shuffleSpeed`(slow/normal/fast)·`shuffleRounds`(1~30), 항목은 `items[].label`(낱말·문장, `영어 | 해석`). 판 구성·섞는 순서·정답 자리는 `lib/shuffleFind.ts`(순수 로직), 화면은 `components/ShuffleFind.tsx`(`gameClock`으로 일시정지 지원, 스페이스=시작·다음 판, 숫자 키=컵 고르기, 폰 리모컨 버튼), 편집은 `pages/ShuffleFindPage.tsx`(번개 피하기 페이지와 같은 틀 + `GameWorkspace`). 그림은 `public/skins/shuffle/*.webp`(만든 법: `app/scripts/vocab/out/shuffle/jobs-*.json` → `gemini-image.mjs` → `cut.py`, 약 $0.2). 추가 SQL 없음. 확인: `node app/scripts/games/check-shuffle.mjs`(로직+브라우저 10개) · `check-shuffle-page.mjs`(목록·작업 화면·저장 설정·학생 화면 6개). 아직: 워크시트, 15초 시연 영상, 수업 레시피·수업 라이브러리 항목.
+
 > **선생님 매뉴얼 (2026-10-19):** [docs/manuals/README.md](docs/manuals/README.md)에 수업 만들기·숙제 내주기 매뉴얼의 PDF와 수정용 원본이 있다. 실제 메뉴 이름을 확인해 작성했으며, 메뉴·버튼이 바뀌면 원본과 PDF를 함께 갱신한다.
 
 > **Codex 인수인계 (2026-10-19, 학생 학습 게임):** 기존 스탯에 게임 확인 기록을 연결하고 맞춤 게임 숙제·개별수업·다음 수업 준비 연습으로 이어지는 변경은 [docs/claude-game-learning-handoff.md](docs/claude-game-learning-handoff.md)를 확인한다. 필요한 SQL은 **088a → 088b → 088_check** 순서다. 합성 DB/브라우저 검증은 완료했으며 운영 SQL 실행·커밋·배포는 하지 않았다.

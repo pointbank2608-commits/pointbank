@@ -75,6 +75,7 @@ const LABEL_GAMES = new Set<GameType>([
   'lastbox',
   'mysterybox',
   'lightning',
+  'shufflefind',
 ]);
 
 export interface GameContent {

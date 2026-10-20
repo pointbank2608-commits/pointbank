@@ -198,6 +198,7 @@ export type GameType =
   | 'groupsort'
   | 'unscramble'
   | 'sentencesplash'
+  | 'shufflefind'
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
@@ -378,6 +379,11 @@ export interface GameTemplateConfig {
   lightningMax?: number;
   /** 번개 피하기 캐릭터: sheep|boy|girl|umbrella|zeus|mermaid */
   lightningChar?: string;
+  /** 컵 속 친구 찾기 전용: 팀 수(1~4)·컵 수(3~5)·섞는 속도(slow|normal|fast)·판 수(1~30) */
+  shuffleTeams?: number;
+  shuffleCups?: number;
+  shuffleSpeed?: string;
+  shuffleRounds?: number;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;
