@@ -88,7 +88,7 @@ export function useGamePlay() {
 export function GameManagement({ children }: { children: ReactNode }) {
   const { itemsHidden } = useGamePlay();
   const workspace = useGameWorkspace();
-  if (workspace?.playing && workspace.teacherToolsTarget) return createPortal(<div data-game-management className="rounded-xl border p-3">{children}</div>, workspace.teacherToolsTarget);
+  if (workspace && (workspace.playing || workspace.fullscreen) && workspace.teacherToolsTarget) return createPortal(<div data-game-management className="rounded-xl border p-3">{children}</div>, workspace.teacherToolsTarget);
   return <div hidden={itemsHidden} data-game-management style={itemsHidden ? { display: 'none' } : { display: 'contents' }}>{children}</div>;
 }
 
@@ -357,7 +357,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
         setPseudoFs(false);
         setItemsHidden(!!workspace?.playing || presenting);
         setScale(1);
@@ -524,7 +524,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
             }}
           />
         )}
-        {workspace?.playing ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
+        {workspace && (workspace.playing || fullOn || presenting) ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
         {!workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button

@@ -41,6 +41,7 @@ try{
  create policy title_game_rls on game_templates to title_teacher using(academy_id=current_setting('test.academy')::uuid) with check(academy_id=current_setting('test.academy')::uuid);
  create policy title_word_rls on word_lists to title_teacher using(academy_id=current_setting('test.academy')::uuid) with check(academy_id=current_setting('test.academy')::uuid);`);
  await db.exec(readFileSync(resolve(root,'../supabase/089_optional_activity_names.sql'),'utf8'));
+ assert(Object.values((await db.query(readFileSync(resolve(root,'../supabase/089_check.sql'),'utf8'))).rows[0]).every(Boolean));
  const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
  await db.exec(`set role title_teacher;set test.academy='${a}';`);
  for(const name of ['',' ',null])await db.query(`insert into game_templates(academy_id,game_type,name) values($1,'icecream',$2)`,[a,name]);

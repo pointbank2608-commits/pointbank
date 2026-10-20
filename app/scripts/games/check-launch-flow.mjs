@@ -80,7 +80,7 @@ try {
  await centralStart().click();await page.locator('[data-play-mode="play"]').waitFor();assert.equal(await page.locator('[data-game-ready-overlay]').count(),0);
  await page.waitForFunction(()=>window.__ticks===1);
  const board=page.locator('[data-game="matchup"]');await page.evaluate(()=>window.__kept=document.querySelector('[data-game="matchup"]'));
- await board.getByRole('button',{name:'apple',exact:true}).click();await board.getByRole('button',{name:'사과',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.matchup-clay__tile.is-ok').length===2);
+ const firstWord=(await board.locator('.matchup-clay__column').first().getByRole('button').first().innerText()).trim();const meanings={apple:'사과',banana:'바나나',cat:'고양이',dog:'강아지',sun:'해',book:'책',fish:'물고기',milk:'우유'};await board.getByRole('button',{name:firstWord,exact:true}).click();await board.getByRole('button',{name:meanings[firstWord],exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.matchup-clay__tile.is-ok').length===2);
  const exit=page.locator('[data-frame-controls]').getByRole('button',{name:'전체화면 종료',exact:true});await exit.waitFor();
  assert((await exit.boundingBox()).x>1000);await page.screenshot({path:resolve(root,'../output/game-fullscreen-controls.png'),fullPage:true});await exit.click();await page.waitForFunction(()=>!document.querySelector('[data-game-fullscreen="true"]'));
  assert.equal(new URL(page.url()).pathname,'/games/matchup');assert.equal(await page.locator('[data-play-mode="play"]').count(),1);assert.equal(await page.locator('.matchup-clay__tile.is-ok').count(),2);assert(await page.evaluate(()=>window.__kept===document.querySelector('[data-game="matchup"]')));
@@ -135,9 +135,19 @@ try {
  assert.equal(await page.locator('[data-play-mode="play"]').count(),1);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:resolve(root,'../output/game-menu-mobile.png'),fullPage:true});
  console.log('ok sentence category/count/search/order; mobile fullscreen exit and interactive resize keep current game');
- await page.goto(fixture+'?start=/games/wheel&student=1');await page.getByRole('button',{name:'돌리기',exact:true}).waitFor();
+ for(const type of ['feedmonster','sentencebridge','sentencetower']){
+  await page.goto(fixture+'?start=/games/'+type);await centralStart().waitFor();assert.equal(await page.getByRole('button',{name:'게임 시작',exact:true}).count(),1);
+  await centralStart().click();const story=page.locator('[data-story-game="'+type+'"]');await story.locator('[data-choice]').first().waitFor();
+  assert.equal(await story.getByRole('button',{name:'전체 화면',exact:true}).count(),0);await page.evaluate(()=>window.__story=document.querySelector('[data-story-game]'));
+  await story.locator('[data-choice]').first().click();if(type==='feedmonster')await story.getByRole('button',{name:'몬스터에게 먹이 주기',exact:true}).click();
+  await menu().click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();await page.getByRole('button',{name:'닫기',exact:true}).click();
+  assert(await page.evaluate(()=>window.__story===document.querySelector('[data-story-game]')));await menu().click();await page.getByRole('button',{name:'준비 화면으로',exact:true}).click();
+  assert(await page.evaluate(()=>window.__story===document.querySelector('[data-story-game]')));
+ }
+ console.log('ok three existing story games: one shared start, common fullscreen/menu controls, native answer and mounted progress preserved through settings/preparation');
+ await page.goto(fixture+'?start=/games/wheel&student=1');await page.getByRole('button',{name:'돌리기',exact:true}).last().waitFor();
  assert.equal(await page.locator('[data-game-preparation]').count(),0);assert.equal(await page.locator('[data-game-ready-overlay]').count(),0);assert.equal(await page.getByRole('button',{name:'+ 단어장 만들기',exact:true}).count(),0);
- await page.getByRole('button',{name:'돌리기',exact:true}).click();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
+ await page.getByRole('button',{name:'돌리기',exact:true}).last().click();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok existing read-only student game remains playable without teacher preparation or creation controls');
  assert.deepEqual(errors,[]);
 }catch(error){console.error(error);if(page){console.error((await page.locator('body').innerText()).slice(-7000));await page.screenshot({path:resolve(root,'../output/game-launch-failure.png'),fullPage:true});}process.exitCode=1;}

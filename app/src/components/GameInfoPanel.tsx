@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { usePresenting } from '../context/LessonRunnerContext';
@@ -15,12 +16,16 @@ interface Props {
 
 export function GameMethodVideo({ src }: { src: string }) {
   const { t } = useTranslation();
+  const video = useRef<HTMLVideoElement>(null);
+  const workspace = useGameWorkspace();
+  const hidden = !!workspace && workspace.panel !== 'settings' && workspace.panel !== 'video';
   const [seconds, setSeconds] = useState<number | null>(null);
   const [failed,setFailed]=useState(false);
   useEffect(()=>{setSeconds(null);setFailed(false);},[src]);
+  useEffect(()=>{if(hidden)video.current?.pause();},[hidden]);
   return <div className="space-y-3">
     <p className="font-bold">{seconds === null ? t('flow.methodVideo') : t('flow.methodVideoTimed',{seconds})}</p>
-    <video src={src} className="mx-auto w-full max-w-[640px] rounded-xl" controls playsInline preload="metadata" onError={()=>setFailed(true)}
+    <video ref={video} src={src} className="mx-auto w-full max-w-[640px] rounded-xl" controls playsInline preload="metadata" onError={()=>setFailed(true)}
       onLoadedMetadata={event=>{const duration=event.currentTarget.duration;if(Number.isFinite(duration)&&duration>0)setSeconds(Math.round(duration));}} />
     {failed && <p role="alert">{t('flow.videoFailed')}</p>}
   </div>;

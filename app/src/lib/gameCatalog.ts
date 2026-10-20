@@ -43,9 +43,9 @@ export interface GameCatalogEntry {
  * 두 화면 모두에 자동 반영된다.
  */
 export const GAME_CATALOG: GameCatalogEntry[] = [
-  { type: 'feedmonster', number: 51, moment: 'practice', category: 'vocabulary', minItems: 3, icon: 'pets', path: '/games/feedmonster', cover: '/covers/game-feedmonster.svg', nameKey: 'gamesList.feedmonsterName', descKey: 'gamesList.feedmonsterDesc' },
-  { type: 'sentencebridge', number: 52, moment: 'practice', category: 'sentence', minItems: 5, icon: 'landscape', path: '/games/sentencebridge', cover: '/covers/game-sentencebridge.svg', nameKey: 'gamesList.sentencebridgeName', descKey: 'gamesList.sentencebridgeDesc' },
-  { type: 'sentencetower', number: 53, moment: 'learn', category: 'sentence', minItems: 1, icon: 'castle', path: '/games/sentencetower', cover: '/covers/game-sentencetower.svg', nameKey: 'gamesList.sentencetowerName', descKey: 'gamesList.sentencetowerDesc' },
+  { type: 'feedmonster', number: 51, moment: 'practice', category: 'vocabulary', minItems: 3, icon: 'pets', path: '/games/feedmonster', cover: '/covers/game-feedmonster-v2.svg', nameKey: 'gamesList.feedmonsterName', descKey: 'gamesList.feedmonsterDesc' },
+  { type: 'sentencebridge', number: 52, moment: 'practice', category: 'sentence', minItems: 5, icon: 'landscape', path: '/games/sentencebridge', cover: '/covers/game-sentencebridge-v2.svg', nameKey: 'gamesList.sentencebridgeName', descKey: 'gamesList.sentencebridgeDesc' },
+  { type: 'sentencetower', number: 53, moment: 'learn', category: 'sentence', minItems: 1, icon: 'castle', path: '/games/sentencetower', cover: '/covers/game-sentencetower-v2.svg', nameKey: 'gamesList.sentencetowerName', descKey: 'gamesList.sentencetowerDesc' },
   {
     // 텔레파시(2026-10-20, PPT "Pokemon Telepathy Game"): 알에서 어떤 친구가 나올지 팀마다 미리 적고, 열어 보고 맞힌 팀이 점수를 얻는다.
     type: 'telepathy', number: 50, moment: 'team', category: 'vocabulary',
