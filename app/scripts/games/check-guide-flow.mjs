@@ -105,7 +105,7 @@ try {
 
  const prepare=async(type,label)=>{await page.goto(fixture+'?start=/games/'+type);await guide().getByRole('button',{name:label,exact:false}).click();await page.locator('[data-guide-step="1"]').waitFor();};
  const finish=async()=>{await guide().getByRole('button',{name:'다음',exact:true}).click();if(await page.locator('[data-guide-step="2"]').count())await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();};
- await prepare('groupsort','단어로 만들기');await guide().locator('summary').filter({hasText:'내 자료 불러오기'}).click();await guide().getByRole('button',{name:/합성 과일/}).click();
+ await prepare('groupsort','단어로 만들기');await guide().getByRole('button',{name:'내 단어장 불러오기',exact:true}).click();await guide().getByRole('button',{name:/합성 과일/}).click();
  await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByLabel('참여자 이름',{exact:false}).fill('민지\n지우');await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok saved vocabulary/categories -> groups, independent temporary participants, no original writes');
  await prepare('truefalse','단어로 만들기');await guide().getByLabel('문장',{exact:true}).first().fill('Cats can fly.');await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('alert').waitFor();await guide().getByLabel('정답 O / X',{exact:true}).selectOption('X');await finish();

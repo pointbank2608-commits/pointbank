@@ -70,8 +70,8 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
   const sourceFamilies=['list','sentence','pairs','groups','image'];
   if(kind!=='names'&&kind!=='sample'&&sourceFamilies.includes(family)){
     const cards=family==='pairs'&&type==='typeanswer'?guideCards(usable.map(r=>[r[1],r[0]]),base.classroomSource?.cards):guideCards(usable,base.classroomSource?.cards);
-    if(family==='groups')cards.forEach((c,i)=>{c.category=usable[i][1];});
-    if(family==='image')cards.forEach((c,i)=>{c.imageUrl=usable[i][1];c.meaning='';});
+    if(family==='groups')cards.forEach((c,i)=>{c.category=usable[i][1];c.meaning=base.classroomSource?.cards.find(previous=>previous.word===c.word)?.meaning||'';});
+    if(family==='image')cards.forEach((c,i)=>{c.imageUrl=usable[i][1];c.meaning=base.classroomSource?.cards.find(previous=>previous.word===c.word)?.meaning||'';});
     // Only claim a reusable source if the native content really derives from it.
     if(prepareClassroomGame(type,cards,kind==='sentence'?'sentence':'word'))config.classroomSource={id:'composition',name:base.classroomSource?.name||'',kind:kind==='sentence'?'sentence':'word',version:'',cards};
   }

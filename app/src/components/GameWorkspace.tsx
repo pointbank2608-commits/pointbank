@@ -109,7 +109,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     const previousInert = chrome.map(node => node.inert); chrome.forEach(node => { node.inert = true; });
     return () => { document.body.style.overflow = previousOverflow; delete document.documentElement.dataset.gameFocus; chrome.forEach((node,index) => { node.inert = previousInert[index]; }); };
   }, [playing, presenting]);
-  const allRoster = useMemo(() => info?.roster.length ? info.roster : (participantText.trim() ? participantText.split(/\r?\n/).map(name => name.trim()).filter(Boolean) : [t('flow.participant',{n:1}),t('flow.participant',{n:2})]).map((label,index) => ({ id:`temporary:${scope}:${index}`,label })), [info?.roster, participantText, scope, t]);
+  const allRoster = useMemo(() => participantText.trim() ? participantText.split(/\r?\n/).map(name=>name.trim()).filter(Boolean).map((label,index)=>({id:`temporary:${scope}:${index}`,label})) : info?.roster.length ? info.roster : [t('flow.participant',{n:1}),t('flow.participant',{n:2})].map((label,index)=>({id:`temporary:${scope}:${index}`,label})), [info?.roster, participantText, scope, t]);
   const roster = useMemo(() => allRoster.filter(row => !absent.includes(row.id)), [allRoster, absent]);
   const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
   const turnClick = useRef(0);

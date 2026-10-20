@@ -1,6 +1,8 @@
+import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 const ko = {
   guide: guideKo,
+  source: sourceKo,
   flow: {
     videoFailed: '영상을 불러오지 못했어요. 잠시 후 다시 열거나 샘플로 직접 해보세요.',
     defaultLesson: '새 수업',

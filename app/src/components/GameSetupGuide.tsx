@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
 import { guideFamily, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
-import { prepareClassroomGame } from '../lib/gameWorkspace';
+import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { gamePreparation } from '../lib/gamePreparation';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { insertPhrase } from '../lib/storybook';
 import { SENTENCE_PATTERNS, getSentencePattern, slotLabelKey, type SentenceSlot } from '../lib/sentencePatterns';
-import type { FullCardItem, GameTemplate } from '../lib/types';
+import type { FullCardItem, GameTemplate, WordList } from '../lib/types';
+import GameSourcePicker from './GameSourcePicker';
 import GameImagePicker from './GameImagePicker';
 import { guideButton as button } from './GameCreateButton';
 
@@ -41,6 +42,28 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   let rows:string[][]=[];try{const stored=raw?JSON.parse(raw):null;rows=Array.isArray(stored)&&stored.every(r=>Array.isArray(r)&&r.every(s=>typeof s==='string'))?stored:[];}catch{/* recover malformed tab data safely */}
   const write=(next:string[][])=>setRaw(JSON.stringify(next));
   const seed=(template:GameTemplate)=>{const next=guideRows(template,kind);write(next.length?next:[['','']]);};
+  async function importSource(cards:FullCardItem[],list?:WordList){
+    if(!info.selected)return;
+    setError('');
+    if(kind==='names'){write(cards.map(c=>[c.word]));if(info.gameType==='timer')setNames(cards.map(c=>c.word).join('\n'));return;}
+    if(family==='bridge'){setSource(cards[0]?.word||'');write(cards.map(c=>[c.word,'','','']));return;}
+    if(family==='tower'){setTowerStart(cards[0]?.word||'');write([['','0','','']]);return;}
+    if(family==='image'||family==='groups'){
+      const config={...info.selected.config,classroomSource:{id:list?.id||'composition',name:list?.name||'',kind:'word' as const,version:list?.updated_at||'',cards}};
+      if(!await run(()=>info.applyGuide({items:info.selected!.items,config})))throw new Error('import_failed');
+      write(cards.map(c=>family==='image'?[c.word,c.imageUrl||'']:[c.word,c.category||'']));return;
+    }
+    const content=prepareClassroomGame(info.gameType,cards,kind==='sentence'?'sentence':'word');
+    if(!content)throw new Error('incompatible_source');
+    const next={...info.selected,items:content.items,config:{...info.selected.config,...content.config,classroomSource:{id:list?.id||'composition',name:list?.name||'',kind:kind==='sentence'?'sentence' as const:'word' as const,version:list?.updated_at||'',cards}}};
+    if(!await run(()=>info.applyGuide({items:next.items,config:next.config})))throw new Error('import_failed');
+    seed(next);
+  }
+  function sourceReason(list:WordList){
+    if(['bridge','tower','image','groups'].includes(family))return null;
+    if(prepareClassroomGame(info.gameType,list))return null;
+    const requirement=classroomGameRequirement(info.gameType,list.kind||'word');return t(requirement.key,{count:requirement.count});
+  }
   const setCell=(i:number,j:number,value:string)=>{const next=rows.map(r=>[...r]);next[i]||=[];next[i][j]=value;write(next);};
   useEffect(()=>{nativeVisible(active&&step===1&&native);},[active,step,native,nativeVisible]);
   useEffect(()=>{if(active)heading.current?.focus();},[active,step]);
@@ -119,8 +142,9 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     {step===1&&<>
       <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}`)}</p>
       {t(`guide.gameHints.${info.gameType}`,{defaultValue:''})&&<p>{t(`guide.gameHints.${info.gameType}`,{defaultValue:''})}</p>}
+      {!native&&kind!=='sample'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} />}
       {!dedicated&&!native&&<>
-        {kind!=='names'&&<details><summary className="cursor-pointer py-2 font-bold text-primary">{t('guide.load')}</summary><div className="flex flex-wrap gap-2">{info.lists.length?info.lists.map(list=>{const content=prepareClassroomGame(info.gameType,list);const canFill=!!content||(['bridge','tower'].includes(family)?list.kind==='sentence':['image','groups'].includes(family)&&list.kind!=='sentence');return <button className={button} key={list.id} disabled={!canFill||busy} onClick={()=>{if(!info.selected)return;if(family==='bridge'){setSource(list.items[0]?.word||'');write(list.items.map(i=>[i.word,'','','']));return;}if(family==='tower'){setTowerStart(list.items[0]?.word||'');write([['','0','','']]);return;}if(family==='image'){write(list.items.map(i=>[i.word,i.image_url||'']));return;}if(family==='groups'){write(list.items.map(i=>[i.word,i.category||'']));return;}if(content){const next={...info.selected,items:content.items,config:{...info.selected.config,...content.config,classroomSource:{id:list.id,name:list.name,kind:list.kind||'word',version:list.updated_at,cards:list.items.map(i=>({id:i.id,word:i.word,meaning:i.meaning,imageUrl:i.image_url,category:i.category}))}}};void run(()=>info.applyGuide({items:next.items,config:next.config})).then(ok=>{if(ok)seed(next);});}}}>{list.name} · {list.items.length}</button>;}):<p>{t('guide.empty')}</p>}</div></details>}
+
         {family==='diagram'&&<div className="space-y-3"><GameImagePicker academyId={info.academyId} value={diagram||null} onChange={url=>setDiagram(url||'')}/>{diagram&&<div className="relative w-fit"><button type="button" className="block rounded-xl focus-visible:outline-4 focus-visible:outline-primary" aria-label={t('guide.hints.diagram')} onClick={e=>{const bounds=e.currentTarget.getBoundingClientRect();const keyboard=e.detail===0;write([...rows.filter(r=>r[0]),['',String(keyboard ? .5 : (e.clientX-bounds.left)/bounds.width),String(keyboard ? .5 : (e.clientY-bounds.top)/bounds.height)]]);}}><img src={diagram} className="max-h-80 max-w-full cursor-crosshair" alt=""/></button>{rows.map((r,i)=><span key={i} aria-hidden className="pointer-events-none absolute rounded-full bg-primary px-2 text-white" style={{left:`${Number(r[1])*100}%`,top:`${Number(r[2])*100}%`}}>{i+1}</span>)}</div>}</div>}
         {family==='slots'&&<label className="block font-bold">{t('gameWatermelon.slotLabel')}<select className="ml-2 rounded-xl border p-3" value={pattern} onChange={e=>setPattern(e.target.value)}>{SENTENCE_PATTERNS.filter(p=>p.playable).map(p=><option key={p.id} value={p.id}>{t(p.nameKey)}</option>)}</select></label>}
         {family==='tower'&&<label className="block font-bold">{t('guide.startSentence')}<input className="mt-2 w-full rounded-xl border p-3" value={towerStart} onChange={e=>setTowerStart(e.target.value)}/></label>}
@@ -138,6 +162,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     </>}
     {step===2&&<><p>{t('guide.peopleHint')}</p>{info.teamCount!==undefined?<label className="block font-bold">{t('guide.teamCount')}<select className="ml-3 rounded-xl border p-3" value={info.teamCount} disabled={busy} onChange={e=>void run(()=>info.configureTeams(Number(e.target.value)))}>{Array.from({length:info.gameType==='telepathy'?5:info.gameType==='lastbox'||info.gameType==='mysterybox'?7:3},(_,i)=>i+2).map(n=><option key={n}>{n}</option>)}</select></label>:['tictactoe','connect4','baskin31','twodice','gameshowquiz','winlosequiz'].includes(info.gameType)?<p>{t('guide.teamFixed')}</p>:<p>{t('guide.defaultPeople')}</p>}
       {info.gameType==='lightning'&&<label>{t('flow.count_participants',{count:info.selected?.config.lightningPlayers||8})}<input className="ml-2 rounded-xl border p-3" aria-label={t('guide.participation')} type="number" min={2} max={40} value={info.selected?.config.lightningPlayers||8} onChange={e=>{const count=Number(e.target.value);if(count>=2&&count<=40&&info.selected)void run(()=>info.applyGuide({items:info.selected!.items,config:{...info.selected!.config,lightningPlayers:count}}));}}/></label>}
+      {(manualPeople||info.gameType==='saveorgive'||info.gameType==='timer')&&<GameSourcePicker kind="names" onPick={cards=>setNames(cards.map(c=>c.word).join('\n'))} />}
       {(manualPeople||info.gameType==='saveorgive'||info.gameType==='timer')&&<label className="block">{t('guide.peopleNames')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3" value={names} onChange={e=>setNames(e.target.value)}/></label>}{manualPeople&&<button className={button} onClick={()=>{setParticipants(names);openTeams();}}>{t('guide.teamNames')}</button>}<p className="text-sm">{t('guide.teamNative')}</p>
     </>}
     {step===3&&<><p>{t(kind==='sample'?'guide.sampleNotice':'guide.temporary')}</p>{info.gameType==='quizshow'&&<p className="rounded-xl bg-amber-50 p-4">{t('guide.online')}</p>}

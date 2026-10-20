@@ -1,8 +1,10 @@
+import { sourceEn } from '../sourceLocales';
 import { guideEn } from '../guideLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
   guide: guideEn,
+  source: sourceEn,
   flow: {
     videoFailed: 'Could not load the video. Reopen it or try the interactive sample.',
     defaultLesson: 'New lesson',

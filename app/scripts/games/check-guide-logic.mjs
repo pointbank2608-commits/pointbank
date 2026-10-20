@@ -22,6 +22,8 @@ try {
  const names=guideContent('wheel',[['민지'],['지우']],'names',{classroomSource:{id:'old',kind:'word',cards:[{id:'x',word:'apple',meaning:'사과',imageUrl:null}]}});assert.equal(names.config.classroomSource,undefined);assert.equal(names.items[0].label,'민지');
  const input=[{id:'a',word:'apple',meaning:'사과',imageUrl:'/apple.webp'},{id:'c',word:'cat',meaning:'고양이',imageUrl:'/cat.webp'}];const base={classroomSource:{id:'list',name:'원본',kind:'word',version:'v1',cards:input}};const before=JSON.stringify(base);
  const reused=guideContent('matchup',[['apple','사과'],['cat','고양이']],'word',base);assert.equal(reused.config.classroomSource.cards[0].imageUrl,'/apple.webp');assert.equal(JSON.stringify(base),before);
+ const preservedGroups=guideContent('groupsort',[['apple','fruit'],['cat','animal']],'word',base);assert.equal(preservedGroups.config.classroomSource.cards[0].meaning,'사과');
+ const preservedImage=guideContent('imagequiz',[['apple','/apple.webp']],'word',base);assert.equal(preservedImage.config.classroomSource.cards[0].meaning,'사과');
  const groups=guideContent('groupsort',[['apple','fruit'],['cat','animal']],'word',{});assert.equal(guideProblem({...make('groupsort'),...groups}),null);assert.equal(groups.config.classroomSource.cards[1].category,'animal');
  const bridge=storySample('sentencebridge');const rows=bridge.questions.map(q=>[q.prompt,q.answer,...q.wrong]);assert.equal(guideProblem({...make('sentencebridge'),...guideContent('sentencebridge',rows,'sentence',{storybook:bridge})}),null);
  const tower=storySample('sentencetower');assert.equal(guideProblem({...make('sentencetower'),...guideContent('sentencetower',tower.steps.map(s=>[s.phrase,String(s.position),...s.wrong]),'sentence',{storybook:tower},tower.start)}),null);
