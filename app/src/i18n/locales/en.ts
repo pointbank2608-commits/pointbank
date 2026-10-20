@@ -283,9 +283,9 @@ const en: Ko = {
     infoDescription:
       'Register words, numbers, or names and draw them one at a time like a lottery machine. Great for lotto-style games, calling bingo numbers, or prize drawings.',
     infoSteps: [
-      'Type a word or number into the box next to the machine and tap "Add" — the ball flies right into the machine. Add at least 2.',
+      'Prepare at least 2 words, numbers, or names in game setup. To change items, open Game settings from the menu.',
       'Tap "Mix" to send the balls tumbling inside the machine.',
-      'Once mixing stops the button becomes "Draw" — tap it each time to pop one ball out.',
+      'When the button becomes "Draw", tap it to draw one ball. The remaining balls keep mixing.',
       'Drawn items stack up below in order. Once they\'re all drawn, tap "Mix" again to start a new round.',
     ],
   },

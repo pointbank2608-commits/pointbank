@@ -9,7 +9,6 @@ interface Props {
   pool: GameItem[];
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
-  onAdd?: (label: string) => void;
 }
 
 type Phase = 'idle' | 'mixing';
@@ -30,7 +29,7 @@ function shuffle<T>(arr: T[]): T[] {
  * 시작할 수 있다. 몇 개만 뽑고 멈춰도 되므로 로또 놀이·빙고 숫자 부르기·상품 추첨 등
  * 어디에든 쓸 수 있다.
  */
-export default function OrderPicker({ pool, music, resultSound, onAdd }: Props) {
+export default function OrderPicker({ pool, music, resultSound }: Props) {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<GameItem[] | null>(null);
@@ -71,10 +70,7 @@ export default function OrderPicker({ pool, music, resultSound, onAdd }: Props) 
     timersRef.current.push(timer);
   }
 
-  // 빠른 추가 입력란이 없는 경우(학생 화면 등)엔 항목이 부족하면 손쓸 방법이 없으니
-  // 예전처럼 안내 문구만 보여준다. 입력란이 있으면(선생님 화면) 0~1개인 상태에서도
-  // 기계와 입력란을 그대로 보여줘서 그 자리에서 채워 넣을 수 있게 한다.
-  if (!canMix && !onAdd) {
+  if (!canMix) {
     return (
       <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
         <div className="text-4xl mb-2">🎱</div>
@@ -88,19 +84,15 @@ export default function OrderPicker({ pool, music, resultSound, onAdd }: Props) 
 
   return (
     <div className="flex w-full flex-col items-center pt-1.5 pb-2">
-      <LotteryMachine pool={pool} drawnList={drawnList} active={phase === 'mixing'} onAdd={onAdd} />
+      <LotteryMachine pool={pool} drawnList={drawnList} active={phase === 'mixing'} />
 
-      {canMix ? (
-        <button
-          onClick={drawReady ? drawOne : mix}
-          disabled={flying}
-          className="mt-1 px-12 py-3.5 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
-        >
-          {buttonLabel}
-        </button>
-      ) : (
-        <div className="mt-3 font-caption text-caption text-on-surface-variant">{t('gameOrder.needTwoParticipants')}</div>
-      )}
+      <button
+        onClick={drawReady ? drawOne : mix}
+        disabled={flying}
+        className="mt-1 px-12 py-3.5 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
+      >
+        {buttonLabel}
+      </button>
     </div>
   );
 }

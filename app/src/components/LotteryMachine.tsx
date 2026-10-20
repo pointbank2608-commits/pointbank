@@ -1,10 +1,9 @@
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { isGameSoundOn } from '../lib/gameSfx';
-import { useTranslation } from 'react-i18next';
-import { colorFor } from '../lib/wheel';
+import LotteryCabinet from './LotteryCabinet';
 import type { GameItem } from '../lib/types';
-import GameFitText from './GameFitText';
+import LotteryBall from './LotteryBall';
 
 interface Props {
   /** 기계에 등록된 전체 항목. 아직 안 뽑힌 개수·라벨 계산에 쓴다. */
@@ -13,9 +12,6 @@ interface Props {
   drawnList: GameItem[];
   /** 섞는 중(공이 마구 튀는 애니메이션)인지. */
   active: boolean;
-  /** 있으면 기계 옆에 빠른 추가 입력란을 보여준다(선생님 전용) — 입력하고 추가를 누르면
-   * 공이 입력란에서 기계 유리 케이지 안으로 날아 들어가는 애니메이션이 재생된다. */
-  onAdd?: (label: string) => void;
 }
 
 interface Pos {
@@ -34,20 +30,10 @@ interface Flyer {
   dy: number;
 }
 
-interface InFlyer {
-  key: number;
-  color: string;
-  sx: number;
-  sy: number;
-  dx: number;
-  dy: number;
-}
-
-const MACHINE_SRC = '/skins/lottery-machine.png?v=3';
-/** 스킨에서 유리 케이지 안쪽. 값은 이미지 너비/높이 대비 비율. */
-const HOLE = { cx: 0.5, cy: 0.42, r: 0.3 };
-/** 앞쪽 나무 배출 홈. */
-const CHUTE = { cx: 0.5, cy: 0.8 };
+const HOLE = { cx: 0.5, cy: 161 / 440, rx: 0.28, ry: 112 / 440 };
+const CHUTE = { cx: 0.5, cy: 0.86 };
+const BALL_COLORS = ['#f49eaa', '#8ccdb8', '#98c9ed', '#f2cf7d', '#b6a6df', '#efb48b'];
+const ballColor = (index: number) => BALL_COLORS[index % BALL_COLORS.length];
 const BALL = 38;
 export const LOTTERY_FLY_MS = 720;
 
@@ -57,21 +43,12 @@ function randomPos(): Pos {
   return { left: 50 + Math.cos(ang) * rad, top: 50 + Math.sin(ang) * rad };
 }
 
-function ballFill(color: string): string {
-  return `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.78), ${color} 46%, rgba(0,0,0,0.2) 100%)`;
-}
-
-function ballShadow(): string {
-  return '0 5px 10px rgba(110,62,18,0.3), inset -3px -4px 7px rgba(0,0,0,0.18), inset 3px 3px 5px rgba(255,255,255,0.38)';
-}
-
 /**
- * 나무 빙고·로또 케이지 안에서 공이 튕기다가, "뽑기"를 누를 때마다 하나씩 홈으로 나와
+ * 유리 추첨기 안에서 공이 튕기다가, "뽑기"를 누를 때마다 하나씩 홈으로 나와
  * 아래 로또 공 줄로 굴러간다. 뽑힌 것들은 계속 쌓이고, 케이지 안에는 아직 안 뽑힌
  * 나머지가 계속 남아 보인다.
  */
-export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props) {
-  const { t } = useTranslation();
+export default function LotteryMachine({ pool, drawnList, active }: Props) {
   const n = pool.length;
   const remaining = pool.filter((p) => !drawnList.some((d) => d.id === p.id));
   const ballsLeft = remaining.length;
@@ -79,16 +56,11 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
   const [positions, setPositions] = useState<Pos[]>(() => Array.from({ length: n }, randomPos));
   const [displayedCount, setDisplayedCount] = useState(0);
   const [flyer, setFlyer] = useState<Flyer | null>(null);
-  const [inFlyer, setInFlyer] = useState<InFlyer | null>(null);
-  const [inputValue, setInputValue] = useState('');
 
   const wrapRef = useRef<HTMLDivElement>(null);
-  const machineBoxRef = useRef<HTMLDivElement>(null);
   const chuteRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const flyTimerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const inFlyTimerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const prevLen = useRef(drawnList.length);
 
   useEffect(() => {
@@ -148,16 +120,17 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
       setDisplayedCount(i + 1);
       return;
     }
-    const sx = chute.left + chute.width / 2 - wrap.left - BALL / 2;
-    const sy = chute.top + chute.height / 2 - wrap.top - BALL / 2;
-    const ex = slot.left + slot.width / 2 - wrap.left - BALL / 2;
-    const ey = slot.top + slot.height / 2 - wrap.top - BALL / 2;
+    const scale = wrap.width / (wrapRef.current?.offsetWidth || wrap.width);
+    const sx = (chute.left + chute.width / 2 - wrap.left) / scale - BALL / 2;
+    const sy = (chute.top + chute.height / 2 - wrap.top) / scale - BALL / 2;
+    const ex = (slot.left + slot.width / 2 - wrap.left) / scale - BALL / 2;
+    const ey = (slot.top + slot.height / 2 - wrap.top) / scale - BALL / 2;
     const label = drawnList[i]?.label ?? '';
     setFlyer({
       key: gameClock.dateNow(),
       index: i,
       label: label.length > 4 ? label.slice(0, 3) : label,
-      color: colorFor(i),
+      color: ballColor(i),
       sx,
       sy,
       dx: ex - sx,
@@ -171,46 +144,26 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawnList.length]);
 
-  function handleAdd() {
-    const label = inputValue.trim();
-    if (!label || !onAdd) return;
-    const wrap = wrapRef.current?.getBoundingClientRect();
-    const input = inputRef.current?.getBoundingClientRect();
-    const box = machineBoxRef.current?.getBoundingClientRect();
-    if (wrap && input && box) {
-      const sx = input.left + input.width / 2 - wrap.left - BALL / 2;
-      const sy = input.top + input.height / 2 - wrap.top - BALL / 2;
-      const dx = box.left + box.width * HOLE.cx - wrap.left - BALL / 2;
-      const dy = box.top + box.height * HOLE.cy - wrap.top - BALL / 2;
-      if (inFlyTimerRef.current) gameClock.clearTimeout(inFlyTimerRef.current);
-      setInFlyer({ key: gameClock.dateNow(), color: colorFor(pool.length), sx, sy, dx: dx - sx, dy: dy - sy });
-      inFlyTimerRef.current = gameClock.setTimeout(() => setInFlyer(null), 560);
-    }
-    onAdd(label);
-    setInputValue('');
-    inputRef.current?.focus();
-  }
-
-  const holeLeft = `${(HOLE.cx - HOLE.r) * 100}%`;
-  const holeTop = `${(HOLE.cy - HOLE.r) * 100}%`;
-  const holeSize = `${HOLE.r * 2 * 100}%`;
+  const holeLeft = `${(HOLE.cx - HOLE.rx) * 100}%`;
+  const holeTop = `${(HOLE.cy - HOLE.ry) * 100}%`;
+  const holeWidth = `${HOLE.rx * 2 * 100}%`;
+  const holeHeight = `${HOLE.ry * 2 * 100}%`;
   const showBallLabel = ballsLeft <= 8;
-  const resultSize = drawnList.length > 10 ? 62 : drawnList.length > 6 ? 70 : 78;
+  const resultSize = drawnList.length > 10 ? 62 : drawnList.length >= 6 ? 70 : 78;
 
   return (
     <div
       ref={wrapRef}
-      className={`relative flex w-full flex-col items-center ${onAdd ? 'md:flex-row md:items-start md:justify-center md:gap-8' : ''}`}
+      className="relative flex w-full flex-col items-center" data-lottery-machine
     >
       <div className="flex flex-col items-center">
         <div
-          ref={machineBoxRef}
-          className={`relative mb-1 w-[min(380px,90vw)] aspect-square ${active ? 'lottery-box-shake' : ''}`}
-          style={{ filter: 'drop-shadow(0 16px 24px rgba(110, 62, 18, 0.24))' }}
+          className={`relative mb-1 w-[min(380px,82vw)] aspect-[10/11] ${active ? 'lottery-box-shake' : ''}`}
         >
+          <LotteryCabinet />
           <div
-            className="absolute overflow-hidden rounded-full"
-            style={{ left: holeLeft, top: holeTop, width: holeSize, height: holeSize }}
+            className="absolute overflow-hidden rounded-full" data-lottery-pool aria-hidden="true"
+            style={{ left: holeLeft, top: holeTop, width: holeWidth, height: holeHeight }}
           >
             {remaining.map((item, i) => (
               <span
@@ -222,15 +175,13 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
                   left: `${positions[i]?.left ?? 50}%`,
                   top: `${positions[i]?.top ?? 50}%`,
                   animationDelay: `${(i % 6) * 0.07}s`,
-                  background: ballFill(colorFor(i)),
-                  boxShadow: ballShadow(),
                 }}
               >
-                {showBallLabel ? item.label.slice(0, 3) : ''}
+                <LotteryBall color={ballColor(i)} label={showBallLabel ? item.label.slice(0, 3) : undefined} compact />
               </span>
             ))}
           </div>
-          <img src={MACHINE_SRC} alt="" draggable={false} className="pointer-events-none absolute inset-0 z-10 h-full w-full select-none" />
+          <div className="pointer-events-none absolute inset-0 z-10"><LotteryCabinet front /></div>
           <div
             ref={chuteRef}
             className="pointer-events-none absolute z-20 h-2 w-2 -translate-x-1/2 -translate-y-1/2"
@@ -242,9 +193,9 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
           <div
             className="relative mx-auto mt-1 mb-4 w-fit max-w-[540px] rounded-[28px] px-3.5 py-3.5"
             style={{
-              background: 'linear-gradient(180deg, #f7e4bc 0%, #e8c48a 58%, #d7ae6c 100%)',
-              border: '3px solid #f0d7a8',
-              boxShadow: '0 3px 0 #c4925c, 0 10px 16px rgba(110,62,18,0.14), inset 0 2px 0 rgba(255,255,255,0.4)',
+              background: '#fff9ed',
+              border: '2px solid #e1d4bb',
+              boxShadow: '0 4px 0 #d5c5a4, 0 8px 20px #526c6514',
             }}
           >
             <div className="flex flex-wrap justify-center gap-2.5">
@@ -252,6 +203,7 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
                 const revealed = i < displayedCount;
                 return (
                   <div
+                    data-lottery-result={revealed ? p.label : undefined}
                     key={p.id}
                     ref={(el) => {
                       slotRefs.current[i] = el;
@@ -262,15 +214,9 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
                     style={{
                       width: resultSize,
                       height: resultSize,
-                      background: revealed ? ballFill(colorFor(i)) : 'transparent',
-                      boxShadow: revealed ? ballShadow() : undefined,
                     }}
                   >
-                    {revealed && (
-                      <span className="absolute inset-[14%] text-white">
-                        <GameFitText text={p.label} maxSize={22} />
-                      </span>
-                    )}
+                    {revealed && <LotteryBall color={ballColor(i)} label={p.label} />}
                   </div>
                 );
               })}
@@ -278,52 +224,6 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
           </div>
         )}
       </div>
-
-      {onAdd && (
-        <div className="flex w-full max-w-[300px] flex-col gap-2 md:w-[240px] md:pt-6">
-          <div className="font-caption text-caption text-on-surface-variant">{t('gameOrder.quickAddLabel')}</div>
-          <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAdd();
-              }}
-              disabled={active}
-              placeholder={t('gameOrder.quickAddPlaceholder')}
-              className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
-            />
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={active || !inputValue.trim()}
-              className="shrink-0 rounded-lg bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {t('gameOrder.quickAddButton')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {inFlyer && (
-        <span
-          key={inFlyer.key}
-          className="lottery-insert-ball pointer-events-none absolute z-30 rounded-full"
-          style={
-            {
-              left: inFlyer.sx,
-              top: inFlyer.sy,
-              width: BALL,
-              height: BALL,
-              '--dx': `${inFlyer.dx}px`,
-              '--dy': `${inFlyer.dy}px`,
-              background: ballFill(inFlyer.color),
-              boxShadow: ballShadow(),
-            } as CSSProperties
-          }
-        />
-      )}
 
       {flyer && (
         <span
@@ -337,12 +237,10 @@ export default function LotteryMachine({ pool, drawnList, active, onAdd }: Props
               height: BALL,
               '--dx': `${flyer.dx}px`,
               '--dy': `${flyer.dy}px`,
-              background: ballFill(flyer.color),
-              boxShadow: ballShadow(),
             } as CSSProperties
           }
         >
-          {flyer.label}
+          <LotteryBall color={flyer.color} label={flyer.label} compact />
         </span>
       )}
     </div>

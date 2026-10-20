@@ -313,7 +313,6 @@ export default function OrderPage() {
               pool={selected.items}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
-              onAdd={isStaff ? (label) => void addItem(label) : undefined}
             />
           </GameThemeFrame>
 
