@@ -61,6 +61,7 @@ export function layoutSplashBricks(
   bricks: SplashBrick[],
   width: number,
   measure: (s: string) => number,
+  minHeight = 0,
 ) {
   const usable = Math.max(48, width - 20);
   // 1) 줄 나누기: 왼쪽부터 채워 가며 넘치면 다음 줄로
@@ -103,6 +104,6 @@ export function layoutSplashBricks(
   }
   const positions = rows.flat();
   const bottom = Math.max(72, ...positions.map((p) => p.y + p.height));
-  const height = Math.max(360, bottom + 230);
+  const height = Math.max(360, bottom + 230, minHeight);
   return { positions, height, fall: height - 90 - bottom };
 }

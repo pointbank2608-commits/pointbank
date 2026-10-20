@@ -72,6 +72,10 @@ export default function SentenceSplash({
     makeSplashBricks(playable[0] || { id: "", label: "" }),
   );
   const [width, setWidth] = useState(640);
+  // 큰 화면(전자칠판·전체화면)에서는 게임 전체를 비례해 키운다. 바깥 틀의 가로폭으로 배율을 정한다.
+  const shell = useRef<HTMLDivElement>(null);
+  const [shellSize, setShellSize] = useState({ w: 1000, h: 800 });
+  const scale = Math.min(1.9, Math.max(1, shellSize.w / 1000));
   const stage = useRef<HTMLDivElement>(null);
   const action = useRef<HTMLButtonElement>(null);
   const words = sentenceWords(playable[round.index]?.label || "");
@@ -82,8 +86,10 @@ export default function SentenceSplash({
       bricks,
       width,
       (s) => ctx?.measureText(s).width ?? s.length * 12,
+      // 화면이 넓으면 무대도 높여 가로로만 길쭉해지지 않게 한다(확대 전 단위).
+      Math.min(shellSize.h * 0.48, shellSize.w * 0.46) / scale,
     );
-  }, [bricks, width]);
+  }, [bricks, width, shellSize, scale]);
   const key = JSON.stringify([items, duration]);
   useEffect(() => {
     const next = initialRound();
@@ -93,6 +99,19 @@ export default function SentenceSplash({
     // Content/config edits restart the game; resizing never does.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+  useEffect(() => {
+    const el = shell.current;
+    if (!el) return;
+    const read = () => setShellSize({ w: el.clientWidth, h: window.innerHeight });
+    read();
+    const observer = new ResizeObserver(read);
+    observer.observe(el);
+    window.addEventListener("resize", read);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", read);
+    };
+  }, []);
   useEffect(() => {
     if (!stage.current) return;
     const observer = new ResizeObserver((entries) =>
@@ -216,7 +235,12 @@ export default function SentenceSplash({
         );
   const overlay = round.phase !== "playing";
   return (
-    <div className="splash-game" data-splash-phase={round.phase}>
+    <div ref={shell} className="splash-shell">
+    <div
+      className="splash-game"
+      data-splash-phase={round.phase}
+      style={scale > 1 ? ({ zoom: scale } as CSSProperties) : undefined}
+    >
       <header className="splash-header">
         <div>
           <h2>🧱 Sentence Splash!</h2>
@@ -447,6 +471,7 @@ export default function SentenceSplash({
           "Mistakes are okay. Try again!",
         )}
       </p>
+    </div>
     </div>
   );
 }
