@@ -11,6 +11,7 @@ import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
+import SentenceSources from '../components/SentenceSources';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { useToast } from '../context/ToastContext';
 import { updateGameTemplate } from '../lib/api';
@@ -71,7 +72,7 @@ function RecentResults({ recent }: { recent: { id: string; label: string; at: nu
 
 export default function WheelPage() {
   const { t } = useTranslation();
-  const g = useGameTemplates({ gameType: 'wheel', defaultItems });
+  const g = useGameTemplates({ gameType: 'wheel', defaultItems, listKind: 'all' });
   const {
     isStaff,
     classes,
@@ -431,10 +432,11 @@ export default function WheelPage() {
                     </div>
                     <WordListPicker
                       variant="label"
-                      wordLists={wordLists}
+                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
                       loading={wordListsLoading}
                       onImportLabels={(labels) => void addItemsBulk(labels)}
                     />
+                    <SentenceSources mode="labels" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportLabels={(labels) => void addItemsBulk(labels)} />
                     <DictionaryPicker
                       variant="label"
                       onImportLabels={(labels) => void addItemsBulk(labels)}

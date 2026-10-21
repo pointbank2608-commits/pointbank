@@ -14,7 +14,7 @@ export const GUIDE_FAMILIES: Partial<Record<GameType, GuideFamily>> = {
 };
 /** New dedicated games keep their native editor until a guided schema is registered. */
 export const guideFamily=(type:GameType):GuideFamily=>GUIDE_FAMILIES[type]||'builtin';
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','treasuredig','catchsentence','lightning','lastbox','mysterybox','shufflefind','telepathy']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','treasuredig','catchsentence','lightning','lastbox','mysterybox','shufflefind','telepathy','passball']);
 export const NAME_GAMES = new Set<GameType>(['wheel','ladder','order','bomb','timer']);
 export function guideKinds(type: GameType): GuideKind[] {
   const family = guideFamily(type);

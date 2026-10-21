@@ -8,6 +8,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
 import WordListPicker from '../components/WordListPicker';
+import SentenceSources from '../components/SentenceSources';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -31,6 +32,7 @@ export default function FlashcardsPage() {
     gameType: 'flashcards',
     defaultItems,
     defaultConfig: () => ({ flashcards: [] }),
+    listKind: 'all',
   });
   const {
     isStaff,
@@ -360,10 +362,11 @@ export default function FlashcardsPage() {
                     <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="pairs"
-                      wordLists={wordLists}
+                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
                       loading={wordListsLoading}
                       onImportPairs={(cards) => addCardsBulk(cards)}
                     />
+                    <SentenceSources mode="pairs" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportPairs={(cards) => addCardsBulk(cards)} />
                     <DictionaryPicker
                       variant="pairs"
                       onImportPairs={(cards) => addCardsBulk(cards)}

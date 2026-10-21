@@ -8,6 +8,7 @@ import GameThemeFrame from '../components/GameThemeFrame';
 import ImportFromClass from '../components/ImportFromClass';
 import TypeAnswer from '../components/TypeAnswer';
 import WordListPicker from '../components/WordListPicker';
+import SentenceSources from '../components/SentenceSources';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -31,6 +32,7 @@ export default function TypeAnswerPage() {
     gameType: 'typeanswer',
     defaultItems,
     defaultConfig: () => ({ typeAnswerEntries: [], typeAnswerMode: 'question' }),
+    listKind: 'all',
   });
   const {
     isStaff,
@@ -368,10 +370,11 @@ export default function TypeAnswerPage() {
                     <div className="flex flex-wrap items-start gap-3 my-3">
                     <WordListPicker
                       variant="pairs"
-                      wordLists={wordLists}
+                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
                       loading={wordListsLoading}
                       onImportPairs={(pairs) => addEntriesFromPairs(pairs)}
                     />
+                    <SentenceSources mode="pairs" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportPairs={(pairs) => addEntriesFromPairs(pairs)} />
                     <DictionaryPicker
                       variant="pairs"
                       onImportPairs={(pairs) => addEntriesFromPairs(pairs)}

@@ -13,6 +13,7 @@ import OpenInOtherGame from '../components/OpenInOtherGame';
 import PassTheBall from '../components/PassTheBall';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
+import SentenceSources from '../components/SentenceSources';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -37,6 +38,7 @@ export default function PassBallPage() {
     gameType: 'passball',
     defaultItems,
     defaultConfig: () => ({ ballRange: DEFAULT_RANGE, music: PASS_BALL_MUSIC }),
+    listKind: 'all',
   });
   const {
     isStaff,
@@ -398,10 +400,11 @@ export default function PassBallPage() {
                         </div>
                         <WordListPicker
                           variant="label"
-                          wordLists={wordLists}
+                          wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
                           loading={wordListsLoading}
                           onImportLabels={(labels) => void addParticipantsBulk(labels)}
                         />
+                        <SentenceSources mode="labels" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportLabels={(labels) => void addParticipantsBulk(labels)} />
                         <DictionaryPicker
                           variant="label"
                           onImportLabels={(labels) => void addParticipantsBulk(labels)}
