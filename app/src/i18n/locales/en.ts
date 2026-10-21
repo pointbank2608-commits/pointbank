@@ -1,9 +1,11 @@
+import { materialBrowserEn } from '../materialBrowserLocales';
 import { homeEn } from '../homeLocales';
 import { sourceEn } from '../sourceLocales';
 import { guideEn } from '../guideLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  materialBrowser: materialBrowserEn,
   home: homeEn,
   guide: guideEn,
   source: sourceEn,

@@ -1,0 +1,30 @@
+.materials-browser { --materials-header: 4rem; --materials-inset: 9rem; display: grid; gap: 1.5rem; min-width: 0; color: var(--color-deep-navy); }
+.materials-browser .materials-heading h1 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 900; line-height: 1.3; letter-spacing: -.04em; }
+.materials-browser .materials-heading p { margin-top: .4rem; color: #52637b; line-height: 1.65; font-size: 1.05rem; }
+.materials-browser .materials-shortcuts { position: sticky; top: var(--materials-header); z-index: 15; background: #fffefa; border: 1px solid #e6edf5; border-radius: 1rem; padding: .45rem; box-shadow: 0 4px 14px #19385f13; min-width: 0; }
+.materials-browser .materials-shortcuts-scroll { display: flex; gap: .5rem; overflow-x: auto; scrollbar-width: thin; position: relative; }
+.materials-browser .materials-shortcuts a { display: flex; flex: 1 0 auto; align-items: center; justify-content: center; gap: .65rem; min-height: 3.2rem; padding: .6rem 1rem; border-radius: .8rem; background: #f0f5fc; color: var(--color-deep-navy); font-size: 1rem; font-weight: 750; white-space: nowrap; text-decoration: none; }
+.materials-browser .materials-shortcuts a[aria-current] { background: var(--color-primary); color: #fff; }
+.materials-browser .materials-count { display: inline-flex; justify-content: center; align-items: center; min-width: 1.8em; padding: .1em .4em; border-radius: 2rem; background: #17365d0c; font-size: .8em; font-weight: 750; }
+.materials-browser a[aria-current] .materials-count { background: #fff3; }
+.materials-browser a:focus-visible { outline: 3px solid #004ab8; outline-offset: -3px; }
+.materials-browser .materials-section { scroll-margin-top: var(--materials-inset); min-width: 0; }
+.materials-browser .materials-section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
+.materials-browser .materials-section-heading h2 { font-size: 1.5rem; line-height: 1.4; font-weight: 850; }
+.materials-browser .materials-section-heading > span { color: #52637b; font-size: .85rem; }
+.materials-browser .materials-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.materials-browser .materials-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid #e8edf4; border-radius: 1rem; background: #fff; overflow: hidden; box-shadow: 0 3px 8px #19385f0c; text-decoration: none; }
+.materials-browser .materials-card:hover { border-color: #99bdef; box-shadow: 0 5px 16px #19385f18; }
+.materials-browser .materials-cover { aspect-ratio: 16 / 9; background: #e4f2fb; overflow: hidden; display: grid; place-items: center; }
+.materials-browser .materials-cover img { width: 100%; height: 100%; object-fit: cover; }
+.materials-browser .materials-card-copy { display: flex; flex: 1; flex-direction: column; align-items: start; gap: .45rem; padding: .9rem; }
+.materials-browser .materials-preparation { border-radius: 2rem; padding: .25rem .65rem; font-size: .8rem; line-height: 1.5; font-weight: 750; }
+.materials-browser .materials-tone-yellow { background: #fff0bd; color: #694b06; }
+.materials-browser .materials-tone-blue { background: #e0efff; color: #0054b5; }
+.materials-browser .materials-tone-mint { background: #dcf5e7; color: #12604d; }
+.materials-browser .materials-tone-purple { background: #eee6ff; color: #5c329a; }
+.materials-browser .materials-card h3 { font-size: 1.15rem; line-height: 1.45; font-weight: 850; overflow-wrap: anywhere; }
+.materials-browser .materials-card p { color: #52637b; line-height: 1.6; font-size: .95rem; overflow-wrap: anywhere; flex: 1; margin-bottom: .25rem; }
+.materials-browser .materials-card-action { display: flex; align-items: center; justify-content: center; gap: .5rem; align-self: stretch; min-height: 2.75rem; padding: .45rem; border-radius: .7rem; background: #e6f2ff; color: #0054c6; font-weight: 750; line-height: 1.5; }
+@media (max-width: 599px) { .materials-browser { gap: 1.25rem; } .materials-browser .materials-shortcuts a { padding-inline: .8rem; font-size: .95rem; } .materials-browser .materials-shortcuts a > .material-symbols-outlined { display: none; } }
+@media print { .materials-browser .materials-shortcuts { display: none; } }

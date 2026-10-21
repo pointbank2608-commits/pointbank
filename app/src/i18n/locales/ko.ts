@@ -1,7 +1,9 @@
+import { materialBrowserKo } from '../materialBrowserLocales';
 import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 const ko = {
+  materialBrowser: materialBrowserKo,
   home: homeKo,
   guide: guideKo,
   source: sourceKo,

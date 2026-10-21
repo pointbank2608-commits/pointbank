@@ -1,5 +1,11 @@
+export type MaterialCategory = 'words' | 'phonics' | 'gamecards' | 'roleplay' | 'other';
+export type MaterialPreparation = 'topic' | 'words' | 'rule' | 'unit' | 'options';
+
 export interface MaterialCatalogEntry {
   id: string;
+  displayOrder?: number;
+  category?: MaterialCategory;
+  preparation?: MaterialPreparation;
   path: string;
   icon: string;
   /** MaterialsPage 카드 커버 사진 경로. 없으면 그라데이션+아이콘으로 대체 표시. */
@@ -12,7 +18,8 @@ export interface MaterialCatalogEntry {
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   {
-    id: 'library',
+    id: 'library', displayOrder: 0,
+    category: 'words', preparation: 'topic',
     path: '/materials/library',
     icon: 'collections_bookmark',
     cover: '/covers/material-library.jpg',
@@ -20,7 +27,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.libraryDesc',
   },
   {
-    id: 'phonics',
+    id: 'phonics', displayOrder: 4,
+    category: 'phonics', preparation: 'rule',
     path: '/materials/phonics',
     icon: 'spellcheck',
     cover: '/covers/material-phonics.jpg',
@@ -29,7 +37,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 미리 만들어 둔 파닉스 CVC 워크북(2026-10-02) — 유닛만 고르면 바로 인쇄
-    id: 'cvcworkbook',
+    id: 'cvcworkbook', displayOrder: 5,
+    category: 'phonics', preparation: 'unit',
     path: '/materials/cvc-workbook',
     icon: 'menu_book',
     cover: '/covers/material-cvcworkbook.jpg',
@@ -38,7 +47,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 미리 만들어 둔 장모음 워크북(2026-10-03) — 매직 e 와 ee·ea, 같은 화면(CvcWorkbookPage book="long")
-    id: 'longvowelworkbook',
+    id: 'longvowelworkbook', displayOrder: 6,
+    category: 'phonics', preparation: 'unit',
     path: '/materials/long-vowel-workbook',
     icon: 'menu_book',
     cover: '/covers/material-longvowelworkbook.jpg',
@@ -46,7 +56,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.longVowelWorkbookDesc',
   },
   {
-    id: 'flashcards',
+    id: 'flashcards', displayOrder: 2,
+    category: 'words', preparation: 'words',
     path: '/materials/flashcards',
     icon: 'print',
     cover: '/covers/material-flashcards.jpg',
@@ -54,7 +65,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.flashcardsDesc',
   },
   {
-    id: 'memorycards',
+    id: 'memorycards', displayOrder: 3,
+    category: 'words', preparation: 'words',
     path: '/materials/memory-cards',
     icon: 'style',
     cover: '/covers/material-memorycards.jpg',
@@ -62,7 +74,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.memoryCardsDesc',
   },
   {
-    id: 'bingo',
+    id: 'bingo', displayOrder: 7,
+    category: 'gamecards', preparation: 'words',
     path: '/materials/bingo',
     icon: 'grid_on',
     cover: '/covers/material-bingo.jpg',
@@ -71,7 +84,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 미스터리 박스 인쇄물(2026-10-14) — 문제 카드 + 보상 카드 28장
-    id: 'mysterybox',
+    id: 'mysterybox', displayOrder: 8,
+    category: 'gamecards', preparation: 'options',
     path: '/materials/mystery-box',
     icon: 'redeem',
     cover: '/covers/game-mysterybox.jpg',
@@ -80,7 +94,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 공항 롤플레이 워크시트(2026-10-15) — 대본 빈칸·순서 맞추기·전광판 읽기·역할 카드
-    id: 'airport',
+    id: 'airport', displayOrder: 10,
+    category: 'roleplay', preparation: 'options',
     path: '/materials/airport',
     icon: 'flight',
     cover: '/covers/game-airport.jpg',
@@ -89,7 +104,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 병원 워크시트(2026-10-15) — 낱말 카드·짝 맞추기·What's the problem?·역할 카드
-    id: 'doctor',
+    id: 'doctor', displayOrder: 13,
+    category: 'roleplay', preparation: 'options',
     path: '/materials/doctor',
     icon: 'medical_services',
     cover: '/covers/game-doctor.jpg',
@@ -98,7 +114,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 번개 피하기 워크시트(2026-10-16) — 읽기 카드·서바이벌 기록지·빈칸 채우기·내가 번개를 맞으면?
-    id: 'lightning',
+    id: 'lightning', displayOrder: 9,
+    category: 'gamecards', preparation: 'options',
     path: '/materials/lightning',
     icon: 'thunderstorm',
     cover: '/covers/game-lightning.jpg',
@@ -107,7 +124,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 아이스크림 가게 워크시트(2026-10-15) — 메뉴판·대화 빈칸·내 아이스크림 주문서·점원/손님 카드와 주문 카드
-    id: 'icecream',
+    id: 'icecream', displayOrder: 12,
+    category: 'roleplay', preparation: 'options',
     path: '/materials/icecream',
     icon: 'icecream',
     cover: '/covers/game-icecream.jpg',
@@ -116,7 +134,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     // 레스토랑 롤플레이 워크시트(2026-10-15) — 메뉴판·주문 대화 빈칸·주문서·짝 연습 카드
-    id: 'restaurant',
+    id: 'restaurant', displayOrder: 11,
+    category: 'roleplay', preparation: 'options',
     path: '/materials/restaurant',
     icon: 'restaurant',
     cover: '/covers/game-restaurant.jpg',
@@ -124,7 +143,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     descKey: 'materials.restaurantDesc',
   },
   {
-    id: 'worksheet',
+    id: 'worksheet', displayOrder: 1,
+    category: 'words', preparation: 'words',
     path: '/materials/worksheet',
     icon: 'description',
     cover: '/covers/material-worksheet.jpg',
@@ -164,3 +184,16 @@ export const WORKSHEET_TAB_CATALOG: WorksheetTabCatalogEntry[] = [
   { tab: 'boardGame', icon: 'casino', labelKey: 'tabBoardGame' },
   { tab: 'readMatch', icon: 'link', labelKey: 'tabReadMatch' },
 ];
+
+/** Both shortcuts and sections use the same catalog; unclassified additions remain visible. */
+export const MATERIAL_CATEGORIES: {key: MaterialCategory; icon: string}[] = [
+  {key:'words',icon:'menu_book'}, {key:'phonics',icon:'headphones'},
+  {key:'gamecards',icon:'casino'}, {key:'roleplay',icon:'theater_comedy'}, {key:'other',icon:'folder'},
+];
+export function materialSections(catalog = MATERIALS_CATALOG) {
+  return MATERIAL_CATEGORIES.map(category => ({...category, items: catalog.filter(item => (item.category ?? 'other') === category.key).sort((a,b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity))})).filter(section => section.items.length > 0);
+}
+export const MATERIAL_PREPARATIONS: Record<MaterialPreparation, {action: 'create' | 'units' | 'settings'; tone: string}> = {
+  topic: {action:'create',tone:'yellow'}, words: {action:'create',tone:'blue'},
+  rule: {action:'create',tone:'purple'}, unit: {action:'units',tone:'mint'}, options: {action:'settings',tone:'purple'},
+};

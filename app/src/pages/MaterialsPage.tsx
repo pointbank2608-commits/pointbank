@@ -1,71 +1,36 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { MATERIALS_CATALOG, type MaterialCatalogEntry } from '../lib/materialsCatalog';
+import { materialSections, MATERIAL_PREPARATIONS } from '../lib/materialsCatalog';
+import { useMaterialNavigation } from '../lib/useMaterialNavigation';
+import '../styles/materials-browser.css';
 
-/** 활동지를 쓰임새별로 묶어 보여 준다(2026-10-17, 외부 평가: 한 줄로 길게 늘어서 있으면 찾기 어렵다). 새 활동지는 여기 한 칸에 id 를 더할 것. */
-const GROUPS: { key: string; ids: string[] }[] = [
-  { key: 'words', ids: ['library', 'worksheet', 'flashcards', 'memorycards'] },
-  { key: 'phonics', ids: ['phonics', 'cvcworkbook', 'longvowelworkbook'] },
-  { key: 'gamecards', ids: ['bingo', 'mysterybox', 'lightning'] },
-  { key: 'roleplay', ids: ['airport', 'restaurant', 'icecream', 'doctor'] },
-];
+const sections = materialSections();
+const sectionIds = sections.map(s => `materials-${s.key}`);
 
 export default function MaterialsPage() {
   const { t } = useTranslation();
-  const known = new Set(GROUPS.flatMap((g) => g.ids));
-  const byId = new Map<string, MaterialCatalogEntry>(MATERIALS_CATALOG.map((m) => [m.id, m]));
-  const sections = [
-    ...GROUPS.map((g) => ({ key: g.key, items: g.ids.map((id) => byId.get(id)).filter((m): m is MaterialCatalogEntry => !!m) })),
-    // 어느 묶음에도 없는 새 활동지는 "기타"로 모은다
-    { key: 'other', items: MATERIALS_CATALOG.filter((m) => !known.has(m.id)) },
-  ].filter((s) => s.items.length > 0);
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy mb-1.5">
-          {t('materials.pageTitle')}
-        </h2>
-        <p className="font-body-md text-body-md text-on-surface-variant">{t('materials.pageSubtitle')}</p>
-      </div>
-
-      {sections.map((s) => (
-        <section key={s.key} className="space-y-3">
-          <h3 className="font-title-md text-title-md text-deep-navy">
-            {t(`materials.group_${s.key}`)} <span className="text-on-surface-variant">{s.items.length}</span>
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {s.items.map((m) => (
-              <Link
-                  key={m.id}
-                  to={m.path}
-                  className="group relative bg-surface-container-lowest rounded-xl shadow-card overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all"
-                >
-                  <div className="relative h-36 overflow-hidden">
-                    {m.cover ? (
-                      <img
-                        src={m.cover}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                        <span className="material-symbols-outlined text-6xl text-on-primary-container opacity-80">{m.icon}</span>
-                      </div>
-                    )}
-                    <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-primary shadow-sm">
-                      <span className="material-symbols-outlined">{m.icon}</span>
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-title-md text-title-md text-on-surface mb-1">{t(m.nameKey)}</h3>
-                    <p className="font-body-md text-body-md text-on-surface-variant">{t(m.descKey)}</p>
-                  </div>
-                </Link>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  );
+  const { rootRef, navRef, active, jump } = useMaterialNavigation(sectionIds);
+  return <div className="materials-browser" ref={rootRef}>
+    <header className="materials-heading"><h1>{t('materials.pageTitle')}</h1><p>{t('materialBrowser.subtitle')}</p></header>
+    <nav className="materials-shortcuts" ref={navRef} aria-label={t('materialBrowser.shortcuts')}>
+      <div className="materials-shortcuts-scroll">{sections.map(s => {
+        const id = `materials-${s.key}`;
+        return <a key={s.key} href={`#${id}`} aria-current={active === id ? 'location' : undefined} onClick={event => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault(); jump(id, true);
+        }}><span className="material-symbols-outlined" aria-hidden="true">{s.icon}</span><span>{t(`materials.group_${s.key}`)}</span><span className="materials-count">{s.items.length}</span></a>;
+      })}</div>
+    </nav>
+    {sections.map(s => <section key={s.key} id={`materials-${s.key}`} className="materials-section" aria-labelledby={`materials-title-${s.key}`}>
+      <div className="materials-section-heading"><h2 id={`materials-title-${s.key}`} tabIndex={-1}>{t(`materials.group_${s.key}`)} <span className="materials-count">{s.items.length}</span></h2><span>{t('materialBrowser.count', {count:s.items.length})}</span></div>
+      <div className="materials-card-grid">{s.items.map(m => {
+        const preparation = m.preparation ?? 'options';
+        const {tone, action} = MATERIAL_PREPARATIONS[preparation];
+        return <Link key={m.id} to={m.path} className="materials-card">
+          <div className="materials-cover">{m.cover ? <img src={m.cover} alt="" width={640} height={360} loading="lazy" decoding="async" /> : <span className="material-symbols-outlined" aria-hidden="true">{m.icon}</span>}</div>
+          <div className="materials-card-copy"><span className={`materials-preparation materials-tone-${tone}`}>{t(`materialBrowser.preparation.${preparation}`)}</span><h3>{t(m.nameKey)}</h3><p>{t(m.descKey)}</p><span className="materials-card-action">{t(`materialBrowser.action.${action}`)} <span aria-hidden="true">→</span></span></div>
+        </Link>;
+      })}</div>
+    </section>)}
+  </div>;
 }
