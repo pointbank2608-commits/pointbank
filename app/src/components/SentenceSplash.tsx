@@ -72,10 +72,9 @@ export default function SentenceSplash({
     makeSplashBricks(playable[0] || { id: "", label: "" }),
   );
   const [width, setWidth] = useState(640);
-  // 큰 화면(전자칠판·전체화면)에서는 게임 전체를 비례해 키운다. 바깥 틀의 가로폭으로 배율을 정한다.
+  // The shared frame fits the whole surface; avoid a second width-only zoom.
   const shell = useRef<HTMLDivElement>(null);
   const [shellSize, setShellSize] = useState({ w: 1000, h: 800 });
-  const scale = Math.min(1.9, Math.max(1, shellSize.w / 1000));
   const stage = useRef<HTMLDivElement>(null);
   const action = useRef<HTMLButtonElement>(null);
   const words = sentenceWords(playable[round.index]?.label || "");
@@ -87,9 +86,9 @@ export default function SentenceSplash({
       width,
       (s) => ctx?.measureText(s).width ?? s.length * 12,
       // 화면이 넓으면 무대도 높여 가로로만 길쭉해지지 않게 한다(확대 전 단위).
-      Math.min(shellSize.h * 0.48, shellSize.w * 0.46) / scale,
+      Math.min(shellSize.h * 0.48, shellSize.w * 0.46),
     );
-  }, [bricks, width, shellSize, scale]);
+  }, [bricks, width, shellSize]);
   const key = JSON.stringify([items, duration]);
   useEffect(() => {
     const next = initialRound();
@@ -239,7 +238,6 @@ export default function SentenceSplash({
     <div
       className="splash-game"
       data-splash-phase={round.phase}
-      style={scale > 1 ? ({ zoom: scale } as CSSProperties) : undefined}
     >
       <header className="splash-header">
         <div>

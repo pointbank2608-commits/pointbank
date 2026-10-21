@@ -244,13 +244,14 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         return;
       }
 
-      const availW = stage.clientWidth;
+      const stageStyle = getComputedStyle(stage);
+      const availW = stage.clientWidth - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight);
       // 전체화면(·발표 중)에선 스테이지 자체가 채울 영역 전체라 clientHeight가 곧 가용 높이지만,
       // 일반 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
       // 따로 재야 한다(지금 스크롤 위치 기준 — 사용자가 이미 스크롤해서 보고 있는 상태를
       // 쫓아다니며 다시 축소하진 않는다, 새로고침·리사이즈 시점에만 재계산).
       const availH = fill
-        ? stage.clientHeight
+        ? stage.clientHeight - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom)
         : Math.max(240, window.innerHeight - stage.getBoundingClientRect().top - 24);
       const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
 
@@ -285,12 +286,18 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      // Ladder results and bomb prompts must remain visible with the turn card.
-      // Switching to scroll mode would reset scale to 1 and hide their lower content.
-      const fitWithoutScroll = ['ladder','bomb'].includes(gameType ?? bg ?? '');
-      const scroll = fill && !fitWithoutScroll && next < 0.75;
+      // Desktop boards always fit both dimensions. The old 0.75 threshold reset
+      // large games to 1x and hid their controls/results below the viewport.
+      // On narrow screens preserve readable text and touch targets with scrolling.
+      const compactBoard = ['ladder', 'bomb'].includes(gameType ?? bg ?? '');
+      const scroll = fill && window.innerWidth < DESKTOP_BREAKPOINT && !compactBoard && next < 0.75;
+      if (!scroll) {
+        // Do not retain a phone's scroll offset after rotating/resizing to fit mode.
+        stage.scrollTop = 0;
+        stage.scrollLeft = 0;
+      }
       setScrollContent(scroll);
-      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(fitWithoutScroll ? 0.1 : 0.75, next)) : Math.min(1, Math.max(0.5, next)));
+      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(0.05, next)) : Math.min(1, Math.max(0.05, next)));
     }
 
     fit();
@@ -314,6 +321,10 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     // 페이지 전체 높이가 같이 바뀌므로 body를 관찰해 다시 재도록 한다. 창 크기 자체가
     // 바뀔 때(회전, 창 리사이즈, 모바일↔데스크탑 폭 경계를 넘나들 때)도 다시 잰다.
     ro.observe(document.body);
+    // Absolute result overlays can change without resizing their game root.
+    const mutations = new MutationObserver(scheduleFit);
+    mutations.observe(wrap, { childList: true, subtree: true, characterData: true });
+    window.visualViewport?.addEventListener('resize', scheduleFit);
     window.addEventListener('resize', fit);
     // 처음 잴 때 웹폰트·그림이 아직 안 불러와져 있으면 안쪽 글자·그림 크기가 나중에 바뀌는데, 그
     // 안쪽 요소들은 관찰 대상이 아니라 다시 재지 않아 배율이 엉뚱하게(예: 0.5) 굳어버렸다(발표 화면에서
@@ -329,6 +340,8 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       timers.forEach((id) => window.clearTimeout(id));
       wrap.removeEventListener('load', fit, true);
       ro.disconnect();
+      mutations.disconnect();
+      window.visualViewport?.removeEventListener('resize', scheduleFit);
       if (fitFrame) window.cancelAnimationFrame(fitFrame);
       window.removeEventListener('resize', fit);
     };
@@ -583,7 +596,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>
         <GameWorkspaceStartOverlay />
-        <div ref={stageRef} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
+        <div ref={stageRef} data-game-fit={scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
             style={!fill && naturalSize.h > 0
