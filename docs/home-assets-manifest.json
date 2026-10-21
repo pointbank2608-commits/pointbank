@@ -1,0 +1,92 @@
+[
+  {
+    "name": "hero-games",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-b18e76d4-b7f2-43ff-b685-c7da5421d108.png",
+    "path": "app\\public\\home\\hero-games.webp",
+    "size": [
+      800,
+      533
+    ],
+    "originalSize": [
+      1536,
+      1024
+    ],
+    "bytes": 53754,
+    "transparent": true
+  },
+  {
+    "name": "hero-worksheet",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-0c31f2c6-462f-4689-941a-c0ed4e3347e8.png",
+    "path": "app\\public\\home\\hero-worksheet.webp",
+    "size": [
+      480,
+      480
+    ],
+    "originalSize": [
+      1254,
+      1254
+    ],
+    "bytes": 26692,
+    "transparent": true
+  },
+  {
+    "name": "game-wheel",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-10d6b4d2-e2a4-4ea7-9b0e-c0cd82805765.png",
+    "path": "app\\public\\home\\game-wheel.webp",
+    "size": [
+      640,
+      400
+    ],
+    "originalSize": [
+      1586,
+      992
+    ],
+    "bytes": 23032,
+    "transparent": false
+  },
+  {
+    "name": "game-matchup",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-1728b50b-0844-46fe-93db-03ed17b01917.png",
+    "path": "app\\public\\home\\game-matchup.webp",
+    "size": [
+      640,
+      400
+    ],
+    "originalSize": [
+      1586,
+      992
+    ],
+    "bytes": 19912,
+    "transparent": false
+  },
+  {
+    "name": "game-unscramble",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-161ed8f3-731d-4c9e-a375-1f3195c433c6.png",
+    "path": "app\\public\\home\\game-unscramble.webp",
+    "size": [
+      640,
+      400
+    ],
+    "originalSize": [
+      1586,
+      992
+    ],
+    "bytes": 13608,
+    "transparent": false
+  },
+  {
+    "name": "game-treasuredig",
+    "source": "C:\\Users\\likes\\.codex\\generated_images\\01a15240-27c2-7a82-aee0-3f0307e910e3\\exec-2033c3ea-65d3-4f3a-bc86-755cee2b300f.png",
+    "path": "app\\public\\home\\game-treasuredig.webp",
+    "size": [
+      640,
+      400
+    ],
+    "originalSize": [
+      1586,
+      992
+    ],
+    "bytes": 46958,
+    "transparent": false
+  }
+]

@@ -10,11 +10,11 @@ import { wordListToCards } from '../lib/gameFromWords';
 import { useFeature } from '../lib/features';
 import { classesToday, shortTime } from '../lib/classSchedule';
 import { recentSourceUses } from '../lib/quickActivity';
-import ActivityPreview from '../components/ActivityPreview';
+import '../styles/home-dashboard.css';
 import AddActivityToLesson from '../components/AddActivityToLesson';
 import type { WordList, CurriculumLesson, ClassRow } from '../lib/types';
 
-const button = 'inline-flex min-h-11 items-center justify-center rounded-xl border border-primary/25 bg-white px-4 py-2 font-bold text-primary hover:bg-primary/5 focus-visible:outline-4 focus-visible:outline-primary';
+const button = 'home-button';
 const recommended = ['wheel', 'matchup', 'unscramble', 'treasuredig'];
 const previews = ['previewWheel', 'previewMatch', 'previewSentence', 'previewDig'];
 export default function DashboardPage() {
@@ -41,37 +41,37 @@ export default function DashboardPage() {
       .catch(() => { if (active) setError(true); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [academy, session?.user.id, groupOpen, retry]);
-  return <div className="space-y-7">
-    <div className="flex flex-wrap items-center justify-between gap-4"><GameCreateButton /></div>
-    <header><h1 className="text-[clamp(1.7rem,3vw,2.5rem)] font-black tracking-tight text-deep-navy">{t('quick.title')}</h1><p className="mt-2 text-lg text-on-surface-variant">{t('quick.subtitle')}</p></header>
-    <div className="grid gap-4 lg:grid-cols-3">
-      <section className="rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/15 to-sky-50 p-6 sm:p-8 lg:col-span-2">
-        <span aria-hidden className="text-4xl">🎮</span>
-        <h2 className="mt-2 text-2xl font-black text-deep-navy">{t('quick.gameTitle')}</h2><p className="my-3 text-lg">{t('quick.gameHint')}</p>
-        <Link to="/games" className={`${button} border-0 bg-primary! px-7 text-white!`}>{t('quick.chooseGame')} →</Link><p className="mt-3 text-sm text-on-surface-variant">{t('quick.gameFirst')}</p>
+  return <div className="home-dashboard" data-home-dashboard>
+    <header className="home-heading"><div><h1>{t('quick.title')}</h1><p>{t('quick.subtitle')}</p></div><div className="home-create"><GameCreateButton /></div></header>
+    <div className="home-launch-grid">
+      <section className="home-launch home-launch-games" aria-labelledby="home-games-title">
+        <div className="home-launch-copy"><h2 id="home-games-title">{t('quick.gameTitle')}</h2><p>{t('home.gameHint')}</p><Link to="/games" className={`${button} home-button-primary`}>{t('quick.chooseGame')} <span aria-hidden="true">→</span></Link></div>
+        <img className="home-launch-art" src="/home/hero-games.webp" width={800} height={533} alt="" fetchPriority="high" decoding="async" />
       </section>
-      <section className="rounded-3xl bg-amber-100 p-6 sm:p-8"><span aria-hidden className="text-4xl">📝</span><h2 className="mt-2 text-2xl font-black text-deep-navy">{t('quick.worksheet')}</h2><p className="my-3">{t('quick.worksheetHint')}</p><Link to="/materials" className={button}>{t('quick.chooseWorksheet')} →</Link></section>
+      <section className="home-launch home-launch-worksheet" aria-labelledby="home-worksheet-title"><div className="home-launch-copy"><h2 id="home-worksheet-title">{t('quick.worksheet')}</h2><p>{t('quick.worksheetHint')}</p><Link to="/materials" className={button}>{t('quick.chooseWorksheet')} <span aria-hidden="true">→</span></Link></div><img className="home-launch-art" src="/home/hero-worksheet.webp" width={480} height={480} alt="" decoding="async" /></section>
     </div>
-    <section className="space-y-3 rounded-2xl border border-outline-variant bg-white p-5" aria-labelledby="material-start-title"><h2 id="material-start-title" className="text-xl font-extrabold">{t('flow.materialTitle')}</h2><p className="text-on-surface-variant">{t('flow.materialSubtitle')}</p><div className="flex flex-wrap gap-2"><Link className={button} to="/wordlists" state={{createMaterialKind:'word'}}>{t('flow.createWords')}</Link><Link className={button} to="/wordlists" state={{createMaterialKind:'sentence'}}>{t('flow.createSentences')}</Link><Link className={button} to="/wordlists">{t('flow.loadMaterial')}</Link></div></section>
-    <section aria-labelledby="recommend-title"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="recommend-title" className="text-2xl font-extrabold text-deep-navy">{t('quick.recommended')}</h2><Link to="/games" className={button}>{t('quick.allGames')} →</Link></div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{recommended.map((type,index) => { const g = GAME_CATALOG.find(game => game.type === type)!; const locked = !hasFullAccess && !isFreeTierGame(g.type); return <article key={type} className="overflow-hidden rounded-2xl border border-outline-variant/50 bg-white shadow-card">
-        <ActivityPreview type={type} label={t(`quick.${previews[index]}`)} />
-        <div className="flex min-h-48 flex-col p-4"><h3 className="text-lg font-bold">{t(g.nameKey)} {locked && <span className="text-sm" aria-label={t('nav.premiumPageBadge')}>🔒</span>}</h3><p className="mt-1 flex-1 text-on-surface-variant">{t(g.descKey)}</p><Link to={g.path} className={button} aria-label={`${t(g.nameKey)} · ${t('quick.start')}`}>{t('quick.start')}</Link></div>
+    <section className="home-material-start" aria-labelledby="material-start-title"><div><h2 id="material-start-title">{t('flow.materialTitle')}</h2><p>{t('flow.materialSubtitle')}</p></div><div className="home-actions"><Link className={button} to="/wordlists" state={{createMaterialKind:'word'}}>{t('flow.createWords')}</Link><Link className={button} to="/wordlists" state={{createMaterialKind:'sentence'}}>{t('flow.createSentences')}</Link><Link className={button} to="/wordlists">{t('flow.loadMaterial')}</Link></div></section>
+    <section className="home-recommended" aria-labelledby="recommend-title"><div className="home-section-heading"><h2 id="recommend-title">{t('quick.recommended')}</h2><Link to="/games" className="home-text-link">{t('quick.allGames')} <span aria-hidden="true">→</span></Link></div>
+      <div className="home-game-grid">{recommended.map((type,index) => { const g = GAME_CATALOG.find(game => game.type === type)!; const locked = !hasFullAccess && !isFreeTierGame(g.type); return <article key={type} className="home-game-card">
+        <img className="home-game-art" src={`/home/game-${type}.webp`} alt={t(`quick.${previews[index]}`)} width={640} height={400} loading="lazy" decoding="async" />
+        <div className="home-game-copy"><h3>{t(g.nameKey)} {locked && <span className="home-lock" aria-label={t('nav.premiumPageBadge')}><svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg></span>}</h3><p>{t(`home.descriptions.${type}`)}</p><Link to={g.path} className={`${button} home-button-soft`} aria-label={`${t(g.nameKey)} · ${t('quick.start')}`}>{t('quick.start')} <span aria-hidden="true">→</span></Link></div>
       </article>; })}</div>
     </section>
-    {error && <div role="alert" className="rounded-xl bg-error-container p-4">{t('quick.failed')} <button className={button} onClick={() => setRetry(n=>n+1)}>{t('quick.retry')}</button></div>}
-    <section className="space-y-3 rounded-2xl bg-emerald-50 p-4 sm:p-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-extrabold text-deep-navy">{t('quick.reuse')}</h2><p className="mt-1 text-sm text-on-surface-variant">{t('quick.recentHint')}</p></div><Link to="/wordlists" className={button}>{t('quick.allLists')}</Link></div>
-      {loading ? <p role="status">{t('common.loading')}</p> : !error && !lists.length ? <div className="space-y-3 rounded-xl bg-white p-4"><p>{t('quick.emptyLists')}</p><Link to="/games/wheel" className={button}>{t('quick.sample')}</Link> <Link to="/wordlists" className={button}>{t('quick.newList')}</Link></div> : lists.map(list => <div key={list.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4"><div><h3 className="font-bold">{list.name}</h3><p className="text-sm text-on-surface-variant">{t('quick.items', {count:list.items.length})} · {t(list.kind === 'sentence' ? 'quick.sentences' : 'quick.words')}</p></div><div className="flex flex-wrap gap-2">
-        <Link to="/games" state={{quickSource:{ownerId:session?.user.id,academyId:academy?.id,cards:wordListToCards(list),kind:list.kind || 'word',name:list.name,id:list.id}}} className={button}>{t('quick.otherGame')}</Link>
-        <Link to="/materials/worksheet" state={{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:wordListToCards(list),materialsKind:list.kind || 'word',materialsTab:'list'}} className={button}>{t('quick.worksheet')}</Link>
-        {groupOpen && <button className={button} onClick={() => setAddList(list)}>{t('quick.addLesson')}</button>}
-      </div></div>)}
-    </section>
-    {groupOpen && <section className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-extrabold text-deep-navy">{t('quick.lessons')}</h2><p className="mt-1 text-on-surface-variant">{t('quick.lessonHint')}</p></div><div className="flex gap-2"><Link to="/curriculum" className={button}>{t('quick.allLessons')}</Link><Link to="/curriculum" state={{openQuick:true}} className={button}>{t('quick.newLesson')}</Link></div></div>
-      {loading ? <p role="status">{t('common.loading')}</p> : !error && !lessons.length ? <p className="rounded-xl border p-4">{t('quick.emptyLessons')}</p> : lessons.map(lesson => <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-outline-variant bg-white p-4"><div><h3 className="font-bold">{lesson.name}</h3><p className="text-sm text-on-surface-variant">{t('quick.activities',{count:lesson.playlist.length})}</p></div><Link className={button} to="/curriculum" state={{focusClassId:lesson.class_id,startLessonId:lesson.id}}>{t('quick.continueLesson')}</Link></div>)}
-      {classesToday(classes).map(cls => <p key={cls.id} className="rounded-lg bg-surface-container-low p-3">{cls.name} · {shortTime(cls.schedule?.time || '')} <Link to="/curriculum" state={{focusClassId:cls.id}} className="ml-3 font-bold text-primary">{t('quick.lessons')} →</Link></p>)}
-    </section>}
-    <section className="rounded-2xl border border-outline-variant p-4"><h2 className="mb-3 font-bold">{t('quick.manage')}</h2><div className="flex flex-wrap gap-2">{[['/attendance','nav.attendance'],['/board','nav.board'],['/results','nav.reports'],['/settings','nav.settings']].map(([to,label]) => <Link key={to} to={to} className={button}>{t(label)}</Link>)}</div></section>
+    {error && <div role="alert" className="home-error">{t('quick.failed')} <button className={button} onClick={() => setRetry(n=>n+1)}>{t('quick.retry')}</button></div>}
+    <div className={`home-lower-grid ${!groupOpen ? 'home-lower-single' : ''}`}>
+      <section className="home-records" aria-labelledby="home-recent-title" aria-busy={loading}><div className="home-section-heading"><div><h2 id="home-recent-title">{t('home.recent')}</h2><p>{t('quick.recentHint')}</p></div><Link to="/wordlists" className="home-text-link">{t('quick.allLists')} <span aria-hidden="true">→</span></Link></div>
+        {loading ? <p role="status" className="home-empty">{t('common.loading')}</p> : !error && !lists.length ? <div className="home-empty"><p>{t('quick.emptyLists')}</p><div className="home-actions"><Link to="/games/wheel" className={button}>{t('quick.sample')}</Link><Link to="/wordlists" className={button}>{t('quick.newList')}</Link></div></div> : lists.map(list => <div key={list.id} className="home-record"><div className="home-record-name"><h3>{list.name}</h3><p>{t(list.kind === 'sentence' ? 'quick.sentences' : 'quick.words')} · {t('quick.items', {count:list.items.length})}</p></div><div className="home-actions">
+          <Link to="/games" state={{quickSource:{ownerId:session?.user.id,academyId:academy?.id,cards:wordListToCards(list),kind:list.kind || 'word',name:list.name,id:list.id}}} className={button}>{t('quick.otherGame')}</Link>
+          <Link to="/materials/worksheet" state={{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:wordListToCards(list),materialsKind:list.kind || 'word',materialsTab:'list'}} className={button}>{t('quick.worksheet')}</Link>
+          {groupOpen && <button className={button} onClick={() => setAddList(list)}>{t('quick.addLesson')}</button>}
+        </div></div>)}
+      </section>
+      {groupOpen && <section className="home-records" aria-labelledby="home-lessons-title" aria-busy={loading}><div className="home-section-heading"><div><h2 id="home-lessons-title">{t('quick.lessons')}</h2><p>{t('quick.lessonHint')}</p></div><div className="home-actions"><Link to="/curriculum" className="home-text-link">{t('quick.allLessons')} <span aria-hidden="true">→</span></Link><Link to="/curriculum" state={{openQuick:true}} className={button}>{t('quick.newLesson')}</Link></div></div>
+        {loading ? <p role="status" className="home-empty">{t('common.loading')}</p> : !error && !lessons.length ? <p className="home-empty">{t('quick.emptyLessons')}</p> : lessons.map(lesson => <div key={lesson.id} className="home-record"><div className="home-record-name"><h3>{lesson.name}</h3><p>{t('quick.activities',{count:lesson.playlist.length})}</p></div><Link className={`${button} home-button-primary`} to="/curriculum" state={{focusClassId:lesson.class_id,startLessonId:lesson.id}}>{t('quick.continueLesson')}</Link></div>)}
+        {classesToday(classes).map(cls => <p key={cls.id} className="home-schedule">{cls.name} · {shortTime(cls.schedule?.time || '')} <Link to="/curriculum" state={{focusClassId:cls.id}} className="home-text-link">{t('quick.lessons')} →</Link></p>)}
+      </section>}
+    </div>
+    <section className="home-management"><h2>{t('quick.manage')}</h2><div className="home-actions">{[['/attendance','nav.attendance'],['/board','nav.board'],['/results','nav.reports'],['/settings','nav.settings']].map(([to,label]) => <Link key={to} to={to} className={button}>{t(label)}</Link>)}</div></section>
     {addList && <AddActivityToLesson source={{cards:wordListToCards(addList),kind:addList.kind || 'word',name:addList.name}} onClose={() => setAddList(null)} />}
   </div>;
 }

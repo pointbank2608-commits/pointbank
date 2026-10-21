@@ -1,0 +1,38 @@
+[
+  {
+    "key": "hero-games",
+    "transparent": true,
+    "ref": true,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark. The attached orange book is the EXISTING BRAND CHARACTER identity reference: preserve the same orange rectangular book body, cream page edges, two black oval eyes, smiling open dark mouth, round coral cheeks, small rounded arms and feet. Do not redesign its face or proportions. Ignore and remove the magenta fringe/background in that reference. Create a wide, compact composition of a colorful clay spinner wheel (coral red pointer, golden rim, 8 bright pastel sectors, wooden base), three ivory picture flashcards showing an apple, cute dog face and cat face, and the orange book waving beside the wheel. Camera front three-quarter slight depth. All subjects grouped tightly together, wheel tallest near center, mascot on right and cards in front/left. No text anywhere. Genuine transparent exterior. Entire composition uncropped. Wide 3:2 composition, no extra props."
+  },
+  {
+    "key": "hero-worksheet",
+    "transparent": true,
+    "ref": false,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark.  A compact still-life of two thick ivory worksheet sheets with faint embossed checklist lines, a small clay apple picture, and one friendly chunky yellow pencil with pink eraser leaning on the paper. Slight three-quarter view, rounded edges, tiny soft shadow. Only paper and pencil. No text or alphabet, no letters, no book character, no background, genuine transparent exterior. Portrait 1:1 composition, objects fill frame."
+  },
+  {
+    "key": "game-wheel",
+    "transparent": false,
+    "ref": false,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark.  Wide 16:10 thumbnail on soft sky-blue studio background: a colorful eight-sector spinner wheel with coral pointer, golden rim and wooden base. In front sit three cream flashcards with sculpted apple, dog face and orange cat face. No letters or words. Large readable objects with generous clean edges; wheel and picture cards clearly communicate a word spinner game."
+  },
+  {
+    "key": "game-matchup",
+    "transparent": false,
+    "ref": false,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark.  Wide 16:10 thumbnail on warm pale apricot studio background. Four chunky ivory cards in a tidy two-by-two arrangement: top row sculpted red apple and orange cat face; lower row cards with exact black lowercase English words \"apple\" and \"cat\" respectively. This communicates pairing pictures with words. No connecting lines, no other text. Cards fill composition, subtle clay texture consistent with handmade toy art."
+  },
+  {
+    "key": "game-unscramble",
+    "transparent": false,
+    "ref": true,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark. The attached orange book is the EXISTING BRAND CHARACTER identity reference: preserve the same orange rectangular book body, cream page edges, two black oval eyes, smiling open dark mouth, round coral cheeks, small rounded arms and feet. Do not redesign its face or proportions. Ignore and remove the magenta fringe/background in that reference. Wide 16:10 thumbnail on soft pale sky-blue studio background. The orange book character stands smiling on left and gestures at three chunky ivory word tiles on right, with the exact English words \"I\", \"like\", \"apples.\" The tiles are clearly separate movable pieces and form one simple sentence. No other letters or text. Large subject, spare classroom toy illustration, consistent soft clay materials."
+  },
+  {
+    "key": "game-treasuredig",
+    "transparent": false,
+    "ref": false,
+    "prompt": "Use case: stylized-concept. Production illustration asset for a Korean teacher's English classroom dashboard. Soft tactile three-dimensional handmade clay, gently rounded forms, warm upper-left light, polished pastel colors, subtle material texture, clean uncluttered composition. No website UI, no button, no title, no Korean lettering, no watermark.  Wide 16:10 thumbnail: golden wooden treasure chest open in a small mound of warm sandy ground, colorful clay gems and coins inside, chunky blue shovel with wooden handle leaning beside it. Simple mint foliage at edges and pale sky-blue background. No map, no characters, no text or letters. Cute teaching game treasure scene, clear central objects, same soft handmade clay style."
+  }
+]

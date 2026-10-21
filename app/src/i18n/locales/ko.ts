@@ -1,6 +1,8 @@
+import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 const ko = {
+  home: homeKo,
   guide: guideKo,
   source: sourceKo,
   flow: {
