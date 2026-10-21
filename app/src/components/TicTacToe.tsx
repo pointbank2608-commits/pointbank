@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -88,6 +89,7 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const winner = checkWinner(marks);
   const isDraw = !winner && marks.every((m) => m !== null);
+  useNativeGameTurn({current:t('gameTicTacToe.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameTicTacToe.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner&&!isDraw});
 
   useEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));

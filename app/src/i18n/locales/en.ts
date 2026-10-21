@@ -1,3 +1,4 @@
+import { turnDisplayEn } from '../turnDisplayLocales';
 import { materialBrowserEn } from '../materialBrowserLocales';
 import { homeEn } from '../homeLocales';
 import { sourceEn } from '../sourceLocales';
@@ -5,6 +6,7 @@ import { guideEn } from '../guideLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  turnDisplay: turnDisplayEn,
   materialBrowser: materialBrowserEn,
   home: homeEn,
   guide: guideEn,
@@ -27,7 +29,7 @@ const en: Ko = {
     "count_teams": "{{count}} teams",
     "count_participants": "{{count}} participants",
     "menuTitle": "Menu",
-    "chooseOtherGame": "Choose another game",
+    "chooseOtherGame": "Game menu",
     "methodVideo": "How to play video",
     "methodVideoTimed": "How to play video · {{seconds}} sec",
 

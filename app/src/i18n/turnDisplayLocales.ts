@@ -1,0 +1,2 @@
+export const turnDisplayKo={region:'현재 차례와 다음 차례',current:'지금 차례',next:'다음',position:'{{index}} / {{total}}번째',pass:'{{name}}에게 넘기기',complete:'완료',holder:'지금 폭탄을 든 사람',read:'읽어보세요'};
+export const turnDisplayEn={region:'Current and next turn',current:'Current turn',next:'Next',position:'{{index}} of {{total}}',pass:'Pass to {{name}}',complete:'Complete',holder:'Holding the bomb',read:'Read aloud'};

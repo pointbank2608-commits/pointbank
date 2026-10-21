@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -93,6 +94,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   const [turn, setTurn] = useState<Team>('blue');
   const [head, setHead] = useState(0);
   const [loser, setLoser] = useState<Team | null>(null);
+  useNativeGameTurn({current:t('gameBaskin31.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameBaskin31.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!loser});
   const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);

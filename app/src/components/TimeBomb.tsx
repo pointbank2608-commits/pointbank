@@ -1,3 +1,5 @@
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,10 +63,16 @@ export default function TimeBomb({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const n = participants.length;
+  const sharedTurn=useGameWorkspace()?.turn;
+  const n = sharedTurn?.total ?? participants.length;
   const [mode, setMode] = useState<Mode>('pass');
   const [phase, setPhase] = useState<Phase>('idle');
   const [holderIndex, setHolderIndex] = useState(0);
+  const [caughtHolder,setCaughtHolder]=useState('');
+  const currentHolder=sharedTurn?.current ?? participants[holderIndex % Math.max(1,n)]?.label ?? '';
+  const nextHolder=sharedTurn?.next ?? participants[(holderIndex+1)%Math.max(1,n)]?.label ?? '';
+  const holderRef=useRef(currentHolder);holderRef.current=currentHolder;
+  const lastPass=useRef(0);
   const [currentWord, setCurrentWord] = useState<GameItem | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [wordDrafts, setWordDrafts] = useState<Record<string, string>>({});
@@ -144,7 +152,7 @@ export default function TimeBomb({
     if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
 
-    setHolderIndex(0);
+    setHolderIndex(0); setCaughtHolder(''); lastPass.current=0;
     setPhase('active');
     pickWord();
     stopMusicRef.current = playMusic(music, { loop: true });
@@ -152,6 +160,7 @@ export default function TimeBomb({
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;
     timerRef.current = gameClock.setTimeout(() => {
+      setCaughtHolder(holderRef.current);
       setPhase('exploded');
       stopMusicRef.current();
       playMusic(resultSound);
@@ -160,7 +169,9 @@ export default function TimeBomb({
 
   function pass() {
     if (phase !== 'active' || n === 0) return;
-    setHolderIndex((prev) => (prev + 1) % n);
+    const now=Date.now();if(now-lastPass.current<250)return;
+    if(sharedTurn){if(!sharedTurn.advance())return;}else setHolderIndex((prev)=>(prev+1)%n);
+    lastPass.current=now;
     pickWord();
   }
 
@@ -177,6 +188,7 @@ export default function TimeBomb({
     setMode(next);
   }
 
+  const hasTurnDisplay=useNativeGameTurn({current:phase==='exploded'?caughtHolder:currentHolder,next:nextHolder,index:sharedTurn?.index??holderIndex,total:n,title:t('turnDisplay.holder'),enabled:mode==='pass'&&n>=2,canAdvance:phase==='active',advance:pass});
   const blockedForPassMode = mode === 'pass' && n < 2;
   const pill =
     'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
@@ -259,6 +271,7 @@ export default function TimeBomb({
                     }
                   />
                 </div>
+                {currentWord && <p className="mt-2 rounded-full bg-white/95 px-4 py-1 font-bold text-deep-navy">{t('turnDisplay.read')}</p>}
                 {currentWord && (
                   <div
                     className="relative mt-1 w-full"
@@ -293,13 +306,13 @@ export default function TimeBomb({
                 </button>
               )}
 
-              {phase === 'active' && mode === 'pass' && (
+              {phase === 'active' && mode === 'pass' && !hasTurnDisplay && (
                 <>
                   <div className="mb-4 text-center font-title-md text-[22px] text-deep-navy md:text-[24px]">
-                    {t('gameBomb.holderTurn', { name: participants[holderIndex]?.label })}
+                    {t('gameBomb.holderTurn', { name: currentHolder })}
                   </div>
                   <button onClick={pass} className={pill}>
-                    {t('gameBomb.passButton')}
+                    {t('turnDisplay.pass',{name:nextHolder})}
                   </button>
                 </>
               )}
@@ -326,7 +339,7 @@ export default function TimeBomb({
                           {t('gameBomb.explodedCaught')}
                         </div>
                         <div className="font-display-lg mt-0.5 text-[38px] text-[#1e3a5f]">
-                          {participants[holderIndex]?.label}
+                          {caughtHolder}
                         </div>
                       </>
                     ) : (

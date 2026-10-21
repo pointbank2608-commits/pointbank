@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -277,6 +278,7 @@ export default function SaveOrGiveIt({
   const currentItem = items.find((i) => i.id === currentItemId) ?? null;
   const currentItemIndex = items.findIndex((i) => i.id === currentItemId);
   const currentPlayer = players[turnIndex % Math.max(players.length, 1)];
+  useNativeGameTurn({current:currentPlayer?.label||'',next:players[(turnIndex+1)%Math.max(players.length,1)]?.label||'',index:turnIndex%Math.max(players.length,1),total:players.length,enabled:players.length>=2&&items.length>0});
   const allUsed = remainingItems.length === 0;
 
   function otherPlayerId(excludeId: string): string {

@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -54,6 +55,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
   const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
+  useNativeGameTurn({current:t('gameGameShowQuiz.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameGameShowQuiz.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:questions.length>0&&pos<questions.length});
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [removedChoices, setRemovedChoices] = useState<Set<number>>(new Set());

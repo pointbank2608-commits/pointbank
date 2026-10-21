@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gameClock } from '../lib/gameClock';
@@ -200,6 +201,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
           : [],
   );
 
+  useNativeGameTurn({current:t('gameShuffle.teamLabel',{n:score.turn+1}),next:t('gameShuffle.teamLabel',{n:(score.turn+1)%Math.max(1,teams)+1}),index:score.turn,total:Math.max(1,teams),enabled:items.length>0&&phase!=='done'});
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">

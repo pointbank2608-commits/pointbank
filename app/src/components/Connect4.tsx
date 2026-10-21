@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -128,6 +129,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   const win = findWin(marks);
   const winner = win?.team ?? null;
   const isDraw = !winner && marks.every((m) => m !== null);
+  useNativeGameTurn({current:t('gameConnect4.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameConnect4.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner&&!isDraw});
   const busy = dropping !== null;
 
   useEffect(() => {

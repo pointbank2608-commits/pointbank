@@ -9,7 +9,7 @@ import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } fro
 const BUILTIN = new Set<GameType>(['sentencerocket','grammardetective','treasurehunt','wordclaw','sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['wordtrain','unscramble','sentencesplash']);
 const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy','catchsentence','lightning']);
-const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','findmissing','popcorn','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
+const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','findmissing','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
 export function gamePreparation(type: GameType) {
   return {
     kinds: BUILTIN.has(type) ? [] : BOTH.has(type) ? ['word','sentence'] as const : SENTENCES.has(type) ? ['sentence'] as const : ['word'] as const,

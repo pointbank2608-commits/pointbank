@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -85,6 +86,7 @@ export default function TwoDice({
   const [claimed, setClaimed] = useState<Record<number, Team>>({});
   const [turn, setTurn] = useState<Team>('blue');
   const [winner, setWinner] = useState<Team | null>(null);
+  useNativeGameTurn({current:t('gameTwoDice.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameTwoDice.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner});
   const [winLine, setWinLine] = useState<number[] | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);

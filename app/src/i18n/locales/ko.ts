@@ -1,8 +1,10 @@
+import { turnDisplayKo } from '../turnDisplayLocales';
 import { materialBrowserKo } from '../materialBrowserLocales';
 import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 const ko = {
+  turnDisplay: turnDisplayKo,
   materialBrowser: materialBrowserKo,
   home: homeKo,
   guide: guideKo,
@@ -25,7 +27,7 @@ const ko = {
     "count_teams": "{{count}}팀",
     "count_participants": "참여자 {{count}}명",
     "menuTitle": "메뉴",
-    "chooseOtherGame": "다른 게임 고르기",
+    "chooseOtherGame": "게임메뉴",
     "methodVideo": "게임 방법 영상",
     "methodVideoTimed": "게임 방법 영상 · {{seconds}}초",
 

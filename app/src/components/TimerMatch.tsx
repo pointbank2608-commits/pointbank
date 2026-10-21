@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -197,6 +198,7 @@ export default function TimerMatch({
     setMode(next);
   }
 
+  const hasTurnDisplay=useNativeGameTurn({current:participants[turnIndex]?.label||'',next:participants[turnIndex+1]?.label||'',index:turnIndex,total:n,enabled:mode==='ranked'&&n>0&&turnIndex<n,canAdvance:phase==='stopped'&&turnIndex+1<n,advance:nextTurn});
   const allDone = mode === 'ranked' && n > 0 && turnIndex >= n;
   const blockedForRanked = mode === 'ranked' && n === 0;
   const diffMs = phase === 'stopped' ? Math.abs(elapsedMs - targetMs) : null;
@@ -302,7 +304,7 @@ export default function TimerMatch({
         </div>
       ) : (
         <>
-          {mode === 'ranked' && phase !== 'stopped' && (
+          {mode === 'ranked' && phase !== 'stopped' && !hasTurnDisplay && (
             <div className="mb-4 text-center font-display-lg text-[34px] text-deep-navy">
               {t('gameTimer.holderTurn', { name: participants[turnIndex]?.label })}
             </div>
@@ -374,8 +376,8 @@ export default function TimerMatch({
                   {t('gameTimer.tryAgainButton')}
                 </button>
               ) : (
-                <button onClick={nextTurn} className={pill}>
-                  {turnIndex + 1 >= n ? t('gameTimer.seeResultsButton') : t('gameTimer.nextPersonButton')}
+                (!hasTurnDisplay||turnIndex+1>=n)&&<button onClick={nextTurn} className={pill}>
+                  {turnIndex+1>=n?t('gameTimer.seeResultsButton'):t('turnDisplay.pass',{name:participants[turnIndex+1]?.label})}
                 </button>
               )}
             </>

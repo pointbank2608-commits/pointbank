@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -116,6 +117,7 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
   useEffect(() => setShowSub(false), [cardPos, sel]);
 
   const teamName = (i: number) => t('gameMysteryBox.teamName', { name: TEAM_NAMES[i] });
+  useNativeGameTurn({current:teamName(turn),next:teamName((turn+1)%teamCount),index:turn,total:teamCount,enabled:items.length>0&&phase!=='final'});
 
   function snap() {
     setSnapshot({ scores: [...scores], opened: [...opened], turn, cardPos });

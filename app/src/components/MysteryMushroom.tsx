@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -115,6 +116,7 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
   }, [teamCount, blockCount, itemKey]);
 
   const teamName = (i: number) => t('gameMysteryBox.teamName', { name: TEAM_NAMES[i] });
+  useNativeGameTurn({current:teamName(turn),next:teamName((turn+1)%teamCount),index:turn,total:teamCount,enabled:items.length>0&&phase!=='final'});
 
   function pickBlock(i: number) {
     if (phase !== 'board' || opened.includes(i) || items.length === 0) return;

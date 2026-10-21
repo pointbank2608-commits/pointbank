@@ -101,7 +101,7 @@ try {
  await page.evaluate(()=>Element.prototype.requestFullscreen=()=>Promise.reject(new Error('synthetic denied')));
  await page.getByRole('button',{name:'전체화면',exact:true}).click();await fullFrame().waitFor();assert.equal(await page.locator('[data-play-mode="prepare"]').count(),1);await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('[data-game-fullscreen="true"]'));
  await page.getByRole('button',{name:'샘플로 바로 해보기',exact:true}).click();await page.locator('[data-play-mode="play"]').waitFor();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);assert.equal(await page.evaluate(()=>window.__workspace.wordWrites?.length||0),0);
- await menu().click();await page.getByRole('link',{name:'다른 게임 고르기',exact:true}).click();await page.waitForURL('**/games');
+ await menu().click();await page.getByRole('link',{name:'게임메뉴',exact:true}).click();await page.waitForURL('**/games');
  console.log('ok interactive sample starts with no persistent writes; menu game picker opens the full catalogue; denied fullscreen also preserves preparation state');
  await page.goto(fixture+'?start=/games/icecream');await centralStart().waitFor();assert.equal(await page.getByRole('button',{name:'+ 단어장 만들기',exact:true}).count(),0);
  await page.getByRole('button',{name:'▶ 게임 방법 영상',exact:true}).click();const video=page.locator('dialog video');await video.waitFor();

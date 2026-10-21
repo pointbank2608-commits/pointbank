@@ -1,3 +1,5 @@
+import {GameTurnProvider,GameTurnDisplay} from './GameTurnDisplay';
+import {GameTurnContext} from '../context/GameTurnContext';
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
@@ -97,7 +99,9 @@ export function GameManagement({ children }: { children: ReactNode }) {
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
  * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster }: Props) {
+export default function GameThemeFrame(props: Props) { return <GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider>; }
+function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster }: Props) {
+  const nativeTurn = useContext(GameTurnContext)?.turn;
   const workspace = useGameWorkspace();
   const roster = workspace?.roster ?? suppliedRoster;
   const { t } = useTranslation();
@@ -281,12 +285,12 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      // Ladder results add content after a reveal. Switching to scroll mode
-      // would reset scale to 1 and suddenly enlarge the board, hiding results.
-      const fitLadder = (gameType ?? bg) === 'ladder';
-      const scroll = fill && !fitLadder && next < 0.75;
+      // Ladder results and bomb prompts must remain visible with the turn card.
+      // Switching to scroll mode would reset scale to 1 and hide their lower content.
+      const fitWithoutScroll = ['ladder','bomb'].includes(gameType ?? bg ?? '');
+      const scroll = fill && !fitWithoutScroll && next < 0.75;
       setScrollContent(scroll);
-      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(fitLadder ? 0.1 : 0.75, next)) : Math.min(1, Math.max(0.5, next)));
+      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(fitWithoutScroll ? 0.1 : 0.75, next)) : Math.min(1, Math.max(0.5, next)));
     }
 
     fit();
@@ -528,7 +532,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
           />
         )}
         {workspace && (workspace.playing || fullOn || presenting) ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
-        {!workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
+        {!nativeTurn && !workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button
               type="button"
@@ -574,6 +578,7 @@ export default function GameThemeFrame({ gameType, bg, className, children, onRe
             </button>
           </div>
         )}
+        <GameTurnDisplay />
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>

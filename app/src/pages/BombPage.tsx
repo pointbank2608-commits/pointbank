@@ -1,3 +1,4 @@
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,6 +47,7 @@ function defaultParticipants(): GameItem[] {
 const DEFAULT_RANGE = { min: 15, max: 60 };
 
 export default function BombPage() {
+  const turnWorkspace=useGameWorkspace();
   const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'bomb',
@@ -404,8 +406,8 @@ export default function BombPage() {
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <TimeBomb key={roundKey}
-              participants={selected.items}
-              words={words}
+              participants={selected.config.classroomSource && turnWorkspace?.roster.length ? turnWorkspace.roster : selected.items}
+              words={words.length?words:selected.config.classroomSource?selected.items:words}
               minSec={range.min}
               maxSec={range.max}
               music={BOMB_TICK_SOUND}

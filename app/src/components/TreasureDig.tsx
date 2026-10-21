@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -167,6 +168,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
 
   const finds = useMemo(() => shuffle(FINDS.filter((f) => f !== 'starfish' && f !== 'boot')), [round]);
   const teamName = (i: number) => t('gameTreasureDig.teamName', { name: TEAM_NAMES_FALLBACK[i] });
+  useNativeGameTurn({current:teamName(turn),next:teamName(phase==='roundEnd'?(turn+1)%teamCount:nextDigTurn(turn,skipped,teamCount).turn),index:turn,total:teamCount,enabled:items.length>0});
 
   function pickMound(idx: number) {
     if (phase !== 'pick' || dug[idx]) return;
@@ -230,14 +232,9 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
 
   /** 다음 차례 팀 — 장화(쉬어요)가 걸린 팀은 한 번 건너뛴다 */
   function advanceTurn(sk: number[] = skipped, from: number = turn) {
-    let n = (from + 1) % teamCount;
-    const left = [...sk];
-    for (let k = 0; k < teamCount && left.includes(n); k++) {
-      left.splice(left.indexOf(n), 1);
-      n = (n + 1) % teamCount;
-    }
-    setSkipped(left);
-    setTurn(n);
+    const next=nextDigTurn(from,sk,teamCount);
+    setSkipped(next.skipped);
+    setTurn(next.turn);
   }
 
   function nextTurn() {
@@ -627,3 +624,5 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
 });
 
 export default TreasureDig;
+
+function nextDigTurn(from:number,skipped:number[],total:number){let next=(from+1)%total;const left=[...skipped];for(let k=0;k<total&&left.includes(next);k++){left.splice(left.indexOf(next),1);next=(next+1)%total;}return {turn:next,skipped:left};}

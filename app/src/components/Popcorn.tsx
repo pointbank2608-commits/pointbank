@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -58,6 +59,7 @@ export default function Popcorn({
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items));
   const [deckIndex, setDeckIndex] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
+  useNativeGameTurn({current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0});
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [lastCard, setLastCard] = useState<Card | null>(null);
   const [poppedTeam, setPoppedTeam] = useState<Team | null>(null);

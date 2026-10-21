@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -173,6 +174,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   const clues = useMemo(() => (word ? buildClues(word, wordInfo, t as never) : []), [word, wordInfo, t]);
   useEffect(() => setPeek(false), [pos, round, phase]);
   const teamName = (i: number) => t('gameFourClues.teamName', { name: TEAM_NAMES[i] });
+  useNativeGameTurn({current:teamName(turn),next:teamName(nextFree(turn,locked)),index:turn,total:teamCount,enabled:items.length>0&&phase==='play'});
   // 선생님 폰 리모컨에는 지금 낱말(정답)을 알려 준다 — 칠판에는 안 보이고 폰에서만 눌러서 본다
   useRemoteSecret(word && phase === 'play' ? { title: t('gameFourClues.remoteSecretTitle'), text: word, sub: wordInfo?.meaning ?? undefined } : null);
 

@@ -114,11 +114,11 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
   const turnClick = useRef(0);
   const advance = useCallback(() => {
-    const now = Date.now(); if (now - turnClick.current < 250 || order.order.length < 2) return;
-    turnClick.current = now; saveTeamOrder(roster, { ...order, turn:(order.turn + 1) % order.order.length }, scope);
+    const now = Date.now(); if (now - turnClick.current < 250 || order.order.length < 2) return false;
+    turnClick.current = now; saveTeamOrder(roster, { ...order, turn:(order.turn + 1) % order.order.length }, scope); return true;
   }, [roster, order, scope]);
   const labels = turnLabels(order, roster, n => t('teamOrder.teamLabel',{n}));
-  const turn = capabilities.manualTurns && ordered && labels ? { ...labels, advance } : null;
+  const turn = capabilities.manualTurns && ordered && labels ? { ...labels, index:order.turn, total:order.order.length, advance } : null;
   async function action(fn: () => Promise<void>, close = true) {
     if (lock.current) return false;
     lock.current = true; setBusy(true); setError('');
@@ -178,7 +178,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       </header>}
       {playing && !presenting && !fullscreen && <div className="game-focus-controls flex shrink-0 flex-wrap items-center gap-2" data-play-controls>
         <button className={btn} onClick={() => setPanel('teacher')}>{t('flow.teacherMenu')}</button>
-        <WorkspaceTurnIndicator />
+
 
       </div>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
@@ -231,15 +231,11 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     </section>
   </GameWorkspaceContext.Provider>;
 }
-export function WorkspaceTurnIndicator() {
-  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace?.turn)return null;
-  return <div className="flex min-w-0 flex-wrap items-center gap-2" data-current-next><button className={btn} aria-label={`${t('flow.current',{name:workspace.turn.current})} · ${t('flow.next',{name:workspace.turn.next})}`} onClick={workspace.openTeams}><strong>{t('flow.current',{name:workspace.turn.current})}</strong><span className="ml-3 font-normal text-on-surface-variant">{t('flow.next',{name:workspace.turn.next})}</span></button><button className={btn} onClick={workspace.turn.advance}>{t('flow.nextParticipant')}</button></div>;
-}
 export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen }: {fullscreen?:boolean;onExitFullscreen?:()=>void}) {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
   return <div className="relative z-30 flex shrink-0 flex-wrap items-center gap-2 bg-white/95 p-2" data-frame-controls>
     <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
-    {workspace.playing && <WorkspaceTurnIndicator />}
+
     {fullscreen && <button className={`${btn} ml-auto`} onClick={onExitFullscreen}>{t('gamePlay.exitFullscreen')}</button>}
   </div>;
 }

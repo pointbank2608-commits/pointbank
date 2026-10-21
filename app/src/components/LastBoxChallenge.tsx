@@ -1,3 +1,4 @@
+import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -141,6 +142,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
   }, [teamCount, boxCount, itemKey]);
 
   const teamNo = (i: number) => i + 1;
+  useNativeGameTurn({current:t('teamOrder.teamLabel',{n:turn+1}),next:t('teamOrder.teamLabel',{n:(turn+1)%teamCount+1}),index:turn,total:teamCount,enabled:items.length>0});
 
   /* ---------------- 박스 읽기 ---------------- */
   function readBox(idx: number) {
