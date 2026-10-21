@@ -1,9 +1,11 @@
+import { bombSoundKo } from '../bombSoundLocales';
 import { turnDisplayKo } from '../turnDisplayLocales';
 import { materialBrowserKo } from '../materialBrowserLocales';
 import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 const ko = {
+  bombSound: bombSoundKo,
   turnDisplay: turnDisplayKo,
   materialBrowser: materialBrowserKo,
   home: homeKo,

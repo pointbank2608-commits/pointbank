@@ -1,3 +1,5 @@
+import BombSoundPicker from '../components/BombSoundPicker';
+import {bombSound,type BombSound} from '../lib/bombSound';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -18,15 +20,6 @@ import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
-
-/** 폭탄 째깍거리는 소리는 커스터마이즈 UI 없이 이 파일로 고정한다(돌림판 회전음과 같은 이유).
- * 게임이 진행되는 내내(터질 때까지) 반복 재생된다. */
-const BOMB_TICK_SOUND: MusicSelection = {
-  kind: 'upload',
-  path: '',
-  name: '폭탄 째깍 소리',
-  url: '/sounds/bomb-tick.m4a?v=2',
-};
 
 /** 폭발음도 같은 이유로 고정. 원본에서 1~4초 구간만 잘라 담아둔다(앞 1초는 무음이라 뺌). */
 const BOMB_EXPLODE_SOUND: MusicSelection = {
@@ -91,6 +84,7 @@ export default function BombPage() {
     reload,
   } = g;
   const { notify } = useToast();
+  const [soundBusy,setSoundBusy]=useState(false);
 
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
@@ -223,6 +217,14 @@ export default function BombPage() {
     if (!selected || words.length === 0) return;
     if (!confirm(t('gameBomb.clearAllWordsConfirm'))) return;
     await persistWords([]);
+  }
+
+  async function commitSound(value:BombSound) {
+    if(!selected||soundBusy)return;
+    const template=selected,config={...selected.config,bombSound:value};setSoundBusy(true);
+    setTemplates(previous=>previous.map(row=>row.id===template.id?{...row,config}:row));
+    try {await updateGameTemplate(template.id,{config});setTemplates(previous=>previous.map(row=>row.id===template.id?{...row,config}:row));}
+    catch {setTemplates(previous=>previous.map(row=>row.id===template.id?{...row,config:{...row.config,bombSound:template.config.bombSound}}:row));notify(t('bombSound.failed'),'error');}finally{setSoundBusy(false);}
   }
 
   async function commitRange(nextRange: { min: number; max: number }) {
@@ -410,7 +412,7 @@ export default function BombPage() {
               words={words.length?words:selected.config.classroomSource?selected.items:words}
               minSec={range.min}
               maxSec={range.max}
-              music={BOMB_TICK_SOUND}
+              music={bombSound(selected.config.bombSound)}
               resultSound={BOMB_EXPLODE_SOUND}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
@@ -444,6 +446,7 @@ export default function BombPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <BombSoundPicker value={selected.config.bombSound} disabled={soundBusy} onChange={value=>void commitSound(value)} />
                     <div className="pt-3">
                     <div className="my-3 max-w-[260px]">
                       <StudentRosterPicker

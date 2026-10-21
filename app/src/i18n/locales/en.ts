@@ -1,3 +1,4 @@
+import { bombSoundEn } from '../bombSoundLocales';
 import { turnDisplayEn } from '../turnDisplayLocales';
 import { materialBrowserEn } from '../materialBrowserLocales';
 import { homeEn } from '../homeLocales';
@@ -6,6 +7,7 @@ import { guideEn } from '../guideLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  bombSound: bombSoundEn,
   turnDisplay: turnDisplayEn,
   materialBrowser: materialBrowserEn,
   home: homeEn,

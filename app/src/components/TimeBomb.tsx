@@ -1,3 +1,4 @@
+import {useGameSoundOn} from '../lib/gameSfx';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
@@ -63,7 +64,9 @@ export default function TimeBomb({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const sharedTurn=useGameWorkspace()?.turn;
+  const workspace=useGameWorkspace();
+  const soundOn=useGameSoundOn();
+  const sharedTurn=workspace?.turn;
   const n = sharedTurn?.total ?? participants.length;
   const [mode, setMode] = useState<Mode>('pass');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -146,6 +149,12 @@ export default function TimeBomb({
     };
   }, []);
 
+  useEffect(()=>{
+    if(phase!=='active'||!soundOn||(workspace&&(!workspace.running||!!workspace.panel)))return;
+    const stop=playMusic(music,{loop:true});stopMusicRef.current=stop;
+    return stop;
+  },[phase,music,soundOn,workspace?.running,workspace?.panel]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function start() {
     if (phase === 'active') return;
     if (mode === 'pass' && n < 2) return;
@@ -155,7 +164,7 @@ export default function TimeBomb({
     setHolderIndex(0); setCaughtHolder(''); lastPass.current=0;
     setPhase('active');
     pickWord();
-    stopMusicRef.current = playMusic(music, { loop: true });
+
 
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;

@@ -311,6 +311,8 @@ export interface GameTemplateConfig {
   /** Ladder bottom labels: legacy configurations keep their input order. */
   ladderResultOrder?: 'input' | 'random';
   /** 시한폭탄 전용: 폭발까지 걸리는 시간(초)의 무작위 범위. */
+  /** Bomb-only running sound. Undefined preserves the original clock audio. */
+  bombSound?: import('./bombSound').BombSound;
   bombRange?: { min: number; max: number };
   /** 시한폭탄 전용: 폭탄이 넘어갈 때마다 무작위로 하나 보여주는 읽을 단어·문장 목록. */
   words?: GameItem[];

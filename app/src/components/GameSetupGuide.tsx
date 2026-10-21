@@ -1,3 +1,4 @@
+import BombSoundPicker from './BombSoundPicker';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -174,6 +175,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
       <button className={button} onClick={()=>setNative(v=>!v)}>{t('guide.native')}</button>
       {native&&<p>{t('guide.nativeReview')}</p>}
     </>}
+    {info.gameType==='bomb'&&info.temporary&&step>0&&<BombSoundPicker value={info.selected?.config.bombSound} disabled={busy||!info.selected} onChange={value=>{if(info.selected)void run(()=>info.applyGuide({items:info.selected!.items,config:{...info.selected!.config,bombSound:value}}));}} />}
     {step===2&&<><p>{t('guide.peopleHint')}</p>{info.teamCount!==undefined?<label className="block font-bold">{t('guide.teamCount')}<select className="ml-3 rounded-xl border p-3" value={info.teamCount} disabled={busy} onChange={e=>void run(()=>info.configureTeams(Number(e.target.value)))}>{Array.from({length:info.gameType==='telepathy'?5:info.gameType==='lastbox'||info.gameType==='mysterybox'?7:3},(_,i)=>i+2).map(n=><option key={n}>{n}</option>)}</select></label>:['tictactoe','connect4','baskin31','twodice','gameshowquiz','winlosequiz'].includes(info.gameType)?<p>{t('guide.teamFixed')}</p>:<p>{t('guide.defaultPeople')}</p>}
       {info.gameType==='lightning'&&<label>{t('flow.count_participants',{count:info.selected?.config.lightningPlayers||8})}<input className="ml-2 rounded-xl border p-3" aria-label={t('guide.participation')} type="number" min={2} max={40} value={info.selected?.config.lightningPlayers||8} onChange={e=>{const count=Number(e.target.value);if(count>=2&&count<=40&&info.selected)void run(()=>info.applyGuide({items:info.selected!.items,config:{...info.selected!.config,lightningPlayers:count}}));}}/></label>}
       {(manualPeople||info.gameType==='saveorgive'||info.gameType==='timer')&&<GameSourcePicker kind="names" onPick={cards=>setNames(cards.map(c=>c.word).join('\n'))} />}
