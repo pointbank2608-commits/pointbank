@@ -12,9 +12,11 @@ interface Props {
   onChange: (music: MusicSelection | null) => void;
   /** 픽커 앞에 붙는 이름. 배경음악/결과 사운드처럼 한 화면에 여러 개 둘 때 구분용. */
   label?: string;
+  /** 목록 맨 위에 따로 보여 줄 기본 제공 음악(파일 업로드 없이 앱에 들어 있는 것) */
+  presets?: { music: MusicSelection; label: string }[];
 }
 
-export default function GameMusicPicker({ academyId, isStaff, value, onChange, label }: Props) {
+export default function GameMusicPicker({ academyId, isStaff, value, onChange, label, presets = [] }: Props) {
   const { notify } = useToast();
   const { t } = useTranslation();
   const pickerLabel = label ?? t('musicPicker.backgroundMusic');
@@ -30,11 +32,16 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
       });
   }, [academyId]);
 
-  const selectValue = !value ? 'none' : value.kind === 'builtin' ? `builtin:${value.id}` : `upload:${value.path}`;
+  const presetOf = (m: MusicSelection | null | undefined) => (m && m.kind === 'upload' ? presets.find((p) => p.music.kind === 'upload' && p.music.url === m.url) : undefined);
+  const selectValue = !value ? 'none' : presetOf(value) ? `preset:${presets.indexOf(presetOf(value)!)}` : value.kind === 'builtin' ? `builtin:${value.id}` : `upload:${value.path}`;
 
   function handleSelect(v: string) {
     if (v === 'none') {
       onChange(null);
+      return;
+    }
+    if (v.startsWith('preset:')) {
+      onChange(presets[Number(v.slice('preset:'.length))].music);
       return;
     }
     if (v.startsWith('builtin:')) {
@@ -64,7 +71,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
   }
 
   async function handleDeleteUpload() {
-    if (!value || value.kind !== 'upload') return;
+    if (!value || value.kind !== 'upload' || !value.path) return;
     if (!confirm(t('musicPicker.deleteUploadConfirm', { name: value.name }))) return;
     try {
       await deleteGameAudio(value.path);
@@ -97,6 +104,11 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
           className="min-w-0 max-w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
         >
           <option value="none">{t('musicPicker.none')}</option>
+          {presets.map((p, i) => (
+            <option key={p.music.kind === 'upload' ? p.music.url : i} value={`preset:${i}`}>
+              🎵 {p.label}
+            </option>
+          ))}
           <optgroup label={t('musicPicker.builtinGroup')}>
             {BUILTIN_SOUNDS.map((s) => (
               <option key={s.id} value={`builtin:${s.id}`}>
@@ -141,7 +153,7 @@ export default function GameMusicPicker({ academyId, isStaff, value, onChange, l
               onChange={(e) => void handleUploadFile(e)}
             />
           </label>
-          {value?.kind === 'upload' && (
+          {value?.kind === 'upload' && !!value.path && (
             <button
               type="button"
               onClick={() => void handleDeleteUpload()}

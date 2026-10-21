@@ -575,6 +575,7 @@ const en: Ko = {
     resultSoundLabel: 'Result sound',
     rangeLabel: 'Music duration range (seconds) — it stops at a random moment in this range',
     seconds: 'sec',
+    defaultMusic: 'Default music (Pass the Ball)',
     startButton: 'Start passing the ball',
     playingHint: 'Pass the ball while the music plays… no one knows when it stops!',
     missionLabel: "Today's mission word",

@@ -16,6 +16,7 @@ import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
+import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, MusicSelection } from '../lib/types';
@@ -35,7 +36,7 @@ export default function PassBallPage() {
   const g = useGameTemplates({
     gameType: 'passball',
     defaultItems,
-    defaultConfig: () => ({ ballRange: DEFAULT_RANGE }),
+    defaultConfig: () => ({ ballRange: DEFAULT_RANGE, music: PASS_BALL_MUSIC }),
   });
   const {
     isStaff,
@@ -327,7 +328,7 @@ export default function PassBallPage() {
           <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="passball" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <PassTheBall items={demoItems} minSec={range.min} maxSec={range.max} />
+              <PassTheBall items={demoItems} minSec={range.min} maxSec={range.max} music={PASS_BALL_MUSIC} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gamePassBall.emptyStaff') : t('gamePassBall.emptyStudent')}
@@ -353,7 +354,7 @@ export default function PassBallPage() {
               items={selected.items}
               minSec={range.min}
               maxSec={range.max}
-              music={selected.config.music}
+              music={passBallMusic(selected.config.music)}
               resultSound={resolveResultSound(selected.config.resultSound)}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
@@ -488,7 +489,8 @@ export default function PassBallPage() {
                         <GameMusicPicker
                           academyId={academy.id}
                           isStaff={isStaff}
-                          value={selected.config.music}
+                          value={passBallMusic(selected.config.music)}
+                          presets={[{ music: PASS_BALL_MUSIC, label: t('gamePassBall.defaultMusic') }]}
                           onChange={(m) => void handleMusicChange(m)}
                         />
                         <GameMusicPicker

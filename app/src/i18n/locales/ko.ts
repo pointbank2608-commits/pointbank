@@ -572,6 +572,7 @@ const ko = {
     resultSoundLabel: '결과 사운드',
     rangeLabel: '음악 재생 시간 범위(초) — 이 사이 무작위 시각에 멈춰요',
     seconds: '초',
+    defaultMusic: '기본 음악(공 돌리기)',
     startButton: '공 돌리기 시작',
     playingHint: '음악이 흐르는 동안 공을 돌리세요… 언제 멈출지 몰라요!',
     missionLabel: '오늘의 미션 단어',
