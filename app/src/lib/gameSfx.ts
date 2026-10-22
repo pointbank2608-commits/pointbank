@@ -36,6 +36,7 @@ export const GAME_SFX = {
   doctor: { reveal: 4041, correct: 4015, wrong: 4025, line: 1013 },
   lightning: { clouds: 2020, go: 6001, pass: 1013, strike: 4025, win: 5037 },
   telepathy: { show: 4041, shake: 1013, pop: 5037, timeUp: 8105, finish: 5037 },
+  sentencesplash: { start: 4041, pick: 4015, wrong: 4025, splash: 3091, done: 5037 },
   shufflefind: { show: 4041, swap: 1011, hit: 5037, miss: 4025, finish: 5037 },
   icecream: { line: 1013, pick: 6001, scoop: 4041, done: 5037 },
   restaurant: { line: 1013, pick: 6001, done: 5037 },

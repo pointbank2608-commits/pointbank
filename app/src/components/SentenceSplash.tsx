@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { gameClock } from "../lib/gameClock";
+import { playSfx, useGameSfx } from "../lib/gameSfx";
 import {
   canClaimBrick,
   layoutSplashBricks,
@@ -71,6 +72,20 @@ export default function SentenceSplash({
   const [bricks, setBricks] = useState(() =>
     makeSplashBricks(playable[0] || { id: "", label: "" }),
   );
+  const sfx = useGameSfx("sentencesplash");
+  // 소리는 상태 변화를 따라 낸다(claim·begin 로직은 건드리지 않는다).
+  const soundPrev = useRef({ phase: round.phase, picked: round.picked.length, wrong: round.wrong });
+  useEffect(() => {
+    const prev = soundPrev.current;
+    if (round.phase === "playing" && prev.phase !== "playing") playSfx(sfx.start);
+    else if (round.phase === "playing" && round.picked.length > prev.picked) playSfx(sfx.pick);
+    if (round.wrong && round.wrong !== prev.wrong) playSfx(sfx.wrong);
+    if (round.phase !== prev.phase) {
+      if (round.phase === "success" || round.phase === "finished") playSfx(sfx.done);
+      else if (round.phase === "failed") playSfx(sfx.splash);
+    }
+    soundPrev.current = { phase: round.phase, picked: round.picked.length, wrong: round.wrong };
+  }, [round.phase, round.picked.length, round.wrong, sfx]);
   const [width, setWidth] = useState(640);
   // The shared frame fits the whole surface; avoid a second width-only zoom.
   const shell = useRef<HTMLDivElement>(null);

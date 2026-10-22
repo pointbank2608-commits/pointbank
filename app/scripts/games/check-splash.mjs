@@ -174,6 +174,14 @@ try {
     return r.abort();
   });
   const url = "http://127.0.0.1:5194/scripts/games/splash.html";
+  // 효과음: Audio.play 호출을 기록해 어떤 소리가 났는지 확인한다(실제 소리는 내지 않는다).
+  await page.addInitScript(() => {
+    window.__snd = [];
+    HTMLMediaElement.prototype.play = function () {
+      window.__snd.push((this.src || "").split("/").pop().split("?")[0]);
+      return Promise.resolve();
+    };
+  });
   await page.goto(url);
   await page.getByRole("button", { name: "게임 시작!", exact: true }).click();
   await page.getByRole("button", { name: "them?", exact: true }).click();
@@ -189,6 +197,11 @@ try {
     await page.locator(".splash-answer").innerText(),
     "He'd like to like them?",
   );
+  const played = await page.evaluate(() => window.__snd);
+  assert.equal(played[0], "4041.mp3", "시작 소리");
+  assert.ok(played.includes("4025.mp3"), "틀린 벽돌 소리");
+  assert.equal(played.filter((n) => n === "4015.mp3").length, 4, "맞힌 벽돌마다 소리(마지막 벽돌은 완성 소리로 대신)");
+  assert.equal(played.at(-1), "5037.mp3", "문장 완성 소리");
   await page
     .getByRole("button", { name: "전체 결과 보기", exact: true })
     .click();
@@ -199,6 +212,7 @@ try {
   await page.evaluate(() => window.__splash.shift(31000));
   await page.getByText("다시 도전해요!", { exact: true }).waitFor();
   assert.equal(await page.locator(".splash-answer").count(), 0);
+  assert.ok((await page.evaluate(() => window.__snd)).includes("3091.mp3"), "바다에 빠진 소리");
   await page
     .getByRole("button", { name: "다시 도전하기", exact: true })
     .click();
