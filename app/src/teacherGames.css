@@ -1,0 +1,28 @@
+/* Teacher navigation stays outside scaled game content: readable at every board size. */
+.teacher-game-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #cbd5e1; border-radius: 12px; }
+.teacher-game-status { margin: 0; font-size: 1rem; }
+.teacher-game-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.teacher-game-actions button { min-height: 48px; font-size: 1rem; line-height: 1.4; border: 2px solid #94a3b8; }
+.teacher-game-actions .teacher-game-primary { background: #334d79; border-color: #334d79; color: #fff; }
+.teacher-game-actions button:focus-visible,
+.game-workspace button:focus-visible,
+.game-workspace summary:focus-visible,
+.teacher-games-catalog a:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }
+.game-workspace-dialog button, .game-workspace-dialog a,
+[data-game-preparation] button, [data-game-preparation] > a,
+.teacher-games-catalog button { min-height: 48px; font-size: max(1rem, 16px); }
+.game-workspace-dialog input:not([type=checkbox]):not([type=radio]),
+.game-workspace-dialog textarea, .game-workspace-dialog select { font-size: max(1rem, 16px); }
+.game-workspace-dialog input[type=checkbox], .game-workspace-dialog input[type=radio] { width: 20px; height: 20px; flex-shrink: 0; }
+.game-workspace-dialog label { line-height: 1.6; }
+.game-optional-actions > summary { cursor: pointer; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; font-weight: 700; color: #263c60; background: #f1f5f9; }
+.game-workspace-dialog [data-teacher-game-tools] .game-play-toolbar { margin: 0; justify-content: flex-start; }
+.game-workspace-dialog [data-teacher-game-tools] button { font-size: 1rem; color: #263c60; background: #fff; border: 1px solid #94a3b8; }
+.game-workspace-dialog [data-teacher-game-tools] button[aria-pressed=true] { border: 2px solid #174ea6; }
+.game-fs-content button:focus-visible { outline: 3px solid #174ea6; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .teacher-game-controls { display: block; }
+  .teacher-game-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .teacher-game-actions button { padding: 8px; min-width: 0; overflow-wrap: anywhere; }
+  .teacher-game-status { margin-bottom: 4px; }
+}

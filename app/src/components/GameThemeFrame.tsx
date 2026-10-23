@@ -434,7 +434,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
                 : 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
             }`}
           >
-            <span aria-hidden className="material-symbols-outlined text-[20px]">{itemsHidden ? 'visibility_off' : 'visibility'}</span>
             {itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
           </button>
           {roster && roster.length > 0 && (
@@ -445,7 +444,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               aria-label={t('gamePlay.teamOrder')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">groups</span>
               {t('gamePlay.teamOrder')}
             </button>
           )}
@@ -464,7 +462,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
                   : 'bg-surface-container-lowest/90 text-on-surface-variant hover:bg-surface-container hover:text-primary'
               }`}
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">format_list_numbered</span>
               {showOrder ? t('gamePlay.hideOrder') : t('gamePlay.showOrder')}
             </button>
           )}
@@ -480,7 +477,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
                 : 'bg-primary text-on-primary hover:bg-primary-container'
             }`}
           >
-            <span aria-hidden className="material-symbols-outlined text-[20px]">{soundOn ? 'volume_up' : 'volume_off'}</span>
             {soundOn ? t('gamePlay.soundLabelOn') : t('gamePlay.soundLabelOff')}
           </button>
           {onUndo && (
@@ -491,7 +487,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               aria-label={t('gamePlay.undo')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">undo</span>
               {t('gamePlay.undo')}
             </button>
           )}
@@ -503,7 +498,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               aria-label={t('gamePlay.restart')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">refresh</span>
               {t('gamePlay.restart')}
             </button>
           )}
@@ -516,7 +510,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               aria-label={fullOn ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
               className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
             >
-              <span aria-hidden className="material-symbols-outlined text-[20px]">{fullOn ? 'fullscreen_exit' : 'fullscreen'}</span>
               {fullOn ? t('gamePlay.exitFullscreen') : t('gamePlay.fullscreen')}
             </button>
           )}
@@ -531,7 +524,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
-        {workspace && (fullOn || presenting) && <GameWorkspaceFrameControls fullscreen={fullOn} onExitFullscreen={()=>void toggleFullscreen()} />}
+        {workspace && <GameWorkspaceFrameControls fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
         {bgUrl && (
           <div
             aria-hidden
@@ -544,7 +537,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             }}
           />
         )}
-        {workspace && (workspace.playing || fullOn || presenting) ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
+        {workspace ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
         {!nativeTurn && !workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button

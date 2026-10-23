@@ -78,7 +78,8 @@ export default function GamesPage() {
   const libraryEmpty = showLibrary && libraryLoaded && (libraryTypes?.length ?? 0) === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="teacher-games-catalog space-y-6">
+      {isStaff && <p className="rounded-xl bg-white p-4 text-lg font-semibold text-deep-navy">{t('teacherGame.browseHint')}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
           {t('gamesList.title')}

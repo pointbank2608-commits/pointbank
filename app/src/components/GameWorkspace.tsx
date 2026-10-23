@@ -1,4 +1,5 @@
 import GameSetupGuide from './GameSetupGuide';
+import '../teacherGames.css';
 import { guideProblem } from '../lib/gameGuide';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -174,13 +175,9 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         </div></details>
         {info && !canStart && !info.loading && <p role="status" className="text-error">{validation}</p>}
         {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
-        {reuse}
+        <details className="game-optional-actions"><summary>{t('teacherGame.extra')}</summary><div className="mt-3">{reuse}</div></details>
+        <p className="text-base text-deep-navy">{t('teacherGame.prepareHint')}</p>
       </header>}
-      {playing && !presenting && !fullscreen && <div className="game-focus-controls flex shrink-0 flex-wrap items-center gap-2" data-play-controls>
-        <button className={btn} onClick={() => setPanel('teacher')}>{t('flow.teacherMenu')}</button>
-
-
-      </div>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
 
       </div>
@@ -189,13 +186,15 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         {error && <p role="alert" className="bg-error-container p-4 text-on-error-container">{error}</p>}
         {info?.sharedView && <p className="bg-amber-50 p-4">{t('flow.sharedView')}</p>}
         <div hidden={panel !== 'teacher'} className="space-y-4 p-4">
-          <div ref={setTeacherToolsTarget} className="space-y-2" data-teacher-game-tools />
-          <button className={btn} onClick={() => setPanel(null)}>{t('flow.resume')}</button>
+          <button className={`${btn} bg-primary! text-white!`} onClick={() => setPanel(null)}>{t('flow.resume')}</button>
+          <p>{t('teacherGame.menuHint')}</p>
           <button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>
           {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
           <button className={btn} onClick={exitPlay}>{t('flow.backToPreparation')}</button>
-          <Link className={`${btn} inline-flex`} to="/games">{t('flow.chooseOtherGame')}</Link>
-          {reuse}
+          <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>
+          <p className="text-base">{t('teacherGame.navigationHint')}</p>
+          <details className="game-optional-actions"><summary>{t('teacherGame.tools')}</summary><div ref={setTeacherToolsTarget} className="mt-3 space-y-2" data-teacher-game-tools /></details>
+          <details className="game-optional-actions"><summary>{t('teacherGame.extra')}</summary><div className="mt-3">{reuse}</div></details>
         </div>
         {panel === 'video' && demo && <div className="p-4"><GameMethodVideo src={demo} /></div>}
         {panel === 'content' && !info?.sharedView && <div className="space-y-4 p-4">
@@ -231,12 +230,16 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     </section>
   </GameWorkspaceContext.Provider>;
 }
-export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen }: {fullscreen?:boolean;onExitFullscreen?:()=>void}) {
+export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, presenting=false }: {fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean}) {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
-  return <div className="relative z-30 flex shrink-0 flex-wrap items-center gap-2 bg-white/95 p-2" data-frame-controls>
-    <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
-
-    {fullscreen && <button className={`${btn} ml-auto`} onClick={onExitFullscreen}>{t('gamePlay.exitFullscreen')}</button>}
+  return <div className="teacher-game-controls relative z-30 shrink-0 bg-white p-2" data-frame-controls data-play-controls>
+    <p className="teacher-game-status font-bold text-deep-navy" role="status">{t(workspace.playing ? workspace.running ? 'teacherGame.playing' : 'teacherGame.paused' : 'teacherGame.ready')}</p>
+    <div className="teacher-game-actions">
+      <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
+      {workspace.playing && workspace.running && <button className={`${btn} teacher-game-primary`} onClick={workspace.pause}>{t('teacherGame.pause')}</button>}
+      {workspace.playing && !presenting && <button className={btn} onClick={workspace.exitPlay}>{t('flow.backToPreparation')}</button>}
+      {!presenting && <button className={btn} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{t(fullscreen ? 'gamePlay.exitFullscreen' : 'gamePlay.fullscreen')}</button>}
+    </div>
   </div>;
 }
 export function GameWorkspaceStartOverlay() {

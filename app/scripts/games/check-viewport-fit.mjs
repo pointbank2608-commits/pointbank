@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
@@ -98,20 +98,36 @@ try {
    assert(result.top>=result.stageTop-2&&result.bottom<=result.stageBottom+2,type+' clipped '+JSON.stringify(result));
    assert(!result.overflow,type+' page overflow');
  }
+ const reports=[];
+ mkdirSync(resolve(root,'../output/teacher-game-ux'),{recursive:true});
  const subset=process.env.FIT_FOCUS?.split(',');
  for(const game of GAME_CATALOG.filter(g=>!subset||subset.includes(g.type))){
    await page.setViewportSize({width:1366,height:768});
    await sample(game.type);await fits(game.type);
+   const controls=page.locator('[data-frame-controls]');
+   await controls.getByRole('button',{name:'잠시 멈춤',exact:true}).click();
+   await page.getByRole('button',{name:'계속하기',exact:true}).click();
+   await controls.getByRole('button',{name:'☰ 메뉴',exact:true}).click();
+   await page.getByRole('dialog',{name:'메뉴',exact:true}).getByRole('button',{name:'게임 설정·수정',exact:true}).click();
+   await page.getByRole('button',{name:'닫기',exact:true}).click();
+   await controls.getByRole('button',{name:'준비 화면으로',exact:true}).click();
+   await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();
+   if(['quiz','sentencesplash','wordfishing'].includes(game.type))await page.screenshot({path:resolve(root,'../output/teacher-game-ux/'+game.type+'-desktop.png')});
    await page.setViewportSize({width:1024,height:768});await page.waitForTimeout(250);await fits(game.type+' tablet');
    await page.setViewportSize({width:390,height:844});await page.waitForTimeout(250);
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),game.type+' mobile page overflow');
+   const controlBounds=await controls.getByRole('button').evaluateAll(buttons=>buttons.map(b=>({label:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height,font:parseFloat(getComputedStyle(b).fontSize)})));
+   assert(controlBounds.every(b=>b.height>=48&&b.width>=44&&b.font>=16),game.type+' inaccessible teacher controls '+JSON.stringify(controlBounds));
+   if(['quiz','sentencesplash','wordfishing'].includes(game.type))await page.screenshot({path:resolve(root,'../output/teacher-game-ux/'+game.type+'-mobile.png')});
    const last=page.locator('.game-fs-scale button:visible').last();
    if(await last.count()){
      if(await page.locator('[data-game-fit]').getAttribute('data-game-fit')==='scroll')await last.evaluate(el=>el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'}));
      const box=await last.boundingBox();assert(box.y>=0&&box.y+box.height<=844+2,game.type+' mobile last action clipped');
    }
    console.log('ok laptop/tablet/mobile '+game.type);
+   reports.push({type:game.type,pauseResume:true,settings:true,returnAndRestartWithoutRemount:true,laptop:true,tablet:true,mobile:true,controlBounds});
  }
+ writeFileSync(resolve(root,'../output/teacher-game-ux/'+(subset?'focus-checks.json':'checks.json')),JSON.stringify({reports,errors},null,2));
  await page.setViewportSize({width:1366,height:768});
  await sample('sentencesplash');
  await page.getByRole('button',{name:'게임 시작!',exact:true}).click();
