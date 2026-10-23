@@ -7,7 +7,7 @@ const type=(query.get('game') || 'feedmonster') as StoryType;
 export function Harness(){
   const [key,setKey]=useState(0);
   const [config]=useState(()=>{
-    const c=storySample(type);c.sound=false;
+    const c=storySample(type);c.sound=query.has('sound');
     if(query.has('timed'))c.seconds=30;
     if(query.has('long')){
       if(type==='sentencetower'){c.start='My wonderful friends play.';c.steps=[{id:'long',phrase:'football together in the beautiful garden every afternoon after school',sentence:'My wonderful friends play football together in the beautiful garden every afternoon after school.',position:25,wrong:['a book']}];}

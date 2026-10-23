@@ -1,0 +1,182 @@
+{
+  "sample_rate": 32000,
+  "channels": 1,
+  "source": "Original procedural synthesis; no third-party samples",
+  "sounds": [
+    {
+      "name": "intro",
+      "seconds": 0.8,
+      "peak_dbfs": -10.19,
+      "rms_dbfs": -22.99,
+      "sha256": "85655baf4b217a7dd26cc6612688a1a24b1af0418f1e31d46eb0219687e4e6df"
+    },
+    {
+      "name": "pick",
+      "seconds": 0.13,
+      "peak_dbfs": -13.72,
+      "rms_dbfs": -30.1,
+      "sha256": "afacf9049aa7bade32e87aa6d90ee6267198b4e56dd4a205158f4938e1c96937"
+    },
+    {
+      "name": "place",
+      "seconds": 0.22,
+      "peak_dbfs": -12.33,
+      "rms_dbfs": -27.01,
+      "sha256": "932736c07dcf3983af2349ab8508cf2d872996c0021b485d47a834e3c6c7384d"
+    },
+    {
+      "name": "shuffle",
+      "seconds": 0.42,
+      "peak_dbfs": -13.46,
+      "rms_dbfs": -26.24,
+      "sha256": "0275e14590f014f26fe2370b12197374cf9a5a46dddc9722f24243bfa605c525"
+    },
+    {
+      "name": "next",
+      "seconds": 0.55,
+      "peak_dbfs": -11.89,
+      "rms_dbfs": -24.5,
+      "sha256": "0ac9e4f7b4dec3ba6214ea123c68f1e5342119fd99b3b5f05ed5c9d8de28dd00"
+    },
+    {
+      "name": "wrong",
+      "seconds": 0.48,
+      "peak_dbfs": -8.35,
+      "rms_dbfs": -17.13,
+      "sha256": "e4df4a9fe648087e4c6474191e119f73ab6c2e764caa36c2a5a29008231eff92"
+    },
+    {
+      "name": "time-up",
+      "seconds": 0.72,
+      "peak_dbfs": -13.85,
+      "rms_dbfs": -26.19,
+      "sha256": "1674ac26f26bda8ac926d4c66ab419c630b848d47f16fd85c1a2e249dfbcaef9"
+    },
+    {
+      "name": "finish",
+      "seconds": 1.85,
+      "peak_dbfs": -9.13,
+      "rms_dbfs": -22.62,
+      "sha256": "055aaf6786dc9f75b38b6add38e330bbf8954b3b7e5664b1fc027a750b842142"
+    },
+    {
+      "name": "balloon-pop",
+      "seconds": 0.52,
+      "peak_dbfs": -5.89,
+      "rms_dbfs": -20.2,
+      "sha256": "3cd0d870abf089a879209a0f65f89619afc2474c96e7cae15362e72b5c93874c"
+    },
+    {
+      "name": "train-depart",
+      "seconds": 1.85,
+      "peak_dbfs": -8.99,
+      "rms_dbfs": -21.32,
+      "sha256": "2e5424b2f94cbd3032f7636aa84d6ff51ac6a2a52ac9b444b531bb4c88d9e26f"
+    },
+    {
+      "name": "train-arrive",
+      "seconds": 0.8,
+      "peak_dbfs": -13.37,
+      "rms_dbfs": -26.13,
+      "sha256": "7a9b303cede11d2704df7d362266219abc010e4a7353aa722531ed3a2ceb919e"
+    },
+    {
+      "name": "fish-cast",
+      "seconds": 0.7,
+      "peak_dbfs": -7.81,
+      "rms_dbfs": -20.65,
+      "sha256": "bf4e860056beb3cc5a0a7deea27593dd327d6d68f07db47062bffa3b72ec584f"
+    },
+    {
+      "name": "fish-catch",
+      "seconds": 1.15,
+      "peak_dbfs": -6.72,
+      "rms_dbfs": -19.13,
+      "sha256": "a9265ed6d93c922db17bda6f2ff625d0bec0962685f12f1c9a240023d6ce1cfe"
+    },
+    {
+      "name": "rocket-fuel",
+      "seconds": 0.8,
+      "peak_dbfs": -10.89,
+      "rms_dbfs": -19.52,
+      "sha256": "e55326ab1e7e12c6a68824b33e3d57d775b16caa44310c2e66d1a67e19da219a"
+    },
+    {
+      "name": "rocket-countdown",
+      "seconds": 0.22,
+      "peak_dbfs": -12.6,
+      "rms_dbfs": -17.01,
+      "sha256": "d8cec73ade2bc105a43104540b55d5b01f832a7b380aadccb501a6b93db86c40"
+    },
+    {
+      "name": "rocket-launch",
+      "seconds": 2.65,
+      "peak_dbfs": -6.16,
+      "rms_dbfs": -17.76,
+      "sha256": "699a7d7a84eeb6095f68cfba385dd2135e0898638b823ac32e4742effc4cf218"
+    },
+    {
+      "name": "detective-stamp",
+      "seconds": 0.65,
+      "peak_dbfs": -10.34,
+      "rms_dbfs": -24.29,
+      "sha256": "e95c27a1b3f54aeb1579f8835d0a8a9e9bb42b157984d9c38c702418d552e4a3"
+    },
+    {
+      "name": "hunt-step",
+      "seconds": 0.3,
+      "peak_dbfs": -14.78,
+      "rms_dbfs": -32.3,
+      "sha256": "abaef0a68ac30f09d4bd2d55c3af6136e12d12b41dd436e7a81afffd11411681"
+    },
+    {
+      "name": "treasure-open",
+      "seconds": 1.5,
+      "peak_dbfs": -10.15,
+      "rms_dbfs": -23.05,
+      "sha256": "d8025d25979c162c256d4689c89d3d796b3599ff92c747441290974f64a991a5"
+    },
+    {
+      "name": "claw-move",
+      "seconds": 0.24,
+      "peak_dbfs": -14.31,
+      "rms_dbfs": -20.59,
+      "sha256": "9a790a3b39a9add13d9f6771b4a1db279e9b30deca605acb28042ce02563322f"
+    },
+    {
+      "name": "claw-drop",
+      "seconds": 0.85,
+      "peak_dbfs": -13.14,
+      "rms_dbfs": -21.1,
+      "sha256": "564407e60c2307eb45922de37e55d3df54c0ea8d1bbef5d7de383e55c6a1501f"
+    },
+    {
+      "name": "claw-catch",
+      "seconds": 1.35,
+      "peak_dbfs": -10.44,
+      "rms_dbfs": -21.78,
+      "sha256": "f041c738222789124db3e8db8f66f9aeb0b7306536d57d5322e1252236425bcd"
+    },
+    {
+      "name": "monster-nibble",
+      "seconds": 0.9,
+      "peak_dbfs": -10.32,
+      "rms_dbfs": -18.27,
+      "sha256": "714d527ce709b9a780e1d18ef7c3d1d681bb9fb6fec0ae7252450d984824d319"
+    },
+    {
+      "name": "bridge-hop",
+      "seconds": 0.8,
+      "peak_dbfs": -12.38,
+      "rms_dbfs": -20.6,
+      "sha256": "4a2410b528f58ddcd57047fdd22a3620ca31ecad26dedef0c3b68649bca39842"
+    },
+    {
+      "name": "tower-stack",
+      "seconds": 0.95,
+      "peak_dbfs": -11.52,
+      "rms_dbfs": -22.74,
+      "sha256": "678bda248ef31188dc824ebf3ff8022e6d93e2d36bdc516953b4f8435099c48c"
+    }
+  ]
+}

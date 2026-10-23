@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { gameClock } from './gameClock';
-import { playSfx } from './gameSfx';
+import { useMiniGameSfx } from './miniGameSfx';
 import { shuffled, type StorybookConfig, type StoryGame } from './storybook';
 
 export function useStoryRound(type: StoryGame, config: StorybookConfig, paused: boolean) {
+  const sounds=useMiniGameSfx(type,config.sound,paused);
   const [deck] = useState(() => (type === 'sentencetower' ? config.steps : config.shuffle ? shuffled(config.questions) : config.questions).slice(0, type === 'sentencetower' ? undefined : config.count));
   const [phase, setPhase] = useState<'ready' | 'playing' | 'finished'>('ready');
   const [index, setIndex] = useState(0);
@@ -24,7 +25,8 @@ export function useStoryRound(type: StoryGame, config: StorybookConfig, paused: 
     const job = gameClock.setInterval(() => setRemaining(old => { if (old <= 1) { setExpired(true); return 0; } return old - 1; }), 1000);
     return () => gameClock.clearInterval(job);
   }, [phase, index, config.seconds, paused, reaction, expired]);
-  const start = useCallback(() => { if (deck.length) { setPhase('playing'); setRemaining(config.seconds); } }, [deck.length, config.seconds]);
+  const start = useCallback(() => { if (deck.length) { setPhase('playing'); setRemaining(config.seconds);sounds.play('start'); } }, [deck.length, config.seconds,sounds]);
+  useEffect(()=>{if(expired)sounds.play('timeUp');},[expired,sounds]);
   function submit(value: string) {
     if (locked.current || phase !== 'playing' || expired || paused || !choices.includes(value)) return;
     locked.current = true;
@@ -32,15 +34,15 @@ export function useStoryRound(type: StoryGame, config: StorybookConfig, paused: 
     const correct = value === answer;
     setReaction(correct ? 'correct' : 'wrong');
     if (!correct) setMistakes(n => n + 1);
-    if (config.sound) playSfx(correct ? 4015 : 4023);
+    sounds.play(correct?'correct':'wrong');
     timer.current = gameClock.setTimeout(() => {
       if (correct) {
-        if (index + 1 === deck.length) { setPhase('finished'); if (config.sound) playSfx(5037); }
-        else setIndex(n => n + 1);
+        if (index + 1 === deck.length) { setPhase('finished');sounds.play('finish'); }
+        else {setIndex(n => n + 1);sounds.play('next');}
       }
       setPicked(''); setReaction('idle'); setRemaining(config.seconds); locked.current = false;
     }, correct ? 1450 : 850);
   }
-  function retry() { setExpired(false); setRemaining(config.seconds); }
-  return { deck, phase, index, reaction, picked, mistakes, remaining, expired, choices, start, submit, retry, total: deck.length };
+  function retry() { setExpired(false); setRemaining(config.seconds);sounds.play('next'); }
+  return { deck, phase, index, reaction, picked, mistakes, remaining, expired, choices, start, submit, retry,sound:sounds.play, total: deck.length };
 }
