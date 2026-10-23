@@ -81,7 +81,9 @@ export default function SentenceSplash({
     else if (round.phase === "playing" && round.picked.length > prev.picked) playSfx(sfx.pick);
     if (round.wrong && round.wrong !== prev.wrong) playSfx(sfx.wrong);
     if (round.phase !== prev.phase) {
-      if (round.phase === "success" || round.phase === "finished") playSfx(sfx.done);
+      // 문장 완성(다음 문장으로 넘어가는 순간) 멜로디는 다른 소리보다 커서 절반 정도로 낮춘다. 전체 완료는 그대로.
+      if (round.phase === "success") playSfx(sfx.done, 0.4);
+      else if (round.phase === "finished") playSfx(sfx.done);
       else if (round.phase === "failed") playSfx(sfx.splash);
     }
     soundPrev.current = { phase: round.phase, picked: round.picked.length, wrong: round.wrong };
