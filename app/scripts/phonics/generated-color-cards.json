@@ -1,0 +1,258 @@
+{
+  "generator": "built-in image_gen",
+  "styleReferences": [
+    "app/public/phonics-images/apple.webp",
+    "app/public/phonics-images/ant.webp",
+    "app/public/phonics-images/axe.webp",
+    "app/public/phonics-images/bag.webp",
+    "app/public/phonics-images/cat.webp"
+  ],
+  "commonStyle": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.",
+  "format": {
+    "width": 1024,
+    "height": 1024,
+    "mode": "RGB",
+    "format": "WebP",
+    "quality": 92
+  },
+  "records": [
+    {
+      "word": "clam",
+      "wordId": "pw-clam",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-96c001b2-2a83-4c23-8e6f-1ed680772711.png",
+      "destination": "app/public/phonics-images/clam.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: clam, a bivalve shellfish. Show one large rounded clam with TWO matched, subtly ridged oval beige shells slightly open, a small coral-colored soft body inside. NO pearl or treasure. On a little sandy cream surface, no busy ocean. Do not use a fan-shaped scallop shell.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate one individual square flashcard image, 1024x1024, as a new subject variant of the reference cards. The five input images are STYLE REFERENCES ONLY: preserve their clay material, lighting and warm setting, replace their subject completely. Subject: Meaning: clam, a bivalve shellfish. Show one large rounded clam with TWO matched, subtly ridged oval beige shells slightly open, a small coral-colored soft body inside. NO pearl or treasure. On a little sandy cream surface, no busy ocean. Do not use a fan-shaped scallop shell.\nKeep the complete subject inside the central 80% of the square, with cream background margin. No collage or border.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "a6b8add1573e34b54f2842f9e4da2e280c0e62f2cb31c89f22dc8702acf679d8"
+    },
+    {
+      "word": "flap",
+      "wordId": "pw-flap",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-d51a5dd5-1f9b-42c2-b6e6-d58561c4e440.png",
+      "destination": "app/public/phonics-images/flap.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: to flap wings. One friendly small coral-and-muted-green bird hovering just above a low cream perch, both wings clearly spread upward and outward in a vigorous flap. Show the wings and a few soft sculpted motion wisps near each wing, no extra wings. Both feet off perch. Rounded bird, correct paired wings and tail. No words or diagram arrows.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: to flap wings. One friendly small coral-and-muted-green bird hovering just above a low cream perch, both wings clearly spread upward and outward in a vigorous flap. Show the wings and a few soft sculpted motion wisps near each wing, no extra wings. Both feet off perch. Rounded bird, correct paired wings and tail. No words or diagram arrows.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "a96dd3e3d77e7fc901ca1b33d4e514068a6a5c9b85bc831e9b4b551348a00b96"
+    },
+    {
+      "word": "drip",
+      "wordId": "pw-drip",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-b69774a7-f8e9-46ed-ab39-030e82f046fe.png",
+      "destination": "app/public/phonics-images/drip.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: water drips. A simple rounded terracotta-and-cream faucet with a tiny clear blue drop hanging at its tip and two separate large water droplets falling into a small shallow puddle below. Focus close on faucet tip, hanging droplet and falling droplets; no streaming jet. Warm cream miniature wash area.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: water drips. A simple rounded terracotta-and-cream faucet with a tiny clear blue drop hanging at its tip and two separate large water droplets falling into a small shallow puddle below. Focus close on faucet tip, hanging droplet and falling droplets; no streaming jet. Warm cream miniature wash area.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "bc77d861b3c7c2b45ccddfe23f044760dfc37fc1a9e4b7ad83c5c890eedd0dec"
+    },
+    {
+      "word": "fern",
+      "wordId": "pw-fern",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-14825ead-3bbd-4e1e-a0e9-8899879cd4dd.png",
+      "destination": "app/public/phonics-images/fern.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: fern plant. A prominent lush muted-green fern with multiple arching fronds, each central stem bearing many paired small leaflets. Distinctive feathery fern silhouette, one curled young fiddlehead. Rooted in a small patch of brown earth on a cream surface. No flowers, no tree, no dominant pot.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: fern plant. A prominent lush muted-green fern with multiple arching fronds, each central stem bearing many paired small leaflets. Distinctive feathery fern silhouette, one curled young fiddlehead. Rooted in a small patch of brown earth on a cream surface. No flowers, no tree, no dominant pot.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "f4426591f29d4eb504cdc679ff7e224cf3ea16ca7e1661650147410e399dabb6"
+    },
+    {
+      "word": "plum",
+      "wordId": "pw-plum",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-49637501-b3e8-4a74-8975-5bfb7f70c8f6.png",
+      "destination": "app/public/phonics-images/plum.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: plum fruit. Two large rounded deep muted-purple plums, one whole with a short brown stem and green leaf, the other half showing warm golden flesh and one brown stone. Natural subtle seam in whole plum. Simple warm cream background, no plate, no face.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: plum fruit. Two large rounded deep muted-purple plums, one whole with a short brown stem and green leaf, the other half showing warm golden flesh and one brown stone. Natural subtle seam in whole plum. Simple warm cream background, no plate, no face.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "50b9ecbcf36a3cc675ac01e538b6796de26514afebcff9522ce7511eb231ddc8"
+    },
+    {
+      "word": "plug",
+      "wordId": "pw-plug",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-9f21a2c0-d45e-4544-abd2-2cd38aa99ce9.png",
+      "destination": "app/public/phonics-images/plug.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: electrical plug. Large safe rounded coral electrical plug body with exactly two short parallel rounded metal pins and a thick muted-green cable curving behind. A small simple cream wall outlet is behind and to one side, visibly disconnected with clear space between pins and socket. The plug dominates, all cable ends and prongs within frame. No hands, no electricity sparks.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: electrical plug. Large safe rounded coral electrical plug body with exactly two short parallel rounded metal pins and a thick muted-green cable curving behind. A small simple cream wall outlet is behind and to one side, visibly disconnected with clear space between pins and socket. The plug dominates, all cable ends and prongs within frame. No hands, no electricity sparks.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "6209bf07912538f1b1b62c6ddc43851b6bbbb4b199ce2861157f25029d829b58"
+    },
+    {
+      "word": "glob",
+      "wordId": "pw-glob",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-778a0655-822d-4a59-a35f-b9915c1c6b57.png",
+      "destination": "app/public/phonics-images/glob.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: a small shapeless lump or glob of thick sticky substance. A single large irregular rounded muted-green glob of thick putty resting on a cream surface, a short thick sticky strand stretching up to a small plain wooden spatula above it. Keep the amorphous dollop unmistakable, not a ball, plant, animal, food fruit, or decorative object; one tiny smear near its base.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: a small shapeless lump or glob of thick sticky substance. A single large irregular rounded muted-green glob of thick putty resting on a cream surface, a short thick sticky strand stretching up to a small plain wooden spatula above it. Keep the amorphous dollop unmistakable, not a ball, plant, animal, food fruit, or decorative object; one tiny smear near its base.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "7e1876a4b72a74c4ce5cbe4f01ce38d61b98283f77588f7c8ef943e930a8c954"
+    },
+    {
+      "word": "glum",
+      "wordId": "pw-glum",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-793f9bf4-f2fb-4d69-8348-e70033d80554.png",
+      "destination": "app/public/phonics-images/glum.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: downcast, glum. A friendly rounded child sitting on a low cream step, shoulders slumped, head gently tilted down, eyebrows raised toward the middle and a small downturned mouth. Hands resting limply on knees. Muted coral sweater, green trousers. No tears, injury, anger or frightened expression. Simple warm cream room, focus on downcast face and posture.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: downcast, glum. A friendly rounded child sitting on a low cream step, shoulders slumped, head gently tilted down, eyebrows raised toward the middle and a small downturned mouth. Hands resting limply on knees. Muted coral sweater, green trousers. No tears, injury, anger or frightened expression. Simple warm cream room, focus on downcast face and posture.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "cefa8c59079961c8c2e7e3603fd3568520fb8e0a3a1d32a789e7070c43359345"
+    },
+    {
+      "word": "grin",
+      "wordId": "pw-grin",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-31ff39cf-22be-4f09-bc1f-40b80211313f.png",
+      "destination": "app/public/phonics-images/grin.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: to grin broadly. Close clear view of a friendly clay child with a wide cheerful toothy grin, upturned mouth corners and delighted eyes. Simple believable row of teeth, no exaggerated giant teeth. Coral shirt, cream background, head and shoulders, arms not needed.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: to grin broadly. Close clear view of a friendly clay child with a wide cheerful toothy grin, upturned mouth corners and delighted eyes. Simple believable row of teeth, no exaggerated giant teeth. Coral shirt, cream background, head and shoulders, arms not needed.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "53c9422b4de473f24c51e76eb8f095e22450914e2037682a3a4ab7c9def837eb"
+    },
+    {
+      "word": "brim",
+      "wordId": "pw-brim",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-bd7ad7ce-ccfd-406a-852c-41f7c7f43b00.png",
+      "destination": "app/public/phonics-images/brim.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: the projecting edge/rim of a hat. A mustard broad-brimmed hat in large three-quarter view on a cream table, broad flat rounded brim clearly projecting around a smaller terracotta crown. One small hand lightly pinches the outer front edge of the brim to identify that part. The brim fills most of the composition; all edges fully inside frame. No labels/arrows.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: the projecting edge/rim of a hat. A mustard broad-brimmed hat in large three-quarter view on a cream table, broad flat rounded brim clearly projecting around a smaller terracotta crown. One small hand lightly pinches the outer front edge of the brim to identify that part. The brim fills most of the composition; all edges fully inside frame. No labels/arrows.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "8ae62d7e0714cb8fe846601f851eb6aafe8dd6311f69a03daae19113b341b24c"
+    },
+    {
+      "word": "bran",
+      "wordId": "pw-bran",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-ecc5b4d6-d6df-4f95-8aa5-01493a9147ff.png",
+      "destination": "app/public/phonics-images/bran.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: wheat bran, the thin outer husk flakes of milled grain. A large small mound of dry thin irregular golden-brown wheat bran flakes in the foreground, several individual light papery husk flakes prominent and visible. A shallow cream scoop behind holds a few more flakes; one small wheat ear aside as supporting context. No flour powder, rice, bread, whole oats, or breakfast cereal bowl.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: wheat bran, the thin outer husk flakes of milled grain. A large small mound of dry thin irregular golden-brown wheat bran flakes in the foreground, several individual light papery husk flakes prominent and visible. A shallow cream scoop behind holds a few more flakes; one small wheat ear aside as supporting context. No flour powder, rice, bread, whole oats, or breakfast cereal bowl.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "072502ca16e082845acafd68ba72062a2abdfd212ec2d5b2e5fd305202563297"
+    },
+    {
+      "word": "prim",
+      "wordId": "pw-prim",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-eb15e906-506a-4370-97dd-d046e0ff7d25.png",
+      "destination": "app/public/phonics-images/prim.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: neat and properly dressed, prim. A rounded child in a carefully buttoned tidy coral cardigan over a cream collared shirt, neatly combed hair, clean muted green skirt/trousers, sitting upright with knees together and hands neatly folded on lap. Mild composed reserved expression with closed mouth, not sad or angry. Very simple cream room, details of neatly aligned clothing clearly visible.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: neat and properly dressed, prim. A rounded child in a carefully buttoned tidy coral cardigan over a cream collared shirt, neatly combed hair, clean muted green skirt/trousers, sitting upright with knees together and hands neatly folded on lap. Mild composed reserved expression with closed mouth, not sad or angry. Very simple cream room, details of neatly aligned clothing clearly visible.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "b7b1ed23f52f40654f12d44649b23845048d1f8a9f6ae815602ca1ff23f95223"
+    },
+    {
+      "word": "prop",
+      "wordId": "pw-prop",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-492281fe-36be-4f60-824b-581f897e80b9.png",
+      "destination": "app/public/phonics-images/prop.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: a support that holds an object up. Show a simple muted-green wooden PROP / support strut leaning diagonally under a slightly tilted coral board, its upper end firmly supporting the board and its lower end grounded on a cream surface. A small wooden base supports the opposite board edge. The support is thick and visually dominant, clear contact points. No person holding it, no unrelated theatrical props.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: a support that holds an object up. Show a simple muted-green wooden PROP / support strut leaning diagonally under a slightly tilted coral board, its upper end firmly supporting the board and its lower end grounded on a cream surface. A small wooden base supports the opposite board edge. The support is thick and visually dominant, clear contact points. No person holding it, no unrelated theatrical props.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "7d6cb463b97e75a3603835b0302fe273f0447a6196f2ffd9ac44638a94f2c856"
+    },
+    {
+      "word": "skid",
+      "wordId": "pw-skid",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-faa9c590-8e20-4ef4-8b5f-c454bd8ccf4d.png",
+      "destination": "app/public/phonics-images/skid.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: to skid, slide sideways on a slippery surface. A small rounded coral toy car viewed three-quarter from above, its body angled sideways across a short smooth beige road patch. Two clear shallow curved tire skid trails behind, four correct wheels, a little loose sand pushed sideways at the tires. No crash, speed flames, text, arrows or driver. Depict loss of tire grip rather than ordinary straight driving.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nOne square individual card for SKID, meaning to slide sideways after tires lose grip. Use the reference images only for material and style. Show a coral toy car broadside in a small icy pale-blue patch on a cream road. Its long axis points left-to-right, but broad sideways sliding scuffs and loose snow trail behind its SIDE toward upper background, visibly perpendicular to where the car nose points. The wheels cannot grip the ice. Two small soft motion wisps along the sideways sliding path. One front wheel slightly turned, exactly four wheels total with natural occlusion. Make the sideways skid unmistakable, not ordinary cornering/driving; no crash or person. Car takes central 65% of square with full margins. Clay camera three-quarter overhead; no text, symbols, arrows, border, collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "85f0e0dae52e5006aaf2d682f788984cbdcfbf17b7949e2077bb1b23283ea2de"
+    },
+    {
+      "word": "skim",
+      "wordId": "pw-skim",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-13dc440e-65f5-47fa-afdb-e5fedeaf08f9.png",
+      "destination": "app/public/phonics-images/skim.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: to skim across a liquid surface. A small smooth flat terracotta pebble just grazing a shallow pale-blue pond surface, producing a tiny splash beneath it and a short sequence of two fading circular ripple rings behind. Low near-surface viewpoint makes the stone's movement across, not under, the water clear. Simple cream banks with minimal muted-green plant. No person, skimmer tool, reading/book, text or arrows.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: to skim across a liquid surface. A small smooth flat terracotta pebble just grazing a shallow pale-blue pond surface, producing a tiny splash beneath it and a short sequence of two fading circular ripple rings behind. Low near-surface viewpoint makes the stone's movement across, not under, the water clear. Simple cream banks with minimal muted-green plant. No person, skimmer tool, reading/book, text or arrows.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "d4f484eff4dc7a799cc7871db0e88e7d3181fca567ae8c52d261ed58f1cadb08"
+    },
+    {
+      "word": "tusk",
+      "wordId": "pw-tusk",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-35e84e96-e2ed-41ce-aa1c-513d39904e22.png",
+      "destination": "app/public/phonics-images/tusk.webp",
+      "status": "accepted",
+      "meaningScene": "Meaning: an elephant tusk. Close three-quarter view of a friendly rounded clay elephant head with two smooth curved ivory tusks clearly emerging beside the trunk. One tusk closer and especially prominent but both anatomically correct. Muted warm gray elephant, cream background, simple friendly eyes, no circus or decorations. Keep entire tusks, trunk and ears safely inside frame.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: an elephant tusk. Close three-quarter view of a friendly rounded clay elephant head with two smooth curved ivory tusks clearly emerging beside the trunk. One tusk closer and especially prominent but both anatomically correct. Muted warm gray elephant, cream background, simple friendly eyes, no circus or decorations. Keep entire tusks, trunk and ears safely inside frame.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "d09f20590c0e35310ef056eb9716eec80d9137a394399d1a8c36137287d26f41"
+    },
+    {
+      "word": "them",
+      "wordId": "pw-them",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-928ec164-8495-4fd9-bd05-4d4c32d5f66d.png",
+      "destination": "output/imagegen/phonics/review/them.webp",
+      "status": "meaning-review",
+      "meaningScene": "Meaning: them, the recipients/object of an action, not a particular object. A small relational scene: one friendly clay child in the left foreground clearly extends a basket of three apples toward a distinct group of three friendly children on the right, reaching to receive it. The foreground giver's open hand gestures toward the group as recipients. Keep all children consistent in scale, correct limbs, coral/mustard/muted-green clothes, simple cream room. No arrow, pointer icon, text or speech bubble. The receiving group must be visually distinct from the single giver.",
+      "prompt": "Create a warm, child-friendly educational vocabulary illustration matching the supplied ClassBank reference images. Use a soft 3D clay sculpture style with rounded forms, subtle handmade clay texture, warm cream and beige surroundings, gentle diffuse lighting, and soft contact shadows. Use clear, harmonious colors with coral, terracotta, mustard, and muted green accents where appropriate. Make the target object or action large, immediately recognizable, and easy for young children to understand. Use a simple miniature diorama setting only when it helps explain the meaning. Keep the composition uncluttered and readable at small flashcard size. Match the reference images in material, lighting, camera style, and visual detail. No text, letters, numbers, labels, captions, logos, or watermarks.\nCreate ONE individual SQUARE vocabulary card, 1024x1024, as a new subject variant of the supplied reference cards. Input images are STYLE REFERENCES ONLY, not subjects to retain. Subject: Meaning: them, the recipients/object of an action, not a particular object. A small relational scene: one friendly clay child in the left foreground clearly extends a basket of three apples toward a distinct group of three friendly children on the right, reaching to receive it. The foreground giver's open hand gestures toward the group as recipients. Keep all children consistent in scale, correct limbs, coral/mustard/muted-green clothes, simple cream room. No arrow, pointer icon, text or speech bubble. The receiving group must be visually distinct from the single giver.\nKeep all key subject features inside central 80% for safe square cropping, cream background to edges. No border, no collage.",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sha256": "cedcf5a8b30b108066c390798040ce829ce8d00ab90a81bceae8ed66f5bb3cd4"
+    }
+  ]
+}

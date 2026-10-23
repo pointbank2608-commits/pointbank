@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import TracingRow from './TracingRow';
 import { FONT_LETTER, FONT_TITLE } from './cuteTheme';
 import { WORKBOOKS, cvcCircleRows, cvcImage, cvcLineart, cvcMatchOrder, soundMarks, type CvcUnit, type WorkbookId } from '../../data/cvcWorkbook';
-import { workbookHasPictures, workbookHasLineart, workbookPrintable, type PhonicsWorkbookUnit } from '../../data/phonicsWorkbook';
-import { phonicsCircleRows, workbookLetterOrder } from '../../data/phonicsWorkbookTasks';
+import { workbookPrintable, type PhonicsWorkbookUnit } from '../../data/phonicsWorkbook';
+import { phonicsCircleRows } from '../../data/phonicsWorkbookTasks';
 
 type SheetUnit = CvcUnit | PhonicsWorkbookUnit;
 const isPatternUnit = (unit: SheetUnit): unit is PhonicsWorkbookUnit => 'kind' in unit;
-const imageFor = (unit: SheetUnit, word: string) => isPatternUnit(unit) ? unit.images[word] : cvcImage(word);
-const lineartFor = (unit: SheetUnit, word: string) => isPatternUnit(unit) ? unit.lineart[word] : cvcLineart(word);
+const imageFor = (unit: SheetUnit, word: string) => isPatternUnit(unit) ? unit.images[word] : unit.images ? unit.images[word] : cvcImage(word);
+const lineartFor = (unit: SheetUnit, word: string) => isPatternUnit(unit) ? unit.lineart[word] : unit.lineart ? unit.lineart[word] : cvcLineart(word);
 function blankRunLength(indices: number[], start: number) {
   let end = start;
   while (indices.includes(end)) end++;
@@ -28,7 +28,7 @@ const TONES = [
 const VOWEL_RED = '#e11d2e';
 
 /** 낱말을 쓰되 소리 규칙 글자만 빨갛게. blank 면 비울 글자 자리를 빈칸 상자로(나머지 규칙 글자는 빨갛게 남는다). */
-function Word({ word, unit, size, blank = false, neutral = false }: { word: string; unit: SheetUnit; size: number; blank?: boolean; neutral?: boolean }) {
+function Word({ word, unit, size, blank = false }: { word: string; unit: SheetUnit; size: number; blank?: boolean }) {
   const marks = isPatternUnit(unit) ? unit.targets[word] : soundMarks(unit, word);
   // Longer bank words fit the original card without changing its dimensions.
   if (isPatternUnit(unit)) size = Math.min(size, 35 / (word.length * 0.65));
@@ -40,7 +40,7 @@ function Word({ word, unit, size, blank = false, neutral = false }: { word: stri
             // One uninterrupted writing line for the whole annotated grapheme.
             marks.blank.includes(i - 1) ? null : <span key={i} data-target-blank style={{ display: 'inline-block', width: `${size * 0.65 * blankRunLength(marks.blank, i)}mm`, height: `${size}mm`, borderBottom: '0.5mm solid #1b1b1b' }} />
           ) : <span key={i} style={{ display: 'inline-block', width: `${size * 0.95}mm`, height: `${size * 1.15}mm`, margin: `0 ${size * 0.1}mm`, borderRadius: '2.5mm', background: '#fbeecb', border: '0.4mm solid #e6c97a' }} />
-        ) : !neutral && marks.red.includes(i) ? (
+        ) : marks.red.includes(i) ? (
           <span key={i} style={{ color: VOWEL_RED }}>
             {ch}
           </span>
@@ -93,7 +93,8 @@ function Sheet({ unit, page, children }: { unit: SheetUnit; page: number; childr
 export function CvcUnitPages({ unit }: { unit: SheetUnit }) {
   const { t } = useTranslation();
   if (isPatternUnit(unit) && !workbookPrintable(unit)) return null;
-  if (isPatternUnit(unit) && !workbookHasPictures(unit)) return <TextWorkbookPages unit={unit} />;
+  if (unit.words.some(word => !imageFor(unit, word) || !lineartFor(unit, word))) return null;
+
   const circle = isPatternUnit(unit) ? phonicsCircleRows(unit) : cvcCircleRows(unit);
   const matchRight = cvcMatchOrder(unit);
   const row = { display: 'flex', alignItems: 'center' } as const;
@@ -168,7 +169,7 @@ export function CvcUnitPages({ unit }: { unit: SheetUnit }) {
           </div>
         </Section>
 
-        {isPatternUnit(unit) && !workbookHasLineart(unit) ? <RuleMarkActivity unit={unit} n={6} /> : <Section n={6} title={t('workbook.activities.color')} height={66}>
+        <Section n={6} title={t('workbook.activities.color')} height={66}>
           <div style={{ ...row, justifyContent: 'space-around' }}>
             {unit.words.map((w) => (
               <div key={w} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2mm' }}>
@@ -177,66 +178,10 @@ export function CvcUnitPages({ unit }: { unit: SheetUnit }) {
               </div>
             ))}
           </div>
-        </Section>}
+        </Section>
       </Sheet>
     </>
   );
-}
-
-function RuleMarkActivity({ unit, n }: { unit: PhonicsWorkbookUnit; n: number }) {
-  const { t } = useTranslation();
-  return <Section n={n} title={t('workbook.activities.mark')} height={n === 3 ? 56 : 66}>
-    <p style={{ fontSize: '3.5mm', margin: 0 }}>{t('workbook.activities.markHint')}</p>
-    {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8mm' }}>
-      <Word word={word} unit={unit} size={8} neutral />
-      <span style={{ fontSize: '4mm' }}>{unit.meanings[word]}</span>
-    </div>)}
-  </Section>;
-}
-
-/** When any color picture is absent, every word follows the same text activity set. */
-function TextWorkbookPages({ unit }: { unit: PhonicsWorkbookUnit }) {
-  const { t } = useTranslation();
-  const writingLine = { height: '12mm', borderBottom: '0.4mm solid #8893a7', flex: 1 };
-  return <>
-    <Sheet unit={unit} page={unit.unit * 2 - 1}>
-      <Section n={1} title={t('workbook.activities.read')} height={64}>
-        {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8mm' }}>
-          <Word word={word} unit={unit} size={9} /><span style={{ fontSize: '4.5mm' }}>{unit.meanings[word]}</span>
-        </div>)}
-      </Section>
-      <Section n={2} title={t('workbook.activities.trace')} height={66}>
-        {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', alignItems: 'center', gap: '5mm' }}>
-          <div style={{ width: '38mm' }}><Word word={word} unit={unit} size={7} /></div>
-          <div style={{ flex: 1, ['--trace-stroke' as string]: '#9aa3b5' }}><TracingRow word={word} trace last rowMm={12} emMm={12.5} /></div>
-        </div>)}
-      </Section>
-      <RuleMarkActivity unit={unit} n={3} />
-    </Sheet>
-    <Sheet unit={unit} page={unit.unit * 2}>
-      <Section n={4} title={t('workbook.activities.order')} height={60}>
-        <p style={{ fontSize: '3.5mm', margin: 0 }}>{t('workbook.activities.orderHint')}</p>
-        {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', alignItems: 'center', gap: '4mm' }}>
-          <span style={{ width: '35mm', fontSize: '3.6mm' }}>{unit.meanings[word]}</span>
-          <span data-letter-order style={{ width: '55mm', flexShrink: 0, display: 'flex', gap: '1mm', fontFamily: FONT_LETTER, fontSize: '5.5mm' }}>{workbookLetterOrder(word).map((letter, i) => <span key={i} style={{ width: '7mm', textAlign: 'center', border: '0.3mm solid #bcc7d8', borderRadius: '1mm' }}>{letter}</span>)}</span>
-          <span style={writingLine} />
-        </div>)}
-      </Section>
-      <Section n={5} title={t('workbook.activities.complete')} height={66}>
-        <p style={{ fontSize: '3.5mm', margin: 0 }}>{t('workbook.activities.completeHint')}</p>
-        {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8mm' }}>
-          <span style={{ width: '55mm', fontSize: '4mm' }}>{unit.meanings[word]}</span>
-          <Word word={word} unit={unit} size={9} blank />
-        </div>)}
-      </Section>
-      <Section n={6} title={t('workbook.activities.recall')} height={66}>
-        <p style={{ fontSize: '3.5mm', margin: 0 }}>{t('workbook.activities.recallHint')}</p>
-        {unit.words.map(word => <div key={word} data-text-word={word} style={{ display: 'flex', alignItems: 'center', gap: '8mm', padding: '0 8mm' }}>
-          <span style={{ width: '55mm', fontSize: '4mm' }}>{unit.meanings[word]}</span><span style={writingLine} />
-        </div>)}
-      </Section>
-    </Sheet>
-  </>;
 }
 
 /** Shared compact CVC control styles, also used by stage 4/5. */

@@ -29,8 +29,8 @@ await mkdir('../output/phonics-fallback',{recursive:true});await mkdir('../tmp/p
 await page.goto(root+'/materials/phonics-stage-4-workbook');
 const print=page.getByRole('button',{name:'선택 유닛 인쇄',exact:true});
 await print.waitFor();await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
-await page.getByText('48개 유닛 · 105개 학습 항목 · 인쇄 가능한 유닛 48개',{exact:true}).waitFor();
-assert.equal(await page.getByRole('checkbox',{disabled:true}).count(),0);
+await page.getByText('48개 유닛 · 105개 학습 항목 · 인쇄 가능한 유닛 47개',{exact:true}).waitFor();
+assert.equal(await page.getByRole('checkbox',{disabled:true}).count(),1);
 assert.equal(await page.locator('[data-unit-picker] a').count(),0);
 assert.equal(await page.locator('[data-unit-picker]').getByText(/컬러 그림 없음|색칠용 선화 없음|준비 중/).count(),0);
 assert.equal(await page.locator('[data-asset-status]').getAttribute('open'),null);
@@ -44,8 +44,8 @@ await page.screenshot({path:'../output/phonics-fallback/mobile.png',fullPage:fal
 await page.setViewportSize({width:1440,height:1000});
 const reports=[];
 for(const [name,words,mode] of [
- ['black',['black','block'],'pictures'],['blank',['blank','blink'],'color-only'],
- ['clam',['clam','clock'],'text'],['glob',['glob','glum'],'text'],['brush',['fish','dish','brush'],'pictures']
+ ['black',['black','block'],'pictures'],['blank',['blank','blink'],'pictures'],
+ ['clam',['clam','clock'],'pictures'],['glob',['glob','glum'],'pictures'],['brush',['fish','dish','brush'],'pictures']
 ]){
  await page.getByRole('button',{name:'선택 지우기',exact:true}).click();
  assert.equal(await page.locator('.print-board').count(),0);assert.equal(await print.isEnabled(),false);
@@ -58,17 +58,10 @@ for(const [name,words,mode] of [
  for(let i=0;i<6;i++){
   const section=sheets.locator('section').nth(i);
   const exercised=await section.locator('[data-text-word],[data-workbook-word]').evaluateAll(els=>els.map(e=>e.getAttribute('data-text-word')??e.getAttribute('data-workbook-word')));
-  if(i!==4||mode==='text')for(const word of words)assert(exercised.includes(word),name+' section '+i+' '+word);
+  if(i!==4)for(const word of words)assert(exercised.includes(word),name+' section '+i+' '+word);
  }
- if(mode==='text'){
-  assert.equal(await sheets.locator('img').count(),0);
-  const page2=sheets.nth(1);for(const word of words)assert(!(await page2.innerText()).includes(word));
-  const letters=await page2.locator('[data-letter-order]').allTextContents();
-  assert.deepEqual(letters.map(s=>[...s].sort()),words.map(s=>[...s].sort()));
- }else{
-  assert.equal(await sheets.locator('img').count(),mode==='color-only'?words.length*5:words.length*6);
-  assert.equal(await sheets.nth(1).locator('section').nth(2).locator('img').count(),mode==='color-only'?0:words.length);
- }
+ assert.equal(await sheets.locator('img').count(),words.length*6);
+ assert.equal(await sheets.nth(1).locator('section').nth(2).locator('img').count(),words.length);
  await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.querySelectorAll('.print-board img')].map(i=>i.decode()));});
  const imageCount=await sheets.locator('img').count();
  await page.emulateMedia({media:'print'});
@@ -81,17 +74,20 @@ for(const [name,words,mode] of [
  await page.emulateMedia({media:'screen'});reports.push({name,words,mode,metrics,imageCount});
 }
 await page.getByRole('button',{name:'전체 선택',exact:true}).click();
-await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===96);
-assert.equal(await page.getByRole('checkbox',{checked:true}).count(),48);
+await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===94);
+assert.equal(await page.getByRole('checkbox',{checked:true}).count(),47);
 await page.evaluate(()=>{window.__printCount=0;window.print=()=>window.__printCount++;});
 await print.click();assert.equal(await page.evaluate(()=>window.__printCount),1);
 await page.goto(root+'/materials/phonics-stage-5-workbook');
-await page.getByText('32개 유닛 · 66개 학습 항목 · 인쇄 가능한 유닛 32개',{exact:true}).waitFor();
-await page.getByRole('button',{name:'전체 선택',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===64);
-assert.equal(await page.getByRole('checkbox',{checked:true}).count(),32);
+await page.getByText('32개 유닛 · 66개 학습 항목 · 인쇄 가능한 유닛 31개',{exact:true}).waitFor();
+await page.getByRole('button',{name:'전체 선택',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===62);
+assert.equal(await page.getByRole('checkbox',{checked:true}).count(),31);
 await page.route('**/phonics-images/black.webp',r=>r.abort());
-await page.goto(root+'/materials/phonics-stage-4-workbook');await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
-assert.equal(await page.locator('.print-board img').count(),0);assert.equal(await print.isEnabled(),true);
+await page.goto(root+'/materials/phonics-stage-4-workbook');
+await page.getByText('48개 유닛 · 105개 학습 항목 · 인쇄 가능한 유닛 46개',{exact:true}).waitFor();
+await page.getByRole('button',{name:'선택 지우기',exact:true}).click();
+assert.equal(await page.getByRole('checkbox',{name:/black · block/}).isDisabled(),true);
+assert.equal(await page.locator('.print-board img').count(),0);assert.equal(await print.isEnabled(),false);
 assert.deepEqual(errors,[]);
-await writeFile('../output/phonics-fallback/browser-checks.json',JSON.stringify({passed:true,reports,errors,allUnits:[48,32],runtimeBrokenImage:'text fallback',printButton:true},null,2));
-await browser.close();console.log('PASS: compact picker, keyboard, all words, fallbacks, A4 previews and print controls.');
+await writeFile('../output/phonics-six-activities/browser-checks.json',JSON.stringify({passed:true,reports,errors,allUnits:[47,31],runtimeBrokenImage:'blocked incomplete unit',printButton:true},null,2));
+await browser.close();console.log('PASS: compact picker, keyboard, all words, six picture activities, A4 previews and print controls.');

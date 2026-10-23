@@ -10,6 +10,8 @@ export type WorkbookId = 'cvc' | 'long';
 
 export interface CvcUnit {
   id: string;
+  images?: Record<string, string>;
+  lineart?: Record<string, string>;
   targets?: Record<string, { red: number[]; blank: number[] }>;
   book: WorkbookId;
   /** 1부터 — 워크북 머리글의 UNIT 번호 */

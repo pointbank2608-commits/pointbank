@@ -612,6 +612,8 @@ export interface WordBankEntry {
 /* ---------------- 파닉스(소리 규칙) 단어, 학원 구분 없는 공용 데이터 ---------------- */
 
 export interface PhonicsBankEntry {
+  /** Shared coloring asset, paired with this word's current color image. */
+  lineart_url?: string | null;
   /** Curriculum IDs are immutable; historical database IDs remain untouched. */
   curriculum?: boolean;
   stageId?: string;

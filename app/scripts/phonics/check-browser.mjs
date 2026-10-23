@@ -95,7 +95,7 @@ await page.getByRole('button',{name:'선택 지우기',exact:true}).click();
 const fallback=page.getByRole('checkbox',{name:/blank · blink/});assert.equal(await fallback.isEnabled(),true);
 await fallback.check();await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
 assert.deepEqual(await paperWords(),['blank','blink']);
-assert.equal(await page.locator('.print-board').nth(1).locator('section').nth(2).getByText('Find the Target Letters',{exact:true}).count(),1);
+assert.equal(await page.locator('.print-board').nth(1).locator('section').nth(2).getByText('Color',{exact:true}).count(),1);
 await page.goto(root+'/materials/phonics-stage-5-workbook');
 await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).waitFor();
 assert.equal(await page.getByRole('checkbox',{name:/teacher/}).count(),0);

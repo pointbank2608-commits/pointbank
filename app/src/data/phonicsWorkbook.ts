@@ -1,6 +1,6 @@
 import type { PhonicsBankEntry } from '../lib/types';
-import { WORKBOOK_COLOR_PATHS } from '../lib/workbookImageManifest';
-import { PHONICS_RULES, unitsForStep, wordBySpelling } from './phonicsCurriculum';
+import { PHONICS_RULES, unitsForStep } from './phonicsCurriculum';
+import { isImageReference } from './phonicsMedia';
 export { phonicsCircleRows } from './phonicsWorkbookTasks';
 
 export interface WorkbookIssue { type: 'count' | 'target' | 'color' | 'lineart' | 'duplicate' | 'meaning'; word?: string }
@@ -34,11 +34,9 @@ export function patternTargets(word: string, pattern: string): number[] | null {
   return !marked && plain === word && positions.length > 0 ? positions : null;
 }
 
-const colorPaths = new Set(WORKBOOK_COLOR_PATHS);
 function colorFor(entry: PhonicsBankEntry): string | null {
-  // Local assets are checked at build time; don't silently print a broken DB URL.
   const path = entry.image_url;
-  return path && colorPaths.has(path) ? path : null;
+  return isImageReference(path) ? path : null;
 }
 
 /** Keep full rule identity: oo short/long and ow long-o/diphthong never merge. */
@@ -59,7 +57,7 @@ export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 4 | 5): 
         if (!marks) unit.issues.push({ type: 'target', word: entry.word });
         else unit.targets[entry.word] = { red: marks, blank: marks };
         const image = colorFor(entry);
-        const lineart = wordBySpelling(entry.word)?.lineartUrl;
+        const lineart = isImageReference(entry.lineart_url) ? entry.lineart_url : null;
         if (image) unit.images[entry.word] = image;
         else unit.issues.push({ type: 'color', word: entry.word });
         if (lineart) unit.lineart[entry.word] = lineart;
@@ -70,7 +68,7 @@ export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 4 | 5): 
   });
 }
 
-/** Missing pictures change activities, while invalid content still blocks printing. */
+/** Every finished workbook requires all six picture activities. */
 export function workbookHasPictures(unit: PhonicsWorkbookUnit) {
   return unit.words.every(word => !!unit.images[word]);
 }
@@ -78,21 +76,21 @@ export function workbookHasLineart(unit: PhonicsWorkbookUnit) {
   return unit.words.every(word => !!unit.lineart[word]);
 }
 export function workbookBlockingIssues(unit: PhonicsWorkbookUnit): WorkbookIssue[] {
-  const issues = unit.issues.filter(i => i.type !== 'color' && i.type !== 'lineart');
+  const issues = [...unit.issues];
   if (unit.words.length < 2 || unit.words.length > 3 || unit.words.some(w => !w.trim())) issues.push({ type: 'count' });
   for (const word of unit.words) {
     const target = unit.targets[word];
     if (!target?.red.length || !target.blank.length || [...target.red, ...target.blank].some(i => !Number.isInteger(i) || i < 0 || i >= word.length)) issues.push({ type: 'target', word });
   }
-  if (!workbookHasPictures(unit)) for (const word of unit.words) {
-    if (!unit.meanings[word]?.trim()) issues.push({ type: 'meaning', word });
+  for (const word of unit.words) {
+    if (!unit.images[word]) issues.push({ type: 'color', word });
+    if (!unit.lineart[word]) issues.push({ type: 'lineart', word });
   }
-  return issues;
+  return issues.filter((issue, i) => issues.findIndex(other => other.type === issue.type && other.word === issue.word) === i);
 }
 export function workbookPrintable(unit: PhonicsWorkbookUnit) { return workbookBlockingIssues(unit).length === 0; }
-export function workbookUsesText(unit: PhonicsWorkbookUnit) { return !workbookHasPictures(unit) || !workbookHasLineart(unit); }
 
-/** Runtime decode failures follow the same activity policy as absent local assets. */
+/** A failed image never appears as a broken icon in a finished workbook. */
 export function withVerifiedWorkbookAssets(unit: PhonicsWorkbookUnit, checked: Record<string, boolean>): PhonicsWorkbookUnit {
   const images = Object.fromEntries(Object.entries(unit.images).filter(([, src]) => checked[src] !== false));
   const lineart = Object.fromEntries(Object.entries(unit.lineart).filter(([, src]) => checked[src] !== false));

@@ -55,7 +55,7 @@ function PhonicsImage({ entry, onOpen }: { entry: PhonicsBankEntry; onOpen: (ent
       <img
         src={entry.image_url}
         alt=""
-        className="h-32 w-full rounded-lg object-cover transition-transform hover:scale-[1.03]"
+        className="h-32 w-full rounded-lg bg-[#fff0d8] object-contain"
         onError={() => setBroken(true)}
       />
     </button>

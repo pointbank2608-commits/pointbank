@@ -981,10 +981,14 @@ export async function fetchWordBank(): Promise<WordBankEntry[]> {
 
 /** Shared confirmed curriculum; extension and historical entries require an explicit opt-in. */
 export async function fetchPhonicsBank(options: { includeLegacy?: boolean; includeExtensions?: boolean } = {}): Promise<PhonicsBankEntry[]> {
-  const { curriculumEntries, withLegacyPhonics } = await import('../data/phonicsCurriculum');
-  if (!options.includeLegacy) return curriculumEntries(options.includeExtensions === true);
-  const raw = unwrap(await supabase.from('phonics_bank').select('*').order('sort_order')) as PhonicsBankEntry[];
-  return withLegacyPhonics(raw, options.includeExtensions === true);
+  const { curriculumEntries } = await import('../data/phonicsCurriculum');
+  const { withPhonicsMediaUpdates } = await import('../data/phonicsMedia');
+  const base = curriculumEntries(options.includeExtensions === true);
+  const result = await supabase.from('phonics_bank').select('*').order('sort_order');
+  if (result.error) return base;
+  const raw = (result.data ?? []) as PhonicsBankEntry[];
+  const current = withPhonicsMediaUpdates(base, raw);
+  return options.includeLegacy ? [...current, ...raw.map(row => ({ ...row, tier: 'legacy' as const }))] : current;
 }
 
 /** 2026-09 사전·파닉스 그림을 PNG → WebP 로 바꿨는데(supabase/017), 단어장·게임 내용·수업은 단어를

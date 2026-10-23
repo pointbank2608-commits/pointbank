@@ -7,6 +7,7 @@ export interface PhonicsWord {
   word: string; meaning: string | null; imageUrl: string | null; lineartUrl: string | null;
   audio: { provider: string; text: string; recordingUrl: string | null }; meaningSource: string | null;
   reviewFlags?: string[];
+  lineartSourceImageUrl?: string;
 }
 export interface PhonicsUnit {
   id: string; ruleId: string; stageId: string; step: number; name: string; order: number;
@@ -34,7 +35,7 @@ function entry(pattern: string, rule: typeof source.rules[number], unitIds: stri
   const word = PHONICS_WORDS[wordId];
   return {
     id: `phonics:${tier === 'basic' ? unitIds[0] : rule.id + ':extension'}:${wordId}`,
-    wordId, word: word.word, meaning: word.meaning, image_url: word.imageUrl,
+    wordId, word: word.word, meaning: word.meaning, image_url: word.imageUrl, lineart_url: word.lineartUrl,
     pattern_marked: pattern, step: rule.step, rule: rule.name, sort_order: order,
     curriculum: true, stageId: rule.stageId, ruleId: rule.id, unitId: unitIds[0], unitIds, tier,
     soundId: rule.sound, targets: positionsOfPattern(pattern),
