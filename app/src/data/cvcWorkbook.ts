@@ -163,7 +163,7 @@ export function cvcCircleRows(unit: CvcUnit): { word: string; choices: string[] 
 }
 
 /** Match: 오른쪽 그림 순서 — 제자리에 오는 그림이 없게 한 칸씩 민다. */
-export function cvcMatchOrder(unit: CvcUnit): string[] {
+export function cvcMatchOrder(unit: Pick<CvcUnit, 'unit' | 'words'>): string[] {
   const shift = unit.words.length > 2 ? (unit.unit % 2) + 1 : 1;
   return unit.words.map((_, i) => unit.words[(i + shift) % unit.words.length]);
 }

@@ -55,6 +55,7 @@ function AppLayoutInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
   // 클래스뱅크 브랜드 footer 는 "수업 자료실"에서 뽑는 인쇄물에만 찍는다(학원 워터마크는 전 화면 공통).
   const isMaterialsPrint = pathname.startsWith('/materials');
+  const isWorkbookPrint = /^\/materials\/(cvc-workbook|long-vowel-workbook|phonics-stage-[45]-workbook|grammar-workbook)$/.test(pathname);
 
   // "발표하기"를 누른 뒤 "수업 마치기" 전까지는 사이드바·상단바·페이지 여백을 전부 걷어낸다 —
   // 발표 중엔 편집 화면으로 빠져나가지 못하고 만들어 둔 수업만 진행한다(2026-09-25 사용자 결정).
@@ -192,7 +193,7 @@ function AppLayoutInner() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background font-body-md text-on-background">
+    <div className={`min-h-screen flex bg-background font-body-md text-on-background ${isWorkbookPrint ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
       <PrintWatermark />
       {isMaterialsPrint && <PrintBrandFooter />}
       {/* 모바일 상단바 */}
@@ -236,7 +237,7 @@ function AppLayoutInner() {
         {sidebarContent}
       </nav>
 
-      <main data-app-main className="flex-1 min-w-0 md:ml-[17.5rem] pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0">
+      <main data-app-main className={`flex-1 min-w-0 md:ml-[17.5rem] pt-[calc(4rem+env(safe-area-inset-top,0px))] md:pt-0 min-h-screen print:min-h-0 print:pt-0 ${isWorkbookPrint ? 'print:ml-0' : ''}`}>
         <LessonRunnerBar />
         {/* 데스크톱 상단바 */}
         <header data-app-chrome className="no-print sticky top-0 z-20 hidden h-16 items-center justify-end gap-3 bg-background/90 px-margin-desktop backdrop-blur md:flex">

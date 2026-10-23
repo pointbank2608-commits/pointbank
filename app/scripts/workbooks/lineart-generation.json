@@ -1,0 +1,198 @@
+{
+  "tool": "Built-in image_gen",
+  "savedDirectory": "C:/Users/likes/Desktop/pointbank/app/public/word-bank-lineart",
+  "filenamePattern": "<word>.webp",
+  "promptTemplate": "Use case: scientific-educational. Asset type: one square primary-school English workbook coloring picture for the word WORD. Subject: SUBJECT. Pure black outline on pure white background. Friendly rounded children's coloring-book line art, uniform clean bold outlines, generous closed empty areas for coloring, centered composition with generous margins. No gray shading, no photographic or 3D rendering, no texture, no filled dark backgrounds, no letters, no labels, no watermark, no decorative border.",
+  "created": "2026-10-23",
+  "style": "Square primary-school coloring picture; pure black outlines on white, closed empty areas, no gray shading, labels or watermark.",
+  "subjects": [
+    [
+      "blouse",
+      "A simple collared button blouse"
+    ],
+    [
+      "black",
+      "an upright chunky wax crayon next to an open paint pot and a simple paint splash, open outlined areas to color black"
+    ],
+    [
+      "clap",
+      "a happy child clapping both hands together clearly in front of their chest, tiny motion lines around touching palms"
+    ],
+    [
+      "club",
+      "a small children's clubhouse with a small roof, door and window, no signage"
+    ],
+    [
+      "flat",
+      "one flat circular disk beside a single upright cube for comparison, a hand resting flat on the disk"
+    ],
+    [
+      "glad",
+      "a happy smiling child with raised arms"
+    ],
+    [
+      "plan",
+      "a child planning a simple garden with a pencil and a paper diagram of plant shapes"
+    ],
+    [
+      "cross",
+      "a child crossing a pedestrian zebra crossing, a simple short stretch of road"
+    ],
+    [
+      "drop",
+      "a child dropping a ball from an open hand, the ball clearly falling with a few motion lines"
+    ],
+    [
+      "frame",
+      "an empty rectangular picture frame with rounded decorative corners"
+    ],
+    [
+      "print",
+      "a small desktop printer ejecting one sheet of paper bearing a simple star picture"
+    ],
+    [
+      "press",
+      "a finger pressing a large round button, side view and motion lines"
+    ],
+    [
+      "stop",
+      "a child holding up a palm to indicate stop, beside a simple stopping toy car"
+    ],
+    [
+      "step",
+      "a child taking one step up on a single low stair, feet clearly visible"
+    ],
+    [
+      "skin",
+      "a child pointing to the exposed skin on their forearm"
+    ],
+    [
+      "skip",
+      "a child skipping with a jump rope, full body with looped rope"
+    ],
+    [
+      "camp",
+      "a simple camping tent next to a small campfire and one tree"
+    ],
+    [
+      "band",
+      "a small music band of three cheerful children with guitar, drum and microphone"
+    ],
+    [
+      "pink",
+      "an upright chunky wax crayon beside a small empty heart shape and an open paint pot, all outlined so children can color pink"
+    ],
+    [
+      "ink",
+      "an open ink bottle with a feather quill and two large empty outlined ink drops"
+    ],
+    [
+      "shop",
+      "a little shop front with an awning, door and display window, no signs or lettering"
+    ],
+    [
+      "lunch",
+      "a lunch tray with a sandwich, apple and small milk carton, no labels"
+    ],
+    [
+      "thin",
+      "one thin pencil next to one wide marker, plainly distinguishable widths"
+    ],
+    [
+      "thick",
+      "one thick closed book next to a very thin notebook, clearly visible spines"
+    ],
+    [
+      "math",
+      "a child with an abacus and simple geometric blocks, no writing or digits"
+    ],
+    [
+      "path",
+      "a winding garden path leading between two trees"
+    ],
+    [
+      "with",
+      "two friendly children walking together side by side holding hands"
+    ],
+    [
+      "whip",
+      "a single coiled rope whip with a short handle, no people or animals"
+    ],
+    [
+      "white",
+      "an upright chunky crayon beside two empty outlined clouds, wide open areas to leave white"
+    ],
+    [
+      "ring",
+      "a single jewelry ring with one large faceted gemstone"
+    ],
+    [
+      "sing",
+      "a happy child singing into a microphone, a few musical notes"
+    ],
+    [
+      "song",
+      "a music sheet with only large musical notes, no staff words, beside a child singing"
+    ],
+    [
+      "day",
+      "a smiling sun over a simple house and tree in daytime"
+    ],
+    [
+      "play",
+      "two happy children playing with a ball"
+    ],
+    [
+      "say",
+      "a child speaking with an empty speech bubble, no text inside it"
+    ],
+    [
+      "may",
+      "a spring scene with blooming flowers and a small calendar containing a simple flower symbol, no letters or numerals"
+    ],
+    [
+      "yellow",
+      "an upright chunky crayon next to an empty outlined sun and small paint pot, areas ready to color yellow"
+    ],
+    [
+      "cook",
+      "a friendly child wearing a chef hat stirring a pot on a table"
+    ],
+    [
+      "wood",
+      "two pieces of cut timber and a tree stump, simple wood grain outlines"
+    ],
+    [
+      "food",
+      "a plate with bread, a carrot and an apple, a glass of water beside it"
+    ],
+    [
+      "point",
+      "a child pointing with their index finger toward a large star shape"
+    ],
+    [
+      "toy",
+      "a simple teddy bear and one toy car"
+    ],
+    [
+      "joy",
+      "a very happy child with open arms jumping, simple tiny hearts around them"
+    ],
+    [
+      "out",
+      "a child stepping out through an open door, visible motion and threshold"
+    ],
+    [
+      "down",
+      "a child walking down three low stairs, small arrow pointing downward"
+    ],
+    [
+      "dark",
+      "a night scene with an outlined moon and a child using a flashlight, all areas unfilled for coloring"
+    ],
+    [
+      "her",
+      "a smiling girl pointing to her own small bag, no letters or words"
+    ]
+  ]
+}

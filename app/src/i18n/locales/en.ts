@@ -4,9 +4,11 @@ import { materialBrowserEn } from '../materialBrowserLocales';
 import { homeEn } from '../homeLocales';
 import { sourceEn } from '../sourceLocales';
 import { guideEn } from '../guideLocales';
+import { workbookEn } from '../workbookLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  workbook: workbookEn,
   bombSound: bombSoundEn,
   turnDisplay: turnDisplayEn,
   materialBrowser: materialBrowserEn,
@@ -2705,6 +2707,12 @@ const en: Ko = {
     memoryCardsName: 'Memory Card Maker',
     memoryCardsDesc: 'Print two of each word card to play Memory or Go Fish.',
     cvcWorkbookName: 'Phonics CVC Workbook',
+    stage4WorkbookName: 'Phonics Stage 4 Workbook',
+    stage4WorkbookDesc: 'Two pages per unit for consonant blends and digraphs, using the original words and pictures.',
+    stage5WorkbookName: 'Phonics Stage 5 Workbook',
+    stage5WorkbookDesc: 'Vowel teams, diphthongs and R-controlled vowels, grouped by their sounds.',
+    grammarWorkbookName: 'Grammar Practice and Missions',
+    grammarWorkbookDesc: '13 third-person singular questions and a Robot Detective mission. Separate student and teacher sheets.',
     cvcWorkbookDesc: 'Ready-made short vowel worksheets in 24 units. Pick the units and print.',
     longVowelWorkbookName: 'Phonics Long Vowel Workbook',
     longVowelWorkbookDesc: 'Ready-made long vowel (magic e, ee, ea) worksheets in 26 units. Pick the units and print.',

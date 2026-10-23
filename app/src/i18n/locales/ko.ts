@@ -4,7 +4,9 @@ import { materialBrowserKo } from '../materialBrowserLocales';
 import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
+import { workbookKo } from '../workbookLocales';
 const ko = {
+  workbook: workbookKo,
   bombSound: bombSoundKo,
   turnDisplay: turnDisplayKo,
   materialBrowser: materialBrowserKo,
@@ -2702,6 +2704,12 @@ const ko = {
     memoryCardsName: '메모리 카드 만들기',
     memoryCardsDesc: '단어 카드를 두 장씩 인쇄해서 메모리 게임이나 고피쉬로 즐겨요.',
     cvcWorkbookName: '파닉스 CVC 워크북',
+    stage4WorkbookName: '파닉스 4단계 워크북',
+    stage4WorkbookDesc: '자음군·이중자음 규칙별 A4 두 장. 원본 단어와 그림으로 읽고 쓰고 색칠해요.',
+    stage5WorkbookName: '파닉스 5단계 워크북',
+    stage5WorkbookDesc: '모음 조합·이중모음·R 모음. 소리별로 구분한 유닛을 골라 인쇄해요.',
+    grammarWorkbookName: '문법 기본 연습과 활동 미션',
+    grammarWorkbookDesc: '3인칭 단수 현재형 13문항과 로봇 탐정 미션. 학생용·교사용을 골라 인쇄해요.',
     cvcWorkbookDesc: '미리 만들어 둔 단모음 워크시트 24유닛. 유닛만 고르면 바로 인쇄해요.',
     longVowelWorkbookName: '파닉스 장모음 워크북',
     longVowelWorkbookDesc: '미리 만들어 둔 장모음(매직 e · ee · ea) 워크시트 26유닛. 유닛만 고르면 바로 인쇄해요.',

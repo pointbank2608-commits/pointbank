@@ -173,6 +173,9 @@ export default function GrammarPage() {
             <GrammarBoard key={`${point.id}:${seed}:${extra.length}`} point={point} extra={extra} themeId={themeId} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => navigate(`/materials/grammar-workbook?topic=${encodeURIComponent(point.id)}`)} className="rounded-full border-2 border-primary px-5 py-2 font-label-md text-label-md text-primary hover:bg-primary/10">
+              {t('workbook.create')}{point.id !== 'third-s' ? ` · ${t('workbook.preparing')}` : ''}
+            </button>
             <button
               type="button"
               onClick={() => setBig(true)}

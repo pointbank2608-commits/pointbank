@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "observed-4-L-Blends (bl)-blouse",
+    "step": 4,
+    "rule": "L-Blends (bl)",
+    "word": "blouse",
+    "pattern_marked": "{bl}ouse",
+    "image_url": "/phonics-images/blouse.webp",
+    "meaning": null,
+    "sort_order": 0
+  },
+  {
+    "id": "observed-4-L-Blends (bl)-black",
+    "step": 4,
+    "rule": "L-Blends (bl)",
+    "word": "black",
+    "pattern_marked": "{bl}ack",
+    "image_url": "/phonics-images/black.webp",
+    "meaning": null,
+    "sort_order": 1
+  },
+  {
+    "id": "observed-4-L-Blends (bl)-block",
+    "step": 4,
+    "rule": "L-Blends (bl)",
+    "word": "block",
+    "pattern_marked": "{bl}ock",
+    "image_url": "/phonics-images/block.webp",
+    "meaning": null,
+    "sort_order": 2
+  },
+  {
+    "id": "observed-4-L-Blends (cl)-clap",
+    "step": 4,
+    "rule": "L-Blends (cl)",
+    "word": "clap",
+    "pattern_marked": "{cl}ap",
+    "image_url": "/phonics-images/clap.webp",
+    "meaning": null,
+    "sort_order": 3
+  },
+  {
+    "id": "observed-4-L-Blends (cl)-clock",
+    "step": 4,
+    "rule": "L-Blends (cl)",
+    "word": "clock",
+    "pattern_marked": "{cl}ock",
+    "image_url": "/phonics-images/clock.webp",
+    "meaning": null,
+    "sort_order": 4
+  },
+  {
+    "id": "observed-4-L-Blends (cl)-club",
+    "step": 4,
+    "rule": "L-Blends (cl)",
+    "word": "club",
+    "pattern_marked": "{cl}ub",
+    "image_url": "/phonics-images/club.webp",
+    "meaning": null,
+    "sort_order": 5
+  },
+  {
+    "id": "observed-4-L-Blends (fl)-flag",
+    "step": 4,
+    "rule": "L-Blends (fl)",
+    "word": "flag",
+    "pattern_marked": "{fl}ag",
+    "image_url": "/phonics-images/flag.webp",
+    "meaning": null,
+    "sort_order": 6
+  },
+  {
+    "id": "observed-4-L-Blends (fl)-flat",
+    "step": 4,
+    "rule": "L-Blends (fl)",
+    "word": "flat",
+    "pattern_marked": "{fl}at",
+    "image_url": "/phonics-images/flat.webp",
+    "meaning": null,
+    "sort_order": 7
+  },
+  {
+    "id": "observed-4-L-Blends (gl)-glass",
+    "step": 4,
+    "rule": "L-Blends (gl)",
+    "word": "glass",
+    "pattern_marked": "{gl}ass",
+    "image_url": "/phonics-images/glass.webp",
+    "meaning": null,
+    "sort_order": 8
+  },
+  {
+    "id": "observed-4-L-Blends (gl)-glad",
+    "step": 4,
+    "rule": "L-Blends (gl)",
+    "word": "glad",
+    "pattern_marked": "{gl}ad",
+    "image_url": "/phonics-images/glad.webp",
+    "meaning": null,
+    "sort_order": 9
+  },
+  {
+    "id": "observed-4-L-Blends (pl)-plant",
+    "step": 4,
+    "rule": "L-Blends (pl)",
+    "word": "plant",
+    "pattern_marked": "{pl}ant",
+    "image_url": "/phonics-images/plant.webp",
+    "meaning": null,
+    "sort_order": 10
+  },
+  {
+    "id": "observed-4-L-Blends (pl)-plan",
+    "step": 4,
+    "rule": "L-Blends (pl)",
+    "word": "plan",
+    "pattern_marked": "{pl}an",
+    "image_url": "/phonics-images/plan.webp",
+    "meaning": null,
+    "sort_order": 11
+  },
+  {
+    "id": "observed-4-R-Blends (br)-bread",
+    "step": 4,
+    "rule": "R-Blends (br)",
+    "word": "bread",
+    "pattern_marked": "{br}ead",
+    "image_url": "/phonics-images/bread.webp",
+    "meaning": null,
+    "sort_order": 12
+  },
+  {
+    "id": "observed-4-R-Blends (br)-brush",
+    "step": 4,
+    "rule": "R-Blends (br)",
+    "word": "brush",
+    "pattern_marked": "{br}ush",
+    "image_url": "/phonics-images/brush.webp",
+    "meaning": null,
+    "sort_order": 13
+  },
+  {
+    "id": "observed-4-R-Blends (cr)-crab",
+    "step": 4,
+    "rule": "R-Blends (cr)",
+    "word": "crab",
+    "pattern_marked": "{cr}ab",
+    "image_url": "/phonics-images/crab.webp",
+    "meaning": null,
+    "sort_order": 14
+  },
+  {
+    "id": "observed-4-R-Blends (cr)-cross",
+    "step": 4,
+    "rule": "R-Blends (cr)",
+    "word": "cross",
+    "pattern_marked": "{cr}oss",
+    "image_url": "/phonics-images/cross.webp",
+    "meaning": null,
+    "sort_order": 15
+  },
+  {
+    "id": "observed-4-R-Blends (dr)-drum",
+    "step": 4,
+    "rule": "R-Blends (dr)",
+    "word": "drum",
+    "pattern_marked": "{dr}um",
+    "image_url": "/phonics-images/drum.webp",
+    "meaning": null,
+    "sort_order": 16
+  },
+  {
+    "id": "observed-4-R-Blends (dr)-drop",
+    "step": 4,
+    "rule": "R-Blends (dr)",
+    "word": "drop",
+    "pattern_marked": "{dr}op",
+    "image_url": "/phonics-images/drop.webp",
+    "meaning": null,
+    "sort_order": 17
+  },
+  {
+    "id": "observed-4-R-Blends (fr)-frog",
+    "step": 4,
+    "rule": "R-Blends (fr)",
+    "word": "frog",
+    "pattern_marked": "{fr}og",
+    "image_url": "/phonics-images/frog.webp",
+    "meaning": null,
+    "sort_order": 18
+  },
+  {
+    "id": "observed-4-R-Blends (fr)-frame",
+    "step": 4,
+    "rule": "R-Blends (fr)",
+    "word": "frame",
+    "pattern_marked": "{fr}ame",
+    "image_url": "/phonics-images/frame.webp",
+    "meaning": null,
+    "sort_order": 19
+  },
+  {
+    "id": "observed-4-R-Blends (gr)-grape",
+    "step": 4,
+    "rule": "R-Blends (gr)",
+    "word": "grape",
+    "pattern_marked": "{gr}ape",
+    "image_url": "/phonics-images/grape.webp",
+    "meaning": null,
+    "sort_order": 20
+  },
+  {
+    "id": "observed-4-R-Blends (gr)-grass",
+    "step": 4,
+    "rule": "R-Blends (gr)",
+    "word": "grass",
+    "pattern_marked": "{gr}ass",
+    "image_url": "/phonics-images/grass.webp",
+    "meaning": null,
+    "sort_order": 21
+  },
+  {
+    "id": "observed-4-R-Blends (pr)-print",
+    "step": 4,
+    "rule": "R-Blends (pr)",
+    "word": "print",
+    "pattern_marked": "{pr}int",
+    "image_url": "/phonics-images/print.webp",
+    "meaning": null,
+    "sort_order": 22
+  },
+  {
+    "id": "observed-4-R-Blends (pr)-press",
+    "step": 4,
+    "rule": "R-Blends (pr)",
+    "word": "press",
+    "pattern_marked": "{pr}ess",
+    "image_url": "/phonics-images/press.webp",
+    "meaning": null,
+    "sort_order": 23
+  },
+  {
+    "id": "observed-4-R-Blends (tr)-train",
+    "step": 4,
+    "rule": "R-Blends (tr)",
+    "word": "train",
+    "pattern_marked": "{tr}ain",
+    "image_url": "/phonics-images/train.webp",
+    "meaning": null,
+    "sort_order": 24
+  },
+  {
+    "id": "observed-4-R-Blends (tr)-truck",
+    "step": 4,
+    "rule": "R-Blends (tr)",
+    "word": "truck",
+    "pattern_marked": "{tr}uck",
+    "image_url": "/phonics-images/truck.webp",
+    "meaning": null,
+    "sort_order": 25
+  },
+  {
+    "id": "observed-4-S-Blends (st)-stop",
+    "step": 4,
+    "rule": "S-Blends (st)",
+    "word": "stop",
+    "pattern_marked": "{st}op",
+    "image_url": "/phonics-images/stop.webp",
+    "meaning": null,
+    "sort_order": 26
+  },
+  {
+    "id": "observed-4-S-Blends (st)-star",
+    "step": 4,
+    "rule": "S-Blends (st)",
+    "word": "star",
+    "pattern_marked": "{st}ar",
+    "image_url": "/phonics-images/star.webp",
+    "meaning": null,
+    "sort_order": 27
+  },
+  {
+    "id": "observed-4-S-Blends (st)-stem",
+    "step": 4,
+    "rule": "S-Blends (st)",
+    "word": "stem",
+    "pattern_marked": "{st}em",
+    "image_url": "/phonics-images/stem.webp",
+    "meaning": null,
+    "sort_order": 28
+  },
+  {
+    "id": "observed-4-S-Blends (st)-step",
+    "step": 4,
+    "rule": "S-Blends (st)",
+    "word": "step",
+    "pattern_marked": "{st}ep",
+    "image_url": "/phonics-images/step.webp",
+    "meaning": null,
+    "sort_order": 29
+  },
+  {
+    "id": "observed-4-S-Blends (sk)-skin",
+    "step": 4,
+    "rule": "S-Blends (sk)",
+    "word": "skin",
+    "pattern_marked": "{sk}in",
+    "image_url": "/phonics-images/skin.webp",
+    "meaning": null,
+    "sort_order": 30
+  },
+  {
+    "id": "observed-4-S-Blends (sk)-skip",
+    "step": 4,
+    "rule": "S-Blends (sk)",
+    "word": "skip",
+    "pattern_marked": "{sk}ip",
+    "image_url": "/phonics-images/skip.webp",
+    "meaning": null,
+    "sort_order": 31
+  },
+  {
+    "id": "observed-4-Final Blend (sk)-desk",
+    "step": 4,
+    "rule": "Final Blend (sk)",
+    "word": "desk",
+    "pattern_marked": "de{sk}",
+    "image_url": "/phonics-images/desk.webp",
+    "meaning": null,
+    "sort_order": 32
+  },
+  {
+    "id": "observed-4-Final Blend (sk)-mask",
+    "step": 4,
+    "rule": "Final Blend (sk)",
+    "word": "mask",
+    "pattern_marked": "ma{sk}",
+    "image_url": "/phonics-images/mask.webp",
+    "meaning": null,
+    "sort_order": 33
+  },
+  {
+    "id": "observed-4-Final Blend (mp)-lamp",
+    "step": 4,
+    "rule": "Final Blend (mp)",
+    "word": "lamp",
+    "pattern_marked": "la{mp}",
+    "image_url": "/phonics-images/lamp.webp",
+    "meaning": null,
+    "sort_order": 34
+  },
+  {
+    "id": "observed-4-Final Blend (mp)-camp",
+    "step": 4,
+    "rule": "Final Blend (mp)",
+    "word": "camp",
+    "pattern_marked": "ca{mp}",
+    "image_url": "/phonics-images/camp.webp",
+    "meaning": null,
+    "sort_order": 35
+  },
+  {
+    "id": "observed-4-Final Blend (nd)-hand",
+    "step": 4,
+    "rule": "Final Blend (nd)",
+    "word": "hand",
+    "pattern_marked": "ha{nd}",
+    "image_url": "/phonics-images/hand.webp",
+    "meaning": null,
+    "sort_order": 36
+  },
+  {
+    "id": "observed-4-Final Blend (nd)-band",
+    "step": 4,
+    "rule": "Final Blend (nd)",
+    "word": "band",
+    "pattern_marked": "ba{nd}",
+    "image_url": "/phonics-images/band.webp",
+    "meaning": null,
+    "sort_order": 37
+  },
+  {
+    "id": "observed-4-Final Blend (lk)-milk",
+    "step": 4,
+    "rule": "Final Blend (lk)",
+    "word": "milk",
+    "pattern_marked": "mi{lk}",
+    "image_url": "/phonics-images/milk.webp",
+    "meaning": null,
+    "sort_order": 38
+  },
+  {
+    "id": "observed-4-Final Blend (nk)-pink",
+    "step": 4,
+    "rule": "Final Blend (nk)",
+    "word": "pink",
+    "pattern_marked": "pi{nk}",
+    "image_url": "/phonics-images/pink.webp",
+    "meaning": null,
+    "sort_order": 39
+  },
+  {
+    "id": "observed-4-Final Blend (nk)-ink",
+    "step": 4,
+    "rule": "Final Blend (nk)",
+    "word": "ink",
+    "pattern_marked": "i{nk}",
+    "image_url": "/phonics-images/ink.webp",
+    "meaning": null,
+    "sort_order": 40
+  },
+  {
+    "id": "observed-4-Final Blend (nk)-bank",
+    "step": 4,
+    "rule": "Final Blend (nk)",
+    "word": "bank",
+    "pattern_marked": "ba{nk}",
+    "image_url": "/phonics-images/bank.webp",
+    "meaning": null,
+    "sort_order": 41
+  },
+  {
+    "id": "observed-4-Digraph (sh)-ship",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "ship",
+    "pattern_marked": "{sh}ip",
+    "image_url": "/phonics-images/ship.webp",
+    "meaning": null,
+    "sort_order": 42
+  },
+  {
+    "id": "observed-4-Digraph (sh)-shop",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "shop",
+    "pattern_marked": "{sh}op",
+    "image_url": "/phonics-images/shop.webp",
+    "meaning": null,
+    "sort_order": 43
+  },
+  {
+    "id": "observed-4-Digraph (sh)-shell",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "shell",
+    "pattern_marked": "{sh}ell",
+    "image_url": "/phonics-images/shell.webp",
+    "meaning": null,
+    "sort_order": 44
+  },
+  {
+    "id": "observed-4-Digraph (sh)-fish",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "fish",
+    "pattern_marked": "fi{sh}",
+    "image_url": "/phonics-images/fish.webp",
+    "meaning": null,
+    "sort_order": 45
+  },
+  {
+    "id": "observed-4-Digraph (sh)-dish",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "dish",
+    "pattern_marked": "di{sh}",
+    "image_url": "/phonics-images/dish.webp",
+    "meaning": null,
+    "sort_order": 46
+  },
+  {
+    "id": "observed-4-Digraph (sh)-brush",
+    "step": 4,
+    "rule": "Digraph (sh)",
+    "word": "brush",
+    "pattern_marked": "bru{sh}",
+    "image_url": "/phonics-images/brush.webp",
+    "meaning": null,
+    "sort_order": 47
+  },
+  {
+    "id": "observed-4-Digraph (ch)-chip",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "chip",
+    "pattern_marked": "{ch}ip",
+    "image_url": "/phonics-images/chip.webp",
+    "meaning": null,
+    "sort_order": 48
+  },
+  {
+    "id": "observed-4-Digraph (ch)-chin",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "chin",
+    "pattern_marked": "{ch}in",
+    "image_url": "/phonics-images/chin.webp",
+    "meaning": null,
+    "sort_order": 49
+  },
+  {
+    "id": "observed-4-Digraph (ch)-chair",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "chair",
+    "pattern_marked": "{ch}air",
+    "image_url": "/phonics-images/chair.webp",
+    "meaning": null,
+    "sort_order": 50
+  },
+  {
+    "id": "observed-4-Digraph (ch)-bench",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "bench",
+    "pattern_marked": "ben{ch}",
+    "image_url": "/phonics-images/bench.webp",
+    "meaning": null,
+    "sort_order": 51
+  },
+  {
+    "id": "observed-4-Digraph (ch)-lunch",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "lunch",
+    "pattern_marked": "lun{ch}",
+    "image_url": "/phonics-images/lunch.webp",
+    "meaning": null,
+    "sort_order": 52
+  },
+  {
+    "id": "observed-4-Digraph (ch)-peach",
+    "step": 4,
+    "rule": "Digraph (ch)",
+    "word": "peach",
+    "pattern_marked": "pea{ch}",
+    "image_url": "/phonics-images/peach.webp",
+    "meaning": null,
+    "sort_order": 53
+  },
+  {
+    "id": "observed-4-Digraph (th)-thin",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "thin",
+    "pattern_marked": "{th}in",
+    "image_url": "/phonics-images/thin.webp",
+    "meaning": null,
+    "sort_order": 54
+  },
+  {
+    "id": "observed-4-Digraph (th)-thick",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "thick",
+    "pattern_marked": "{th}ick",
+    "image_url": "/phonics-images/thick.webp",
+    "meaning": null,
+    "sort_order": 55
+  },
+  {
+    "id": "observed-4-Digraph (th)-math",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "math",
+    "pattern_marked": "ma{th}",
+    "image_url": "/phonics-images/math.webp",
+    "meaning": null,
+    "sort_order": 56
+  },
+  {
+    "id": "observed-4-Digraph (th)-path",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "path",
+    "pattern_marked": "pa{th}",
+    "image_url": "/phonics-images/path.webp",
+    "meaning": null,
+    "sort_order": 57
+  },
+  {
+    "id": "observed-4-Digraph (th)-teeth",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "teeth",
+    "pattern_marked": "tee{th}",
+    "image_url": "/phonics-images/teeth.webp",
+    "meaning": null,
+    "sort_order": 58
+  },
+  {
+    "id": "observed-4-Digraph (th)-with",
+    "step": 4,
+    "rule": "Digraph (th)",
+    "word": "with",
+    "pattern_marked": "wi{th}",
+    "image_url": "/phonics-images/with.webp",
+    "meaning": null,
+    "sort_order": 59
+  },
+  {
+    "id": "observed-4-Digraph (wh)-whip",
+    "step": 4,
+    "rule": "Digraph (wh)",
+    "word": "whip",
+    "pattern_marked": "{wh}ip",
+    "image_url": "/phonics-images/whip.webp",
+    "meaning": null,
+    "sort_order": 60
+  },
+  {
+    "id": "observed-4-Digraph (wh)-white",
+    "step": 4,
+    "rule": "Digraph (wh)",
+    "word": "white",
+    "pattern_marked": "{wh}ite",
+    "image_url": "/phonics-images/white.webp",
+    "meaning": null,
+    "sort_order": 61
+  },
+  {
+    "id": "observed-4-Digraph (wh)-wheel",
+    "step": 4,
+    "rule": "Digraph (wh)",
+    "word": "wheel",
+    "pattern_marked": "{wh}eel",
+    "image_url": "/phonics-images/wheel.webp",
+    "meaning": null,
+    "sort_order": 62
+  },
+  {
+    "id": "observed-4-Digraph (wh)-whale",
+    "step": 4,
+    "rule": "Digraph (wh)",
+    "word": "whale",
+    "pattern_marked": "{wh}ale",
+    "image_url": "/phonics-images/whale.webp",
+    "meaning": null,
+    "sort_order": 63
+  },
+  {
+    "id": "observed-4-Digraph (ng)-king",
+    "step": 4,
+    "rule": "Digraph (ng)",
+    "word": "king",
+    "pattern_marked": "ki{ng}",
+    "image_url": "/phonics-images/king.webp",
+    "meaning": null,
+    "sort_order": 64
+  },
+  {
+    "id": "observed-4-Digraph (ng)-ring",
+    "step": 4,
+    "rule": "Digraph (ng)",
+    "word": "ring",
+    "pattern_marked": "ri{ng}",
+    "image_url": "/phonics-images/ring.webp",
+    "meaning": null,
+    "sort_order": 65
+  },
+  {
+    "id": "observed-4-Digraph (ng)-sing",
+    "step": 4,
+    "rule": "Digraph (ng)",
+    "word": "sing",
+    "pattern_marked": "si{ng}",
+    "image_url": "/phonics-images/sing.webp",
+    "meaning": null,
+    "sort_order": 66
+  },
+  {
+    "id": "observed-4-Digraph (ng)-song",
+    "step": 4,
+    "rule": "Digraph (ng)",
+    "word": "song",
+    "pattern_marked": "so{ng}",
+    "image_url": "/phonics-images/song.webp",
+    "meaning": null,
+    "sort_order": 67
+  },
+  {
+    "id": "observed-5-ai-rain",
+    "step": 5,
+    "rule": "ai",
+    "word": "rain",
+    "pattern_marked": "r{ai}n",
+    "image_url": "/phonics-images/rain.webp",
+    "meaning": null,
+    "sort_order": 68
+  },
+  {
+    "id": "observed-5-ai-train",
+    "step": 5,
+    "rule": "ai",
+    "word": "train",
+    "pattern_marked": "tr{ai}n",
+    "image_url": "/phonics-images/train.webp",
+    "meaning": null,
+    "sort_order": 69
+  },
+  {
+    "id": "observed-5-ai-tail",
+    "step": 5,
+    "rule": "ai",
+    "word": "tail",
+    "pattern_marked": "t{ai}l",
+    "image_url": "/phonics-images/tail.webp",
+    "meaning": null,
+    "sort_order": 70
+  },
+  {
+    "id": "observed-5-ai-mail",
+    "step": 5,
+    "rule": "ai",
+    "word": "mail",
+    "pattern_marked": "m{ai}l",
+    "image_url": "/phonics-images/mail.webp",
+    "meaning": null,
+    "sort_order": 71
+  },
+  {
+    "id": "observed-5-ay-day",
+    "step": 5,
+    "rule": "ay",
+    "word": "day",
+    "pattern_marked": "d{ay}",
+    "image_url": "/phonics-images/day.webp",
+    "meaning": null,
+    "sort_order": 72
+  },
+  {
+    "id": "observed-5-ay-play",
+    "step": 5,
+    "rule": "ay",
+    "word": "play",
+    "pattern_marked": "pl{ay}",
+    "image_url": "/phonics-images/play.webp",
+    "meaning": null,
+    "sort_order": 73
+  },
+  {
+    "id": "observed-5-ay-say",
+    "step": 5,
+    "rule": "ay",
+    "word": "say",
+    "pattern_marked": "s{ay}",
+    "image_url": "/phonics-images/say.webp",
+    "meaning": null,
+    "sort_order": 74
+  },
+  {
+    "id": "observed-5-ay-may",
+    "step": 5,
+    "rule": "ay",
+    "word": "may",
+    "pattern_marked": "m{ay}",
+    "image_url": "/phonics-images/may.webp",
+    "meaning": null,
+    "sort_order": 75
+  },
+  {
+    "id": "observed-5-ee-bee",
+    "step": 5,
+    "rule": "ee",
+    "word": "bee",
+    "pattern_marked": "b{ee}",
+    "image_url": "/phonics-images/bee.webp",
+    "meaning": null,
+    "sort_order": 76
+  },
+  {
+    "id": "observed-5-ee-tree",
+    "step": 5,
+    "rule": "ee",
+    "word": "tree",
+    "pattern_marked": "tr{ee}",
+    "image_url": "/phonics-images/tree.webp",
+    "meaning": null,
+    "sort_order": 77
+  },
+  {
+    "id": "observed-5-ee-seed",
+    "step": 5,
+    "rule": "ee",
+    "word": "seed",
+    "pattern_marked": "s{ee}d",
+    "image_url": "/phonics-images/seed.webp",
+    "meaning": null,
+    "sort_order": 78
+  },
+  {
+    "id": "observed-5-ee-feet",
+    "step": 5,
+    "rule": "ee",
+    "word": "feet",
+    "pattern_marked": "f{ee}t",
+    "image_url": "/phonics-images/feet.webp",
+    "meaning": null,
+    "sort_order": 79
+  },
+  {
+    "id": "observed-5-ea-meat",
+    "step": 5,
+    "rule": "ea",
+    "word": "meat",
+    "pattern_marked": "m{ea}t",
+    "image_url": "/phonics-images/meat.webp",
+    "meaning": null,
+    "sort_order": 80
+  },
+  {
+    "id": "observed-5-ea-leaf",
+    "step": 5,
+    "rule": "ea",
+    "word": "leaf",
+    "pattern_marked": "l{ea}f",
+    "image_url": "/phonics-images/leaf.webp",
+    "meaning": null,
+    "sort_order": 81
+  },
+  {
+    "id": "observed-5-ea-sea",
+    "step": 5,
+    "rule": "ea",
+    "word": "sea",
+    "pattern_marked": "s{ea}",
+    "image_url": "/phonics-images/sea.webp",
+    "meaning": null,
+    "sort_order": 82
+  },
+  {
+    "id": "observed-5-ea-tea",
+    "step": 5,
+    "rule": "ea",
+    "word": "tea",
+    "pattern_marked": "t{ea}",
+    "image_url": "/phonics-images/tea.webp",
+    "meaning": null,
+    "sort_order": 83
+  },
+  {
+    "id": "observed-5-oa-boat",
+    "step": 5,
+    "rule": "oa",
+    "word": "boat",
+    "pattern_marked": "b{oa}t",
+    "image_url": "/phonics-images/boat.webp",
+    "meaning": null,
+    "sort_order": 84
+  },
+  {
+    "id": "observed-5-oa-coat",
+    "step": 5,
+    "rule": "oa",
+    "word": "coat",
+    "pattern_marked": "c{oa}t",
+    "image_url": "/phonics-images/coat.webp",
+    "meaning": null,
+    "sort_order": 85
+  },
+  {
+    "id": "observed-5-oa-road",
+    "step": 5,
+    "rule": "oa",
+    "word": "road",
+    "pattern_marked": "r{oa}d",
+    "image_url": "/phonics-images/road.webp",
+    "meaning": null,
+    "sort_order": 86
+  },
+  {
+    "id": "observed-5-oa-soap",
+    "step": 5,
+    "rule": "oa",
+    "word": "soap",
+    "pattern_marked": "s{oa}p",
+    "image_url": "/phonics-images/soap.webp",
+    "meaning": null,
+    "sort_order": 87
+  },
+  {
+    "id": "observed-5-ow (long o)-snow",
+    "step": 5,
+    "rule": "ow (long o)",
+    "word": "snow",
+    "pattern_marked": "sn{ow}",
+    "image_url": "/phonics-images/snow.webp",
+    "meaning": null,
+    "sort_order": 88
+  },
+  {
+    "id": "observed-5-ow (long o)-window",
+    "step": 5,
+    "rule": "ow (long o)",
+    "word": "window",
+    "pattern_marked": "wind{ow}",
+    "image_url": "/phonics-images/window.webp",
+    "meaning": null,
+    "sort_order": 89
+  },
+  {
+    "id": "observed-5-ow (long o)-yellow",
+    "step": 5,
+    "rule": "ow (long o)",
+    "word": "yellow",
+    "pattern_marked": "yell{ow}",
+    "image_url": "/phonics-images/yellow.webp",
+    "meaning": null,
+    "sort_order": 90
+  },
+  {
+    "id": "observed-5-oo (short)-book",
+    "step": 5,
+    "rule": "oo (short)",
+    "word": "book",
+    "pattern_marked": "b{oo}k",
+    "image_url": "/phonics-images/book.webp",
+    "meaning": null,
+    "sort_order": 91
+  },
+  {
+    "id": "observed-5-oo (short)-cook",
+    "step": 5,
+    "rule": "oo (short)",
+    "word": "cook",
+    "pattern_marked": "c{oo}k",
+    "image_url": "/phonics-images/cook.webp",
+    "meaning": null,
+    "sort_order": 92
+  },
+  {
+    "id": "observed-5-oo (short)-foot",
+    "step": 5,
+    "rule": "oo (short)",
+    "word": "foot",
+    "pattern_marked": "f{oo}t",
+    "image_url": "/phonics-images/foot.webp",
+    "meaning": null,
+    "sort_order": 93
+  },
+  {
+    "id": "observed-5-oo (short)-wood",
+    "step": 5,
+    "rule": "oo (short)",
+    "word": "wood",
+    "pattern_marked": "w{oo}d",
+    "image_url": "/phonics-images/wood.webp",
+    "meaning": null,
+    "sort_order": 94
+  },
+  {
+    "id": "observed-5-oo (long)-moon",
+    "step": 5,
+    "rule": "oo (long)",
+    "word": "moon",
+    "pattern_marked": "m{oo}n",
+    "image_url": "/phonics-images/moon.webp",
+    "meaning": null,
+    "sort_order": 95
+  },
+  {
+    "id": "observed-5-oo (long)-spoon",
+    "step": 5,
+    "rule": "oo (long)",
+    "word": "spoon",
+    "pattern_marked": "sp{oo}n",
+    "image_url": "/phonics-images/spoon.webp",
+    "meaning": null,
+    "sort_order": 96
+  },
+  {
+    "id": "observed-5-oo (long)-zoo",
+    "step": 5,
+    "rule": "oo (long)",
+    "word": "zoo",
+    "pattern_marked": "z{oo}",
+    "image_url": "/phonics-images/zoo.webp",
+    "meaning": null,
+    "sort_order": 97
+  },
+  {
+    "id": "observed-5-oo (long)-food",
+    "step": 5,
+    "rule": "oo (long)",
+    "word": "food",
+    "pattern_marked": "f{oo}d",
+    "image_url": "/phonics-images/food.webp",
+    "meaning": null,
+    "sort_order": 98
+  },
+  {
+    "id": "observed-5-oi-coin",
+    "step": 5,
+    "rule": "oi",
+    "word": "coin",
+    "pattern_marked": "c{oi}n",
+    "image_url": "/phonics-images/coin.webp",
+    "meaning": null,
+    "sort_order": 99
+  },
+  {
+    "id": "observed-5-oi-point",
+    "step": 5,
+    "rule": "oi",
+    "word": "point",
+    "pattern_marked": "p{oi}nt",
+    "image_url": "/phonics-images/point.webp",
+    "meaning": null,
+    "sort_order": 100
+  },
+  {
+    "id": "observed-5-oy-boy",
+    "step": 5,
+    "rule": "oy",
+    "word": "boy",
+    "pattern_marked": "b{oy}",
+    "image_url": "/phonics-images/boy.webp",
+    "meaning": null,
+    "sort_order": 101
+  },
+  {
+    "id": "observed-5-oy-toy",
+    "step": 5,
+    "rule": "oy",
+    "word": "toy",
+    "pattern_marked": "t{oy}",
+    "image_url": "/phonics-images/toy.webp",
+    "meaning": null,
+    "sort_order": 102
+  },
+  {
+    "id": "observed-5-oy-joy",
+    "step": 5,
+    "rule": "oy",
+    "word": "joy",
+    "pattern_marked": "j{oy}",
+    "image_url": "/phonics-images/joy.webp",
+    "meaning": null,
+    "sort_order": 103
+  },
+  {
+    "id": "observed-5-ou-house",
+    "step": 5,
+    "rule": "ou",
+    "word": "house",
+    "pattern_marked": "h{ou}se",
+    "image_url": "/phonics-images/house.webp",
+    "meaning": null,
+    "sort_order": 104
+  },
+  {
+    "id": "observed-5-ou-mouse",
+    "step": 5,
+    "rule": "ou",
+    "word": "mouse",
+    "pattern_marked": "m{ou}se",
+    "image_url": "/phonics-images/mouse.webp",
+    "meaning": null,
+    "sort_order": 105
+  },
+  {
+    "id": "observed-5-ou-out",
+    "step": 5,
+    "rule": "ou",
+    "word": "out",
+    "pattern_marked": "{ou}t",
+    "image_url": "/phonics-images/out.webp",
+    "meaning": null,
+    "sort_order": 106
+  },
+  {
+    "id": "observed-5-ou-cloud",
+    "step": 5,
+    "rule": "ou",
+    "word": "cloud",
+    "pattern_marked": "cl{ou}d",
+    "image_url": "/phonics-images/cloud.webp",
+    "meaning": null,
+    "sort_order": 107
+  },
+  {
+    "id": "observed-5-ow (diphthong)-cow",
+    "step": 5,
+    "rule": "ow (diphthong)",
+    "word": "cow",
+    "pattern_marked": "c{ow}",
+    "image_url": "/phonics-images/cow.webp",
+    "meaning": null,
+    "sort_order": 108
+  },
+  {
+    "id": "observed-5-ow (diphthong)-owl",
+    "step": 5,
+    "rule": "ow (diphthong)",
+    "word": "owl",
+    "pattern_marked": "{ow}l",
+    "image_url": "/phonics-images/owl.webp",
+    "meaning": null,
+    "sort_order": 109
+  },
+  {
+    "id": "observed-5-ow (diphthong)-down",
+    "step": 5,
+    "rule": "ow (diphthong)",
+    "word": "down",
+    "pattern_marked": "d{ow}n",
+    "image_url": "/phonics-images/down.webp",
+    "meaning": null,
+    "sort_order": 110
+  },
+  {
+    "id": "observed-5-ow (diphthong)-crown",
+    "step": 5,
+    "rule": "ow (diphthong)",
+    "word": "crown",
+    "pattern_marked": "cr{ow}n",
+    "image_url": "/phonics-images/crown.webp",
+    "meaning": null,
+    "sort_order": 111
+  },
+  {
+    "id": "observed-5-ar-car",
+    "step": 5,
+    "rule": "ar",
+    "word": "car",
+    "pattern_marked": "c{ar}",
+    "image_url": "/phonics-images/car.webp",
+    "meaning": null,
+    "sort_order": 112
+  },
+  {
+    "id": "observed-5-ar-star",
+    "step": 5,
+    "rule": "ar",
+    "word": "star",
+    "pattern_marked": "st{ar}",
+    "image_url": "/phonics-images/star.webp",
+    "meaning": null,
+    "sort_order": 113
+  },
+  {
+    "id": "observed-5-ar-park",
+    "step": 5,
+    "rule": "ar",
+    "word": "park",
+    "pattern_marked": "p{ar}k",
+    "image_url": "/phonics-images/park.webp",
+    "meaning": null,
+    "sort_order": 114
+  },
+  {
+    "id": "observed-5-ar-dark",
+    "step": 5,
+    "rule": "ar",
+    "word": "dark",
+    "pattern_marked": "d{ar}k",
+    "image_url": "/phonics-images/dark.webp",
+    "meaning": null,
+    "sort_order": 115
+  },
+  {
+    "id": "observed-5-er-her",
+    "step": 5,
+    "rule": "er",
+    "word": "her",
+    "pattern_marked": "h{er}",
+    "image_url": "/phonics-images/her.webp",
+    "meaning": null,
+    "sort_order": 116
+  },
+  {
+    "id": "observed-5-er-teacher",
+    "step": 5,
+    "rule": "er",
+    "word": "teacher",
+    "pattern_marked": "teach{er}",
+    "image_url": "/phonics-images/teacher.webp",
+    "meaning": null,
+    "sort_order": 117
+  },
+  {
+    "id": "observed-5-ir-bird",
+    "step": 5,
+    "rule": "ir",
+    "word": "bird",
+    "pattern_marked": "b{ir}d",
+    "image_url": "/phonics-images/bird.webp",
+    "meaning": null,
+    "sort_order": 118
+  },
+  {
+    "id": "observed-5-ir-girl",
+    "step": 5,
+    "rule": "ir",
+    "word": "girl",
+    "pattern_marked": "g{ir}l",
+    "image_url": "/phonics-images/girl.webp",
+    "meaning": null,
+    "sort_order": 119
+  },
+  {
+    "id": "observed-5-ir-shirt",
+    "step": 5,
+    "rule": "ir",
+    "word": "shirt",
+    "pattern_marked": "sh{ir}t",
+    "image_url": "/phonics-images/shirt.webp",
+    "meaning": null,
+    "sort_order": 120
+  },
+  {
+    "id": "observed-5-or-fork",
+    "step": 5,
+    "rule": "or",
+    "word": "fork",
+    "pattern_marked": "f{or}k",
+    "image_url": "/phonics-images/fork.webp",
+    "meaning": null,
+    "sort_order": 121
+  },
+  {
+    "id": "observed-5-or-corn",
+    "step": 5,
+    "rule": "or",
+    "word": "corn",
+    "pattern_marked": "c{or}n",
+    "image_url": "/phonics-images/corn.webp",
+    "meaning": null,
+    "sort_order": 122
+  },
+  {
+    "id": "observed-5-or-horse",
+    "step": 5,
+    "rule": "or",
+    "word": "horse",
+    "pattern_marked": "h{or}se",
+    "image_url": "/phonics-images/horse.webp",
+    "meaning": null,
+    "sort_order": 123
+  },
+  {
+    "id": "observed-5-ur-nurse",
+    "step": 5,
+    "rule": "ur",
+    "word": "nurse",
+    "pattern_marked": "n{ur}se",
+    "image_url": "/phonics-images/nurse.webp",
+    "meaning": null,
+    "sort_order": 124
+  },
+  {
+    "id": "observed-5-ur-turtle",
+    "step": 5,
+    "rule": "ur",
+    "word": "turtle",
+    "pattern_marked": "t{ur}tle",
+    "image_url": "/phonics-images/turtle.webp",
+    "meaning": null,
+    "sort_order": 125
+  }
+]
