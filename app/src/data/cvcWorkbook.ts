@@ -1,12 +1,16 @@
+import { curriculumEntries, unitsForStep, positionsOfPattern, wordBySpelling, PHONICS_RULES } from './phonicsCurriculum';
+import legacyRefs from './phonics/legacyWorkbookRefs.json';
 // 파닉스 CVC 워크북(2026-10-02): 미리 만들어 둔 워크시트 — 선생님이 단어를 고르지 않고 유닛만 골라 바로 인쇄한다.
 // 유닛 하나 = 같은 끝소리(-ad, -ag …) 낱말 2~3개, A4 두 장(Look and Say · Read and Write · Circle the Correct Word /
 // Match · Complete the Word · Color). 구성과 낱말 묶음은 사용자가 만든 워크북 그대로다.
 export type CvcVowel = 'a' | 'e' | 'i' | 'o' | 'u';
 
-/** 워크북 종류 — cvc 단모음(Short vowel) · long 장모음(Long vowel: 매직 e 와 ee·ea) */
+/** Current course: CVC short vowels / magic e. Historical ee/ea pages are resolved separately. */
 export type WorkbookId = 'cvc' | 'long';
 
 export interface CvcUnit {
+  id: string;
+  targets?: Record<string, { red: number[]; blank: number[] }>;
   book: WorkbookId;
   /** 1부터 — 워크북 머리글의 UNIT 번호 */
   unit: number;
@@ -16,67 +20,46 @@ export interface CvcUnit {
   words: string[];
 }
 
-const SETS: [CvcVowel, string, string[]][] = [
-  ['a', '-ad', ['dad', 'bad', 'sad']],
-  ['a', '-ag', ['bag', 'tag', 'wag']],
-  ['a', '-am', ['jam', 'ram', 'ham']],
-  ['a', '-an', ['fan', 'can', 'man']],
-  ['a', '-ap', ['map', 'cap', 'tap']],
-  ['a', '-at', ['cat', 'fat', 'hat']],
-  ['e', '-ed', ['red', 'bed', 'Ted']],
-  ['e', '-en', ['hen', 'ten', 'pen']],
-  ['e', '-et', ['jet', 'wet', 'pet']],
-  ['i', '-ig', ['pig', 'big', 'wig']],
-  ['i', '-in', ['bin', 'win', 'pin']],
-  ['i', '-ip', ['lip', 'hip', 'rip']],
-  ['i', '-it', ['kit', 'sit', 'hit']],
-  ['i', '-ix', ['mix', 'fix', 'six']],
-  ['i', '-id', ['lid', 'kid']],
-  ['o', '-og', ['dog', 'log', 'jog']],
-  ['o', '-ot', ['pot', 'hot', 'dot']],
-  ['o', '-ox', ['fox', 'box', 'ox']],
-  ['u', '-ug', ['bug', 'hug', 'rug']],
-  ['u', '-un', ['sun', 'bun', 'run']],
-  ['u', '-ut', ['nut', 'hut', 'cut']],
-  ['u', '-ub', ['tub', 'cub']],
-  ['u', '-ud', ['mud', 'bud']],
-  ['u', '-up', ['cup', 'pup']],
-];
-
-/** 장모음(2026-10-03): 매직 e(a_e · i_e · o_e · u_e) 22유닛 + ee·ea 4유닛. 낱말 묶음은 끝소리가 같은 것끼리. */
-const LONG_SETS: [CvcVowel, string, string[]][] = [
-  ['a', '-ake', ['cake', 'lake', 'bake']],
-  ['a', '-ame', ['game', 'name', 'same']],
-  ['a', '-ate', ['gate', 'date', 'late']],
-  ['a', '-ave', ['cave', 'wave', 'save']],
-  ['a', '-ane', ['cane', 'mane', 'lane']],
-  ['a', '-ape', ['cape', 'tape']],
-  ['i', '-ike', ['bike', 'hike', 'like']],
-  ['i', '-ine', ['nine', 'line', 'pine']],
-  ['i', '-ite', ['kite', 'bite', 'site']],
-  ['i', '-ide', ['hide', 'ride', 'side']],
-  ['i', '-ime', ['time', 'lime', 'dime']],
-  ['i', '-ive', ['five', 'dive', 'hive']],
-  ['o', '-one', ['bone', 'cone', 'zone']],
-  ['o', '-ose', ['nose', 'rose', 'hose']],
-  ['o', '-ole', ['hole', 'pole', 'mole']],
-  ['o', '-ope', ['rope', 'hope']],
-  ['o', '-ote', ['note', 'vote']],
-  ['o', '-ome', ['home', 'dome']],
-  ['u', '-une', ['tune', 'June', 'dune']],
-  ['u', '-ube', ['cube', 'tube']],
-  ['u', '-ute', ['cute', 'mute']],
-  ['u', '-ule', ['mule', 'rule']],
-  ['e', '-eed', ['seed', 'feed', 'weed']],
-  ['e', '-eet', ['feet', 'meet', 'beet']],
-  ['e', '-eep', ['jeep', 'deep', 'keep']],
-  ['e', '-eat', ['seat', 'meat', 'heat']],
-];
-
-const toUnits = (book: WorkbookId, sets: [CvcVowel, string, string[]][]): CvcUnit[] => sets.map(([vowel, family, words], i) => ({ book, unit: i + 1, vowel, family, words }));
-export const CVC_UNITS: CvcUnit[] = toUnits('cvc', SETS);
-export const LONG_UNITS: CvcUnit[] = toUnits('long', LONG_SETS);
+function curriculumUnit(book: WorkbookId, id: string): CvcUnit {
+  const unit = unitsForStep(book === 'cvc' ? 2 : 3).find(u => u.id === id)!;
+  const entries = unit.entries;
+  const vowel = PHONICS_RULES.find(rule => rule.id === unit.ruleId)?.vowel as CvcVowel;
+  if (!vowel) throw new Error(`Missing vowel metadata: ${unit.ruleId}`);
+  return { id, book, unit: unit.order, vowel, family: unit.name, words: entries.map(e => e.word),
+    targets: Object.fromEntries(entries.map(e => { const red = positionsOfPattern(e.pattern_marked); return [e.word, { red, blank: book === 'long' ? red.slice(0,1) : red }]; })) };
+}
+export const CVC_UNITS = unitsForStep(2).map(u => curriculumUnit('cvc', u.id));
+export const LONG_UNITS = unitsForStep(3).map(u => curriculumUnit('long', u.id));
 export const CVC_VOWELS: CvcVowel[] = ['a', 'e', 'i', 'o', 'u'];
+
+/** Frozen historical pages: old saved 23–26 must not open new stage-5 unit numbers. */
+export const LONG_LEGACY_UNITS: CvcUnit[] = [
+  { id: 'legacy-long-eed', book: 'long', unit: 23, vowel: 'e', family: '-eed', words: ['seed', 'feed', 'weed'] },
+  { id: 'legacy-long-eet', book: 'long', unit: 24, vowel: 'e', family: '-eet', words: ['feet', 'meet', 'beet'] },
+  { id: 'legacy-long-eep', book: 'long', unit: 25, vowel: 'e', family: '-eep', words: ['jeep', 'deep', 'keep'] },
+  { id: 'legacy-long-eat', book: 'long', unit: 26, vowel: 'e', family: '-eat', words: ['seat', 'meat', 'heat'] },
+];
+export function stableWorkbookRefs(book: WorkbookId, numbers: number[]): string[] {
+  const map = legacyRefs[book] as Record<string,string>;
+  return numbers.map(n => map[n]).filter((id): id is string => !!id);
+}
+export function workbookNumbers(book: WorkbookId, ids: string[]): number[] {
+  return Object.entries(legacyRefs[book]).filter(([, id]) => ids.includes(id)).map(([number]) => Number(number));
+}
+export function resolveWorkbookSelection(book: WorkbookId, state: unknown): { units: CvcUnit[]; missing: string[]; requested: boolean } {
+  const value = state as { phonicsUnitIds?: unknown; cvcUnits?: unknown } | null;
+  const ids = Array.isArray(value?.phonicsUnitIds) ? value.phonicsUnitIds : null;
+  const numbers = Array.isArray(value?.cvcUnits) ? value.cvcUnits : null;
+  const map = legacyRefs[book] as Record<string,string>;
+  const requested = ids ?? numbers?.map(n => typeof n === 'number' ? map[n] ?? `unknown-number:${n}` : 'invalid-reference');
+  const available = [...(book === 'cvc' ? CVC_UNITS : LONG_UNITS), ...(book === 'long' ? LONG_LEGACY_UNITS : [])];
+  if (!requested) {
+    const invalid = value?.phonicsUnitIds !== undefined || value?.cvcUnits !== undefined;
+    return { units: [], missing: invalid ? ['invalid-reference'] : [], requested: invalid };
+  }
+  return { units: requested.map(id => available.find(u => u.id === id)).filter((u): u is CvcUnit => !!u),
+    missing: requested.filter(id => !available.some(u => u.id === id)).map(String), requested: true };
+}
 
 export interface Workbook {
   id: WorkbookId;
@@ -90,7 +73,7 @@ export interface Workbook {
 }
 export const WORKBOOKS: Record<WorkbookId, Workbook> = {
   cvc: { id: 'cvc', heading: 'SHORT VOWEL', materialId: 'cvcworkbook', vowels: CVC_VOWELS, units: CVC_UNITS },
-  long: { id: 'long', heading: 'LONG VOWEL', materialId: 'longvowelworkbook', vowels: ['a', 'i', 'o', 'u', 'e'], units: LONG_UNITS },
+  long: { id: 'long', heading: 'LONG VOWEL', materialId: 'longvowelworkbook', vowels: ['a', 'i', 'o', 'u'], units: LONG_UNITS },
 };
 export function workbookOfMaterial(materialId: string): Workbook | null {
   return Object.values(WORKBOOKS).find((b) => b.materialId === materialId) ?? null;
@@ -101,6 +84,7 @@ export function workbookOfMaterial(materialId: string): Workbook | null {
  * 단모음: 모음 하나 · 매직 e: 모음과 끝의 e 를 칠하고 모음만 비운다(c_ke) · ee/ea: 두 글자를 칠하고 둘 다 비운다.
  */
 export function soundMarks(unit: CvcUnit, word: string): { red: number[]; blank: number[] } {
+  if (unit.targets?.[word]) return unit.targets[word];
   const w = word.toLowerCase();
   if (unit.book === 'cvc') {
     const i = w.indexOf(unit.vowel);
@@ -115,21 +99,9 @@ export function soundMarks(unit: CvcUnit, word: string): { red: number[]; blank:
   return { red: [v, w.length - 1], blank: [v] };
 }
 
-/** 파닉스 그림이 없어 사전 그림을 쓰는 낱말(그 밖에는 public/phonics-images/<낱말>.webp). */
-const FROM_DICTIONARY = new Set([
-  'dad', 'sad', 'man', 'hip', 'kit', 'mix', 'fix', 'lid', 'kid', 'bug', 'hug',
-  'date', 'lane', 'hike', 'site', 'dive', 'hope', 'rule', 'feed', 'meet', 'deep', 'keep', 'seat', 'heat',
-]);
-
-export function cvcImage(word: string): string {
-  const w = word.toLowerCase();
-  return `/${FROM_DICTIONARY.has(w) ? 'word-bank-images' : 'phonics-images'}/${w}.webp`;
-}
-
-/** 색칠용 선화 */
-export function cvcLineart(word: string): string {
-  return `/word-bank-lineart/${word.toLowerCase()}.webp`;
-}
+/** The same verified asset reference is used by cards and both kinds of worksheets. */
+export function cvcImage(word: string): string { return wordBySpelling(word)?.imageUrl ?? ''; }
+export function cvcLineart(word: string): string { return wordBySpelling(word)?.lineartUrl ?? ''; }
 
 /** 고정 난수(유닛마다 늘 같은 보기·순서가 나오게 — 미리보기와 인쇄가 같다). */
 function rng(seed: number) {
@@ -155,7 +127,9 @@ function shuffled<T>(arr: T[], rand: () => number): T[] {
 /** Circle the Correct Word: 낱말마다 [정답 + 같은 모음의 다른 낱말 둘]을 섞은 보기 세 개. */
 export function cvcCircleRows(unit: CvcUnit): { word: string; choices: string[] }[] {
   const rand = rng(unit.unit * 7919 + (unit.book === 'cvc' ? 0 : 101));
-  const pool = WORKBOOKS[unit.book].units.filter((u) => u.vowel === unit.vowel).flatMap((u) => u.words);
+  const pool = unit.book === 'long' && unit.unit > 22
+    ? curriculumEntries(false).filter(e => e.step === 5 && e.ruleId === (unit.family.includes('ea') ? 'vowel-ea' : 'vowel-ee')).map(e => e.word)
+    : WORKBOOKS[unit.book].units.filter((u) => u.vowel === unit.vowel).flatMap((u) => u.words);
   return unit.words.map((word) => {
     const others = shuffled(pool.filter((w) => w !== word), rand).slice(0, 2);
     return { word, choices: shuffled([word, ...others], rand) };

@@ -32,7 +32,7 @@ function Word({ word, unit, size, blank = false }: { word: string; unit: SheetUn
   // Longer bank words fit the original card without changing its dimensions.
   if (isPatternUnit(unit)) size = Math.min(size, 35 / (word.length * 0.65));
   return (
-    <span style={{ fontFamily: FONT_LETTER, fontSize: `${size}mm`, fontWeight: 700, lineHeight: 1, letterSpacing: '0.04em', color: '#1b1b1b', display: 'inline-flex', alignItems: 'center' }}>
+    <span data-workbook-word={blank ? undefined : word} style={{ fontFamily: FONT_LETTER, fontSize: `${size}mm`, fontWeight: 700, lineHeight: 1, letterSpacing: '0.04em', color: '#1b1b1b', display: 'inline-flex', alignItems: 'center' }}>
       {[...word].map((ch, i) =>
         blank && marks.blank.includes(i) ? (
           isPatternUnit(unit) ? (
@@ -76,7 +76,7 @@ function Picture({ src, size }: { src: string; size: number }) {
 
 function Sheet({ unit, page, children }: { unit: SheetUnit; page: number; children: ReactNode }) {
   return (
-    <div className="print-board bg-white text-black" style={{ width: '186mm', margin: '0 auto' }}>
+    <div data-unit-id={unit.id} className="print-board bg-white text-black" style={{ width: '186mm', margin: '0 auto' }}>
       <div style={{ height: '15mm', marginBottom: '4mm', background: '#f8e9c0', borderRadius: '3mm', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT_TITLE, fontWeight: 700, fontSize: '7.5mm', letterSpacing: '0.03em', color: '#1b1b1b' }}>
         UNIT {unit.unit}.&nbsp; {isPatternUnit(unit) ? unit.heading : `${WORKBOOKS[unit.book].heading} ${unit.vowel.toUpperCase()}`}
       </div>

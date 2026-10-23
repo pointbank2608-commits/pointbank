@@ -1,3 +1,5 @@
+import { PHONICS_STAGES } from '../data/phonicsCurriculum';
+
 /** word_bank.category 의 고정값(원래 16개 + 확장 사전 카테고리). DictionaryPage(필터 칩)·WordListsPage(카테고리로
  * 선택하기)·DictionaryPicker(사전에서 추가하기 카테고리 필터) 전부 같은 목록을 써야
  * 어긋나지 않아 여기 하나로 뺐다. */
@@ -98,4 +100,4 @@ export function entryInCategory(
 }
 
 /** phonics_bank.step 값(1~5단계). */
-export const PHONICS_STEPS = [1, 2, 3, 4, 5] as const;
+export const PHONICS_STEPS = PHONICS_STAGES.map(stage => stage.number);

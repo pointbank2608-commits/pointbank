@@ -33,7 +33,7 @@ await context.route('**/*.supabase.co/**',async route=>{
  return route.fulfill({status:200,headers,json:data});
 });
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-const base='http://127.0.0.1:5174';
+const base=process.env.PHONICS_QA_URL??'http://127.0.0.1:5180';
 await mkdir('../output/pdf',{recursive:true});
 await page.goto(base+'/materials');
 for(const name of ['파닉스 4단계 워크북','파닉스 5단계 워크북','문법 기본 연습과 활동 미션'])await page.getByRole('link').filter({has:page.getByRole('heading',{name,exact:true})}).waitFor();
@@ -64,8 +64,8 @@ for(const step of [4,5]){
  await page.getByRole('button',{name:'선택 지우기',exact:true}).click();assert.equal(await page.locator('.print-board').count(),0);
  assert.equal(await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).isEnabled(),false);
  await page.getByRole('button',{name:'전체 선택',exact:true}).click();
- await page.waitForFunction(n=>document.querySelectorAll('.print-board').length===n,step===4?58:54);
- if(step===4){assert.equal(await page.getByRole('checkbox',{name:/milk/}).isEnabled(),false);}
+ await page.waitForFunction(n=>document.querySelectorAll('.print-board').length===n,step===4?38:50);
+ if(step===4){assert.equal(await page.getByRole('checkbox',{name:/milk/}).count(),0);}
  await page.emulateMedia({media:'print'});
  await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));});
  const bounds=await page.locator('.print-board').evaluateAll(els=>els.map(el=>({height:el.getBoundingClientRect().height,overflow:el.scrollWidth-el.clientWidth})));
@@ -80,14 +80,13 @@ for(const step of [4,5]){
  await page.screenshot({path:`../output/pdf/stage${step}-screen.png`,fullPage:false});
 }
 bankFailure=true;
+await page.goto(base+'/materials/phonics');
+await page.locator('[data-phonics-chosen]').waitFor();
+assert(await page.locator('[data-phonics-chosen] > button').count()>0);
+bankFailure=false;
+await page.route('**/phonics-images/black.webp',route=>route.abort());
 await page.goto(base+'/materials/phonics-stage-4-workbook');
-await page.getByRole('button',{name:'다시 시도',exact:true}).waitFor();
-assert.equal(await page.locator('.print-board').count(),0);
-bankFailure=false;await page.getByRole('button',{name:'다시 시도',exact:true}).click();
-await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).waitFor();
-await page.route('**/phonics-images/ship.webp',route=>route.abort());
-await page.goto(base+'/materials/phonics-stage-4-workbook');
-await page.getByText('그림 로드 실패: /phonics-images/ship.webp',{exact:true}).waitFor();
+await page.getByText('그림 로드 실패: /phonics-images/black.webp',{exact:true}).waitFor();
 assert.equal(await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).isEnabled(),false);
 assert.equal(await page.locator('.print-board').count(),0);
 await page.getByRole('button',{name:'EN',exact:true}).click();
@@ -97,5 +96,5 @@ await page.getByRole('button',{name:'EN',exact:true}).click();
 await page.getByRole('heading',{name:'Create a Grammar Workbook',exact:true}).waitFor();
 await page.getByRole('checkbox',{name:'Teacher answers and explanations',exact:true}).waitFor();
 assert.deepEqual(errors,[]);
-await writeFile('../output/pdf/flow-checks.json',JSON.stringify({passed:true,errors,isolatedRequests:requests.length,checks:['catalog','grammar board flow without roster','default preview','title','activity/student/teacher options','unsupported topic','unit selection','incomplete unit','print menu hiding','print sidebar margin','data fetch failure and retry','image load failure blocks printing','Korean and English controls']},null,2));
+await writeFile('../output/pdf/flow-checks.json',JSON.stringify({passed:true,errors,isolatedRequests:requests.length,checks:['catalog','grammar board flow without roster','default preview','title','activity/student/teacher options','unsupported topic','unit selection','incomplete unit','print menu hiding','print sidebar margin','local curriculum available during DB failure','image load failure blocks printing','Korean and English controls']},null,2));
 await browser.close();console.log('PASS: workbook routes and teacher flows; all Supabase requests intercepted.');

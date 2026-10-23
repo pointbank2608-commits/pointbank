@@ -5,8 +5,10 @@ import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
+import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
   workbook: workbookKo,
+  phonicsCourse: phonicsCourseKo,
   bombSound: bombSoundKo,
   turnDisplay: turnDisplayKo,
   materialBrowser: materialBrowserKo,
@@ -2711,12 +2713,12 @@ const ko = {
     grammarWorkbookName: '문법 기본 연습과 활동 미션',
     grammarWorkbookDesc: '3인칭 단수 현재형 13문항과 로봇 탐정 미션. 학생용·교사용을 골라 인쇄해요.',
     cvcWorkbookDesc: '미리 만들어 둔 단모음 워크시트 24유닛. 유닛만 고르면 바로 인쇄해요.',
-    longVowelWorkbookName: '파닉스 장모음 워크북',
-    longVowelWorkbookDesc: '미리 만들어 둔 장모음(매직 e · ee · ea) 워크시트 26유닛. 유닛만 고르면 바로 인쇄해요.',
+    longVowelWorkbookName: '파닉스 3단계 워크북 · 매직 e',
+    longVowelWorkbookDesc: '매직 e 워크시트 22유닛. ee·ea는 5단계에서 배우며 기존 저장 자료는 유지돼요.',
     cvc: {
       intro: '단모음(a·e·i·o·u) 낱말 68개를 24유닛으로 묶은 워크북이에요. 유닛마다 A4 두 장 — 보고 말하기, 읽고 쓰기, 맞는 낱말 고르기, 잇기, 낱말 완성하기, 색칠하기.',
       longVowel: 'Long {{vowel}}',
-      longIntro: '장모음 낱말 71개를 26유닛으로 묶은 워크북이에요. 매직 e(a_e · i_e · o_e · u_e)와 ee · ea. 유닛마다 A4 두 장이고 활동 구성은 CVC 워크북과 같아요.',
+      longIntro: '매직 e 낱말 59개를 22유닛으로 묶었어요(a_e · i_e · o_e · u_e). 유닛마다 A4 두 장이고 활동 구성은 CVC 워크북과 같아요. ee·ea는 5단계로 연결됩니다.',
       pickTitle: '인쇄할 유닛',
       vowel: 'Short {{vowel}}',
       selectAll: '전체 선택',

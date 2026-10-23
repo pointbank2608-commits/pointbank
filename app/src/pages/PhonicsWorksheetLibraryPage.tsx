@@ -28,6 +28,9 @@ import {
 } from '../lib/worksheetGenerators';
 import { PHONICS_STEPS } from '../lib/wordBankCategories';
 import type { FullCardItem, PhonicsBankEntry } from '../lib/types';
+import PhonicsUnitControls from '../components/PhonicsUnitControls';
+import { curriculumEntries, selectPhonicsEntries, unitById } from '../data/phonicsCurriculum';
+import { savedPhonicsEntries } from '../lib/phonicsSelection';
 
 const COUNT_OPTIONS = [6, 8, 10, 12];
 const GRID_PAGE = 60;
@@ -130,6 +133,8 @@ export default function PhonicsWorksheetLibraryPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1);
   const [rules, setRules] = useState<string[]>([]);
+  const [unitId, setUnitId] = useState('');
+  const [extensions, setExtensions] = useState(false);
   const [count, setCount] = useState(8);
   const [seed, setSeed] = useState(1);
   const [chosen, setChosen] = useState<string[]>([]);
@@ -150,59 +155,57 @@ export default function PhonicsWorksheetLibraryPage() {
   const workspaceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchPhonicsBank()
+    fetchPhonicsBank({ includeLegacy: true, includeExtensions: true })
       .then(setEntries)
-      .catch((err) => setError(err instanceof Error ? err.message : String(err)));
+      .catch(() => { setEntries(curriculumEntries()); setError(null); });
   }, []);
 
-  const stepEntries = useMemo(() => (entries ?? []).filter((e) => e.step === step), [entries, step]);
+  const stepEntries = useMemo(() => selectPhonicsEntries(entries ?? [], step, extensions), [entries, step, extensions]);
   const stepRules = useMemo(() => {
     const seen: string[] = [];
     for (const e of stepEntries) if (!seen.includes(e.rule)) seen.push(e.rule);
     return seen;
   }, [stepEntries]);
   const candidates = useMemo(
-    () => (rules.length === 0 ? stepEntries : stepEntries.filter((e) => rules.includes(e.rule))),
-    [stepEntries, rules],
+    () => selectPhonicsEntries(entries ?? [], step, extensions, unitId, rules),
+    [entries, step, extensions, unitId, rules],
   );
 
-  const byId = useMemo(() => new Map((entries ?? []).map((e) => [e.id, e])), [entries]);
+  const savedEntries = useMemo(() => savedPhonicsEntries(fillPhonicsMarks(wordsFromLocationState(location.state), entries ?? [], true), entries ?? []), [entries, location.state]);
+  const byId = useMemo(() => new Map([...(entries ?? []), ...savedEntries].map((e) => [e.id, e])), [entries, savedEntries]);
   const chosenEntries = useMemo(() => chosen.map((id) => byId.get(id)).filter((e): e is PhonicsBankEntry => !!e), [chosen, byId]);
   const words = useMemo(() => chosenEntries.map(toCard), [chosenEntries]);
 
-  function recommend(list: PhonicsBankEntry[], cnt: number, sd: number) {
-    setChosen(pickBalanced(list, cnt, sd).map((e) => e.id));
+  function recommend(list: PhonicsBankEntry[], cnt: number, sd: number, selectedUnit = unitId) {
+    setChosen((selectedUnit ? list : pickBalanced(list, cnt, sd)).map((e) => e.id));
     setGridLimit(GRID_PAGE);
   }
 
   // 단계를 고르면 그 단계의 첫 두 소리 규칙을 기본으로 켜고 추천 단어를 뽑는다(규칙 2~3개가 분류·다른 하나 찾기에 알맞다).
   function selectStep(s: number) {
     if (!entries) return;
-    const inStep = entries.filter((e) => e.step === s);
+    const inStep = selectPhonicsEntries(entries, s, extensions);
     const firstRules: string[] = [];
     for (const e of inStep) if (!firstRules.includes(e.rule) && firstRules.length < 2) firstRules.push(e.rule);
     setStep(s);
+    setUnitId('');
     setRules(firstRules);
     setSeed(1);
-    recommend(inStep.filter((e) => firstRules.includes(e.rule)), count, 1);
+    recommend(inStep.filter((e) => firstRules.includes(e.rule)), count, 1, '');
   }
 
   /** 넘어온 단어(파닉스 선택 바의 id, 또는 수업 슬라이드·단어장의 단어) → 파닉스 자료의 항목. */
   function entriesFromHandoff(list: PhonicsBankEntry[]): PhonicsBankEntry[] {
     const handoff = handoffFromLocationState(location.state);
     const ids = handoff.phonicsWordIds ?? [];
+    if (handoff.phonicsUnitIds?.length) {
+      return handoff.phonicsUnitIds.flatMap(id => { const u = unitById(id); return u ? [...u.entries, ...(handoff.phonicsIncludeExtensions ? u.extensions : [])] : []; });
+    }
     const byIds = ids.map((id) => list.find((e) => e.id === id)).filter((e): e is PhonicsBankEntry => !!e);
-    if (byIds.length > 0) return byIds;
+    if (ids.length > 0) return byIds;
     // 수업 단어장·슬라이드 단어: 같은 낱말(규칙까지 같으면 그것)을 파닉스 자료에서 찾는다.
     const cards = fillPhonicsMarks(wordsFromLocationState(location.state), list, true);
-    const out: PhonicsBankEntry[] = [];
-    for (const c of cards) {
-      const hit =
-        list.find((e) => e.word.toLowerCase() === c.word.trim().toLowerCase() && (!c.category || e.rule === c.category)) ??
-        list.find((e) => e.word.toLowerCase() === c.word.trim().toLowerCase());
-      if (hit && !out.includes(hit)) out.push(hit);
-    }
-    return out;
+    return savedPhonicsEntries(cards, list);
   }
 
   /** 수업 슬라이드에서 정해 둔 유형·옵션(발표 중엔 고르는 화면 없이 이대로). */
@@ -232,9 +235,14 @@ export default function PhonicsWorksheetLibraryPage() {
     if (!entries) return;
     const picked = entriesFromHandoff(entries);
     if (picked.length > 0) {
+      const handoff = handoffFromLocationState(location.state);
+      if (handoff.phonicsUnitIds?.length === 1) setUnitId(handoff.phonicsUnitIds[0]);
+      if (handoff.phonicsIncludeExtensions) setExtensions(true);
       setStep(picked[0].step);
       setRules([...new Set(picked.map((e) => e.rule))]);
       setChosen(picked.map((e) => e.id));
+    } else if (handoffFromLocationState(location.state).phonicsWordIds?.length || handoffFromLocationState(location.state).phonicsUnitIds?.length || wordsFromLocationState(location.state).length) {
+      setChosen([]);
     } else if (chosen.length === 0 && rules.length === 0) {
       selectStep(1);
     }
@@ -248,9 +256,10 @@ export default function PhonicsWorksheetLibraryPage() {
   }, [step]);
 
   function toggleRule(rule: string) {
+    setUnitId('');
     const next = rules.includes(rule) ? rules.filter((r) => r !== rule) : [...rules, rule];
     setRules(next);
-    recommend(next.length === 0 ? stepEntries : stepEntries.filter((e) => next.includes(e.rule)), count, seed);
+    recommend(next.length === 0 ? stepEntries : stepEntries.filter((e) => next.includes(e.rule)), count, seed, '');
   }
 
   function changeCount(cnt: number) {
@@ -326,7 +335,7 @@ export default function PhonicsWorksheetLibraryPage() {
   const imageOf = (word: string | null): string | null => {
     if (!word) return null;
     const hit = (entries ?? []).find((e) => e.word.toLowerCase() === word.toLowerCase() && e.image_url);
-    return hit?.image_url ?? `/phonics-images/${word.toLowerCase()}.webp`;
+    return hit?.image_url ?? null;
   };
   // 그림이 들어가면 한 줄이 높아져서 한 장에 들어가는 개수가 줄어든다.
   const listPerPage = showImage ? PHONICS_PER_PAGE.list : PHONICS_PER_PAGE.list + 2;
@@ -388,6 +397,13 @@ export default function PhonicsWorksheetLibraryPage() {
         {entries && (
           <>
             <section className="space-y-4 rounded-xl bg-surface-container-lowest p-5 shadow-card">
+              <PhonicsUnitControls step={step} ruleNames={rules} unitId={unitId} extensions={extensions}
+                onUnit={id => { setUnitId(id); const u = unitById(id); if (u) { setRules([u.entries[0].rule]); recommend(selectPhonicsEntries(entries, step, extensions, id), count, seed, id); } else recommend(selectPhonicsEntries(entries, step, extensions, '', rules), count, seed, ''); }}
+                onExtensions={on => { setExtensions(on); recommend(selectPhonicsEntries(entries, step, on, unitId, rules), count, seed); }} />
+              {(handoffFromLocationState(location.state).phonicsWordIds ?? []).some(id => !byId.has(id)) && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
+              {(handoffFromLocationState(location.state).phonicsUnitIds ?? []).some(id => !unitById(id)) && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
+              {savedEntries.length < wordsFromLocationState(location.state).length && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
+              {chosenEntries.some(e => e.tier === 'legacy') && <p>{t('phonicsCourse.legacy')}</p>}
               <div>
                 <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('phonics.stepLabel')}</div>
                 <div className="flex flex-wrap gap-2">
@@ -416,6 +432,7 @@ export default function PhonicsWorksheetLibraryPage() {
                   <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
                     {t('materials.library.countLabel')}
                     <select
+                      aria-label={t('materials.library.countLabel')}
                       value={count}
                       onChange={(e) => changeCount(Number(e.target.value))}
                       className="rounded-lg border border-outline-variant bg-surface px-2 py-1.5 text-on-surface"
@@ -446,10 +463,11 @@ export default function PhonicsWorksheetLibraryPage() {
               </div>
 
               {/* 고른 단어: 흰 바탕에 진한 글씨로 — 소리 규칙 글자만 노랗게 강조한다. */}
-              <div className="flex flex-wrap gap-1.5">
+              <div data-phonics-chosen className="flex flex-wrap gap-1.5">
                 {chosenEntries.map((e) => (
                   <button
                     key={e.id}
+                    data-word={e.word}
                     type="button"
                     onClick={() => toggleWord(e.id)}
                     title={t('materials.library.removeWord', { word: e.word })}
@@ -521,7 +539,7 @@ export default function PhonicsWorksheetLibraryPage() {
                       {e.image_url ? (
                         <img src={e.image_url} alt="" className="aspect-square w-full rounded-md bg-surface-container-low object-contain" />
                       ) : (
-                        <div className="flex aspect-square w-full items-center justify-center rounded-md bg-surface-container-low text-xl">🔤</div>
+                        <div className="flex aspect-square w-full items-center justify-center rounded-md bg-surface-container-low text-sm">{t('phonicsCourse.imagePending')}</div>
                       )}
                       <div className="mt-1 truncate">
                         <Pattern pattern={e.pattern_marked} />

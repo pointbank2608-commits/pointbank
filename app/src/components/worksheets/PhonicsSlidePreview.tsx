@@ -7,9 +7,11 @@ import { buildWorksheet, chunk, DEFAULT_COLORING_OPTIONS, isWorksheetEmpty, PHON
 import type { FullCardItem, PhonicsBankEntry, PhonicsSlideOptions } from '../../lib/types';
 import { PhonicsListCute, PhonicsTracingCute, ReaderCute } from './PhonicsCuteSheets';
 import WorksheetSheets from './WorksheetSheets';
+import { savedPhonicsEntries } from '../../lib/phonicsSelection';
+import { curriculumEntries } from '../../data/phonicsCurriculum';
 
 let bankPromise: Promise<PhonicsBankEntry[]> | null = null;
-const loadBank = () => (bankPromise ??= fetchPhonicsBank().catch(() => ((bankPromise = null), [])));
+const loadBank = () => (bankPromise ??= fetchPhonicsBank({ includeLegacy: true, includeExtensions: true }).catch(() => ((bankPromise = null), curriculumEntries())));
 
 /**
  * 수업 만들기의 파닉스 워크시트 슬라이드 미리보기(2026-10-03 "미리보기가 안 보인다" 제보).
@@ -30,21 +32,13 @@ export default function PhonicsSlidePreview({ tab, words, options }: { tab: stri
   const cards = useMemo<FullCardItem[]>(() => {
     if (!bank) return [];
     const filled = fillPhonicsMarks(words, bank, true);
-    const out: FullCardItem[] = [];
-    for (const c of filled) {
-      const w = c.word.trim().toLowerCase();
-      const hit = bank.find((e) => e.word.toLowerCase() === w && (!c.category || e.rule === c.category)) ?? bank.find((e) => e.word.toLowerCase() === w);
-      if (hit && !out.some((o) => o.id === hit.id)) {
-        out.push({ id: hit.id, word: hit.word, meaning: hit.meaning ?? '', imageUrl: hit.image_url, category: hit.rule, patternMarked: hit.pattern_marked });
-      }
-    }
-    return out;
+    return savedPhonicsEntries(filled, bank).map(hit => ({ id: hit.id, word: hit.word, meaning: hit.meaning ?? '', imageUrl: hit.image_url, category: hit.rule, patternMarked: hit.pattern_marked }));
   }, [bank, words]);
 
   const color = options.cuteColor !== false;
   const showImage = options.showImage !== false;
   const showMeaning = !!options.showMeaning;
-  const imageOf = (word: string | null) => (word ? (bank?.find((e) => e.word.toLowerCase() === word.toLowerCase())?.image_url ?? `/phonics-images/${word.toLowerCase()}.webp`) : null);
+  const imageOf = (word: string | null) => (word ? (bank?.find((e) => e.word.toLowerCase() === word.toLowerCase())?.image_url ?? null) : null);
 
   let sheet: React.ReactNode = null;
   if (bank) {

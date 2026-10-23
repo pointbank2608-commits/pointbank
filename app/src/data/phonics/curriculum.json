@@ -1,0 +1,2756 @@
+{
+  "version": 1,
+  "stages": [
+    {
+      "id": "alphabet",
+      "number": 1,
+      "name": "알파벳과 기본 음가",
+      "order": 1
+    },
+    {
+      "id": "short-vowels",
+      "number": 2,
+      "name": "단모음",
+      "order": 2
+    },
+    {
+      "id": "magic-e",
+      "number": 3,
+      "name": "매직 e",
+      "order": 3
+    },
+    {
+      "id": "consonants",
+      "number": 4,
+      "name": "자음군·이중자음",
+      "order": 4
+    },
+    {
+      "id": "vowel-teams",
+      "number": 5,
+      "name": "모음 조합·이중모음·R 모음",
+      "order": 5
+    }
+  ],
+  "rules": [
+    {
+      "id": "letter-a",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "A",
+      "sound": "a",
+      "order": 1,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-a"
+          ],
+          "unitOrders": [
+            1
+          ],
+          "name": "A",
+          "patterns": [
+            "{a}pple",
+            "{a}nt",
+            "{a}xe"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-b",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "B",
+      "sound": "b",
+      "order": 2,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-b"
+          ],
+          "unitOrders": [
+            2
+          ],
+          "name": "B",
+          "patterns": [
+            "{b}ag",
+            "{b}at",
+            "{b}us"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-c",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "C",
+      "sound": "c",
+      "order": 3,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-c"
+          ],
+          "unitOrders": [
+            3
+          ],
+          "name": "C",
+          "patterns": [
+            "{c}at",
+            "{c}ap",
+            "{c}up"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-d",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "D",
+      "sound": "d",
+      "order": 4,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-d"
+          ],
+          "unitOrders": [
+            4
+          ],
+          "name": "D",
+          "patterns": [
+            "{d}og",
+            "{d}uck",
+            "{d}esk"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-e",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "E",
+      "sound": "e",
+      "order": 5,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-e"
+          ],
+          "unitOrders": [
+            5
+          ],
+          "name": "E",
+          "patterns": [
+            "{e}gg",
+            "{e}lephant",
+            "{e}lbow"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-f",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "F",
+      "sound": "f",
+      "order": 6,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-f"
+          ],
+          "unitOrders": [
+            6
+          ],
+          "name": "F",
+          "patterns": [
+            "{f}ish",
+            "{f}an",
+            "{f}ox"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-g",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "G",
+      "sound": "g",
+      "order": 7,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-g"
+          ],
+          "unitOrders": [
+            7
+          ],
+          "name": "G",
+          "patterns": [
+            "{g}orilla",
+            "{g}ift",
+            "{g}arden"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-h",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "H",
+      "sound": "h",
+      "order": 8,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-h"
+          ],
+          "unitOrders": [
+            8
+          ],
+          "name": "H",
+          "patterns": [
+            "{h}at",
+            "{h}en",
+            "{h}and"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-i",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "I",
+      "sound": "i",
+      "order": 9,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-i"
+          ],
+          "unitOrders": [
+            9
+          ],
+          "name": "I",
+          "patterns": [
+            "{i}gloo",
+            "{i}nk",
+            "{i}nsect"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-j",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "J",
+      "sound": "j",
+      "order": 10,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-j"
+          ],
+          "unitOrders": [
+            10
+          ],
+          "name": "J",
+          "patterns": [
+            "{j}am",
+            "{j}et",
+            "{j}ug"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-k",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "K",
+      "sound": "k",
+      "order": 11,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-k"
+          ],
+          "unitOrders": [
+            11
+          ],
+          "name": "K",
+          "patterns": [
+            "{k}ing",
+            "{k}ite",
+            "{k}ey"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-l",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "L",
+      "sound": "l",
+      "order": 12,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-l"
+          ],
+          "unitOrders": [
+            12
+          ],
+          "name": "L",
+          "patterns": [
+            "{l}ion",
+            "{l}eg",
+            "{l}emon"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-m",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "M",
+      "sound": "m",
+      "order": 13,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-m"
+          ],
+          "unitOrders": [
+            13
+          ],
+          "name": "M",
+          "patterns": [
+            "{m}onkey",
+            "{m}ap",
+            "{m}ilk"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-n",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "N",
+      "sound": "n",
+      "order": 14,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-n"
+          ],
+          "unitOrders": [
+            14
+          ],
+          "name": "N",
+          "patterns": [
+            "{n}est",
+            "{n}et",
+            "{n}ut"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-o",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "O",
+      "sound": "o",
+      "order": 15,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-o"
+          ],
+          "unitOrders": [
+            15
+          ],
+          "name": "O",
+          "patterns": [
+            "{o}ctopus",
+            "{o}strich",
+            "{o}x"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-p",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "P",
+      "sound": "p",
+      "order": 16,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-p"
+          ],
+          "unitOrders": [
+            16
+          ],
+          "name": "P",
+          "patterns": [
+            "{p}ig",
+            "{p}en",
+            "{p}in"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-q",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "Q",
+      "sound": "qu",
+      "order": 17,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-q"
+          ],
+          "unitOrders": [
+            17
+          ],
+          "name": "Q",
+          "patterns": [
+            "{qu}een",
+            "{qu}ilt",
+            "{qu}estion"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-r",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "R",
+      "sound": "r",
+      "order": 18,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-r"
+          ],
+          "unitOrders": [
+            18
+          ],
+          "name": "R",
+          "patterns": [
+            "{r}abbit",
+            "{r}ing",
+            "{r}ain"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-s",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "S",
+      "sound": "s",
+      "order": 19,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-s"
+          ],
+          "unitOrders": [
+            19
+          ],
+          "name": "S",
+          "patterns": [
+            "{s}un",
+            "{s}ock",
+            "{s}nake"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-t",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "T",
+      "sound": "t",
+      "order": 20,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-t"
+          ],
+          "unitOrders": [
+            20
+          ],
+          "name": "T",
+          "patterns": [
+            "{t}iger",
+            "{t}op",
+            "{t}urtle"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-u",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "U",
+      "sound": "u",
+      "order": 21,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-u"
+          ],
+          "unitOrders": [
+            21
+          ],
+          "name": "U",
+          "patterns": [
+            "{u}mbrella",
+            "{u}p",
+            "{u}nder"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-v",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "V",
+      "sound": "v",
+      "order": 22,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-v"
+          ],
+          "unitOrders": [
+            22
+          ],
+          "name": "V",
+          "patterns": [
+            "{v}an",
+            "{v}est",
+            "{v}iolin"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-w",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "W",
+      "sound": "w",
+      "order": 23,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-w"
+          ],
+          "unitOrders": [
+            23
+          ],
+          "name": "W",
+          "patterns": [
+            "{w}eb",
+            "{w}indow",
+            "{w}atch"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-x",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "X",
+      "sound": "x",
+      "order": 24,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-x"
+          ],
+          "unitOrders": [
+            24
+          ],
+          "name": "X",
+          "patterns": [
+            "bo{x}",
+            "fo{x}",
+            "si{x}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-y",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "Y",
+      "sound": "y",
+      "order": 25,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-y"
+          ],
+          "unitOrders": [
+            25
+          ],
+          "name": "Y",
+          "patterns": [
+            "{y}o-yo",
+            "{y}ellow",
+            "{y}am"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "letter-z",
+      "stageId": "alphabet",
+      "step": 1,
+      "name": "Z",
+      "sound": "z",
+      "order": 26,
+      "groups": [
+        {
+          "unitIds": [
+            "alphabet-z"
+          ],
+          "unitOrders": [
+            26
+          ],
+          "name": "Z",
+          "patterns": [
+            "{z}ebra",
+            "{z}ipper",
+            "{z}oo"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "short-a",
+      "stageId": "short-vowels",
+      "step": 2,
+      "name": "Short a",
+      "sound": "short-a",
+      "order": 1,
+      "groups": [
+        {
+          "unitIds": [
+            "cvc-ad"
+          ],
+          "unitOrders": [
+            1
+          ],
+          "name": "-ad",
+          "patterns": [
+            "d{a}d",
+            "b{a}d",
+            "s{a}d"
+          ],
+          "extensions": [
+            "m{a}d"
+          ]
+        },
+        {
+          "unitIds": [
+            "cvc-ag"
+          ],
+          "unitOrders": [
+            2
+          ],
+          "name": "-ag",
+          "patterns": [
+            "b{a}g",
+            "t{a}g",
+            "w{a}g"
+          ],
+          "extensions": [
+            "r{a}g"
+          ]
+        },
+        {
+          "unitIds": [
+            "cvc-am"
+          ],
+          "unitOrders": [
+            3
+          ],
+          "name": "-am",
+          "patterns": [
+            "j{a}m",
+            "r{a}m",
+            "h{a}m"
+          ],
+          "extensions": [
+            "d{a}m",
+            "y{a}m"
+          ]
+        },
+        {
+          "unitIds": [
+            "cvc-an"
+          ],
+          "unitOrders": [
+            4
+          ],
+          "name": "-an",
+          "patterns": [
+            "f{a}n",
+            "c{a}n",
+            "m{a}n"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ap"
+          ],
+          "unitOrders": [
+            5
+          ],
+          "name": "-ap",
+          "patterns": [
+            "m{a}p",
+            "c{a}p",
+            "t{a}p"
+          ],
+          "extensions": [
+            "n{a}p"
+          ]
+        },
+        {
+          "unitIds": [
+            "cvc-at"
+          ],
+          "unitOrders": [
+            6
+          ],
+          "name": "-at",
+          "patterns": [
+            "c{a}t",
+            "f{a}t",
+            "h{a}t"
+          ],
+          "extensions": [
+            "b{a}t",
+            "m{a}t",
+            "r{a}t"
+          ]
+        }
+      ],
+      "vowel": "a"
+    },
+    {
+      "id": "short-e",
+      "stageId": "short-vowels",
+      "step": 2,
+      "name": "Short e",
+      "sound": "short-e",
+      "order": 2,
+      "groups": [
+        {
+          "unitIds": [
+            "cvc-ed"
+          ],
+          "unitOrders": [
+            7
+          ],
+          "name": "-ed",
+          "patterns": [
+            "r{e}d",
+            "b{e}d",
+            "T{e}d"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-en"
+          ],
+          "unitOrders": [
+            8
+          ],
+          "name": "-en",
+          "patterns": [
+            "h{e}n",
+            "t{e}n",
+            "p{e}n"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-et"
+          ],
+          "unitOrders": [
+            9
+          ],
+          "name": "-et",
+          "patterns": [
+            "j{e}t",
+            "w{e}t",
+            "p{e}t"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "e"
+    },
+    {
+      "id": "short-i",
+      "stageId": "short-vowels",
+      "step": 2,
+      "name": "Short i",
+      "sound": "short-i",
+      "order": 3,
+      "groups": [
+        {
+          "unitIds": [
+            "cvc-ig"
+          ],
+          "unitOrders": [
+            10
+          ],
+          "name": "-ig",
+          "patterns": [
+            "p{i}g",
+            "b{i}g",
+            "w{i}g"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-in"
+          ],
+          "unitOrders": [
+            11
+          ],
+          "name": "-in",
+          "patterns": [
+            "b{i}n",
+            "w{i}n",
+            "p{i}n"
+          ],
+          "extensions": [
+            "f{i}n"
+          ]
+        },
+        {
+          "unitIds": [
+            "cvc-ip"
+          ],
+          "unitOrders": [
+            12
+          ],
+          "name": "-ip",
+          "patterns": [
+            "l{i}p",
+            "h{i}p",
+            "r{i}p"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-it"
+          ],
+          "unitOrders": [
+            13
+          ],
+          "name": "-it",
+          "patterns": [
+            "k{i}t",
+            "s{i}t",
+            "h{i}t"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ix"
+          ],
+          "unitOrders": [
+            14
+          ],
+          "name": "-ix",
+          "patterns": [
+            "m{i}x",
+            "f{i}x",
+            "s{i}x"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-id"
+          ],
+          "unitOrders": [
+            15
+          ],
+          "name": "-id",
+          "patterns": [
+            "l{i}d",
+            "k{i}d"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "i"
+    },
+    {
+      "id": "short-o",
+      "stageId": "short-vowels",
+      "step": 2,
+      "name": "Short o",
+      "sound": "short-o",
+      "order": 4,
+      "groups": [
+        {
+          "unitIds": [
+            "cvc-og"
+          ],
+          "unitOrders": [
+            16
+          ],
+          "name": "-og",
+          "patterns": [
+            "d{o}g",
+            "l{o}g",
+            "j{o}g"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ot"
+          ],
+          "unitOrders": [
+            17
+          ],
+          "name": "-ot",
+          "patterns": [
+            "p{o}t",
+            "h{o}t",
+            "d{o}t"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ox"
+          ],
+          "unitOrders": [
+            18
+          ],
+          "name": "-ox",
+          "patterns": [
+            "f{o}x",
+            "b{o}x",
+            "{o}x"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "o"
+    },
+    {
+      "id": "short-u",
+      "stageId": "short-vowels",
+      "step": 2,
+      "name": "Short u",
+      "sound": "short-u",
+      "order": 5,
+      "groups": [
+        {
+          "unitIds": [
+            "cvc-ug"
+          ],
+          "unitOrders": [
+            19
+          ],
+          "name": "-ug",
+          "patterns": [
+            "b{u}g",
+            "h{u}g",
+            "r{u}g"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-un"
+          ],
+          "unitOrders": [
+            20
+          ],
+          "name": "-un",
+          "patterns": [
+            "s{u}n",
+            "b{u}n",
+            "r{u}n"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ut"
+          ],
+          "unitOrders": [
+            21
+          ],
+          "name": "-ut",
+          "patterns": [
+            "n{u}t",
+            "h{u}t",
+            "c{u}t"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ub"
+          ],
+          "unitOrders": [
+            22
+          ],
+          "name": "-ub",
+          "patterns": [
+            "t{u}b",
+            "c{u}b"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-ud"
+          ],
+          "unitOrders": [
+            23
+          ],
+          "name": "-ud",
+          "patterns": [
+            "m{u}d",
+            "b{u}d"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "cvc-up"
+          ],
+          "unitOrders": [
+            24
+          ],
+          "name": "-up",
+          "patterns": [
+            "c{u}p",
+            "p{u}p"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "u"
+    },
+    {
+      "id": "magic-a",
+      "stageId": "magic-e",
+      "step": 3,
+      "name": "a_e",
+      "sound": "a_e",
+      "order": 1,
+      "groups": [
+        {
+          "unitIds": [
+            "magic-ake"
+          ],
+          "unitOrders": [
+            1
+          ],
+          "name": "-ake",
+          "patterns": [
+            "c{a}k{e}",
+            "l{a}k{e}",
+            "b{a}k{e}"
+          ],
+          "extensions": [
+            "m{a}k{e}",
+            "r{a}k{e}"
+          ]
+        },
+        {
+          "unitIds": [
+            "magic-ame"
+          ],
+          "unitOrders": [
+            2
+          ],
+          "name": "-ame",
+          "patterns": [
+            "g{a}m{e}",
+            "n{a}m{e}",
+            "s{a}m{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ate"
+          ],
+          "unitOrders": [
+            3
+          ],
+          "name": "-ate",
+          "patterns": [
+            "g{a}t{e}",
+            "d{a}t{e}",
+            "l{a}t{e}"
+          ],
+          "extensions": [
+            "r{a}t{e}"
+          ]
+        },
+        {
+          "unitIds": [
+            "magic-ave"
+          ],
+          "unitOrders": [
+            4
+          ],
+          "name": "-ave",
+          "patterns": [
+            "c{a}v{e}",
+            "w{a}v{e}",
+            "s{a}v{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ane"
+          ],
+          "unitOrders": [
+            5
+          ],
+          "name": "-ane",
+          "patterns": [
+            "c{a}n{e}",
+            "m{a}n{e}",
+            "l{a}n{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ape"
+          ],
+          "unitOrders": [
+            6
+          ],
+          "name": "-ape",
+          "patterns": [
+            "c{a}p{e}",
+            "t{a}p{e}"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "a"
+    },
+    {
+      "id": "magic-i",
+      "stageId": "magic-e",
+      "step": 3,
+      "name": "i_e",
+      "sound": "i_e",
+      "order": 2,
+      "groups": [
+        {
+          "unitIds": [
+            "magic-ike"
+          ],
+          "unitOrders": [
+            7
+          ],
+          "name": "-ike",
+          "patterns": [
+            "b{i}k{e}",
+            "h{i}k{e}",
+            "l{i}k{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ine"
+          ],
+          "unitOrders": [
+            8
+          ],
+          "name": "-ine",
+          "patterns": [
+            "n{i}n{e}",
+            "l{i}n{e}",
+            "p{i}n{e}"
+          ],
+          "extensions": [
+            "f{i}n{e}"
+          ]
+        },
+        {
+          "unitIds": [
+            "magic-ite"
+          ],
+          "unitOrders": [
+            9
+          ],
+          "name": "-ite",
+          "patterns": [
+            "k{i}t{e}",
+            "b{i}t{e}",
+            "s{i}t{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ide"
+          ],
+          "unitOrders": [
+            10
+          ],
+          "name": "-ide",
+          "patterns": [
+            "h{i}d{e}",
+            "r{i}d{e}",
+            "s{i}d{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ime"
+          ],
+          "unitOrders": [
+            11
+          ],
+          "name": "-ime",
+          "patterns": [
+            "t{i}m{e}",
+            "l{i}m{e}",
+            "d{i}m{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ive"
+          ],
+          "unitOrders": [
+            12
+          ],
+          "name": "-ive",
+          "patterns": [
+            "f{i}v{e}",
+            "d{i}v{e}",
+            "h{i}v{e}"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "i"
+    },
+    {
+      "id": "magic-o",
+      "stageId": "magic-e",
+      "step": 3,
+      "name": "o_e",
+      "sound": "o_e",
+      "order": 3,
+      "groups": [
+        {
+          "unitIds": [
+            "magic-one"
+          ],
+          "unitOrders": [
+            13
+          ],
+          "name": "-one",
+          "patterns": [
+            "b{o}n{e}",
+            "c{o}n{e}",
+            "z{o}n{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ose"
+          ],
+          "unitOrders": [
+            14
+          ],
+          "name": "-ose",
+          "patterns": [
+            "n{o}s{e}",
+            "r{o}s{e}",
+            "h{o}s{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ole"
+          ],
+          "unitOrders": [
+            15
+          ],
+          "name": "-ole",
+          "patterns": [
+            "h{o}l{e}",
+            "p{o}l{e}",
+            "m{o}l{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ope"
+          ],
+          "unitOrders": [
+            16
+          ],
+          "name": "-ope",
+          "patterns": [
+            "r{o}p{e}",
+            "h{o}p{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ote"
+          ],
+          "unitOrders": [
+            17
+          ],
+          "name": "-ote",
+          "patterns": [
+            "n{o}t{e}",
+            "v{o}t{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ome"
+          ],
+          "unitOrders": [
+            18
+          ],
+          "name": "-ome",
+          "patterns": [
+            "h{o}m{e}",
+            "d{o}m{e}"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "o"
+    },
+    {
+      "id": "magic-u",
+      "stageId": "magic-e",
+      "step": 3,
+      "name": "u_e",
+      "sound": "u_e",
+      "order": 4,
+      "groups": [
+        {
+          "unitIds": [
+            "magic-une"
+          ],
+          "unitOrders": [
+            19
+          ],
+          "name": "-une",
+          "patterns": [
+            "t{u}n{e}",
+            "J{u}n{e}",
+            "d{u}n{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ube"
+          ],
+          "unitOrders": [
+            20
+          ],
+          "name": "-ube",
+          "patterns": [
+            "c{u}b{e}",
+            "t{u}b{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ute"
+          ],
+          "unitOrders": [
+            21
+          ],
+          "name": "-ute",
+          "patterns": [
+            "c{u}t{e}",
+            "m{u}t{e}"
+          ],
+          "extensions": []
+        },
+        {
+          "unitIds": [
+            "magic-ule"
+          ],
+          "unitOrders": [
+            22
+          ],
+          "name": "-ule",
+          "patterns": [
+            "m{u}l{e}",
+            "r{u}l{e}"
+          ],
+          "extensions": []
+        }
+      ],
+      "vowel": "u"
+    },
+    {
+      "id": "blend-bl",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "bl",
+      "sound": "bl",
+      "order": 1,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-bl-a",
+            "blend-bl-b"
+          ],
+          "unitOrders": [
+            1,
+            2
+          ],
+          "name": "bl",
+          "patterns": [
+            "{bl}ack",
+            "{bl}ock",
+            "{bl}ank",
+            "{bl}ink"
+          ],
+          "extensions": [
+            "{bl}ue",
+            "{bl}ow",
+            "{bl}ouse"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-cl",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "cl",
+      "sound": "cl",
+      "order": 2,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-cl-a",
+            "blend-cl-b"
+          ],
+          "unitOrders": [
+            3,
+            4
+          ],
+          "name": "cl",
+          "patterns": [
+            "{cl}ap",
+            "{cl}ip",
+            "{cl}ub",
+            "{cl}am",
+            "{cl}ock"
+          ],
+          "extensions": [
+            "{cl}oud"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-fl",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "fl",
+      "sound": "fl",
+      "order": 3,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-fl-a",
+            "blend-fl-b"
+          ],
+          "unitOrders": [
+            5,
+            6
+          ],
+          "name": "fl",
+          "patterns": [
+            "{fl}ag",
+            "{fl}at",
+            "{fl}ap",
+            "{fl}ip"
+          ],
+          "extensions": [
+            "{fl}ute"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-gl",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "gl",
+      "sound": "gl",
+      "order": 4,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-gl-a",
+            "blend-gl-b"
+          ],
+          "unitOrders": [
+            7,
+            8
+          ],
+          "name": "gl",
+          "patterns": [
+            "{gl}ad",
+            "{gl}ass",
+            "{gl}ob",
+            "{gl}um"
+          ],
+          "extensions": [
+            "{gl}obe",
+            "{gl}ue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-pl",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "pl",
+      "sound": "pl",
+      "order": 5,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-pl-a",
+            "blend-pl-b"
+          ],
+          "unitOrders": [
+            9,
+            10
+          ],
+          "name": "pl",
+          "patterns": [
+            "{pl}an",
+            "{pl}ant",
+            "{pl}um",
+            "{pl}ug"
+          ],
+          "extensions": [
+            "{pl}ane",
+            "{pl}ate"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-br",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "br",
+      "sound": "br",
+      "order": 6,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-br-a",
+            "blend-br-b"
+          ],
+          "unitOrders": [
+            11,
+            12
+          ],
+          "name": "br",
+          "patterns": [
+            "{br}ush",
+            "{br}ick",
+            "{br}im",
+            "{br}an"
+          ],
+          "extensions": [
+            "{br}ead",
+            "{br}own"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-cr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "cr",
+      "sound": "cr",
+      "order": 7,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-cr-a",
+            "blend-cr-b"
+          ],
+          "unitOrders": [
+            13,
+            14
+          ],
+          "name": "cr",
+          "patterns": [
+            "{cr}ab",
+            "{cr}oss",
+            "{cr}op",
+            "{cr}ack"
+          ],
+          "extensions": [
+            "{cr}ane"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-dr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "dr",
+      "sound": "dr",
+      "order": 8,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-dr-a",
+            "blend-dr-b"
+          ],
+          "unitOrders": [
+            15,
+            16
+          ],
+          "name": "dr",
+          "patterns": [
+            "{dr}um",
+            "{dr}op",
+            "{dr}ip",
+            "{dr}ess"
+          ],
+          "extensions": [
+            "{dr}eam"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-fr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "fr",
+      "sound": "fr",
+      "order": 9,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-fr-a",
+            "blend-fr-b"
+          ],
+          "unitOrders": [
+            17,
+            18
+          ],
+          "name": "fr",
+          "patterns": [
+            "{fr}og",
+            "{fr}om",
+            "{fr}esh",
+            "{fr}ost"
+          ],
+          "extensions": [
+            "{fr}ame",
+            "{fr}uit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-gr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "gr",
+      "sound": "gr",
+      "order": 10,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-gr-a",
+            "blend-gr-b"
+          ],
+          "unitOrders": [
+            19,
+            20
+          ],
+          "name": "gr",
+          "patterns": [
+            "{gr}ass",
+            "{gr}in",
+            "{gr}ab",
+            "{gr}ip"
+          ],
+          "extensions": [
+            "{gr}ape",
+            "{gr}een"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-pr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "pr",
+      "sound": "pr",
+      "order": 11,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-pr-a",
+            "blend-pr-b"
+          ],
+          "unitOrders": [
+            21,
+            22
+          ],
+          "name": "pr",
+          "patterns": [
+            "{pr}int",
+            "{pr}ess",
+            "{pr}im",
+            "{pr}op"
+          ],
+          "extensions": [
+            "{pr}ize"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-tr",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "tr",
+      "sound": "tr",
+      "order": 12,
+      "groups": [
+        {
+          "unitIds": [
+            "blend-tr-a",
+            "blend-tr-b"
+          ],
+          "unitOrders": [
+            23,
+            24
+          ],
+          "name": "tr",
+          "patterns": [
+            "{tr}ap",
+            "{tr}ip",
+            "{tr}im",
+            "{tr}uck"
+          ],
+          "extensions": [
+            "{tr}ain",
+            "{tr}ee"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-st_initial",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "st (initial)",
+      "sound": "st",
+      "order": 13,
+      "groups": [
+        {
+          "unitIds": [
+            "initial-st-a",
+            "initial-st-b"
+          ],
+          "unitOrders": [
+            25,
+            26
+          ],
+          "name": "st (initial)",
+          "patterns": [
+            "{st}op",
+            "{st}em",
+            "{st}ep",
+            "{st}ick"
+          ],
+          "extensions": [
+            "{st}ar",
+            "{st}one"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-sk_initial",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "sk (initial)",
+      "sound": "sk",
+      "order": 14,
+      "groups": [
+        {
+          "unitIds": [
+            "initial-sk-a",
+            "initial-sk-b"
+          ],
+          "unitOrders": [
+            27,
+            28
+          ],
+          "name": "sk (initial)",
+          "patterns": [
+            "{sk}in",
+            "{sk}ip",
+            "{sk}id",
+            "{sk}im"
+          ],
+          "extensions": [
+            "{sk}ate",
+            "{sk}y"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blend-sk_final",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "sk (final)",
+      "sound": "sk",
+      "order": 15,
+      "groups": [
+        {
+          "unitIds": [
+            "final-sk-a",
+            "final-sk-b"
+          ],
+          "unitOrders": [
+            29,
+            30
+          ],
+          "name": "sk (final)",
+          "patterns": [
+            "de{sk}",
+            "ma{sk}",
+            "ta{sk}",
+            "tu{sk}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-mp_final",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "mp (final)",
+      "sound": "mp",
+      "order": 16,
+      "groups": [
+        {
+          "unitIds": [
+            "final-mp-a",
+            "final-mp-b"
+          ],
+          "unitOrders": [
+            31,
+            32
+          ],
+          "name": "mp (final)",
+          "patterns": [
+            "la{mp}",
+            "ca{mp}",
+            "ju{mp}",
+            "bu{mp}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-nd_final",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "nd (final)",
+      "sound": "nd",
+      "order": 17,
+      "groups": [
+        {
+          "unitIds": [
+            "final-nd-a",
+            "final-nd-b"
+          ],
+          "unitOrders": [
+            33,
+            34
+          ],
+          "name": "nd (final)",
+          "patterns": [
+            "ha{nd}",
+            "ba{nd}",
+            "sa{nd}",
+            "po{nd}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-nk_final",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "nk (final)",
+      "sound": "nk",
+      "order": 18,
+      "groups": [
+        {
+          "unitIds": [
+            "final-nk-a",
+            "final-nk-b"
+          ],
+          "unitOrders": [
+            35,
+            36
+          ],
+          "name": "nk (final)",
+          "patterns": [
+            "pi{nk}",
+            "i{nk}",
+            "ba{nk}",
+            "si{nk}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-sh",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "sh",
+      "sound": "sh",
+      "order": 19,
+      "groups": [
+        {
+          "unitIds": [
+            "digraph-sh-a",
+            "digraph-sh-b"
+          ],
+          "unitOrders": [
+            37,
+            38
+          ],
+          "name": "sh",
+          "patterns": [
+            "{sh}ip",
+            "{sh}op",
+            "{sh}ell",
+            "fi{sh}",
+            "di{sh}",
+            "bru{sh}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-ch",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "ch",
+      "sound": "ch",
+      "order": 20,
+      "groups": [
+        {
+          "unitIds": [
+            "digraph-ch-a",
+            "digraph-ch-b"
+          ],
+          "unitOrders": [
+            39,
+            40
+          ],
+          "name": "ch",
+          "patterns": [
+            "{ch}ip",
+            "{ch}in",
+            "{ch}at",
+            "{ch}op",
+            "ben{ch}",
+            "lun{ch}"
+          ],
+          "extensions": [
+            "{ch}air",
+            "pea{ch}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "th-voiceless",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "th /θ/",
+      "sound": "th-voiceless",
+      "order": 21,
+      "groups": [
+        {
+          "unitIds": [
+            "th-voiceless-a",
+            "th-voiceless-b"
+          ],
+          "unitOrders": [
+            41,
+            42
+          ],
+          "name": "th /θ/",
+          "patterns": [
+            "{th}in",
+            "{th}ick",
+            "{th}ree",
+            "ma{th}",
+            "pa{th}",
+            "tee{th}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "th-voiced",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "th /ð/",
+      "sound": "th-voiced",
+      "order": 22,
+      "groups": [
+        {
+          "unitIds": [
+            "th-voiced-a",
+            "th-voiced-b"
+          ],
+          "unitOrders": [
+            43,
+            44
+          ],
+          "name": "th /ð/",
+          "patterns": [
+            "{th}is",
+            "{th}at",
+            "{th}em",
+            "{th}en"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-wh",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "wh",
+      "sound": "wh",
+      "order": 23,
+      "groups": [
+        {
+          "unitIds": [
+            "digraph-wh-a",
+            "digraph-wh-b"
+          ],
+          "unitOrders": [
+            45,
+            46
+          ],
+          "name": "wh",
+          "patterns": [
+            "{wh}ip",
+            "{wh}ite",
+            "{wh}eel",
+            "{wh}ale"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "blend-ng",
+      "stageId": "consonants",
+      "step": 4,
+      "name": "ng",
+      "sound": "ng",
+      "order": 24,
+      "groups": [
+        {
+          "unitIds": [
+            "digraph-ng-a",
+            "digraph-ng-b"
+          ],
+          "unitOrders": [
+            47,
+            48
+          ],
+          "name": "ng",
+          "patterns": [
+            "ki{ng}",
+            "ri{ng}",
+            "si{ng}",
+            "so{ng}",
+            "wi{ng}",
+            "lo{ng}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ee",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ee",
+      "sound": "ee",
+      "order": 1,
+      "groups": [
+        {
+          "unitIds": [
+            "team-ee-a",
+            "team-ee-b"
+          ],
+          "unitOrders": [
+            1,
+            2
+          ],
+          "name": "ee",
+          "patterns": [
+            "b{ee}",
+            "tr{ee}",
+            "s{ee}d",
+            "f{ee}t"
+          ],
+          "extensions": [
+            "f{ee}d",
+            "w{ee}d",
+            "m{ee}t",
+            "b{ee}t",
+            "j{ee}p",
+            "d{ee}p",
+            "k{ee}p"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vowel-ea",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ea",
+      "sound": "ea",
+      "order": 2,
+      "groups": [
+        {
+          "unitIds": [
+            "team-ea-a",
+            "team-ea-b"
+          ],
+          "unitOrders": [
+            3,
+            4
+          ],
+          "name": "ea",
+          "patterns": [
+            "s{ea}",
+            "t{ea}",
+            "m{ea}t",
+            "l{ea}f"
+          ],
+          "extensions": [
+            "s{ea}t",
+            "h{ea}t"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vowel-ai",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ai",
+      "sound": "ai",
+      "order": 3,
+      "groups": [
+        {
+          "unitIds": [
+            "team-ai-a",
+            "team-ai-b"
+          ],
+          "unitOrders": [
+            5,
+            6
+          ],
+          "name": "ai",
+          "patterns": [
+            "r{ai}n",
+            "tr{ai}n",
+            "t{ai}l",
+            "m{ai}l"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ay",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ay",
+      "sound": "ay",
+      "order": 4,
+      "groups": [
+        {
+          "unitIds": [
+            "team-ay-a",
+            "team-ay-b"
+          ],
+          "unitOrders": [
+            7,
+            8
+          ],
+          "name": "ay",
+          "patterns": [
+            "d{ay}",
+            "pl{ay}",
+            "s{ay}",
+            "m{ay}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-oa",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "oa",
+      "sound": "oa",
+      "order": 5,
+      "groups": [
+        {
+          "unitIds": [
+            "team-oa-a",
+            "team-oa-b"
+          ],
+          "unitOrders": [
+            9,
+            10
+          ],
+          "name": "oa",
+          "patterns": [
+            "b{oa}t",
+            "c{oa}t",
+            "r{oa}d",
+            "s{oa}p"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "ow-long-o",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ow /oʊ/",
+      "sound": "ow-long-o",
+      "order": 6,
+      "groups": [
+        {
+          "unitIds": [
+            "ow-long-a",
+            "ow-long-b"
+          ],
+          "unitOrders": [
+            11,
+            12
+          ],
+          "name": "ow /oʊ/",
+          "patterns": [
+            "sn{ow}",
+            "gr{ow}",
+            "sh{ow}",
+            "bl{ow}"
+          ],
+          "extensions": [
+            "wind{ow}",
+            "yell{ow}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oo-short",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "oo /ʊ/",
+      "sound": "oo-short",
+      "order": 7,
+      "groups": [
+        {
+          "unitIds": [
+            "oo-short-a",
+            "oo-short-b"
+          ],
+          "unitOrders": [
+            13,
+            14
+          ],
+          "name": "oo /ʊ/",
+          "patterns": [
+            "b{oo}k",
+            "c{oo}k",
+            "f{oo}t",
+            "w{oo}d"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "oo-long",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "oo /uː/",
+      "sound": "oo-long",
+      "order": 8,
+      "groups": [
+        {
+          "unitIds": [
+            "oo-long-a",
+            "oo-long-b"
+          ],
+          "unitOrders": [
+            15,
+            16
+          ],
+          "name": "oo /uː/",
+          "patterns": [
+            "m{oo}n",
+            "sp{oo}n",
+            "z{oo}",
+            "f{oo}d"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-oi",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "oi",
+      "sound": "oi",
+      "order": 9,
+      "groups": [
+        {
+          "unitIds": [
+            "team-oi-a",
+            "team-oi-b"
+          ],
+          "unitOrders": [
+            17,
+            18
+          ],
+          "name": "oi",
+          "patterns": [
+            "c{oi}n",
+            "p{oi}nt",
+            "{oi}l",
+            "s{oi}l"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-oy",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "oy",
+      "sound": "oy",
+      "order": 10,
+      "groups": [
+        {
+          "unitIds": [
+            "team-oy-a"
+          ],
+          "unitOrders": [
+            19
+          ],
+          "name": "oy",
+          "patterns": [
+            "b{oy}",
+            "t{oy}",
+            "j{oy}"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ou",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ou",
+      "sound": "ou",
+      "order": 11,
+      "groups": [
+        {
+          "unitIds": [
+            "team-ou-a",
+            "team-ou-b"
+          ],
+          "unitOrders": [
+            20,
+            21
+          ],
+          "name": "ou",
+          "patterns": [
+            "h{ou}se",
+            "m{ou}se",
+            "{ou}t",
+            "cl{ou}d"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "ow-diphthong",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ow /aʊ/",
+      "sound": "ow-diphthong",
+      "order": 12,
+      "groups": [
+        {
+          "unitIds": [
+            "ow-diphthong-a",
+            "ow-diphthong-b"
+          ],
+          "unitOrders": [
+            22,
+            23
+          ],
+          "name": "ow /aʊ/",
+          "patterns": [
+            "c{ow}",
+            "{ow}l",
+            "d{ow}n",
+            "cr{ow}n"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ar",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ar",
+      "sound": "ar",
+      "order": 13,
+      "groups": [
+        {
+          "unitIds": [
+            "r-ar-a",
+            "r-ar-b"
+          ],
+          "unitOrders": [
+            24,
+            25
+          ],
+          "name": "ar",
+          "patterns": [
+            "c{ar}",
+            "st{ar}",
+            "p{ar}k",
+            "d{ar}k"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-er",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "er",
+      "sound": "er",
+      "order": 14,
+      "groups": [
+        {
+          "unitIds": [
+            "r-er-a"
+          ],
+          "unitOrders": [
+            26
+          ],
+          "name": "er",
+          "patterns": [
+            "h{er}",
+            "f{er}n",
+            "t{er}m"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ir",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ir",
+      "sound": "ir",
+      "order": 15,
+      "groups": [
+        {
+          "unitIds": [
+            "r-ir-a",
+            "r-ir-b"
+          ],
+          "unitOrders": [
+            27,
+            28
+          ],
+          "name": "ir",
+          "patterns": [
+            "b{ir}d",
+            "g{ir}l",
+            "sh{ir}t",
+            "sk{ir}t"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-or",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "or",
+      "sound": "or",
+      "order": 16,
+      "groups": [
+        {
+          "unitIds": [
+            "r-or-a",
+            "r-or-b"
+          ],
+          "unitOrders": [
+            29,
+            30
+          ],
+          "name": "or",
+          "patterns": [
+            "f{or}k",
+            "c{or}n",
+            "h{or}se",
+            "st{or}m"
+          ],
+          "extensions": []
+        }
+      ]
+    },
+    {
+      "id": "vowel-ur",
+      "stageId": "vowel-teams",
+      "step": 5,
+      "name": "ur",
+      "sound": "ur",
+      "order": 17,
+      "groups": [
+        {
+          "unitIds": [
+            "r-ur-a",
+            "r-ur-b"
+          ],
+          "unitOrders": [
+            31,
+            32
+          ],
+          "name": "ur",
+          "patterns": [
+            "b{ur}n",
+            "t{ur}n",
+            "h{ur}t",
+            "n{ur}se"
+          ],
+          "extensions": [
+            "t{ur}tle"
+          ]
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "candidate-short-op",
+      "step": 2,
+      "ruleId": "short-o",
+      "name": "-op",
+      "patterns": [
+        "t{o}p",
+        "h{o}p",
+        "m{o}p",
+        "p{o}p"
+      ]
+    },
+    {
+      "id": "candidate-short-eg",
+      "step": 2,
+      "ruleId": "short-e",
+      "name": "-eg",
+      "patterns": [
+        "l{e}g",
+        "p{e}g"
+      ]
+    },
+    {
+      "id": "candidate-magic-ipe",
+      "step": 3,
+      "ruleId": "magic-i",
+      "name": "-ipe",
+      "patterns": [
+        "p{i}p{e}",
+        "w{i}p{e}"
+      ]
+    },
+    {
+      "id": "candidate-magic-ude",
+      "step": 3,
+      "ruleId": "magic-u",
+      "name": "-ude",
+      "patterns": [
+        "r{u}d{e}"
+      ]
+    },
+    {
+      "id": "legacy-final-lk",
+      "step": 4,
+      "ruleId": "legacy-lk",
+      "name": "lk (legacy)",
+      "patterns": [
+        "mi{lk}"
+      ]
+    },
+    {
+      "id": "candidate-ending-er",
+      "step": 5,
+      "ruleId": "suffix-er",
+      "name": "word-final -er",
+      "patterns": [
+        "teach{er}"
+      ]
+    }
+  ]
+}

@@ -1,17 +1,13 @@
 import BackButton from '../components/BackButton';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { CvcUnitPages, CvcUnitPicker } from '../components/worksheets/CvcWorkbookSheets';
 import { usePresenting } from '../context/LessonRunnerContext';
-import { WORKBOOKS, type CvcUnit, type WorkbookId } from '../data/cvcWorkbook';
+import { WORKBOOKS, LONG_LEGACY_UNITS, resolveWorkbookSelection, stableWorkbookRefs, workbookNumbers, type WorkbookId } from '../data/cvcWorkbook';
 
 /** 수업 슬라이드에서 넘어올 때 미리 정해 둔 유닛(navState.cvcUnits). */
-function unitsFromState(state: unknown, all: CvcUnit[]): number[] {
-  const units = (state as { cvcUnits?: unknown } | null)?.cvcUnits;
-  return Array.isArray(units) ? units.filter((n): n is number => typeof n === 'number' && all.some((u) => u.unit === n)) : [];
-}
 
 /**
  * 파닉스 CVC 워크북 — 미리 만들어 둔 워크시트. 유닛(낱말 2~3개)을 고르면 유닛마다 A4 두 장이 그대로 나온다.
@@ -22,11 +18,15 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
-  const [selected, setSelected] = useState<number[]>(() => {
-    const fromSlide = unitsFromState(location.state, workbook.units);
-    return fromSlide.length > 0 ? fromSlide : [1];
-  });
-  const units = workbook.units.filter((u) => selected.includes(u.unit));
+  const fromSaved = resolveWorkbookSelection(book, location.state);
+  const initialIds = () => fromSaved.requested ? fromSaved.units.map(u => u.id) : workbook.units.slice(0, 1).map(u => u.id);
+  const [selected, setSelected] = useState<string[]>(initialIds);
+  useEffect(() => {
+    const saved = resolveWorkbookSelection(book, location.state);
+    setSelected(saved.requested ? saved.units.map(u => u.id) : WORKBOOKS[book].units.slice(0, 1).map(u => u.id));
+  }, [location.key, location.state, book]);
+  const available = [...workbook.units, ...(book === 'long' ? LONG_LEGACY_UNITS : [])];
+  const units = available.filter((u) => selected.includes(u.id));
   const vowelLabel = (vowel: string) => t(book === 'cvc' ? 'materials.cvc.vowel' : 'materials.cvc.longVowel', { vowel });
 
   return (
@@ -47,7 +47,7 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setSelected(workbook.units.map((u) => u.unit))}
+                  onClick={() => setSelected(workbook.units.map((u) => u.id))}
                   className="rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 transition-colors"
                 >
                   {t('materials.cvc.selectAll')}
@@ -61,7 +61,9 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
                 </button>
               </div>
             </div>
-            <CvcUnitPicker book={book} selected={selected} onChange={setSelected} vowelLabel={vowelLabel} />
+            {fromSaved.missing.length > 0 && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
+            {units.some(u => u.id.startsWith('legacy-')) && <div><p>{t('phonicsCourse.legacy')}</p>{units.filter(u => u.id.startsWith('legacy-')).map(u => <label key={u.id} className="mr-3"><input type="checkbox" checked onChange={() => setSelected(selected.filter(id => id !== u.id))} />{u.unit}. {u.words.join(' · ')}</label>)}</div>}
+            <CvcUnitPicker book={book} selected={workbookNumbers(book, selected)} onChange={numbers => setSelected(stableWorkbookRefs(book, numbers))} vowelLabel={vowelLabel} />
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

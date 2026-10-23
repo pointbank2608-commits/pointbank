@@ -23,6 +23,8 @@ export interface MaterialsHandoffState {
   materialsDecorTheme?: string | null;
   /** 파닉스 워크시트 페이지가 처음에 골라 둘 phonics_bank 단어 id(파닉스 선택 바에서 넘어올 때). */
   phonicsWordIds?: string[];
+  phonicsUnitIds?: string[];
+  phonicsIncludeExtensions?: boolean;
   /** 수업 파닉스 워크시트 슬라이드의 옵션(유형은 materialsTab). */
   phonicsOptions?: PhonicsSlideOptions;
 }

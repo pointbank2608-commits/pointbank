@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchPhonicsBank } from './api';
 import type { FullCardItem, PhonicsBankEntry } from './types';
+import { curriculumEntries } from '../data/phonicsCurriculum';
+import { WORD_BANK_CATEGORIES } from './wordBankCategories';
 
 /**
  * 파닉스 소리 규칙 표기(patternMarked) 채우기 — 2026-09-27 전에 단어장에 담은 파닉스 단어는 표기가 없다.
@@ -9,7 +11,7 @@ import type { FullCardItem, PhonicsBankEntry } from './types';
  */
 let bankPromise: Promise<PhonicsBankEntry[]> | null = null;
 export function loadPhonicsBank(): Promise<PhonicsBankEntry[]> {
-  if (!bankPromise) bankPromise = fetchPhonicsBank().catch(() => ((bankPromise = null), []));
+  if (!bankPromise) bankPromise = fetchPhonicsBank({ includeLegacy: true, includeExtensions: true }).catch(() => ((bankPromise = null), curriculumEntries()));
   return bankPromise;
 }
 
@@ -28,10 +30,12 @@ export function fillPhonicsMarks(cards: FullCardItem[], bank: PhonicsBankEntry[]
     const hits = byWord.get(c.word.trim().toLowerCase());
     if (!hits) return c;
     const sameRule = c.category ? hits.find((h) => h.rule === c.category) : undefined;
-    const hit = sameRule ?? (loose ? hits[0] : undefined);
+    const dictionaryCategory = !!c.category && (WORD_BANK_CATEGORIES as readonly string[]).includes(c.category);
+    const hit = sameRule ?? (loose && (!c.category || dictionaryCategory) ? hits.find(h => h.tier === 'basic') : undefined);
     if (!hit) return c;
     changed = true;
-    return { ...c, patternMarked: hit.pattern_marked, category: c.category ?? hit.rule, imageUrl: c.imageUrl ?? hit.image_url };
+    return { ...c, patternMarked: hit.pattern_marked, category: dictionaryCategory ? hit.rule : c.category ?? hit.rule,
+      imageUrl: Object.hasOwn(c, 'imageUrl') ? c.imageUrl : hit.image_url };
   });
   return changed ? out : cards;
 }

@@ -5,10 +5,12 @@ import { homeEn } from '../homeLocales';
 import { sourceEn } from '../sourceLocales';
 import { guideEn } from '../guideLocales';
 import { workbookEn } from '../workbookLocales';
+import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
   workbook: workbookEn,
+  phonicsCourse: phonicsCourseEn,
   bombSound: bombSoundEn,
   turnDisplay: turnDisplayEn,
   materialBrowser: materialBrowserEn,
@@ -2714,12 +2716,12 @@ const en: Ko = {
     grammarWorkbookName: 'Grammar Practice and Missions',
     grammarWorkbookDesc: '13 third-person singular questions and a Robot Detective mission. Separate student and teacher sheets.',
     cvcWorkbookDesc: 'Ready-made short vowel worksheets in 24 units. Pick the units and print.',
-    longVowelWorkbookName: 'Phonics Long Vowel Workbook',
-    longVowelWorkbookDesc: 'Ready-made long vowel (magic e, ee, ea) worksheets in 26 units. Pick the units and print.',
+    longVowelWorkbookName: 'Phonics Stage 3 Workbook · Magic e',
+    longVowelWorkbookDesc: '22 magic-e units. ee/ea belong to Stage 5; saved legacy material is preserved.',
     cvc: {
       intro: 'A workbook of 68 short vowel (a, e, i, o, u) words in 24 units. Two A4 pages per unit: look and say, read and write, circle the correct word, match, complete the word, and color.',
       longVowel: 'Long {{vowel}}',
-      longIntro: 'A workbook of 71 long vowel words in 26 units: magic e (a_e, i_e, o_e, u_e) plus ee and ea. Two A4 pages per unit with the same activities as the CVC workbook.',
+      longIntro: '59 magic-e words in 22 units (a_e, i_e, o_e, u_e). Two A4 pages per unit with the same activities as the CVC workbook. ee/ea are linked to Stage 5.',
       pickTitle: 'Units to print',
       vowel: 'Short {{vowel}}',
       selectAll: 'Select all',

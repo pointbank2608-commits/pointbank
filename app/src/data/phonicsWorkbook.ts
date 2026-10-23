@@ -1,10 +1,12 @@
 import type { PhonicsBankEntry } from '../lib/types';
-import { lineartUrlForWord, wordSlug } from '../lib/lineart';
 import { WORKBOOK_COLOR_PATHS } from '../lib/workbookImageManifest';
+import { PHONICS_RULES, unitsForStep, wordBySpelling } from './phonicsCurriculum';
 export { phonicsCircleRows } from './phonicsWorkbookTasks';
 
 export interface WorkbookIssue { type: 'count' | 'target' | 'color' | 'lineart' | 'duplicate'; word?: string }
 export interface PhonicsWorkbookUnit {
+  id: string;
+  ruleId: string;
   kind: 'phonics';
   unit: number;
   step: 4 | 5;
@@ -33,38 +35,20 @@ export function patternTargets(word: string, pattern: string): number[] | null {
 
 const colorPaths = new Set(WORKBOOK_COLOR_PATHS);
 function colorFor(entry: PhonicsBankEntry): string | null {
-  const slug = wordSlug(entry.word);
   // Local assets are checked at build time; don't silently print a broken DB URL.
-  return [entry.image_url?.replace(/\.png$/, '.webp'), `/phonics-images/${slug}.webp`, `/word-bank-images/${slug}.webp`]
-    .find((path): path is string => !!path && colorPaths.has(path)) ?? null;
+  const path = entry.image_url;
+  return path && colorPaths.has(path) ? path : null;
 }
 
 /** Keep full rule identity: oo short/long and ow long-o/diphthong never merge. */
 export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 4 | 5): PhonicsWorkbookUnit[] {
-  const groups = new Map<string, PhonicsBankEntry[]>();
-  for (const entry of [...entries].filter(e => e.step === step).sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id))) {
-    const group = groups.get(entry.rule) ?? [];
-    group.push(entry);
-    groups.set(entry.rule, group);
-  }
-  const units: PhonicsWorkbookUnit[] = [];
-  // Reviewed SH sample is first; only ordering/grouping is workbook-specific.
-  const rules = [...groups.keys()].sort((a, b) => Number(b === 'Digraph (sh)') - Number(a === 'Digraph (sh)'));
-  for (const rule of rules) {
-    const rows = [...groups.get(rule)!];
-    if (rule === 'Digraph (sh)') {
-      const preferred = ['ship', 'shell', 'fish'];
-      rows.sort((a, b) => {
-        const rank = (w: string) => preferred.includes(w) ? preferred.indexOf(w) : 3;
-        return rank(a.word) - rank(b.word);
-      });
-    }
-    while (rows.length) {
-      // Four words become 2+2, never 3+1. One-word source rules remain visibly incomplete.
-      const part = rows.splice(0, rows.length === 4 ? 2 : Math.min(3, rows.length));
+  return unitsForStep(step).map(source => {
+      const rule = PHONICS_RULES.find(r => r.id === source.ruleId)!;
+      const part = source.entries.map(e => entries.find(row => row.id === e.id) ?? e);
       const unit: PhonicsWorkbookUnit = {
-        kind: 'phonics', unit: units.length + 1, step, family: rule,
-        heading: rule === 'Digraph (sh)' ? 'CONSONANT DIGRAPH SH' : rule.toUpperCase(),
+        id: source.id, ruleId: rule.id,
+        kind: 'phonics', unit: source.order, step, family: rule.name,
+        heading: rule.name.toUpperCase(),
         words: part.map(e => e.word), entryIds: part.map(e => e.id), targets: {}, images: {}, lineart: {}, issues: [],
       };
       if (part.length < 2) unit.issues.push({ type: 'count' });
@@ -73,15 +57,13 @@ export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 4 | 5): 
         if (!marks) unit.issues.push({ type: 'target', word: entry.word });
         else unit.targets[entry.word] = { red: marks, blank: marks };
         const image = colorFor(entry);
-        const lineart = lineartUrlForWord(entry.word);
+        const lineart = wordBySpelling(entry.word)?.lineartUrl;
         if (image) unit.images[entry.word] = image;
         else unit.issues.push({ type: 'color', word: entry.word });
         if (lineart) unit.lineart[entry.word] = lineart;
         else unit.issues.push({ type: 'lineart', word: entry.word });
         if (part.filter(e => e.word === entry.word).length > 1) unit.issues.push({ type: 'duplicate', word: entry.word });
       }
-      units.push(unit);
-    }
-  }
-  return units;
+      return unit;
+  });
 }

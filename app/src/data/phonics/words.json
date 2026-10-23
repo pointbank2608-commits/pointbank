@@ -1,0 +1,4745 @@
+{
+  "pw-june": {
+    "word": "June",
+    "meaning": "6월",
+    "imageUrl": "/phonics-images/june.webp",
+    "lineartUrl": "/word-bank-lineart/june.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "June",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ted": {
+    "word": "Ted",
+    "meaning": "테드 (이름)",
+    "imageUrl": "/phonics-images/ted.webp",
+    "lineartUrl": "/word-bank-lineart/ted.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "Ted",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ant": {
+    "word": "ant",
+    "meaning": "개미",
+    "imageUrl": "/phonics-images/ant.webp",
+    "lineartUrl": "/word-bank-lineart/ant.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ant",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-apple": {
+    "word": "apple",
+    "meaning": "사과",
+    "imageUrl": "/phonics-images/apple.webp",
+    "lineartUrl": "/word-bank-lineart/apple.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "apple",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-axe": {
+    "word": "axe",
+    "meaning": "도끼",
+    "imageUrl": "/phonics-images/axe.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "axe",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bad": {
+    "word": "bad",
+    "meaning": "나쁜",
+    "imageUrl": "/phonics-images/bad.webp",
+    "lineartUrl": "/word-bank-lineart/bad.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bad",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bag": {
+    "word": "bag",
+    "meaning": "가방",
+    "imageUrl": "/phonics-images/bag.webp",
+    "lineartUrl": "/word-bank-lineart/bag.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bag",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bake": {
+    "word": "bake",
+    "meaning": "굽다",
+    "imageUrl": "/phonics-images/bake.webp",
+    "lineartUrl": "/word-bank-lineart/bake.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bake",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-band": {
+    "word": "band",
+    "meaning": "음악 밴드",
+    "imageUrl": "/phonics-images/band.webp",
+    "lineartUrl": "/word-bank-lineart/band.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "band",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bank": {
+    "word": "bank",
+    "meaning": "은행",
+    "imageUrl": "/phonics-images/bank.webp",
+    "lineartUrl": "/word-bank-lineart/bank.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bank",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bat": {
+    "word": "bat",
+    "meaning": "박쥐",
+    "imageUrl": "/phonics-images/bat.webp",
+    "lineartUrl": "/word-bank-lineart/bat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bed": {
+    "word": "bed",
+    "meaning": "침대",
+    "imageUrl": "/phonics-images/bed.webp",
+    "lineartUrl": "/word-bank-lineart/bed.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bed",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bee": {
+    "word": "bee",
+    "meaning": "벌",
+    "imageUrl": "/phonics-images/bee.webp",
+    "lineartUrl": "/word-bank-lineart/bee.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bee",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-beet": {
+    "word": "beet",
+    "meaning": "비트",
+    "imageUrl": "/phonics-images/beet.webp",
+    "lineartUrl": "/word-bank-lineart/beet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "beet",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bench": {
+    "word": "bench",
+    "meaning": "벤치",
+    "imageUrl": "/phonics-images/bench.webp",
+    "lineartUrl": "/word-bank-lineart/bench.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bench",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-big": {
+    "word": "big",
+    "meaning": "큰",
+    "imageUrl": "/phonics-images/big.webp",
+    "lineartUrl": "/word-bank-lineart/big.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "big",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bike": {
+    "word": "bike",
+    "meaning": "자전거",
+    "imageUrl": "/phonics-images/bike.webp",
+    "lineartUrl": "/word-bank-lineart/bike.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bike",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-bin": {
+    "word": "bin",
+    "meaning": "쓰레기통, 통",
+    "imageUrl": "/phonics-images/bin.webp",
+    "lineartUrl": "/word-bank-lineart/bin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bin",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-bird": {
+    "word": "bird",
+    "meaning": "새",
+    "imageUrl": "/phonics-images/bird.webp",
+    "lineartUrl": "/word-bank-lineart/bird.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bird",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bite": {
+    "word": "bite",
+    "meaning": "물다",
+    "imageUrl": "/phonics-images/bite.webp",
+    "lineartUrl": "/word-bank-lineart/bite.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bite",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-black": {
+    "word": "black",
+    "meaning": "검은색",
+    "imageUrl": "/phonics-images/black.webp",
+    "lineartUrl": "/word-bank-lineart/black.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "black",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-blank": {
+    "word": "blank",
+    "meaning": "빈, 공백의",
+    "imageUrl": "/word-bank-images/blank.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "blank",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-blink": {
+    "word": "blink",
+    "meaning": "눈을 깜박이다",
+    "imageUrl": "/word-bank-images/blink.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "blink",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-block": {
+    "word": "block",
+    "meaning": "블록, 덩어리",
+    "imageUrl": "/phonics-images/block.webp",
+    "lineartUrl": "/word-bank-lineart/block.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "block",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-blouse": {
+    "word": "blouse",
+    "meaning": "블라우스",
+    "imageUrl": "/phonics-images/blouse.webp",
+    "lineartUrl": "/word-bank-lineart/blouse.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "blouse",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-blow": {
+    "word": "blow",
+    "meaning": "불다",
+    "imageUrl": "/word-bank-images/blow.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "blow",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-blue": {
+    "word": "blue",
+    "meaning": "파란색",
+    "imageUrl": "/word-bank-images/blue.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "blue",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-boat": {
+    "word": "boat",
+    "meaning": "보트",
+    "imageUrl": "/phonics-images/boat.webp",
+    "lineartUrl": "/word-bank-lineart/boat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "boat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bone": {
+    "word": "bone",
+    "meaning": "뼈",
+    "imageUrl": "/phonics-images/bone.webp",
+    "lineartUrl": "/word-bank-lineart/bone.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bone",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-book": {
+    "word": "book",
+    "meaning": "책",
+    "imageUrl": "/phonics-images/book.webp",
+    "lineartUrl": "/word-bank-lineart/book.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "book",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-box": {
+    "word": "box",
+    "meaning": "상자",
+    "imageUrl": "/phonics-images/box.webp",
+    "lineartUrl": "/word-bank-lineart/box.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "box",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-boy": {
+    "word": "boy",
+    "meaning": "소년",
+    "imageUrl": "/phonics-images/boy.webp",
+    "lineartUrl": "/word-bank-lineart/boy.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "boy",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bran": {
+    "word": "bran",
+    "meaning": "밀기울",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "bran",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "familiarity-illustration"
+    ]
+  },
+  "pw-bread": {
+    "word": "bread",
+    "meaning": "빵",
+    "imageUrl": "/phonics-images/bread.webp",
+    "lineartUrl": "/word-bank-lineart/bread.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bread",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-brick": {
+    "word": "brick",
+    "meaning": "벽돌",
+    "imageUrl": "/word-bank-images/brick.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "brick",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-brim": {
+    "word": "brim",
+    "meaning": "가장자리",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "brim",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-brown": {
+    "word": "brown",
+    "meaning": "갈색",
+    "imageUrl": "/word-bank-images/brown.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "brown",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-brush": {
+    "word": "brush",
+    "meaning": "솔질하다, 이를 닦다",
+    "imageUrl": "/phonics-images/brush.webp",
+    "lineartUrl": "/word-bank-lineart/brush.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "brush",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-bud": {
+    "word": "bud",
+    "meaning": "새싹",
+    "imageUrl": "/phonics-images/bud.webp",
+    "lineartUrl": "/word-bank-lineart/bud.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bud",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bug": {
+    "word": "bug",
+    "meaning": "벌레",
+    "imageUrl": "/word-bank-images/bug.webp",
+    "lineartUrl": "/word-bank-lineart/bug.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bug",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-bump": {
+    "word": "bump",
+    "meaning": "부딪치다",
+    "imageUrl": "/word-bank-images/bump.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "bump",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-bun": {
+    "word": "bun",
+    "meaning": "작고 둥근 빵",
+    "imageUrl": "/phonics-images/bun.webp",
+    "lineartUrl": "/word-bank-lineart/bun.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bun",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-burn": {
+    "word": "burn",
+    "meaning": "타다",
+    "imageUrl": "/word-bank-images/burn.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "burn",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-bus": {
+    "word": "bus",
+    "meaning": "버스",
+    "imageUrl": "/phonics-images/bus.webp",
+    "lineartUrl": "/word-bank-lineart/bus.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "bus",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cake": {
+    "word": "cake",
+    "meaning": "케이크",
+    "imageUrl": "/phonics-images/cake.webp",
+    "lineartUrl": "/word-bank-lineart/cake.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cake",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-camp": {
+    "word": "camp",
+    "meaning": "야영하다",
+    "imageUrl": "/phonics-images/camp.webp",
+    "lineartUrl": "/word-bank-lineart/camp.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "camp",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-can": {
+    "word": "can",
+    "meaning": "깡통",
+    "imageUrl": "/phonics-images/can.webp",
+    "lineartUrl": "/word-bank-lineart/can.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "can",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cane": {
+    "word": "cane",
+    "meaning": "지팡이",
+    "imageUrl": "/phonics-images/cane.webp",
+    "lineartUrl": "/word-bank-lineart/cane.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cane",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cap": {
+    "word": "cap",
+    "meaning": "모자",
+    "imageUrl": "/phonics-images/cap.webp",
+    "lineartUrl": "/word-bank-lineart/cap.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cap",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cape": {
+    "word": "cape",
+    "meaning": "망토, 곶",
+    "imageUrl": "/phonics-images/cape.webp",
+    "lineartUrl": "/word-bank-lineart/cape.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cape",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-car": {
+    "word": "car",
+    "meaning": "자동차",
+    "imageUrl": "/phonics-images/car.webp",
+    "lineartUrl": "/word-bank-lineart/car.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "car",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cat": {
+    "word": "cat",
+    "meaning": "cow",
+    "imageUrl": "/phonics-images/cat.webp",
+    "lineartUrl": "/word-bank-lineart/cat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cat",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-cave": {
+    "word": "cave",
+    "meaning": "동굴",
+    "imageUrl": "/phonics-images/cave.webp",
+    "lineartUrl": "/word-bank-lineart/cave.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cave",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-chair": {
+    "word": "chair",
+    "meaning": "의자",
+    "imageUrl": "/phonics-images/chair.webp",
+    "lineartUrl": "/word-bank-lineart/chair.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "chair",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-chat": {
+    "word": "chat",
+    "meaning": "수다 떨다",
+    "imageUrl": "/word-bank-images/chat.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "chat",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-chin": {
+    "word": "chin",
+    "meaning": "턱",
+    "imageUrl": "/phonics-images/chin.webp",
+    "lineartUrl": "/word-bank-lineart/chin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "chin",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-chip": {
+    "word": "chip",
+    "meaning": "칩, 조각",
+    "imageUrl": "/phonics-images/chip.webp",
+    "lineartUrl": "/word-bank-lineart/chip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "chip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-chop": {
+    "word": "chop",
+    "meaning": "썰다",
+    "imageUrl": "/word-bank-images/chop.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "chop",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-clam": {
+    "word": "clam",
+    "meaning": "조개",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "clam",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-clap": {
+    "word": "clap",
+    "meaning": "박수 치다",
+    "imageUrl": "/phonics-images/clap.webp",
+    "lineartUrl": "/word-bank-lineart/clap.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "clap",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-clip": {
+    "word": "clip",
+    "meaning": "클립, 짧은 영상",
+    "imageUrl": "/word-bank-images/clip.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "clip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-clock": {
+    "word": "clock",
+    "meaning": "시계",
+    "imageUrl": "/phonics-images/clock.webp",
+    "lineartUrl": "/word-bank-lineart/clock.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "clock",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cloud": {
+    "word": "cloud",
+    "meaning": "구름",
+    "imageUrl": "/phonics-images/cloud.webp",
+    "lineartUrl": "/word-bank-lineart/cloud.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cloud",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-club": {
+    "word": "club",
+    "meaning": "동아리",
+    "imageUrl": "/phonics-images/club.webp",
+    "lineartUrl": "/word-bank-lineart/club.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "club",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-coat": {
+    "word": "coat",
+    "meaning": "외투",
+    "imageUrl": "/phonics-images/coat.webp",
+    "lineartUrl": "/word-bank-lineart/coat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "coat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-coin": {
+    "word": "coin",
+    "meaning": "동전",
+    "imageUrl": "/phonics-images/coin.webp",
+    "lineartUrl": "/word-bank-lineart/coin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "coin",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cone": {
+    "word": "cone",
+    "meaning": "원뿔",
+    "imageUrl": "/phonics-images/cone.webp",
+    "lineartUrl": "/word-bank-lineart/cone.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cone",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cook": {
+    "word": "cook",
+    "meaning": "요리하다",
+    "imageUrl": "/phonics-images/cook.webp",
+    "lineartUrl": "/word-bank-lineart/cook.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cook",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-corn": {
+    "word": "corn",
+    "meaning": "옥수수",
+    "imageUrl": "/phonics-images/corn.webp",
+    "lineartUrl": "/word-bank-lineart/corn.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "corn",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-cow": {
+    "word": "cow",
+    "meaning": "소",
+    "imageUrl": "/phonics-images/cow.webp",
+    "lineartUrl": "/word-bank-lineart/cow.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cow",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-crab": {
+    "word": "crab",
+    "meaning": "게",
+    "imageUrl": "/phonics-images/crab.webp",
+    "lineartUrl": "/word-bank-lineart/crab.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "crab",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-crack": {
+    "word": "crack",
+    "meaning": "금, 갈라진 틈",
+    "imageUrl": "/word-bank-images/crack.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "crack",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-crane": {
+    "word": "crane",
+    "meaning": "두루미",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "crane",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-crop": {
+    "word": "crop",
+    "meaning": "농작물",
+    "imageUrl": "/word-bank-images/crop.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "crop",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-cross": {
+    "word": "cross",
+    "meaning": "건너다",
+    "imageUrl": "/phonics-images/cross.webp",
+    "lineartUrl": "/word-bank-lineart/cross.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cross",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-crown": {
+    "word": "crown",
+    "meaning": "왕관",
+    "imageUrl": "/phonics-images/crown.webp",
+    "lineartUrl": "/word-bank-lineart/crown.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "crown",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-cub": {
+    "word": "cub",
+    "meaning": "새끼 동물",
+    "imageUrl": "/phonics-images/cub.webp",
+    "lineartUrl": "/word-bank-lineart/cub.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cub",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cube": {
+    "word": "cube",
+    "meaning": "정육면체",
+    "imageUrl": "/phonics-images/cube.webp",
+    "lineartUrl": "/word-bank-lineart/cube.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cube",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cup": {
+    "word": "cup",
+    "meaning": "컵",
+    "imageUrl": "/phonics-images/cup.webp",
+    "lineartUrl": "/word-bank-lineart/cup.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cup",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cut": {
+    "word": "cut",
+    "meaning": "자르다",
+    "imageUrl": "/phonics-images/cut.webp",
+    "lineartUrl": "/word-bank-lineart/cut.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cut",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-cute": {
+    "word": "cute",
+    "meaning": "귀여운",
+    "imageUrl": "/phonics-images/cute.webp",
+    "lineartUrl": "/word-bank-lineart/cute.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "cute",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-dad": {
+    "word": "dad",
+    "meaning": "아빠",
+    "imageUrl": "/word-bank-images/dad.webp",
+    "lineartUrl": "/word-bank-lineart/dad.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dad",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dam": {
+    "word": "dam",
+    "meaning": "댐",
+    "imageUrl": "/phonics-images/dam.webp",
+    "lineartUrl": "/word-bank-lineart/dam.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dam",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dark": {
+    "word": "dark",
+    "meaning": "어두운",
+    "imageUrl": "/phonics-images/dark.webp",
+    "lineartUrl": "/word-bank-lineart/dark.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dark",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-date": {
+    "word": "date",
+    "meaning": "날짜",
+    "imageUrl": "/word-bank-images/date.webp",
+    "lineartUrl": "/word-bank-lineart/date.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "date",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-day": {
+    "word": "day",
+    "meaning": "낮",
+    "imageUrl": "/phonics-images/day.webp",
+    "lineartUrl": "/word-bank-lineart/day.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "day",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-deep": {
+    "word": "deep",
+    "meaning": "깊은",
+    "imageUrl": "/word-bank-images/deep.webp",
+    "lineartUrl": "/word-bank-lineart/deep.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "deep",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-desk": {
+    "word": "desk",
+    "meaning": "책상",
+    "imageUrl": "/phonics-images/desk.webp",
+    "lineartUrl": "/word-bank-lineart/desk.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "desk",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dime": {
+    "word": "dime",
+    "meaning": "10센트 동전",
+    "imageUrl": "/phonics-images/dime.webp",
+    "lineartUrl": "/word-bank-lineart/dime.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dime",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dish": {
+    "word": "dish",
+    "meaning": "접시",
+    "imageUrl": "/phonics-images/dish.webp",
+    "lineartUrl": "/word-bank-lineart/dish.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dish",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dive": {
+    "word": "dive",
+    "meaning": "뛰어들다, 잠수하다",
+    "imageUrl": "/word-bank-images/dive.webp",
+    "lineartUrl": "/word-bank-lineart/dive.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dive",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-dog": {
+    "word": "dog",
+    "meaning": "개",
+    "imageUrl": "/phonics-images/dog.webp",
+    "lineartUrl": "/word-bank-lineart/dog.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dog",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dome": {
+    "word": "dome",
+    "meaning": "둥근 지붕",
+    "imageUrl": "/phonics-images/dome.webp",
+    "lineartUrl": "/word-bank-lineart/dome.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dome",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dot": {
+    "word": "dot",
+    "meaning": "점",
+    "imageUrl": "/phonics-images/dot.webp",
+    "lineartUrl": "/word-bank-lineart/dot.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dot",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-down": {
+    "word": "down",
+    "meaning": "아래로",
+    "imageUrl": "/phonics-images/down.webp",
+    "lineartUrl": "/word-bank-lineart/down.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "down",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dream": {
+    "word": "dream",
+    "meaning": "꿈",
+    "imageUrl": "/word-bank-images/dream.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "dream",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dress": {
+    "word": "dress",
+    "meaning": "드레스",
+    "imageUrl": "/word-bank-images/dress.webp",
+    "lineartUrl": "/word-bank-lineart/dress.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dress",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-drip": {
+    "word": "drip",
+    "meaning": "방울방울 떨어지다",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "drip",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-drop": {
+    "word": "drop",
+    "meaning": "떨어뜨리다",
+    "imageUrl": "/phonics-images/drop.webp",
+    "lineartUrl": "/word-bank-lineart/drop.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "drop",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-drum": {
+    "word": "drum",
+    "meaning": "북",
+    "imageUrl": "/phonics-images/drum.webp",
+    "lineartUrl": "/word-bank-lineart/drum.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "drum",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-duck": {
+    "word": "duck",
+    "meaning": "오리",
+    "imageUrl": "/phonics-images/duck.webp",
+    "lineartUrl": "/word-bank-lineart/duck.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "duck",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-dune": {
+    "word": "dune",
+    "meaning": "모래 언덕",
+    "imageUrl": "/phonics-images/dune.webp",
+    "lineartUrl": "/word-bank-lineart/dune.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "dune",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-egg": {
+    "word": "egg",
+    "meaning": "달걀",
+    "imageUrl": "/phonics-images/egg.webp",
+    "lineartUrl": "/word-bank-lineart/egg.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "egg",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-elbow": {
+    "word": "elbow",
+    "meaning": "팔꿈치",
+    "imageUrl": "/phonics-images/elbow.webp",
+    "lineartUrl": "/word-bank-lineart/elbow.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "elbow",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-elephant": {
+    "word": "elephant",
+    "meaning": "코끼리",
+    "imageUrl": "/phonics-images/elephant.webp",
+    "lineartUrl": "/word-bank-lineart/elephant.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "elephant",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-fan": {
+    "word": "fan",
+    "meaning": "선풍기",
+    "imageUrl": "/phonics-images/fan.webp",
+    "lineartUrl": "/word-bank-lineart/fan.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fan",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fat": {
+    "word": "fat",
+    "meaning": "뚱뚱한",
+    "imageUrl": "/phonics-images/fat.webp",
+    "lineartUrl": "/word-bank-lineart/fat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-feed": {
+    "word": "feed",
+    "meaning": "먹이를 주다",
+    "imageUrl": "/word-bank-images/feed.webp",
+    "lineartUrl": "/word-bank-lineart/feed.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "feed",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-feet": {
+    "word": "feet",
+    "meaning": "발 (복수)",
+    "imageUrl": "/phonics-images/feet.webp",
+    "lineartUrl": "/word-bank-lineart/feet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "feet",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-fern": {
+    "word": "fern",
+    "meaning": "고사리",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "fern",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fin": {
+    "word": "fin",
+    "meaning": "지느러미",
+    "imageUrl": "/phonics-images/fin.webp",
+    "lineartUrl": "/word-bank-lineart/fin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fin",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fine": {
+    "word": "fine",
+    "meaning": "좋은, 괜찮은",
+    "imageUrl": "/phonics-images/fine.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "fine",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fish": {
+    "word": "fish",
+    "meaning": "생선",
+    "imageUrl": "/phonics-images/fish.webp",
+    "lineartUrl": "/word-bank-lineart/fish.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fish",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-five": {
+    "word": "five",
+    "meaning": "다섯, 5",
+    "imageUrl": "/phonics-images/five.webp",
+    "lineartUrl": "/word-bank-lineart/five.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "five",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-fix": {
+    "word": "fix",
+    "meaning": "고치다",
+    "imageUrl": "/word-bank-images/fix.webp",
+    "lineartUrl": "/word-bank-lineart/fix.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fix",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-flag": {
+    "word": "flag",
+    "meaning": "깃발",
+    "imageUrl": "/phonics-images/flag.webp",
+    "lineartUrl": "/word-bank-lineart/flag.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "flag",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-flap": {
+    "word": "flap",
+    "meaning": "펄럭이다",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "flap",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-flat": {
+    "word": "flat",
+    "meaning": "평평한",
+    "imageUrl": "/phonics-images/flat.webp",
+    "lineartUrl": "/word-bank-lineart/flat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "flat",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-flip": {
+    "word": "flip",
+    "meaning": "뒤집다",
+    "imageUrl": "/word-bank-images/flip.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "flip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-flute": {
+    "word": "flute",
+    "meaning": "플루트",
+    "imageUrl": "/word-bank-images/flute.webp",
+    "lineartUrl": "/word-bank-lineart/flute.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "flute",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-food": {
+    "word": "food",
+    "meaning": "음식",
+    "imageUrl": "/phonics-images/food.webp",
+    "lineartUrl": "/word-bank-lineart/food.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "food",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-foot": {
+    "word": "foot",
+    "meaning": "발",
+    "imageUrl": "/phonics-images/foot.webp",
+    "lineartUrl": "/word-bank-lineart/foot.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "foot",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fork": {
+    "word": "fork",
+    "meaning": "포크",
+    "imageUrl": "/phonics-images/fork.webp",
+    "lineartUrl": "/word-bank-lineart/fork.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fork",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-fox": {
+    "word": "fox",
+    "meaning": "여우",
+    "imageUrl": "/phonics-images/fox.webp",
+    "lineartUrl": "/word-bank-lineart/fox.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "fox",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-frame": {
+    "word": "frame",
+    "meaning": "틀, 액자",
+    "imageUrl": "/phonics-images/frame.webp",
+    "lineartUrl": "/word-bank-lineart/frame.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "frame",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-fresh": {
+    "word": "fresh",
+    "meaning": "신선한",
+    "imageUrl": "/word-bank-images/fresh.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "fresh",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-frog": {
+    "word": "frog",
+    "meaning": "개구리",
+    "imageUrl": "/phonics-images/frog.webp",
+    "lineartUrl": "/word-bank-lineart/frog.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "frog",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-from": {
+    "word": "from",
+    "meaning": "~에서",
+    "imageUrl": "/word-bank-images/from.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "from",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-frost": {
+    "word": "frost",
+    "meaning": "서리",
+    "imageUrl": "/word-bank-images/frost.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "frost",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-fruit": {
+    "word": "fruit",
+    "meaning": "과일",
+    "imageUrl": "/word-bank-images/fruit.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "fruit",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-game": {
+    "word": "game",
+    "meaning": "게임",
+    "imageUrl": "/phonics-images/game.webp",
+    "lineartUrl": "/word-bank-lineart/game.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "game",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-garden": {
+    "word": "garden",
+    "meaning": "정원",
+    "imageUrl": "/phonics-images/garden.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "garden",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-gate": {
+    "word": "gate",
+    "meaning": "대문",
+    "imageUrl": "/phonics-images/gate.webp",
+    "lineartUrl": "/word-bank-lineart/gate.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "gate",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-gift": {
+    "word": "gift",
+    "meaning": "선물",
+    "imageUrl": "/phonics-images/gift.webp",
+    "lineartUrl": "/word-bank-lineart/gift.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "gift",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-girl": {
+    "word": "girl",
+    "meaning": "소녀",
+    "imageUrl": "/phonics-images/girl.webp",
+    "lineartUrl": "/word-bank-lineart/girl.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "girl",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-glad": {
+    "word": "glad",
+    "meaning": "기쁜",
+    "imageUrl": "/phonics-images/glad.webp",
+    "lineartUrl": "/word-bank-lineart/glad.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "glad",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-glass": {
+    "word": "glass",
+    "meaning": "유리잔",
+    "imageUrl": "/phonics-images/glass.webp",
+    "lineartUrl": "/word-bank-lineart/glass.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "glass",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-glob": {
+    "word": "glob",
+    "meaning": "작은 덩어리",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "glob",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "familiarity-illustration"
+    ]
+  },
+  "pw-globe": {
+    "word": "globe",
+    "meaning": "지구본, 세계",
+    "imageUrl": "/word-bank-images/globe.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "globe",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-glue": {
+    "word": "glue",
+    "meaning": "풀로 붙이다",
+    "imageUrl": "/word-bank-images/glue.webp",
+    "lineartUrl": "/word-bank-lineart/glue.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "glue",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-glum": {
+    "word": "glum",
+    "meaning": "풀이 죽은",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "glum",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "familiarity-illustration"
+    ]
+  },
+  "pw-gorilla": {
+    "word": "gorilla",
+    "meaning": "고릴라",
+    "imageUrl": "/phonics-images/gorilla.webp",
+    "lineartUrl": "/word-bank-lineart/gorilla.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "gorilla",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-grab": {
+    "word": "grab",
+    "meaning": "움켜잡다",
+    "imageUrl": "/word-bank-images/grab.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "grab",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-grape": {
+    "word": "grape",
+    "meaning": "포도",
+    "imageUrl": "/phonics-images/grape.webp",
+    "lineartUrl": "/word-bank-lineart/grape.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "grape",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-grass": {
+    "word": "grass",
+    "meaning": "잔디",
+    "imageUrl": "/phonics-images/grass.webp",
+    "lineartUrl": "/word-bank-lineart/grass.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "grass",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-green": {
+    "word": "green",
+    "meaning": "초록색",
+    "imageUrl": "/word-bank-images/green.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "green",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-grin": {
+    "word": "grin",
+    "meaning": "활짝 웃다",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "grin",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-grip": {
+    "word": "grip",
+    "meaning": "꽉 쥐다",
+    "imageUrl": "/word-bank-images/grip.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "grip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-grow": {
+    "word": "grow",
+    "meaning": "자라다",
+    "imageUrl": "/word-bank-images/grow.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "grow",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ham": {
+    "word": "ham",
+    "meaning": "햄",
+    "imageUrl": "/phonics-images/ham.webp",
+    "lineartUrl": "/word-bank-lineart/ham.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ham",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hand": {
+    "word": "hand",
+    "meaning": "손",
+    "imageUrl": "/phonics-images/hand.webp",
+    "lineartUrl": "/word-bank-lineart/hand.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hand",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hat": {
+    "word": "hat",
+    "meaning": "모자",
+    "imageUrl": "/phonics-images/hat.webp",
+    "lineartUrl": "/word-bank-lineart/hat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-heat": {
+    "word": "heat",
+    "meaning": "열, 더위",
+    "imageUrl": "/word-bank-images/heat.webp",
+    "lineartUrl": "/word-bank-lineart/heat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "heat",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-hen": {
+    "word": "hen",
+    "meaning": "암탉",
+    "imageUrl": "/phonics-images/hen.webp",
+    "lineartUrl": "/word-bank-lineart/hen.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hen",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-her": {
+    "word": "her",
+    "meaning": "그녀의",
+    "imageUrl": "/phonics-images/her.webp",
+    "lineartUrl": "/word-bank-lineart/her.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "her",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hide": {
+    "word": "hide",
+    "meaning": "숨다",
+    "imageUrl": "/phonics-images/hide.webp",
+    "lineartUrl": "/word-bank-lineart/hide.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hide",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hike": {
+    "word": "hike",
+    "meaning": "하이킹하다, 걷다",
+    "imageUrl": "/word-bank-images/hike.webp",
+    "lineartUrl": "/word-bank-lineart/hike.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hike",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\033_word_bank_moe_elementary.sql"
+  },
+  "pw-hip": {
+    "word": "hip",
+    "meaning": "엉덩이, 골반",
+    "imageUrl": "/word-bank-images/hip.webp",
+    "lineartUrl": "/word-bank-lineart/hip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-hit": {
+    "word": "hit",
+    "meaning": "치다",
+    "imageUrl": "/phonics-images/hit.webp",
+    "lineartUrl": "/word-bank-lineart/hit.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hit",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hive": {
+    "word": "hive",
+    "meaning": "벌집",
+    "imageUrl": "/phonics-images/hive.webp",
+    "lineartUrl": "/word-bank-lineart/hive.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hive",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hole": {
+    "word": "hole",
+    "meaning": "구멍",
+    "imageUrl": "/phonics-images/hole.webp",
+    "lineartUrl": "/word-bank-lineart/hole.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hole",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-home": {
+    "word": "home",
+    "meaning": "집",
+    "imageUrl": "/phonics-images/home.webp",
+    "lineartUrl": "/word-bank-lineart/home.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "home",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hop": {
+    "word": "hop",
+    "meaning": "깡충깡충 뛰다",
+    "imageUrl": "/phonics-images/hop.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "hop",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-hope": {
+    "word": "hope",
+    "meaning": "바라다",
+    "imageUrl": "/word-bank-images/hope.webp",
+    "lineartUrl": "/word-bank-lineart/hope.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hope",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-horse": {
+    "word": "horse",
+    "meaning": "말",
+    "imageUrl": "/phonics-images/horse.webp",
+    "lineartUrl": "/word-bank-lineart/horse.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "horse",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hose": {
+    "word": "hose",
+    "meaning": "호스",
+    "imageUrl": "/phonics-images/hose.webp",
+    "lineartUrl": "/word-bank-lineart/hose.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hose",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hot": {
+    "word": "hot",
+    "meaning": "뜨거운",
+    "imageUrl": "/phonics-images/hot.webp",
+    "lineartUrl": "/word-bank-lineart/hot.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hot",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-house": {
+    "word": "house",
+    "meaning": "집",
+    "imageUrl": "/phonics-images/house.webp",
+    "lineartUrl": "/word-bank-lineart/house.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "house",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hug": {
+    "word": "hug",
+    "meaning": "껴안다",
+    "imageUrl": "/word-bank-images/hug.webp",
+    "lineartUrl": "/word-bank-lineart/hug.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hug",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-hurt": {
+    "word": "hurt",
+    "meaning": "다치다",
+    "imageUrl": "/word-bank-images/hurt.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "hurt",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-hut": {
+    "word": "hut",
+    "meaning": "오두막",
+    "imageUrl": "/phonics-images/hut.webp",
+    "lineartUrl": "/word-bank-lineart/hut.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "hut",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-igloo": {
+    "word": "igloo",
+    "meaning": "이글루",
+    "imageUrl": "/phonics-images/igloo.webp",
+    "lineartUrl": "/word-bank-lineart/igloo.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "igloo",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ink": {
+    "word": "ink",
+    "meaning": "잉크",
+    "imageUrl": "/phonics-images/ink.webp",
+    "lineartUrl": "/word-bank-lineart/ink.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ink",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-insect": {
+    "word": "insect",
+    "meaning": "곤충",
+    "imageUrl": "/phonics-images/insect.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "insect",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-jam": {
+    "word": "jam",
+    "meaning": "잼",
+    "imageUrl": "/phonics-images/jam.webp",
+    "lineartUrl": "/word-bank-lineart/jam.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "jam",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-jeep": {
+    "word": "jeep",
+    "meaning": "지프차",
+    "imageUrl": "/phonics-images/jeep.webp",
+    "lineartUrl": "/word-bank-lineart/jeep.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "jeep",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-jet": {
+    "word": "jet",
+    "meaning": "제트기",
+    "imageUrl": "/phonics-images/jet.webp",
+    "lineartUrl": "/word-bank-lineart/jet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "jet",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-jog": {
+    "word": "jog",
+    "meaning": "조깅하다",
+    "imageUrl": "/phonics-images/jog.webp",
+    "lineartUrl": "/word-bank-lineart/jog.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "jog",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-joy": {
+    "word": "joy",
+    "meaning": "기쁨",
+    "imageUrl": "/phonics-images/joy.webp",
+    "lineartUrl": "/word-bank-lineart/joy.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "joy",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-jug": {
+    "word": "jug",
+    "meaning": "주전자",
+    "imageUrl": "/phonics-images/jug.webp",
+    "lineartUrl": "/word-bank-lineart/jug.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "jug",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-jump": {
+    "word": "jump",
+    "meaning": "throw",
+    "imageUrl": "/word-bank-images/jump.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "jump",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-keep": {
+    "word": "keep",
+    "meaning": "간직하다",
+    "imageUrl": "/word-bank-images/keep.webp",
+    "lineartUrl": "/word-bank-lineart/keep.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "keep",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-key": {
+    "word": "key",
+    "meaning": "열쇠",
+    "imageUrl": "/phonics-images/key.webp",
+    "lineartUrl": "/word-bank-lineart/key.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "key",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-kid": {
+    "word": "kid",
+    "meaning": "아이",
+    "imageUrl": "/word-bank-images/kid.webp",
+    "lineartUrl": "/word-bank-lineart/kid.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "kid",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-king": {
+    "word": "king",
+    "meaning": "왕",
+    "imageUrl": "/phonics-images/king.webp",
+    "lineartUrl": "/word-bank-lineart/king.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "king",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-kit": {
+    "word": "kit",
+    "meaning": "도구 세트",
+    "imageUrl": "/word-bank-images/kit.webp",
+    "lineartUrl": "/word-bank-lineart/kit.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "kit",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-kite": {
+    "word": "kite",
+    "meaning": "연",
+    "imageUrl": "/phonics-images/kite.webp",
+    "lineartUrl": "/word-bank-lineart/kite.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "kite",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-lake": {
+    "word": "lake",
+    "meaning": "호수",
+    "imageUrl": "/phonics-images/lake.webp",
+    "lineartUrl": "/word-bank-lineart/lake.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lake",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lamp": {
+    "word": "lamp",
+    "meaning": "램프",
+    "imageUrl": "/phonics-images/lamp.webp",
+    "lineartUrl": "/word-bank-lineart/lamp.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lamp",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lane": {
+    "word": "lane",
+    "meaning": "좁은 길, 차선",
+    "imageUrl": "/word-bank-images/lane.webp",
+    "lineartUrl": "/word-bank-lineart/lane.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lane",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-late": {
+    "word": "late",
+    "meaning": "늦은",
+    "imageUrl": "/phonics-images/late.webp",
+    "lineartUrl": "/word-bank-lineart/late.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "late",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-leaf": {
+    "word": "leaf",
+    "meaning": "나뭇잎",
+    "imageUrl": "/phonics-images/leaf.webp",
+    "lineartUrl": "/word-bank-lineart/leaf.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "leaf",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-leg": {
+    "word": "leg",
+    "meaning": "다리",
+    "imageUrl": "/phonics-images/leg.webp",
+    "lineartUrl": "/word-bank-lineart/leg.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "leg",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lemon": {
+    "word": "lemon",
+    "meaning": "레몬",
+    "imageUrl": "/phonics-images/lemon.webp",
+    "lineartUrl": "/word-bank-lineart/lemon.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lemon",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-lid": {
+    "word": "lid",
+    "meaning": "뚜껑",
+    "imageUrl": "/word-bank-images/lid.webp",
+    "lineartUrl": "/word-bank-lineart/lid.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lid",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-like": {
+    "word": "like",
+    "meaning": "좋아하다",
+    "imageUrl": "/phonics-images/like.webp",
+    "lineartUrl": "/word-bank-lineart/like.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "like",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lime": {
+    "word": "lime",
+    "meaning": "라임",
+    "imageUrl": "/phonics-images/lime.webp",
+    "lineartUrl": "/word-bank-lineart/lime.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lime",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-line": {
+    "word": "line",
+    "meaning": "선",
+    "imageUrl": "/phonics-images/line.webp",
+    "lineartUrl": "/word-bank-lineart/line.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "line",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lion": {
+    "word": "lion",
+    "meaning": "사자",
+    "imageUrl": "/phonics-images/lion.webp",
+    "lineartUrl": "/word-bank-lineart/lion.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lion",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lip": {
+    "word": "lip",
+    "meaning": "입술",
+    "imageUrl": "/phonics-images/lip.webp",
+    "lineartUrl": "/word-bank-lineart/lip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lip",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-log": {
+    "word": "log",
+    "meaning": "통나무",
+    "imageUrl": "/phonics-images/log.webp",
+    "lineartUrl": "/word-bank-lineart/log.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "log",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-long": {
+    "word": "long",
+    "meaning": "긴",
+    "imageUrl": "/word-bank-images/long.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "long",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-lunch": {
+    "word": "lunch",
+    "meaning": "점심",
+    "imageUrl": "/phonics-images/lunch.webp",
+    "lineartUrl": "/word-bank-lineart/lunch.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "lunch",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mad": {
+    "word": "mad",
+    "meaning": "화가 난",
+    "imageUrl": "/phonics-images/mad.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "mad",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mail": {
+    "word": "mail",
+    "meaning": "우편",
+    "imageUrl": "/phonics-images/mail.webp",
+    "lineartUrl": "/word-bank-lineart/mail.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mail",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-make": {
+    "word": "make",
+    "meaning": "만들다",
+    "imageUrl": "/phonics-images/make.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "make",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-man": {
+    "word": "man",
+    "meaning": "boy",
+    "imageUrl": "/word-bank-images/man.webp",
+    "lineartUrl": "/word-bank-lineart/man.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "man",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-mane": {
+    "word": "mane",
+    "meaning": "갈기",
+    "imageUrl": "/phonics-images/mane.webp",
+    "lineartUrl": "/word-bank-lineart/mane.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mane",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-map": {
+    "word": "map",
+    "meaning": "지도",
+    "imageUrl": "/phonics-images/map.webp",
+    "lineartUrl": "/word-bank-lineart/map.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "map",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mask": {
+    "word": "mask",
+    "meaning": "마스크, 가면",
+    "imageUrl": "/phonics-images/mask.webp",
+    "lineartUrl": "/word-bank-lineart/mask.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mask",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-mat": {
+    "word": "mat",
+    "meaning": "매트",
+    "imageUrl": "/phonics-images/mat.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "mat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-math": {
+    "word": "math",
+    "meaning": "수학",
+    "imageUrl": "/phonics-images/math.webp",
+    "lineartUrl": "/word-bank-lineart/math.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "math",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-may": {
+    "word": "may",
+    "meaning": "5월",
+    "imageUrl": "/phonics-images/may.webp",
+    "lineartUrl": "/word-bank-lineart/may.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "may",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-meat": {
+    "word": "meat",
+    "meaning": "고기",
+    "imageUrl": "/phonics-images/meat.webp",
+    "lineartUrl": "/word-bank-lineart/meat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "meat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-meet": {
+    "word": "meet",
+    "meaning": "만나다",
+    "imageUrl": "/word-bank-images/meet.webp",
+    "lineartUrl": "/word-bank-lineart/meet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "meet",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-milk": {
+    "word": "milk",
+    "meaning": "우유",
+    "imageUrl": "/phonics-images/milk.webp",
+    "lineartUrl": "/word-bank-lineart/milk.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "milk",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mix": {
+    "word": "mix",
+    "meaning": "섞다",
+    "imageUrl": "/word-bank-images/mix.webp",
+    "lineartUrl": "/word-bank-lineart/mix.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mix",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-mole": {
+    "word": "mole",
+    "meaning": "두더지",
+    "imageUrl": "/phonics-images/mole.webp",
+    "lineartUrl": "/word-bank-lineart/mole.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mole",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-monkey": {
+    "word": "monkey",
+    "meaning": "tiger",
+    "imageUrl": "/phonics-images/monkey.webp",
+    "lineartUrl": "/word-bank-lineart/monkey.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "monkey",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-moon": {
+    "word": "moon",
+    "meaning": "달",
+    "imageUrl": "/phonics-images/moon.webp",
+    "lineartUrl": "/word-bank-lineart/moon.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "moon",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mop": {
+    "word": "mop",
+    "meaning": "대걸레",
+    "imageUrl": "/phonics-images/mop.webp",
+    "lineartUrl": "/word-bank-lineart/mop.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mop",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mouse": {
+    "word": "mouse",
+    "meaning": "생쥐",
+    "imageUrl": "/phonics-images/mouse.webp",
+    "lineartUrl": "/word-bank-lineart/mouse.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mouse",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-mud": {
+    "word": "mud",
+    "meaning": "진흙",
+    "imageUrl": "/phonics-images/mud.webp",
+    "lineartUrl": "/word-bank-lineart/mud.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mud",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-mule": {
+    "word": "mule",
+    "meaning": "노새",
+    "imageUrl": "/phonics-images/mule.webp",
+    "lineartUrl": "/word-bank-lineart/mule.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mule",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-mute": {
+    "word": "mute",
+    "meaning": "말소리가 없는",
+    "imageUrl": "/phonics-images/mute.webp",
+    "lineartUrl": "/word-bank-lineart/mute.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "mute",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-name": {
+    "word": "name",
+    "meaning": "이름",
+    "imageUrl": "/phonics-images/name.webp",
+    "lineartUrl": "/word-bank-lineart/name.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "name",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-nap": {
+    "word": "nap",
+    "meaning": "낮잠",
+    "imageUrl": "/phonics-images/nap.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "nap",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-nest": {
+    "word": "nest",
+    "meaning": "둥지",
+    "imageUrl": "/phonics-images/nest.webp",
+    "lineartUrl": "/word-bank-lineart/nest.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "nest",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-net": {
+    "word": "net",
+    "meaning": "그물, 네트",
+    "imageUrl": "/phonics-images/net.webp",
+    "lineartUrl": "/word-bank-lineart/net.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "net",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-nine": {
+    "word": "nine",
+    "meaning": "아홉, 9",
+    "imageUrl": "/phonics-images/nine.webp",
+    "lineartUrl": "/word-bank-lineart/nine.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "nine",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-nose": {
+    "word": "nose",
+    "meaning": "코",
+    "imageUrl": "/phonics-images/nose.webp",
+    "lineartUrl": "/word-bank-lineart/nose.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "nose",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-note": {
+    "word": "note",
+    "meaning": "쪽지",
+    "imageUrl": "/phonics-images/note.webp",
+    "lineartUrl": "/word-bank-lineart/note.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "note",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-nurse": {
+    "word": "nurse",
+    "meaning": "간호사",
+    "imageUrl": "/phonics-images/nurse.webp",
+    "lineartUrl": "/word-bank-lineart/nurse.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "nurse",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-nut": {
+    "word": "nut",
+    "meaning": "견과",
+    "imageUrl": "/phonics-images/nut.webp",
+    "lineartUrl": "/word-bank-lineart/nut.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "nut",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-octopus": {
+    "word": "octopus",
+    "meaning": "문어",
+    "imageUrl": "/phonics-images/octopus.webp",
+    "lineartUrl": "/word-bank-lineart/octopus.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "octopus",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-oil": {
+    "word": "oil",
+    "meaning": "기름",
+    "imageUrl": "/word-bank-images/oil.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "oil",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ostrich": {
+    "word": "ostrich",
+    "meaning": "타조",
+    "imageUrl": "/phonics-images/ostrich.webp",
+    "lineartUrl": "/word-bank-lineart/ostrich.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ostrich",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-out": {
+    "word": "out",
+    "meaning": "밖으로",
+    "imageUrl": "/phonics-images/out.webp",
+    "lineartUrl": "/word-bank-lineart/out.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "out",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-owl": {
+    "word": "owl",
+    "meaning": "부엉이",
+    "imageUrl": "/phonics-images/owl.webp",
+    "lineartUrl": "/word-bank-lineart/owl.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "owl",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-ox": {
+    "word": "ox",
+    "meaning": "황소",
+    "imageUrl": "/phonics-images/ox.webp",
+    "lineartUrl": "/word-bank-lineart/ox.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ox",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-park": {
+    "word": "park",
+    "meaning": "공원",
+    "imageUrl": "/phonics-images/park.webp",
+    "lineartUrl": "/word-bank-lineart/park.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "park",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-path": {
+    "word": "path",
+    "meaning": "길, 오솔길",
+    "imageUrl": "/phonics-images/path.webp",
+    "lineartUrl": "/word-bank-lineart/path.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "path",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-peach": {
+    "word": "peach",
+    "meaning": "복숭아",
+    "imageUrl": "/phonics-images/peach.webp",
+    "lineartUrl": "/word-bank-lineart/peach.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "peach",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-peg": {
+    "word": "peg",
+    "meaning": "빨래집게",
+    "imageUrl": "/phonics-images/peg.webp",
+    "lineartUrl": "/word-bank-lineart/peg.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "peg",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pen": {
+    "word": "pen",
+    "meaning": "펜",
+    "imageUrl": "/phonics-images/pen.webp",
+    "lineartUrl": "/word-bank-lineart/pen.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pen",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pet": {
+    "word": "pet",
+    "meaning": "반려동물",
+    "imageUrl": "/phonics-images/pet.webp",
+    "lineartUrl": "/word-bank-lineart/pet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pet",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-pig": {
+    "word": "pig",
+    "meaning": "돼지",
+    "imageUrl": "/phonics-images/pig.webp",
+    "lineartUrl": "/word-bank-lineart/pig.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pig",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pin": {
+    "word": "pin",
+    "meaning": "핀",
+    "imageUrl": "/phonics-images/pin.webp",
+    "lineartUrl": "/word-bank-lineart/pin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pin",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pine": {
+    "word": "pine",
+    "meaning": "소나무",
+    "imageUrl": "/phonics-images/pine.webp",
+    "lineartUrl": "/word-bank-lineart/pine.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pine",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pink": {
+    "word": "pink",
+    "meaning": "분홍색",
+    "imageUrl": "/phonics-images/pink.webp",
+    "lineartUrl": "/word-bank-lineart/pink.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pink",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-pipe": {
+    "word": "pipe",
+    "meaning": "관",
+    "imageUrl": "/phonics-images/pipe.webp",
+    "lineartUrl": "/word-bank-lineart/pipe.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pipe",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-plan": {
+    "word": "plan",
+    "meaning": "계획",
+    "imageUrl": "/phonics-images/plan.webp",
+    "lineartUrl": "/word-bank-lineart/plan.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "plan",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-plane": {
+    "word": "plane",
+    "meaning": "비행기",
+    "imageUrl": "/word-bank-images/plane.webp",
+    "lineartUrl": "/word-bank-lineart/plane.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "plane",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-plant": {
+    "word": "plant",
+    "meaning": "심다",
+    "imageUrl": "/phonics-images/plant.webp",
+    "lineartUrl": "/word-bank-lineart/plant.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "plant",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-plate": {
+    "word": "plate",
+    "meaning": "접시",
+    "imageUrl": "/word-bank-images/plate.webp",
+    "lineartUrl": "/word-bank-lineart/plate.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "plate",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-play": {
+    "word": "play",
+    "meaning": "놀다",
+    "imageUrl": "/phonics-images/play.webp",
+    "lineartUrl": "/word-bank-lineart/play.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "play",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-plug": {
+    "word": "plug",
+    "meaning": "플러그",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "plug",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-plum": {
+    "word": "plum",
+    "meaning": "자두",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "plum",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-point": {
+    "word": "point",
+    "meaning": "가리키다",
+    "imageUrl": "/phonics-images/point.webp",
+    "lineartUrl": "/word-bank-lineart/point.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "point",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-pole": {
+    "word": "pole",
+    "meaning": "막대기, 극",
+    "imageUrl": "/phonics-images/pole.webp",
+    "lineartUrl": "/word-bank-lineart/pole.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pole",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-pond": {
+    "word": "pond",
+    "meaning": "연못",
+    "imageUrl": "/word-bank-images/pond.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "pond",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-pop": {
+    "word": "pop",
+    "meaning": "펑 터지다",
+    "imageUrl": "/phonics-images/pop.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "pop",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-pot": {
+    "word": "pot",
+    "meaning": "냄비, 화분",
+    "imageUrl": "/phonics-images/pot.webp",
+    "lineartUrl": "/word-bank-lineart/pot.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pot",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-press": {
+    "word": "press",
+    "meaning": "누르다",
+    "imageUrl": "/phonics-images/press.webp",
+    "lineartUrl": "/word-bank-lineart/press.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "press",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-prim": {
+    "word": "prim",
+    "meaning": "단정한",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "prim",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "familiarity-illustration"
+    ]
+  },
+  "pw-print": {
+    "word": "print",
+    "meaning": "인쇄하다",
+    "imageUrl": "/phonics-images/print.webp",
+    "lineartUrl": "/word-bank-lineart/print.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "print",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-prize": {
+    "word": "prize",
+    "meaning": "상, 상품",
+    "imageUrl": "/word-bank-images/prize.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "prize",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-prop": {
+    "word": "prop",
+    "meaning": "받침대",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "prop",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "familiarity-illustration"
+    ]
+  },
+  "pw-pup": {
+    "word": "pup",
+    "meaning": "강아지",
+    "imageUrl": "/phonics-images/pup.webp",
+    "lineartUrl": "/word-bank-lineart/pup.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "pup",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-queen": {
+    "word": "queen",
+    "meaning": "여왕",
+    "imageUrl": "/phonics-images/queen.webp",
+    "lineartUrl": "/word-bank-lineart/queen.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "queen",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-question": {
+    "word": "question",
+    "meaning": "질문",
+    "imageUrl": "/phonics-images/question.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "question",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-quilt": {
+    "word": "quilt",
+    "meaning": "누비이불",
+    "imageUrl": "/phonics-images/quilt.webp",
+    "lineartUrl": "/word-bank-lineart/quilt.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "quilt",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rabbit": {
+    "word": "rabbit",
+    "meaning": "토끼",
+    "imageUrl": "/phonics-images/rabbit.webp",
+    "lineartUrl": "/word-bank-lineart/rabbit.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rabbit",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-rag": {
+    "word": "rag",
+    "meaning": "헝겊",
+    "imageUrl": "/phonics-images/rag.webp",
+    "lineartUrl": "/word-bank-lineart/rag.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rag",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rain": {
+    "word": "rain",
+    "meaning": "비",
+    "imageUrl": "/phonics-images/rain.webp",
+    "lineartUrl": "/word-bank-lineart/rain.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rain",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rake": {
+    "word": "rake",
+    "meaning": "갈퀴",
+    "imageUrl": "/phonics-images/rake.webp",
+    "lineartUrl": "/word-bank-lineart/rake.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rake",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ram": {
+    "word": "ram",
+    "meaning": "숫양",
+    "imageUrl": "/phonics-images/ram.webp",
+    "lineartUrl": "/word-bank-lineart/ram.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ram",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rat": {
+    "word": "rat",
+    "meaning": "쥐",
+    "imageUrl": "/phonics-images/rat.webp",
+    "lineartUrl": "/word-bank-lineart/rat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rat",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-rate": {
+    "word": "rate",
+    "meaning": "비율",
+    "imageUrl": "/phonics-images/rate.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "rate",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-red": {
+    "word": "red",
+    "meaning": "빨간색",
+    "imageUrl": "/phonics-images/red.webp",
+    "lineartUrl": "/word-bank-lineart/red.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "red",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ride": {
+    "word": "ride",
+    "meaning": "타다",
+    "imageUrl": "/phonics-images/ride.webp",
+    "lineartUrl": "/word-bank-lineart/ride.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ride",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-ring": {
+    "word": "ring",
+    "meaning": "반지",
+    "imageUrl": "/phonics-images/ring.webp",
+    "lineartUrl": "/word-bank-lineart/ring.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ring",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rip": {
+    "word": "rip",
+    "meaning": "찢다",
+    "imageUrl": "/phonics-images/rip.webp",
+    "lineartUrl": "/word-bank-lineart/rip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rip",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-road": {
+    "word": "road",
+    "meaning": "길",
+    "imageUrl": "/phonics-images/road.webp",
+    "lineartUrl": "/word-bank-lineart/road.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "road",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rope": {
+    "word": "rope",
+    "meaning": "밧줄",
+    "imageUrl": "/phonics-images/rope.webp",
+    "lineartUrl": "/word-bank-lineart/rope.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rope",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-rose": {
+    "word": "rose",
+    "meaning": "장미",
+    "imageUrl": "/phonics-images/rose.webp",
+    "lineartUrl": "/word-bank-lineart/rose.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rose",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rude": {
+    "word": "rude",
+    "meaning": "무례한",
+    "imageUrl": "/phonics-images/rude.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "rude",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-rug": {
+    "word": "rug",
+    "meaning": "깔개",
+    "imageUrl": "/phonics-images/rug.webp",
+    "lineartUrl": "/word-bank-lineart/rug.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rug",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-rule": {
+    "word": "rule",
+    "meaning": "규칙",
+    "imageUrl": "/word-bank-images/rule.webp",
+    "lineartUrl": "/word-bank-lineart/rule.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "rule",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-run": {
+    "word": "run",
+    "meaning": "달리다",
+    "imageUrl": "/phonics-images/run.webp",
+    "lineartUrl": "/word-bank-lineart/run.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "run",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sad": {
+    "word": "sad",
+    "meaning": "mad",
+    "imageUrl": "/word-bank-images/sad.webp",
+    "lineartUrl": "/word-bank-lineart/sad.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sad",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-same": {
+    "word": "same",
+    "meaning": "같은",
+    "imageUrl": "/phonics-images/same.webp",
+    "lineartUrl": "/word-bank-lineart/same.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "same",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sand": {
+    "word": "sand",
+    "meaning": "모래",
+    "imageUrl": "/word-bank-images/sand.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "sand",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-save": {
+    "word": "save",
+    "meaning": "저축하다, 아끼다",
+    "imageUrl": "/phonics-images/save.webp",
+    "lineartUrl": "/word-bank-lineart/save.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "save",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-say": {
+    "word": "say",
+    "meaning": "말하다",
+    "imageUrl": "/phonics-images/say.webp",
+    "lineartUrl": "/word-bank-lineart/say.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "say",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sea": {
+    "word": "sea",
+    "meaning": "바다",
+    "imageUrl": "/phonics-images/sea.webp",
+    "lineartUrl": "/word-bank-lineart/sea.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sea",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-seat": {
+    "word": "seat",
+    "meaning": "좌석",
+    "imageUrl": "/word-bank-images/seat.webp",
+    "lineartUrl": "/word-bank-lineart/seat.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "seat",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-seed": {
+    "word": "seed",
+    "meaning": "씨앗",
+    "imageUrl": "/phonics-images/seed.webp",
+    "lineartUrl": "/word-bank-lineart/seed.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "seed",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-shell": {
+    "word": "shell",
+    "meaning": "조개껍데기, 껍질",
+    "imageUrl": "/phonics-images/shell.webp",
+    "lineartUrl": "/word-bank-lineart/shell.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "shell",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-ship": {
+    "word": "ship",
+    "meaning": "큰 배",
+    "imageUrl": "/phonics-images/ship.webp",
+    "lineartUrl": "/word-bank-lineart/ship.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ship",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-shirt": {
+    "word": "shirt",
+    "meaning": "coat",
+    "imageUrl": "/phonics-images/shirt.webp",
+    "lineartUrl": "/word-bank-lineart/shirt.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "shirt",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-shop": {
+    "word": "shop",
+    "meaning": "가게",
+    "imageUrl": "/phonics-images/shop.webp",
+    "lineartUrl": "/word-bank-lineart/shop.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "shop",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-show": {
+    "word": "show",
+    "meaning": "보여 주다",
+    "imageUrl": "/word-bank-images/show.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "show",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-side": {
+    "word": "side",
+    "meaning": "옆",
+    "imageUrl": "/phonics-images/side.webp",
+    "lineartUrl": "/word-bank-lineart/side.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "side",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sing": {
+    "word": "sing",
+    "meaning": "노래하다",
+    "imageUrl": "/phonics-images/sing.webp",
+    "lineartUrl": "/word-bank-lineart/sing.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sing",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sink": {
+    "word": "sink",
+    "meaning": "싱크대, 세면대",
+    "imageUrl": "/word-bank-images/sink.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "sink",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-sit": {
+    "word": "sit",
+    "meaning": "앉다",
+    "imageUrl": "/phonics-images/sit.webp",
+    "lineartUrl": "/word-bank-lineart/sit.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sit",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-site": {
+    "word": "site",
+    "meaning": "장소",
+    "imageUrl": "/word-bank-images/site.webp",
+    "lineartUrl": "/word-bank-lineart/site.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "site",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-six": {
+    "word": "six",
+    "meaning": "여섯, 6",
+    "imageUrl": "/phonics-images/six.webp",
+    "lineartUrl": "/word-bank-lineart/six.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "six",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-skate": {
+    "word": "skate",
+    "meaning": "스케이트를 타다",
+    "imageUrl": "/word-bank-images/skate.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "skate",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-skid": {
+    "word": "skid",
+    "meaning": "미끄러지다",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "skid",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-skim": {
+    "word": "skim",
+    "meaning": "액체 표면을 스치다",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "skim",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-skin": {
+    "word": "skin",
+    "meaning": "피부",
+    "imageUrl": "/phonics-images/skin.webp",
+    "lineartUrl": "/word-bank-lineart/skin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "skin",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-skip": {
+    "word": "skip",
+    "meaning": "가볍게 뛰어가다",
+    "imageUrl": "/phonics-images/skip.webp",
+    "lineartUrl": "/word-bank-lineart/skip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "skip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-skirt": {
+    "word": "skirt",
+    "meaning": "치마",
+    "imageUrl": "/word-bank-images/skirt.webp",
+    "lineartUrl": "/word-bank-lineart/skirt.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "skirt",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sky": {
+    "word": "sky",
+    "meaning": "하늘",
+    "imageUrl": "/word-bank-images/sky.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "sky",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-snake": {
+    "word": "snake",
+    "meaning": "뱀",
+    "imageUrl": "/phonics-images/snake.webp",
+    "lineartUrl": "/word-bank-lineart/snake.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "snake",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-snow": {
+    "word": "snow",
+    "meaning": "눈",
+    "imageUrl": "/phonics-images/snow.webp",
+    "lineartUrl": "/word-bank-lineart/snow.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "snow",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-soap": {
+    "word": "soap",
+    "meaning": "비누",
+    "imageUrl": "/phonics-images/soap.webp",
+    "lineartUrl": "/word-bank-lineart/soap.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "soap",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sock": {
+    "word": "sock",
+    "meaning": "양말",
+    "imageUrl": "/phonics-images/sock.webp",
+    "lineartUrl": "/word-bank-lineart/sock.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sock",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-soil": {
+    "word": "soil",
+    "meaning": "흙",
+    "imageUrl": "/word-bank-images/soil.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "soil",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-song": {
+    "word": "song",
+    "meaning": "guitar",
+    "imageUrl": "/phonics-images/song.webp",
+    "lineartUrl": "/word-bank-lineart/song.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "song",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-spoon": {
+    "word": "spoon",
+    "meaning": "숟가락",
+    "imageUrl": "/phonics-images/spoon.webp",
+    "lineartUrl": "/word-bank-lineart/spoon.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "spoon",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-star": {
+    "word": "star",
+    "meaning": "별",
+    "imageUrl": "/phonics-images/star.webp",
+    "lineartUrl": "/word-bank-lineart/star.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "star",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-stem": {
+    "word": "stem",
+    "meaning": "줄기",
+    "imageUrl": "/phonics-images/stem.webp",
+    "lineartUrl": "/word-bank-lineart/stem.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "stem",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-step": {
+    "word": "step",
+    "meaning": "걸음",
+    "imageUrl": "/phonics-images/step.webp",
+    "lineartUrl": "/word-bank-lineart/step.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "step",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-stick": {
+    "word": "stick",
+    "meaning": "막대기",
+    "imageUrl": "/word-bank-images/stick.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "stick",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-stone": {
+    "word": "stone",
+    "meaning": "돌",
+    "imageUrl": "/word-bank-images/stone.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "stone",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-stop": {
+    "word": "stop",
+    "meaning": "멈추다",
+    "imageUrl": "/phonics-images/stop.webp",
+    "lineartUrl": "/word-bank-lineart/stop.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "stop",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-storm": {
+    "word": "storm",
+    "meaning": "폭풍",
+    "imageUrl": "/word-bank-images/storm.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "storm",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-sun": {
+    "word": "sun",
+    "meaning": "star",
+    "imageUrl": "/phonics-images/sun.webp",
+    "lineartUrl": "/word-bank-lineart/sun.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "sun",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-tag": {
+    "word": "tag",
+    "meaning": "꼬리표, 태그",
+    "imageUrl": "/phonics-images/tag.webp",
+    "lineartUrl": "/word-bank-lineart/tag.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tag",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-tail": {
+    "word": "tail",
+    "meaning": "꼬리",
+    "imageUrl": "/phonics-images/tail.webp",
+    "lineartUrl": "/word-bank-lineart/tail.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tail",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\033_word_bank_moe_elementary.sql"
+  },
+  "pw-tap": {
+    "word": "tap",
+    "meaning": "수도꼭지",
+    "imageUrl": "/phonics-images/tap.webp",
+    "lineartUrl": "/word-bank-lineart/tap.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tap",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-tape": {
+    "word": "tape",
+    "meaning": "테이프",
+    "imageUrl": "/phonics-images/tape.webp",
+    "lineartUrl": "/word-bank-lineart/tape.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tape",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-task": {
+    "word": "task",
+    "meaning": "과제, 일",
+    "imageUrl": "/word-bank-images/task.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "task",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-tea": {
+    "word": "tea",
+    "meaning": "차",
+    "imageUrl": "/phonics-images/tea.webp",
+    "lineartUrl": "/word-bank-lineart/tea.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tea",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-teacher": {
+    "word": "teacher",
+    "meaning": "선생님",
+    "imageUrl": "/phonics-images/teacher.webp",
+    "lineartUrl": "/word-bank-lineart/teacher.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "teacher",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-teeth": {
+    "word": "teeth",
+    "meaning": "이, 치아 (복수)",
+    "imageUrl": "/phonics-images/teeth.webp",
+    "lineartUrl": "/word-bank-lineart/teeth.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "teeth",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-ten": {
+    "word": "ten",
+    "meaning": "열, 10",
+    "imageUrl": "/phonics-images/ten.webp",
+    "lineartUrl": "/word-bank-lineart/ten.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "ten",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-term": {
+    "word": "term",
+    "meaning": "학기, 용어",
+    "imageUrl": "/word-bank-images/term.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "term",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-that": {
+    "word": "that",
+    "meaning": "저것",
+    "imageUrl": "/word-bank-images/that.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "that",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-them": {
+    "word": "them",
+    "meaning": "그들을",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "them",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-then": {
+    "word": "then",
+    "meaning": "그때",
+    "imageUrl": "/word-bank-images/then.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "then",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-thick": {
+    "word": "thick",
+    "meaning": "두꺼운",
+    "imageUrl": "/phonics-images/thick.webp",
+    "lineartUrl": "/word-bank-lineart/thick.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "thick",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-thin": {
+    "word": "thin",
+    "meaning": "straight",
+    "imageUrl": "/phonics-images/thin.webp",
+    "lineartUrl": "/word-bank-lineart/thin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "thin",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-this": {
+    "word": "this",
+    "meaning": "이것",
+    "imageUrl": "/word-bank-images/this.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "this",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-three": {
+    "word": "three",
+    "meaning": "셋, 3",
+    "imageUrl": "/word-bank-images/three.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "three",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-tiger": {
+    "word": "tiger",
+    "meaning": "호랑이",
+    "imageUrl": "/phonics-images/tiger.webp",
+    "lineartUrl": "/word-bank-lineart/tiger.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tiger",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-time": {
+    "word": "time",
+    "meaning": "시간",
+    "imageUrl": "/phonics-images/time.webp",
+    "lineartUrl": "/word-bank-lineart/time.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "time",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-top": {
+    "word": "top",
+    "meaning": "팽이",
+    "imageUrl": "/phonics-images/top.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "top",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-toy": {
+    "word": "toy",
+    "meaning": "장난감",
+    "imageUrl": "/phonics-images/toy.webp",
+    "lineartUrl": "/word-bank-lineart/toy.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "toy",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-train": {
+    "word": "train",
+    "meaning": "기차",
+    "imageUrl": "/phonics-images/train.webp",
+    "lineartUrl": "/word-bank-lineart/train.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "train",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-trap": {
+    "word": "trap",
+    "meaning": "덫",
+    "imageUrl": "/word-bank-images/trap.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "trap",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-tree": {
+    "word": "tree",
+    "meaning": "나무",
+    "imageUrl": "/phonics-images/tree.webp",
+    "lineartUrl": "/word-bank-lineart/tree.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tree",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-trim": {
+    "word": "trim",
+    "meaning": "다듬다",
+    "imageUrl": "/word-bank-images/trim.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "trim",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-trip": {
+    "word": "trip",
+    "meaning": "여행",
+    "imageUrl": "/word-bank-images/trip.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "trip",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-truck": {
+    "word": "truck",
+    "meaning": "트럭",
+    "imageUrl": "/phonics-images/truck.webp",
+    "lineartUrl": "/word-bank-lineart/truck.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "truck",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-tub": {
+    "word": "tub",
+    "meaning": "욕조",
+    "imageUrl": "/phonics-images/tub.webp",
+    "lineartUrl": "/word-bank-lineart/tub.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tub",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-tube": {
+    "word": "tube",
+    "meaning": "관, 튜브",
+    "imageUrl": "/phonics-images/tube.webp",
+    "lineartUrl": "/word-bank-lineart/tube.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tube",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-tune": {
+    "word": "tune",
+    "meaning": "곡조, 선율",
+    "imageUrl": "/phonics-images/tune.webp",
+    "lineartUrl": "/word-bank-lineart/tune.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "tune",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-turn": {
+    "word": "turn",
+    "meaning": "돌다",
+    "imageUrl": "/word-bank-images/turn.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "turn",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-turtle": {
+    "word": "turtle",
+    "meaning": "거북이",
+    "imageUrl": "/phonics-images/turtle.webp",
+    "lineartUrl": "/word-bank-lineart/turtle.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "turtle",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-tusk": {
+    "word": "tusk",
+    "meaning": "엄니",
+    "imageUrl": null,
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "tusk",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-umbrella": {
+    "word": "umbrella",
+    "meaning": "우산",
+    "imageUrl": "/phonics-images/umbrella.webp",
+    "lineartUrl": "/word-bank-lineart/umbrella.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "umbrella",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-under": {
+    "word": "under",
+    "meaning": "~아래에",
+    "imageUrl": "/phonics-images/under.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "under",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-up": {
+    "word": "up",
+    "meaning": "위로",
+    "imageUrl": "/phonics-images/up.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "up",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-van": {
+    "word": "van",
+    "meaning": "승합차",
+    "imageUrl": "/phonics-images/van.webp",
+    "lineartUrl": "/word-bank-lineart/van.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "van",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-vest": {
+    "word": "vest",
+    "meaning": "조끼",
+    "imageUrl": "/phonics-images/vest.webp",
+    "lineartUrl": "/word-bank-lineart/vest.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "vest",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-violin": {
+    "word": "violin",
+    "meaning": "바이올린",
+    "imageUrl": "/phonics-images/violin.webp",
+    "lineartUrl": "/word-bank-lineart/violin.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "violin",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-vote": {
+    "word": "vote",
+    "meaning": "투표하다",
+    "imageUrl": "/phonics-images/vote.webp",
+    "lineartUrl": "/word-bank-lineart/vote.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "vote",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-wag": {
+    "word": "wag",
+    "meaning": "꼬리를 흔들다",
+    "imageUrl": "/phonics-images/wag.webp",
+    "lineartUrl": "/word-bank-lineart/wag.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wag",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-watch": {
+    "word": "watch",
+    "meaning": "손목시계",
+    "imageUrl": "/phonics-images/watch.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "watch",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-wave": {
+    "word": "wave",
+    "meaning": "손을 흔들다",
+    "imageUrl": "/phonics-images/wave.webp",
+    "lineartUrl": "/word-bank-lineart/wave.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wave",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-web": {
+    "word": "web",
+    "meaning": "거미줄",
+    "imageUrl": "/phonics-images/web.webp",
+    "lineartUrl": "/word-bank-lineart/web.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "web",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-weed": {
+    "word": "weed",
+    "meaning": "잡초",
+    "imageUrl": "/phonics-images/weed.webp",
+    "lineartUrl": "/word-bank-lineart/weed.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "weed",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-wet": {
+    "word": "wet",
+    "meaning": "젖은",
+    "imageUrl": "/phonics-images/wet.webp",
+    "lineartUrl": "/word-bank-lineart/wet.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wet",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-whale": {
+    "word": "whale",
+    "meaning": "고래",
+    "imageUrl": "/phonics-images/whale.webp",
+    "lineartUrl": "/word-bank-lineart/whale.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "whale",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-wheel": {
+    "word": "wheel",
+    "meaning": "바퀴",
+    "imageUrl": "/phonics-images/wheel.webp",
+    "lineartUrl": "/word-bank-lineart/wheel.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wheel",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-whip": {
+    "word": "whip",
+    "meaning": "채찍",
+    "imageUrl": "/phonics-images/whip.webp",
+    "lineartUrl": "/word-bank-lineart/whip.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "whip",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-white": {
+    "word": "white",
+    "meaning": "하얀색",
+    "imageUrl": "/phonics-images/white.webp",
+    "lineartUrl": "/word-bank-lineart/white.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "white",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-wig": {
+    "word": "wig",
+    "meaning": "가발",
+    "imageUrl": "/phonics-images/wig.webp",
+    "lineartUrl": "/word-bank-lineart/wig.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wig",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-win": {
+    "word": "win",
+    "meaning": "이기다",
+    "imageUrl": "/phonics-images/win.webp",
+    "lineartUrl": "/word-bank-lineart/win.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "win",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-window": {
+    "word": "window",
+    "meaning": "창문",
+    "imageUrl": "/phonics-images/window.webp",
+    "lineartUrl": "/word-bank-lineart/window.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "window",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-wing": {
+    "word": "wing",
+    "meaning": "날개",
+    "imageUrl": "/word-bank-images/wing.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "wing",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-wipe": {
+    "word": "wipe",
+    "meaning": "닦다",
+    "imageUrl": "/phonics-images/wipe.webp",
+    "lineartUrl": null,
+    "audio": {
+      "provider": "web-speech",
+      "text": "wipe",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\036_word_bank_moe_middle.sql"
+  },
+  "pw-wood": {
+    "word": "wood",
+    "meaning": "목재",
+    "imageUrl": "/phonics-images/wood.webp",
+    "lineartUrl": "/word-bank-lineart/wood.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "wood",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-yam": {
+    "word": "yam",
+    "meaning": "참마",
+    "imageUrl": "/phonics-images/yam.webp",
+    "lineartUrl": "/word-bank-lineart/yam.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "yam",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  },
+  "pw-yellow": {
+    "word": "yellow",
+    "meaning": "blue",
+    "imageUrl": "/phonics-images/yellow.webp",
+    "lineartUrl": "/word-bank-lineart/yellow.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "yellow",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\025_word_bank_batch2_extra_categories.sql"
+  },
+  "pw-yo-yo": {
+    "word": "yo-yo",
+    "meaning": "요요",
+    "imageUrl": "/phonics-images/yo-yo.webp",
+    "lineartUrl": "/word-bank-lineart/yo-yo.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "yo-yo",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-zebra": {
+    "word": "zebra",
+    "meaning": "얼룩말",
+    "imageUrl": "/phonics-images/zebra.webp",
+    "lineartUrl": "/word-bank-lineart/zebra.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "zebra",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+  },
+  "pw-zipper": {
+    "word": "zipper",
+    "meaning": "지퍼",
+    "imageUrl": "/phonics-images/zipper.webp",
+    "lineartUrl": "/word-bank-lineart/zipper.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "zipper",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+  },
+  "pw-zone": {
+    "word": "zone",
+    "meaning": "구역, 지대",
+    "imageUrl": "/phonics-images/zone.webp",
+    "lineartUrl": "/word-bank-lineart/zone.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "zone",
+      "recordingUrl": null
+    },
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+  },
+  "pw-zoo": {
+    "word": "zoo",
+    "meaning": "동물원",
+    "imageUrl": "/phonics-images/zoo.webp",
+    "lineartUrl": "/word-bank-lineart/zoo.webp",
+    "audio": {
+      "provider": "web-speech",
+      "text": "zoo",
+      "recordingUrl": null
+    },
+    "meaningSource": "unit-reviewed"
+  }
+}

@@ -1,0 +1,743 @@
+{
+  "source": "User-confirmed phonics specification, 2026-10-23; independent test oracle, not imported by the app.",
+  "stages": {
+    "1": {
+      "basic": {
+        "A": [
+          "apple",
+          "ant",
+          "axe"
+        ],
+        "B": [
+          "bag",
+          "bat",
+          "bus"
+        ],
+        "C": [
+          "cat",
+          "cap",
+          "cup"
+        ],
+        "D": [
+          "dog",
+          "duck",
+          "desk"
+        ],
+        "E": [
+          "egg",
+          "elephant",
+          "elbow"
+        ],
+        "F": [
+          "fish",
+          "fan",
+          "fox"
+        ],
+        "G": [
+          "gorilla",
+          "gift",
+          "garden"
+        ],
+        "H": [
+          "hat",
+          "hen",
+          "hand"
+        ],
+        "I": [
+          "igloo",
+          "ink",
+          "insect"
+        ],
+        "J": [
+          "jam",
+          "jet",
+          "jug"
+        ],
+        "K": [
+          "king",
+          "kite",
+          "key"
+        ],
+        "L": [
+          "lion",
+          "leg",
+          "lemon"
+        ],
+        "M": [
+          "monkey",
+          "map",
+          "milk"
+        ],
+        "N": [
+          "nest",
+          "net",
+          "nut"
+        ],
+        "O": [
+          "octopus",
+          "ostrich",
+          "ox"
+        ],
+        "P": [
+          "pig",
+          "pen",
+          "pin"
+        ],
+        "Q": [
+          "queen",
+          "quilt",
+          "question"
+        ],
+        "R": [
+          "rabbit",
+          "ring",
+          "rain"
+        ],
+        "S": [
+          "sun",
+          "sock",
+          "snake"
+        ],
+        "T": [
+          "tiger",
+          "top",
+          "turtle"
+        ],
+        "U": [
+          "umbrella",
+          "up",
+          "under"
+        ],
+        "V": [
+          "van",
+          "vest",
+          "violin"
+        ],
+        "W": [
+          "web",
+          "window",
+          "watch"
+        ],
+        "X": [
+          "box",
+          "fox",
+          "six"
+        ],
+        "Y": [
+          "yo-yo",
+          "yellow",
+          "yam"
+        ],
+        "Z": [
+          "zebra",
+          "zipper",
+          "zoo"
+        ]
+      },
+      "extension": {}
+    },
+    "2": {
+      "basic": {
+        "-ad": [
+          "dad",
+          "bad",
+          "sad"
+        ],
+        "-ag": [
+          "bag",
+          "tag",
+          "wag"
+        ],
+        "-am": [
+          "jam",
+          "ram",
+          "ham"
+        ],
+        "-an": [
+          "fan",
+          "can",
+          "man"
+        ],
+        "-ap": [
+          "map",
+          "cap",
+          "tap"
+        ],
+        "-at": [
+          "cat",
+          "fat",
+          "hat"
+        ],
+        "-ed": [
+          "red",
+          "bed",
+          "Ted"
+        ],
+        "-en": [
+          "hen",
+          "ten",
+          "pen"
+        ],
+        "-et": [
+          "jet",
+          "wet",
+          "pet"
+        ],
+        "-ig": [
+          "pig",
+          "big",
+          "wig"
+        ],
+        "-in": [
+          "bin",
+          "win",
+          "pin"
+        ],
+        "-ip": [
+          "lip",
+          "hip",
+          "rip"
+        ],
+        "-it": [
+          "kit",
+          "sit",
+          "hit"
+        ],
+        "-ix": [
+          "mix",
+          "fix",
+          "six"
+        ],
+        "-id": [
+          "lid",
+          "kid"
+        ],
+        "-og": [
+          "dog",
+          "log",
+          "jog"
+        ],
+        "-ot": [
+          "pot",
+          "hot",
+          "dot"
+        ],
+        "-ox": [
+          "fox",
+          "box",
+          "ox"
+        ],
+        "-ug": [
+          "bug",
+          "hug",
+          "rug"
+        ],
+        "-un": [
+          "sun",
+          "bun",
+          "run"
+        ],
+        "-ut": [
+          "nut",
+          "hut",
+          "cut"
+        ],
+        "-ub": [
+          "tub",
+          "cub"
+        ],
+        "-ud": [
+          "mud",
+          "bud"
+        ],
+        "-up": [
+          "cup",
+          "pup"
+        ]
+      },
+      "extension": {
+        "-ad": [
+          "mad"
+        ],
+        "-ag": [
+          "rag"
+        ],
+        "-am": [
+          "dam",
+          "yam"
+        ],
+        "-ap": [
+          "nap"
+        ],
+        "-at": [
+          "bat",
+          "mat",
+          "rat"
+        ],
+        "-in": [
+          "fin"
+        ]
+      }
+    },
+    "3": {
+      "basic": {
+        "-ake": [
+          "cake",
+          "lake",
+          "bake"
+        ],
+        "-ame": [
+          "game",
+          "name",
+          "same"
+        ],
+        "-ate": [
+          "gate",
+          "date",
+          "late"
+        ],
+        "-ave": [
+          "cave",
+          "wave",
+          "save"
+        ],
+        "-ane": [
+          "cane",
+          "mane",
+          "lane"
+        ],
+        "-ape": [
+          "cape",
+          "tape"
+        ],
+        "-ike": [
+          "bike",
+          "hike",
+          "like"
+        ],
+        "-ine": [
+          "nine",
+          "line",
+          "pine"
+        ],
+        "-ite": [
+          "kite",
+          "bite",
+          "site"
+        ],
+        "-ide": [
+          "hide",
+          "ride",
+          "side"
+        ],
+        "-ime": [
+          "time",
+          "lime",
+          "dime"
+        ],
+        "-ive": [
+          "five",
+          "dive",
+          "hive"
+        ],
+        "-one": [
+          "bone",
+          "cone",
+          "zone"
+        ],
+        "-ose": [
+          "nose",
+          "rose",
+          "hose"
+        ],
+        "-ole": [
+          "hole",
+          "pole",
+          "mole"
+        ],
+        "-ope": [
+          "rope",
+          "hope"
+        ],
+        "-ote": [
+          "note",
+          "vote"
+        ],
+        "-ome": [
+          "home",
+          "dome"
+        ],
+        "-une": [
+          "tune",
+          "June",
+          "dune"
+        ],
+        "-ube": [
+          "cube",
+          "tube"
+        ],
+        "-ute": [
+          "cute",
+          "mute"
+        ],
+        "-ule": [
+          "mule",
+          "rule"
+        ]
+      },
+      "extension": {
+        "-ake": [
+          "make",
+          "rake"
+        ],
+        "-ate": [
+          "rate"
+        ],
+        "-ine": [
+          "fine"
+        ]
+      }
+    },
+    "4": {
+      "basic": {
+        "bl": [
+          "black",
+          "block",
+          "blank",
+          "blink"
+        ],
+        "cl": [
+          "clap",
+          "clip",
+          "club",
+          "clam",
+          "clock"
+        ],
+        "fl": [
+          "flag",
+          "flat",
+          "flap",
+          "flip"
+        ],
+        "gl": [
+          "glad",
+          "glass",
+          "glob",
+          "glum"
+        ],
+        "pl": [
+          "plan",
+          "plant",
+          "plum",
+          "plug"
+        ],
+        "br": [
+          "brush",
+          "brick",
+          "brim",
+          "bran"
+        ],
+        "cr": [
+          "crab",
+          "cross",
+          "crop",
+          "crack"
+        ],
+        "dr": [
+          "drum",
+          "drop",
+          "drip",
+          "dress"
+        ],
+        "fr": [
+          "frog",
+          "from",
+          "fresh",
+          "frost"
+        ],
+        "gr": [
+          "grass",
+          "grin",
+          "grab",
+          "grip"
+        ],
+        "pr": [
+          "print",
+          "press",
+          "prim",
+          "prop"
+        ],
+        "tr": [
+          "trap",
+          "trip",
+          "trim",
+          "truck"
+        ],
+        "st_initial": [
+          "stop",
+          "stem",
+          "step",
+          "stick"
+        ],
+        "sk_initial": [
+          "skin",
+          "skip",
+          "skid",
+          "skim"
+        ],
+        "sk_final": [
+          "desk",
+          "mask",
+          "task",
+          "tusk"
+        ],
+        "mp_final": [
+          "lamp",
+          "camp",
+          "jump",
+          "bump"
+        ],
+        "nd_final": [
+          "hand",
+          "band",
+          "sand",
+          "pond"
+        ],
+        "nk_final": [
+          "pink",
+          "ink",
+          "bank",
+          "sink"
+        ],
+        "sh": [
+          "ship",
+          "shop",
+          "shell",
+          "fish",
+          "dish",
+          "brush"
+        ],
+        "ch": [
+          "chip",
+          "chin",
+          "chat",
+          "chop",
+          "bench",
+          "lunch"
+        ],
+        "th_thin": [
+          "thin",
+          "thick",
+          "three",
+          "math",
+          "path",
+          "teeth"
+        ],
+        "th_this": [
+          "this",
+          "that",
+          "them",
+          "then"
+        ],
+        "wh": [
+          "whip",
+          "white",
+          "wheel",
+          "whale"
+        ],
+        "ng": [
+          "king",
+          "ring",
+          "sing",
+          "song",
+          "wing",
+          "long"
+        ]
+      },
+      "extension": {
+        "bl": [
+          "blue",
+          "blow",
+          "blouse"
+        ],
+        "cl": [
+          "cloud"
+        ],
+        "fl": [
+          "flute"
+        ],
+        "gl": [
+          "globe",
+          "glue"
+        ],
+        "pl": [
+          "plane",
+          "plate"
+        ],
+        "br": [
+          "bread",
+          "brown"
+        ],
+        "cr": [
+          "crane"
+        ],
+        "dr": [
+          "dream"
+        ],
+        "fr": [
+          "frame",
+          "fruit"
+        ],
+        "gr": [
+          "grape",
+          "green"
+        ],
+        "pr": [
+          "prize"
+        ],
+        "tr": [
+          "train",
+          "tree"
+        ],
+        "st_initial": [
+          "star",
+          "stone"
+        ],
+        "sk_initial": [
+          "skate",
+          "sky"
+        ],
+        "ch": [
+          "chair",
+          "peach"
+        ]
+      }
+    },
+    "5": {
+      "basic": {
+        "ee": [
+          "bee",
+          "tree",
+          "seed",
+          "feet"
+        ],
+        "ea": [
+          "sea",
+          "tea",
+          "meat",
+          "leaf"
+        ],
+        "ai": [
+          "rain",
+          "train",
+          "tail",
+          "mail"
+        ],
+        "ay": [
+          "day",
+          "play",
+          "say",
+          "may"
+        ],
+        "oa": [
+          "boat",
+          "coat",
+          "road",
+          "soap"
+        ],
+        "ow_long_o": [
+          "snow",
+          "grow",
+          "show",
+          "blow"
+        ],
+        "oo_book": [
+          "book",
+          "cook",
+          "foot",
+          "wood"
+        ],
+        "oo_moon": [
+          "moon",
+          "spoon",
+          "zoo",
+          "food"
+        ],
+        "oi": [
+          "coin",
+          "point",
+          "oil",
+          "soil"
+        ],
+        "oy": [
+          "boy",
+          "toy",
+          "joy"
+        ],
+        "ou": [
+          "house",
+          "mouse",
+          "out",
+          "cloud"
+        ],
+        "ow_cow": [
+          "cow",
+          "owl",
+          "down",
+          "crown"
+        ],
+        "ar": [
+          "car",
+          "star",
+          "park",
+          "dark"
+        ],
+        "er": [
+          "her",
+          "fern",
+          "term"
+        ],
+        "ir": [
+          "bird",
+          "girl",
+          "shirt",
+          "skirt"
+        ],
+        "or": [
+          "fork",
+          "corn",
+          "horse",
+          "storm"
+        ],
+        "ur": [
+          "burn",
+          "turn",
+          "hurt",
+          "nurse"
+        ]
+      },
+      "extension": {
+        "ee": [
+          "feed",
+          "weed",
+          "meet",
+          "beet",
+          "jeep",
+          "deep",
+          "keep"
+        ],
+        "ea": [
+          "seat",
+          "heat"
+        ],
+        "ow_long_o": [
+          "window",
+          "yellow"
+        ],
+        "ur": [
+          "turtle"
+        ]
+      }
+    }
+  }
+}

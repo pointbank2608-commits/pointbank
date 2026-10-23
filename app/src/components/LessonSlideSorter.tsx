@@ -35,7 +35,7 @@ import { newHelper, type HelperType } from '../lib/slideHelpers';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
-import { workbookOfMaterial } from '../data/cvcWorkbook';
+import { workbookOfMaterial, workbookNumbers, stableWorkbookRefs, resolveWorkbookSelection } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
   FullCardItem,
@@ -1606,10 +1606,12 @@ function SlideDetail({
         </PreviewFrame>
         <div>
           <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('materials.cvc.pickTitle')}</div>
+          {resolveWorkbookSelection(workbook.id, slide).missing.length > 0 && <p>{t('phonicsCourse.missingRef')}</p>}
+          {resolveWorkbookSelection(workbook.id, slide).units.some(u => u.id.startsWith('legacy-')) && <p>{t('phonicsCourse.legacy')}</p>}
           <CvcUnitPicker
             book={workbook.id}
-            selected={slide.cvcUnits ?? [1]}
-            onChange={(cvcUnits) => onUpdate({ cvcUnits } as Partial<LessonSlide>)}
+            selected={slide.phonicsUnitIds ? workbookNumbers(workbook.id, slide.phonicsUnitIds) : slide.cvcUnits ?? [1]}
+            onChange={(cvcUnits) => onUpdate({ cvcUnits, phonicsUnitIds: stableWorkbookRefs(workbook.id, cvcUnits) } as Partial<LessonSlide>)}
             vowelLabel={(vowel) => t(workbook.id === 'cvc' ? 'materials.cvc.vowel' : 'materials.cvc.longVowel', { vowel })}
           />
         </div>

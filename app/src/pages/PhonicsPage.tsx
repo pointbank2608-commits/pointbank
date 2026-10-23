@@ -7,24 +7,14 @@ import WordSelectionBar from '../components/WordSelectionBar';
 import { fetchPhonicsBank } from '../lib/api';
 import { speak } from '../lib/speech';
 import type { FullCardItem, PhonicsBankEntry } from '../lib/types';
+import PhonicsUnitControls from '../components/PhonicsUnitControls';
+import { PHONICS_STAGES, selectPhonicsEntries, unitById } from '../data/phonicsCurriculum';
+import { parsePattern } from '../lib/phonicsPattern';
 
-const STEPS = [1, 2, 3, 4, 5];
+const STEPS = PHONICS_STAGES.map(stage => stage.number);
 
 /** "r{ai}n" -> [{text:'r'},{text:'ai',marked:true},{text:'n'}]. 소리 규칙 글자를 {} 로 감싸둔
  * pattern_marked 를 파싱해서, AI 이미지에 텍스트를 굽는 대신 앱이 직접 색깔 있는 글자로 그린다. */
-function parsePattern(pattern: string): { text: string; marked?: boolean }[] {
-  const parts: { text: string; marked?: boolean }[] = [];
-  const re = /\{([^}]*)\}/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(pattern))) {
-    if (match.index > lastIndex) parts.push({ text: pattern.slice(lastIndex, match.index) });
-    parts.push({ text: match[1], marked: true });
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < pattern.length) parts.push({ text: pattern.slice(lastIndex) });
-  return parts;
-}
 
 function PatternWord({ pattern, size = 'card' }: { pattern: string; size?: 'card' | 'lightbox' }) {
   const textSizeClass = size === 'lightbox' ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-[26px]';
@@ -51,7 +41,7 @@ function PhonicsImage({ entry, onOpen }: { entry: PhonicsBankEntry; onOpen: (ent
   if (!entry.image_url || broken) {
     return (
       <div className="flex h-32 w-full items-center justify-center rounded-lg bg-surface-container-low text-3xl">
-        🔤
+        <span className="text-sm">{t('phonicsCourse.imagePending')}</span>
       </div>
     );
   }
@@ -133,21 +123,23 @@ export default function PhonicsPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1);
   const [rule, setRule] = useState<string>('all');
+  const [unitId, setUnitId] = useState('');
+  const [extensions, setExtensions] = useState(false);
   const [lightbox, setLightbox] = useState<PhonicsBankEntry | null>(null);
   const [studying, setStudying] = useState(false);
   // 단계·소리 규칙을 바꿔도 선택이 남도록 페이지 상태로 들고 있다(id → 카드 데이터, 담은 순서 유지).
   const [selected, setSelected] = useState<Record<string, FullCardItem>>({});
 
   useEffect(() => {
-    fetchPhonicsBank()
+    fetchPhonicsBank({ includeExtensions: true })
       .then(setEntries)
       .catch((err) => setError(err instanceof Error ? err.message : String(err)));
   }, []);
 
   const stepEntries = useMemo(() => {
     if (!entries) return [];
-    return entries.filter((e) => e.step === step);
-  }, [entries, step]);
+    return selectPhonicsEntries(entries, step, extensions);
+  }, [entries, step, extensions]);
 
   const usedRules = useMemo(() => {
     const seen: string[] = [];
@@ -156,9 +148,8 @@ export default function PhonicsPage() {
   }, [stepEntries]);
 
   const filtered = useMemo(() => {
-    if (rule === 'all') return stepEntries;
-    return stepEntries.filter((e) => e.rule === rule);
-  }, [stepEntries, rule]);
+    return selectPhonicsEntries(entries ?? [], step, extensions, unitId, rule === 'all' ? [] : [rule]);
+  }, [entries, step, extensions, unitId, rule]);
 
   const selectedList = useMemo(() => Object.values(selected), [selected]);
   const allFilteredSelected = filtered.length > 0 && filtered.every((e) => selected[e.id]);
@@ -197,6 +188,7 @@ export default function PhonicsPage() {
         </h2>
         <Link
           to="/materials/phonics"
+          state={unitId ? { phonicsUnitIds: [unitId], phonicsIncludeExtensions: extensions } : undefined}
           className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
         >
           <span className="material-symbols-outlined text-[20px]" aria-hidden>
@@ -216,6 +208,7 @@ export default function PhonicsPage() {
               onClick={() => {
                 setStep(s);
                 setRule('all');
+                setUnitId('');
               }}
               className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
                 step === s
@@ -235,7 +228,7 @@ export default function PhonicsPage() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setRule('all')}
+              onClick={() => { setRule('all'); setUnitId(''); }}
               className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
                 rule === 'all'
                   ? 'bg-secondary text-on-secondary shadow-sm'
@@ -248,7 +241,7 @@ export default function PhonicsPage() {
               <button
                 key={r}
                 type="button"
-                onClick={() => setRule(r)}
+                onClick={() => { setRule(r); setUnitId(''); }}
                 className={`rounded-full px-4 py-2 font-label-md text-label-md transition-all ${
                   rule === r
                     ? 'bg-secondary text-on-secondary shadow-sm'
@@ -262,6 +255,7 @@ export default function PhonicsPage() {
         </div>
       )}
 
+      <PhonicsUnitControls step={step} ruleNames={rule === 'all' ? [] : [rule]} unitId={unitId} extensions={extensions} onExtensions={setExtensions} onUnit={id => { setUnitId(id); const u = unitById(id); if (u) setRule(u.entries[0].rule); }} />
       {error && <div className="font-body-md text-body-md text-error">{error}</div>}
 
       {!entries && !error && (

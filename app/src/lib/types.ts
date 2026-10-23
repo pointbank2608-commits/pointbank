@@ -612,6 +612,18 @@ export interface WordBankEntry {
 /* ---------------- 파닉스(소리 규칙) 단어, 학원 구분 없는 공용 데이터 ---------------- */
 
 export interface PhonicsBankEntry {
+  /** Curriculum IDs are immutable; historical database IDs remain untouched. */
+  curriculum?: boolean;
+  stageId?: string;
+  ruleId?: string;
+  unitId?: string;
+  unitIds?: string[];
+  wordId?: string;
+  tier?: 'basic' | 'extension' | 'legacy' | 'candidate';
+  soundId?: string;
+  targets?: number[];
+  reviewFlags?: string[];
+  audio?: { provider: string; text: string; recordingUrl: string | null };
   id: string;
   word: string;
   /** 소리 규칙에 해당하는 글자를 {} 로 감싼 문자열. 예: "r{ai}n", 비연속 규칙은 "b{a}k{e}". */
@@ -753,6 +765,8 @@ export interface MaterialSlide {
   phonicsOptions?: PhonicsSlideOptions;
   /** 파닉스 워크북(materialId 'cvcworkbook'·'longvowelworkbook')에서 인쇄할 유닛 번호 — 발표 중엔 이 유닛이 그대로 나온다. */
   cvcUnits?: number[];
+  /** Stable curriculum references for new saves; cvcUnits is retained for old lessons. */
+  phonicsUnitIds?: string[];
 }
 
 export interface PhonicsSlideOptions {

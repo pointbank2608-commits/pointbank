@@ -207,7 +207,7 @@ function PhonicsWordsPicker({ words, onChange }: { words: FullCardItem[] | undef
     void loadPhonicsBank().then(setBank);
   }, []);
   const steps = useMemo(() => [...new Set((bank ?? []).map((e) => e.step))].sort((a, b) => a - b), [bank]);
-  const stepEntries = useMemo(() => (bank ?? []).filter((e) => e.step === step), [bank, step]);
+  const stepEntries = useMemo(() => (bank ?? []).filter((e) => e.step === step && e.tier === 'basic'), [bank, step]);
   const stepRules = useMemo(() => [...new Set(stepEntries.map((e) => e.rule))], [stepEntries]);
 
   function pick(nextRules: string[], cnt: number, sd: number, list = stepEntries) {
@@ -227,7 +227,7 @@ function PhonicsWordsPicker({ words, onChange }: { words: FullCardItem[] | undef
             onClick={() => {
               setStep(s);
               setRules([]);
-              const list = bank.filter((e) => e.step === s);
+              const list = bank.filter((e) => e.step === s && e.tier === 'basic');
               pick([], count, seed, list);
             }}
           >
