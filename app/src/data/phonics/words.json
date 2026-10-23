@@ -448,7 +448,7 @@
   },
   "pw-brush": {
     "word": "brush",
-    "meaning": "솔질하다, 이를 닦다",
+    "meaning": "솔, 빗",
     "imageUrl": "/phonics-images/brush.webp",
     "lineartUrl": "/word-bank-lineart/brush.webp",
     "audio": {
@@ -456,7 +456,7 @@
       "text": "brush",
       "recordingUrl": null
     },
-    "meaningSource": "supabase\\022_word_bank_pilot.sql"
+    "meaningSource": "unit-reviewed"
   },
   "pw-bud": {
     "word": "bud",

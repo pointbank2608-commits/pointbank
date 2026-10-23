@@ -10,7 +10,7 @@ scratch = root / 'tmp/pdfs'
 expected = {
     'output/pdf/cvc-baseline.pdf': 2, 'output/pdf/long-baseline.pdf': 2,
     'output/phonics-curriculum/print/stage4-sh.pdf': 2, 'output/phonics-curriculum/print/grammar-third-person.pdf': 4,
-    'tmp/pdfs/stage4-all-review.pdf': 38, 'tmp/pdfs/stage5-all-review.pdf': 50,
+    'tmp/pdfs/stage4-all-review.pdf': 96, 'tmp/pdfs/stage5-all-review.pdf': 64,
 }
 checks = []
 for name, count in expected.items():

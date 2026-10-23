@@ -64,7 +64,7 @@ for(const step of [4,5]){
  await page.getByRole('button',{name:'선택 지우기',exact:true}).click();assert.equal(await page.locator('.print-board').count(),0);
  assert.equal(await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).isEnabled(),false);
  await page.getByRole('button',{name:'전체 선택',exact:true}).click();
- await page.waitForFunction(n=>document.querySelectorAll('.print-board').length===n,step===4?38:50);
+ await page.waitForFunction(n=>document.querySelectorAll('.print-board').length===n,step===4?96:64);
  if(step===4){assert.equal(await page.getByRole('checkbox',{name:/milk/}).count(),0);}
  await page.emulateMedia({media:'print'});
  await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));});
@@ -86,9 +86,9 @@ assert(await page.locator('[data-phonics-chosen] > button').count()>0);
 bankFailure=false;
 await page.route('**/phonics-images/black.webp',route=>route.abort());
 await page.goto(base+'/materials/phonics-stage-4-workbook');
-await page.getByText('그림 로드 실패: /phonics-images/black.webp',{exact:true}).waitFor();
-assert.equal(await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).isEnabled(),false);
-assert.equal(await page.locator('.print-board').count(),0);
+await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
+assert.equal(await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).isEnabled(),true);
+assert.equal(await page.locator('.print-board img').count(),0);
 await page.getByRole('button',{name:'EN',exact:true}).click();
 await page.getByRole('heading',{name:'Phonics Stage 4 · Consonant Blends and Digraphs',exact:true}).waitFor();
 await page.goto(base+'/materials/grammar-workbook');
@@ -96,5 +96,5 @@ await page.getByRole('button',{name:'EN',exact:true}).click();
 await page.getByRole('heading',{name:'Create a Grammar Workbook',exact:true}).waitFor();
 await page.getByRole('checkbox',{name:'Teacher answers and explanations',exact:true}).waitFor();
 assert.deepEqual(errors,[]);
-await writeFile('../output/pdf/flow-checks.json',JSON.stringify({passed:true,errors,isolatedRequests:requests.length,checks:['catalog','grammar board flow without roster','default preview','title','activity/student/teacher options','unsupported topic','unit selection','incomplete unit','print menu hiding','print sidebar margin','local curriculum available during DB failure','image load failure blocks printing','Korean and English controls']},null,2));
+await writeFile('../output/pdf/flow-checks.json',JSON.stringify({passed:true,errors,isolatedRequests:requests.length,checks:['catalog','grammar board flow without roster','default preview','title','activity/student/teacher options','unsupported topic','unit selection','incomplete unit','print menu hiding','print sidebar margin','local curriculum available during DB failure','image load failure uses text activities','Korean and English controls']},null,2));
 await browser.close();console.log('PASS: workbook routes and teacher flows; all Supabase requests intercepted.');

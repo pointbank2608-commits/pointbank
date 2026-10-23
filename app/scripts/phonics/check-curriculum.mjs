@@ -68,7 +68,7 @@ try{
    assert.deepEqual(units.map(u=>u.id),c.unitsForStep(step).map(u=>u.id));
    assert.deepEqual(units.flatMap(u=>u.words),base.filter(e=>e.step===step).map(e=>e.word));
    for(const unit of units){const qs=p.phonicsCircleRows(unit);assert(qs.every(q=>q.choices.filter(x=>x===q.word).length===1));assert(new Set(qs.map(q=>q.choices.indexOf(q.word))).size>1);}
-   statuses.push({step,units:units.length,printableUnits:units.filter(u=>!u.issues.length).length});
+   statuses.push({step,units:units.length,printableUnits:units.filter(p.workbookPrintable).length,fullPictureUnits:units.filter(u=>!p.workbookUsesText(u)).length});
  }
  const fs=await import('node:fs');const issues=[];
  for(const [id,word] of Object.entries(c.PHONICS_WORDS)){

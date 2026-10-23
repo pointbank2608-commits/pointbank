@@ -92,10 +92,10 @@ assert.equal(await page.locator('.no-print').first().isVisible(),false);
 await page.screenshot({path:'../output/phonics-curriculum/stage4-print.png',fullPage:true});
 await page.emulateMedia({media:'screen'});
 await page.getByRole('button',{name:'선택 지우기',exact:true}).click();
-const unavailable=page.getByRole('checkbox',{name:/blank · blink/});assert.equal(await unavailable.isEnabled(),false);
-await page.getByRole('checkbox',{name:/blank · blink/}).locator('..').getByRole('link').click();
-await page.waitForFunction(()=>document.querySelectorAll('[data-phonics-chosen] > button').length===2);
-assert.deepEqual(await selected(),['blank','blink']); // no replacement despite missing pictures
+const fallback=page.getByRole('checkbox',{name:/blank · blink/});assert.equal(await fallback.isEnabled(),true);
+await fallback.check();await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
+assert.deepEqual(await paperWords(),['blank','blink']);
+assert.equal(await page.locator('.print-board').nth(1).locator('section').nth(2).getByText('Find the Target Letters',{exact:true}).count(),1);
 await page.goto(root+'/materials/phonics-stage-5-workbook');
 await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).waitFor();
 assert.equal(await page.getByRole('checkbox',{name:/teacher/}).count(),0);

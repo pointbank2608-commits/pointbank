@@ -8,3 +8,13 @@ export function phonicsCircleRows(unit: Pick<PhonicsWorkbookUnit, 'words'>) {
     return { word, choices: [...choices.slice(shift), ...choices.slice(0, shift)] };
   });
 }
+
+/** A reversible rotation preserves repeated letters and never prints the answer order. */
+export function workbookLetterOrder(word: string): string[] {
+  const letters = [...word];
+  for (let n = 1; n < letters.length; n++) {
+    const rotated = [...letters.slice(n), ...letters.slice(0, n)];
+    if (rotated.join('') !== word) return rotated;
+  }
+  return letters;
+}
