@@ -1,5 +1,5 @@
 export type MaterialCategory = 'words' | 'phonics' | 'gamecards' | 'roleplay' | 'other';
-export type MaterialPreparation = 'topic' | 'words' | 'rule' | 'unit' | 'options';
+export type MaterialPreparation = 'topic' | 'words' | 'rule' | 'unit' | 'options' | 'phonicsRules' | 'workbook';
 
 export interface MaterialCatalogEntry {
   id: string;
@@ -17,9 +17,9 @@ export interface MaterialCatalogEntry {
 /** 수업 자료실 카드 목록 — /materials 페이지가 그대로 매핑한다. 새 인쇄 자료를 추가할 땐
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
-  { id:'phonicsstage1', displayOrder:4.1, category:'phonics', preparation:'unit', path:'/materials/phonics-stage-1', icon:'auto_stories', cover:'/covers/material-phonics.jpg', nameKey:'phonicsStage1.title', descKey:'phonicsStage1.description' },
-  { id: 'phonicsstage4workbook', displayOrder: 6.1, category: 'phonics', preparation: 'unit', path: '/materials/phonics-stage-4-workbook', icon: 'menu_book', cover: '/covers/material-cvcworkbook.jpg', nameKey: 'materials.stage4WorkbookName', descKey: 'materials.stage4WorkbookDesc' },
-  { id: 'phonicsstage5workbook', displayOrder: 6.2, category: 'phonics', preparation: 'unit', path: '/materials/phonics-stage-5-workbook', icon: 'menu_book', cover: '/covers/material-longvowelworkbook.jpg', nameKey: 'materials.stage5WorkbookName', descKey: 'materials.stage5WorkbookDesc' },
+  { id:'phonicsstage1', displayOrder:4.1, category:'phonics', preparation:'workbook', path:'/materials/phonics-stage-1', icon:'auto_stories', cover:'/covers/material-phonics.jpg', nameKey:'phonicsStage1.title', descKey:'phonicsStage1.description' },
+  { id: 'phonicsstage4workbook', displayOrder: 6.1, category: 'phonics', preparation: 'workbook', path: '/materials/phonics-stage-4-workbook', icon: 'menu_book', cover: '/covers/material-cvcworkbook.jpg', nameKey: 'materials.stage4WorkbookName', descKey: 'materials.stage4WorkbookDesc' },
+  { id: 'phonicsstage5workbook', displayOrder: 6.2, category: 'phonics', preparation: 'workbook', path: '/materials/phonics-stage-5-workbook', icon: 'menu_book', cover: '/covers/material-longvowelworkbook.jpg', nameKey: 'materials.stage5WorkbookName', descKey: 'materials.stage5WorkbookDesc' },
   { id: 'grammarworkbook', displayOrder: 6.3, category: 'other', preparation: 'topic', path: '/materials/grammar-workbook', icon: 'rule', cover: null, nameKey: 'materials.grammarWorkbookName', descKey: 'materials.grammarWorkbookDesc' },
   {
     id: 'library', displayOrder: 0,
@@ -32,7 +32,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   },
   {
     id: 'phonics', displayOrder: 4,
-    category: 'phonics', preparation: 'rule',
+    category: 'phonics', preparation: 'phonicsRules',
     path: '/materials/phonics',
     icon: 'spellcheck',
     cover: '/covers/material-phonics.jpg',
@@ -42,7 +42,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   {
     // 미리 만들어 둔 파닉스 CVC 워크북(2026-10-02) — 유닛만 고르면 바로 인쇄
     id: 'cvcworkbook', displayOrder: 5,
-    category: 'phonics', preparation: 'unit',
+    category: 'phonics', preparation: 'workbook',
     path: '/materials/cvc-workbook',
     icon: 'menu_book',
     cover: '/covers/material-cvcworkbook.jpg',
@@ -52,7 +52,7 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
   {
     // 미리 만들어 둔 장모음 워크북(2026-10-03) — 매직 e 와 ee·ea, 같은 화면(CvcWorkbookPage book="long")
     id: 'longvowelworkbook', displayOrder: 6,
-    category: 'phonics', preparation: 'unit',
+    category: 'phonics', preparation: 'workbook',
     path: '/materials/long-vowel-workbook',
     icon: 'menu_book',
     cover: '/covers/material-longvowelworkbook.jpg',
@@ -197,7 +197,8 @@ export const MATERIAL_CATEGORIES: {key: MaterialCategory; icon: string}[] = [
 export function materialSections(catalog = MATERIALS_CATALOG) {
   return MATERIAL_CATEGORIES.map(category => ({...category, items: catalog.filter(item => (item.category ?? 'other') === category.key).sort((a,b) => (a.displayOrder ?? Infinity) - (b.displayOrder ?? Infinity))})).filter(section => section.items.length > 0);
 }
-export const MATERIAL_PREPARATIONS: Record<MaterialPreparation, {action: 'create' | 'units' | 'settings'; tone: string}> = {
+export const MATERIAL_PREPARATIONS: Record<MaterialPreparation, {action: 'create' | 'units' | 'settings' | 'createWorksheet'; tone: string}> = {
   topic: {action:'create',tone:'yellow'}, words: {action:'create',tone:'blue'},
   rule: {action:'create',tone:'purple'}, unit: {action:'units',tone:'mint'}, options: {action:'settings',tone:'purple'},
+  phonicsRules: {action:'createWorksheet',tone:'purple'}, workbook: {action:'units',tone:'mint'},
 };

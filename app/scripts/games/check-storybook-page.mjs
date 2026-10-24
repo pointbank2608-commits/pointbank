@@ -28,7 +28,8 @@ for(const game of ['feedmonster','sentencebridge','sentencetower'])assert.ok(awa
 for(const game of ['feedmonster','sentencebridge','sentencetower']){
  await page.goto(`${base}?game=${game}&mode=teacher`);await page.locator(`[data-game="${game}"]`).waitFor();console.log("STEP",game,"board");
  // The current workspace owns game start and exposes the native editor in a dialog.
- await page.getByRole('button',{name:'게임 시작',exact:true}).click();console.log('STEP started');
+ await page.getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();
+ await page.getByRole('button',{name:/게임 시작/}).click();console.log('STEP started');
  if(game==='feedmonster'){
   const a=await page.locator('[data-choice="apple"]').boundingBox(),b=await page.locator('.sb-mouth-target').boundingBox();
   await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:12});
@@ -37,7 +38,9 @@ for(const game of ['feedmonster','sentencebridge','sentencetower']){
  }
  await page.locator('.sb-overlay').waitFor({state:'hidden'});
  assert.equal(await page.locator('.sb-editor:visible').count(),0);
- await page.getByRole('button',{name:'게임 준비로 돌아가기'}).click();
+ await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();
+ await page.getByRole('dialog',{name:'메뉴',exact:true}).getByRole('button',{name:'준비 화면으로',exact:true}).click();
+ await page.locator('[data-game-preparation] summary').filter({hasText:'추가 설정'}).click();
  await page.locator('[data-game-preparation]').getByRole('button',{name:/게임 설정/}).click();
  await page.getByRole('button',{name:'새 게임으로 저장',exact:true}).click();
  await page.waitForFunction(g=>JSON.parse(sessionStorage.getItem('storybook-test-rows')||'[]').some(r=>r.game_type===g),game);

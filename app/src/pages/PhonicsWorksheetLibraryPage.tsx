@@ -389,7 +389,7 @@ export default function PhonicsWorksheetLibraryPage() {
           <h2 className="mb-1.5 font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">
             {t('materials.phonicsLibraryName')}
           </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant">{t('materials.phonicsLibrary.subtitle')}</p>
+          <p className="font-body-md text-body-md text-on-surface-variant">{t('materials.phonicsLibraryDesc')}</p>
         </div>
 
         {error && <div className="rounded-lg bg-error-container p-3 font-body-md text-on-error-container">{error}</div>}

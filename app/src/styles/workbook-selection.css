@@ -1,0 +1,9 @@
+.workbook-selection-panel { container: workbook-selection / inline-size;min-width:0; }
+.workbook-rule-groups { display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:1rem 1.25rem; }
+.workbook-rule-row { display:grid;grid-template-columns:6.5rem minmax(0,1fr);align-items:start;gap:.5rem;min-width:0; }
+.workbook-rule-heading { min-width:0; }
+.workbook-rule-heading>* { max-width:100%;overflow-wrap:anywhere; }
+.workbook-rule-units { display:flex;flex-wrap:wrap;align-items:flex-start;gap:.375rem;min-width:0; }
+.workbook-rule-units>label { flex:0 1 auto; }
+@container workbook-selection (min-width:38rem) { .workbook-rule-groups { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container workbook-selection (max-width:23rem) { .workbook-rule-row { grid-template-columns:5.75rem minmax(0,1fr); } }

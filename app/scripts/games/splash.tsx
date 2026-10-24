@@ -50,6 +50,7 @@ function Fixture() {
         <SentenceSplashPage />
       </GameWorkspace>
     );
+  if (mode === 'teacher-native') return <SentenceSplashPage />;
   if (mode === "games") return <GamesPage />;
   if (mode === "embed") {
     const Page = GAME_PAGES["/games/sentencesplash"];

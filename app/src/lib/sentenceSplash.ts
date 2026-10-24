@@ -1,4 +1,4 @@
-import type { GameItem } from "./types";
+import type { GameItem, GameTemplate, GameTemplateConfig } from "./types";
 
 export const SPLASH_TIMES = [30, 45, 60, 90] as const;
 export const SPLASH_SAMPLES = [
@@ -12,6 +12,29 @@ export const SPLASH_SAMPLES = [
 ];
 export const splashSeconds = (value?: number) =>
   SPLASH_TIMES.includes(value as 30) ? value! : 45;
+export const isSplashSampleItems = (items: GameItem[]) =>
+  items.length === SPLASH_SAMPLES.length &&
+  items.every((item, i) => item.label === SPLASH_SAMPLES[i]);
+
+/** Preview, saved copies and lesson imports must carry the same current sentences. */
+export function editedSplashConfig(
+  template: Pick<GameTemplate, 'id' | 'name' | 'config'>,
+  items: GameItem[],
+  seconds: number,
+): GameTemplateConfig {
+  const source = template.config.classroomSource;
+  return {
+    ...template.config,
+    splashSeconds: splashSeconds(seconds),
+    classroomSource: {
+      id: source?.id || `splash:${template.id}`,
+      version: source?.version || '',
+      name: source?.name || template.name,
+      kind: 'sentence',
+      cards: items.map(i => ({ id: i.id, word: i.label, meaning: '', imageUrl: null })),
+    },
+  };
+}
 export const sentenceWords = (sentence: string) =>
   sentence.trim().split(/\s+/u).filter(Boolean);
 export const splashSampleItems = (): GameItem[] =>

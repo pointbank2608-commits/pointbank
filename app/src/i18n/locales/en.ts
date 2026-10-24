@@ -12,6 +12,10 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  sentenceSplashSave: {
+    imported:'Imported sentences applied to the game.',
+    saveHint:'Imported lists apply immediately. Apply manual edits to the preview for this lesson, or save the current edits as a new game.',
+  },
   teacherGame: teacherGameEn,
   phonicsStage1: phonicsStage1En,
   whiteboard: boardEn,
@@ -2533,7 +2537,7 @@ const en: Ko = {
   },
 
   phonics: {
-    worksheetButton: 'Make phonics worksheets',
+    worksheetButton: 'Phonics Worksheet Generator',
     title: 'Phonics',
     stepLabel: 'Step',
     stepName: 'Step {{step}}',
@@ -2714,16 +2718,16 @@ const en: Ko = {
     },
     memoryCardsName: 'Memory Card Maker',
     memoryCardsDesc: 'Print two of each word card to play Memory or Go Fish.',
-    cvcWorkbookName: 'Phonics CVC Workbook',
-    stage4WorkbookName: 'Phonics Stage 4 Workbook',
-    stage4WorkbookDesc: 'Two pages per unit for consonant blends and digraphs, using the original words and pictures.',
-    stage5WorkbookName: 'Phonics Stage 5 Workbook',
-    stage5WorkbookDesc: 'Vowel teams, diphthongs and R-controlled vowels, grouped by their sounds.',
+    cvcWorkbookName: 'Phonics Stage 2 Workbook · Short Vowel CVC',
+    stage4WorkbookName: 'Phonics Stage 4 Workbook · Consonant Blends and Digraphs',
+    stage4WorkbookDesc: 'Practise consonant blends and digraphs in ready-made units. Select the units you need and print two A4 pages per unit.',
+    stage5WorkbookName: 'Phonics Stage 5 Workbook · Vowel Teams, Diphthongs and R-controlled Vowels',
+    stage5WorkbookDesc: 'Practise vowel teams, diphthongs and R-controlled vowels in ready-made units. Select the units you need and print two A4 pages per unit.',
     grammarWorkbookName: 'Grammar Practice and Missions',
     grammarWorkbookDesc: '13 third-person singular questions and a Robot Detective mission. Separate student and teacher sheets.',
-    cvcWorkbookDesc: 'Ready-made short vowel worksheets in 24 units. Pick the units and print.',
+    cvcWorkbookDesc: 'Practise short vowels a, e, i, o and u with CVC words in ready-made units. Select the units you need and print two A4 pages per unit.',
     longVowelWorkbookName: 'Phonics Stage 3 Workbook · Magic e',
-    longVowelWorkbookDesc: '22 magic-e units. ee/ea belong to Stage 5; saved legacy material is preserved.',
+    longVowelWorkbookDesc: 'Practise magic-e rules and words in ready-made units. Select the units you need and print two A4 pages per unit.',
     cvc: {
       intro: 'A workbook of 68 short vowel (a, e, i, o, u) words in 24 units. Two A4 pages per unit: look and say, read and write, circle the correct word, match, complete the word, and color.',
       longVowel: 'Long {{vowel}}',
@@ -2956,8 +2960,8 @@ const en: Ko = {
         list: 'A tidy list of words and meanings.',
       },
     },
-    phonicsLibraryName: 'Phonics Worksheets',
-    phonicsLibraryDesc: 'Pick a phonics step and sound rules to get phonics-only sheets: sound blanks, odd one out, rhyme match, and more.',
+    phonicsLibraryName: 'Phonics Worksheet Generator',
+    phonicsLibraryDesc: 'Choose a stage, sound rules and words to create the matching, gap-fill, sorting or other worksheets you need.',
     phonicsLibrary: {
       presentEmpty: "This slide has no phonics words. Pick words in the editor.",
       typeReadyCards: '{{count}} reading cards',

@@ -26,6 +26,7 @@ import {
   fetchWordLists,
   fetchAllWordLists,
   renameGameTemplate,
+  updateGameTemplate,
   type ImportCandidate,
 } from './api';
 import { useClasses } from './useClasses';
@@ -274,6 +275,26 @@ export function useGameTemplates(params: {
   }, [loading, selectedId]);
 
   const selected = templates.find((t) => t.id === selectedId) ?? null;
+
+  /** Applying a new lesson game's configuration must also create its saved reference. */
+  async function persistConfig(config: GameTemplateConfig, name?: string): Promise<GameTemplate | null> {
+    if (selected) {
+      await updateGameTemplate(selected.id, { config });
+      const next = { ...selected, config };
+      setTemplates(rows => rows.map(row => row.id === next.id ? next : row));
+      return next;
+    }
+    if (!embed) return null; // Standalone preview stays temporary until explicitly saved.
+    if (!academy?.id || !profile) throw new Error(t('flow.actionFailed'));
+    const next = await createGameTemplate({
+      academyId: academy.id, classId, gameType, teacherId: profile.id,
+      name: name || t(GAME_CATALOG.find(game => game.type === gameType)?.nameKey || 'flow.defaultActivity'),
+      items: defaultItems(), config,
+    });
+    setTemplates(rows => [...rows, next]);
+    setSelectedId(next.id);
+    return next;
+  }
 
   /** explicitName을 주면(인라인 편집 등) prompt() 없이 그 값으로 바로 바꾼다. 안 주면 기존처럼 prompt로 물어본다. */
   async function handleRename(explicitName?: string) {
@@ -530,6 +551,7 @@ export function useGameTemplates(params: {
     selected,
     selectedId,
     setSelectedId,
+    persistConfig,
     loading: loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`),
     showCreateForm,
     setShowCreateForm,

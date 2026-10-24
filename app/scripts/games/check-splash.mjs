@@ -289,13 +289,10 @@ try {
   console.log(
     "ok complete game: seven rounds, keyboard input, final score, exit",
   );
-  await page.goto(url + "?mode=teacher");
+  await page.goto(url + "?mode=teacher-native");
   await page.locator('[data-game="sentencesplash"]').waitFor();
-  await page
-    .getByRole("button", { name: "설정·저장", exact: true })
-    .first()
-    .click();
-  const settings = page.locator("[data-game-existing-settings]");
+
+  const settings = page.getByRole("region", { name: "Sentence Splash 편집", exact: true });
   assert.equal(
     await settings.getByLabel(/^문장 \d+$/, { exact: true }).count(),
     7,
@@ -312,7 +309,7 @@ try {
     .selectOption("60");
   await settings
     .getByLabel("여러 문장 붙여넣기 (한 줄에 한 문장)", { exact: true })
-    .fill("We play together.\nLook what I found.");
+    .fill("We play together.\nWe found a new star.");
   await settings
     .getByRole("button", { name: "입력한 문장 추가", exact: true })
     .click();
@@ -347,10 +344,7 @@ try {
   assert.equal(saved.items[0].label, "I like it like this.");
   await page.reload();
   await page.locator('[data-game="sentencesplash"]').waitFor();
-  await page
-    .getByRole("button", { name: "설정·저장", exact: true })
-    .first()
-    .click();
+
   await settings
     .getByLabel("저장한 게임", { exact: true })
     .selectOption(saved.id);

@@ -3,7 +3,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import { createGameTemplate, renameGameTemplate, updateGameTemplate } from '../lib/api';
+import { createGameTemplate, renameGameTemplate } from '../lib/api';
 import { storySample, storyErrors, STORY_NAMES, type StorybookConfig, type StoryGame as StoryType } from '../lib/storybook';
 import type { GameTemplate } from '../lib/types';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -28,13 +28,10 @@ export default function StorybookGamePage({ type }: { type: StoryType }) {
     if (storyErrors(type,value).length || busy) return;
     setBusy(true);
     try {
-      if(selected){
-        const next={...selected.config,storybook:structuredClone(value)};
-        // Teacher-authored rules now own the content; stale source adapters must not override it.
-        delete next.classroomSource;
-        await updateGameTemplate(selected.id,{config:next});
-        g.setTemplates(old=>old.map(t=>t.id===selected.id?{...t,config:next}:t));
-      } else setFallback({storybook:structuredClone(value)});
+      const next={...selected?.config,storybook:structuredClone(value)};
+      // Teacher-authored rules now own the content; stale source adapters must not override it.
+      delete next.classroomSource;
+      if(!await g.persistConfig(next,name.trim()||STORY_NAMES[type]))setFallback({storybook:structuredClone(value)});
       setPending(false);setRevision(n=>n+1);notify('게임 설정을 적용했어요.');
     } catch(e){notify(e instanceof Error?e.message:String(e),'error');throw e;}
     finally{setBusy(false);}

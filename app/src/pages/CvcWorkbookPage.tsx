@@ -10,6 +10,7 @@ import { curriculumEntries } from '../data/phonicsCurriculum';
 import { withWorkbookWordMedia } from '../data/phonicsMedia';
 import { fetchPhonicsBank } from '../lib/api';
 import { useWorkbookImageChecks } from '../lib/useWorkbookImageChecks';
+import WorkbookSelectionPanel from '../components/worksheets/WorkbookSelectionPanel';
 
 /** 수업 슬라이드에서 넘어올 때 미리 정해 둔 유닛(navState.cvcUnits). */
 
@@ -62,31 +63,12 @@ export default function CvcWorkbookPage({ book = 'cvc' }: { book?: WorkbookId })
             <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t(book === 'cvc' ? 'materials.cvc.intro' : 'materials.cvc.longIntro')}</p>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-title-md text-title-md text-on-surface">{t('materials.cvc.pickTitle')}</h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelected(workbook.units.map((u) => u.id))}
-                  className="rounded-full border-2 border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 transition-colors"
-                >
-                  {t('materials.cvc.selectAll')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelected([])}
-                  className="rounded-full border-2 border-outline-variant px-4 py-1.5 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-colors"
-                >
-                  {t('materials.cvc.clear')}
-                </button>
-              </div>
-            </div>
+          <WorkbookSelectionPanel onSelectAll={() => setSelected(workbook.units.map((u) => u.id))} onClear={() => setSelected([])}>
             {fromSaved.missing.length > 0 && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
             {units.some(u => u.id.startsWith('legacy-')) && <div><p>{t('phonicsCourse.legacy')}</p>{units.filter(u => u.id.startsWith('legacy-')).map(u => <label key={u.id} className="mr-3"><input type="checkbox" checked onChange={() => setSelected(selected.filter(id => id !== u.id))} />{u.unit}. {u.words.join(' · ')}</label>)}</div>}
             <CvcUnitPicker book={book} selected={workbookNumbers(book, selected)} onChange={numbers => setSelected(stableWorkbookRefs(book, numbers))} vowelLabel={vowelLabel} />
             {assetIssues.length > 0 && <details><summary>{t('workbook.assetStatus')}</summary><ul>{assetIssues.map(issue => <li key={`${issue.unit}-${issue.word}-${issue.type}`}>{issue.unit}. {t(`workbook.issue_${issue.type}`, { word: issue.word })}</li>)}</ul></details>}
-          </div>
+          </WorkbookSelectionPanel>
 
           <div className="flex flex-wrap items-center gap-3">
             <button

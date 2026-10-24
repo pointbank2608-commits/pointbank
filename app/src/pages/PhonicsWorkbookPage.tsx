@@ -8,6 +8,7 @@ import { CvcUnitPages, WorkbookRuleLabel, WorkbookUnitChip } from '../components
 import { useLocation } from 'react-router-dom';
 import { curriculumEntries } from '../data/phonicsCurriculum';
 import { useWorkbookImageChecks } from '../lib/useWorkbookImageChecks';
+import WorkbookSelectionPanel from '../components/worksheets/WorkbookSelectionPanel';
 
 export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
   const { t } = useTranslation();
@@ -47,12 +48,12 @@ export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
   };
   const canPrint = status === 'ready' && selectedIds.length > 0 && selectedIds.every(id => complete.some(u => u.id === id));
   const toggle = (id: string) => setSelected(selectedIds.includes(id) ? selectedIds.filter(n => n !== id) : [...selectedIds, id]);
-  const title = t(step === 4 ? 'workbook.stage4' : 'workbook.stage5');
+  const title = t(step === 4 ? 'materials.stage4WorkbookName' : 'materials.stage5WorkbookName');
   return <div className="space-y-6">
     <div className="no-print space-y-4">
       <Link to="/materials">← {t('materials.backToMaterials')}</Link>
       <h1 className="text-2xl font-bold text-deep-navy">{title}</h1>
-      <p>{t('workbook.intro')}</p>
+      <p>{t(step === 4 ? 'materials.stage4WorkbookDesc' : 'materials.stage5WorkbookDesc')}</p>
       {missingRefs.length > 0 && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
       <Link className="inline-block text-sm underline" to="/materials/phonics">{t('phonics.worksheetButton')}</Link>
       <details className="text-sm" data-asset-status><summary className="cursor-pointer font-medium">{t('workbook.assetStatus')}</summary>
@@ -67,18 +68,16 @@ export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
       {status === 'ready' && !units.length && <p role="alert">{t('workbook.empty')}</p>}
       {!!units.length && <>
         <p>{t('workbook.counts', { units: units.length, words: units.reduce((sum, u) => sum + u.words.length, 0), ready: complete.length })}</p>
-        <div className="flex flex-wrap gap-3">
-          <button className="rounded-full border px-4 py-2" onClick={() => setSelected(complete.map(u => u.id))}>{t('materials.cvc.selectAll')}</button>
-          <button className="rounded-full border px-4 py-2" onClick={() => setSelected([])}>{t('materials.cvc.clear')}</button>
-        </div>
-        <div data-unit-picker className="grid grid-cols-1 items-start gap-x-5 gap-y-4 rounded-xl bg-surface-container-lowest p-5 md:grid-cols-2">
-          {[...new Set(resolved.map(u => u.ruleId))].map(ruleId => <fieldset key={ruleId} className="min-w-0 space-y-2">
-            <legend><WorkbookRuleLabel>{resolved.find(u => u.ruleId === ruleId)!.family}</WorkbookRuleLabel></legend>
-            <div className="flex flex-wrap items-start gap-1.5">{resolved.filter(u => u.ruleId === ruleId).map(u => <WorkbookUnitChip key={u.id} checkbox disabled={!workbookPrintable(u)} selected={workbookPrintable(u) && selectedIds.includes(u.id)} onChange={() => toggle(u.id)}>
-              {u.unit}. {u.words.join(' · ')}
-            </WorkbookUnitChip>)}</div>
-          </fieldset>)}
-        </div>
+        <WorkbookSelectionPanel onSelectAll={() => setSelected(complete.map(u => u.id))} onClear={() => setSelected([])}>
+          <div data-unit-picker className="workbook-rule-groups">
+            {[...new Set(resolved.map(u => u.ruleId))].map(ruleId => <div key={ruleId} role="group" aria-labelledby={`workbook-rule-${step}-${ruleId}`} className="workbook-rule-row">
+              <div id={`workbook-rule-${step}-${ruleId}`} className="workbook-rule-heading"><WorkbookRuleLabel>{resolved.find(u => u.ruleId === ruleId)!.family}</WorkbookRuleLabel></div>
+              <div className="workbook-rule-units">{resolved.filter(u => u.ruleId === ruleId).map(u => <WorkbookUnitChip key={u.id} checkbox disabled={!workbookPrintable(u)} selected={workbookPrintable(u) && selectedIds.includes(u.id)} onChange={() => toggle(u.id)} title={!workbookPrintable(u) ? workbookBlockingIssues(u).map(i => t(`workbook.issue_${i.type}`,{word:i.word})).join(' · ') : undefined}>
+                {u.unit}. {u.words.join(' · ')}{!workbookPrintable(u)&&<small> · {t('workbook.preparing')}</small>}
+              </WorkbookUnitChip>)}</div>
+            </div>)}
+          </div>
+        </WorkbookSelectionPanel>
         <button className="rounded-full bg-primary px-6 py-3 text-on-primary disabled:opacity-50" disabled={!canPrint} onClick={async () => { await document.fonts.ready; window.print(); }}>{t('workbook.printUnits')}</button>
         <span className="ml-3">{t('workbook.pages', { units: printUnits.length, pages: printUnits.length * 2 })}</span>
       </>}

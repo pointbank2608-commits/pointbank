@@ -27,6 +27,7 @@ import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, GAME_MOMENTS } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
@@ -1960,7 +1961,7 @@ function GameSlideEditor({
   const autoDone = useRef<Set<string>>(new Set());
   const templateRef = useRef(slide.templateId);
   templateRef.current = slide.templateId;
-  /** 문장 게임(문장 배열하기)은 내 단어장의 "문장 목록"으로도 바꿀 수 있다(066) */
+  /** Both sentence-building games can use a saved sentence list. */
   const [sentenceLists, setSentenceLists] = useState<WordList[]>([]);
   const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
   const GamePage = game ? GAME_PAGES[game.path] : undefined;
@@ -2006,9 +2007,9 @@ function GameSlideEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slide.id, slide.gameType, slide.templateId, slide.autoWordListId, slide.ownWordListId, wordListId, content, profile]);
 
-  // 문장 목록(문장 배열하기만)
+  // Keep the lesson-level sentence picker consistent with both game pages.
   useEffect(() => {
-    if (slide.gameType !== 'unscramble' || !academyId) {
+    if ((slide.gameType !== 'unscramble' && slide.gameType !== 'sentencesplash') || !academyId) {
       setSentenceLists([]);
       return;
     }
@@ -2024,10 +2025,8 @@ function GameSlideEditor({
   async function applySentenceList(listId: string) {
     const list = sentenceLists.find((l) => l.id === listId);
     if (!list || !profile || creating) return;
-    const items = list.items
-      .filter((i) => i.word.trim().split(/\s+/).filter(Boolean).length >= 2)
-      .map((i) => ({ id: i.id, label: i.word.trim() }));
-    if (items.length === 0) {
+    const content=prepareClassroomGame(slide.gameType,list);
+    if (!content) {
       notify(t('wordLists.sentence.needSentences'), 'error');
       return;
     }
@@ -2038,8 +2037,8 @@ function GameSlideEditor({
         classId,
         gameType: slide.gameType,
         name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list.name),
-        items,
-        config: {},
+        items:content.items,
+        config: {...content.config,classroomSource:{id:list.id,name:list.name,version:list.updated_at,kind:'sentence',cards:wordListToCards(list)}},
         teacherId: profile.id,
       });
       onUpdate({ templateId: tpl.id, ownWordListId: list.id, autoWordListId: undefined });

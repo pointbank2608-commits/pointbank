@@ -10,6 +10,10 @@ import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  sentenceSplashSave: {
+    imported:'불러온 문장을 게임에 적용했어요.',
+    saveHint:'문장 목록은 불러오면 바로 적용돼요. 직접 수정한 문장은 ‘미리보기 적용’으로 수업에 반영하거나, ‘새 게임으로 저장’으로 저장하세요.',
+  },
   teacherGame: teacherGameKo,
   phonicsStage1: phonicsStage1Ko,
   whiteboard: boardKo,
@@ -2530,7 +2534,7 @@ const ko = {
   },
 
   phonics: {
-    worksheetButton: '파닉스 워크시트 만들기',
+    worksheetButton: '파닉스 워크시트 생성기',
     title: '파닉스',
     stepLabel: '단계',
     stepName: '{{step}}단계',
@@ -2711,16 +2715,16 @@ const ko = {
     },
     memoryCardsName: '메모리 카드 만들기',
     memoryCardsDesc: '단어 카드를 두 장씩 인쇄해서 메모리 게임이나 고피쉬로 즐겨요.',
-    cvcWorkbookName: '파닉스 CVC 워크북',
-    stage4WorkbookName: '파닉스 4단계 워크북',
-    stage4WorkbookDesc: '자음군·이중자음 규칙별 A4 두 장. 원본 단어와 그림으로 읽고 쓰고 색칠해요.',
-    stage5WorkbookName: '파닉스 5단계 워크북',
-    stage5WorkbookDesc: '모음 조합·이중모음·R 모음. 소리별로 구분한 유닛을 골라 인쇄해요.',
+    cvcWorkbookName: '파닉스 2단계 워크북 · 단모음 CVC',
+    stage4WorkbookName: '파닉스 4단계 워크북 · 자음군과 이중자음',
+    stage4WorkbookDesc: '자음군과 이중자음 규칙을 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
+    stage5WorkbookName: '파닉스 5단계 워크북 · 모음 조합·이중모음·R 모음',
+    stage5WorkbookDesc: '모음 조합·이중모음·R 모음을 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
     grammarWorkbookName: '문법 기본 연습과 활동 미션',
     grammarWorkbookDesc: '3인칭 단수 현재형 13문항과 로봇 탐정 미션. 학생용·교사용을 골라 인쇄해요.',
-    cvcWorkbookDesc: '미리 만들어 둔 단모음 워크시트 24유닛. 유닛만 고르면 바로 인쇄해요.',
+    cvcWorkbookDesc: '단모음 a·e·i·o·u와 CVC 단어를 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
     longVowelWorkbookName: '파닉스 3단계 워크북 · 매직 e',
-    longVowelWorkbookDesc: '매직 e 워크시트 22유닛. ee·ea는 5단계에서 배우며 기존 저장 자료는 유지돼요.',
+    longVowelWorkbookDesc: '매직 e 규칙과 단어를 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
     cvc: {
       intro: '단모음(a·e·i·o·u) 낱말 68개를 24유닛으로 묶은 워크북이에요. 유닛마다 A4 두 장 — 보고 말하기, 읽고 쓰기, 맞는 낱말 고르기, 잇기, 낱말 완성하기, 색칠하기.',
       longVowel: 'Long {{vowel}}',
@@ -2953,8 +2957,8 @@ const ko = {
         list: '단어와 뜻이 정리된 목록이에요.',
       },
     },
-    phonicsLibraryName: '파닉스 워크시트',
-    phonicsLibraryDesc: '파닉스 단계와 소리 규칙을 고르면 규칙 글자 빈칸, 다른 하나 찾기, 라임 잇기 같은 파닉스 전용 워크시트가 바로 만들어져요.',
+    phonicsLibraryName: '파닉스 워크시트 생성기',
+    phonicsLibraryDesc: '단계·소리 규칙·단어를 고르고, 연결하기·빈칸·분류 등 필요한 활동지를 만들어요.',
     phonicsLibrary: {
       presentEmpty: "이 슬라이드에 파닉스 단어가 없어요. 편집 화면에서 단어를 골라 주세요.",
       typeReadyCards: '읽기 카드 {{count}}개',

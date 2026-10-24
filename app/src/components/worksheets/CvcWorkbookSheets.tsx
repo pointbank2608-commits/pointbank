@@ -189,10 +189,10 @@ export function WorkbookRuleLabel({ children, onClick, selected = false }: { chi
   const className = `inline-block shrink-0 rounded-lg px-3 py-1.5 text-left font-label-md text-label-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected ? 'bg-sky-200 text-sky-950' : 'bg-sky-100 text-sky-900'}`;
   return onClick ? <button type="button" className={className} aria-pressed={selected} onClick={onClick}>{children}</button> : <span className={className}>{children}</span>;
 }
-export function WorkbookUnitChip({ selected, onChange, disabled = false, checkbox = false, children }: { selected: boolean; onChange: () => void; disabled?: boolean; checkbox?: boolean; children: ReactNode }) {
+export function WorkbookUnitChip({ selected, onChange, disabled = false, checkbox = false, title, children }: { selected: boolean; onChange: () => void; disabled?: boolean; checkbox?: boolean; title?:string; children: ReactNode }) {
   const className = `inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-left font-label-md text-label-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${selected ? 'bg-primary text-on-primary shadow-sm' : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/50 hover:bg-secondary-container/40'}`;
-  return checkbox ? <label className={className}><input type="checkbox" className="shrink-0 accent-primary" checked={selected} disabled={disabled} onChange={onChange} /><span className="min-w-0 break-words">{children}</span></label>
-    : <button type="button" className={className} aria-pressed={selected} disabled={disabled} onClick={onChange}>{children}</button>;
+  return checkbox ? <label className={className} title={title}><input type="checkbox" className="shrink-0 accent-primary" checked={selected} disabled={disabled} onChange={onChange} /><span className="min-w-0 break-words">{children}</span></label>
+    : <button type="button" className={className} title={title} aria-pressed={selected} disabled={disabled} onClick={onChange}>{children}</button>;
 }
 
 /** 유닛 고르기 — 모음별로 묶은 칩. 자료실 페이지와 수업 만들기의 슬라이드 설정이 같이 쓴다. */

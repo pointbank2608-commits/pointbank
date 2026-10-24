@@ -36,7 +36,7 @@ try{
  await page.goto(root+'/materials/phonics-stage-1?view=teacher&unit='+unit.id);await page.locator('.s1-teacher-guide').waitFor();
  await page.getByRole('button',{name:'내 수업에 저장하기',exact:true}).click();await page.getByRole('status').filter({hasText:'수업을 저장했습니다'}).waitFor();
  savedLesson={...savedLesson,...savedPayload};await page.locator('.s1-course-footer a').click();
- const panel=page.locator('h3').filter({hasText:'파닉스 1단계 · 슬라이드와 워크북'}).locator('..');await panel.waitFor();
+ const panel=page.locator('h3').filter({hasText:'파닉스 1단계 워크북 · 알파벳과 기본 음가'}).locator('..');await panel.waitFor();
  assert.equal(await panel.locator('select').nth(0).inputValue(),unit.id);
  await panel.locator('select').nth(0).selectOption('stage1-alphabet-d');await panel.locator('select').nth(1).selectOption('2');
  assert.equal(await panel.locator('select').nth(0).inputValue(),'stage1-alphabet-d');

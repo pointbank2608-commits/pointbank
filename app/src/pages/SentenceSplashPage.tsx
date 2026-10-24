@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../context/ToastContext";
@@ -15,8 +15,11 @@ import {
   SPLASH_TIMES,
   splashSampleItems,
   splashSeconds,
+  editedSplashConfig,
+  isSplashSampleItems,
 } from "../lib/sentenceSplash";
 import type { GameItem, GameTemplate } from "../lib/types";
+import { useGameEmbed } from '../context/GameEmbedContext';
 
 const button =
   "min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 font-semibold disabled:opacity-40";
@@ -24,11 +27,12 @@ const input =
   "min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2";
 
 export default function SentenceSplashPage() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const en = i18n.language.startsWith("en");
   const text = (ko: string, english: string) => (en ? english : ko);
   const navigate = useNavigate();
   const { academy, profile } = useAuth();
+  const embed = useGameEmbed();
   const g = useGameTemplates({
     gameType: "sentencesplash",
     defaultItems: splashSampleItems,
@@ -46,6 +50,7 @@ export default function SentenceSplashPage() {
   const [name, setName] = useState("");
   const { notify } = useToast();
   const [saving, setSaving] = useState(false);
+  const [applying, setApplying] = useState(false);
   // A new game can be edited and previewed before creating any saved template.
   // This also works without the optional platform-wide temporary-activity flow.
   const [draft, setDraft] = useState<GameTemplate>(() => ({
@@ -54,18 +59,26 @@ export default function SentenceSplashPage() {
     items: splashSampleItems(), config: { splashSeconds: 45 },
   }));
   const selected = g.selected || draft;
+  const [changes, setChanges] = useState<{ templateId: string; items: GameItem[]; seconds: number } | null>(null);
+  const captureChanges = useCallback((items: GameItem[], seconds: number) => {
+    setChanges({ templateId: selected.id, items, seconds });
+  }, [selected.id]);
+  const editing = changes?.templateId === selected.id
+    ? changes : { items: selected.items, seconds: splashSeconds(selected.config.splashSeconds) };
+  const invalid = editing.items.length === 0 || editing.items.some(i => sentenceWords(i.label).length < 2);
   async function saveCopy() {
-    if (!academy || !profile || saving || !name.trim()) return;
+    if (!academy || !profile || saving || applying || invalid || !name.trim()) return;
     setSaving(true);
     try {
+      const items = editing.items.map(i => ({ ...i, label: i.label.trim() }));
       const tpl = await createGameTemplate({
         academyId: academy.id,
         classId: g.classId,
         gameType: "sentencesplash",
         teacherId: profile.id,
         name: name.trim(),
-        items: structuredClone(selected.items),
-        config: structuredClone(selected.config),
+        items,
+        config: editedSplashConfig(selected, items, editing.seconds),
       });
       g.setTemplates((old) => [...old, tpl]);
       g.setSelectedId(tpl.id);
@@ -78,26 +91,25 @@ export default function SentenceSplashPage() {
     }
   }
   async function apply(items: GameItem[], seconds: number) {
-    const config = { ...selected.config, splashSeconds: seconds };
-    // Saved sources describe the activity at the moment of import. Keep it in sync after editing
-    // so switching to another sentence game uses the teacher's current sentences.
-    config.classroomSource = {
-      id: config.classroomSource?.id || `splash:${selected.id}`,
-      version: config.classroomSource?.version || "",
-      name: config.classroomSource?.name || selected.name,
-      kind: "sentence",
-      cards: items.map((i) => ({
-        id: i.id,
-        word: i.label,
-        meaning: "",
-        imageUrl: null,
-      })),
-    };
-    if (g.selected) {
-      await updateGameTemplate(selected.id, { items, config });
-      g.setTemplates((old) => old.map((t) => (t.id === selected.id ? { ...t, items, config } : t)));
-    } else setDraft({ ...draft, items, config });
-    setRestart((k) => k + 1);
+    const config = editedSplashConfig(selected, items, seconds);
+    setApplying(true);
+    try {
+      if (g.selected) {
+        await updateGameTemplate(selected.id, { items, config });
+        g.setTemplates((old) => old.map((t) => (t.id === selected.id ? { ...t, items, config } : t)));
+      } else if (embed && academy && profile) {
+        // A new embedded game has no template yet. Persist it before reporting its ID to the lesson.
+        const row = await createGameTemplate({
+          academyId: academy.id, classId: g.classId, gameType: 'sentencesplash',
+          teacherId: profile.id, name: name.trim() || selected.name, items, config,
+        });
+        g.setTemplates(old => [...old, row]);
+        g.setSelectedId(row.id);
+      } else setDraft({ ...draft, items, config });
+      setRestart((k) => k + 1);
+    } finally {
+      setApplying(false);
+    }
   }
   return (
     <div className="space-y-4">
@@ -175,6 +187,8 @@ export default function SentenceSplashPage() {
                 listsLoading={g.wordListsLoading}
                 classId={g.classId}
                 apply={apply}
+                onChange={captureChanges}
+                saving={saving}
               />
             ) : (
               <p>
@@ -195,14 +209,11 @@ export default function SentenceSplashPage() {
                 />
               </label>
               <p className="text-sm">
-                {text(
-                  "문장을 고친 뒤 ‘미리보기 적용’을 누르고 저장하세요.",
-                  "Apply your changes to the preview before saving.",
-                )}
+                {t('sentenceSplashSave.saveHint')}
               </p>
               <button
                 className={button}
-                disabled={saving || !name.trim()}
+                disabled={saving || applying || invalid || !name.trim()}
                 onClick={() => void saveCopy()}
               >
                 {saving
@@ -244,14 +255,18 @@ function SplashEditor({
   listsLoading,
   classId,
   apply,
+  onChange,
+  saving,
 }: {
   template: GameTemplate;
   wordLists: ReturnType<typeof useGameTemplates>["wordLists"];
   listsLoading: boolean;
   classId: string | null;
   apply: (items: GameItem[], seconds: number) => Promise<void>;
+  onChange: (items: GameItem[], seconds: number) => void;
+  saving: boolean;
 }) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const en = i18n.language.startsWith("en");
   const text = (ko: string, english: string) => (en ? english : ko);
   const [items, setItems] = useState(() =>
@@ -266,15 +281,35 @@ function SplashEditor({
   const invalid =
     items.length === 0 || items.some((i) => sentenceWords(i.label).length < 2);
   const { notify } = useToast();
-  function append(labels: string[]) {
-    setItems((old) => [
-      ...old,
-      ...labels
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((label) => ({ id: crypto.randomUUID(), label })),
-    ]);
-    setFeedback("");
+  useLayoutEffect(() => onChange(items, seconds), [items, seconds, onChange]);
+  async function append(labels: string[]) {
+    if (busy || saving) return false;
+    // Also repair older saved games that accidentally contain only the untouched demo.
+    const base = isSplashSampleItems(items) ? [] : items;
+    const seen = new Set(base.map(i => i.label.trim().replace(/\s+/g, ' ').toLowerCase()));
+    const fresh = labels.map(s => s.trim()).filter(label => {
+      const key = label.replace(/\s+/g, ' ').toLowerCase();
+      if (!label || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).map(label => ({ id: crypto.randomUUID(), label }));
+    if (!fresh.length) return false;
+    const next = [...base, ...fresh];
+    setItems(next);
+    if (next.some(i => sentenceWords(i.label).length < 2)) return false;
+    setBusy(true);
+    setFeedback('');
+    try {
+      await apply(next, seconds);
+      setFeedback(t('sentenceSplashSave.imported'));
+      return true;
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), 'error');
+      setFeedback(text('적용하지 못했어요. 입력 내용은 유지되니 다시 시도하세요.', 'Could not apply. Your edits are still here; please retry.'));
+      return false;
+    } finally {
+      setBusy(false);
+    }
   }
   function move(index: number, direction: number) {
     setItems((old) => {
@@ -314,7 +349,7 @@ function SplashEditor({
     }
   }
   return (
-    <fieldset disabled={busy} className="space-y-4 min-w-0">
+    <fieldset disabled={busy||saving} className="space-y-4 min-w-0">
       <label className="block font-semibold">
         {text("문장당 제한 시간", "Time per sentence")}
         <select
@@ -409,10 +444,7 @@ function SplashEditor({
           className={button}
           type="button"
           disabled={!bulk.trim()}
-          onClick={() => {
-            append(bulk.split(/\r?\n/));
-            setBulk("");
-          }}
+          onClick={async () => { if(await append(bulk.split(/\r?\n/)))setBulk(''); }}
         >
           {text("입력한 문장 추가", "Add pasted sentences")}
         </button>
@@ -431,12 +463,12 @@ function SplashEditor({
         kind="sentence"
         wordLists={wordLists}
         loading={listsLoading}
-        onImportFull={(cards) => append(cards.map((c) => c.word))}
+        onImportFull={(cards) => {void append(cards.map((c) => c.word));}}
       />
       <SentenceBankPicker
         withKo={false}
         classId={classId}
-        onImportLabels={append}
+        onImportLabels={labels=>{void append(labels);}}
       />
       {invalid && (
         <p role="status">
