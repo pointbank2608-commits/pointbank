@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "unit1": {
+    "id": "stage1-abc",
+    "number": 1,
+    "sourceUnitIds": ["alphabet-a", "alphabet-b", "alphabet-c"],
+    "representatives": { "alphabet-a": "pw-apple", "alphabet-b": "pw-bag", "alphabet-c": "pw-cat" },
+    "reader": { "sightWords": ["a"], "pattern": "I see a {word}.", "wordIds": ["pw-cat", "pw-cap", "pw-cup", "pw-bag"], "scene": { "pw-cat": {"x":4,"y":28,"w":25,"h":63}, "pw-cap": {"x":32,"y":10,"w":24,"h":50}, "pw-cup": {"x":42,"y":53,"w":20,"h":42}, "pw-bag": {"x":69,"y":20,"w":26,"h":73} } }
+  },
+  "remainingPolicy": "Existing confirmed single-letter units D-Z. No invented multi-letter grouping or reader sentences."
+}

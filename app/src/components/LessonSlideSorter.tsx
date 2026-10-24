@@ -21,6 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
@@ -35,6 +36,7 @@ import { newHelper, type HelperType } from '../lib/slideHelpers';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
+import Stage1LessonOptions from './phonicsStage1/Stage1LessonOptions';
 import { workbookOfMaterial, workbookNumbers, stableWorkbookRefs, resolveWorkbookSelection } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
@@ -524,6 +526,7 @@ export default function LessonSlideSorter({
       id: uid(),
       kind: 'material',
       materialId,
+      ...(materialId === 'phonicsstage1' ? { phonicsStage1: { unitId: 'stage1-abc', view: 'slides' as const, lesson: 1 as const } } : {}),
       ...(worksheetTab ? { worksheetTab } : {}),
       ...(worksheetOptions ? { worksheetOptions } : {}),
       ...(boardTheme ? { boardTheme } : {}),
@@ -1155,7 +1158,7 @@ export default function LessonSlideSorter({
               }}
             />
             <div className="mt-4 space-y-3">
-              <BlockOptionsPanel
+              {!(selected.kind === 'material' && selected.materialId === 'phonicsstage1') && <BlockOptionsPanel
                 slide={selected}
                 academyId={academyId}
                 classId={classId}
@@ -1164,7 +1167,7 @@ export default function LessonSlideSorter({
                 lessonListName={wordList?.name}
                 wordLists={wordLists}
                 onUpdate={(patch) => updateSlide(selected.id, patch)}
-              />
+              />}
               <SlideHelpersEditor helpers={selected.helpers ?? []} onChange={(next) => updateSlide(selected.id, { helpers: next })} />
             </div>
             </>
@@ -1180,7 +1183,7 @@ function RainbowAddPanel({ onAdd }: { onAdd: (d: RainbowDraft) => void }) {
   return <RainbowSlideForm value={draft} onChange={setDraft} onAdd={() => onAdd(draft)} />;
 }
 
-function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon: string; label: string } {
+function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; label: string } {
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
@@ -1213,6 +1216,11 @@ function slideThumbLabel(slide: LessonSlide, t: (key: string) => string): { icon
   if (slide.materialId === 'worksheet' && slide.worksheetTab) {
     const wt = WORKSHEET_TAB_CATALOG.find((w) => w.tab === slide.worksheetTab);
     if (wt) return { icon: wt.icon, label: t(`materials.worksheet.${wt.labelKey}`) };
+  }
+  if (slide.materialId === 'phonicsstage1' && slide.phonicsStage1) {
+    const ref = slide.phonicsStage1;
+    const label = ref.view === 'workbook' ? t('phonicsStage1.workbook') : ref.optional ? t('phonicsStage1.extra') : t('phonicsStage1.lesson', { n: ref.lesson });
+    return { icon: 'auto_stories', label: t('phonicsStage1.title') + ' · ' + label };
   }
   const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
   return { icon: entry?.icon ?? 'print', label: entry ? t(entry.nameKey) : slide.materialId };
@@ -1593,6 +1601,9 @@ function SlideDetail({
   }
 
   // material slide
+  if (slide.materialId === 'phonicsstage1') {
+    return <Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
+  }
   if (slide.materialId === 'phonics') {
     return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
   }

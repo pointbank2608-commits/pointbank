@@ -280,6 +280,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             navState.materialsDecorTheme = decorThemeFor(slide.topic);
           }
           if (Array.isArray(slide.phonicsUnitIds)) navState.phonicsUnitIds = slide.phonicsUnitIds;
+          if (slide.phonicsStage1) navState.phonicsStage1 = slide.phonicsStage1;
           else if ((slide.materialId === 'cvcworkbook' || slide.materialId === 'longvowelworkbook') && Array.isArray(slide.cvcUnits)) navState.cvcUnits = slide.cvcUnits;
           if (slide.materialId === 'phonics') {
             if (slide.phonicsTab) navState.materialsTab = slide.phonicsTab;

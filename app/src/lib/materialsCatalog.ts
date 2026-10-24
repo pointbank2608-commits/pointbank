@@ -17,6 +17,7 @@ export interface MaterialCatalogEntry {
 /** 수업 자료실 카드 목록 — /materials 페이지가 그대로 매핑한다. 새 인쇄 자료를 추가할 땐
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
+  { id:'phonicsstage1', displayOrder:4.1, category:'phonics', preparation:'unit', path:'/materials/phonics-stage-1', icon:'auto_stories', cover:'/covers/material-phonics.jpg', nameKey:'phonicsStage1.title', descKey:'phonicsStage1.description' },
   { id: 'phonicsstage4workbook', displayOrder: 6.1, category: 'phonics', preparation: 'unit', path: '/materials/phonics-stage-4-workbook', icon: 'menu_book', cover: '/covers/material-cvcworkbook.jpg', nameKey: 'materials.stage4WorkbookName', descKey: 'materials.stage4WorkbookDesc' },
   { id: 'phonicsstage5workbook', displayOrder: 6.2, category: 'phonics', preparation: 'unit', path: '/materials/phonics-stage-5-workbook', icon: 'menu_book', cover: '/covers/material-longvowelworkbook.jpg', nameKey: 'materials.stage5WorkbookName', descKey: 'materials.stage5WorkbookDesc' },
   { id: 'grammarworkbook', displayOrder: 6.3, category: 'other', preparation: 'topic', path: '/materials/grammar-workbook', icon: 'rule', cover: null, nameKey: 'materials.grammarWorkbookName', descKey: 'materials.grammarWorkbookDesc' },

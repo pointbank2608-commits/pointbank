@@ -1,7 +1,7 @@
 import BackButton from '../components/BackButton';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { PhonicsListCute, PhonicsTracingCute, ReaderCute, type ReaderImageMode } from '../components/worksheets/PhonicsCuteSheets';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import { fetchPhonicsBank } from '../lib/api';
@@ -383,6 +383,7 @@ export default function PhonicsWorksheetLibraryPage() {
     <div className="space-y-6 print:space-y-0">
       <div className="no-print space-y-6">
         <BackButton path="/materials" to={t('materials.backToMaterials')} />
+          {step === 1 && <Link className="inline-flex min-h-12 items-center rounded-xl border border-primary bg-white px-4 font-bold text-primary" to="/materials/phonics-stage-1">{t('phonicsStage1.title')}</Link>}
 
         <div>
           <h2 className="mb-1.5 font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">

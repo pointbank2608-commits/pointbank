@@ -100,8 +100,8 @@
           ],
           "name": "C",
           "patterns": [
-            "{c}at",
             "{c}ap",
+            "{c}at",
             "{c}up"
           ],
           "extensions": []

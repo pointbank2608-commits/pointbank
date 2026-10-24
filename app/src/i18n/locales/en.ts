@@ -1,5 +1,6 @@
 import { boardEn } from '../boardLocales';
 import { teacherGameEn } from '../teacherGameLocales';
+import { phonicsStage1En } from '../phonicsStage1Locales';
 import { bombSoundEn } from '../bombSoundLocales';
 import { turnDisplayEn } from '../turnDisplayLocales';
 import { materialBrowserEn } from '../materialBrowserLocales';
@@ -12,6 +13,7 @@ import type { Ko } from './ko';
 
 const en: Ko = {
   teacherGame: teacherGameEn,
+  phonicsStage1: phonicsStage1En,
   whiteboard: boardEn,
   workbook: workbookEn,
   phonicsCourse: phonicsCourseEn,

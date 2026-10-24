@@ -44,6 +44,7 @@ const ClassBoardPage = lazyPage(() => import('./pages/ClassBoardPage'));
 const DashboardPage = lazyPage(() => import('./pages/DashboardPage'));
 const DictionaryPage = lazyPage(() => import('./pages/DictionaryPage'));
 const PhonicsPage = lazyPage(() => import('./pages/PhonicsPage'));
+const PhonicsStage1Page = lazyPage(() => import('./pages/PhonicsStage1Page'));
 const GrammarPage = lazyPage(() => import('./pages/GrammarPage'));
 const WordListsPage = lazyPage(() => import('./pages/WordListsPage'));
 const FindMissingPage = lazyPage(() => import('./pages/FindMissingPage'));
@@ -283,6 +284,8 @@ function AppRoutes() {
             <Route path="/settings/billing" element={<BillingPage />} />
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
+            <Route path="/phonics/stage-1" element={<PhonicsStage1Page />} />
+            <Route path="/materials/phonics-stage-1" element={<PhonicsStage1Page />} />
             <Route path="/grammar" element={<GrammarPage />} />
             <Route path="/videos" element={<VideoLibraryPage />} />
             <Route path="/homework" element={<HomeworkPage />} />

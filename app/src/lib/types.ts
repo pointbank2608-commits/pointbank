@@ -750,6 +750,7 @@ export interface WorksheetSlideOptions {
  * 리스트)으로 연다. worksheetOptions 는 그 탭의 세부 설정(2026-09-25 추가) — 발표 중엔 옵션
  * 컨트롤이 안 보이므로 여기서 미리 정해둔 값이 그대로 쓰인다. */
 export interface MaterialSlide {
+  phonicsStage1?: { unitId: string; view: 'slides' | 'workbook'; lesson: 1 | 2; optional?: boolean };
   id: string;
   kind: 'material';
   materialId: string;

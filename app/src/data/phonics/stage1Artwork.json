@@ -1,0 +1,50 @@
+{
+  "source": "User-supplied Unit1 v4 PDF; original embedded pages, cropped only by SVG viewport at display time.",
+  "shadows": {
+    "pw-ant": {
+      "url": "/phonics-stage1-reference/shadow-ant.png",
+      "viewBox": "486 244 303 310",
+      "sourcePage": 46
+    },
+    "pw-bat": {
+      "url": "/phonics-stage1-reference/shadow-bat.png",
+      "viewBox": "445 242 375 275",
+      "sourcePage": 48
+    },
+    "pw-cup": {
+      "url": "/phonics-stage1-reference/shadow-cup.png",
+      "viewBox": "475 240 329 250",
+      "sourcePage": 50
+    },
+    "pw-bus": {
+      "url": "/phonics-stage1-reference/shadow-bus.png",
+      "viewBox": "445 230 368 314",
+      "sourcePage": 80
+    },
+    "pw-axe": {
+      "url": "/phonics-stage1-reference/shadow-axe.png",
+      "viewBox": "490 206 290 344",
+      "sourcePage": 82
+    },
+    "pw-apple": {
+      "url": "/phonics-stage1-reference/shadow-apple.png",
+      "viewBox": "482 224 305 327",
+      "sourcePage": 84
+    },
+    "pw-bag": {
+      "url": "/phonics-stage1-reference/shadow-bag.png",
+      "viewBox": "463 218 334 309",
+      "sourcePage": 86
+    },
+    "pw-cap": {
+      "url": "/phonics-stage1-reference/shadow-cap.png",
+      "viewBox": "450 229 346 250",
+      "sourcePage": 88
+    },
+    "pw-cat": {
+      "url": "/phonics-stage1-reference/shadow-cat.png",
+      "viewBox": "491 180 314 329",
+      "sourcePage": 90
+    }
+  }
+}

@@ -200,6 +200,7 @@ export default function PhonicsPage() {
 
       <div>
         <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('phonics.stepLabel')}</div>
+        {step === 1 && <Link className="mb-3 inline-flex min-h-12 items-center rounded-xl border border-primary bg-white px-4 font-bold text-primary" to="/materials/phonics-stage-1">{t('phonicsStage1.title')}</Link>}
         <div className="flex flex-wrap gap-2">
           {STEPS.map((s) => (
             <button
