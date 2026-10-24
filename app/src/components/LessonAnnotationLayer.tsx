@@ -19,6 +19,10 @@ interface Props {
   onClose: () => void;
   /** 위쪽에서 비울 높이(px) — 발표 진행바가 있으면 52, 자료실 화면에서는 0 */
   top?: number;
+  /** 전자칠판처럼 닫기 없이 계속 쓰는 판서 — 닫기 단추와 Esc 닫기를 없앤다 */
+  persistent?: boolean;
+  /** 있으면 이 탭 sessionStorage 에 선을 남겨, 다른 화면에 다녀와도 판서가 이어진다 */
+  persistKey?: string;
 }
 
 // 흰색: 초록·검은 칠판 배경에서도 잘 보이게(2026-10-11 사용자 요청)
@@ -27,12 +31,21 @@ const WIDTHS = [3, 6, 11];
 
 /** 수업 중 이미지·워크시트 위에만 잠깐 쓰는 판서 레이어. 선은 서버에 저장하지 않고 현재
  * 활동 안에서만 유지한다. 좌표를 비율로 저장해 전체화면 전환이나 창 크기 변경에도 모양을 지킨다. */
-export default function LessonAnnotationLayer({ onClose, top = 52 }: Props) {
+export default function LessonAnnotationLayer({ onClose, top = 52, persistent = false, persistKey }: Props) {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const activeStrokeRef = useRef<Stroke | null>(null);
   const strokesRef = useRef<Stroke[]>([]);
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [strokes, setStrokes] = useState<Stroke[]>(() => {
+    if (!persistKey) return [];
+    try {
+      const raw = sessionStorage.getItem(persistKey);
+      const parsed = raw ? (JSON.parse(raw) as Stroke[]) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState(COLORS[0]);
   const [width, setWidth] = useState(WIDTHS[1]);
@@ -79,7 +92,14 @@ export default function LessonAnnotationLayer({ onClose, top = 52 }: Props) {
   useEffect(() => {
     strokesRef.current = strokes;
     redraw();
-  }, [strokes, redraw]);
+    if (persistKey) {
+      try {
+        sessionStorage.setItem(persistKey, JSON.stringify(strokes));
+      } catch {
+        /* 너무 커서 못 남겨도 이번 화면에서는 그대로 쓴다 */
+      }
+    }
+  }, [strokes, redraw, persistKey]);
 
   useEffect(() => {
     const observer = new ResizeObserver(redraw);
@@ -93,11 +113,11 @@ export default function LessonAnnotationLayer({ onClose, top = 52 }: Props) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape' && !persistent) onClose();
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, persistent]);
 
   function pointFromEvent(event: ReactPointerEvent<HTMLCanvasElement>): Point {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -199,9 +219,11 @@ export default function LessonAnnotationLayer({ onClose, top = 52 }: Props) {
         <button type="button" disabled={strokes.length === 0} onClick={() => setStrokes([])} className="flex h-10 w-10 items-center justify-center rounded-xl hover:bg-white/15 disabled:opacity-30" aria-label={t('curriculum.play.clearDrawing')}>
           <span className="material-symbols-outlined text-[20px]">delete_sweep</span>
         </button>
-        <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20" aria-label={t('curriculum.play.closeDrawing')}>
-          <span className="material-symbols-outlined text-[20px]">close</span>
-        </button>
+        {!persistent && (
+          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 hover:bg-white/20" aria-label={t('curriculum.play.closeDrawing')}>
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        )}
       </div>
     </div>
   );

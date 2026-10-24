@@ -1,3 +1,4 @@
+import { boardEn } from '../boardLocales';
 import { teacherGameEn } from '../teacherGameLocales';
 import { bombSoundEn } from '../bombSoundLocales';
 import { turnDisplayEn } from '../turnDisplayLocales';
@@ -11,6 +12,7 @@ import type { Ko } from './ko';
 
 const en: Ko = {
   teacherGame: teacherGameEn,
+  whiteboard: boardEn,
   workbook: workbookEn,
   phonicsCourse: phonicsCourseEn,
   bombSound: bombSoundEn,
@@ -581,9 +583,9 @@ const en: Ko = {
     clearAllConfirm: 'Delete all the registered items?',
     settingsTitle: 'Pass the Ball settings',
     resultSoundLabel: 'Result sound',
+    defaultMusic: 'Default music (Pass the Ball)',
     rangeLabel: 'Music duration range (seconds) — it stops at a random moment in this range',
     seconds: 'sec',
-    defaultMusic: 'Default music (Pass the Ball)',
     startButton: 'Start passing the ball',
     playingHint: 'Pass the ball while the music plays… no one knows when it stops!',
     missionLabel: "Today's mission word",

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import AcademyCodeButton from '../components/AcademyCodeButton';
 import MaterialsPenButton from '../components/MaterialsPenButton';
+import BoardReturnPill from '../components/board/BoardReturnPill';
 import CoachTip from '../components/CoachTip';
 import DeletionBanner from '../components/DeletionBanner';
 import { TrialBanner, TrialModal } from '../components/TrialNotice';
@@ -272,6 +273,7 @@ function AppLayoutInner() {
           <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}
+        <BoardReturnPill />
       </main>
     </div>
   );

@@ -31,7 +31,10 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
     id: 'lesson',
     labelKey: 'nav.group_lesson',
     icon: 'play_circle',
-    children: [{ to: '/curriculum', labelKey: 'nav.curriculum', icon: 'auto_stories', feature: 'group' }],
+    children: [
+      { to: '/curriculum', labelKey: 'nav.curriculum', icon: 'auto_stories', feature: 'group' },
+      { to: '/whiteboard', labelKey: 'whiteboard.navLabel', icon: 'draw' },
+    ],
   },
   {
     id: 'class',

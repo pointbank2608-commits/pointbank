@@ -1,3 +1,4 @@
+import { boardKo } from '../boardLocales';
 import { teacherGameKo } from '../teacherGameLocales';
 import { bombSoundKo } from '../bombSoundLocales';
 import { turnDisplayKo } from '../turnDisplayLocales';
@@ -9,6 +10,7 @@ import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
   teacherGame: teacherGameKo,
+  whiteboard: boardKo,
   workbook: workbookKo,
   phonicsCourse: phonicsCourseKo,
   bombSound: bombSoundKo,
@@ -578,9 +580,9 @@ const ko = {
     clearAllConfirm: '등록된 항목을 전부 삭제할까요?',
     settingsTitle: '공 돌리기 설정',
     resultSoundLabel: '결과 사운드',
+    defaultMusic: '기본 음악(공 돌리기)',
     rangeLabel: '음악 재생 시간 범위(초) — 이 사이 무작위 시각에 멈춰요',
     seconds: '초',
-    defaultMusic: '기본 음악(공 돌리기)',
     startButton: '공 돌리기 시작',
     playingHint: '음악이 흐르는 동안 공을 돌리세요… 언제 멈출지 몰라요!',
     missionLabel: '오늘의 미션 단어',

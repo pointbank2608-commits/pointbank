@@ -16,6 +16,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = ['start', 'lesson', 'games', 'words
 
 export const FAQ: FaqItem[] = [
   {
+    id: 'lesson-whiteboard',
+    category: 'lesson',
+    q: { ko: '수업을 미리 안 만들었어요. 즉흥으로 수업할 때는 어떻게 하나요?', en: 'I did not prepare a lesson. How do I teach on the spot?' },
+    a: {
+      ko: '왼쪽 메뉴 "수업 → 전자칠판"(또는 오늘 화면의 "전자칠판")을 열어 보세요. 빈 칠판에 펜으로 쓰면서, 위쪽의 "오늘 자료 넣기"에 단어나 문장을 한 번만 붙여 넣으면 플래시카드·예문 읽기·간단 퀴즈·게임·활동지 인쇄를 그 자료로 바로 불러올 수 있어요. 게임이나 활동지를 하다가 "칠판으로 돌아가기"를 누르면 판서와 자료가 그대로 이어져요. 판서와 자료는 이 탭에만 남고 서버에는 저장되지 않아요.',
+      en: 'Open "Lesson → Whiteboard" (or the "Whiteboard" tile on Today). Write with the pen on the empty board, paste words or sentences once under "Add today’s material", and bring in flashcards, sentence reading, a quick quiz, a game or a printable worksheet from that material. After a game or worksheet, press "Back to the whiteboard" and your writing and material are still there. They stay in this tab only and are not saved to the server.',
+    },
+    link: '/whiteboard',
+  },
+  {
     id: 'start-menu',
     category: 'start',
     q: { ko: '메뉴 이름이 바뀐 것 같아요. 예전 메뉴는 어디 있나요?', en: 'The menu names look different. Where did the old menus go?' },
