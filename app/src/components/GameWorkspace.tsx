@@ -67,6 +67,9 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const capabilities = gamePreparation(info?.gameType || 'wheel');
   const source = info?.selected?.config.classroomSource;
   const sourceKind = source?.kind || (capabilities.kinds[0] || 'word');
+  const reuseLabel = source || capabilities.kinds.length
+    ? sourceKind === 'sentence' ? 'teacherGame.moreSentences' : 'teacherGame.moreWords'
+    : 'teacherGame.moreContent';
   const sourceReady = !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
   const canStart = !!info && info.academyId===academy?.id && !info.loading && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
@@ -160,8 +163,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     <button className={btn} disabled={busy || !info || info.loading || !!info.sharedView} onClick={() => {sampleFromId.current=info?.selected?.id;void action(() => bridge.current!.useSource({cards: sampleActivityCards(sourceKind),kind:sourceKind,name:t('quick.sampleTitle')})).then(ok=>{if(ok)setSampleRequested(true);});}}>{t('quick.sample')}</button>
   </div>;
   const reuse = <div className="flex flex-wrap gap-2">
-    {!!info?.sourceCards?.length && <><button className={btn} onClick={() => setPanel('games')}>{t('quick.otherGame')}</button><button className={btn} onClick={() => navigate('/materials/worksheet',{state:{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:info.sourceCards,materialsKind:sourceKind,materialsTab:'list'}})}>{t('quick.worksheet')}</button></>}
-    {!presenting && groupOpen && info?.selected && <button className={btn} onClick={() => { setPanel(null); setAddLesson(true); }}>{t('quick.addLesson')}</button>}
+    {!!info?.sourceCards?.length && <><button className={btn} onClick={() => setPanel('games')}>{t('teacherGame.switchGame')}</button><button className={btn} onClick={() => navigate('/materials/worksheet',{state:{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:info.sourceCards,materialsKind:sourceKind,materialsTab:'list'}})}>{t('quick.worksheet')}</button></>}
+    {!presenting && groupOpen && info?.selected && <button className={btn} onClick={() => { setPanel(null); setAddLesson(true); }}>{t('teacherGame.addToLesson')}</button>}
   </div>;
   return <GameWorkspaceContext.Provider value={value}>
     <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
@@ -175,7 +178,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         </div></details>
         {info && !canStart && !info.loading && <p role="status" className="text-error">{validation}</p>}
         {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
-        <details className="game-optional-actions"><summary>{t('teacherGame.extra')}</summary><div className="mt-3">{reuse}</div></details>
+        <details className="game-optional-actions"><summary>{t(reuseLabel)}</summary><div className="mt-3">{reuse}</div></details>
         <p className="text-base text-deep-navy">{t('teacherGame.prepareHint')}</p>
       </header>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
@@ -194,7 +197,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>
           <p className="text-base">{t('teacherGame.navigationHint')}</p>
           <details className="game-optional-actions"><summary>{t('teacherGame.tools')}</summary><div ref={setTeacherToolsTarget} className="mt-3 space-y-2" data-teacher-game-tools /></details>
-          <details className="game-optional-actions"><summary>{t('teacherGame.extra')}</summary><div className="mt-3">{reuse}</div></details>
+          <details className="game-optional-actions"><summary>{t(reuseLabel)}</summary><div className="mt-3">{reuse}</div></details>
         </div>
         {panel === 'video' && demo && <div className="p-4"><GameMethodVideo src={demo} /></div>}
         {panel === 'content' && !info?.sharedView && <div className="space-y-4 p-4">
