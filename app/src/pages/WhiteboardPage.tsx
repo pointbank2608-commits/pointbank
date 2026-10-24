@@ -29,15 +29,7 @@ const THEMES: Record<Theme, { cls: string; style?: React.CSSProperties; dark: bo
   white: { cls: 'bg-white', dark: false },
   green: { cls: 'bg-[#1f4d3a]', dark: true },
   black: { cls: 'bg-[#15171c]', dark: true },
-  // 영어 4선 노트: 위 선·점선(중간)·기준선·아래 선, 96px마다 반복
-  lined: {
-    cls: 'bg-white',
-    dark: false,
-    style: {
-      backgroundImage: "url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='96'><path d='M0 8H200M0 72H200M0 88H200' stroke='%2393c5fd' stroke-width='1.5'/><path d='M0 72H200' stroke='%2360a5fa' stroke-width='2'/><path d='M0 40H200' stroke='%23f87171' stroke-width='1.5' stroke-dasharray='8 6'/></svg>\")",
-      backgroundSize: '200px 96px',
-    },
-  },
+  lined: { cls: 'bg-white', dark: false },
   grid: {
     cls: 'bg-white',
     dark: false,
@@ -47,6 +39,27 @@ const THEMES: Record<Theme, { cls: string; style?: React.CSSProperties; dark: bo
     },
   },
 };
+
+const LINE_GAPS = [18, 26, 38, 54] as const;
+const BOARD_LINEGAP_KEY = 'classbank.board.linegap.v1';
+
+/** 영어 4선 노트(예시 그림과 같은 모양): 회색 윗줄 · 점선 · 빨간 기준선 · 회색 아랫줄이 같은 간격이고, 두 칸 띄운 뒤 반복. gap 은 선 사이 px. */
+function linedStyle(gap: number): React.CSSProperties {
+  const period = gap * 5;
+  const y = (n: number) => Math.round(gap * 0.5) + gap * n;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='${period}'><path d='M0 ${y(0)}H200M0 ${y(3)}H200' stroke='%239ca3af' stroke-width='1.5'/><path d='M0 ${y(1)}H200' stroke='%236b7280' stroke-width='1.2' stroke-dasharray='5 4'/><path d='M0 ${y(2)}H200' stroke='%23ef4444' stroke-width='2'/></svg>`;
+  return { backgroundImage: `url("data:image/svg+xml,${svg}")`, backgroundSize: `200px ${period}px` };
+}
+
+function readLineGap(): number {
+  try {
+    const v = Number(sessionStorage.getItem(BOARD_LINEGAP_KEY));
+    if ((LINE_GAPS as readonly number[]).includes(v)) return v;
+  } catch {
+    /* 기본값 */
+  }
+  return 26;
+}
 
 function readTheme(): Theme {
   try {
@@ -70,6 +83,7 @@ export default function WhiteboardPage() {
   const root = useRef<HTMLDivElement>(null);
   const [material, setMaterial] = useState<BoardMaterial | null>(() => loadBoardMaterial());
   const [theme, setTheme] = useState<Theme>(readTheme);
+  const [lineGap, setLineGap] = useState(readLineGap);
   const [tool, setTool] = useState<Tool | null>(null);
   const [pending, setPending] = useState<Tool | null>(null);
   const [materialOpen, setMaterialOpen] = useState(false);
@@ -137,6 +151,15 @@ export default function WhiteboardPage() {
     [material],
   );
   const th = THEMES[theme];
+  const bgStyle = theme === 'lined' ? linedStyle(lineGap) : th.style;
+  function chooseGap(g: number) {
+    setLineGap(g);
+    try {
+      sessionStorage.setItem(BOARD_LINEGAP_KEY, String(g));
+    } catch {
+      /* 무시 */
+    }
+  }
   const label = material ? t(material.kind === 'sentence' ? 'whiteboard.materialSentences' : 'whiteboard.materialWords', { n: material.cards.length }) : t('whiteboard.materialNone');
   const topBtn = 'flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[15px] font-bold text-white focus-visible:outline-4 focus-visible:outline-white hover:bg-white/15';
   const tools: { id: Tool; icon: string; label: string }[] = [
@@ -149,7 +172,7 @@ export default function WhiteboardPage() {
   ];
 
   return (
-    <div ref={root} className={`fixed inset-0 z-50 select-none ${th.cls}`} style={th.style} data-whiteboard data-theme-name={theme} onPointerDownCapture={(e) => { if ((e.target as HTMLElement).tagName === 'CANVAS') setWrote(true); }}>
+    <div ref={root} className={`fixed inset-0 z-50 select-none ${th.cls}`} style={bgStyle} data-whiteboard data-theme-name={theme} onPointerDownCapture={(e) => { if ((e.target as HTMLElement).tagName === 'CANVAS') setWrote(true); }}>
       <header className="no-print absolute inset-x-0 top-0 z-[45] flex h-14 items-center gap-1 bg-deep-navy px-2 text-white" aria-label={t('whiteboard.title')}>
         <button type="button" className={topBtn} onClick={exit} aria-label={t('whiteboard.exit')}>
           <span className="material-symbols-outlined text-[22px]" aria-hidden>
@@ -184,6 +207,23 @@ export default function WhiteboardPage() {
             </button>
           ))}
         </nav>
+        {theme === 'lined' && (
+          <div className="flex items-center gap-0.5" role="group" aria-label={t('whiteboard.lineSize')} data-board-linesize>
+            {LINE_GAPS.map((g, i) => (
+              <button
+                key={g}
+                type="button"
+                aria-pressed={lineGap === g}
+                aria-label={`${t('whiteboard.lineSize')} ${i + 1}`}
+                title={`${t('whiteboard.lineSize')} ${i + 1}`}
+                onClick={() => chooseGap(g)}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg font-bold text-white ${lineGap === g ? 'bg-white/30' : 'hover:bg-white/15'}`}
+              >
+                {['S', 'M', 'L', 'XL'][i]}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-0.5" role="group" aria-label={t('whiteboard.bg')}>
           {(['white', 'green', 'black', 'grid', 'lined'] as const).map((k) => (
             <button
@@ -194,7 +234,7 @@ export default function WhiteboardPage() {
               title={t(`whiteboard.bg_${k}`)}
               onClick={() => chooseTheme(k)}
               className={`h-8 w-8 rounded-full border-2 ${theme === k ? 'border-white' : 'border-white/30'}`}
-              style={{ background: k === 'white' ? '#fff' : k === 'green' ? '#1f4d3a' : k === 'black' ? '#15171c' : k === 'lined' ? 'linear-gradient(#fff 0 30%,#60a5fa 30% 36%,#fff 36% 62%,#f87171 62% 68%,#fff 68% 90%,#60a5fa 90% 96%,#fff 96%)' : 'repeating-linear-gradient(0deg,#fff,#fff 5px,#cbd5e1 5px,#cbd5e1 6px)' }}
+              style={{ background: k === 'white' ? '#fff' : k === 'green' ? '#1f4d3a' : k === 'black' ? '#15171c' : k === 'lined' ? 'linear-gradient(#fff 0 12%,#9ca3af 12% 16%,#fff 16% 32%,#6b7280 32% 35%,#fff 35% 48%,#ef4444 48% 54%,#fff 54% 68%,#9ca3af 68% 72%,#fff 72%)' : 'repeating-linear-gradient(0deg,#fff,#fff 5px,#cbd5e1 5px,#cbd5e1 6px)' }}
             />
           ))}
         </div>

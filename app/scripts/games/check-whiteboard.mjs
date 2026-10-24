@@ -147,6 +147,17 @@ try {
   await page.waitForSelector("[data-board-overlay]", { state: "detached" });
   ok("문법 불러오기: 목록·문법 칠판·다시 고르기·검색");
 
+  // 영어 4선 노트: 줄 칸 크기 바꾸기
+  await page.getByRole("button", { name: "영어 4선 노트" }).click();
+  const bgSize = () => page.locator("[data-whiteboard]").evaluate((el) => getComputedStyle(el).backgroundSize);
+  const sizeM = await bgSize();
+  await page.locator("[data-board-linesize] button").nth(3).click();
+  const sizeXL = await bgSize();
+  assert.notEqual(sizeM, sizeXL, "칸 크기를 바꾸면 줄 간격이 달라진다");
+  await page.screenshot({ path: process.env.LINED_SHOT || "/tmp/lined.png" });
+  await page.getByRole("button", { name: "초록" }).click();
+  ok("영어 4선 노트: 줄 칸 크기 조절");
+
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();
   await page.getByRole("button", { name: "퀴즈 시작" }).click();
