@@ -133,6 +133,20 @@ try {
   await page.waitForSelector("[data-board-overlay]", { state: "detached" });
   ok("예문 읽기: 다음·이전(키보드)·뜻 보기");
 
+  // 문법 불러오기: 고르기 → 문법 칠판 → 다시 고르기 → 검색
+  await page.locator('[data-board-tool="grammar"]').click();
+  await page.waitForSelector("[data-board-grammar-picker]");
+  assert.ok((await page.locator("[data-grammar-id]").count()) > 5, "문법 목록이 보인다");
+  await page.locator("[data-grammar-id]").first().click();
+  await page.waitForSelector("[data-board-grammar-view]");
+  assert.ok((await page.locator("[data-board-grammar-view]").innerText()).length > 20, "문법 칠판 내용");
+  await page.locator("[data-board-grammar-list]").click();
+  await page.getByPlaceholder("문법 이름·문장 틀로 찾기").fill("zzzzqq");
+  assert.equal(await page.locator("[data-grammar-id]").count(), 0);
+  await page.getByRole("button", { name: /← 칠판으로/ }).click();
+  await page.waitForSelector("[data-board-overlay]", { state: "detached" });
+  ok("문법 불러오기: 목록·문법 칠판·다시 고르기·검색");
+
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();
   await page.getByRole("button", { name: "퀴즈 시작" }).click();

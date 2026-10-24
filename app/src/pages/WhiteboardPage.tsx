@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from '../components/AccessibleDialog';
+import BoardGrammar from '../components/board/BoardGrammar';
 import BoardGameDialog from '../components/board/BoardGameDialog';
 import BoardMaterialDialog from '../components/board/BoardMaterialDialog';
 import BoardQuiz from '../components/board/BoardQuiz';
@@ -21,13 +22,22 @@ import {
   type BoardMaterial,
 } from '../lib/boardMaterial';
 
-type Tool = 'flash' | 'read' | 'quiz' | 'game' | 'print';
-type Theme = 'white' | 'green' | 'black' | 'grid';
+type Tool = 'flash' | 'read' | 'quiz' | 'grammar' | 'game' | 'print';
+type Theme = 'white' | 'green' | 'black' | 'grid' | 'lined';
 
 const THEMES: Record<Theme, { cls: string; style?: React.CSSProperties; dark: boolean }> = {
   white: { cls: 'bg-white', dark: false },
   green: { cls: 'bg-[#1f4d3a]', dark: true },
   black: { cls: 'bg-[#15171c]', dark: true },
+  // 영어 4선 노트: 위 선·점선(중간)·기준선·아래 선, 96px마다 반복
+  lined: {
+    cls: 'bg-white',
+    dark: false,
+    style: {
+      backgroundImage: "url(\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='96'><path d='M0 8H200M0 72H200M0 88H200' stroke='%2393c5fd' stroke-width='1.5'/><path d='M0 72H200' stroke='%2360a5fa' stroke-width='2'/><path d='M0 40H200' stroke='%23f87171' stroke-width='1.5' stroke-dasharray='8 6'/></svg>\")",
+      backgroundSize: '200px 96px',
+    },
+  },
   grid: {
     cls: 'bg-white',
     dark: false,
@@ -41,7 +51,7 @@ const THEMES: Record<Theme, { cls: string; style?: React.CSSProperties; dark: bo
 function readTheme(): Theme {
   try {
     const v = sessionStorage.getItem(BOARD_THEME_KEY);
-    if (v === 'white' || v === 'green' || v === 'black' || v === 'grid') return v;
+    if (v === 'white' || v === 'green' || v === 'black' || v === 'grid' || v === 'lined') return v;
   } catch {
     /* 기본값 */
   }
@@ -93,7 +103,7 @@ export default function WhiteboardPage() {
   );
 
   function open(next: Tool) {
-    if (!material) {
+    if (!material && next !== 'grammar') {
       setPending(next);
       setMaterialOpen(true);
       return;
@@ -133,6 +143,7 @@ export default function WhiteboardPage() {
     { id: 'flash', icon: 'style', label: t('whiteboard.toolFlash') },
     { id: 'read', icon: 'menu_book', label: t('whiteboard.toolRead') },
     { id: 'quiz', icon: 'quiz', label: t('whiteboard.toolQuiz') },
+    { id: 'grammar', icon: 'spellcheck', label: t('whiteboard.toolGrammar') },
     { id: 'game', icon: 'sports_esports', label: t('whiteboard.toolGame') },
     { id: 'print', icon: 'print', label: t('whiteboard.toolPrint') },
   ];
@@ -174,7 +185,7 @@ export default function WhiteboardPage() {
           ))}
         </nav>
         <div className="flex items-center gap-0.5" role="group" aria-label={t('whiteboard.bg')}>
-          {(['white', 'green', 'black', 'grid'] as const).map((k) => (
+          {(['white', 'green', 'black', 'grid', 'lined'] as const).map((k) => (
             <button
               key={k}
               type="button"
@@ -183,7 +194,7 @@ export default function WhiteboardPage() {
               title={t(`whiteboard.bg_${k}`)}
               onClick={() => chooseTheme(k)}
               className={`h-8 w-8 rounded-full border-2 ${theme === k ? 'border-white' : 'border-white/30'}`}
-              style={{ background: k === 'white' ? '#fff' : k === 'green' ? '#1f4d3a' : k === 'black' ? '#15171c' : 'repeating-linear-gradient(0deg,#fff,#fff 5px,#cbd5e1 5px,#cbd5e1 6px)' }}
+              style={{ background: k === 'white' ? '#fff' : k === 'green' ? '#1f4d3a' : k === 'black' ? '#15171c' : k === 'lined' ? 'linear-gradient(#fff 0 30%,#60a5fa 30% 36%,#fff 36% 62%,#f87171 62% 68%,#fff 68% 90%,#60a5fa 90% 96%,#fff 96%)' : 'repeating-linear-gradient(0deg,#fff,#fff 5px,#cbd5e1 5px,#cbd5e1 6px)' }}
             />
           ))}
         </div>
@@ -212,6 +223,7 @@ export default function WhiteboardPage() {
           <div className="h-full pt-16">
             {tool === 'flash' && material && <FlashcardStudy title={t('whiteboard.toolFlash')} cards={studyCards} inline startShuffled />}
             {tool === 'read' && material && <BoardSentenceReader cards={material.cards} onClose={() => setTool(null)} />}
+            {tool === 'grammar' && <BoardGrammar />}
             {tool === 'quiz' && material && <BoardQuiz cards={material.cards} onClose={() => setTool(null)} />}
           </div>
           {tool === 'game' && material && <BoardGameDialog material={material} onClose={() => setTool(null)} />}
