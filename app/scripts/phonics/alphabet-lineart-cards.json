@@ -1,0 +1,98 @@
+{
+  "generator": "built-in image_gen",
+  "colorCorrections": [
+    {
+      "word": "top",
+      "wordId": "pw-top",
+      "previousImageUrl": "/phonics-images/top.webp",
+      "destination": "app/public/phonics-images/top-alphabet-v2.webp",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-c81d33c5-a3cf-4933-8b1f-95fc76edf2a2.png",
+      "prompt": "Use case: stylized-concept. Asset: ClassBank educational vocabulary color illustration for TOP, meaning a SPINNING TOP TOY (Korean 팽이). The supplied axe picture is ONLY a material, lighting and warm palette STYLE REFERENCE; do NOT draw the axe or workshop. Create one immediately recognizable traditional spinning top toy: rounded broad tapered body with a short vertical spindle handle at the top and a narrow pointed tip touching a simple cream surface. Friendly soft handmade 3D clay sculpture texture, rounded shapes, warm cream/beige background, coral/terracotta body with mustard and muted green simple bands, diffuse light and soft contact shadow. Object centered large with ample white/cream margins, clean uncluttered composition. Show the whole toy with clear upper handle and lower pointed spinning tip. No mountains, people, tool, product frame, packaging, face, letters, numbers, text, logo or watermark. Square image, one toy only.",
+      "styleReference": "app/public/phonics-images/axe.webp"
+    }
+  ],
+  "records": [
+    {
+      "word": "axe",
+      "wordId": "pw-axe",
+      "colorReferenceUrl": "/phonics-images/axe.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/axe.webp",
+      "prompt": "Use case: style-transfer. Asset: one printable vocabulary coloring-book illustration for ClassBank, word axe (도끼). Use the supplied color picture as the subject reference: a single upright axe, wooden handle, broad curved axe head facing right, rounded grip. Redraw the axe itself as clean medium-bold black outlines on pure white. Keep its friendly rounded clay-inspired silhouette, proportions and recognizable tool shape. Large white coloring regions; hollow outlined blade and handle. Remove the workshop and all background objects, wood texture, color, gray fills, shading, gradients and shadows. Include the whole object with generous white margins on every side, centered in a square image. No text, letters, numbers, captions, border, logos or watermark. Do not produce a grayscale conversion or a photo edge filter; draw a new simple outline suitable for young children.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-18a906a1-9501-443e-bee5-dca92579af03.png",
+      "destination": "app/public/word-bank-lineart/axe-alphabet-v1.webp"
+    },
+    {
+      "word": "bat",
+      "wordId": "pw-bat",
+      "colorReferenceUrl": "/phonics-images/bat.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/bat.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary bat means the ANIMAL, a friendly bat with two large ears and two spread membranous wings, just like the reference. Draw the whole bat large in a front three-quarter view. Keep a small rounded body, friendly face, two little feet and clear wing segments. Leave wing membranes and fur white to color. Only tiny pupils and nostrils may be solid black. Remove cave, trees, plants and sky. Do not draw a baseball bat.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-d6db9454-8551-46df-a64b-a35d2386ac83.png",
+      "destination": "app/public/word-bank-lineart/bat-alphabet-v1.webp"
+    },
+    {
+      "word": "garden",
+      "wordId": "pw-garden",
+      "colorReferenceUrl": "/phonics-images/garden.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/garden.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary garden means a tended FLOWER GARDEN. Simplify the reference into a small curved stepping-stone path between two low flower beds, a few large easy-to-color flowers and leaves, two plant pots, a small watering can and a short picket fence behind. Keep a coherent garden scene, with large white spaces between broad clean outlines. Reduce the many tiny leaves and blossoms to a few large recognizable plants. No sky fill or busy backdrop.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-e059ce5f-9307-4167-9fe7-a48ed33d5c60.png",
+      "destination": "app/public/word-bank-lineart/garden-alphabet-v1.webp"
+    },
+    {
+      "word": "insect",
+      "wordId": "pw-insect",
+      "colorReferenceUrl": "/phonics-images/insect.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/insect.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary insect is a friendly LADYBUG from the supplied reference. Correct the anatomy for a child's educational coloring page: use a nearly TOP-DOWN view so ALL SIX LEGS are visible, exactly THREE separate short curved legs extending from the LEFT side and exactly THREE from the RIGHT side. Two antennae only above the head. Oval spotted split wing shell, small rounded head and friendly eyes. Keep all legs separate and clearly countable, not hidden behind the head or leaf. The entire insect is large, centered on one simple broad leaf. Every spot, wing and body area is WHITE inside bold BLACK outlines; only tiny pupils black. Leave at least ten percent white margin around all contours.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-19c474f6-465e-4444-b281-c1fa8a600d62.png",
+      "destination": "app/public/word-bank-lineart/insect-alphabet-v1.webp"
+    },
+    {
+      "word": "question",
+      "wordId": "pw-question",
+      "colorReferenceUrl": "/phonics-images/question.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/question.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary question means asking a question (질문). Preserve the reference curious child with a finger at the chin and other arm folded, friendly puzzled expression, together with ONE LARGE HOLLOW OUTLINED QUESTION MARK beside the child. The question mark is the sole allowed punctuation symbol because it conveys the vocabulary meaning. It must be hollow and colorable, not filled black. Keep two arms, two legs, two shoes and natural simple hands. Remove scenery and furniture. Hair, clothes, shoes and the question mark remain white inside black outlines.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-41b2ed9c-bd63-4f00-93a9-aa39fa73d525.png",
+      "destination": "app/public/word-bank-lineart/question-alphabet-v1.webp"
+    },
+    {
+      "word": "top",
+      "wordId": "pw-top",
+      "colorReferenceUrl": "/phonics-images/top-alphabet-v2.webp",
+      "reference": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-c81d33c5-a3cf-4933-8b1f-95fc76edf2a2.png",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary TOP means a SPINNING TOP TOY (팽이). Use the supplied newly corrected color image as the exact subject reference. Draw the same single rounded striped spinning top, its short upright spindle handle and narrow pointed tip. Preserve the proportions and three-quarter view. Draw the color bands as simple curved contour divisions with white interiors. Remove color, clay texture and the ground shadow completely. No mountain, child, tree or other objects. Show the whole toy within generous white margins. No text or numbers.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-9553a582-2b41-44d8-9ad7-06479e8497b9.png",
+      "destination": "app/public/word-bank-lineart/top-alphabet-v2.webp",
+      "replaceMismatchedReference": true
+    },
+    {
+      "word": "up",
+      "wordId": "pw-up",
+      "colorReferenceUrl": "/phonics-images/up.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/up.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary up means UPWARD (위로). Preserve the reference child looking upward and pointing one index finger clearly upward. Full child visible, two arms, two legs, two shoes; one hand relaxed, other raised above the head pointing up. Clean friendly face with outlined hair. For clarity keep ample empty white space in the direction the child is pointing. No extra arrows, words, sky, clouds, fence, pots or plants. All clothes and hair white inside clear contours.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-e26ebc85-b1de-47ae-bcc5-11411d3655d2.png",
+      "destination": "app/public/word-bank-lineart/up-alphabet-v1.webp"
+    },
+    {
+      "word": "under",
+      "wordId": "pw-under",
+      "colorReferenceUrl": "/phonics-images/under.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/under.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary under means BENEATH (~아래에). Keep exactly one friendly cat crouching on the floor UNDER one small table, as in the reference. The tabletop must be clearly above the cat, with table legs to the sides, so the under relationship is immediately evident. Show the cat's face, two front paws and curled tail under the table. Simple rounded table contours, large white coloring areas; cat markings outlined but not filled. Remove wall decorations, carpet patterns, plants and extra furniture.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-2899f4ea-98c9-4ae1-9102-ea777a602111.png",
+      "destination": "app/public/word-bank-lineart/under-alphabet-v1.webp"
+    },
+    {
+      "word": "watch",
+      "wordId": "pw-watch",
+      "colorReferenceUrl": "/phonics-images/watch.webp",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/watch.webp",
+      "prompt": "Redraw the referenced clay illustration as a NEW children's coloring-book outline, preserving the target subject, meaning, main pose and essential relationships. Pure opaque white background, smooth consistent medium-bold BLACK contour lines, large open WHITE coloring areas. No color, gray fills, shading, gradients, texture, cast shadows, hatch marks or tiny decorative detail. Rounded friendly forms. Do not merely desaturate or edge-filter the photo. Center the complete subject with white safety margins, one individual square image, no collage, frame, captions, logos or watermark. No letters or numbers. Simplify away nonessential background objects.\nVocabulary watch means WRISTWATCH (손목시계). Draw the SAME recognizable rounded rectangular wristwatch and curved strap as the reference, with a side crown and simple buckle, shown in three-quarter view. White interior spaces bounded by medium-bold black outlines. Simplify the watch face to an empty outlined screen with a small outlined sun icon. Remove the frame and remove the entire written smartwatch label. No brand marks, digital numbers, letters, words or any lettering. One wristwatch only, complete strap and case inside broad white margins.",
+      "sourcePath": "C:\\Users\\likes\\.codex\\generated_images\\01a156f2-a097-7241-a23f-7d6c190f6d55\\exec-d3987d93-ffca-4130-bbc5-afb77a3778a8.png",
+      "destination": "app/public/word-bank-lineart/watch-alphabet-v1.webp"
+    }
+  ]
+}

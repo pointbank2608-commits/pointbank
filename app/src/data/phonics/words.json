@@ -51,13 +51,14 @@
     "word": "axe",
     "meaning": "도끼",
     "imageUrl": "/phonics-images/axe.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/axe-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "axe",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/axe.webp"
   },
   "pw-bad": {
     "word": "bad",
@@ -123,13 +124,14 @@
     "word": "bat",
     "meaning": "박쥐",
     "imageUrl": "/phonics-images/bat.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/bat-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "bat",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/bat.webp"
   },
   "pw-bed": {
     "word": "bed",
@@ -1599,13 +1601,14 @@
     "word": "garden",
     "meaning": "정원",
     "imageUrl": "/phonics-images/garden.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/garden-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "garden",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/garden.webp"
   },
   "pw-gate": {
     "word": "gate",
@@ -2116,13 +2119,14 @@
     "word": "insect",
     "meaning": "곤충",
     "imageUrl": "/phonics-images/insect.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/insect-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "insect",
       "recordingUrl": null
     },
-    "meaningSource": "supabase\\037_word_bank_moe_high.sql"
+    "meaningSource": "supabase\\037_word_bank_moe_high.sql",
+    "lineartSourceImageUrl": "/phonics-images/insect.webp"
   },
   "pw-jam": {
     "word": "jam",
@@ -3294,13 +3298,14 @@
     "word": "question",
     "meaning": "질문",
     "imageUrl": "/phonics-images/question.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/question-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "question",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/question.webp"
   },
   "pw-quilt": {
     "word": "quilt",
@@ -4266,14 +4271,15 @@
   "pw-top": {
     "word": "top",
     "meaning": "팽이",
-    "imageUrl": "/phonics-images/top.webp",
-    "lineartUrl": null,
+    "imageUrl": "/phonics-images/top-alphabet-v2.webp",
+    "lineartUrl": "/word-bank-lineart/top-alphabet-v2.webp",
     "audio": {
       "provider": "web-speech",
       "text": "top",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/top-alphabet-v2.webp"
   },
   "pw-toy": {
     "word": "toy",
@@ -4452,25 +4458,27 @@
     "word": "under",
     "meaning": "~아래에",
     "imageUrl": "/phonics-images/under.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/under-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "under",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/under.webp"
   },
   "pw-up": {
     "word": "up",
     "meaning": "위로",
     "imageUrl": "/phonics-images/up.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/up-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "up",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "lineartSourceImageUrl": "/phonics-images/up.webp"
   },
   "pw-van": {
     "word": "van",
@@ -4536,13 +4544,14 @@
     "word": "watch",
     "meaning": "손목시계",
     "imageUrl": "/phonics-images/watch.webp",
-    "lineartUrl": null,
+    "lineartUrl": "/word-bank-lineart/watch-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
       "text": "watch",
       "recordingUrl": null
     },
-    "meaningSource": "supabase\\024_word_bank_batch2.sql"
+    "meaningSource": "supabase\\024_word_bank_batch2.sql",
+    "lineartSourceImageUrl": "/phonics-images/watch.webp"
   },
   "pw-wave": {
     "word": "wave",
