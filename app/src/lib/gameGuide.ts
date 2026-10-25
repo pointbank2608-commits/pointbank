@@ -7,7 +7,7 @@ import { storySample, storyErrors, insertPhrase } from './storybook';
 import { getSentencePattern } from './sentencePatterns';
 import { ADVENTURE_TYPES, sampleAdventure, type AdventureType } from './adventureGames';
 
-export type GuideKind = 'sample' | 'word' | 'sentence' | 'names';
+export type GuideKind = 'sample' | 'word' | 'sentence' | 'names' | 'numbers';
 export type GuideFamily = 'list' | 'sentence' | 'pairs' | 'quiz' | 'ox' | 'groups' | 'image' | 'builtin' | 'diagram' | 'slots' | 'monster' | 'bridge' | 'tower' | 'online';
 export const GUIDE_FAMILIES: Partial<Record<GameType, GuideFamily>> = {
   wheel:'list',ladder:'list',order:'list',bomb:'list',timer:'builtin',tictactoe:'list',saveorgive:'list',findmissing:'list',baskin31:'list',connect4:'list',popcorn:'list',passball:'list',twodice:'list',quiz:'quiz',hangman:'list',truefalse:'ox',matchup:'pairs',whackamole:'pairs',flashcards:'pairs',anagram:'list',groupsort:'groups',unscramble:'sentence',typeanswer:'pairs',spellword:'list',rankorder:'list',wordsearch:'list',crossword:'list',mathgen:'builtin',mazechase:'list',airplane:'list',labeleddiagram:'diagram',imagequiz:'image',gameshowquiz:'quiz',winlosequiz:'quiz',watermelon:'slots',quizshow:'online',shopping:'builtin',treasuredig:'list',fourclues:'list',catchsentence:'sentence',lastbox:'list',mysterybox:'list',airport:'builtin',restaurant:'builtin',icecream:'builtin',doctor:'builtin',lightning:'sentence',sentencesplash:'sentence',shufflefind:'list',telepathy:'list',feedmonster:'monster',sentencebridge:'bridge',sentencetower:'tower',
@@ -16,6 +16,8 @@ export const GUIDE_FAMILIES: Partial<Record<GameType, GuideFamily>> = {
 export const guideFamily=(type:GameType):GuideFamily=>GUIDE_FAMILIES[type]||'builtin';
 const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','treasuredig','catchsentence','lightning','lastbox','mysterybox','shufflefind','telepathy','passball']);
 export const NAME_GAMES = new Set<GameType>(['wheel','ladder','order','bomb','timer']);
+/** 숫자 범위로 항목을 채울 수 있는 게임(랜덤 공 뽑기) */
+export const NUMBER_GAMES = new Set<GameType>(['order']);
 export function guideKinds(type: GameType): GuideKind[] {
   const family = guideFamily(type);
   if(!GUIDE_FAMILIES[type])return ['sample',...gamePreparation(type).kinds];
@@ -24,6 +26,7 @@ export function guideKinds(type: GameType): GuideKind[] {
   if (type==='unscramble'||type==='sentencesplash') return ['sample','sentence'];
   if (BOTH.has(type)||family==='bridge'||family==='tower') kinds.push('sentence');
   if (NAME_GAMES.has(type)) kinds.push('names');
+  if (NUMBER_GAMES.has(type)) kinds.push('numbers');
   return kinds;
 }
 export function guideCards(rows: string[][], previous: FullCardItem[] = []): FullCardItem[] {
@@ -42,7 +45,7 @@ export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   if(family==='tower')return (c.storybook?.steps||[]).map(s=>[s.phrase,String(s.position),...s.wrong]);
   if(family==='diagram')return (c.diagramPins||[]).map(p=>[p.label,String(p.x),String(p.y)]);
   if(family==='slots')return template.items.map(i=>[i.label,i.slot||'subject']);
-  if(kind==='names')return template.items.map(i=>[i.label]);
+  if(kind==='names'||kind==='numbers')return template.items.map(i=>[i.label]);
   return c.classroomSource?.cards.map(c=>[c.word,c.meaning])||template.items.map(i=>[i.label]);
 }
 export function guideContent(type: GameType, rows: string[][], kind: GuideKind, base: GameTemplateConfig, start = ''): {items:GameItem[];config:GameTemplateConfig} {
@@ -69,7 +72,7 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
   }
   if(kind==='names'&&type==='ladder')config.results=items.map((i,index)=>({id:i.id,label:base.results?.[index]?.label||String(index+1)}));
   const sourceFamilies=['list','sentence','pairs','groups','image'];
-  if(kind!=='names'&&kind!=='sample'&&sourceFamilies.includes(family)){
+  if(kind!=='names'&&kind!=='numbers'&&kind!=='sample'&&sourceFamilies.includes(family)){
     const cards=family==='pairs'&&type==='typeanswer'?guideCards(usable.map(r=>[r[1],r[0]]),base.classroomSource?.cards):guideCards(usable,base.classroomSource?.cards);
     if(family==='groups')cards.forEach((c,i)=>{c.category=usable[i][1];c.meaning=base.classroomSource?.cards.find(previous=>previous.word===c.word)?.meaning||'';});
     if(family==='image')cards.forEach((c,i)=>{c.imageUrl=usable[i][1];c.meaning=base.classroomSource?.cards.find(previous=>previous.word===c.word)?.meaning||'';});

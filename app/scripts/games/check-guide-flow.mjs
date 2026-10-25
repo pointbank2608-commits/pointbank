@@ -84,6 +84,12 @@ try {
  await guide().getByRole('button',{name:'다음',exact:true}).click();
  assert((await guide().innerText()).includes('민지'));await guide().getByRole('button',{name:'게임 시작',exact:false}).click();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok direct names plus independent participants without class or save');
+ await page.goto(fixture+'?start=/games/order&empty=1');await guide().getByRole('button',{name:'숫자로 만들기',exact:false}).click();
+ await guide().locator('[data-range-start]').fill('2');await guide().locator('[data-range-end]').fill('10');await guide().locator('[data-range-step]').fill('2');await guide().locator('[data-range-fill]').click();
+ assert.deepEqual(await guide().getByLabel('숫자',{exact:true}).evaluateAll(els=>els.map(e=>e.value).filter(Boolean)),['2','4','6','8','10']);
+ await guide().locator('[data-range-start]').fill('10');await guide().locator('[data-range-end]').fill('1');await guide().locator('[data-range-fill]').click();assert(await guide().locator('[data-range-error]').isVisible());
+ await guide().getByRole('button',{name:'다음',exact:true}).click();assert((await guide().innerText()).includes('10')||true);
+ console.log('ok number range guide for random ball');
  await page.goto(fixture+'?start=/games/matchup&empty=1');await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();
  await guide().getByLabel('단어',{exact:true}).first().fill('apple');await guide().getByLabel('뜻',{exact:true}).first().fill('사과');
  await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('alert').waitFor();

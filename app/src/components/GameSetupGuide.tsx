@@ -1,3 +1,4 @@
+import NumberRangeFill from './NumberRangeFill';
 import BombSoundPicker from './BombSoundPicker';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -39,9 +40,10 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   const [diagram,setDiagram]=useRecoverableField(`guide:${info.gameType}:diagram`,info.selected?.config.diagramImageUrl||'');
   const [pattern,setPattern]=useRecoverableField(`guide:${info.gameType}:pattern`,info.selected?.config.watermelonPatternId||'svo');
   const pendingRows=useRef<{kind:GuideKind;rows:string[][]}|null>(null);
+  const asNames=kind==='names'||kind==='numbers';
   const family=guideFamily(info.gameType);const dedicated=family==='builtin';
   const manualPeople=gamePreparation(info.gameType).manualTurns;
-  const needsPeople=(kind!=='names'||info.gameType==='timer')&&(manualPeople||info.teamCount!==undefined||['tictactoe','connect4','baskin31','twodice','gameshowquiz','winlosequiz','saveorgive','lightning','timer'].includes(info.gameType));
+  const needsPeople=(!asNames||info.gameType==='timer')&&(manualPeople||info.teamCount!==undefined||['tictactoe','connect4','baskin31','twodice','gameshowquiz','winlosequiz','saveorgive','lightning','timer'].includes(info.gameType));
   const steps=needsPeople?[0,1,2,3]:[0,1,3];
   let rows:string[][]=[];try{const stored=raw?JSON.parse(raw):null;rows=Array.isArray(stored)&&stored.every(r=>Array.isArray(r)&&r.every(s=>typeof s==='string'))?stored:[];}catch{/* recover malformed tab data safely */}
   const write=(next:string[][])=>setRaw(JSON.stringify(next));
@@ -52,7 +54,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   async function importSource(cards:FullCardItem[],list?:WordList){
     if(!info.selected)return;
     setError('');
-    if(kind==='names'){write(cards.map(c=>[c.word]));if(info.gameType==='timer')setNames(cards.map(c=>c.word).join('\n'));return;}
+    if(asNames){write(cards.map(c=>[c.word]));if(info.gameType==='timer')setNames(cards.map(c=>c.word).join('\n'));return;}
     if(family==='bridge'){setSource(cards[0]?.word||'');write(cards.map(c=>[c.word,'','','']));return;}
     if(family==='tower'){setTowerStart(cards[0]?.word||'');write([['','0','','']]);return;}
     if(family==='image'||family==='groups'){
@@ -144,7 +146,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
       setStep(3);
     }
   }
-  const columns=kind==='names'?['nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question','answer']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['sentenceColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
+  const columns=asNames?[kind==='numbers'?'numberColumn':'nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question','answer']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['sentenceColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
   let previous=towerStart;
   const towerPrevious=rows.map(r=>{const p=previous;previous=insertPhrase(previous,r[0]||'',Number(r[1])||0);return p;});
   if(!active)return null;
@@ -156,7 +158,8 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     {step===1&&<>
       <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}`)}</p>
       {t(`guide.gameHints.${info.gameType}`,{defaultValue:''})&&<p>{t(`guide.gameHints.${info.gameType}`,{defaultValue:''})}</p>}
-      {!native&&kind!=='sample'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} />}
+      {!native&&kind==='numbers'&&<NumberRangeFill existingLabels={rows.map(r=>r[0]||'').filter(Boolean)} onFill={(labels,replace)=>{const keep=replace?[]:rows.filter(r=>r[0]?.trim());const next=[...keep,...labels.map(l=>[l])];write(next.length?next:[['']]);}} />}
+      {!native&&kind!=='sample'&&kind!=='numbers'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} />}
       {!dedicated&&!native&&<>
 
         {family==='diagram'&&<div className="space-y-3"><GameImagePicker academyId={info.academyId} value={diagram||null} onChange={url=>setDiagram(url||'')}/>{diagram&&<div className="relative w-fit"><button type="button" className="block rounded-xl focus-visible:outline-4 focus-visible:outline-primary" aria-label={t('guide.hints.diagram')} onClick={e=>{const bounds=e.currentTarget.getBoundingClientRect();const keyboard=e.detail===0;write([...rows.filter(r=>r[0]),['',String(keyboard ? .5 : (e.clientX-bounds.left)/bounds.width),String(keyboard ? .5 : (e.clientY-bounds.top)/bounds.height)]]);}}><img src={diagram} className="max-h-80 max-w-full cursor-crosshair" alt=""/></button>{rows.map((r,i)=><span key={i} aria-hidden className="pointer-events-none absolute rounded-full bg-primary px-2 text-white" style={{left:`${Number(r[1])*100}%`,top:`${Number(r[2])*100}%`}}>{i+1}</span>)}</div>}</div>}
