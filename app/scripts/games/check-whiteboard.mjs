@@ -158,6 +158,36 @@ try {
   await page.getByRole("button", { name: "초록" }).click();
   ok("영어 4선 노트: 줄 칸 크기 조절");
 
+  // 지우개: 눈에 보이는 원 모양·크기 단추·휠·두 손가락 벌리기
+  await page.locator("button:has-text(\"ink_eraser\")").click();
+  await page.mouse.move(600, 400);
+  const ring = page.locator("[data-eraser-cursor]");
+  await ring.waitFor();
+  const ringW = async () => Math.round((await ring.boundingBox()).width);
+  assert.equal(await ringW(), 64, "기본 지우개 원 크기");
+  await page.locator("[data-eraser-sizes] button").nth(3).click();
+  await page.mouse.move(610, 410);
+  assert.equal(await ringW(), 200, "큰 지우개");
+  await page.mouse.wheel(0, 120);
+  await page.mouse.move(612, 412);
+  assert.ok((await ringW()) < 200, "휠로 작아진다");
+  const before = await ringW();
+  const after = await page.evaluate(async () => {
+    const cv = document.querySelector("canvas");
+    const fire = (type, id, x, y) => cv.dispatchEvent(new PointerEvent(type, { pointerId: id, pointerType: "touch", clientX: x, clientY: y, bubbles: true, isPrimary: id === 11 }));
+    fire("pointerdown", 11, 400, 400);
+    fire("pointerdown", 12, 500, 400);
+    fire("pointermove", 12, 700, 400);
+    await new Promise((r) => setTimeout(r, 50));
+    const w = document.querySelector("[data-eraser-cursor]")?.getBoundingClientRect().width;
+    fire("pointerup", 12, 700, 400);
+    fire("pointerup", 11, 400, 400);
+    return w;
+  });
+  assert.ok(after > before * 1.5, `두 손가락을 벌리면 커진다(${before} → ${after})`);
+  await page.locator("button:has-text(\"ink_pen\")").click();
+  ok("지우개: 원 모양 표시·크기 단추·휠·두 손가락 조절");
+
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();
   await page.getByRole("button", { name: "퀴즈 시작" }).click();

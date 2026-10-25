@@ -6499,6 +6499,7 @@ const en: Ko = {
       eraser: 'Eraser',
       undoDrawing: 'Undo last stroke',
       clearDrawing: 'Clear annotations',
+      eraserSize: 'Eraser size (pinch with two fingers)',
       closeDrawing: 'Close drawing tools',
       exitFullscreen: 'Exit fullscreen',
       pointsButton: 'Give points',

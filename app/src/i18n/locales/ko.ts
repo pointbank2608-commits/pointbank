@@ -6495,6 +6495,7 @@ const ko = {
       eraser: '지우개',
       undoDrawing: '마지막 판서 되돌리기',
       clearDrawing: '판서 전체 지우기',
+      eraserSize: '지우개 크기 (두 손가락으로 벌리기·오므리기)',
       closeDrawing: '판서 도구 닫기',
       exitFullscreen: '전체화면 나가기',
       pointsButton: '포인트 주기',
