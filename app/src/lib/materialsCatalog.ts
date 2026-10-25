@@ -1,4 +1,4 @@
-export type MaterialCategory = 'words' | 'phonics' | 'gamecards' | 'roleplay' | 'other';
+export type MaterialCategory = 'words' | 'phonics' | 'gamecards' | 'roleplay' | 'elementary800' | 'other';
 export type MaterialPreparation = 'topic' | 'words' | 'rule' | 'unit' | 'options' | 'phonicsRules' | 'workbook';
 
 export interface MaterialCatalogEntry {
@@ -17,6 +17,8 @@ export interface MaterialCatalogEntry {
 /** 수업 자료실 카드 목록 — /materials 페이지가 그대로 매핑한다. 새 인쇄 자료를 추가할 땐
  * 여기 한 줄 + App.tsx 라우트 한 줄이면 된다(게임 카탈로그와 같은 방식). */
 export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
+  { id:'elementary800-original', category:'elementary800', preparation:'unit', path:'/materials/elementary-800?tab=original', icon:'menu_book', cover:'/workbooks/elementary800/verbs-cover.webp', nameKey:'elementary800.verbCollectionTitle', descKey:'elementary800.verbCollectionDescription' },
+  { id:'elementary800-workbook', category:'elementary800', preparation:'unit', path:'/materials/elementary-800?tab=workbook', icon:'auto_stories', cover:'/covers/material-flashcards.jpg', nameKey:'elementary800.workbookCardTitle', descKey:'elementary800.description' },
   { id:'phonicsstage1', displayOrder:4.1, category:'phonics', preparation:'workbook', path:'/materials/phonics-stage-1', icon:'auto_stories', cover:'/covers/material-phonics.jpg', nameKey:'phonicsPrint.title', descKey:'phonicsPrint.description' },
   { id: 'phonicsstage4workbook', displayOrder: 6.1, category: 'phonics', preparation: 'workbook', path: '/materials/phonics-stage-4-workbook', icon: 'menu_book', cover: '/covers/material-cvcworkbook.jpg', nameKey: 'materials.stage4WorkbookName', descKey: 'materials.stage4WorkbookDesc' },
   { id: 'phonicsstage5workbook', displayOrder: 6.2, category: 'phonics', preparation: 'workbook', path: '/materials/phonics-stage-5-workbook', icon: 'menu_book', cover: '/covers/material-longvowelworkbook.jpg', nameKey: 'materials.stage5WorkbookName', descKey: 'materials.stage5WorkbookDesc' },
@@ -191,7 +193,7 @@ export const WORKSHEET_TAB_CATALOG: WorksheetTabCatalogEntry[] = [
 
 /** Both shortcuts and sections use the same catalog; unclassified additions remain visible. */
 export const MATERIAL_CATEGORIES: {key: MaterialCategory; icon: string}[] = [
-  {key:'words',icon:'menu_book'}, {key:'phonics',icon:'headphones'},
+  {key:'words',icon:'menu_book'}, {key:'elementary800',icon:'auto_stories'}, {key:'phonics',icon:'headphones'},
   {key:'gamecards',icon:'casino'}, {key:'roleplay',icon:'theater_comedy'}, {key:'other',icon:'folder'},
 ];
 export function materialSections(catalog = MATERIALS_CATALOG) {

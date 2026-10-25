@@ -61,6 +61,7 @@ const LadderPage = lazyPage(() => import('./pages/LadderPage'));
 const LandingPage = lazyPage(() => import('./pages/LandingPage'));
 const MatchupPage = lazyPage(() => import('./pages/MatchupPage'));
 const MathGeneratorPage = lazyPage(() => import('./pages/MathGeneratorPage'));
+const Elementary800WorkbookPage = lazyPage(() => import('./pages/Elementary800WorkbookPage'));
 const MaterialsPage = lazyPage(() => import('./pages/MaterialsPage'));
 const WhiteboardPage = lazyPage(() => import('./pages/WhiteboardPage'));
 const ResourcesHomePage = lazyPage(() => import('./pages/ResourcesHomePage'));
@@ -292,6 +293,7 @@ function AppRoutes() {
             <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/resources" element={<ResourcesHomePage />} />
             <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/materials/elementary-800" element={<Elementary800WorkbookPage />} />
             <Route path="/whiteboard" element={<WhiteboardPage />} />
             <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />
             <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />

@@ -1,3 +1,4 @@
+import { elementary800Ko } from '../elementary800Locales';
 import { phonicsPrintKo, phonicsTeachingKo } from '../phonicsTeachingLocales';
 import { worksheetStudioKo } from '../worksheetStudioLocales';
 import { boardKo } from '../boardLocales';
@@ -12,6 +13,7 @@ import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  elementary800: elementary800Ko,
   worksheetStudio: worksheetStudioKo,
   sentenceSplashSave: {
     imported:'불러온 문장을 게임에 적용했어요.',
@@ -2697,6 +2699,7 @@ const ko = {
   },
 
   materials: {
+    group_elementary800: '초등 800단어 단어장',
     group_words: '단어 학습',
     group_phonics: '파닉스',
     group_gamecards: '게임 카드·기록지',

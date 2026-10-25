@@ -1,0 +1,11 @@
+import {createRoot} from 'react-dom/client';
+import Elementary800Sheets from '../../src/components/worksheets/Elementary800Sheets';
+import {ELEMENTARY800_VERB_CONTINUATION} from '../../src/data/elementary800VerbContinuation';
+import {buildElementaryBooklets} from '../../src/lib/elementary800Workbook';
+import i18n from '../../src/i18n';
+import '../../src/tailwind.css';
+import '../../src/styles/elementary800.css';
+void i18n.changeLanguage('ko');
+const level=new URLSearchParams(location.search).get('level');
+const books=buildElementaryBooklets(ELEMENTARY800_VERB_CONTINUATION).filter(b=>!level||String(b.level)===level);
+createRoot(document.getElementById('root')!).render(<Elementary800Sheets books={books} kind="both" copies={1} cover guide={false} mono={false}/>);

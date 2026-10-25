@@ -1,3 +1,4 @@
+import { elementary800En } from '../elementary800Locales';
 import { phonicsPrintEn, phonicsTeachingEn } from '../phonicsTeachingLocales';
 import { worksheetStudioEn } from '../worksheetStudioLocales';
 import { boardEn } from '../boardLocales';
@@ -14,6 +15,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  elementary800: elementary800En,
   worksheetStudio: worksheetStudioEn,
   sentenceSplashSave: {
     imported:'Imported sentences applied to the game.',
@@ -2700,6 +2702,7 @@ const en: Ko = {
   },
 
   materials: {
+    group_elementary800: 'Elementary 800 Word Workbooks',
     group_words: 'Vocabulary',
     group_phonics: 'Phonics',
     group_gamecards: 'Game cards & sheets',

@@ -12,7 +12,7 @@ import AccessibleDialog from './AccessibleDialog';
 export const guideButton = 'min-h-12 rounded-xl border border-outline-variant bg-white px-5 py-3 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-40';
 export default function GameCreateButton() {
   const {t}=useTranslation();const {session,academy,hasFullAccess,isStaff}=useAuth();const navigate=useNavigate();
-  const [open,setOpen]=useState(false);const [kind,setKind]=useState<GuideKind|null>(null);const [ready,setReady]=useState(false);
+  const [open,setOpen]=useState(false);const [kind,setKind]=useState<Exclude<GuideKind,'numbers'>|null>(null);const [ready,setReady]=useState(false);
   const [text,setText]=useRecoverableField(`game-create:${kind||'word'}`);const [cards,setCards]=useState<FullCardItem[]>([]);
   useEffect(()=>{setOpen(false);setKind(null);setCards([]);},[session?.user.id,academy?.id]);
   if(!isStaff)return null;
