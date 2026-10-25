@@ -1,3 +1,4 @@
+import SentenceSources from '../components/SentenceSources';
 import BombSoundPicker from '../components/BombSoundPicker';
 import {bombSound,type BombSound} from '../lib/bombSound';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
@@ -44,6 +45,7 @@ export default function BombPage() {
   const { t } = useTranslation();
   const g = useGameTemplates({
     gameType: 'bomb',
+    listKind: 'all',
     defaultItems: defaultParticipants,
     defaultConfig: () => ({ bombRange: DEFAULT_RANGE }),
   });
@@ -517,7 +519,7 @@ export default function BombPage() {
                       <div className="flex flex-wrap items-start gap-2 mb-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                         <WordListPicker
                           variant="label"
-                          wordLists={wordLists}
+                          wordLists={wordLists.filter(list=>(list.kind||'word')==='word')}
                           loading={wordListsLoading}
                           onImportLabels={(labels) => void addWordsBulk(labels)}
                         />
@@ -525,6 +527,7 @@ export default function BombPage() {
                           variant="label"
                           onImportLabels={(labels) => void addWordsBulk(labels)}
                         />
+                        <SentenceSources mode="labels" wordLists={wordLists} loading={wordListsLoading} classId={classId} onImportLabels={labels=>void addWordsBulk(labels)} />
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {words.length === 0 ? (

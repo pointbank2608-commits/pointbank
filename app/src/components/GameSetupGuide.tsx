@@ -1,3 +1,4 @@
+import BombPracticeInput from './BombPracticeInput';
 import NumberRangeFill from './NumberRangeFill';
 import BombSoundPicker from './BombSoundPicker';
 import { useEffect, useRef, useState } from 'react';
@@ -173,7 +174,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
         </fieldset>)}</div>{family!=='diagram'&&<button className={button} onClick={()=>write([...rows,columns.map(()=> '')])}>+ {t('guide.add')}</button>}
         <details><summary className="cursor-pointer py-3 font-bold text-primary">{t('guide.paste')}</summary><label className="block">{t('guide.pasteHint')}<textarea className="mt-2 min-h-32 w-full rounded-xl border p-3" value={paste} onChange={e=>setPaste(e.target.value)}/></label><button className={button} disabled={!paste.trim()} onClick={()=>{const next=paste.split(/\r?\n/).filter(s=>s.trim()).map(s=>s.split(/\t|\s*\|\s*/));write([...rows.filter(r=>r.some(s=>s.trim())),...next]);}}>{t('guide.applyPaste')}</button></details>
         {info.gameType==='ladder'&&<div ref={resultSection}><LadderResultSetup draft={resultDraft} count={resultCount} onChange={draft=>{setExtra(JSON.stringify(draft));setError('');}} /></div>}
-        {info.gameType==='bomb'&&<label className="block font-bold">{t('guide.bombWords')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3 font-normal" value={extra} onChange={e=>setExtra(e.target.value)}/></label>}
+        {info.gameType==='bomb'&&<BombPracticeInput value={extra} onChange={setExtra}/>}
       </>}
       <button className={button} onClick={()=>setNative(v=>!v)}>{t('guide.native')}</button>
       {native&&<p>{t('guide.nativeReview')}</p>}
