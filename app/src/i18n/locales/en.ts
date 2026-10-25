@@ -1,3 +1,4 @@
+import { phonicsPrintEn, phonicsTeachingEn } from '../phonicsTeachingLocales';
 import { worksheetStudioEn } from '../worksheetStudioLocales';
 import { boardEn } from '../boardLocales';
 import { teacherGameEn } from '../teacherGameLocales';
@@ -20,6 +21,8 @@ const en: Ko = {
   },
   teacherGame: teacherGameEn,
   phonicsStage1: phonicsStage1En,
+  phonicsPrint: phonicsPrintEn,
+  phonicsTeaching: phonicsTeachingEn,
   whiteboard: boardEn,
   workbook: workbookEn,
   phonicsCourse: phonicsCourseEn,

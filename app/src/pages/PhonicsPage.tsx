@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { PHONICS_TEACHING_PREVIEW } from '../data/phonicsTeachingCourse';
+import PhonicsTeachingPreview from '../components/phonicsStage1/PhonicsTeachingPreview';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
 import WordSelectionBar from '../components/WordSelectionBar';
@@ -118,6 +120,18 @@ function PhonicsLightbox({ entry, onClose }: { entry: PhonicsBankEntry; onClose:
 }
 
 export default function PhonicsPage() {
+  const {t}=useTranslation();const [params,setParams]=useSearchParams();
+  const teaching=PHONICS_TEACHING_PREVIEW&&params.get('tab')==='course';
+  return <div className="space-y-5">
+    <nav className="flex flex-wrap gap-2 no-print" role="tablist" aria-label={t('phonics.title')}>
+      <button type="button" role="tab" id="phonics-words-tab" aria-controls="phonics-words-panel" aria-selected={!teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${!teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({})}>{t('phonicsTeaching.words')}</button>
+      {PHONICS_TEACHING_PREVIEW&&<button type="button" role="tab" id="phonics-course-tab" aria-controls="phonics-course-panel" aria-selected={teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'course'})}>{t('phonicsTeaching.course')}</button>}
+    </nav>
+    <div role="tabpanel" id="phonics-words-panel" aria-labelledby="phonics-words-tab" hidden={teaching}><PhonicsWordLearning/></div>
+    {teaching&&<div role="tabpanel" id="phonics-course-panel" aria-labelledby="phonics-course-tab"><PhonicsTeachingPreview/></div>}
+  </div>;
+}
+function PhonicsWordLearning() {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<PhonicsBankEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -200,7 +214,6 @@ export default function PhonicsPage() {
 
       <div>
         <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('phonics.stepLabel')}</div>
-        {step === 1 && <Link className="mb-3 inline-flex min-h-12 items-center rounded-xl border border-primary bg-white px-4 font-bold text-primary" to="/materials/phonics-stage-1">{t('phonicsStage1.title')}</Link>}
         <div className="flex flex-wrap gap-2">
           {STEPS.map((s) => (
             <button

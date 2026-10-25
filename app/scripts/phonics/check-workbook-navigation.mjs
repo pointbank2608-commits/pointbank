@@ -1,3 +1,4 @@
+import {execFileSync} from 'node:child_process';
 import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
@@ -31,7 +32,7 @@ const baseline=process.argv.includes('--baseline'),uiOnly=process.argv.includes(
 const server=await createServer({server:{host:'127.0.0.1',port:5230,strictPort:true},logLevel:'error'});await server.listen();
 const {curriculumEntries,unitsForStep}=await server.ssrLoadModule('/src/data/phonicsCurriculum.ts');
 const {buildPhonicsWorkbook,workbookPrintable}=await server.ssrLoadModule('/src/data/phonicsWorkbook.ts');
-const cases=[{id:'stage1',path:'phonics-stage-1?view=workbook&unit=stage1-abc',pages:8},{id:'stage2',path:'cvc-workbook',pages:2},{id:'stage3',path:'long-vowel-workbook',pages:2},{id:'stage4-two-words',path:'phonics-stage-4-workbook',pages:2},{id:'stage4-three-words',path:'phonics-stage-4-workbook',pages:2,selectWord:'ship'},{id:'stage5',path:'phonics-stage-5-workbook',pages:2}];
+const cases=[{id:'stage1',path:'phonics-stage-1',pages:2},{id:'stage2',path:'cvc-workbook',pages:2},{id:'stage3',path:'long-vowel-workbook',pages:2},{id:'stage4-two-words',path:'phonics-stage-4-workbook',pages:2},{id:'stage4-three-words',path:'phonics-stage-4-workbook',pages:2,selectWord:'ship'},{id:'stage5',path:'phonics-stage-5-workbook',pages:2}];
 const report={baseline,cases:[],errors};
 async function waitImages(){await page.locator('.print-board img').evaluateAll(imgs=>Promise.all(imgs.map(i=>i.decode())));await page.evaluate(()=>document.fonts.ready);}
 try{
@@ -44,10 +45,11 @@ try{
   await page.pdf({path:out+'/'+(baseline?'before-':'after-')+c.id+'.pdf',format:'A4',preferCSSPageSize:true,printBackground:true});await page.emulateMedia({media:'screen'});
   report.cases.push({id:c.id,pages:c.pages,signature});
  }
- const sourceFiles=['src/data/phonics/curriculum.json','src/data/phonics/words.json','src/data/phonics/stage1Course.json','src/data/phonicsStage1.ts','src/data/phonicsStage1Workbook.ts','src/data/phonicsWorkbook.ts','src/data/cvcWorkbook.ts'];
+ const sourceFiles=['src/data/phonics/curriculum.json','src/data/phonics/stage1Course.json','src/data/phonicsStage1.ts','src/data/phonicsStage1Workbook.ts','src/data/cvcWorkbook.ts'];
  report.sourceHashes=Object.fromEntries(await Promise.all(sourceFiles.map(async path=>[path,createHash('sha256').update(await readFile(path)).digest('hex')])));
  if(!baseline){
-  const before=JSON.parse(await readFile(out+'/before-checks.json','utf8'));assert.deepEqual(report.sourceHashes,before.sourceHashes,'canonical content and unit IDs remain unchanged');for(const c of report.cases)assert.equal(createHash('sha256').update(JSON.stringify(c)).digest('hex'),createHash('sha256').update(JSON.stringify(before.cases.find(b=>b.id===c.id))).digest('hex'),'student print content unchanged: '+c.id);
+  const oldWords=JSON.parse(execFileSync('git',['show','HEAD:app/src/data/phonics/words.json'],{encoding:'utf8'}));oldWords['pw-bat'].lineartUrl=null;assert.deepEqual(JSON.parse(await readFile('src/data/phonics/words.json','utf8')),oldWords,'Only the verified bat line-art mismatch is disconnected; words, meanings and other assets stay unchanged');
+  const before=JSON.parse(await readFile(out+'/before-checks.json','utf8'));assert.deepEqual(report.sourceHashes,Object.fromEntries(Object.keys(report.sourceHashes).map(key=>[key,before.sourceHashes[key]])),'canonical content and unit IDs remain unchanged');for(const c of report.cases.filter(c=>c.id!=='stage1'))assert.equal(createHash('sha256').update(JSON.stringify(c)).digest('hex'),createHash('sha256').update(JSON.stringify(before.cases.find(b=>b.id===c.id))).digest('hex'),'student print content unchanged: '+c.id);
   const titles=['파닉스 워크시트 생성기','파닉스 1단계 워크북 · 알파벳과 기본 음가','파닉스 2단계 워크북 · 단모음 CVC','파닉스 3단계 워크북 · 매직 e','파닉스 4단계 워크북 · 자음군과 이중자음','파닉스 5단계 워크북 · 모음 조합·이중모음·R 모음'];
   await page.goto(root+'/materials');const section=page.locator('#materials-phonics');await section.waitFor();
   assert.deepEqual(await section.locator('.materials-card h3').allTextContents(),titles);assert.equal(await section.locator('.materials-count').textContent(),'6');assert.equal(await page.locator('a[href="#materials-phonics"] .materials-count').textContent(),'6');
@@ -56,7 +58,7 @@ try{
   const links=await section.locator('a.materials-card').evaluateAll(es=>es.map(e=>e.getAttribute('href')));assert.deepEqual(links,['/materials/phonics','/materials/phonics-stage-1','/materials/cvc-workbook','/materials/long-vowel-workbook','/materials/phonics-stage-4-workbook','/materials/phonics-stage-5-workbook']);
   await section.locator('img').evaluateAll(imgs=>Promise.all(imgs.map(i=>i.decode())));await page.setViewportSize({width:1440,height:1800});await section.screenshot({path:out+'/materials-phonics-desktop.png',animations:'disabled'});await page.setViewportSize({width:1440,height:1000});
   await section.locator('a.materials-card').first().click();await page.getByRole('heading',{name:titles[0],exact:true}).waitFor();await page.getByRole('button',{name:'1단계',exact:true}).click();await page.locator('a[href="/materials/phonics-stage-1"]').waitFor();
-  await page.goto(root+links[1]);await page.getByRole('heading',{name:titles[1],exact:true}).waitFor();assert.equal(await page.locator('.s1-unit-cards section').count(),24);assert.equal(await page.locator('.s1-course-header a').getAttribute('href'),'/materials');
+  await page.goto(root+links[1]);await page.getByRole('heading',{name:titles[1],exact:true}).waitFor();await page.locator('[data-unit-picker] input').last().waitFor();assert.equal(await page.locator('[data-unit-picker] input').count(),26);assert.equal(await page.locator('.s1-unit-cards').count(),0);await page.goto(root+'/phonics/stage-1');await page.locator('.s1-unit-cards section').last().waitFor();assert.equal(await page.locator('.s1-unit-cards section').count(),24);
   const abc=page.locator('.s1-unit-cards section').first();assert.equal(await abc.locator('button').first().textContent(),'인쇄 워크북');await abc.getByRole('button',{name:'인쇄 워크북',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.s1-book-page').length===8);assert.equal(await page.locator('.s1-book-page').nth(2).locator('h2').textContent(),'Read and Match');
   await page.getByRole('button',{name:'교사용 안내·정답',exact:true}).first().click();assert.match(await page.locator('.s1-teacher-guide section').nth(2).locator('h3').textContent(),/Read and Match/);
   for(const [i,path] of links.entries())if(i>1){await page.goto(root+path);await page.getByRole('heading',{name:titles[i],exact:true}).waitFor();}

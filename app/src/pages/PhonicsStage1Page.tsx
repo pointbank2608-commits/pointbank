@@ -11,8 +11,13 @@ import type { MaterialSlide } from '../lib/types';
 import Stage1SlideView from '../components/phonicsStage1/Stage1SlideView';
 import { Stage1TeacherGuide, Stage1WorkbookPage } from '../components/phonicsStage1/Stage1Workbook';
 import '../phonicsStage1.css';
+import { PHONICS_TEACHING_PREVIEW } from '../data/phonicsTeachingCourse';
 
 export default function PhonicsStage1Page(){
+  const {t}=useTranslation();
+  return PHONICS_TEACHING_PREVIEW?<Stage1CoursePreview/>:<p role="status">{t('phonicsTeaching.unavailable')} <Link to="/phonics">{t('phonicsTeaching.words')}</Link></p>;
+}
+function Stage1CoursePreview(){
   const {t}=useTranslation();const [params,setParams]=useSearchParams();const location=useLocation();const presenting=usePresenting();
   const {academy,profile,isStaff}=useAuth();
   const nav=(location.state as {phonicsStage1?:MaterialSlide['phonicsStage1']}|null)?.phonicsStage1;
@@ -33,7 +38,8 @@ export default function PhonicsStage1Page(){
   const ready=(u:typeof course[number])=>loaded&&u.groups.every(g=>g.entries.every(e=>!!e.image_url&&checked[e.image_url]===true));
   const [selectedPages,setSelectedPages]=useState<string[]>([]);
   const pageIds=unit?.pages.map(p=>p.id).join('\n')??'';
-  useEffect(()=>setSelectedPages(pageIds?pageIds.split('\n'):[]),[pageIds]); // Preserve selection when only media changes.
+  const requestedPages=params.get('pages');
+  useEffect(()=>{const all=pageIds?pageIds.split('\n'):[];setSelectedPages(requestedPages===null?all:all.filter(id=>requestedPages.split(',').includes(id)));},[pageIds,requestedPages]); // Preserve selection when only media changes.
   const [large,setLarge]=useState(false),[guide,setGuide]=useState(false),[saving,setSaving]=useState(false),[savedId,setSavedId]=useState(''),[saveError,setSaveError]=useState(false);
   const go=useCallback((changes:Record<string,string|undefined>)=>setParams(old=>{
     const next=new URLSearchParams(old);
@@ -66,10 +72,10 @@ export default function PhonicsStage1Page(){
     const name=unit.number?'Unit '+unit.number+' · Aa Bb Cc':unit.groups[0].letter+unit.groups[0].letter.toLowerCase();
     const row=await createCurriculumLesson({academyId:academy.id,teacherId:profile.id,classId:null,name:t('phonicsStage1.lessonName',{name}),wordListId:null,videoUrl:null,level:null,playlist:stage1LessonBlocks(unit.id)});setSavedId(row.id);
   }catch{setSaveError(true);}finally{setSaving(false);}}
-  if(!unit)return <p role="alert">{t('phonicsStage1.invalidReference')} <Link to="/materials/phonics-stage-1">{t('phonicsStage1.back')}</Link></p>;
+  if(!unit)return <p role="alert">{t('phonicsStage1.invalidReference')} <Link to="/phonics?tab=course">{t('phonicsStage1.back')}</Link></p>;
   const canPrint=ready(unit)&&selectedPages.length>0;
   return <div className={'s1-course '+(view==='teacher'?'s1-print-teacher':'s1-print-student')}>
-    {!large&&!presenting&&<header className="s1-course-header no-print"><Link to={location.pathname.startsWith('/materials/')?'/materials':'/phonics'}>← {t(location.pathname.startsWith('/materials/')?'materials.backToMaterials':'phonics.title')}</Link><h1>{t('phonicsStage1.title')}</h1><p>{t('phonicsStage1.description')}</p></header>}
+    {!large&&!presenting&&<header className="s1-course-header no-print"><Link to="/phonics?tab=course">← {t(location.pathname.startsWith('/materials/')?'materials.backToMaterials':'phonics.title')}</Link><h1>{t('phonicsTeaching.course')}</h1><p>{t('phonicsStage1.description')}</p></header>}
     {view==='units'?<div className="no-print s1-unit-selection"><p className="s1-course-intro">{t('phonicsStage1.unit1Ready')}</p><div className="s1-unit-cards">{course.map(u=><section key={u.id}><h2>{u.number?'Unit '+u.number+' · ':''}{u.groups.map(g=>g.letter+g.letter.toLowerCase()).join(' ')}</h2><p>{u.groups.flatMap(g=>g.entries.map(e=>e.word)).join(' · ')}</p><p>{u.reader?t('phonicsStage1.unit1Ready'):t('phonicsStage1.pendingReader')}</p><p>{t('phonicsStage1.slides',{count:u.slides.filter(s=>!s.optional).length})} · {t('phonicsStage1.pages',{count:u.pages.length})}</p>{missing(u).length>0&&<p role="status">{t('phonicsStage1.mediaPending',{words:missing(u).map(e=>e.word).join(', ')})}</p>}<div className="s1-actions"><button onClick={()=>go({unit:u.id,view:'workbook',slide:undefined})}>{t('phonicsStage1.workbook')}</button>{([1,2] as const).map(n=><button key={n} disabled={!ready(u)} onClick={()=>go({unit:u.id,view:'slides',lesson:String(n),optional:undefined,slide:undefined})}>{t('phonicsStage1.start',{n})}</button>)}</div></section>)}</div><p>{t('phonicsStage1.letterOnly')}</p></div>:<>
       {view!=='slides'&&<nav className="s1-actions no-print"><button onClick={()=>go({view:'units',slide:undefined})}>{t('phonicsStage1.back')}</button><button onClick={()=>start(1)}>{t('phonicsStage1.start',{n:1})}</button><button onClick={()=>go({view:'workbook'})}>{t('phonicsStage1.workbook')}</button><button onClick={()=>go({view:'teacher'})}>{t('phonicsStage1.teacher')}</button></nav>}
       {!ready(unit)&&<p role="status" className="no-print">{missing(unit).length?t('phonicsStage1.mediaPending',{words:missing(unit).map(e=>e.word).join(', ')}):t('phonicsStage1.mediaChecking')}</p>}

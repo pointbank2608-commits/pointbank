@@ -288,7 +288,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           }
           push({
             kind: 'material',
-            path: entry.path,
+            path: materialId==='phonicsstage1'&&slide.phonicsStage1?'/phonics/stage-1':entry.path,
             label: t(entry.nameKey),
             icon: entry.icon,
             navState: Object.keys(navState).length > 0 ? navState : undefined,

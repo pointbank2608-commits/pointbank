@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchPhonicsBank } from '../lib/api';
@@ -10,9 +10,11 @@ import { curriculumEntries } from '../data/phonicsCurriculum';
 import { useWorkbookImageChecks } from '../lib/useWorkbookImageChecks';
 import WorkbookSelectionPanel from '../components/worksheets/WorkbookSelectionPanel';
 
-export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
+export default function PhonicsWorkbookPage({ step }: { step: 1 | 4 | 5 }) {
   const { t } = useTranslation();
   const location = useLocation();
+  const previewViewport=useRef<HTMLDivElement>(null),[previewScale,setPreviewScale]=useState(1);
+  useLayoutEffect(()=>{const el=previewViewport.current;if(step!==1||!el)return;const update=()=>setPreviewScale(Math.min(1,el.clientWidth/704));update();const observer=new ResizeObserver(update);observer.observe(el);return()=>observer.disconnect();},[step]);
   const [entries, setEntries] = useState<PhonicsBankEntry[]>([]);
   const [status, setStatus] = useState('loading');
   const [attempt, setAttempt] = useState(0);
@@ -48,12 +50,12 @@ export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
   };
   const canPrint = status === 'ready' && selectedIds.length > 0 && selectedIds.every(id => complete.some(u => u.id === id));
   const toggle = (id: string) => setSelected(selectedIds.includes(id) ? selectedIds.filter(n => n !== id) : [...selectedIds, id]);
-  const title = t(step === 4 ? 'materials.stage4WorkbookName' : 'materials.stage5WorkbookName');
+  const title = t(step===1?'phonicsPrint.title':step === 4 ? 'materials.stage4WorkbookName' : 'materials.stage5WorkbookName');
   return <div className="space-y-6">
     <div className="no-print space-y-4">
       <Link to="/materials">← {t('materials.backToMaterials')}</Link>
       <h1 className="text-2xl font-bold text-deep-navy">{title}</h1>
-      <p>{t(step === 4 ? 'materials.stage4WorkbookDesc' : 'materials.stage5WorkbookDesc')}</p>
+      <p>{t(step===1?'phonicsPrint.description':step === 4 ? 'materials.stage4WorkbookDesc' : 'materials.stage5WorkbookDesc')}</p>
       {missingRefs.length > 0 && <p role="alert">{t('phonicsCourse.missingRef')}</p>}
       <Link className="inline-block text-sm underline" to="/materials/phonics">{t('phonics.worksheetButton')}</Link>
       <details className="text-sm" data-asset-status><summary className="cursor-pointer font-medium">{t('workbook.assetStatus')}</summary>
@@ -68,8 +70,8 @@ export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
       {status === 'ready' && !units.length && <p role="alert">{t('workbook.empty')}</p>}
       {!!units.length && <>
         <p>{t('workbook.counts', { units: units.length, words: units.reduce((sum, u) => sum + u.words.length, 0), ready: complete.length })}</p>
-        <WorkbookSelectionPanel onSelectAll={() => setSelected(complete.map(u => u.id))} onClear={() => setSelected([])}>
-          <div data-unit-picker className="workbook-rule-groups">
+        <WorkbookSelectionPanel onSelectAll={() => setSelected(resolved.filter(workbookPrintable).map(u => u.id))} onClear={() => setSelected([])}>
+          <div data-unit-picker className={`workbook-rule-groups ${step===1?'alphabet-workbook-groups':''}`}>
             {[...new Set(resolved.map(u => u.ruleId))].map(ruleId => <div key={ruleId} role="group" aria-labelledby={`workbook-rule-${step}-${ruleId}`} className="workbook-rule-row">
               <div id={`workbook-rule-${step}-${ruleId}`} className="workbook-rule-heading"><WorkbookRuleLabel>{resolved.find(u => u.ruleId === ruleId)!.family}</WorkbookRuleLabel></div>
               <div className="workbook-rule-units">{resolved.filter(u => u.ruleId === ruleId).map(u => <WorkbookUnitChip key={u.id} checkbox disabled={!workbookPrintable(u)} selected={workbookPrintable(u) && selectedIds.includes(u.id)} onChange={() => toggle(u.id)} title={!workbookPrintable(u) ? workbookBlockingIssues(u).map(i => t(`workbook.issue_${i.type}`,{word:i.word})).join(' · ') : undefined}>
@@ -82,8 +84,8 @@ export default function PhonicsWorkbookPage({ step }: { step: 4 | 5 }) {
         <span className="ml-3">{t('workbook.pages', { units: printUnits.length, pages: printUnits.length * 2 })}</span>
       </>}
     </div>
-    <div className="max-w-full overflow-x-auto print:max-w-none print:overflow-visible">
-    <div className="print-sheet mx-auto space-y-8 print:space-y-0">
+    <div ref={previewViewport} className="max-w-full overflow-x-auto print:max-w-none print:overflow-visible">
+    <div className={`print-sheet mx-auto space-y-8 print:space-y-0 ${step===1?'alphabet-workbook-preview':''}`} style={step===1?{width:'186mm',maxWidth:'none',zoom:previewScale}:undefined}>
       {printUnits.filter(verified).map(unit => <CvcUnitPages key={unit.id} unit={unit} />)}
     </div>
     </div>

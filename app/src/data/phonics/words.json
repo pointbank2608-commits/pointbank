@@ -123,7 +123,7 @@
     "word": "bat",
     "meaning": "박쥐",
     "imageUrl": "/phonics-images/bat.webp",
-    "lineartUrl": "/word-bank-lineart/bat.webp",
+    "lineartUrl": null,
     "audio": {
       "provider": "web-speech",
       "text": "bat",

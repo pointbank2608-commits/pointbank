@@ -38,6 +38,7 @@ import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalo
 import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
 import Stage1LessonOptions from './phonicsStage1/Stage1LessonOptions';
+import { PHONICS_TEACHING_PREVIEW } from '../data/phonicsTeachingCourse';
 import { workbookOfMaterial, workbookNumbers, stableWorkbookRefs, resolveWorkbookSelection } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
@@ -527,7 +528,6 @@ export default function LessonSlideSorter({
       id: uid(),
       kind: 'material',
       materialId,
-      ...(materialId === 'phonicsstage1' ? { phonicsStage1: { unitId: 'stage1-abc', view: 'slides' as const, lesson: 1 as const } } : {}),
       ...(worksheetTab ? { worksheetTab } : {}),
       ...(worksheetOptions ? { worksheetOptions } : {}),
       ...(boardTheme ? { boardTheme } : {}),
@@ -1603,7 +1603,8 @@ function SlideDetail({
 
   // material slide
   if (slide.materialId === 'phonicsstage1') {
-    return <Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
+    if(!slide.phonicsStage1)return <p>{t('phonicsPrint.description')}</p>;
+    return PHONICS_TEACHING_PREVIEW?<Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />:<p>{t('phonicsTeaching.unavailable')}</p>;
   }
   if (slide.materialId === 'phonics') {
     return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;

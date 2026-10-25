@@ -285,7 +285,7 @@ function AppRoutes() {
             <Route path="/dictionary" element={<DictionaryPage />} />
             <Route path="/phonics" element={<PhonicsPage />} />
             <Route path="/phonics/stage-1" element={<PhonicsStage1Page />} />
-            <Route path="/materials/phonics-stage-1" element={<PhonicsStage1Page />} />
+            <Route path="/materials/phonics-stage-1" element={<PhonicsWorkbookPage step={1} />} />
             <Route path="/grammar" element={<GrammarPage />} />
             <Route path="/videos" element={<VideoLibraryPage />} />
             <Route path="/homework" element={<HomeworkPage />} />

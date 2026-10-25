@@ -9,7 +9,7 @@ export interface PhonicsWorkbookUnit {
   ruleId: string;
   kind: 'phonics';
   unit: number;
-  step: 4 | 5;
+  step: 1 | 4 | 5;
   family: string;
   heading: string;
   words: string[];
@@ -40,21 +40,23 @@ function colorFor(entry: PhonicsBankEntry): string | null {
 }
 
 /** Keep full rule identity: oo short/long and ow long-o/diphthong never merge. */
-export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 4 | 5): PhonicsWorkbookUnit[] {
+export function buildPhonicsWorkbook(entries: PhonicsBankEntry[], step: 1 | 4 | 5): PhonicsWorkbookUnit[] {
   return unitsForStep(step).map(source => {
       const rule = PHONICS_RULES.find(r => r.id === source.ruleId)!;
       const part = source.entries.map(e => entries.find(row => row.id === e.id) ?? e);
       const unit: PhonicsWorkbookUnit = {
         id: source.id, ruleId: rule.id,
-        kind: 'phonics', unit: source.order, step, family: rule.name,
-        heading: rule.name.toUpperCase(),
+        kind: 'phonics', unit: source.order, step, family: step===1?source.name+source.name.toLowerCase():rule.name,
+        heading: step===1?source.name+source.name.toLowerCase():rule.name.toUpperCase(),
         words: part.map(e => e.word), entryIds: part.map(e => e.id), targets: {}, images: {}, lineart: {}, meanings: {}, issues: [],
       };
       if (part.length < 2 || part.length > 3 || part.some(e => !e.word.trim())) unit.issues.push({ type: 'count' });
       for (const entry of part) {
-        const marks = patternTargets(entry.word, entry.pattern_marked);
+        const canonicalMarks = patternTargets(entry.word, entry.pattern_marked);
+        // Alphabet print practice targets the letter itself; the shared Q sound rule remains {qu}.
+        const marks = step===1?canonicalMarks?.filter(index=>entry.word[index].toLowerCase()===source.name.toLowerCase()):canonicalMarks;
         if (entry.meaning?.trim()) unit.meanings[entry.word] = entry.meaning;
-        if (!marks) unit.issues.push({ type: 'target', word: entry.word });
+        if (!marks?.length) unit.issues.push({ type: 'target', word: entry.word });
         else unit.targets[entry.word] = { red: marks, blank: marks };
         const image = colorFor(entry);
         const lineart = isImageReference(entry.lineart_url) ? entry.lineart_url : null;
