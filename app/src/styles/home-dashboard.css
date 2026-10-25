@@ -26,7 +26,7 @@ html[data-font-scale='xlarge'] .home-dashboard .home-launch-worksheet { grid-tem
 .home-dashboard .home-material-start { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; border-radius: 1rem; padding: 1.15rem 1.5rem; background: linear-gradient(110deg, #d7f5e7, #d5f4ec); }
 .home-dashboard .home-material-start h2 { font-size: clamp(1.2rem, 1.5vw, 1.45rem); font-weight: 850; line-height: 1.4; letter-spacing: -.03em; }
 .home-dashboard .home-material-start p { margin-top: .3rem; color: #3b6260; line-height: 1.5; font-size: .95rem; }
-.home-dashboard .home-material-start .home-button { color: var(--home-ink); border-color: #d4e9e1; }
+.home-dashboard .home-material-start .home-button:not(.home-button-primary) { color: var(--home-ink); border-color: #d4e9e1; }
 .home-dashboard .home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; min-width: 0; }
 .home-dashboard .home-section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1rem; margin-bottom: .8rem; }
 .home-dashboard .home-section-heading h2 { font-size: 1.4rem; line-height: 1.4; font-weight: 850; letter-spacing: -.03em; }
