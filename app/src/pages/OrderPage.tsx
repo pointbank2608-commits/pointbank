@@ -1,3 +1,4 @@
+import NumberRangeFill from '../components/NumberRangeFill';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -105,6 +106,12 @@ export default function OrderPage() {
   async function addParticipantsBulk(labels: string[]) {
     if (!selected || labels.length === 0) return;
     await persist([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
+  }
+
+  async function fillNumbers(labels: string[], replace: boolean) {
+    if (!selected) return;
+    if (replace) await persist(labels.map((label) => ({ id: uid(), label })));
+    else await addParticipantsBulk(labels);
   }
 
   async function removeParticipant(index: number) {
@@ -385,6 +392,7 @@ export default function OrderPage() {
                           onImportLabels={(labels) => void addParticipantsBulk(labels)}
                         />
                       </div>
+                      <NumberRangeFill existingLabels={selected.items.map((i) => i.label)} onFill={(labels, replace) => void fillNumbers(labels, replace)} />
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {selected.items.length === 0 ? (
                           <span className="font-caption text-caption text-on-surface-variant">

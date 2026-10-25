@@ -226,6 +226,26 @@ try {
   await page.waitForSelector("[data-board-points]", { state: "detached" });
   ok("포인트 주기: 반 고르기·학생·프리셋 → 지급");
 
+  // 점수판: 팀 점수 올리기·내리기·팀 늘리기·0으로, 도구를 열어도 유지
+  await page.locator('[data-board-tool="score"]').click();
+  const val = (i) => page.locator(`[data-score-team="${i}"] [data-score-value]`).innerText();
+  await page.locator('[data-score-team="0"] [data-score-plus]').click();
+  await page.locator('[data-score-team="0"] [data-score-plus]').click();
+  await page.locator('[data-score-team="1"] [data-score-minus]').click();
+  assert.equal(await val(0), "2");
+  assert.equal(await val(1), "-1");
+  await page.locator("[data-score-more]").click();
+  assert.equal(await page.locator("[data-score-team]").count(), 3);
+  await page.locator('[data-board-tool="flash"]').click();
+  await page.waitForSelector("[data-board-score]");
+  await page.locator("[data-board-back]").click();
+  assert.equal(await val(0), "2", "도구를 열어도 점수 유지");
+  await page.locator("[data-score-reset]").click();
+  assert.equal(await val(0), "0");
+  await page.locator('[data-board-tool="score"]').click();
+  await page.waitForSelector("[data-board-score]", { state: "detached" });
+  ok("점수판: 점수 올리기·내리기·팀 늘리기·0으로·도구를 열어도 유지");
+
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();
   await page.getByRole("button", { name: "퀴즈 시작" }).click();

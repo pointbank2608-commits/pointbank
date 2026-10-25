@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AccessibleDialog from '../components/AccessibleDialog';
 import LessonPointsPanel from '../components/LessonPointsPanel';
 import { useClasses } from '../lib/useClasses';
+import BoardScoreboard from '../components/board/BoardScoreboard';
 import BoardTimer from '../components/board/BoardTimer';
 import BoardGrammar from '../components/board/BoardGrammar';
 import BoardGameDialog from '../components/board/BoardGameDialog';
@@ -93,6 +94,7 @@ export default function WhiteboardPage() {
   const [pending, setPending] = useState<Tool | null>(null);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [timerOpen, setTimerOpen] = useState(false);
+  const [scoreOpen, setScoreOpen] = useState(false);
   const [full, setFull] = useState(false);
   // 처음 쓰기 시작하면(또는 이미 쓴 판서가 있으면) 안내 글을 걷는다
   const [wrote, setWrote] = useState(() => {
@@ -209,7 +211,7 @@ export default function WhiteboardPage() {
               <span className="material-symbols-outlined text-[22px]" aria-hidden>
                 {x.icon}
               </span>
-              <span className="hidden lg:inline">{x.label}</span>
+              <span className="hidden 2xl:inline">{x.label}</span>
             </button>
           ))}
         </nav>
@@ -217,13 +219,19 @@ export default function WhiteboardPage() {
           <span className="material-symbols-outlined text-[22px]" aria-hidden>
             stars
           </span>
-          <span className="hidden lg:inline">{t('whiteboard.toolPoints')}</span>
+          <span className="hidden 2xl:inline">{t('whiteboard.toolPoints')}</span>
+        </button>
+        <button type="button" className={`${topBtn} ${scoreOpen ? 'bg-white/25' : ''}`} onClick={() => setScoreOpen((v) => !v)} aria-pressed={scoreOpen} aria-label={t('whiteboard.toolScore')} title={t('whiteboard.toolScore')} data-board-tool="score">
+          <span className="material-symbols-outlined text-[22px]" aria-hidden>
+            scoreboard
+          </span>
+          <span className="hidden 2xl:inline">{t('whiteboard.toolScore')}</span>
         </button>
         <button type="button" className={`${topBtn} ${timerOpen ? 'bg-white/25' : ''}`} onClick={() => setTimerOpen((v) => !v)} aria-pressed={timerOpen} aria-label={t('whiteboard.toolTimer')} title={t('whiteboard.toolTimer')} data-board-tool="timer">
           <span className="material-symbols-outlined text-[22px]" aria-hidden>
             timer
           </span>
-          <span className="hidden lg:inline">{t('whiteboard.toolTimer')}</span>
+          <span className="hidden 2xl:inline">{t('whiteboard.toolTimer')}</span>
         </button>
         {theme === 'lined' && (
           <div className="flex items-center gap-0.5" role="group" aria-label={t('whiteboard.lineSize')} data-board-linesize>
@@ -288,6 +296,8 @@ export default function WhiteboardPage() {
           )}
         </div>
       )}
+
+      {scoreOpen && <BoardScoreboard onClose={() => setScoreOpen(false)} />}
 
       {timerOpen && <BoardTimer onClose={() => setTimerOpen(false)} />}
 

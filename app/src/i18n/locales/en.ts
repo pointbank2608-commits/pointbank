@@ -290,6 +290,16 @@ const en: Ko = {
   },
 
   gameOrder: {
+    rangeTitle: 'Fill with a number range',
+    rangeStart: 'From',
+    rangeEnd: 'To',
+    rangeStep: 'Step',
+    rangeFill: 'Fill numbers',
+    rangeReplace: 'Replace current items',
+    rangeError_invalid: 'Enter whole numbers for From and To.',
+    rangeError_order: 'From must be less than or equal to To.',
+    rangeError_step: 'Step must be a whole number of 1 or more.',
+    rangeError_tooMany: 'You can fill up to {{max}} at a time. Adjust the range or step.',
     defaultParticipant: 'Item {{n}}',
     studentClassTitle: "{{className}}'s Random Draw",
     newButton: '+ New list',

@@ -288,6 +288,16 @@ const ko = {
   },
 
   gameOrder: {
+    rangeTitle: '숫자 범위로 채우기',
+    rangeStart: '시작 숫자',
+    rangeEnd: '끝 숫자',
+    rangeStep: '간격',
+    rangeFill: '숫자 채우기',
+    rangeReplace: '지금 항목을 지우고 새로 채우기',
+    rangeError_invalid: '시작 숫자와 끝 숫자를 정수로 적어 주세요.',
+    rangeError_order: '시작 숫자는 끝 숫자보다 작거나 같아야 해요.',
+    rangeError_step: '간격은 1 이상의 정수로 적어 주세요.',
+    rangeError_tooMany: '한 번에 {{max}}개까지만 채울 수 있어요. 범위나 간격을 조정해 주세요.',
     defaultParticipant: '항목 {{n}}',
     studentClassTitle: '{{className}} 랜덤 공 뽑기',
     newButton: '+ 새 목록',

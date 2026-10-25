@@ -233,13 +233,14 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     </section>
   </GameWorkspaceContext.Provider>;
 }
-export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, presenting=false }: {fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean}) {
+export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, onRestart, presenting=false }: {onRestart?:()=>void;fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean}) {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
   return <div className="teacher-game-controls relative z-30 shrink-0 bg-white p-2" data-frame-controls data-play-controls>
     <p className="teacher-game-status font-bold text-deep-navy" role="status">{t(workspace.playing ? workspace.running ? 'teacherGame.playing' : 'teacherGame.paused' : 'teacherGame.ready')}</p>
     <div className="teacher-game-actions">
       <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
       {workspace.playing && workspace.running && <button className={`${btn} teacher-game-primary`} onClick={workspace.pause}>{t('teacherGame.pause')}</button>}
+      {workspace.playing && onRestart && <button className={btn} onClick={onRestart} data-frame-restart>{t('gamePlay.restart')}</button>}
       {workspace.playing && !presenting && <button className={btn} onClick={workspace.exitPlay}>{t('flow.backToPreparation')}</button>}
       {!presenting && <button className={btn} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{t(fullscreen ? 'gamePlay.exitFullscreen' : 'gamePlay.fullscreen')}</button>}
     </div>
