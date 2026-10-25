@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { fetchAllWordLists, fetchPhonicsBankResult } from '../../lib/api';
-import { ACTIVITY_PURPOSES, WORKSHEET_ACTIVITIES, WORKSHEET_BASICS, worksheetActivity, type ActivityPurpose } from '../../lib/worksheetActivityCatalog';
+import { ACTIVITY_PURPOSES, WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES, worksheetActivity, type ActivityPurpose } from '../../lib/worksheetActivityCatalog';
 import { addKnownWorksheetSounds, exampleWorksheet } from '../../lib/worksheetActivitySamples';
 import { parseWorksheetFile, readWorksheetStore, rebuildWordTasks, replaceStudioWords, studioKey, studioWordsFromCards, worksheetIssues, writeWorksheetStore, type StudioWord, type WorksheetDocument, type WorksheetStore } from '../../lib/worksheetStudio';
 import { teacherCues } from '../../lib/worksheetActivityPrinting';
@@ -14,9 +14,10 @@ import type { FullCardItem, PhonicsBankEntry, WordList } from '../../lib/types';
 import WorksheetActivitySheets from './WorksheetActivitySheets';
 import WorksheetSourceEditor from './WorksheetSourceEditor';
 import WorksheetTaskEditor from './WorksheetTaskEditor';
+import WorksheetSampleCard from './WorksheetSampleCard';
+import WorksheetSampleDialog from './WorksheetSampleDialog';
 import '../../styles/worksheet-studio.css';
 
-const basicLabels:Record<string,string>={list:'tabList',card:'tabCard',tracing:'tabTracing',quiz:'tabQuiz',coloring:'tabColoring',fillBlank:'tabFillBlank',cutPaste:'tabCutPaste',miniBook:'tabMiniBook',trueFalse:'tabTrueFalse'};
 export default function WorksheetStudio() {
  const {session,academy}=useAuth();
  return <WorksheetStudioOwner key={`${session?.user.id}:${academy?.id}`} owner={studioKey(session?.user.id||'guest',academy?.id||'none')}/>;
@@ -37,6 +38,7 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
  const incoming=handoffFromLocationState(location.state),allowed=!incoming.materialsOwnerId||(incoming.materialsOwnerId===session?.user.id&&incoming.materialsAcademyId===academy?.id);
  const incomingWords=wordsFromLocationState(allowed?location.state:null);
  const consumed=useRef('');
+ const [sampleId,setSampleId]=useState<string|null>(null);
  const navigationInput=useRef({incomingWords,bank,location});navigationInput.current={incomingWords,bank,location};
  useEffect(()=>{
   const {incomingWords:cards,bank:media,location:route}=navigationInput.current;
@@ -65,6 +67,17 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
   });return()=>{cancelled=true;cancelAnimationFrame(frame);};
  },[doc,audience]);
  function choose(id:string){let next=store.current.current[id]||exampleWorksheet(id);if(incomingWords.length)next=replaceStudioWords(next,studioWordsFromCards(incomingWords,bank).map(addKnownWorksheetSounds));change(next);setUndo(null);setAudience('student');navigate(`/materials/worksheet?activity=${encodeURIComponent(id)}`,{state:{}});}
+ function useSample(next:WorksheetDocument){
+  const previous=store.current.current[next.activityId];
+  if(previous&&copies.length>=30){notify(tr('storageLimit'),'error');return 'storageLimit' as const;}
+  const nextCopies=previous?[{id:crypto.randomUUID(),name:tr('previousWork',{title:previous.title}).slice(0,100),document:structuredClone(previous),updatedAt:new Date().toISOString()},...copies]:copies;
+  const nextStore={...store.current,copies:nextCopies,current:{...store.current.current,[next.activityId]:next}};
+  // Write atomically before replacing the screen so a quota failure cannot discard earlier work.
+  if(!writeWorksheetStore(owner,nextStore)){setSaved(false);notify(tr('saveFailed'),'error');return 'saveFailed' as const;}
+  store.current=nextStore;setCopies(nextCopies);setSaved(true);docRef.current=next;setDoc(next);setUndo(previous?structuredClone(previous):null);setAudience('student');setSampleId(null);
+  navigate(`/materials/worksheet?activity=${encodeURIComponent(next.activityId)}`,{state:{}});
+  return null;
+ }
  function importWords(cards:FullCardItem[],append:boolean){const current=docRef.current;if(!current)return;if(current.editedTasks&&!append&&!confirm(tr('confirmReplace')))return;setUndo(structuredClone(current));const words=studioWordsFromCards(cards,bank).map(addKnownWorksheetSounds);const combined=append?[...current.words,...words.map(w=>({...w,id:crypto.randomUUID()}))]:words;change(replaceStudioWords(current,combined));}
  function editWords(words:StudioWord[]){const current=docRef.current!;let next={...current,words};const semantic=JSON.stringify(current.words.map(w=>[w.id,w.word,w.meaning,w.example]))!==JSON.stringify(words.map(w=>[w.id,w.word,w.meaning,w.example]));if(worksheetActivity(current.activityId)!.mode==='words'){
    if(!current.editedTasks)next=rebuildWordTasks(next);
@@ -87,12 +100,12 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
    <div className="ws-actions">{editFile}</div>{copyShelf}
    <label className="ws-search">{tr('search')}<input type="search" value={search} onChange={e=>{setSearch(e.target.value);setLimit(18);}}/></label>
    <nav className="ws-purpose-nav" aria-label={tr('title')}><button type="button" aria-pressed={purpose==='all'} onClick={()=>{setPurpose('all');setLimit(18);}}>{tr('all')} <small>{WORKSHEET_ACTIVITIES.length}</small></button>{ACTIVITY_PURPOSES.map(p=><button type="button" key={p} aria-pressed={purpose===p} onClick={()=>{setPurpose(p);setLimit(18);}}>{tr(`purpose.${p}`)} <small>{WORKSHEET_ACTIVITIES.filter(a=>a.purpose===p).length}</small></button>)}</nav>
-   <p role="status">{tr('count',{count:filtered.length})}</p><div className="ws-activity-grid">{filtered.slice(0,limit).map(a=><button className="ws-activity-card" type="button" key={a.id} onClick={()=>choose(a.id)} data-activity-card={a.id}><span className="ws-purpose-label">{tr(`purpose.${a.purpose}`)}</span><h2>{tr(`activities.${a.id}.title`)}</h2><p>{tr(`activities.${a.id}.goal`)}</p><small>{tr(`people.${a.people}`)} · {tr('time',{count:a.minutes})}</small><strong>{tr('open')} →</strong></button>)}</div>{!filtered.length&&<p>{tr('noResults')}</p>}{filtered.length>limit&&<button type="button" className="ws-button" onClick={()=>setLimit(n=>n+18)}>{tr('more')}</button>}
-   <section className="ws-basics"><h2>{tr('basics')}</h2><div className="ws-actions">{WORKSHEET_BASICS.map(tab=><button type="button" key={tab} className="ws-button" onClick={()=>choose('basic-'+tab)}>{t(`materials.worksheet.${basicLabels[tab]}`)}</button>)}</div></section>
+   <p role="status">{tr('count',{count:filtered.length})}</p><div className="ws-activity-grid">{filtered.slice(0,limit).map(a=><WorksheetSampleCard key={a.id} activity={a} onPreview={()=>setSampleId(a.id)} onEdit={()=>choose(a.id)}/>)}</div>{!filtered.length&&<p>{tr('noResults')}</p>}{filtered.length>limit&&<button type="button" className="ws-button" onClick={()=>setLimit(n=>n+18)}>{tr('more')}</button>}
+   <section className="ws-basics"><h2>{tr('basics')}</h2><div className="ws-activity-grid">{WORKSHEET_BASIC_ACTIVITIES.map(a=><WorksheetSampleCard key={a.id} activity={a} onPreview={()=>setSampleId(a.id)} onEdit={()=>choose(a.id)}/>)}</div></section>
   </div>:<>
    <div className="ws-preparation no-print" data-worksheet-editor={doc.activityId}><button type="button" className="ws-back" onClick={()=>navigate('/materials/worksheet',{state:{}})}>← {tr('back')}</button><header><span className="ws-purpose-label">{tr(`purpose.${activity!.purpose}`)}</span><h1>{tr(`activities.${doc.activityId}.title`)}</h1><p>{tr(`activities.${doc.activityId}.goal`)}</p></header>
     <details open className="ws-help"><summary>{tr('help')}</summary><p>{tr(`people.${activity!.people}`)} · {tr('time',{count:activity!.minutes})}</p><ol><li>{tr('prepare')}</li><li>{tr('model')}</li><li>{tr('finish')}</li></ol><p className="ws-tip"><strong>{tr('tip')}: </strong>{tr(`activities.${doc.activityId}.tip`)}</p></details>
-    <section className="ws-editor-section"><h2>{tr('stepSource')}</h2>{sourceError&&<p role="alert">{tr('sourceError')}</p>}<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>void reloadSources()} disabled={loading}>{tr('refresh')}</button><button type="button" className="ws-button" onClick={()=>{if(confirm(tr('confirmReplace'))){setUndo(structuredClone(doc));change(exampleWorksheet(doc.activityId));}}}>{tr('sample')}</button>{undo&&<button type="button" className="ws-button" onClick={()=>{change(undo);navigate(`/materials/worksheet?activity=${encodeURIComponent(undo.activityId)}`,{state:{}});setUndo(null);}}>{tr('undo')}</button>}</div>{activity!.mode==='content'&&<p className="ws-note">{tr('contentHint')}</p>}<WorksheetSourceEditor key={owner+doc.activityId} words={doc.words} onChange={editWords} onImport={importWords} lists={lists} loading={loading} activityId={doc.activityId}/></section>
+    <section className="ws-editor-section"><h2>{tr('stepSource')}</h2>{sourceError&&<p role="alert">{tr('sourceError')}</p>}<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>void reloadSources()} disabled={loading}>{tr('refresh')}</button><button type="button" className="ws-button" onClick={()=>setSampleId(doc.activityId)}>{tr('samplePreview')}</button>{undo&&<button type="button" className="ws-button" onClick={()=>{change(undo);navigate(`/materials/worksheet?activity=${encodeURIComponent(undo.activityId)}`,{state:{}});setUndo(null);}}>{tr('undo')}</button>}</div>{activity!.mode==='content'&&<p className="ws-note">{tr('contentHint')}</p>}<WorksheetSourceEditor key={owner+doc.activityId} words={doc.words} onChange={editWords} onImport={importWords} lists={lists} loading={loading} activityId={doc.activityId}/></section>
     <section className="ws-editor-section"><h2>{tr('stepEdit')}</h2><WorksheetTaskEditor doc={doc} onChange={change}/>{activity!.mode==='words'&&<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>{if(!doc.editedTasks||confirm(tr('confirmReplace'))){setUndo(structuredClone(doc));change(rebuildWordTasks(doc));}}}>{tr('regenerate')}</button>{doc.needsReview&&<button type="button" className="ws-button" onClick={()=>change({...doc,needsReview:false})}>{tr('reviewDone')}</button>}</div>}</section>
     <section className="ws-editor-section"><h2>{tr('stepPreview')}</h2><p role="status">{saved?tr('autosave'):tr('saveFailed')}</p><div className="ws-actions"><button type="button" className="ws-button" onClick={()=>persist(store.current)}>{tr('save')}</button><button type="button" className="ws-button" onClick={download}>{tr('download')}</button>{editFile}</div><p className="ws-file-hint">{tr('fileHint')}</p><div className="ws-copy-controls"><label>{tr('copyName')}<input value={copyName} maxLength={100} onChange={e=>setCopyName(e.target.value)}/></label><button type="button" className="ws-button" onClick={saveCopy}>{tr('saveCopy')}</button></div>{copyShelf}
      {issues.length>0?<div role="alert" className="ws-validation"><strong>{tr('needs')}</strong><ul>{issues.map((issue,i)=>{const values={...issue.values,...(issue.values?.field?{field:tr(`field.${issue.values.field}`)}:{})};const message=tr(issue.key,values);return <li key={i}>{issue.index===undefined?message:tr('questionNumber',{number:issue.index+1,message})}</li>;})}</ul></div>:<p className="ws-ready">{tr('ready')}</p>}
@@ -103,5 +116,6 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
     {audience==='teacher'&&cues.length>0&&<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>speakSequence(cues)}>{tr('listen')}</button><button type="button" className="ws-button" onClick={()=>window.speechSynthesis?.cancel()}>{tr('stop')}</button><small>{tr('voiceHint')}</small></div>}
    </div><div className="ws-preview-viewport" ref={viewport}><div className={`ws-preview-stack print-sheet${landscape?' ws-landscape-stack':''}`} ref={preview} style={{zoom:previewScale}} data-audience={audience}><WorksheetActivitySheets doc={doc} audience={audience}/></div></div>
   </>}
+  {sampleId&&<WorksheetSampleDialog key={sampleId} activityId={sampleId} onClose={()=>setSampleId(null)} onUse={useSample}/>}
  </div>;
 }

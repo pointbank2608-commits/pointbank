@@ -1,6 +1,7 @@
 import { WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES } from '../lib/worksheetActivityCatalog';
 
 const labels: Record<string,[string,string]> = {
+ samplePreview:['샘플 보기','View sample'],closeSample:['닫기','Close'],previewNamedSample:['{{title}} 샘플 보기','Preview {{title}}'],samplePageCount:['샘플 {{count}}쪽','{{count}} sample pages'],sampleAllPages:['전체 {{count}}쪽 · 아래로 내려 모두 볼 수 있어요','All {{count}} pages · scroll to see every page'],samplePreviewHint:['학생용 전체 구성과 교사용 설명·답안을 먼저 살펴보세요.','Explore all student pages and the teacher notes and answers.'],sampleKeepWork:['샘플은 자유롭게 수정할 수 있어요. 이전 수정본이 있으면 사본으로 보관해요.','You can edit this example. Previous work is kept as a separate copy.'],useSample:['이 샘플로 만들기','Start with this sample'],previousWork:['{{title}} · 이전 수정본','{{title}} · previous work'],
  linkedTasks:['각 단어와 문항이 한 번씩 연결되도록 그림 연결을 확인해 주세요.','Link every chosen word to exactly one task.'],
  exactWords:['이 활동에는 단어 {{count}}개가 필요해요.','This activity needs exactly {{count}} words.'],
  soundGroup:['소리 규칙 분류','Sound-pattern group'],unusedWord:['이 단어를 문항으로 만들지 못했어요. 짝이나 소리 분류를 보완해 주세요.','This word was not used. Add a suitable partner or sound group.'],
