@@ -28,7 +28,7 @@ interface Props {
 }
 
 // 흰색: 초록·검은 칠판 배경에서도 잘 보이게(2026-10-11 사용자 요청)
-const COLORS = ['#E53935', '#1565C0', '#2E7D32', '#111827', '#FFFFFF'];
+const COLORS = ['#E53935', '#FB8C00', '#FDD835', '#43A047', '#00ACC1', '#1565C0', '#8E24AA', '#EC407A', '#795548', '#111827', '#FFFFFF'];
 const WIDTHS = [3, 6, 11];
 const ERASER_SIZES = [32, 64, 120, 200];
 const ERASER_MIN = 16;
@@ -247,6 +247,20 @@ export default function LessonAnnotationLayer({ onClose, top = 52, persistent = 
               aria-pressed={color === item && tool === 'pen'}
             />
           ))}
+          <label
+            className={`relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 ${!COLORS.includes(color) && tool === 'pen' ? 'border-white ring-2 ring-white/40' : 'border-white/40'}`}
+            style={{ background: COLORS.includes(color) ? 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' : color }}
+            title={t('curriculum.play.customColor')}
+            data-custom-color
+          >
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => { setColor(e.target.value); setTool('pen'); }}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              aria-label={t('curriculum.play.customColor')}
+            />
+          </label>
         </div>
         <div className="flex items-center gap-0.5 rounded-xl bg-white/10 p-1" aria-label={t('curriculum.play.penWidth')}>
           {WIDTHS.map((item) => (

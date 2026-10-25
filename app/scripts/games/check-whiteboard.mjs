@@ -188,6 +188,29 @@ try {
   await page.locator("button:has-text(\"ink_pen\")").click();
   ok("지우개: 원 모양 표시·크기 단추·휠·두 손가락 조절");
 
+  // 타이머: 시간 고르기·시작·멈춤·처음으로, 도구를 열어도 유지
+  await page.locator('[data-board-tool="timer"]').click();
+  const clock = () => page.locator("[data-timer-clock]").innerText();
+  await page.locator('[data-timer-preset="30"]').click();
+  assert.equal((await clock()).trim(), "0:30");
+  await page.locator("[data-timer-toggle]").click();
+  await page.waitForTimeout(2300);
+  const mid = (await clock()).trim();
+  assert.ok(mid < "0:30" && mid >= "0:25", `줄어든다(${mid})`);
+  await page.locator('[data-board-tool="flash"]').click();
+  await page.waitForSelector("[data-board-timer]");
+  await page.locator("[data-board-back]").click();
+  await page.locator("[data-timer-toggle]").click();
+  const paused = (await clock()).trim();
+  await page.waitForTimeout(1200);
+  assert.equal((await clock()).trim(), paused, "멈추면 그대로");
+  await page.locator("[data-timer-reset]").click();
+  assert.equal((await clock()).trim(), "0:30");
+  await page.locator('[data-timer-preset="1"], [data-timer-preset="60"]').first().click();
+  assert.equal((await clock()).trim(), "1:00");
+  await page.getByRole("button", { name: "닫기" }).last().click().catch(() => {});
+  ok("타이머: 시간 고르기·시작·멈춤·처음으로·도구를 열어도 유지");
+
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();
   await page.getByRole("button", { name: "퀴즈 시작" }).click();

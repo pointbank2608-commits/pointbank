@@ -6500,6 +6500,7 @@ const en: Ko = {
       selectPenWidth: 'Pen width {{width}}',
       eraser: 'Eraser',
       eraserSize: 'Eraser size (pinch with two fingers)',
+      customColor: 'Pick another color',
       undoDrawing: 'Undo last stroke',
       clearDrawing: 'Clear annotations',
       closeDrawing: 'Close drawing tools',

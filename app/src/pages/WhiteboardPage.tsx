@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from '../components/AccessibleDialog';
+import BoardTimer from '../components/board/BoardTimer';
 import BoardGrammar from '../components/board/BoardGrammar';
 import BoardGameDialog from '../components/board/BoardGameDialog';
 import BoardMaterialDialog from '../components/board/BoardMaterialDialog';
@@ -87,6 +88,7 @@ export default function WhiteboardPage() {
   const [tool, setTool] = useState<Tool | null>(null);
   const [pending, setPending] = useState<Tool | null>(null);
   const [materialOpen, setMaterialOpen] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
   const [full, setFull] = useState(false);
   // 처음 쓰기 시작하면(또는 이미 쓴 판서가 있으면) 안내 글을 걷는다
   const [wrote, setWrote] = useState(() => {
@@ -207,6 +209,12 @@ export default function WhiteboardPage() {
             </button>
           ))}
         </nav>
+        <button type="button" className={`${topBtn} ${timerOpen ? 'bg-white/25' : ''}`} onClick={() => setTimerOpen((v) => !v)} aria-pressed={timerOpen} aria-label={t('whiteboard.toolTimer')} title={t('whiteboard.toolTimer')} data-board-tool="timer">
+          <span className="material-symbols-outlined text-[22px]" aria-hidden>
+            timer
+          </span>
+          <span className="hidden lg:inline">{t('whiteboard.toolTimer')}</span>
+        </button>
         {theme === 'lined' && (
           <div className="flex items-center gap-0.5" role="group" aria-label={t('whiteboard.lineSize')} data-board-linesize>
             {LINE_GAPS.map((g, i) => (
@@ -249,6 +257,8 @@ export default function WhiteboardPage() {
       {!wrote && <p className={`pointer-events-none absolute inset-x-0 top-[40%] px-6 text-center text-xl font-bold ${th.dark ? 'text-white/35' : 'text-slate-400'}`}>{t('whiteboard.hint')}</p>}
 
       <LessonAnnotationLayer top={56} persistent persistKey={BOARD_STROKES_KEY} onClose={() => undefined} />
+
+      {timerOpen && <BoardTimer onClose={() => setTimerOpen(false)} />}
 
       {tool && (
         <div className="absolute inset-0 z-[60] bg-[#f7f9fd]" data-board-overlay={tool}>
