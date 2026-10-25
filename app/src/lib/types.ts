@@ -570,6 +570,8 @@ export interface ImageQuizItem {
 
 /** 단어+뜻+이미지를 한꺼번에 쓰는 인쇄물(메모리 카드 등) 전용. 이미지는 없을 수 있다. */
 export interface FullCardItem {
+  /** Explicit shared or teacher-selected line art; separate from the colour picture. */
+  lineartUrl?: string | null;
   id: string;
   word: string;
   meaning: string;

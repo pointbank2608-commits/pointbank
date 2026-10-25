@@ -11,7 +11,7 @@ export default function MaterialsPage() {
   const { t } = useTranslation();
   const { rootRef, navRef, active, jump } = useMaterialNavigation(sectionIds);
   return <div className="materials-browser" ref={rootRef}>
-    <header className="materials-heading"><h1>{t('materials.pageTitle')}</h1><p>{t('materialBrowser.subtitle')}</p></header>
+    <header className="materials-heading"><h1>{t('materials.pageTitle')}</h1><p>{t('materialBrowser.subtitle')}</p><Link to="/materials/worksheet" className="mt-4 inline-flex min-h-12 items-center rounded-xl bg-primary px-5 py-3 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-primary">{t('worksheetStudio.title')} →</Link></header>
     <nav className="materials-shortcuts" ref={navRef} aria-label={t('materialBrowser.shortcuts')}>
       <div className="materials-shortcuts-scroll">{sections.map(s => {
         const id = `materials-${s.key}`;

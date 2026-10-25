@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../BrandMark';
 import { BRAND_DOMAIN } from '../PrintBrandFooter';
@@ -41,7 +41,10 @@ interface Props {
   matchMeaning?: boolean;
   /** 귀여운 스타일(파닉스)에서 컬러로 그릴지, 흑백에 맞는 모양으로 그릴지. */
   cuteColor?: boolean;
+  /** Optional editable heading for the purpose-based editor; old routes retain their exact headings. */
+  heading?: { title:string; instruction:string };
 }
+const HeadingContext=createContext<Props['heading']>(undefined);
 
 function Page({ children }: { children: ReactNode }) {
   return (
@@ -53,6 +56,8 @@ function Page({ children }: { children: ReactNode }) {
 
 function Header({ title, instruction }: { title: string; instruction?: string }) {
   const { t } = useTranslation();
+  const override=useContext(HeadingContext);
+  title=override?.title??title;instruction=override?.instruction??instruction;
   return (
     <header className="mb-[5mm]">
       <div className="flex items-end justify-between gap-[6mm]">
@@ -88,6 +93,7 @@ function DecorImg({ id, className }: { id: string | undefined; className: string
 
 function ColoringSheet({ page, options }: { page: ColoringPage; options: ColoringOptions }) {
   const { t } = useTranslation();
+  const heading = useContext(HeadingContext);
   return (
     <Page>
       <div className="flex h-[262mm] flex-col rounded-[6mm] border-[1.2mm] border-black p-[5mm]">
@@ -98,6 +104,7 @@ function ColoringSheet({ page, options }: { page: ColoringPage; options: Colorin
           </div>
           <DecorImg id={page.decor[1]} className="h-[22mm] w-[26mm] shrink-0" />
         </div>
+        {heading?.instruction && <p className="shrink-0 py-[2mm] text-[13px] leading-snug text-black">{heading.instruction}</p>}
         <div className="flex shrink-0 justify-end gap-[6mm] py-[2mm] text-[13px] text-black">
           <span className="flex items-end gap-1">
             {t('materials.worksheet.sheet.name')}: <span className="inline-block w-[40mm] border-b border-black" />
@@ -733,12 +740,14 @@ function BoardSheet({ cells, title }: { cells: BoardCell[]; title: string }) {
 
 function BookPanel({ page, book, upsideDown }: { page: number; book: MiniBook; upsideDown: boolean }) {
   const { t } = useTranslation();
+  const heading = useContext(HeadingContext);
   const content = (() => {
     if (page === 1) {
       return (
         <div className="flex h-full flex-col items-center justify-center gap-[3mm] p-[4mm] text-center">
           <div className="text-[22px] font-extrabold leading-tight">{book.title}</div>
-          {book.coverImage && <Picture src={book.coverImage} className="h-[40mm] w-[40mm]" />}
+          {book.coverImage && <Picture src={book.coverImage} className={heading ? 'h-[28mm] w-[28mm]' : 'h-[40mm] w-[40mm]'} />}
+          {heading?.instruction && <p className="text-[10px] leading-snug">{heading.instruction}</p>}
           <div className="mt-[2mm] flex w-full items-end gap-1 text-[12px]">
             {t('materials.worksheet.sheet.name')}: <span className="inline-block flex-1 border-b border-black" />
           </div>
@@ -944,18 +953,40 @@ function PhonicsOddSheet({ rows, startIndex, answer }: { rows: OddRow[]; startIn
   );
 }
 
+/** Reuse the exact generated answer mapping without printing student sheets first. */
+export function WorksheetAnswerSheets({data}:{data:WorksheetData}) {
+  switch(data.kind){
+    case 'match':case 'readMatch':case 'phonicsRhyme':return <MatchAnswer pages={data.pages}/>;
+    case 'sentence':return <SentenceAnswer pages={data.pages}/>;
+    case 'wordSearch':return <>{data.pages.map((page,i)=><WordSearchSheet key={i} page={page} answer/>)}</>;
+    case 'unscramble':return <UnscrambleAnswer pages={data.pages}/>;
+    case 'fillBlank':return <FillBlankAnswer pages={data.pages}/>;
+    case 'multipleChoice':return <ChoiceAnswer pages={data.pages}/>;
+    case 'trueFalse':return <TrueFalseAnswer pages={data.pages}/>;
+    case 'grouping':return data.sheet?<GroupingSheet groups={data.sheet.groups} pool={data.sheet.pool} answer/>:null;
+    case 'phonicsBlank':return <>{data.pages.map((rows,i)=><PhonicsBlankSheet key={i} rows={rows} bank={data.bank} startIndex={i*PHONICS_PER_PAGE.blank} answer/>)}</>;
+    case 'phonicsCircle':return <>{data.pages.map((rows,i)=><PhonicsCircleSheet key={i} rows={rows} sameTarget={data.sameTarget} startIndex={i*PHONICS_PER_PAGE.circle} answer/>)}</>;
+    case 'phonicsOdd':return <>{data.pages.map((rows,i)=><PhonicsOddSheet key={i} rows={rows} startIndex={i*PHONICS_PER_PAGE.odd} answer/>)}</>;
+    case 'cutPaste':return <>{data.pages.map((page,i)=><CutPasteSheets key={i} page={page} answer/>)}</>;
+    default:return null;
+  }
+}
+
 /* ---------------- 진입점 ---------------- */
 
 
 
 
-export default function WorksheetSheets({ data, includeAnswers, cuteColor = true, matchMeaning = false }: Props) {
+export default function WorksheetSheets(props:Props) {
+  return <HeadingContext.Provider value={props.heading}><WorksheetSheetContent {...props}/></HeadingContext.Provider>;
+}
+function WorksheetSheetContent({ data, includeAnswers, cuteColor = true, matchMeaning = false, heading }: Props) {
   switch (data.kind) {
     case 'phonicsBlank':
       return (
         <>
           {data.pages.map((rows, i) => (
-            <PhonicsBlankCute key={i} rows={rows} bank={data.bank} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.blank} />
+            heading?<PhonicsBlankSheet key={i} rows={rows} bank={data.bank} startIndex={i * PHONICS_PER_PAGE.blank} answer={false}/>:<PhonicsBlankCute key={i} rows={rows} bank={data.bank} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.blank} />
           ))}
           {includeAnswers &&
             data.pages.map((rows, i) => (
@@ -979,7 +1010,7 @@ export default function WorksheetSheets({ data, includeAnswers, cuteColor = true
       return (
         <>
           {data.pages.map((rows, i) => (
-            <PhonicsOddCute key={i} rows={rows} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.odd} />
+            heading?<PhonicsOddSheet key={i} rows={rows} startIndex={i * PHONICS_PER_PAGE.odd} answer={false}/>:<PhonicsOddCute key={i} rows={rows} color={cuteColor} startIndex={i * PHONICS_PER_PAGE.odd} />
           ))}
           {includeAnswers &&
             data.pages.map((rows, i) => <PhonicsOddSheet key={`a${i}`} rows={rows} startIndex={i * PHONICS_PER_PAGE.odd} answer />)}
@@ -989,7 +1020,7 @@ export default function WorksheetSheets({ data, includeAnswers, cuteColor = true
       return (
         <>
           {data.pages.map((p, i) => (
-            <RhymeCute key={i} page={p} color={cuteColor} />
+            heading?<MatchSheet key={i} page={p} pictureMode={false}/>:<RhymeCute key={i} page={p} color={cuteColor} />
           ))}
           {includeAnswers && <MatchAnswer pages={data.pages} />}
         </>

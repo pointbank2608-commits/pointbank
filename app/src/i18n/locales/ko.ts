@@ -1,3 +1,4 @@
+import { worksheetStudioKo } from '../worksheetStudioLocales';
 import { boardKo } from '../boardLocales';
 import { teacherGameKo } from '../teacherGameLocales';
 import { phonicsStage1Ko } from '../phonicsStage1Locales';
@@ -10,6 +11,7 @@ import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  worksheetStudio: worksheetStudioKo,
   sentenceSplashSave: {
     imported:'불러온 문장을 게임에 적용했어요.',
     saveHint:'문장 목록은 불러오면 바로 적용돼요. 직접 수정한 문장은 ‘미리보기 적용’으로 수업에 반영하거나, ‘새 게임으로 저장’으로 저장하세요.',
@@ -6493,9 +6495,9 @@ const ko = {
       penWidth: '펜 굵기',
       selectPenWidth: '펜 굵기 {{width}}',
       eraser: '지우개',
+      eraserSize: '지우개 크기 (두 손가락으로 벌리기·오므리기)',
       undoDrawing: '마지막 판서 되돌리기',
       clearDrawing: '판서 전체 지우기',
-      eraserSize: '지우개 크기 (두 손가락으로 벌리기·오므리기)',
       closeDrawing: '판서 도구 닫기',
       exitFullscreen: '전체화면 나가기',
       pointsButton: '포인트 주기',

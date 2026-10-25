@@ -150,6 +150,7 @@ export default function WorksheetLibraryPage() {
   return (
     <div className="space-y-6">
       <BackButton path="/materials" to={t('materials.backToMaterials')} />
+      <button type="button" className="min-h-12 rounded-xl border border-primary px-4 py-2 font-bold text-primary no-print" onClick={()=>navigate('/materials/worksheet',{state:{materialsWords:words}})}>{t('worksheetStudio.title')} →</button>
 
       <div>
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy mb-1.5">

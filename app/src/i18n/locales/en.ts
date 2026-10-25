@@ -1,3 +1,4 @@
+import { worksheetStudioEn } from '../worksheetStudioLocales';
 import { boardEn } from '../boardLocales';
 import { teacherGameEn } from '../teacherGameLocales';
 import { phonicsStage1En } from '../phonicsStage1Locales';
@@ -12,6 +13,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  worksheetStudio: worksheetStudioEn,
   sentenceSplashSave: {
     imported:'Imported sentences applied to the game.',
     saveHint:'Imported lists apply immediately. Apply manual edits to the preview for this lesson, or save the current edits as a new game.',
@@ -6497,9 +6499,9 @@ const en: Ko = {
       penWidth: 'Pen width',
       selectPenWidth: 'Pen width {{width}}',
       eraser: 'Eraser',
+      eraserSize: 'Eraser size (pinch with two fingers)',
       undoDrawing: 'Undo last stroke',
       clearDrawing: 'Clear annotations',
-      eraserSize: 'Eraser size (pinch with two fingers)',
       closeDrawing: 'Close drawing tools',
       exitFullscreen: 'Exit fullscreen',
       pointsButton: 'Give points',

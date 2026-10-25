@@ -251,6 +251,8 @@ export type ColoringLabelMode = 'word' | 'write' | 'none';
 export type ColoringPerPage = 4 | 6 | 8 | 9;
 
 export interface ColoringOptions {
+  /** The studio keeps distinct chosen words even when the teacher shares an illustration. */
+  preserveWords?: boolean;
   title: string;
   labelMode: ColoringLabelMode;
   perPage: ColoringPerPage;
@@ -281,13 +283,14 @@ export function buildColoringPages(words: FullCardItem[], rng: Rng, options: Col
   const skipped: string[] = [];
   const seen = new Set<string>();
   for (const w of words) {
-    const src = lineartUrlForWord(w.word);
+    const src = w.lineartUrl === undefined ? lineartUrlForWord(w.word) : w.lineartUrl;
     if (!src) {
       skipped.push(w.word);
       continue;
     }
-    if (seen.has(src)) continue;
-    seen.add(src);
+    const identity=options.preserveWords?w.id:src;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     usable.push({ word: w.word, src });
   }
   const [cols, rows] = COLORING_GRID[options.perPage];

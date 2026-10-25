@@ -980,15 +980,19 @@ export async function fetchWordBank(): Promise<WordBankEntry[]> {
 /* ---------------- 파닉스 ---------------- */
 
 /** Shared confirmed curriculum; extension and historical entries require an explicit opt-in. */
-export async function fetchPhonicsBank(options: { includeLegacy?: boolean; includeExtensions?: boolean } = {}): Promise<PhonicsBankEntry[]> {
+export async function fetchPhonicsBankResult(options: { includeLegacy?: boolean; includeExtensions?: boolean } = {}): Promise<{entries:PhonicsBankEntry[];mediaAvailable:boolean}> {
   const { curriculumEntries } = await import('../data/phonicsCurriculum');
   const { withPhonicsMediaUpdates } = await import('../data/phonicsMedia');
   const base = curriculumEntries(options.includeExtensions === true);
   const result = await supabase.from('phonics_bank').select('*').order('sort_order');
-  if (result.error) return base;
+  if (result.error) return {entries:base,mediaAvailable:false};
   const raw = (result.data ?? []) as PhonicsBankEntry[];
   const current = withPhonicsMediaUpdates(base, raw);
-  return options.includeLegacy ? [...current, ...raw.map(row => ({ ...row, tier: 'legacy' as const }))] : current;
+  return {entries:options.includeLegacy ? [...current, ...raw.map(row => ({ ...row, tier: 'legacy' as const }))] : current,mediaAvailable:true};
+}
+/** Existing readers retain the same array contract, including the offline curriculum fallback. */
+export async function fetchPhonicsBank(options: { includeLegacy?: boolean; includeExtensions?: boolean } = {}): Promise<PhonicsBankEntry[]> {
+  return (await fetchPhonicsBankResult(options)).entries;
 }
 
 /** 2026-09 사전·파닉스 그림을 PNG → WebP 로 바꿨는데(supabase/017), 단어장·게임 내용·수업은 단어를

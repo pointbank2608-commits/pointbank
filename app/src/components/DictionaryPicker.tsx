@@ -26,6 +26,7 @@ const RESULT_LIMIT = 60;
 /** 사전(word_bank)·파닉스(phonics_bank) 항목을 이 패널 안에서 다루는 공통 모양. 출처가
  * 달라도(사전 category 든 파닉스 rule 이든) 검색·필터·선택·추가 로직은 이거 하나로 통일한다. */
 interface PickerEntry {
+  lineartUrl?: string | null;
   id: string;
   word: string;
   meaning: string;
@@ -51,7 +52,7 @@ function fromWordBank(e: WordBankEntry): PickerEntry {
 }
 
 function fromPhonics(e: PhonicsBankEntry): PickerEntry {
-  return { id: e.id, word: e.word, meaning: e.meaning ?? '', image_url: e.image_url, category: e.rule, partOfSpeech: null, patternMarked: e.pattern_marked };
+  return { id: e.id, word: e.word, meaning: e.meaning ?? '', image_url: e.image_url, lineartUrl:e.lineart_url, category: e.rule, partOfSpeech: null, patternMarked: e.pattern_marked };
 }
 
 type CategoryFilter = { type: 'category'; value: string } | { type: 'pos'; value: string } | { type: 'phonics'; step: number };
@@ -189,7 +190,7 @@ export default function DictionaryPicker(props: Props) {
         selectedList.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category, example: i.example_sentence, partOfSpeech: i.partOfSpeech, patternMarked: i.patternMarked })));
+      props.onImportFull(selectedList.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, lineartUrl:i.lineartUrl, category: i.category, example: i.example_sentence, partOfSpeech: i.partOfSpeech, patternMarked: i.patternMarked })));
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions({ items: selectedList }, direction));
     } else if (props.variant === 'truefalse') {

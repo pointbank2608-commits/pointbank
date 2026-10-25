@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AskAnswerScreen from '../components/AskAnswerScreen';
 import ClassChipRow from '../components/ClassChipRow';
-import MaterialsWordPicker from '../components/MaterialsWordPicker';
 import PresentPrintBar from '../components/PresentPrintBar';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -19,6 +18,9 @@ import type { FullCardItem, GameType } from '../lib/types';
 import TracingRow from '../components/worksheets/TracingRow';
 import WorksheetOptionsFields from '../components/worksheets/WorksheetOptionsFields';
 import WorksheetSheets from '../components/worksheets/WorksheetSheets';
+import WorksheetStudio from '../components/worksheets/WorksheetStudio';
+import WorksheetSourceEditor from '../components/worksheets/WorksheetSourceEditor';
+import { WORKSHEET_ACTIVITIES } from '../lib/worksheetActivityCatalog';
 import {
   buildWorksheet,
   DEFAULT_COLORING_OPTIONS,
@@ -91,6 +93,12 @@ const TAB_GAME_BRIDGE: Partial<Record<Tab, GameType>> = {
 };
 
 export default function WorksheetPrintPage() {
+  const location=useLocation();
+  const search=new URLSearchParams(location.search);
+  const legacy=search.get('legacy')==='1'||(!search.has('activity')&&search.get('studio')!=='1'&&!!handoffFromLocationState(location.state).materialsTab);
+  return legacy?<LegacyWorksheetPrintPage/>:<WorksheetStudio/>;
+}
+function LegacyWorksheetPrintPage() {
   const { t } = useTranslation();
   const { session, academy } = useAuth();
   const { notify } = useToast();
@@ -230,6 +238,7 @@ export default function WorksheetPrintPage() {
       ) : (
       <>
       <BackButton path="/materials" to={t('materials.backToMaterials')} />
+      <button type="button" className="no-print text-primary underline min-h-11" onClick={()=>navigate('/materials/worksheet?studio=1',{state:{materialsWords:words,materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id}})}>{t('worksheetStudio.title')}</button>
 
       <h2 className="no-print font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('materials.worksheetName')}
@@ -241,13 +250,10 @@ export default function WorksheetPrintPage() {
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <div>
             <div className="font-caption text-caption text-on-surface-variant mb-2">{t('materials.wordsLabel')}</div>
-            <MaterialsWordPicker
-              words={words}
-              onChange={setWords}
-              wordLists={wordLists}
-              wordListsLoading={wordListsLoading}
-            />
+
           </div>
+          <details className="rounded-xl bg-sky-50 p-4"><summary className="cursor-pointer font-bold min-h-11">{t('worksheetStudio.help')}</summary><p>{t('worksheetStudio.legacyHelp')}</p><p>{t(`worksheetStudio.activities.${WORKSHEET_ACTIVITIES.find(a=>a.legacy===tab)?.id||'coverWrite'}.tip`)}</p></details>
+          <div className="worksheet-studio"><WorksheetSourceEditor words={words} onChange={setWords} onImport={(cards,append)=>setWords(append?[...words,...cards]:cards)} lists={wordLists} loading={wordListsLoading} activityId={`legacy:${tab}`}/></div>
 
           <div className="flex flex-wrap bg-surface-container-low rounded-lg p-1 w-fit max-w-full gap-y-1">
             {TABS.map((tb) => (

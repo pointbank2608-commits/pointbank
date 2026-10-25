@@ -152,8 +152,8 @@ export const MATERIALS_CATALOG: MaterialCatalogEntry[] = [
     path: '/materials/worksheet',
     icon: 'description',
     cover: '/covers/material-worksheet.jpg',
-    nameKey: 'materials.worksheetName',
-    descKey: 'materials.worksheetDesc',
+    nameKey: 'worksheetStudio.title',
+    descKey: 'worksheetStudio.subtitle',
   },
 ];
 
