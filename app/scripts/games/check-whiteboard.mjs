@@ -16,9 +16,9 @@ const ok = (n) => { pass += 1; console.log("PASS", n); };
 const names = [...readFileSync(resolve(root, "src/lib/api.ts"), "utf8").matchAll(/export (?:async )?function (\w+)|export const (\w+)/g)].map((m) => m[1] || m[2]);
 const api = `
 const lists=[{id:'w1',kind:'word',name:'합성 단어장',items:[{id:'i1',word:'tiger',meaning:'호랑이',image_url:null}]},{id:'s1',kind:'sentence',name:'합성 문장',items:[{id:'i2',word:'We play together.',meaning:'함께 놀아요',image_url:null}]}];
-const fn={fetchAllWordLists:async()=>lists,fetchWordLists:async()=>lists,fetchClasses:async()=>[]};
+const fn={fetchAllWordLists:async()=>lists,fetchWordLists:async()=>lists,fetchClasses:async()=>[{id:'c1',name:'A반'},{id:'c2',name:'B반'}],fetchBalancesOfClass:async(c)=>[{student_id:'s-'+c,name:c==='c1'?'민수':'지아',balance:0}],fetchPresets:async()=>[{id:'p1',label:'발표 잘함',delta:2,is_homework:false}],fetchTransactionsSince:async()=>[],fetchSettlement:async()=>null,givePoints:async(a)=>{(globalThis.__gave=globalThis.__gave||[]).push(a);}};
 ${names.map((n) => `export const ${n}=(...args)=>(fn.${n}||(async()=>[]))(...args);`).join("\n")}`;
-const auth = `const value={academy:{id:'academy-a',features:{group:true,solo:true,homework:true},plan:'paid'},profile:{id:'teacher-a'},isStaff:true,isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:true}};export const useAuth=()=>value;`;
+const auth = `const value={academy:{id:'academy-a',features:{group:true,solo:true,homework:true},plan:'paid'},profile:{id:'teacher-a',display_name:'선생님'},pointUnit:'점',isStaff:true,isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:true}};export const useAuth=()=>value;`;
 
 const server = await createServer({
   root,
@@ -210,6 +210,21 @@ try {
   assert.equal((await clock()).trim(), "1:00");
   await page.getByRole("button", { name: "닫기" }).last().click().catch(() => {});
   ok("타이머: 시간 고르기·시작·멈춤·처음으로·도구를 열어도 유지");
+
+  // 포인트 주기: 반 고르기 → 학생 → 프리셋 → 지급 요청(반·학생·점수)
+  await page.locator('[data-board-tool="points"]').click();
+  await page.waitForSelector("[data-board-points]");
+  await page.getByRole("button", { name: "B반" }).click();
+  await page.getByRole("button", { name: /지아/ }).click();
+  await page.getByRole("button", { name: /발표 잘함/ }).click();
+  await page.waitForFunction(() => (globalThis.__gave || []).length === 1);
+  const gave = await page.evaluate(() => globalThis.__gave[0]);
+  assert.equal(gave.classId, "c2");
+  assert.equal(gave.studentId, "s-c2");
+  assert.equal(gave.delta, 2);
+  await page.keyboard.press("Escape");
+  await page.waitForSelector("[data-board-points]", { state: "detached" });
+  ok("포인트 주기: 반 고르기·학생·프리셋 → 지급");
 
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();

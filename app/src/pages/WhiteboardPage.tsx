@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from '../components/AccessibleDialog';
+import LessonPointsPanel from '../components/LessonPointsPanel';
+import { useClasses } from '../lib/useClasses';
 import BoardTimer from '../components/board/BoardTimer';
 import BoardGrammar from '../components/board/BoardGrammar';
 import BoardGameDialog from '../components/board/BoardGameDialog';
@@ -80,7 +82,9 @@ export default function WhiteboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { notify } = useToast();
-  const { hasFullAccess } = useAuth();
+  const { hasFullAccess, academy } = useAuth();
+  const { classes, selectedId, select: selectClass } = useClasses(academy?.id);
+  const [pointsOpen, setPointsOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const [material, setMaterial] = useState<BoardMaterial | null>(() => loadBoardMaterial());
   const [theme, setTheme] = useState<Theme>(readTheme);
@@ -209,6 +213,12 @@ export default function WhiteboardPage() {
             </button>
           ))}
         </nav>
+        <button type="button" className={topBtn} onClick={() => setPointsOpen(true)} aria-label={t('whiteboard.toolPoints')} title={t('whiteboard.toolPoints')} data-board-tool="points">
+          <span className="material-symbols-outlined text-[22px]" aria-hidden>
+            stars
+          </span>
+          <span className="hidden lg:inline">{t('whiteboard.toolPoints')}</span>
+        </button>
         <button type="button" className={`${topBtn} ${timerOpen ? 'bg-white/25' : ''}`} onClick={() => setTimerOpen((v) => !v)} aria-pressed={timerOpen} aria-label={t('whiteboard.toolTimer')} title={t('whiteboard.toolTimer')} data-board-tool="timer">
           <span className="material-symbols-outlined text-[22px]" aria-hidden>
             timer
@@ -257,6 +267,27 @@ export default function WhiteboardPage() {
       {!wrote && <p className={`pointer-events-none absolute inset-x-0 top-[40%] px-6 text-center text-xl font-bold ${th.dark ? 'text-white/35' : 'text-slate-400'}`}>{t('whiteboard.hint')}</p>}
 
       <LessonAnnotationLayer top={56} persistent persistKey={BOARD_STROKES_KEY} onClose={() => undefined} />
+
+      {pointsOpen && (
+        <div className="fixed inset-0 z-[70]" data-board-points>
+          {classes.length > 1 && (
+            <div className="fixed left-1/2 top-3 z-[80] flex max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-2xl bg-deep-navy p-2 text-white shadow-xl" role="group" aria-label={t('whiteboard.pointsClass')}>
+              {classes.map((c) => (
+                <button key={c.id} type="button" aria-pressed={c.id === selectedId} onClick={() => selectClass(c.id)} className={`min-h-10 rounded-xl px-4 font-bold ${c.id === selectedId ? 'bg-white text-deep-navy' : 'bg-white/10 hover:bg-white/20'}`}>
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+          {selectedId ? (
+            <LessonPointsPanel key={selectedId} classId={selectedId} onClose={() => setPointsOpen(false)} />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-inverse-surface/60 p-4" onClick={() => setPointsOpen(false)}>
+              <p className="rounded-2xl bg-white p-6 text-lg font-bold text-deep-navy">{t('whiteboard.pointsNoClass')}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {timerOpen && <BoardTimer onClose={() => setTimerOpen(false)} />}
 
