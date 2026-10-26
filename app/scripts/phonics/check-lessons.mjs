@@ -110,7 +110,7 @@ try{
   await page.getByRole('button',{name:'판서 도구 닫기',exact:true}).click();assert.equal(await canvas.count(),0);
   await page.getByRole('button',{name:'판서',exact:true}).click();assert.equal(await ink(),originalInk);
   const firstDrawingSlide=await page.locator('[data-course-slide]').getAttribute('data-course-slide');
-  await page.locator('[data-course-next]').click();await page.waitForFunction(id=>document.querySelector('[data-course-slide]')?.getAttribute('data-course-slide')!==id,firstDrawingSlide);assert.equal(await ink(),0);await page.getByRole('button',{name:'이전',exact:true}).click();assert.equal(await ink(),originalInk);
+  await page.locator('[data-course-next]').click();await page.waitForFunction(id=>document.querySelector('[data-course-slide]')?.getAttribute('data-course-slide')!==id,firstDrawingSlide);assert.equal(await ink(),0);await page.getByRole('button',{name:'이전',exact:true}).click();await page.waitForFunction(id=>document.querySelector('[data-course-slide]')?.getAttribute('data-course-slide')===id,firstDrawingSlide);await page.waitForFunction(expected=>{const c=document.querySelector('canvas[aria-label="수업 화면 판서 영역"]');if(!c)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i])n++;return n===expected;},originalInk);assert.equal(await ink(),originalInk);
   await page.getByRole('button',{name:'지우개',exact:false}).filter({has:page.locator('.material-symbols-outlined')}).first().click();
   await page.mouse.move(x,y);await page.mouse.down();await page.mouse.up();assert((await ink())<originalInk);
   await page.getByRole('button',{name:'마지막 판서 되돌리기',exact:true}).click();assert.equal(await ink(),originalInk);
