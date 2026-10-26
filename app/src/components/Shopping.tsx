@@ -1,7 +1,7 @@
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { isGameSoundOn, playSfx, useGameSfx } from '../lib/gameSfx';
+import { isGameSoundOn, playSfx, setGameSoundOn, useGameSoundOn, useGameSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
 import {
   LIST_FRAME,
@@ -106,6 +106,13 @@ function layoutShelves(shelf: ImageQuizItem[]) {
 export default function Shopping({ items, mode, listSize, memorizeSeconds, scene = null }: Props) {
   const { t } = useTranslation();
   const sfx = useGameSfx('shopping');
+  const soundOn = useGameSoundOn();
+  function toggleSound() {
+    setGameSoundOn(!soundOn);
+    if (!soundOn) playSfx(sfx.reveal);
+    else window.speechSynthesis?.cancel();
+  }
+  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
   const goods: ShopGood[] = useMemo(() => (scene ? sceneGoods(scene) : uniqueShopItems(items)), [items, scene]);
   const missions = missionsFor(mode, scene?.id);
 
@@ -154,6 +161,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
   }, [phase, secondsLeft, memorizeSeconds]);
 
   function startRound(nextMission = missionIndex) {
+    window.speechSynthesis?.cancel();
     setCart([]);
     setPeeks(0);
     setMisses(0);
@@ -460,6 +468,13 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
 
   return (
     <div ref={sceneRef} className="relative mx-auto aspect-video w-full select-none overflow-hidden rounded-2xl bg-[#1d2a3d]" style={{ containerType: 'size' }}>
+      <button type="button" onClick={toggleSound} aria-pressed={soundOn}
+        aria-label={t(soundOn ? 'gamePlay.soundOff' : 'gamePlay.soundOn')}
+        className="absolute z-40 flex items-center gap-1 rounded-full border border-white bg-white/95 px-3 py-2 font-bold text-deep-navy shadow-lg focus-visible:outline-4 focus-visible:outline-primary"
+        style={{ left: '1.5cqw', bottom: '1.5cqw', fontSize: 'clamp(11px, 1.4cqw, 18px)', minHeight: 40 }}>
+        <span aria-hidden="true" className="material-symbols-outlined">{soundOn ? 'volume_up' : 'volume_off'}</span>
+        {t(soundOn ? 'gamePlay.soundLabelOn' : 'gamePlay.soundLabelOff')}
+      </button>
       {scene ? (
         /* 통째로 그린 가게 그림 — 물건 자리를 눌러 담는다 */
         <div key={round} className="absolute inset-0 animate-[shop-zoom_0.9s_ease-out]">
@@ -614,7 +629,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
               {frame} <span style={{ color: KIND_COLOR.one }}>a … / an …</span> / <span style={{ color: KIND_COLOR.some }}>some …</span>
             </div>
             {spoken && (
-              <button type="button" onClick={() => say(spoken)} className="flex items-center text-left font-extrabold text-deep-navy" style={{ gap: '0.6cqw', fontSize: '2.6cqw', marginTop: '0.3cqw' }}>
+              <button type="button" onClick={() => speak(spoken)} className="flex items-center text-left font-extrabold text-deep-navy" style={{ gap: '0.6cqw', fontSize: '2.6cqw', marginTop: '0.3cqw' }}>
                 <span className="material-symbols-outlined shrink-0" style={{ fontSize: '2.6cqw' }} aria-hidden="true">
                   volume_up
                 </span>
@@ -716,7 +731,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
                   {cartItems.map((it) => (
                     <li key={it.id} className="flex items-center bg-white/95" style={{ gap: '1cqw', borderRadius: '1cqw', padding: '0.6cqw 1cqw' }}>
                       {thumb(it, 'shrink-0', { width: '5cqw', height: '5cqw', borderRadius: '0.8cqw' })}
-                      <button type="button" onClick={() => say(`${frame} ${shoppingPhrase(it.answer)}.`)} className="text-left font-bold text-deep-navy hover:underline" style={{ fontSize: '2.1cqw' }}>
+                      <button type="button" onClick={() => speak(`${frame} ${shoppingPhrase(it.answer)}.`)} className="text-left font-bold text-deep-navy hover:underline" style={{ fontSize: '2.1cqw' }}>
                         {frame} {shoppingPhrase(it.answer)}.
                       </button>
                     </li>

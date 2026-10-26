@@ -41,6 +41,16 @@ const en: Ko = {
   home: homeEn,
   guide: guideEn,
   source: sourceEn,
+  settingsSave: {
+    pendingHint: 'Some edits have not been applied to the game yet. Use the editor’s Apply settings button first.',
+    existingEditorHint: 'You are editing a saved game. After changing settings, use Save below to confirm completion.',
+    "save": "Save game and close",
+    "apply": "Apply and close",
+    "saving": "Saving…",
+    "saved": "Game saved. You can open it again from saved games.",
+    "temporaryHint": "This is a temporary activity. Save the game to use it again later.",
+    "savedHint": "Use Save below to confirm these settings in this game."
+},
   flow: {
     videoFailed: 'Could not load the video. Reopen it or try the interactive sample.',
     defaultLesson: 'New lesson',

@@ -1,7 +1,8 @@
+import {flushGameTemplateWrites} from './gameTemplateWrites';
 import { activityName } from './activityNames';
 import { GAME_CATALOG } from './gameCatalog';
-import { gamePreparation } from './gamePreparation';
-import { guideSample } from './gameGuide';
+import { gamePreparation, isNativeGameReady } from './gamePreparation';
+import { guideSample, guideProblem } from './gameGuide';
 import { DRAFT_EVENT, draftId, isActivityDraft, readActivityDraft, writeActivityDraft, sampleActivityCards, readComposition, legacyActivityInput, rememberSourceUse, ownedQuickSource, type QuickActivitySource } from './quickActivity';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -54,6 +55,8 @@ export function useGameTemplates(params: {
   sampleCards?: () => FullCardItem[];
   /** 불러올 목록 종류 — 문장 게임은 'sentence'(문장 목록, 066), 나머지는 단어장 */
   listKind?: 'word' | 'sentence' | 'all';
+  /** Read after rendering so dedicated editors can report their unapplied local changes. */
+  hasPendingSettings?: () => boolean;
 }) {
   const { gameType, defaultItems, defaultConfig, listKind = 'word' } = params;
   const { academy, profile, isStaff, session } = useAuth();
@@ -506,7 +509,7 @@ export function useGameTemplates(params: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!workspace || !isStaff) return;
-    workspace.publish({ gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
+    workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
       applyGuide: async (content) => {
         if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
         const draft = isActivityDraft(selected.id) ? selected : makeDraft();
@@ -520,6 +523,19 @@ export function useGameTemplates(params: {
       },
       selectClass: chooseClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
       renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
+      saveSettings: async (name) => {
+        if (!selected) throw new Error('no_activity');
+        if (params.hasPendingSettings?.()) throw new Error(t('settingsSave.pendingHint'));
+        const snapshot = structuredClone(selected);
+        if (!isNativeGameReady(snapshot) || guideProblem(snapshot)) throw new Error(t('flow.actionFailed'));
+        await flushGameTemplateWrites(snapshot.id);
+        if (isActivityDraft(snapshot.id)) {
+          if (!await handleCreate(name)) throw new Error('save_failed');
+        } else {
+          await updateGameTemplate(snapshot.id, { items: snapshot.items, config: snapshot.config });
+          setTemplates(rows => rows.map(row => row.id === snapshot.id ? { ...row, items: snapshot.items, config: snapshot.config } : row));
+        }
+      },
       saveActivity: async (name) => { if (!await handleCreate(name)) throw new Error('save_failed'); },
       teamCount: teamKey ? (selected?.config[teamKey] || defaultConfig?.()[teamKey] || 2) : undefined, configureTeams });
   });

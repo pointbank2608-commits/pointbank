@@ -1,3 +1,4 @@
+import {useToast} from '../context/ToastContext';
 import GameSetupGuide from './GameSetupGuide';
 import '../teacherGames.css';
 import { guideProblem, NUMBER_GAMES, type GuideKind } from '../lib/gameGuide';
@@ -30,6 +31,7 @@ export default function GameWorkspace({ children }: { children: ReactNode }) {
 }
 function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
+  const {notify}=useToast();
   const { hasFullAccess, session, academy } = useAuth();
   const presenting = usePresenting();
   const groupOpen = useFeature('group');
@@ -53,6 +55,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   const [error, setError] = useState('');
+  const [settingsSaved,setSettingsSaved]=useState(false);
+  useEffect(()=>{if(panel)setSettingsSaved(false);},[panel]);
   const [addLesson, setAddLesson] = useState(false);
   const [activityName, setActivityName] = useState('');
   const [saveOriginal, setSaveOriginal] = useState(false);
@@ -72,12 +76,12 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     : 'teacherGame.moreContent';
   const sourceReady = !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
-  const canStart = !!info && info.academyId===academy?.id && !info.loading && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
+  const canStart = !!info && info.academyId===academy?.id && !info.loading && !info.settingsPending && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
   const publish = useCallback((next: GameWorkspaceBridge) => {
     bridge.current = next;
-    setInfo(old => old && old.gameType === next.gameType && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
+    setInfo(old => old && old.gameType === next.gameType && old.settingsPending === next.settingsPending && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
   }, []);
-  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); }, [identity]);
+  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); setSettingsSaved(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(()=>{if(!presenting&&info&&!info.loading&&info.temporary&&info.selected&&isActivityDraft(info.selected.id)&&guideOpened.current!==identity){guideOpened.current=identity;setPanel(info.gameType==='quizshow'?'settings':'guide');}},[info,identity,presenting]);
@@ -143,6 +147,20 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     }
     setPanel(null);
   }
+  async function saveSettingsAndClose() {
+    if (!canStart || !bridge.current?.selected) return;
+    const ok = await action(async () => {
+      // Commit native editor fields that save on blur before taking their latest snapshot.
+      (document.activeElement as HTMLElement | null)?.blur();
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      if (saveOriginal) {
+        await bridge.current!.saveMaterial(materialName.trim());
+        setSaveOriginal(false);
+      }
+      await bridge.current!.saveSettings(activityName.trim() || undefined);
+    });
+    if (ok) { setSettingsSaved(true); notify(t('settingsSave.saved')); }
+  }
   const [guidePreset, setGuidePreset] = useState<GuideKind | null>(null);
   async function begin(kind: 'word' | 'sentence') {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
@@ -151,7 +169,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const readiness = [details?.count !== null && details?.count !== undefined ? t(`flow.count_${details.kind}`,{count:details.count}) : null,
     ordered && capabilities.manualTurns ? order.mode==='team' ? t('flow.count_teams',{count:order.teamCount}) : t('flow.count_participants',{count:roster.length}) : details?.teams ? t('flow.count_teams',{count:details.teams}) : null,
     canStart ? t('flow.readyComplete') : null].filter(Boolean).join(' · ');
-  const validation = info?.loading ? t('common.loading') : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
+  const validation = info?.loading ? t('common.loading') : info?.settingsPending ? t('settingsSave.pendingHint') : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
   const game = GAME_CATALOG.find(row => row.type === info?.gameType);
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
@@ -181,6 +199,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         {info && !canStart && !info.loading && <p role="status" className="text-error">{validation}</p>}
         {info?.temporary && <p className="text-sm text-on-surface-variant">{t('quick.temporary')}</p>}
         <details className="game-optional-actions"><summary>{t(reuseLabel)}</summary><div className="mt-3">{reuse}</div></details>
+        {settingsSaved&&<p role="status" className="rounded-xl bg-green-50 p-3 font-bold text-green-800">{t('settingsSave.saved')}</p>}
         <p className="text-base text-deep-navy">{t('teacherGame.prepareHint')}</p>
       </header>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
@@ -188,6 +207,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       </div>
       <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
         <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t('common.close')}</button></header>
+        <div className="game-workspace-dialog-body min-h-0 flex-1 overflow-y-auto" inert={busy}>
         {error && <p role="alert" className="bg-error-container p-4 text-on-error-container">{error}</p>}
         {info?.sharedView && <p className="bg-amber-50 p-4">{t('flow.sharedView')}</p>}
         <div hidden={panel !== 'teacher'} className="space-y-4 p-4">
@@ -217,14 +237,22 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           {info?.selected && info.gameType !== 'quizshow' && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
-          {info?.gameType !== 'quizshow' && <><p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
+          {info?.gameType !== 'quizshow' && <><p className="mb-3 text-sm text-on-surface-variant">{t(info?.selected&&!isActivityDraft(info.selected.id)?'settingsSave.existingEditorHint':'flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
           {children}
-          <div hidden={panel==='guide'||info?.gameType==='quizshow'} className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
+
+        </div>
+        </div>
+          <div hidden={panel!=='settings'||info?.gameType==='quizshow'||!info?.selected||!!info?.sharedView} className="game-settings-footer z-20 shrink-0 space-y-3 border-t bg-white p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
-            <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t(saveOriginal?'flow.saveAndPrepare':'flow.confirmContent')}</button>
+            <p className="text-sm text-on-surface-variant">{t(info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !canStart} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'settingsSave.save')}</button>
+              <button className={btn} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t('settingsSave.apply')}</button>
+            </div>
+            {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
+            {error&&<p role="alert" className="text-error">{error}</p>}
             {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><p className="my-2 text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultGameName})}</p><label>{t('quick.activityName')}<input placeholder={defaultGameName} className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}
           </div>
-        </div>
       </dialog>
       {addLesson && info?.selected && <AddActivityToLesson activity={info.selected} onClose={()=>setAddLesson(false)} />}
       {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);}}>

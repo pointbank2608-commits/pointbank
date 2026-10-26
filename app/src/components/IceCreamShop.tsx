@@ -68,23 +68,26 @@ function shuffle<T>(a: T[]): T[] {
 function IceCream({ order, className, style }: { order: Order; className?: string; style?: CSSProperties }) {
   const n = order.flavours.length;
   const isTub = order.style?.id === 'tub';
-  const top = isTub ? 64 : 36 + Math.max(0, n - 1) * 17;
+  const topping = order.topping && order.topping !== 'none' ? order.topping.id : null;
+  // Coordinates share the cup rim and the real upper scoop, rather than fixed topping heights.
+  const scoops = order.flavours.map((_f, i) => isTub
+    ? n === 1 ? { left: 20, width: 60, bottom: 34 }
+      : n === 2 ? { left: i === 0 ? 4 : 40, width: 56, bottom: i === 0 ? 34 : 36 }
+        : i < 2 ? { left: i === 0 ? 2 : 42, width: 56, bottom: 34 }
+          : { left: 22, width: 56, bottom: 52 }
+    : { left: 17, width: 66, bottom: 36 + i * 17 });
+  const surface = isTub && n === 2 ? scoops : scoops.slice(-1);
+  const asPercent = (position: { left: number; width: number; bottom: number }): CSSProperties => ({
+    left: `${position.left}%`, width: `${position.width}%`, bottom: `${position.bottom}%`,
+  });
   const abs = (s: CSSProperties): CSSProperties => ({ position: 'absolute', ...s });
   return (
-    <div className={className} style={{ position: 'relative', aspectRatio: '1 / 1.45', ...style }}>
+    <div className={className} style={{ position: 'relative', aspectRatio: '1 / 1.45', transform: !isTub && n === 3 ? 'scale(.88)' : undefined, transformOrigin: 'bottom center', ...style }}>
       {order.style && (
         <img src={IMG(isTub ? 'tub' : 'cone')} alt="" draggable={false} style={abs(isTub ? { left: '14%', width: '72%', bottom: '2%' } : { left: '22%', width: '56%', bottom: '0' })} className="object-contain" />
       )}
       {order.flavours.map((f, i) => {
-        const pos: CSSProperties = isTub
-          ? n === 1
-            ? { left: '20%', width: '60%', bottom: '46%' }
-            : n === 2
-              ? { left: i === 0 ? '4%' : '40%', width: '56%', bottom: i === 0 ? '46%' : '48%' }
-              : i < 2
-                ? { left: i === 0 ? '2%' : '42%', width: '56%', bottom: '46%' }
-                : { left: '22%', width: '56%', bottom: '64%' }
-          : { left: '17%', width: '66%', bottom: `${36 + i * 17}%` };
+        const pos = asPercent(scoops[i]);
         return (
           <img
             key={`${f.id}-${i}`}
@@ -96,24 +99,22 @@ function IceCream({ order, className, style }: { order: Order; className?: strin
           />
         );
       })}
-      {order.topping && order.topping !== 'none' && n > 0 && (
-        <img
-          src={IMG(order.topping.id === 'sprinkles' ? 'sprinkles' : order.topping.id === 'flake' ? 'flake' : 'sauce')}
-          alt=""
-          draggable={false}
-          className="ic-anim object-contain"
-          style={{
-            ...abs(
-              order.topping.id === 'flake'
-                ? { left: '58%', width: '14%', bottom: `${top + 12}%`, transform: 'rotate(28deg)' }
-                : order.topping.id === 'sauce'
-                  ? { left: '22%', width: '56%', bottom: `${top + (isTub ? 6 : 8)}%` }
-                  : { left: '24%', width: '52%', bottom: `${top + (isTub ? 10 : 12)}%` },
-            ),
-            zIndex: 10,
-            animation: 'ic-pop .4s both',
-          }}
-        />
+      {topping && n > 0 && (
+        topping === 'flake' ? (
+          <img src={IMG('flake')} alt="" draggable={false} className="ic-anim object-contain"
+            style={{ ...abs(asPercent({ left: scoops[n - 1].left + scoops[n - 1].width * .4,
+              width: scoops[n - 1].width * .64, bottom: scoops[n - 1].bottom + 14 })),
+              zIndex: 10, animation: 'ic-pop .4s both' }} />
+        ) : surface.map((scoop, i) => {
+          const mask = `url(${IMG(order.flavours[scoops.indexOf(scoop)].art)})`;
+          return <div key={`${topping}-${i}`} className="ic-anim" style={{ ...abs(asPercent(scoop)),
+            aspectRatio: '259 / 239', maskImage: mask, WebkitMaskImage: mask,
+            maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat',
+            zIndex: 10 + i, animation: 'ic-pop .4s both', pointerEvents: 'none' }}>
+            <img src={IMG(topping === 'sauce' ? 'sauce' : 'sprinkles')} alt="" draggable={false}
+              className="object-contain" style={abs({ left: '8%', width: '84%', bottom: topping === 'sauce' ? '10%' : '22%' })} />
+          </div>;
+        })
       )}
     </div>
   );
@@ -133,6 +134,7 @@ export default function IceCreamShop({ showKo: showKoProp, menu = 'full', curren
   const { t } = useTranslation();
   configureShop({ menu, currency });
   const [step, setStep] = useState<Step>('menu');
+  useEffect(() => () => { window.speechSynthesis?.cancel(); }, [step]);
   const [showKo, setShowKo] = useState(showKoProp);
   const timers = useRef<number[]>([]);
   useEffect(() => {
@@ -159,6 +161,7 @@ export default function IceCreamShop({ showKo: showKoProp, menu = 'full', curren
   const finished = shown >= SHOP_LINES.length;
 
   function resetOrder() {
+    window.speechSynthesis?.cancel();
     setShown(0);
     setOrder(EMPTY_ORDER);
   }
@@ -180,6 +183,7 @@ export default function IceCreamShop({ showKo: showKoProp, menu = 'full', curren
     playSfx(GAME_SFX.icecream.pick);
     const o = { ...order, size: s, flavours: order.flavours.slice(0, s.scoops) };
     setOrder(o);
+    if (o.style) say(lastIdx, o);
   }
   function chooseStyle(s: ShopOption) {
     playSfx(GAME_SFX.icecream.pick);

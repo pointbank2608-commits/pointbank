@@ -1,3 +1,4 @@
+import {queueGameTemplateWrite} from './gameTemplateWrites';
 import i18n from '../i18n';
 import { GAME_CATALOG } from './gameCatalog';
 import { activityName } from './activityNames';
@@ -557,24 +558,17 @@ async function updateTemporaryActivity(id: string, patch: Parameters<typeof patc
 }
 
 export async function updateGameTemplateItems(id: string, items: GameItem[]) {
-  if (await updateTemporaryActivity(id, { items })) return;
-  const { error } = await supabase
-    .from('game_templates')
-    .update({ items, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) throw new Error(error.message);
+  await updateGameTemplate(id, { items });
 }
 
-export async function updateGameTemplate(
-  id: string,
-  patch: { items?: GameItem[]; config?: GameTemplateConfig },
-) {
-  if (await updateTemporaryActivity(id, patch)) return;
-  const { error } = await supabase
-    .from('game_templates')
-    .update({ ...patch, updated_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) throw new Error(error.message);
+export async function updateGameTemplate(id: string, patch: { items?: GameItem[]; config?: GameTemplateConfig }) {
+  const snapshot = structuredClone(patch);
+  await queueGameTemplateWrite(id, async () => {
+    if (await updateTemporaryActivity(id, snapshot)) return;
+    const { error } = await supabase.from('game_templates')
+      .update({ ...snapshot, updated_at: new Date().toISOString() }).eq('id', id).select('id').single();
+    if (error) throw new Error(error.message);
+  });
 }
 
 export async function renameGameTemplate(id: string, name: string) {

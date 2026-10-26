@@ -5552,3 +5552,5 @@ html:has(.landing) {
 .lp-shake {
   animation: lp-shake 0.35s;
 }
+
+.game-workspace-dialog[open]{display:flex;flex-direction:column;overflow:hidden}.game-workspace-dialog>header{flex-shrink:0}.game-workspace-dialog-body{overscroll-behavior:contain}.game-settings-footer{max-height:42dvh;overflow-y:auto}.game-settings-footer>details{font-size:14px}

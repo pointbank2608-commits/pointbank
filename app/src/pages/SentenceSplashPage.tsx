@@ -34,6 +34,8 @@ export default function SentenceSplashPage() {
   const { academy, profile } = useAuth();
   const embed = useGameEmbed();
   const g = useGameTemplates({
+    hasPendingSettings: () => changes?.templateId === selected.id &&
+      (JSON.stringify(changes.items) !== JSON.stringify(selected.items) || changes.seconds !== splashSeconds(selected.config.splashSeconds)),
     gameType: "sentencesplash",
     defaultItems: splashSampleItems,
     defaultConfig: () => ({ splashSeconds: 45 }),

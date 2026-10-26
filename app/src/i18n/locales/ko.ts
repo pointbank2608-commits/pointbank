@@ -39,6 +39,16 @@ const ko = {
   home: homeKo,
   guide: guideKo,
   source: sourceKo,
+  settingsSave: {
+    pendingHint: '아직 게임에 적용하지 않은 수정 내용이 있어요. 편집 영역의 설정 적용 버튼을 먼저 눌러 주세요.',
+    existingEditorHint: '현재 저장된 게임을 수정하고 있어요. 설정을 바꾼 뒤 아래 저장 버튼으로 완료를 확인하세요.',
+    "save": "게임 저장하고 닫기",
+    "apply": "설정 적용하고 닫기",
+    "saving": "저장 중…",
+    "saved": "게임이 저장됐어요. 저장한 게임 불러오기에서 다시 사용할 수 있어요.",
+    "temporaryHint": "현재는 임시 활동이에요. 게임을 저장하면 나중에도 다시 불러올 수 있어요.",
+    "savedHint": "현재 게임에 설정을 저장하려면 아래 저장 버튼을 누르세요."
+},
   flow: {
     videoFailed: '영상을 불러오지 못했어요. 잠시 후 다시 열거나 샘플로 직접 해보세요.',
     defaultLesson: '새 수업',
