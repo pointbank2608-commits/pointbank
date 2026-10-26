@@ -527,7 +527,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
-        {fullOn && hasBoardReturn() && (
+        {fullOn && !presenting && hasBoardReturn() && (
           <button
             type="button"
             data-board-return-in-game
