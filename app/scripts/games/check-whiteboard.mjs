@@ -77,6 +77,36 @@ try {
   assert.ok(spread.slice(0, 4).every((n) => n > 2000 * 0.15), `정답 자리가 고르게 나온다 ${spread}`);
   ok("퀴즈: 정답·보기 중복·문제 겹침·만들 수 없는 경우·정답 자리 분포");
 
+  // 퀴즈 종류: 뜻→영어·듣고 고르기·빈칸 철자·O/X
+  const byWord = Object.fromEntries(quizCards.map((c) => [c.word, c.meaning]));
+  for (let r = 0; r < 200; r++) {
+    for (const q of B.buildBoardQuiz(quizCards, 5, Math.random, "word")) {
+      assert.equal(new Set(q.choices).size, q.choices.length);
+      assert.equal(byWord[q.choices[q.correct]], q.prompt, "뜻 → 영어: 정답 영어의 뜻이 문제");
+    }
+    for (const q of B.buildBoardQuiz(quizCards, 5, Math.random, "listen")) {
+      assert.equal(q.prompt, "", "듣고 고르기는 글이 없다");
+      assert.equal(q.choices[q.correct], q.speak, "읽어 주는 낱말이 정답");
+      assert.equal(new Set(q.choices).size, q.choices.length);
+    }
+    for (const q of B.buildBoardQuiz(quizCards, 5, Math.random, "spelling")) {
+      const word = q.speak;
+      const at = q.prompt.indexOf("＿");
+      assert.ok(at >= 1, "첫 글자는 남긴다");
+      assert.equal(word.slice(0, at) + q.choices[q.correct] + word.slice(at + 1), word, "빠진 글자가 정답");
+      assert.equal(new Set(q.choices).size, q.choices.length);
+      assert.equal(q.hint, byWord[word]);
+    }
+    const ox = B.buildBoardQuiz(quizCards, 6, Math.random, "ox");
+    for (const q of ox) {
+      const [w, mean] = q.prompt.split(" = ");
+      assert.equal(q.correct === 0, byWord[w] === mean, "O/X 정답이 맞다");
+    }
+    assert.ok(ox.some((q) => q.correct === 0) && ox.some((q) => q.correct === 1), "O와 X가 섞인다");
+  }
+  assert.equal(B.buildBoardQuiz(B.cardsFromLines(["I like it. 좋아해요.", "She runs. 그녀가 달려요."]), 3, Math.random, "spelling").length, 0, "문장은 철자 퀴즈를 만들 수 없다");
+  ok("퀴즈 종류: 뜻→영어·듣고 고르기·빈칸 철자·O/X 정답과 보기");
+
   // 3) 브라우저
   browser = await chromium.launch({ channel: "chrome", headless: true });
   const errors = [];
@@ -245,6 +275,24 @@ try {
   await page.locator('[data-board-tool="score"]').click();
   await page.waitForSelector("[data-board-score]", { state: "detached" });
   ok("점수판: 점수 올리기·내리기·팀 늘리기·0으로·도구를 열어도 유지");
+
+  // 퀴즈 종류 고르기: O/X 한 판, 듣고 고르기 한 판
+  await page.locator('[data-board-tool="quiz"]').click();
+  await page.locator('[data-quiz-mode="ox"]').click();
+  await page.locator("[data-quiz-start]").click();
+  await page.waitForSelector('[data-quiz-kind="ox"]');
+  assert.equal(await page.locator("[data-choice]").count(), 2, "O/X는 보기 둘");
+  await page.getByRole("button", { name: "O", exact: true }).click();
+  await page.getByRole("button", { name: "다음 문제" }).click();
+  await page.keyboard.press("Escape").catch(() => {});
+  await page.locator("[data-board-back]").click();
+  await page.locator('[data-board-tool="quiz"]').click();
+  await page.locator('[data-quiz-mode="listen"]').click();
+  await page.locator("[data-quiz-start]").click();
+  await page.waitForSelector("[data-listen]");
+  assert.equal(await page.locator("[data-choice]").count(), 4);
+  await page.locator("[data-board-back]").click();
+  ok("퀴즈 종류 고르기: O/X·듣고 고르기 화면");
 
   // 간단 퀴즈(6장 → 6문제), 정답·오답 표시, 결과
   await page.locator('[data-board-tool="quiz"]').click();

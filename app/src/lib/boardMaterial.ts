@@ -99,13 +99,23 @@ export function clearBoardReturn() {
 
 /* ---------------- 퀴즈 ---------------- */
 
+export type BoardQuizMode = 'meaning' | 'word' | 'listen' | 'spelling' | 'ox';
+export const BOARD_QUIZ_MODES: BoardQuizMode[] = ['meaning', 'word', 'listen', 'spelling', 'ox'];
+
 export interface BoardQuestion {
   id: string;
-  /** 문제로 보여 줄 영어 */
+  mode: BoardQuizMode;
+  /** 문제로 보여 줄 글(듣고 고르기는 비워 둔다) */
   prompt: string;
-  /** 보기(우리말 뜻) */
+  /** 읽어 줄 영어(듣고 고르기는 자동으로 들려 준다) */
+  speak?: string;
+  /** 보기 */
   choices: string[];
+  /** 보기가 영어인지(글꼴·읽기용) */
+  choicesEnglish: boolean;
   correct: number;
+  /** 철자 퀴즈의 뜻 힌트 */
+  hint?: string;
 }
 
 export type Rng = () => number;
@@ -119,23 +129,59 @@ function shuffled<T>(items: readonly T[], rng: Rng): T[] {
   return a;
 }
 
+function pickChoices(right: string, pool: readonly string[], rng: Rng, max = 4): { choices: string[]; correct: number } {
+  const wrong = shuffled(pool.filter((m) => m !== right), rng).slice(0, Math.min(max - 1, pool.length - 1));
+  const choices = shuffled([right, ...wrong], rng);
+  return { choices, correct: choices.indexOf(right) };
+}
+
+const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+
 /**
- * 영어 → 우리말 뜻 고르기. 뜻이 있는 카드만 쓰고, 보기는 같은 자료의 다른 뜻에서 뽑는다(같은 뜻은 한 번).
- * 뜻이 서로 다른 카드가 2개 미만이면 만들 수 없다(빈 배열).
+ * 퀴즈 문제 만들기.
+ * - meaning: 영어 → 우리말 뜻 고르기 / word: 뜻 → 영어 고르기 / listen: 듣고 영어 고르기
+ * - spelling: 빠진 글자 고르기(낱말만) / ox: "영어 = 뜻"이 맞는지 O·X
+ * 뜻이 있는 카드만 쓴다(listen·spelling은 뜻 없이도 되지만 단순하게 같은 기준). 만들 수 없으면 빈 배열.
  */
-export function buildBoardQuiz(cards: readonly FullCardItem[], count = 8, rng: Rng = Math.random): BoardQuestion[] {
+export function buildBoardQuiz(cards: readonly FullCardItem[], count = 8, rng: Rng = Math.random, mode: BoardQuizMode = 'meaning'): BoardQuestion[] {
   const usable = cards.filter((c) => c.word.trim() && c.meaning.trim());
   const meanings = [...new Set(usable.map((c) => c.meaning.trim()))];
-  if (usable.length < 2 || meanings.length < 2) return [];
-  const picks = shuffled(usable, rng).slice(0, Math.max(1, count));
-  return picks.map((card) => {
-    const right = card.meaning.trim();
-    const wrong = shuffled(
-      meanings.filter((m) => m !== right),
-      rng,
-    ).slice(0, Math.min(3, meanings.length - 1));
-    const choices = shuffled([right, ...wrong], rng);
-    return { id: card.id, prompt: card.word.trim(), choices, correct: choices.indexOf(right) };
+  const words = [...new Set(usable.map((c) => c.word.trim()))];
+  if (usable.length < 2 || meanings.length < 2 || words.length < 2) return [];
+  const take = Math.max(1, count);
+  if (mode === 'spelling') {
+    const spellable = usable.filter((c) => /^[A-Za-z]{3,}$/.test(c.word.trim()));
+    return shuffled(spellable, rng)
+      .slice(0, take)
+      .map((card) => {
+        const word = card.word.trim();
+        const at = 1 + Math.floor(rng() * (word.length - 1)); // 첫 글자는 남긴다
+        const right = word[at].toLowerCase();
+        const { choices, correct } = pickChoices(right, shuffled([...LETTERS], rng).slice(0, 6), rng);
+        const shown = word.slice(0, at) + '＿' + word.slice(at + 1);
+        return { id: card.id, mode, prompt: shown, speak: word, choices, choicesEnglish: true, correct, hint: card.meaning.trim() };
+      });
+  }
+  const picks = shuffled(usable, rng).slice(0, take);
+  return picks.map((card, i) => {
+    const word = card.word.trim();
+    const meaning = card.meaning.trim();
+    if (mode === 'word') {
+      const { choices, correct } = pickChoices(word, words, rng);
+      return { id: card.id, mode, prompt: meaning, choices, choicesEnglish: true, correct };
+    }
+    if (mode === 'listen') {
+      const { choices, correct } = pickChoices(word, words, rng);
+      return { id: card.id, mode, prompt: '', speak: word, choices, choicesEnglish: true, correct };
+    }
+    if (mode === 'ox') {
+      const isTrue = i % 2 === 0;
+      const other = shuffled(meanings.filter((m) => m !== meaning), rng)[0];
+      const shownMeaning = isTrue ? meaning : other;
+      return { id: card.id, mode, prompt: `${word} = ${shownMeaning}`, speak: word, choices: ['O', 'X'], choicesEnglish: false, correct: isTrue ? 0 : 1 };
+    }
+    const { choices, correct } = pickChoices(meaning, meanings, rng);
+    return { id: card.id, mode, prompt: word, speak: word, choices, choicesEnglish: false, correct };
   });
 }
 
