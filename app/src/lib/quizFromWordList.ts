@@ -17,6 +17,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+/** 문법 항목(노래 가사에서 담은 문법 설명 등)은 낱말 퀴즈의 문제·오답 재료로 쓰지 않는다. */
+export function isGrammarItem(item: { partOfSpeech?: string | null; grammarId?: string | null }): boolean {
+  return item.partOfSpeech === '문법' || !!item.grammarId;
+}
+
 export type QuizDirection = 'wordToMeaning' | 'meaningToWord';
 
 function normalize(text: string): string {
@@ -42,8 +47,9 @@ function distractorsFor(items: WordListItem[], item: WordListItem, direction: Qu
  * 뜻/단어를 무작위로 뽑아서 채운다. 단어장이 작아서 보기 후보가 모자라면 그만큼만 만들고,
  * 오답 후보가 하나도 없는(사실상 단어장에 그 항목 하나뿐인) 경우는 문제를 만들 수 없어 건너뛴다.
  */
-export function buildQuizQuestions(list: WordListLike, direction: QuizDirection, choiceCount = 4): QuizQuestion[] {
+export function buildQuizQuestions(source: WordListLike, direction: QuizDirection, choiceCount = 4): QuizQuestion[] {
   const questions: QuizQuestion[] = [];
+  const list = { items: source.items.filter((item) => !isGrammarItem(item)) };
   for (const item of list.items) {
     if (!item.word.trim() || !item.meaning.trim()) continue;
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;
@@ -67,8 +73,9 @@ export function buildQuizQuestions(list: WordListLike, direction: QuizDirection,
  * 문장에 넣어 참 문장을, 나머지 절반은 같은 단어장의 다른 항목의 짝을 대신 넣어 거짓
  * 문장을 만든다 — 오답 후보가 없으면(단어장에 1개뿐이면) 참 문장으로 대체한다.
  */
-export function buildTrueFalseStatements(list: WordListLike, direction: QuizDirection): TrueFalseStatement[] {
+export function buildTrueFalseStatements(source: WordListLike, direction: QuizDirection): TrueFalseStatement[] {
   const statements: TrueFalseStatement[] = [];
+  const list = { items: source.items.filter((item) => !isGrammarItem(item)) };
   for (const item of list.items) {
     if (!item.word.trim() || !item.meaning.trim()) continue;
     const correctText = direction === 'wordToMeaning' ? item.meaning : item.word;

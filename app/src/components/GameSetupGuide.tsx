@@ -56,7 +56,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   const seed=(template:GameTemplate)=>{const next=guideRows(template,kind);write(next.length?next:[['','']]);};
   async function importSource(rawCards:FullCardItem[],list?:WordList){
     if(!info.selected)return;
-    const cards=splitCards(rawCards);
+    const cards=splitCards(rawCards).filter(c=>!(['quiz','online','ox'].includes(family)&&c.partOfSpeech==='문법'));
     setError('');
     if(asNames){write(cards.map(c=>[c.word]));if(info.gameType==='timer')setNames(cards.map(c=>c.word).join('\n'));return;}
     if(family==='bridge'){setSource(cards[0]?.word||'');write(cards.map(c=>[c.word,'','','']));return;}
@@ -90,7 +90,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     const k=launch.kind;if(!guideKinds(info.gameType).includes(k))return;
     setKind(k);
     if(k==='sample'){void run(()=>info.sampleGuide()).then(ok=>{if(ok)setStep(3);});return;}
-    const cards=splitCards(launch.cards||[]);const prepared=(k==='names'||k==='numbers')?null:prepareClassroomGame(info.gameType,cards,k==='sentence'?'sentence':'word');
+    const cards=splitCards(launch.cards||[]).filter(c=>!(['quiz','online','ox'].includes(family)&&c.partOfSpeech==='문법'));const prepared=(k==='names'||k==='numbers')?null:prepareClassroomGame(info.gameType,cards,k==='sentence'?'sentence':'word');
     const content=prepared?{items:prepared.items,config:{...info.selected.config,...prepared.config,classroomSource:{id:'composition',name:'',kind:k==='sentence'?'sentence' as const:'word' as const,version:'',cards}}}:guideContent(info.gameType,cards.map(c=>family==='image'?[c.word,c.imageUrl||'']:family==='bridge'?[c.word,'','','']:family==='tower'?['','0','','']:[c.word,c.meaning]),k,info.selected.config,towerStart);
     if(family==='bridge')setSource(cards[0]?.word||'');
     if(family==='tower')setTowerStart(cards[0]?.word||'');
