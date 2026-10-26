@@ -29,22 +29,39 @@ export function guideKinds(type: GameType): GuideKind[] {
   if (NUMBER_GAMES.has(type)) kinds.push('numbers');
   return kinds;
 }
-/** 문제·정답만 있고 오답이 비어 있는 줄은, 다른 줄의 정답을 오답으로 채운다(단어장에서 가져온 문제 등). 이미 적은 오답은 그대로 둔다. */
+/** 단어장에 "word = 뜻" 한 줄로만 저장된 항목(뜻 칸이 비어 있음)은 낱말과 뜻으로 나눠 준다. */
+export function splitCards(cards: FullCardItem[]): FullCardItem[] {
+  return cards.map(c => {
+    if (c.meaning?.trim()) return c;
+    const m = c.word.match(/^(.+?)\s+[=＝]\s+(.+)$/);
+    return m ? { ...c, word: m[1].trim(), meaning: m[2].trim() } : c;
+  });
+}
+const scriptOf = (t: string) => (/[가-힣]/.test(t) ? 'ko' : /[A-Za-z]/.test(t) ? 'en' : 'etc');
+const sentenceLike = (t: string) => t.length > 14 || /[.!?"]|\s.*\s.*\s/.test(t);
+/** 정답과 얼마나 닮았는지(작을수록 닮음): 글자 종류·문장 여부·길이·품사 어미·쉼표 */
+function likeness(answer: string, cand: string): number {
+  let d = Math.abs(answer.length - cand.length) * 2;
+  if (scriptOf(answer) !== scriptOf(cand)) d += 40;
+  if (sentenceLike(answer) !== sentenceLike(cand)) d += 30;
+  if (answer.slice(-1) === cand.slice(-1)) d -= 3;
+  if (answer.includes(',') !== cand.includes(',')) d += 4;
+  return d;
+}
+/** 문제·정답만 있고 오답이 비어 있는 줄은, 다른 줄의 정답 가운데 정답과 닮은 것(같은 글자 종류·비슷한 길이·문장이 아닌 것)을 오답으로 채운다(단어장에서 가져온 문제 등). 이미 적은 오답은 그대로 둔다. */
 export function fillDistractors(rows: string[][], want = 2): string[][] {
-  const answers = rows.map(r => r[1]?.trim() || '');
-  return rows.map((row, i) => {
+  const answers = [...new Set(rows.map(r => r[1]?.trim() || '').filter(Boolean))];
+  return rows.map((row) => {
     if (!row[0]?.trim() || !row[1]?.trim()) return row;
     const wrong = row.slice(2).map(s => s.trim()).filter(Boolean);
     if (wrong.length) return row;
-    const taken = new Set([row[1].trim().toLowerCase()]);
-    const picked: string[] = [];
-    for (let step = 1; step < rows.length && picked.length < want; step++) {
-      const a = answers[(i + step) % rows.length];
-      if (a && !taken.has(a.toLowerCase())) {
-        taken.add(a.toLowerCase());
-        picked.push(a);
-      }
-    }
+    const answer = row[1].trim();
+    const ranked = answers
+      .filter(a => a.toLowerCase() !== answer.toLowerCase())
+      .map(a => ({ a, d: likeness(answer, a) + Math.random() * 6 }))
+      .sort((x, y) => x.d - y.d);
+    // 너무 안 닮은 것(글자 종류·문장 여부가 다른 것)은 쓰지 않는다. 후보가 모자라면 그만큼만 채운다.
+    const picked = ranked.filter(x => x.d < 30).slice(0, want).map(x => x.a);
     return [row[0], row[1], ...picked];
   });
 }
