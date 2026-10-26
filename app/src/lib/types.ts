@@ -276,8 +276,11 @@ export type LiveQuestionStyle = 'picture' | 'listen' | 'scramble' | 'blank';
 export type ContestRoundType = 'choice' | 'ox' | 'text' | 'buzzer' | 'picture' | 'listen' | 'scramble' | 'blank';
 export interface ContestRoundSetting {
   type: ContestRoundType;
+  /** -1: 사용 가능한 전체 항목. 기존 양수 설정은 유지한다. */
   count: number;
   on: boolean;
+  seconds?: number;
+  points?: number;
 }
 
 export interface GameItem {

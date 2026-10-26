@@ -80,7 +80,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
-  useEffect(()=>{if(!presenting&&info&&!info.loading&&info.temporary&&info.selected&&isActivityDraft(info.selected.id)&&guideOpened.current!==identity){guideOpened.current=identity;setPanel('guide');}},[info,identity,presenting]);
+  useEffect(()=>{if(!presenting&&info&&!info.loading&&info.temporary&&info.selected&&isActivityDraft(info.selected.id)&&guideOpened.current!==identity){guideOpened.current=identity;setPanel(info.gameType==='quizshow'?'settings':'guide');}},[info,identity,presenting]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
     setOrdered(false);
@@ -212,14 +212,14 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           {info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=><button key={row.id} className={`${btn} mr-2 mb-2`} onClick={()=>{bridge.current?.selectTemplate(row.id);setPanel(null);}}>{row.name}</button>)}
         </div>}
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
-        {info && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} start={start} nativeVisible={setGuideNative} setParticipants={text=>{setParticipantText(text);setOrdered(!!text.trim());}} openTeams={()=>setTeams(true)} />}
-        <div hidden={(panel !== 'settings' && !(panel==='guide'&&guideNative)) || !!info?.sharedView} className="p-4" data-game-existing-settings>
-          {info?.selected && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
+        {info && info.gameType !== 'quizshow' && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} start={start} nativeVisible={setGuideNative} setParticipants={text=>{setParticipantText(text);setOrdered(!!text.trim());}} openTeams={()=>setTeams(true)} />}
+        <div hidden={(panel !== 'settings' && !(panel==='guide'&&(guideNative||info?.gameType==='quizshow'))) || !!info?.sharedView} className="p-4" data-game-existing-settings>
+          {info?.selected && info.gameType !== 'quizshow' && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
-          <p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p>
+          {info?.gameType !== 'quizshow' && <><p className="mb-3 text-sm text-on-surface-variant">{t('flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
           {children}
-          <div hidden={panel==='guide'} className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
+          <div hidden={panel==='guide'||info?.gameType==='quizshow'} className="sticky bottom-0 z-20 mt-5 space-y-3 rounded-xl border bg-white/95 p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             <button className={`${btn} bg-primary! text-white!`} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t(saveOriginal?'flow.saveAndPrepare':'flow.confirmContent')}</button>
             {info?.temporary && info.selected && isActivityDraft(info.selected.id) && <details><summary className="cursor-pointer py-2 font-bold text-primary">{t('quick.saveActivity')}</summary><p className="my-2 text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultGameName})}</p><label>{t('quick.activityName')}<input placeholder={defaultGameName} className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)} /></label><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.saveActivity(activityName.trim()))}>{t('quick.saveActivity')}</button></details>}

@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { clearBoardReturn, hasBoardReturn } from '../lib/boardMaterial';
 import { usePresenting } from '../context/LessonRunnerContext';
 import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
@@ -106,6 +108,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const roster = workspace?.roster ?? suppliedRoster;
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -524,6 +527,20 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
+        {fullOn && hasBoardReturn() && (
+          <button
+            type="button"
+            data-board-return-in-game
+            className="no-print fixed bottom-4 left-4 z-[60] min-h-11 rounded-full bg-primary px-5 text-base font-bold text-white shadow-xl focus-visible:outline-4 focus-visible:outline-white"
+            onClick={() => {
+              clearBoardReturn();
+              if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+              navigate('/whiteboard');
+            }}
+          >
+            {t('whiteboard.returnPill')}
+          </button>
+        )}
         {workspace && <GameWorkspaceFrameControls onRestart={onRestart ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
         {bgUrl && (
           <div

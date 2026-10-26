@@ -108,7 +108,7 @@ export const ROUND_KIND: Record<ContestRoundType, { kind: LiveQuestionKind; styl
 };
 
 /** 처음 설정: 예전과 같은 4라운드 켜짐 + 새 라운드 4종은 꺼짐(선생님이 켠다) */
-export const DEFAULT_CONTEST_ROUNDS: ContestRoundSetting[] = CONTEST_ROUND_TYPES.map((type, i) => ({ type, count: 5, on: i < 4 }));
+export const DEFAULT_CONTEST_ROUNDS: ContestRoundSetting[] = CONTEST_ROUND_TYPES.map((type, i) => ({ type, count: -1, on: i < 4 }));
 
 /** 저장된 설정에 빠진 종류가 있으면(새 종류가 생긴 뒤) 뒤에 꺼진 채로 붙인다 */
 export function normalizeContestRounds(saved: ContestRoundSetting[] | undefined): ContestRoundSetting[] {
@@ -229,7 +229,7 @@ export function contestAvailability(words: FullCardItem[]): Record<ContestRoundT
 
 /**
  * 단어장 하나로 "종합 대회"를 만든다 — AI 없이 단어장(+사전 예문·그림) 자료만 쓴다.
- * rounds 순서대로, 켜진 라운드만, 라운드마다 count 문제. 라운드 번호는 실제로 만들어진 순서대로 1, 2, 3 …
+ * rounds 순서대로, 켜진 라운드만, 라운드마다 count 문제(-1은 사용 가능한 전체 항목). 라운드 번호는 실제로 만들어진 순서대로 1, 2, 3 …
  * 단어가 넉넉하면 라운드마다 다른 단어를 쓰고, 모자라면 섞어서 다시 쓴다.
  * (예전 호출처럼 숫자를 넘기면 기본 4라운드 × 그 수)
  */
@@ -250,12 +250,14 @@ export function buildContestQuestions(
   const pools = new Map<string, FullCardItem[]>();
   const take = (key: string, candidates: FullCardItem[], count: number): FullCardItem[] => {
     if (candidates.length === 0) return [];
-    const n = Math.max(1, Math.min(count, candidates.length));
+    const n = Math.max(1, Math.min(count === -1 ? candidates.length : count, candidates.length));
     let pool = pools.get(key) ?? shuffle(candidates);
     const out: FullCardItem[] = [];
     while (out.length < n) {
       if (pool.length === 0) pool = shuffle(candidates);
-      out.push(pool.shift()!);
+      const next = pool.shift()!;
+      // A shared pool may wrap mid-round; never repeat an entry within that round.
+      if (!out.includes(next)) out.push(next);
     }
     pools.set(key, pool);
     return out;
@@ -270,7 +272,7 @@ export function buildContestQuestions(
   const questions: LiveQuestion[] = [];
   let roundNo = 0;
   for (const r of settings) {
-    if (!r.on || r.count <= 0) continue;
+    if (!r.on || (r.count !== -1 && r.count <= 0)) continue;
     const { kind, style } = ROUND_KIND[r.type];
     const round = names.numbered(roundNo + 1, names.name(r.type));
     const base = { kind, style, roundType: r.type, round, imageUrl: null as string | null };
@@ -335,7 +337,7 @@ export function buildContestQuestions(
     }
     if (made.length > 0) {
       roundNo++;
-      questions.push(...made);
+      questions.push(...made.map(q => ({ ...q, seconds: r.seconds ?? q.seconds, points: r.points ?? q.points })));
     }
   }
   return questions;

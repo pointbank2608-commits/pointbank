@@ -2,13 +2,16 @@ import { isActivityDraft } from '../lib/quickActivity';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import ContestSetup from '../components/ContestSetup';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
+import { useAuth } from '../context/AuthContext';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import QuizShowHost from '../components/QuizShowHost';
-import { updateGameTemplate } from '../lib/api';
+import { createGameTemplate, updateGameTemplate } from '../lib/api';
 import { wordListToCards } from '../lib/gameFromWords';
 import {
   buildContestQuestions,
@@ -51,7 +54,9 @@ const input =
 
 export default function QuizShowPage() {
   const { t } = useTranslation();
-  const g = useGameTemplates({ gameType: 'quizshow', defaultItems, defaultConfig: () => ({ liveQuestions: [] }) });
+  const { profile } = useAuth();
+  const workspace = useGameWorkspace();
+  const g = useGameTemplates({ gameType: 'quizshow', listKind: 'all', defaultItems, defaultConfig: () => ({ liveQuestions: [] }) });
   const {
     isStaff,
     classes,
@@ -67,10 +72,6 @@ export default function QuizShowPage() {
     loading,
     showCreateForm,
     setShowCreateForm,
-    submitting,
-    newName,
-    setNewName,
-    handleCreate,
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
@@ -99,6 +100,13 @@ export default function QuizShowPage() {
     setPreview(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id]);
+
+  useEffect(() => {
+    if (selected && isActivityDraft(selected.id)) setShowCreateForm(true);
+  }, [selected?.id, setShowCreateForm]);
+  useEffect(() => {
+    if (workspace?.panel === 'guide') setShowCreateForm(true);
+  }, [workspace?.panel, setShowCreateForm]);
 
   const demo = useMemo(
     () =>
@@ -241,28 +249,15 @@ export default function QuizShowPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3">
-      <label className="font-label-md text-label-md text-on-surface-variant block">{t('gameAdmin.nameFieldLabel')}</label>
-      <input
-        value={newName}
-        onChange={(e) => setNewName(e.target.value)}
-        placeholder={t('liveQuiz.namePlaceholder')}
-        onKeyDown={(e) => e.key === 'Enter' && void handleCreate()}
-        className={input}
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={() => void handleCreate()}
-          disabled={submitting}
-          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container"
-        >
-          {submitting ? t('gameAdmin.creating') : t('gameAdmin.create')}
-        </button>
-        <button onClick={() => setShowCreateForm(false)} className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low">
-          {t('gameAdmin.cancel')}
-        </button>
-      </div>
-    </div>
+    <ContestSetup lists={wordLists} loading={wordListsLoading} onCancel={() => setShowCreateForm(false)} onSave={async (name, config) => {
+      if (!academy || !profile) throw new Error('not_authenticated');
+      const tpl = await createGameTemplate({ academyId: academy.id, teacherId: profile.id, classId,
+        gameType: 'quizshow', name, items: [], config });
+      setTemplates(prev => [...prev, tpl]);
+      setSelectedId(tpl.id);
+      setShowCreateForm(false);
+      workspace?.open(null);
+    }} />
   );
 
   const hostClassId = classId ?? null;
@@ -286,13 +281,13 @@ export default function QuizShowPage() {
             <QuizShowHost title={t('liveQuiz.demoTitle')} questions={demo} classId={hostClassId} templateId={null} speedBonus />
           </GameThemeFrame>
           <div className="text-center font-body-md text-body-md text-on-surface-variant">{t('liveQuiz.emptyStaff')}</div>
-          <EditOnly>{templateRow}</EditOnly>
+          <EditOnly>{!showCreateForm && templateRow}</EditOnly>
           {createForm}
         </div>
       ) : (
         <div className="space-y-6">
-          {isActivityDraft(selected.id) && <p className="rounded-xl bg-primary/5 p-4">{t('quick.onlinePreview')}</p>}
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{selected.name}</h2>
+          {!showCreateForm && isActivityDraft(selected.id) && <p className="rounded-xl bg-primary/5 p-4">{t('quick.onlinePreview')}</p>}
+          {!showCreateForm && <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{selected.name}</h2>}
 
           {isStaff && preview && playable.length > 0 && (
             <GameThemeFrame gameType="quizshow" className="rounded-[28px]">
@@ -316,10 +311,10 @@ export default function QuizShowPage() {
 
           <div className="space-y-4">
             <EditOnly>{classPicker}</EditOnly>
-            <EditOnly>{templateRow}</EditOnly>
+            <EditOnly>{!showCreateForm && templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
+            {isStaff && !showCreateForm && (
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('liveQuiz.settingsTitle', { count: draft.length })}</h4>
@@ -359,11 +354,11 @@ export default function QuizShowPage() {
                     <div className="rounded-xl border-2 border-primary/25 bg-primary-fixed/30 p-4 space-y-3">
                       <div className="flex items-center gap-2 font-label-md text-label-md text-primary">
                         <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
-                        {t('liveQuiz.fromListTitle')}
+                        {t('contestSetup.regenerate')}
                       </div>
                       <p className="font-caption text-caption text-on-surface-variant">{t('liveQuiz.fromListHint2')}</p>
                       <select value={listId} onChange={(e) => setListId(e.target.value)} className={`${input} w-auto min-w-48`} disabled={wordListsLoading}>
-                        <option value="">{wordListsLoading ? t('common.loading') : t('liveQuiz.pickList')}</option>
+                        <option value="">{wordListsLoading ? t('common.loading') : t('contestSetup.pickMaterial')}</option>
                         {wordLists.map((w) => (
                           <option key={w.id} value={w.id}>
                             {w.name} ({w.items.length})
@@ -406,13 +401,14 @@ export default function QuizShowPage() {
                                   className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1 font-caption text-caption disabled:opacity-40"
                                   aria-label={t('liveQuiz.perRound')}
                                 >
-                                  {[3, 4, 5, 6, 8, 10].map((n) => (
+                                  <option value={-1}>{t('contestSetup.all')}</option>
+                                  {[3, 4, 5, 6, 8, 10, 20, 30, 50, 100].map((n) => (
                                     <option key={n} value={n}>
                                       {t('liveQuiz.countQuestions', { count: n })}
                                     </option>
                                   ))}
                                 </select>
-                                {can != null && !blocked && can < r.count && r.on && (
+                                {can != null && !blocked && r.count !== -1 && can < r.count && r.on && (
                                   <span className="font-caption text-caption text-on-surface-variant">{t('liveQuiz.onlyAvailable', { count: can })}</span>
                                 )}
                                 <div className="flex">

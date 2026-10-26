@@ -70,7 +70,7 @@ try {
  const {GAME_CATALOG:catalog}=await server.ssrLoadModule('/src/lib/gameCatalog.ts');
  const {guideSample,guideProblem,GUIDE_FAMILIES}=await server.ssrLoadModule('/src/lib/gameGuide.ts');
  assert.equal(catalog.filter(g=>g.number<=53).length,53);assert.equal(Object.keys(GUIDE_FAMILIES).length,53);
- for(const g of process.env.GUIDE_SKIP_SAMPLES?[]:catalog.filter(g=>g.number<=53)){
+ for(const g of process.env.GUIDE_SKIP_SAMPLES?[]:catalog.filter(g=>g.number<=53&&g.type!=='quizshow')){
   await page.goto(fixture+'?start='+g.path+'&empty=1');await guide().getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();
   await page.locator('[data-game-guide][data-guide-step="3"]').waitFor();
   const start=guide().getByRole('button',{name:'게임 시작',exact:false});
@@ -78,7 +78,7 @@ try {
   await page.locator('[data-play-mode="play"]').waitFor();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
   console.log('ok sample',g.type);
  }
- console.log(process.env.GUIDE_SKIP_SAMPLES?'focused scenarios; sample loop skipped':'ok 53 native games: guided sample prepares and starts without persistent game/wordlist/lesson writes');
+ console.log(process.env.GUIDE_SKIP_SAMPLES?'focused scenarios; sample loop skipped':'ok 52 native games: guided sample (phone contest verified separately) prepares and starts without persistent game/wordlist/lesson writes');
  await page.goto(fixture+'?start=/games/wheel&empty=1');await guide().getByRole('button',{name:'학생·팀 이름으로 만들기',exact:false}).click();
  await guide().getByLabel('학생·팀 이름',{exact:true}).first().fill('민지');await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('학생·팀 이름',{exact:true}).nth(1).fill('지우');
  await guide().getByRole('button',{name:'다음',exact:true}).click();
@@ -94,13 +94,10 @@ try {
  await guide().locator('[data-range-fill]').waitFor();await guide().locator('[data-range-end]').fill('5');await guide().locator('[data-range-fill]').click();
  {const v=await guide().getByLabel('숫자',{exact:true}).evaluateAll(els=>els.map(e=>e.value).filter(Boolean));assert(['1','3','5'].every(x=>v.includes(x)),'새 숫자가 더해진다');assert.equal(new Set(v).size,v.length,'중복 없음');}
  console.log('ok number start button in extra settings');
- await page.goto(fixture+'?start=/games/quizshow&empty=1');await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();
- await guide().getByLabel('문제',{exact:true}).first().fill('밀다');await guide().getByLabel('정답',{exact:true}).first().fill('push');
- await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('문제',{exact:true}).nth(1).fill('당기다');await guide().getByLabel('정답',{exact:true}).nth(1).fill('pull');
- await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('문제',{exact:true}).nth(2).fill('열다');await guide().getByLabel('정답',{exact:true}).nth(2).fill('open');
- await guide().getByRole('button',{name:'다음',exact:true}).click();
- await page.waitForFunction(()=>document.querySelector('[data-game-guide]')?.getAttribute('data-guide-step')!=='1');
- console.log('ok online quiz without typed wrong answers fills them and moves on');
+ await page.goto(fixture+'?start=/games/quizshow&empty=1');
+ const contest=page.getByRole('region',{name:'휴대폰 참여 보카 대회 만들기'});
+ await contest.waitFor();assert.equal(await contest.getByRole('button',{name:'다음',exact:true}).isDisabled(),true);
+ console.log('ok online contest uses material-first setup and blocks missing lists');
  await page.goto(fixture+'?start=/games/matchup&empty=1');await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();
  await guide().getByLabel('단어',{exact:true}).first().fill('apple');await guide().getByLabel('뜻',{exact:true}).first().fill('사과');
  await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('alert').waitFor();
@@ -108,9 +105,9 @@ try {
  await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();
  console.log('ok native pair validation, direct unsaved match content, separate participant step');
  await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();await page.locator('[data-preparation-submit] summary').click();await page.getByRole('textbox',{name:'활동 이름 (선택)',exact:true}).fill('안내에서 만든 저장 게임');await page.getByRole('button',{name:'내 활동으로 저장',exact:true}).click();await page.waitForFunction(()=>window.__workspace.writes.length===1);
- await page.locator('[data-game-preparation] summary').click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'안내에서 만든 저장 게임',exact:true}).click();
- await page.getByRole('button',{name:'활동지 만들기',exact:true}).click();await page.waitForURL('**/materials/worksheet');assert.equal(await page.evaluate(()=>history.state.usr.materialsWords.length),2);
- await page.goBack();if(await guide().isVisible())await page.getByRole('button',{name:'닫기',exact:true}).click();await page.getByRole('button',{name:'수업에 추가',exact:true}).click();assert.equal(await page.evaluate(()=>window.__workspace.lessons?.length||0),0);
+ await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'안내에서 만든 저장 게임',exact:true}).click();
+ await page.locator('[data-game-preparation] .game-optional-actions > summary').click();await page.getByRole('button',{name:'활동지 만들기',exact:true}).click();await page.waitForURL('**/materials/worksheet');assert.equal(await page.evaluate(()=>history.state.usr.materialsWords.length),2);
+ await page.goBack();if(await guide().isVisible())await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] .game-optional-actions > summary').click();await page.getByRole('button',{name:'내 수업에 넣기',exact:true}).click();assert.equal(await page.evaluate(()=>window.__workspace.lessons?.length||0),0);
  await page.getByLabel('추가할 수업 선택',{exact:true}).selectOption('new');await page.getByRole('textbox',{name:'수업 이름 (선택)',exact:true}).fill('안내 검증 수업');await page.getByRole('dialog').getByRole('button',{name:'수업에 추가',exact:true}).click();await page.waitForURL('**/curriculum');assert.equal(await page.evaluate(()=>window.__workspace.lessons[0].playlist.length),1);
  console.log('ok guided activity explicit save/reopen, identical source to worksheet, explicit new lesson only after selection');
 
@@ -137,7 +134,7 @@ try {
  await guide().getByRole('button',{name:'기존 상세 편집기 열기',exact:true}).click();
  await page.getByRole('button',{name:'닫기',exact:true}).first().click();
  console.log('ok detailed editor remains available without a duplicated game board');
- await page.goto(fixture+'?start=/games/wheel&saved=1');await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] summary').click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'원본 저장 게임',exact:true}).click();
+ await page.goto(fixture+'?start=/games/wheel&saved=1');await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'원본 저장 게임',exact:true}).click();
  await page.locator('[data-game-preparation]').getByRole('button',{name:'무엇으로 게임을 만들까요?',exact:true}).click();await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();await guide().getByLabel('단어',{exact:true}).first().fill('CHANGED');await finish();
  assert.equal(await page.evaluate(()=>window.__workspace.templates.find(t=>t.id==='original-game').items[0].label),'ORIGINAL');assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok guided edit of saved activity makes a temporary copy; saved original unchanged');
