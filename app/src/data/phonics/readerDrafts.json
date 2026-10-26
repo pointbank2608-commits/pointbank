@@ -1,0 +1,577 @@
+{
+  "version": 1,
+  "baselineSightWords": [
+    "I",
+    "see",
+    "a"
+  ],
+  "drafts": [
+    {
+      "unitId": "course-1-2",
+      "status": "draft",
+      "newSightWords": [
+        "the"
+      ],
+      "pattern": "I see the {word}.",
+      "wordIds": [
+        "pw-dog",
+        "pw-duck",
+        "pw-egg",
+        "pw-fish"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-3",
+      "status": "draft",
+      "newSightWords": [
+        "my"
+      ],
+      "pattern": "I see my {word}.",
+      "wordIds": [
+        "pw-gift",
+        "pw-hat",
+        "pw-hand"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-4",
+      "status": "draft",
+      "newSightWords": [
+        "and"
+      ],
+      "pattern": "I see a {word} and a {other}.",
+      "wordIds": [
+        "pw-jug",
+        "pw-kite",
+        "pw-lion",
+        "pw-lemon"
+      ],
+      "otherWordIds": [
+        "pw-kite",
+        "pw-jug",
+        "pw-lemon",
+        "pw-lion"
+      ]
+    },
+    {
+      "unitId": "course-1-5",
+      "status": "draft",
+      "newSightWords": [
+        "can"
+      ],
+      "pattern": "I can see a {word}.",
+      "wordIds": [
+        "pw-monkey",
+        "pw-map",
+        "pw-net",
+        "pw-nest"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-6",
+      "status": "draft",
+      "newSightWords": [
+        "this"
+      ],
+      "pattern": "I see this {word}.",
+      "wordIds": [
+        "pw-pig",
+        "pw-pen",
+        "pw-quilt",
+        "pw-rabbit"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-7",
+      "status": "draft",
+      "newSightWords": [
+        "that"
+      ],
+      "pattern": "I see that {word}.",
+      "wordIds": [
+        "pw-sun",
+        "pw-sock",
+        "pw-top",
+        "pw-umbrella"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-8",
+      "status": "draft",
+      "newSightWords": [
+        "we"
+      ],
+      "pattern": "We can see a {word}.",
+      "wordIds": [
+        "pw-van",
+        "pw-vest",
+        "pw-web",
+        "pw-box"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-1-9",
+      "status": "draft",
+      "newSightWords": [
+        "like"
+      ],
+      "pattern": "I like the {word}.",
+      "wordIds": [
+        "pw-yo-yo",
+        "pw-yam",
+        "pw-zebra",
+        "pw-zoo"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-1",
+      "status": "draft",
+      "newSightWords": [
+        "is"
+      ],
+      "pattern": "This is my {word}.",
+      "wordIds": [
+        "pw-dad",
+        "pw-bag",
+        "pw-jam"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-2",
+      "status": "draft",
+      "newSightWords": [
+        "it"
+      ],
+      "pattern": "It is a {word}.",
+      "wordIds": [
+        "pw-fan",
+        "pw-map",
+        "pw-cat",
+        "pw-hat"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-3",
+      "status": "draft",
+      "newSightWords": [
+        "you"
+      ],
+      "pattern": "You can see the {word}.",
+      "wordIds": [
+        "pw-bed",
+        "pw-hen",
+        "pw-pen",
+        "pw-jet"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-4",
+      "status": "draft",
+      "newSightWords": [
+        "have"
+      ],
+      "pattern": "I have a {word}.",
+      "wordIds": [
+        "pw-pig",
+        "pw-wig",
+        "pw-bin",
+        "pw-pin"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-5",
+      "status": "draft",
+      "newSightWords": [
+        "here"
+      ],
+      "pattern": "The {word} is here.",
+      "wordIds": [
+        "pw-kid",
+        "pw-lid",
+        "pw-kit"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-6",
+      "status": "draft",
+      "newSightWords": [
+        "look"
+      ],
+      "pattern": "Look! I see a {word}.",
+      "wordIds": [
+        "pw-dog",
+        "pw-log",
+        "pw-pot",
+        "pw-box"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-7",
+      "status": "draft",
+      "newSightWords": [
+        "at"
+      ],
+      "pattern": "Look at the {word}.",
+      "wordIds": [
+        "pw-bug",
+        "pw-rug",
+        "pw-sun",
+        "pw-hut"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-2-8",
+      "status": "draft",
+      "newSightWords": [
+        "your"
+      ],
+      "pattern": "I see your {word}.",
+      "wordIds": [
+        "pw-tub",
+        "pw-cup",
+        "pw-pup"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-1",
+      "status": "draft",
+      "newSightWords": [
+        "has"
+      ],
+      "pattern": "Dad has a {word}.",
+      "wordIds": [
+        "pw-cake",
+        "pw-game"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-2",
+      "status": "draft",
+      "newSightWords": [
+        "for"
+      ],
+      "pattern": "The {word} is for Dad.",
+      "wordIds": [
+        "pw-cape",
+        "pw-tape",
+        "pw-cane"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-3",
+      "status": "draft",
+      "newSightWords": [
+        "he"
+      ],
+      "pattern": "He has a {word}.",
+      "wordIds": [
+        "pw-bike",
+        "pw-kite"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-4",
+      "status": "draft",
+      "newSightWords": [
+        "she"
+      ],
+      "pattern": "She has a {word}.",
+      "wordIds": [
+        "pw-lime",
+        "pw-dime"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-5",
+      "status": "draft",
+      "newSightWords": [
+        "one"
+      ],
+      "pattern": "I have one {word}.",
+      "wordIds": [
+        "pw-cone",
+        "pw-rose",
+        "pw-hose"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-6",
+      "status": "draft",
+      "newSightWords": [
+        "want"
+      ],
+      "pattern": "I want a {word}.",
+      "wordIds": [
+        "pw-rope",
+        "pw-note",
+        "pw-home"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-7",
+      "status": "draft",
+      "newSightWords": [
+        "his"
+      ],
+      "pattern": "This is his {word}.",
+      "wordIds": [
+        "pw-cube",
+        "pw-tube"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-3-8",
+      "status": "draft",
+      "newSightWords": [
+        "her"
+      ],
+      "pattern": "This is her {word}.",
+      "wordIds": [
+        "pw-mule",
+        "pw-cube",
+        "pw-tube"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-2",
+      "status": "draft",
+      "newSightWords": [
+        "are"
+      ],
+      "pattern": "We are {word}.",
+      "wordIds": [
+        "pw-glad",
+        "pw-glum"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-3",
+      "status": "draft",
+      "newSightWords": [
+        "some"
+      ],
+      "pattern": "I see some {word}.",
+      "wordIds": [
+        "pw-frost",
+        "pw-bran"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-4",
+      "status": "draft",
+      "newSightWords": [
+        "get"
+      ],
+      "pattern": "I can get a {word}.",
+      "wordIds": [
+        "pw-truck",
+        "pw-prop"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-5",
+      "status": "draft",
+      "newSightWords": [
+        "put"
+      ],
+      "pattern": "Put the {word} here.",
+      "wordIds": [
+        "pw-mask",
+        "pw-stick",
+        "pw-desk"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-6",
+      "status": "draft",
+      "newSightWords": [
+        "there"
+      ],
+      "pattern": "The {word} is there.",
+      "wordIds": [
+        "pw-lamp",
+        "pw-pond",
+        "pw-sand"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-7",
+      "status": "draft",
+      "newSightWords": [
+        "these"
+      ],
+      "pattern": "These are {word}.",
+      "wordIds": [
+        "pw-fish",
+        "pw-teeth"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-4-8",
+      "status": "draft",
+      "newSightWords": [
+        "our"
+      ],
+      "pattern": "This is our {word}.",
+      "wordIds": [
+        "pw-wheel",
+        "pw-ring"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-1",
+      "status": "draft",
+      "newSightWords": [
+        "us"
+      ],
+      "pattern": "This {word} is for us.",
+      "wordIds": [
+        "pw-tree",
+        "pw-tea",
+        "pw-meat"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-2",
+      "status": "draft",
+      "newSightWords": [
+        "all"
+      ],
+      "pattern": "We all like the {word}.",
+      "wordIds": [
+        "pw-rain",
+        "pw-train"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-3",
+      "status": "draft",
+      "newSightWords": [
+        "too"
+      ],
+      "pattern": "I see the {word}, too.",
+      "wordIds": [
+        "pw-boat",
+        "pw-coat",
+        "pw-soap"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-4",
+      "status": "draft",
+      "newSightWords": [
+        "read"
+      ],
+      "pattern": "I can read the {word}.",
+      "wordIds": [
+        "pw-book",
+        "pw-note"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-5",
+      "status": "draft",
+      "newSightWords": [
+        "more"
+      ],
+      "pattern": "I want more {word}.",
+      "wordIds": [
+        "pw-oil",
+        "pw-soil"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-6",
+      "status": "draft",
+      "newSightWords": [
+        "where"
+      ],
+      "pattern": "Where is the {word}?",
+      "wordIds": [
+        "pw-house",
+        "pw-mouse",
+        "pw-cow",
+        "pw-owl"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-7",
+      "status": "draft",
+      "newSightWords": [
+        "or"
+      ],
+      "pattern": "Is this a {word} or a {other}?",
+      "wordIds": [
+        "pw-car",
+        "pw-star"
+      ],
+      "otherWordIds": [
+        "pw-star",
+        "pw-car"
+      ]
+    },
+    {
+      "unitId": "course-5-8",
+      "status": "draft",
+      "newSightWords": [
+        "little"
+      ],
+      "pattern": "I see a little {word}.",
+      "wordIds": [
+        "pw-bird",
+        "pw-girl"
+      ],
+      "otherWordIds": []
+    },
+    {
+      "unitId": "course-5-9",
+      "status": "draft",
+      "newSightWords": [
+        "do"
+      ],
+      "pattern": "Do you see the {word}?",
+      "wordIds": [
+        "pw-horse",
+        "pw-fork",
+        "pw-nurse"
+      ],
+      "otherWordIds": []
+    }
+  ]
+}

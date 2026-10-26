@@ -1,0 +1,53 @@
+{
+  "generator": "built-in image_gen",
+  "records": [
+    {
+      "prompt": "Use case: stylized-concept. Create one ClassBank phonics vocabulary illustration for THEM, objective pronoun meaning 그들을/그들에게, not an isolated unrelated object. Reference image is STYLE ONLY: match its warm handmade soft 3D clay material, subtle texture, rounded forms, cream and beige surroundings, coral terracotta mustard muted green palette, diffuse soft light and contact shadows. Scene: one friendly child in the left foreground is offering a small basket of apples to TWO other friendly children standing together on the right, reaching toward that pair as recipients. Make the two receiving children the clear visual focus and larger than the giver, while the giver's extended arm establishes the relation to them. All figures full body, friendly faces, natural hands, uncluttered miniature cream studio floor with no busy background. Wide safe margins, square composition readable at flashcard size. No text, labels, numbers, letters, speech bubbles, arrows, logos, watermarks. This is an educational relationship scene, no pronoun printed.",
+      "reference": "app/public/phonics-images/bag.webp",
+      "destination": "app/public/phonics-images/them-course-v1.webp",
+      "source": "C:/Users/likes/.codex/generated_images/01a156f2-a097-7241-a23f-7d6c190f6d55/exec-5613d0c7-14df-4943-be1c-304284c9cb4e.png",
+      "review": "Objective pronoun requires teacher context; illustration shows a child handing apples to two recipients.",
+      "word": "them"
+    },
+    {
+      "word": "burn",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/word-bank-images/burn.webp",
+      "prompt": "Use case: style-transfer. Create a clean standalone ClassBank vocabulary illustration of BURN (a candle burning). The supplied image is an edit/reference target. Keep the warm rounded handmade 3D clay material, natural cream and beige background, soft lighting and contact shadows. Show one large cream wax candle with a clearly visible glowing orange flame and dark wick, softened melted wax drips. The candle is a normal object, NO face. Simple round terracotta saucer, minimal surrounding scenery. Remove ALL existing text including burn, Korean text, bottom sentence, label plaques, decorative border and any letters or numbers. No extra fire scenes, no harm to people or animals. Whole candle and flame fully visible, ample safe margins, centered square composition. No words, captions, logos or watermarks.",
+      "source": "C:/Users/likes/.codex/generated_images/01a156f2-a097-7241-a23f-7d6c190f6d55/exec-01926707-b38e-46e6-ab20-3733487fc72c.png",
+      "destination": "app/public/phonics-images/burn-course-v1.webp"
+    },
+    {
+      "word": "watch",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/watch.webp",
+      "prompt": "Use case: style-transfer. The supplied ClassBank watch illustration is the edit target. Preserve exactly the recognizable rounded square wristwatch, orange/terracotta case, dark bezel, warm coral face with small sun icon, curved tan clay strap, muted green keeper, side crown and friendly handmade 3D clay material. Remove the smartwatch text, its caption plaque, and the surrounding picture frame completely. Place the complete watch large and centered on a simple warm cream/beige seamless background, gentle diffuse light and soft contact shadow. Keep all strap ends, buttons and watch face within safe margins. No text, letters, numbers, captions, labels, words, logos, watermark or border.",
+      "source": "C:/Users/likes/.codex/generated_images/01a156f2-a097-7241-a23f-7d6c190f6d55/exec-07aa458d-35d4-4be0-96d9-8a87811c6c50.png",
+      "destination": "app/public/phonics-images/watch-course-v1.webp"
+    }
+  ],
+  "sceneExtractions": [
+    {
+      "source": "ClassBank_Level4_Unit1_FullSlides_v2.pdf",
+      "page": 102,
+      "rectangle": [
+        315,
+        190,
+        965,
+        556
+      ],
+      "destination": "app/public/phonics-course/level4-unit1-scene.webp",
+      "note": "Only illustration extracted. No slide text/background screenshot used as lesson content."
+    },
+    {
+      "source": "app/public/phonics-course/level4-unit1-scene.webp",
+      "rectangle": [
+        30,
+        240,
+        145,
+        318
+      ],
+      "destination": "app/public/phonics-course/level4-unit1-black-block.webp",
+      "note": "Contextual black block crop for reading checks, not a replacement for shared block image."
+    }
+  ],
+  "preserved": "Existing original files remain untouched. line was inspected at full size and already has a real line, so it was retained."
+}

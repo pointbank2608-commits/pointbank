@@ -1,0 +1,14 @@
+{
+  "pw-them": "pronoun",
+  "pw-this": "pronoun",
+  "pw-that": "pronoun",
+  "pw-her": "pronoun",
+  "pw-then": "time",
+  "pw-from": "relation",
+  "pw-term": "term",
+  "pw-may": "month",
+  "pw-site": "place",
+  "pw-prim": "quality",
+  "pw-name": "name",
+  "pw-same": "comparison"
+}

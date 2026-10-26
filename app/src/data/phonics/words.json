@@ -518,7 +518,7 @@
   "pw-burn": {
     "word": "burn",
     "meaning": "타다",
-    "imageUrl": "/word-bank-images/burn.webp",
+    "imageUrl": "/phonics-images/burn-course-v1.webp",
     "lineartUrl": "/word-bank-lineart/burn.webp",
     "audio": {
       "provider": "web-speech",
@@ -4172,14 +4172,17 @@
   "pw-them": {
     "word": "them",
     "meaning": "그들을",
-    "imageUrl": null,
+    "imageUrl": "/phonics-images/them-course-v1.webp",
     "lineartUrl": null,
     "audio": {
       "provider": "web-speech",
       "text": "them",
       "recordingUrl": null
     },
-    "meaningSource": "unit-reviewed"
+    "meaningSource": "unit-reviewed",
+    "reviewFlags": [
+      "pronoun-scene-needs-teacher-context"
+    ]
   },
   "pw-then": {
     "word": "then",
@@ -4543,7 +4546,7 @@
   "pw-watch": {
     "word": "watch",
     "meaning": "손목시계",
-    "imageUrl": "/phonics-images/watch.webp",
+    "imageUrl": "/phonics-images/watch-course-v1.webp",
     "lineartUrl": "/word-bank-lineart/watch-alphabet-v1.webp",
     "audio": {
       "provider": "web-speech",
@@ -4551,7 +4554,7 @@
       "recordingUrl": null
     },
     "meaningSource": "supabase\\024_word_bank_batch2.sql",
-    "lineartSourceImageUrl": "/phonics-images/watch.webp"
+    "lineartSourceImageUrl": "/phonics-images/watch-course-v1.webp"
   },
   "pw-wave": {
     "word": "wave",

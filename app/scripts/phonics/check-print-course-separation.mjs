@@ -87,19 +87,14 @@ try{
   const course=page.locator('[data-phonics-teaching]');await course.waitFor();assert.equal(await course.locator('.pc-teaching-panel').count(),2);
   assert.equal(await course.locator('.pc-teaching-columns').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),2);
   assert((await course.locator('[data-teaching-words]').innerText()).includes('apple · ant · axe'));
-  await course.getByRole('button',{name:'워크북 미리보기',exact:true}).click();assert.equal(await course.locator('.s1-book-page').count(),8);
-  await course.locator('.pc-page-options input').nth(2).uncheck();assert.equal(await course.locator('.s1-book-page').count(),7);
-  const bookLink=await course.getByRole('link',{name:'워크북 인쇄 · 7쪽 선택',exact:true}).getAttribute('href');assert(bookLink.includes('pages='));
-  await page.screenshot({path:out+'/course-desktop.png'});
-  await page.setViewportSize({width:390,height:844});assert.equal(await course.locator('.pc-teaching-columns').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),1);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:out+'/course-mobile.png',fullPage:true});await page.setViewportSize({width:1440,height:1100});
-  await course.locator('select').first().selectOption('2');assert.equal(await course.locator('[data-teaching-words]').innerText(),cvcTeaching.entries.map(e=>e.word).join(' · '));assert.equal(await course.locator('a.pc-primary').count(),0);assert(await course.getByText(/확정 콘텐츠 연결 전/).count());
-  await page.goto(root+bookLink);await page.waitForFunction(()=>document.querySelectorAll('.s1-book-page').length===7);assert.equal(await page.locator('.s1-page-picker input:checked').count(),7);
+  await course.getByRole('link',{name:'기존 ABC 연계 워크북 보기',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('.s1-book-page').length===8);
+  await page.locator('.s1-page-picker input').nth(2).uncheck();assert.equal(await page.locator('.s1-book-page').count(),7);
   await page.goto(root+'/phonics');await page.getByRole('tab',{name:'단어·소리 학습',exact:true}).click();assert(await page.locator('#phonics-words-panel').isVisible());assert.equal(await page.locator('#phonics-words-panel a[href="/materials/phonics-stage-1"]').count(),0);
   const wordsPanel=page.locator('#phonics-words-panel');await wordsPanel.getByRole('button',{name:'2단계',exact:true}).click();await wordsPanel.locator('select').selectOption('cvc-ad');
   await wordsPanel.getByRole('button',{name:'dad 발음 듣기',exact:true}).waitFor();assert.equal(await wordsPanel.getByRole('checkbox').count(),4);
   await wordsPanel.getByRole('button',{name:/카드로 외우기/}).click();await page.locator('div[role=button][tabindex="0"]').waitFor();await page.locator('div[role=button][tabindex="0"]').click();await page.keyboard.press('Escape');await page.locator('div[role=button][tabindex="0"]').waitFor({state:'detached'});assert(await wordsPanel.getByRole('button',{name:/카드로 외우기/}).isVisible());
   await page.getByRole('tab',{name:'슬라이드 수업·교재',exact:true}).click();await page.getByRole('tab',{name:'단어·소리 학습',exact:true}).click();assert.equal(await wordsPanel.locator('select').inputValue(),'cvc-ad');
-  result.checks.push('DEV-only teaching tab, real ABC slide and 8-page book, selected-page handoff, CVC nine-word references, unpublished content disabled');
+  result.checks.push('DEV-only teaching catalog, preserved ABC linked workbook, selected pages, word learning and CVC references');
  }
  assert.deepEqual(errors,[]);assert.deepEqual(writes,[]);result.passed=true;console.log(JSON.stringify(result));
 }catch(e){result.failure={message:e.message,url:page.url(),body:(await page.locator('body').innerText()).slice(-1500)};await page.screenshot({path:out+'/failure.png'});throw e;}

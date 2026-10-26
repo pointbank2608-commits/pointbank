@@ -1,0 +1,710 @@
+{
+  "version": 1,
+  "units": [
+    {
+      "id": "course-1-1",
+      "step": 1,
+      "number": 1,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-a"
+        },
+        {
+          "ruleId": "letter-b"
+        },
+        {
+          "ruleId": "letter-c"
+        }
+      ],
+      "reader": "abc"
+    },
+    {
+      "id": "course-1-2",
+      "step": 1,
+      "number": 2,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-d"
+        },
+        {
+          "ruleId": "letter-e"
+        },
+        {
+          "ruleId": "letter-f"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-3",
+      "step": 1,
+      "number": 3,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-g"
+        },
+        {
+          "ruleId": "letter-h"
+        },
+        {
+          "ruleId": "letter-i"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-4",
+      "step": 1,
+      "number": 4,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-j"
+        },
+        {
+          "ruleId": "letter-k"
+        },
+        {
+          "ruleId": "letter-l"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-5",
+      "step": 1,
+      "number": 5,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-m"
+        },
+        {
+          "ruleId": "letter-n"
+        },
+        {
+          "ruleId": "letter-o"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-6",
+      "step": 1,
+      "number": 6,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-p"
+        },
+        {
+          "ruleId": "letter-q"
+        },
+        {
+          "ruleId": "letter-r"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-7",
+      "step": 1,
+      "number": 7,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-s"
+        },
+        {
+          "ruleId": "letter-t"
+        },
+        {
+          "ruleId": "letter-u"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-8",
+      "step": 1,
+      "number": 8,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-v"
+        },
+        {
+          "ruleId": "letter-w"
+        },
+        {
+          "ruleId": "letter-x"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-1-9",
+      "step": 1,
+      "number": 9,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "letter-y"
+        },
+        {
+          "ruleId": "letter-z"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-1",
+      "step": 2,
+      "number": 1,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-a",
+          "groupNames": [
+            "-ad",
+            "-ag",
+            "-am"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-2",
+      "step": 2,
+      "number": 2,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-a",
+          "groupNames": [
+            "-an",
+            "-ap",
+            "-at"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-3",
+      "step": 2,
+      "number": 3,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-e",
+          "groupNames": [
+            "-ed",
+            "-en",
+            "-et"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-4",
+      "step": 2,
+      "number": 4,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-i",
+          "groupNames": [
+            "-ig",
+            "-in",
+            "-ip"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-5",
+      "step": 2,
+      "number": 5,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-i",
+          "groupNames": [
+            "-it",
+            "-ix",
+            "-id"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-6",
+      "step": 2,
+      "number": 6,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-o",
+          "groupNames": [
+            "-og",
+            "-ot",
+            "-ox"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-7",
+      "step": 2,
+      "number": 7,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-u",
+          "groupNames": [
+            "-ug",
+            "-un",
+            "-ut"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-2-8",
+      "step": 2,
+      "number": 8,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "short-u",
+          "groupNames": [
+            "-ub",
+            "-ud",
+            "-up"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-1",
+      "step": 3,
+      "number": 1,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-a",
+          "groupNames": [
+            "-ake",
+            "-ame",
+            "-ate"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-2",
+      "step": 3,
+      "number": 2,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-a",
+          "groupNames": [
+            "-ave",
+            "-ane",
+            "-ape"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-3",
+      "step": 3,
+      "number": 3,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-i",
+          "groupNames": [
+            "-ike",
+            "-ine",
+            "-ite"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-4",
+      "step": 3,
+      "number": 4,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-i",
+          "groupNames": [
+            "-ide",
+            "-ime",
+            "-ive"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-5",
+      "step": 3,
+      "number": 5,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-o",
+          "groupNames": [
+            "-one",
+            "-ose",
+            "-ole"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-6",
+      "step": 3,
+      "number": 6,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-o",
+          "groupNames": [
+            "-ope",
+            "-ote",
+            "-ome"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-7",
+      "step": 3,
+      "number": 7,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-u",
+          "groupNames": [
+            "-une",
+            "-ube",
+            "-ute"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-3-8",
+      "step": 3,
+      "number": 8,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "magic-u",
+          "groupNames": [
+            "-ule"
+          ]
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-1",
+      "step": 4,
+      "number": 1,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-bl"
+        },
+        {
+          "ruleId": "blend-cl"
+        },
+        {
+          "ruleId": "blend-fl"
+        }
+      ],
+      "reader": "bl-cl-fl"
+    },
+    {
+      "id": "course-4-2",
+      "step": 4,
+      "number": 2,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-gl"
+        },
+        {
+          "ruleId": "blend-pl"
+        },
+        {
+          "ruleId": "blend-br"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-3",
+      "step": 4,
+      "number": 3,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-cr"
+        },
+        {
+          "ruleId": "blend-dr"
+        },
+        {
+          "ruleId": "blend-fr"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-4",
+      "step": 4,
+      "number": 4,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-gr"
+        },
+        {
+          "ruleId": "blend-pr"
+        },
+        {
+          "ruleId": "blend-tr"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-5",
+      "step": 4,
+      "number": 5,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-st_initial"
+        },
+        {
+          "ruleId": "blend-sk_initial"
+        },
+        {
+          "ruleId": "blend-sk_final"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-6",
+      "step": 4,
+      "number": 6,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-mp_final"
+        },
+        {
+          "ruleId": "blend-nd_final"
+        },
+        {
+          "ruleId": "blend-nk_final"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-7",
+      "step": 4,
+      "number": 7,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "blend-sh"
+        },
+        {
+          "ruleId": "blend-ch"
+        },
+        {
+          "ruleId": "th-voiceless"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-4-8",
+      "step": 4,
+      "number": 8,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "th-voiced"
+        },
+        {
+          "ruleId": "blend-wh"
+        },
+        {
+          "ruleId": "blend-ng"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-1",
+      "step": 5,
+      "number": 1,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-ee"
+        },
+        {
+          "ruleId": "vowel-ea"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-2",
+      "step": 5,
+      "number": 2,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-ai"
+        },
+        {
+          "ruleId": "vowel-ay"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-3",
+      "step": 5,
+      "number": 3,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-oa"
+        },
+        {
+          "ruleId": "ow-long-o"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-4",
+      "step": 5,
+      "number": 4,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "oo-short"
+        },
+        {
+          "ruleId": "oo-long"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-5",
+      "step": 5,
+      "number": 5,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-oi"
+        },
+        {
+          "ruleId": "vowel-oy"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-6",
+      "step": 5,
+      "number": 6,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-ou"
+        },
+        {
+          "ruleId": "ow-diphthong"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-7",
+      "step": 5,
+      "number": 7,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-ar"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-8",
+      "step": 5,
+      "number": 8,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-er"
+        },
+        {
+          "ruleId": "vowel-ir"
+        }
+      ],
+      "reader": null
+    },
+    {
+      "id": "course-5-9",
+      "step": 5,
+      "number": 9,
+      "status": "confirmed",
+      "segments": [
+        {
+          "ruleId": "vowel-or"
+        },
+        {
+          "ruleId": "vowel-ur"
+        }
+      ],
+      "reader": null
+    }
+  ]
+}

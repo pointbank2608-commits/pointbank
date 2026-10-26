@@ -1,3 +1,4 @@
+import { phonicsLessonKo } from '../phonicsLessonLocales';
 import { elementary800Ko } from '../elementary800Locales';
 import { phonicsPrintKo, phonicsTeachingKo } from '../phonicsTeachingLocales';
 import { worksheetStudioKo } from '../worksheetStudioLocales';
@@ -22,6 +23,7 @@ const ko = {
   teacherGame: teacherGameKo,
   phonicsStage1: phonicsStage1Ko,
   phonicsPrint: phonicsPrintKo,
+  phonicsLesson: phonicsLessonKo,
   phonicsTeaching: phonicsTeachingKo,
   whiteboard: boardKo,
   workbook: workbookKo,
