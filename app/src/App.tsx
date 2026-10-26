@@ -24,6 +24,7 @@ const AdminBrandPage = lazyPage(() => import('./pages/AdminBrandPage'));
 const VideoLibraryPage = lazyPage(() => import('./pages/VideoLibraryPage'));
 const HomeworkPage = lazyPage(() => import('./pages/HomeworkPage'));
 const HomeworkStudentPage = lazyPage(() => import('./pages/HomeworkStudentPage'));
+const WordMemoryStudentPage = lazyPage(() => import('./pages/WordMemoryStudentPage'));
 const StudentPortalPage = lazyPage(() => import('./pages/StudentPortalPage'));
 const StudentSoloPage = lazyPage(() => import('./pages/StudentSoloPage'));
 const SharedRecordingPage = lazyPage(() => import('./pages/SharedRecordingPage'));
@@ -178,6 +179,14 @@ function AppRoutes() {
         <Route path="/hw" element={<HomeworkStudentPage />} />
         <Route path="/hw/p/:access" element={<HomeworkStudentPage />} />
         <Route path="/hw/:code" element={<HomeworkStudentPage />} />
+      </Routes>
+    );
+  }
+  // 학생 단어암기숙제(개인 링크 열쇠 하나로, 로그인 없음)
+  if (pathname.startsWith('/wm/')) {
+    return (
+      <Routes>
+        <Route path="/wm/:access" element={<WordMemoryStudentPage />} />
       </Routes>
     );
   }

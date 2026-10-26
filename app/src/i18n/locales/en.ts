@@ -3,6 +3,7 @@ import { elementary800En } from '../elementary800Locales';
 import { phonicsPrintEn, phonicsTeachingEn } from '../phonicsTeachingLocales';
 import { worksheetStudioEn } from '../worksheetStudioLocales';
 import { boardEn } from '../boardLocales';
+import { wordMemoryEn } from '../wordMemoryLocales';
 import { teacherGameEn } from '../teacherGameLocales';
 import { phonicsStage1En } from '../phonicsStage1Locales';
 import { bombSoundEn } from '../bombSoundLocales';
@@ -28,6 +29,7 @@ const en: Ko = {
   phonicsLesson: phonicsLessonEn,
   phonicsTeaching: phonicsTeachingEn,
   whiteboard: boardEn,
+  wordMemory: wordMemoryEn,
   workbook: workbookEn,
   phonicsCourse: phonicsCourseEn,
   bombSound: bombSoundEn,

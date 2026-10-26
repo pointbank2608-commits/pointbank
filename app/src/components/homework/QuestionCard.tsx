@@ -10,7 +10,7 @@ const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#
  * 숙제 문제 한 개(학생 화면·선생님 미리보기 공용) — 보기 고르기 · 철자 입력 · 낱말/글자 순서(탭으로 놓기).
  * 답을 정하면 onAnswer(응답 글)를 부른다. 채점은 하지 않는다(서버 또는 미리보기가 한다).
  */
-export default function QuestionCard({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean }) {
+export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
   const { t } = useTranslation();
   const listen = q.style === 'listen';
 
@@ -53,14 +53,14 @@ export default function QuestionCard({ q, onAnswer, disabled }: { q: HwQuestion;
         )}
       </div>
 
-      {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />}
       {q.qtype === 'text' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
     </div>
   );
 }
 
-function ChoiceList({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
   const choices = q.choices ?? [];
   const ox = choices.length === 2 && choices[0] === 'O' && choices[1] === 'X';
   if (ox) {
@@ -80,9 +80,10 @@ function ChoiceList({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: st
         <button
           key={i}
           type="button"
-          disabled={disabled}
+          disabled={disabled || eliminated.includes(i)}
+          data-choice={i}
           onClick={() => onAnswer(String(i))}
-          className="flex min-h-14 items-center gap-3 rounded-2xl px-4 py-3 text-left text-lg font-bold text-white shadow-lg active:scale-[0.98] disabled:opacity-60"
+          className={`flex min-h-14 items-center gap-3 rounded-2xl px-4 py-3 text-left text-lg font-bold text-white shadow-lg active:scale-[0.98] disabled:opacity-60 ${eliminated.includes(i) ? 'line-through opacity-40!' : ''}`}
           style={{ background: CHOICE_COLORS[i % CHOICE_COLORS.length] }}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/25 text-base">{i + 1}</span>
@@ -123,7 +124,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
               {tok}
             </span>
           ) : (
-            <button key={i} type="button" disabled={disabled} onClick={() => setPlaced((p) => [...p, i])} className={`${tile} bg-white text-deep-navy`}>
+            <button key={i} type="button" disabled={disabled} data-tile={i} onClick={() => setPlaced((p) => [...p, i])} className={`${tile} bg-white text-deep-navy`}>
               {tok}
             </button>
           ),
@@ -136,6 +137,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
         <button
           type="button"
           disabled={disabled || !done}
+          data-order-submit
           onClick={() => onAnswer(JSON.stringify(placed.map((i) => tokens[i])))}
           className="min-h-12 flex-[2] rounded-full bg-warm-yellow text-lg font-bold text-deep-navy disabled:opacity-40"
         >

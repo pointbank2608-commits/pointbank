@@ -16,6 +16,8 @@
 
 > **전자칠판 (2026-10-24):** 즉흥 수업용 `/whiteboard`(사이드바 "내 수업" 아래·오늘 화면 카드). 펜 판서(`LessonAnnotationLayer` `persistent`) 위에 오늘 자료(붙여넣기·내 단어장·문장 목록·문장 은행)를 한 번 넣어 플래시카드·예문 읽기·간단 퀴즈·게임(기존 `guideLaunch` 흐름)·활동지 인쇄를 부르고, 나갔다 오면 `BoardReturnPill`로 칠판에 돌아온다. 자료·판서는 이 탭 sessionStorage 에만(서버·SQL 없음). 파일·한계·다음 후보는 [docs/whiteboard-handoff.md](docs/whiteboard-handoff.md), 확인은 `node app/scripts/games/check-whiteboard.mjs`. 실제 전자칠판 하드웨어 미확인.
 
+> **단어암기숙제 (2026-10-26):** 단어장·초등 800 레벨을 한 번 배정하면 여러 날에 걸쳐 같은 단어를 간격·다른 활동으로 다시 만나게 하는 숙제(`/wm/:열쇠`, 선생님 현황은 `/homework` 위쪽). 문제·정답·복습 일정은 서버 SQL(`supabase/090a~m`, 규칙 wm-v1)이 만들고 학생에게 정답이 가지 않는다. 숙련(혼자 맞힘·며칠 뒤에도 기억함)은 "소개 다음 날 이후 도움 없이 처음 답으로 맞힘"만 증거로 센다. **운영 DB에는 아직 적용하지 않았다**(적용·확인·되돌리기·검증 방법·남은 제약은 [docs/word-memory-homework.md](docs/word-memory-homework.md)). 기존 숙제·스탯 산식은 건드리지 않았다.
+
 > **선생님 매뉴얼 (2026-10-19):** [docs/manuals/README.md](docs/manuals/README.md)에 수업 만들기·숙제 내주기 매뉴얼의 PDF와 수정용 원본이 있다. 실제 메뉴 이름을 확인해 작성했으며, 메뉴·버튼이 바뀌면 원본과 PDF를 함께 갱신한다.
 
 > **Codex 인수인계 (2026-10-19, 학생 학습 게임):** 기존 스탯에 게임 확인 기록을 연결하고 맞춤 게임 숙제·개별수업·다음 수업 준비 연습으로 이어지는 변경은 [docs/claude-game-learning-handoff.md](docs/claude-game-learning-handoff.md)를 확인한다. 필요한 SQL은 **088a → 088b → 088_check** 순서다. 합성 DB/브라우저 검증은 완료했으며 운영 SQL 실행·커밋·배포는 하지 않았다.

@@ -33,6 +33,8 @@ import {
   type ContentRevision,
 } from '../lib/api';
 import WordListHistoryModal from '../components/WordListHistoryModal';
+import WordMemoryAssignModal from '../components/wordMemory/WordMemoryAssignModal';
+import { useFeature } from '../lib/features';
 import { useClasses } from '../lib/useClasses';
 import type { PhonicsBankEntry, WordBankEntry, WordList, WordListItem } from '../lib/types';
 import { entryInCategory, PHONICS_STEPS, WORD_BANK_CATEGORIES } from '../lib/wordBankCategories';
@@ -577,6 +579,8 @@ export default function WordListsPage() {
   const [creating, setCreating] = useState(false);
   const [studyingListId, setStudyingListId] = useState<string | null>(null);
   const [printListId, setPrintListId] = useState<string | null>(null);
+  const homeworkOpen = useFeature('homework');
+  const [memoryList, setMemoryList] = useState<WordList | null>(null);
   const studyingList = lists.find((l) => l.id === studyingListId) ?? null;
   const [dictionaryEntries, setDictionaryEntries] = useState<WordBankEntry[] | null>(null);
 
@@ -884,6 +888,18 @@ export default function WordListsPage() {
                       {t('wordLists.studyButton')}
                     </button>
                   )}
+                  {homeworkOpen && wordListKindOf(list) === 'word' && list.items.length >= 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setMemoryList(list)}
+                      className="flex items-center gap-1 font-label-md text-label-md text-secondary hover:underline"
+                      title={t('wordMemory.assignHintList')}
+                      data-wm-open
+                    >
+                      <span className="material-symbols-outlined text-base">event_repeat</span>
+                      {t('wordMemory.assignButton')}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setHistoryList(list)}
@@ -990,6 +1006,7 @@ export default function WordListsPage() {
         </div>
       )}
 
+      {memoryList && <WordMemoryAssignModal source={{ type: 'wordlist', id: memoryList.id, name: memoryList.name }} cards={wordListToCards(memoryList)} defaultClassId={memoryList.class_id} onClose={() => setMemoryList(null)} />}
       {historyList && (
         <WordListHistoryModal
           list={historyList}

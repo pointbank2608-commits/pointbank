@@ -3,6 +3,7 @@ import { elementary800Ko } from '../elementary800Locales';
 import { phonicsPrintKo, phonicsTeachingKo } from '../phonicsTeachingLocales';
 import { worksheetStudioKo } from '../worksheetStudioLocales';
 import { boardKo } from '../boardLocales';
+import { wordMemoryKo } from '../wordMemoryLocales';
 import { teacherGameKo } from '../teacherGameLocales';
 import { phonicsStage1Ko } from '../phonicsStage1Locales';
 import { bombSoundKo } from '../bombSoundLocales';
@@ -26,6 +27,7 @@ const ko = {
   phonicsLesson: phonicsLessonKo,
   phonicsTeaching: phonicsTeachingKo,
   whiteboard: boardKo,
+  wordMemory: wordMemoryKo,
   workbook: workbookKo,
   phonicsCourse: phonicsCourseKo,
   bombSound: bombSoundKo,

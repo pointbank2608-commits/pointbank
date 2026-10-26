@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import WordMemoryResults from '../components/wordMemory/WordMemoryResults';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
@@ -213,6 +214,8 @@ export default function HomeworkPage() {
           }}
         />
       )}
+
+      {classId && <WordMemoryResults key={classId} classId={classId} initialPlanId={(location.state as { wmPlanId?: string } | null)?.wmPlanId} />}
 
       {list === null ? (
         <div className="text-base text-on-surface-variant">{t('common.loading')}</div>

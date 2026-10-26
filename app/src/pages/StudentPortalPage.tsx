@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import ReviewSection from '../components/solo/ReviewSection';
+import WordMemoryPortalLinks from '../components/wordMemory/WordMemoryPortalLinks';
 import StudentStampCalendar from '../components/homework/StudentStampCalendar';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { studentNotice } from '../lib/soloChat';
@@ -240,6 +241,8 @@ function HomeView({
       </section>
 
       {savedToken() && <ReviewSection token={savedToken() as string} />}
+
+      {savedToken() && !hwClosed && <WordMemoryPortalLinks token={savedToken() as string} />}
 
       {savedToken() && <StudentStampCalendar token={savedToken() as string} />}
 
