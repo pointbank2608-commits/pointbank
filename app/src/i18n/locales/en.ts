@@ -3264,7 +3264,7 @@ const en: Ko = {
     "review": "Review and save",
     "word": "Word lists",
     "sentence": "Sentence collections",
-    "fullHint": "Use every available word or sentence by default. You can also limit each game.",
+    "fullHint": "Each round starts with 3 questions. You can increase the count or use all available words or sentences for each game.",
     "materialCount": "{{total}} entries · {{usable}} with meanings available (at least 2 required)",
     "defaultName": "{{name}} vocabulary contest",
     "failed": "Could not save. Your selections are kept. Check your connection and retry.",

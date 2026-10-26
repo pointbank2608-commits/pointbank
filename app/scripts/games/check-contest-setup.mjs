@@ -71,7 +71,13 @@ try {
  await setup.getByRole('combobox').selectOption('words');
  await setup.getByRole('button',{name:'다음',exact:true}).click();
  await setup.getByRole('button',{name:'뜻 고르기',exact:true}).click();
- assert.equal(await setup.getByRole('combobox').inputValue(),'-1');
+ assert.equal(await setup.getByRole('combobox').inputValue(),'3');
+ for (const label of ['O·X 퀴즈','철자 쓰기','스피드 부저']) {
+  await setup.getByRole('button',{name:label,exact:true}).click();
+  assert.equal(await setup.getByRole('combobox').inputValue(),'3');
+  await setup.getByRole('combobox').selectOption('-1');
+ }
+ await setup.getByRole('button',{name:'뜻 고르기',exact:true}).click();
  await setup.getByRole('combobox').selectOption('20');
  await setup.getByRole('spinbutton').first().fill('45');
  await setup.getByRole('button',{name:'이전',exact:true}).click();
@@ -105,7 +111,7 @@ try {
  await setup.getByRole('button',{name:'다음 · 대회 저장',exact:true}).click();
  await setup.waitFor({state:'hidden'});
  const sentence=await page.evaluate(()=>window.__workspace.writes.at(-1));
- assert.equal(sentence.config.liveQuestions.length,48);
+ assert.equal(sentence.config.liveQuestions.length,12);
  assert.equal(sentence.config.classroomSource.kind,'sentence');
  await page.getByRole('button',{name:'무엇으로 게임을 만들까요?',exact:true}).click();
  await setup.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();
@@ -119,8 +125,8 @@ try {
   const {default:i18n}=await import('/src/i18n/index.ts');
   const cards=Array.from({length:81},(_,i)=>({id:'x'+i,word:'target'+String.fromCharCode(97+Math.floor(i/26))+String.fromCharCode(97+i%26),meaning:'뜻'+i,imageUrl:i<13?'/a.webp':null}));
   const names=contestRoundNames(i18n.t.bind(i18n));
-  return {all:buildContestQuestions(cards,names).length,legacy:buildContestQuestions(cards,names,5).length,picture:buildContestQuestions(cards,names,[{type:'picture',on:true,count:-1}]).length,defaults:DEFAULT_CONTEST_ROUNDS};
+  return {defaultsCount:buildContestQuestions(cards,names).length,all:buildContestQuestions(cards,names,DEFAULT_CONTEST_ROUNDS.map(r=>({...r,count:-1}))).length,legacy:buildContestQuestions(cards,names,5).length,picture:buildContestQuestions(cards,names,[{type:'picture',on:true,count:-1}]).length,defaults:DEFAULT_CONTEST_ROUNDS};
  });
- assert.equal(logic.all,324); assert.equal(logic.legacy,20); assert.equal(logic.picture,13); assert.equal(errors.length,0,errors.join('\n'));
- console.log(JSON.stringify({passed:true,wordEntries:37,questions:131,sentenceEntries:12,sentenceQuestions:48,largeListQuestions:324,legacyQuestions:20,errors}));
+ assert.equal(logic.defaultsCount,12); assert.equal(logic.all,324); assert.equal(logic.legacy,20); assert.equal(logic.picture,13); assert.equal(errors.length,0,errors.join('\n'));
+ console.log(JSON.stringify({passed:true,wordEntries:37,questions:131,sentenceEntries:12,sentenceQuestions:12,largeListQuestions:324,legacyQuestions:20,errors}));
 } catch(error) { console.error(await page?.locator('body').innerText()); await page?.screenshot({path:resolve(root,'../output/contest-setup-failure.png'),fullPage:true}); throw error; } finally { await browser?.close(); await server.close(); }

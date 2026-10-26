@@ -108,12 +108,12 @@ export const ROUND_KIND: Record<ContestRoundType, { kind: LiveQuestionKind; styl
 };
 
 /** 처음 설정: 예전과 같은 4라운드 켜짐 + 새 라운드 4종은 꺼짐(선생님이 켠다) */
-export const DEFAULT_CONTEST_ROUNDS: ContestRoundSetting[] = CONTEST_ROUND_TYPES.map((type, i) => ({ type, count: -1, on: i < 4 }));
+export const DEFAULT_CONTEST_ROUNDS: ContestRoundSetting[] = CONTEST_ROUND_TYPES.map((type, i) => ({ type, count: 3, on: i < 4 }));
 
 /** 저장된 설정에 빠진 종류가 있으면(새 종류가 생긴 뒤) 뒤에 꺼진 채로 붙인다 */
 export function normalizeContestRounds(saved: ContestRoundSetting[] | undefined): ContestRoundSetting[] {
   const list = (saved ?? DEFAULT_CONTEST_ROUNDS).filter((r) => CONTEST_ROUND_TYPES.includes(r.type));
-  const missing = CONTEST_ROUND_TYPES.filter((type) => !list.some((r) => r.type === type)).map((type) => ({ type, count: 5, on: false }));
+  const missing = CONTEST_ROUND_TYPES.filter((type) => !list.some((r) => r.type === type)).map((type) => ({ type, count: 3, on: false }));
   return [...list, ...missing];
 }
 
