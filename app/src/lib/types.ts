@@ -662,6 +662,8 @@ export interface GameTemplate {
 /* ---------------- 단어장(선생님이 반/수업별로 만드는 것 — word_bank 와 다름) ---------------- */
 
 export interface WordListItem {
+  /** Optional dictionary example retained when saving workbook vocabulary. */
+  example?: string | null;
   id: string;
   word: string;
   meaning: string;

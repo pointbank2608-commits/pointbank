@@ -220,7 +220,9 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
   return (
     <Link
       to={locked ? '/settings/billing' : g.path}
-      state={source && compatible && !locked ? { quickSource: source } : undefined}
+      state={source && compatible && !locked ? { quickSource: source, guideLaunch: {
+        kind: source.kind, cards: source.cards, ownerId: source.ownerId, academyId: source.academyId,
+      } } : undefined}
       aria-disabled={!compatible}
       onClick={e => { if (!compatible) e.preventDefault(); }}
       tabIndex={compatible ? 0 : -1}

@@ -1,4 +1,7 @@
 export const elementary800Ko = {
+ reuseLevel:'이 레벨로 게임·단어장 만들기',reuseTitle:'같은 단어로 게임과 수업까지',reuseHint:'선택한 레벨의 단어 순서와 뜻·그림·예문을 그대로 사용해요. 게임 실행에는 저장이나 반 등록이 필요 없어요.',saveLists:'단어장으로 저장',playWords:'이 단어로 게임하기',listName:'초등 800단어 · {{pos}} Level {{levels}}',
+ saveHint:'새 단어장은 내 학원 공용으로 저장합니다. 같은 내용과 순서의 단어장이 있으면 기존 자료를 사용하고, 수정된 자료는 덮어쓰지 않아요.',separate:'레벨별 단어장으로 저장 (기본)',merge:'선택한 레벨을 한 단어장으로 합치기',confirmSave:'저장 · 기존 단어장 확인',savedHint:'사용할 수 있는 단어장입니다. 내 단어장에서 게임이나 수업으로 다시 연결할 수 있어요.',saveError:'저장하지 못한 자료가 있어요. 다시 누르면 완료된 자료는 재사용하고 나머지를 저장해요.',
+ originalReuse:'원본 Level 1–4의 단어 순서를 유지합니다. 게임용 뜻·그림·예문은 현재 사전의 정보를 사용하므로 PDF의 표현과 다를 수 있어요.',originalMissing:'선택한 원본 레벨의 단어 정보를 모두 불러오지 못했어요. 일부 단어가 빠진 단어장을 만들지 않도록 연결을 중단했어요. PDF 인쇄는 사용할 수 있어요.',
  verbCollectionTitle:'동사편 고피쉬 워크북 · Level 1–7',verbCollectionDescription:'원본 100개 + 후속 71개 · 총 69쪽 · 합본 또는 레벨별 PDF',workbookCardTitle:'품사별·레벨별 단어장 인쇄',
  continuationTitle:'동사편 이어서 · Level 5–7',continuationDescription:'우리 800단어의 남은 동사 71개 · 기존 100개 다음으로 이어지는 완성 PDF입니다. 기존 사전의 그림을 사용했어요.',continuationDownload:'후속편 Level 5–7 내려받기',completeDownload:'동사편 전체 Level 1–7 내려받기',
  title:'초등 800단어 단어장', description:'품사와 레벨을 고르면 그림 카드와 쓰기 워크북을 인쇄해요.',
@@ -24,6 +27,9 @@ export const elementary800Ko = {
  pos:{verb:'동사',noun:'명사',adjective:'형용사',adverb:'부사',pronoun:'대명사',preposition:'전치사',conjunction:'접속사',determiner:'관사·한정사',number:'수사',interjection:'감탄사',auxiliary:'조동사',interrogative:'의문사',other:'기타 품사'},
 };
 export const elementary800En = {
+ reuseLevel:'Use this level in games · Save words',reuseTitle:'Use these words in games and lessons',reuseHint:'Keep the selected levels’ word order, meanings, pictures and examples. No saving or class registration is required to play.',saveLists:'Save as word lists',playWords:'Play with these words',listName:'Elementary 800 · {{pos}} Level {{levels}}',
+ saveHint:'New lists are shared within your academy. Identical ordered content reuses an existing list. Edited lists are never overwritten.',separate:'Save a separate list for each level (default)',merge:'Merge selected levels into one list',confirmSave:'Save · Check existing lists',savedHint:'These word lists are ready. Open My word lists to use them in games or lessons again.',saveError:'Some lists could not be saved. Retry to reuse completed lists and save the remaining ones.',
+ originalReuse:'Keep the original word order in Levels 1–4. Game meanings, pictures and examples come from the current dictionary and may differ from the PDF.',originalMissing:'Some words in the selected original levels are unavailable. Reuse is paused to avoid incomplete lists. PDF printing is still available.',
  verbCollectionTitle:'Go Fish Verbs · Levels 1–7',verbCollectionDescription:'Original 100 + 71 more verbs · 69 pages · Complete or individual PDFs',workbookCardTitle:'Print by part of speech and level',
  continuationTitle:'Continue the verbs · Levels 5–7',continuationDescription:'71 remaining verbs from our 800-word list, following the original 100. Finished PDFs reuse our dictionary artwork.',continuationDownload:'Download Levels 5–7',completeDownload:'Download all verbs · Levels 1–7',
  title:'Elementary 800 Word Workbooks',description:'Choose a part of speech and level to print picture cards and writing pages.',

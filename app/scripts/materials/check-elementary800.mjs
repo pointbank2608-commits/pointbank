@@ -12,6 +12,8 @@ const names = [
 ].map((m) => m[1] || m[2]);
 const stub = `
 import { isActivityDraft, patchActivityDraft } from '/src/lib/quickActivity.ts';
+import { ORIGINAL_VERBS } from '/src/lib/elementary800Workbook.ts';
+import { ELEMENTARY800_VERB_CONTINUATION } from '/src/data/elementary800VerbContinuation.ts';
 const academy={id:'academy-a',features:{group:true,homework:true},plan:'paid'};
 const registeredClasses=[{id:'class-a',academy_id:'academy-a',name:'합성 A반'},{id:'class-b',academy_id:'academy-a',name:'합성 B반'}];
 const classes=[];
@@ -31,14 +33,14 @@ if(new URLSearchParams(location.search).has('populated')){
 if(new URLSearchParams(location.search).has('long'))lists[0].name='아주 긴 자료 이름과 문장 모음 이름이 여러 줄이어도 읽을 수 있는지 확인합니다 '.repeat(3);
 window.__workspace.fail=new URLSearchParams(location.search).has('fail');
 const functions={
-fetchWordBank:async()=>{if(new URLSearchParams(location.search).has('fail800'))throw Error('synthetic load failure');return ['act','answer','break','bring','brush','call','change','drink','drive','drop','eat','enjoy','exercise','fall','fight','find','get','happen','have','hide','hurry','keep','kill','land','lead','leave','let','lie','live','lose','marry','move','need','pay','pick','plant','point','print','put','rest','return','ride','ring','roll','send','set','shoot','shop','shout','shut','sleep','smell','smoke','spell','spend','stay','step','stop','strike','switch','taste','tie','touch','travel','visit','wake','waste','welcome','win','wish','wonder','work'].map((word,i)=>({id:word,word,meaning:word==='eat'?'먹다':word==='drink'?'마시다':'검증용 뜻',part_of_speech:'동사',sense_number:1,level:i%4+1,sort_order:i,example_sentence:word==='eat'?'I eat an apple.':word==='drink'?'I drink water.':null,image_url:['eat','drink','act'].includes(word)?'/word-bank-images/'+word+'.webp':null})).concat([{id:'apple',word:'apple',meaning:'사과',part_of_speech:'명사',sense_number:1,level:1,example_sentence:'I eat an apple.',image_url:'/word-bank-images/apple.webp'},{id:'be',word:'be',meaning:'이다',part_of_speech:'동사',sense_number:1,level:1,example_sentence:'I am happy.',image_url:null}]);},
+fetchWordBank:async()=>{if(new URLSearchParams(location.search).has('fail800'))throw Error('synthetic load failure');return structuredClone(ELEMENTARY800_VERB_CONTINUATION).concat([{id:'apple',word:'apple',meaning:'사과',part_of_speech:'명사',sense_number:1,level:1,example_sentence:'I eat an apple.',image_url:'/word-bank-images/apple.webp'}]).concat(ORIGINAL_VERBS.flat().map(word=>({id:word,word,meaning:'원본 검증 뜻',part_of_speech:'동사',sense_number:1,level:1,image_url:null,example_sentence:'I '+word+'.'})));},
 fetchPhonicsBank:async()=>['cat','hat','bat','mat','fat','rat'].map((word,i)=>({id:'ph'+i,word,meaning:'sample',step:1,rule:'short a',image_url:'/phonics-images/'+word+'.webp',pattern_marked:word})),
 
 fetchMyStudentRow:async()=>({class_id:'class-a'}),
 wordListKindOf:(list)=>list.kind==='sentence'?'sentence':'word',
 updateWordListItems:async(id,items)=>{if(window.__workspace.fail)throw new Error('synthetic word update failure'); const list=lists.find(row=>row.id===id);if(list)list.items=items;},
 fetchClasses:async()=>classes,fetchStudentsOfClass:async()=>students,fetchStudentsOfAcademy:async()=>students,
-createWordList:async(p)=>{if(window.__workspace.fail)throw new Error('synthetic save failure'); const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,name:p.name,kind:p.kind,items:p.items,updated_at:'now'};(window.__workspace.wordWrites||=[]).push(row);lists.push(row);return row;},
+createWordList:async(p)=>{window.__workspace.saveAttempts=(window.__workspace.saveAttempts||0)+1;if(window.__workspace.failWordAt===window.__workspace.saveAttempts)throw new Error('partial save failure');if(window.__workspace.fail)throw new Error('synthetic save failure'); const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,name:p.name,kind:p.kind,items:p.items,updated_at:'now'};(window.__workspace.wordWrites||=[]).push(row);lists.push(row);return row;},
 fetchAllWordLists:async()=>{if(window.__workspace.fail)throw new Error('synthetic load failure');return window.__workspace.empty?[]:structuredClone(lists)},fetchAllCurriculumLessons:async()=>structuredClone(window.__workspace.lessons||[]),
 fetchCurriculumLessons:async()=>structuredClone(window.__workspace.lessons||[]),
 fetchCurriculumLessonById:async(id)=>(window.__workspace.lessons||[]).find(x=>x.id===id),
@@ -93,6 +95,15 @@ try{
  const produced=new Set(fullBooks.flatMap(b=>b.entries.map(w=>w.word)));
  for(const w of full)assert(produced.has(w.word)||(w.part_of_speech==='동사'&&ORIGINAL_VERBS.flat().includes(w.word)));
  console.log('ok canonical 800 numbers, original 100 order, original exclusion, stable difficulty/curriculum sort, no mutations');
+ const reuse=await server.ssrLoadModule('/src/lib/elementary800Sources.ts');
+ const cards=reuse.bookletCards([{id:'noun-1',pos:'noun',level:1,entries:[{...row('apple','명사'),image_url:'/word-bank-images/apple.webp',example_sentence:'I eat an apple.',category:'fruit'}]}]);
+ const items=reuse.workbookListItems(cards);const own={id:'own',academy_id:'academy-a',kind:'word',items};
+ assert.equal(reuse.matchingWorkbookList([{...own,academy_id:'other-academy'}],'academy-a',cards),undefined);
+ assert.equal(reuse.matchingWorkbookList([{...own,kind:'sentence'}],'academy-a',cards),undefined);
+ assert.equal(reuse.matchingWorkbookList([{...own,items:[{...items[0],meaning:'edited'}]}],'academy-a',cards),undefined);
+ assert.equal(reuse.matchingWorkbookList([own],'academy-a',cards).id,'own');
+ assert.equal(items[0].example,'I eat an apple.');
+
  browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const url='http://127.0.0.1:5257/scripts/materials/elementary800.html?start=';
  await page.goto(url+encodeURIComponent('/materials'));await page.locator('#materials-elementary800').waitFor();assert.equal(await page.locator('#materials-elementary800 .materials-card').count(),2);
@@ -115,7 +126,65 @@ try{
  await page.getByRole('combobox',{name:'품사 선택',exact:true}).selectOption('noun');assert.equal(await page.locator('.e800-sheet').count(),0);await page.getByRole('checkbox',{name:/Level 1/}).check();assert.equal(await page.locator('.e800-write-row').count(),1);
  await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:resolve(root,'../output/elementary800-mobile.png')});
  await page.evaluate(async()=>{const m=await import('/src/i18n/index.ts');await m.default.changeLanguage('en')});await page.getByRole('button',{name:'Print selection · Save PDF',exact:true}).waitFor();
+
+ // Real components + synthetic backend: no production writes.
+ await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=workbook&pos=verb&levels=verb-5,verb-6'));
+ await page.getByRole('button',{name:'이 단어로 게임하기',exact:true}).waitFor();
+ const openSave=()=>page.getByRole('button',{name:'단어장으로 저장',exact:true}).click();
+ const confirm=()=>page.getByRole('button',{name:'저장 · 기존 단어장 확인',exact:true}).click();
+ await openSave();assert.equal(await page.getByRole('radio',{name:'레벨별 단어장으로 저장 (기본)',exact:true}).isChecked(),true);
+ await page.evaluate(()=>{window.__workspace.failWordAt=2;});await confirm();await page.getByRole('alert').filter({hasText:'저장하지 못한 자료'}).waitFor();
+ assert.equal(await page.evaluate(()=>window.__workspace.wordWrites.length),1);
+ await confirm();await page.getByRole('dialog').getByText('초등 800단어 · 동사 Level 6 · 25개 단어',{exact:true}).waitFor();
+ let saved=await page.evaluate(()=>window.__workspace.wordWrites);assert.equal(saved.length,2);
+ const expected=await page.evaluate(async()=>{const api=await import('/src/lib/api.ts');const book=await import('/src/lib/elementary800Workbook.ts');return book.buildElementaryBooklets(book.workbookBankWithVerbContinuation(await api.fetchWordBank())).filter(b=>['verb-5','verb-6'].includes(b.id));});
+ assert.deepEqual(saved.map(row=>row.items.map(w=>[w.word,w.meaning,w.image_url,w.example])),expected.map(book=>book.entries.map(w=>[w.word,w.meaning,w.image_url,w.example_sentence])));
+ await confirm();await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>window.__workspace.wordWrites.length),2,'repeated save reuses exact lists');
+ await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();
+ await openSave();await page.getByRole('radio',{name:'선택한 레벨을 한 단어장으로 합치기',exact:true}).check();await confirm();
+ await page.getByRole('dialog').getByText('초등 800단어 · 동사 Level 5, 6 · 50개 단어',{exact:true}).waitFor();
+ assert.equal(await page.evaluate(()=>window.__workspace.wordWrites.length),3);
+ // Reopen saved data in the existing word-list screen.
+ await page.getByRole('dialog').getByRole('link',{name:'내 단어장 열기 →',exact:true}).click();
+ await page.waitForURL('**/wordlists');await page.getByText('초등 800단어 · 동사 Level 5, 6',{exact:true}).waitFor();
+ await page.goBack();await page.getByRole('button',{name:'이 단어로 게임하기',exact:true}).waitFor();
+ await page.setViewportSize({width:1440,height:1000});await page.locator('[data-e800-actions]').evaluate(el=>el.scrollIntoView({block:'center'}));
+ await page.screenshot({path:resolve(root,'../output/elementary800-reuse-desktop.png')});
+ await page.setViewportSize({width:390,height:844});await page.locator('[data-e800-actions]').evaluate(el=>el.scrollIntoView({block:'center'}));await page.screenshot({path:resolve(root,'../output/elementary800-reuse-mobile.png')});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.setViewportSize({width:1440,height:1000});
+ // Quick launch must not create a word list, game template, lesson or class.
+ await page.getByRole('button',{name:'이 단어로 게임하기',exact:true}).click();await page.locator('a[href="/games/wheel"]').first().click();
+ await page.getByRole('heading',{name:'내용을 준비해 주세요',exact:true}).waitFor();assert.equal(await page.locator('dialog fieldset input').count()>=50,true);
+ await page.getByRole('button',{name:'다음',exact:true}).click();await page.getByRole('button',{name:'다음',exact:true}).click();await page.getByRole('button',{name:'▶ 게임 시작',exact:true}).click();await page.locator('[data-play-mode=play]').waitFor();
+ const source=await page.evaluate(()=>history.state.usr.quickSource);
+ assert.equal(source.ownerId,'teacher-a');assert.equal(source.academyId,'academy-a');assert.equal(source.cards.length,50);
+ assert.deepEqual(source.cards.map(w=>w.word),expected.flatMap(b=>b.entries.map(w=>w.word)));
+ assert.equal(await page.evaluate(()=>window.__workspace.wordWrites.length),3);assert.equal(await page.evaluate(()=>window.__workspace.templates.length),0);
+ console.log('ok per-level/merged save, exact order and metadata, partial-failure retry, duplicate reuse, unsaved 50-word game launch');
+ // Existing/new lessons are created only after explicit confirmation.
+ await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=workbook&pos=verb&levels=verb-5'));
+ await page.evaluate(()=>{window.__workspace.lessons=[{id:'existing',academy_id:'academy-a',class_id:null,name:'기존 수업',playlist:[]}];});
+ await page.getByRole('button',{name:'수업에 추가',exact:true}).click();assert.equal(await page.evaluate(()=>window.__workspace.templates.length),0);
+ await page.getByRole('dialog').getByRole('combobox').selectOption('existing');await page.getByRole('dialog').getByRole('button',{name:'수업에 추가',exact:true}).click();
+ await page.waitForURL('**/curriculum');
+ assert.equal(await page.evaluate(()=>window.__workspace.lessons.length),1);assert.equal(await page.evaluate(()=>window.__workspace.lessons[0].playlist.length),1);
+ assert.deepEqual(await page.evaluate(()=>window.__workspace.templates[0].config.classroomSource.cards.map(w=>w.word)),expected[0].entries.map(w=>w.word));
+ await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=workbook&pos=noun&levels=noun-1'));
+ await page.getByRole('button',{name:'수업에 추가',exact:true}).click();
+ assert.equal(await page.evaluate(()=>window.__workspace.lessons?.length||0),0);
+ await page.getByRole('dialog').getByRole('combobox').selectOption('new');await page.getByRole('dialog').getByRole('button',{name:'수업에 추가',exact:true}).click();await page.waitForURL('**/curriculum');
+ assert.equal(await page.evaluate(()=>window.__workspace.lessons.length),1);
+ // Original levels retain their 25-word PDF order.
+ await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=original'));
+ await page.getByRole('radio',{name:'Level 2',exact:true}).check();await page.getByRole('button',{name:'단어장으로 저장',exact:true}).click();await confirm();
+ await page.getByRole('dialog').getByText('초등 800단어 · 동사 Level 2 · 25개 단어',{exact:true}).waitFor();
+ assert.deepEqual(await page.evaluate(()=>window.__workspace.wordWrites[0].items.map(w=>w.word)),ORIGINAL_VERBS[1]);
+ await page.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();
+ await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.setViewportSize({width:1440,height:1000});
+ console.log('ok existing/new lessons and original PDF word order, mobile layout');
  await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=workbook&fail800=1'));await page.getByRole('button',{name:/Retry|다시 불러오기/}).waitFor();
+ await page.goto(url+encodeURIComponent('/materials/elementary-800?tab=original&fail800=1'));await page.getByRole('alert').filter({hasText:'선택한 원본 레벨의 단어 정보를'}).waitFor();assert.equal(await page.getByRole('button',{name:'단어장으로 저장',exact:true}).count(),0);
  assert.deepEqual(errors,[]);console.log('PASS original PDFs, catalog route, verb continuation, all selection/reset, copies, A4 PDF, mobile, English, load error');
 }catch(e){console.error(e);if(page)await page.screenshot({path:resolve(root,'../output/elementary800-failure.png'),fullPage:true});process.exitCode=1;}
 finally{await browser?.close();await server.close();}

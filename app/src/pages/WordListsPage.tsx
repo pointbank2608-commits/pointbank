@@ -584,8 +584,7 @@ export default function WordListsPage() {
   const studyingList = lists.find((l) => l.id === studyingListId) ?? null;
   const [dictionaryEntries, setDictionaryEntries] = useState<WordBankEntry[] | null>(null);
 
-  // 단어장 항목엔 예문을 따로 저장하지 않으니, 카드로 외울 때 같은 단어가 사전(word_bank)에
-  // 있으면 그 예문을 빌려와서 같이 보여준다 — 직접 입력한 단어도 사전에 있는 단어면 예문이 뜬다.
+  // 저장된 예문을 우선 사용한다. 예문이 없는 기존·직접 입력 단어장만 사전에서 보완한다.
   useEffect(() => {
     if (studyingListId && dictionaryEntries === null) {
       fetchWordBank().then(setDictionaryEntries).catch(() => setDictionaryEntries([]));
@@ -1032,7 +1031,7 @@ export default function WordListsPage() {
             id: i.id,
             word: i.word,
             back: i.meaning,
-            example: exampleByWord.get(i.word) ?? null,
+            example: i.example ?? exampleByWord.get(i.word) ?? null,
             image_url: i.image_url,
           }))}
           onClose={() => setStudyingListId(null)}
