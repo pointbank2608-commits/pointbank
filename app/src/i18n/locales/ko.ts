@@ -3251,6 +3251,8 @@ const ko = {
     step_present_hint: '전자칠판에서 수업 시작으로 진행',
   },
   contestSetup: {
+    savedHint: '대회를 고르면 저장한 문제와 설정으로 다시 시작할 수 있어요.',
+    noSaved: '아직 저장한 대회가 없어요. 아래에서 새 대회를 만들어 주세요.',
     pickMaterial: '단어장·문장모음 고르기',
     regenerate: '단어장·문장모음으로 문제 다시 만들기',
     "title": "휴대폰 참여 보카 대회 만들기",

@@ -66,6 +66,8 @@ try {
  page=await context.newPage(); page.setDefaultTimeout(12000); const errors=[]; page.on('pageerror',e=>errors.push(e.message)); await page.route('https://**/*',r=>r.abort());
  await page.goto('http://127.0.0.1:5301/scripts/games/focus.html?start=/games/quizshow');
  const setup=page.getByRole('region',{name:'휴대폰 참여 보카 대회 만들기'});
+ await setup.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();
+ await setup.getByText('아직 저장한 대회가 없어요.',{exact:false}).waitFor();
  await setup.getByRole('combobox').selectOption('words');
  await setup.getByRole('button',{name:'다음',exact:true}).click();
  await setup.getByRole('button',{name:'뜻 고르기',exact:true}).click();
@@ -105,6 +107,12 @@ try {
  const sentence=await page.evaluate(()=>window.__workspace.writes.at(-1));
  assert.equal(sentence.config.liveQuestions.length,48);
  assert.equal(sentence.config.classroomSource.kind,'sentence');
+ await page.getByRole('button',{name:'무엇으로 게임을 만들까요?',exact:true}).click();
+ await setup.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();
+ await setup.getByRole('button',{name:new RegExp(saved.name)}).click();
+ await setup.waitFor({state:'hidden'});
+ assert.equal(await page.evaluate(()=>window.__workspace.writes.length),2,'loading must not create a duplicate');
+ await page.getByText('문제 131개',{exact:false}).first().waitFor();
  // Pure generator checks, including legacy numeric calls and partial media availability.
  const logic=await page.evaluate(async()=>{
   const {buildContestQuestions,contestRoundNames,DEFAULT_CONTEST_ROUNDS}=await import('/src/lib/liveQuiz.ts');

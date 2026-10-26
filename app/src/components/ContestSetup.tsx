@@ -3,19 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { buildContestQuestions, contestAvailability, contestRoundNames, DEFAULT_CONTEST_ROUNDS } from '../lib/liveQuiz';
 import { wordListToCards } from '../lib/gameFromWords';
 import { useWordBankEnriched } from '../lib/wordBankCache';
-import type { ContestRoundSetting, ContestRoundType, GameTemplateConfig, WordList } from '../lib/types';
+import type { ContestRoundSetting, ContestRoundType, GameTemplate, GameTemplateConfig, WordList } from '../lib/types';
 
 const field = 'w-full min-w-0 rounded-xl border border-outline-variant bg-white p-3 text-on-surface';
 const primary = 'rounded-full bg-primary px-6 py-3 font-bold !text-white disabled:opacity-40';
 
 /** A local draft: navigation never saves partial contests or loses round settings. */
-export default function ContestSetup({ lists, loading, onSave, onCancel }: {
-  lists: WordList[]; loading: boolean;
+export default function ContestSetup({ lists, loading, templates, onLoad, onSave, onCancel }: {
+  lists: WordList[]; loading: boolean; templates: GameTemplate[];
+  onLoad: (template: GameTemplate) => void;
   onSave: (name: string, config: GameTemplateConfig) => Promise<void>;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const [step, setStep] = useState(0);
+  const [savedOpen, setSavedOpen] = useState(false);
   const [listId, setListId] = useState('');
   const [kind, setKind] = useState<'word' | 'sentence'>('word');
   const [rounds, setRounds] = useState(() => DEFAULT_CONTEST_ROUNDS.map(r => ({ ...r })));
@@ -49,6 +51,11 @@ export default function ContestSetup({ lists, loading, onSave, onCancel }: {
     <h3 className="text-xl font-bold">{t('contestSetup.title')}</h3>
     <ol className="flex flex-wrap gap-3 text-sm font-bold">{['material', 'games', 'review'].map((s, i) => <li key={s} aria-current={step === i ? 'step' : undefined} className={step === i ? 'text-primary' : 'text-on-surface-variant'}>{i + 1}. {t(`contestSetup.${s}`)}</li>)}</ol>
     {step === 0 && <div className="space-y-3">
+      <button type="button" aria-expanded={savedOpen} onClick={() => setSavedOpen(value => !value)} className="min-h-12 rounded-xl border border-primary px-5 py-3 font-bold text-primary">{t('flow.savedGames')}</button>
+      {savedOpen && <div className="space-y-3 rounded-xl border border-outline-variant bg-surface-container-low p-3">
+        <p>{t('contestSetup.savedHint')}</p>
+        {templates.length === 0 ? <p>{t('contestSetup.noSaved')}</p> : templates.map(tpl => <button type="button" key={tpl.id} onClick={() => onLoad(tpl)} className="block w-full rounded-xl border border-outline-variant bg-white p-3 text-left font-bold text-on-surface">{tpl.name}<span className="ml-2 text-sm font-normal">{t('liveQuiz.countQuestions', { count: tpl.config.liveQuestions?.length ?? 0 })}</span></button>)}
+      </div>}
       <div className="flex gap-2">{(['word', 'sentence'] as const).map(k => <button type="button" aria-pressed={kind === k} className={kind === k ? primary : 'rounded-full border px-5 py-3'} key={k} onClick={() => { setKind(k); setListId(''); }}>{t(`contestSetup.${k}`)}</button>)}</div>
       <label className="block space-y-2"><span>{t('contestSetup.material')}</span><select className={field} value={listId} disabled={loading} onChange={e => setListId(e.target.value)}><option value="">{t('contestSetup.pickMaterial')}</option>{lists.filter(l => (l.kind || 'word') === kind).map(l => <option key={l.id} value={l.id}>{l.name} ({l.items.length})</option>)}</select></label>
       <p>{t('contestSetup.fullHint')}</p>

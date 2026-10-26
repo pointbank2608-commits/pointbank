@@ -3254,6 +3254,8 @@ const en: Ko = {
     step_present_hint: 'Run it on the board with Start lesson',
   },
   contestSetup: {
+    savedHint: 'Choose a contest to play again with its saved questions and settings.',
+    noSaved: 'No saved contests yet. Create a new contest below.',
     pickMaterial: 'Choose a word list or sentence collection',
     regenerate: 'Regenerate from a word list or sentence collection',
     "title": "Create a phone vocabulary contest",

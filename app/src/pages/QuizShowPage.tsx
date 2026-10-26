@@ -249,7 +249,14 @@ export default function QuizShowPage() {
   );
 
   const createForm = isStaff && showCreateForm && (
-    <ContestSetup lists={wordLists} loading={wordListsLoading} onCancel={() => setShowCreateForm(false)} onSave={async (name, config) => {
+    <ContestSetup templates={templates.filter(tpl => !isActivityDraft(tpl.id) && tpl.config.liveQuestions?.some(isLiveQuestionReady))} onLoad={tpl => {
+      setSelectedId(tpl.id);
+      setDraft(tpl.config.liveQuestions ?? []);
+      setRounds(normalizeContestRounds(tpl.config.liveContestRounds));
+      setMode('play'); setPreview(false);
+      setShowCreateForm(false);
+      workspace?.open(null);
+    }} lists={wordLists} loading={wordListsLoading} onCancel={() => setShowCreateForm(false)} onSave={async (name, config) => {
       if (!academy || !profile) throw new Error('not_authenticated');
       const tpl = await createGameTemplate({ academyId: academy.id, teacherId: profile.id, classId,
         gameType: 'quizshow', name, items: [], config });
