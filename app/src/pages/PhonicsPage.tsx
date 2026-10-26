@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
-import { PHONICS_TEACHING_PREVIEW } from '../data/phonicsTeachingCourse';
+import { PHONICS_TEACHING_VISIBLE } from '../data/phonicsTeachingCourse';
 import PhonicsTeachingPreview from '../components/phonicsStage1/PhonicsTeachingPreview';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
@@ -121,11 +121,11 @@ function PhonicsLightbox({ entry, onClose }: { entry: PhonicsBankEntry; onClose:
 
 export default function PhonicsPage() {
   const {t}=useTranslation();const [params,setParams]=useSearchParams();
-  const teaching=PHONICS_TEACHING_PREVIEW&&params.get('tab')==='course';
+  const teaching=PHONICS_TEACHING_VISIBLE&&params.get('tab')==='course';
   return <div className="space-y-5">
     <nav className="flex flex-wrap gap-2 no-print" role="tablist" aria-label={t('phonics.title')}>
       <button type="button" role="tab" id="phonics-words-tab" aria-controls="phonics-words-panel" aria-selected={!teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${!teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({})}>{t('phonicsTeaching.words')}</button>
-      {PHONICS_TEACHING_PREVIEW&&<button type="button" role="tab" id="phonics-course-tab" aria-controls="phonics-course-panel" aria-selected={teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'course'})}>{t('phonicsTeaching.course')}</button>}
+      {PHONICS_TEACHING_VISIBLE&&<button type="button" role="tab" id="phonics-course-tab" aria-controls="phonics-course-panel" aria-selected={teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'course'})}>{t('phonicsTeaching.course')}</button>}
     </nav>
     <div role="tabpanel" id="phonics-words-panel" aria-labelledby="phonics-words-tab" hidden={teaching}><PhonicsWordLearning/></div>
     {teaching&&<div role="tabpanel" id="phonics-course-panel" aria-labelledby="phonics-course-tab"><PhonicsTeachingPreview/></div>}

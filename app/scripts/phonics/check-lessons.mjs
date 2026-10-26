@@ -10,7 +10,7 @@ const exp=Math.floor(Date.now()/1000)+86400,b64=o=>Buffer.from(JSON.stringify(o)
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'worksheet-qa@example.test',app_metadata:{},user_metadata:{}};
 const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
 const profile={id:uid,academy_id:aid,role:'owner',display_name:'Worksheet QA'},academy={id:aid,name:'Worksheet QA',point_unit:'별',plan:'paid',plan_status:'active',deletion_requested_at:null,features:{group:true,solo:true,homework:true}};
-const server=await createServer({server:{host:'127.0.0.1',port:Number(process.env.PHONICS_QA_PORT||5250),strictPort:true},logLevel:'error'});await server.listen();
+const server=await createServer({define:process.argv.includes('--production')?{'import.meta.env.DEV':'false'}:{},server:{host:'127.0.0.1',port:Number(process.env.PHONICS_QA_PORT||5250),strictPort:true},logLevel:'error'});await server.listen();
 const {WORKSHEET_ACTIVITIES,WORKSHEET_BASIC_ACTIVITIES}=await server.ssrLoadModule('/src/lib/worksheetActivityCatalog.ts');
 const {exampleWorksheet}=await server.ssrLoadModule('/src/lib/worksheetActivitySamples.ts');
 const {studioKey}=await server.ssrLoadModule('/src/lib/worksheetStudio.ts');
@@ -67,7 +67,20 @@ try{
  }
  for(const file of ['src/data/phonics/curriculum.json','src/data/cvcWorkbook.ts','src/data/phonicsStage1.ts','src/data/phonicsStage1Workbook.ts'])assert.equal(createHash('sha256').update((await readFile(file,'utf8')).replace(/\r\n/g,'\n')).digest('hex'),createHash('sha256').update(execFileSync('git',['show','HEAD:app/'+file],{encoding:'utf8'}).replace(/\r\n/g,'\n')).digest('hex'),'existing workbook configuration unchanged');
  assert.deepEqual(result.missingImages,[]);
- if(process.argv.includes('--data-only')){result.passed=true;console.log(JSON.stringify({passed:true,units:units.length,slides:result.slides}));}else if(production){await page.goto(root+'/phonics?tab=course');await page.locator('#phonics-words-panel').waitFor();assert.equal(await page.getByRole('tab',{name:'슬라이드 수업·교재',exact:true}).count(),0);await page.goto(root+'/phonics/lesson?unit=course-4-1');await page.getByText('수업 자료는 아직 운영 공개 전입니다.').waitFor();assert.equal(await page.locator('[data-course-player]').count(),0);}
+ if(process.argv.includes('--data-only')){result.passed=true;console.log(JSON.stringify({passed:true,units:units.length,slides:result.slides}));}else if(production){
+  await page.goto(root+'/phonics?tab=course');await page.locator('#phonics-course-panel').waitFor();
+  assert.equal(await page.getByRole('tab',{name:'슬라이드 수업·교재',exact:true}).getAttribute('aria-selected'),'true');
+  assert.equal(await page.getByRole('link',{name:'기존 ABC 연계 워크북 보기',exact:true}).count(),0);
+  await page.screenshot({path:out+'/public-course-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:out+'/public-course-mobile.png',fullPage:true});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.setViewportSize({width:1440,height:1100});
+  const draftUnit=units.find(u=>u.reading.status==='draft'),draftSlide=lessonSlides(draftUnit).find(s=>s.draft);
+  await page.goto(root+'/phonics/lesson?unit='+draftUnit.id+'&lesson=2');await page.locator('[data-course-player]').waitFor();
+  assert.equal(await page.getByRole('combobox').first().locator('option').count(),lessonSlides(draftUnit).filter(s=>s.lesson===2&&!s.draft).length);
+  await page.goto(root+'/phonics/lesson?unit='+draftUnit.id+'&lesson='+draftSlide.lesson+'&slide='+draftSlide.id);await page.getByText('선택한 수업을 찾을 수 없습니다.').waitFor();assert.equal(await page.locator('[data-course-player]').count(),0);
+  await page.goto(root+'/phonics/lesson?unit=course-4-1');await page.locator('[data-course-player]').waitFor();
+ }
+
  else{
   await context.addInitScript(()=>{window.__spoken=[];if(window.speechSynthesis){window.speechSynthesis.speak=u=>window.__spoken.push(u.text);window.speechSynthesis.cancel=()=>{};}});
   await page.goto(root+'/phonics?tab=course&level=4&unit=course-4-1');await page.getByRole('link',{name:'1차시 수업 시작',exact:true}).waitFor();assert((await page.locator('[data-teaching-words]').innerText()).includes('black · block · blank · blink · clap · clip · club · clam · clock · flag · flat · flap · flip'));

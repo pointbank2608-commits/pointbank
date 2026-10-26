@@ -187,3 +187,6 @@ function level4ReferenceSlides(u:CourseUnit):CourseSlide[]{
  if(slides.length!==137)throw new Error('Level 4 reference sequence must contain 137 steps');
  return slides;
 }
+
+/** Unapproved reader drafts remain in development when the course tab is published. */
+export function availableLessonSlides(unit:CourseUnit){return lessonSlides(unit).filter(slide=>import.meta.env.DEV||!slide.draft);}

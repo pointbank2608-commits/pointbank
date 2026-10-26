@@ -2,7 +2,8 @@ import {courseUnits} from './phonicsLessons';
 import {curriculumEntries} from './phonicsCurriculum';
 import type {PhonicsBankEntry} from '../lib/types';
 
-/** Content review remains local until explicitly approved for publication. */
+/** The course tab is public; draft readers and legacy review routes stay in development. */
+export const PHONICS_TEACHING_VISIBLE=true;
 export const PHONICS_TEACHING_PREVIEW=import.meta.env.DEV;
 export interface TeachingUnit {id:string;step:number;title:string;sounds:string;entryIds:string[];entries:PhonicsBankEntry[];stage1Id?:string;}
 /** Compatibility adapter: saved ABC and CVC references keep their historic IDs. */
