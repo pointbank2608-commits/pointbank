@@ -345,6 +345,9 @@ const ko = {
   },
 
   gameBomb: {
+    minTime: '최소 시간(초)',
+    maxTime: '최대 시간(초)',
+    rangeHint: '같은 값을 입력하면 정해진 시간에 터져요. 변경한 시간은 다음 시작부터 적용돼요.',
     defaultParticipant: '참가자 {{n}}',
     defaultTemplateName: '새 시한폭탄',
     studentClassTitle: '{{className}} 시한폭탄',
@@ -383,6 +386,7 @@ const ko = {
   },
 
   gameTimer: {
+    playSettings: '진행 방식·숫자 표시',
     defaultParticipant: '참가자 {{n}}',
     studentClassTitle: '{{className}} 타이머 맞추기',
     newButton: '+ 새 목록',
@@ -1423,6 +1427,8 @@ const ko = {
   },
 
   gameCatchSentence: {
+    levelTimeSettings: '단계·표시 시간',
+    displaySeconds: '문장 표시 시간(초)',
     studentClassTitle: '{{className}} 문장 잡기',
     newButton: '+ 새 문장 잡기',
     namePlaceholder: '예: 3학년 현재진행형 문장 잡기',

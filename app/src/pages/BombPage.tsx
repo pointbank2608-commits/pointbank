@@ -1,4 +1,5 @@
 import SentenceSources from '../components/SentenceSources';
+import BombRangePicker from '../components/BombRangePicker';
 import BombSoundPicker from '../components/BombSoundPicker';
 import {bombSound,type BombSound} from '../lib/bombSound';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
@@ -448,6 +449,7 @@ export default function BombPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <BombRangePicker min={range.min} max={range.max} onChange={(min,max)=>void commitRange({min,max})} />
                     <BombSoundPicker value={selected.config.bombSound} disabled={soundBusy} onChange={value=>void commitSound(value)} />
                     <div className="pt-3">
                     <div className="my-3 max-w-[260px]">

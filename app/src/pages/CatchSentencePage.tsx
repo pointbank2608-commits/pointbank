@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
+import CatchSentenceSettings from '../components/CatchSentenceSettings';
 import CatchSentence, { CATCH_DEFAULT_SECONDS, type CatchLevel } from '../components/CatchSentence';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -338,6 +339,7 @@ export default function CatchSentencePage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <CatchSentenceSettings level={level} seconds={seconds} onChange={patch=>void commitConfig({catchLevel:patch.level,catchSeconds:patch.seconds})}/>
                     <div className="pt-3">
                     <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                     <div className="flex-1 [&>div]:my-0">

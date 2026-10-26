@@ -347,6 +347,9 @@ const en: Ko = {
   },
 
   gameBomb: {
+    minTime: 'Minimum time (seconds)',
+    maxTime: 'Maximum time (seconds)',
+    rangeHint: 'Use the same value for a fixed time. Changes apply the next time you start.',
     defaultParticipant: 'Participant {{n}}',
     defaultTemplateName: 'New time bomb',
     studentClassTitle: "{{className}}'s Time Bomb",
@@ -385,6 +388,7 @@ const en: Ko = {
   },
 
   gameTimer: {
+    playSettings: 'Play mode and clock display',
     defaultParticipant: 'Participant {{n}}',
     studentClassTitle: "{{className}}'s Timer Match",
     newButton: '+ New list',
@@ -1426,6 +1430,8 @@ const en: Ko = {
   },
 
   gameCatchSentence: {
+    levelTimeSettings: 'Level and display time',
+    displaySeconds: 'Sentence display time (seconds)',
     studentClassTitle: '{{className}} Catch the Sentence',
     newButton: '+ New Catch the Sentence',
     namePlaceholder: 'e.g. Present continuous sentences',

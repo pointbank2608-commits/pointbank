@@ -1,3 +1,4 @@
+import TimerPlaySettings,{type TimerPlayMode} from './TimerPlaySettings';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
@@ -11,6 +12,9 @@ import type { GameItem, MusicSelection } from '../lib/types';
 interface Props {
   participants: GameItem[];
   targetMs: number;
+  playMode?: TimerPlayMode;
+  showClock?: boolean;
+  onPlaySettingsChange?: (patch:{mode?:TimerPlayMode;showTimer?:boolean})=>void;
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
   /** true면 오른쪽에 참가자 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
@@ -83,6 +87,7 @@ function DigitalReadout({ value, masked }: { value: string; masked: boolean }) {
 export default function TimerMatch({
   participants,
   targetMs,
+  playMode,showClock,onPlaySettingsChange,
   music,
   resultSound,
   editable,
@@ -198,6 +203,8 @@ export default function TimerMatch({
     setMode(next);
   }
 
+  useEffect(()=>{if(playMode!==undefined&&playMode!==mode){restartAll();setMode(playMode);}if(showClock!==undefined)setShowTimer(showClock);},[playMode,showClock]);
+
   const hasTurnDisplay=useNativeGameTurn({current:participants[turnIndex]?.label||'',next:participants[turnIndex+1]?.label||'',index:turnIndex,total:n,enabled:mode==='ranked'&&n>0&&turnIndex<n,canAdvance:phase==='stopped'&&turnIndex+1<n,advance:nextTurn});
   const allDone = mode === 'ranked' && n > 0 && turnIndex >= n;
   const blockedForRanked = mode === 'ranked' && n === 0;
@@ -207,8 +214,6 @@ export default function TimerMatch({
   const readout = masked ? (phase === 'running' ? '??:??.??' : fmt(0)) : fmt(elapsedMs);
   const pill =
     'px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
-  const tabOn = 'rounded-full bg-white px-4 py-1.5 font-label-md text-label-md text-secondary shadow-sm';
-  const tabOff = 'rounded-full px-4 py-1.5 font-label-md text-label-md text-on-surface-variant';
 
   return (
     <div className="flex w-full flex-col items-center pt-3 pb-2">
@@ -244,26 +249,7 @@ export default function TimerMatch({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <GameManagement><div className="mb-4 flex flex-wrap justify-center gap-2.5">
-        <div className="flex rounded-full bg-[#f3eee4] p-1">
-          <button type="button" onClick={() => switchMode('practice')} className={mode === 'practice' ? tabOn : tabOff}>
-            {t('gameTimer.modePractice')}
-          </button>
-          <button type="button" onClick={() => switchMode('ranked')} className={mode === 'ranked' ? tabOn : tabOff}>
-            {t('gameTimer.modeRanked')}
-          </button>
-        </div>
-        <div className="flex rounded-full bg-[#f3eee4] p-1">
-          <button type="button" onClick={() => setShowTimer(true)} className={showTimer ? tabOn : tabOff}>
-            {t('gameTimer.showTimerOn')}
-          </button>
-          <button type="button" onClick={() => setShowTimer(false)} className={!showTimer ? tabOn : tabOff}>
-            {t('gameTimer.showTimerOff')}
-          </button>
-        </div>
-      </div>
-
-      </GameManagement>
+      <GameManagement><TimerPlaySettings mode={mode} showTimer={showTimer} onChange={patch=>{if(patch.mode)switchMode(patch.mode);if(patch.showTimer!==undefined)setShowTimer(patch.showTimer);onPlaySettingsChange?.(patch);}}/></GameManagement>
       <div className="mb-3.5 font-label-md text-label-md font-bold text-on-surface-variant">
         {t('gameTimer.targetPrefix', { time: fmt(targetMs) })}
       </div>

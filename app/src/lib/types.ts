@@ -321,6 +321,9 @@ export interface GameTemplateConfig {
   words?: GameItem[];
   /** 타이머 맞추기 전용: 목표 시간(밀리초). */
   targetMs?: number;
+  timerMode?: 'practice' | 'ranked';
+  timerShowClock?: boolean;
+  wheelEliminate?: boolean;
   /** 재생할 배경음악. 없으면 무음. */
   music?: MusicSelection | null;
   /** 결과가 확정되는 순간 울리는 사운드. 한 번도 설정 안 했으면(undefined) "짜잔"을 기본으로 쓴다. */

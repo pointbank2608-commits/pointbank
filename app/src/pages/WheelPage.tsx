@@ -111,6 +111,13 @@ export default function WheelPage() {
 
   const [playItems, setPlayItems] = useState<GameItem[]>([]);
   const [eliminateMode, setEliminateMode] = useState(false);
+  useEffect(()=>setEliminateMode(selected?.config.wheelEliminate??false),[selected?.id,selected?.config.wheelEliminate]);
+  async function commitEliminateMode(value:boolean){
+    setEliminateMode(value);if(!selected)return;
+    const config={...selected.config,wheelEliminate:value};
+    setTemplates(rows=>rows.map(row=>row.id===selected.id?{...row,config}:row));
+    try{await updateGameTemplate(selected.id,{config});}catch(err){notify(err instanceof Error?err.message:String(err),'error');await reload();}
+  }
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
@@ -384,7 +391,7 @@ export default function WheelPage() {
                 <input
                   type="checkbox"
                   checked={eliminateMode}
-                  onChange={(e) => setEliminateMode(e.target.checked)}
+                  onChange={(e) => void commitEliminateMode(e.target.checked)}
                   className="w-4 h-4 accent-primary"
                 />
                 {t('gameWheel.eliminateMode')}
@@ -418,6 +425,7 @@ export default function WheelPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <label className="my-3 flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant bg-white p-3 font-bold text-deep-navy"><input type="checkbox" className="h-5 w-5" checked={eliminateMode} onChange={e=>void commitEliminateMode(e.target.checked)}/>{t('gameWheel.eliminateMode')}</label>
                     <div className="pt-3">
                     <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                     <div className="flex-1 [&>div]:my-0">

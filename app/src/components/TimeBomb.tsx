@@ -1,3 +1,4 @@
+import BombRangePicker from './BombRangePicker';
 import {useGameSoundOn} from '../lib/gameSfx';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
@@ -81,8 +82,6 @@ export default function TimeBomb({
   const [wordDrafts, setWordDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const [minInput, setMinInput] = useState(String(minSec));
-  const [maxInput, setMaxInput] = useState(String(maxSec));
   const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
 
@@ -94,10 +93,6 @@ export default function TimeBomb({
     setWordDrafts(Object.fromEntries(words.map((w) => [w.id, w.label])));
   }, [words]);
 
-  useEffect(() => {
-    setMinInput(String(minSec));
-    setMaxInput(String(maxSec));
-  }, [minSec, maxSec]);
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -117,11 +112,6 @@ export default function TimeBomb({
     if (value) onEditWord?.(id, value);
   }
 
-  function commitRange() {
-    const min = Number(minInput);
-    const max = Number(maxInput);
-    if (Number.isFinite(min) && Number.isFinite(max)) onRangeChange?.(min, max);
-  }
 
   function startEditTemplateName() {
     setTemplateNameDraft(templateName ?? '');
@@ -366,29 +356,7 @@ export default function TimeBomb({
 
         {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
-            <div>
-              <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('gameBomb.rangeLabel')}</div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  value={minInput}
-                  onChange={(e) => setMinInput(e.target.value)}
-                  onBlur={commitRange}
-                  className="w-[64px] rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 font-body-md text-sm text-on-surface text-center outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                <span className="font-body-md text-body-md text-on-surface-variant">~</span>
-                <input
-                  type="number"
-                  min={1}
-                  value={maxInput}
-                  onChange={(e) => setMaxInput(e.target.value)}
-                  onBlur={commitRange}
-                  className="w-[64px] rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 font-body-md text-sm text-on-surface text-center outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                <span className="font-body-md text-body-md text-on-surface-variant">{t('gameBomb.seconds')}</span>
-              </div>
-            </div>
+            <BombRangePicker min={minSec} max={maxSec} onChange={(min,max)=>onRangeChange?.(min,max)} />
 
             {mode === 'pass' && (
               <div>

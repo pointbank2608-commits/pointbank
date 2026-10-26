@@ -1,3 +1,5 @@
+import CatchSentenceSettings, {type CatchLevel} from './CatchSentenceSettings';
+export {CATCH_DEFAULT_SECONDS, type CatchLevel} from './CatchSentenceSettings';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,8 +15,6 @@ import type { GameItem, UndoHandle } from '../lib/types';
  *  4단계 문장이 화면을 가로질러 지나감(오른쪽→왼쪽, 아래→위로 흔들, 빙글 돌며) / 5단계 섞인 낱말이 날아서 지나감
  */
 
-export type CatchLevel = 1 | 2 | 3 | 4 | 5;
-export const CATCH_DEFAULT_SECONDS: Record<CatchLevel, number> = { 1: 2, 2: 3, 3: 5, 4: 5, 5: 6 };
 
 interface Props {
   items: GameItem[];
@@ -116,6 +116,8 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamCount, itemKey]);
+  useEffect(()=>{clearTimers();setPhase('ready');setSnapshot(null);},[level,seconds]);
+
 
   const current = items.length > 0 && order.length > 0 ? parseItem(items[order[pos % order.length]]?.label ?? '') : { text: '', ko: '' };
   const words = useMemo(() => current.text.split(/\s+/).filter(Boolean), [current.text]);
@@ -268,28 +270,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
         </span>
       </div>
 
-      {/* 단계·시간 — 수업 중 바로 바꾼다 */}
-      {onChange && (
-        <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
-          {([1, 2, 3, 4, 5] as CatchLevel[]).map((l) => (
-            <button
-              key={l}
-              type="button"
-              disabled={phase === 'show'}
-              onClick={() => onChange({ level: l, seconds: CATCH_DEFAULT_SECONDS[l] })}
-              className={`rounded-full px-3 py-1 font-label-md text-label-md transition-colors ${
-                level === l ? 'bg-indigo-600 text-white' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
-              }`}
-            >
-              {t('gameCatchSentence.levelChip', { n: l })}
-            </button>
-          ))}
-          <span className="mx-1 text-on-surface-variant">|</span>
-          <button type="button" disabled={phase === 'show'} onClick={() => onChange({ seconds: Math.max(1, +(seconds - 0.5).toFixed(1)) })} className="rounded-full bg-surface-container-low px-3 py-1 font-bold">−</button>
-          <span className="min-w-[4.5em] text-center font-label-md text-label-md">{t('gameCatchSentence.secondsLabel', { n: seconds })}</span>
-          <button type="button" disabled={phase === 'show'} onClick={() => onChange({ seconds: Math.min(10, +(seconds + 0.5).toFixed(1)) })} className="rounded-full bg-surface-container-low px-3 py-1 font-bold">＋</button>
-        </div>
-      )}
+      <CatchSentenceSettings level={level} seconds={seconds} disabled={phase==='show'} onChange={onChange}/>
 
       <div
         className="relative w-full overflow-hidden rounded-[24px] shadow-lg"

@@ -13,6 +13,7 @@ import OpenInOtherGame from '../components/OpenInOtherGame';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
 import DictionaryPicker from '../components/DictionaryPicker';
+import TimerPlaySettings,{type TimerPlayMode} from '../components/TimerPlaySettings';
 import TimerMatch from '../components/TimerMatch';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
@@ -143,6 +144,13 @@ export default function TimerMatchPage() {
     if (!selected || selected.items.length === 0) return;
     if (!confirm(t('gameTimer.clearAllConfirm'))) return;
     await persistItems([]);
+  }
+
+  async function commitPlaySettings(patch:{mode?:TimerPlayMode;showTimer?:boolean}) {
+    if(!selected)return;
+    const config={...selected.config,...(patch.mode!==undefined?{timerMode:patch.mode}:{}),...(patch.showTimer!==undefined?{timerShowClock:patch.showTimer}:{})};
+    setTemplates(rows=>rows.map(row=>row.id===selected.id?{...row,config}:row));
+    try{await updateGameTemplate(selected.id,{config});}catch(err){notify(err instanceof Error?err.message:String(err),'error');await reload();}
   }
 
   async function commitTarget() {
@@ -349,6 +357,7 @@ export default function TimerMatchPage() {
             <TimerMatch key={roundKey}
               participants={selected.items}
               targetMs={targetMs}
+              playMode={selected.config.timerMode??'practice'} showClock={selected.config.timerShowClock??false} onPlaySettingsChange={patch=>void commitPlaySettings(patch)}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
               editable={isStaff}
@@ -379,6 +388,7 @@ export default function TimerMatchPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <TimerPlaySettings mode={selected.config.timerMode??'practice'} showTimer={selected.config.timerShowClock??false} onChange={patch=>void commitPlaySettings(patch)}/>
                     <div className="pt-3">
                     <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                     <div className="flex-1 [&>div]:my-0">
