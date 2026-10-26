@@ -29,6 +29,25 @@ export function guideKinds(type: GameType): GuideKind[] {
   if (NUMBER_GAMES.has(type)) kinds.push('numbers');
   return kinds;
 }
+/** 문제·정답만 있고 오답이 비어 있는 줄은, 다른 줄의 정답을 오답으로 채운다(단어장에서 가져온 문제 등). 이미 적은 오답은 그대로 둔다. */
+export function fillDistractors(rows: string[][], want = 2): string[][] {
+  const answers = rows.map(r => r[1]?.trim() || '');
+  return rows.map((row, i) => {
+    if (!row[0]?.trim() || !row[1]?.trim()) return row;
+    const wrong = row.slice(2).map(s => s.trim()).filter(Boolean);
+    if (wrong.length) return row;
+    const taken = new Set([row[1].trim().toLowerCase()]);
+    const picked: string[] = [];
+    for (let step = 1; step < rows.length && picked.length < want; step++) {
+      const a = answers[(i + step) % rows.length];
+      if (a && !taken.has(a.toLowerCase())) {
+        taken.add(a.toLowerCase());
+        picked.push(a);
+      }
+    }
+    return [row[0], row[1], ...picked];
+  });
+}
 export function guideCards(rows: string[][], previous: FullCardItem[] = []): FullCardItem[] {
   return rows.filter(r=>r[0]?.trim()).map((r,i)=>({ ...previous.find(c=>c.word===r[0].trim()), id:previous.find(c=>c.word===r[0].trim())?.id || `guide-${i}`, word:r[0].trim(), meaning:r[1]?.trim()||'', imageUrl:previous.find(c=>c.word===r[0].trim())?.imageUrl || null }));
 }

@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
-import { guideFamily, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
+import { guideFamily, fillDistractors, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { gamePreparation } from '../lib/gamePreparation';
 import { useRecoverableField } from '../lib/useRecoverableField';
@@ -20,6 +20,8 @@ import GameImagePicker from './GameImagePicker';
 import { guideButton as button } from './GameCreateButton';
 
 interface Props {
+  /** 설정 화면의 "숫자로 만들기" 단추처럼, 열자마자 이 방식을 고른다 */
+  presetKind?:GuideKind|null;onPresetUsed?:()=>void;
   info:GameWorkspaceBridge;active:boolean;canStart:boolean;busy:boolean;
   run:(fn:()=>Promise<void>)=>Promise<boolean>;
   start:()=>void;openTeams:()=>void;
@@ -27,7 +29,7 @@ interface Props {
   setParticipants:(text:string)=>void;
 }
 type Launch={kind:GuideKind;cards?:FullCardItem[];ownerId?:string;academyId?:string};
-export default function GameSetupGuide({info,active,canStart,busy,run,start,openTeams,nativeVisible,setParticipants}:Props){
+export default function GameSetupGuide({info,active,canStart,busy,run,start,openTeams,nativeVisible,setParticipants,presetKind,onPresetUsed}:Props){
   const {t}=useTranslation();const {session,academy}=useAuth();const location=useLocation();
   const [kind,setKind]=useState<GuideKind>('word');const [step,setStep]=useState(0);const [native,setNative]=useState(false);const [error,setError]=useState('');
   const [raw,setRaw]=useRecoverableField(`guide:${info.gameType}:${kind}:rows`);
@@ -77,6 +79,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   const setCell=(i:number,j:number,value:string)=>{const next=rows.map(r=>[...r]);next[i]||=[];next[i][j]=value;write(next);};
   useEffect(()=>{nativeVisible(active&&step===1&&native);},[active,step,native,nativeVisible]);
   useEffect(()=>{if(active)heading.current?.focus();},[active,step]);
+  useEffect(()=>{if(!active||!presetKind||!info.selected||info.loading||busy)return;onPresetUsed?.();void choose(presetKind);},[active,presetKind,info.selected,info.loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // Route payloads are scoped just like existing quick sources. They never write saved data.
   useEffect(()=>{
     const launch=(location.state as {guideLaunch?:Launch}|null)?.guideLaunch;
@@ -86,7 +89,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     const k=launch.kind;if(!guideKinds(info.gameType).includes(k))return;
     setKind(k);
     if(k==='sample'){void run(()=>info.sampleGuide()).then(ok=>{if(ok)setStep(3);});return;}
-    const cards=launch.cards||[];const prepared=k==='names'?null:prepareClassroomGame(info.gameType,cards,k==='sentence'?'sentence':'word');
+    const cards=launch.cards||[];const prepared=(k==='names'||k==='numbers')?null:prepareClassroomGame(info.gameType,cards,k==='sentence'?'sentence':'word');
     const content=prepared?{items:prepared.items,config:{...info.selected.config,...prepared.config,classroomSource:{id:'composition',name:'',kind:k==='sentence'?'sentence' as const:'word' as const,version:'',cards}}}:guideContent(info.gameType,cards.map(c=>family==='image'?[c.word,c.imageUrl||'']:family==='bridge'?[c.word,'','','']:family==='tower'?['','0','','']:[c.word,c.meaning]),k,info.selected.config,towerStart);
     if(family==='bridge')setSource(cards[0]?.word||'');
     if(family==='tower')setTowerStart(cards[0]?.word||'');
@@ -114,10 +117,12 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
     setError('');
     if(step===1){
       if(!dedicated&&!native){
-        if(['pairs','groups','image'].includes(family)&&rows.some(r=>r.some(s=>s.trim())&&(!r[0]?.trim()||!r[1]?.trim()))){setError(t('guide.incomplete'));return;}
-        if(family==='ox'&&rows.some(r=>r[0]?.trim()&&!['O','X'].includes(r[1]?.toUpperCase()))){setError(t('guide.incomplete'));return;}
-        if(['quiz','online'].includes(family)&&rows.some(r=>r.some(Boolean)&&(!r[0]?.trim()||!r[1]?.trim()||!r.slice(2).some(s=>s.trim())||new Set(r.slice(1).filter(Boolean).map(s=>s.trim().toLowerCase())).size!==r.slice(1).filter(Boolean).length))){setError(t('guide.incomplete'));return;}
-        const content=guideContent(info.gameType,rows,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart);
+        const work=['quiz','online'].includes(family)?fillDistractors(rows):rows;
+        if(work!==rows&&work.some((r,i)=>r.length!==rows[i].length))write(work);
+        if(['pairs','groups','image'].includes(family)&&work.some(r=>r.some(s=>s.trim())&&(!r[0]?.trim()||!r[1]?.trim()))){setError(t('guide.incomplete'));return;}
+        if(family==='ox'&&work.some(r=>r[0]?.trim()&&!['O','X'].includes(r[1]?.toUpperCase()))){setError(t('guide.incomplete'));return;}
+        if(['quiz','online'].includes(family)&&work.some(r=>r.some(Boolean)&&(!r[0]?.trim()||!r[1]?.trim()||!r.slice(2).some(s=>s.trim())||new Set(r.slice(1).filter(Boolean).map(s=>s.trim().toLowerCase())).size!==r.slice(1).filter(Boolean).length))){setError(t('guide.incomplete'));return;}
+        const content=guideContent(info.gameType,work,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart);
         if(info.gameType==='ladder'){
           const slots=ladderSlots(resultDraft,content.items.length);
           const missing=slots.filter(s=>!s.miss&&!s.label.trim()).length;
@@ -154,7 +159,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
   return <section className="space-y-5 p-4 sm:p-6" data-game-guide data-guide-step={step}>
     <p className="font-bold text-primary" role="status">{t('guide.step',{current:steps.indexOf(step)+1,total:steps.length})} · {t(step===0?'guide.chooseSource':step===1?'guide.content':step===2?'guide.participation':'guide.review')}</p>
     <h2 ref={heading} tabIndex={-1} className="text-2xl font-black">{t(step===0?'guide.title':step===1?'guide.chooseContent':step===2?'guide.participation':'guide.ready')}</h2>
-    {error&&<p role="alert" className="rounded-xl bg-error-container p-4">{error}</p>}
+    {error&&step!==1&&<p role="alert" className="rounded-xl bg-error-container p-4">{error}</p>}
     {step===0&&<div className="grid gap-3 sm:grid-cols-2">{guideKinds(info.gameType).map(k=><button className={`${button} min-h-28 text-left ${k==='sample'?'bg-sky-50! border-primary':''}`} key={k} disabled={busy||info.loading} onClick={()=>void choose(k)}><span className="block text-xl">{t(`guide.${k}`)}</span><span className="mt-2 block font-normal">{t(`guide.${k}Hint`)}</span></button>)}{dedicated&&<button className={button} onClick={()=>void choose(info.gameType==='timer'?'names':'word')}>{t('guide.keepDefault')}</button>}</div>}
     {step===1&&<>
       <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}`)}</p>
@@ -191,7 +196,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,start,open
       {problem&&<p role="alert">{t(`guide.${problem}`)}</p>}
       <button className={`${button} bg-primary! px-8! text-xl! text-white!`} disabled={busy||!canStart||!!problem} onClick={start}>▶ {t('guide.start')}</button><button className={button} onClick={()=>setStep(0)}>{t('guide.editMine')}</button><p>{t('guide.saveLater')}</p>
     </>}
-    {error&&step===1&&info.gameType==='ladder'&&<p className="rounded-xl bg-error-container p-3 font-bold">{error}</p>}
+    {error&&step===1&&<p role="alert" className="rounded-xl bg-error-container p-3 font-bold" data-guide-error>{error}</p>}
     <footer className="flex flex-wrap gap-3 border-t pt-4">{step>0&&<button className={button} disabled={busy} onClick={()=>{setStep(n=>n===3&&!needsPeople?1:Math.max(0,n-1));setError('');}}>{t('guide.back')}</button>}{(step===1||step===2)&&<button className={`${button} bg-primary! text-white!`} disabled={busy||info.loading} onClick={()=>void next()}>{t('guide.next')}</button>}</footer>
   </section>;
 }

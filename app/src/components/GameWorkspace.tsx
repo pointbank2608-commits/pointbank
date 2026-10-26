@@ -1,6 +1,6 @@
 import GameSetupGuide from './GameSetupGuide';
 import '../teacherGames.css';
-import { guideProblem } from '../lib/gameGuide';
+import { guideProblem, NUMBER_GAMES, type GuideKind } from '../lib/gameGuide';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -143,6 +143,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     }
     setPanel(null);
   }
+  const [guidePreset, setGuidePreset] = useState<GuideKind | null>(null);
   async function begin(kind: 'word' | 'sentence') {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
   }
@@ -159,6 +160,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
+    {info && NUMBER_GAMES.has(info.gameType) && <button className={btn} disabled={busy || info.loading || !!info.sharedView} onClick={() => { setGuidePreset('numbers'); setPanel('guide'); }} data-number-start>{t('guide.numbers')}</button>}
     {includeLoad && <button className={btn} disabled={busy || !info || info.loading} onClick={() => setPanel('content')}>{t('flow.loadMaterial')}</button>}
     <button className={btn} disabled={busy || !info || info.loading || !!info.sharedView} onClick={() => {sampleFromId.current=info?.selected?.id;void action(() => bridge.current!.useSource({cards: sampleActivityCards(sourceKind),kind:sourceKind,name:t('quick.sampleTitle')})).then(ok=>{if(ok)setSampleRequested(true);});}}>{t('quick.sample')}</button>
   </div>;
@@ -210,7 +212,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           {info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=><button key={row.id} className={`${btn} mr-2 mb-2`} onClick={()=>{bridge.current?.selectTemplate(row.id);setPanel(null);}}>{row.name}</button>)}
         </div>}
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
-        {info && <GameSetupGuide info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} start={start} nativeVisible={setGuideNative} setParticipants={text=>{setParticipantText(text);setOrdered(!!text.trim());}} openTeams={()=>setTeams(true)} />}
+        {info && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} start={start} nativeVisible={setGuideNative} setParticipants={text=>{setParticipantText(text);setOrdered(!!text.trim());}} openTeams={()=>setTeams(true)} />}
         <div hidden={(panel !== 'settings' && !(panel==='guide'&&guideNative)) || !!info?.sharedView} className="p-4" data-game-existing-settings>
           {info?.selected && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>

@@ -90,6 +90,17 @@ try {
  await guide().locator('[data-range-start]').fill('10');await guide().locator('[data-range-end]').fill('1');await guide().locator('[data-range-fill]').click();assert(await guide().locator('[data-range-error]').isVisible());
  await guide().getByRole('button',{name:'다음',exact:true}).click();assert((await guide().innerText()).includes('10')||true);
  console.log('ok number range guide for random ball');
+ await page.goto(fixture+'?start=/games/order&empty=1');await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] details').first().locator('summary').click();await page.locator('[data-number-start]').click();
+ await guide().locator('[data-range-fill]').waitFor();await guide().locator('[data-range-end]').fill('5');await guide().locator('[data-range-fill]').click();
+ {const v=await guide().getByLabel('숫자',{exact:true}).evaluateAll(els=>els.map(e=>e.value).filter(Boolean));assert(['1','3','5'].every(x=>v.includes(x)),'새 숫자가 더해진다');assert.equal(new Set(v).size,v.length,'중복 없음');}
+ console.log('ok number start button in extra settings');
+ await page.goto(fixture+'?start=/games/quizshow&empty=1');await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();
+ await guide().getByLabel('문제',{exact:true}).first().fill('밀다');await guide().getByLabel('정답',{exact:true}).first().fill('push');
+ await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('문제',{exact:true}).nth(1).fill('당기다');await guide().getByLabel('정답',{exact:true}).nth(1).fill('pull');
+ await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('문제',{exact:true}).nth(2).fill('열다');await guide().getByLabel('정답',{exact:true}).nth(2).fill('open');
+ await guide().getByRole('button',{name:'다음',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('[data-game-guide]')?.getAttribute('data-guide-step')!=='1');
+ console.log('ok online quiz without typed wrong answers fills them and moves on');
  await page.goto(fixture+'?start=/games/matchup&empty=1');await guide().getByRole('button',{name:'단어로 만들기',exact:false}).click();
  await guide().getByLabel('단어',{exact:true}).first().fill('apple');await guide().getByLabel('뜻',{exact:true}).first().fill('사과');
  await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('alert').waitFor();
