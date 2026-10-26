@@ -1,5 +1,5 @@
 import i18n from '../i18n';
-import type { FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
+import type { LiveQuestion, FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
 import { GAME_CATALOG } from './gameCatalog';
 import { prepareClassroomGame } from './gameWorkspace';
 import { gamePreparation, isNativeGameReady } from './gamePreparation';
@@ -73,7 +73,7 @@ export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   if(c.adventure){const a=c.adventure;switch(template.game_type){case 'balloonpop':case 'wordfishing':return a.words.map(w=>[w.word,w.meaning]);case 'wordtrain':case 'sentencerocket':return a.sentences.map(s=>[s.text,s.tokens.join(' | ')]);case 'grammardetective':return a.cases.map(s=>[s.incorrect,s.correct]);case 'treasurehunt':return a.clues.map(s=>[s.text]);case 'wordclaw':return a.missions.map(s=>[s.text,s.tag]);}}
   if(family==='pairs') return (template.game_type==='typeanswer'?c.typeAnswerEntries?.map(p=>({left:p.prompt,right:p.answer})):template.game_type==='flashcards'?c.flashcards:c.pairs||[] )?.map(p=>[p.left,p.right])||[];
   if(family==='quiz')return (c.questions||[]).map(q=>[q.question,q.choices[q.correctIndex]||'',...q.choices.filter((_,i)=>i!==q.correctIndex)]);
-  if(family==='online')return (c.liveQuestions||[]).map(q=>[q.prompt,q.choices?.[q.correctIndex||0]||q.answer||'',...(q.choices?.filter((_,i)=>i!==q.correctIndex)||[])]);
+  if(family==='online')return (c.liveQuestions||[]).filter(q=>q.kind==='choice'&&q.choices?.length).map(q=>[q.prompt,q.choices?.[q.correctIndex||0]||'',...(q.choices?.filter((_,i)=>i!==(q.correctIndex||0))||[])]);
   if(family==='ox')return (c.statements||[]).map(q=>[q.text,q.isTrue?'O':'X']);
   if(family==='groups')return (c.groups||[]).flatMap(g=>g.items.map(i=>[i.text,g.name]));
   if(family==='image')return (c.imageQuizItems||[]).map(i=>[i.answer,i.imageUrl]);
@@ -83,6 +83,23 @@ export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   if(family==='slots')return template.items.map(i=>[i.label,i.slot||'subject']);
   if(kind==='names'||kind==='numbers')return template.items.map(i=>[i.label]);
   return c.classroomSource?.cards.map(c=>[c.word,c.meaning])||template.items.map(i=>[i.label]);
+}
+/** 휴대폰 참여 퀴즈의 "고르기" 줄만 이 화면에서 고친다. O·X·쓰기·부저 문제와 라운드·그림·듣기 같은 부가 정보는 그대로 두고, 고친 줄만 같은 문제에 덮어쓴다. */
+function mergeLiveRows(prev: LiveQuestion[], rows: string[][]): LiveQuestion[] {
+  const left = rows.map((r, i) => ({ r, i, used: false }));
+  const out: LiveQuestion[] = [];
+  for (const q of prev) {
+    if (q.kind !== 'choice' || !q.choices?.length) { out.push(q); continue; }
+    const hit = left.find(x => !x.used && x.r[0] === q.prompt);
+    if (!hit) continue;
+    hit.used = true;
+    out.push({ ...q, prompt: hit.r[0] || '', choices: hit.r.slice(1).filter(Boolean), correctIndex: 0 });
+  }
+  for (const x of left) {
+    if (x.used) continue;
+    out.push({ id: `guide-${x.i}`, kind: 'choice', prompt: x.r[0] || '', choices: x.r.slice(1).filter(Boolean), correctIndex: 0, points: 1000, seconds: 20 });
+  }
+  return out;
 }
 export function guideContent(type: GameType, rows: string[][], kind: GuideKind, base: GameTemplateConfig, start = ''): {items:GameItem[];config:GameTemplateConfig} {
   const family=guideFamily(type), usable=rows.filter(r=>r.some(s=>s.trim())).map(r=>r.map(s=>s.trim()));
@@ -94,7 +111,7 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
     if(type==='typeanswer')config.typeAnswerEntries=pairs.map(p=>({id:p.id,prompt:p.left,answer:p.right}));
     else if(type==='flashcards')config.flashcards=pairs;else config.pairs=pairs;
   } else if(family==='quiz')config.questions=usable.map((r,i)=>({id:id(i),question:r[0]||'',choices:r.slice(1).filter(Boolean),correctIndex:0}));
-  else if(family==='online')config.liveQuestions=usable.map((r,i)=>({id:id(i),kind:'choice',prompt:r[0]||'',choices:r.slice(1).filter(Boolean),correctIndex:0,points:1000,seconds:20}));
+  else if(family==='online')config.liveQuestions=mergeLiveRows(base.liveQuestions||[],usable);
   else if(family==='ox')config.statements=usable.map((r,i)=>({id:id(i),text:r[0]||'',isTrue:r[1]?.toUpperCase()==='O'}));
   else if(family==='groups')config.groups=[...new Set(usable.map(r=>r[1]))].map((name,i)=>({id:id(i),name:name||'',items:usable.filter(r=>r[1]===name).map((r,j)=>({id:`${i}-${j}`,text:r[0]||''}))}));
   else if(family==='image')config.imageQuizItems=usable.map((r,i)=>({id:id(i),answer:r[0]||'',imageUrl:r[1]||''}));
