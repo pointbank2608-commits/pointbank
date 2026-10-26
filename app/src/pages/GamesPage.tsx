@@ -79,6 +79,7 @@ export default function GamesPage() {
 
   return (
     <div className="teacher-games-catalog space-y-6">
+      {isStaff && <nav className="flex flex-wrap gap-3" aria-label={t('phonicsGamesTitle')}><Link className="rounded-xl bg-deep-navy px-5 py-3 font-bold text-white" to="/games" aria-current="page">{t('classroomGamesTitle')}</Link><Link className="rounded-xl border border-outline-variant bg-white px-5 py-3 font-bold text-deep-navy" to="/phonics-games">{t('phonicsGamesTitle')}</Link></nav>}
       {isStaff && <p className="rounded-xl bg-white p-4 text-lg font-semibold text-deep-navy">{t('teacherGame.browseHint')}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">

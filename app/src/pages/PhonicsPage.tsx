@@ -123,6 +123,7 @@ export default function PhonicsPage() {
   const {t}=useTranslation();const [params,setParams]=useSearchParams();
   const teaching=PHONICS_TEACHING_VISIBLE&&params.get('tab')==='course';
   return <div className="space-y-5">
+    <Link className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-outline-variant bg-white px-5 py-3 font-bold text-deep-navy" to="/phonics-games"><span className="material-symbols-outlined" aria-hidden>sports_esports</span>{t('phonicsGamesTitle')}</Link>
     <nav className="flex flex-wrap gap-2 no-print" role="tablist" aria-label={t('phonics.title')}>
       <button type="button" role="tab" id="phonics-words-tab" aria-controls="phonics-words-panel" aria-selected={!teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${!teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({})}>{t('phonicsTeaching.words')}</button>
       {PHONICS_TEACHING_VISIBLE&&<button type="button" role="tab" id="phonics-course-tab" aria-controls="phonics-course-panel" aria-selected={teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'course'})}>{t('phonicsTeaching.course')}</button>}

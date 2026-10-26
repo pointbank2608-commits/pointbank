@@ -15,6 +15,9 @@ import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  phonicsGamesTitle: '파닉스 게임',
+  classroomGamesTitle: '기존 게임',
+  phonicsGameWithUnit: '이 유닛으로 파닉스 게임',
   elementary800: elementary800Ko,
   worksheetStudio: worksheetStudioKo,
   sentenceSplashSave: {

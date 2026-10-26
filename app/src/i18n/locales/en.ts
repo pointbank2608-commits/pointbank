@@ -17,6 +17,9 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  phonicsGamesTitle: 'Phonics Games',
+  classroomGamesTitle: 'Classroom games',
+  phonicsGameWithUnit: 'Phonics games with this unit',
   elementary800: elementary800En,
   worksheetStudio: worksheetStudioEn,
   sentenceSplashSave: {
