@@ -99,6 +99,37 @@ try{
   await page.locator('.pc-word-card .s1-speaker').click();assert((await page.evaluate(()=>window.__spoken)).includes('bee'));
   await page.setViewportSize({width:1366,height:768});for(const step of [1,2,3,4,5]){const u=units.find(u=>u.step===step);await visit(u,lessonSlides(u).find(s=>s.kind=== (step===1?'introduce':'group')));await page.getByRole('button',{name:'화면 크게 보기',exact:true}).click();assert.equal(await page.locator('.pc-lesson-slide').evaluate(e=>getComputedStyle(e).backgroundColor),['rgb(229, 243, 255)','rgb(251, 224, 233)','rgb(220, 238, 224)','rgb(236, 229, 248)','rgb(255, 241, 188)'][step-1]);await page.screenshot({path:out+`/level-${step}-large.png`});assert(await page.evaluate(()=>{const e=document.querySelector('.pc-lesson-slide'),r=e.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1;}));await page.keyboard.press('Escape');assert.equal(await page.locator('.pc-player-full').count(),0);}
  }
+ if(!process.argv.includes('--data-only')){
+  await page.goto(root+'/phonics/lesson?unit=course-4-1&lesson=1');await page.locator('[data-course-slide]').waitFor();
+  await page.getByRole('button',{name:'판서',exact:true}).click();
+  const canvas=page.getByLabel('수업 화면 판서 영역'),notes=()=>page.evaluate(()=>Object.entries(sessionStorage).filter(([k])=>k.startsWith('classbank:phonics-drawing:')).map(([key,value])=>({key,strokes:JSON.parse(value)})));
+  const ink=()=>canvas.evaluate(c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i])n++;return n;});
+  let rect=await canvas.boundingBox();const x=rect.x+rect.width*.5,y=rect.y+rect.height*.5;
+  await page.mouse.move(x-20,y);await page.mouse.down();await page.mouse.move(x+20,y,{steps:8});await page.mouse.up();
+  assert((await notes()).some(n=>n.strokes.length===1));const originalInk=await ink();assert(originalInk>0);
+  await page.getByRole('button',{name:'판서 도구 닫기',exact:true}).click();assert.equal(await canvas.count(),0);
+  await page.getByRole('button',{name:'판서',exact:true}).click();assert.equal(await ink(),originalInk);
+  const firstDrawingSlide=await page.locator('[data-course-slide]').getAttribute('data-course-slide');
+  await page.locator('[data-course-next]').click();await page.waitForFunction(id=>document.querySelector('[data-course-slide]')?.getAttribute('data-course-slide')!==id,firstDrawingSlide);assert.equal(await ink(),0);await page.getByRole('button',{name:'이전',exact:true}).click();assert.equal(await ink(),originalInk);
+  await page.getByRole('button',{name:'지우개',exact:false}).filter({has:page.locator('.material-symbols-outlined')}).first().click();
+  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.up();assert((await ink())<originalInk);
+  await page.getByRole('button',{name:'마지막 판서 되돌리기',exact:true}).click();assert.equal(await ink(),originalInk);
+  await page.getByRole('button',{name:'화면 크게 보기',exact:true}).click();
+  rect=await canvas.boundingBox();const slideRect=await page.locator('.pc-lesson-slide').boundingBox();assert(Math.abs(rect.width-slideRect.width)<2&&Math.abs(rect.height-slideRect.height)<2,JSON.stringify({canvas:rect,slide:slideRect}));
+  await page.keyboard.press('Escape');assert.equal(await canvas.count(),0);assert.equal(await page.locator('.pc-player-full').count(),1);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.pc-player-full').count(),0);
+  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'판서',exact:true}).click();
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await page.screenshot({path:out+'/drawing-mobile.png',fullPage:true});
+  await page.getByRole('button',{name:'판서 전체 지우기',exact:true}).click();assert.equal(await ink(),0);
+  assert(await page.getByRole('button',{name:'마지막 판서 되돌리기',exact:true}).isDisabled());
+  // Stylus/touch input uses the same PointerEvent path as the existing whiteboard.
+  await canvas.dispatchEvent('pointerdown',{pointerId:21,pointerType:'touch',isPrimary:true,clientX:80,clientY:180});
+  await canvas.dispatchEvent('pointermove',{pointerId:21,pointerType:'touch',isPrimary:true,clientX:100,clientY:190});
+  await canvas.dispatchEvent('pointerup',{pointerId:21,pointerType:'touch',isPrimary:true,clientX:100,clientY:190});
+  assert((await notes()).some(n=>n.strokes.length===1));
+  await page.setViewportSize({width:1440,height:1100});await page.screenshot({path:out+'/drawing-desktop.png',fullPage:true});
+ }
  // Review representative variants, including draft reading, with child bounds inside the slide.
   if(!production&&!process.argv.includes('--data-only')){
    for(const id of ['course-1-1','course-1-2','course-3-8','course-4-1','course-4-7','course-5-1']){

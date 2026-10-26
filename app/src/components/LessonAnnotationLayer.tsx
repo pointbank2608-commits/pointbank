@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 type Tool = 'pen' | 'eraser';
@@ -25,6 +26,9 @@ interface Props {
   persistent?: boolean;
   /** 있으면 이 탭 sessionStorage 에 선을 남겨, 다른 화면에 다녀와도 판서가 이어진다 */
   persistKey?: string;
+  /** Slide-local canvas with a toolbar rendered outside the drawing surface. */
+  contained?: boolean;
+  toolbarTarget?: HTMLElement | null;
 }
 
 // 흰색: 초록·검은 칠판 배경에서도 잘 보이게(2026-10-11 사용자 요청)
@@ -37,7 +41,7 @@ const clampEraser = (n: number) => Math.min(ERASER_MAX, Math.max(ERASER_MIN, Mat
 
 /** 수업 중 이미지·워크시트 위에만 잠깐 쓰는 판서 레이어. 선은 서버에 저장하지 않고 현재
  * 활동 안에서만 유지한다. 좌표를 비율로 저장해 전체화면 전환이나 창 크기 변경에도 모양을 지킨다. */
-export default function LessonAnnotationLayer({ onClose, top = 52, persistent = false, persistKey }: Props) {
+export default function LessonAnnotationLayer({ onClose, top = 52, persistent = false, persistKey, contained = false, toolbarTarget }: Props) {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const activeStrokeRef = useRef<Stroke | null>(null);
@@ -204,38 +208,19 @@ export default function LessonAnnotationLayer({ onClose, top = 52, persistent = 
     setEraserSize((n) => clampEraser(n * (event.deltaY < 0 ? 1.12 : 1 / 1.12)));
   }
 
-  return (
-    <div className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-40" style={{ top }}>
-      <canvas
-        ref={canvasRef}
-        className={`pointer-events-auto h-full w-full touch-none ${tool === 'eraser' ? 'cursor-none' : 'cursor-crosshair'}`}
-        aria-label={t('curriculum.play.annotationCanvas')}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={finishStroke}
-        onPointerCancel={finishStroke}
-        onPointerLeave={(e) => { if (e.pointerType === 'mouse') setCursor(null); }}
-        onWheel={handleWheel}
-      />
-      {tool === 'eraser' && cursor && (
-        <div
-          aria-hidden
-          data-eraser-cursor
-          className="pointer-events-none fixed rounded-full border-[3px] border-white bg-white/25 shadow-[0_0_0_2px_rgba(15,23,42,0.75),0_2px_10px_rgba(0,0,0,0.35)]"
-          style={{ width: eraserSize, height: eraserSize, left: cursor.x - eraserSize / 2, top: cursor.y - eraserSize / 2 }}
-        />
-      )}
-      <div className="pointer-events-auto absolute bottom-4 left-1/2 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/15 bg-deep-navy/95 p-2 text-white shadow-xl backdrop-blur-sm">
+  const toolbar = (
+<div className={`pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-white/15 bg-deep-navy/95 p-2 text-white shadow-xl backdrop-blur-sm ${contained ? 'w-full' : 'absolute bottom-4 left-1/2 max-w-[calc(100vw-1rem)] -translate-x-1/2'}`} role="toolbar" aria-label={t('curriculum.play.annotation')}>
         <button
           type="button"
           onClick={() => setTool('pen')}
+          aria-label={t('curriculum.play.pen')}
           className={`flex h-10 items-center gap-1 rounded-xl px-3 font-label-md text-label-md ${tool === 'pen' ? 'bg-white text-deep-navy' : 'hover:bg-white/15'}`}
           aria-pressed={tool === 'pen'}
         >
           <span className="material-symbols-outlined text-[20px]">ink_pen</span>
           <span className="hidden sm:inline">{t('curriculum.play.pen')}</span>
         </button>
-        <div className="flex items-center gap-1 px-1" aria-label={t('curriculum.play.penColor')}>
+        <div className={`flex items-center gap-1 px-1 ${contained ? 'max-w-full flex-wrap justify-center' : ''}`} aria-label={t('curriculum.play.penColor')}>
           {COLORS.map((item) => (
             <button
               key={item}
@@ -279,6 +264,7 @@ export default function LessonAnnotationLayer({ onClose, top = 52, persistent = 
         <button
           type="button"
           onClick={() => setTool('eraser')}
+          aria-label={t('curriculum.play.eraser')}
           className={`flex h-10 items-center gap-1 rounded-xl px-3 font-label-md text-label-md ${tool === 'eraser' ? 'bg-white text-deep-navy' : 'hover:bg-white/15'}`}
           aria-pressed={tool === 'eraser'}
         >
@@ -286,7 +272,7 @@ export default function LessonAnnotationLayer({ onClose, top = 52, persistent = 
           <span className="hidden sm:inline">{t('curriculum.play.eraser')}</span>
         </button>
         {tool === 'eraser' && (
-          <div className="flex items-center gap-1 rounded-xl bg-white/10 p-1" role="group" aria-label={t('curriculum.play.eraserSize')} data-eraser-sizes>
+          <div className={`flex items-center gap-1 rounded-xl bg-white/10 p-1 ${contained ? 'max-w-full flex-wrap justify-center' : ''}`} role="group" aria-label={t('curriculum.play.eraserSize')} data-eraser-sizes>
             {ERASER_SIZES.map((item, i) => (
               <button
                 key={item}
@@ -322,6 +308,30 @@ export default function LessonAnnotationLayer({ onClose, top = 52, persistent = 
           </button>
         )}
       </div>
+  );
+
+  return (
+    <div className={`no-print pointer-events-none ${contained ? 'absolute inset-0 z-10' : 'fixed inset-x-0 bottom-0 z-40'}`} style={contained ? undefined : { top }}>
+      <canvas
+        ref={canvasRef}
+        className={`pointer-events-auto h-full w-full touch-none ${tool === 'eraser' ? 'cursor-none' : 'cursor-crosshair'}`}
+        aria-label={t('curriculum.play.annotationCanvas')}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishStroke}
+        onPointerCancel={finishStroke}
+        onPointerLeave={(e) => { if (e.pointerType === 'mouse') setCursor(null); }}
+        onWheel={handleWheel}
+      />
+      {tool === 'eraser' && cursor && (
+        <div
+          aria-hidden
+          data-eraser-cursor
+          className="pointer-events-none fixed rounded-full border-[3px] border-white bg-white/25 shadow-[0_0_0_2px_rgba(15,23,42,0.75),0_2px_10px_rgba(0,0,0,0.35)]"
+          style={{ width: eraserSize, height: eraserSize, left: cursor.x - eraserSize / 2, top: cursor.y - eraserSize / 2 }}
+        />
+      )}
+      {contained ? toolbarTarget && createPortal(toolbar, toolbarTarget) : toolbar}
     </div>
   );
 }
