@@ -402,7 +402,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
       {/* 진행 버튼 */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
         {phase === 'ready' && (
-          <button type="button" onClick={startRound} className={`${btn} bg-primary`}>{t('gameShuffle.start')}</button>
+          <button type="button" data-initial-game-start onClick={startRound} className={`${btn} bg-primary`}>{t('gameShuffle.start')}</button>
         )}
         {phase === 'reveal' && (
           <button type="button" onClick={advance} className={`${btn} bg-primary`}>{round >= rounds ? t('gameShuffle.seeResult') : t('gameShuffle.nextRound')}</button>

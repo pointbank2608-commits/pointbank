@@ -38,7 +38,7 @@ ${names.map((n) => `export const ${n}=(...args)=>(functions.${n}|| (async()=>[])
 `;
 const auth = `const value={academy:{id:'academy-a',features:{group:true},plan:'paid',deletion_requested_at:null,deletion_scheduled_at:null},profile:{id:'teacher-a'},isStaff:true,isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:false,inTrial:false,daysLeft:7},pointUnit:'별'};export const useAuth=()=>value;export const AuthProvider=({children})=>children;`;
 const toast = `const run=async(fn)=>{try{await fn();return true}catch(e){console.error(e);return false}};const value={notify:()=>{},run};export const useToast=()=>value;export const ToastProvider=({children})=>children;`;
-const server = await createServer({
+const server = await createServer({cacheDir:'node_modules/.vite/qa-check-settings-all',
   root,
   logLevel: "error",
   plugins: [
@@ -68,9 +68,9 @@ try {
   const row={game:game.type,number:game.number};try{
    await page.setViewportSize({width:1440,height:1000});
    await page.goto('http://127.0.0.1:5327/scripts/games/focus.html?start='+game.path);
-   const guide=page.locator('[data-game-guide]');await guide.getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();await page.locator('[data-game-guide][data-guide-step="3"]').waitFor();
-   await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();
-   const footer=page.locator('[data-preparation-submit]'),save=footer.getByRole('button',{name:'게임 저장하고 닫기',exact:true});await save.waitFor();
+   const guide=page.locator('[data-game-guide]');await guide.getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
+   await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();
+   const footer=page.locator('[data-preparation-submit]'),save=footer.getByRole('button',{name:'게임 저장',exact:true});await save.waitFor();
    const editor=page.locator('[data-game-existing-settings]');
    const adventure=game.number>=54;
    const story=['feedmonster','sentencebridge','sentencetower'].includes(game.type);
@@ -78,10 +78,10 @@ try {
     if(adventure){const count=editor.getByLabel('최대 문제 개수',{exact:true});row.expectedCount=Number(await count.inputValue())===1?2:1;await count.fill(String(row.expectedCount));}
     else if(story)await editor.getByRole('checkbox',{name:'효과음',exact:true}).setChecked(!await editor.getByRole('checkbox',{name:'효과음',exact:true}).isChecked());
     else await editor.getByRole('combobox',{name:'문장당 제한 시간',exact:true}).selectOption('30');
-    await page.waitForFunction(()=>[...document.querySelectorAll('[data-preparation-submit] button')].find(b=>b.textContent.trim()==='게임 저장하고 닫기')?.disabled===true);
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-preparation-submit] button')].find(b=>b.textContent.trim()==='게임 저장')?.disabled===true);
     await footer.getByText('아직 게임에 적용하지 않은 수정 내용이 있어요.',{exact:false}).waitFor();
     await editor.getByRole('button',{name:adventure?'설정 적용 · 게임 다시 준비':story?'설정 적용 · 미리보기':'미리보기 적용',exact:true}).click();
-    await page.waitForFunction(()=>[...document.querySelectorAll('[data-preparation-submit] button')].find(b=>b.textContent.trim()==='게임 저장하고 닫기')?.disabled===false);
+    await page.waitForFunction(()=>[...document.querySelectorAll('[data-preparation-submit] button')].find(b=>b.textContent.trim()==='게임 저장')?.disabled===false);
     row.pendingGuard=true;
    }
    if(await save.isDisabled())throw new Error('Save disabled: '+(await footer.innerText()));
@@ -89,17 +89,17 @@ try {
    let b=await footer.boundingBox();assert(b.y>=0&&b.y+b.height<=1001);
    await save.click();await page.getByRole('dialog').waitFor({state:'hidden'});
    const saved=await page.evaluate(()=>window.__workspace.writes[0]);assert(saved);assert.equal(saved.game_type,game.type);if(adventure)assert.equal(saved.config.adventure.count,row.expectedCount);if(game.type==='sentencesplash')assert.equal(saved.config.splashSeconds,30);row.saved=true;
-   await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();await save.click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__workspace.writes.length),1);row.updated=true;
-   await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();await page.setViewportSize({width:390,height:844});b=await footer.boundingBox();assert(b.y>=0&&b.y+b.height<=845);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);row.mobile=true;
+   await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();await save.click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__workspace.writes.length),1);row.updated=true;
+   await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();await page.setViewportSize({width:390,height:844});b=await footer.boundingBox();assert(b.y>=0&&b.y+b.height<=845);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);row.mobile=true;
    if(['wheel','quiz','balloonpop','icecream','shopping','sentencetower'].includes(game.type))await page.screenshot({path:resolve(root,'../output/game-settings-audit/'+game.type+'-mobile.png')});
    if(['balloonpop','feedmonster'].includes(game.type)){
     await page.getByRole('button',{name:'닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});
     await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();await page.locator('[data-play-mode="play"]').waitFor();
-    await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();
+    await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'자세히 설정',exact:true}).click();
     await editor.getByRole('button',{name:adventure?'설정 적용 · 게임 다시 준비':'설정 적용 · 미리보기',exact:true}).waitFor();
     if(adventure)await editor.getByLabel('최대 문제 개수',{exact:true}).fill('3');
     else await editor.getByRole('checkbox',{name:'효과음',exact:true}).setChecked(!await editor.getByRole('checkbox',{name:'효과음',exact:true}).isChecked());
-    await page.getByRole('button',{name:'닫기',exact:true}).click();await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();
+    await page.getByRole('button',{name:'닫기',exact:true}).click();await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'자세히 설정',exact:true}).click();
     if(adventure)assert.equal(await editor.getByLabel('최대 문제 개수',{exact:true}).inputValue(),'3');
     assert(await save.isDisabled());await editor.getByRole('button',{name:adventure?'설정 적용 · 게임 다시 준비':'설정 적용 · 미리보기',exact:true}).click();row.playSettings=true;row.draftRetained=true;
    }

@@ -1,3 +1,4 @@
+import MyGamesPage from './pages/MyGamesPage';
 import GameWorkspace from './components/GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import StudentAppIdentity from './components/StudentAppIdentity';
@@ -308,6 +309,7 @@ function AppRoutes() {
             <Route path="/resources" element={<ResourcesHomePage />} />
             <Route path="/materials" element={<MaterialsPage />} />
             <Route path="/materials/elementary-800" element={<Elementary800WorkbookPage />} />
+            <Route path="/my-games" element={<MyGamesPage />} />
             <Route path="/whiteboard" element={<WhiteboardPage />} />
             <Route path="/materials/flashcards" element={<FlashcardPrintPage />} />
             <Route path="/materials/memory-cards" element={<MemoryCardsPage />} />

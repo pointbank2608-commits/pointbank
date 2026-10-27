@@ -13,3 +13,10 @@
 .ad-case-file{animation:ad-file .5s ease-out}.ad-evidence .is-selected{transform:scale(1.08)}.ad-open-chest{position:absolute;z-index:5;pointer-events:none;width:85px;height:80px;transform:translate(-50%,-60%)}.ad-open-chest svg{width:100%;height:100%;filter:drop-shadow(0 5px 4px #956a4f66)}.ad-chest-lid{transform-origin:10px 43px;animation:ad-chest .8s forwards .2s}.ad-outlet{position:absolute;right:4%;bottom:1%;background:#8d658c;color:#fff5d8;box-shadow:inset 0 3px 4px #322b5055;border:3px solid #ffe3f1;border-radius:12px;width:90px;height:30px;text-align:center;line-height:24px;font-size:12px;font-weight:800}.ad-capsule.is-lifting{z-index:6;animation:ad-deliver 2.2s forwards}@keyframes ad-file{from{opacity:.2;transform:perspective(900px) rotateY(-14deg)}to{opacity:1;transform:rotate(-1deg)}}@keyframes ad-chest{to{transform:rotate(-40deg)}}@keyframes ad-deliver{0%,35%{translate:0 0}70%{translate:0 -140px;scale:.85}95%,100%{translate:var(--delivery-x,100px) var(--delivery-y,140px);scale:.25;opacity:0}}
 .ad-wordtrain .ad-assembly{animation:ad-arrive .6s ease-out}.ad-piece:active{scale:.96}@keyframes ad-arrive{from{translate:-25% 0;opacity:.3}to{translate:0 0;opacity:1}}
 .ad-word>span:last-of-type{font-size:24px;line-height:1.25}@media(max-width:600px){.ad-word>span:last-of-type{font-size:18px}}
+
+/* Vocabulary labels grow with long words and text zoom; tails remain decorative. */
+.ad-word>span:last-of-type{max-height:none;overflow:visible;white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.ad-word{height:auto;min-height:170px;display:flex;align-items:center;justify-content:center;min-width:0}
+.ad-fish{min-height:110px;padding:28px 20px 20px 28px}
+.ad-balloon{padding:24px 14px}
+@media(max-width:600px){.ad-vocab-board{gap:22px 18px;padding:16px 8px}.ad-word{width:100%;min-width:0}.ad-balloon{min-height:140px}.ad-fish{min-height:100px}}

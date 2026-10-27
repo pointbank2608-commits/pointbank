@@ -1439,3 +1439,12 @@ export async function appendActivityToLesson(lesson: CurriculumLesson, slide: Le
     .eq('id', lesson.id).eq('academy_id', lesson.academy_id).eq('updated_at', lesson.updated_at).select('id');
   if (error || !data?.length) throw new Error(error?.message || 'lesson_changed_retry');
 }
+
+/** Existing game_templates, academy-scoped and protected by the existing RLS. */
+export async function fetchSavedGames(academyId:string):Promise<GameTemplate[]> {
+  const rows:GameTemplate[]=[];
+  for(let offset=0;;offset+=500){
+    const page=unwrap(await supabase.from('game_templates').select('*').eq('academy_id',academyId).order('updated_at',{ascending:false}).order('id').range(offset,offset+499)) as GameTemplate[];
+    rows.push(...page);if(page.length<500)return fixLegacyImageUrls(rows);
+  }
+}

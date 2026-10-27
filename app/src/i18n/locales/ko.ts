@@ -1,3 +1,4 @@
+import {launchUxKo} from '../launchUxLocales';
 import { phonicsLessonKo } from '../phonicsLessonLocales';
 import { elementary800Ko } from '../elementary800Locales';
 import { phonicsPrintKo, phonicsTeachingKo } from '../phonicsTeachingLocales';
@@ -15,6 +16,7 @@ import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  launchUx:launchUxKo,
   phonicsGamesTitle: '파닉스 게임',
   classroomGamesTitle: '기존 게임',
   phonicsGameWithUnit: '이 유닛으로 파닉스 게임',
@@ -87,7 +89,7 @@ const ko = {
     "preparation": "게임 준비",
     "start": "게임 시작",
     "startContent": "이 내용으로 게임 시작",
-    "nativeEditor": "게임 설정·수정",
+    "nativeEditor": "자세히 설정",
     "nativeEditorHint": "아래 기존 게임 항목 편집기로 내용을 작성하세요. 새로 작성한 내용은 임시 활동이며 원본 자료를 덮어쓰지 않습니다.",
     "noMaterialRequired": "단어장 입력 없이 게임을 시작할 수 있어요. 필요한 참여자·규칙은 게임 설정에서 확인하세요.",
     "participation": "참여자·팀·순서",
@@ -120,7 +122,7 @@ const ko = {
 },
   quick: {
     "sampleTitle": "샘플 자료",
-    onlinePreview: "임시 활동은 교실 시연으로 체험합니다. 실제 휴대폰 참여·온라인 기록은 게임 설정·수정에서 내 활동으로 저장한 뒤 대회를 열어 사용하세요. 반 등록은 선택입니다.",
+    onlinePreview: "임시 활동은 교실 시연으로 체험합니다. 실제 휴대폰 참여·온라인 기록은 자세히 설정에서 내 활동으로 저장한 뒤 대회를 열어 사용하세요. 반 등록은 선택입니다.",
     "builtin": "기본 대본으로 진행하는 게임입니다. 선택한 자료를 사용하지 않습니다.",
     "wordsOnly": "이 게임은 단어 자료를 지원합니다. 문장 모음은 다른 게임에서 사용하세요.",
     "needSentence": "두 단어 이상으로 된 영어 문장이 필요합니다.",
@@ -337,7 +339,7 @@ const ko = {
     infoDescription:
       '단어나 숫자, 이름을 등록해두고 로또 기계처럼 하나씩 무작위로 뽑는 게임이에요. 로또 놀이, 빙고 숫자 부르기, 상품 추첨에도 쓸 수 있어요.',
     infoSteps: [
-      '게임 준비에서 단어·숫자·이름을 2개 이상 준비해 주세요. 항목 변경은 메뉴의 게임 설정·수정에서 할 수 있어요.',
+      '게임 준비에서 단어·숫자·이름을 2개 이상 준비해 주세요. 항목 변경은 메뉴의 자세히 설정에서 할 수 있어요.',
       '"섞기" 버튼을 누르면 공이 기계 안에서 마구 섞여요.',
       '버튼이 "뽑기"로 바뀌면 누를 때마다 공이 하나씩 나와요. 뽑는 동안에도 공은 계속 섞여요.',
       '뽑힌 것들은 아래에 순서대로 계속 쌓여요. 다 뽑으면 "섞기"를 다시 눌러 새로 시작할 수 있어요.',

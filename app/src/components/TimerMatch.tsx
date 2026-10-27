@@ -328,7 +328,7 @@ export default function TimerMatch({
           {(phase === 'idle' || phase === 'running') && (
             <button
               type="button"
-              onClick={phase === 'running' ? stop : start}
+              data-initial-game-start={phase==='idle'||undefined} onClick={phase === 'running' ? stop : start}
               aria-label={phase === 'running' ? 'STOP' : 'START'}
               className={`h-[110px] w-[110px] rounded-full bg-transparent p-0 transition-[filter] hover:not-disabled:brightness-105 active:not-disabled:brightness-95 ${
                 phase === 'running' ? 'timer-btn-pulse' : ''

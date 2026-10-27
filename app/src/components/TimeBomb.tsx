@@ -300,7 +300,7 @@ export default function TimeBomb({
               </div>
 
               {phase === 'idle' && (
-                <button onClick={start} className={pill}>
+                <button data-initial-game-start onClick={start} className={pill}>
                   {t('gameBomb.startButton')}
                 </button>
               )}

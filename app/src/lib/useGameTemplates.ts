@@ -335,7 +335,7 @@ export function useGameTemplates(params: {
         gameType,
         name,
         items: selected && isActivityDraft(selected.id) ? structuredClone(selected.items) : defaultItems(),
-        config: selected && isActivityDraft(selected.id) ? structuredClone(selected.config) : defaultConfig?.() ?? {},
+        config: selected && isActivityDraft(selected.id) ? {...structuredClone(selected.config),lessonSnapshot:undefined} : defaultConfig?.() ?? {},
         teacherId: profile.id,
       });
       setTemplates((prev) => [...prev, tpl]);
@@ -512,10 +512,10 @@ export function useGameTemplates(params: {
     workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
       applyGuide: async (content) => {
         if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
-        const draft = isActivityDraft(selected.id) ? selected : makeDraft();
+        const draft = isActivityDraft(selected.id) ? selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};
         // Native editors synchronize their local question state on selection changes.
         // A fresh revision ID applies guided content without remounting the workspace.
-        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: structuredClone(content.config) });
+        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: {...structuredClone(content.config),...(!isActivityDraft(selected.id)?{editingTemplateId:selected.id}:{})} });
       },
       sampleGuide: async () => {
         if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
@@ -527,9 +527,16 @@ export function useGameTemplates(params: {
         if (!selected) throw new Error('no_activity');
         if (params.hasPendingSettings?.()) throw new Error(t('settingsSave.pendingHint'));
         const snapshot = structuredClone(selected);
+        delete snapshot.config.lessonSnapshot;
         if (!isNativeGameReady(snapshot) || guideProblem(snapshot)) throw new Error(t('flow.actionFailed'));
         await flushGameTemplateWrites(snapshot.id);
-        if (isActivityDraft(snapshot.id)) {
+        if (isActivityDraft(snapshot.id)&&snapshot.config.editingTemplateId) {
+          const original=templates.find(row=>row.id===snapshot.config.editingTemplateId&&!isActivityDraft(row.id));
+          if(!original)throw new Error('missing_saved_game');
+          const config={...snapshot.config};delete config.editingTemplateId;
+          await updateGameTemplate(original.id,{items:snapshot.items,config});
+          setTemplates(rows=>rows.map(row=>row.id===original.id?{...row,items:snapshot.items,config}:row));setSelectedId(original.id);
+        } else if (isActivityDraft(snapshot.id)) {
           if (!await handleCreate(name)) throw new Error('save_failed');
         } else {
           await updateGameTemplate(snapshot.id, { items: snapshot.items, config: snapshot.config });

@@ -41,7 +41,7 @@ ${names.map((n) => `export const ${n}=(...args)=>(functions.${n}|| (async()=>[])
 `;
 const auth = `const value={academy:{id:'academy-a',features:{group:true},plan:'paid',deletion_requested_at:null,deletion_scheduled_at:null},profile:{id:'teacher-a'},isStaff:!new URLSearchParams(location.search).has('student'),isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:false,inTrial:false,daysLeft:7},pointUnit:'별'};export const useAuth=()=>value;export const AuthProvider=({children})=>children;`;
 const toast = `const run=async(fn)=>{try{await fn();return true}catch(e){console.error(e);return false}};const value={notify:()=>{},run};export const useToast=()=>value;export const ToastProvider=({children})=>children;`;
-const server = await createServer({
+const server = await createServer({cacheDir:'node_modules/.vite/qa-check-ladder-guide',
   root,
   logLevel: "error",
   plugins: [
@@ -84,22 +84,22 @@ try {
  });
  await page.reload();await guide().getByRole('button',{name:'학생·팀 이름으로 만들기',exact:false}).click();
  await guide().locator('[data-ladder-result="5"]').waitFor();assert.equal(await guide().locator('[data-ladder-result]').count(),6);
- await guide().getByRole('button',{name:'다음',exact:true}).click();await guide().getByRole('alert').getByText(/결과를 4개 더/).waitFor();assert.equal(await page.locator(':focus').getAttribute('data-ladder-result'),'2');
+ await guide().getByRole('button',{name:'완료',exact:true}).click();await guide().getByRole('alert').getByText(/결과를 4개 더/).waitFor();assert.equal(await page.locator(':focus').getAttribute('data-ladder-result'),'2');
  assert.equal(await guide().getAttribute('data-guide-step'),'1');
  await guide().getByRole('button',{name:'빈 결과를 모두 꽝으로 채우기',exact:true}).click();assert.equal(await guide().getByRole('checkbox',{checked:true}).count(),4);
  await guide().getByRole('checkbox',{name:'결과 3은 꽝',exact:true}).uncheck();await guide().getByLabel('결과 3',{exact:true}).fill('발표하기');
  await guide().getByRole('checkbox',{name:'결과 3은 꽝',exact:true}).check();await guide().getByRole('checkbox',{name:'결과 3은 꽝',exact:true}).uncheck();assert.equal(await guide().getByLabel('결과 3',{exact:true}).inputValue(),'발표하기');
- await guide().getByRole('button',{name:'다음',exact:true}).click();await page.locator('[data-guide-step="3"]').waitFor();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();
+ await guide().getByRole('button',{name:'완료',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();
  const board=page.locator('[data-ladder-results]');await board.waitFor();assert.deepEqual(await board.locator(':scope > div').allTextContents(),['상품1','상품2','발표하기','꽝','꽝','꽝']);
  assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok six result fields, explicit missing count and focus, fill blanks, reversible No prize, Next -> native ordered game without saving');
  // Resume without losing text, increase/decrease participants and restore hidden results.
  await page.reload();await guide().getByRole('button',{name:'학생·팀 이름으로 만들기',exact:false}).click();await guide().getByLabel('결과 3',{exact:true}).waitFor();assert.equal(await guide().getByLabel('결과 3',{exact:true}).inputValue(),'발표하기');
- await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('학생·팀 이름',{exact:true}).last().fill('새 친구');assert.equal(await guide().locator('[data-ladder-result]').count(),7);await guide().getByLabel('결과 7',{exact:true}).fill('마지막 상품');
- await guide().getByRole('button',{name:'삭제 7',exact:true}).click();assert.equal(await guide().locator('[data-ladder-result]').count(),6);await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('학생·팀 이름',{exact:true}).last().fill('새 친구');assert.equal(await guide().getByLabel('결과 7',{exact:true}).inputValue(),'마지막 상품');
+ await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('항목',{exact:true}).last().fill('새 친구');assert.equal(await guide().locator('[data-ladder-result]').count(),7);await guide().getByLabel('결과 7',{exact:true}).fill('마지막 상품');
+ await guide().getByRole('button',{name:'삭제 7',exact:true}).click();assert.equal(await guide().locator('[data-ladder-result]').count(),6);await guide().getByRole('button',{name:'항목 추가',exact:false}).click();await guide().getByLabel('항목',{exact:true}).last().fill('새 친구');assert.equal(await guide().getByLabel('결과 7',{exact:true}).inputValue(),'마지막 상품');
  await guide().getByRole('radio',{name:'무작위로 섞기',exact:true}).check();
  await page.setViewportSize({width:390,height:844});await guide().getByRole('radio',{name:'무작위로 섞기',exact:true}).scrollIntoViewIfNeeded();assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:resolve(root,'../output/ladder-results-mobile.png'),fullPage:true});
- await page.reload();await guide().getByRole('button',{name:'학생·팀 이름으로 만들기',exact:false}).click();assert(await guide().getByRole('radio',{name:'무작위로 섞기',exact:true}).isChecked());await guide().getByRole('button',{name:'다음',exact:true}).click();await page.locator('[data-guide-step="3"]').waitFor();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();await board.waitFor();
+ await page.reload();await guide().getByRole('button',{name:'학생·팀 이름으로 만들기',exact:false}).click();assert(await guide().getByRole('radio',{name:'무작위로 섞기',exact:true}).isChecked());await guide().getByRole('button',{name:'완료',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();await board.waitFor();
  // Deterministic randomness only in the test: every result must be retained and source order stays untouched.
  await page.evaluate(()=>{Math.random=()=>0;});await page.getByRole('button',{name:'한 명씩 결과 보기',exact:false}).click();
  const labels=await board.locator(':scope > div').allTextContents();assert.deepEqual(labels,['상품2','발표하기','꽝','꽝','꽝','마지막 상품','상품1']);
@@ -107,15 +107,15 @@ try {
  await page.setViewportSize({width:1024,height:900});assert.deepEqual(await board.locator(':scope > div').allTextContents(),labels);assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);assert.deepEqual(errors,[]);
  console.log('ok recovery, result count resizes/restores, mobile, random placement stable across resize, saved config keeps original order, no writes/errors');
  await page.getByRole('button',{name:'민지',exact:true}).click();await page.locator('[data-ladder-outcome]').waitFor();assert.match(await page.locator('[data-ladder-outcome]').first().innerText(),/민지\s*→\s*발표하기/);
- await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).click();await page.locator('[data-preparation-submit] summary').click();await page.getByRole('textbox',{name:'활동 이름 (선택)',exact:true}).fill('사다리 저장 검증');await page.getByRole('button',{name:'내 활동으로 저장',exact:true}).click();await page.waitForFunction(()=>window.__workspace.writes.length===1);
+ await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'자세히 설정',exact:true}).click();await page.getByRole('textbox',{name:'활동 이름 (선택)',exact:true}).fill('사다리 저장 검증');await page.getByRole('button',{name:'게임 저장',exact:true}).click();await page.waitForFunction(()=>window.__workspace.writes.length===1);
  const saved=await page.evaluate(()=>structuredClone(window.__workspace.writes[0]));assert.deepEqual(saved.config.results,draft.config.results);assert.equal(saved.config.ladderResultOrder,'random');
- await page.locator('[data-game-preparation] summary').click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'사다리 저장 검증',exact:true}).click();await board.waitFor();assert.deepEqual((await board.locator(':scope > div').allTextContents()).sort(),labels.slice().sort());assert.deepEqual(errors,[]);
+ await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();await page.getByRole('button',{name:'사다리 저장 검증',exact:true}).click();await board.waitFor();assert.deepEqual((await board.locator(':scope > div').allTextContents()).sort(),labels.slice().sort());assert.deepEqual(errors,[]);
  console.log('ok shuffled endpoint matches revealed outcome; explicit save/reopen preserves results and placement mode');
  // A short ladder must remain centered even when the frame scales the whole game down.
- await page.setViewportSize({width:2048,height:809});await page.goto(fixture);await guide().getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();await guide().getByRole('button',{name:'게임 시작',exact:false}).click();
+ await page.setViewportSize({width:2048,height:809});await page.goto(fixture);await guide().getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();
  const centered=async()=>{await page.waitForFunction(()=>{const el=document.querySelector('[data-ladder-stage]');if(!el)return false;const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();return a.width>0&&Math.abs((a.left+a.right-b.left-b.right)/2)<3;});};
  await centered();
- await page.getByRole('button',{name:'☰ 메뉴',exact:true}).click();await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.locator('[data-game-fullscreen="true"]').waitFor();await centered();
+ await page.locator('[data-frame-controls]').getByRole('button',{name:'전체화면',exact:true}).click();await page.locator('[data-game-fullscreen="true"]').waitFor();await centered();
  await page.screenshot({path:resolve(root,'../output/ladder-centered-wide.png'),fullPage:true});
  await page.setViewportSize({width:1280,height:800});await centered();assert.deepEqual(errors,[]);console.log('ok six-column board centered in wide play/fullscreen and after resize');
  const fitResults=async(width,height)=>{

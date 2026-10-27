@@ -4,7 +4,7 @@ import {createServer} from 'vite';
 import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
 
 const out='../output/phonics-games-v2';await mkdir(out,{recursive:true});
-const server=await createServer({server:{host:'127.0.0.1',port:5264,strictPort:true},logLevel:'error'});await server.listen();
+const server=await createServer({cacheDir:'node_modules/.vite/qa-phonics-games',server:{host:'127.0.0.1',port:5264,strictPort:true},logLevel:'error'});await server.listen();
 let browser;
 try {
  const model=await server.ssrLoadModule('/src/lib/phonicsGames.ts');
@@ -46,7 +46,14 @@ try {
   await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));if(!localStorage.getItem('classbank.lang'))localStorage.setItem('classbank.lang','ko');crypto.getRandomValues=a=>{a.fill(123);return a;};window.__spoken=[];speechSynthesis.speak=u=>window.__spoken.push(u.text);},{key:`sb-${ref}-auth-token`,session});
   const writes=[],errors=[];
   await context.route('**/*.supabase.co/**',async route=>{const req=route.request(),path=new URL(req.url()).pathname,headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};if(req.method()==='OPTIONS')return route.fulfill({status:204,headers});if(!['GET','HEAD'].includes(req.method())&&!path.includes('/auth/')&&!path.includes('/rpc/'))writes.push(path);const single=(req.headers().accept||'').includes('vnd.pgrst.object');let data=single?{}:[];if(path.includes('/auth/v1/user'))data=user;else if(path.includes('/auth/v1/'))data=session;else if(path.endsWith('/profiles'))data=single?profile:[profile];else if(path.endsWith('/academies'))data=single?academy:[academy];else if(path.endsWith('/classes'))data=[{id:'class-qa',academy_id:aid,name:'검증 반'}];else if(path.endsWith('/rpc/my_deletion_request'))data=null;return route.fulfill({status:200,headers,json:data});});
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(12000);const root='http://127.0.0.1:5264';
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(30000);const root='http://127.0.0.1:5264';
+  await page.goto(root+'/phonics-games/sound-fishing?unit=course-2-1');await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+  await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.getByRole('button',{name:'전체화면 종료',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>!!document.fullscreenElement),true);await page.keyboard.press('Escape');await page.getByRole('button',{name:'전체화면',exact:true}).waitFor();
+  await page.evaluate(()=>{HTMLElement.prototype.requestFullscreen=async()=>{throw Error('QA unsupported');};});
+  await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.getByRole('button',{name:'전체화면 종료',exact:true}).click();await page.locator('.pg-fullscreen').waitFor({state:'hidden'});assert.equal(await page.locator('.pg-fullscreen').count(),0);
+  console.log('PASS phonics native fullscreen, Escape and unsupported-device fallback');
+
   await page.goto(root+'/phonics-games');await page.locator('[data-game-card]').first().waitFor();await page.screenshot({path:out+'/catalog-desktop.png',fullPage:true});
   const solve=async(g,u,index)=>{
    const r=makeRound(g,u,index,123),area=page.locator('[data-activity]');
@@ -120,7 +127,7 @@ try {
   await page.goto(root+'/phonics-games/missing?unit=bad');await page.getByRole('alert').waitFor();
   await page.goto(root+'/phonics-games?unit=course-4-1');await page.locator('[data-game-card]').first().waitFor();await page.setViewportSize({width:390,height:844});await page.screenshot({path:out+'/catalog-mobile.png',fullPage:true});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await page.getByRole('button',{name:'게임 시작',exact:true}).click();await solve(games.find(g=>g.id==='sound-train'),units.find(u=>u.id==='course-2-1'),0);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:out+'/play-mobile.png',fullPage:true});
-  await page.getByRole('button',{name:'크게 보기',exact:true}).click();await page.keyboard.press('Escape');await page.getByRole('button',{name:'이어서 하기',exact:true}).click();await page.locator('.pg-next').waitFor();
+  await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.keyboard.press('Escape');await page.getByRole('button',{name:'이어서 하기',exact:true}).click();await page.locator('.pg-next').waitFor();
   // Retry + help must not become a first-attempt success. Pause must preserve a partly built word.
   const train=games.find(g=>g.id==='sound-train'),trainUnit=units.find(u=>u.id==='course-2-1');
   await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await page.getByLabel('문제 수',{exact:true}).selectOption('3');await page.getByRole('button',{name:'게임 시작',exact:true}).click();

@@ -1,5 +1,6 @@
+import {useToast} from '../context/ToastContext';
 import { activityName } from '../lib/activityNames';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import AccessibleDialog from './AccessibleDialog';
@@ -11,7 +12,7 @@ import { prepareClassroomGame } from '../lib/gameWorkspace';
 export default function AddActivityToLesson({ activity, source, onClose }: {
   activity?: GameTemplate; source?: { cards: FullCardItem[]; kind: 'word' | 'sentence'; name: string }; onClose: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation();const {notify}=useToast();const adding=useRef(false);
   const { academy, profile } = useAuth();
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<CurriculumLesson[] | null>(null);
@@ -25,24 +26,27 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
     return () => { active = false; };
   }, [academy, t]);
   async function add() {
-    if (!academy || !profile || busy || !target) return;
+    if (!academy || !profile || busy || adding.current || !target) return;
+    adding.current=true;
     setBusy(true); setError('');
     try {
       const lesson = target === 'new' ? null : await fetchCurriculumLessonById(target);
+      if (target!=='new'&&!lesson)throw new Error('missing_lesson');
       if (lesson && lesson.academy_id !== academy.id) throw new Error('wrong_academy');
       const gameType: GameType = activity?.game_type || (source?.kind === 'sentence' ? 'unscramble' : 'wheel');
       const content = activity || (source && prepareClassroomGame(gameType, source.cards, source.kind));
       if (!content) throw new Error('invalid_content');
       // Snapshot: later edits to an activity must not silently change a saved lesson.
       const template = await createGameTemplate({ academyId: academy.id, classId: lesson?.class_id || null,
-        teacherId: profile.id, gameType, name: activity?.name || source!.name, items: structuredClone(content.items), config: structuredClone({ ...content.config, ...(source ? { classroomSource: { id: 'temporary', name: source.name, kind: source.kind, version: '', cards: source.cards } } : {}) }) });
+        teacherId: profile.id, gameType, name: activity?.name || source!.name, items: structuredClone(content.items), config: structuredClone({ ...content.config, editingTemplateId:undefined, lessonSnapshot:true, ...(source ? { classroomSource: { id: 'temporary', name: source.name, kind: source.kind, version: '', cards: source.cards } } : {}) }) });
       const slide = { id: crypto.randomUUID(), kind: 'game' as const, gameType, templateId: template.id };
       const saved = lesson || await createCurriculumLesson({ academyId: academy.id, classId: null, teacherId: profile.id,
         name: activityName(name,t('flow.defaultLesson'),lessons?.map(row=>row.name)), wordListId: null, videoUrl: null, level: null, playlist: [slide] });
       if (lesson) await appendActivityToLesson(lesson, slide);
+      notify(t('launchUx.lessonAdded',{name:saved.name}));
       navigate('/curriculum', { state: { focusClassId: saved.class_id, reopenLessonId: saved.id } });
       onClose();
-    } catch { setError(t('quick.addFailed')); } finally { setBusy(false); }
+    } catch { setError(t('quick.addFailed')); } finally { adding.current=false;setBusy(false); }
   }
   return <AccessibleDialog label={t('quick.addLesson')} onClose={() => { if (!busy) onClose(); }}>
     <div className="space-y-4 p-6">

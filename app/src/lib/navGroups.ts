@@ -29,11 +29,13 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
   { id: 'wordlists', labelKey: 'nav.wordLists', icon: 'library_books', children: [{ to: '/wordlists', labelKey: 'nav.wordLists', icon: 'library_books' }] },
   {
     id: 'lesson',
-    labelKey: 'nav.group_lesson',
+    labelKey: 'launchUx.lessons',
     icon: 'play_circle',
     children: [
       { to: '/curriculum', labelKey: 'nav.curriculum', icon: 'auto_stories', feature: 'group' },
+      { to: '/my-games', labelKey: 'launchUx.myGames', icon: 'sports_esports' },
       { to: '/whiteboard', labelKey: 'whiteboard.navLabel', icon: 'draw' },
+      { to: '/phonics?tab=course', labelKey: 'launchUx.readyClass', icon: 'spellcheck' },
     ],
   },
   {

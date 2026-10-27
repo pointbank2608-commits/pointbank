@@ -304,6 +304,11 @@ export type MusicSelection =
   | { kind: 'upload'; path: string; name: string; url: string };
 
 export interface GameTemplateConfig {
+  /** Current-session guided edit; save updates this existing game without changing its scope. */
+  editingTemplateId?: string;
+  setupKind?: 'word' | 'sentence' | 'names' | 'numbers';
+  /** Internal lesson snapshot, not an explicit My games save. Legacy games remain visible. */
+  lessonSnapshot?: boolean;
   adventure?: import('./adventureGames').AdventureConfig;
   storybook?: import('./storybook').StorybookConfig;
   /** Sentence Splash: time limit in seconds for each sentence. */

@@ -1,3 +1,4 @@
+import {launchUxEn} from '../launchUxLocales';
 import { phonicsLessonEn } from '../phonicsLessonLocales';
 import { elementary800En } from '../elementary800Locales';
 import { phonicsPrintEn, phonicsTeachingEn } from '../phonicsTeachingLocales';
@@ -17,6 +18,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+ launchUx:launchUxEn,
   phonicsGamesTitle: 'Phonics Games',
   classroomGamesTitle: 'Classroom games',
   phonicsGameWithUnit: 'Phonics games with this unit',
@@ -89,7 +91,7 @@ const en: Ko = {
     "preparation": "Game preparation",
     "start": "Start game",
     "startContent": "Start game with this content",
-    "nativeEditor": "Game settings & editing",
+    "nativeEditor": "More settings",
     "nativeEditorHint": "Use this game’s existing item editor below. New content is temporary and never overwrites the original resource.",
     "noMaterialRequired": "Start without a vocabulary list. Check participants or rules in game settings if needed.",
     "participation": "Participants, teams & order",

@@ -104,8 +104,14 @@ export function GameManagement({ children }: { children: ReactNode }) {
 export default function GameThemeFrame(props: Props) { return <GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider>; }
 function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster }: Props) {
   const nativeTurn = useContext(GameTurnContext)?.turn;
+  const started=useRef(false);
+
   const workspace = useGameWorkspace();
   const roster = workspace?.roster ?? suppliedRoster;
+  useEffect(()=>{if(!workspace?.running){if(!workspace?.playing)started.current=false;return;}if(started.current)return;started.current=true;
+    containerRef.current?.querySelector<HTMLButtonElement>('[data-initial-game-start]:not(:disabled),[data-initial-game-start-container] button:not(:disabled)')?.click();
+  },[workspace?.running,workspace?.playing]);
+
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();

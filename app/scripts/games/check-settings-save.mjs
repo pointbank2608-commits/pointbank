@@ -38,7 +38,7 @@ ${names.map((n) => `export const ${n}=(...args)=>(functions.${n}|| (async()=>[])
 `;
 const auth = `const value={academy:{id:'academy-a',features:{group:true},plan:'paid',deletion_requested_at:null,deletion_scheduled_at:null},profile:{id:'teacher-a'},isStaff:true,isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:false,inTrial:false,daysLeft:7},pointUnit:'별'};export const useAuth=()=>value;export const AuthProvider=({children})=>children;`;
 const toast = `const run=async(fn)=>{try{await fn();return true}catch(e){console.error(e);return false}};const value={notify:()=>{},run};export const useToast=()=>value;export const ToastProvider=({children})=>children;`;
-const server = await createServer({
+const server = await createServer({cacheDir:'node_modules/.vite/qa-settings-save',
   root,
   logLevel: "error",
   plugins: [
@@ -67,23 +67,23 @@ try {
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('https://**/*',r=>r.abort());
  await page.goto('http://127.0.0.1:5326/scripts/games/focus.html?start=/games/shopping');
- await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();
+ await page.getByRole('button',{name:'닫기',exact:true}).click();await page.locator('[data-game-preparation] summary').first().click();await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();
  const footer=page.locator('[data-preparation-submit]'),editor=page.locator('[data-game-existing-settings]');
- await footer.getByRole('button',{name:'게임 저장하고 닫기',exact:true}).waitFor();
+ await footer.getByRole('button',{name:'게임 저장',exact:true}).waitFor();
  let box=await footer.boundingBox();assert(box.y+box.height<=1001,'footer visible before scrolling');
  await editor.getByRole('button',{name:'옷 가게',exact:true}).click();await editor.getByRole('button',{name:'8',exact:true}).click();
  await page.screenshot({path:resolve(root,'../output/settings-save-desktop.png')});
  assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
- await footer.getByRole('button',{name:'게임 저장하고 닫기',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.getByText('게임이 저장됐어요.',{exact:false}).waitFor();
+ await footer.getByRole('button',{name:'게임 저장',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});await page.getByText('내 게임에 저장했어요.',{exact:false}).waitFor();
  const saved=await page.evaluate(()=>window.__workspace.writes[0]);assert.equal(saved.config.shopScene,'clothes');assert.equal(saved.config.shopListSize,8);
- await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();await editor.getByRole('button',{name:'5',exact:true}).click();
+ await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();await editor.getByRole('button',{name:'5',exact:true}).click();
  await page.evaluate(()=>window.__workspace.fail=true);
- await footer.getByRole('button',{name:'게임 저장하고 닫기',exact:true}).click();await footer.getByRole('alert').waitFor();assert(await page.getByRole('dialog').isVisible());
- await page.evaluate(()=>window.__workspace.fail=false);await footer.getByRole('button',{name:'게임 저장하고 닫기',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
+ await footer.getByRole('button',{name:'게임 저장',exact:true}).click();await footer.getByRole('alert').waitFor();assert(await page.getByRole('dialog').isVisible());
+ await page.evaluate(()=>window.__workspace.fail=false);await footer.getByRole('button',{name:'게임 저장',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
  assert.equal(await page.evaluate(()=>window.__workspace.writes.length),1);assert.equal(await page.evaluate(()=>window.__workspace.templates.find(t=>t.id===window.__workspace.writes[0].id).config.shopListSize),5);
- await page.getByRole('button',{name:'게임 설정·수정',exact:true}).first().click();await page.setViewportSize({width:390,height:844});
+ await page.getByRole('button',{name:'자세히 설정',exact:true}).first().click();await page.setViewportSize({width:390,height:844});
  box=await footer.boundingBox();assert(box.y>=0&&box.y+box.height<=845,'mobile footer visible');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  await page.screenshot({path:resolve(root,'../output/settings-save-mobile.png')});
- await footer.getByRole('button',{name:'설정 적용하고 닫기',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__workspace.writes.length),1);
+ await footer.getByRole('button',{name:'완료',exact:true}).click();await page.getByRole('dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__workspace.writes.length),1);
  assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,temporarySave:true,updateSameGame:true,failureRetainsDialog:true,retry:true,footerDesktopMobile:true,queuedWrites:true,errors}));
 } catch(error) {console.error(await page?.locator('body').innerText());await page?.screenshot({path:resolve(root,'../output/settings-save-failure.png'),fullPage:true});throw error;}finally{await browser?.close();await server.close();}

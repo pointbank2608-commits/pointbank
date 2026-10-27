@@ -331,6 +331,11 @@ export default function CurriculumPage() {
     clearDraft();
   }
 
+  const editReturn=useRef<{y:number;trigger:HTMLElement|null}|null>(null);
+  const editForm=useRef<HTMLDivElement>(null);
+  useEffect(()=>{if(showForm){requestAnimationFrame(()=>{editForm.current?.scrollIntoView({block:'start'});editForm.current?.querySelector<HTMLInputElement>('input')?.focus({preventScroll:true});});}
+    else if(editReturn.current){const saved=editReturn.current;editReturn.current=null;requestAnimationFrame(()=>{window.scrollTo({top:saved.y});if(saved.trigger?.isConnected)saved.trigger.focus({preventScroll:true});});}
+  },[showForm,editingId]);
   function resetForm() {
     setReopenSlideId(null);
     setEditingId(null);
@@ -358,6 +363,7 @@ export default function CurriculumPage() {
   /** 레슨 카드의 "편집"을 누르면 그 레슨 내용을 폼에 채워서 연다. 영상은 예전엔 별도
    * 컬럼(video_url)이었을 수 있어 effectiveSlides()로 슬라이드 형태로 통일해서 불러온다. */
   function openEditForm(lesson: CurriculumLesson) {
+    if(!showForm)editReturn.current={y:window.scrollY,trigger:document.activeElement as HTMLElement};
     setEditingId(lesson.id);
     setName(lesson.name);
     setWordListId(lesson.word_list_id ?? '');
@@ -472,7 +478,7 @@ export default function CurriculumPage() {
         gameType: slide.gameType,
         name: lessonGameTemplateName(name.trim(), wordList?.name),
         items: content.items,
-        config: content.config,
+        config: {...content.config,lessonSnapshot:true},
         teacherId: profile.id,
       });
       out.push({ ...slide, templateId: tpl.id });
@@ -834,7 +840,7 @@ export default function CurriculumPage() {
       )}
 
       {!showForm ? null : (
-        <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
+        <div ref={editForm} data-lesson-edit-form className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <BackButton onClick={handleCancel} to={t('curriculum.backToList')} />
           {homeworkOpen && <button type="button" className="min-h-11 rounded-xl bg-warm-yellow px-4 font-bold text-deep-navy" onClick={async () => { const saved = await saveLesson(); if (saved) navigate('/homework', { state: { fromLessonId: saved.id, fromClassId: saved.class_id ?? staffClassId } }); }}>{t('studentHw.importLesson', { defaultValue: '저장하고 숙제로 가져오기' })}</button>}
           <h3 className="font-title-md text-title-md text-on-surface">
@@ -984,7 +990,7 @@ export default function CurriculumPage() {
                         gameType,
                         name: listName,
                         items: content.items,
-                        config: content.config,
+                        config: {...content.config,lessonSnapshot:true},
                         teacherId: profile.id,
                       });
                       return tpl.id;

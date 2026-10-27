@@ -1,0 +1,14 @@
+import {useRef,useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {adventureId,type DetectiveCase} from '../../lib/adventureGames';
+import {detectiveSuggestion} from '../../lib/detectiveSuggestion';
+export default function DetectiveCaseEditor({item,onChange,onRemove}:{item:DetectiveCase;onChange:(value:DetectiveCase)=>void;onRemove:()=>void}){
+ const {t}=useTranslation(),area=useRef<HTMLTextAreaElement>(null);const [notice,setNotice]=useState('');
+ return <div className="ad-edit-card"><label>{t('launchUx.incorrect')}<textarea ref={area} value={item.incorrect} onChange={e=>{setNotice('');onChange({...item,incorrect:e.target.value,errors:[]});}}/></label>
+ <label>{t('launchUx.correct')}<input value={item.correct} onChange={e=>{setNotice('');onChange({...item,correct:e.target.value});}}/></label>
+ <button type="button" onClick={()=>{const proposal=detectiveSuggestion(item.incorrect,item.correct);if(!proposal){setNotice(t('launchUx.ambiguous'));return;}setNotice('');onChange({...item,errors:[{id:adventureId(),...proposal}]});}}>{t('launchUx.suggest')}</button>{notice&&<p role="status">{notice}</p>}
+ <details open={!!item.errors.length}><summary>{t('launchUx.reviewSuggestion')}</summary><p>{t('launchUx.manualRange')}</p><button type="button" onClick={()=>{const n=area.current;if(!n||n.selectionStart===n.selectionEnd){area.current?.focus();return;}onChange({...item,errors:[...item.errors,{id:adventureId(),start:n.selectionStart,end:n.selectionEnd,replacement:'',choices:[]}]});}}>{t('launchUx.addRange')}</button>
+ {item.errors.map(range=><div className="ad-edit-row" key={range.id}><strong>“{item.incorrect.slice(range.start,range.end)}”</strong><label>{t('guide.answer')}<input value={range.replacement} onChange={e=>onChange({...item,errors:item.errors.map(r=>r.id===range.id?{...r,replacement:e.target.value}:r)})}/></label><label>{t('launchUx.choices')}<input value={range.choices.join(' | ')} onChange={e=>onChange({...item,errors:item.errors.map(r=>r.id===range.id?{...r,choices:e.target.value.split('|').map(v=>v.trim())}:r)})}/></label><button type="button" onClick={()=>onChange({...item,errors:item.errors.filter(r=>r.id!==range.id)})}>{t('guide.remove')}</button></div>)}</details>
+ <details><summary>{t('launchUx.advanced')}</summary><label>{t('launchUx.accepted')}<textarea value={item.accepted.join('\n')} onChange={e=>onChange({...item,accepted:e.target.value.split('\n').filter(Boolean)})}/></label><label>{t('launchUx.explanation')}<input value={item.explanation} onChange={e=>onChange({...item,explanation:e.target.value})}/></label></details><button type="button" onClick={onRemove}>{t('guide.remove')}</button>
+ </div>;
+}

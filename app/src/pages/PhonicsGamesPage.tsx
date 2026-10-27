@@ -71,7 +71,14 @@ function GameSession({game,unit,en,rounds,seed,onExit,onReward,rewards}:{game:Ph
  const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
  const [results,setResults]=useState<boolean[]>([]);const [leaving,setLeaving]=useState(false);
  const panel=useRef<HTMLDivElement>(null);
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);window.speechSynthesis?.cancel();};},[]);
+ const pseudoFull=useRef(false);
+ async function toggleFullscreen(){
+   if(large){if(document.fullscreenElement===panel.current)await document.exitFullscreen();pseudoFull.current=false;setLarge(false);return;}
+   try{if(!panel.current?.requestFullscreen)throw Error('unsupported');await panel.current.requestFullscreen();setLarge(true);}catch{pseudoFull.current=true;setLarge(true);}
+ }
+ useEffect(()=>{const changed=()=>{if(!pseudoFull.current)setLarge(document.fullscreenElement===panel.current);};document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed);},[]);
+
+ useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){pseudoFull.current=false;setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);window.speechSynthesis?.cancel();};},[]);
  useEffect(()=>{if(!large)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[large]);
  useEffect(()=>{if(paused)window.speechSynthesis?.cancel();},[paused]);
  const finish=index>=rounds;
@@ -85,7 +92,7 @@ function GameSession({game,unit,en,rounds,seed,onExit,onReward,rewards}:{game:Ph
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
  return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
-  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>setLarge(v=>!v)}>{l(en,large?'큰 화면 닫기':'크게 보기',large?'Exit large view':'Large view')}</button><button type="button" className="pg-button" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button></div>
+  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button></div>
   {leaving&&<div className="pg-note" role="alert"><p>{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p><button className="pg-button" onClick={onExit}>{l(en,'나가기','Leave')}</button><button className="pg-button" onClick={()=>setLeaving(false)}>{l(en,'계속할게요','Keep playing')}</button></div>}
   <div className="pg-progress"><span>{Math.min(index+1,rounds)} / {rounds}</span><progress value={index} max={rounds} aria-label={l(en,'게임 진행','Game progress')}/><span>{l(en,'첫 시도 정답','First try')}: {results.filter(Boolean).length}</span></div>
   {game.theme&&<ol className={'pg-journey pg-theme-'+game.theme}>{milestones[game.theme][en?1:0].map((s,i)=><li key={s} aria-current={!finish&&Math.min(2,Math.floor(index*3/rounds))===i?'step':undefined} className={index>=Math.ceil((i+1)*rounds/3)?'pg-milestone-done':''}>{icon(index>=Math.ceil((i+1)*rounds/3)?'check_circle':game.icon)}{s}</li>)}</ol>}

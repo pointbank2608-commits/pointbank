@@ -1,3 +1,5 @@
+import PrelaunchExtras from './prelaunch-extras';
+import MyGamesPage from '../../src/pages/MyGamesPage';
 // Synthetic backend fixture. Uses the real app shell, routes, editors and games.
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -16,5 +18,5 @@ void i18n.changeLanguage('ko');
 (window as unknown as {__clock: typeof gameClock}).__clock=gameClock;
 const params=new URLSearchParams(location.search);
 history.replaceState({},'',params.get('start') || '/dashboard');
-export default function Fixture(){return <BrowserRouter><Routes><Route element={<AppLayout />}><Route path="/dashboard" element={<DashboardPage />}/><Route path="/games" element={<GamesPage />}/><Route path="/wordlists" element={<WordListsPage />}/><Route path="/materials/worksheet" element={<WorksheetPrintPage />}/><Route path="/curriculum" element={<CurriculumPage />}/>{Object.entries(GAME_PAGES).map(([path,Page])=><Route key={path} path={path} element={<GameWorkspace><Page /></GameWorkspace>}/>)}</Route></Routes></BrowserRouter>}
+export default function Fixture(){return <BrowserRouter><Routes><Route element={<AppLayout />}><Route path="/dashboard" element={<DashboardPage />}/><Route path="/games" element={<GamesPage />}/><Route path="/wordlists" element={<WordListsPage />}/><Route path="/materials/worksheet" element={<WorksheetPrintPage />}/><Route path="/qa/prelaunch" element={<PrelaunchExtras />}/><Route path="/my-games" element={<MyGamesPage />}/><Route path="/curriculum" element={<CurriculumPage />}/>{Object.entries(GAME_PAGES).map(([path,Page])=><Route key={path} path={path} element={<GameWorkspace><Page /></GameWorkspace>}/>)}</Route></Routes></BrowserRouter>}
 createRoot(document.getElementById('root')!).render(<Fixture />);

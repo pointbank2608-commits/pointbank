@@ -171,7 +171,7 @@ export default function PassTheBall({
           />
 
           {phase === 'idle' && (
-            <button type="button" onClick={start} className={pill}>
+            <button type="button" data-initial-game-start onClick={start} className={pill}>
               {t('gamePassBall.startButton')}
             </button>
           )}

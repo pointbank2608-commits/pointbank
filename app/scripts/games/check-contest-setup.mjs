@@ -39,7 +39,7 @@ ${names.map((n) => `export const ${n}=(...args)=>(functions.${n}|| (async()=>[])
 `;
 const auth = `const value={academy:{id:'academy-a',features:{group:true},plan:'paid',deletion_requested_at:null,deletion_scheduled_at:null},profile:{id:'teacher-a'},isStaff:true,isAdmin:false,hasFullAccess:true,isPaid:true,session:{user:{id:'teacher-a'}},trial:{active:false,inTrial:false,daysLeft:7},pointUnit:'별'};export const useAuth=()=>value;export const AuthProvider=({children})=>children;`;
 const toast = `const run=async(fn)=>{try{await fn();return true}catch(e){console.error(e);return false}};const value={notify:()=>{},run};export const useToast=()=>value;export const ToastProvider=({children})=>children;`;
-const server = await createServer({
+const server = await createServer({cacheDir:'node_modules/.vite/qa-check-contest-setup',
   root,
   logLevel: "error",
   plugins: [
@@ -102,7 +102,7 @@ try {
  assert.equal(new Set(saved.config.liveQuestions.filter(q=>q.roundType==='text').map(q=>q.answer)).size,37);
  assert.equal(new Set(saved.config.liveQuestions.filter(q=>q.roundType==='buzzer').map(q=>q.answer)).size,37);
  assert.equal(saved.config.classroomSource.cards.length,37);
- await page.getByRole('button',{name:'무엇으로 게임을 만들까요?',exact:true}).click();
+ await page.locator('[data-game-preparation] > button').first().click();
  await setup.getByRole('button',{name:'문장모음',exact:true}).click();
  await setup.getByRole('combobox').selectOption('sentences');
  await setup.getByRole('button',{name:'다음',exact:true}).click();
@@ -113,7 +113,7 @@ try {
  const sentence=await page.evaluate(()=>window.__workspace.writes.at(-1));
  assert.equal(sentence.config.liveQuestions.length,12);
  assert.equal(sentence.config.classroomSource.kind,'sentence');
- await page.getByRole('button',{name:'무엇으로 게임을 만들까요?',exact:true}).click();
+ await page.locator('[data-game-preparation] > button').first().click();
  await setup.getByRole('button',{name:'저장한 게임 불러오기',exact:true}).click();
  await setup.getByRole('button',{name:new RegExp(saved.name)}).click();
  await setup.waitFor({state:'hidden'});

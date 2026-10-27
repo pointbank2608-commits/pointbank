@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'vite';
+import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+const server=await createServer({cacheDir:'node_modules/.vite/qa-check-prelaunch-layout',logLevel:'error',server:{host:'127.0.0.1',port:5336,strictPort:true,hmr:false}});let browser;
+try{await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});const errors=[],results=[];
+for(const type of ['balloonpop','wordfishing'])for(const width of [1440,390])for(const zoom of [1,1.5]){
+ const page=await browser.newPage({viewport:{width,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.route('https://**/*',r=>r.abort());await page.goto(`http://127.0.0.1:5336/scripts/games/adventure.html?game=${type}&longwords=1`);await page.getByRole('button',{name:'게임 시작',exact:true}).click();await page.locator('.ad-word').first().waitFor();await page.evaluate(zoom=>{document.querySelectorAll('.ad-word>span:last-of-type').forEach(n=>{n.style.fontSize=24*zoom+'px';});},zoom);await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(150);
+ const labels=await page.locator('.ad-word>span:last-of-type').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent,overflow:getComputedStyle(n).overflowY,h:n.clientHeight,sh:n.scrollHeight,css:getComputedStyle(n).height,parentCss:getComputedStyle(n.parentElement).height,scroll:n.scrollHeight>n.clientHeight+1,w:n.scrollWidth>n.clientWidth+1,within:n.getBoundingClientRect().bottom<=n.parentElement.getBoundingClientRect().bottom+2})));await page.screenshot({path:'../output/prelaunch-layout-debug.png'});assert(labels.some(n=>n.text==='apple'));assert(labels.every(n=>n.overflow==='visible'&&!n.scroll&&!n.w&&n.within),JSON.stringify({type,width,zoom,labels}));
+ await page.locator('.ad-word').first().focus();await page.keyboard.press('Enter');await page.waitForTimeout(100);assert(await page.locator('.ad-notice').isVisible());
+ if(width===390&&zoom===1.5)await page.screenshot({path:`../output/prelaunch-${type}-large-mobile.png`});
+ if(width===1440&&zoom===1){await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.getByRole('button',{name:'전체화면 종료',exact:true}).waitFor();await page.keyboard.press('Escape');}
+ results.push({type,width,zoom,labels:labels.length});await page.close();
+}assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,cases:results,keyboard:true,fullscreen:true,errors}));}finally{await browser?.close();await server.close();}
