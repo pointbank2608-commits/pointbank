@@ -7,7 +7,10 @@ import { fetchPhonicsBank } from '../lib/api';
 import { courseUnits } from '../data/phonicsLessons';
 import { PHONICS_GAMES, alphabetGlyph, gameAvailability, gameName, gamePool, makeRound, patternKey, patternLabel, phonicsGameUnits, pictureEligible, shuffled, targetText, type PhonicsGame } from '../lib/phonicsGames';
 import type { PhonicsBankEntry } from '../lib/types';
+import {ClaySprite,ClassroomVillage,LearningStage,PhonicsGameCover,PlayWorld} from '../components/PhonicsGameArt';
+import {PHONICS_WORLDS,addVillageReward,gameVisual,readVillageRewards,type PhonicsWorld,type VillageReward} from '../lib/phonicsGameVisuals';
 import '../styles/phonics-games.css';
+import '../styles/phonics-games-v2.css';
 
 const l=(en:boolean,ko:string,english:string)=>en?english:ko;
 const icon=(name:string)=><span className="material-symbols-outlined" aria-hidden="true">{name}</span>;
@@ -31,14 +34,16 @@ export default function PhonicsGamesPage(){
  const [query,setQuery]=useState('');const [rounds,setRounds]=useState(6);
  const [playing,setPlaying]=useState(false);const [seed,setSeed]=useState(1);
  const [guide,setGuide]=useState(false);
+ const [world,setWorld]=useState<PhonicsWorld|'all'>('all');
+ const [rewards,setRewards]=useState(readVillageRewards);
  const pick=(id:string)=>{setPlaying(false);setParams({unit:id},{replace:true});};
  const invalid=Boolean(rawUnit&&!requested)||Boolean(gameId&&!game);
  const reason=game?gameAvailability(game,unit,en):null;
- const candidates=PHONICS_GAMES.filter(g=>(!query||`${g.ko} ${g.en} ${g.goal.join(' ')}`.toLowerCase().includes(query.toLowerCase()))&&g.stages.includes(unit.step));
+ const candidates=PHONICS_GAMES.filter(g=>(!query||`${g.ko} ${g.en} ${g.goal.join(' ')}`.toLowerCase().includes(query.toLowerCase()))&&g.stages.includes(unit.step)&&(world==='all'||gameVisual(g).world===world));
  const start=()=>{setSeed(crypto.getRandomValues(new Uint32Array(1))[0]);setPlaying(true);};
- return <main className="phonics-games" data-phonics-games>
+ return <main className={'phonics-games pg-v2 '+(playing?'pg-is-playing':'')} data-phonics-games>
   <nav className="pg-tabs" aria-label={l(en,'게임 카테고리','Game categories')}><Link to="/games">{l(en,'기존 게임','Classroom games')}</Link><Link to="/phonics-games" aria-current="page">{l(en,'파닉스 게임','Phonics Games')}</Link></nav>
-  <header className="pg-hero"><div><p className="pg-eyebrow">CLASSBANK · PHONICS PLAY</p><h1>{game?gameName(game,en):l(en,'파닉스 게임','Phonics Games')}</h1><p>{game?game.goal[en?1:0]:l(en,'우리 단어와 소리 규칙으로, 매일 다른 놀이를 만나요.','A different way to play with our words and spelling patterns.')}</p></div><span className="pg-hero-art" aria-hidden="true">Aa<span>sh</span><span>ee</span></span></header>
+  <header className="pg-hero"><div><p className="pg-eyebrow">CLASSBANK · CLAY PLAY</p><h1>{game?gameName(game,en):l(en,'파닉스 게임','Phonics Games')}</h1><p>{game?gameVisual(game)[en?'en':'ko']:l(en,'글자를 만지고, 소리를 잇고, 우리 마을을 만들어요.','Touch the letters. Connect the sounds. Build our village.')}</p></div><PhonicsGameCover game={game??PHONICS_GAMES[5]} large/></header>
   {invalid?<div className="pg-panel" role="alert"><p>{l(en,'찾을 수 없는 게임 또는 수업 유닛이에요.','This game or unit could not be found.')}</p><Link to="/phonics-games">{l(en,'파닉스 게임 목록','Phonics Games catalogue')}</Link></div>:<>
    {!playing&&<section className="pg-panel pg-setup" aria-label={l(en,'수업 선택','Choose lesson')}>
     <div className="pg-levels">{PHONICS_STAGES.map(s=><button key={s.number} type="button" aria-pressed={unit.step===s.number} onClick={()=>pick(units.find(u=>u.step===s.number)!.id)}>{l(en,`${s.number}단계`,`Level ${s.number}`)}</button>)}</div>
@@ -46,11 +51,11 @@ export default function PhonicsGamesPage(){
     <p className="pg-unit-summary">{unit.entries.length}{l(en,'개 학습 항목',' learning entries')} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     <details><summary>{l(en,'이번 유닛 단어 보기','View this unit’s words')}</summary><p lang="en">{unit.entries.map(e=>e.word).join(' · ')}</p></details>
    </section>}
-   {!game?<><div className="pg-catalog-heading"><h2>{l(en,`${unit.step}단계에서 고르기`,`Choose a Level ${unit.step} game`)}</h2><label>{l(en,'게임 검색','Search games')}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
-    <div className="pg-grid">{candidates.map(g=>{const blocked=gameAvailability(g,unit,en);return <article className={'pg-game-card '+(blocked?'pg-unavailable':'')} key={g.id} data-game-card={g.id}><span className={'pg-game-art pg-theme-'+(g.theme??g.mechanic)}>{icon(g.icon)}<span lang="en">{unit.groups[0].label}</span></span><div><p className="pg-eyebrow">{g.number>=36?l(en,'모험 게임','Adventure'):l(en,'학습 게임','Learning game')}</p><h3>{gameName(g,en)}</h3><p>{g.goal[en?1:0]}</p>{blocked?<p className="pg-reason">{blocked}</p>:<span className="pg-ready">{l(en,'이 유닛으로 바로 시작','Ready for this unit')}</span>}<Link className="pg-button" to={`/phonics-games/${g.id}?unit=${unit.id}`}>{blocked?l(en,'게임·유닛 안내','View requirements'):l(en,'게임 열기','Open game')}{icon('arrow_forward')}</Link></div></article>;})}</div>
+   {!game?<><ClassroomVillage rewards={rewards} en={en} onClear={()=>{try{sessionStorage.removeItem('classbank.phonics.village.v2');}catch{/* The in-memory village can still be cleared. */}setRewards([]);}}/><div className="pg-world-filter" aria-label={l(en,'놀이 세계','Play worlds')}><button type="button" aria-pressed={world==='all'} onClick={()=>setWorld('all')}>{l(en,'모든 세계','All worlds')}</button>{(Object.keys(PHONICS_WORLDS) as PhonicsWorld[]).map(id=><button type="button" key={id} aria-pressed={world===id} onClick={()=>setWorld(id)}><ClaySprite kind={PHONICS_WORLDS[id].prop}/>{PHONICS_WORLDS[id][en?'en':'ko']}</button>)}</div><div className="pg-catalog-heading"><h2>{l(en,`${unit.step}단계에서 고르기`,`Choose a Level ${unit.step} game`)}</h2><label>{l(en,'게임 검색','Search games')}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
+    <div className="pg-grid">{candidates.map(g=>{const blocked=gameAvailability(g,unit,en);return <article className={'pg-game-card '+(blocked?'pg-unavailable':'')} key={g.id} data-game-card={g.id}><PhonicsGameCover game={g}/><div><p className="pg-eyebrow">{g.number>=36?l(en,'모험 게임','Adventure'):l(en,'학습 게임','Learning game')}</p><h3>{gameName(g,en)}</h3><p>{g.goal[en?1:0]}</p>{blocked?<p className="pg-reason">{blocked}</p>:<span className="pg-ready">{l(en,'이 유닛으로 바로 시작','Ready for this unit')}</span>}<Link className="pg-button" to={`/phonics-games/${g.id}?unit=${unit.id}`}>{blocked?l(en,'게임·유닛 안내','View requirements'):l(en,'게임 열기','Open game')}{icon('arrow_forward')}</Link></div></article>;})}</div>
     {!candidates.length&&<p role="status">{l(en,'검색 결과가 없어요. 다른 이름으로 찾아보세요.','No games found. Try another search.')}</p>}
     <p className="pg-footnote">{l(en,'전체 40종 중 선택한 단계의 게임을 보여 줍니다. 문장 게임은 검토가 끝난 수업에서 열립니다.','Showing this level’s games from the 40-game library. Sentence games use approved lessons only.')}</p>
-   </>:playing?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} onExit={()=>setPlaying(false)}/>:<section className="pg-panel pg-launch">
+   </>:playing?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={()=>setPlaying(false)}/>:<section className="pg-panel pg-launch">
     <h2>{l(en,'이 유닛으로 놀아요','Play with this unit')}</h2><p>Level {unit.step} · Unit {unit.number} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     {game.id==='ow-crossroads'&&<p className="pg-note">{l(en,'5단계 Unit 3의 ow /oʊ/와 Unit 6의 ow /aʊ/를 함께 복습합니다.','Reviews ow /oʊ/ from Level 5 Unit 3 and ow /aʊ/ from Unit 6.')}</p>}
     {reason?<p className="pg-reason" role="status">{reason}</p>:<><label>{l(en,'문제 수','Rounds')}<select aria-label={l(en,'문제 수','Rounds')} value={rounds} onChange={e=>setRounds(Number(e.target.value))}>{[3,6,10].map(n=><option key={n} value={n}>{n}</option>)}</select></label><button type="button" className="pg-primary" onClick={start}>{icon('play_arrow')}{l(en,'게임 시작','Start game')}</button></>}
@@ -62,7 +67,7 @@ export default function PhonicsGamesPage(){
  </main>;
 }
 
-function GameSession({game,unit,en,rounds,seed,onExit}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;onExit:()=>void}){
+function GameSession({game,unit,en,rounds,seed,onExit,onReward,rewards}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;onExit:()=>void;onReward:(reward:VillageReward)=>void;rewards:VillageReward[]}){
  const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
  const [results,setResults]=useState<boolean[]>([]);const [leaving,setLeaving]=useState(false);
  const panel=useRef<HTMLDivElement>(null);
@@ -70,6 +75,8 @@ function GameSession({game,unit,en,rounds,seed,onExit}:{game:PhonicsGame;unit:Co
  useEffect(()=>{if(!large)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[large]);
  useEffect(()=>{if(paused)window.speechSynthesis?.cancel();},[paused]);
  const finish=index>=rounds;
+ const rewardAdded=useRef(false);
+ useEffect(()=>{if(!finish){rewardAdded.current=false;return;}if(rewardAdded.current)return;rewardAdded.current=true;onReward({world:gameVisual(game).world,gameId:game.id,unitId:unit.id,label:gameName(game,en)});},[finish,game,unit.id,en,onReward]);
  const activity=useMemo(()=>{
   if(game.mechanic!=='adventure')return game;
   const ids=game.theme==='book'?['read-and-move','sentence-bridge','read-and-move']:unit.step===1?['sound-balloons','sound-baskets','memory-cards']:['sound-fishing',unit.step===2?'sound-train':unit.step===3?'magic-builder':unit.step===4?'consonant-repair':'vowel-chef','word-treasure'];
@@ -77,22 +84,22 @@ function GameSession({game,unit,en,rounds,seed,onExit}:{game:PhonicsGame;unit:Co
   return gameAvailability(candidate,unit)?PHONICS_GAMES.find(g=>g.id==='sound-fishing')!:candidate;
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
- return <div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id}>
+ return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
   <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>setLarge(v=>!v)}>{l(en,large?'큰 화면 닫기':'크게 보기',large?'Exit large view':'Large view')}</button><button type="button" className="pg-button" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button></div>
   {leaving&&<div className="pg-note" role="alert"><p>{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p><button className="pg-button" onClick={onExit}>{l(en,'나가기','Leave')}</button><button className="pg-button" onClick={()=>setLeaving(false)}>{l(en,'계속할게요','Keep playing')}</button></div>}
   <div className="pg-progress"><span>{Math.min(index+1,rounds)} / {rounds}</span><progress value={index} max={rounds} aria-label={l(en,'게임 진행','Game progress')}/><span>{l(en,'첫 시도 정답','First try')}: {results.filter(Boolean).length}</span></div>
   {game.theme&&<ol className={'pg-journey pg-theme-'+game.theme}>{milestones[game.theme][en?1:0].map((s,i)=><li key={s} aria-current={!finish&&Math.min(2,Math.floor(index*3/rounds))===i?'step':undefined} className={index>=Math.ceil((i+1)*rounds/3)?'pg-milestone-done':''}>{icon(index>=Math.ceil((i+1)*rounds/3)?'check_circle':game.icon)}{s}</li>)}</ol>}
   {paused&&<section className="pg-panel pg-pause" role="status"><h2>{l(en,'잠깐 쉬어가요','Take a break')}</h2><button className="pg-primary" onClick={()=>setPaused(false)}>{l(en,'이어서 하기','Resume')}</button></section>}
-  {finish?<section hidden={paused} className="pg-panel pg-results" aria-live="polite"><span className="pg-trophy">{icon('workspace_premium')}</span><h2>{l(en,'오늘도 잘했어요!','Great work today!')}</h2><p>{rounds}{l(en,'문제를 끝냈어요.',' rounds completed.')}</p><p>{l(en,'첫 시도에 혼자 맞힘','Correct on the first try')}: {results.filter(Boolean).length} · {l(en,'다시 도전·도움 후 완성','Completed after retry / help')}: {results.filter(x=>!x).length}</p><p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><button className="pg-primary" onClick={()=>{setIndex(0);setResults([]);setDone(false);}}>{l(en,'다시 하기','Play again')}</button><button className="pg-button" onClick={onExit}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
+  {finish?<section hidden={paused} className="pg-panel pg-results" aria-live="polite"><ClaySprite kind={gameVisual(game).prop} className="pg-result-friend"/><h2>{l(en,'오늘도 잘했어요!','Great work today!')}</h2><p>{rounds}{l(en,'문제를 끝냈어요.',' rounds completed.')}</p><p>{l(en,'첫 시도에 혼자 맞힘','Correct on the first try')}: {results.filter(Boolean).length} · {l(en,'다시 도전·도움 후 완성','Completed after retry / help')}: {results.filter(x=>!x).length}</p><p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><ClassroomVillage rewards={rewards} en={en}/><button className="pg-primary" onClick={()=>{setIndex(0);setResults([]);setDone(false);}}>{l(en,'다시 하기','Play again')}</button><button className="pg-button" onClick={onExit}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
    {game.mechanic==='adventure'&&<p className="pg-mission">{l(en,'이번 미션','Mission')}: {gameName(activity,en)}</p>}
-   <RoundActivity key={`${index}:${activity.id}`} game={activity} unit={unit} en={en} index={index} seed={seed} onComplete={first=>{setResults(old=>[...old,first]);setDone(true);}}/>
-   {done&&<button autoFocus className="pg-primary pg-next" onClick={()=>{window.speechSynthesis?.cancel();setDone(false);setIndex(n=>n+1);}}>{l(en,index+1===rounds?'결과 보기':'다음 문제',index+1===rounds?'See results':'Next round')}{icon('arrow_forward')}</button>}
+   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} onComplete={first=>{setResults(old=>[...old,first]);setDone(true);}}/>
+   {done&&<button className="pg-primary pg-next" onClick={()=>{window.speechSynthesis?.cancel();setDone(false);setIndex(n=>n+1);}}>{l(en,index+1===rounds?'결과 보기':'다음 문제',index+1===rounds?'See results':'Next round')}{icon('arrow_forward')}</button>}
   </div>}
- </div>;
+ </div></PlayWorld>;
 }
 
-interface ActivityProps {game:PhonicsGame;unit:CourseUnit;en:boolean;index:number;seed:number;onComplete:(first:boolean)=>void}
-function RoundActivity({game,unit,en,index,seed,onComplete}:ActivityProps){
+interface ActivityProps {game:PhonicsGame;visualGame?:PhonicsGame;unit:CourseUnit;en:boolean;index:number;seed:number;onComplete:(first:boolean)=>void}
+function RoundActivity({game,visualGame,unit,en,index,seed,onComplete}:ActivityProps){
  const round=useMemo(()=>makeRound(game,unit,index,seed),[game,unit,index,seed]);
  const [errors,setErrors]=useState(0),[help,setHelp]=useState(false),[solved,setSolved]=useState(false),[wrong,setWrong]=useState(false);
  const [selected,setSelected]=useState<number[]>([]),[opened,setOpened]=useState<number[]>([]),[matched,setMatched]=useState<number[]>([]);
@@ -160,8 +167,10 @@ function RoundActivity({game,unit,en,index,seed,onComplete}:ActivityProps){
    {balloons?<div className="pg-options pg-balloons">{shuffled([...new Map(gamePool(game,unit).map(e=>[targetText(e).toLowerCase(),e])).values()],seed+index).map(e=><button type="button" key={e.id} disabled={solved} onClick={()=>good(targetText(e).toLowerCase()===targetText(round.entry).toLowerCase())}>{alphabetGlyph(e).toUpperCase()} {alphabetGlyph(e).toLowerCase()}</button>)}</div>:read&&preview&&game.id==='word-treasure'?null:<div className={'pg-options '+(game.id==='sound-fishing'?'pg-fish':'')}>{round.options.map(e=><button type="button" key={e.id} disabled={solved} onClick={()=>good(e.id===round.entry.id)}>{read||game.mechanic==='choice'?pictureEligible(e)?<WordPicture entry={e} en={en}/>:<span lang="en">{e.word}</span>:<span lang="en">{e.word}</span>}</button>)}</div>}
   </>;
  }
- return <section className={'pg-playground pg-mode-'+game.id} data-activity={game.id}>
-  <h2>{gameName(game,en)}</h2>{content}{feedback}
+ return <section className={'pg-playground pg-mode-'+game.id} data-activity={game.id} data-solved={solved} data-retry={wrong} data-carriages={game.id==='sound-train'&&gameVisual(visualGame??game).world==='train'}>
+  <h2>{gameName(game,en)}</h2>
+  <LearningStage game={visualGame??game} en={en} solved={solved} wrong={wrong} word={solved?speakTarget:''} pieces={tiles.map(id=>tokenChoices.find(t=>t.id===id)?.text??'')} slots={buildTokens.length} progress={Math.max(tiles.length/Math.max(1,buildTokens.length),matched.length/Math.max(1,pairCards.length),selected.length/Math.max(1,huntLetters.filter(x=>x.toLowerCase()===huntTarget).length),covered.length/Math.max(1,bingoEntries.length),connected.length/Math.max(1,round.entry.targets?.length??0),game.mechanic==='puzzle'?opened.length/4:0,drawn ? .5 : 0)}/>
+  <div className="pg-learning-content">{content}</div>{feedback}
   {!solved&&<details className="pg-hint" onToggle={e=>{if(e.currentTarget.open)setHelp(true);}}><summary>{l(en,'선생님 힌트','Teacher hint')}</summary><p>{game.mechanic==='odd'?oddOptions.map(e=>`${e.word}: ${patternLabel(unit,e)}`).join(' / '):game.mechanic==='pairs'?l(en,'같은 글자의 대문자와 소문자를 연결하세요.','Match the two cases of the same letter.'):game.mechanic==='bingo'&&bingoTarget!==undefined?bingoEntries[bingoTarget].word:hintWord}</p><p>{l(en,'힌트를 본 문제는 도움 후 완성으로 기록해요.','A round with a hint is recorded as completed with help.')}</p>{!['pairs','memory','bingo'].includes(game.mechanic)&&<Audio text={hintWord} en={en} onHelp={speechHint}/>}</details>}
  </section>;
 }
