@@ -1,4 +1,6 @@
 import GameCreateButton from '../components/GameCreateButton';
+import {LESSON_CHANGED} from '../lib/lessonChanges';
+import {effectiveSlides} from '../lib/lessonSlides';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -28,6 +30,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent).detail?.academyId===academy?.id)setRetry(n=>n+1);};window.addEventListener(LESSON_CHANGED,changed);return()=>window.removeEventListener(LESSON_CHANGED,changed);},[academy?.id]);
   const [addList, setAddList] = useState<WordList | null>(null);
   useEffect(() => {
     try { const pending = localStorage.getItem(PENDING_SHARE_KEY); if (pending) { localStorage.removeItem(PENDING_SHARE_KEY); navigate(`/share/${pending}`, { replace: true }); } } catch { /* storage unavailable */ }
@@ -68,7 +71,7 @@ export default function DashboardPage() {
         </div></div>)}
       </section>
       {groupOpen && <section className="home-records" aria-labelledby="home-lessons-title" aria-busy={loading}><div className="home-section-heading"><div><h2 id="home-lessons-title">{t('quick.lessons')}</h2><p>{t('quick.lessonHint')}</p></div><div className="home-actions"><Link to="/curriculum" className="home-text-link">{t('quick.allLessons')} <span aria-hidden="true">→</span></Link><Link to="/curriculum" state={{openQuick:true}} className={button}>{t('quick.newLesson')}</Link></div></div>
-        {loading ? <p role="status" className="home-empty">{t('common.loading')}</p> : !error && !lessons.length ? <p className="home-empty">{t('quick.emptyLessons')}</p> : lessons.map(lesson => <div key={lesson.id} className="home-record"><div className="home-record-name"><h3>{lesson.name}</h3><p>{t('quick.activities',{count:lesson.playlist.length})}</p></div><Link className={`${button} home-button-primary`} to="/curriculum" state={{focusClassId:lesson.class_id,startLessonId:lesson.id}}>{t('quick.continueLesson')}</Link></div>)}
+        {loading ? <p role="status" className="home-empty">{t('common.loading')}</p> : !error && !lessons.length ? <p className="home-empty">{t('quick.emptyLessons')}</p> : lessons.map(lesson => <div key={lesson.id} className="home-record"><div className="home-record-name"><h3>{lesson.name}</h3><p>{t('quick.activities',{count:effectiveSlides(lesson).length})}</p></div><Link className={`${button} home-button-primary`} to="/curriculum" state={{focusClassId:lesson.class_id,startLessonId:lesson.id}}>{t('quick.continueLesson')}</Link></div>)}
         {classesToday(classes).map(cls => <p key={cls.id} className="home-schedule">{cls.name} · {shortTime(cls.schedule?.time || '')} <Link to="/curriculum" state={{focusClassId:cls.id}} className="home-text-link">{t('quick.lessons')} →</Link></p>)}
       </section>}
     </div>

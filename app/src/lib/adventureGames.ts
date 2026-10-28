@@ -119,12 +119,16 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
     }
   }
   if(type==='wordtrain'||type==='sentencerocket'){
-    if(!c.sentences.length)out.push('영어 문장을 입력해 주세요.');
+    if(!c.sentences.length)out.push('영어 문장을 최소 1개 입력해 주세요. 각 문장은 블록이 2개 이상 필요해요.');
     c.sentences.forEach((s,i)=>{if(!s.text.trim()||s.tokens.length<2||s.tokens.some(t=>!t.trim())||normalizeStory(s.tokens.join(' '))!==normalizeStory(s.text))out.push(`${i+1}번: 블록을 순서대로 합친 문장이 원문과 일치해야 해요. 대소문자·문장부호를 확인하세요.`);});
   }
   if(type==='grammardetective'){
-    if(!c.cases.length)out.push('사건 문장을 입력해 주세요.');
+    if(!c.cases.length)out.push('틀린 문장과 올바른 문장을 한 쌍 이상 입력해 주세요.');
     c.cases.forEach((item,i)=>{
+      if(!item.incorrect.trim()||!item.correct.trim()){
+        out.push(`${i+1}번: 틀린 문장과 올바른 문장을 모두 입력해 주세요. 최소 한 쌍이 필요해요.`);
+        return;
+      }
       const ranges=[...item.errors].sort((a,b)=>a.start-b.start);
       if(new Set(ranges.map(r=>r.id)).size!==ranges.length)out.push(`${i+1}번: 오류 식별자가 중복돼요. 오류 범위를 다시 지정하세요.`);
       if(c.detectiveMode==='choice'&&ranges.some(r=>r.choices.some(v=>!v.trim())))out.push(`${i+1}번: 빈 선택지를 지우거나 채워 주세요.`);

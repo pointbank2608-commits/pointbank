@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { appendActivityToLesson, createCurriculumLesson, createGameTemplate, fetchAllCurriculumLessons, fetchCurriculumLessonById } from '../lib/api';
 import type { CurriculumLesson, GameTemplate, GameType, FullCardItem } from '../lib/types';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
+import {announceLessonChange} from '../lib/lessonChanges';
 
 export default function AddActivityToLesson({ activity, source, onClose }: {
   activity?: GameTemplate; source?: { cards: FullCardItem[]; kind: 'word' | 'sentence'; name: string }; onClose: () => void;
@@ -43,6 +44,7 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
       const saved = lesson || await createCurriculumLesson({ academyId: academy.id, classId: null, teacherId: profile.id,
         name: activityName(name,t('flow.defaultLesson'),lessons?.map(row=>row.name)), wordListId: null, videoUrl: null, level: null, playlist: [slide] });
       if (lesson) await appendActivityToLesson(lesson, slide);
+      announceLessonChange(academy.id,saved.id);
       notify(t('launchUx.lessonAdded',{name:saved.name}));
       navigate('/curriculum', { state: { focusClassId: saved.class_id, reopenLessonId: saved.id } });
       onClose();

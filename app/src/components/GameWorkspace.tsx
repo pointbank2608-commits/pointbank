@@ -41,11 +41,33 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const [teacherToolsTarget, setTeacherToolsTarget] = useState<HTMLDivElement | null>(null);
   const [info, setInfo] = useState<GameWorkspaceBridge | null>(null);
   const bridge = useRef<GameWorkspaceBridge | null>(null);
+  const nativeCommit=useRef<(()=>Promise<boolean>)|null>(null),commitLock=useRef(false);
+  const registerPreparation=useCallback((commit:()=>Promise<boolean>)=>{nativeCommit.current=commit;return()=>{if(nativeCommit.current===commit)nativeCommit.current=null;};},[]);
+  const commitPreparation=useCallback(async()=>{
+    if(commitLock.current)return false;commitLock.current=true;setError('');
+    try{
+      (document.activeElement as HTMLElement|null)?.blur();
+      await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+      const commit=nativeCommit.current;
+      if(commit&&!await commit())return false;
+      // React can publish the applied selection after more than one animation frame.
+      // Wait for readiness instead of treating the previous render as the result.
+      const ready=()=>{const current=bridge.current;return !!current?.selected&&!current.settingsPending&&isNativeGameReady(current.selected)&&!guideProblem(current.selected);};
+      const until=performance.now()+2000;
+      do{
+        await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
+        if(ready())return true;
+      }while(commit&&performance.now()<until);
+      if(commit)throw new Error(t('flow.actionFailed'));
+      return false;
+    }catch(error){setError(error instanceof Error?error.message:t('flow.actionFailed'));return false;}
+    finally{commitLock.current=false;}
+  },[t]);
   const [panel, setPanel] = useState<Panel>(null);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
-  function completePreparation(){setPanel(null);setPlaying(false);setRunning(false);notify(t('launchUx.applied'));}
+  const completePreparation=useCallback(()=>{setPanel(null);setPlaying(false);setRunning(false);notify(t('launchUx.applied'));},[notify,t]);
   const guideOpened=useRef('');
   const [playing, setPlaying] = useState(false);
   const [fullscreen,setFullscreen]=useState(false);
@@ -63,6 +85,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(()=>{if(panel)setSettingsSaved(false);},[panel]);
   const [addLesson, setAddLesson] = useState(false);
   const [activityName, setActivityName] = useState('');
+  const [saveCopy,setSaveCopy]=useState(false);
   const [saveOriginal, setSaveOriginal] = useState(false);
   const [materialName, setMaterialName] = useState('');
   const [sampleRequested,setSampleRequested]=useState(false);
@@ -143,17 +166,18 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     if (!canStart) { setPanel('settings'); return; }
     setPanel(null); setPlaying(true); setRunning(true);
   }
-  useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected]);
+  useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
   function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
   async function startFromEditor() {
+    if(!await commitPreparation())return;
     if (saveOriginal) {
       if (!await action(() => bridge.current!.saveMaterial(materialName.trim()), false)) return;
       setSaveOriginal(false);
     }
-    setPanel(null);notify(t('launchUx.applied'));
+    completePreparation();
   }
   async function saveSettingsAndClose() {
-    if (!canStart || !bridge.current?.selected) return;
+    if (!bridge.current?.selected || !await commitPreparation()) return;
     const ok = await action(async () => {
       // Commit native editor fields that save on blur before taking their latest snapshot.
       (document.activeElement as HTMLElement | null)?.blur();
@@ -162,15 +186,15 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         await bridge.current!.saveMaterial(materialName.trim());
         setSaveOriginal(false);
       }
-      await bridge.current!.saveSettings(activityName.trim() || undefined);
+      await bridge.current!.saveSettings(activityName.trim() || undefined,saveCopy);
     });
-    if (ok) { setSettingsSaved(true); notify(t('launchUx.saved')); }
+    if (ok) { setSettingsSaved(true);setSaveCopy(false);notify(`${t('launchUx.saved')} · ${t('launchUx.myGames')}`); }
   }
   const [guidePreset, setGuidePreset] = useState<GuideKind | null>(null);
   async function begin(kind: 'word' | 'sentence') {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
   }
-  useEffect(()=>{const state=location.state as {editGame?:boolean;openTemplateId?:string}|null;if(state?.editGame&&info?.selected?.id===state.openTemplateId&&editHandled.current!==location.key){editHandled.current=location.key;editContent();}},[location.key,location.state,info?.selected]);
+  useEffect(()=>{const state=location.state as {editGame?:boolean;openTemplateId?:string}|null;if(state?.editGame&&(info?.selected?.id===state.openTemplateId||info?.selected?.config.editingTemplateId===state.openTemplateId)&&editHandled.current!==location.key){editHandled.current=location.key;editContent();}},[location.key,location.state,info?.selected]);
   const details = info?.selected ? gameReadyDetails(info.selected) : null;
   const readiness = [details?.count !== null && details?.count !== undefined ? t(`flow.count_${details.kind}`,{count:details.count}) : null,
     ordered && capabilities.manualTurns ? order.mode==='team' ? t('flow.count_teams',{count:order.teamCount}) : t('flow.count_participants',{count:roster.length}) : details?.teams ? t('flow.count_teams',{count:details.teams}) : null,
@@ -180,7 +204,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
@@ -192,6 +216,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     {!!info?.sourceCards?.length && <><button className={btn} onClick={() => setPanel('games')}>{t('teacherGame.switchGame')}</button><button className={btn} onClick={() => navigate('/materials/worksheet',{state:{materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id,materialsWords:info.sourceCards,materialsKind:sourceKind,materialsTab:'list'}})}>{t('quick.worksheet')}</button></>}
     {!presenting && groupOpen && info?.selected && <button className={btn} onClick={() => { setPanel(null); setAddLesson(true); }}>{t('teacherGame.addToLesson')}</button>}
   </div>;
+  const saveOptions=<details data-game-save-options><summary className="cursor-pointer py-2 font-bold">{i18n.resolvedLanguage?.startsWith('en')?'Save options':'저장 옵션'}</summary><p>{info?.saveTarget?`${i18n.resolvedLanguage?.startsWith('en')?'Update saved game':'갱신할 저장 게임'}: ${info.saveTarget.name}`:t('settingsSave.temporaryHint')}</p><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveCopy} onChange={e=>setSaveCopy(e.target.checked)}/>{i18n.resolvedLanguage?.startsWith('en')?'Save as a new game':'새 이름으로 저장'}</label><label className="block">{t('quick.activityName')}<input className={btn} value={activityName} placeholder={info?.saveTarget?.name||defaultGameName} onChange={e=>setActivityName(e.target.value)}/></label></details>;
   return <GameWorkspaceContext.Provider value={value}>
     <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
       {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
@@ -221,7 +246,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           <p>{t('teacherGame.menuHint')}</p>
           <button className={btn} onClick={editContent}>{t('launchUx.editContent')}</button>
           <button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>
-          <button className={btn} disabled={!canStart||busy} onClick={()=>void saveSettingsAndClose()}>{t('launchUx.saveGame')}</button>
+          {panel==='teacher'&&saveOptions}
+          <button className={btn} disabled={busy||!!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t('launchUx.saveGame')}</button>
           {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
           <button className={btn} onClick={exitPlay}>{t('flow.backToPreparation')}</button>
           <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>
@@ -255,12 +281,12 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
             <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>
             <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !canStart} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'launchUx.saveGame')}</button>
-              <button className={btn} disabled={busy || !canStart} onClick={()=>void startFromEditor()}>{t('launchUx.done')}</button>
+              <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'launchUx.saveGame')}</button>
+              <button className={btn} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{t('launchUx.done')}</button>
             </div>
             {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
             {error&&<p role="alert" className="text-error">{error}</p>}
-            {info?.selected&&isActivityDraft(info.selected.id)&&<label className="block">{t('quick.activityName')}<input placeholder={defaultGameName} className={`${btn} ml-2`} value={activityName} onChange={event=>setActivityName(event.target.value)}/></label>}
+            {panel==='settings'&&saveOptions}
 
           </div>
       </dialog>

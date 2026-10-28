@@ -1959,7 +1959,6 @@ function GameSlideEditor({
   const [creating, setCreating] = useState(false);
   // 게임 내용을 새로 만들면 게임 화면을 다시 그려 그 템플릿을 연다.
   const [reloadKey, setReloadKey] = useState(0);
-  const autoDone = useRef<Set<string>>(new Set());
   const templateRef = useRef(slide.templateId);
   templateRef.current = slide.templateId;
   /** Both sentence-building games can use a saved sentence list. */
@@ -1994,19 +1993,7 @@ function GameSlideEditor({
     }
   }
 
-  // 슬라이드를 고르면 수업 단어장으로 게임 내용을 바로 만들어 둔다(따로 "만들기"를 누를 필요 없음).
-  // 이 블록만 다른 단어장을 골라 둔 슬라이드는 건드리지 않고, 수업 단어장이 바뀌었으면 새 단어장으로 다시 만든다.
-  useEffect(() => {
-    if (!content || !profile || creating) return;
-    if (slide.ownWordListId && slide.templateId) return;
-    const stale = !!slide.templateId && !!slide.autoWordListId && slide.autoWordListId !== wordListId;
-    if (slide.templateId && !stale) return;
-    const key = `${slide.id}:${slide.gameType}:${wordListId}`;
-    if (autoDone.current.has(key)) return;
-    autoDone.current.add(key);
-    void createFromLesson(stale ? 'changed' : 'first');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slide.id, slide.gameType, slide.templateId, slide.autoWordListId, slide.ownWordListId, wordListId, content, profile]);
+  // Opening an existing lesson is read-only; creating/replacing game content is explicit.
 
   // Keep the lesson-level sentence picker consistent with both game pages.
   useEffect(() => {
@@ -2139,8 +2126,9 @@ function GameSlideEditor({
       </div>
       <p className="flex items-center gap-1 px-1 font-caption text-caption text-on-surface-variant">
         <span className="material-symbols-outlined text-[16px] text-primary">info</span>
-        {t('curriculum.slides.gameEmbedHint')} {t('curriculum.slides.gameAutoHint')}
+        {t('curriculum.slides.gameEmbedHint')}
       </p>
+      {content&&(!slide.templateId||(slide.autoWordListId&&slide.autoWordListId!==wordListId))&&<button type="button" className="min-h-11 rounded-xl border px-4 py-2" disabled={creating} onClick={()=>void createFromLesson(slide.templateId?'changed':'first')}>{t('curriculum.slides.gameContentCreateNow')}</button>}
       {GamePage ? (
         <div className="game-embed rounded-xl bg-background p-3 md:p-4">
           <GameEmbedContext.Provider value={embed}>

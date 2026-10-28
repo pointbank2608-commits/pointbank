@@ -1,10 +1,11 @@
 import BombPracticeInput from './BombPracticeInput';
 import NumberRangeFill from './NumberRangeFill';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback,useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
@@ -31,6 +32,7 @@ interface Props {
 }
 type Launch={kind:GuideKind;cards?:FullCardItem[];ownerId?:string;academyId?:string};
 export default function GameSetupGuide({info,active,canStart,busy,run,complete,editRevision,nativeVisible,presetKind,onPresetUsed}:Props){
+  const workspace=useGameWorkspace();
   const {t}=useTranslation();const {session,academy}=useAuth();const location=useLocation();
   const [kind,setKind]=useState<GuideKind>('word');const [step,setStep]=useState(0);const [native,setNative]=useState(false);const [error,setError]=useState('');
   const [raw,setRaw]=useRecoverableField(`guide:${info.gameType}:${kind}:rows`);
@@ -45,10 +47,13 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   const [pattern,setPattern]=useRecoverableField(`guide:${info.gameType}:pattern`,info.selected?.config.watermelonPatternId||'svo');
   const pendingRows=useRef<{kind:GuideKind;rows:string[][]}|null>(null);
   const asNames=kind==='names'||kind==='numbers';
-  const family=guideFamily(info.gameType);const dedicated=family==='builtin';
+  const family=guideFamily(info.gameType);const dedicated=family==='builtin'&&info.gameType!=='timer';
+  // Built-in roleplay and generated activities need no extra input with their defaults.
+  // Their optional editors remain in the separate settings panel.
+  const inlineNative=dedicated&&!['airport','restaurant','icecream','doctor','shopping','mathgen'].includes(info.gameType);
   const steps=[0,1];
   let rows:string[][]=[];try{const stored=raw?JSON.parse(raw):null;rows=Array.isArray(stored)&&stored.every(r=>Array.isArray(r)&&r.every(s=>typeof s==='string'))?stored:[];}catch{/* recover malformed tab data safely */}
-  const write=(next:string[][])=>setRaw(JSON.stringify(next));
+  const write=useCallback((next:string[][])=>setRaw(JSON.stringify(next)),[setRaw]);
   const resultCount=rows.filter(r=>r[0]?.trim()).length;
   const resultDraft=ladderResultDraft(extra,info.selected?.config.results);
   if(!extra&&info.selected?.config.ladderResultOrder==='random')resultDraft.order='random';
@@ -77,7 +82,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     const requirement=classroomGameRequirement(info.gameType,list.kind||'word');return t(requirement.key,{count:requirement.count});
   }
   const setCell=(i:number,j:number,value:string)=>{const next=rows.map(r=>[...r]);next[i]||=[];next[i][j]=value;write(next);};
-  useEffect(()=>{nativeVisible(active&&step===1&&native);},[active,step,native,nativeVisible]);
+  useEffect(()=>{nativeVisible(active&&step===1&&native&&inlineNative);},[active,step,native,inlineNative,nativeVisible]);
   useEffect(()=>{if(active)heading.current?.focus();},[active,step]);
   useEffect(()=>{if(!active||!presetKind||!info.selected||info.loading||busy)return;onPresetUsed?.();void choose(presetKind);},[active,presetKind,info.selected,info.loading]); // eslint-disable-line react-hooks/exhaustive-deps
   // Route payloads are scoped just like existing quick sources. They never write saved data.
@@ -106,7 +111,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   useEffect(()=>{if(!active||!editRevision||edited.current===editRevision||!info.selected)return;
     edited.current=editRevision;const k=info.selected.config.setupKind || info.selected.config.classroomSource?.kind || (guideKinds(info.gameType).includes('word')?'word':guideKinds(info.gameType).includes('names')?'names':'sentence');
     setKind(k);write(guideRows(info.selected,k));setNative(dedicated);setStep(1);setError('');
-  },[active,editRevision,info.selected]);
+  },[active,editRevision,info.selected,info.gameType,dedicated,write]);
   const problem=info.selected?guideProblem(info.selected):'incomplete';
   async function choose(k:GuideKind){
     setError('');setKind(k);setNative(dedicated);
@@ -117,7 +122,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
       if(await run(()=>info.beginMaterial(k==='sentence'?'sentence':'word')))setStep(1);
     } else if(await run(()=>info.applyGuide({items:info.selected!.items,config:info.selected!.config})))setStep(1);
   }
-  async function next(){
+  async function next(advanced=false){
     if(!info.selected)return;
     setError('');
     if(step===1){
@@ -148,8 +153,9 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
         content.config.setupKind=kind==='sample'?undefined:kind;
         const check=guideProblem({...info.selected,...content});if(check){const count=work.filter(r=>r[0]?.trim()).length;const minimum=family==='list'?GAME_CATALOG.find(g=>g.type===info.gameType)?.minItems||1:0;setError(minimum>count?t('launchUx.minimum',{count,minimum}):t('launchUx.problem',{reason:t(`guide.${check}`),count}));return;}
         if(!await run(()=>info.applyGuide(content)))return;
-      }else if(problem||!canStart){setError(t(`guide.${problem||'incomplete'}`));return;}
-      complete();
+      }else if(workspace?.commitPreparation){if(!await workspace.commitPreparation()){setError(t(`guide.${problem||'incomplete'}`));return;}}
+      else if(problem||!canStart){setError(t(`guide.${problem||'incomplete'}`));return;}
+      if(advanced)workspace?.open('settings');else complete();
     }
   }
   const columns=asNames?[kind==='numbers'?'numberColumn':['wheel','ladder','order'].includes(info.gameType)?'itemColumn':'nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question','answer']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['sentenceColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:['wheel','ladder','order'].includes(info.gameType)?['itemColumn']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
@@ -182,7 +188,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
         {info.gameType==='ladder'&&<div ref={resultSection}><LadderResultSetup draft={resultDraft} count={resultCount} onChange={draft=>{setExtra(JSON.stringify(draft));setError('');}} /></div>}
         {info.gameType==='bomb'&&<BombPracticeInput value={extra} onChange={setExtra}/>}
       </>}
-      <button className={button} onClick={()=>setNative(v=>!v)}>{t('guide.native')}</button>
+      <button className={button} onClick={()=>dedicated?workspace?.open('settings'):void next(true)}>{t('guide.native')}</button>
       {native&&<p>{t('guide.nativeReview')}</p>}
     </>}
     {error&&step===1&&<p role="alert" className="rounded-xl bg-error-container p-3 font-bold" data-guide-error>{error}</p>}

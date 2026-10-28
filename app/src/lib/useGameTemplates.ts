@@ -169,6 +169,8 @@ export function useGameTemplates(params: {
 
   const [templates, setTemplates] = useState<GameTemplate[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Saving records a destination; it must not select a new runtime or reset a running game.
+  const savedTargets=useRef(new Map<string,string>());
   const [loading, setLoading] = useState(true);
   const [loadedWorkspaceKey, setLoadedWorkspaceKey] = useState('');
   const loadSequence = useRef(0);
@@ -196,6 +198,11 @@ export function useGameTemplates(params: {
     setTemplates(old => [draft, ...old.filter(row => !isActivityDraft(row.id))]);
     setSelectedId(draft.id);
   }
+  function selectTemplate(id:string|null){
+    const row=templates.find(row=>row.id===id);
+    if(temporary&&row&&!isActivityDraft(row.id))chooseDraft({...structuredClone(row),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(row.config),editingTemplateId:row.id}});
+    else setSelectedId(id);
+  }
   useEffect(() => {
     const sync = (event: Event) => {
       if ((event as CustomEvent).detail !== temporaryId) return;
@@ -213,7 +220,7 @@ export function useGameTemplates(params: {
   const consumedSource = useRef('');
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current;
-    if (!academy?.id || (!classId && !temporary)) {
+    if (!academy?.id || (!classId && !temporary && !embedRef.current)) {
       setTemplates([]);
       setLoading(false);
       return;
@@ -224,20 +231,21 @@ export function useGameTemplates(params: {
       if (sequence !== loadSequence.current) return;
       const source = ownedQuickSource((routeState.current as OpenState | null)?.quickSource, session?.user.id, academy?.id);
       const hasNewSource = !!source && consumedSource.current !== location.key;
-      const draft = temporary && temporaryId ? (hasNewSource ? draftFactory.current(source) : readActivityDraft(temporaryId) || draftFactory.current()) : null;
+      const openId = openTemplateIdRef.current;
+      const opened=rows.find(row=>row.id===openId);
+      const draft = temporary && temporaryId ? (opened?{...structuredClone(opened),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(opened.config),editingTemplateId:opened.id}}:hasNewSource ? draftFactory.current(source) : readActivityDraft(temporaryId) || draftFactory.current()) : null;
       consumedSource.current = location.key;
       if (draft) writeActivityDraft(draft);
       setTemplates(draft ? [draft, ...rows] : rows);
       // 한 번 반영한 openTemplateId 는 비워서, 나중에 선생님이 다른 템플릿을 고른 뒤 목록을 다시
       // 불러와도 선택이 도로 튀지 않게 한다.
-      const openId = openTemplateIdRef.current;
       const openFound = !!openId && rows.some((r) => r.id === openId);
       if (openFound) openTemplateIdRef.current = undefined;
       setSelectedId((prev) => {
-        if (openFound) return openId as string;
+        if (openFound) return draft?.id ?? openId as string;
         if (hasNewSource && draft) return draft.id;
         if (prev && rows.some((r) => r.id === prev)) return prev;
-        return draft?.id ?? rows[0]?.id ?? null;
+        return draft?.id ?? (embedRef.current ? null : rows[0]?.id ?? null);
       });
     } catch (err) {
       if (sequence !== loadSequence.current) return;
@@ -270,8 +278,10 @@ export function useGameTemplates(params: {
 
   // 편집 화면 안: 선생님이 고른(또는 새로 만든) 템플릿을 슬라이드의 "발표 때 열 내용"으로 되돌려 준다.
   const reportedRef = useRef<string | null | undefined>(embed?.templateId);
+  const initialSelectionReported=useRef(false);
   useEffect(() => {
     if (!embedRef.current || loading) return;
+    if(!initialSelectionReported.current){initialSelectionReported.current=true;reportedRef.current=selectedId;return;}
     if (selectedId === (reportedRef.current ?? null)) return;
     reportedRef.current = selectedId;
     embedRef.current.onSelect(selectedId);
@@ -281,6 +291,11 @@ export function useGameTemplates(params: {
 
   /** Applying a new lesson game's configuration must also create its saved reference. */
   async function persistConfig(config: GameTemplateConfig, name?: string): Promise<GameTemplate | null> {
+    if(temporary&&selected){
+      const current=isActivityDraft(selected.id)?readActivityDraft(selected.id)||selected:selected;
+      const next={...current,id:`${temporaryId}:${crypto.randomUUID()}`,config:{...config,...(isActivityDraft(selected.id)?{editingTemplateId:savedTargets.current.get(selected.id)||current.config.editingTemplateId}:{editingTemplateId:selected.id})}};
+      chooseDraft(next);return next;
+    }
     if (selected) {
       await updateGameTemplate(selected.id, { config });
       const next = { ...selected, config };
@@ -512,35 +527,48 @@ export function useGameTemplates(params: {
     workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
       applyGuide: async (content) => {
         if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
-        const draft = isActivityDraft(selected.id) ? selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};
+        const draft = isActivityDraft(selected.id) ? readActivityDraft(selected.id)||selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};
         // Native editors synchronize their local question state on selection changes.
         // A fresh revision ID applies guided content without remounting the workspace.
-        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: {...structuredClone(content.config),...(!isActivityDraft(selected.id)?{editingTemplateId:selected.id}:{})} });
+        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: {...structuredClone(content.config),editingTemplateId:!isActivityDraft(selected.id)?selected.id:savedTargets.current.get(selected.id)||selected.config.editingTemplateId} });
       },
       sampleGuide: async () => {
         if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
         const draft=makeDraft();const content=guideSample(gameType,draft);chooseDraft({...draft,...content});
       },
-      selectClass: chooseClass, selectTemplate: setSelectedId, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
+      selectClass: chooseClass, selectTemplate, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
       renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
-      saveSettings: async (name) => {
+      saveTarget: selected?templates.find(row=>row.id===(savedTargets.current.get(selected.id)||selected.config.editingTemplateId||selected.id)&&!isActivityDraft(row.id))||null:null,
+      saveSettings: async (name,copy=false) => {
         if (!selected) throw new Error('no_activity');
         if (params.hasPendingSettings?.()) throw new Error(t('settingsSave.pendingHint'));
-        const snapshot = structuredClone(selected);
+        await flushGameTemplateWrites(selected.id);
+        const snapshot = structuredClone(isActivityDraft(selected.id)?readActivityDraft(selected.id)||selected:selected);
         delete snapshot.config.lessonSnapshot;
         if (!isNativeGameReady(snapshot) || guideProblem(snapshot)) throw new Error(t('flow.actionFailed'));
-        await flushGameTemplateWrites(snapshot.id);
-        if (isActivityDraft(snapshot.id)&&snapshot.config.editingTemplateId) {
-          const original=templates.find(row=>row.id===snapshot.config.editingTemplateId&&!isActivityDraft(row.id));
+        const targetId=savedTargets.current.get(snapshot.id)||snapshot.config.editingTemplateId;
+        if (!copy&&isActivityDraft(snapshot.id)&&targetId) {
+          const original=templates.find(row=>row.id===targetId&&!isActivityDraft(row.id));
           if(!original)throw new Error('missing_saved_game');
           const config={...snapshot.config};delete config.editingTemplateId;
           await updateGameTemplate(original.id,{items:snapshot.items,config});
-          setTemplates(rows=>rows.map(row=>row.id===original.id?{...row,items:snapshot.items,config}:row));setSelectedId(original.id);
-        } else if (isActivityDraft(snapshot.id)) {
-          if (!await handleCreate(name)) throw new Error('save_failed');
+          const title=name?.trim()||snapshot.name;
+          if(title!==original.name)await renameGameTemplate(original.id,title);
+          writeActivityDraft({...snapshot,name:title,config:{...snapshot.config,editingTemplateId:original.id}},false);
+          setTemplates(rows=>rows.map(row=>row.id===original.id?{...row,name:title,items:snapshot.items,config}:row));
+        } else if (isActivityDraft(snapshot.id)||copy) {
+          if(!academy||!profile)throw new Error('no_owner');
+          const config={...snapshot.config};delete config.editingTemplateId;
+          const original=templates.find(row=>row.id===targetId);
+          const saved=await createGameTemplate({academyId:academy.id,classId:original?original.class_id:!isActivityDraft(snapshot.id)?snapshot.class_id:(newScope==='class'?classId:null),teacherId:profile.id,gameType,name:activityName(name||snapshot.name,t(GAME_CATALOG.find(game=>game.type===gameType)?.nameKey||'flow.defaultActivity'),templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name)),items:snapshot.items,config});
+          savedTargets.current.set(snapshot.id,saved.id);
+          if(isActivityDraft(snapshot.id))writeActivityDraft({...snapshot,name:saved.name,config:{...snapshot.config,editingTemplateId:saved.id}},false);
+          setTemplates(rows=>[...rows,saved]);
         } else {
           await updateGameTemplate(snapshot.id, { items: snapshot.items, config: snapshot.config });
-          setTemplates(rows => rows.map(row => row.id === snapshot.id ? { ...row, items: snapshot.items, config: snapshot.config } : row));
+          if(name?.trim()&&name.trim()!==snapshot.name){await renameGameTemplate(snapshot.id,name.trim());setTemplates(rows=>rows.map(row=>row.id===snapshot.id?{...row,name:name.trim()}:row));}
+          // The current data is already in memory. Replacing item/config references here
+          // would reset engines even though saving did not change gameplay content.
         }
       },
       saveActivity: async (name) => { if (!await handleCreate(name)) throw new Error('save_failed'); },
@@ -573,7 +601,7 @@ export function useGameTemplates(params: {
     setTemplates,
     selected,
     selectedId,
-    setSelectedId,
+    setSelectedId:selectTemplate,
     persistConfig,
     loading: loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`),
     showCreateForm,

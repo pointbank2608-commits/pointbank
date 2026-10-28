@@ -50,9 +50,9 @@ export function lessonSlides(u:CourseUnit):CourseSlide[]{
  if(u.id==='course-1-1')return alphabetReferenceSlides(u);
  if(u.id==='course-4-1')return level4ReferenceSlides(u);
  const slides:CourseSlide[]=[];const all=u.entries.map(e=>e.id);const reps=u.groups.map(g=>g.entries[0].id);
- let lesson:CourseSlide['lesson']=1;
+ let lesson:CourseSlide['lesson']=1,idOffset=0;
  const add=(kind:CourseKind,title:string,ids:string[]=[],groups:string[]=[],hint='',phase=0,answerIds:string[]=[],extra:Partial<CourseSlide>={})=>{
-  const s={id:u.id+':'+slides.length,kind,title,hint,lesson,entryIds:ids,groupIds:groups,phase,answerIds,...extra};slides.push(s);return s;
+  const s={id:u.id+':'+(slides.length-idOffset),kind,title,hint,lesson,entryIds:ids,groupIds:groups,phase,answerIds,...extra};slides.push(s);return s;
  };
  const phases=(kind:CourseKind,title:string,ids:string[],answer:string[],hint:string,count=2,groups:string[]=[])=>{for(let phase=0;phase<count;phase++)add(kind,title,ids,groups,hint,phase,answer);};
  const game=(kind:'puzzle'|'memory',ids:string[])=>{for(const id of ids){if(kind==='puzzle'&&pictureContext(courseWord(u,id)))continue;phases(kind,kind==='puzzle'?'What is it?':'Read and Remember',[id],[id],kind==='puzzle'?'Look at the pieces.':'Read the word. Remember it.',3);}};
@@ -83,7 +83,13 @@ export function lessonSlides(u:CourseUnit):CourseSlide[]{
  add('finish','Great Work!',[],[],'You finished Lesson 1.');
  lesson=2;add('lesson','Lesson 2',[],[],'Review, remember, write and read');
  for(const g of u.groups)for(const ids of batch(g))add('group','Quick Review',ids,[g.id],'Say the words.');
- game('memory',reps);
+ if(u.id==='course-2-1'){
+  // Retain introductory representatives and existing downstream deep links.
+  const start=slides.length,expanded=['bad','sad','tag','wag','ram','ham'].map(word=>u.entries.find(e=>e.word===word)!.id);
+  game('memory',expanded);
+  slides.slice(start+reps.length*3).forEach(s=>{s.id=`${u.id}:expanded-memory:${s.entryIds[0]}:${s.phase}`;});
+  idOffset+=(expanded.length-reps.length)*3;
+ }else game('memory',reps);
  for(const g of u.groups)for(const ids of batch(g))add('write','Look and Write',ids,[g.id],'Say the words. Trace, then write.');
  for(const g of u.groups)for(const ids of batch(g))phases('complete','Complete the Words',ids,[],'Look at the pictures. Fill the target letters.');
  if(u.groups.length>1)for(const ids of chunks(all,6))phases('sort','Read and Sort',ids,[],'Read the words. Sort by the spelling pattern.');

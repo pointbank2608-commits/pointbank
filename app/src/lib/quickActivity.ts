@@ -36,13 +36,13 @@ export function readActivityDraft(id: string): GameTemplate | null {
   const value = memory.get(storageKey(id));
   return value && (value.id === id || id === storageKey(id)) ? structuredClone(value) : null;
 }
-export function writeActivityDraft(draft: GameTemplate) {
+export function writeActivityDraft(draft: GameTemplate, announce=true) {
   memory.set(storageKey(draft.id), structuredClone(draft));
   try { sessionStorage.setItem(storageKey(draft.id), JSON.stringify(draft)); } catch { /* in-memory recovery remains available */ }
   if (draft.config.classroomSource?.id === 'composition') {
     try { sessionStorage.setItem(`composition:${storageKey(draft.id)}:${draft.config.classroomSource.kind}`, JSON.stringify(draft)); } catch { /* in-memory draft remains */ }
   }
-  window.dispatchEvent(new CustomEvent(DRAFT_EVENT, { detail: storageKey(draft.id) }));
+  if(announce)window.dispatchEvent(new CustomEvent(DRAFT_EVENT, { detail: storageKey(draft.id) }));
 }
 export function patchActivityDraft(id: string, patch: { items?: GameTemplate['items']; config?: GameTemplateConfig; name?: string }) {
   const draft = readActivityDraft(id);

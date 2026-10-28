@@ -17,7 +17,8 @@ export interface GameWorkspaceBridge {
   temporary: boolean;
   useSource: (source: { cards: FullCardItem[]; kind: 'word' | 'sentence'; name: string }) => Promise<void>;
   saveActivity: (name: string) => Promise<void>;
-  saveSettings: (name?: string) => Promise<void>;
+  saveSettings: (name?: string, copy?:boolean) => Promise<void>;
+  saveTarget?: GameTemplate|null;
   settingsPending: boolean;
   sharedView: boolean;
   gameType: GameType;
@@ -38,6 +39,8 @@ export interface GameWorkspaceBridge {
   sourceCards: FullCardItem[] | null;
 }
 export interface WorkspaceContextValue {
+  registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
+  commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;
   canStart: boolean;

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { createGameTemplate } from '../lib/api';
+import { createGameTemplate,fetchGameTemplateById } from '../lib/api';
+import {gameReadyDetails,isNativeGameReady} from '../lib/gamePreparation';
 import { blockOfSlide } from '../lib/blocks/registry';
 import { buildGameContent, lessonGameTemplateName, wordListToCards } from '../lib/gameFromWords';
-import type { FullCardItem, LessonSlide, WordList } from '../lib/types';
+import type { FullCardItem, LessonSlide, WordList,GameTemplate } from '../lib/types';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 
 /**
@@ -41,16 +42,20 @@ export default function BlockOptionsPanel({
   const { profile } = useAuth();
   const { notify } = useToast();
   const [busy, setBusy] = useState(false);
+  const templateId = slide.kind === 'game' ? slide.templateId : undefined;
+  const gameType = slide.kind === 'game' ? slide.gameType : undefined;
+  const [savedGame,setSavedGame]=useState<GameTemplate|null>(null),[checking,setChecking]=useState(false),[failed,setFailed]=useState(false),[retry,setRetry]=useState(0);
+  useEffect(()=>{let active=true;setSavedGame(null);setFailed(false);setChecking(!!templateId);if(!templateId)return;void fetchGameTemplateById(templateId).then(row=>{if(row.academy_id!==academyId||row.game_type!==gameType)throw Error('invalid_game_reference');if(active)setSavedGame(row);}).catch(()=>{if(active)setFailed(true);}).finally(()=>{if(active)setChecking(false);});return()=>{active=false;};},[templateId,academyId,gameType,retry]);
   const block = blockOfSlide(slide);
   if (!block) return null;
 
   const usesWords = WORD_KINDS.includes(slide.kind);
   const isGame = slide.kind === 'game';
   const slideWords: FullCardItem[] | undefined = 'words' in slide ? (slide.words as FullCardItem[] | undefined) : undefined;
-  const templateId = slide.kind === 'game' ? slide.templateId : undefined;
-  const own = isGame ? !!(slide.ownWordListId && templateId) : !!slideWords?.length;
+  const own = isGame ? !!templateId : !!slideWords?.length;
   const ownList = slide.ownWordListId ? wordLists.find((w) => w.id === slide.ownWordListId) : undefined;
-  const ownCount = isGame ? ownList?.items.length ?? 0 : slideWords?.length ?? 0;
+  const detail=savedGame?gameReadyDetails(savedGame):null;
+  const ownCount = isGame ? detail?.count??ownList?.items.length??0 : slideWords?.length ?? 0;
   const available = own ? ownCount : lessonCards.length;
   const min = block.needs?.words?.min ?? 0;
   const name = block.nameKey ? t(block.nameKey) : block.name?.[i18n.language.startsWith('ko') ? 'ko' : 'en'] ?? block.id;
@@ -113,7 +118,7 @@ export default function BlockOptionsPanel({
           <div className="font-label-md text-label-md text-on-surface">{t('curriculum.blockOptions.wordsTitle')}</div>
           {own ? (
             <p className="rounded-lg bg-primary/10 px-3 py-2 font-body-md text-body-md text-on-surface">
-              {ownList
+              {isGame&&savedGame?`${savedGame.name} · ${detail?.count!==null?t(`flow.count_${detail?.kind}`,{count:detail?.count}):t(isNativeGameReady(savedGame)?'flow.readyComplete':'curriculum.slides.gameContentMissing')}`:ownList
                 ? t('curriculum.blockOptions.ownNow', { name: ownList.name, count: ownCount })
                 : isGame
                   ? t('curriculum.blockOptions.ownGame')
@@ -126,6 +131,8 @@ export default function BlockOptionsPanel({
                 : t('curriculum.blockOptions.useLessonNone', { count: lessonCards.length })}
             </p>
           )}
+          {own&&isGame&&checking&&<p role="status">{t('common.loading')}</p>}
+          {own&&isGame&&failed&&<p role="alert">{t('quick.failed')} <button type="button" onClick={()=>setRetry(n=>n+1)}>{t('quick.retry')}</button></p>}
           <div className="flex flex-wrap items-center gap-2">
             <select
               value=""
@@ -151,11 +158,12 @@ export default function BlockOptionsPanel({
               </button>
             )}
           </div>
-          {min > 0 && available < min && (
+          {min > 0 && available < min && !(isGame&&templateId) && (
             <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 font-caption text-caption text-on-surface">
               {t('curriculum.blockOptions.needMore', { min, count: available })}
             </p>
           )}
+          {isGame&&savedGame&&!isNativeGameReady(savedGame)&&<p role="alert">{t('curriculum.slides.gameContentMissing')}</p>}
         </div>
       )}
     </section>

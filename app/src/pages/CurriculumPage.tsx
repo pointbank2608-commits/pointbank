@@ -3,7 +3,7 @@ import { useFeature } from '../lib/features';
 import QuickLessonWizard from '../components/QuickLessonWizard';
 import StartCheck, { startCheckSkipped } from '../components/StartCheck';
 import LessonWrapUp, { type WrapUpInfo } from '../components/LessonWrapUp';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback,useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
@@ -39,6 +39,7 @@ import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToC
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 import { lessonCover } from '../lib/lessonCover';
 import { effectiveSlides } from '../lib/lessonSlides';
+import {LESSON_CHANGED} from '../lib/lessonChanges';
 import { extractYoutubeId } from '../lib/youtube';
 import { copyLessonToClass } from '../lib/copyLesson';
 import type { CurriculumLesson, FullCardItem, LessonSlide, WordList } from '../lib/types';
@@ -102,7 +103,7 @@ export default function CurriculumPage() {
   const [historyLesson, setHistoryLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function reload() {
+  const reload=useCallback(async () => {
     if (!academy?.id) {
       setWordLists([]);
       setLessons([]);
@@ -128,13 +129,13 @@ export default function CurriculumPage() {
     } finally {
       setLoading(false);
     }
-  }
+  },[academy?.id,staffClassId,notify]);
 
   useEffect(() => {
     void reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [academy?.id, staffClassId]);
+  }, [reload]);
 
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent).detail?.academyId===academy?.id)void reload();};window.addEventListener(LESSON_CHANGED,changed);return()=>window.removeEventListener(LESSON_CHANGED,changed);},[academy?.id,reload]);
   const [showForm, setShowForm] = useState(false);
   /** null 이면 새로 만드는 중, 값이 있으면 그 레슨을 수정하는 중(2026-09-24 수정 기능 추가). */
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -369,9 +370,10 @@ export default function CurriculumPage() {
     setWordListId(lesson.word_list_id ?? '');
     setVideoUrl('');
     setLevel(lesson.level ?? '');
-    setPlaylist(effectiveSlides(lesson));
+    const initialSlides=effectiveSlides(lesson);
+    setPlaylist(initialSlides);
     setSavedSnapshot(
-      JSON.stringify({ name: lesson.name, wordListId: lesson.word_list_id ?? '', level: lesson.level ?? '', playlist: effectiveSlides(lesson) }),
+      JSON.stringify({ name: lesson.name, wordListId: lesson.word_list_id ?? '', level: lesson.level ?? '', playlist: initialSlides }),
     );
     setShowForm(true);
   }

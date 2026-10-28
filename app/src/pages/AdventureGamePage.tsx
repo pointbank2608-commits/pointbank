@@ -1,3 +1,4 @@
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import { useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +12,7 @@ import AdventureGame from '../components/adventure/AdventureGame';
 import AdventureEditor from '../components/adventure/AdventureEditor';
 
 export default function AdventureGamePage({ type }: { type: AdventureType }) {
+  const workspace=useGameWorkspace();
   const g=useGameTemplates({gameType:type,defaultItems:()=>[],defaultConfig:()=>({adventure:sampleAdventure(type)}),listKind:'all',hasPendingSettings:()=>pending});
   const {notify}=useToast();
   const {profile}=useAuth();
@@ -52,7 +54,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   return <div className="space-y-4">
     {!g.loading && <GameThemeFrame gameType={type} onRestart={()=>setRevision(n=>n+1)}><AdventureGame key={`${type}:${selected?.id}:${revision}:${JSON.stringify(config)}`} type={type} config={config} onRestart={()=>setRevision(n=>n+1)}/></GameThemeFrame>}
     {g.isStaff && !g.presenting && <>
-      <section className="ad-editor"><h2>{ADVENTURE_NAMES[type][0]} · 게임 준비</h2><p>콘텐츠를 적용하고 미리 본 다음 저장하세요. 제목을 비우면 자동으로 이름이 붙어요.</p><div className="ad-edit-row"><label>저장된 게임<select value={g.selectedId || ''} onChange={e=>{setPending(false);g.setSelectedId(e.target.value || null);}}><option value="">샘플 미리보기</option>{g.templates.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label><label>게임 제목 (선택)<input value={name} placeholder={selected?.name || ADVENTURE_NAMES[type][0]} onChange={e=>setName(e.target.value)}/></label></div><div className="ad-edit-row"><button className="ad-apply" disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>void save(true)}>새 게임으로 저장</button>{selected && <button disabled={busy} onClick={()=>void save(false)}>제목 변경</button>}<button disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>setAddLesson(true)}>수업에 삽입</button></div></section>
+      {!workspace&&<section className="ad-editor"><h2>{ADVENTURE_NAMES[type][0]} · 게임 준비</h2><p>콘텐츠를 적용하고 미리 본 다음 저장하세요. 제목을 비우면 자동으로 이름이 붙어요.</p><div className="ad-edit-row"><label>저장된 게임<select value={g.selectedId || ''} onChange={e=>{setPending(false);g.setSelectedId(e.target.value || null);}}><option value="">샘플 미리보기</option>{g.templates.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label><label>게임 제목 (선택)<input value={name} placeholder={selected?.name || ADVENTURE_NAMES[type][0]} onChange={e=>setName(e.target.value)}/></label></div><div className="ad-edit-row"><button className="ad-apply" disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>void save(true)}>새 게임으로 저장</button>{selected && <button disabled={busy} onClick={()=>void save(false)}>제목 변경</button>}<button disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>setAddLesson(true)}>수업에 삽입</button></div></section>}
       <AdventureEditor key={`${selected?.id}:${revision}:${JSON.stringify(config)}`} type={type} value={config} lists={g.wordLists} loading={g.wordListsLoading} busy={busy} onApply={apply} onDirty={setPending}/>
     </>}
     {addLesson && <AddActivityToLesson activity={activity} onClose={()=>setAddLesson(false)}/>}
