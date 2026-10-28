@@ -17,9 +17,13 @@ let maxH = 0;
 const supports = [1, 3];
 const EXPECTED = 8; // 학생용 7쪽(1+1+2+1+1+1) + 교사용 1쪽
 const only = process.env.IDS?.split(',');
+let progress = 0;
 for (const id of GRAMMAR_POINTS_IDS.filter((x) => !only || only.includes(x))) {
+  progress++;
+  if (progress % 10 === 0) console.log(`progress ${progress}/${GRAMMAR_POINTS_IDS.length} 최대 ${maxH.toFixed(0)}mm 문제 ${over.length}건`);
   for (const set of ['A', 'B']) for (const s of supports) {
-    await page.goto(`http://localhost:5199/scripts/grammar-sheets/harness.html?topic=${id}&support=${s}&set=${set}`);
+    const url = `http://localhost:5199/scripts/grammar-sheets/harness.html?topic=${id}&support=${s}&set=${set}`;
+    try { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); } catch { await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); }
     await page.waitForSelector('#ready, #missing');
     if (await page.$('#missing')) { if (!only) over.push(`${id} ${set}: 자료 없음`); continue; }
     await page.evaluate(() => document.fonts.ready);

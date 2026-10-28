@@ -10,6 +10,8 @@
 
 > **남은 게임/수업 UX 수정 (2026-10-28):** 완료 시 전용 편집기의 최신 입력을 적용하고, 저장 목적지와 실행 상태를 분리했다. 공통 저장·상세 설정, 수업 추가 후 갱신/블록 콘텐츠 인식, 무수정 수업 경고, Ready Class L2 U1의 확장6단어 기억하기를 보완했다. 원인·검사·보존 항목·브라우저/운영 검증의 한계는 [완료 보고](docs/remaining-ux-worklog.md)를 참고한다. 후속 사용자 요청으로 이번 UX 변경만 선별 커밋·푸시하고 main 자동 운영 배포를 진행한다. 운영 DB/워크북을 테스트 목적으로 변경하지 않았다.
 
+> **문법 워크북 A·B 세트 (2026-10-28):** `/materials/grammar-workbook`(활동지 카드 "문법 워크북 · 개념부터 도전까지")를 의도별 시트로 새로 만들었다(옛 `GrammarWorkbookPage`는 삭제, 로봇 탐정 미션은 `third-s`에서 선택 항목으로 유지). 문법 169개 전부에 규칙 발견·고르기 10·빈칸·배열 각 8·고쳐 쓰기 6·말하기 6+미션·총정리 6 + **서로 다른 문장의 B 세트**가 있고, 도움 수준 3단계·교사용 정답지를 인쇄한다(세트당 학생 7쪽 + 정답 1쪽). 자료는 `src/data/grammarSheets/bank/e*.json`(A = 최상위, B = `b`), 화면 `pages/GrammarSheetsPage.tsx`·`components/worksheets/GrammarIntentSheets.tsx`·`lib/grammarSheets.ts`. 문항은 Gemini 생성(`scripts/grammar-sheets/gen-v2.mjs`) → 정적 검사(`check-bank.mjs --complete`) → 독립 검수·자동 수정 반복(`loop-v2.mjs`) → A4 쪽 배치(`check-layout.mjs`)로 확인했다. **교사가 전수 검수한 것은 아니다** — 피드백으로 다듬을 것. 작성 규칙·한계·명령은 [docs/grammar-workbook-intent.md](docs/grammar-workbook-intent.md). 커밋·배포는 사용자 요청 시에만.
+
 > **파닉스 게임 효과음 (2026-10-28):** 40종의 조작·장면·성공·완료에 기존 직접 합성 WAV를 연결했다. `phonicsGameSound.ts`·`PhonicsSoundControls.tsx`를 사용하며 공통 효과음 음소거, 파닉스 음량 저장, 단어·문장 음성 우선권과 일시정지·숨김·종료 시 예약 소리 취소를 지원한다. [동작·검증](docs/phonics-game-sound.md). 배경음악과 개별 음가 녹음은 후속 범위이고 음가는 공개 음원 수집·검수로 진행한다. 후속 사용자 요청으로 효과음 변경만 main에 커밋·푸시하고 자동 운영 배포를 진행한다.
 
 > **파닉스 게임 클레이 v2 (2026-10-27):** 40종의 화면을 6개 놀이 세계·투명 소품·학습 반응으로 개편했다. `phonicsGameVisuals.ts`, `PhonicsGameArt.tsx`, `phonics-games-v2.css`, `public/skins/phonics-v2/`를 사용한다. 현재 탭의 마을 보상은 sessionStorage이며 학생 성적·DB 기록이 아니다. [제작·검증 기록](docs/phonics-game-art-v2.md)을 참고한다. 후속 사용자 요청으로 이 디자인 변경만 main에 커밋·푸시하고 자동 운영 배포를 진행한다.

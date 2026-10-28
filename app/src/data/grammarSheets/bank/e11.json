@@ -1786,11 +1786,11 @@
         }
       ],
       "mission": {
-        "title": "진실 혹은 거짓! (What I did)",
-        "scene": "짝과 함께 주말에 한 일 중 진짜인 것과 가짜인 것을 맞혀보는 활동을 합니다.",
+        "title": "진실 혹은 거짓! (What I ate)",
+        "scene": "짝과 함께 어제 먹은 음식 중 진짜인 것과 가짜인 것을 맞혀보는 활동을 합니다.",
         "steps": [
-          "각자 종이에 주말에 한 일 두 가지를 'What I did was ~' 형태로 적습니다. (하나는 진실, 하나는 거짓)",
-          "짝에게 두 문장을 차례대로 읽어줍니다. (예: What I did was watching a movie.)",
+          "각자 종이에 어제 먹은 음식 두 가지를 'What I ate was ~' 형태로 적습니다. (하나는 진실, 하나는 거짓)",
+          "짝에게 두 문장을 차례대로 읽어줍니다. (예: What I ate was pizza.)",
           "짝은 어느 것이 진짜인지 추측해서 맞혀봅니다."
         ]
       },
@@ -3312,19 +3312,22 @@
     ],
     "correct": [
       {
-        "w": "the house in that I live",
-        "r": "the house in which I live",
-        "why": "전치사 뒤에는 that을 쓸 수 없습니다."
+        "n": 1,
+        "w": "This is the house in that I live.",
+        "r": "This is the house in which I live.",
+        "why": "전치사 뒤에는 관계대명사 that을 쓸 수 없습니다."
       },
       {
-        "w": "the person to who I spoke",
-        "r": "the person to whom I spoke",
-        "why": "전치사 뒤의 사람은 whom입니다."
+        "n": 2,
+        "w": "The person to who I spoke was kind.",
+        "r": "The person to whom I spoke was kind.",
+        "why": "전치사 뒤에 사람이 올 때는 목적격인 whom을 써야 합니다."
       },
       {
-        "w": "the pen with that he wrote",
-        "r": "the pen with which he wrote",
-        "why": "전치사 뒤에는 which를 씁니다."
+        "n": 3,
+        "w": "This is the pen with that he wrote.",
+        "r": "This is the pen with which he wrote.",
+        "why": "전치사 뒤에는 that을 쓸 수 없으므로 which를 씁니다."
       },
       {
         "w": "The girl to who he sent flowers smiled.",
@@ -3658,7 +3661,11 @@
           "model": "The music to which we listened was calming."
         }
       ]
-    }
+    },
+    "dropPitfalls": [
+      "the house in that I live",
+      "the person to who I spoke"
+    ]
   },
   {
     "id": "h-compound-relative",
@@ -5124,9 +5131,10 @@
         "why": "과거 반대는 if절에 had p.p.를 씁니다."
       },
       {
-        "w": "If I had studied, I would pass then.",
-        "r": "If I had studied, I would have passed.",
-        "why": "과거 결과는 would have p.p.입니다."
+        "n": 2,
+        "w": "If I had studied, I would pass the exam then.",
+        "r": "If I had studied, I would have passed the exam then.",
+        "why": "과거(then) 사실에 대한 결과이므로 주절에 would have p.p.를 써야 합니다."
       },
       {
         "w": "If I had taken the medicine, I would being fine now.",
@@ -5180,7 +5188,7 @@
       "scene": "과거의 선택을 바꾸면 어떻게 되었을지 상상해 쓰는 이야기예요.",
       "steps": [
         "후회되는 과거 일을 하나 고른다.",
-        "If I had ____, I would have ____. 로 두 문장을 쓴다.",
+        "If I had ____, I would have ____. 로 한 문장을 쓴다.",
         "지금의 결과를 If I had ____, I would be ____ now. 로 덧붙인다."
       ]
     },

@@ -352,9 +352,10 @@
           "why": "meat는 셀 수 없는 명사이므로 a를 쓰지 않습니다."
         },
         {
-          "w": "Do you need some help?",
-          "r": "Do you need any help?",
-          "why": "의문문에서는 any를 씁니다."
+          "n": 2,
+          "w": "Do you have a homework?",
+          "r": "Do you have any homework?",
+          "why": "homework는 셀 수 없는 명사이므로 a를 쓸 수 없고, 의문문이므로 any를 씁니다."
         },
         {
           "w": "There isn't some rice.",
@@ -1915,9 +1916,10 @@
         "why": "'혼자서'는 by herself입니다."
       },
       {
-        "w": "She talks to her often.",
-        "r": "She talks to herself often.",
-        "why": "주어와 목적어가 같은 사람이므로 재귀대명사 herself를 써야 합니다."
+        "n": 4,
+        "w": "I talk to me often.",
+        "r": "I talk to myself often.",
+        "why": "주어와 목적어가 같은 사람이므로 재귀대명사 myself를 써야 합니다."
       },
       {
         "w": "They made the box by them.",
@@ -2149,9 +2151,10 @@
       ],
       "correct": [
         {
-          "w": "He burned him on the stove.",
-          "r": "He burned himself on the stove.",
-          "why": "자기 자신이 데인 것이므로 himself를 써야 합니다."
+          "n": 1,
+          "w": "I burned me on the stove.",
+          "r": "I burned myself on the stove.",
+          "why": "자기 자신이 데인 것이므로 myself를 써야 합니다."
         },
         {
           "w": "I made this robot by me.",
@@ -2159,9 +2162,10 @@
           "why": "'혼자서'는 by me가 아니라 by myself입니다."
         },
         {
-          "w": "The cat is cleaning it.",
-          "r": "The cat is cleaning itself.",
-          "why": "고양이가 자기 자신을 닦는 것이므로 itself를 써야 합니다."
+          "n": 3,
+          "w": "I looked at me in the mirror.",
+          "r": "I looked at myself in the mirror.",
+          "why": "거울 속 자기 자신을 보는 것이므로 myself를 써야 합니다."
         },
         {
           "w": "Did you guys enjoy you?",
@@ -2169,9 +2173,10 @@
           "why": "여러 명(you guys)에게 즐거웠냐고 묻는 관용 표현은 enjoy yourselves입니다."
         },
         {
-          "w": "She taught her Spanish.",
-          "r": "She taught herself Spanish.",
-          "why": "주어와 목적어가 같으므로 herself를 써야 독학했다는 의미가 됩니다."
+          "n": 5,
+          "w": "I taught me Spanish.",
+          "r": "I taught myself Spanish.",
+          "why": "주어와 목적어가 같으므로 myself를 써야 독학했다는 의미가 됩니다."
         },
         {
           "w": "They fixed the bike by them.",
@@ -2401,8 +2406,9 @@
         "frame": "Can I have another one, please?"
       },
       {
-        "task": "두 가지 선택지 중 나머지 하나를 말해요.",
-        "frame": "I have two ____s. One is ____, and the other is ____."
+        "n": 5,
+        "task": "막연한 물건 하나가 필요하다고 말해요.",
+        "frame": "I don't have a ____. I need one."
       },
       {
         "task": "일부 사람들과 다른 사람들의 차이를 말해요.",
@@ -3078,9 +3084,10 @@
           "why": "equipment는 셀 수 없는 명사이므로 an을 쓸 수 없습니다."
         },
         {
-          "w": "Earth is the third planet from the sun.",
-          "r": "The earth is the third planet from the sun.",
-          "why": "지구(earth)처럼 유일한 대상 앞에는 the를 씁니다."
+          "n": 5,
+          "w": "Sun is shining brightly today.",
+          "r": "The sun is shining brightly today.",
+          "why": "해(sun)처럼 세상에 유일한 대상 앞에는 the를 써야 합니다."
         },
         {
           "w": "This is a first time I met him.",

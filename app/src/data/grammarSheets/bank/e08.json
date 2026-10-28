@@ -1189,13 +1189,13 @@
           "why": "비교급(better)은 many가 아니라 much로 강조합니다."
         },
         {
-          "p": "She is a ____ more famous singer now.",
+          "p": "She is ____ more famous now.",
           "c": [
-            "very",
-            "lot"
+            "a lot",
+            "very"
           ],
-          "a": 1,
-          "why": "비교급을 강조하는 표현은 a lot입니다."
+          "a": 0,
+          "why": "비교급을 강조할 때는 a lot, much, even 등을 쓰고 very는 쓰지 않아요."
         },
         {
           "p": "The elephant is ____ heavier than the lion.",
@@ -2353,9 +2353,10 @@
         "why": "둘 다 좋아하면 and를 씁니다."
       },
       {
-        "w": "I like milk, but I like not juice.",
-        "r": "I like milk, but I don't like juice.",
-        "why": "일반동사의 부정은 don't를 씁니다."
+        "n": 2,
+        "w": "I like spring but fall.",
+        "r": "I like spring and fall.",
+        "why": "두 계절을 모두 좋아하므로 and로 연결합니다."
       },
       {
         "w": "I have a cat but a dog.",
@@ -2363,9 +2364,10 @@
         "why": "둘 다 있으므로 and를 씁니다."
       },
       {
-        "w": "I like math, and I don't like English.",
-        "r": "I like math, but I don't like English.",
-        "why": "좋아하는 것과 안 좋아하는 것을 연결할 때는 but을 씁니다."
+        "n": 4,
+        "w": "I can read but write.",
+        "r": "I can read and write.",
+        "why": "할 수 있는 두 가지를 나열할 때는 and를 씁니다."
       },
       {
         "w": "I have a pencil but an eraser.",
@@ -2373,9 +2375,10 @@
         "why": "두 가지 물건을 모두 가지고 있을 때는 and로 연결합니다."
       },
       {
-        "w": "I like blue, and you like red.",
-        "r": "I like blue, but you like red.",
-        "why": "서로 좋아하는 색이 다르다는 것을 대조할 때는 but을 씁니다."
+        "n": 6,
+        "w": "She has a dog but a cat.",
+        "r": "She has a dog and a cat.",
+        "why": "두 동물을 모두 기르고 있으므로 and로 연결합니다."
       }
     ],
     "say": [
@@ -2607,24 +2610,28 @@
           "why": "두 가지 물건을 모두 가지고 있을 때는 and를 씁니다."
         },
         {
-          "w": "He likes math, and he doesn't like science.",
-          "r": "He likes math, but he doesn't like science.",
-          "why": "좋아하는 것과 싫어하는 것을 연결할 때는 but을 씁니다."
+          "n": 3,
+          "w": "He plays soccer but baseball.",
+          "r": "He plays soccer and baseball.",
+          "why": "두 가지 운동을 모두 하므로 and로 연결합니다."
         },
         {
-          "w": "I can swim, and I can't run.",
-          "r": "I can swim, but I can't run.",
-          "why": "할 수 있는 것과 할 수 없는 것을 대조하므로 but을 씁니다."
+          "n": 4,
+          "w": "I want an apple but a banana.",
+          "r": "I want an apple and a banana.",
+          "why": "두 가지를 모두 원할 때는 and로 연결합니다."
         },
         {
-          "w": "I like milk, and she likes juice.",
-          "r": "I like milk, but she likes juice.",
-          "why": "서로 좋아하는 것이 다르다는 것을 대조할 때는 but을 씁니다."
+          "n": 5,
+          "w": "We study English but math.",
+          "r": "We study English and math.",
+          "why": "두 과목을 모두 공부하므로 and로 연결합니다."
         },
         {
-          "w": "The turtle is slow and cute.",
-          "r": "The turtle is slow but cute.",
-          "why": "느리지만 귀엽다는 대조적인 특징을 말할 때는 but을 씁니다."
+          "n": 6,
+          "w": "They have a son but a daughter.",
+          "r": "They have a son and a daughter.",
+          "why": "아들과 딸이 모두 있으므로 and로 연결합니다."
         }
       ],
       "say": [
@@ -2821,9 +2828,10 @@
         "why": "상태를 나타내는 형용사 앞에는 be동사가 필요합니다."
       },
       {
-        "w": "We like cats because they is cute.",
+        "n": 6,
+        "w": "We like cats because cute.",
         "r": "We like cats because they are cute.",
-        "why": "they 뒤에는 be동사 are를 씁니다."
+        "why": "because 뒤에는 주어와 동사가 필요합니다."
       }
     ],
     "say": [
@@ -3054,14 +3062,16 @@
           "why": "상태를 나타내는 형용사 앞에는 be동사가 필요합니다."
         },
         {
-          "w": "We run fast because we is late.",
+          "n": 3,
+          "w": "We run fast because late.",
           "r": "We run fast because we are late.",
-          "why": "we 뒤에는 be동사 are를 씁니다."
+          "why": "because 뒤에는 주어와 동사가 필요합니다."
         },
         {
-          "w": "He likes books because it are fun.",
+          "n": 4,
+          "w": "He likes books because fun.",
           "r": "He likes books because they are fun.",
-          "why": "책들(books)은 복수이므로 they로 받습니다."
+          "why": "because 뒤에는 주어와 동사가 필요합니다."
         },
         {
           "w": "I wash my hands because dirty.",
@@ -3069,9 +3079,10 @@
           "why": "because 뒤에는 주어와 동사가 필요합니다."
         },
         {
-          "w": "They smile because they am happy.",
+          "n": 6,
+          "w": "They smile because happy.",
           "r": "They smile because they are happy.",
-          "why": "they 뒤에는 be동사 are를 씁니다."
+          "why": "because 뒤에는 주어와 동사가 필요합니다."
         }
       ],
       "say": [
@@ -3961,9 +3972,10 @@
           "why": "피곤해서 일찍 잤다는 결과의 의미이므로 so를 씁니다."
         },
         {
-          "w": "Do you like summer and winter?",
-          "r": "Do you like summer or winter?",
-          "why": "여름과 겨울 중 어느 것을 좋아하는지 묻는 선택이므로 or를 씁니다."
+          "n": 2,
+          "w": "Do you want water but juice?",
+          "r": "Do you want water or juice?",
+          "why": "물과 주스 중 어느 것을 원하는지 묻는 선택이므로 or를 씁니다."
         },
         {
           "w": "She is kind, but everyone likes her.",
@@ -4423,7 +4435,8 @@
           "why": "조건 부사절에서는 미래 대신 현재시제를 씁니다."
         },
         {
-          "w": "I know if she is a good singer.",
+          "n": 2,
+          "w": "I know what she is a good singer.",
           "r": "I know that she is a good singer.",
           "why": "know의 목적어절을 이끌 때는 that을 씁니다."
         },

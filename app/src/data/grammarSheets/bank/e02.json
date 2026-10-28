@@ -1977,7 +1977,7 @@
         "model": "Yes, I do."
       },
       {
-        "ko": "아니, 없어.",
+        "ko": "아니, 안 좋아해.",
         "cond": "No로 시작하고 don't를 써요.",
         "model": "No, I don't."
       },

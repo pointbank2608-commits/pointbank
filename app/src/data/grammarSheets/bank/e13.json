@@ -934,13 +934,13 @@
         "why": "형용사 hot을 꾸미는 말은 부사입니다."
       },
       {
-        "p": "She ____ gets up early.",
+        "p": "She ____ early.",
         "c": [
-          "always",
-          "gets always"
+          "always gets up",
+          "gets always up"
         ],
         "a": 0,
-        "why": "빈도부사는 일반동사 앞에 옵니다."
+        "why": "빈도부사 always는 일반동사 앞에 와요."
       },
       {
         "p": "He did ____ on the test.",
@@ -979,13 +979,13 @@
         "why": "'열심히'라는 뜻의 부사는 hard입니다."
       },
       {
-        "p": "I am ____ late for school.",
+        "p": "I ____ late for school.",
         "c": [
-          "never am",
-          "never"
+          "am never",
+          "never am"
         ],
-        "a": 1,
-        "why": "빈도부사는 be동사 뒤에 옵니다."
+        "a": 0,
+        "why": "빈도부사 never는 be동사 뒤에 와요."
       },
       {
         "p": "The bird sings ____.",
@@ -1148,13 +1148,13 @@
           "why": "동사를 꾸미는 부사가 필요합니다."
         },
         {
-          "p": "He ____ eats breakfast.",
+          "p": "He ____ breakfast.",
           "c": [
-            "eats usually",
-            "usually"
+            "usually eats",
+            "eats usually"
           ],
-          "a": 1,
-          "why": "빈도부사는 일반동사 앞에 옵니다."
+          "a": 0,
+          "why": "빈도부사 usually는 일반동사 앞에 와요."
         },
         {
           "p": "The movie was ____ interesting.",
@@ -1202,13 +1202,13 @@
           "why": "동사를 꾸미는 부사가 필요합니다."
         },
         {
-          "p": "He is ____ busy.",
+          "p": "He ____ busy.",
           "c": [
-            "always is",
-            "always"
+            "is always",
+            "always is"
           ],
-          "a": 1,
-          "why": "빈도부사는 be동사 뒤에 옵니다."
+          "a": 0,
+          "why": "빈도부사 always는 be동사 뒤에 와요."
         },
         {
           "p": "The wind blew ____.",
@@ -1910,9 +1910,9 @@
     ],
     "correct": [
       {
-        "w": "Because it was raining.",
+        "w": "I stayed home. Because it was raining.",
         "r": "I stayed home because it was raining.",
-        "why": "because 문장은 혼자 쓰지 않고 결과 문장과 함께 씁니다."
+        "why": "because가 이끄는 문장은 마침표로 끊어 혼자 쓰지 않고 결과 문장과 한 문장으로 연결해서 씁니다."
       },
       {
         "w": "Although he is rich, but he is not happy.",
@@ -2168,9 +2168,10 @@
       ],
       "correct": [
         {
-          "w": "I think that is a good idea.",
-          "r": "I think that it is a good idea.",
-          "why": "접속사 that 뒤에는 완전한 문장이 와야 하므로 주어(it)가 필요합니다."
+          "n": 1,
+          "w": "I think that is raining.",
+          "r": "I think that it is raining.",
+          "why": "접속사 that 뒤에는 주어와 동사가 모두 있어야 하므로 주어(it)가 필요합니다."
         },
         {
           "w": "Although it was late, but I watched a movie.",
@@ -2265,7 +2266,10 @@
           "model": "She said that she was hungry."
         }
       ]
-    }
+    },
+    "dropPitfalls": [
+      "Because it was raining."
+    ]
   },
   {
     "id": "pos-interjection",

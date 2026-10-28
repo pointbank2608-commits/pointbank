@@ -104,9 +104,10 @@
         "why": "so that 뒤에는 문장(주어 + 동사)이 옵니다."
       },
       {
-        "w": "I hid it so that no one know.",
-        "r": "I hid it so that no one knows.",
-        "why": "no one은 단수이므로 knows입니다."
+        "n": 2,
+        "w": "I hid it so that no one will know.",
+        "r": "I hid it so that no one would know.",
+        "why": "주절이 과거 시제이므로 종속절에도 과거형 조동사 would를 씁니다."
       },
       {
         "w": "She studied hard so that she could passed the test.",
@@ -444,7 +445,10 @@
           "model": "They worked together so that they could finish faster."
         }
       ]
-    }
+    },
+    "dropPitfalls": [
+      "I hid it so that no one know."
+    ]
   },
   {
     "id": "m-if-conditional",
@@ -1912,9 +1916,10 @@
         "why": "fact의 내용을 구체적으로 설명할 때는 동격의 that을 씁니다."
       },
       {
-        "w": "I am not sure that it will rain tomorrow.",
-        "r": "I am not sure whether it will rain tomorrow.",
-        "why": "'~인지 아닌지' 불확실한 내용을 나타낼 때는 whether나 if를 씁니다."
+        "n": 6,
+        "w": "She asked me that I was hungry.",
+        "r": "She asked me whether I was hungry.",
+        "why": "질문하는 내용이므로 that 대신 whether나 if를 씁니다."
       }
     ],
     "say": [
@@ -2145,9 +2150,10 @@
           "why": "rumor의 내용을 설명하는 동격절은 that으로 이끕니다."
         },
         {
-          "w": "I don't know that he will accept the offer.",
-          "r": "I don't know whether he will accept the offer.",
-          "why": "'수락할지 안 할지' 모르는 것이므로 that 대신 whether(또는 if)를 씁니다."
+          "n": 3,
+          "w": "It depends on that he will accept the offer.",
+          "r": "It depends on whether he will accept the offer.",
+          "why": "전치사 on 뒤에는 that절을 쓸 수 없고, '~인지 아닌지'를 뜻하는 whether를 씁니다."
         },
         {
           "w": "What she is a good singer is true.",
@@ -3103,7 +3109,8 @@
           "frame": "I keep ____ing every day."
         },
         {
-          "task": "창문을 닫아도 되는지 정중하게 물어봐요.",
+          "n": 6,
+          "task": "상대방에게 창문을 닫아 달라고 정중하게 부탁해요.",
           "frame": "Do you mind ____ing the window?"
         }
       ],
@@ -3250,19 +3257,22 @@
     ],
     "correct": [
       {
-        "w": "I need something drink.",
-        "r": "I need something to drink.",
+        "n": 1,
+        "w": "I have a lot of work do.",
+        "r": "I have a lot of work to do.",
         "why": "명사를 꾸밀 때는 to부정사가 필요합니다."
       },
       {
-        "w": "She went to the library study.",
-        "r": "She went to the library to study.",
+        "n": 2,
+        "w": "He went to the store buy some milk.",
+        "r": "He went to the store to buy some milk.",
         "why": "목적은 to부정사로 나타냅니다."
       },
       {
-        "w": "I'm glad meet you.",
-        "r": "I'm glad to meet you.",
-        "why": "감정의 이유는 to부정사로 나타냅니다."
+        "n": 3,
+        "w": "I was surprised see him.",
+        "r": "I was surprised to see him.",
+        "why": "감정의 원인은 to부정사로 나타냅니다."
       },
       {
         "w": "I went to the park play soccer.",
@@ -3317,19 +3327,22 @@
     },
     "review": [
       {
-        "ko": "나는 마실 것이 필요해요.",
+        "n": 1,
+        "ko": "나는 시원한 마실 것을 원한다.",
         "cond": "to drink를 써요.",
-        "model": "I need something to drink."
+        "model": "I want something cold to drink."
       },
       {
-        "ko": "그녀는 공부하러 도서관에 갔다.",
-        "cond": "to study를 써요.",
-        "model": "She went to the library to study."
+        "n": 2,
+        "ko": "그는 책을 빌리러 도서관에 갔다.",
+        "cond": "to borrow를 써요.",
+        "model": "He went to the library to borrow a book."
       },
       {
-        "ko": "만나서 반가워요.",
+        "n": 3,
+        "ko": "너를 다시 봐서 기뻐.",
         "cond": "glad to를 써요.",
-        "model": "I'm glad to meet you."
+        "model": "I am glad to see you again."
       },
       {
         "ko": "우리는 입을 옷이 없다.",
@@ -3337,9 +3350,10 @@
         "model": "We have nothing to wear."
       },
       {
-        "ko": "그는 축구를 하려고 공원에 갔다.",
-        "cond": "to play를 써요.",
-        "model": "He went to the park to play soccer."
+        "n": 5,
+        "ko": "그녀는 친구를 만나러 카페에 갔다.",
+        "cond": "to meet를 써요.",
+        "model": "She went to the cafe to meet her friend."
       },
       {
         "ko": "나는 그 선물을 받아서 기쁘다.",
@@ -3575,14 +3589,16 @@
       },
       "review": [
         {
-          "ko": "나는 오늘 밤에 쓸 편지가 있다.",
-          "cond": "letter를 써요.",
-          "model": "I have a letter to write tonight."
+          "n": 1,
+          "ko": "나는 끝내야 할 숙제가 약간 있다.",
+          "cond": "to finish를 써요.",
+          "model": "I have some homework to finish."
         },
         {
-          "ko": "그녀는 우유를 사러 가게에 갔다.",
+          "n": 2,
+          "ko": "그는 빵을 사러 빵집에 갔다.",
           "cond": "went를 써요.",
-          "model": "She went to the store to buy milk."
+          "model": "He went to the bakery to buy bread."
         },
         {
           "ko": "그는 그 소식을 듣고 슬펐다.",
@@ -3590,19 +3606,22 @@
           "model": "He was sad to hear the news."
         },
         {
-          "ko": "우리는 야구를 할 장소가 필요하다.",
-          "cond": "place를 써요.",
-          "model": "We need a place to play baseball."
+          "n": 4,
+          "ko": "나는 이야기할 친구가 필요하다.",
+          "cond": "friend를 써요.",
+          "model": "I need a friend to talk to."
         },
         {
-          "ko": "나의 아버지는 뉴스를 보기 위해 TV를 켜셨다.",
-          "cond": "turned on을 써요.",
-          "model": "My father turned on the TV to watch the news."
+          "n": 5,
+          "ko": "그녀는 버스를 타기 위해 일찍 일어났다.",
+          "cond": "to catch를 써요.",
+          "model": "She woke up early to catch the bus."
         },
         {
-          "ko": "그들은 경기에서 이겨서 기뻤다.",
-          "cond": "win을 써요.",
-          "model": "They were happy to win the game."
+          "n": 6,
+          "ko": "나는 네 편지를 받아서 기뻤다.",
+          "cond": "glad를 써요.",
+          "model": "I was glad to receive your letter."
         }
       ]
     }
@@ -3708,18 +3727,21 @@
     ],
     "correct": [
       {
-        "w": "I finished to read the book.",
-        "r": "I finished reading the book.",
+        "n": 1,
+        "w": "She finished to wash the dishes.",
+        "r": "She finished washing the dishes.",
         "why": "finish는 동명사를 목적어로 씁니다."
       },
       {
-        "w": "We decided going there.",
-        "r": "We decided to go there.",
+        "n": 2,
+        "w": "They decided buying a new car.",
+        "r": "They decided to buy a new car.",
         "why": "decide는 to부정사를 목적어로 씁니다."
       },
       {
-        "w": "He gave up to eat junk food.",
-        "r": "He gave up eating junk food.",
+        "n": 3,
+        "w": "My dad gave up to smoke.",
+        "r": "My dad gave up smoking.",
         "why": "give up은 동명사를 목적어로 씁니다."
       },
       {
@@ -3775,14 +3797,16 @@
     },
     "review": [
       {
-        "ko": "그는 정크푸드 먹는 걸 끊었다.",
+        "n": 1,
+        "ko": "그녀는 탄산음료 마시는 것을 끊었다.",
         "cond": "gave up을 써요.",
-        "model": "He gave up eating junk food."
+        "model": "She gave up drinking soda."
       },
       {
-        "ko": "그들은 다시 오겠다고 약속했다.",
+        "n": 2,
+        "ko": "그는 열심히 공부하겠다고 약속했다.",
         "cond": "promised를 써요.",
-        "model": "They promised to come back."
+        "model": "He promised to study hard."
       },
       {
         "ko": "다시 비가 오기 시작했다.",
@@ -3790,19 +3814,22 @@
         "model": "It started raining again."
       },
       {
-        "ko": "나는 음악 듣는 것을 즐긴다.",
+        "n": 4,
+        "ko": "우리는 야구하는 것을 즐긴다.",
         "cond": "enjoy를 써요.",
-        "model": "I enjoy listening to music."
+        "model": "We enjoy playing baseball."
       },
       {
-        "ko": "우리는 제주도를 방문할 계획이다.",
+        "n": 5,
+        "ko": "나는 책을 많이 읽을 계획이다.",
         "cond": "plan을 써요.",
-        "model": "We plan to visit Jeju Island."
+        "model": "I plan to read many books."
       },
       {
-        "ko": "그는 게임하는 것을 그만두었다.",
+        "n": 6,
+        "ko": "그는 뛰는 것을 멈췄다.",
         "cond": "stopped를 써요.",
-        "model": "He stopped playing games."
+        "model": "He stopped running."
       }
     ],
     "buildExtra": [
@@ -4024,14 +4051,16 @@
       },
       "review": [
         {
-          "ko": "나는 내 방 청소하는 것을 끝냈다.",
+          "n": 1,
+          "ko": "그는 만화책 읽는 것을 끝냈다.",
           "cond": "finished를 써요.",
-          "model": "I finished cleaning my room."
+          "model": "He finished reading the comic book."
         },
         {
-          "ko": "그녀는 새 자전거를 사기로 결정했다.",
+          "n": 2,
+          "ko": "그들은 소풍을 가기로 결정했다.",
           "cond": "decided를 써요.",
-          "model": "She decided to buy a new bike."
+          "model": "They decided to go on a picnic."
         },
         {
           "ko": "창문을 닫아 주시겠어요?",
@@ -4039,14 +4068,16 @@
           "model": "Do you mind closing the window?"
         },
         {
-          "ko": "우리는 그 경기에 이기기를 희망한다.",
+          "n": 4,
+          "ko": "나는 그를 다시 만나기를 희망한다.",
           "cond": "hope를 써요.",
-          "model": "We hope to win the game."
+          "model": "I hope to meet him again."
         },
         {
-          "ko": "그 개는 계속해서 짖었다.",
+          "n": 5,
+          "ko": "비가 계속 내렸다.",
           "cond": "kept를 써요.",
-          "model": "The dog kept barking."
+          "model": "It kept raining."
         },
         {
           "ko": "그는 전화를 받기 위해 멈췄다.",

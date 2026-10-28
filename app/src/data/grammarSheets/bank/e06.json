@@ -566,9 +566,9 @@
         "why": "듣는 사람이 나오면 told를 씁니다."
       },
       {
-        "w": "She said that she were tired.",
-        "r": "She said that she was tired.",
-        "why": "she 뒤에는 was를 씁니다."
+        "w": "He said that he likes soccer.",
+        "r": "He said that he liked soccer.",
+        "why": "주절의 동사가 과거(said)이므로 현재형 likes를 과거형 liked로 바꿔야 합니다."
       },
       {
         "w": "Tom said that he will come.",

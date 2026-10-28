@@ -125,7 +125,7 @@ export function SaySheet({ data, support, part = 0 }: { data: SheetData; support
   const from = part * PER_PAGE.say;
   return <Shell data={data} kind="say" support={support} teacher={false} part={part}>
     <GrammarExerciseBlock title="1. Talk with your partner." color="#f0608f">
-      {data.say.slice(from, from + PER_PAGE.say).map((q, k) => <div key={k} style={{ padding: '1.4mm 0' }}>
+      {data.say.slice(from, from + PER_PAGE.say).map((q, k) => <div key={k} style={{ padding: '0.8mm 0' }}>
         <div style={body}><span style={{ color: '#8d99ae' }}>{num(from + k)}</span>{q.task}</div>
         {support < 3 && <div style={{ background: '#fff5d6', borderRadius: '1.5mm', padding: '0.8mm 3mm', margin: '0.8mm 0 1mm', ...small, color: '#182640' }}>{q.frame}</div>}
         <div style={line} />

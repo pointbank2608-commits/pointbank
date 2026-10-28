@@ -4004,7 +4004,8 @@
       },
       "review": [
         {
-          "ko": "코치는 선수들이 운동장을 뛰게 만들었다.",
+          "n": 1,
+          "ko": "코치는 선수들이 뛰게 만들었다.",
           "cond": "made the players를 써요.",
           "model": "The coach made the players run."
         },

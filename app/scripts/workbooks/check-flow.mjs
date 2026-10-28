@@ -36,7 +36,7 @@ const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors
 const base=process.env.PHONICS_QA_URL??'http://127.0.0.1:5180';
 await mkdir('../output/pdf',{recursive:true});
 await page.goto(base+'/materials');
-for(const name of ['파닉스 4단계 워크북','파닉스 5단계 워크북','문법 기본 연습과 활동 미션'])await page.getByRole('link').filter({has:page.getByRole('heading',{name,exact:true})}).waitFor();
+for(const name of ['파닉스 4단계 워크북 · 자음군과 이중자음','파닉스 5단계 워크북 · 모음 조합·이중모음·R 모음','문법 워크북 · 개념부터 심화까지'])await page.getByRole('link').filter({has:page.getByRole('heading',{name,exact:true})}).waitFor();
 await page.goto(base+'/grammar');
 await page.locator('input[type="search"]').fill('3인칭 단수');
 await page.getByRole('button',{name:/3인칭 단수 -s/}).click();
@@ -44,19 +44,18 @@ await page.getByRole('button',{name:'워크북 만들기',exact:true}).click();
 assert(page.url().includes('topic=third-s'));
 await page.locator('[data-audience="student"]').first().waitFor();
 assert.equal(await page.locator('[data-audience="teacher"]').count(),0);
-assert.equal(await page.locator('.print-board').count(),2);
-await page.getByLabel('워크북 제목',{exact:true}).fill('우리 반 · 3인칭 단수');
-assert.equal(await page.locator('.print-board h1').first().innerText(),'우리 반 · 3인칭 단수');
-await page.getByLabel('활동',{exact:true}).selectOption('mission');
-assert.equal(await page.locator('.print-board').count(),1);
-await page.getByLabel('학생용',{exact:true}).uncheck();
-assert.equal(await page.getByRole('button',{name:'선택 자료 인쇄'}).isEnabled(),false);
+assert.equal(await page.locator('.print-board').count(),7); // 세트 A 학생용 7쪽
 await page.getByLabel('교사용 정답·풀이',{exact:true}).check();
-assert.equal(await page.locator('[data-audience="teacher"]').count(),1);
-assert((await page.locator('.print-sheet').innerText()).includes('소포 주인: TOBI'));
+assert.equal(await page.locator('.print-board').count(),8);
+await page.getByLabel('B 세트',{exact:true}).check();
+assert.equal(await page.locator('.print-board').count(),8);
+assert((await page.locator('.print-sheet').innerText()).includes('세트 B'));
+await page.getByLabel('A + B 모두',{exact:true}).check();
+assert.equal(await page.locator('.print-board').count(),16);
+await page.getByLabel('학생용',{exact:true}).uncheck();
+assert.equal(await page.locator('[data-audience="teacher"]').count(),2);
 await page.getByLabel('문법 주제',{exact:true}).selectOption('this-is');
-await page.getByText('이 주제의 워크북은 준비 중입니다.',{exact:false}).waitFor();
-assert.equal(await page.locator('.print-board').count(),0);
+await page.waitForFunction(()=>document.querySelectorAll('.print-board').length===2);
 for(const step of [4,5]){
  await page.goto(base+`/materials/phonics-stage-${step}-workbook`);
  await page.getByRole('button',{name:'선택 유닛 인쇄',exact:true}).waitFor();

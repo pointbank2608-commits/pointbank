@@ -1466,9 +1466,10 @@
         "why": "시간을 말할 때도 주어 It이 필요합니다."
       },
       {
-        "w": "It is getting darkly.",
+        "n": 3,
+        "w": "Is getting dark.",
         "r": "It is getting dark.",
-        "why": "get 뒤에는 형용사를 씁니다."
+        "why": "명암(밝기)을 말할 때도 주어 It이 필요합니다."
       },
       {
         "w": "Is Monday today.",

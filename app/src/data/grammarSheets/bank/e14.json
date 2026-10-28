@@ -4654,7 +4654,8 @@
         "why": "explain은 4형식으로 쓰지 않고 3형식으로 씁니다."
       },
       {
-        "w": "I made him to a sandwich.",
+        "n": 6,
+        "w": "I made for him a sandwich.",
         "r": "I made him a sandwich.",
         "why": "4형식에서는 사람 앞에 전치사를 쓰지 않습니다."
       }
@@ -4882,7 +4883,8 @@
           "why": "give는 3형식으로 바꿀 때 to를 씁니다."
         },
         {
-          "w": "I cooked my family to dinner.",
+          "n": 2,
+          "w": "I cooked for my family dinner.",
           "r": "I cooked my family dinner.",
           "why": "4형식에서는 사람 앞에 전치사를 쓰지 않습니다."
         },
@@ -4902,7 +4904,8 @@
           "why": "4형식에서는 동사 뒤에 사람이 바로 옵니다."
         },
         {
-          "w": "My dad read me to a story.",
+          "n": 6,
+          "w": "My dad read a story me.",
           "r": "My dad read me a story.",
           "why": "4형식에서는 동사 뒤에 사람, 사물 순서로 옵니다."
         }

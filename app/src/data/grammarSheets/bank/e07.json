@@ -1456,9 +1456,10 @@
     ],
     "correct": [
       {
-        "w": "First, I washing my hands.",
-        "r": "First, I wash my hands.",
-        "why": "I 다음에는 동사원형을 씁니다."
+        "n": 1,
+        "w": "Next. I wash my face.",
+        "r": "Next, I wash my face.",
+        "why": "순서를 나타내는 말 뒤에는 마침표가 아니라 쉼표를 써야 합니다."
       },
       {
         "w": "First I wash my hands.",
@@ -1466,9 +1467,10 @@
         "why": "순서를 나타내는 말 뒤에는 쉼표가 필요합니다."
       },
       {
-        "w": "Then, I eat breakfast",
+        "n": 3,
+        "w": "Then I eat breakfast.",
         "r": "Then, I eat breakfast.",
-        "why": "문장 끝에는 마침표가 필요합니다."
+        "why": "순서를 나타내는 말 뒤에는 쉼표를 써야 합니다."
       },
       {
         "w": "Finally I go home.",
@@ -1476,14 +1478,16 @@
         "why": "순서를 나타내는 말 뒤에는 쉼표를 써야 합니다."
       },
       {
-        "w": "First, I goes to bed.",
+        "n": 5,
+        "w": "First. I go to bed.",
         "r": "First, I go to bed.",
-        "why": "주어가 I일 때 동사원형을 씁니다."
+        "why": "순서를 나타내는 말 뒤에는 마침표가 아니라 쉼표를 써야 합니다."
       },
       {
-        "w": "Next, I make a sandwich",
+        "n": 6,
+        "w": "Next I make a sandwich.",
         "r": "Next, I make a sandwich.",
-        "why": "문장 끝에는 마침표를 써야 합니다."
+        "why": "순서를 나타내는 말 뒤에는 쉼표를 써야 합니다."
       }
     ],
     "say": [
@@ -1719,24 +1723,28 @@
           "why": "순서를 나타내는 말 뒤에는 쉼표가 필요합니다."
         },
         {
-          "w": "First, we plays soccer.",
+          "n": 2,
+          "w": "First we play soccer.",
           "r": "First, we play soccer.",
-          "why": "주어가 we일 때는 동사원형을 씁니다."
+          "why": "순서를 나타내는 말 뒤에는 쉼표를 써야 합니다."
         },
         {
-          "w": "Finally, they go home",
+          "n": 3,
+          "w": "Finally. they go home.",
           "r": "Finally, they go home.",
-          "why": "문장 끝에는 마침표를 찍어야 합니다."
+          "why": "순서를 나타내는 말 뒤에는 마침표가 아니라 쉼표를 써야 합니다."
         },
         {
-          "w": "Next, she make juice.",
+          "n": 4,
+          "w": "Next she makes juice.",
           "r": "Next, she makes juice.",
-          "why": "주어가 she일 때는 동사에 s를 붙입니다."
+          "why": "순서를 나타내는 말 뒤에는 쉼표를 써야 합니다."
         },
         {
-          "w": "First, I drinking milk.",
+          "n": 5,
+          "w": "First. I drink milk.",
           "r": "First, I drink milk.",
-          "why": "I 뒤에는 동사원형을 써야 합니다."
+          "why": "순서를 나타내는 말 뒤에는 마침표가 아니라 쉼표를 써야 합니다."
         },
         {
           "w": "Finally I eat the apple.",
@@ -1918,9 +1926,10 @@
         "why": "I think 뒤에는 주어 + 동사 순서입니다."
       },
       {
-        "w": "I think dogs is cute.",
+        "n": 2,
+        "w": "I think are dogs cute.",
         "r": "I think dogs are cute.",
-        "why": "dogs는 복수이므로 are를 씁니다."
+        "why": "I think 뒤에는 '주어 + 동사' 순서로 써야 합니다."
       },
       {
         "w": "I not think so.",
@@ -1933,9 +1942,10 @@
         "why": "I think 뒤에는 '주어 + 동사' 순서가 되어야 합니다."
       },
       {
-        "w": "I think cats is fast.",
+        "n": 5,
+        "w": "I think are cats fast.",
         "r": "I think cats are fast.",
-        "why": "cats는 복수이므로 be동사 are를 써야 합니다."
+        "why": "I think 뒤에는 '주어 + 동사' 순서로 써야 합니다."
       },
       {
         "w": "I am not think so.",
@@ -2166,9 +2176,10 @@
           "why": "I think 뒤에는 주어가 먼저 오고 동사가 와야 합니다."
         },
         {
-          "w": "I think rabbits is cute.",
+          "n": 2,
+          "w": "I think are rabbits cute.",
           "r": "I think rabbits are cute.",
-          "why": "rabbits는 복수이므로 be동사 are를 씁니다."
+          "why": "I think 뒤에는 '주어 + 동사' 순서로 써야 합니다."
         },
         {
           "w": "I don't think to.",
@@ -2176,9 +2187,10 @@
           "why": "'그렇게 생각하지 않는다'는 I don't think so. 입니다."
         },
         {
-          "w": "I think elephants is big.",
+          "n": 4,
+          "w": "I think are elephants big.",
           "r": "I think elephants are big.",
-          "why": "elephants는 복수이므로 is 대신 are를 써야 합니다."
+          "why": "I think 뒤에는 '주어 + 동사' 순서로 써야 합니다."
         },
         {
           "w": "I think is hot summer.",
@@ -2186,9 +2198,10 @@
           "why": "I think 뒤에는 '주어 + 동사' 순서로 씁니다."
         },
         {
-          "w": "I think grapes is sweet.",
+          "n": 6,
+          "w": "I think are grapes sweet.",
           "r": "I think grapes are sweet.",
-          "why": "grapes는 복수이므로 are를 써야 합니다."
+          "why": "I think 뒤에는 '주어 + 동사' 순서로 써야 합니다."
         }
       ],
       "say": [
