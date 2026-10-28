@@ -1,0 +1,221 @@
+{
+  "passed": true,
+  "checked": 7000,
+  "cases": [
+    {
+      "game": "sound-balloons",
+      "unit": "course-1-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "letter-partners",
+      "unit": "course-1-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "sound-baskets",
+      "unit": "course-1-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "letter-explorers",
+      "unit": "course-1-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "letter-trails",
+      "unit": "course-1-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "sound-train",
+      "unit": "course-2-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "onset-change",
+      "unit": "course-2-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "family-homes",
+      "unit": "course-2-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "vowel-repair",
+      "unit": "course-2-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "sound-steps",
+      "unit": "course-2-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "magic-bridge",
+      "unit": "course-3-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "magic-lab",
+      "unit": "course-3-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "magic-builder",
+      "unit": "course-3-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "magic-families",
+      "unit": "course-3-1",
+      "eligibleUnits": 7
+    },
+    {
+      "game": "rescue-e",
+      "unit": "course-3-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "blend-launch",
+      "unit": "course-4-1",
+      "eligibleUnits": 6
+    },
+    {
+      "game": "digraph-friends",
+      "unit": "course-4-7",
+      "eligibleUnits": 2
+    },
+    {
+      "game": "sound-position",
+      "unit": "course-4-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "odd-friend",
+      "unit": "course-2-1",
+      "eligibleUnits": 31
+    },
+    {
+      "game": "consonant-repair",
+      "unit": "course-4-1",
+      "eligibleUnits": 8
+    },
+    {
+      "game": "same-sound-roads",
+      "unit": "course-5-1",
+      "eligibleUnits": 5
+    },
+    {
+      "game": "two-oo",
+      "unit": "course-5-4",
+      "eligibleUnits": 1
+    },
+    {
+      "game": "ow-crossroads",
+      "unit": "course-5-6",
+      "eligibleUnits": 4
+    },
+    {
+      "game": "vowel-chef",
+      "unit": "course-5-1",
+      "eligibleUnits": 9
+    },
+    {
+      "game": "r-journey",
+      "unit": "course-5-7",
+      "eligibleUnits": 3
+    },
+    {
+      "game": "sound-fishing",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "monster-diner",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "memory-cards",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "missing-card",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "picture-puzzle",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "sound-bingo",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "word-treasure",
+      "unit": "course-2-1",
+      "eligibleUnits": 33
+    },
+    {
+      "game": "sorting-factory",
+      "unit": "course-1-1",
+      "eligibleUnits": 40
+    },
+    {
+      "game": "read-and-move",
+      "unit": "course-1-1",
+      "eligibleUnits": 2
+    },
+    {
+      "game": "sentence-bridge",
+      "unit": "course-1-1",
+      "eligibleUnits": 2
+    },
+    {
+      "game": "phonics-farm",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "dino-expedition",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "space-rescue",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "phonics-island",
+      "unit": "course-1-1",
+      "eligibleUnits": 42
+    },
+    {
+      "game": "our-storybook",
+      "unit": "course-1-1",
+      "eligibleUnits": 2
+    }
+  ],
+  "browserGames": 0,
+  "errors": [],
+  "writes": [],
+  "audioAll40": false,
+  "audioLifecycle": true,
+  "mobile": true,
+  "pausePreservesState": true,
+  "retryScoring": true,
+  "qAndX": true,
+  "speechFailure": true,
+  "brokenImages": true,
+  "english": true,
+  "worldFilters": true,
+  "villageReplayDedupAndReset": true,
+  "actualCarriageLetters": true
+}

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createServer} from 'vite';
 import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
 
-const out='../output/phonics-games-v2';await mkdir(out,{recursive:true});
+const audioChecks=process.argv.includes('--sound');
+const out=audioChecks?'../output/phonics-games-sound':'../output/phonics-games-v2';await mkdir(out,{recursive:true});
 const server=await createServer({cacheDir:'node_modules/.vite/qa-phonics-games',server:{host:'127.0.0.1',port:5264,strictPort:true},logLevel:'error'});await server.listen();
 let browser;
 try {
@@ -13,6 +15,9 @@ try {
  const visuals=await server.ssrLoadModule('/src/lib/phonicsGameVisuals.ts');
  assert.deepEqual(Object.keys(visuals.PHONICS_VISUALS).sort(),games.map(g=>g.id).sort());
  for(const world of Object.keys(visuals.PHONICS_WORLDS))assert((await readFile(`public${visuals.worldBackground(world)}`)).length>1000);
+ const sounds=await server.ssrLoadModule('/src/lib/phonicsGameSound.ts');
+ const manifest=JSON.parse(await readFile('public/sounds/minigames/manifest.json','utf8'));
+ for(const name of new Set(games.flatMap(g=>Object.values(sounds.phonicsSoundProfile(g))))){const row=manifest.sounds.find(s=>s.name===name);assert(row);assert.equal(createHash('sha256').update(await readFile('public/sounds/minigames/'+name+'.wav')).digest('hex'),row.sha256);}
  let checked=0;const cases=[];
  for(const g of games){
   const eligible=units.filter(u=>!gameAvailability(g,u));assert(eligible.length,`${g.id}: no eligible unit`);cases.push({game:g.id,unit:eligible[0].id,eligibleUnits:eligible.length});
@@ -43,7 +48,13 @@ try {
   const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
   const profile={id:uid,academy_id:aid,role:'owner',display_name:'Phonics QA'},academy={id:aid,name:'Phonics QA',point_unit:'별',plan:'paid',plan_status:'active',deletion_requested_at:null,features:{group:true,solo:true,homework:true}};
   browser=await chromium.launch({channel:'chrome',headless:true});const context=await browser.newContext({viewport:{width:1440,height:1100}});
-  await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));if(!localStorage.getItem('classbank.lang'))localStorage.setItem('classbank.lang','ko');crypto.getRandomValues=a=>{a.fill(123);return a;};window.__spoken=[];speechSynthesis.speak=u=>window.__spoken.push(u.text);},{key:`sb-${ref}-auth-token`,session});
+  await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));if(!localStorage.getItem('classbank.lang'))localStorage.setItem('classbank.lang','ko');crypto.getRandomValues=a=>{a.fill(123);return a;};window.__spoken=[];speechSynthesis.speak=u=>{window.__spoken.push(u.text);u.onend?.();};},{key:`sb-${ref}-auth-token`,session});
+  if(audioChecks)await context.addInitScript(()=>{
+   window.__sounds=[];window.__activeSounds=new Set();let serial=0;
+   const start=AudioBufferSourceNode.prototype.start,stop=AudioBufferSourceNode.prototype.stop;
+   AudioBufferSourceNode.prototype.start=function(...args){const id=++serial;this.__soundId=id;const data=this.buffer.getChannelData(0);let energy=0;for(let i=0;i<data.length;i++)energy+=data[i]*data[i];window.__sounds.push({id,duration:this.buffer.duration,db:20*Math.log10(Math.sqrt(energy/data.length)),state:this.context.state});window.__activeSounds.add(id);this.addEventListener('ended',()=>window.__activeSounds.delete(id));return start.apply(this,args);};
+   AudioBufferSourceNode.prototype.stop=function(...args){window.__activeSounds.delete(this.__soundId);return stop.apply(this,args);};
+  });
   const writes=[],errors=[];
   await context.route('**/*.supabase.co/**',async route=>{const req=route.request(),path=new URL(req.url()).pathname,headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};if(req.method()==='OPTIONS')return route.fulfill({status:204,headers});if(!['GET','HEAD'].includes(req.method())&&!path.includes('/auth/')&&!path.includes('/rpc/'))writes.push(path);const single=(req.headers().accept||'').includes('vnd.pgrst.object');let data=single?{}:[];if(path.includes('/auth/v1/user'))data=user;else if(path.includes('/auth/v1/'))data=session;else if(path.endsWith('/profiles'))data=single?profile:[profile];else if(path.endsWith('/academies'))data=single?academy:[academy];else if(path.endsWith('/classes'))data=[{id:'class-qa',academy_id:aid,name:'검증 반'}];else if(path.endsWith('/rpc/my_deletion_request'))data=null;return route.fulfill({status:200,headers,json:data});});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(30000);const root='http://127.0.0.1:5264';
@@ -54,7 +65,8 @@ try {
   await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.getByRole('button',{name:'전체화면 종료',exact:true}).click();await page.locator('.pg-fullscreen').waitFor({state:'hidden'});assert.equal(await page.locator('.pg-fullscreen').count(),0);
   console.log('PASS phonics native fullscreen, Escape and unsupported-device fallback');
 
-  await page.goto(root+'/phonics-games');await page.locator('[data-game-card]').first().waitFor();await page.screenshot({path:out+'/catalog-desktop.png',fullPage:true});
+  const soundPlayed=async(name,from=0)=>{const expected=manifest.sounds.find(s=>s.name===name);try{await page.waitForFunction(({expected,from})=>window.__sounds.slice(from).some(s=>s.state==='running'&&Math.abs(s.duration-expected.seconds)<.002&&Math.abs(s.db-expected.rms_dbfs)<.3),{expected,from});}catch(error){console.log('AUDIO FAILURE',JSON.stringify({expected,from,played:await page.evaluate(()=>window.__sounds)}));throw error;}};
+  await page.goto(root+'/phonics-games');await page.locator('[data-game-card]').first().waitFor();if(audioChecks)assert.equal(await page.evaluate(()=>window.__sounds.length),0);await page.screenshot({path:out+'/catalog-desktop.png',fullPage:true});
   const solve=async(g,u,index)=>{
    const r=makeRound(g,u,index,123),area=page.locator('[data-activity]');
    await area.waitFor();
@@ -91,7 +103,9 @@ try {
    }
    await page.locator('.pg-next').waitFor();
   };
-  for(const c of process.argv.includes('--edges-only')?[]:cases){
+  const only=process.argv.find(a=>a.startsWith('--games='))?.slice(8).split(',');
+  const browserCases=process.argv.includes('--edges-only')?[]:cases.filter(c=>!only||only.includes(c.game));
+  for(const c of browserCases){
    const g=games.find(g=>g.id===c.game),u=units.find(u=>u.id===c.unit);
    await page.goto(`${root}/phonics-games/${g.id}?unit=${u.id}`);await page.getByRole('button',{name:'게임 시작',exact:true}).waitFor();await page.getByLabel('문제 수',{exact:true}).selectOption('3');await page.getByRole('button',{name:'게임 시작',exact:true}).click();
    assert.equal(await page.locator('[data-play-world]').getAttribute('data-play-world'),visuals.gameVisual(g).world);
@@ -106,14 +120,47 @@ try {
     if(g.mechanic==='adventure'){
      const ids=g.theme==='book'?['read-and-move','sentence-bridge','read-and-move']:u.step===1?['sound-balloons','sound-baskets','memory-cards']:['sound-fishing',u.step===2?'sound-train':u.step===3?'magic-builder':u.step===4?'consonant-repair':'vowel-chef','word-treasure'];activity=games.find(g=>g.id===ids[i%ids.length]);if(gameAvailability(activity,u))activity=games.find(g=>g.id==='sound-fishing');
     }
+    const soundMark=audioChecks?await page.evaluate(()=>window.__sounds.length):0;
     await solve(activity,u,i);
+    if(audioChecks&&i===0){await soundPlayed(sounds.phonicsSoundProfile(g).scene,soundMark);await soundPlayed('next',soundMark);}
     assert.equal(await page.locator('[data-reaction]').getAttribute('data-reaction'),'success');
     if(g.id==='sound-train'&&i===0){await page.getByRole('button',{name:'잠시 멈춤',exact:true}).click();assert.equal(await page.locator('.pg-next').isVisible(),false);await page.getByRole('button',{name:'이어서 하기',exact:true}).click();await page.locator('.pg-next').waitFor();}
     if(['sound-train','two-oo','magic-bridge'].includes(g.id)&&i===0)await page.screenshot({path:out+`/${g.id}.png`,fullPage:true});
     await page.locator('.pg-next').click();
    }
-   await page.getByRole('heading',{name:'오늘도 잘했어요!'}).waitFor();console.log('PASS browser',g.id);
+   await page.getByRole('heading',{name:'오늘도 잘했어요!'}).waitFor();if(audioChecks)await soundPlayed('finish');console.log('PASS browser',g.id,audioChecks?'scene + success + finish audio':'');
    assert(await page.evaluate(id=>JSON.parse(sessionStorage.getItem('classbank.phonics.village.v2')||'[]').some(r=>r.gameId===id),g.id));
+  }
+  if(audioChecks){
+   const trainGame=games.find(g=>g.id==='sound-train'),u=units.find(u=>u.id==='course-2-1');
+   const openTrain=async()=>{await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await page.getByRole('button',{name:'게임 시작',exact:true}).click();await soundPlayed('intro');};
+   const count=()=>page.evaluate(()=>window.__sounds.length);
+   const active=()=>page.evaluate(()=>window.__activeSounds.size);
+   const setVolume=async value=>{await page.getByLabel('효과음 음량',{exact:true}).focus();await page.keyboard.press('Home');for(let i=0;i<value/5;i++)await page.keyboard.press('ArrowRight');};
+   await openTrain();await solve(trainGame,u,0);await soundPlayed('train-depart');
+   await page.getByRole('button',{name:'잠시 멈춤',exact:true}).click();assert.equal(await active(),0);let mark=await count();await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   await page.getByRole('button',{name:'이어서 하기',exact:true}).click();await page.waitForTimeout(150);assert.equal(await count(),mark);
+   // A word reading immediately cancels a train AND its queued celebration.
+   await openTrain();await page.evaluate(()=>{speechSynthesis.speak=u=>{window.__spoken.push(u.text);window.__utterance=u;};});
+   await solve(trainGame,u,0);await soundPlayed('train-depart');await page.locator('[data-learning-audio]').first().click();assert.equal(await active(),0);mark=await count();await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   await page.locator('.pg-token-bank button').first().click({force:true});assert.equal(await count(),mark);
+   await page.evaluate(()=>window.__utterance.onend());await page.locator('.pg-next').click();await soundPlayed('train-arrive',mark);
+   // Stop effects immediately, persist mute, and keep the word-reading button usable.
+   await page.getByRole('button',{name:'효과음',exact:true}).click();assert.equal(await active(),0);mark=await count();await solve(trainGame,u,1);await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   const spoken=await page.evaluate(()=>window.__spoken.length);await page.locator('[data-learning-audio]').first().click();assert.equal(await page.evaluate(()=>window.__spoken.length),spoken+1);
+   await page.reload();await page.getByRole('button',{name:'게임 시작',exact:true}).click();assert.equal(await page.getByRole('button',{name:'효과음',exact:true}).getAttribute('aria-pressed'),'false');assert.equal(await count(),0);
+   await page.getByRole('button',{name:'효과음',exact:true}).click();
+   await setVolume(0);mark=await count();await solve(trainGame,u,0);await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   await setVolume(35);await page.reload();await page.getByRole('button',{name:'게임 시작',exact:true}).click();assert.equal(await page.getByLabel('효과음 음량',{exact:true}).inputValue(),'35');
+   await solve(trainGame,u,0);await soundPlayed('train-depart');
+   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});assert.equal(await active(),0);mark=await count();await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'));});
+   await page.locator('.pg-next').click();await solve(trainGame,u,1);await soundPlayed('train-depart',mark);
+   await page.getByRole('button',{name:'게임 나가기',exact:true}).click();assert.equal(await active(),0);await page.getByRole('button',{name:'나가기',exact:true}).click();mark=await count();await page.waitForTimeout(1800);assert.equal(await count(),mark);
+   // Missing sound downloads and unavailable Web Audio still allow a complete round.
+   await page.route('**/sounds/minigames/*.wav',route=>route.abort());await page.reload();await page.getByRole('button',{name:'게임 시작',exact:true}).click();await solve(trainGame,u,0);await page.unroute('**/sounds/minigames/*.wav');
+   await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await page.evaluate(()=>{window.AudioContext=undefined;window.webkitAudioContext=undefined;});await page.getByRole('button',{name:'게임 시작',exact:true}).click();await solve(trainGame,u,0);
+   console.log('PASS audio: pause/hidden/exit cancel queued effects, voice priority, independent mute, zero volume, persistence, missing WAV and unsupported Web Audio');
   }
   // Themed adventures retain their own mascot, but still show assembled word pieces.
   for(const id of ['phonics-farm','dino-expedition','space-rescue','phonics-island']){
@@ -159,7 +206,7 @@ try {
   // Broken images fall back to readable text instead of an empty answer card.
   await page.route('**/*.webp',route=>route.abort());await page.goto(root+'/phonics-games/monster-diner?unit=course-2-1');await page.getByRole('button',{name:'Start game',exact:true}).click();await page.locator('.pg-picture-fallback').filter({hasText:'Read the word instead'}).first().waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(writes,[]);
-  await writeFile(out+(process.argv.includes('--edges-only')?'/edge-checks.json':'/checks.json'),JSON.stringify({passed:true,checked,cases,browserGames:process.argv.includes('--edges-only')?0:40,errors,writes,mobile:true,pausePreservesState:true,retryScoring:true,qAndX:true,speechFailure:true,brokenImages:true,english:true,worldFilters:true,villageReplayDedupAndReset:true,actualCarriageLetters:true},null,2));
+  await writeFile(out+(process.argv.includes('--edges-only')?'/edge-checks.json':'/checks.json'),JSON.stringify({passed:true,checked,cases,browserGames:browserCases.length,errors,writes,audioAll40:audioChecks&&browserCases.length===40,audioLifecycle:audioChecks,mobile:true,pausePreservesState:true,retryScoring:true,qAndX:true,speechFailure:true,brokenImages:true,english:true,worldFilters:true,villageReplayDedupAndReset:true,actualCarriageLetters:true},null,2));
   console.log('PASS edge cases: retry/help scoring, pause state, Q/X, speech errors, broken images, English and mobile');
  }
 } finally {await browser?.close();await server.close();}

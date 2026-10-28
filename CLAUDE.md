@@ -2,6 +2,8 @@
 
 # 클래스뱅크 — Claude 협업 메모
 
+> **파닉스 게임 효과음 (2026-10-28):** 40종의 조작·장면·성공·완료에 기존 직접 합성 WAV를 연결했다. `phonicsGameSound.ts`·`PhonicsSoundControls.tsx`를 사용하며 공통 효과음 음소거, 파닉스 음량 저장, 단어·문장 음성 우선권과 일시정지·숨김·종료 시 예약 소리 취소를 지원한다. [동작·검증](docs/phonics-game-sound.md). 배경음악과 개별 음가 녹음은 후속 범위이고 음가는 공개 음원 수집·검수로 진행한다. 후속 사용자 요청으로 효과음 변경만 main에 커밋·푸시하고 자동 운영 배포를 진행한다.
+
 > **파닉스 게임 클레이 v2 (2026-10-27):** 40종의 화면을 6개 놀이 세계·투명 소품·학습 반응으로 개편했다. `phonicsGameVisuals.ts`, `PhonicsGameArt.tsx`, `phonics-games-v2.css`, `public/skins/phonics-v2/`를 사용한다. 현재 탭의 마을 보상은 sessionStorage이며 학생 성적·DB 기록이 아니다. [제작·검증 기록](docs/phonics-game-art-v2.md)을 참고한다. 후속 사용자 요청으로 이 디자인 변경만 main에 커밋·푸시하고 자동 운영 배포를 진행한다.
 
 > **파닉스 게임 (2026-10-26):** 사용자 결정으로 기존 게임과 별도 카테고리 `/phonics-games`를 추가했다. 승인된 5단계·42개 수업 유닛을 사용하는 학습 35종·미션형 모험 5종의 첫 구현이다. 기존 게임 카탈로그·사용자 DB는 변경하지 않았다. 수업 슬라이드에서 유닛을 유지해 진입한다. 게임·문제 생성은 `lib/phonicsGames.ts`, 화면은 `pages/PhonicsGamesPage.tsx`. 문장 초안 차단·개별 음가 녹음 없음·교사 확인 쓰기·세션 결과의 범위·검증은 [docs/phonics-games.md](docs/phonics-games.md)를 확인한다. 후속 사용자 요청으로 이 변경만 분리해 main 커밋·푸시·자동 배포를 진행한다.

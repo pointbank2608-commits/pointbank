@@ -146,3 +146,9 @@
 .pg-mode-letter-partners .pg-memory-card{font-size:48px;color:#315951}
 .pg-clay-sprite[data-prop=carriage]{clip-path:inset(0 0 0 6%)}
 @media(max-width:640px){.pg-v2 .pg-memory-card{font-size:25px}.pg-mode-letter-partners .pg-memory-card{font-size:38px}}
+.pg-sound-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin:8px 0;padding:6px 10px;background:#fffdf1ec;border:1px solid #fff7dc;border-radius:17px;color:#365950}
+.pg-sound-controls .pg-button{min-height:44px;padding:5px 12px;font-size:14px}
+.pg-sound-controls label{display:flex;flex-direction:row;align-items:center;gap:9px;font-size:14px;font-weight:700}
+.pg-sound-controls input[type=range]{width:110px;height:32px;accent-color:#548d7c;border:0;padding:0;background:transparent}
+.pg-sound-controls output{font-variant-numeric:tabular-nums;min-width:36px}
+@media(max-width:640px){.pg-sound-controls{justify-content:space-between;gap:5px;padding:6px}.pg-sound-controls label{font-size:12px;gap:5px}.pg-sound-controls input[type=range]{width:80px}.pg-v2 .pg-sound-controls .pg-button{font-size:13px;padding:5px 8px}}
