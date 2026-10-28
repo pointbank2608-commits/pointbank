@@ -1,3 +1,4 @@
+import {readyMediaEn} from '../readyMediaLocales';
 import {launchUxEn} from '../launchUxLocales';
 import { phonicsLessonEn } from '../phonicsLessonLocales';
 import { elementary800En } from '../elementary800Locales';
@@ -19,6 +20,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  readyMedia: readyMediaEn,
  launchUx:launchUxEn,
   phonicsGamesTitle: 'Phonics Games',
   classroomGamesTitle: 'Classroom games',
@@ -1571,10 +1573,10 @@ const en: Ko = {
     purposeLabel: 'Speaking purpose',
     patternLabel: 'Pick a pattern to practise one structure (collected from every topic and purpose)',
     axis_pattern: 'Sentence pattern',
-    levelLabel: 'Level',
-    level_kinder: 'Kindergarten',
     open: 'Add from sentence bank',
     draftNote: 'All sentences in the bank are drafts (not yet reviewed). Please read them before class.',
+    levelLabel: 'Level',
+    level_kinder: 'Kindergarten',
     level_elem: 'Elementary',
     level_middle: 'Middle school',
     level_high: 'High school',

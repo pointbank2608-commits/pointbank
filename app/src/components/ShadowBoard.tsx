@@ -1,3 +1,6 @@
+import {useVideoChrome} from '../lib/videoChrome';
+import '../styles/video-teaching.css';
+import {readPlaybackMemory,writePlaybackMemory} from '../lib/videoPlaybackMemory';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSyncedSubState } from '../lib/presentSync';
@@ -28,6 +31,8 @@ const TEAM_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706'];
  */
 export default function ShadowBoard({
   source,
+  expanded=false,
+  rememberKey,
   title,
   videoUrl,
   flow: flowInit = 'auto',
@@ -38,6 +43,8 @@ export default function ShadowBoard({
   interactive = true,
 }: {
   source: string;
+  expanded?:boolean;
+  rememberKey?:string;
   title?: string;
   videoUrl?: string | null;
   flow?: ShadowFlow;
@@ -52,24 +59,32 @@ export default function ShadowBoard({
   const speakers = shadowSpeakers(lines);
   const videoId = videoUrl ? extractYoutubeId(videoUrl) : null;
 
-  const [idx, setIdx] = useState(0);
+  const memoryKey=rememberKey?`${rememberKey}:${videoId}:${source}`:undefined;
+  const restored=useRef(readPlaybackMemory(memoryKey));
+  const [idx, setIdx] = useState(restored.current?.idx??0);
   const [rep, setRep] = useState(1);
   const [phase, setPhase] = useState<Phase>('idle');
-  const [flow, setFlow] = useState<ShadowFlow>(flowInit);
-  const [repeat, setRepeat] = useState(repeatInit);
-  const [speed, setSpeed] = useState(speedInit);
-  const [subtitle, setSubtitle] = useState<ShadowSubtitle>(subtitleInit);
-  const [roleTeams, setRoleTeams] = useState(roleTeamsInit);
+  const [flow, setFlow] = useState<ShadowFlow>(restored.current?.flow??flowInit);
+  const [repeat, setRepeat] = useState(restored.current?.repeat??repeatInit);
+  const [speed, setSpeed] = useState(restored.current?.speed??speedInit);
+  const [subtitle, setSubtitle] = useState<ShadowSubtitle>(restored.current?.subtitle??subtitleInit);
+  const [roleTeams, setRoleTeams] = useState(restored.current?.roleTeams??roleTeamsInit);
   const [speakMs, setSpeakMs] = useState(0);
   const [ready, setReady] = useState(false);
+  const [mediaError,setMediaError]=useState('');
+  const [popup,setPopup]=useState<'settings'|'subtitles'|null>(null);
+  const chrome=useVideoChrome(phase==='listen'||phase==='speak',popup!==null,expanded);
+  const resumeAt=useRef(restored.current?.time);
+  const remember=useRef({idx,flow,repeat,speed,subtitle,roleTeams});remember.current={idx,flow,repeat,speed,subtitle,roleTeams};
 
   // 설정이 바뀌면(편집 화면에서 고칠 때) 따라간다
-  useEffect(() => setFlow(flowInit), [flowInit]);
-  useEffect(() => setRepeat(repeatInit), [repeatInit]);
-  useEffect(() => setSpeed(speedInit), [speedInit]);
-  useEffect(() => setSubtitle(subtitleInit), [subtitleInit]);
-  useEffect(() => setRoleTeams(roleTeamsInit), [roleTeamsInit]);
+  useEffect(() => {if(!restored.current)setFlow(flowInit);}, [flowInit]);
+  useEffect(() => {if(!restored.current)setRepeat(repeatInit);}, [repeatInit]);
+  useEffect(() => {if(!restored.current)setSpeed(speedInit);}, [speedInit]);
+  useEffect(() => {if(!restored.current)setSubtitle(subtitleInit);}, [subtitleInit]);
+  useEffect(() => {if(!restored.current)setRoleTeams(roleTeamsInit);}, [roleTeamsInit]);
 
+  useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape')setPopup(null);};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[]);
   const follower = useSyncedSubState({ idx, subtitle, roleTeams, phase }, (s) => {
     setIdx(Number(s.idx) || 0);
     setSubtitle((s.subtitle as ShadowSubtitle) ?? 'both');
@@ -100,22 +115,25 @@ export default function ShadowBoard({
       playerRef.current = new window.YT.Player(elementId, {
         videoId,
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, fs: 0 },
-        events: { onReady: () => setReady(true) },
+        events: { onReady: () => {setReady(true);if(restored.current?.time)playerRef.current?.seekTo(restored.current.time,true);},onError:(e:{data:number})=>{clearTimers();setReady(false);setMediaError(String(e.data));setPhase('wait');} },
       });
-    });
+    }).catch(()=>{if(!cancelled)setMediaError('API');});
     return () => {
       cancelled = true;
       clearTimers();
+      writePlaybackMemory(memoryKey,{...remember.current,time:playerRef.current?.getCurrentTime()??resumeAt.current??0});
+      playerRef.current?.pauseVideo();
       playerRef.current?.destroy();
       playerRef.current = null;
       setReady(false);
     };
-  }, [usePlayer, videoId, elementId]);
+  }, [usePlayer, videoId, elementId,memoryKey]);
 
   useEffect(() => () => clearTimers(), []);
 
   /** i 번째 문장을 처음부터 듣기 */
-  function playLine(i: number, repNo = 1) {
+  function playLine(i: number, repNo = 1,from?:number) {
+    if(mediaError)return;
     const { lines: ls, speed: sp } = state.current;
     const line = ls[i];
     if (!line) return;
@@ -130,7 +148,8 @@ export default function ShadowBoard({
     }
     setPhase('listen');
     player.setPlaybackRate(sp);
-    player.seekTo(Math.max(0, line.start - 0.05), true);
+    player.seekTo(from??Math.max(0, line.start - 0.05), true);
+    resumeAt.current=undefined;
     player.playVideo();
     if (state.current.flow === 'video') {
       // 영상 따라하기: 멈추지 않고 흘려보내며, 지금 시간이 속한 문장으로 자막만 바꾼다
@@ -192,6 +211,7 @@ export default function ShadowBoard({
   function stop() {
     clearTimers();
     playerRef.current?.pauseVideo();
+    resumeAt.current=playerRef.current?.getCurrentTime();
     setPhase((p) => (p === 'idle' ? 'idle' : 'wait'));
   }
 
@@ -207,7 +227,7 @@ export default function ShadowBoard({
     if (!interactive || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'||tag==='BUTTON') return;
       const { idx: i, phase: ph, len } = keyState.current;
       const forward = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
@@ -282,13 +302,14 @@ export default function ShadowBoard({
     </div>
   );
 
+  useEffect(()=>{if(ready)playerRef.current?.setPlaybackRate(speed);},[speed,ready]);
   const ctl = 'flex items-center gap-[0.6cqh] rounded-full bg-white px-[1.6cqh] py-[0.8cqh] font-bold text-[#1f2937] shadow hover:bg-[#f1f5f9] disabled:opacity-40';
 
   return (
-    <div className="flex h-full w-full items-center justify-center" style={{ containerType: 'size' }}>
-      <CanvasStageBox fitParent className="rounded-xl bg-[#0f172a] shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
+    <div data-shadow-board onMouseMove={chrome.show} onPointerDown={chrome.pointer} onKeyDown={chrome.show} className="flex h-full w-full items-center justify-center" style={{ containerType: 'size' }}>
+      <CanvasStageBox fitParent className="sb-stage rounded-xl bg-[#0f172a] shadow-[0_8px_28px_rgba(0,0,0,0.25)]">
         {/* 영상(위 66%) */}
-        <div className="absolute left-0 right-0 top-0 h-[66%] bg-black">
+        <div data-shadow-video className="absolute left-0 right-0 top-0 h-[66%] bg-black">
           {usePlayer ? (
             <div className="absolute inset-0 [&>iframe]:h-full [&>iframe]:w-full">
               <div id={elementId} />
@@ -303,10 +324,11 @@ export default function ShadowBoard({
           )}
           {/* 영상을 직접 눌러 재생·정지하면 자막(문장)과 영상이 어긋나므로, 영상 위를 막고 아래 조작 줄로만 움직인다 */}
           {usePlayer && <div className="absolute inset-0 z-[5]" aria-hidden />}
+          {mediaError&&<div role="alert" className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-900/90 p-4 text-center text-sm text-white"><p>{t('readyMedia.videoError',{code:mediaError})}</p><a className="rounded-lg border px-4 py-2" href={videoUrl??undefined} target="_blank" rel="noopener noreferrer">{t('readyMedia.youtube')}</a></div>}
           {usePlayer && phase === 'idle' && lines.length > 0 && (
             <button
               type="button"
-              onClick={() => playLine(idx, 1)}
+              onClick={() => playLine(idx, 1,resumeAt.current)}
               disabled={!ready}
               className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-[1.5cqh] bg-black/45 text-white"
             >
@@ -340,14 +362,14 @@ export default function ShadowBoard({
         </div>
 
         {/* 따라 말하기 시간 막대 */}
-        <div className="absolute left-0 right-0 top-[66%] h-[0.9cqh] bg-[#e2e8f0]">
+        <div data-shadow-progress className="absolute left-0 right-0 top-[66%] h-[0.9cqh] bg-[#e2e8f0]">
           {phase === 'speak' && (
             <div key={`${idx}-${rep}`} className="h-full bg-[#facc15]" style={{ animation: `shadow-bar ${speakMs}ms linear forwards` }} />
           )}
         </div>
 
         {/* 자막(아래) */}
-        <div className="absolute bottom-[9cqh] left-0 right-0 top-[67%] bg-white">
+        <div data-shadow-caption className="absolute bottom-[9cqh] left-0 right-0 top-[67%] bg-white">
           {lines.length === 0 ? (
             <div className="flex h-full items-center justify-center text-[#64748b]" style={{ fontSize: '3cqh' }}>
               {t('curriculum.shadow.empty')}
@@ -357,81 +379,29 @@ export default function ShadowBoard({
           )}
         </div>
 
-        {/* 조작 줄 */}
-        <div className="absolute bottom-0 left-0 right-0 flex h-[9cqh] items-center gap-[1cqh] overflow-x-auto whitespace-nowrap bg-[#eef2f7] px-[1.5cqh]" style={{ fontSize: '2.2cqh' }}>
-          {interactive && !follower && lines.length > 0 && (
-            <>
-              <button type="button" className={ctl} onClick={() => go(-1)} disabled={idx === 0} aria-label={t('curriculum.shadow.prev')}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.3em' }}>skip_previous</span>
-              </button>
-              {phase === 'listen' || phase === 'speak' ? (
-                <button type="button" className={ctl} onClick={stop}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1.3em' }}>pause</span>
-                  {t('curriculum.shadow.pause')}
-                </button>
-              ) : (
-                <button type="button" className={ctl} onClick={() => playLine(idx, 1)}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1.3em' }}>replay</span>
-                  {t('curriculum.shadow.replay')}
-                </button>
-              )}
-              <button type="button" className={ctl} onClick={() => go(1)} disabled={idx >= lines.length - 1} aria-label={t('curriculum.shadow.next')}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.3em' }}>skip_next</span>
-              </button>
-              <span className="mx-[0.5cqh] h-[4cqh] w-px bg-[#cbd5e1]" />
-              <div className="flex shrink-0 rounded-full bg-white p-[0.4cqh] shadow">
-                {(['video', 'auto', 'manual'] as const).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setFlow(f)}
-                    className={`rounded-full px-[1.4cqh] py-[0.5cqh] font-bold ${flow === f ? 'bg-[#2563eb] text-white' : 'text-[#475569]'}`}
-                  >
-                    {t(`curriculum.shadow.flow_${f}`)}
-                  </button>
-                ))}
-              </div>
-              <select value={repeat} onChange={(e) => setRepeat(Number(e.target.value))} className="rounded-full bg-white px-[1.2cqh] py-[0.6cqh] font-bold text-[#1f2937] shadow">
-                {SHADOW_REPEATS.map((n) => (
-                  <option key={n} value={n}>
-                    {t('curriculum.shadow.repeatN', { n })}
-                  </option>
-                ))}
-              </select>
-              <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="rounded-full bg-white px-[1.2cqh] py-[0.6cqh] font-bold text-[#1f2937] shadow">
-                {SHADOW_SPEEDS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}x
-                  </option>
-                ))}
-              </select>
-              <select value={subtitle} onChange={(e) => setSubtitle(e.target.value as ShadowSubtitle)} className="rounded-full bg-white px-[1.2cqh] py-[0.6cqh] font-bold text-[#1f2937] shadow">
-                {SHADOW_SUBTITLES.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`curriculum.shadow.sub_${s}`)}
-                  </option>
-                ))}
-              </select>
-              {speakers.length > 1 && (
-                <select value={roleTeams} onChange={(e) => setRoleTeams(Number(e.target.value))} className="rounded-full bg-white px-[1.2cqh] py-[0.6cqh] font-bold text-[#1f2937] shadow">
-                  {[0, 2, 3, 4].map((n) => (
-                    <option key={n} value={n}>
-                      {n === 0 ? t('curriculum.shadow.rolesOff') : t('curriculum.shadow.rolesN', { n })}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </>
-          )}
-          {roleTeams > 0 && speakers.length > 1 && (
-            <div className="ml-auto flex shrink-0 items-center gap-[0.6cqh]">
-              {speakers.map((s) => (
-                <span key={s} className="rounded-full px-[1.2cqh] py-[0.3cqh] font-bold text-white" style={{ background: TEAM_COLORS[teamOf(s) % TEAM_COLORS.length] }}>
-                  {teamOf(s) + 1}·{s}
-                </span>
-              ))}
-            </div>
-          )}
+        {popup&&<div data-video-popup role="group" aria-label={t('readyMedia.'+popup)} className="absolute right-[2%] top-[2%] z-30 max-h-[58%] max-w-[96%] overflow-auto rounded-xl border bg-white p-3 text-sm text-slate-900 shadow-xl" {...chrome.lock}>
+          <button type="button" className="mb-2 rounded-lg border px-3 py-1" onClick={()=>setPopup(null)}>{t('readyMedia.close')}</button>
+          {popup==='settings'?<div className="grid gap-2">
+            <div className="flex flex-wrap gap-2">{(['video','auto','manual'] as const).map(f=><button type="button" key={f} aria-pressed={flow===f} className={`rounded-lg border p-2 ${flow===f?'bg-blue-600 text-white':''}`} onClick={()=>{stop();setFlow(f);}}>{t('curriculum.shadow.flow_'+f)}</button>)}</div>
+            <label>{t('curriculum.player.rate')} <select aria-label={t('curriculum.player.rate')} value={speed} onChange={e=>setSpeed(Number(e.target.value))}>{SHADOW_SPEEDS.map(n=><option key={n}>{n}</option>)}</select></label>
+            <label>{t('curriculum.shadow.repeatN',{n:repeat})} <select aria-label={t('curriculum.shadow.repeatN',{n:repeat})} value={repeat} onChange={e=>setRepeat(Number(e.target.value))}>{SHADOW_REPEATS.map(n=><option key={n}>{n}</option>)}</select></label>
+            {speakers.length>1&&<label>{t('readyMedia.roles')} <select aria-label={t('readyMedia.roles')} value={roleTeams} onChange={e=>setRoleTeams(Number(e.target.value))}>{[0,2,3,4].map(n=><option key={n} value={n}>{n===0?t('curriculum.shadow.rolesOff'):t('curriculum.shadow.rolesN',{n})}</option>)}</select></label>}
+            <label><input type="checkbox" checked={chrome.always} onChange={e=>chrome.setAlways(e.target.checked)}/> {t('readyMedia.always')}</label>
+          </div>:<div className="grid gap-2">{SHADOW_SUBTITLES.map(sub=><button type="button" key={sub} aria-pressed={subtitle===sub} className={`rounded-lg border p-2 ${subtitle===sub?'bg-blue-600 text-white':''}`} onClick={()=>{setSubtitle(sub);setPopup(null);}}>{t('curriculum.shadow.sub_'+sub)}</button>)}</div>}
+        </div>}
+        <div data-video-controls aria-hidden={!chrome.visible} className="absolute bottom-0 left-0 right-0 z-20 flex h-[9cqh] items-center gap-[1cqh] overflow-x-auto whitespace-nowrap bg-[#eef2f7] px-[1.5cqh] transition-opacity" style={{fontSize:'2.2cqh',opacity:chrome.visible?1:0,pointerEvents:chrome.visible?'auto':'none'}} {...chrome.lock}>
+          {interactive&&!follower&&lines.length>0&&<>
+            <div className="sb-main-controls">
+            <button type="button" className={ctl} onClick={()=>go(-1)} disabled={idx===0} aria-label={t('curriculum.shadow.prev')}>◀</button>
+            <button type="button" className={ctl} onClick={()=>phase==='listen'||phase==='speak'?stop():playLine(idx,1,resumeAt.current)} aria-label={t(phase==='listen'||phase==='speak'?'curriculum.shadow.pause':'readyMedia.play')}>{t(phase==='listen'||phase==='speak'?'curriculum.shadow.pause':'readyMedia.play')}</button>
+            <button type="button" className={ctl} onClick={()=>playLine(idx,1)}>{t('curriculum.shadow.replay')}</button>
+            <button type="button" className={ctl} onClick={()=>go(1)} disabled={idx>=lines.length-1} aria-label={t('curriculum.shadow.next')}>▶</button>
+            </div><div className="sb-tool-controls">
+            <button type="button" className={ctl} aria-pressed={flow!=='video'} onClick={()=>{stop();setFlow(flow==='video'?'auto':'video');}}>{t('readyMedia.follow')}</button>
+            <button type="button" className={ctl} aria-expanded={popup==='settings'} onClick={()=>setPopup(p=>p==='settings'?null:'settings')}>{t('readyMedia.settings')}</button>
+            <button type="button" className={ctl} aria-expanded={popup==='subtitles'} onClick={()=>setPopup(p=>p==='subtitles'?null:'subtitles')}>{t('readyMedia.subtitles')}</button>
+            </div><span className="sb-summary">{t('readyMedia.summary',{repeat,speed,teams:roleTeams})}</span>
+          </>}
         </div>
       </CanvasStageBox>
     </div>

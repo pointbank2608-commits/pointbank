@@ -137,6 +137,7 @@ export default function LessonSlideContent({
       <div className={boardBox}>
         <ShadowBoard
           key={slide.id}
+          rememberKey={`lesson:${slide.id}`}
           source={slide.source}
           title={slide.title}
           videoUrl={student ? undefined : slide.videoUrl}

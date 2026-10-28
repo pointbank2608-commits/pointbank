@@ -304,6 +304,7 @@ export type MusicSelection =
   | { kind: 'upload'; path: string; name: string; url: string };
 
 export interface GameTemplateConfig {
+  popcornPopCount?: number;
   /** Current-session guided edit; save updates this existing game without changing its scope. */
   editingTemplateId?: string;
   setupKind?: 'word' | 'sentence' | 'names' | 'numbers';

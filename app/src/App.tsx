@@ -13,6 +13,9 @@ import { lazyPage } from './lib/lazyPage';
 
 // 화면 코드 분할(2026-10-17): 화면을 처음 열 때 그 조각만 받는다. 레이아웃(AppLayout/AdminLayout)만 처음부터 들어 있다.
 const PhonicsLessonPage = lazyPage(() => import('./pages/PhonicsLessonPage'));
+const ReadyClassWorkbookPage = lazyPage(() => import('./pages/ReadyClassWorkbookPage'));
+const VideoWorksheetPage = lazyPage(() => import('./pages/VideoWorksheetPage'));
+const PhonicsSongsAdminPage = lazyPage(() => import('./components/phonicsStage1/PhonicsSongs'));
 const PhonicsGamesPage = lazyPage(() => import('./pages/PhonicsGamesPage'));
 const AdminTodayPage = lazyPage(() => import('./pages/AdminTodayPage'));
 const AdminAcademyDetailPage = lazyPage(() => import('./pages/AdminAcademyDetailPage'));
@@ -261,6 +264,7 @@ function AppRoutes() {
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />
           <Route path="/admin/videos" element={<AdminVideosPage />} />
+          <Route path="/admin/phonics-songs" element={<PhonicsSongsAdminPage />} />
           <Route path="/admin/brand" element={<AdminBrandPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
@@ -300,6 +304,8 @@ function AppRoutes() {
             <Route path="/phonics-games" element={<PhonicsGamesPage />} />
             <Route path="/phonics-games/:gameId" element={<PhonicsGamesPage />} />
             <Route path="/phonics/lesson" element={<PhonicsLessonPage />} />
+            <Route path="/phonics/workbook" element={<ReadyClassWorkbookPage />} />
+            <Route path="/materials/video-worksheet" element={<VideoWorksheetPage />} />
             <Route path="/phonics/stage-1" element={<PhonicsStage1Page />} />
             <Route path="/materials/phonics-stage-1" element={<PhonicsWorkbookPage step={1} />} />
             <Route path="/grammar" element={<GrammarPage />} />

@@ -1,3 +1,4 @@
+import {readyMediaKo} from '../readyMediaLocales';
 import {launchUxKo} from '../launchUxLocales';
 import { phonicsLessonKo } from '../phonicsLessonLocales';
 import { elementary800Ko } from '../elementary800Locales';
@@ -17,6 +18,7 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  readyMedia: readyMediaKo,
   launchUx:launchUxKo,
   phonicsGamesTitle: '파닉스 게임',
   classroomGamesTitle: '기존 게임',
@@ -1568,10 +1570,10 @@ const ko = {
     purposeLabel: '말하기 목적',
     patternLabel: '같은 구조를 반복 연습할 패턴 (모든 상황·목적에서 모아 줘요)',
     axis_pattern: '문장 패턴',
-    levelLabel: '레벨',
-    level_kinder: '유치',
     open: '문장 은행에서 담기',
     draftNote: '문장 은행의 문장은 모두 초안이에요(선생님 검수 전). 수업에 쓰기 전에 한 번 읽어 보세요.',
+    levelLabel: '레벨',
+    level_kinder: '유치',
     level_elem: '초등',
     level_middle: '중등',
     level_high: '고등',

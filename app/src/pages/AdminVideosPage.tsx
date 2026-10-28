@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import {Link} from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { parseShadowText, toShadowSource } from '../lib/shadowLines';
 import {
@@ -53,7 +54,7 @@ export default function AdminVideosPage() {
 
   const load = async () => {
     try {
-      setClips(await adminListVideoClips());
+      setClips((await adminListVideoClips()).filter(c=>!c.pack?.phonicsSong));
     } catch (e) {
       const msg = String((e as { message?: string })?.message ?? e);
       setError(/video_clips|relation/i.test(msg) ? t('adminVideos.needSetup') : msg);
@@ -151,6 +152,7 @@ export default function AdminVideosPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-headline-md text-headline-md text-deep-navy">{t('adminVideos.title')}</h1>
+          <Link className="inline-block rounded-lg border bg-white px-4 py-2" to="/admin/phonics-songs">{t('readyMedia.songManage')}</Link>
           <p className="font-body-md text-body-md text-on-surface-variant">{t('adminVideos.intro')}</p>
         </div>
         {!form && (

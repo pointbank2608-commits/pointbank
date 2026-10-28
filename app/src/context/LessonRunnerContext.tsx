@@ -134,10 +134,14 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleFullscreen = useCallback(() => {
+    if(document.documentElement.dataset.lessonExpanded==='true'){delete document.documentElement.dataset.lessonExpanded;setIsFullscreen(false);window.dispatchEvent(new Event('classbank:lesson-expanded'));return;}
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
-    else void document.documentElement.requestFullscreen().catch(() => {});
+    else {const fallback=()=>{document.documentElement.dataset.lessonExpanded='true';setIsFullscreen(true);window.dispatchEvent(new Event('classbank:lesson-expanded'));};if(document.documentElement.requestFullscreen)void document.documentElement.requestFullscreen().catch(fallback);else fallback();}
     // 권한 없음 등으로 실패해도(catch로 삼킴) 진행바 자체는 계속 동작해야 한다.
   }, []);
+
+  useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&document.documentElement.dataset.lessonExpanded==='true'){delete document.documentElement.dataset.lessonExpanded;setIsFullscreen(false);window.dispatchEvent(new Event('classbank:lesson-expanded'));}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[]);
+  useEffect(()=>{if(!runner){delete document.documentElement.dataset.lessonExpanded;setIsFullscreen(!!document.fullscreenElement);}},[runner?.lessonId]);
 
   const start = useCallback(
     (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null, opts?: StartOptions) => {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PHONICS_TEACHING_VISIBLE } from '../data/phonicsTeachingCourse';
+import PhonicsSongs from '../components/phonicsStage1/PhonicsSongs';
 import PhonicsTeachingPreview from '../components/phonicsStage1/PhonicsTeachingPreview';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
@@ -121,14 +122,17 @@ function PhonicsLightbox({ entry, onClose }: { entry: PhonicsBankEntry; onClose:
 
 export default function PhonicsPage() {
   const {t}=useTranslation();const [params,setParams]=useSearchParams();
+  const songs=params.get('tab')==='songs';
   const teaching=PHONICS_TEACHING_VISIBLE&&params.get('tab')==='course';
   return <div className="space-y-5">
     <Link className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-outline-variant bg-white px-5 py-3 font-bold text-deep-navy" to="/phonics-games"><span className="material-symbols-outlined" aria-hidden>sports_esports</span>{t('phonicsGamesTitle')}</Link>
     <nav className="flex flex-wrap gap-2 no-print" role="tablist" aria-label={t('phonics.title')}>
-      <button type="button" role="tab" id="phonics-words-tab" aria-controls="phonics-words-panel" aria-selected={!teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${!teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({})}>{t('phonicsTeaching.words')}</button>
+      <button type="button" role="tab" id="phonics-words-tab" aria-controls="phonics-words-panel" aria-selected={!teaching&&!songs} className={`min-h-12 rounded-xl border px-5 font-bold ${!teaching&&!songs?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({})}>{t('phonicsTeaching.words')}</button>
       {PHONICS_TEACHING_VISIBLE&&<button type="button" role="tab" id="phonics-course-tab" aria-controls="phonics-course-panel" aria-selected={teaching} className={`min-h-12 rounded-xl border px-5 font-bold ${teaching?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'course'})}>{t('phonicsTeaching.course')}</button>}
+      <button type="button" role="tab" id="phonics-songs-tab" aria-controls="phonics-songs-panel" aria-selected={songs} className={`min-h-12 rounded-xl border px-5 font-bold ${songs?'bg-primary text-white':'bg-white text-deep-navy'}`} onClick={()=>setParams({tab:'songs'})}>{t('readyMedia.songs')}</button>
     </nav>
-    <div role="tabpanel" id="phonics-words-panel" aria-labelledby="phonics-words-tab" hidden={teaching}><PhonicsWordLearning/></div>
+    <div role="tabpanel" id="phonics-words-panel" aria-labelledby="phonics-words-tab" hidden={teaching||songs}><PhonicsWordLearning/></div>
+    {songs&&<div role="tabpanel" id="phonics-songs-panel" aria-labelledby="phonics-songs-tab"><PhonicsSongs/></div>}
     {teaching&&<div role="tabpanel" id="phonics-course-panel" aria-labelledby="phonics-course-tab"><PhonicsTeachingPreview/></div>}
   </div>;
 }

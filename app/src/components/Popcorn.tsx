@@ -1,3 +1,4 @@
+import {popcornDeck as buildDeck} from '../lib/popcorn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { GAME_SFX, playSfx } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
+  popCount?:number;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -23,30 +25,14 @@ interface Props {
 type Team = 'blue' | 'red';
 type Card = GameItem | 'pop';
 
-const POP_RATIO = 0.25;
 const KETTLE_SRC = '/skins/popcorn-kettle.png?v=2';
 const KERNEL_SRC = '/skins/popcorn-kernel.png';
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/** 항목 카드 사이사이에 'POP!' 카드를 섞어 넣은 뽑기 더미를 만든다. */
-function buildDeck(items: GameItem[]): Card[] {
-  const popCount = Math.max(1, Math.round(items.length * POP_RATIO));
-  const deck: Card[] = [...items, ...Array<Card>(popCount).fill('pop')];
-  return shuffle(deck);
-}
 
 const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
 
 export default function Popcorn({
   items,
+  popCount,
   editable,
   onEditItem,
   templateName,
@@ -56,7 +42,7 @@ export default function Popcorn({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [deck, setDeck] = useState<Card[]>(() => buildDeck(items));
+  const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount));
   const [deckIndex, setDeckIndex] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
   useNativeGameTurn({current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0});
@@ -99,7 +85,7 @@ export default function Popcorn({
     let currentDeck = deck;
     let index = deckIndex;
     if (index >= currentDeck.length) {
-      currentDeck = buildDeck(items);
+      currentDeck = buildDeck(items,popCount);
       index = 0;
       setDeck(currentDeck);
     }
@@ -121,7 +107,7 @@ export default function Popcorn({
   }
 
   function resetAll() {
-    setDeck(buildDeck(items));
+    setDeck(buildDeck(items,popCount));
     setDeckIndex(0);
     setTurn('blue');
     setScores({ blue: 0, red: 0 });

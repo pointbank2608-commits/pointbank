@@ -1,3 +1,4 @@
+import LessonVideoActivityNav from './LessonVideoActivityNav';
 import { useEffect, useState } from 'react';
 import OnlineClassPanel from './OnlineClassPanel';
 import { RemoteBridge, RemotePanel, loadRemoteId } from './RemoteControl';
@@ -262,6 +263,7 @@ export default function LessonRunnerBar() {
     {annotationOpen && canAnnotate && (
       <LessonAnnotationLayer key={`${runner.lessonId}:${runner.stepIndex}`} onClose={() => setAnnotationOpen(false)} />
     )}
+    <LessonVideoActivityNav/>
     </>
   );
 }

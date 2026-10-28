@@ -1,3 +1,4 @@
+import {popcornCount,MAX_POP_CARDS} from '../lib/popcorn';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { sampleWord } from '../lib/sampleWords';
 import { useMemo, useState } from 'react';
@@ -298,7 +299,8 @@ export default function PopcornPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Popcorn key={roundKey}
+            <Popcorn key={`${selected.id}:${roundKey}:${selected.config.popcornPopCount ?? "legacy"}`}
+              popCount={selected.config.popcornPopCount}
               items={selected.items}
               editable={isStaff}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
@@ -328,6 +330,7 @@ export default function PopcornPage() {
 
                 {editorOpen && (
                   <div className="space-y-1 divide-y divide-surface-container">
+                    <label className="block py-3 font-bold">{t('readyMedia.popCount')}<input type="number" min={0} max={MAX_POP_CARDS} step={1} value={popcornCount(selected.items.length,selected.config.popcornPopCount)} className="ml-3 w-24 rounded-lg border p-2" onChange={async e=>{const value=e.target.valueAsNumber;if(!Number.isInteger(value)||value<0||value>MAX_POP_CARDS){e.target.setCustomValidity(t('readyMedia.popHint'));e.target.reportValidity();return;}e.target.setCustomValidity('');const config={...selected.config,popcornPopCount:value};setTemplates(prev=>prev.map(row=>row.id===selected.id?{...row,config}:row));try{await updateGameTemplate(selected.id,{config});}catch(err){notify(String(err),'error');await reload();}}}/><p className="mt-2 text-sm font-normal">{t('readyMedia.popSummary',{words:selected.items.length,pop:popcornCount(selected.items.length,selected.config.popcornPopCount)})}</p><p className="text-sm font-normal">{t('readyMedia.popHint')}</p></label>
                     <div className="pt-3">
                       <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
                         <div className="flex-1 [&>div]:my-0">

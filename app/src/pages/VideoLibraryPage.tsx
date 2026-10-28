@@ -13,10 +13,10 @@ export default function VideoLibraryPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('videoLibrary.pageTitle')}</h1>
-        <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('videoLibrary.pageIntro')}</p>
+        <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('readyMedia.videoIntro')}</p>
       </div>
       <div className="rounded-xl bg-surface-container-lowest p-4 shadow-sm">
-        <VideoClipLibrary tall pickLabel={t('recipes.videoUseClip')} onPick={(clip) => navigate('/curriculum', { state: { createFromClipId: clip.id } })} />
+        <VideoClipLibrary tall pickLabel={t('readyMedia.makeLesson')} onPick={(clip,activities) => navigate('/curriculum', { state: { createFromClipId: clip.id,clipActivities:activities } })} />
       </div>
     </div>
   );

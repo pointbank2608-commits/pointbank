@@ -379,6 +379,7 @@ export default function CurriculumPage() {
   }
 
   // 영상 라이브러리 메뉴의 "이 장면으로 수업 만들기"(2026-10-03) — 새 수업을 열고 레시피가 그 장면으로 채운다
+  const [autoClipActivities,setAutoClipActivities]=useState<import('../lib/clipActivities').ClipActivity[]|undefined>();
   const [autoClip, setAutoClip] = useState<VideoClip | null>(null);
   const clipHandled = useRef<string | null>(null);
   // 오늘 화면의 "샘플로 1분 체험하기"(2026-10-17) — 새 수업 창을 열고 샘플 단어 수업을 바로 채운다
@@ -394,7 +395,7 @@ export default function CurriculumPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key, loading]);
   useEffect(() => {
-    const st = location.state as { createFromClipId?: string } | null;
+    const st = location.state as { createFromClipId?: string;clipActivities?:import('../lib/clipActivities').ClipActivity[] } | null;
     if (!st?.createFromClipId || loading || clipHandled.current === location.key) return;
     clipHandled.current = location.key;
     const clipId = st.createFromClipId;
@@ -403,6 +404,7 @@ export default function CurriculumPage() {
       const clip = clips.find((c) => c.id === clipId);
       if (!clip) return;
       openCreateForm();
+      setAutoClipActivities(st.clipActivities);
       setAutoClip(clip);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -950,6 +952,7 @@ export default function CurriculumPage() {
               <div className="mb-4">
                 <LessonRecipePicker
                   autoClip={autoClip}
+                  autoClipActivities={autoClipActivities}
                   autoSample={autoSample}
                   hasWords={(wordLists.find((wl) => wl.id === wordListId)?.items.length ?? 0) > 0}
                   wordListName={wordLists.find((wl) => wl.id === wordListId)?.name}

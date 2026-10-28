@@ -24,7 +24,7 @@ export interface RecipeContext {
   grammarId?: string;
   reading?: { source: string; title?: string; videoUrl?: string | null };
   /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
-  video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null };
+  video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null;activities?:import('./clipActivities').ClipActivity[] };
   /** 영상 레시피: 대사에서 고른 낱말로 수업 단어장을 만들어 고른다(이미 단어장이 있으면 부르지 않는다) */
   makeWordList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   /** 영상 레시피: 대사 문장으로 "문장 배열하기" 게임 내용을 만든다 */
@@ -469,6 +469,7 @@ export function clipWordCards(clip: VideoClip, bank: WordBankEntry[]): FullCardI
  * 쉐도잉 → 빈칸 듣기 → 문법 칠판 → 문장 배열하기 → 퀴즈 → 배역 나눠 따라하기.
  */
 async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<LessonSlide[]> {
+  if(ctx.video?.activities)return buildSelectedClipLesson(ctx,clip,ctx.video.activities);
   const videoUrl = `https://www.youtube.com/watch?v=${clip.youtube_id}`;
   const title = clip.title;
   const bank = await loadWordBank();
@@ -505,6 +506,22 @@ async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<Les
     slides.push({ id: uid(), kind: 'shadow', title: `${title} · ${ctx.t('recipes.bingoListen')}`, videoUrl, source: markBingoWords(clip.script, bingo), flow: 'manual', repeat: 2, speed: 1, subtitle: 'cloze', roleTeams: 0, clipId: clip.id });
   }
   return slides;
+}
+
+/** New catalogue path: only explicitly selected activities, in their actual teaching order. */
+export async function buildSelectedClipLesson(ctx:RecipeContext,clip:VideoClip,selected:import('./clipActivities').ClipActivity[]):Promise<LessonSlide[]>{
+ void ctx; // New drafts keep selected vocabulary on their own slide; no unrelated list is imported.
+ const {clipActivities}=await import('./clipActivities');const allowed=new Set(clipActivities(clip));const picks=new Set(selected.filter(id=>allowed.has(id)));
+ const videoUrl=`https://www.youtube.com/watch?v=${clip.youtube_id}`,title=clip.title,slides:LessonSlide[]=[];
+ const words=picks.has('words')?clipWordCards(clip,await loadWordBank()):[];
+ if(picks.has('words')&&words.length)slides.push({id:uid(),kind:'wordshow',boardTheme:'green',words,videoUrl});
+ if(picks.has('shadow'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'video',repeat:1,speed:1,subtitle:'both',roleTeams:0,clipId:clip.id});
+ if(picks.has('questions'))slides.push({id:uid(),kind:'qna',title,questions:clip.pack.questions!,videoUrl,boardTheme:'green',clipId:clip.id});
+ if(picks.has('cloze'))slides.push({id:uid(),kind:'reading',mode:'cloze',title,videoUrl,source:markBingoWords(clip.script,clip.words),boardTheme:'green'});
+ const g=clip.pack.grammar;if(picks.has('drill')&&g)slides.push({id:uid(),kind:'drill',title,sentence:g.sentence,sentenceKo:g.sentenceKo,point:g.point,drills:g.drills,time:g.time,videoUrl,boardTheme:'green',clipId:clip.id});
+ if(picks.has('roles'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'manual',repeat:1,speed:1,subtitle:'ko',roleTeams:2,clipId:clip.id});
+ if(picks.has('bingo')){const bingo=clip.pack.bingo!;slides.push({id:uid(),kind:'material',materialId:'bingo',words:bingo.map(word=>({id:uid(),word,meaning:'',imageUrl:null})),boardTheme:'whiteboard'});}
+ return slides;
 }
 
 /** 문법 레시피가 쓰는 "문장 배열하기" 게임 내용 만들기(예문으로) */
