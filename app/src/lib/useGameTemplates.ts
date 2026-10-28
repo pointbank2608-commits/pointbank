@@ -453,7 +453,7 @@ export function useGameTemplates(params: {
     if (!selected || selected.config.classroomSource) return undefined;
     const pairs = selected.config.pairs || selected.config.flashcards;
     const cards: FullCardItem[] = pairs ? pairs.map(pair => ({ id: pair.id, word: pair.left, meaning: pair.right, imageUrl: null }))
-      : selected.items.filter(item => item.label.trim()).map(item => ({ id: item.id, word: item.label, meaning: '', imageUrl: null }));
+      : (gameType === 'bomb' ? selected.config.words || [] : selected.items).filter(item => item.label.trim()).map(item => ({ id: item.id, word: item.label, meaning: '', imageUrl: null }));
     return cards.length ? { id: `activity:${selected.id}`, name: selected.name, kind: (gameType === 'unscramble' || gameType === 'sentencesplash' ? 'sentence' : 'word') as 'word' | 'sentence', version: selected.updated_at, cards } : undefined;
   }, [selected, gameType]);
   const classroomSource = selected?.config.classroomSource || (lessonCards?.length ? { id: `lesson:${lessonRunner.runner?.lessonId}`, name: lessonRunner.runner?.lessonName || '수업 자료', kind: (lessonCards.every((c) => c.word.trim().split(/\s+/).length >= 2) ? 'sentence' : 'word') as 'word'|'sentence', version: '', cards: lessonCards } : undefined) || inferredSource;

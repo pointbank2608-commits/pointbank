@@ -23,6 +23,7 @@ const SENTENCE_GAMES = new Set<GameType>([
   "flashcards",
   "typeanswer",
   "passball",
+  "bomb",
 ]);
 const BUILTIN = new Set<GameType>([
   "airport",

@@ -1,4 +1,3 @@
-import BombPracticeInput from './BombPracticeInput';
 import NumberRangeFill from './NumberRangeFill';
 
 import { useCallback,useEffect, useRef, useState } from 'react';
@@ -8,13 +7,13 @@ import { useAuth } from '../context/AuthContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import { guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
+import { isBombReading, guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { insertPhrase } from '../lib/storybook';
 import { SENTENCE_PATTERNS, getSentencePattern, slotLabelKey, type SentenceSlot } from '../lib/sentencePatterns';
-import type { FullCardItem, GameTemplate, WordList } from '../lib/types';
+import type { FullCardItem, GameItem, GameTemplate, WordList } from '../lib/types';
 import GameSourcePicker from './GameSourcePicker';
 import LadderResultSetup from './LadderResultSetup';
 import { ladderResultDraft, ladderSlots } from '../lib/ladderSetup';
@@ -57,6 +56,8 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   const resultCount=rows.filter(r=>r[0]?.trim()).length;
   const resultDraft=ladderResultDraft(extra,info.selected?.config.results);
   if(!extra&&info.selected?.config.ladderResultOrder==='random')resultDraft.order='random';
+  // 시한폭탄은 단어·문장이 "읽을 내용"이라 참가자(items)는 그대로 두고, 예전 방식으로 단어가 참가자 칸에 들어간 활동만 기본 참가자로 되돌린다.
+  const bombPeople=():GameItem[]=>{const own=info.selected;if(!own)return [];const words=new Set((own.config.classroomSource?.cards||[]).map(c=>c.word));return own.items.length&&own.items.every(i=>words.has(i.label))?[]:own.items;};
   const seed=(template:GameTemplate)=>{const next=guideRows(template,kind);write(next.length?next:[['','']]);};
   async function importSource(rawCards:FullCardItem[],list?:WordList){
     if(!info.selected)return;
@@ -72,7 +73,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     }
     const content=prepareClassroomGame(info.gameType,cards,kind==='sentence'?'sentence':'word');
     if(!content)throw new Error('incompatible_source');
-    const next={...info.selected,items:content.items,config:{...info.selected.config,...content.config,classroomSource:{id:list?.id||'composition',name:list?.name||'',kind:kind==='sentence'?'sentence' as const:'word' as const,version:list?.updated_at||'',cards}}};
+    const next={...info.selected,items:isBombReading(info.gameType,kind)&&bombPeople().length?bombPeople():content.items,config:{...info.selected.config,...content.config,classroomSource:{id:list?.id||'composition',name:list?.name||'',kind:kind==='sentence'?'sentence' as const:'word' as const,version:list?.updated_at||'',cards}}};
     if(!await run(()=>info.applyGuide({items:next.items,config:next.config})))throw new Error('import_failed');
     seed(next);
   }
@@ -137,7 +138,8 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           return false;
         });
         if(invalid>=0){setError(t('launchUx.invalidRow',{row:invalid+1}));requestAnimationFrame(()=>{const inputs=Array.from(heading.current?.parentElement?.querySelectorAll<HTMLInputElement>(`[data-guide-row="${invalid}"] input`)||[]);(inputs.find(n=>!n.value.trim())||inputs[0])?.focus();});return;}
-        const content=guideContent(info.gameType,work,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart);
+        if(isBombReading(info.gameType,kind)&&!work.some(r=>r[0]?.trim())){setError(t('guide.incomplete'));return;}
+        const content=guideContent(info.gameType,work,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart,bombPeople());
         if(info.gameType==='ladder'){
           const slots=ladderSlots(resultDraft,content.items.length);
           const missing=slots.filter(s=>!s.miss&&!s.label.trim()).length;
@@ -149,7 +151,6 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           content.config.results=slots.map((slot,i)=>({id:`result-${i}`,label:slot.miss?t('guide.ladder.miss'):slot.label.trim()}));
           content.config.ladderResultOrder=resultDraft.order;
         }
-        if(info.gameType==='bomb')content.config.words=extra.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map((label,i)=>({id:`practice-${i}`,label}));
         content.config.setupKind=kind==='sample'?undefined:kind;
         const check=guideProblem({...info.selected,...content});if(check){const count=work.filter(r=>r[0]?.trim()).length;const minimum=family==='list'?GAME_CATALOG.find(g=>g.type===info.gameType)?.minItems||1:0;setError(minimum>count?t('launchUx.minimum',{count,minimum}):t('launchUx.problem',{reason:t(`guide.${check}`),count}));return;}
         if(!await run(()=>info.applyGuide(content)))return;
@@ -159,6 +160,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     }
   }
   const columns=asNames?[kind==='numbers'?'numberColumn':['wheel','ladder','order'].includes(info.gameType)?'itemColumn':'nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question','answer']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['sentenceColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:['wheel','ladder','order'].includes(info.gameType)?['itemColumn']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
+  const gameHint=t(`guide.gameHints.${info.gameType}_${kind}`,{defaultValue:t(`guide.gameHints.${info.gameType}`,{defaultValue:''})});
   let previous=towerStart;
   const towerPrevious=rows.map(r=>{const p=previous;previous=insertPhrase(previous,r[0]||'',Number(r[1])||0);return p;});
   if(!active)return null;
@@ -170,7 +172,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     {step===1&&<>
       <p className="text-sm text-on-surface-variant">{t('launchUx.contentRestart')}</p>
       <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}`)}</p>
-      {t(`guide.gameHints.${info.gameType}`,{defaultValue:''})&&<p>{t(`guide.gameHints.${info.gameType}`,{defaultValue:''})}</p>}
+      {gameHint&&<p>{gameHint}</p>}
       {!native&&kind==='numbers'&&<NumberRangeFill existingLabels={rows.map(r=>r[0]||'').filter(Boolean)} onFill={(labels,replace)=>{const keep=replace?[]:rows.filter(r=>r[0]?.trim());const next=[...keep,...labels.map(l=>[l])];write(next.length?next:[['']]);}} />}
       {!native&&kind!=='sample'&&kind!=='numbers'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} onDirect={()=>{setNative(false);requestAnimationFrame(()=>heading.current?.parentElement?.querySelector<HTMLInputElement>('fieldset input')?.focus());}} />}
       {!dedicated&&!native&&<>
@@ -186,7 +188,6 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
         </fieldset>)}</div>{family!=='diagram'&&<button className={button} onClick={()=>write([...rows,columns.map(()=> '')])}>+ {t('guide.add')}</button>}
         <details><summary className="cursor-pointer py-3 font-bold text-primary">{t('guide.paste')}</summary><label className="block">{t('guide.pasteHint')}<textarea className="mt-2 min-h-32 w-full rounded-xl border p-3" value={paste} onChange={e=>setPaste(e.target.value)}/></label><button className={button} disabled={!paste.trim()} onClick={()=>{const next=paste.split(/\r?\n/).filter(s=>s.trim()).map(s=>s.split(/\t|\s*\|\s*/));write([...rows.filter(r=>r.some(s=>s.trim())),...next]);}}>{t('guide.applyPaste')}</button></details>
         {info.gameType==='ladder'&&<div ref={resultSection}><LadderResultSetup draft={resultDraft} count={resultCount} onChange={draft=>{setExtra(JSON.stringify(draft));setError('');}} /></div>}
-        {info.gameType==='bomb'&&<BombPracticeInput value={extra} onChange={setExtra}/>}
       </>}
       <button className={button} onClick={()=>dedicated?workspace?.open('settings'):void next(true)}>{t('guide.native')}</button>
       {native&&<p>{t('guide.nativeReview')}</p>}

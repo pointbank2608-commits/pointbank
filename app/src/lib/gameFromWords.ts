@@ -50,12 +50,16 @@ function cardsToWordListItems(words: FullCardItem[]): WordListItem[] {
   }));
 }
 
+/** 시한폭탄의 기본 참가자(학생 이름을 넣기 전에 쓰는 이름) */
+export function bombParticipants(): GameItem[] {
+  return [1, 2, 3].map((n) => ({ id: crypto.randomUUID(), label: i18n.t('gameBomb.defaultParticipant', { n }) }));
+}
+
 /** 항목이 라벨 하나(GameItem.label)뿐인 게임 — 단어를 그대로 라벨로 넣는다. */
 const LABEL_GAMES = new Set<GameType>([
   'wheel',
   'ladder',
   'order',
-  'bomb',
   'timer',
   'tictactoe',
   'saveorgive',
@@ -123,6 +127,8 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
   const labelItems: GameItem[] = words.map((w) => ({ id: w.id, label: w.word }));
   const pairs = () => words.map((w) => ({ id: w.id, left: w.word, right: w.meaning }));
 
+  // 시한폭탄은 단어·문장이 "읽을 내용"이고 참가자는 따로다 — 참가자 칸에 단어를 넣지 않는다.
+  if (gameType === 'bomb') return { items: bombParticipants(), config: { words: labelItems } };
   if (LABEL_GAMES.has(gameType)) return { items: labelItems };
 
   switch (gameType) {

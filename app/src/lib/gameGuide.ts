@@ -2,6 +2,7 @@ import i18n from '../i18n';
 import type { LiveQuestion, FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
 import { GAME_CATALOG } from './gameCatalog';
 import { prepareClassroomGame } from './gameWorkspace';
+import { bombParticipants } from './gameFromWords';
 import { gamePreparation, isNativeGameReady } from './gamePreparation';
 import { storySample, storyErrors, insertPhrase } from './storybook';
 import { getSentencePattern } from './sentencePatterns';
@@ -14,7 +15,9 @@ export const GUIDE_FAMILIES: Partial<Record<GameType, GuideFamily>> = {
 };
 /** New dedicated games keep their native editor until a guided schema is registered. */
 export const guideFamily=(type:GameType):GuideFamily=>GUIDE_FAMILIES[type]||'builtin';
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','treasuredig','catchsentence','lightning','lastbox','mysterybox','shufflefind','telepathy','passball']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','treasuredig','catchsentence','lightning','lastbox','mysterybox','shufflefind','telepathy','passball','bomb']);
+/** 시한폭탄: 단어·문장은 "읽을 내용"(config.words), 이름은 참가자(items)로 따로 들어간다. */
+export const isBombReading=(type:GameType,kind:GuideKind)=>type==='bomb'&&(kind==='word'||kind==='sentence');
 export const NAME_GAMES = new Set<GameType>(['wheel','ladder','order','bomb','timer']);
 /** 숫자 범위로 항목을 채울 수 있는 게임(랜덤 공 뽑기) */
 export const NUMBER_GAMES = new Set<GameType>(['order']);
@@ -82,6 +85,7 @@ export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   if(family==='diagram')return (c.diagramPins||[]).map(p=>[p.label,String(p.x),String(p.y)]);
   if(family==='slots')return template.items.map(i=>[i.label,i.slot||'subject']);
   if(kind==='names'||kind==='numbers')return template.items.map(i=>[i.label]);
+  if(isBombReading(template.game_type,kind))return c.classroomSource?.cards.map(c=>[c.word,c.meaning])||(c.words||[]).map(w=>[w.label]);
   return c.classroomSource?.cards.map(c=>[c.word,c.meaning])||template.items.map(i=>[i.label]);
 }
 /** 휴대폰 참여 퀴즈의 "고르기" 줄만 이 화면에서 고친다. O·X·쓰기·부저 문제와 라운드·그림·듣기 같은 부가 정보는 그대로 두고, 고친 줄만 같은 문제에 덮어쓴다. */
@@ -101,7 +105,7 @@ function mergeLiveRows(prev: LiveQuestion[], rows: string[][]): LiveQuestion[] {
   }
   return out;
 }
-export function guideContent(type: GameType, rows: string[][], kind: GuideKind, base: GameTemplateConfig, start = ''): {items:GameItem[];config:GameTemplateConfig} {
+export function guideContent(type: GameType, rows: string[][], kind: GuideKind, base: GameTemplateConfig, start = '', participants: GameItem[] = []): {items:GameItem[];config:GameTemplateConfig} {
   const family=guideFamily(type), usable=rows.filter(r=>r.some(s=>s.trim())).map(r=>r.map(s=>s.trim()));
   const items=usable.filter(r=>r[0]).map((r,i)=>({id:`guide-${i}`,label:r[0]}));
   const config={...base};delete config.classroomSource;
@@ -123,6 +127,8 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
     const steps=usable.map((r,i)=>{const position=Number(r[1]);const sentence=insertPhrase(previous,r[0]||'',position);previous=sentence;return{id:id(i),phrase:r[0]||'',position,sentence,wrong:r.slice(2).filter(Boolean)};});
     config.storybook={...(base.storybook||storySample('sentencetower')),start,steps,count:steps.length};
   }
+  const bombReading=isBombReading(type,kind);
+  if(bombReading)config.words=items.map((item,i)=>({id:`word-${i}`,label:item.label}));
   if(kind==='names'&&type==='ladder')config.results=items.map((i,index)=>({id:i.id,label:base.results?.[index]?.label||String(index+1)}));
   const sourceFamilies=['list','sentence','pairs','groups','image'];
   if(kind!=='names'&&kind!=='numbers'&&kind!=='sample'&&sourceFamilies.includes(family)){
@@ -138,6 +144,7 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
     if(selected.length&&selected.every(Boolean))config.classroomSource={...original,cards:structuredClone(selected as FullCardItem[])};
   }
   // Native question/pin structures must not masquerade as a plain word list.
+  if(bombReading)return {items:participants.some(p=>p.label.trim())?participants:bombParticipants(),config};
   return {items:['quiz','online','ox','diagram','bridge','tower','monster'].includes(family)?[]:items,config};
 }
 export function guideProblem(template:GameTemplate): string | null {
