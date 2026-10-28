@@ -330,6 +330,7 @@ export default function LabeledDiagramPage() {
                         {t('gameLabeledDiagram.backgroundImageLabel')}
                       </div>
                       <GameImagePicker
+                        library
                         academyId={academy.id}
                         value={selected.config.diagramImageUrl ?? null}
                         onChange={handleImageChange}

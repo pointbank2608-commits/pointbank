@@ -18,6 +18,7 @@ import GameSourcePicker from './GameSourcePicker';
 import LadderResultSetup from './LadderResultSetup';
 import { ladderResultDraft, ladderSlots } from '../lib/ladderSetup';
 import GameImagePicker from './GameImagePicker';
+import {enrichCards,loadWordBank} from '../lib/wordBankCache';
 import { guideButton as button } from './GameCreateButton';
 
 interface Props {
@@ -43,6 +44,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   const heading=useRef<HTMLHeadingElement>(null);
   const resultSection=useRef<HTMLDivElement>(null);
   const [diagram,setDiagram]=useRecoverableField(`guide:${info.gameType}:diagram`,info.selected?.config.diagramImageUrl||'');
+  const [diagramCards,setDiagramCards]=useState<FullCardItem[]>([]),[diagramTarget,setDiagramTarget]=useState<number|null>(null);
   const [pattern,setPattern]=useRecoverableField(`guide:${info.gameType}:pattern`,info.selected?.config.watermelonPatternId||'svo');
   const pendingRows=useRef<{kind:GuideKind;rows:string[][]}|null>(null);
   const asNames=kind==='names'||kind==='numbers';
@@ -64,6 +66,10 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     const cards=splitCards(rawCards).filter(c=>!(['quiz','online','ox'].includes(family)&&c.partOfSpeech==='문법'));
     setError('');
     if(asNames){write(cards.map(c=>[c.word]));return;}
+    if(family==='diagram'){
+      setDiagramCards(enrichCards(cards,await loadWordBank()));
+      write(cards.map(card=>[card.word,'','']));setDiagram('');setDiagramTarget(0);return;
+    }
     if(family==='bridge'){setSource(cards[0]?.word||'');write(cards.map(c=>[c.word,'','','']));return;}
     if(family==='tower'){setTowerStart(cards[0]?.word||'');write([['','0','','']]);return;}
     if(family==='image'||family==='groups'){
@@ -78,7 +84,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     seed(next);
   }
   function sourceReason(list:WordList){
-    if(['bridge','tower','image','groups'].includes(family))return null;
+    if(['bridge','tower','image','groups','diagram'].includes(family))return null;
     if(prepareClassroomGame(info.gameType,list))return null;
     const requirement=classroomGameRequirement(info.gameType,list.kind||'word');return t(requirement.key,{count:requirement.count});
   }
@@ -138,6 +144,10 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           return false;
         });
         if(invalid>=0){setError(t('launchUx.invalidRow',{row:invalid+1}));requestAnimationFrame(()=>{const inputs=Array.from(heading.current?.parentElement?.querySelectorAll<HTMLInputElement>(`[data-guide-row="${invalid}"] input`)||[]);(inputs.find(n=>!n.value.trim())||inputs[0])?.focus();});return;}
+        if(family==='diagram'){
+          const unplaced=work.findIndex(row=>row[0]?.trim()&&(!row[1]?.trim()||!row[2]?.trim()));
+          if(unplaced>=0){setDiagramTarget(unplaced);setError(t('guide.diagramMissingPoint',{row:unplaced+1}));return;}
+        }
         if(isBombReading(info.gameType,kind)&&!work.some(r=>r[0]?.trim())){setError(t('guide.incomplete'));return;}
         const content=guideContent(info.gameType,work,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart,bombPeople());
         if(info.gameType==='ladder'){
@@ -177,11 +187,12 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
       {!native&&kind!=='sample'&&kind!=='numbers'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} onDirect={()=>{setNative(false);requestAnimationFrame(()=>heading.current?.parentElement?.querySelector<HTMLInputElement>('fieldset input')?.focus());}} />}
       {!dedicated&&!native&&<>
 
-        {family==='diagram'&&<div className="space-y-3"><GameImagePicker academyId={info.academyId} value={diagram||null} onChange={url=>setDiagram(url||'')}/>{diagram&&<div className="relative w-fit"><button type="button" className="block rounded-xl focus-visible:outline-4 focus-visible:outline-primary" aria-label={t('guide.hints.diagram')} onClick={e=>{const bounds=e.currentTarget.getBoundingClientRect();const keyboard=e.detail===0;write([...rows.filter(r=>r[0]),['',String(keyboard ? .5 : (e.clientX-bounds.left)/bounds.width),String(keyboard ? .5 : (e.clientY-bounds.top)/bounds.height)]]);}}><img src={diagram} className="max-h-80 max-w-full cursor-crosshair" alt=""/></button>{rows.map((r,i)=><span key={i} aria-hidden className="pointer-events-none absolute rounded-full bg-primary px-2 text-white" style={{left:`${Number(r[1])*100}%`,top:`${Number(r[2])*100}%`}}>{i+1}</span>)}</div>}</div>}
+        {family==='diagram'&&<div className="space-y-3"><p>{t('guide.diagramSourceHint')}</p><GameImagePicker library libraryCards={diagramCards} academyId={info.academyId} value={diagram||null} onChange={url=>setDiagram(url||'')}/>{diagram&&<div className="relative w-fit"><button type="button" className="block rounded-xl focus-visible:outline-4 focus-visible:outline-primary" data-diagram-position-image aria-label={t('guide.hints.diagram')} onClick={e=>{const bounds=e.currentTarget.getBoundingClientRect(),keyboard=e.detail===0;const position=[String(keyboard?.5:(e.clientX-bounds.left)/bounds.width),String(keyboard?.5:(e.clientY-bounds.top)/bounds.height)];const index=diagramTarget!==null&&diagramTarget<rows.length?diagramTarget:rows.findIndex(row=>row[0]&&(!row[1]||!row[2]));if(index>=0){write(rows.map((row,i)=>i===index?[row[0],...position]:row));setDiagramTarget(null);}else write([...rows.filter(row=>row[0]),['',...position]]);setError('');}}><img src={diagram} className="max-h-80 max-w-full cursor-crosshair" alt=""/></button>{rows.map((row,i)=>row[1]&&row[2]?<span key={i} aria-hidden className="pointer-events-none absolute rounded-full bg-primary px-2 text-white" style={{left:`${Number(row[1])*100}%`,top:`${Number(row[2])*100}%`}}>{i+1}</span>:null)}</div>}</div>}
         {family==='slots'&&<label className="block font-bold">{t('gameWatermelon.slotLabel')}<select className="ml-2 rounded-xl border p-3" value={pattern} onChange={e=>setPattern(e.target.value)}>{SENTENCE_PATTERNS.filter(p=>p.playable).map(p=><option key={p.id} value={p.id}>{t(p.nameKey)}</option>)}</select></label>}
         {family==='tower'&&<label className="block font-bold">{t('guide.startSentence')}<input className="mt-2 w-full rounded-xl border p-3" value={towerStart} onChange={e=>setTowerStart(e.target.value)}/></label>}
         {family==='bridge'&&<div className="space-y-2 rounded-xl border p-3"><label className="block">{t('guide.blank')}<input value={source} className="mt-2 w-full rounded-xl border p-3" onChange={e=>setSource(e.target.value)} onSelect={e=>{selection.current={start:e.currentTarget.selectionStart||0,end:e.currentTarget.selectionEnd||0};}}/></label><button className={button} onClick={()=>{const {start,end}=selection.current;if(end>start){write([...rows.filter(r=>r[0]),[source.slice(0,start)+'___'+source.slice(end),source.slice(start,end),'','']]);}}}>{t('guide.makeBlank')}</button></div>}
         <div className="space-y-3">{rows.map((row,i)=><fieldset key={i} data-guide-row={i} className="rounded-2xl border bg-surface-container-lowest p-4"><legend className="px-2 font-bold">{i+1}</legend>
+          {family==='diagram'&&<button type="button" data-diagram-target={i} aria-pressed={diagramTarget===i} className={button} onClick={()=>setDiagramTarget(i)}>{t(diagramTarget===i?'guide.diagramClickPoint':row[1]&&row[2]?'guide.diagramMovePoint':'guide.diagramSetPoint',{row:i+1})}</button>}
           {family==='tower'&&<div className="mb-3 space-y-2"><p>{t('guide.towerHint')}</p><div className="flex flex-wrap gap-1">{[0,...Array.from(towerPrevious[i].matchAll(/\s+/g),m=>m.index!+m[0].length),towerPrevious[i].length].map((pos,j)=><button type="button" className={`${button} ${Number(row[1])===pos?'border-primary bg-sky-50!':''}`} key={`${pos}-${j}`} onClick={()=>setCell(i,1,String(pos))}>{towerPrevious[i].slice(0,pos)} ▏ {towerPrevious[i].slice(pos)}</button>)}</div><p>{t('guide.result')}: {insertPhrase(towerPrevious[i],row[0]||'',Number(row[1])||0)}</p></div>}
           <div className="grid gap-3 sm:grid-cols-2">{columns.map((col,j)=>family==='tower'&&j===1?null:<label key={`${col}-${j}`} className="block font-bold">{t(`guide.${col}`)}{col==='wrong'?` ${j-1}`:''}{family==='slots'&&j===1?<select aria-label={t('gameWatermelon.slotLabel')} className="mt-1 w-full rounded-xl border p-3" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)}><option value="">—</option>{getSentencePattern(pattern).slots.map(slot=><option key={slot} value={slot}>{t(slotLabelKey(slot as SentenceSlot))}</option>)}</select>:col==='image'?<GameImagePicker academyId={info.academyId} value={row[j]||null} onChange={url=>setCell(i,j,url||'')} previewHeight={96}/>:col==='ox'?<select aria-label={t('guide.ox')} className="mt-1 w-full rounded-xl border bg-white p-3" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)}><option value="">—</option><option>O</option><option>X</option></select>:<input className="mt-1 w-full rounded-xl border bg-white p-3 font-normal" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)} />}</label>)}</div>
           <button className={`${button} mt-3`} aria-label={`${t('guide.remove')} ${i+1}`} onClick={()=>write(rows.filter((_,n)=>n!==i))}>{t('guide.remove')}</button>

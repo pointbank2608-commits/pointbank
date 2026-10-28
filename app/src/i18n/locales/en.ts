@@ -130,6 +130,7 @@ const en: Ko = {
     "needSentence": "Enter English sentences with at least two words.",
     "needPairs": "At least two distinct word / meaning pairs are required.",
     "needImages": "Material with images is required for this game.",
+    "needDiagram": "Label positions need your input. Choose an existing picture and place the labels in content preparation.",
     "needGroups": "Vocabulary in at least two different categories is required.",
     "needFormat": "Check answers, choices and required content in this game’s dedicated settings.",
     "needItems": "At least {{count}} non-empty items are required.",
@@ -2489,6 +2490,12 @@ const en: Ko = {
   },
 
   imagePicker: {
+    library: 'Choose an existing picture',
+    libraryHint: 'Use pictures from the loaded word list or picture dictionary. Choose one background, then place its labels.',
+    search: 'Search pictures (word or meaning)',
+    choose: 'Use {{word}} picture',
+    noMatches: 'No matching pictures. Try another word or upload your own.',
+    more: 'Show more pictures',
     upload: '+ Upload Photo',
     replace: 'Replace Photo',
     remove: 'Remove Photo',

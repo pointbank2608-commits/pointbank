@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { uploadGameImage } from '../lib/api';
+import GameLibraryImages from './GameLibraryImages';
+import type {FullCardItem} from '../lib/types';
 
 interface UploadedImage {
   path: string;
@@ -9,6 +11,8 @@ interface UploadedImage {
 }
 
 interface Props {
+  library?:boolean;
+  libraryCards?:FullCardItem[];
   academyId: string;
   value: string | null;
   onChange: (url: string | null) => void;
@@ -30,6 +34,8 @@ export default function GameImagePicker({
   previewHeight = 96,
   uploadFn = uploadGameImage,
   onUploaded,
+  library=false,
+  libraryCards,
 }: Props) {
   const { notify } = useToast();
   const { t } = useTranslation();
@@ -54,6 +60,7 @@ export default function GameImagePicker({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
+      {library&&<GameLibraryImages cards={libraryCards} onChoose={onChange}/>}
       {value && (
         <img
           src={value}
