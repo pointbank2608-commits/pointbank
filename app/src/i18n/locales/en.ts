@@ -14,6 +14,7 @@ import { homeEn } from '../homeLocales';
 import { sourceEn } from '../sourceLocales';
 import { guideEn } from '../guideLocales';
 import { workbookEn } from '../workbookLocales';
+import { grammarSheetsEn } from '../grammarSheetsLocales';
 import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
@@ -36,6 +37,7 @@ const en: Ko = {
   whiteboard: boardEn,
   wordMemory: wordMemoryEn,
   workbook: workbookEn,
+  grammarSheets: grammarSheetsEn,
   phonicsCourse: phonicsCourseEn,
   bombSound: bombSoundEn,
   turnDisplay: turnDisplayEn,
@@ -2773,8 +2775,8 @@ const en: Ko = {
     stage4WorkbookDesc: 'Practise consonant blends and digraphs in ready-made units. Select the units you need and print two A4 pages per unit.',
     stage5WorkbookName: 'Phonics Stage 5 Workbook · Vowel Teams, Diphthongs and R-controlled Vowels',
     stage5WorkbookDesc: 'Practise vowel teams, diphthongs and R-controlled vowels in ready-made units. Select the units you need and print two A4 pages per unit.',
-    grammarWorkbookName: 'Grammar Practice and Missions',
-    grammarWorkbookDesc: '13 third-person singular questions and a Robot Detective mission. Separate student and teacher sheets.',
+    grammarWorkbookName: 'Grammar Workbook · From Concept to Challenge',
+    grammarWorkbookDesc: 'All 169 grammar points · six sheets (discover, choose, build, fix, speak, review) with three support levels. Print student sheets and a teacher key.',
     cvcWorkbookDesc: 'Practise short vowels a, e, i, o and u with CVC words in ready-made units. Select the units you need and print two A4 pages per unit.',
     longVowelWorkbookName: 'Phonics Stage 3 Workbook · Magic e',
     longVowelWorkbookDesc: 'Practise magic-e rules and words in ready-made units. Select the units you need and print two A4 pages per unit.',

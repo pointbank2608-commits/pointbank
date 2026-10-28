@@ -1,0 +1,20 @@
+// 시트를 그림으로 저장해 눈으로 확인한다: node scripts/grammar-sheets/shot.mjs <topic> <set> <support> <out폴더>
+import { dirname, resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'vite';
+import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const [topic = 'third-s', set = 'A', support = '2', out = 'scripts/grammar-sheets/out/shots'] = process.argv.slice(2);
+mkdirSync(out, { recursive: true });
+const server = await createServer({ root, server: { port: 5198, strictPort: true }, logLevel: 'error' });
+await server.listen();
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const page = await browser.newPage({ viewport: { width: 900, height: 1200 } });
+await page.goto(`http://localhost:5198/scripts/grammar-sheets/harness.html?topic=${topic}&support=${support}&set=${set}`);
+await page.waitForSelector('#ready');
+await page.evaluate(() => document.fonts.ready);
+const boards = await page.$$('.print-board');
+for (const [i, b] of boards.entries()) await b.screenshot({ path: `${out}/${topic}-${set}-${i + 1}.png` });
+console.log(boards.length);
+await browser.close(); await server.close();

@@ -56,7 +56,7 @@ function AppLayoutInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
   // 클래스뱅크 브랜드 footer 는 "수업 자료실"에서 뽑는 인쇄물에만 찍는다(학원 워터마크는 전 화면 공통).
   const isMaterialsPrint = pathname.startsWith('/materials');
-  const isWorkbookPrint = /^\/materials\/(worksheet|cvc-workbook|long-vowel-workbook|phonics-stage-[45]-workbook|phonics-stage-1|grammar-workbook|elementary-800)$/.test(pathname) || pathname === '/phonics/stage-1';
+  const isWorkbookPrint = /^\/materials\/(worksheet|cvc-workbook|long-vowel-workbook|phonics-stage-[45]-workbook|phonics-stage-1|grammar-workbook|grammar-sheets|elementary-800)$/.test(pathname) || pathname === '/phonics/stage-1';
 
   // "발표하기"를 누른 뒤 "수업 마치기" 전까지는 사이드바·상단바·페이지 여백을 전부 걷어낸다 —
   // 발표 중엔 편집 화면으로 빠져나가지 못하고 만들어 둔 수업만 진행한다(2026-09-25 사용자 결정).

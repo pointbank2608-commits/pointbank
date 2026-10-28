@@ -1,0 +1,5879 @@
+[
+  {
+    "id": "h-without-its-time",
+    "discover": {
+      "q": "Without ~, It's time ~, Were I ~, Had I ~로 시작하는 문장을 보세요. if 없이도 어떻게 가정의 뜻이 나타났나요? It's time 뒤의 동사는 어떤 시제인가요?",
+      "a": "Without + 명사는 '~이 없다면(없었다면)'의 뜻이고, if를 생략하면 Were/Had가 주어 앞으로 나온다. It's time 뒤에는 과거형 동사를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "Without water, nothing ____ live.",
+        "c": [
+          "could",
+          "lived"
+        ],
+        "a": 0,
+        "why": "현재 사실과 반대인 가정이므로 could를 씁니다."
+      },
+      {
+        "p": "Without your help, I ____ have failed.",
+        "c": [
+          "would",
+          "will"
+        ],
+        "a": 0,
+        "why": "과거 사실과 반대인 가정이므로 would have p.p.입니다."
+      },
+      {
+        "p": "It's time we ____ home.",
+        "c": [
+          "went",
+          "going"
+        ],
+        "a": 0,
+        "why": "It's time 뒤에는 과거형 동사를 씁니다."
+      },
+      {
+        "p": "____ I you, I would take the job.",
+        "c": [
+          "Were",
+          "Was"
+        ],
+        "a": 0,
+        "why": "If I were you에서 If를 생략하면 Were I you입니다."
+      },
+      {
+        "p": "____ I known, I would have called you.",
+        "c": [
+          "Had",
+          "Have"
+        ],
+        "a": 0,
+        "why": "If I had known에서 If를 생략하면 Had I known입니다."
+      },
+      {
+        "p": "Without his quick action yesterday, the building ____ burned down.",
+        "c": [
+          "would have",
+          "will have",
+          "would"
+        ],
+        "a": 0,
+        "why": "yesterday가 있으므로 과거 사실과 반대되는 가정인 would have p.p.를 써야 합니다."
+      },
+      {
+        "p": "It's time you ____ studying for the final exam.",
+        "c": [
+          "start",
+          "started"
+        ],
+        "a": 1,
+        "why": "It's time 뒤에는 주어와 함께 동사의 과거형을 써서 '~해야 할 시간이다'를 표현합니다."
+      },
+      {
+        "p": "____ she in charge, she would change the policy.",
+        "c": [
+          "Were",
+          "Was",
+          "Had"
+        ],
+        "a": 0,
+        "why": "If she were in charge에서 If가 생략된 도치 구문이므로 Were가 앞으로 나옵니다."
+      },
+      {
+        "p": "____ he studied harder, he would have passed the test last week.",
+        "c": [
+          "Had",
+          "Has",
+          "Did"
+        ],
+        "a": 0,
+        "why": "과거 사실에 대한 가정(would have passed)이므로 If he had studied에서 If가 생략된 Had를 씁니다."
+      },
+      {
+        "p": "Without smartphones, our lives ____ very inconvenient now.",
+        "c": [
+          "would be",
+          "would have been"
+        ],
+        "a": 0,
+        "why": "now가 있으므로 현재 사실과 반대되는 가정인 조동사의 과거형 + 동사원형을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "It's time we going home.",
+        "r": "It's time we went home.",
+        "why": "It's time 뒤에는 과거형 동사를 씁니다."
+      },
+      {
+        "w": "Was I you, I would take the job.",
+        "r": "Were I you, I would take the job.",
+        "why": "if를 생략한 도치에서는 Were를 씁니다."
+      },
+      {
+        "w": "Have I known, I would have called you.",
+        "r": "Had I known, I would have called you.",
+        "why": "if를 생략한 도치에서는 Had를 씁니다."
+      },
+      {
+        "w": "It's time you go to bed.",
+        "r": "It's time you went to bed.",
+        "why": "It's time 뒤에는 주어 다음에 과거형 동사를 써야 합니다."
+      },
+      {
+        "w": "Was she my daughter, I would be proud.",
+        "r": "Were she my daughter, I would be proud.",
+        "why": "if가 생략된 가정법 도치에서는 주어의 인칭과 수에 상관없이 Were를 씁니다."
+      },
+      {
+        "w": "Without your advice last year, I would fail.",
+        "r": "Without your advice last year, I would have failed.",
+        "why": "last year가 있는 과거 사실에 대한 가정이므로 would have p.p.를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "없었다면 어땠을지 상상해요.",
+        "frame": "Without ____, I would have ____ed."
+      },
+      {
+        "task": "지금 해야 할 일을 재촉해요.",
+        "frame": "It's time we ____ed."
+      },
+      {
+        "task": "if를 생략한 문장을 말해요.",
+        "frame": "Were I ____, I would ____."
+      },
+      {
+        "task": "과거의 후회를 if 없이 말해요.",
+        "frame": "Had I known, I would have ____."
+      },
+      {
+        "task": "현재 상황을 반대로 가정하여 말해봐요.",
+        "frame": "Without ____, I would ____."
+      },
+      {
+        "task": "상대방이 지금 당장 해야 할 행동을 제안해요.",
+        "frame": "It's time you ____ed."
+      }
+    ],
+    "mission": {
+      "title": "없다면 어떻게 될까? 토론",
+      "scene": "'없다면'이라는 상상으로 세상의 모습을 토론해요.",
+      "steps": [
+        "Without ____, ... 으로 상상한 세상을 한 문장씩 말한다.",
+        "It's time we ____. 로 해야 할 일을 제안한다.",
+        "친구들의 생각에 의견을 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "물이 없다면 아무것도 살 수 없을 것이다.",
+        "cond": "Without를 써요.",
+        "model": "Without water, nothing could live."
+      },
+      {
+        "ko": "이제 집에 갈 시간이야.",
+        "cond": "It's time과 과거형을 써요.",
+        "model": "It's time we went home."
+      },
+      {
+        "ko": "내가 너라면 그 일을 맡을 거야.",
+        "cond": "Were I로 시작해요.",
+        "model": "Were I you, I would take the job."
+      },
+      {
+        "ko": "네 충고가 없었더라면 나는 포기했을 거야.",
+        "cond": "Without과 would have를 써요.",
+        "model": "Without your advice, I would have given up."
+      },
+      {
+        "ko": "네가 잠자리에 들 시간이야.",
+        "cond": "It's time과 과거형을 써요.",
+        "model": "It's time you went to bed."
+      },
+      {
+        "ko": "그가 그곳에 있었더라면 너를 도왔을 텐데.",
+        "cond": "Had he로 시작해요.",
+        "model": "Had he been there, he would have helped you."
+      }
+    ],
+    "dropPitfalls": [
+      "It's time we go home."
+    ],
+    "buildExtra": [
+      {
+        "en": "**Without** music, life **would be** boring.",
+        "ko": "음악이 없다면 삶은 지루할 것이다."
+      },
+      {
+        "en": "**It's time** we **left** for the airport.",
+        "ko": "우리가 공항으로 출발할 시간이다."
+      },
+      {
+        "en": "**Were** I rich, I **would buy** a yacht.",
+        "ko": "내가 부자라면 요트를 살 텐데."
+      },
+      {
+        "en": "**Had** I seen him, I **would have said** hello.",
+        "ko": "내가 그를 봤더라면 인사했을 텐데."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'Without water, nothing could live.'와 'It's time we went home.'에서 굵게 표시된 부분의 공통적인 문법적 특징은 무엇인가요?",
+        "a": "현재의 일이나 상황을 나타내지만 가정의 의미를 담고 있어서 동사나 조동사의 과거형을 사용합니다."
+      },
+      "choose": [
+        {
+          "p": "Without air, we ____ breathe.",
+          "c": [
+            "couldn't",
+            "can't"
+          ],
+          "a": 0,
+          "why": "현재 사실과 반대되는 가정이므로 조동사의 과거형(couldn't)을 씁니다."
+        },
+        {
+          "p": "Without the map yesterday, they ____ gotten lost.",
+          "c": [
+            "would have",
+            "would"
+          ],
+          "a": 0,
+          "why": "yesterday가 있으므로 과거 사실과 반대되는 가정인 would have p.p.를 써야 합니다."
+        },
+        {
+          "p": "It's high time you ____ your own room.",
+          "c": [
+            "clean",
+            "cleaned"
+          ],
+          "a": 1,
+          "why": "It's (high) time 뒤에는 주어와 함께 과거형 동사를 씁니다."
+        },
+        {
+          "p": "____ it not for his mistake, we would win the game now.",
+          "c": [
+            "Were",
+            "Was",
+            "Had"
+          ],
+          "a": 0,
+          "why": "If it were not for에서 If가 생략된 형태이므로 Were가 주어 앞으로 나옵니다."
+        },
+        {
+          "p": "____ she arrived earlier, she could have met the star.",
+          "c": [
+            "Had",
+            "Has",
+            "Did"
+          ],
+          "a": 0,
+          "why": "과거 사실에 대한 가정이므로 If she had arrived에서 If가 생략된 Had를 씁니다."
+        },
+        {
+          "p": "Without gravity, everything ____ float in the air.",
+          "c": [
+            "will",
+            "would"
+          ],
+          "a": 1,
+          "why": "현재 사실과 반대되는 가정이므로 조동사의 과거형(would)을 씁니다."
+        },
+        {
+          "p": "It's about time he ____ a job.",
+          "c": [
+            "found",
+            "finds"
+          ],
+          "a": 0,
+          "why": "It's (about) time 구문에서는 주어 뒤에 과거형 동사를 써야 합니다."
+        },
+        {
+          "p": "____ I a bird, I would fly to you.",
+          "c": [
+            "Am",
+            "Was",
+            "Were"
+          ],
+          "a": 2,
+          "why": "If I were a bird에서 If가 생략된 도치 구문이므로 Were를 씁니다."
+        },
+        {
+          "p": "Without the seatbelt, he ____ been badly injured in the crash.",
+          "c": [
+            "might have",
+            "might be"
+          ],
+          "a": 0,
+          "why": "사고(the crash) 당시의 과거 사실에 대한 가정이므로 might have p.p.를 씁니다."
+        },
+        {
+          "p": "____ we booked a table, we wouldn't have waited so long.",
+          "c": [
+            "Had",
+            "Have",
+            "Were"
+          ],
+          "a": 0,
+          "why": "과거 사실에 대한 가정(wouldn't have waited)이므로 If we had booked에서 If가 생략된 Had를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Without** trees, we **couldn't** get fresh air.",
+          "ko": "나무가 없다면 우리는 신선한 공기를 얻을 수 없을 것이다."
+        },
+        {
+          "en": "**Without** the umbrella, I **would have gotten** wet.",
+          "ko": "우산이 없었더라면 나는 젖었을 것이다."
+        },
+        {
+          "en": "**It's time** the kids **went** to sleep.",
+          "ko": "아이들이 잠을 잘 시간이다."
+        },
+        {
+          "en": "**It's time** you **told** the truth.",
+          "ko": "네가 진실을 말할 시간이다."
+        },
+        {
+          "en": "**Were** I the boss, I **would hire** him.",
+          "ko": "내가 사장이라면 그를 고용할 텐데."
+        },
+        {
+          "en": "**Were** it true, I **would be** shocked.",
+          "ko": "그것이 사실이라면 나는 충격을 받을 것이다."
+        },
+        {
+          "en": "**Had** I checked the email, I **would have replied**.",
+          "ko": "이메일을 확인했더라면 답장을 했을 텐데."
+        },
+        {
+          "en": "**Had** he asked me, I **would have agreed**.",
+          "ko": "그가 내게 물어봤더라면 나는 동의했을 텐데."
+        }
+      ],
+      "correct": [
+        {
+          "w": "It's time we start the meeting.",
+          "r": "It's time we started the meeting.",
+          "why": "It's time 뒤에는 가정법 과거 동사를 써야 합니다."
+        },
+        {
+          "w": "Without the internet, life will be very boring.",
+          "r": "Without the internet, life would be very boring.",
+          "why": "현재 사실과 반대되는 가정이므로 조동사의 과거형을 씁니다."
+        },
+        {
+          "w": "Had I have enough money, I would have bought it.",
+          "r": "Had I had enough money, I would have bought it.",
+          "why": "If I had had에서 if가 생략된 형태이므로 Had I had가 맞습니다."
+        },
+        {
+          "w": "Was I a doctor, I could cure him.",
+          "r": "Were I a doctor, I could cure him.",
+          "why": "가정법 도치에서는 주어의 인칭과 수에 관계없이 Were를 씁니다."
+        },
+        {
+          "w": "Without his help yesterday, I would fail the exam.",
+          "r": "Without his help yesterday, I would have failed the exam.",
+          "why": "과거 사실에 대한 가정이므로 would have p.p.를 써야 합니다."
+        },
+        {
+          "w": "It's about time you wash your car.",
+          "r": "It's about time you washed your car.",
+          "why": "It's time 구문에서는 주어 뒤에 과거형 동사를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "필수적인 것이 없다고 가정하고 말해봐요.",
+          "frame": "Without ____, we couldn't ____."
+        },
+        {
+          "task": "과거의 다행스러운 상황을 가정해봐요.",
+          "frame": "Without ____, I would have ____ed."
+        },
+        {
+          "task": "미루던 일을 해야 한다고 말해요.",
+          "frame": "It's time we ____ed ____."
+        },
+        {
+          "task": "내가 다른 사람이라면 어떨지 상상해요.",
+          "frame": "Were I ____, I would ____."
+        },
+        {
+          "task": "과거의 사실을 반대로 가정해봐요.",
+          "frame": "Had I ____ed, I would have ____ed."
+        },
+        {
+          "task": "상대방이 진작 했어야 할 일을 지적해요.",
+          "frame": "It's time you ____ed your ____."
+        }
+      ],
+      "mission": {
+        "title": "만약의 세계 상상하기",
+        "scene": "친구와 함께 현재나 과거의 상황을 반대로 가정해보는 대화를 나눕니다.",
+        "steps": [
+          "한 친구가 'Without ____,'로 시작하여 어떤 것이 없는 상황을 제시합니다.",
+          "다른 친구가 'I would ____.' 또는 'I would have ____.'로 그 결과를 이어 말합니다.",
+          "'It's time we ____.'를 사용하여 지금 당장 현실로 돌아와 해야 할 일을 말하며 마무리합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "공기가 없다면 우리는 숨을 쉴 수 없을 것이다.",
+          "cond": "Without을 써요.",
+          "model": "Without air, we couldn't breathe."
+        },
+        {
+          "ko": "네가 세차를 할 시간이다.",
+          "cond": "It's time과 과거형을 써요.",
+          "model": "It's time you washed your car."
+        },
+        {
+          "ko": "내가 사장이라면 그를 고용할 텐데.",
+          "cond": "Were I로 시작해요.",
+          "model": "Were I the boss, I would hire him."
+        },
+        {
+          "ko": "지도가 없었더라면 그들은 길을 잃었을 것이다.",
+          "cond": "Without과 would have를 써요.",
+          "model": "Without the map, they would have gotten lost."
+        },
+        {
+          "ko": "그가 테이블을 예약했더라면 그렇게 오래 기다리지 않았을 텐데.",
+          "cond": "Had he로 시작해요.",
+          "model": "Had he booked a table, he wouldn't have waited so long."
+        },
+        {
+          "ko": "그녀가 일찍 도착했더라면 그 스타를 만날 수 있었을 텐데.",
+          "cond": "Had she로 시작해요.",
+          "model": "Had she arrived earlier, she could have met the star."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-subjunctive-demand",
+    "discover": {
+      "q": "suggested that he take, insisted that we (should) go, demanded that everyone be를 보세요. that절의 동사는 주어에 따라 -s가 붙었나요? 어떤 모양이 쓰였나요?",
+      "a": "제안·요구·주장 동사 뒤의 that절에서는 (should +) 동사원형을 쓴다. 주어가 3인칭 단수여도 -s를 붙이지 않는다."
+    },
+    "choose": [
+      {
+        "p": "The doctor suggested that he ____ a rest.",
+        "c": [
+          "take",
+          "takes"
+        ],
+        "a": 0,
+        "why": "제안 동사 뒤 that절은 동사원형을 씁니다."
+      },
+      {
+        "p": "She insisted that we ____ go home early.",
+        "c": [
+          "(should)",
+          "will"
+        ],
+        "a": 0,
+        "why": "주장 동사 뒤에는 (should) + 동사원형입니다."
+      },
+      {
+        "p": "The teacher demanded that everyone ____ quiet.",
+        "c": [
+          "be",
+          "is"
+        ],
+        "a": 0,
+        "why": "요구 동사 뒤 that절은 동사원형 be를 씁니다."
+      },
+      {
+        "p": "It is important that he ____ on time.",
+        "c": [
+          "be",
+          "are"
+        ],
+        "a": 0,
+        "why": "중요하다는 의미의 형용사 뒤 that절도 동사원형을 씁니다."
+      },
+      {
+        "p": "They recommended that she ____ for the job.",
+        "c": [
+          "apply",
+          "applies"
+        ],
+        "a": 0,
+        "why": "권고 동사 뒤 that절은 동사원형을 씁니다."
+      },
+      {
+        "p": "The manager required that all employees ____ the meeting.",
+        "c": [
+          "attend",
+          "attends",
+          "attended"
+        ],
+        "a": 0,
+        "why": "요구 동사(require) 뒤 that절은 (should) + 동사원형을 씁니다."
+      },
+      {
+        "p": "The police officer ordered that the driver ____ out of the car.",
+        "c": [
+          "step",
+          "steps"
+        ],
+        "a": 0,
+        "why": "명령 동사(order) 뒤 that절은 동사원형을 씁니다."
+      },
+      {
+        "p": "My parents insist that my brother ____ his room every weekend.",
+        "c": [
+          "clean",
+          "cleans"
+        ],
+        "a": 0,
+        "why": "당위성을 나타내는 주장 동사(insist) 뒤 that절은 동사원형을 씁니다."
+      },
+      {
+        "p": "The committee proposed that the new rule ____ immediately.",
+        "c": [
+          "be applied",
+          "is applied"
+        ],
+        "a": 0,
+        "why": "제안 동사(propose) 뒤 that절은 동사원형 be를 씁니다."
+      },
+      {
+        "p": "The witness insisted that he ____ the accident with his own eyes.",
+        "c": [
+          "saw",
+          "see"
+        ],
+        "a": 0,
+        "why": "insist가 이미 일어난 사실을 주장할 때는 직설법 시제를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The doctor suggested that he takes a rest.",
+        "r": "The doctor suggested that he take a rest.",
+        "why": "제안 동사 뒤 that절은 동사원형입니다."
+      },
+      {
+        "w": "I demand that he to be here.",
+        "r": "I demand that he be here.",
+        "why": "요구 동사 뒤 that절은 동사원형입니다."
+      },
+      {
+        "w": "They recommended that she applies for the job.",
+        "r": "They recommended that she apply for the job.",
+        "why": "권고 동사 뒤 that절은 동사원형입니다."
+      },
+      {
+        "w": "The principal ordered that the students stops running in the hall.",
+        "r": "The principal ordered that the students stop running in the hall.",
+        "why": "명령 동사 뒤 that절은 동사원형을 써야 합니다."
+      },
+      {
+        "w": "I strongly recommend that he goes to see a dentist.",
+        "r": "I strongly recommend that he go to see a dentist.",
+        "why": "권고 동사 뒤 that절은 동사원형을 써야 합니다."
+      },
+      {
+        "w": "The manager proposed that the project is delayed.",
+        "r": "The manager proposed that the project be delayed.",
+        "why": "제안 동사 뒤 that절의 be동사는 원형인 be를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "의사나 선생님의 제안을 전달해요.",
+        "frame": "The doctor/teacher suggested that I ____."
+      },
+      {
+        "task": "요구한 일을 말해요.",
+        "frame": "My mom demanded that I ____."
+      },
+      {
+        "task": "주장한 일을 말해요.",
+        "frame": "He insisted that we (should) ____."
+      },
+      {
+        "task": "중요한 일을 말해요.",
+        "frame": "It is important that he/she ____."
+      },
+      {
+        "task": "친구에게 추천받은 것을 말해요.",
+        "frame": "My friend recommended that I ____."
+      },
+      {
+        "task": "규칙이나 법이 요구하는 바를 말해요.",
+        "frame": "The rule requires that we ____."
+      }
+    ],
+    "mission": {
+      "title": "조언 전하기 릴레이",
+      "scene": "의사·선생님·부모님이 한 말을 that절로 전달하는 릴레이예요.",
+      "steps": [
+        "조언 카드를 읽는다. (예: Take a rest.)",
+        "The doctor suggested that I take a rest. 처럼 전달한다.",
+        "동사 -s가 붙지 않았는지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "의사는 그가 휴식을 취해야 한다고 제안했다.",
+        "cond": "suggested that과 동사원형을 써요.",
+        "model": "The doctor suggested that he take a rest."
+      },
+      {
+        "ko": "선생님은 모두가 조용히 하라고 요구했다.",
+        "cond": "demanded that과 be를 써요.",
+        "model": "The teacher demanded that everyone be quiet."
+      },
+      {
+        "ko": "그들은 그녀가 그 일에 지원해 보라고 권했다.",
+        "cond": "recommended that을 써요.",
+        "model": "They recommended that she apply for the job."
+      },
+      {
+        "ko": "경찰은 그 남자가 차를 멈춰야 한다고 명령했다.",
+        "cond": "ordered that을 써요.",
+        "model": "The police ordered that the man stop the car."
+      },
+      {
+        "ko": "위원회는 그 축제가 취소되어야 한다고 제안했다.",
+        "cond": "proposed that과 수동태(be canceled)를 써요.",
+        "model": "The committee proposed that the festival be canceled."
+      },
+      {
+        "ko": "나의 부모님은 내가 매일 운동해야 한다고 주장하신다.",
+        "cond": "insist that을 써요.",
+        "model": "My parents insist that I exercise every day."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The coach **demanded that** we **practice** harder.",
+        "ko": "코치는 우리가 더 열심히 연습해야 한다고 요구했다."
+      },
+      {
+        "en": "I **suggest that** she **read** this book.",
+        "ko": "나는 그녀가 이 책을 읽어볼 것을 제안한다."
+      },
+      {
+        "en": "The law **requires that** everyone **wear** a seatbelt.",
+        "ko": "법은 모든 사람이 안전벨트를 매야 한다고 규정한다."
+      },
+      {
+        "en": "He **insisted that** I **stay** for dinner.",
+        "ko": "그는 내가 저녁 식사를 하고 가야 한다고 고집했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "제안, 요구, 주장, 권고를 나타내는 동사 뒤의 that절에서 동사의 형태는 어떻게 변하나요?",
+        "a": "주어의 인칭이나 수, 시제와 상관없이 동사원형을 씁니다. (앞에 should가 생략될 수 있습니다.)"
+      },
+      "choose": [
+        {
+          "p": "The guide recommended that the tourists ____ comfortable shoes.",
+          "c": [
+            "wear",
+            "wears",
+            "wore"
+          ],
+          "a": 0,
+          "why": "권고 동사(recommend) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "The customer demanded that the manager ____ him a refund.",
+          "c": [
+            "give",
+            "gives"
+          ],
+          "a": 0,
+          "why": "요구 동사(demand) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "It is essential that the password ____ changed regularly.",
+          "c": [
+            "be",
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "필수적임을 나타내는 형용사(essential) 뒤 that절은 동사원형 be를 씁니다."
+        },
+        {
+          "p": "The suspect insisted that he ____ at home during the crime.",
+          "c": [
+            "was",
+            "be"
+          ],
+          "a": 0,
+          "why": "insist가 과거의 사실을 주장할 때는 직설법 과거 시제를 씁니다."
+        },
+        {
+          "p": "The doctor advised that the patient ____ drinking coffee.",
+          "c": [
+            "stop",
+            "stops"
+          ],
+          "a": 0,
+          "why": "충고 동사(advise) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "The school requires that every student ____ a uniform.",
+          "c": [
+            "wear",
+            "wears"
+          ],
+          "a": 0,
+          "why": "규정 동사(require) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "The director asked that the actor ____ the scene again.",
+          "c": [
+            "practice",
+            "practices"
+          ],
+          "a": 0,
+          "why": "요청 동사(ask) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "The mayor proposed that a new park ____ built in the city.",
+          "c": [
+            "be",
+            "is"
+          ],
+          "a": 0,
+          "why": "제안 동사(propose) 뒤 that절은 동사원형 be를 씁니다."
+        },
+        {
+          "p": "She insisted that her son ____ his homework before playing games.",
+          "c": [
+            "finish",
+            "finishes"
+          ],
+          "a": 0,
+          "why": "당위성을 나타내는 주장 동사(insist) 뒤 that절은 동사원형을 씁니다."
+        },
+        {
+          "p": "The flight attendant requested that passengers ____ their seatbelts.",
+          "c": [
+            "fasten",
+            "fastens"
+          ],
+          "a": 0,
+          "why": "요청 동사(request) 뒤 that절은 동사원형을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "They **proposed that** the meeting **be** postponed.",
+          "ko": "그들은 회의가 연기되어야 한다고 제안했다."
+        },
+        {
+          "en": "The expert **recommends that** you **drink** enough water.",
+          "ko": "전문가는 당신이 충분한 물을 마실 것을 권장한다."
+        },
+        {
+          "en": "She **demanded that** he **apologize** to her.",
+          "ko": "그녀는 그가 자신에게 사과해야 한다고 요구했다."
+        },
+        {
+          "en": "It is **crucial that** we **protect** the environment.",
+          "ko": "우리가 환경을 보호하는 것은 매우 중요하다."
+        },
+        {
+          "en": "The boss **ordered that** the report **be** finished today.",
+          "ko": "상사는 그 보고서가 오늘 끝내져야 한다고 지시했다."
+        },
+        {
+          "en": "He **insisted that** he **didn't steal** the money.",
+          "ko": "그는 자신이 그 돈을 훔치지 않았다고 주장했다."
+        },
+        {
+          "en": "I **suggest that** he **take** a taxi.",
+          "ko": "나는 그가 택시를 타야 한다고 제안한다."
+        },
+        {
+          "en": "The rule **requires that** players **not touch** the ball.",
+          "ko": "그 규칙은 선수들이 공을 만지지 말 것을 요구한다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The teacher requested that she submits the assignment by Friday.",
+          "r": "The teacher requested that she submit the assignment by Friday.",
+          "why": "요청 동사 뒤 that절은 동사원형을 써야 합니다."
+        },
+        {
+          "w": "My father insisted that my sister comes home by 10 p.m.",
+          "r": "My father insisted that my sister come home by 10 p.m.",
+          "why": "당위성을 주장하는 동사 뒤 that절은 동사원형을 써야 합니다."
+        },
+        {
+          "w": "The doctor recommended that he exercises regularly.",
+          "r": "The doctor recommended that he exercise regularly.",
+          "why": "권고 동사 뒤 that절은 동사원형을 써야 합니다."
+        },
+        {
+          "w": "It is necessary that she arrives at the airport early.",
+          "r": "It is necessary that she arrive at the airport early.",
+          "why": "필요성을 나타내는 형용사 뒤 that절은 동사원형을 써야 합니다."
+        },
+        {
+          "w": "The citizens demanded that the mayor resigns.",
+          "r": "The citizens demanded that the mayor resign.",
+          "why": "요구 동사 뒤 that절은 동사원형을 써야 합니다."
+        },
+        {
+          "w": "I suggest that he does not go out in this heavy rain.",
+          "r": "I suggest that he not go out in this heavy rain.",
+          "why": "제안 동사 뒤 that절의 부정은 (should) not + 동사원형을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "의사가 환자에게 권고한 내용을 말해요.",
+          "frame": "The doctor recommended that the patient ____."
+        },
+        {
+          "task": "부모님이 당신에게 요구한 것을 말해요.",
+          "frame": "My parents demanded that I ____."
+        },
+        {
+          "task": "학교 규칙이 학생들에게 요구하는 바를 말해요.",
+          "frame": "The school requires that students ____."
+        },
+        {
+          "task": "친구에게 제안하고 싶은 것을 말해요.",
+          "frame": "I suggest that you ____."
+        },
+        {
+          "task": "회의에서 제안된 사항을 말해요.",
+          "frame": "Someone proposed that we ____."
+        },
+        {
+          "task": "어떤 일이 필수적이라고 말해요.",
+          "frame": "It is essential that we ____."
+        }
+      ],
+      "mission": {
+        "title": "우리의 새로운 학급 규칙 만들기",
+        "scene": "새 학기를 맞아 학급 회의에서 반 친구들과 함께 지켜야 할 규칙을 제안하고 요구하는 상황입니다.",
+        "steps": [
+          "각자 학급에 필요하다고 생각하는 규칙을 'I suggest that everyone ~' 또는 'I demand that we ~' 형태로 3가지 적어봅니다.",
+          "짝과 함께 자신이 적은 규칙을 번갈아 발표하며 의견을 나눕니다.",
+          "두 사람의 의견을 모아 가장 중요한 규칙 3가지를 선정하여 칠판에 적습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 고객은 매니저가 자신에게 환불해 주어야 한다고 요구했다.",
+          "cond": "demanded that을 써요.",
+          "model": "The customer demanded that the manager give him a refund."
+        },
+        {
+          "ko": "가이드는 관광객들이 편안한 신발을 신어야 한다고 권했다.",
+          "cond": "recommended that을 써요.",
+          "model": "The guide recommended that the tourists wear comfortable shoes."
+        },
+        {
+          "ko": "시장은 도시에 새로운 공원이 건설되어야 한다고 제안했다.",
+          "cond": "proposed that과 수동태(be built)를 써요.",
+          "model": "The mayor proposed that a new park be built in the city."
+        },
+        {
+          "ko": "그녀는 아들이 게임을 하기 전에 숙제를 끝내야 한다고 주장했다.",
+          "cond": "insisted that을 써요.",
+          "model": "She insisted that her son finish his homework before playing games."
+        },
+        {
+          "ko": "학교는 모든 학생이 학생증을 소지해야 한다고 규정한다.",
+          "cond": "requires that을 써요.",
+          "model": "The school requires that every student have a student ID."
+        },
+        {
+          "ko": "의사는 그 환자가 커피 마시는 것을 멈춰야 한다고 충고했다.",
+          "cond": "advised that을 써요.",
+          "model": "The doctor advised that the patient stop drinking coffee."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-exclamation",
+    "discover": {
+      "q": "What a beautiful day!와 How cute your puppy is!를 비교해 보세요. 명사가 있을 때와 없을 때 어떤 낱말로 시작하나요?",
+      "a": "명사가 있으면 What a/an + 형용사 + 명사, 형용사나 부사만 있으면 How + 형용사/부사로 시작한다."
+    },
+    "choose": [
+      {
+        "p": "____ a beautiful day!",
+        "c": [
+          "What",
+          "How"
+        ],
+        "a": 0,
+        "why": "뒤에 명사(day)가 있으므로 What입니다."
+      },
+      {
+        "p": "____ cute your puppy is!",
+        "c": [
+          "How",
+          "What"
+        ],
+        "a": 0,
+        "why": "형용사만 있으므로 How입니다."
+      },
+      {
+        "p": "What ____ big house it is!",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "big은 자음 소리로 시작하므로 a입니다."
+      },
+      {
+        "p": "____ fast he runs!",
+        "c": [
+          "How",
+          "What"
+        ],
+        "a": 0,
+        "why": "부사만 있으므로 How입니다."
+      },
+      {
+        "p": "What nice ____!",
+        "c": [
+          "shoes",
+          "a shoes"
+        ],
+        "a": 0,
+        "why": "복수 명사 앞에는 a/an을 쓰지 않습니다."
+      },
+      {
+        "p": "____ an interesting book this is!",
+        "c": [
+          "What",
+          "How"
+        ],
+        "a": 0,
+        "why": "뒤에 명사(book)가 있으므로 What입니다."
+      },
+      {
+        "p": "____ tall the building is!",
+        "c": [
+          "What",
+          "How"
+        ],
+        "a": 1,
+        "why": "명사 없이 형용사(tall)만 있으므로 How입니다."
+      },
+      {
+        "p": "What ____ smart boy he is!",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "smart는 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "p": "____ well she sings!",
+        "c": [
+          "What",
+          "How"
+        ],
+        "a": 1,
+        "why": "명사 없이 부사(well)만 있으므로 How입니다."
+      },
+      {
+        "p": "What pretty ____ they are!",
+        "c": [
+          "flower",
+          "flowers"
+        ],
+        "a": 1,
+        "why": "주어가 they이므로 복수 명사인 flowers를 써야 합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "How a beautiful day!",
+        "r": "What a beautiful day!",
+        "why": "명사가 있으면 What을 씁니다."
+      },
+      {
+        "w": "What cute your puppy is!",
+        "r": "How cute your puppy is!",
+        "why": "형용사만 있으면 How를 씁니다."
+      },
+      {
+        "w": "What a nice shoes!",
+        "r": "What nice shoes!",
+        "why": "복수 명사 앞에는 a를 쓰지 않습니다."
+      },
+      {
+        "w": "How an interesting book it is!",
+        "r": "What an interesting book it is!",
+        "why": "뒤에 명사(book)가 올 때는 What을 씁니다."
+      },
+      {
+        "w": "What tall the tree is!",
+        "r": "How tall the tree is!",
+        "why": "뒤에 명사 없이 형용사(tall)만 올 때는 How를 씁니다."
+      },
+      {
+        "w": "What a smart boys they are!",
+        "r": "What smart boys they are!",
+        "why": "복수 명사(boys) 앞에는 관사 a를 쓰지 않습니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "멋진 것을 보고 감탄해요.",
+        "frame": "What a ____ ____!"
+      },
+      {
+        "task": "친구의 물건을 칭찬해요.",
+        "frame": "How ____ your ____ is!"
+      },
+      {
+        "task": "놀라운 동작을 칭찬해요.",
+        "frame": "How fast/well you ____!"
+      },
+      {
+        "task": "복수 명사로 감탄해요.",
+        "frame": "What ____ ____s!"
+      },
+      {
+        "task": "친구의 옷차림을 보고 감탄해요.",
+        "frame": "What a nice ____!"
+      },
+      {
+        "task": "날씨가 얼마나 더운지 감탄해요.",
+        "frame": "How ____ it is today!"
+      }
+    ],
+    "mission": {
+      "title": "감탄사 폭격 대회",
+      "scene": "그림 카드를 보고 What과 How로 감탄하는 대회예요.",
+      "steps": [
+        "그림 카드를 한 장 뽑는다.",
+        "What a ____ ____! 로 한 번, How ____! 로 한 번 감탄한다.",
+        "가장 크게 감탄한 사람이 점수를 얻는다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "정말 아름다운 날이다!",
+        "cond": "What a를 써요.",
+        "model": "What a beautiful day!"
+      },
+      {
+        "ko": "네 강아지 정말 귀엽다!",
+        "cond": "How로 시작해요.",
+        "model": "How cute your puppy is!"
+      },
+      {
+        "ko": "그는 정말 빨리 달린다!",
+        "cond": "How로 시작해요.",
+        "model": "How fast he runs!"
+      },
+      {
+        "ko": "정말 재미있는 영화구나!",
+        "cond": "What으로 시작해요.",
+        "model": "What a funny movie it is!"
+      },
+      {
+        "ko": "이 가방은 정말 무겁게 보인다!",
+        "cond": "How로 시작해요.",
+        "model": "How heavy this bag looks!"
+      },
+      {
+        "ko": "그녀는 정말 아름다운 목소리를 가졌구나!",
+        "cond": "What으로 시작해요.",
+        "model": "What a beautiful voice she has!"
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**What** a funny story **it is**!",
+        "ko": "정말 재미있는 이야기구나!"
+      },
+      {
+        "en": "**How** kind **you are**!",
+        "ko": "너는 정말 친절하구나!"
+      },
+      {
+        "en": "**What** an old tree **that is**!",
+        "ko": "저것은 정말 오래된 나무구나!"
+      },
+      {
+        "en": "**How** hard **they study**!",
+        "ko": "그들은 정말 열심히 공부하는구나!"
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "감탄문에서 What과 How 뒤에 각각 어떤 품사가 오는지 예문에서 찾아보세요.",
+        "a": "What 뒤에는 명사가 오고, How 뒤에는 형용사나 부사가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "____ a great idea!",
+          "c": [
+            "How",
+            "What"
+          ],
+          "a": 1,
+          "why": "뒤에 명사(idea)가 있으므로 What입니다."
+        },
+        {
+          "p": "____ lucky we are!",
+          "c": [
+            "What",
+            "How"
+          ],
+          "a": 1,
+          "why": "명사 없이 형용사(lucky)만 있으므로 How입니다."
+        },
+        {
+          "p": "What ____ amazing story it is!",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "amazing은 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "____ cold the water is!",
+          "c": [
+            "How",
+            "What"
+          ],
+          "a": 0,
+          "why": "명사 없이 형용사(cold)만 있으므로 How입니다."
+        },
+        {
+          "p": "What cute ____ those are!",
+          "c": [
+            "baby",
+            "babies"
+          ],
+          "a": 1,
+          "why": "주어가 those이므로 복수 명사인 babies를 써야 합니다."
+        },
+        {
+          "p": "____ brave he is!",
+          "c": [
+            "What",
+            "How"
+          ],
+          "a": 1,
+          "why": "명사 없이 형용사(brave)만 있으므로 How입니다."
+        },
+        {
+          "p": "____ a lovely dress she is wearing!",
+          "c": [
+            "What",
+            "How"
+          ],
+          "a": 0,
+          "why": "뒤에 명사(dress)가 있으므로 What입니다."
+        },
+        {
+          "p": "What ____ cute cat that is!",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 0,
+          "why": "cute는 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "p": "____ high the bird flies!",
+          "c": [
+            "What",
+            "How"
+          ],
+          "a": 1,
+          "why": "명사 없이 부사(high)만 있으므로 How입니다."
+        },
+        {
+          "p": "What beautiful ____ you have!",
+          "c": [
+            "eye",
+            "eyes"
+          ],
+          "a": 1,
+          "why": "관사 a/an이 없으므로 복수 명사인 eyes를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**What** a nice car **he drives**!",
+          "ko": "그는 정말 멋진 차를 운전하는구나!"
+        },
+        {
+          "en": "**How** sweet **this orange is**!",
+          "ko": "이 오렌지는 정말 달콤하구나!"
+        },
+        {
+          "en": "**What** an easy test **it was**!",
+          "ko": "정말 쉬운 시험이었어!"
+        },
+        {
+          "en": "**How** loudly **the baby cries**!",
+          "ko": "아기가 정말 시끄럽게 우는구나!"
+        },
+        {
+          "en": "**What** tall buildings **they are**!",
+          "ko": "정말 높은 건물들이구나!"
+        },
+        {
+          "en": "**How** dark **the room is**!",
+          "ko": "방이 정말 어둡구나!"
+        },
+        {
+          "en": "**What** a smart dog **you have**!",
+          "ko": "너는 정말 똑똑한 개를 가졌구나!"
+        },
+        {
+          "en": "**How** beautifully **she dances**!",
+          "ko": "그녀는 정말 아름답게 춤을 추는구나!"
+        }
+      ],
+      "correct": [
+        {
+          "w": "How a great player he is!",
+          "r": "What a great player he is!",
+          "why": "명사(player)가 포함되어 있으므로 What으로 시작해야 합니다."
+        },
+        {
+          "w": "What lucky you are!",
+          "r": "How lucky you are!",
+          "why": "뒤에 명사 없이 형용사(lucky)만 있으므로 How로 시작해야 합니다."
+        },
+        {
+          "w": "What a amazing picture this is!",
+          "r": "What an amazing picture this is!",
+          "why": "모음 소리로 시작하는 단어 앞에는 an을 씁니다."
+        },
+        {
+          "w": "How fast runner he is!",
+          "r": "What a fast runner he is!",
+          "why": "명사(runner)가 있으므로 What a를 써야 합니다."
+        },
+        {
+          "w": "What a long legs he has!",
+          "r": "What long legs he has!",
+          "why": "복수 명사(legs) 앞에는 관사 a를 쓰지 않습니다."
+        },
+        {
+          "w": "How well does she play the piano!",
+          "r": "How well she plays the piano!",
+          "why": "감탄문은 의문문 어순이 아니라 평서문 어순(주어+동사)을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구의 그림을 보고 감탄해요.",
+          "frame": "What a wonderful ____!"
+        },
+        {
+          "task": "음식이 얼마나 맛있는지 표현해요.",
+          "frame": "How ____ this food is!"
+        },
+        {
+          "task": "친구가 얼마나 높이 뛰는지 칭찬해요.",
+          "frame": "How high you ____!"
+        },
+        {
+          "task": "귀여운 동물들을 보고 감탄해요.",
+          "frame": "What cute ____s they are!"
+        },
+        {
+          "task": "방이 얼마나 넓은지 놀라워해요.",
+          "frame": "How ____ your room is!"
+        },
+        {
+          "task": "재미있는 책을 읽고 감탄해요.",
+          "frame": "What an ____ book it is!"
+        }
+      ],
+      "mission": {
+        "title": "감탄문 릴레이 칭찬하기",
+        "scene": "반 친구들과 돌아가며 서로의 장점이나 물건을 감탄문으로 칭찬해 봅시다.",
+        "steps": [
+          "짝의 멋진 학용품이나 옷을 보고 \"What a nice ____!\"라고 칭찬합니다.",
+          "짝의 친절함이나 똑똑함을 \"How ____ you are!\"라고 칭찬합니다.",
+          "칭찬을 받은 사람은 \"Thank you!\"라고 답하고 역할을 바꿉니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "너는 정말 멋진 자전거를 가졌구나!",
+          "cond": "What으로 시작해요.",
+          "model": "What a nice bike you have!"
+        },
+        {
+          "ko": "이 수프는 정말 뜨겁게 느껴진다!",
+          "cond": "How로 시작해요.",
+          "model": "How hot this soup feels!"
+        },
+        {
+          "ko": "그는 정말 똑똑한 소년이다!",
+          "cond": "What으로 시작해요.",
+          "model": "What a smart boy he is!"
+        },
+        {
+          "ko": "그녀는 영어를 정말 잘 말하는구나!",
+          "cond": "How로 시작해요.",
+          "model": "How well she speaks English!"
+        },
+        {
+          "ko": "그들은 정말 아름다운 꽃들을 샀구나!",
+          "cond": "What으로 시작해요.",
+          "model": "What beautiful flowers they bought!"
+        },
+        {
+          "ko": "그 기차는 정말 빨리 움직인다!",
+          "cond": "How로 시작해요.",
+          "model": "How fast the train moves!"
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-it-impersonal",
+    "discover": {
+      "q": "It is seven thirty, It's very cold outside, It is two kilometers from here에서 It은 무엇을 가리키나요? 이 문장들에서 it을 '그것'이라고 해석할 수 있나요?",
+      "a": "시간·날씨·요일·거리·밝기를 말할 때 형식적인 주어로 쓴다. '그것'이라고 해석하지 않는다."
+    },
+    "choose": [
+      {
+        "p": "____ is seven thirty.",
+        "c": [
+          "It",
+          "This"
+        ],
+        "a": 0,
+        "why": "시간을 말할 때는 It을 주어로 씁니다."
+      },
+      {
+        "p": "____'s very cold outside.",
+        "c": [
+          "It",
+          "There"
+        ],
+        "a": 0,
+        "why": "날씨를 말할 때는 It을 주어로 씁니다."
+      },
+      {
+        "p": "It is ____ today.",
+        "c": [
+          "Sunday",
+          "Sundays"
+        ],
+        "a": 0,
+        "why": "'오늘은 일요일'이므로 Sunday입니다."
+      },
+      {
+        "p": "It is two kilometers ____ here.",
+        "c": [
+          "from",
+          "to"
+        ],
+        "a": 0,
+        "why": "'여기서 ~ 떨어져 있다'는 from here입니다."
+      },
+      {
+        "p": "It is getting ____.",
+        "c": [
+          "dark",
+          "darkly"
+        ],
+        "a": 0,
+        "why": "get 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "____ is nine o'clock now.",
+        "c": [
+          "It",
+          "He",
+          "That"
+        ],
+        "a": 0,
+        "why": "시간을 나타낼 때는 비인칭 주어 It을 씁니다."
+      },
+      {
+        "p": "____ is snowing heavily.",
+        "c": [
+          "This",
+          "It",
+          "There"
+        ],
+        "a": 1,
+        "why": "날씨를 나타낼 때는 비인칭 주어 It을 씁니다."
+      },
+      {
+        "p": "It is October 31st ____.",
+        "c": [
+          "today",
+          "yesterday"
+        ],
+        "a": 0,
+        "why": "동사가 현재형(is)이므로 today가 알맞습니다."
+      },
+      {
+        "p": "____ is far from here to the station.",
+        "c": [
+          "It",
+          "That"
+        ],
+        "a": 0,
+        "why": "거리를 나타낼 때는 비인칭 주어 It을 씁니다."
+      },
+      {
+        "p": "What day is ____ today?",
+        "c": [
+          "it",
+          "this",
+          "that"
+        ],
+        "a": 0,
+        "why": "요일을 묻고 답할 때는 비인칭 주어 it을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Is raining now.",
+        "r": "It is raining now.",
+        "why": "영어 문장에는 주어가 필요합니다."
+      },
+      {
+        "w": "Is seven thirty.",
+        "r": "It is seven thirty.",
+        "why": "시간을 말할 때도 주어 It이 필요합니다."
+      },
+      {
+        "w": "It is getting darkly.",
+        "r": "It is getting dark.",
+        "why": "get 뒤에는 형용사를 씁니다."
+      },
+      {
+        "w": "Is Monday today.",
+        "r": "It is Monday today.",
+        "why": "요일을 말할 때도 주어 It이 필요합니다."
+      },
+      {
+        "w": "Are ten kilometers from here.",
+        "r": "It is ten kilometers from here.",
+        "why": "거리를 말할 때는 비인칭 주어 It을 단수 취급하여 is를 씁니다."
+      },
+      {
+        "w": "Is sunny today.",
+        "r": "It is sunny today.",
+        "why": "날씨를 말할 때도 주어 It이 필요합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "지금 시각을 말해요.",
+        "frame": "It is ____ o'clock."
+      },
+      {
+        "task": "오늘 날씨와 요일을 말해요.",
+        "frame": "It's ____ today. It's ____."
+      },
+      {
+        "task": "집에서 학교까지 거리를 말해요.",
+        "frame": "It is ____ kilometers from my house to school."
+      },
+      {
+        "task": "밖의 밝기나 상태를 말해요.",
+        "frame": "It is getting ____."
+      },
+      {
+        "task": "오늘 날짜를 묻고 답해요.",
+        "frame": "A: What date is ____ today?\nB: It is ____."
+      },
+      {
+        "task": "지금 밖의 날씨를 말해요.",
+        "frame": "It is ____ outside."
+      }
+    ],
+    "mission": {
+      "title": "it 방송국",
+      "scene": "시간·날씨·요일·거리 정보를 방송처럼 알려 주는 놀이예요.",
+      "steps": [
+        "It is ____ o'clock. 으로 시간을 알린다.",
+        "It's ____ outside. 로 날씨를 알린다.",
+        "It is ____ kilometers to ____. 로 거리를 알린다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "7시 30분이야.",
+        "cond": "It is로 시작해요.",
+        "model": "It is seven thirty."
+      },
+      {
+        "ko": "밖이 정말 추워.",
+        "cond": "It's로 시작해요.",
+        "model": "It's very cold outside."
+      },
+      {
+        "ko": "어두워지고 있어.",
+        "cond": "It is getting을 써요.",
+        "model": "It is getting dark."
+      },
+      {
+        "ko": "오늘은 화창해.",
+        "cond": "It으로 시작해요.",
+        "model": "It is sunny today."
+      },
+      {
+        "ko": "지금은 10시 정각이야.",
+        "cond": "o'clock을 써요.",
+        "model": "It is ten o'clock now."
+      },
+      {
+        "ko": "여기서 멀어.",
+        "cond": "far를 써요.",
+        "model": "It is far from here."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**It** is sunny today.",
+        "ko": "오늘은 화창하다."
+      },
+      {
+        "en": "**It** is August 15th.",
+        "ko": "8월 15일이다."
+      },
+      {
+        "en": "**It** is noon.",
+        "ko": "정오이다."
+      },
+      {
+        "en": "**It** is far from here.",
+        "ko": "여기서 멀다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "It is sunny. / It is Friday. / It is 8 o'clock. 에서 굵게 표시된 **It**은 공통적으로 무엇을 나타낼 때 쓰이나요?",
+        "a": "날씨, 요일, 시간 등을 나타낼 때 해석하지 않는 주어로 쓰입니다."
+      },
+      "choose": [
+        {
+          "p": "____ is half past eight.",
+          "c": [
+            "It",
+            "This",
+            "He"
+          ],
+          "a": 0,
+          "why": "시간을 나타낼 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "____ is cloudy today.",
+          "c": [
+            "That",
+            "It",
+            "She"
+          ],
+          "a": 1,
+          "why": "날씨를 나타낼 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "A: What day is it? B: ____ is Wednesday.",
+          "c": [
+            "It",
+            "This"
+          ],
+          "a": 0,
+          "why": "요일을 묻고 답할 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "____ is December 25th.",
+          "c": [
+            "It",
+            "There"
+          ],
+          "a": 0,
+          "why": "날짜를 나타낼 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "____ is close to the park.",
+          "c": [
+            "It",
+            "That"
+          ],
+          "a": 0,
+          "why": "거리를 나타낼 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "____ is bright in the room.",
+          "c": [
+            "It",
+            "Here"
+          ],
+          "a": 0,
+          "why": "명암(밝기)을 나타낼 때는 비인칭 주어 It을 씁니다."
+        },
+        {
+          "p": "It ____ a lot in summer.",
+          "c": [
+            "rains",
+            "rain"
+          ],
+          "a": 0,
+          "why": "주어 It은 3인칭 단수이므로 현재형 동사에 -s를 붙입니다."
+        },
+        {
+          "p": "What time is ____ now?",
+          "c": [
+            "it",
+            "this",
+            "that"
+          ],
+          "a": 0,
+          "why": "시간을 물을 때는 비인칭 주어 it을 씁니다."
+        },
+        {
+          "p": "It ____ windy yesterday.",
+          "c": [
+            "was",
+            "is"
+          ],
+          "a": 0,
+          "why": "yesterday(어제)가 있으므로 과거형 be동사 was를 씁니다."
+        },
+        {
+          "p": "How far is ____ from the bank?",
+          "c": [
+            "it",
+            "there"
+          ],
+          "a": 0,
+          "why": "거리를 물을 때는 비인칭 주어 it을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**It** is cloudy.",
+          "ko": "흐리다."
+        },
+        {
+          "en": "**It** is spring.",
+          "ko": "봄이다."
+        },
+        {
+          "en": "**It** is March.",
+          "ko": "3월이다."
+        },
+        {
+          "en": "**It** is warm outside.",
+          "ko": "밖은 따뜻하다."
+        },
+        {
+          "en": "**It** is Tuesday today.",
+          "ko": "오늘은 화요일이다."
+        },
+        {
+          "en": "**It** is almost midnight.",
+          "ko": "거의 자정이다."
+        },
+        {
+          "en": "**It** is five blocks from here.",
+          "ko": "여기서 5블록 떨어져 있다."
+        },
+        {
+          "en": "**It** is getting bright.",
+          "ko": "밝아지고 있다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Is cloudy today.",
+          "r": "It is cloudy today.",
+          "why": "날씨를 말할 때 주어 It이 필요합니다."
+        },
+        {
+          "w": "Is Friday.",
+          "r": "It is Friday.",
+          "why": "요일을 말할 때 주어 It이 필요합니다."
+        },
+        {
+          "w": "Is December 1st.",
+          "r": "It is December 1st.",
+          "why": "날짜를 말할 때 주어 It이 필요합니다."
+        },
+        {
+          "w": "Are three miles from here.",
+          "r": "It is three miles from here.",
+          "why": "거리를 말할 때는 비인칭 주어 It을 단수 취급하여 is를 씁니다."
+        },
+        {
+          "w": "What time is this?",
+          "r": "What time is it?",
+          "why": "시간을 물을 때는 지시대명사 this가 아니라 비인칭 주어 it을 씁니다."
+        },
+        {
+          "w": "Is warm in the room.",
+          "r": "It is warm in the room.",
+          "why": "온도나 날씨를 말할 때 주어 It이 필요합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "지금 몇 시인지 묻고 답해요.",
+          "frame": "A: What time is ____?\nB: ____ is five o'clock."
+        },
+        {
+          "task": "오늘 무슨 요일인지 묻고 답해요.",
+          "frame": "A: What day is ____ today?\nB: ____ is Thursday."
+        },
+        {
+          "task": "오늘 날짜를 묻고 답해요.",
+          "frame": "A: What date is ____ today?\nB: ____ is April 10th."
+        },
+        {
+          "task": "어제 날씨가 어땠는지 말해요.",
+          "frame": "____ was rainy yesterday."
+        },
+        {
+          "task": "가장 좋아하는 계절을 말해요.",
+          "frame": "I like winter. ____ is cold and snowy."
+        },
+        {
+          "task": "도서관까지 얼마나 먼지 묻고 답해요.",
+          "frame": "A: How far is ____ to the library?\nB: ____ is not far."
+        }
+      ],
+      "mission": {
+        "title": "날씨 예보관 되기",
+        "scene": "세계 여러 도시의 현재 시간과 날씨를 짝에게 알려줍니다.",
+        "steps": [
+          "각자 세계 지도에서 세 도시를 고르고 시간과 날씨를 상상해 적습니다.",
+          "짝에게 'What time is it in Paris?'라고 묻습니다.",
+          "'It is 9 a.m. It is sunny.'처럼 비인칭 주어 It을 사용하여 대답합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "오늘은 흐려.",
+          "cond": "It으로 시작해요.",
+          "model": "It is cloudy today."
+        },
+        {
+          "ko": "지금은 자정이야.",
+          "cond": "midnight을 써요.",
+          "model": "It is midnight now."
+        },
+        {
+          "ko": "오늘은 화요일이야.",
+          "cond": "Tuesday를 써요.",
+          "model": "It is Tuesday today."
+        },
+        {
+          "ko": "어제는 비가 왔어.",
+          "cond": "과거형 동사를 써요.",
+          "model": "It was rainy yesterday."
+        },
+        {
+          "ko": "여기서 멀지 않아.",
+          "cond": "far를 써요.",
+          "model": "It is not far from here."
+        },
+        {
+          "ko": "방 안이 밝아.",
+          "cond": "bright를 써요.",
+          "model": "It is bright in the room."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-inversion",
+    "discover": {
+      "q": "Never have I seen ~, So do I, Neither can I를 보세요. 부정어나 So/Neither가 앞에 올 때 뒤의 어순은 어떻게 바뀌었나요?",
+      "a": "부정어나 So/Neither가 문장 앞에 오면 (조)동사 + 주어 순서로 바뀐다."
+    },
+    "choose": [
+      {
+        "p": "Never ____ I seen such a beautiful view.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "부정어가 앞에 오면 조동사 + 주어 순서이고 현재완료는 have입니다."
+      },
+      {
+        "p": "Only then ____ I realize my mistake.",
+        "c": [
+          "did",
+          "do"
+        ],
+        "a": 0,
+        "why": "과거의 일이므로 did + 주어 + 동사원형입니다."
+      },
+      {
+        "p": "\"I love pizza.\" \"So ____ I.\"",
+        "c": [
+          "do",
+          "am"
+        ],
+        "a": 0,
+        "why": "앞 문장의 일반동사 love를 받아 So do I입니다."
+      },
+      {
+        "p": "\"I can't swim.\" \"Neither ____ I.\"",
+        "c": [
+          "can",
+          "do"
+        ],
+        "a": 0,
+        "why": "앞 문장의 조동사 can을 받아 Neither can I입니다."
+      },
+      {
+        "p": "Here ____ the bus.",
+        "c": [
+          "comes",
+          "come"
+        ],
+        "a": 0,
+        "why": "주어 the bus는 단수이므로 comes입니다."
+      },
+      {
+        "p": "Rarely ____ he go to the library.",
+        "c": [
+          "does",
+          "do",
+          "is"
+        ],
+        "a": 0,
+        "why": "부정어 Rarely가 문두에 오고 일반동사 go가 쓰였으며 주어가 3인칭 단수(he)이므로 does가 적절합니다."
+      },
+      {
+        "p": "\"I didn't finish the homework.\" \"Neither ____ I.\"",
+        "c": [
+          "do",
+          "did",
+          "was"
+        ],
+        "a": 1,
+        "why": "앞 문장이 과거 시제(didn't finish)이므로 Neither 뒤에도 과거형 조동사 did를 씁니다."
+      },
+      {
+        "p": "Little ____ she know about the surprise party at that time.",
+        "c": [
+          "do",
+          "has",
+          "did"
+        ],
+        "a": 2,
+        "why": "과거 시점(at that time)의 일이므로 부정어 Little 뒤에 조동사 과거형 did가 와야 합니다."
+      },
+      {
+        "p": "Under the tree ____ a cute dog.",
+        "c": [
+          "sleep",
+          "sleeps",
+          "sleeping"
+        ],
+        "a": 1,
+        "why": "장소 부사구(Under the tree)가 앞에 오면 동사 + 주어 순서가 되며, 주어(a cute dog)가 단수이므로 단수 동사 sleeps를 씁니다."
+      },
+      {
+        "p": "\"I am very tired today.\" \"So ____ I.\"",
+        "c": [
+          "do",
+          "have",
+          "am"
+        ],
+        "a": 2,
+        "why": "앞 문장의 동사가 be동사(am)이므로 So 뒤에도 be동사를 사용합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Never I have seen such a view.",
+        "r": "Never have I seen such a view.",
+        "why": "부정어가 앞에 오면 조동사 + 주어 순서입니다."
+      },
+      {
+        "w": "\"I like it.\" \"So I do.\"",
+        "r": "\"I like it.\" \"So do I.\"",
+        "why": "'나도 그래'는 So + 동사 + 주어입니다."
+      },
+      {
+        "w": "\"I can't swim.\" \"Neither I can.\"",
+        "r": "\"I can't swim.\" \"Neither can I.\"",
+        "why": "Neither 뒤에는 조동사 + 주어 순서입니다."
+      },
+      {
+        "w": "Rarely she talks to strangers.",
+        "r": "Rarely does she talk to strangers.",
+        "why": "부정어 Rarely가 문장 맨 앞에 오면 조동사(does) + 주어 + 동사원형 순서로 도치되어야 합니다."
+      },
+      {
+        "w": "\"I won't go.\" \"Neither I will.\"",
+        "r": "\"I won't go.\" \"Neither will I.\"",
+        "why": "Neither 뒤에는 조동사 + 주어 순서로 도치되어야 합니다."
+      },
+      {
+        "w": "Little he knew about the secret.",
+        "r": "Little did he know about the secret.",
+        "why": "부정어 Little이 문두에 오면 일반동사의 경우 조동사(did) + 주어 + 동사원형 순서가 됩니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "친구의 말에 '나도 그래'라고 맞장구쳐요.",
+        "frame": "So do I. / Neither do I."
+      },
+      {
+        "task": "한 번도 하지 않은 일을 강조해요.",
+        "frame": "Never have I ____ed."
+      },
+      {
+        "task": "지금 막 일어난 일을 알려요.",
+        "frame": "Here comes ____."
+      },
+      {
+        "task": "그때서야 알게 된 일을 말해요.",
+        "frame": "Only then did I realize ____."
+      },
+      {
+        "task": "거의 하지 않는 행동을 말해봐요.",
+        "frame": "Rarely do I ____."
+      },
+      {
+        "task": "상대방의 과거 경험에 공감해봐요.",
+        "frame": "\"I ____ed.\" \"So did I.\""
+      }
+    ],
+    "mission": {
+      "title": "나도! 맞장구 게임",
+      "scene": "한 사람이 말하면 다른 사람이 So do I / Neither do I로 빠르게 맞장구치는 게임이에요.",
+      "steps": [
+        "I like ____. / I don't like ____. 로 말한다.",
+        "짝이 So do I. 또는 Neither do I. 로 대답한다.",
+        "틀리면 역할을 바꾼다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이렇게 아름다운 경치는 한 번도 본 적이 없다.",
+        "cond": "Never have I를 써요.",
+        "model": "Never have I seen such a beautiful view."
+      },
+      {
+        "ko": "나도 피자를 좋아해.",
+        "cond": "So do I를 써요.",
+        "model": "So do I."
+      },
+      {
+        "ko": "버스가 온다.",
+        "cond": "Here로 시작해요.",
+        "model": "Here comes the bus."
+      },
+      {
+        "ko": "나는 패스트푸드를 좀처럼 먹지 않는다.",
+        "cond": "Rarely로 시작할 것.",
+        "model": "Rarely do I eat fast food."
+      },
+      {
+        "ko": "나는 그 규칙에 대해 거의 알지 못했다.",
+        "cond": "Little로 시작할 것.",
+        "model": "Little did I know about the rule."
+      },
+      {
+        "ko": "저기 내 친구들이 간다.",
+        "cond": "There로 시작할 것.",
+        "model": "There go my friends."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Rarely do I** eat fast food.",
+        "ko": "나는 패스트푸드를 좀처럼 먹지 않는다."
+      },
+      {
+        "en": "He was late, and **so was I**.",
+        "ko": "그는 지각했고, 나도 그랬다."
+      },
+      {
+        "en": "**There goes** my brother.",
+        "ko": "저기 내 남동생이 간다."
+      },
+      {
+        "en": "**Little did we** expect the rain.",
+        "ko": "우리는 비가 올 줄 거의 예상하지 못했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "부정어(Never, Rarely, Little 등)가 문장 맨 앞에 올 때, 주어와 동사의 순서는 어떻게 변하나요?",
+        "a": "의문문을 만들 때처럼 조동사나 be동사가 주어 앞으로 나옵니다."
+      },
+      "choose": [
+        {
+          "p": "Never ____ she expect to win the prize.",
+          "c": [
+            "do",
+            "did",
+            "was"
+          ],
+          "a": 1,
+          "why": "부정어 Never 뒤에 일반동사 expect가 왔고, 과거의 의미이므로 조동사 did가 필요합니다."
+        },
+        {
+          "p": "\"I don't like carrots.\" \"Neither ____ I.\"",
+          "c": [
+            "do",
+            "am",
+            "can"
+          ],
+          "a": 0,
+          "why": "앞 문장에 일반동사의 부정(don't like)이 쓰였으므로 Neither 뒤에 do를 씁니다."
+        },
+        {
+          "p": "Only later ____ he understand the movie.",
+          "c": [
+            "does",
+            "has",
+            "did"
+          ],
+          "a": 2,
+          "why": "Only later(나중에야)는 과거의 일을 나타내며 일반동사 understand가 있으므로 did를 씁니다."
+        },
+        {
+          "p": "On the desk ____ two thick books.",
+          "c": [
+            "is",
+            "are",
+            "do"
+          ],
+          "a": 1,
+          "why": "장소 부사구 뒤에 도치된 주어(two thick books)가 복수이므로 복수 동사 are를 씁니다."
+        },
+        {
+          "p": "\"I will call you tonight.\" \"So ____ I.\"",
+          "c": [
+            "do",
+            "will",
+            "am"
+          ],
+          "a": 1,
+          "why": "앞 문장에 조동사 will이 쓰였으므로 So 뒤에도 will을 씁니다."
+        },
+        {
+          "p": "Hardly ____ I have time to watch TV.",
+          "c": [
+            "am",
+            "do",
+            "have"
+          ],
+          "a": 1,
+          "why": "부정어 Hardly 뒤에 일반동사 have가 쓰였으므로 조동사 do가 주어 앞으로 와야 합니다."
+        },
+        {
+          "p": "\"I have finished my project.\" \"So ____ I.\"",
+          "c": [
+            "do",
+            "did",
+            "have"
+          ],
+          "a": 2,
+          "why": "앞 문장이 현재완료(have finished)이므로 So 뒤에도 조동사 역할을 하는 have를 씁니다."
+        },
+        {
+          "p": "Not only ____ she smart, but she is also kind.",
+          "c": [
+            "does",
+            "has",
+            "is"
+          ],
+          "a": 2,
+          "why": "Not only가 문두에 오면 도치가 일어나며, 형용사 smart와 어울리는 be동사 is가 주어 앞으로 나옵니다."
+        },
+        {
+          "p": "Down the hill ____ a large dog.",
+          "c": [
+            "run",
+            "runs",
+            "running"
+          ],
+          "a": 1,
+          "why": "방향 부사구(Down the hill)가 앞에 오면 주어와 동사가 도치되며, 주어(a large dog)가 단수이므로 runs를 씁니다."
+        },
+        {
+          "p": "\"I didn't watch the game.\" \"Neither ____ I.\"",
+          "c": [
+            "do",
+            "was",
+            "did"
+          ],
+          "a": 2,
+          "why": "앞 문장이 과거 시제(didn't watch)이므로 Neither 뒤에도 조동사 과거형 did를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Never will I** forget this day.",
+          "ko": "나는 이 날을 절대 잊지 않을 것이다."
+        },
+        {
+          "en": "**Hardly does he** study at home.",
+          "ko": "그는 집에서 거의 공부하지 않는다."
+        },
+        {
+          "en": "She is hungry, and **so am I**.",
+          "ko": "그녀는 배가 고프고, 나도 그렇다."
+        },
+        {
+          "en": "He can't sing well, and **neither can I**.",
+          "ko": "그는 노래를 잘 못 하고, 나도 못 한다."
+        },
+        {
+          "en": "**Only then did she** smile.",
+          "ko": "그때서야 그녀는 미소를 지었다."
+        },
+        {
+          "en": "**There stands** an old castle.",
+          "ko": "저기에 오래된 성이 서 있다."
+        },
+        {
+          "en": "**Little did they** realize the danger.",
+          "ko": "그들은 그 위험을 거의 깨닫지 못했다."
+        },
+        {
+          "en": "**Not only is he** smart, but also kind.",
+          "ko": "그는 똑똑할 뿐만 아니라 친절하다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Never I will make that mistake again.",
+          "r": "Never will I make that mistake again.",
+          "why": "부정어 Never가 앞에 오면 조동사(will)가 주어 앞으로 도치됩니다."
+        },
+        {
+          "w": "\"I am happy.\" \"So do I.\"",
+          "r": "\"I am happy.\" \"So am I.\"",
+          "why": "앞 문장의 동사가 be동사이므로 So 뒤에도 be동사를 써야 합니다."
+        },
+        {
+          "w": "Hardly he goes to the gym.",
+          "r": "Hardly does he go to the gym.",
+          "why": "부정어 Hardly가 앞에 오면 조동사(does) + 주어 + 동사원형 순서가 됩니다."
+        },
+        {
+          "w": "\"I wasn't there.\" \"Neither I was.\"",
+          "r": "\"I wasn't there.\" \"Neither was I.\"",
+          "why": "Neither 뒤에는 동사 + 주어 순서로 도치되어야 합니다."
+        },
+        {
+          "w": "Only later he realized the truth.",
+          "r": "Only later did he realize the truth.",
+          "why": "Only + 부사구가 문장 맨 앞에 오면 의문문 어순으로 도치됩니다."
+        },
+        {
+          "w": "On the sofa sleeps two cats.",
+          "r": "On the sofa sleep two cats.",
+          "why": "장소 부사구 뒤에 도치된 주어(two cats)가 복수이므로 복수 동사(sleep)를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "절대 하지 않을 일을 다짐해봐요.",
+          "frame": "Never will I ____."
+        },
+        {
+          "task": "친구의 긍정적인 말에 동의해봐요.",
+          "frame": "\"I am ____.\" \"So am I.\""
+        },
+        {
+          "task": "친구의 부정적인 말에 동의해봐요.",
+          "frame": "\"I don't ____.\" \"Neither do I.\""
+        },
+        {
+          "task": "나중에야 깨달은 사실을 말해봐요.",
+          "frame": "Only later did I ____."
+        },
+        {
+          "task": "장소를 나타내는 말을 앞에 두고 묘사해봐요.",
+          "frame": "On the desk is ____."
+        },
+        {
+          "task": "거의 하지 않는 일을 말해봐요.",
+          "frame": "Hardly do I ____."
+        }
+      ],
+      "mission": {
+        "title": "공감왕 찾기 게임",
+        "scene": "반 친구들과 돌아가며 자신의 취향이나 경험을 말하고, 가장 많이 공감을 받는 사람을 찾습니다.",
+        "steps": [
+          "한 학생이 자신의 경험이나 취향을 말합니다. (예: \"I like action movies.\" 또는 \"I can't play chess.\")",
+          "같은 경험이나 취향을 가진 학생들은 \"So do I.\" 또는 \"Neither can I.\"처럼 도치 구문으로 맞장구칩니다.",
+          "가장 많은 친구들의 맞장구를 이끌어낸 학생이 점수를 얻습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 이 날을 절대 잊지 않을 것이다.",
+          "cond": "Never로 시작할 것.",
+          "model": "Never will I forget this day."
+        },
+        {
+          "ko": "그는 집에서 거의 공부하지 않는다.",
+          "cond": "Hardly로 시작할 것.",
+          "model": "Hardly does he study at home."
+        },
+        {
+          "ko": "그때서야 그녀는 미소를 지었다.",
+          "cond": "Only then으로 시작할 것.",
+          "model": "Only then did she smile."
+        },
+        {
+          "ko": "저기에 오래된 성이 서 있다.",
+          "cond": "There로 시작할 것.",
+          "model": "There stands an old castle."
+        },
+        {
+          "ko": "그들은 그 위험을 거의 깨닫지 못했다.",
+          "cond": "Little로 시작할 것.",
+          "model": "Little did they realize the danger."
+        },
+        {
+          "ko": "소파 위에 고양이 두 마리가 자고 있다.",
+          "cond": "On the sofa로 시작할 것.",
+          "model": "On the sofa sleep two cats."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-emphasis",
+    "discover": {
+      "q": "It was Tom that broke the window.와 I do love you.를 보세요. 어떤 낱말이 강조되었나요? 강조 do 뒤의 동사는 어떤 모양인가요?",
+      "a": "It is/was ~ that 사이에 강조할 말을 넣는다. 동사를 강조할 때는 do/does/did + 동사원형을 쓴다."
+    },
+    "choose": [
+      {
+        "p": "It ____ Tom that broke the window.",
+        "c": [
+          "was",
+          "were"
+        ],
+        "a": 0,
+        "why": "과거의 일(broke)이므로 was입니다."
+      },
+      {
+        "p": "It was in the park ____ I lost my phone.",
+        "c": [
+          "that",
+          "who"
+        ],
+        "a": 0,
+        "why": "장소를 강조하는 It was ~ that 구문입니다."
+      },
+      {
+        "p": "It is you ____ are wrong.",
+        "c": [
+          "who",
+          "which"
+        ],
+        "a": 0,
+        "why": "사람을 강조할 때는 who를 쓸 수 있습니다."
+      },
+      {
+        "p": "I ____ love you.",
+        "c": [
+          "do",
+          "does"
+        ],
+        "a": 0,
+        "why": "I 뒤의 강조는 do입니다."
+      },
+      {
+        "p": "He did ____ his homework.",
+        "c": [
+          "finish",
+          "finished"
+        ],
+        "a": 0,
+        "why": "강조 did 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "The manager ____ agree with your proposal.",
+        "c": [
+          "does",
+          "do",
+          "doing"
+        ],
+        "a": 0,
+        "why": "주어(The manager)가 3인칭 단수이므로 강조 조동사 does를 씁니다."
+      },
+      {
+        "p": "It was yesterday ____ I met the famous actor.",
+        "c": [
+          "that",
+          "what",
+          "which"
+        ],
+        "a": 0,
+        "why": "시간 부사(yesterday)를 강조하는 It was ~ that 구문입니다."
+      },
+      {
+        "p": "They ____ study hard for the final exam.",
+        "c": [
+          "did",
+          "done",
+          "doing"
+        ],
+        "a": 0,
+        "why": "동사를 강조할 때는 do/does/did를 사용하며, 뒤에 동사원형이 옵니다."
+      },
+      {
+        "p": "It ____ my sister who solved the puzzle yesterday.",
+        "c": [
+          "was",
+          "is",
+          "were"
+        ],
+        "a": 0,
+        "why": "어제(yesterday) 일어난 과거의 일이므로 was를 씁니다."
+      },
+      {
+        "p": "She does ____ a lot about her future career.",
+        "c": [
+          "worry",
+          "worries",
+          "worried"
+        ],
+        "a": 0,
+        "why": "강조 조동사 does 뒤에는 반드시 동사원형을 써야 합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "He did finished his homework.",
+        "r": "He did finish his homework.",
+        "why": "강조 do 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "It was Tom what broke the window.",
+        "r": "It was Tom that broke the window.",
+        "why": "강조 구문에서는 that(또는 who)을 씁니다."
+      },
+      {
+        "w": "She does loves you.",
+        "r": "She does love you.",
+        "why": "강조 does 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "She do want to visit Paris.",
+        "r": "She does want to visit Paris.",
+        "why": "주어가 3인칭 단수(She)이므로 강조 조동사 does를 써야 합니다."
+      },
+      {
+        "w": "It was Jane which helped me.",
+        "r": "It was Jane who helped me.",
+        "why": "사람(Jane)을 강조할 때는 which가 아니라 who나 that을 씁니다."
+      },
+      {
+        "w": "I did sent the email.",
+        "r": "I did send the email.",
+        "why": "강조 조동사 did 뒤에는 동사원형을 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "누가 했는지 강조해서 말해요.",
+        "frame": "It was ____ who/that ____."
+      },
+      {
+        "task": "어디서 일어났는지 강조해요.",
+        "frame": "It was in/at ____ that ____."
+      },
+      {
+        "task": "마음을 강조해서 말해요.",
+        "frame": "I do love/like ____."
+      },
+      {
+        "task": "했다는 사실을 강조해요.",
+        "frame": "He/She did ____."
+      },
+      {
+        "task": "언제 일어난 일인지 시간을 강조해서 말해요.",
+        "frame": "It was yesterday that ____."
+      },
+      {
+        "task": "정말로 원한다고 동사를 강조해서 말해요.",
+        "frame": "I do want to ____."
+      }
+    ],
+    "mission": {
+      "title": "진짜 범인은 바로 너! 추리 놀이",
+      "scene": "사건 카드를 보고 범인과 장소를 강조 구문으로 발표하는 추리 놀이예요.",
+      "steps": [
+        "사건 카드를 읽는다.",
+        "It was ____ that ____. 로 범인이나 장소를 강조한다.",
+        "친구들이 정말 그런지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "창문을 깬 건 바로 톰이었다.",
+        "cond": "It was ~ that을 써요.",
+        "model": "It was Tom that broke the window."
+      },
+      {
+        "ko": "나는 정말로 너를 사랑해.",
+        "cond": "do를 써요.",
+        "model": "I do love you."
+      },
+      {
+        "ko": "그는 정말로 숙제를 끝냈어.",
+        "cond": "did를 써요.",
+        "model": "He did finish his homework."
+      },
+      {
+        "ko": "내 삶을 바꾼 것은 바로 그 책이었다.",
+        "cond": "It was ~ that을 써요.",
+        "model": "It was the book that changed my life."
+      },
+      {
+        "ko": "그녀는 정말로 그의 이름을 기억한다.",
+        "cond": "does를 써요.",
+        "model": "She does remember his name."
+      },
+      {
+        "ko": "가장 중요한 것은 바로 건강이다.",
+        "cond": "It is ~ that을 써요.",
+        "model": "It is health that matters most."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "She **does remember** his name.",
+        "ko": "그녀는 그의 이름을 정말로 기억한다."
+      },
+      {
+        "en": "**It was** the book **that** changed my life.",
+        "ko": "내 삶을 바꾼 것은 바로 그 책이었다."
+      },
+      {
+        "en": "He **did apologize** to me.",
+        "ko": "그는 나에게 정말로 사과했다."
+      },
+      {
+        "en": "**It is** health **that** matters most.",
+        "ko": "가장 중요한 것은 바로 건강이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "강조 구문인 'It was ~ that'에서 'It was'와 'that'을 지우면 문장 구조는 어떻게 되나요?",
+        "a": "원래의 완전한 문장이 됩니다."
+      },
+      "choose": [
+        {
+          "p": "It was in 2020 ____ they moved to Seoul.",
+          "c": [
+            "that",
+            "what",
+            "which"
+          ],
+          "a": 0,
+          "why": "시간 부사구를 강조하는 It was ~ that 구문입니다."
+        },
+        {
+          "p": "My parents ____ believe my story.",
+          "c": [
+            "did",
+            "done",
+            "doing"
+          ],
+          "a": 0,
+          "why": "동사를 강조하기 위해 조동사 did를 씁니다."
+        },
+        {
+          "p": "It ____ the principal who announced the new rules this morning.",
+          "c": [
+            "was",
+            "were",
+            "are"
+          ],
+          "a": 0,
+          "why": "오늘 아침(this morning)에 일어난 과거의 일이므로 was를 씁니다."
+        },
+        {
+          "p": "He does ____ his best in every game.",
+          "c": [
+            "try",
+            "tries",
+            "trying"
+          ],
+          "a": 0,
+          "why": "강조 조동사 does 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "It is money ____ he wants most.",
+          "c": [
+            "that",
+            "who",
+            "where"
+          ],
+          "a": 0,
+          "why": "사물(money)을 강조하는 It is ~ that 구문입니다."
+        },
+        {
+          "p": "I ____ think we need more time to prepare.",
+          "c": [
+            "do",
+            "does",
+            "doing"
+          ],
+          "a": 0,
+          "why": "주어가 1인칭(I)이므로 강조 조동사 do를 씁니다."
+        },
+        {
+          "p": "It was on the sofa ____ I found the missing keys.",
+          "c": [
+            "that",
+            "what",
+            "who"
+          ],
+          "a": 0,
+          "why": "장소 부사구(on the sofa)를 강조할 때는 that을 씁니다."
+        },
+        {
+          "p": "The teacher did ____ the difficult concept clearly.",
+          "c": [
+            "explain",
+            "explained",
+            "explains"
+          ],
+          "a": 0,
+          "why": "강조 조동사 did 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "p": "It ____ you that have to make the final decision.",
+          "c": [
+            "is",
+            "are",
+            "was"
+          ],
+          "a": 0,
+          "why": "현재의 의무(have to)를 나타내므로 is를 씁니다."
+        },
+        {
+          "p": "She ____ know the secret password.",
+          "c": [
+            "does",
+            "do",
+            "done"
+          ],
+          "a": 0,
+          "why": "주어가 3인칭 단수(She)이므로 강조 조동사 does를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **do need** your help now.",
+          "ko": "나는 지금 너의 도움이 정말 필요해."
+        },
+        {
+          "en": "**It was** the rain **that** ruined our picnic.",
+          "ko": "우리의 소풍을 망친 것은 바로 그 비였다."
+        },
+        {
+          "en": "He **does look** tired today.",
+          "ko": "그는 오늘 정말 피곤해 보인다."
+        },
+        {
+          "en": "**It is** love **that** makes us strong.",
+          "ko": "우리를 강하게 만드는 것은 바로 사랑이다."
+        },
+        {
+          "en": "They **did try** to save the dog.",
+          "ko": "그들은 그 개를 구하려고 정말로 노력했다."
+        },
+        {
+          "en": "**It was** yesterday **that** I saw him.",
+          "ko": "내가 그를 본 것은 바로 어제였다."
+        },
+        {
+          "en": "She **did pass** the driving test.",
+          "ko": "그녀는 운전 면허 시험에 정말로 합격했다."
+        },
+        {
+          "en": "**It is** the music **that** I enjoy.",
+          "ko": "내가 즐기는 것은 바로 그 음악이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "He does likes playing basketball.",
+          "r": "He does like playing basketball.",
+          "why": "강조 조동사 does 뒤에는 반드시 동사원형을 써야 합니다."
+        },
+        {
+          "w": "It were the students that cleaned the room.",
+          "r": "It was the students that cleaned the room.",
+          "why": "강조 구문은 주어의 수와 관계없이 항상 It is나 It was로 시작합니다."
+        },
+        {
+          "w": "I did told him the truth.",
+          "r": "I did tell him the truth.",
+          "why": "강조 조동사 did 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "It is my brother what broke the vase.",
+          "r": "It is my brother that broke the vase.",
+          "why": "강조 구문에서는 what이 아니라 that(또는 who)을 씁니다."
+        },
+        {
+          "w": "She do have a lot of friends.",
+          "r": "She does have a lot of friends.",
+          "why": "주어가 3인칭 단수이므로 강조 조동사 does를 써야 합니다."
+        },
+        {
+          "w": "It was in the kitchen which the fire started.",
+          "r": "It was in the kitchen that the fire started.",
+          "why": "장소 부사구를 강조할 때는 which가 아니라 that을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내가 정말로 좋아하는 것을 동사를 강조해서 말해요.",
+          "frame": "I do like ____."
+        },
+        {
+          "task": "과거에 정말로 했던 행동을 강조해요.",
+          "frame": "I did ____."
+        },
+        {
+          "task": "친구가 정말로 가지고 있는 것을 강조해요.",
+          "frame": "My friend does have ____."
+        },
+        {
+          "task": "사고 싶은 물건이 무엇인지 강조해서 말해요.",
+          "frame": "It is ____ that I want to buy."
+        },
+        {
+          "task": "어디서 만났는지 장소를 강조해요.",
+          "frame": "It was at ____ that we met."
+        },
+        {
+          "task": "누가 도와주었는지 사람을 강조해요.",
+          "frame": "It was ____ who helped me."
+        }
+      ],
+      "mission": {
+        "title": "명탐정의 단서 찾기",
+        "scene": "사건 현장에서 발견된 단서들을 바탕으로, 누가 어디서 무엇을 했는지 강조하여 발표합니다.",
+        "steps": [
+          "자신이 찾은 가장 중요한 단서를 'It was ~ that' 구문으로 강조하여 짝에게 말합니다.",
+          "짝은 그 단서가 사실인지 'Did he really ~?'라고 묻습니다.",
+          "질문을 받은 학생은 'He did ~'를 사용하여 행동을 강조하며 대답합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "우리의 소풍을 망친 것은 바로 그 비였다.",
+          "cond": "It was ~ that을 써요.",
+          "model": "It was the rain that ruined our picnic."
+        },
+        {
+          "ko": "나는 지금 너의 도움이 정말 필요해.",
+          "cond": "do를 써요.",
+          "model": "I do need your help now."
+        },
+        {
+          "ko": "그는 오늘 정말 피곤해 보인다.",
+          "cond": "does를 써요.",
+          "model": "He does look tired today."
+        },
+        {
+          "ko": "내가 그를 본 것은 바로 어제였다.",
+          "cond": "It was ~ that을 써요.",
+          "model": "It was yesterday that I saw him."
+        },
+        {
+          "ko": "그들은 그 개를 구하려고 정말로 노력했다.",
+          "cond": "did를 써요.",
+          "model": "They did try to save the dog."
+        },
+        {
+          "ko": "우리를 강하게 만드는 것은 바로 사랑이다.",
+          "cond": "It is ~ that을 써요.",
+          "model": "It is love that makes us strong."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-agreement",
+    "discover": {
+      "q": "The number of students is와 A number of students are를 비교해 보세요. 어떤 낱말에 동사를 맞췄나요? each, every, 동명사 주어는 단수와 복수 중 무엇으로 취급했나요?",
+      "a": "the number of는 단수, a number of는 '많은'이라는 뜻의 복수로 취급한다. each, every, 동명사 주어는 단수로 취급하고, 수식어를 빼고 진짜 주어에 맞춘다."
+    },
+    "choose": [
+      {
+        "p": "The number of students ____ increasing.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "the number of는 단수 취급입니다."
+      },
+      {
+        "p": "A number of students ____ absent today.",
+        "c": [
+          "are",
+          "is"
+        ],
+        "a": 0,
+        "why": "a number of는 '많은'이라는 뜻으로 복수 취급입니다."
+      },
+      {
+        "p": "Each student ____ a locker.",
+        "c": [
+          "has",
+          "have"
+        ],
+        "a": 0,
+        "why": "each는 단수 취급입니다."
+      },
+      {
+        "p": "The book on the shelves ____ mine.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "진짜 주어는 the book(단수)입니다."
+      },
+      {
+        "p": "Reading books ____ me happy.",
+        "c": [
+          "makes",
+          "make"
+        ],
+        "a": 0,
+        "why": "동명사 주어는 단수 취급입니다."
+      },
+      {
+        "p": "The pictures on the wall ____ beautiful.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 1,
+        "why": "진짜 주어는 복수명사인 The pictures이므로 are를 씁니다."
+      },
+      {
+        "p": "Playing computer games ____ a lot of time.",
+        "c": [
+          "take",
+          "takes"
+        ],
+        "a": 1,
+        "why": "동명사 주어(Playing)는 단수 취급하므로 takes를 씁니다."
+      },
+      {
+        "p": "Every student in this room ____ a uniform.",
+        "c": [
+          "wears",
+          "wear"
+        ],
+        "a": 0,
+        "why": "every가 이끄는 명사는 단수 취급하므로 wears를 씁니다."
+      },
+      {
+        "p": "A number of people ____ waiting outside.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 1,
+        "why": "a number of는 '많은'이라는 뜻으로 복수 취급하므로 are를 씁니다."
+      },
+      {
+        "p": "What he said ____ true.",
+        "c": [
+          "was",
+          "were"
+        ],
+        "a": 0,
+        "why": "명사절 주어(What he said)는 단수 취급하므로 was를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The number of students are increasing.",
+        "r": "The number of students is increasing.",
+        "why": "the number of는 단수 취급입니다."
+      },
+      {
+        "w": "The book on the shelves are mine.",
+        "r": "The book on the shelves is mine.",
+        "why": "진짜 주어는 the book이므로 is입니다."
+      },
+      {
+        "w": "Each student have a locker.",
+        "r": "Each student has a locker.",
+        "why": "each는 단수 취급입니다."
+      },
+      {
+        "w": "A number of animals is losing their homes.",
+        "r": "A number of animals are losing their homes.",
+        "why": "a number of는 복수 취급하므로 are를 써야 합니다."
+      },
+      {
+        "w": "Watching movies at night make me tired.",
+        "r": "Watching movies at night makes me tired.",
+        "why": "동명사 주어는 단수 취급하므로 makes를 써야 합니다."
+      },
+      {
+        "w": "Every child need love and care.",
+        "r": "Every child needs love and care.",
+        "why": "every 단수명사는 단수 취급하므로 needs를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "우리 반 학생 수에 대해 말해요.",
+        "frame": "The number of students in my class is ____."
+      },
+      {
+        "task": "많은 학생이 하는 일을 말해요.",
+        "frame": "A number of students ____."
+      },
+      {
+        "task": "각자가 가진 것을 말해요.",
+        "frame": "Each student has a ____."
+      },
+      {
+        "task": "내 취미를 동명사 주어로 말해요.",
+        "frame": "____ing is my hobby / makes me ____."
+      },
+      {
+        "task": "내가 속한 그룹의 모든 사람이 좋아하는 것을 말해요.",
+        "frame": "Everyone in my ____ likes ____."
+      },
+      {
+        "task": "많은 사람들이 하는 행동을 말해요.",
+        "frame": "A number of people are ____ing ____."
+      }
+    ],
+    "mission": {
+      "title": "수 일치 탐정단",
+      "scene": "문장에서 진짜 주어를 찾아 동사의 수를 맞히는 탐정 놀이예요.",
+      "steps": [
+        "문장 카드를 읽고 수식어를 괄호로 묶는다.",
+        "진짜 주어를 찾고 단수인지 복수인지 정한다.",
+        "알맞은 동사를 골라 문장을 완성한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "학생의 수가 늘고 있다.",
+        "cond": "The number of를 써요.",
+        "model": "The number of students is increasing."
+      },
+      {
+        "ko": "오늘 많은 학생이 결석했다.",
+        "cond": "A number of를 써요.",
+        "model": "A number of students are absent today."
+      },
+      {
+        "ko": "책 읽기는 나를 행복하게 한다.",
+        "cond": "동명사 주어를 써요.",
+        "model": "Reading books makes me happy."
+      },
+      {
+        "ko": "책상 위의 펜들은 내 소유이다.",
+        "cond": "전치사구를 포함한 주어를 써요.",
+        "model": "The pens on the desk belong to me."
+      },
+      {
+        "ko": "모든 사람은 자신만의 특별한 재능을 가지고 있다.",
+        "cond": "Everyone을 주어로 써요.",
+        "model": "Everyone has their own special talent."
+      },
+      {
+        "ko": "주차장의 많은 자동차들이 더러워 보인다.",
+        "cond": "A number of를 써요.",
+        "model": "A number of cars in the parking lot look dirty."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**The number of** cars on the road **is** decreasing.",
+        "ko": "도로 위 자동차의 수가 줄어들고 있다."
+      },
+      {
+        "en": "**Everyone** in my family **likes** music.",
+        "ko": "우리 가족 모두가 음악을 좋아한다."
+      },
+      {
+        "en": "**Learning** new languages **is** exciting.",
+        "ko": "새로운 언어를 배우는 것은 흥미롭다."
+      },
+      {
+        "en": "**The boy** with glasses **is** my brother.",
+        "ko": "안경을 쓴 소년은 내 남동생이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'The number of'와 'A number of' 뒤에 오는 명사와 동사의 형태를 비교해 보고, 어떤 차이가 있는지 찾아보세요.",
+        "a": "둘 다 뒤에 복수 명사가 오지만, 'The number of'는 단수 동사를, 'A number of'는 복수 동사를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "The number of smartphones ____ growing rapidly.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "the number of는 '~의 수'라는 뜻으로 단수 취급합니다."
+        },
+        {
+          "p": "A number of questions ____ asked during the class.",
+          "c": [
+            "was",
+            "were"
+          ],
+          "a": 1,
+          "why": "a number of는 복수 취급하므로 were를 씁니다."
+        },
+        {
+          "p": "Each player ____ a different uniform number.",
+          "c": [
+            "have",
+            "has"
+          ],
+          "a": 1,
+          "why": "each 뒤에는 단수명사가 오며 단수 취급합니다."
+        },
+        {
+          "p": "Eating too much fast food ____ bad for your health.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "동명사 주어는 단수 취급합니다."
+        },
+        {
+          "p": "The girls in the front row ____ very smart.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 1,
+          "why": "진짜 주어는 복수명사인 The girls입니다."
+        },
+        {
+          "p": "Every computer in the lab ____ connected to the internet.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "every 단수명사는 단수 취급합니다."
+        },
+        {
+          "p": "That he lied to us ____ a big shock.",
+          "c": [
+            "was",
+            "were"
+          ],
+          "a": 0,
+          "why": "명사절 주어(That ~)는 단수 취급합니다."
+        },
+        {
+          "p": "A number of trees ____ planted in the park.",
+          "c": [
+            "was",
+            "were"
+          ],
+          "a": 1,
+          "why": "a number of는 복수 취급합니다."
+        },
+        {
+          "p": "The number of visitors to the museum ____ 500 today.",
+          "c": [
+            "was",
+            "were"
+          ],
+          "a": 0,
+          "why": "the number of는 단수 취급합니다."
+        },
+        {
+          "p": "Making new friends ____ not always easy.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "동명사 주어는 단수 취급합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**The number of** subscribers **is** going up.",
+          "ko": "구독자의 수가 올라가고 있다."
+        },
+        {
+          "en": "**A number of** problems **were** solved.",
+          "ko": "많은 문제들이 해결되었다."
+        },
+        {
+          "en": "**Each** team member **has** a role.",
+          "ko": "각 팀원은 역할을 가지고 있다."
+        },
+        {
+          "en": "**The apples** in the basket **are** fresh.",
+          "ko": "바구니 안의 사과들은 신선하다."
+        },
+        {
+          "en": "**Taking** a walk **helps** me relax.",
+          "ko": "산책하는 것은 내가 긴장을 풀도록 도와준다."
+        },
+        {
+          "en": "**Every** country **has** its own culture.",
+          "ko": "모든 나라는 자신만의 문화를 가지고 있다."
+        },
+        {
+          "en": "**Everyone** in the hall **was** surprised.",
+          "ko": "홀에 있던 모든 사람이 놀랐다."
+        },
+        {
+          "en": "**That** he is honest **is** true.",
+          "ko": "그가 정직하다는 것은 사실이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The number of accidents are decreasing.",
+          "r": "The number of accidents is decreasing.",
+          "why": "the number of는 단수 취급하므로 is를 써야 합니다."
+        },
+        {
+          "w": "A number of birds is flying in the sky.",
+          "r": "A number of birds are flying in the sky.",
+          "why": "a number of는 복수 취급하므로 are를 써야 합니다."
+        },
+        {
+          "w": "Each room have a large window.",
+          "r": "Each room has a large window.",
+          "why": "each 단수명사는 단수 취급하므로 has를 써야 합니다."
+        },
+        {
+          "w": "The flowers in the garden looks beautiful.",
+          "r": "The flowers in the garden look beautiful.",
+          "why": "진짜 주어는 복수명사인 The flowers이므로 look을 써야 합니다."
+        },
+        {
+          "w": "Drinking enough water are important.",
+          "r": "Drinking enough water is important.",
+          "why": "동명사 주어는 단수 취급하므로 is를 써야 합니다."
+        },
+        {
+          "w": "Everyone want to be happy.",
+          "r": "Everyone wants to be happy.",
+          "why": "everyone은 단수 취급하므로 wants를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "줄어들고 있는 것의 수를 말해요.",
+          "frame": "The number of ____ is decreasing."
+        },
+        {
+          "task": "많은 친구들이 가지고 있는 것을 말해요.",
+          "frame": "A number of my friends have ____."
+        },
+        {
+          "task": "각 교실에 있는 것을 말해요.",
+          "frame": "Each classroom has ____."
+        },
+        {
+          "task": "건강에 좋은 습관을 동명사 주어로 말해요.",
+          "frame": "____ing ____ is good for my health."
+        },
+        {
+          "task": "우리 가족 모두가 동의하는 것을 말해요.",
+          "frame": "Everyone in my family agrees that ____."
+        },
+        {
+          "task": "꾸며주는 말이 있는 주어를 사용해 상태를 말해요.",
+          "frame": "The ____ in the ____ are ____."
+        }
+      ],
+      "mission": {
+        "title": "진짜 주어 탐정 게임",
+        "scene": "교실 곳곳에 숨겨진 문장 카드를 찾고, 올바른 동사를 선택해 문장을 완성하는 활동입니다.",
+        "steps": [
+          "짝과 함께 교실에 숨겨진 문장 카드를 찾습니다.",
+          "카드에 적힌 문장의 진짜 주어를 찾아 동그라미를 칩니다.",
+          "주어에 알맞은 동사(단수/복수)를 골라 문장을 완성하고 선생님께 확인을 받습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "스마트폰 사용자의 수가 매년 증가한다.",
+          "cond": "The number of를 써요.",
+          "model": "The number of smartphone users grows every year."
+        },
+        {
+          "ko": "많은 별들이 밤하늘에서 빛나고 있다.",
+          "cond": "A number of를 써요.",
+          "model": "A number of stars shine in the night sky."
+        },
+        {
+          "ko": "각 학생은 자신의 목표를 적는다.",
+          "cond": "Each student를 주어로 써요.",
+          "model": "Each student writes their own goal."
+        },
+        {
+          "ko": "매일 운동하는 것은 너의 에너지를 증가시킨다.",
+          "cond": "동명사 주어를 써요.",
+          "model": "Exercising every day increases your energy."
+        },
+        {
+          "ko": "내 가방 안의 책들은 무겁다.",
+          "cond": "전치사구를 포함한 주어를 써요.",
+          "model": "The books in my bag weigh a lot."
+        },
+        {
+          "ko": "그가 우리를 도왔다는 것은 나를 놀라게 한다.",
+          "cond": "명사절 주어를 써요.",
+          "model": "That he helped us surprises me."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-parallelism",
+    "discover": {
+      "q": "She likes swimming, reading, and cooking.을 보세요. 나열된 낱말들의 형태가 어떻게 되어 있나요? not only A but also B에서 A와 B는 어떤 관계인가요?",
+      "a": "나열하는 말은 모두 같은 형태(-ing끼리, 명사끼리, 동사끼리)로 맞춘다. not only A but also B에서도 A와 B의 형태를 같게 한다."
+    },
+    "choose": [
+      {
+        "p": "She likes swimming, reading, and ____.",
+        "c": [
+          "cooking",
+          "to cook"
+        ],
+        "a": 0,
+        "why": "앞의 swimming, reading과 같은 -ing 형태로 맞춥니다."
+      },
+      {
+        "p": "He decided to leave early and ____ a taxi.",
+        "c": [
+          "(to) take",
+          "taking"
+        ],
+        "a": 0,
+        "why": "앞의 to leave와 같은 형태로 맞춥니다."
+      },
+      {
+        "p": "The task was not only difficult but also ____.",
+        "c": [
+          "boring",
+          "bored"
+        ],
+        "a": 0,
+        "why": "difficult와 같은 형용사 형태로 맞춥니다."
+      },
+      {
+        "p": "You can either stay here or ____ with us.",
+        "c": [
+          "come",
+          "to come"
+        ],
+        "a": 0,
+        "why": "stay와 같은 동사원형으로 맞춥니다."
+      },
+      {
+        "p": "I want something cheap and ____.",
+        "c": [
+          "useful",
+          "usefully"
+        ],
+        "a": 0,
+        "why": "cheap과 같은 형용사로 맞춥니다."
+      },
+      {
+        "p": "We can eat either pizza ____ pasta for dinner.",
+        "c": [
+          "or",
+          "nor",
+          "and"
+        ],
+        "a": 0,
+        "why": "either와 짝을 이루어 'A 또는 B'를 의미하는 접속사는 or입니다."
+      },
+      {
+        "p": "The new smartphone is both fast ____ reliable.",
+        "c": [
+          "and",
+          "or",
+          "but"
+        ],
+        "a": 0,
+        "why": "both와 짝을 이루어 'A와 B 둘 다'를 의미하는 접속사는 and입니다."
+      },
+      {
+        "p": "My goal is to study hard, to get good grades, and ____ a top university.",
+        "c": [
+          "entering",
+          "to enter"
+        ],
+        "a": 1,
+        "why": "앞의 to study, to get과 병렬 구조를 이루어야 하므로 to부정사 형태로 맞춥니다."
+      },
+      {
+        "p": "He speaks neither English ____ French.",
+        "c": [
+          "or",
+          "nor"
+        ],
+        "a": 1,
+        "why": "neither와 짝을 이루어 'A도 B도 아닌'을 의미하는 접속사는 nor입니다."
+      },
+      {
+        "p": "Yesterday, I cleaned my room, washed the dishes, and ____ my homework.",
+        "c": [
+          "do",
+          "did"
+        ],
+        "a": 1,
+        "why": "과거 시제인 cleaned, washed와 병렬 구조를 이루어야 하므로 과거형 동사로 맞춥니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She likes swimming, to read, and cooking.",
+        "r": "She likes swimming, reading, and cooking.",
+        "why": "나열하는 말의 형태를 -ing로 맞춥니다."
+      },
+      {
+        "w": "He is not only smart but also works hard.",
+        "r": "He is not only smart but also hard-working.",
+        "why": "형용사끼리 형태를 맞춥니다."
+      },
+      {
+        "w": "You can either stay here or to come with us.",
+        "r": "You can either stay here or come with us.",
+        "why": "stay와 같은 동사원형으로 맞춥니다."
+      },
+      {
+        "w": "The movie was both exciting and bored.",
+        "r": "The movie was both exciting and boring.",
+        "why": "both A and B에서 A와 B의 형태를 같은 분사(현재분사)로 맞춥니다."
+      },
+      {
+        "w": "She advised me to rest and drinking water.",
+        "r": "She advised me to rest and drink water.",
+        "why": "to부정사 뒤에 연결되므로 동사원형으로 형태를 맞춥니다."
+      },
+      {
+        "w": "I neither like apples or bananas.",
+        "r": "I neither like apples nor bananas.",
+        "why": "neither와 짝을 이루는 접속사는 nor입니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 것을 세 가지 나열해요.",
+        "frame": "I like ____ing, ____ing, and ____ing."
+      },
+      {
+        "task": "하고 싶은 일을 나열해요.",
+        "frame": "I want to ____ and (to) ____."
+      },
+      {
+        "task": "장점을 두 가지 말해요.",
+        "frame": "He/She is not only ____ but also ____."
+      },
+      {
+        "task": "선택지를 말해요.",
+        "frame": "You can either ____ or ____."
+      },
+      {
+        "task": "두 가지 특징을 모두 가졌다고 묘사해요.",
+        "frame": "The ____ is both ____ and ____."
+      },
+      {
+        "task": "과거에 한 일 세 가지를 순서대로 말해요.",
+        "frame": "Yesterday, I ____ed, ____ed, and ____ed."
+      }
+    ],
+    "mission": {
+      "title": "형태 맞추기 릴레이",
+      "scene": "나열하는 문장에서 형태가 다른 낱말을 찾아 고치는 릴레이예요.",
+      "steps": [
+        "문장 카드를 읽는다.",
+        "형태가 다른 낱말에 밑줄을 긋는다.",
+        "같은 형태로 고쳐 다시 읽는다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그녀는 수영, 독서, 요리를 좋아한다.",
+        "cond": "-ing 세 개를 써요.",
+        "model": "She likes swimming, reading, and cooking."
+      },
+      {
+        "ko": "그 일은 어려울 뿐만 아니라 지루하기도 했다.",
+        "cond": "not only ~ but also를 써요.",
+        "model": "The task was not only difficult but also boring."
+      },
+      {
+        "ko": "너는 여기 머물거나 우리와 함께 가도 된다.",
+        "cond": "either ~ or를 써요.",
+        "model": "You can either stay here or come with us."
+      },
+      {
+        "ko": "나는 피자나 파스타 중 하나를 먹을 수 있다.",
+        "cond": "either A or B를 사용하세요.",
+        "model": "I can eat either pizza or pasta."
+      },
+      {
+        "ko": "그는 영어도 프랑스어도 하지 못한다.",
+        "cond": "neither A nor B를 사용하세요.",
+        "model": "He speaks neither English nor French."
+      },
+      {
+        "ko": "어제 나는 방을 청소하고, 설거지하고, 숙제를 했다.",
+        "cond": "과거 동사 세 개를 병렬로 연결하세요.",
+        "model": "Yesterday I cleaned my room, washed the dishes, and did my homework."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "She **is both** smart **and** kind.",
+        "ko": "그녀는 똑똑하면서도 친절하다."
+      },
+      {
+        "en": "I **neither** smoke **nor** drink.",
+        "ko": "나는 담배도 피우지 않고 술도 마시지 않는다."
+      },
+      {
+        "en": "He likes **singing and dancing**.",
+        "ko": "그는 노래하기와 춤추기를 좋아한다."
+      },
+      {
+        "en": "They **not only** won **but also** celebrated.",
+        "ko": "그들은 이겼을 뿐만 아니라 축하도 했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 부분(A and B 등)의 형태를 비교해 볼 때, 접속사로 연결된 단어들은 어떤 공통점이 있나요?",
+        "a": "동사, 명사, 형용사 등 같은 문법적 형태로 짝을 이룹니다."
+      },
+      "choose": [
+        {
+          "p": "The weather today is sunny, warm, and ____.",
+          "c": [
+            "beautifully",
+            "beautiful"
+          ],
+          "a": 1,
+          "why": "sunny, warm과 같은 형용사 형태로 맞춥니다."
+        },
+        {
+          "p": "She is not only a great singer but ____ a talented actor.",
+          "c": [
+            "also",
+            "and"
+          ],
+          "a": 0,
+          "why": "not only와 짝을 이루는 접속사는 but also입니다."
+        },
+        {
+          "p": "He is good at playing tennis and ____ basketball.",
+          "c": [
+            "to shoot",
+            "shooting"
+          ],
+          "a": 1,
+          "why": "전치사 at의 목적어이므로 playing과 같이 동명사로 맞춥니다."
+        },
+        {
+          "p": "You can pay by either cash ____ credit card.",
+          "c": [
+            "or",
+            "nor",
+            "and"
+          ],
+          "a": 0,
+          "why": "either와 짝을 이루는 접속사는 or입니다."
+        },
+        {
+          "p": "Please sit down, open your books, and ____ quietly.",
+          "c": [
+            "read",
+            "reading"
+          ],
+          "a": 0,
+          "why": "명령문이므로 sit, open과 같이 동사원형으로 맞춥니다."
+        },
+        {
+          "p": "The teacher praised ____ the boys and the girls.",
+          "c": [
+            "either",
+            "both",
+            "neither"
+          ],
+          "a": 1,
+          "why": "뒤에 and가 있으므로 'A와 B 둘 다'를 뜻하는 both A and B 구문을 씁니다."
+        },
+        {
+          "p": "I plan to visit Paris, to see the Eiffel Tower, and ____ French food.",
+          "c": [
+            "eating",
+            "to eat"
+          ],
+          "a": 1,
+          "why": "앞의 to visit, to see와 같이 to부정사 형태로 맞춥니다."
+        },
+        {
+          "p": "The shoes were neither cheap ____ comfortable.",
+          "c": [
+            "or",
+            "nor"
+          ],
+          "a": 1,
+          "why": "neither와 짝을 이루는 접속사는 nor입니다."
+        },
+        {
+          "p": "We need more time, more money, and more ____.",
+          "c": [
+            "support",
+            "to support"
+          ],
+          "a": 0,
+          "why": "앞의 명사구(more time, more money)와 형태를 맞추어 명사를 씁니다."
+        },
+        {
+          "p": "They were laughing, talking, and ____ a good time.",
+          "c": [
+            "having",
+            "had"
+          ],
+          "a": 0,
+          "why": "진행형을 만드는 -ing(laughing, talking)와 형태를 맞춥니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "She **enjoys reading** and **writing**.",
+          "ko": "그녀는 읽기와 쓰기를 즐긴다."
+        },
+        {
+          "en": "He is **both** tall **and** handsome.",
+          "ko": "그는 키가 크고 잘생겼다."
+        },
+        {
+          "en": "You must **either** apologize **or** leave.",
+          "ko": "너는 사과하거나 떠나야 한다."
+        },
+        {
+          "en": "They **neither** called **nor** texted me.",
+          "ko": "그들은 나에게 전화도 문자도 하지 않았다."
+        },
+        {
+          "en": "I bought **apples, bananas, and oranges**.",
+          "ko": "나는 사과, 바나나, 그리고 오렌지를 샀다."
+        },
+        {
+          "en": "The test was **long and difficult**.",
+          "ko": "그 시험은 길고 어려웠다."
+        },
+        {
+          "en": "We decided **to stay and rest**.",
+          "ko": "우리는 머물면서 쉬기로 결정했다."
+        },
+        {
+          "en": "He **not only** reads **but also** writes.",
+          "ko": "그는 읽을 뿐만 아니라 쓰기도 한다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She likes to paint, drawing, and crafting.",
+          "r": "She likes painting, drawing, and crafting.",
+          "why": "나열되는 항목들을 모두 -ing(동명사) 형태로 통일합니다."
+        },
+        {
+          "w": "The restaurant is both cheap or delicious.",
+          "r": "The restaurant is both cheap and delicious.",
+          "why": "both A와 짝을 이루는 접속사는 and입니다."
+        },
+        {
+          "w": "I will either call you nor send an email.",
+          "r": "I will either call you or send an email.",
+          "why": "either A와 짝을 이루는 접속사는 or입니다."
+        },
+        {
+          "w": "He neither drinks coffee or tea.",
+          "r": "He neither drinks coffee nor tea.",
+          "why": "neither A와 짝을 이루는 접속사는 nor입니다."
+        },
+        {
+          "w": "My hobbies are reading books and to play soccer.",
+          "r": "My hobbies are reading books and playing soccer.",
+          "why": "and로 연결된 앞뒤 형태를 동명사(-ing)로 맞춥니다."
+        },
+        {
+          "w": "She is not only beautiful but also work hard.",
+          "r": "She is not only beautiful but also hard-working.",
+          "why": "형용사 beautiful과 병렬 구조를 이루도록 형용사 형태로 맞춥니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구의 장점을 both A and B로 칭찬해요.",
+          "frame": "You are both ____ and ____."
+        },
+        {
+          "task": "주말에 할 수 있는 두 가지 선택지를 말해요.",
+          "frame": "We can either ____ or ____ this weekend."
+        },
+        {
+          "task": "자신이 하지 않는 두 가지 행동을 말해요.",
+          "frame": "I neither ____ nor ____ on Sundays."
+        },
+        {
+          "task": "취미 세 가지를 동명사로 나열해요.",
+          "frame": "In my free time, I enjoy ____ing, ____ing, and ____ing."
+        },
+        {
+          "task": "여행 가서 하고 싶은 일 세 가지를 말해요.",
+          "frame": "I want to ____, ____, and ____ on my trip."
+        },
+        {
+          "task": "어떤 물건이 가진 두 가지 특징을 강조해요.",
+          "frame": "This phone is not only ____ but also ____."
+        }
+      ],
+      "mission": {
+        "title": "완벽한 짝꿍 찾기 (병렬 구조 인터뷰)",
+        "scene": "친구와 인터뷰하며 병렬 구조를 사용해 공통점과 차이점을 찾아봅니다.",
+        "steps": [
+          "짝꿍에게 주말에 주로 하는 활동 세 가지를 물어보고 'He/She enjoys ~ing, ~ing, and ~ing.' 형태로 메모합니다.",
+          "둘 다 좋아하는 것을 찾아 'We both like A and B.'라고 말해봅니다.",
+          "둘 다 싫어하는 것을 찾아 'We neither like A nor B.' 문장으로 발표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "오늘 날씨는 맑고, 따뜻하고, 아름답다.",
+          "cond": "형용사 세 개를 병렬로 연결하세요.",
+          "model": "The weather today is sunny, warm, and beautiful."
+        },
+        {
+          "ko": "그녀는 훌륭한 가수일 뿐만 아니라 재능 있는 배우이다.",
+          "cond": "not only A but also B를 사용하세요.",
+          "model": "She is not only a great singer but also a talented actor."
+        },
+        {
+          "ko": "너는 현금이나 신용카드 중 하나로 지불할 수 있다.",
+          "cond": "either A or B를 사용하세요.",
+          "model": "You can pay by either cash or credit card."
+        },
+        {
+          "ko": "그 신발은 싸지도 않고 편안하지도 않았다.",
+          "cond": "neither A nor B를 사용하세요.",
+          "model": "The shoes were neither cheap nor comfortable."
+        },
+        {
+          "ko": "우리는 머물면서 쉬기로 결정했다.",
+          "cond": "to부정사 병렬 구조를 사용하세요.",
+          "model": "We decided to stay and rest."
+        },
+        {
+          "ko": "그 선생님은 소년들과 소녀들 모두를 칭찬했다.",
+          "cond": "both A and B를 사용하세요.",
+          "model": "The teacher praised both the boys and the girls."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-ellipsis-insertion",
+    "discover": {
+      "q": "When tired, he drinks coffee와 Mr. Kim, my English teacher, is very kind를 보세요. 어떤 말이 생략되었나요? 쉼표 사이에 끼어든 말은 무슨 역할을 하나요?",
+      "a": "부사절의 '주어 + be'는 주절의 주어와 같으면 생략할 수 있다. 쉼표 사이의 말은 앞 명사를 설명하는 동격이나 삽입 표현이다."
+    },
+    "choose": [
+      {
+        "p": "____ tired, he drinks coffee.",
+        "c": [
+          "When",
+          "When was"
+        ],
+        "a": 0,
+        "why": "주어와 be동사를 함께 생략하면 When tired가 됩니다."
+      },
+      {
+        "p": "Mr. Kim, ____, is very kind.",
+        "c": [
+          "my English teacher",
+          "my English teacher is"
+        ],
+        "a": 0,
+        "why": "동격은 명사구만 씁니다."
+      },
+      {
+        "p": "She is, ____, the best player in the club.",
+        "c": [
+          "I think",
+          "I thinking"
+        ],
+        "a": 0,
+        "why": "삽입된 표현 I think는 그대로 씁니다."
+      },
+      {
+        "p": "____ young, she was very brave.",
+        "c": [
+          "Though",
+          "Though was"
+        ],
+        "a": 0,
+        "why": "주어와 be동사를 함께 생략하면 Though young이 됩니다."
+      },
+      {
+        "p": "Some like tea, and others ____.",
+        "c": [
+          "coffee",
+          "are coffee"
+        ],
+        "a": 0,
+        "why": "반복되는 동사 like를 생략한 문장입니다."
+      },
+      {
+        "p": "____ walking in the park, I met an old friend.",
+        "c": [
+          "While",
+          "While was",
+          "While am"
+        ],
+        "a": 0,
+        "why": "부사절의 주어와 be동사를 함께 생략하면 While만 남습니다."
+      },
+      {
+        "p": "Seoul, ____, is a very crowded city.",
+        "c": [
+          "is the capital of Korea",
+          "the capital of Korea"
+        ],
+        "a": 1,
+        "why": "동격은 명사(구)로 표현하며 동사를 포함하지 않습니다."
+      },
+      {
+        "p": "The movie was, ____, a bit boring.",
+        "c": [
+          "I suppose",
+          "I supposing",
+          "I supposed"
+        ],
+        "a": 0,
+        "why": "내 의견을 덧붙이는 삽입절 I suppose는 형태를 바꾸지 않고 그대로 씁니다."
+      },
+      {
+        "p": "My dad likes hiking, and my mom ____.",
+        "c": [
+          "swimming",
+          "is swimming"
+        ],
+        "a": 0,
+        "why": "반복되는 동사 likes를 생략하고 목적어만 남긴 형태입니다."
+      },
+      {
+        "p": "____ necessary, we will change the schedule.",
+        "c": [
+          "If",
+          "If is",
+          "If it"
+        ],
+        "a": 0,
+        "why": "주어와 be동사인 it is가 통째로 생략되어 If만 남습니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "When was tired, he drank coffee.",
+        "r": "When tired, he drank coffee.",
+        "why": "주어 없이 be동사만 남길 수 없습니다."
+      },
+      {
+        "w": "Though was young, she was very brave.",
+        "r": "Though young, she was very brave.",
+        "why": "주어 없이 was만 남길 수 없습니다."
+      },
+      {
+        "w": "Mr. Kim my English teacher is very kind.",
+        "r": "Mr. Kim, my English teacher, is very kind.",
+        "why": "동격 표현은 쉼표로 구분합니다."
+      },
+      {
+        "w": "While was reading a book, he fell asleep.",
+        "r": "While reading a book, he fell asleep.",
+        "why": "부사절에서 주어를 생략할 때 be동사도 함께 생략해야 합니다."
+      },
+      {
+        "w": "The boy a genius solved the puzzle.",
+        "r": "The boy, a genius, solved the puzzle.",
+        "why": "동격 명사구는 쉼표를 사용하여 나타냅니다."
+      },
+      {
+        "w": "The story is I think true.",
+        "r": "The story is, I think, true.",
+        "why": "문장 중간에 삽입된 구문은 양옆에 쉼표를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "피곤할 때의 행동을 줄여서 말해요.",
+        "frame": "When tired/hungry, I ____."
+      },
+      {
+        "task": "친구를 설명을 덧붙여 소개해요.",
+        "frame": "____, my ____, is very ____."
+      },
+      {
+        "task": "내 의견을 삽입해서 말해요.",
+        "frame": "He/She is, I think, ____."
+      },
+      {
+        "task": "반복을 줄여서 말해요.",
+        "frame": "Some like ____, and others ____."
+      },
+      {
+        "task": "만약 가능하다면 어떻게 할지 말해요.",
+        "frame": "If possible, I will ____."
+      },
+      {
+        "task": "동격을 사용해 좋아하는 장소를 소개해요.",
+        "frame": "____, my favorite place, is ____."
+      }
+    ],
+    "mission": {
+      "title": "짧게 말하기 챌린지",
+      "scene": "긴 문장을 생략과 삽입으로 간결하게 바꿔 말하는 챌린지예요.",
+      "steps": [
+        "When I was tired, ... 같은 문장을 받는다.",
+        "When tired, ... 처럼 줄여 말한다.",
+        "Mr./Ms. ____, my ____, ... 로 소개하는 문장도 만든다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "피곤할 때 그는 커피를 마신다.",
+        "cond": "When tired를 써요.",
+        "model": "When tired, he drinks coffee."
+      },
+      {
+        "ko": "나의 영어 선생님이신 김 선생님은 매우 친절하시다.",
+        "cond": "동격을 써요.",
+        "model": "Mr. Kim, my English teacher, is very kind."
+      },
+      {
+        "ko": "비록 어렸지만 그녀는 매우 용감했다.",
+        "cond": "Though young을 써요.",
+        "model": "Though young, she was very brave."
+      },
+      {
+        "ko": "걷는 동안, 그녀는 음악을 들었다.",
+        "cond": "While walking을 써요.",
+        "model": "While walking, she listened to music."
+      },
+      {
+        "ko": "의사인 내 형은 열심히 일한다.",
+        "cond": "동격을 써요.",
+        "model": "My brother, a doctor, works hard."
+      },
+      {
+        "ko": "그는 프랑스어를 하고, 그녀는 스페인어를 한다.",
+        "cond": "반복되는 동사를 생략해요.",
+        "model": "He speaks French, and she Spanish."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**While** **walking**, she listened to music.",
+        "ko": "걷는 동안, 그녀는 음악을 들었다."
+      },
+      {
+        "en": "My brother, **a doctor**, works hard.",
+        "ko": "의사인 내 형은 열심히 일한다."
+      },
+      {
+        "en": "The test, **I believe**, was easy.",
+        "ko": "내 생각에, 그 시험은 쉬웠다."
+      },
+      {
+        "en": "He speaks French, and **she Spanish**.",
+        "ko": "그는 프랑스어를 하고, 그녀는 스페인어를 한다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "부사절에서 주어와 be동사가 생략될 때, 생략된 주어는 주절의 주어와 어떤 관계가 있나요?",
+        "a": "부사절의 주어와 주절의 주어가 서로 같습니다."
+      },
+      "choose": [
+        {
+          "p": "____ asked about the accident, he remained silent.",
+          "c": [
+            "When",
+            "When was",
+            "When did"
+          ],
+          "a": 0,
+          "why": "주어와 be동사를 함께 생략하여 When만 남습니다."
+        },
+        {
+          "p": "My sister chose an apple, and I ____.",
+          "c": [
+            "an orange",
+            "am an orange",
+            "choosing an orange"
+          ],
+          "a": 0,
+          "why": "반복되는 동사 chose를 생략하고 목적어만 남깁니다."
+        },
+        {
+          "p": "The new student, ____, is from Canada.",
+          "c": [
+            "a tall boy",
+            "is a tall boy",
+            "a tall boy is"
+          ],
+          "a": 0,
+          "why": "동격은 명사구 형태로 쓰며 동사를 포함하지 않습니다."
+        },
+        {
+          "p": "The plan will, ____, succeed in the end.",
+          "c": [
+            "I am sure",
+            "I sure",
+            "I making sure"
+          ],
+          "a": 0,
+          "why": "확신을 나타내는 절 I am sure를 그대로 삽입합니다."
+        },
+        {
+          "p": "____ in Rome, do as the Romans do.",
+          "c": [
+            "While are",
+            "While",
+            "While is"
+          ],
+          "a": 1,
+          "why": "주어와 be동사인 you are가 생략된 형태입니다."
+        },
+        {
+          "p": "Some students played soccer, and others ____.",
+          "c": [
+            "basketball",
+            "played basketballs",
+            "are basketball"
+          ],
+          "a": 0,
+          "why": "반복되는 동사 played를 생략한 문장입니다."
+        },
+        {
+          "p": "Dr. Smith, ____, discovered the cure.",
+          "c": [
+            "who a famous scientist",
+            "a famous scientist is",
+            "a famous scientist"
+          ],
+          "a": 2,
+          "why": "명사를 부연 설명하는 동격은 명사구 형태로 씁니다."
+        },
+        {
+          "p": "The weather is, ____, getting warmer.",
+          "c": [
+            "as you know",
+            "as you knowing",
+            "as you known"
+          ],
+          "a": 0,
+          "why": "삽입절 as you know는 형태를 바꾸지 않고 그대로 씁니다."
+        },
+        {
+          "p": "____ possible, please reply by tomorrow.",
+          "c": [
+            "If",
+            "If is",
+            "If are"
+          ],
+          "a": 0,
+          "why": "주어와 be동사인 it is가 생략된 형태입니다."
+        },
+        {
+          "p": "One girl wore a red hat, and another ____.",
+          "c": [
+            "is a blue hat",
+            "a blue hat",
+            "wearing a blue hat"
+          ],
+          "a": 1,
+          "why": "반복되는 동사 wore를 생략하고 목적어만 남긴 형태입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**When** **asked**, he smiled brightly.",
+          "ko": "질문을 받았을 때, 그는 밝게 웃었다."
+        },
+        {
+          "en": "Paris, **the capital of France**, is beautiful.",
+          "ko": "프랑스의 수도인 파리는 아름답다."
+        },
+        {
+          "en": "The rumor is, **it seems**, completely false.",
+          "ko": "그 소문은, 보아하니, 완전히 거짓이다."
+        },
+        {
+          "en": "I ordered pizza, and **he pasta**.",
+          "ko": "나는 피자를 주문했고, 그는 파스타를 주문했다."
+        },
+        {
+          "en": "**If** **necessary**, call me immediately.",
+          "ko": "필요하다면, 즉시 나에게 전화해."
+        },
+        {
+          "en": "Mr. Lee, **our principal**, gave a speech.",
+          "ko": "우리 교장 선생님이신 이 선생님께서 연설을 하셨다."
+        },
+        {
+          "en": "The problem, **I guess**, is too hard.",
+          "ko": "내 생각에, 그 문제는 너무 어렵다."
+        },
+        {
+          "en": "Jane likes dogs, and **Tom cats**.",
+          "ko": "제인은 개를 좋아하고, 톰은 고양이를 좋아한다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "When was young, she lived in London.",
+          "r": "When young, she lived in London.",
+          "why": "주어 없이 be동사만 남길 수 없으므로 함께 생략합니다."
+        },
+        {
+          "w": "My uncle a pilot travels around the world.",
+          "r": "My uncle, a pilot, travels around the world.",
+          "why": "명사를 부연 설명하는 동격은 쉼표로 구분합니다."
+        },
+        {
+          "w": "The result is I believe excellent.",
+          "r": "The result is, I believe, excellent.",
+          "why": "삽입절은 쉼표를 이용해 문장과 분리해야 합니다."
+        },
+        {
+          "w": "If is possible, I want to join the club.",
+          "r": "If possible, I want to join the club.",
+          "why": "부사절에서 it is를 통째로 생략해야 합니다."
+        },
+        {
+          "w": "Some people like summer, and others are winter.",
+          "r": "Some people like summer, and others winter.",
+          "why": "반복되는 동사 like를 생략한 자리이므로 be동사를 쓰지 않습니다."
+        },
+        {
+          "w": "The book a bestseller was very interesting.",
+          "r": "The book, a bestseller, was very interesting.",
+          "why": "동격 표현 앞뒤에는 쉼표를 붙여야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "질문을 받았을 때의 반응을 말해요.",
+          "frame": "When asked about ____, I usually ____."
+        },
+        {
+          "task": "동격을 이용해 유명인을 소개해요.",
+          "frame": "____, a famous ____, is ____."
+        },
+        {
+          "task": "삽입구를 넣어 확신을 표현해요.",
+          "frame": "This movie will, I am sure, be ____."
+        },
+        {
+          "task": "필요할 때 할 행동을 말해요.",
+          "frame": "If necessary, I will ____."
+        },
+        {
+          "task": "서로 다른 선택을 줄여서 말해요.",
+          "frame": "I chose ____, and my friend ____."
+        },
+        {
+          "task": "아는 사실을 삽입하여 말해요.",
+          "frame": "The test is, as you know, ____."
+        }
+      ],
+      "mission": {
+        "title": "문장 다이어트 클럽",
+        "scene": "길고 복잡한 문장을 짧고 간결하게 줄여보는 활동입니다.",
+        "steps": [
+          "짝과 함께 길게 쓰인 문장 카드를 한 장씩 뽑습니다.",
+          "부사절 생략, 동격, 반복 생략 등을 이용해 문장을 짧게 고쳐 말합니다. (예: 'When he is tired...' -> 'When tired...')",
+          "올바르게 줄인 문장을 활동지에 적고 서로 확인합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "질문을 받았을 때, 그는 밝게 웃었다.",
+          "cond": "When asked를 써요.",
+          "model": "When asked, he smiled brightly."
+        },
+        {
+          "ko": "프랑스의 수도인 파리는 아름답다.",
+          "cond": "동격을 써요.",
+          "model": "Paris, the capital of France, is beautiful."
+        },
+        {
+          "ko": "그 소문은, 보아하니, 완전히 거짓이다.",
+          "cond": "it seems를 삽입해요.",
+          "model": "The rumor is, it seems, completely false."
+        },
+        {
+          "ko": "나는 피자를 주문했고, 그는 파스타를 주문했다.",
+          "cond": "반복되는 동사를 생략해요.",
+          "model": "I ordered pizza, and he pasta."
+        },
+        {
+          "ko": "필요하다면, 즉시 나에게 전화해.",
+          "cond": "If necessary를 써요.",
+          "model": "If necessary, call me immediately."
+        },
+        {
+          "ko": "우리 교장 선생님이신 이 선생님께서 연설을 하셨다.",
+          "cond": "동격을 써요.",
+          "model": "Mr. Lee, our principal, gave a speech."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-negation",
+    "discover": {
+      "q": "Not all students like math, Neither of the answers is correct, He hardly ever goes out을 비교해 보세요. 부분부정, 전체부정, 준부정은 각각 어떻게 다른가요?",
+      "a": "not + all/every/always는 '모두(항상) ~인 것은 아니다'(부분부정), none/neither/never는 '전혀 ~않다'(전체부정), hardly/seldom은 '거의 ~않다'(준부정)이다."
+    },
+    "choose": [
+      {
+        "p": "____ all students like math.",
+        "c": [
+          "Not",
+          "None"
+        ],
+        "a": 0,
+        "why": "'모두 ~인 것은 아니다'는 Not all입니다."
+      },
+      {
+        "p": "Rich people are not ____ happy.",
+        "c": [
+          "always",
+          "never"
+        ],
+        "a": 0,
+        "why": "'항상 ~인 것은 아니다'는 not always입니다."
+      },
+      {
+        "p": "____ of the answers is correct.",
+        "c": [
+          "Neither",
+          "Not"
+        ],
+        "a": 0,
+        "why": "'둘 다 아니다'는 Neither of입니다."
+      },
+      {
+        "p": "He ____ ever goes out.",
+        "c": [
+          "hardly",
+          "hard"
+        ],
+        "a": 0,
+        "why": "'거의 ~않다'는 hardly ever입니다."
+      },
+      {
+        "p": "I don't know ____.",
+        "c": [
+          "either",
+          "neither"
+        ],
+        "a": 0,
+        "why": "부정문 뒤에는 either를 씁니다."
+      },
+      {
+        "p": "I invited two friends, but ____ of them came.",
+        "c": [
+          "neither",
+          "none"
+        ],
+        "a": 0,
+        "why": "대상이 두 명(two friends)일 때 둘 다 아니라는 전체부정은 neither를 씁니다."
+      },
+      {
+        "p": "She ____ ever makes mistakes in her essays.",
+        "c": [
+          "hardly",
+          "highly"
+        ],
+        "a": 0,
+        "why": "'거의 ~않다'라는 의미의 준부정어는 hardly입니다."
+      },
+      {
+        "p": "Good medicine does ____ necessarily taste bitter.",
+        "c": [
+          "not",
+          "never"
+        ],
+        "a": 0,
+        "why": "'반드시 ~한 것은 아니다'라는 부분부정은 not necessarily를 사용합니다."
+      },
+      {
+        "p": "I could not ____ crying when I heard the sad news.",
+        "c": [
+          "help",
+          "helping"
+        ],
+        "a": 0,
+        "why": "'~하지 않을 수 없다'는 cannot help -ing 구문을 씁니다."
+      },
+      {
+        "p": "____ of the five members agreed with the new plan.",
+        "c": [
+          "None",
+          "Neither"
+        ],
+        "a": 0,
+        "why": "대상이 셋 이상(five members)일 때 아무도 아니라는 전체부정은 None을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "He hardly doesn't go out.",
+        "r": "He hardly goes out.",
+        "why": "hardly는 이미 부정의 뜻이라 not을 또 쓰지 않습니다."
+      },
+      {
+        "w": "I don't know neither.",
+        "r": "I don't know either.",
+        "why": "부정어를 두 번 쓰지 않습니다."
+      },
+      {
+        "w": "I don't have no money.",
+        "r": "I don't have any money.",
+        "why": "부정문에서는 no 대신 any를 씁니다."
+      },
+      {
+        "w": "She doesn't rarely watch television.",
+        "r": "She rarely watches television.",
+        "why": "rarely는 그 자체로 부정의 의미를 가지므로 not과 함께 쓰지 않습니다."
+      },
+      {
+        "w": "I cannot help to feel sorry for him.",
+        "r": "I cannot help feeling sorry for him.",
+        "why": "'cannot help' 뒤에는 동명사(-ing)가 와야 합니다."
+      },
+      {
+        "w": "Neither of the three boys passed the exam.",
+        "r": "None of the three boys passed the exam.",
+        "why": "셋 이상을 모두 부정할 때는 neither가 아니라 none을 사용합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "모두가 그렇지는 않은 것을 말해요.",
+        "frame": "Not all ____ are ____."
+      },
+      {
+        "task": "항상 그렇지는 않은 것을 말해요.",
+        "frame": "____ is not always ____."
+      },
+      {
+        "task": "거의 하지 않는 일을 말해요.",
+        "frame": "I hardly ever ____."
+      },
+      {
+        "task": "둘 다 아닌 것을 말해요.",
+        "frame": "Neither of ____ is ____."
+      },
+      {
+        "task": "반드시 그런 것은 아니라고 말해봐요.",
+        "frame": "____ is not necessarily ____."
+      },
+      {
+        "task": "어쩔 수 없이 하게 된 행동을 말해봐요.",
+        "frame": "I couldn't help ____ing when ____."
+      }
+    ],
+    "mission": {
+      "title": "다 그런 건 아니야! 반론 게임",
+      "scene": "한 사람이 일반적인 주장을 하면 다른 사람이 부분부정으로 반박하는 게임이에요.",
+      "steps": [
+        "Rich people are happy. 같은 주장을 한다.",
+        "Not all rich people are happy. 로 반박한다.",
+        "이유를 한 문장으로 덧붙인다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "모든 학생이 수학을 좋아하는 것은 아니다.",
+        "cond": "Not all을 써요.",
+        "model": "Not all students like math."
+      },
+      {
+        "ko": "부자라고 항상 행복한 것은 아니다.",
+        "cond": "not always를 써요.",
+        "model": "Rich people are not always happy."
+      },
+      {
+        "ko": "그는 거의 외출하지 않는다.",
+        "cond": "hardly ever를 써요.",
+        "model": "He hardly ever goes out."
+      },
+      {
+        "ko": "나는 그의 농담에 웃지 않을 수 없었다.",
+        "cond": "cannot help를 써요.",
+        "model": "I could not help laughing at his joke."
+      },
+      {
+        "ko": "모든 학생이 대학에 가고 싶어 하는 것은 아니다.",
+        "cond": "Not every를 써요.",
+        "model": "Not every student wants to go to college."
+      },
+      {
+        "ko": "그녀는 점심으로 패스트푸드를 거의 먹지 않는다.",
+        "cond": "rarely를 써요.",
+        "model": "She rarely eats fast food for lunch."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Not every** student wants to go to college.",
+        "ko": "모든 학생이 대학에 가고 싶어 하는 것은 아니다."
+      },
+      {
+        "en": "She **rarely** eats fast food for lunch.",
+        "ko": "그녀는 점심으로 패스트푸드를 거의 먹지 않는다."
+      },
+      {
+        "en": "I could **not help** laughing at his joke.",
+        "ko": "나는 그의 농담에 웃지 않을 수 없었다."
+      },
+      {
+        "en": "He has **little** interest in learning foreign languages.",
+        "ko": "그는 외국어 학습에 관심이 거의 없다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'Not all'과 'None', 'hardly'와 'never'의 의미 차이는 무엇일까요?",
+        "a": "'Not all'은 일부는 그렇다는 부분부정이고, 'None'은 하나도 없다는 전체부정입니다. 'hardly'는 거의 없다는 준부정이고, 'never'는 절대 없다는 전체부정입니다."
+      },
+      "choose": [
+        {
+          "p": "____ every applicant will be accepted into the program.",
+          "c": [
+            "Not",
+            "No"
+          ],
+          "a": 0,
+          "why": "'모두가 ~인 것은 아니다'라는 부분부정은 Not every를 씁니다."
+        },
+        {
+          "p": "The famous actor ____ appears on talk shows.",
+          "c": [
+            "seldom",
+            "doesn't"
+          ],
+          "a": 0,
+          "why": "문맥상 '거의 출현하지 않는다'는 의미이며, 뒤에 동사원형이 아닌 appears가 왔으므로 조동사 doesn't가 아닌 준부정어 seldom이 적절합니다."
+        },
+        {
+          "p": "I have read two books, but I liked ____ of them.",
+          "c": [
+            "neither",
+            "none"
+          ],
+          "a": 0,
+          "why": "두 권(two books) 중 둘 다 마음에 들지 않았다는 의미이므로 neither를 씁니다."
+        },
+        {
+          "p": "We cannot help ____ disappointed by the results.",
+          "c": [
+            "feeling",
+            "feel"
+          ],
+          "a": 0,
+          "why": "'~하지 않을 수 없다'는 cannot help -ing 형태를 취합니다."
+        },
+        {
+          "p": "There is ____ hope left for the abandoned project.",
+          "c": [
+            "little",
+            "a little"
+          ],
+          "a": 0,
+          "why": "버려진 프로젝트이므로 희망이 '거의 없다'는 부정의 의미를 나타내는 little을 써야 합니다."
+        },
+        {
+          "p": "Expensive products are not ____ of high quality.",
+          "c": [
+            "always",
+            "never"
+          ],
+          "a": 0,
+          "why": "'항상 ~인 것은 아니다'라는 부분부정은 not always를 씁니다."
+        },
+        {
+          "p": "____ people know the true story behind the incident.",
+          "c": [
+            "Few",
+            "A few"
+          ],
+          "a": 0,
+          "why": "진실을 아는 사람이 '거의 없다'는 부정의 의미를 나타내기 위해 Few를 씁니다."
+        },
+        {
+          "p": "I ____ scarcely believe what I saw on the news.",
+          "c": [
+            "could",
+            "couldn't"
+          ],
+          "a": 0,
+          "why": "scarcely는 이미 부정의 의미를 포함하므로 긍정 조동사 could와 함께 씁니다."
+        },
+        {
+          "p": "____ of the ten computers in the lab is working.",
+          "c": [
+            "None",
+            "Neither"
+          ],
+          "a": 0,
+          "why": "10대(ten computers) 중 아무것도 작동하지 않는다는 전체부정이므로 None을 씁니다."
+        },
+        {
+          "p": "You do ____ necessarily need a degree to succeed.",
+          "c": [
+            "not",
+            "never"
+          ],
+          "a": 0,
+          "why": "'반드시 ~할 필요는 없다'는 부분부정 표현은 not necessarily입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Not all** of the rumors are true.",
+          "ko": "그 소문들이 모두 사실인 것은 아니다."
+        },
+        {
+          "en": "He **seldom** visits his hometown these days.",
+          "ko": "그는 요즘 고향을 거의 방문하지 않는다."
+        },
+        {
+          "en": "**Neither** of my parents can drive a car.",
+          "ko": "나의 부모님 두 분 다 운전을 하지 못하신다."
+        },
+        {
+          "en": "She has **few** friends in this new city.",
+          "ko": "그녀는 이 낯선 도시에서 친구가 거의 없다."
+        },
+        {
+          "en": "I **cannot help** worrying about my future.",
+          "ko": "나는 내 미래에 대해 걱정하지 않을 수 없다."
+        },
+        {
+          "en": "Wealth does **not necessarily** bring happiness.",
+          "ko": "부가 반드시 행복을 가져다주는 것은 아니다."
+        },
+        {
+          "en": "**None** of the students finished the test early.",
+          "ko": "학생들 중 아무도 시험을 일찍 끝내지 못했다."
+        },
+        {
+          "en": "We **scarcely** had time to eat breakfast.",
+          "ko": "우리는 아침을 먹을 시간이 거의 없었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I couldn't hardly understand the teacher's explanation.",
+          "r": "I could hardly understand the teacher's explanation.",
+          "why": "hardly는 이미 부정의 의미를 가지므로 not과 함께 쓸 수 없습니다."
+        },
+        {
+          "w": "Not every people agree with the new policy.",
+          "r": "Not all people agree with the new policy.",
+          "why": "every 뒤에는 단수 명사가 와야 하므로 복수 명사(people) 앞에는 all을 씁니다."
+        },
+        {
+          "w": "I cannot help to think about the accident.",
+          "r": "I cannot help thinking about the accident.",
+          "why": "'cannot help' 뒤에는 동명사(-ing) 형태가 와야 합니다."
+        },
+        {
+          "w": "Neither of the five options is attractive.",
+          "r": "None of the five options is attractive.",
+          "why": "5개(셋 이상)를 부정할 때는 neither 대신 none을 사용합니다."
+        },
+        {
+          "w": "He doesn't seldom go to the gym.",
+          "r": "He seldom goes to the gym.",
+          "why": "seldom은 준부정어이므로 부정 조동사(doesn't)와 함께 쓰지 않습니다."
+        },
+        {
+          "w": "There is a little water left, so we can't drink.",
+          "r": "There is little water left, so we can't drink.",
+          "why": "'거의 없다'는 부정의 의미를 나타내려면 관사 a 없이 little을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "모두가 동의하는 것은 아니라고 말해봐요.",
+          "frame": "Not all people agree with ____."
+        },
+        {
+          "task": "두 가지 선택지 모두 마음에 들지 않는다고 말해봐요.",
+          "frame": "I like neither of ____."
+        },
+        {
+          "task": "평소에 거의 하지 않는 취미나 행동을 말해봐요.",
+          "frame": "I seldom ____ on weekends."
+        },
+        {
+          "task": "어쩔 수 없이 하게 되는 생각을 말해봐요.",
+          "frame": "I cannot help thinking about ____."
+        },
+        {
+          "task": "반드시 그런 것은 아니라고 조언해봐요.",
+          "frame": "____ does not necessarily mean ____."
+        },
+        {
+          "task": "친구가 거의 없었던 경험을 말해봐요.",
+          "frame": "I had few friends when I was in ____."
+        }
+      ],
+      "mission": {
+        "title": "진실과 오해 게임",
+        "scene": "반 친구들이 가지고 있는 고정관념을 찾아내고, 그것이 항상 참은 아님을 설명해 봅시다.",
+        "steps": [
+          "짝과 함께 사람들이 흔히 믿는 고정관념 3가지를 찾습니다.",
+          "'Not all...' 또는 '...not always...' 패턴을 사용하여 그 고정관념을 반박하는 문장을 만듭니다.",
+          "완성된 문장을 번갈아 발표하며 어느 팀의 문장이 가장 설득력 있는지 투표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "부가 반드시 행복을 가져다주는 것은 아니다.",
+          "cond": "necessarily를 써요.",
+          "model": "Wealth does not necessarily bring happiness."
+        },
+        {
+          "ko": "나의 부모님 두 분 다 운전을 하지 못하신다.",
+          "cond": "Neither를 써요.",
+          "model": "Neither of my parents can drive a car."
+        },
+        {
+          "ko": "나는 내 미래에 대해 걱정하지 않을 수 없다.",
+          "cond": "cannot help를 써요.",
+          "model": "I cannot help worrying about my future."
+        },
+        {
+          "ko": "그는 요즘 고향을 거의 방문하지 않는다.",
+          "cond": "seldom을 써요.",
+          "model": "He seldom visits his hometown these days."
+        },
+        {
+          "ko": "학생들 중 아무도 시험을 일찍 끝내지 못했다.",
+          "cond": "None을 써요.",
+          "model": "None of the students finished the test early."
+        },
+        {
+          "ko": "그 소문들이 모두 사실인 것은 아니다.",
+          "cond": "Not all을 써요.",
+          "model": "Not all of the rumors are true."
+        }
+      ]
+    }
+  },
+  {
+    "id": "pos-overview",
+    "discover": {
+      "q": "굵게 표시한 낱말들을 보세요. 사람·사물의 이름, 움직임, 꾸미는 말, 위치를 나타내는 말은 각각 무슨 품사인가요?",
+      "a": "이름은 명사, 대신하는 말은 대명사, 움직임은 동사, 명사를 꾸미는 말은 형용사, 동사를 꾸미는 말은 부사, 위치·관계를 나타내는 말은 전치사, 이어 주는 말은 접속사, 느낌을 나타내는 말은 감탄사이다."
+    },
+    "choose": [
+      {
+        "p": "'Tom is my friend.'에서 Tom은 ____입니다.",
+        "c": [
+          "명사",
+          "동사"
+        ],
+        "a": 0,
+        "why": "Tom은 사람 이름이므로 명사입니다."
+      },
+      {
+        "p": "'Birds fly.'에서 fly는 ____입니다.",
+        "c": [
+          "동사",
+          "형용사"
+        ],
+        "a": 0,
+        "why": "fly는 움직임을 나타내는 동사입니다."
+      },
+      {
+        "p": "'It is a red apple.'에서 red는 ____입니다.",
+        "c": [
+          "형용사",
+          "부사"
+        ],
+        "a": 0,
+        "why": "명사 apple을 꾸미므로 형용사입니다."
+      },
+      {
+        "p": "'She sings beautifully.'에서 beautifully는 ____입니다.",
+        "c": [
+          "부사",
+          "형용사"
+        ],
+        "a": 0,
+        "why": "동사 sings를 꾸미므로 부사입니다."
+      },
+      {
+        "p": "'The cat is under the table.'에서 under는 ____입니다.",
+        "c": [
+          "전치사",
+          "접속사"
+        ],
+        "a": 0,
+        "why": "위치를 나타내므로 전치사입니다."
+      },
+      {
+        "p": "'Wow, that is big!'에서 Wow는 ____입니다.",
+        "c": [
+          "감탄사",
+          "대명사"
+        ],
+        "a": 0,
+        "why": "Wow는 놀람을 나타내는 감탄사입니다."
+      },
+      {
+        "p": "'I like apples and bananas.'에서 and는 ____입니다.",
+        "c": [
+          "전치사",
+          "접속사"
+        ],
+        "a": 1,
+        "why": "and는 두 낱말을 이어주는 접속사입니다."
+      },
+      {
+        "p": "'She is a student.'에서 She는 ____입니다.",
+        "c": [
+          "대명사",
+          "명사"
+        ],
+        "a": 0,
+        "why": "She는 사람 이름 대신 쓰는 대명사입니다."
+      },
+      {
+        "p": "'The dog barks loudly.'에서 loudly는 ____입니다.",
+        "c": [
+          "부사",
+          "형용사"
+        ],
+        "a": 0,
+        "why": "loudly는 동사 barks를 꾸며주는 부사입니다."
+      },
+      {
+        "p": "'We play soccer on Sunday.'에서 on은 ____입니다.",
+        "c": [
+          "전치사",
+          "접속사"
+        ],
+        "a": 0,
+        "why": "on은 요일 앞에 쓰여 시간을 나타내는 전치사입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "He is a happily boy.",
+        "r": "He is a happy boy.",
+        "why": "명사 boy를 꾸미는 말은 형용사입니다."
+      },
+      {
+        "w": "She runs quick.",
+        "r": "She runs quickly.",
+        "why": "동사 runs를 꾸미는 말은 부사입니다."
+      },
+      {
+        "w": "She sings beautiful.",
+        "r": "She sings beautifully.",
+        "why": "동사 sings를 꾸미는 말은 부사입니다."
+      },
+      {
+        "w": "He is a loudly boy.",
+        "r": "He is a loud boy.",
+        "why": "명사 boy를 꾸미려면 부사가 아니라 형용사를 써야 합니다."
+      },
+      {
+        "w": "They walk slow.",
+        "r": "They walk slowly.",
+        "why": "동사 walk를 꾸미려면 형용사가 아니라 부사를 써야 합니다."
+      },
+      {
+        "w": "She is a nicely girl.",
+        "r": "She is a nice girl.",
+        "why": "명사 girl을 꾸미려면 부사가 아니라 형용사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "문장 속 낱말의 품사를 말해요.",
+        "frame": "____ is a noun/verb/adjective."
+      },
+      {
+        "task": "내가 아는 낱말을 품사별로 말해요.",
+        "frame": "Nouns: ____. Verbs: ____."
+      },
+      {
+        "task": "그림을 보고 꾸미는 말을 찾아요.",
+        "frame": "A ____ ____ (adjective + noun)."
+      },
+      {
+        "task": "문장을 만들고 품사를 짚어요.",
+        "frame": "She ____s ____ly. (verb + adverb)"
+      },
+      {
+        "task": "두 낱말을 이어주는 접속사를 넣어 말해요.",
+        "frame": "I like ____ and ____."
+      },
+      {
+        "task": "감탄사를 넣어 놀람을 표현해요.",
+        "frame": "____, that is cool!"
+      }
+    ],
+    "mission": {
+      "title": "품사 색칠 놀이",
+      "scene": "문장의 낱말에 품사별 색을 칠해 보는 놀이예요.",
+      "steps": [
+        "문장 카드를 읽는다.",
+        "명사는 빨강, 동사는 노랑, 형용사는 초록으로 칠한다.",
+        "짝과 색이 같은지 비교한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그것은 빨간 사과예요.",
+        "cond": "형용사를 써요.",
+        "model": "It is a red apple."
+      },
+      {
+        "ko": "그녀는 아름답게 노래해요.",
+        "cond": "부사를 써요.",
+        "model": "She sings beautifully."
+      },
+      {
+        "ko": "고양이가 탁자 아래에 있어요.",
+        "cond": "전치사를 써요.",
+        "model": "The cat is under the table."
+      },
+      {
+        "ko": "우와, 그것은 정말 크다!",
+        "cond": "감탄사를 써요.",
+        "model": "Wow, it is really big!"
+      },
+      {
+        "ko": "나는 사과와 포도를 좋아해.",
+        "cond": "접속사를 써요.",
+        "model": "I like apples and grapes."
+      },
+      {
+        "ko": "아빠가 차 안에서 기다리셔.",
+        "cond": "전치사를 써요.",
+        "model": "Dad waits in the car."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Wow**, look at that!",
+        "ko": "우와, 저것 좀 봐!"
+      },
+      {
+        "en": "He plays tennis **well**.",
+        "ko": "그는 테니스를 잘 쳐."
+      },
+      {
+        "en": "I want milk **or** juice.",
+        "ko": "나는 우유나 주스를 원해."
+      },
+      {
+        "en": "The book is **on** the desk.",
+        "ko": "그 책은 책상 위에 있어."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "문장에서 굵게 표시된 낱말들(명사, 동사, 형용사 등)은 각자 어떤 역할을 하고 있나요?",
+        "a": "이름을 나타내거나, 움직임을 표현하거나, 다른 말을 꾸며주는 등 각자의 쓰임새(품사)가 다릅니다."
+      },
+      "choose": [
+        {
+          "p": "'Jane reads a book.'에서 Jane은 ____입니다.",
+          "c": [
+            "명사",
+            "대명사"
+          ],
+          "a": 0,
+          "why": "Jane은 사람의 이름이므로 명사입니다."
+        },
+        {
+          "p": "'They run fast.'에서 They는 ____입니다.",
+          "c": [
+            "명사",
+            "대명사"
+          ],
+          "a": 1,
+          "why": "They는 명사 대신 쓰인 대명사입니다."
+        },
+        {
+          "p": "'I sleep early.'에서 sleep은 ____입니다.",
+          "c": [
+            "동사",
+            "형용사"
+          ],
+          "a": 0,
+          "why": "sleep은 움직임이나 상태를 나타내는 동사입니다."
+        },
+        {
+          "p": "'He has a cute dog.'에서 cute는 ____입니다.",
+          "c": [
+            "부사",
+            "형용사"
+          ],
+          "a": 1,
+          "why": "cute는 명사 dog를 꾸며주는 형용사입니다."
+        },
+        {
+          "p": "'The baby cries loudly.'에서 loudly는 ____입니다.",
+          "c": [
+            "형용사",
+            "부사"
+          ],
+          "a": 1,
+          "why": "loudly는 동사 cries를 꾸며주는 부사입니다."
+        },
+        {
+          "p": "'The pen is in the box.'에서 in은 ____입니다.",
+          "c": [
+            "전치사",
+            "접속사"
+          ],
+          "a": 0,
+          "why": "in은 위치를 나타내는 전치사입니다."
+        },
+        {
+          "p": "'I am tired but happy.'에서 but은 ____입니다.",
+          "c": [
+            "접속사",
+            "전치사"
+          ],
+          "a": 0,
+          "why": "but은 두 낱말을 이어주는 접속사입니다."
+        },
+        {
+          "p": "'Oops, I dropped it.'에서 Oops는 ____입니다.",
+          "c": [
+            "감탄사",
+            "대명사"
+          ],
+          "a": 0,
+          "why": "Oops는 감정을 나타내는 감탄사입니다."
+        },
+        {
+          "p": "'We study English.'에서 English는 ____입니다.",
+          "c": [
+            "명사",
+            "부사"
+          ],
+          "a": 0,
+          "why": "English는 과목 이름이므로 명사입니다."
+        },
+        {
+          "p": "'She smiles brightly.'에서 brightly는 ____입니다.",
+          "c": [
+            "부사",
+            "형용사"
+          ],
+          "a": 0,
+          "why": "brightly는 동사 smiles를 꾸며주는 부사입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Jane** is my sister.",
+          "ko": "제인은 내 여동생이야."
+        },
+        {
+          "en": "**They** are playing soccer.",
+          "ko": "그들은 축구를 하고 있어."
+        },
+        {
+          "en": "I **sleep** early.",
+          "ko": "나는 일찍 자."
+        },
+        {
+          "en": "He has a **cute** dog.",
+          "ko": "그는 귀여운 개를 키워."
+        },
+        {
+          "en": "The baby cries **loudly**.",
+          "ko": "아기가 시끄럽게 울어."
+        },
+        {
+          "en": "The pen is **in** the box.",
+          "ko": "펜이 상자 안에 있어."
+        },
+        {
+          "en": "I am tired **but** happy.",
+          "ko": "나는 피곤하지만 행복해."
+        },
+        {
+          "en": "**Oops**, I dropped it.",
+          "ko": "이런, 내가 그걸 떨어뜨렸네."
+        }
+      ],
+      "correct": [
+        {
+          "w": "It is a softly pillow.",
+          "r": "It is a soft pillow.",
+          "why": "명사 pillow를 꾸미는 말은 형용사입니다."
+        },
+        {
+          "w": "He speaks quiet.",
+          "r": "He speaks quietly.",
+          "why": "동사 speaks를 꾸미는 말은 부사입니다."
+        },
+        {
+          "w": "They are a happily family.",
+          "r": "They are a happy family.",
+          "why": "명사 family를 꾸미는 말은 형용사입니다."
+        },
+        {
+          "w": "She dances beautiful.",
+          "r": "She dances beautifully.",
+          "why": "동사 dances를 꾸미는 말은 부사입니다."
+        },
+        {
+          "w": "I have a warmly coat.",
+          "r": "I have a warm coat.",
+          "why": "명사 coat를 꾸미는 말은 형용사입니다."
+        },
+        {
+          "w": "He eats slow.",
+          "r": "He eats slowly.",
+          "why": "동사 eats를 꾸미는 말은 부사입니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "명사와 형용사를 짝지어 말해요.",
+          "frame": "A ____(adjective) ____(noun)."
+        },
+        {
+          "task": "동사와 부사를 짝지어 말해요.",
+          "frame": "I ____(verb) ____(adverb)."
+        },
+        {
+          "task": "대명사를 사용해 친구를 소개해요.",
+          "frame": "____(pronoun) is my friend."
+        },
+        {
+          "task": "전치사를 써서 물건의 위치를 말해요.",
+          "frame": "The bag is ____(preposition) the desk."
+        },
+        {
+          "task": "접속사 but을 써서 두 가지 상태를 말해요.",
+          "frame": "I am ____ but ____."
+        },
+        {
+          "task": "감탄사를 넣어 기분을 표현해요.",
+          "frame": "____! I won the game!"
+        }
+      ],
+      "mission": {
+        "title": "8품사 보물찾기",
+        "scene": "교실 안의 물건이나 행동을 보며 8품사에 맞는 영어 단어를 찾아봅시다.",
+        "steps": [
+          "짝과 함께 교실 안에서 명사(사물 이름)와 형용사(상태)를 하나씩 찾습니다.",
+          "'The desk is hard.'처럼 명사와 형용사를 넣어 문장을 만듭니다.",
+          "동사와 부사를 써서 'We study quietly.'처럼 행동을 표현해 봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "제인은 책을 읽어.",
+          "cond": "명사를 써요.",
+          "model": "Jane reads a book."
+        },
+        {
+          "ko": "그들은 축구를 해.",
+          "cond": "대명사를 써요.",
+          "model": "They play soccer."
+        },
+        {
+          "ko": "그는 귀여운 개를 키워.",
+          "cond": "형용사를 써요.",
+          "model": "He has a cute dog."
+        },
+        {
+          "ko": "아기가 시끄럽게 울어.",
+          "cond": "부사를 써요.",
+          "model": "The baby cries loudly."
+        },
+        {
+          "ko": "고양이가 소파 위에서 자.",
+          "cond": "전치사를 써요.",
+          "model": "A cat sleeps on the sofa."
+        },
+        {
+          "ko": "나는 피곤하지만 행복하게 느껴져.",
+          "cond": "접속사를 써요.",
+          "model": "I feel tired but happy."
+        }
+      ]
+    }
+  },
+  {
+    "id": "pos-noun",
+    "discover": {
+      "q": "a dog, two cats, a glass of water, Seoul을 보세요. 셀 수 있는 명사와 셀 수 없는 명사, 고유명사는 어떻게 다르게 쓰였나요?",
+      "a": "셀 수 있는 명사는 a/an(단수)이나 -s/-es(복수)를 쓰고, 셀 수 없는 명사는 a glass of처럼 단위로 센다. 고유명사는 대문자로 시작한다."
+    },
+    "choose": [
+      {
+        "p": "I have a dog and two ____.",
+        "c": [
+          "cats",
+          "cat"
+        ],
+        "a": 0,
+        "why": "둘 이상이므로 복수형 cats입니다."
+      },
+      {
+        "p": "Can I have a glass of ____?",
+        "c": [
+          "water",
+          "waters"
+        ],
+        "a": 0,
+        "why": "water는 셀 수 없는 명사입니다."
+      },
+      {
+        "p": "I live in ____.",
+        "c": [
+          "Seoul",
+          "a Seoul"
+        ],
+        "a": 0,
+        "why": "고유명사 앞에는 a를 쓰지 않고 대문자로 시작합니다."
+      },
+      {
+        "p": "She gave me some ____.",
+        "c": [
+          "advice",
+          "advices"
+        ],
+        "a": 0,
+        "why": "advice는 셀 수 없는 명사입니다."
+      },
+      {
+        "p": "I have two ____.",
+        "c": [
+          "children",
+          "childs"
+        ],
+        "a": 0,
+        "why": "child의 복수형은 children입니다."
+      },
+      {
+        "p": "I drink a lot of ____.",
+        "c": [
+          "milk",
+          "milks"
+        ],
+        "a": 0,
+        "why": "milk는 셀 수 없는 명사이므로 복수형 -s를 붙이지 않습니다."
+      },
+      {
+        "p": "My friend lives in ____.",
+        "c": [
+          "Busan",
+          "busan"
+        ],
+        "a": 0,
+        "why": "도시 이름과 같은 고유명사는 항상 대문자로 시작합니다."
+      },
+      {
+        "p": "There are three ____ on the desk.",
+        "c": [
+          "boxs",
+          "boxes"
+        ],
+        "a": 1,
+        "why": "-x로 끝나는 명사의 복수형은 -es를 붙입니다."
+      },
+      {
+        "p": "We bought some ____.",
+        "c": [
+          "furniture",
+          "furnitures"
+        ],
+        "a": 0,
+        "why": "furniture(가구)는 셀 수 없는 명사이므로 복수형으로 쓰지 않습니다."
+      },
+      {
+        "p": "He has ____ umbrella.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "모음 소리로 시작하는 단수 명사 앞에는 an을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I need an information.",
+        "r": "I need some information.",
+        "why": "information은 셀 수 없는 명사입니다."
+      },
+      {
+        "w": "I have two childs.",
+        "r": "I have two children.",
+        "why": "child의 복수형은 children입니다."
+      },
+      {
+        "w": "seoul is a big city.",
+        "r": "Seoul is a big city.",
+        "why": "고유명사는 대문자로 시작합니다."
+      },
+      {
+        "w": "I have three boxs.",
+        "r": "I have three boxes.",
+        "why": "-x로 끝나는 명사의 복수형은 -es를 붙입니다."
+      },
+      {
+        "w": "He gave me an advice.",
+        "r": "He gave me some advice.",
+        "why": "advice는 셀 수 없는 명사이므로 a/an을 쓸 수 없습니다."
+      },
+      {
+        "w": "We visited london last year.",
+        "r": "We visited London last year.",
+        "why": "고유명사는 항상 대문자로 시작해야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내가 가진 것을 세어서 말해요.",
+        "frame": "I have a ____ and two ____s."
+      },
+      {
+        "task": "음료나 음식을 단위로 말해요.",
+        "frame": "Can I have a glass of/a piece of ____?"
+      },
+      {
+        "task": "내가 사는 도시를 소개해요.",
+        "frame": "____ is a ____ city."
+      },
+      {
+        "task": "조언을 해 주는 상황을 말해요.",
+        "frame": "I'll give you some advice."
+      },
+      {
+        "task": "필요한 종이나 빵의 양을 단위로 말해요.",
+        "frame": "I need a piece of ____."
+      },
+      {
+        "task": "친구가 가지고 있는 물건의 개수를 물어봐요.",
+        "frame": "How many ____s do you have?"
+      }
+    ],
+    "mission": {
+      "title": "명사 분류 게임",
+      "scene": "명사 카드를 셀 수 있는 것, 셀 수 없는 것, 이름으로 분류하는 게임이에요.",
+      "steps": [
+        "명사 카드를 뽑는다.",
+        "알맞은 바구니에 넣는다.",
+        "그 명사로 한 문장을 만든다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 개 한 마리와 고양이 두 마리가 있어요.",
+        "cond": "복수형을 써요.",
+        "model": "I have a dog and two cats."
+      },
+      {
+        "ko": "물 한 잔 마실 수 있을까요?",
+        "cond": "a glass of를 써요.",
+        "model": "Can I have a glass of water?"
+      },
+      {
+        "ko": "그녀가 나에게 조언을 좀 해 줬어요.",
+        "cond": "some advice를 써요.",
+        "model": "She gave me some advice."
+      },
+      {
+        "ko": "그는 매일 우유 두 잔을 마신다.",
+        "cond": "glasses of를 써요.",
+        "model": "He drinks two glasses of milk every day."
+      },
+      {
+        "ko": "우리는 새 가구를 좀 샀다.",
+        "cond": "셀 수 없는 명사 furniture를 써요.",
+        "model": "We bought some new furniture."
+      },
+      {
+        "ko": "제인은 뉴욕에 산다.",
+        "cond": "고유명사를 써요.",
+        "model": "Jane lives in New York."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "She bought **three apples**.",
+        "ko": "그녀는 사과 세 개를 샀어."
+      },
+      {
+        "en": "I need **a piece of paper**.",
+        "ko": "나는 종이 한 장이 필요해."
+      },
+      {
+        "en": "**Minho** likes **dogs**.",
+        "ko": "민호는 개를 좋아해."
+      },
+      {
+        "en": "They drink **milk** every day.",
+        "ko": "그들은 매일 우유를 마셔."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "명사의 종류에 따라 a/an, 복수형(-s), 대문자 사용이 어떻게 달라지나요?",
+        "a": "셀 수 있는 명사는 a/an이나 복수형을 쓰고, 셀 수 없는 명사는 a/an이나 복수형을 쓰지 않으며, 고유명사는 항상 대문자로 시작합니다."
+      },
+      "choose": [
+        {
+          "p": "I have two ____ in my bag.",
+          "c": [
+            "book",
+            "books"
+          ],
+          "a": 1,
+          "why": "two(둘)이므로 복수형 books를 써야 합니다."
+        },
+        {
+          "p": "She wants a ____ of cake.",
+          "c": [
+            "piece",
+            "pieces"
+          ],
+          "a": 0,
+          "why": "앞에 a가 있으므로 단수형 단위인 piece를 씁니다."
+        },
+        {
+          "p": "My favorite subject is ____.",
+          "c": [
+            "English",
+            "english"
+          ],
+          "a": 0,
+          "why": "언어나 과목 이름과 같은 고유명사는 대문자로 시작합니다."
+        },
+        {
+          "p": "There are five ____ in the park.",
+          "c": [
+            "mans",
+            "men"
+          ],
+          "a": 1,
+          "why": "man의 복수형은 불규칙하게 변하여 men이 됩니다."
+        },
+        {
+          "p": "Can I have some ____?",
+          "c": [
+            "juice",
+            "juices"
+          ],
+          "a": 0,
+          "why": "juice는 액체로 셀 수 없는 명사이므로 복수형을 쓰지 않습니다."
+        },
+        {
+          "p": "I saw ____ elephant at the zoo.",
+          "c": [
+            "an",
+            "a"
+          ],
+          "a": 0,
+          "why": "모음 소리로 시작하는 단수 명사 앞에는 an을 씁니다."
+        },
+        {
+          "p": "He washed both his ____ before dinner.",
+          "c": [
+            "hand",
+            "hands"
+          ],
+          "a": 1,
+          "why": "both(양쪽)이므로 복수형 hands를 써야 합니다."
+        },
+        {
+          "p": "We need a lot of ____ for the trip.",
+          "c": [
+            "money",
+            "moneys"
+          ],
+          "a": 0,
+          "why": "money(돈)는 셀 수 없는 명사이므로 복수형으로 쓰지 않습니다."
+        },
+        {
+          "p": "____ is a beautiful country.",
+          "c": [
+            "korea",
+            "Korea"
+          ],
+          "a": 1,
+          "why": "나라 이름인 고유명사는 대문자로 시작해야 합니다."
+        },
+        {
+          "p": "She bought two ____ of juice.",
+          "c": [
+            "glass",
+            "glasses"
+          ],
+          "a": 1,
+          "why": "two(둘)이므로 단위 명사 glass의 복수형인 glasses를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I eat **an egg** for breakfast.",
+          "ko": "나는 아침으로 계란 한 개를 먹어."
+        },
+        {
+          "en": "He has **two cars**.",
+          "ko": "그는 자동차 두 대를 가지고 있어."
+        },
+        {
+          "en": "Can I get **a glass of milk**?",
+          "ko": "우유 한 잔 주시겠어요?"
+        },
+        {
+          "en": "**Tom** likes **music**.",
+          "ko": "톰은 음악을 좋아해."
+        },
+        {
+          "en": "She gave me **two pieces of cake**.",
+          "ko": "그녀는 나에게 케이크 두 조각을 주었어."
+        },
+        {
+          "en": "They need **some water**.",
+          "ko": "그들은 물이 좀 필요해."
+        },
+        {
+          "en": "**Paris** is a famous **city**.",
+          "ko": "파리는 유명한 도시야."
+        },
+        {
+          "en": "I have **three watches**.",
+          "ko": "나는 시계 세 개를 가지고 있어."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She has two watchs.",
+          "r": "She has two watches.",
+          "why": "-ch로 끝나는 명사의 복수형은 -es를 붙입니다."
+        },
+        {
+          "w": "I need a money.",
+          "r": "I need some money.",
+          "why": "money는 셀 수 없는 명사이므로 a/an을 쓸 수 없습니다."
+        },
+        {
+          "w": "He studies english hard.",
+          "r": "He studies English hard.",
+          "why": "언어 이름과 같은 고유명사는 대문자로 시작합니다."
+        },
+        {
+          "w": "There are three womans.",
+          "r": "There are three women.",
+          "why": "woman의 복수형은 불규칙하게 변하여 women이 됩니다."
+        },
+        {
+          "w": "Can I have a water?",
+          "r": "Can I have a glass of water?",
+          "why": "water는 셀 수 없으므로 a glass of와 같은 단위를 사용해 셉니다."
+        },
+        {
+          "w": "I ate a bread.",
+          "r": "I ate a piece of bread.",
+          "why": "bread는 셀 수 없는 명사이므로 a piece of와 같은 단위를 사용해 셉니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "아침에 먹은 음식의 개수를 말해요.",
+          "frame": "I ate an ____ and two ____s."
+        },
+        {
+          "task": "마시고 싶은 음료를 단위와 함께 말해요.",
+          "frame": "I want a glass of ____."
+        },
+        {
+          "task": "가고 싶은 나라나 도시를 말해요.",
+          "frame": "I want to visit ____."
+        },
+        {
+          "task": "필요한 물건을 세어서 요청해요.",
+          "frame": "I need three pieces of ____."
+        },
+        {
+          "task": "동물원에서 본 동물을 말해요.",
+          "frame": "I saw an ____ and two ____s."
+        },
+        {
+          "task": "가족 중 특정 사람의 수를 말해요.",
+          "frame": "I have two ____s."
+        }
+      ],
+      "mission": {
+        "title": "명사 시장 놀이",
+        "scene": "시장에서 셀 수 있는 물건과 셀 수 없는 물건을 정확하게 주문해 봅시다.",
+        "steps": [
+          "한 명은 상인이 되고, 한 명은 손님이 됩니다.",
+          "손님은 'I want two apples and a glass of milk.'처럼 명사 규칙에 맞게 세 가지 물건을 주문합니다.",
+          "상인은 주문이 정확하면 물건 카드를 건네주고, 틀리면 'Try again!'이라고 말합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 내 가방 안에 책 세 권이 있다.",
+          "cond": "복수형을 써요.",
+          "model": "I have three books in my bag."
+        },
+        {
+          "ko": "그는 종이 두 장을 원한다.",
+          "cond": "pieces of를 써요.",
+          "model": "He wants two pieces of paper."
+        },
+        {
+          "ko": "수미는 영어를 열심히 공부한다.",
+          "cond": "고유명사를 써요.",
+          "model": "Sumi studies English hard."
+        },
+        {
+          "ko": "우리는 공원에서 남자 세 명을 보았다.",
+          "cond": "불규칙 복수형을 써요.",
+          "model": "We saw three men in the park."
+        },
+        {
+          "ko": "그녀는 매일 아침 주스 한 잔을 마신다.",
+          "cond": "a glass of를 써요.",
+          "model": "She drinks a glass of juice every morning."
+        },
+        {
+          "ko": "그들은 약간의 돈이 필요하다.",
+          "cond": "셀 수 없는 명사를 써요.",
+          "model": "They need some money."
+        }
+      ]
+    }
+  },
+  {
+    "id": "pos-pronoun",
+    "discover": {
+      "q": "She, This/that, Everyone, myself가 쓰인 문장을 보세요. 대명사는 앞에 나온 어떤 말을 대신하나요? everyone은 단수와 복수 중 무엇으로 취급했나요?",
+      "a": "대명사는 앞에서 말한 명사를 대신한다. everyone은 단수 취급해 loves처럼 쓴다. -self는 자기 자신을 가리킨다."
+    },
+    "choose": [
+      {
+        "p": "I met Jisu. ____ was very kind.",
+        "c": [
+          "She",
+          "Her"
+        ],
+        "a": 0,
+        "why": "주어 자리에는 주격 She를 씁니다."
+      },
+      {
+        "p": "____ is my bag, and that is yours.",
+        "c": [
+          "This",
+          "These"
+        ],
+        "a": 0,
+        "why": "가까운 하나이므로 This입니다."
+      },
+      {
+        "p": "Everyone ____ him.",
+        "c": [
+          "loves",
+          "love"
+        ],
+        "a": 0,
+        "why": "everyone은 단수 취급입니다."
+      },
+      {
+        "p": "I made it ____.",
+        "c": [
+          "myself",
+          "me"
+        ],
+        "a": 0,
+        "why": "'스스로'는 myself입니다."
+      },
+      {
+        "p": "My friend and ____ went to the park.",
+        "c": [
+          "I",
+          "me"
+        ],
+        "a": 0,
+        "why": "주어 자리에는 주격 I를 씁니다."
+      },
+      {
+        "p": "Look at the birds. ____ are flying high.",
+        "c": [
+          "They",
+          "Them"
+        ],
+        "a": 0,
+        "why": "앞에 나온 복수 명사(birds)를 대신하는 주격 대명사 They를 씁니다."
+      },
+      {
+        "p": "My mom gave ____ a new book.",
+        "c": [
+          "I",
+          "me"
+        ],
+        "a": 1,
+        "why": "동사 뒤 목적어 자리이므로 목적격 대명사 me를 씁니다."
+      },
+      {
+        "p": "____ shoes are too big for me.",
+        "c": [
+          "This",
+          "These"
+        ],
+        "a": 1,
+        "why": "shoes는 복수형이므로 복수 지시 대명사 These를 씁니다."
+      },
+      {
+        "p": "Did you clean the room ____?",
+        "c": [
+          "yourself",
+          "you"
+        ],
+        "a": 0,
+        "why": "주어 you가 한 행동을 스스로 했다는 뜻이므로 재귀대명사 yourself를 씁니다."
+      },
+      {
+        "p": "Everyone in the class ____ English.",
+        "c": [
+          "study",
+          "studies"
+        ],
+        "a": 1,
+        "why": "Everyone은 단수 취급하므로 동사에 -s/es를 붙입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Everyone are happy.",
+        "r": "Everyone is happy.",
+        "why": "everyone은 단수 취급입니다."
+      },
+      {
+        "w": "I made it me.",
+        "r": "I made it myself.",
+        "why": "'스스로'는 myself입니다."
+      },
+      {
+        "w": "These is my bag.",
+        "r": "This is my bag.",
+        "why": "가까운 하나는 This입니다."
+      },
+      {
+        "w": "Him is a good soccer player.",
+        "r": "He is a good soccer player.",
+        "why": "주어 자리에는 목적격 Him이 아니라 주격 He를 써야 합니다."
+      },
+      {
+        "w": "My sister and me like music.",
+        "r": "My sister and I like music.",
+        "why": "주어 자리이므로 목적격 me가 아니라 주격 I를 써야 합니다."
+      },
+      {
+        "w": "Look at that dogs over there.",
+        "r": "Look at those dogs over there.",
+        "why": "dogs가 복수이므로 지시 대명사도 복수형 those를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "친구를 대명사로 이어서 소개해요.",
+        "frame": "I met ____. He/She was ____."
+      },
+      {
+        "task": "가까운 것과 먼 것을 구별해요.",
+        "frame": "This is my ____, and that is yours."
+      },
+      {
+        "task": "모두에 대해 말해요.",
+        "frame": "Everyone is/likes ____."
+      },
+      {
+        "task": "스스로 한 일을 말해요.",
+        "frame": "I made/did it myself."
+      },
+      {
+        "task": "가족이 스스로 한 일을 자랑해요.",
+        "frame": "My ____ did it himself/herself."
+      },
+      {
+        "task": "여러 개의 물건을 가리키며 말해요.",
+        "frame": "These are my ____."
+      }
+    ],
+    "mission": {
+      "title": "대명사 바꿔 말하기 게임",
+      "scene": "명사가 반복되는 문장을 대명사로 바꿔 말하는 게임이에요.",
+      "steps": [
+        "Jisu is kind. Jisu is my friend. 같은 카드를 읽는다.",
+        "두 번째 Jisu를 She로 바꿔 말한다.",
+        "목적어는 her/him/them으로도 바꿔 본다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "지수를 만났어요. 그녀는 정말 친절했어요.",
+        "cond": "She를 써요.",
+        "model": "I met Jisu. She was very kind."
+      },
+      {
+        "ko": "모두가 그를 좋아해요.",
+        "cond": "Everyone을 써요.",
+        "model": "Everyone loves him."
+      },
+      {
+        "ko": "내가 그걸 직접 만들었어요.",
+        "cond": "myself를 써요.",
+        "model": "I made it myself."
+      },
+      {
+        "ko": "그들은 공원에서 놀고 있어요.",
+        "cond": "They를 써요.",
+        "model": "They are playing in the park."
+      },
+      {
+        "ko": "이것들은 예쁜 꽃들이에요.",
+        "cond": "These를 써요.",
+        "model": "These are pretty flowers."
+      },
+      {
+        "ko": "아빠가 나에게 선물을 주셨어요.",
+        "cond": "me를 써요.",
+        "model": "Dad gave me a gift."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I saw **him** yesterday.",
+        "ko": "나는 어제 그를 보았다."
+      },
+      {
+        "en": "**Those** are my pencils.",
+        "ko": "저것들은 내 연필들이다."
+      },
+      {
+        "en": "She fixed the bike **herself**.",
+        "ko": "그녀는 스스로 자전거를 고쳤다."
+      },
+      {
+        "en": "**Everyone** wants some pizza.",
+        "ko": "모두가 피자를 원한다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "다음 문장들에서 굵은 글씨로 표시된 단어들의 공통점은 무엇일까요? (I saw **him**. / She likes **them**.)",
+        "a": "동사 뒤에 쓰여 '~을/를'의 의미를 나타내는 목적격 대명사입니다."
+      },
+      "choose": [
+        {
+          "p": "Tom is my friend. I like ____ very much.",
+          "c": [
+            "he",
+            "him"
+          ],
+          "a": 1,
+          "why": "동사 like의 목적어 자리이므로 목적격 him을 씁니다."
+        },
+        {
+          "p": "____ are my favorite cookies.",
+          "c": [
+            "This",
+            "These"
+          ],
+          "a": 1,
+          "why": "cookies가 복수이므로 복수형 지시대명사 These를 씁니다."
+        },
+        {
+          "p": "He painted the wall ____.",
+          "c": [
+            "himself",
+            "him"
+          ],
+          "a": 0,
+          "why": "'그 스스로'라는 뜻이므로 재귀대명사 himself를 씁니다."
+        },
+        {
+          "p": "____ is ready for the test.",
+          "c": [
+            "Everyone",
+            "All"
+          ],
+          "a": 0,
+          "why": "단수 동사 is가 쓰였으므로 단수 취급하는 Everyone이 알맞습니다."
+        },
+        {
+          "p": "My mom and ____ baked a cake.",
+          "c": [
+            "I",
+            "me"
+          ],
+          "a": 0,
+          "why": "주어 자리이므로 주격 대명사 I를 씁니다."
+        },
+        {
+          "p": "Look at the stars. ____ are so bright.",
+          "c": [
+            "They",
+            "It"
+          ],
+          "a": 0,
+          "why": "stars가 복수이므로 주격 대명사 They로 받습니다."
+        },
+        {
+          "p": "Can you help ____ with this math problem?",
+          "c": [
+            "me",
+            "I"
+          ],
+          "a": 0,
+          "why": "동사 help의 목적어 자리이므로 목적격 me를 씁니다."
+        },
+        {
+          "p": "____ is a picture of my family.",
+          "c": [
+            "This",
+            "These"
+          ],
+          "a": 0,
+          "why": "단수명사 picture를 가리키므로 단수형 This를 씁니다."
+        },
+        {
+          "p": "We enjoyed ____ at the party.",
+          "c": [
+            "ourselves",
+            "us"
+          ],
+          "a": 0,
+          "why": "주어 We와 목적어가 같으므로 재귀대명사 ourselves를 씁니다."
+        },
+        {
+          "p": "Everyone ____ to play outside.",
+          "c": [
+            "wants",
+            "want"
+          ],
+          "a": 0,
+          "why": "Everyone은 단수 취급하므로 동사에 -s를 붙입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "She loves **them**.",
+          "ko": "그녀는 그들을 사랑한다."
+        },
+        {
+          "en": "I bought **this** yesterday.",
+          "ko": "나는 어제 이것을 샀다."
+        },
+        {
+          "en": "They built the house **themselves**.",
+          "ko": "그들은 스스로 그 집을 지었다."
+        },
+        {
+          "en": "**Everyone** knows the answer.",
+          "ko": "모두가 그 정답을 안다."
+        },
+        {
+          "en": "He invited **us** to dinner.",
+          "ko": "그가 우리를 저녁 식사에 초대했다."
+        },
+        {
+          "en": "**Those** are heavy boxes.",
+          "ko": "저것들은 무거운 상자들이다."
+        },
+        {
+          "en": "You must do it **yourself**.",
+          "ko": "너는 스스로 그것을 해야 한다."
+        },
+        {
+          "en": "**She** is a great singer.",
+          "ko": "그녀는 훌륭한 가수이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Her is my English teacher.",
+          "r": "She is my English teacher.",
+          "why": "주어 자리에는 주격 대명사 She를 써야 합니다."
+        },
+        {
+          "w": "I saw they at the mall.",
+          "r": "I saw them at the mall.",
+          "why": "동사 뒤 목적어 자리에는 목적격 대명사 them을 써야 합니다."
+        },
+        {
+          "w": "This are my new friends.",
+          "r": "These are my new friends.",
+          "why": "뒤에 복수형 동사 are가 오므로 복수 지시대명사 These를 써야 합니다."
+        },
+        {
+          "w": "Everyone have a red pen.",
+          "r": "Everyone has a red pen.",
+          "why": "Everyone은 단수 취급하므로 동사 has를 써야 합니다."
+        },
+        {
+          "w": "He fixed the computer him.",
+          "r": "He fixed the computer himself.",
+          "why": "'그 스스로'라는 의미를 나타내려면 재귀대명사 himself를 써야 합니다."
+        },
+        {
+          "w": "My dad and me washed the car.",
+          "r": "My dad and I washed the car.",
+          "why": "주어 자리에는 목적격 me가 아니라 주격 I를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구가 가진 여러 개의 물건을 가리켜요.",
+          "frame": "Those are your ____."
+        },
+        {
+          "task": "어떤 사람을 좋아하는지 말해요.",
+          "frame": "I like him/her because ____."
+        },
+        {
+          "task": "모두가 가지고 있는 것을 말해요.",
+          "frame": "Everyone has a ____."
+        },
+        {
+          "task": "우리 스스로 한 일을 말해요.",
+          "frame": "We finished the ____ ourselves."
+        },
+        {
+          "task": "가까이 있는 한 가지 물건을 소개해요.",
+          "frame": "This is my favorite ____."
+        },
+        {
+          "task": "나와 친구가 함께 한 일을 말해요.",
+          "frame": "My friend and I played ____."
+        }
+      ],
+      "mission": {
+        "title": "대명사 탐정 놀이",
+        "scene": "교실에 있는 물건이나 친구들을 가리키며 알맞은 대명사로 표현해 봅시다.",
+        "steps": [
+          "가까운 물건과 먼 물건을 하나씩 골라 'This is ~', 'That is ~'로 말해보세요.",
+          "친구 한 명을 가리키며 'I like him/her.'이라고 말해보세요.",
+          "짝과 함께 스스로 한 일을 'I did it myself.'라고 자랑해보세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그는 매우 똑똑해요.",
+          "cond": "He를 써요.",
+          "model": "He is very smart."
+        },
+        {
+          "ko": "나는 그것들을 좋아하지 않아요.",
+          "cond": "them을 써요.",
+          "model": "I do not like them."
+        },
+        {
+          "ko": "저것들은 내 책들이에요.",
+          "cond": "Those를 써요.",
+          "model": "Those are my books."
+        },
+        {
+          "ko": "모두가 그 노래를 알아요.",
+          "cond": "Everyone을 써요.",
+          "model": "Everyone knows the song."
+        },
+        {
+          "ko": "우리는 우리 스스로 청소했어요.",
+          "cond": "ourselves를 써요.",
+          "model": "We cleaned it ourselves."
+        },
+        {
+          "ko": "내 동생과 나는 우유를 마셨어요.",
+          "cond": "주어 자리에 I를 써요.",
+          "model": "My brother and I drank milk."
+        }
+      ]
+    }
+  }
+]

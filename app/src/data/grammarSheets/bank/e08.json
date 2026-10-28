@@ -1,0 +1,5415 @@
+[
+  {
+    "id": "superlative",
+    "discover": {
+      "q": "굵게 표시한 부분(the tallest, the fastest, the biggest)을 보세요. 형용사 끝에 무엇이 붙었나요? 그 앞에는 어떤 낱말이 있나요?",
+      "a": "형용사 끝에 -est를 붙이고(big은 g를 한 번 더 써서 biggest) 그 앞에 the를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "The giraffe is the ____.",
+        "c": [
+          "tallest",
+          "taller"
+        ],
+        "a": 0,
+        "why": "셋 이상 중 가장 ~한 것은 -est를 붙입니다."
+      },
+      {
+        "p": "Mina is ____ fastest in my class.",
+        "c": [
+          "the",
+          "a"
+        ],
+        "a": 0,
+        "why": "최상급 앞에는 the를 씁니다."
+      },
+      {
+        "p": "This is the ____ box in the room.",
+        "c": [
+          "biggest",
+          "bigest"
+        ],
+        "a": 0,
+        "why": "big은 마지막 g를 한 번 더 쓰고 -est를 붙입니다."
+      },
+      {
+        "p": "The whale is the ____ animal in the sea.",
+        "c": [
+          "biggest",
+          "bigger"
+        ],
+        "a": 0,
+        "why": "바다의 모든 동물 중 가장 큰 것이므로 최상급입니다."
+      },
+      {
+        "p": "Winter is the ____ season of the year.",
+        "c": [
+          "coldest",
+          "colder"
+        ],
+        "a": 0,
+        "why": "일 년의 모든 계절 중 가장 추운 것이므로 최상급입니다."
+      },
+      {
+        "p": "Summer is the ____ season of the year.",
+        "c": [
+          "hotest",
+          "hottest",
+          "hotter"
+        ],
+        "a": 1,
+        "why": "hot은 마지막 t를 한 번 더 쓰고 -est를 붙여 최상급을 만듭니다."
+      },
+      {
+        "p": "My grandpa is ____ oldest in my family.",
+        "c": [
+          "the",
+          "an"
+        ],
+        "a": 0,
+        "why": "최상급 앞에는 항상 the를 씁니다."
+      },
+      {
+        "p": "The cheetah is the ____ animal on land.",
+        "c": [
+          "fast",
+          "faster",
+          "fastest"
+        ],
+        "a": 2,
+        "why": "육지의 모든 동물 중 가장 빠른 것이므로 최상급을 씁니다."
+      },
+      {
+        "p": "This pencil is the ____ of all.",
+        "c": [
+          "shorter",
+          "shortest"
+        ],
+        "a": 1,
+        "why": "모든 것 중에서 가장 짧은 것이므로 최상급을 씁니다."
+      },
+      {
+        "p": "Yujin is the ____ student in my group.",
+        "c": [
+          "smartest",
+          "smart"
+        ],
+        "a": 0,
+        "why": "모둠에서 가장 똑똑한 학생이므로 최상급을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Mina is fastest in my class.",
+        "r": "Mina is the fastest in my class.",
+        "why": "최상급 앞에는 the를 씁니다."
+      },
+      {
+        "w": "The giraffe is the taller.",
+        "r": "The giraffe is the tallest.",
+        "why": "가장 ~한 것은 -est를 붙입니다."
+      },
+      {
+        "w": "This is the bigest box.",
+        "r": "This is the biggest box.",
+        "why": "big은 g를 한 번 더 쓰고 -est를 붙입니다."
+      },
+      {
+        "w": "This river is the longgest.",
+        "r": "This river is the longest.",
+        "why": "long의 최상급은 g를 한 번 더 쓰지 않고 그냥 -est를 붙입니다."
+      },
+      {
+        "w": "My dog is oldest in my house.",
+        "r": "My dog is the oldest in my house.",
+        "why": "최상급 앞에는 반드시 the를 써야 합니다."
+      },
+      {
+        "w": "She is the smarter girl in my class.",
+        "r": "She is the smartest girl in my class.",
+        "why": "반에서 가장 똑똑한 것이므로 비교급이 아닌 최상급을 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "우리 반에서 가장 ~한 친구를 말해요.",
+        "frame": "____ is the ____est in my class."
+      },
+      {
+        "task": "동물이나 물건 중 가장 ~한 것을 말해요.",
+        "frame": "The ____ is the ____est animal."
+      },
+      {
+        "task": "좋아하는 계절이나 음식을 최상급으로 말해요.",
+        "frame": "____ is the ____est season."
+      },
+      {
+        "task": "짝의 말을 듣고 맞는지 확인해요.",
+        "frame": "I think so, too. / No, the ____ is the ____est."
+      },
+      {
+        "task": "가족 중에서 가장 ~한 사람을 말해요.",
+        "frame": "My ____ is the ____est in my family."
+      },
+      {
+        "task": "여러 물건 중에서 가장 ~한 것을 골라 말해요.",
+        "frame": "This ____ is the ____est of all."
+      }
+    ],
+    "mission": {
+      "title": "최고 시상식",
+      "scene": "우리 반에서 가장 ~한 친구나 물건에게 상을 주는 시상식 놀이예요.",
+      "steps": [
+        "상 이름을 정한다. (예: the tallest, the fastest)",
+        "The ____est student is ____. 로 발표한다.",
+        "이유를 한 문장으로 덧붙인다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "기린이 가장 키가 커요.",
+        "cond": "the tallest를 써요.",
+        "model": "The giraffe is the tallest."
+      },
+      {
+        "ko": "미나가 우리 반에서 가장 빨라요.",
+        "cond": "the fastest를 써요.",
+        "model": "Mina is the fastest in my class."
+      },
+      {
+        "ko": "겨울이 가장 추운 계절이에요.",
+        "cond": "the coldest를 써요.",
+        "model": "Winter is the coldest season."
+      },
+      {
+        "ko": "이 가방이 가장 작아 보여요.",
+        "cond": "the smallest를 써요.",
+        "model": "This bag looks the smallest."
+      },
+      {
+        "ko": "이 음악이 가장 크게 들려요.",
+        "cond": "the loudest를 써요.",
+        "model": "This music sounds the loudest."
+      },
+      {
+        "ko": "그 물이 가장 차갑게 느껴져요.",
+        "cond": "the coldest를 써요.",
+        "model": "The water feels the coldest."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "Summer is **the** hot**test** season.",
+        "ko": "여름이 가장 더운 계절이야."
+      },
+      {
+        "en": "He is **the** smart**est** boy.",
+        "ko": "그는 가장 똑똑한 소년이야."
+      },
+      {
+        "en": "This bag is **the** small**est**.",
+        "ko": "이 가방이 가장 작아."
+      },
+      {
+        "en": "My dad is **the** strong**est**.",
+        "ko": "우리 아빠가 가장 힘이 세."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 부분(the ~est)은 어떤 의미를 나타낼까요?",
+        "a": "여럿 중에서 '가장 ~한'이라는 의미를 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "The elephant is the ____ animal here.",
+          "c": [
+            "strongest",
+            "stronger"
+          ],
+          "a": 0,
+          "why": "여기 있는 동물 중 가장 힘이 센 것이므로 최상급을 씁니다."
+        },
+        {
+          "p": "This ruler is ____ longest.",
+          "c": [
+            "the",
+            "a"
+          ],
+          "a": 0,
+          "why": "최상급 앞에는 항상 the를 씁니다."
+        },
+        {
+          "p": "February is the ____ month of the year.",
+          "c": [
+            "short",
+            "shortest",
+            "shorter"
+          ],
+          "a": 1,
+          "why": "일 년 중 가장 짧은 달이므로 최상급을 씁니다."
+        },
+        {
+          "p": "That is the ____ car in the shop.",
+          "c": [
+            "oldest",
+            "old"
+          ],
+          "a": 0,
+          "why": "가게에서 가장 오래된 자동차이므로 최상급을 씁니다."
+        },
+        {
+          "p": "Today is the ____ day of the week.",
+          "c": [
+            "hotest",
+            "hottest"
+          ],
+          "a": 1,
+          "why": "hot은 t를 한 번 더 쓰고 -est를 붙입니다."
+        },
+        {
+          "p": "Jihoon is the ____ player on the team.",
+          "c": [
+            "tallest",
+            "tall"
+          ],
+          "a": 0,
+          "why": "팀에서 가장 키가 큰 선수이므로 최상급을 씁니다."
+        },
+        {
+          "p": "The mouse is the ____ animal in the story.",
+          "c": [
+            "smallest",
+            "smaller"
+          ],
+          "a": 0,
+          "why": "이야기에서 가장 작은 동물이므로 최상급을 씁니다."
+        },
+        {
+          "p": "This is the ____ book in the library.",
+          "c": [
+            "thickest",
+            "thicker"
+          ],
+          "a": 0,
+          "why": "도서관에서 가장 두꺼운 책이므로 최상급을 씁니다."
+        },
+        {
+          "p": "My brother is ____ youngest in my family.",
+          "c": [
+            "the",
+            "an"
+          ],
+          "a": 0,
+          "why": "최상급 앞에는 the를 써야 합니다."
+        },
+        {
+          "p": "The blue whale is the ____ animal on Earth.",
+          "c": [
+            "loudest",
+            "louder"
+          ],
+          "a": 0,
+          "why": "지구에서 가장 소리가 큰 동물이므로 최상급을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The elephant is **the** strong**est**.",
+          "ko": "코끼리가 가장 힘이 세."
+        },
+        {
+          "en": "This ruler is **the** long**est**.",
+          "ko": "이 자가 가장 길어."
+        },
+        {
+          "en": "February is **the** short**est** month.",
+          "ko": "2월이 가장 짧은 달이야."
+        },
+        {
+          "en": "That is **the** old**est** car.",
+          "ko": "저것이 가장 오래된 자동차야."
+        },
+        {
+          "en": "Today is **the** hot**test** day.",
+          "ko": "오늘이 가장 더운 날이야."
+        },
+        {
+          "en": "The mouse is **the** small**est**.",
+          "ko": "생쥐가 가장 작아."
+        },
+        {
+          "en": "Jihoon is **the** tall**est** player.",
+          "ko": "지훈이가 가장 키가 큰 선수야."
+        },
+        {
+          "en": "My brother is **the** young**est**.",
+          "ko": "내 남동생이 가장 어려."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The elephant is strongest animal here.",
+          "r": "The elephant is the strongest animal here.",
+          "why": "최상급 앞에는 the를 써야 합니다."
+        },
+        {
+          "w": "Today is the hotest day.",
+          "r": "Today is the hottest day.",
+          "why": "hot은 t를 한 번 더 쓰고 -est를 붙입니다."
+        },
+        {
+          "w": "This ruler is the longer.",
+          "r": "This ruler is the longest.",
+          "why": "가장 ~하다는 의미를 나타낼 때는 -est를 붙여 최상급을 만듭니다."
+        },
+        {
+          "w": "February is shortest month.",
+          "r": "February is the shortest month.",
+          "why": "최상급 앞에는 항상 the를 씁니다."
+        },
+        {
+          "w": "My brother is the younggest.",
+          "r": "My brother is the youngest.",
+          "why": "young은 g를 한 번 더 쓰지 않고 그냥 -est를 붙입니다."
+        },
+        {
+          "w": "That is the older car in the shop.",
+          "r": "That is the oldest car in the shop.",
+          "why": "가게에서 가장 오래된 것이므로 비교급이 아닌 최상급을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "동물원에서 가장 ~한 동물을 말해요.",
+          "frame": "The ____ is the ____est animal in the zoo."
+        },
+        {
+          "task": "학용품 중에서 가장 ~한 것을 말해요.",
+          "frame": "This ____ is the ____est."
+        },
+        {
+          "task": "일주일 중 가장 ~한 요일을 말해요.",
+          "frame": "____day is the ____est day."
+        },
+        {
+          "task": "친구들의 키나 나이를 비교하며 가장 ~한 사람을 말해요.",
+          "frame": "____ is the ____est in our group."
+        },
+        {
+          "task": "내가 아는 가장 ~한 장소를 말해요.",
+          "frame": "____ is the ____est place."
+        },
+        {
+          "task": "짝의 의견에 동의하거나 다르게 생각한다고 말해요.",
+          "frame": "I agree. / No, ____ is the ____est."
+        }
+      ],
+      "mission": {
+        "title": "기네스북 기록 만들기",
+        "scene": "우리 반의 재미있는 최고 기록을 찾아 반 기네스북을 만듭니다.",
+        "steps": [
+          "짝과 함께 연필, 지우개 등 비교할 대상을 정합니다.",
+          "서로의 물건을 비교하며 'My pencil is the shortest.'처럼 최상급으로 말합니다.",
+          "반 전체에서 가장 ~한 친구나 물건을 찾아 칠판에 기록합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "코끼리가 가장 힘이 세요.",
+          "cond": "the strongest를 써요.",
+          "model": "The elephant is the strongest."
+        },
+        {
+          "ko": "이 자가 가장 길어 보여요.",
+          "cond": "the longest를 써요.",
+          "model": "This ruler looks the longest."
+        },
+        {
+          "ko": "얼음이 가장 차갑게 느껴져요.",
+          "cond": "the coldest를 써요.",
+          "model": "Ice feels the coldest."
+        },
+        {
+          "ko": "그 이야기가 가장 슬프게 들려요.",
+          "cond": "the saddest를 써요.",
+          "model": "The story sounds the saddest."
+        },
+        {
+          "ko": "이 방이 가장 어두워져요.",
+          "cond": "the darkest를 써요.",
+          "model": "This room becomes the darkest."
+        },
+        {
+          "ko": "이 신발이 가장 새 것 같아요.",
+          "cond": "the newest를 써요.",
+          "model": "These shoes seem the newest."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-comparison",
+    "discover": {
+      "q": "more interesting, the most popular, as heavy as, better, worst를 보세요. 짧은 형용사와 긴 형용사의 비교급은 어떻게 다른가요? good과 bad는 어떻게 바뀌었나요?",
+      "a": "짧은 말은 -er/-est를, 긴 말은 more/most를 붙인다. good은 better–best, bad는 worse–worst로 불규칙하게 바뀐다. 같은 정도는 as + 원급 + as이다."
+    },
+    "choose": [
+      {
+        "p": "This book is ____ than that one.",
+        "c": [
+          "more interesting",
+          "interestinger"
+        ],
+        "a": 0,
+        "why": "긴 형용사는 more를 붙여 비교급을 만듭니다."
+      },
+      {
+        "p": "She is the ____ popular student in our class.",
+        "c": [
+          "most",
+          "more"
+        ],
+        "a": 0,
+        "why": "긴 형용사의 최상급은 the most입니다."
+      },
+      {
+        "p": "My bag is as ____ as yours.",
+        "c": [
+          "heavy",
+          "heavier"
+        ],
+        "a": 0,
+        "why": "as ~ as 사이에는 원급을 씁니다."
+      },
+      {
+        "p": "Your idea is ____ than mine.",
+        "c": [
+          "better",
+          "gooder"
+        ],
+        "a": 0,
+        "why": "good의 비교급은 better입니다."
+      },
+      {
+        "p": "This is the ____ movie ever.",
+        "c": [
+          "worst",
+          "baddest"
+        ],
+        "a": 0,
+        "why": "bad의 최상급은 worst입니다."
+      },
+      {
+        "p": "Math is ____ difficult than English.",
+        "c": [
+          "most",
+          "more"
+        ],
+        "a": 1,
+        "why": "difficult처럼 긴 형용사는 앞에 more를 붙여 비교급을 만듭니다."
+      },
+      {
+        "p": "This car is as ____ as that car.",
+        "c": [
+          "faster",
+          "fast"
+        ],
+        "a": 1,
+        "why": "as ~ as 사이에는 형용사나 부사의 원급을 써야 합니다."
+      },
+      {
+        "p": "He is the ____ soccer player in our school.",
+        "c": [
+          "good",
+          "better",
+          "best"
+        ],
+        "a": 2,
+        "why": "우리 학교에서 가장 뛰어나다는 의미이므로 good의 최상급인 best를 써야 합니다."
+      },
+      {
+        "p": "My dog is ____ than your dog.",
+        "c": [
+          "smarter",
+          "more smart"
+        ],
+        "a": 0,
+        "why": "smart는 짧은 형용사이므로 뒤에 -er을 붙여 비교급을 만듭니다."
+      },
+      {
+        "p": "Today's weather is ____ than yesterday's.",
+        "c": [
+          "badder",
+          "worse"
+        ],
+        "a": 1,
+        "why": "bad의 비교급은 불규칙 형태인 worse입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She is more taller than me.",
+        "r": "She is taller than me.",
+        "why": "-er와 more를 함께 쓰지 않습니다."
+      },
+      {
+        "w": "It is gooder than before.",
+        "r": "It is better than before.",
+        "why": "good의 비교급은 better입니다."
+      },
+      {
+        "w": "My bag is as heavier as yours.",
+        "r": "My bag is as heavy as yours.",
+        "why": "as ~ as 사이에는 원급을 씁니다."
+      },
+      {
+        "w": "This dress is most expensive than that one.",
+        "r": "This dress is more expensive than that one.",
+        "why": "뒤에 than이 있으므로 최상급이 아닌 비교급 more를 써야 합니다."
+      },
+      {
+        "w": "He is the most smartest boy.",
+        "r": "He is the smartest boy.",
+        "why": "짧은 형용사의 최상급은 -est만 붙이며 most를 중복해서 쓰지 않습니다."
+      },
+      {
+        "w": "My room is as bigger as your room.",
+        "r": "My room is as big as your room.",
+        "why": "as와 as 사이에는 비교급이 아닌 원급을 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "두 물건을 비교해요.",
+        "frame": "This ____ is more ____ than that ____."
+      },
+      {
+        "task": "나와 짝이 같은 정도인 것을 말해요.",
+        "frame": "I am as ____ as you."
+      },
+      {
+        "task": "가장 좋아하는 것을 말해요.",
+        "frame": "____ is the most ____ ____ in the world."
+      },
+      {
+        "task": "내 생각과 짝의 생각을 비교해요.",
+        "frame": "Your idea is better/worse than mine."
+      },
+      {
+        "task": "두 과목의 난이도를 비교해요.",
+        "frame": "____ is more difficult than ____."
+      },
+      {
+        "task": "우리 반에서 가장 ~한 사람을 말해요.",
+        "frame": "____ is the most ____ student in our class."
+      }
+    ],
+    "mission": {
+      "title": "비교 토크쇼",
+      "scene": "두 가지를 비교해서 최고와 최악을 정하는 토크쇼 놀이예요.",
+      "steps": [
+        "영화·음식·운동 중 한 가지를 고른다.",
+        "비교급과 최상급으로 세 문장을 말한다.",
+        "as ~ as를 써서 같은 정도인 것도 하나 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이 책이 저 책보다 더 재미있다.",
+        "cond": "more interesting than을 써요.",
+        "model": "This book is more interesting than that one."
+      },
+      {
+        "ko": "내 가방은 네 가방만큼 무겁다.",
+        "cond": "as heavy as를 써요.",
+        "model": "My bag is as heavy as yours."
+      },
+      {
+        "ko": "네 생각이 내 생각보다 낫다.",
+        "cond": "better than을 써요.",
+        "model": "Your idea is better than mine."
+      },
+      {
+        "ko": "이 꽃은 저 꽃보다 더 아름답다.",
+        "cond": "more beautiful than을 써요.",
+        "model": "This flower is more beautiful than that flower."
+      },
+      {
+        "ko": "내 고양이는 네 고양이만큼 빠르게 달린다.",
+        "cond": "as fast as를 써요.",
+        "model": "My cat runs as fast as your cat."
+      },
+      {
+        "ko": "그녀는 최고의 아이디어를 가지고 있다.",
+        "cond": "the best를 써요.",
+        "model": "She has the best idea."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "This flower is **more beautiful than** a rose.",
+        "ko": "이 꽃은 장미보다 더 아름답다."
+      },
+      {
+        "en": "My brother is **as tall as** my father.",
+        "ko": "내 남동생은 우리 아빠만큼 키가 크다."
+      },
+      {
+        "en": "This puzzle is **the most difficult** one.",
+        "ko": "이 퍼즐은 가장 어려운 것이다."
+      },
+      {
+        "en": "Her singing is **better than** mine.",
+        "ko": "그녀의 노래는 내 것보다 낫다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 beautiful이나 interesting처럼 길이가 긴 단어의 비교급과 최상급을 만들 때, 단어 앞에 각각 어떤 말을 붙이나요?",
+        "a": "비교급에는 more를, 최상급에는 the most를 붙입니다."
+      },
+      "choose": [
+        {
+          "p": "This movie is ____ exciting than the book.",
+          "c": [
+            "most",
+            "more"
+          ],
+          "a": 1,
+          "why": "than이 있으므로 비교급이 필요하며, 긴 단어 앞에는 more를 씁니다."
+        },
+        {
+          "p": "She runs as ____ as a cheetah.",
+          "c": [
+            "fast",
+            "faster",
+            "fastest"
+          ],
+          "a": 0,
+          "why": "as ~ as 사이에는 반드시 원급을 써야 합니다."
+        },
+        {
+          "p": "This is the ____ delicious cake in the shop.",
+          "c": [
+            "most",
+            "more"
+          ],
+          "a": 0,
+          "why": "가게에서 가장 맛있다는 의미의 최상급이 필요하므로 the most를 씁니다."
+        },
+        {
+          "p": "My test score is ____ than yours.",
+          "c": [
+            "worse",
+            "worst",
+            "badder"
+          ],
+          "a": 0,
+          "why": "than 앞에는 비교급을 쓰며, bad의 비교급은 worse입니다."
+        },
+        {
+          "p": "A tiger is ____ than a cat.",
+          "c": [
+            "more big",
+            "bigger"
+          ],
+          "a": 1,
+          "why": "big은 짧은 단어이므로 -er을 붙여 비교급을 만듭니다."
+        },
+        {
+          "p": "This game is ____ popular than that game.",
+          "c": [
+            "most",
+            "more"
+          ],
+          "a": 1,
+          "why": "popular처럼 긴 단어의 비교급은 앞에 more를 붙입니다."
+        },
+        {
+          "p": "He is the ____ singer in the world.",
+          "c": [
+            "better",
+            "best",
+            "goodest"
+          ],
+          "a": 1,
+          "why": "세상에서 가장 훌륭하다는 최상급이 필요하며, good의 최상급은 best입니다."
+        },
+        {
+          "p": "Your shoes are as ____ as mine.",
+          "c": [
+            "cleaner",
+            "clean"
+          ],
+          "a": 1,
+          "why": "as와 as 사이에는 항상 원급을 씁니다."
+        },
+        {
+          "p": "Science is ____ important than art.",
+          "c": [
+            "more",
+            "most"
+          ],
+          "a": 0,
+          "why": "than이 있으므로 비교급인 more important가 되어야 합니다."
+        },
+        {
+          "p": "Seoul is the ____ city in Korea.",
+          "c": [
+            "largest",
+            "larger",
+            "most large"
+          ],
+          "a": 0,
+          "why": "한국에서 가장 큰 도시라는 의미이므로 짧은 단어 large에 -st를 붙인 최상급을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "This watch is **more expensive than** that ring.",
+          "ko": "이 시계는 저 반지보다 더 비싸다."
+        },
+        {
+          "en": "I am **as fast as** my sister.",
+          "ko": "나는 내 여동생만큼 빠르다."
+        },
+        {
+          "en": "He is **the most famous** actor here.",
+          "ko": "그는 여기서 가장 유명한 배우이다."
+        },
+        {
+          "en": "Your drawing is **worse than** his drawing.",
+          "ko": "네 그림은 그의 그림보다 더 나쁘다."
+        },
+        {
+          "en": "This is **the best** day of my life.",
+          "ko": "오늘은 내 인생에서 최고의 날이다."
+        },
+        {
+          "en": "A smartphone is **more useful than** a radio.",
+          "ko": "스마트폰은 라디오보다 더 유용하다."
+        },
+        {
+          "en": "My hair is **as long as** yours.",
+          "ko": "내 머리카락은 네 것만큼 길다."
+        },
+        {
+          "en": "She is **the smartest** girl in the room.",
+          "ko": "그녀는 이 방에서 가장 똑똑한 소녀이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "This bag is more heavy than that one.",
+          "r": "This bag is heavier than that one.",
+          "why": "heavy처럼 짧은 단어는 more를 쓰지 않고 -ier를 붙여 비교급을 만듭니다."
+        },
+        {
+          "w": "He is as taller as his brother.",
+          "r": "He is as tall as his brother.",
+          "why": "as와 as 사이에는 비교급이 아닌 원급을 써야 합니다."
+        },
+        {
+          "w": "This is the most worst problem.",
+          "r": "This is the worst problem.",
+          "why": "worst 자체가 최상급이므로 앞에 most를 중복해서 쓰지 않습니다."
+        },
+        {
+          "w": "Science is more harder than math.",
+          "r": "Science is harder than math.",
+          "why": "hard는 짧은 단어이므로 -er만 붙여 비교급을 만들며 more를 함께 쓰지 않습니다."
+        },
+        {
+          "w": "My phone is gooder than yours.",
+          "r": "My phone is better than yours.",
+          "why": "good의 비교급은 불규칙 형태인 better입니다."
+        },
+        {
+          "w": "She is the beautifulest girl here.",
+          "r": "She is the most beautiful girl here.",
+          "why": "beautiful처럼 긴 단어의 최상급은 -est를 붙이지 않고 앞에 the most를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "두 동물의 크기를 비교해요.",
+          "frame": "A ____ is bigger than a ____."
+        },
+        {
+          "task": "두 물건의 가격이 같다고 말해요.",
+          "frame": "This ____ is as expensive as that ____."
+        },
+        {
+          "task": "자신이 아는 가장 유명한 사람을 말해요.",
+          "frame": "____ is the most famous person I know."
+        },
+        {
+          "task": "두 스포츠의 재미를 비교해요.",
+          "frame": "____ is more exciting than ____."
+        },
+        {
+          "task": "내가 가진 최고의 물건을 자랑해요.",
+          "frame": "This is the best ____ in my house."
+        },
+        {
+          "task": "친구와 나의 나이가 같다고 말해요.",
+          "frame": "I am as old as ____."
+        }
+      ],
+      "mission": {
+        "title": "최고의 물건 찾기",
+        "scene": "교실 안의 물건들을 비교하여 가장 크거나 비싼 물건을 찾아봅니다.",
+        "steps": [
+          "짝과 함께 교실에 있는 물건 두 개를 골라 크기나 가격을 비교합니다. (예: This desk is bigger than that chair.)",
+          "우리 반에서 가장 큰 물건이나 가장 비싼 물건을 하나씩 정합니다.",
+          "정한 물건을 친구들 앞에서 영어로 발표합니다. (예: The TV is the most expensive thing in our classroom.)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "이 시계는 저 반지보다 더 비싸다.",
+          "cond": "more expensive than을 써요.",
+          "model": "This watch is more expensive than that ring."
+        },
+        {
+          "ko": "제인은 메리만큼 빠르게 달린다.",
+          "cond": "as fast as를 써요.",
+          "model": "Jane runs as fast as Mary."
+        },
+        {
+          "ko": "네 그림은 내 것보다 더 나빠 보인다.",
+          "cond": "worse than을 써요.",
+          "model": "Your drawing looks worse than mine."
+        },
+        {
+          "ko": "이 소파는 저 의자만큼 편안하게 느껴진다.",
+          "cond": "as comfortable as를 써요.",
+          "model": "This sofa feels as comfortable as that chair."
+        },
+        {
+          "ko": "나는 내 인생에서 최고의 날을 보냈다.",
+          "cond": "the best를 써요.",
+          "model": "I had the best day of my life."
+        },
+        {
+          "ko": "그 새는 가장 아름다운 노래를 부른다.",
+          "cond": "the most beautiful을 써요.",
+          "model": "The bird sings the most beautiful song."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-comparative-emphasis",
+    "discover": {
+      "q": "much, even, far, a lot가 들어간 문장을 보세요. 이 낱말은 비교급 앞에서 어떤 역할을 하나요? very는 쓸 수 있나요?",
+      "a": "비교급 앞에서 '훨씬'이라는 뜻으로 강조한다. very는 비교급을 강조할 수 없고 원급 앞에서 쓴다."
+    },
+    "choose": [
+      {
+        "p": "This bag is ____ heavier than that one.",
+        "c": [
+          "much",
+          "very"
+        ],
+        "a": 0,
+        "why": "비교급은 much로 강조하고 very는 쓰지 않습니다."
+      },
+      {
+        "p": "Today is ____ hotter than yesterday.",
+        "c": [
+          "even",
+          "very"
+        ],
+        "a": 0,
+        "why": "비교급 강조는 even을 쓸 수 있고 very는 쓸 수 없습니다."
+      },
+      {
+        "p": "She runs ____ faster than I do.",
+        "c": [
+          "far",
+          "very"
+        ],
+        "a": 0,
+        "why": "비교급 강조는 far를 씁니다."
+      },
+      {
+        "p": "This book is a lot ____ interesting.",
+        "c": [
+          "more",
+          "most"
+        ],
+        "a": 0,
+        "why": "비교급이므로 more를 씁니다."
+      },
+      {
+        "p": "This soup is ____ delicious.",
+        "c": [
+          "very",
+          "much"
+        ],
+        "a": 0,
+        "why": "원급(delicious)을 강조할 때는 very를 씁니다."
+      },
+      {
+        "p": "This test is ____ harder than the last one.",
+        "c": [
+          "much",
+          "very",
+          "many"
+        ],
+        "a": 0,
+        "why": "비교급(harder)을 강조할 때는 very나 many가 아닌 much를 씁니다."
+      },
+      {
+        "p": "My dad's car is ____ faster than my bike.",
+        "c": [
+          "very",
+          "a lot"
+        ],
+        "a": 1,
+        "why": "비교급을 강조하는 표현으로 a lot을 쓸 수 있습니다."
+      },
+      {
+        "p": "The puppy is ____ cute.",
+        "c": [
+          "much",
+          "very"
+        ],
+        "a": 1,
+        "why": "비교급이 아닌 원급(cute)을 강조할 때는 very를 씁니다."
+      },
+      {
+        "p": "This movie is far ____ exciting than the book.",
+        "c": [
+          "more",
+          "most"
+        ],
+        "a": 0,
+        "why": "뒤에 than이 있으므로 비교급인 more를 써야 합니다."
+      },
+      {
+        "p": "Russia is ____ larger than Korea.",
+        "c": [
+          "still",
+          "very"
+        ],
+        "a": 0,
+        "why": "비교급(larger) 앞에는 very를 쓸 수 없고 still로 강조합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "This is very bigger than that.",
+        "r": "This is much bigger than that.",
+        "why": "비교급 앞에는 very 대신 much를 씁니다."
+      },
+      {
+        "w": "She is very taller than him.",
+        "r": "She is much taller than him.",
+        "why": "비교급은 much/even/far로 강조합니다."
+      },
+      {
+        "w": "My score is still higher then yours.",
+        "r": "My score is still higher than yours.",
+        "why": "비교 대상 앞에는 than을 씁니다."
+      },
+      {
+        "w": "This computer is very more expensive.",
+        "r": "This computer is much more expensive.",
+        "why": "비교급 앞에는 very 대신 much, even, far 등을 씁니다."
+      },
+      {
+        "w": "He swims a lot fast than I do.",
+        "r": "He swims a lot faster than I do.",
+        "why": "비교 대상(than)이 있으므로 원급이 아니라 비교급을 써야 합니다."
+      },
+      {
+        "w": "My new shoes are many better.",
+        "r": "My new shoes are much better.",
+        "why": "비교급 강조에는 many가 아니라 much를 사용합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "두 물건의 차이가 크다고 말해요.",
+        "frame": "This is much/far ____er than that."
+      },
+      {
+        "task": "어제와 오늘을 비교해 말해요.",
+        "frame": "Today is even ____er than yesterday."
+      },
+      {
+        "task": "내 점수나 키를 짝과 비교해요.",
+        "frame": "I am a lot ____er than you."
+      },
+      {
+        "task": "책이나 영화를 비교해 말해요.",
+        "frame": "This ____ is a lot more ____ than that one."
+      },
+      {
+        "task": "두 사람의 나이를 비교하며 강조해서 말해요.",
+        "frame": "My ____ is much older than ____."
+      },
+      {
+        "task": "두 사물의 길이를 비교해 말해요.",
+        "frame": "The ____ is far longer than the ____."
+      }
+    ],
+    "mission": {
+      "title": "어마어마한 비교 대회",
+      "scene": "두 가지를 골라 얼마나 차이가 큰지 과장해서 말하는 대회예요.",
+      "steps": [
+        "비교할 두 가지를 정한다.",
+        "much / far / even / a lot를 써서 세 문장을 만든다.",
+        "가장 재미있는 비교에 박수를 보낸다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이 가방은 저것보다 훨씬 무거워요.",
+        "cond": "much를 써요.",
+        "model": "This bag is much heavier than that one."
+      },
+      {
+        "ko": "오늘은 어제보다 훨씬 더 더워요.",
+        "cond": "even을 써요.",
+        "model": "Today is even hotter than yesterday."
+      },
+      {
+        "ko": "그녀는 나보다 훨씬 빨리 달려요.",
+        "cond": "far를 써요.",
+        "model": "She runs far faster than I do."
+      },
+      {
+        "ko": "이 피자는 저것보다 훨씬 더 맛있다.",
+        "cond": "a lot을 써요.",
+        "model": "This pizza tastes a lot better than that one."
+      },
+      {
+        "ko": "그의 목소리는 내 것보다 훨씬 더 크다.",
+        "cond": "far를 써요.",
+        "model": "His voice sounds far louder than mine."
+      },
+      {
+        "ko": "기차가 버스보다 여전히 더 빠르다.",
+        "cond": "still을 써요.",
+        "model": "The train travels still faster than the bus."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "His room is **much dirtier** than mine.",
+        "ko": "그의 방은 내 방보다 훨씬 더 더럽다."
+      },
+      {
+        "en": "This game is **a lot more exciting**.",
+        "ko": "이 게임은 훨씬 더 흥미진진하다."
+      },
+      {
+        "en": "She speaks English **even better** now.",
+        "ko": "그녀는 이제 영어를 훨씬 더 잘 말한다."
+      },
+      {
+        "en": "My brother is **far stronger** than me.",
+        "ko": "내 남동생은 나보다 훨씬 더 힘이 세다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 much, even, far 뒤에 오는 형용사나 부사는 어떤 형태인가요?",
+        "a": "비교급 형태(-er 또는 more ~)입니다."
+      },
+      "choose": [
+        {
+          "p": "Science is ____ more difficult than art.",
+          "c": [
+            "much",
+            "very",
+            "many"
+          ],
+          "a": 0,
+          "why": "비교급(more difficult)을 강조할 때는 much를 씁니다."
+        },
+        {
+          "p": "This winter is ____ colder than last year.",
+          "c": [
+            "very",
+            "even"
+          ],
+          "a": 1,
+          "why": "colder라는 비교급을 강조하므로 even이 알맞습니다."
+        },
+        {
+          "p": "The red shirt is ____ cheaper than the blue one.",
+          "c": [
+            "very",
+            "many",
+            "far"
+          ],
+          "a": 2,
+          "why": "비교급 앞에는 very나 many를 쓸 수 없고 far를 씁니다."
+        },
+        {
+          "p": "Your drawing is ____ beautiful.",
+          "c": [
+            "much",
+            "very"
+          ],
+          "a": 1,
+          "why": "비교급이 아닌 원급(beautiful)을 강조할 때는 very를 씁니다."
+        },
+        {
+          "p": "He wakes up a lot ____ than his sister.",
+          "c": [
+            "early",
+            "earlier"
+          ],
+          "a": 1,
+          "why": "비교 대상(than)이 있으므로 비교급인 earlier를 써야 합니다."
+        },
+        {
+          "p": "This problem is ____ easier than I thought.",
+          "c": [
+            "very",
+            "still"
+          ],
+          "a": 1,
+          "why": "비교급(easier) 강조에는 still을 씁니다."
+        },
+        {
+          "p": "I feel ____ better today.",
+          "c": [
+            "much",
+            "many"
+          ],
+          "a": 0,
+          "why": "비교급(better)은 many가 아니라 much로 강조합니다."
+        },
+        {
+          "p": "She is a ____ more famous singer now.",
+          "c": [
+            "very",
+            "lot"
+          ],
+          "a": 1,
+          "why": "비교급을 강조하는 표현은 a lot입니다."
+        },
+        {
+          "p": "The elephant is ____ heavier than the lion.",
+          "c": [
+            "far",
+            "very",
+            "many"
+          ],
+          "a": 0,
+          "why": "비교급(heavier) 앞에는 far를 써서 강조합니다."
+        },
+        {
+          "p": "This cake is ____ sweet.",
+          "c": [
+            "much",
+            "so"
+          ],
+          "a": 1,
+          "why": "원급(sweet)을 강조할 때는 so나 very를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "This box is **much smaller** than that.",
+          "ko": "이 상자는 저것보다 훨씬 작다."
+        },
+        {
+          "en": "The river is **even deeper** here.",
+          "ko": "그 강은 여기서 훨씬 더 깊다."
+        },
+        {
+          "en": "He drives **far more carefully** today.",
+          "ko": "그는 오늘 훨씬 더 조심스럽게 운전한다."
+        },
+        {
+          "en": "This phone is **a lot cheaper**.",
+          "ko": "이 전화기는 훨씬 더 싸다."
+        },
+        {
+          "en": "Her hair is **still longer** than yours.",
+          "ko": "그녀의 머리카락은 여전히 네 것보다 길다."
+        },
+        {
+          "en": "The test was **much easier** than before.",
+          "ko": "그 시험은 예전보다 훨씬 더 쉬웠다."
+        },
+        {
+          "en": "I am **even more tired** now.",
+          "ko": "나는 지금 훨씬 더 피곤하다."
+        },
+        {
+          "en": "This song is **far more popular**.",
+          "ko": "이 노래는 훨씬 더 인기가 있다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She is very smarter than her brother.",
+          "r": "She is much smarter than her brother.",
+          "why": "비교급 앞에는 very를 쓸 수 없고 much 등을 써야 합니다."
+        },
+        {
+          "w": "This building is much tall than that one.",
+          "r": "This building is much taller than that one.",
+          "why": "much 뒤에는 원급이 아니라 비교급이 와야 합니다."
+        },
+        {
+          "w": "He plays soccer even gooder than me.",
+          "r": "He plays soccer even better than me.",
+          "why": "good의 비교급은 gooder가 아니라 better입니다."
+        },
+        {
+          "w": "This jacket is a lot more warm.",
+          "r": "This jacket is a lot warmer.",
+          "why": "warm의 비교급은 more warm이 아니라 warmer입니다."
+        },
+        {
+          "w": "My cat is many lazier than my dog.",
+          "r": "My cat is much lazier than my dog.",
+          "why": "비교급 강조에는 many가 아니라 much를 씁니다."
+        },
+        {
+          "w": "The movie was very more boring than the book.",
+          "r": "The movie was much more boring than the book.",
+          "why": "비교급 more boring 앞에는 much를 써서 강조합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "두 동물의 크기를 비교해 말해요.",
+          "frame": "A ____ is much bigger than a ____."
+        },
+        {
+          "task": "두 과목의 난이도를 비교해 말해요.",
+          "frame": "____ is a lot more difficult than ____."
+        },
+        {
+          "task": "가족 중 누구의 키가 훨씬 더 큰지 말해요.",
+          "frame": "My ____ is far taller than my ____."
+        },
+        {
+          "task": "오늘 날씨가 어제보다 훨씬 더 좋다고 말해요.",
+          "frame": "The weather is even ____er today."
+        },
+        {
+          "task": "두 음식의 맛을 비교해 말해요.",
+          "frame": "This ____ is much tastier than that ____."
+        },
+        {
+          "task": "자신의 기분이 훨씬 나아졌다고 말해요.",
+          "frame": "I feel a lot ____ now."
+        }
+      ],
+      "mission": {
+        "title": "최고의 선택! (비교급 강조하기)",
+        "scene": "친구와 두 가지 물건이나 장소를 비교하며 어떤 것이 훨씬 더 좋은지 이야기해 봅시다.",
+        "steps": [
+          "각자 비교하고 싶은 두 가지 주제(예: 피자와 햄버거, 여름과 겨울)를 정하세요.",
+          "한 명이 '____ is much better than ____.'라고 강조해서 말하세요.",
+          "상대방은 동의하거나 반대하며 'I think ____ is even better.'라고 대답하세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "이 의자는 저것보다 훨씬 더 편안하게 보인다.",
+          "cond": "much를 써요.",
+          "model": "This chair looks much more comfortable than that one."
+        },
+        {
+          "ko": "내 가방은 네 것보다 훨씬 더 비쌌다.",
+          "cond": "even을 써요.",
+          "model": "My bag was even more expensive than yours."
+        },
+        {
+          "ko": "그는 나보다 훨씬 더 일찍 일어난다.",
+          "cond": "a lot을 써요.",
+          "model": "He wakes up a lot earlier than I do."
+        },
+        {
+          "ko": "수학은 과학보다 훨씬 더 어려워 보인다.",
+          "cond": "far를 써요.",
+          "model": "Math seems far more difficult than science."
+        },
+        {
+          "ko": "이 컴퓨터는 저것보다 여전히 더 빠르게 작동한다.",
+          "cond": "still을 써요.",
+          "model": "This computer works still faster than that one."
+        },
+        {
+          "ko": "제인은 메리보다 훨씬 더 노래를 잘한다.",
+          "cond": "much를 써요.",
+          "model": "Jane sings much better than Mary."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-superlative-one-of",
+    "discover": {
+      "q": "one of the biggest cities와 the tallest in his class를 비교해 보세요. one of the 뒤에는 단수와 복수 중 무엇이 오나요? in과 of는 각각 어떤 말 앞에 쓰였나요?",
+      "a": "one of the + 최상급 뒤에는 복수명사가 온다. in은 장소·집단(in his class) 앞에, of는 비교 대상들(of the four seasons) 앞에 쓴다."
+    },
+    "choose": [
+      {
+        "p": "Seoul is one of the biggest ____ in the world.",
+        "c": [
+          "cities",
+          "city"
+        ],
+        "a": 0,
+        "why": "one of the 뒤에는 복수명사를 씁니다."
+      },
+      {
+        "p": "He is the tallest ____ his class.",
+        "c": [
+          "in",
+          "of"
+        ],
+        "a": 0,
+        "why": "집단(반) 앞에는 in을 씁니다."
+      },
+      {
+        "p": "Summer is the hottest ____ the four seasons.",
+        "c": [
+          "of",
+          "in"
+        ],
+        "a": 0,
+        "why": "비교 대상들 앞에는 of를 씁니다."
+      },
+      {
+        "p": "She is one of the best ____ on the team.",
+        "c": [
+          "players",
+          "player"
+        ],
+        "a": 0,
+        "why": "one of the 뒤에는 복수명사를 씁니다."
+      },
+      {
+        "p": "This is the most exciting game ____ the year.",
+        "c": [
+          "of",
+          "in"
+        ],
+        "a": 0,
+        "why": "'올해의 경기들 중'은 of the year입니다."
+      },
+      {
+        "p": "Everest is one of the highest ____ in the world.",
+        "c": [
+          "mountain",
+          "mountains"
+        ],
+        "a": 1,
+        "why": "one of the 최상급 뒤에는 항상 복수명사를 씁니다."
+      },
+      {
+        "p": "Mina is the smartest student ____ my school.",
+        "c": [
+          "in",
+          "of"
+        ],
+        "a": 0,
+        "why": "학교(school)와 같은 장소나 단수형 집단 앞에는 in을 씁니다."
+      },
+      {
+        "p": "This apple is the sweetest ____ all the fruits here.",
+        "c": [
+          "in",
+          "of"
+        ],
+        "a": 1,
+        "why": "비교 대상들(all the fruits) 앞에는 of를 씁니다."
+      },
+      {
+        "p": "He is one of ____ greatest scientists in history.",
+        "c": [
+          "a",
+          "the"
+        ],
+        "a": 1,
+        "why": "최상급 앞에는 정관사 the를 써야 합니다."
+      },
+      {
+        "p": "This is one of the ____ books I have.",
+        "c": [
+          "heavy",
+          "heaviest"
+        ],
+        "a": 1,
+        "why": "one of the 뒤에는 형용사의 최상급을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She is one of the best player.",
+        "r": "She is one of the best players.",
+        "why": "one of the 뒤에는 복수명사를 씁니다."
+      },
+      {
+        "w": "He is the tallest of his class.",
+        "r": "He is the tallest in his class.",
+        "why": "집단(반) 앞에는 in을 씁니다."
+      },
+      {
+        "w": "Summer is the hottest in the four seasons.",
+        "r": "Summer is the hottest of the four seasons.",
+        "why": "비교 대상들 앞에는 of를 씁니다."
+      },
+      {
+        "w": "This is one of the most popular song.",
+        "r": "This is one of the most popular songs.",
+        "why": "one of the 최상급 뒤에는 복수명사를 써야 합니다."
+      },
+      {
+        "w": "He is the youngest of his family.",
+        "r": "He is the youngest in his family.",
+        "why": "가족(family)과 같은 단수형 집단 앞에는 in을 씁니다."
+      },
+      {
+        "w": "She is one of the tallest girl in our class.",
+        "r": "She is one of the tallest girls in our class.",
+        "why": "one of the 최상급 뒤에는 반드시 복수명사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "우리 도시나 나라를 최상급으로 소개해요.",
+        "frame": "____ is one of the ____est ____s in ____."
+      },
+      {
+        "task": "우리 반 친구를 소개해요.",
+        "frame": "He/She is the ____est in my class."
+      },
+      {
+        "task": "좋아하는 팀이나 선수를 소개해요.",
+        "frame": "He/She is one of the best ____s on the team."
+      },
+      {
+        "task": "올해 가장 ~했던 일을 말해요.",
+        "frame": "This is the most ____ ____ of the year."
+      },
+      {
+        "task": "우리 가족 중에서 가장 ~한 사람을 말해요.",
+        "frame": "____ is the ____est in my family."
+      },
+      {
+        "task": "내가 아는 가장 재미있는 영화 중 하나를 소개해요.",
+        "frame": "____ is one of the most interesting ____s."
+      }
+    ],
+    "mission": {
+      "title": "세계에서 가장 ~한 곳 퀴즈",
+      "scene": "세계의 유명한 장소나 사람에 대해 one of the ~est로 퀴즈를 내요.",
+      "steps": [
+        "한 장소나 사람을 정한다.",
+        "It is one of the ____est ____s in the world. 로 힌트를 준다.",
+        "짝이 맞히면 역할을 바꾼다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "서울은 세계에서 가장 큰 도시 중 하나다.",
+        "cond": "one of the biggest를 써요.",
+        "model": "Seoul is one of the biggest cities in the world."
+      },
+      {
+        "ko": "그는 반에서 키가 가장 크다.",
+        "cond": "in his class를 써요.",
+        "model": "He is the tallest in his class."
+      },
+      {
+        "ko": "여름은 사계절 중 가장 덥다.",
+        "cond": "of the four seasons를 써요.",
+        "model": "Summer is the hottest of the four seasons."
+      },
+      {
+        "ko": "그것은 한국에서 가장 아름다운 공원 중 하나다.",
+        "cond": "one of the most beautiful을 써요.",
+        "model": "It is one of the most beautiful parks in Korea."
+      },
+      {
+        "ko": "제인은 그녀의 친구들 중에서 가장 나이가 많다.",
+        "cond": "of her friends를 써요.",
+        "model": "Jane is the oldest of her friends."
+      },
+      {
+        "ko": "이것은 우리 마을에서 가장 오래된 나무다.",
+        "cond": "in my town을 써요.",
+        "model": "This is the oldest tree in my town."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "She is **one of the smartest students**.",
+        "ko": "그녀는 가장 똑똑한 학생들 중 한 명이다."
+      },
+      {
+        "en": "He is **the fastest runner in** his family.",
+        "ko": "그는 그의 가족 중에서 가장 빠른 달리기 선수이다."
+      },
+      {
+        "en": "This is **one of the oldest buildings**.",
+        "ko": "이것은 가장 오래된 건물들 중 하나이다."
+      },
+      {
+        "en": "Math is **the hardest of** all subjects.",
+        "ko": "수학은 모든 과목들 중에서 가장 어렵다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 '가장 ~한 것들 중 하나'를 표현할 때 최상급 뒤에 오는 명사의 형태는 어떠한가요?",
+        "a": "명사의 복수형(복수명사)을 씁니다."
+      },
+      "choose": [
+        {
+          "p": "New York is one of the busiest ____ in America.",
+          "c": [
+            "city",
+            "cities"
+          ],
+          "a": 1,
+          "why": "one of the 최상급 뒤에는 복수명사(-s/es)를 씁니다."
+        },
+        {
+          "p": "Tom is the strongest boy ____ the club.",
+          "c": [
+            "in",
+            "of"
+          ],
+          "a": 0,
+          "why": "동아리(club) 같은 소속 집단 앞에는 in을 씁니다."
+        },
+        {
+          "p": "This ring is the most expensive ____ the three.",
+          "c": [
+            "in",
+            "of"
+          ],
+          "a": 1,
+          "why": "구체적인 비교 대상의 수(the three) 앞에는 of를 씁니다."
+        },
+        {
+          "p": "Soccer is one of the most popular ____ in my school.",
+          "c": [
+            "sports",
+            "sport"
+          ],
+          "a": 0,
+          "why": "one of the 최상급 뒤에는 복수명사를 써야 합니다."
+        },
+        {
+          "p": "February is the shortest ____ all the months.",
+          "c": [
+            "in",
+            "of"
+          ],
+          "a": 1,
+          "why": "비교 대상들(all the months)을 나타낼 때는 of를 씁니다."
+        },
+        {
+          "p": "She is one of ____ most famous singers.",
+          "c": [
+            "a",
+            "the"
+          ],
+          "a": 1,
+          "why": "최상급 앞에는 the를 붙여야 합니다."
+        },
+        {
+          "p": "He is the youngest player ____ the team.",
+          "c": [
+            "of",
+            "in"
+          ],
+          "a": 1,
+          "why": "팀(team)이라는 집단 앞에는 in을 씁니다."
+        },
+        {
+          "p": "This is one of the ____ movies I know.",
+          "c": [
+            "saddest",
+            "sad"
+          ],
+          "a": 0,
+          "why": "one of the 뒤에는 형용사의 최상급을 씁니다."
+        },
+        {
+          "p": "My dad is the busiest person ____ my family.",
+          "c": [
+            "in",
+            "of"
+          ],
+          "a": 0,
+          "why": "가족(family)이라는 집단 앞에는 in을 씁니다."
+        },
+        {
+          "p": "That was one of the worst ____ of my life.",
+          "c": [
+            "days",
+            "day"
+          ],
+          "a": 0,
+          "why": "one of the 최상급 뒤에는 항상 복수명사를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "He is **one of the greatest actors**.",
+          "ko": "그는 가장 위대한 배우들 중 한 명이다."
+        },
+        {
+          "en": "This is **the longest river in** my country.",
+          "ko": "이것은 우리나라에서 가장 긴 강이다."
+        },
+        {
+          "en": "She is **the smartest of** the three girls.",
+          "ko": "그녀는 세 소녀들 중에서 가장 똑똑하다."
+        },
+        {
+          "en": "It is **one of the hardest questions**.",
+          "ko": "그것은 가장 어려운 질문들 중 하나이다."
+        },
+        {
+          "en": "Mike is **the tallest boy in** our club.",
+          "ko": "마이크는 우리 동아리에서 가장 키가 큰 소년이다."
+        },
+        {
+          "en": "That is **one of the fastest cars**.",
+          "ko": "저것은 가장 빠른 자동차들 중 하나이다."
+        },
+        {
+          "en": "Today is **the happiest day of** my life.",
+          "ko": "오늘은 내 인생에서 가장 행복한 날이다."
+        },
+        {
+          "en": "You are **one of my best friends**.",
+          "ko": "너는 나의 가장 좋은 친구들 중 한 명이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "This is one of the biggest room in the house.",
+          "r": "This is one of the biggest rooms in the house.",
+          "why": "one of the 최상급 뒤에는 복수명사(rooms)를 씁니다."
+        },
+        {
+          "w": "He is the fastest runner of the team.",
+          "r": "He is the fastest runner in the team.",
+          "why": "팀(team)과 같은 소속 집단 앞에는 in을 씁니다."
+        },
+        {
+          "w": "She is the shortest in the five girls.",
+          "r": "She is the shortest of the five girls.",
+          "why": "비교 대상들(the five girls) 앞에는 of를 씁니다."
+        },
+        {
+          "w": "It is one of the most beautiful picture.",
+          "r": "It is one of the most beautiful pictures.",
+          "why": "one of the 최상급 뒤에는 복수명사를 써야 합니다."
+        },
+        {
+          "w": "My dog is the smartest of my house.",
+          "r": "My dog is the smartest in my house.",
+          "why": "집(house)과 같은 장소 앞에는 in을 씁니다."
+        },
+        {
+          "w": "This is one of most difficult tests.",
+          "r": "This is one of the most difficult tests.",
+          "why": "최상급 앞에는 정관사 the를 반드시 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "우리 학교에서 가장 ~한 장소를 말해요.",
+          "frame": "____ is the ____est place in our school."
+        },
+        {
+          "task": "내가 가장 좋아하는 동물 중 하나를 소개해요.",
+          "frame": "____ is one of the cutest ____s in the world."
+        },
+        {
+          "task": "세 가지 물건 중 가장 ~한 것을 골라요.",
+          "frame": "This ____ is the ____est of the three."
+        },
+        {
+          "task": "우리 동네에서 가장 맛있는 식당 중 하나를 말해요.",
+          "frame": "____ is one of the best ____s in my town."
+        },
+        {
+          "task": "친구들 중에서 가장 ~한 사람을 말해요.",
+          "frame": "____ is the ____est of my friends."
+        },
+        {
+          "task": "내가 가진 책 중 가장 ~한 책을 말해요.",
+          "frame": "This is one of the ____est books I have."
+        }
+      ],
+      "mission": {
+        "title": "기네스북 퀴즈 대회",
+        "scene": "반 친구들과 함께 세계에서 가장 ~한 것들에 대한 퀴즈를 만들고 맞혀봅니다.",
+        "steps": [
+          "인터넷이나 책을 이용해 '가장 ~한 것들 중 하나'에 대한 사실을 3개 찾습니다.",
+          "찾은 정보를 바탕으로 'What is one of the ____est ____s in the world?' 라는 질문을 만듭니다.",
+          "짝과 함께 질문을 주고받으며 정답을 맞혀봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "이것은 세계에서 가장 큰 동물들 중 하나다.",
+          "cond": "one of the biggest를 써요.",
+          "model": "This is one of the biggest animals in the world."
+        },
+        {
+          "ko": "그녀는 우리 가족 중에서 가장 바쁘다.",
+          "cond": "in my family를 써요.",
+          "model": "She is the busiest in my family."
+        },
+        {
+          "ko": "이 가방은 모든 가방들 중에서 가장 무겁다.",
+          "cond": "of all the bags를 써요.",
+          "model": "This bag is the heaviest of all the bags."
+        },
+        {
+          "ko": "그는 역사상 가장 위대한 왕들 중 한 명이다.",
+          "cond": "one of the greatest를 써요.",
+          "model": "He is one of the greatest kings in history."
+        },
+        {
+          "ko": "이것은 우리 학교에서 가장 높은 건물이다.",
+          "cond": "in my school을 써요.",
+          "model": "This is the highest building in my school."
+        },
+        {
+          "ko": "그것은 내가 아는 가장 재미있는 이야기들 중 하나다.",
+          "cond": "one of the most interesting을 써요.",
+          "model": "It is one of the most interesting stories I know."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-comparison-advanced",
+    "discover": {
+      "q": "The more you practice, the better you get과 colder and colder를 보세요. 비교급이 어떻게 쓰였나요? No other ~ as ~ as와 비교급 than any other는 어떤 뜻을 나타내나요?",
+      "a": "The + 비교급, the + 비교급은 '~할수록 더 ~하다', 비교급 and 비교급은 '점점 더 ~하다'이다. No other ~ as ~ as와 비교급 than any other + 단수명사는 '가장 ~하다'는 뜻이다."
+    },
+    "choose": [
+      {
+        "p": "The more you practice, the ____ you get.",
+        "c": [
+          "better",
+          "best"
+        ],
+        "a": 0,
+        "why": "the + 비교급, the + 비교급 형태이므로 better입니다."
+      },
+      {
+        "p": "This room is twice as ____ as mine.",
+        "c": [
+          "big",
+          "bigger"
+        ],
+        "a": 0,
+        "why": "배수 + as 원급 as에서는 원급을 씁니다."
+      },
+      {
+        "p": "It is getting colder and ____.",
+        "c": [
+          "colder",
+          "cold"
+        ],
+        "a": 0,
+        "why": "'점점 더'는 비교급 and 비교급입니다."
+      },
+      {
+        "p": "No other mountain in Korea is as ____ as Hallasan.",
+        "c": [
+          "high",
+          "higher"
+        ],
+        "a": 0,
+        "why": "as ~ as 사이에는 원급을 씁니다."
+      },
+      {
+        "p": "She is taller than any other ____.",
+        "c": [
+          "student",
+          "students"
+        ],
+        "a": 0,
+        "why": "any other 뒤에는 단수명사를 씁니다."
+      },
+      {
+        "p": "The harder you study, the ____ your grades will be.",
+        "c": [
+          "better",
+          "best"
+        ],
+        "a": 0,
+        "why": "'the + 비교급, the + 비교급' 구문이므로 better가 알맞습니다."
+      },
+      {
+        "p": "His new car is three times as ____ as his old one.",
+        "c": [
+          "fast",
+          "faster"
+        ],
+        "a": 0,
+        "why": "배수사 뒤의 'as ~ as' 사이에는 원급이 와야 합니다."
+      },
+      {
+        "p": "Because of global warming, the Earth is getting hotter and ____.",
+        "c": [
+          "hot",
+          "hotter"
+        ],
+        "a": 1,
+        "why": "'점점 더 ~해지다'는 '비교급 and 비교급' 형태를 사용합니다."
+      },
+      {
+        "p": "No other student in our class is as ____ as Minho.",
+        "c": [
+          "smart",
+          "smarter"
+        ],
+        "a": 0,
+        "why": "'as ~ as' 사이에는 원급을 써야 합니다."
+      },
+      {
+        "p": "This puzzle is ____ more difficult than the previous one.",
+        "c": [
+          "very",
+          "much"
+        ],
+        "a": 1,
+        "why": "비교급 앞에서는 very가 아닌 much, even, far 등으로 강조합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She is very taller than him.",
+        "r": "She is much taller than him.",
+        "why": "비교급 강조는 much/even/far입니다."
+      },
+      {
+        "w": "She is taller than any other students.",
+        "r": "She is taller than any other student.",
+        "why": "any other 뒤에는 단수명사를 씁니다."
+      },
+      {
+        "w": "The more you practice, the best you get.",
+        "r": "The more you practice, the better you get.",
+        "why": "the + 비교급, the + 비교급 형태입니다."
+      },
+      {
+        "w": "The wind is blowing stronger and strongest.",
+        "r": "The wind is blowing stronger and stronger.",
+        "why": "'점점 더 ~한'은 비교급 and 비교급 형태를 사용해야 합니다."
+      },
+      {
+        "w": "Her presentation was very better than expected.",
+        "r": "Her presentation was much better than expected.",
+        "why": "비교급 앞에서는 very 대신 much, even, far, a lot 등을 써서 강조합니다."
+      },
+      {
+        "w": "He runs faster than any other players on the team.",
+        "r": "He runs faster than any other player on the team.",
+        "why": "'any other' 뒤에는 단수명사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "연습할수록 나아지는 것을 말해요.",
+        "frame": "The more I ____, the better I ____."
+      },
+      {
+        "task": "점점 변하는 상황을 말해요.",
+        "frame": "It is getting ____er and ____er."
+      },
+      {
+        "task": "배수 비교로 두 물건을 비교해요.",
+        "frame": "This ____ is twice as ____ as that ____."
+      },
+      {
+        "task": "가장 ~한 것을 다른 방식으로 말해요.",
+        "frame": "No other ____ is as ____ as ____."
+      },
+      {
+        "task": "두 가지가 비례해서 변하는 상황을 말해요.",
+        "frame": "The ____er the weather gets, the ____er I feel."
+      },
+      {
+        "task": "어떤 것이 다른 것보다 몇 배 더 어떠한지 비교해요.",
+        "frame": "My bag is ____ times as ____ as yours."
+      }
+    ],
+    "mission": {
+      "title": "최고를 증명하라",
+      "scene": "가장 좋아하는 것이 최고임을 세 가지 비교 구문으로 증명하는 발표예요.",
+      "steps": [
+        "The more ~, the better ~. 로 한 문장을 만든다.",
+        "twice as ~ as 또는 colder and colder 중 하나를 쓴다.",
+        "No other ~ is as ~ as ... 로 최고라고 마무리한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "연습할수록 더 잘하게 된다.",
+        "cond": "The more와 the better를 써요.",
+        "model": "The more you practice, the better you get."
+      },
+      {
+        "ko": "이 방은 내 방보다 두 배 크다.",
+        "cond": "twice as big as를 써요.",
+        "model": "This room is twice as big as mine."
+      },
+      {
+        "ko": "날씨가 점점 더 추워지고 있다.",
+        "cond": "colder and colder를 써요.",
+        "model": "It is getting colder and colder."
+      },
+      {
+        "ko": "네가 더 많이 읽을수록, 너는 더 많이 알게 된다.",
+        "cond": "The more를 두 번 사용하세요.",
+        "model": "The more you read, the more you know."
+      },
+      {
+        "ko": "그녀의 가방은 내 것보다 세 배 무겁다.",
+        "cond": "three times as heavy as를 사용하세요.",
+        "model": "Her bag is three times as heavy as mine."
+      },
+      {
+        "ko": "이 문제는 다른 어떤 문제보다 더 어려워 보인다.",
+        "cond": "more difficult than any other를 사용하세요.",
+        "model": "This problem seems more difficult than any other problem."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**The older** we grow, **the wiser** we become.",
+        "ko": "우리가 나이가 들수록, 우리는 더 현명해진다."
+      },
+      {
+        "en": "This box is **three times as heavy as** mine.",
+        "ko": "이 상자는 내 것보다 세 배 무겁다."
+      },
+      {
+        "en": "The movie became **more and more interesting**.",
+        "ko": "그 영화는 점점 더 흥미로워졌다."
+      },
+      {
+        "en": "Seoul is **larger than any other city** in Korea.",
+        "ko": "서울은 한국의 다른 어떤 도시보다 더 크다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'The more you practice, the better you get.'에서 굵게 표시된 부분의 형태와 의미는 무엇인가요?",
+        "a": "형태는 'the + 비교급, the + 비교급'이며, 의미는 '~하면 할수록 더 ...하다'입니다."
+      },
+      "choose": [
+        {
+          "p": "The ____ you climb, the colder the air becomes.",
+          "c": [
+            "high",
+            "higher"
+          ],
+          "a": 1,
+          "why": "뒤에 the colder가 있으므로 'the + 비교급, the + 비교급' 구문을 써야 합니다."
+        },
+        {
+          "p": "My dog is twice as ____ as yours.",
+          "c": [
+            "heavier",
+            "heavy"
+          ],
+          "a": 1,
+          "why": "배수사 뒤의 'as ~ as' 사이에는 원급을 써야 합니다."
+        },
+        {
+          "p": "Smart phones are becoming ____ and more useful.",
+          "c": [
+            "much",
+            "more"
+          ],
+          "a": 1,
+          "why": "'점점 더 ~해지다'는 '비교급 and 비교급' 형태를 사용하므로 more가 알맞습니다."
+        },
+        {
+          "p": "No other river in the world is as ____ as the Nile.",
+          "c": [
+            "longer",
+            "long"
+          ],
+          "a": 1,
+          "why": "'as ~ as' 사이에는 원급을 써야 합니다."
+        },
+        {
+          "p": "This laptop is ____ faster than my old computer.",
+          "c": [
+            "very",
+            "even"
+          ],
+          "a": 1,
+          "why": "비교급 faster를 강조하려면 very가 아닌 even, much 등을 써야 합니다."
+        },
+        {
+          "p": "She is more diligent than any other ____ in her group.",
+          "c": [
+            "members",
+            "member"
+          ],
+          "a": 1,
+          "why": "'비교급 + than any other' 뒤에는 단수명사가 와야 합니다."
+        },
+        {
+          "p": "The more money he makes, the ____ he spends.",
+          "c": [
+            "more",
+            "much"
+          ],
+          "a": 0,
+          "why": "'the + 비교급, the + 비교급' 구문이므로 more가 알맞습니다."
+        },
+        {
+          "p": "The museum is three times as ____ as the library.",
+          "c": [
+            "large",
+            "larger"
+          ],
+          "a": 0,
+          "why": "'as ~ as' 사이에는 원급을 써야 합니다."
+        },
+        {
+          "p": "The situation is getting worse and ____.",
+          "c": [
+            "bad",
+            "worse"
+          ],
+          "a": 1,
+          "why": "'비교급 and 비교급' 형태를 사용해야 하므로 worse가 알맞습니다."
+        },
+        {
+          "p": "No other animal in the zoo is as ____ as the elephant.",
+          "c": [
+            "big",
+            "bigger"
+          ],
+          "a": 0,
+          "why": "'as ~ as' 사이에는 원급을 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**The sooner** you leave, **the earlier** you arrive.",
+          "ko": "네가 더 일찍 떠날수록, 너는 더 일찍 도착한다."
+        },
+        {
+          "en": "This bridge is **twice as long as** that one.",
+          "ko": "이 다리는 저 다리보다 두 배 길다."
+        },
+        {
+          "en": "Finding a job is getting **harder and harder**.",
+          "ko": "일자리를 찾는 것이 점점 더 어려워지고 있다."
+        },
+        {
+          "en": "**No other** metal is **as useful as** iron.",
+          "ko": "다른 어떤 금속도 철만큼 유용하지 않다."
+        },
+        {
+          "en": "This smartphone is **much more expensive** than yours.",
+          "ko": "이 스마트폰은 너의 것보다 훨씬 더 비싸다."
+        },
+        {
+          "en": "He is **taller than any other boy** here.",
+          "ko": "그는 이곳의 다른 어떤 소년보다 키가 크다."
+        },
+        {
+          "en": "**The higher** the price, **the better** the quality.",
+          "ko": "가격이 더 높을수록, 품질이 더 좋다."
+        },
+        {
+          "en": "The sky grew **darker and darker**.",
+          "ko": "하늘이 점점 더 어두워졌다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The more you eat, the fat you become.",
+          "r": "The more you eat, the fatter you become.",
+          "why": "'the + 비교급, the + 비교급' 구문을 써야 하므로 fatter가 되어야 합니다."
+        },
+        {
+          "w": "My room is twice as bigger as my sister's.",
+          "r": "My room is twice as big as my sister's.",
+          "why": "'배수 + as ~ as' 구문에서는 as와 as 사이에 원급을 써야 합니다."
+        },
+        {
+          "w": "The test was very harder than I thought.",
+          "r": "The test was much harder than I thought.",
+          "why": "비교급을 강조할 때는 very가 아니라 much, even, far 등을 사용합니다."
+        },
+        {
+          "w": "No other boy in the club is as stronger as Tom.",
+          "r": "No other boy in the club is as strong as Tom.",
+          "why": "as와 as 사이에는 비교급이 아닌 원급을 써야 합니다."
+        },
+        {
+          "w": "She speaks English better than any other girls.",
+          "r": "She speaks English better than any other girl.",
+          "why": "'비교급 + than any other' 뒤에는 단수명사가 와야 합니다."
+        },
+        {
+          "w": "The music is getting loud and louder.",
+          "r": "The music is getting louder and louder.",
+          "why": "'점점 더 ~한'의 의미를 나타내려면 '비교급 and 비교급' 형태를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "조건이 변함에 따라 결과도 변하는 상황을 말해요.",
+          "frame": "The ____er the exam is, the ____er I feel."
+        },
+        {
+          "task": "두 가지 물건의 크기나 무게를 배수로 비교해요.",
+          "frame": "This ____ is three times as ____ as that one."
+        },
+        {
+          "task": "시간이 지남에 따라 점점 변하는 상태를 표현해요.",
+          "frame": "My English is getting ____er and ____er."
+        },
+        {
+          "task": "어떤 것이 그룹 내에서 가장 어떠한지 다른 방식으로 말해요.",
+          "frame": "No other ____ in our school is as ____ as ____."
+        },
+        {
+          "task": "두 가지를 비교하며 하나가 훨씬 더 어떠하다고 강조해요.",
+          "frame": "Playing ____ is much more ____ than watching it."
+        },
+        {
+          "task": "어떤 사람이 다른 누구보다 더 어떠하다고 말해요.",
+          "frame": "____ is more ____ than any other student in the class."
+        }
+      ],
+      "mission": {
+        "title": "비교급 탐정 놀이",
+        "scene": "교실 안의 물건들이나 친구들의 특징을 비교하여 가장 알맞은 표현을 찾아내는 활동입니다.",
+        "steps": [
+          "짝과 함께 교실 안의 물건 두 개를 골라 크기나 무게를 배수로 비교해 봅니다. (예: This desk is twice as heavy as that chair.)",
+          "우리 반 친구 한 명을 골라 다른 어떤 친구보다 뛰어난 점을 찾아 말해 봅니다. (예: Minho runs faster than any other student.)",
+          "서로가 만든 문장을 듣고 문법적으로 올바른지 확인해 줍니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "네가 더 높이 올라갈수록, 날씨는 더 추워진다.",
+          "cond": "The higher와 the colder를 사용하세요.",
+          "model": "The higher you climb, the colder it gets."
+        },
+        {
+          "ko": "내 개는 너의 개보다 두 배 많이 나간다(무게가).",
+          "cond": "twice as much as를 사용하세요.",
+          "model": "My dog weighs twice as much as yours."
+        },
+        {
+          "ko": "스마트폰은 점점 더 유용해지고 있다.",
+          "cond": "more and more를 사용하세요.",
+          "model": "Smart phones are becoming more and more useful."
+        },
+        {
+          "ko": "이 노트북은 내 옛날 것보다 훨씬 더 빠르게 작동한다.",
+          "cond": "훨씬 더 빠르게라는 의미로 even faster를 사용하세요.",
+          "model": "This laptop runs even faster than my old one."
+        },
+        {
+          "ko": "그녀는 다른 어떤 멤버보다 더 열심히 일한다.",
+          "cond": "harder than any other를 사용하세요.",
+          "model": "She works harder than any other member."
+        },
+        {
+          "ko": "다른 어떤 강도 나일강만큼 길어 보이지 않는다.",
+          "cond": "No other river로 시작하세요.",
+          "model": "No other river looks as long as the Nile."
+        }
+      ]
+    }
+  },
+  {
+    "id": "and-but",
+    "discover": {
+      "q": "and와 but이 쓰인 문장을 비교해 보세요. 같은 방향의 이야기를 이을 때와 반대되는 이야기를 이을 때 어떤 낱말을 썼나요?",
+      "a": "비슷한 내용이나 더해 줄 때는 and, 반대되는 내용을 이을 때는 but을 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I like cats ____ dogs.",
+        "c": [
+          "and",
+          "but"
+        ],
+        "a": 0,
+        "why": "둘 다 좋아하니 같은 방향이므로 and입니다."
+      },
+      {
+        "p": "I like milk, ____ I don't like juice.",
+        "c": [
+          "but",
+          "or"
+        ],
+        "a": 0,
+        "why": "우유는 좋아하고 주스는 싫어하므로 반대 내용을 잇는 but입니다."
+      },
+      {
+        "p": "It is small ____ fast.",
+        "c": [
+          "but",
+          "because"
+        ],
+        "a": 0,
+        "why": "작지만 빠르다는 대조이므로 but입니다."
+      },
+      {
+        "p": "I have a cat ____ a dog.",
+        "c": [
+          "and",
+          "but"
+        ],
+        "a": 0,
+        "why": "둘 다 가졌으므로 and입니다."
+      },
+      {
+        "p": "I like red, ____ she likes blue.",
+        "c": [
+          "but",
+          "or"
+        ],
+        "a": 0,
+        "why": "서로 다른 색을 좋아하는 대조이므로 but입니다."
+      },
+      {
+        "p": "I can sing ____ dance.",
+        "c": [
+          "and",
+          "but",
+          "or"
+        ],
+        "a": 0,
+        "why": "노래도 하고 춤도 추는 같은 방향의 내용이므로 and를 씁니다."
+      },
+      {
+        "p": "He is tall, ____ he is weak.",
+        "c": [
+          "and",
+          "but",
+          "so"
+        ],
+        "a": 1,
+        "why": "키가 크지만 약하다는 반대 내용이므로 but을 씁니다."
+      },
+      {
+        "p": "I like apples, ____ I don't like bananas.",
+        "c": [
+          "and",
+          "but"
+        ],
+        "a": 1,
+        "why": "사과는 좋아하지만 바나나는 싫어하는 반대 내용이므로 but입니다."
+      },
+      {
+        "p": "She has a book ____ a pen.",
+        "c": [
+          "but",
+          "and"
+        ],
+        "a": 1,
+        "why": "책과 펜을 모두 가지고 있으므로 and로 연결합니다."
+      },
+      {
+        "p": "It is sunny ____ cold today.",
+        "c": [
+          "but",
+          "and"
+        ],
+        "a": 0,
+        "why": "햇빛이 나지만 춥다는 대조적인 날씨이므로 but을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I like cats but dogs.",
+        "r": "I like cats and dogs.",
+        "why": "둘 다 좋아하면 and를 씁니다."
+      },
+      {
+        "w": "I like milk, but I like not juice.",
+        "r": "I like milk, but I don't like juice.",
+        "why": "일반동사의 부정은 don't를 씁니다."
+      },
+      {
+        "w": "I have a cat but a dog.",
+        "r": "I have a cat and a dog.",
+        "why": "둘 다 있으므로 and를 씁니다."
+      },
+      {
+        "w": "I like math, and I don't like English.",
+        "r": "I like math, but I don't like English.",
+        "why": "좋아하는 것과 안 좋아하는 것을 연결할 때는 but을 씁니다."
+      },
+      {
+        "w": "I have a pencil but an eraser.",
+        "r": "I have a pencil and an eraser.",
+        "why": "두 가지 물건을 모두 가지고 있을 때는 and로 연결합니다."
+      },
+      {
+        "w": "I like blue, and you like red.",
+        "r": "I like blue, but you like red.",
+        "why": "서로 좋아하는 색이 다르다는 것을 대조할 때는 but을 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 것 두 가지를 and로 이어요.",
+        "frame": "I like ____ and ____."
+      },
+      {
+        "task": "좋아하는 것과 싫어하는 것을 but으로 이어요.",
+        "frame": "I like ____, but I don't like ____."
+      },
+      {
+        "task": "나와 짝이 다른 점을 말해요.",
+        "frame": "I like ____, but you like ____."
+      },
+      {
+        "task": "물건의 특징을 대조해서 말해요.",
+        "frame": "It is ____ but ____."
+      },
+      {
+        "task": "할 수 있는 두 가지 동작을 and로 이어서 말해요.",
+        "frame": "I can ____ and ____."
+      },
+      {
+        "task": "가지고 있는 것과 없는 것을 but으로 이어서 말해요.",
+        "frame": "I have a ____, but I don't have a ____."
+      }
+    ],
+    "mission": {
+      "title": "나와 친구의 같은 점과 다른 점",
+      "scene": "짝과 서로 질문해서 같은 점과 다른 점을 찾아 문장으로 정리해요.",
+      "steps": [
+        "Do you like ____? 로 다섯 가지를 묻는다.",
+        "같은 것은 We both like ____ and ____. 로 정리한다.",
+        "다른 것은 I like ____, but you like ____. 로 정리한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 고양이와 개를 좋아해요.",
+        "cond": "and를 써요.",
+        "model": "I like cats and dogs."
+      },
+      {
+        "ko": "나는 우유는 좋아하지만 주스는 안 좋아해요.",
+        "cond": "but을 써요.",
+        "model": "I like milk, but I don't like juice."
+      },
+      {
+        "ko": "그것은 작지만 빨라요.",
+        "cond": "but을 써요.",
+        "model": "It is small but fast."
+      },
+      {
+        "ko": "그녀는 피자를 좋아하지만, 햄버거는 안 좋아해요.",
+        "cond": "but을 써요.",
+        "model": "She likes pizza, but she doesn't like hamburgers."
+      },
+      {
+        "ko": "우리는 수영하고 달릴 수 있어요.",
+        "cond": "and를 써요.",
+        "model": "We can swim and run."
+      },
+      {
+        "ko": "그는 키가 크지만 느려요.",
+        "cond": "but을 써요.",
+        "model": "He is tall but slow."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I have a brother **and** a sister.",
+        "ko": "나는 남동생과 여동생이 있어."
+      },
+      {
+        "en": "He likes soccer, **but** he doesn't like baseball.",
+        "ko": "그는 축구는 좋아하지만, 야구는 안 좋아해."
+      },
+      {
+        "en": "The bag is big **but** light.",
+        "ko": "그 가방은 크지만 가벼워."
+      },
+      {
+        "en": "I can swim **and** jump.",
+        "ko": "나는 수영하고 점프할 수 있어."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 and와 but은 각각 어떤 내용을 연결할 때 쓰이나요?",
+        "a": "and는 비슷한 내용을 연결할 때, but은 반대되거나 대조되는 내용을 연결할 때 씁니다."
+      },
+      "choose": [
+        {
+          "p": "I like summer ____ winter.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 0,
+          "why": "여름과 겨울을 모두 좋아하므로 and를 씁니다."
+        },
+        {
+          "p": "I like chicken, ____ I don't like fish.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 1,
+          "why": "치킨은 좋아하지만 생선은 싫어하므로 but을 씁니다."
+        },
+        {
+          "p": "The test is hard ____ short.",
+          "c": [
+            "but",
+            "and"
+          ],
+          "a": 0,
+          "why": "시험이 어렵지만 짧다는 대조적인 내용이므로 but을 씁니다."
+        },
+        {
+          "p": "My dad is tall ____ strong.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 0,
+          "why": "키가 크고 힘이 세다는 비슷한 특징을 나열하므로 and를 씁니다."
+        },
+        {
+          "p": "I have a bike, ____ I don't have a car.",
+          "c": [
+            "and",
+            "but",
+            "or"
+          ],
+          "a": 1,
+          "why": "자전거는 있지만 자동차는 없다는 대조이므로 but을 씁니다."
+        },
+        {
+          "p": "She can play the piano ____ the guitar.",
+          "c": [
+            "but",
+            "and"
+          ],
+          "a": 1,
+          "why": "피아노와 기타를 둘 다 칠 수 있으므로 and를 씁니다."
+        },
+        {
+          "p": "I want to play outside, ____ it is raining.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 1,
+          "why": "밖에 나가 놀고 싶지만 비가 온다는 반대 상황이므로 but을 씁니다."
+        },
+        {
+          "p": "He eats bread ____ drinks milk.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 0,
+          "why": "빵을 먹고 우유를 마신다는 두 가지 행동을 나열하므로 and를 씁니다."
+        },
+        {
+          "p": "The movie is old ____ fun.",
+          "c": [
+            "but",
+            "and"
+          ],
+          "a": 0,
+          "why": "영화가 오래되었지만 재미있다는 대조이므로 but을 씁니다."
+        },
+        {
+          "p": "I like science, ____ my brother likes art.",
+          "c": [
+            "and",
+            "but"
+          ],
+          "a": 1,
+          "why": "나와 동생이 좋아하는 과목이 서로 다르므로 but을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I like spring **and** fall.",
+          "ko": "나는 봄과 가을을 좋아해."
+        },
+        {
+          "en": "He is young **but** smart.",
+          "ko": "그는 어리지만 똑똑해."
+        },
+        {
+          "en": "I have a ruler **and** an eraser.",
+          "ko": "나는 자와 지우개가 있어."
+        },
+        {
+          "en": "She likes apples, **but** she doesn't like grapes.",
+          "ko": "그녀는 사과는 좋아하지만, 포도는 안 좋아해."
+        },
+        {
+          "en": "We can sing **and** dance.",
+          "ko": "우리는 노래하고 춤출 수 있어."
+        },
+        {
+          "en": "The book is thick **but** easy.",
+          "ko": "그 책은 두껍지만 쉬워."
+        },
+        {
+          "en": "I like dogs, **but** my sister likes cats.",
+          "ko": "나는 개를 좋아하지만, 내 여동생은 고양이를 좋아해."
+        },
+        {
+          "en": "They play tennis **and** basketball.",
+          "ko": "그들은 테니스와 농구를 해."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I like pizza but pasta.",
+          "r": "I like pizza and pasta.",
+          "why": "두 가지 음식을 모두 좋아하므로 and로 연결합니다."
+        },
+        {
+          "w": "I have a pen but a pencil.",
+          "r": "I have a pen and a pencil.",
+          "why": "두 가지 물건을 모두 가지고 있을 때는 and를 씁니다."
+        },
+        {
+          "w": "He likes math, and he doesn't like science.",
+          "r": "He likes math, but he doesn't like science.",
+          "why": "좋아하는 것과 싫어하는 것을 연결할 때는 but을 씁니다."
+        },
+        {
+          "w": "I can swim, and I can't run.",
+          "r": "I can swim, but I can't run.",
+          "why": "할 수 있는 것과 할 수 없는 것을 대조하므로 but을 씁니다."
+        },
+        {
+          "w": "I like milk, and she likes juice.",
+          "r": "I like milk, but she likes juice.",
+          "why": "서로 좋아하는 것이 다르다는 것을 대조할 때는 but을 씁니다."
+        },
+        {
+          "w": "The turtle is slow and cute.",
+          "r": "The turtle is slow but cute.",
+          "why": "느리지만 귀엽다는 대조적인 특징을 말할 때는 but을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "좋아하는 과목 두 가지를 and로 이어서 말해요.",
+          "frame": "I like ____ and ____."
+        },
+        {
+          "task": "좋아하는 음식과 싫어하는 음식을 but으로 이어서 말해요.",
+          "frame": "I like ____, but I don't like ____."
+        },
+        {
+          "task": "동물의 두 가지 특징을 대조해서 말해요.",
+          "frame": "It is ____ but ____."
+        },
+        {
+          "task": "나와 내 친구가 좋아하는 것이 다름을 but으로 말해요.",
+          "frame": "I like ____, but my friend likes ____."
+        },
+        {
+          "task": "할 수 있는 것과 할 수 없는 것을 but으로 이어서 말해요.",
+          "frame": "I can ____, but I can't ____."
+        },
+        {
+          "task": "가지고 있는 학용품 두 가지를 and로 이어서 말해요.",
+          "frame": "I have a ____ and a ____."
+        }
+      ],
+      "mission": {
+        "title": "나의 취향 벤다이어그램",
+        "scene": "짝과 함께 서로 좋아하는 것을 비교하며 공통점과 차이점을 찾아봅니다.",
+        "steps": [
+          "각자 종이에 좋아하는 음식과 싫어하는 음식을 적습니다.",
+          "짝에게 'I like ~, but I don't like ~.'라고 말하며 내 취향을 소개합니다.",
+          "서로 좋아하는 것이 다를 때는 'I like ~, but you like ~.'라고 말해봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 봄과 가을을 좋아해요.",
+          "cond": "and를 써요.",
+          "model": "I like spring and fall."
+        },
+        {
+          "ko": "그는 사과는 좋아하지만, 바나나는 안 좋아해요.",
+          "cond": "but을 써요.",
+          "model": "He likes apples, but he doesn't like bananas."
+        },
+        {
+          "ko": "그 사자는 크지만 착해요.",
+          "cond": "but을 써요.",
+          "model": "The lion is big but nice."
+        },
+        {
+          "ko": "우리는 야구와 축구를 해요.",
+          "cond": "and를 써요.",
+          "model": "We play baseball and soccer."
+        },
+        {
+          "ko": "나는 피아노를 칠 수 있지만, 기타는 칠 수 없어요.",
+          "cond": "but을 써요.",
+          "model": "I can play the piano, but I can't play the guitar."
+        },
+        {
+          "ko": "그녀는 개가 있지만, 고양이는 없어요.",
+          "cond": "but을 써요.",
+          "model": "She has a dog, but she doesn't have a cat."
+        }
+      ]
+    }
+  },
+  {
+    "id": "because",
+    "discover": {
+      "q": "because가 들어간 문장을 보세요. because 뒤에는 어떤 형태의 말이 오나요? 결과와 이유 중 because 뒤에 오는 것은 무엇인가요?",
+      "a": "because 뒤에는 이유를 나타내는 주어 + 동사가 온다. 결과를 먼저 말하고 이유를 because 뒤에 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I like summer ____ it's hot.",
+        "c": [
+          "because",
+          "so"
+        ],
+        "a": 0,
+        "why": "이유(더우니까)를 이끄는 말은 because입니다."
+      },
+      {
+        "p": "I'm happy because ____ my birthday.",
+        "c": [
+          "it's",
+          "is"
+        ],
+        "a": 0,
+        "why": "because 뒤에는 주어 + 동사가 옵니다."
+      },
+      {
+        "p": "I stay home because I ____ sick.",
+        "c": [
+          "am",
+          "is"
+        ],
+        "a": 0,
+        "why": "I 뒤에는 am을 씁니다."
+      },
+      {
+        "p": "I like dogs because they ____ cute.",
+        "c": [
+          "are",
+          "is"
+        ],
+        "a": 0,
+        "why": "they 뒤에는 are를 씁니다."
+      },
+      {
+        "p": "I drink water because I'm ____.",
+        "c": [
+          "thirsty",
+          "hungry"
+        ],
+        "a": 0,
+        "why": "물을 마시는 이유는 목이 마르기 때문입니다."
+      },
+      {
+        "p": "I wear a jacket ____ it is cold.",
+        "c": [
+          "because",
+          "but"
+        ],
+        "a": 0,
+        "why": "이유(추우니까)를 나타낼 때는 because를 씁니다."
+      },
+      {
+        "p": "She likes apples because ____ are sweet.",
+        "c": [
+          "they",
+          "it"
+        ],
+        "a": 0,
+        "why": "사과들(apples)은 복수이므로 they로 받습니다."
+      },
+      {
+        "p": "He sleeps early because he ____ tired.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "주어 he 뒤에는 be동사 is를 씁니다."
+      },
+      {
+        "p": "We eat pizza because we are ____.",
+        "c": [
+          "hungry",
+          "full"
+        ],
+        "a": 0,
+        "why": "피자를 먹는 이유는 배가 고프기 때문입니다."
+      },
+      {
+        "p": "I like monkeys because they ____ funny.",
+        "c": [
+          "are",
+          "is"
+        ],
+        "a": 0,
+        "why": "주어 they 뒤에는 be동사 are를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I like summer because hot.",
+        "r": "I like summer because it's hot.",
+        "why": "because 뒤에는 주어 + 동사가 필요합니다."
+      },
+      {
+        "w": "I'm happy because my birthday.",
+        "r": "I'm happy because it's my birthday.",
+        "why": "because 뒤에는 주어 + 동사가 필요합니다."
+      },
+      {
+        "w": "I stay home because I sick.",
+        "r": "I stay home because I am sick.",
+        "why": "be동사(am)가 필요합니다."
+      },
+      {
+        "w": "I wear a coat because cold.",
+        "r": "I wear a coat because it is cold.",
+        "why": "because 뒤에는 주어와 동사가 필요합니다."
+      },
+      {
+        "w": "He is sad because he hungry.",
+        "r": "He is sad because he is hungry.",
+        "why": "상태를 나타내는 형용사 앞에는 be동사가 필요합니다."
+      },
+      {
+        "w": "We like cats because they is cute.",
+        "r": "We like cats because they are cute.",
+        "why": "they 뒤에는 be동사 are를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 것과 이유를 말해요.",
+        "frame": "I like ____ because ____."
+      },
+      {
+        "task": "오늘의 기분과 이유를 말해요.",
+        "frame": "I'm ____ because ____."
+      },
+      {
+        "task": "짝에게 이유를 물어요.",
+        "frame": "Why do you like ____? — Because ____."
+      },
+      {
+        "task": "하지 못한 일의 이유를 말해요.",
+        "frame": "I can't ____ because ____."
+      },
+      {
+        "task": "좋아하는 동물과 그 이유를 말해요.",
+        "frame": "I like ____ because they are ____."
+      },
+      {
+        "task": "지금 입고 있는 옷과 이유를 말해요.",
+        "frame": "I wear ____ because it is ____."
+      }
+    ],
+    "mission": {
+      "title": "왜? 인터뷰",
+      "scene": "친구의 좋아하는 것과 그 이유를 묻고 정리해서 소개해요.",
+      "steps": [
+        "What do you like? 로 좋아하는 것을 묻는다.",
+        "Why? 로 이유를 묻는다.",
+        "He/She likes ____ because ____. 로 반에 소개한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 여름이 좋아요, 더우니까요.",
+        "cond": "because를 써요.",
+        "model": "I like summer because it's hot."
+      },
+      {
+        "ko": "나는 행복해요, 내 생일이니까요.",
+        "cond": "because를 써요.",
+        "model": "I'm happy because it's my birthday."
+      },
+      {
+        "ko": "나는 물을 마셔요, 목마르니까요.",
+        "cond": "because를 써요.",
+        "model": "I drink water because I'm thirsty."
+      },
+      {
+        "ko": "나는 피자가 좋아요, 맛있으니까요.",
+        "cond": "because를 써요.",
+        "model": "I like pizza because it is good."
+      },
+      {
+        "ko": "그는 자요, 피곤하니까요.",
+        "cond": "because를 써요.",
+        "model": "He sleeps because he is tired."
+      },
+      {
+        "ko": "우리는 빵을 먹어요, 배가 고프니까요.",
+        "cond": "because를 써요.",
+        "model": "We eat bread because we are hungry."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I like winter **because** it is cold.",
+        "ko": "나는 겨울이 좋아, 추우니까."
+      },
+      {
+        "en": "She runs fast **because** she is late.",
+        "ko": "그녀는 빨리 달려, 늦었으니까."
+      },
+      {
+        "en": "He eats an apple **because** he is hungry.",
+        "ko": "그는 사과를 먹어, 배가 고프니까."
+      },
+      {
+        "en": "They sleep **because** they are tired.",
+        "ko": "그들은 자, 피곤하니까."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 because 뒤에는 어떤 말들이 오나요?",
+        "a": "주어와 동사가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "I like spring ____ it is warm.",
+          "c": [
+            "because",
+            "and"
+          ],
+          "a": 0,
+          "why": "이유(따뜻하니까)를 나타낼 때는 because를 씁니다."
+        },
+        {
+          "p": "My brother is crying because he ____ sad.",
+          "c": [
+            "is",
+            "am"
+          ],
+          "a": 0,
+          "why": "주어 he 뒤에는 be동사 is를 씁니다."
+        },
+        {
+          "p": "I read books because they ____ fun.",
+          "c": [
+            "are",
+            "is"
+          ],
+          "a": 0,
+          "why": "주어 they 뒤에는 be동사 are를 씁니다."
+        },
+        {
+          "p": "She drinks milk because she is ____.",
+          "c": [
+            "thirsty",
+            "full"
+          ],
+          "a": 0,
+          "why": "우유를 마시는 이유는 목이 마르기 때문입니다."
+        },
+        {
+          "p": "We run fast because we ____ late.",
+          "c": [
+            "are",
+            "is"
+          ],
+          "a": 0,
+          "why": "주어 we 뒤에는 be동사 are를 씁니다."
+        },
+        {
+          "p": "He likes soccer because ____ is fun.",
+          "c": [
+            "it",
+            "they"
+          ],
+          "a": 0,
+          "why": "축구(soccer)는 단수이므로 it으로 받습니다."
+        },
+        {
+          "p": "I wash my hands because they are ____.",
+          "c": [
+            "dirty",
+            "clean"
+          ],
+          "a": 0,
+          "why": "손을 씻는 이유는 손이 더럽기 때문입니다."
+        },
+        {
+          "p": "They wear hats because it ____ sunny.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "날씨를 나타내는 주어 it 뒤에는 is를 씁니다."
+        },
+        {
+          "p": "I love my mom because she ____ kind.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "주어 she 뒤에는 be동사 is를 씁니다."
+        },
+        {
+          "p": "The cat sleeps because ____ is tired.",
+          "c": [
+            "it",
+            "they"
+          ],
+          "a": 0,
+          "why": "고양이 한 마리(The cat)는 단수이므로 it으로 받습니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I like math **because** it is fun.",
+          "ko": "나는 수학이 좋아, 재미있으니까."
+        },
+        {
+          "en": "He drinks juice **because** he is thirsty.",
+          "ko": "그는 주스를 마셔, 목마르니까."
+        },
+        {
+          "en": "We smile **because** we are happy.",
+          "ko": "우리는 웃어, 행복하니까."
+        },
+        {
+          "en": "She likes cats **because** they are cute.",
+          "ko": "그녀는 고양이가 좋아, 귀여우니까."
+        },
+        {
+          "en": "They run **because** they are late.",
+          "ko": "그들은 뛰어, 늦었으니까."
+        },
+        {
+          "en": "I wear a hat **because** it is sunny.",
+          "ko": "나는 모자를 써, 햇빛이 강하니까."
+        },
+        {
+          "en": "My dad rests **because** he is tired.",
+          "ko": "나의 아빠는 쉬어, 피곤하니까."
+        },
+        {
+          "en": "The dog barks **because** it is angry.",
+          "ko": "그 개는 짖어, 화가 났으니까."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I like spring because warm.",
+          "r": "I like spring because it is warm.",
+          "why": "because 뒤에는 주어와 동사가 필요합니다."
+        },
+        {
+          "w": "She is crying because she sad.",
+          "r": "She is crying because she is sad.",
+          "why": "상태를 나타내는 형용사 앞에는 be동사가 필요합니다."
+        },
+        {
+          "w": "We run fast because we is late.",
+          "r": "We run fast because we are late.",
+          "why": "we 뒤에는 be동사 are를 씁니다."
+        },
+        {
+          "w": "He likes books because it are fun.",
+          "r": "He likes books because they are fun.",
+          "why": "책들(books)은 복수이므로 they로 받습니다."
+        },
+        {
+          "w": "I wash my hands because dirty.",
+          "r": "I wash my hands because they are dirty.",
+          "why": "because 뒤에는 주어와 동사가 필요합니다."
+        },
+        {
+          "w": "They smile because they am happy.",
+          "r": "They smile because they are happy.",
+          "why": "they 뒤에는 be동사 are를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "좋아하는 과목과 이유를 말해요.",
+          "frame": "I like ____ because it is ____."
+        },
+        {
+          "task": "지금 먹고 싶은 음식과 이유를 말해요.",
+          "frame": "I want to eat ____ because I am ____."
+        },
+        {
+          "task": "좋아하는 계절과 이유를 말해요.",
+          "frame": "I like ____ because it is ____."
+        },
+        {
+          "task": "어떤 행동을 하는 이유를 말해요.",
+          "frame": "I ____ because I am ____."
+        },
+        {
+          "task": "친구가 우는 이유를 추측해서 말해요.",
+          "frame": "She is crying because she is ____."
+        },
+        {
+          "task": "개가 짖는 이유를 말해요.",
+          "frame": "The dog barks because it is ____."
+        }
+      ],
+      "mission": {
+        "title": "이유를 찾아라!",
+        "scene": "친구들이 특정한 행동을 하는 이유를 알아맞히는 게임입니다.",
+        "steps": [
+          "짝과 함께 한 명은 행동을 흉내 내고 다른 한 명은 'Why do you...?'라고 묻습니다.",
+          "행동을 한 친구는 'I ... because I am ...' 패턴으로 이유를 대답합니다.",
+          "역할을 바꾸어 세 번씩 연습하고 가장 재미있는 이유를 발표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 수학이 좋아요, 재미있으니까요.",
+          "cond": "because를 써요.",
+          "model": "I like math because it is fun."
+        },
+        {
+          "ko": "그녀는 우유를 마셔요, 목마르니까요.",
+          "cond": "because를 써요.",
+          "model": "She drinks milk because she is thirsty."
+        },
+        {
+          "ko": "우리는 뛰어요, 늦었으니까요.",
+          "cond": "because를 써요.",
+          "model": "We run because we are late."
+        },
+        {
+          "ko": "그는 쉬어요, 피곤하니까요.",
+          "cond": "because를 써요.",
+          "model": "He rests because he is tired."
+        },
+        {
+          "ko": "그들은 웃어요, 행복하니까요.",
+          "cond": "because를 써요.",
+          "model": "They smile because they are happy."
+        },
+        {
+          "ko": "그 고양이는 자요, 졸리니까요.",
+          "cond": "because를 써요.",
+          "model": "The cat sleeps because it is sleepy."
+        }
+      ]
+    }
+  },
+  {
+    "id": "so",
+    "discover": {
+      "q": "so가 들어간 문장을 보세요. so 앞에는 이유가, 뒤에는 결과가 오나요, 반대인가요?",
+      "a": "so 앞에 이유가, so 뒤에 결과가 온다. 앞의 말 때문에 그 결과가 생겼다는 뜻이다."
+    },
+    "choose": [
+      {
+        "p": "It's cold, ____ I wear a coat.",
+        "c": [
+          "so",
+          "because"
+        ],
+        "a": 0,
+        "why": "결과(코트를 입는다)를 이끄는 말은 so입니다."
+      },
+      {
+        "p": "I'm hungry, so I ____ bread.",
+        "c": [
+          "eat",
+          "ate"
+        ],
+        "a": 0,
+        "why": "현재 상황이므로 현재형 eat입니다."
+      },
+      {
+        "p": "It's late, so I go ____ bed.",
+        "c": [
+          "to",
+          "at"
+        ],
+        "a": 0,
+        "why": "'자러 가다'는 go to bed입니다."
+      },
+      {
+        "p": "It's raining, so I take an ____.",
+        "c": [
+          "umbrella",
+          "sunglasses"
+        ],
+        "a": 0,
+        "why": "비가 오니 우산을 챙기는 것이 자연스럽습니다."
+      },
+      {
+        "p": "I'm tired, ____ I sleep.",
+        "c": [
+          "so",
+          "because"
+        ],
+        "a": 0,
+        "why": "피곤한 결과로 자는 것이므로 so입니다."
+      },
+      {
+        "p": "It's hot, ____ I open the window.",
+        "c": [
+          "but",
+          "so"
+        ],
+        "a": 1,
+        "why": "더운 원인으로 창문을 여는 결과를 나타내므로 so를 씁니다."
+      },
+      {
+        "p": "I am sick, so I ____ a doctor.",
+        "c": [
+          "see",
+          "seeing"
+        ],
+        "a": 0,
+        "why": "현재의 사실을 말하므로 동사원형 see를 씁니다."
+      },
+      {
+        "p": "It's sunny, so we ____ outside.",
+        "c": [
+          "plays",
+          "play"
+        ],
+        "a": 1,
+        "why": "주어가 we이므로 동사원형 play를 씁니다."
+      },
+      {
+        "p": "I like apples, ____ I eat them.",
+        "c": [
+          "so",
+          "because"
+        ],
+        "a": 0,
+        "why": "사과를 좋아해서 먹는다는 결과를 나타내므로 so가 알맞습니다."
+      },
+      {
+        "p": "The box is heavy, so I ____ help.",
+        "c": [
+          "needs",
+          "need"
+        ],
+        "a": 1,
+        "why": "주어가 I이므로 동사원형 need를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "So it's cold, I wear a coat.",
+        "r": "It's cold, so I wear a coat.",
+        "why": "so는 결과 앞에 씁니다."
+      },
+      {
+        "w": "Because I'm hungry, so I eat bread.",
+        "r": "I'm hungry, so I eat bread.",
+        "why": "because와 so를 함께 쓰지 않습니다."
+      },
+      {
+        "w": "It's late, so I am go to bed.",
+        "r": "It's late, so I go to bed.",
+        "why": "am 과 go 를 함께 쓰지 않습니다."
+      },
+      {
+        "w": "It's hot, because I open the window.",
+        "r": "It's hot, so I open the window.",
+        "why": "결과를 나타내는 문장 앞에는 because가 아니라 so를 씁니다."
+      },
+      {
+        "w": "I am sick so I resting.",
+        "r": "I am sick, so I rest.",
+        "why": "현재의 행동을 나타내므로 동사원형을 써야 합니다."
+      },
+      {
+        "w": "It's sunny, so we plays outside.",
+        "r": "It's sunny, so we play outside.",
+        "why": "주어가 we일 때는 동사원형 play를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "날씨 때문에 하는 일을 말해요.",
+        "frame": "It's ____, so I ____."
+      },
+      {
+        "task": "기분이나 몸 상태 때문에 하는 일을 말해요.",
+        "frame": "I'm ____, so I ____."
+      },
+      {
+        "task": "짝의 이유를 듣고 결과를 말해요.",
+        "frame": "You're ____, so you should ____."
+      },
+      {
+        "task": "내 하루의 원인과 결과를 두 문장으로 말해요.",
+        "frame": "I ____ a lot, so I'm ____."
+      },
+      {
+        "task": "날씨에 따라 입는 옷을 말해요.",
+        "frame": "It's ____, so I wear ____."
+      },
+      {
+        "task": "좋아하는 것과 그 결과를 말해요.",
+        "frame": "I like ____, so I ____."
+      }
+    ],
+    "mission": {
+      "title": "원인과 결과 카드 맞추기",
+      "scene": "원인 카드와 결과 카드를 짝지어 so로 이은 문장을 만드는 게임이에요.",
+      "steps": [
+        "원인 카드와 결과 카드를 섞는다.",
+        "한 장씩 뽑아 ____, so ____. 로 말해 본다.",
+        "자연스러운 짝이면 카드를 가져간다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "추워서 코트를 입어요.",
+        "cond": "so를 써요.",
+        "model": "It's cold, so I wear a coat."
+      },
+      {
+        "ko": "배고파서 빵을 먹어요.",
+        "cond": "so를 써요.",
+        "model": "I'm hungry, so I eat bread."
+      },
+      {
+        "ko": "비가 와서 우산을 챙겨요.",
+        "cond": "so를 써요.",
+        "model": "It's raining, so I take an umbrella."
+      },
+      {
+        "ko": "더워서 나는 창문을 열어요.",
+        "cond": "so를 써요.",
+        "model": "It's hot, so I open the window."
+      },
+      {
+        "ko": "화창해서 우리는 밖에서 놀아요.",
+        "cond": "so를 써요.",
+        "model": "It's sunny, so we play outside."
+      },
+      {
+        "ko": "아파서 그는 병원에 가요.",
+        "cond": "so를 써요.",
+        "model": "He is sick, so he goes to a hospital."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "It's hot, **so** I **open** the window.",
+        "ko": "더워서 나는 창문을 열어."
+      },
+      {
+        "en": "I am sick, **so** I **rest**.",
+        "ko": "나는 아파서 쉬어."
+      },
+      {
+        "en": "It's sunny, **so** we **play** outside.",
+        "ko": "화창해서 우리는 밖에서 놀아."
+      },
+      {
+        "en": "I like music, **so** I **sing**.",
+        "ko": "나는 음악을 좋아해서 노래해."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 so 앞과 뒤에는 각각 어떤 내용이 오나요?",
+        "a": "앞에는 이유(원인)가 오고, 뒤에는 그에 따른 결과가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "I am thirsty, ____ I drink water.",
+          "c": [
+            "but",
+            "so"
+          ],
+          "a": 1,
+          "why": "목이 마른 이유로 물을 마시는 결과를 나타내므로 so를 씁니다."
+        },
+        {
+          "p": "It is dark, so I ____ on the light.",
+          "c": [
+            "turn",
+            "turns"
+          ],
+          "a": 0,
+          "why": "주어가 I이므로 동사원형 turn을 씁니다."
+        },
+        {
+          "p": "She is sad, so she ____.",
+          "c": [
+            "cry",
+            "cries"
+          ],
+          "a": 1,
+          "why": "주어가 3인칭 단수(She)이므로 동사에 -s나 -es를 붙입니다."
+        },
+        {
+          "p": "We are late, ____ we run fast.",
+          "c": [
+            "or",
+            "so"
+          ],
+          "a": 1,
+          "why": "늦은 결과로 빨리 뛰는 것이므로 so가 알맞습니다."
+        },
+        {
+          "p": "My room is dirty, so I ____ it.",
+          "c": [
+            "clean",
+            "cleaning"
+          ],
+          "a": 0,
+          "why": "현재의 행동을 나타내므로 동사원형 clean을 씁니다."
+        },
+        {
+          "p": "He likes dogs, so he ____ a puppy.",
+          "c": [
+            "have",
+            "has"
+          ],
+          "a": 1,
+          "why": "주어가 3인칭 단수(He)이므로 has를 씁니다."
+        },
+        {
+          "p": "It is snowing, so they ____ a snowman.",
+          "c": [
+            "make",
+            "makes"
+          ],
+          "a": 0,
+          "why": "주어가 복수(they)이므로 동사원형 make를 씁니다."
+        },
+        {
+          "p": "I have a test, ____ I study hard.",
+          "c": [
+            "because",
+            "so"
+          ],
+          "a": 1,
+          "why": "시험이 있는 원인으로 열심히 공부하는 결과를 이끄는 so가 필요합니다."
+        },
+        {
+          "p": "The movie is funny, so we ____.",
+          "c": [
+            "laugh",
+            "laughs"
+          ],
+          "a": 0,
+          "why": "주어가 we이므로 동사원형 laugh를 씁니다."
+        },
+        {
+          "p": "I am full, so I ____ eating.",
+          "c": [
+            "stops",
+            "stop"
+          ],
+          "a": 1,
+          "why": "주어가 I이므로 동사원형 stop을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I am thirsty, **so** I **drink** water.",
+          "ko": "나는 목이 말라서 물을 마셔."
+        },
+        {
+          "en": "It is dark, **so** I **turn on** the light.",
+          "ko": "어두워서 나는 불을 켜."
+        },
+        {
+          "en": "She is sad, **so** she **cries**.",
+          "ko": "그녀는 슬퍼서 울어."
+        },
+        {
+          "en": "We are late, **so** we **run** fast.",
+          "ko": "우리는 늦어서 빨리 뛰어."
+        },
+        {
+          "en": "My room is dirty, **so** I **clean** it.",
+          "ko": "내 방이 더러워서 나는 청소해."
+        },
+        {
+          "en": "He likes dogs, **so** he **has** a puppy.",
+          "ko": "그는 개를 좋아해서 강아지를 키워."
+        },
+        {
+          "en": "It is snowing, **so** they **make** a snowman.",
+          "ko": "눈이 와서 그들은 눈사람을 만들어."
+        },
+        {
+          "en": "I have a test, **so** I **study** hard.",
+          "ko": "나는 시험이 있어서 열심히 공부해."
+        }
+      ],
+      "correct": [
+        {
+          "w": "So I am thirsty, I drink water.",
+          "r": "I am thirsty, so I drink water.",
+          "why": "so는 결과를 나타내는 문장 앞에 씁니다."
+        },
+        {
+          "w": "It is dark, so I turns on the light.",
+          "r": "It is dark, so I turn on the light.",
+          "why": "주어가 I이므로 동사원형 turn을 씁니다."
+        },
+        {
+          "w": "She is sad, so she cry.",
+          "r": "She is sad, so she cries.",
+          "why": "주어가 She이므로 동사 뒤에 -s나 -es를 붙입니다."
+        },
+        {
+          "w": "We are late, because we run fast.",
+          "r": "We are late, so we run fast.",
+          "why": "늦은 결과로 뛰는 것이므로 because가 아니라 so를 씁니다."
+        },
+        {
+          "w": "My room is dirty, so I cleaning it.",
+          "r": "My room is dirty, so I clean it.",
+          "why": "현재의 행동을 말하므로 동사원형 clean을 씁니다."
+        },
+        {
+          "w": "He likes dogs, so he have a puppy.",
+          "r": "He likes dogs, so he has a puppy.",
+          "why": "주어가 He이므로 have 대신 has를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "목이 마를 때 하는 행동을 말해요.",
+          "frame": "I am thirsty, so I ____."
+        },
+        {
+          "task": "방이 더러울 때 하는 행동을 말해요.",
+          "frame": "My room is dirty, so I ____."
+        },
+        {
+          "task": "늦었을 때 하는 행동을 말해요.",
+          "frame": "I am late, so I ____."
+        },
+        {
+          "task": "시험이 있을 때 하는 행동을 말해요.",
+          "frame": "I have a test, so I ____."
+        },
+        {
+          "task": "친구의 감정에 따른 행동을 말해요.",
+          "frame": "She is ____, so she ____."
+        },
+        {
+          "task": "눈이 올 때 하는 놀이를 말해요.",
+          "frame": "It is snowing, so we ____."
+        }
+      ],
+      "mission": {
+        "title": "원인과 결과 짝짓기",
+        "scene": "친구와 함께 상황 카드와 행동 카드를 연결해 문장을 만들어 봅시다.",
+        "steps": [
+          "한 친구가 상황 카드(예: I am thirsty)를 뽑아 읽습니다.",
+          "다른 친구가 알맞은 행동 카드(예: drink water)를 찾아 'so I drink water'라고 덧붙여 말합니다.",
+          "두 사람이 함께 완성된 문장('I am thirsty, so I drink water.')을 소리 내어 읽습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 목이 말라서 물을 마셔요.",
+          "cond": "so를 써요.",
+          "model": "I am thirsty, so I drink water."
+        },
+        {
+          "ko": "어두워서 그는 불을 켜요.",
+          "cond": "so를 써요.",
+          "model": "It is dark, so he turns on the light."
+        },
+        {
+          "ko": "그녀는 슬퍼서 울어요.",
+          "cond": "so를 써요.",
+          "model": "She is sad, so she cries."
+        },
+        {
+          "ko": "우리는 늦어서 빨리 뛰어요.",
+          "cond": "so를 써요.",
+          "model": "We are late, so we run fast."
+        },
+        {
+          "ko": "눈이 와서 그들은 눈사람을 만들어요.",
+          "cond": "so를 써요.",
+          "model": "It is snowing, so they make a snowman."
+        },
+        {
+          "ko": "그 자동차는 더러워서 아빠가 세차해요.",
+          "cond": "so를 써요.",
+          "model": "The car is dirty, so dad washes it."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-conj-coordinating",
+    "discover": {
+      "q": "and, but, or, so가 쓰인 문장을 비교해 보세요. 각각 어떤 관계(더하기·반대·선택·결과)를 나타내나요?",
+      "a": "and는 더하기, but은 반대·대조, or는 선택, so는 결과(그래서)를 나타낸다."
+    },
+    "choose": [
+      {
+        "p": "I like both dogs ____ cats.",
+        "c": [
+          "and",
+          "or"
+        ],
+        "a": 0,
+        "why": "both와 짝을 이루는 말은 and입니다."
+      },
+      {
+        "p": "He is smart ____ lazy.",
+        "c": [
+          "but",
+          "so"
+        ],
+        "a": 0,
+        "why": "똑똑하지만 게으르다는 대조이므로 but입니다."
+      },
+      {
+        "p": "Which do you want, tea ____ coffee?",
+        "c": [
+          "or",
+          "and"
+        ],
+        "a": 0,
+        "why": "둘 중 하나를 고르는 질문이므로 or입니다."
+      },
+      {
+        "p": "It was raining, ____ we stayed home.",
+        "c": [
+          "so",
+          "but"
+        ],
+        "a": 0,
+        "why": "비 때문에 집에 있었다는 결과이므로 so입니다."
+      },
+      {
+        "p": "I was hungry, ____ I ate a sandwich.",
+        "c": [
+          "so",
+          "but"
+        ],
+        "a": 0,
+        "why": "배고파서 먹었다는 결과이므로 so입니다."
+      },
+      {
+        "p": "I am tired, ____ I can't play soccer.",
+        "c": [
+          "so",
+          "but",
+          "or"
+        ],
+        "a": 0,
+        "why": "피곤해서 축구를 할 수 없다는 결과이므로 so를 씁니다."
+      },
+      {
+        "p": "She likes apples, ____ she doesn't like bananas.",
+        "c": [
+          "and",
+          "but",
+          "so"
+        ],
+        "a": 1,
+        "why": "사과는 좋아하지만 바나나는 좋아하지 않는다는 대조이므로 but을 씁니다."
+      },
+      {
+        "p": "Is your brother tall ____ short?",
+        "c": [
+          "or",
+          "so",
+          "but"
+        ],
+        "a": 0,
+        "why": "키가 큰지 작은지 둘 중 하나를 묻는 선택이므로 or를 씁니다."
+      },
+      {
+        "p": "I bought a pen ____ a notebook at the store.",
+        "c": [
+          "but",
+          "so",
+          "and"
+        ],
+        "a": 2,
+        "why": "펜과 공책을 함께 샀다는 더하기의 의미이므로 and를 씁니다."
+      },
+      {
+        "p": "The movie was boring, ____ I fell asleep.",
+        "c": [
+          "but",
+          "or",
+          "so"
+        ],
+        "a": 2,
+        "why": "영화가 지루해서 잠이 들었다는 결과이므로 so를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Because I was hungry, so I ate a sandwich.",
+        "r": "I was hungry, so I ate a sandwich.",
+        "why": "because와 so는 한 문장에 함께 쓰지 않습니다."
+      },
+      {
+        "w": "Do you want tea but coffee?",
+        "r": "Do you want tea or coffee?",
+        "why": "둘 중 고르는 질문은 or를 씁니다."
+      },
+      {
+        "w": "He is smart so lazy.",
+        "r": "He is smart but lazy.",
+        "why": "반대되는 내용은 but으로 잇습니다."
+      },
+      {
+        "w": "I like math, so I don't like science.",
+        "r": "I like math, but I don't like science.",
+        "why": "수학은 좋아하지만 과학은 좋아하지 않는다는 대조이므로 but을 써야 합니다."
+      },
+      {
+        "w": "Are you a middle school student and a high school student?",
+        "r": "Are you a middle school student or a high school student?",
+        "why": "둘 중 하나를 묻는 선택 의문문에서는 or를 씁니다."
+      },
+      {
+        "w": "He was sick, but he went to see a doctor.",
+        "r": "He was sick, so he went to see a doctor.",
+        "why": "아파서 의사를 보러 갔다는 결과이므로 so를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 것을 and로 더해 말해요.",
+        "frame": "I like ____ and ____."
+      },
+      {
+        "task": "장점과 단점을 but으로 말해요.",
+        "frame": "It's ____, but ____."
+      },
+      {
+        "task": "짝에게 선택을 묻고 답해요.",
+        "frame": "Do you want ____ or ____? — I want ____."
+      },
+      {
+        "task": "원인과 결과를 so로 말해요.",
+        "frame": "I was ____, so I ____."
+      },
+      {
+        "task": "어제 한 두 가지 행동을 이어서 말해요.",
+        "frame": "I ____ and ____ yesterday."
+      },
+      {
+        "task": "날씨와 그에 따른 자신의 행동을 말해요.",
+        "frame": "It was ____, so I ____."
+      }
+    ],
+    "mission": {
+      "title": "접속사 룰렛",
+      "scene": "접속사 카드를 뽑아 그 낱말로 문장을 만드는 게임이에요.",
+      "steps": [
+        "접속사 카드(and, but, or, so)를 한 장 뽑는다.",
+        "그 접속사를 써서 문장을 하나 만든다.",
+        "짝은 알맞은 관계인지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 개와 고양이를 좋아해요.",
+        "cond": "and를 써요.",
+        "model": "I like dogs and cats."
+      },
+      {
+        "ko": "너는 차를 마실래, 커피를 마실래?",
+        "cond": "or를 써요.",
+        "model": "Do you want tea or coffee?"
+      },
+      {
+        "ko": "비가 와서 우리는 집에 있었어요.",
+        "cond": "so를 써요.",
+        "model": "It was raining, so we stayed home."
+      },
+      {
+        "ko": "그녀는 피아노를 칠 수 있지만 바이올린은 켤 수 없어요.",
+        "cond": "but을 써요.",
+        "model": "She can play the piano, but she can't play the violin."
+      },
+      {
+        "ko": "우리는 공원에 갔고 자전거를 탔어요.",
+        "cond": "and를 써요.",
+        "model": "We went to the park and rode bikes."
+      },
+      {
+        "ko": "너는 토요일에 바쁘니, 아니면 일요일에 바쁘니?",
+        "cond": "or를 써요.",
+        "model": "Are you busy on Saturday or Sunday?"
+      }
+    ],
+    "dropPitfalls": [
+      "I was hungry, but I ate a sandwich."
+    ],
+    "buildExtra": [
+      {
+        "en": "I washed my hands **and** face.",
+        "ko": "나는 손과 얼굴을 씻었다."
+      },
+      {
+        "en": "The bag is small **but** heavy.",
+        "ko": "그 가방은 작지만 무겁다."
+      },
+      {
+        "en": "You can walk **or** take a bus.",
+        "ko": "너는 걷거나 버스를 탈 수 있다."
+      },
+      {
+        "en": "It was cold, **so** I wore a jacket.",
+        "ko": "날씨가 추워서 나는 재킷을 입었다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "두 문장을 연결할 때, 앞 문장이 원인이고 뒷 문장이 결과이면 어떤 단어를 사용하나요?",
+        "a": "so를 사용합니다."
+      },
+      "choose": [
+        {
+          "p": "I studied hard, ____ I got a good grade.",
+          "c": [
+            "but",
+            "so",
+            "or"
+          ],
+          "a": 1,
+          "why": "열심히 공부해서 좋은 성적을 받았다는 결과이므로 so를 씁니다."
+        },
+        {
+          "p": "My sister likes music, ____ she can't sing well.",
+          "c": [
+            "so",
+            "but",
+            "or"
+          ],
+          "a": 1,
+          "why": "음악을 좋아하지만 노래는 잘 못한다는 대조이므로 but을 씁니다."
+        },
+        {
+          "p": "Do you want to play baseball ____ basketball?",
+          "c": [
+            "or",
+            "but",
+            "so"
+          ],
+          "a": 0,
+          "why": "야구와 농구 중 하나를 선택하는 질문이므로 or를 씁니다."
+        },
+        {
+          "p": "He woke up late, ____ he missed the train.",
+          "c": [
+            "but",
+            "or",
+            "so"
+          ],
+          "a": 2,
+          "why": "늦게 일어나서 기차를 놓쳤다는 결과이므로 so를 씁니다."
+        },
+        {
+          "p": "I have a brother ____ two sisters.",
+          "c": [
+            "but",
+            "so",
+            "and"
+          ],
+          "a": 2,
+          "why": "남동생 한 명과 여동생 두 명이 있다는 더하기이므로 and를 씁니다."
+        },
+        {
+          "p": "The test was very hard, ____ I did my best.",
+          "c": [
+            "but",
+            "so",
+            "or"
+          ],
+          "a": 0,
+          "why": "시험이 어려웠지만 최선을 다했다는 대조이므로 but을 씁니다."
+        },
+        {
+          "p": "Is that animal a mouse ____ a rabbit?",
+          "c": [
+            "and",
+            "so",
+            "or"
+          ],
+          "a": 2,
+          "why": "쥐인지 토끼인지 묻는 선택 의문문이므로 or를 씁니다."
+        },
+        {
+          "p": "I lost my phone, ____ I am very sad.",
+          "c": [
+            "or",
+            "so",
+            "but"
+          ],
+          "a": 1,
+          "why": "휴대전화를 잃어버려서 슬프다는 결과이므로 so를 씁니다."
+        },
+        {
+          "p": "She opened the door ____ walked into the room.",
+          "c": [
+            "but",
+            "so",
+            "and"
+          ],
+          "a": 2,
+          "why": "문을 열고 방에 들어갔다는 연속된 행동이므로 and를 씁니다."
+        },
+        {
+          "p": "I invited him to the party, ____ he didn't come.",
+          "c": [
+            "but",
+            "so",
+            "or"
+          ],
+          "a": 0,
+          "why": "초대했지만 오지 않았다는 대조이므로 but을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "He is young **but** very wise.",
+          "ko": "그는 어리지만 매우 지혜롭다."
+        },
+        {
+          "en": "I bought some milk **and** bread.",
+          "ko": "나는 우유와 빵을 샀다."
+        },
+        {
+          "en": "Is your house big **or** small?",
+          "ko": "너의 집은 크니, 아니면 작니?"
+        },
+        {
+          "en": "I had no money, **so** I walked.",
+          "ko": "나는 돈이 없어서 걸었다."
+        },
+        {
+          "en": "She likes reading books **and** watching movies.",
+          "ko": "그녀는 책 읽기와 영화 보기를 좋아한다."
+        },
+        {
+          "en": "The food was spicy **but** delicious.",
+          "ko": "그 음식은 매웠지만 맛있었다."
+        },
+        {
+          "en": "You can stay here **or** go home.",
+          "ko": "너는 여기에 머물러도 되고 집에 가도 된다."
+        },
+        {
+          "en": "It is late, **so** we must leave.",
+          "ko": "시간이 늦어서 우리는 떠나야 한다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I was tired, but I went to bed early.",
+          "r": "I was tired, so I went to bed early.",
+          "why": "피곤해서 일찍 잤다는 결과의 의미이므로 so를 씁니다."
+        },
+        {
+          "w": "Do you like summer and winter?",
+          "r": "Do you like summer or winter?",
+          "why": "여름과 겨울 중 어느 것을 좋아하는지 묻는 선택이므로 or를 씁니다."
+        },
+        {
+          "w": "She is kind, but everyone likes her.",
+          "r": "She is kind, so everyone likes her.",
+          "why": "친절해서 모두가 좋아한다는 원인과 결과이므로 so를 씁니다."
+        },
+        {
+          "w": "He ran fast, so he didn't win the race.",
+          "r": "He ran fast, but he didn't win the race.",
+          "why": "빨리 달렸지만 이기지 못했다는 대조이므로 but을 씁니다."
+        },
+        {
+          "w": "I washed my hands but ate dinner.",
+          "r": "I washed my hands and ate dinner.",
+          "why": "손을 씻고 저녁을 먹었다는 순서대로 이어진 행동이므로 and를 씁니다."
+        },
+        {
+          "w": "Because it rained, so we canceled the picnic.",
+          "r": "It rained, so we canceled the picnic.",
+          "why": "접속사 because와 so는 의미가 중복되므로 한 문장에 같이 쓰지 않습니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "자신의 두 가지 취미를 and로 연결해서 말해요.",
+          "frame": "My hobbies are ____ and ____."
+        },
+        {
+          "task": "어떤 것의 장점과 단점을 but으로 묘사해요.",
+          "frame": "My ____ is ____, but ____."
+        },
+        {
+          "task": "상대방에게 두 가지 중 하나를 선택하도록 질문해요.",
+          "frame": "Do you prefer ____ or ____?"
+        },
+        {
+          "task": "어떤 일이 일어난 결과를 so를 써서 말해요.",
+          "frame": "I was ____, so I ____."
+        },
+        {
+          "task": "주말에 한 두 가지 일을 and를 써서 말해요.",
+          "frame": "I ____ and ____ on the weekend."
+        },
+        {
+          "task": "노력했지만 결과가 좋지 않았던 경험을 but으로 말해요.",
+          "frame": "I tried to ____, but I ____."
+        }
+      ],
+      "mission": {
+        "title": "선택과 결과 인터뷰",
+        "scene": "친구들에게 여러 가지 질문을 하고, 그 결과를 정리하여 발표합니다.",
+        "steps": [
+          "친구에게 두 가지 중 하나를 고르는 질문을 합니다. (예: Do you like math or English?)",
+          "친구의 대답을 듣고 메모합니다. (예: He likes English.)",
+          "결과를 so를 사용하여 문장으로 발표합니다. (예: He likes English, so I will give him an English book.)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 일찍 일어났지만 기차를 놓쳤다.",
+          "cond": "but을 써요.",
+          "model": "I woke up early, but I missed the train."
+        },
+        {
+          "ko": "너는 사과를 원하니, 아니면 오렌지를 원하니?",
+          "cond": "or를 써요.",
+          "model": "Do you want an apple or an orange?"
+        },
+        {
+          "ko": "방이 어두워서 나는 불을 켰다.",
+          "cond": "so를 써요.",
+          "model": "The room was dark, so I turned on the light."
+        },
+        {
+          "ko": "나의 아버지는 키가 크고 잘생기셨다.",
+          "cond": "and를 써요.",
+          "model": "My father is tall and handsome."
+        },
+        {
+          "ko": "그녀는 노래를 부르고 춤을 췄다.",
+          "cond": "and를 써요.",
+          "model": "She sang a song and danced."
+        },
+        {
+          "ko": "나는 돈이 없어서 그 셔츠를 살 수 없었다.",
+          "cond": "so를 써요.",
+          "model": "I had no money, so I couldn't buy the shirt."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-conj-when-if-that",
+    "discover": {
+      "q": "when, if, that이 쓰인 문장을 보세요. if절에서 내일 일인데도 현재시제를 쓴 문장을 찾아보세요. that은 어떤 동사 뒤에 쓰였나요?",
+      "a": "when은 때, if는 조건을 나타내고 미래의 일이라도 현재시제를 쓴다(If it rains tomorrow). that은 think, know, hope 같은 동사 뒤에 쓰며 생략할 수 있다."
+    },
+    "choose": [
+      {
+        "p": "____ I got home, my dog was sleeping.",
+        "c": [
+          "When",
+          "If"
+        ],
+        "a": 0,
+        "why": "집에 왔던 때를 말하므로 When입니다."
+      },
+      {
+        "p": "____ you are hungry, eat this.",
+        "c": [
+          "If",
+          "That"
+        ],
+        "a": 0,
+        "why": "배고프다면이라는 조건이므로 If입니다."
+      },
+      {
+        "p": "I think ____ he is honest.",
+        "c": [
+          "that",
+          "if"
+        ],
+        "a": 0,
+        "why": "think 뒤의 내용을 이끄는 말은 that입니다."
+      },
+      {
+        "p": "If it ____ tomorrow, we will stay home.",
+        "c": [
+          "rains",
+          "will rain"
+        ],
+        "a": 0,
+        "why": "조건 부사절에서는 미래 대신 현재시제를 씁니다."
+      },
+      {
+        "p": "I know ____ you are busy.",
+        "c": [
+          "that",
+          "because of"
+        ],
+        "a": 0,
+        "why": "know 뒤의 내용을 이끄는 말은 that입니다."
+      },
+      {
+        "p": "____ I saw him, he was reading a book.",
+        "c": [
+          "When",
+          "If",
+          "That"
+        ],
+        "a": 0,
+        "why": "과거의 특정한 때를 나타내므로 When이 알맞습니다."
+      },
+      {
+        "p": "I hope ____ you will come to my party.",
+        "c": [
+          "if",
+          "that",
+          "when"
+        ],
+        "a": 1,
+        "why": "hope 뒤에 내용을 연결할 때는 that을 씁니다."
+      },
+      {
+        "p": "If he ____ tomorrow, I will tell him the news.",
+        "c": [
+          "will come",
+          "came",
+          "comes"
+        ],
+        "a": 2,
+        "why": "조건을 나타내는 부사절에서는 미래 대신 현재시제를 씁니다."
+      },
+      {
+        "p": "____ you are tired, go to bed early.",
+        "c": [
+          "That",
+          "If",
+          "When"
+        ],
+        "a": 1,
+        "why": "만약 ~하다면이라는 조건의 의미이므로 If가 알맞습니다."
+      },
+      {
+        "p": "When I ____ up tomorrow, I will call you.",
+        "c": [
+          "wake",
+          "will wake",
+          "woke"
+        ],
+        "a": 0,
+        "why": "때를 나타내는 부사절에서는 미래 대신 현재시제를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "If it will rain tomorrow, we will stay home.",
+        "r": "If it rains tomorrow, we will stay home.",
+        "why": "조건 부사절에서는 미래 대신 현재시제를 씁니다."
+      },
+      {
+        "w": "When it will rain, I stay home.",
+        "r": "When it rains, I stay home.",
+        "why": "때를 나타내는 절에서는 미래 대신 현재시제를 씁니다."
+      },
+      {
+        "w": "I think when he is honest.",
+        "r": "I think that he is honest.",
+        "why": "think 뒤의 내용은 that으로 이끕니다."
+      },
+      {
+        "w": "If he will come tomorrow, I will tell him.",
+        "r": "If he comes tomorrow, I will tell him.",
+        "why": "조건 부사절에서는 미래의 일도 현재시제로 씁니다."
+      },
+      {
+        "w": "I hope when you like this gift.",
+        "r": "I hope that you like this gift.",
+        "why": "hope 뒤에 목적어절을 이끌 때는 that을 씁니다."
+      },
+      {
+        "w": "When I will grow up, I will help people.",
+        "r": "When I grow up, I will help people.",
+        "why": "때를 나타내는 부사절에서는 미래의 일도 현재시제로 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "비가 오면 할 일을 말해요.",
+        "frame": "If it rains tomorrow, I will ____."
+      },
+      {
+        "task": "집에 도착했을 때의 일을 말해요.",
+        "frame": "When I got home, ____."
+      },
+      {
+        "task": "내 생각을 말해요.",
+        "frame": "I think that ____."
+      },
+      {
+        "task": "짝의 조건을 묻고 답해요.",
+        "frame": "What will you do if ____? — I will ____."
+      },
+      {
+        "task": "친구에게 바라는 점을 말해요.",
+        "frame": "I hope that ____."
+      },
+      {
+        "task": "어렸을 때의 일을 말해요.",
+        "frame": "When I was young, ____."
+      }
+    ],
+    "mission": {
+      "title": "만약에 게임",
+      "scene": "만약에 카드를 뽑아 그 상황에서 할 일을 말하는 게임이에요.",
+      "steps": [
+        "If ____, ... 카드를 뽑는다.",
+        "If ____, I will ____. 로 대답한다.",
+        "짝은 When을 써서 비슷한 문장을 하나 더 만든다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "내가 집에 왔을 때 우리 개는 자고 있었다.",
+        "cond": "When으로 시작해요.",
+        "model": "When I got home, my dog was sleeping."
+      },
+      {
+        "ko": "내일 비가 오면 우리는 집에 있을 거야.",
+        "cond": "If와 현재시제를 써요.",
+        "model": "If it rains tomorrow, we will stay home."
+      },
+      {
+        "ko": "나는 네가 바쁘다는 것을 알아.",
+        "cond": "that을 써요.",
+        "model": "I know that you are busy."
+      },
+      {
+        "ko": "네가 피곤하다면, 일찍 자라.",
+        "cond": "If를 써요.",
+        "model": "If you are tired, go to bed early."
+      },
+      {
+        "ko": "나는 그가 좋은 사람이라고 생각한다.",
+        "cond": "that을 써요.",
+        "model": "I think that he is a good person."
+      },
+      {
+        "ko": "내가 그를 보았을 때, 그는 책을 읽고 있었다.",
+        "cond": "When을 써요.",
+        "model": "When I saw him, he was reading a book."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**When** I saw him, he was reading.",
+        "ko": "내가 그를 보았을 때, 그는 책을 읽고 있었다."
+      },
+      {
+        "en": "**If** you are tired, go to bed.",
+        "ko": "네가 피곤하다면, 자러 가라."
+      },
+      {
+        "en": "I hope **that** you will come.",
+        "ko": "나는 네가 오기를 바란다."
+      },
+      {
+        "en": "**If** he comes tomorrow, I will tell him.",
+        "ko": "내일 그가 오면, 나는 그에게 말할 것이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 when, if, that은 문장에서 어떤 역할을 하나요?",
+        "a": "두 문장을 하나로 연결해 주는 접속사 역할을 합니다."
+      },
+      "choose": [
+        {
+          "p": "____ I was ten, I lived in Seoul.",
+          "c": [
+            "If",
+            "That",
+            "When"
+          ],
+          "a": 2,
+          "why": "과거의 특정 시기를 나타내므로 When이 알맞습니다."
+        },
+        {
+          "p": "I know ____ she likes apples.",
+          "c": [
+            "that",
+            "when",
+            "if"
+          ],
+          "a": 0,
+          "why": "know의 목적어 역할을 하는 절을 이끌 때는 that을 씁니다."
+        },
+        {
+          "p": "If it ____ sunny tomorrow, we will play soccer.",
+          "c": [
+            "will be",
+            "is",
+            "was"
+          ],
+          "a": 1,
+          "why": "조건 부사절에서는 미래의 일도 현재시제로 씁니다."
+        },
+        {
+          "p": "____ you study hard, you will pass the test.",
+          "c": [
+            "If",
+            "That",
+            "What"
+          ],
+          "a": 0,
+          "why": "만약 ~한다면이라는 조건이므로 If가 알맞습니다."
+        },
+        {
+          "p": "I hope ____ he gets well soon.",
+          "c": [
+            "if",
+            "when",
+            "that"
+          ],
+          "a": 2,
+          "why": "hope 뒤에 이어지는 내용을 이끌 때는 that을 씁니다."
+        },
+        {
+          "p": "When she ____ here tomorrow, I will give it to her.",
+          "c": [
+            "will come",
+            "comes",
+            "came"
+          ],
+          "a": 1,
+          "why": "시간 부사절에서는 미래의 일도 현재시제로 씁니다."
+        },
+        {
+          "p": "____ I opened the door, my mom was cooking.",
+          "c": [
+            "When",
+            "If",
+            "That"
+          ],
+          "a": 0,
+          "why": "~했을 때라는 의미이므로 When이 알맞습니다."
+        },
+        {
+          "p": "I think ____ this book is interesting.",
+          "c": [
+            "if",
+            "that",
+            "when"
+          ],
+          "a": 1,
+          "why": "think의 목적어 역할을 하는 절을 이끌 때는 that을 씁니다."
+        },
+        {
+          "p": "If you ____ time, please help me.",
+          "c": [
+            "have",
+            "will have",
+            "had"
+          ],
+          "a": 0,
+          "why": "조건 부사절에서는 미래의 일도 현재시제로 씁니다."
+        },
+        {
+          "p": "____ you finish your homework, you can watch TV.",
+          "c": [
+            "That",
+            "What",
+            "If"
+          ],
+          "a": 2,
+          "why": "숙제를 끝낸다면이라는 조건이므로 If가 알맞습니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**When** I woke up, it was raining.",
+          "ko": "내가 일어났을 때, 비가 오고 있었다."
+        },
+        {
+          "en": "**If** you run fast, you will catch the bus.",
+          "ko": "네가 빨리 달리면, 너는 버스를 잡을 것이다."
+        },
+        {
+          "en": "I know **that** he is very smart.",
+          "ko": "나는 그가 매우 똑똑하다는 것을 안다."
+        },
+        {
+          "en": "**When** he arrives tomorrow, we will start.",
+          "ko": "내일 그가 도착할 때, 우리는 시작할 것이다."
+        },
+        {
+          "en": "I think **that** she will win the game.",
+          "ko": "나는 그녀가 그 경기에서 이길 것이라고 생각한다."
+        },
+        {
+          "en": "**If** it snows tomorrow, let's make a snowman.",
+          "ko": "내일 눈이 오면, 눈사람을 만들자."
+        },
+        {
+          "en": "**When** I was a child, I liked milk.",
+          "ko": "내가 아이였을 때, 나는 우유를 좋아했다."
+        },
+        {
+          "en": "I hope **that** we can meet again.",
+          "ko": "나는 우리가 다시 만날 수 있기를 바란다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "If you will study hard, you will pass the test.",
+          "r": "If you study hard, you will pass the test.",
+          "why": "조건 부사절에서는 미래 대신 현재시제를 씁니다."
+        },
+        {
+          "w": "I know if she is a good singer.",
+          "r": "I know that she is a good singer.",
+          "why": "know의 목적어절을 이끌 때는 that을 씁니다."
+        },
+        {
+          "w": "When he will arrive tomorrow, we will start.",
+          "r": "When he arrives tomorrow, we will start.",
+          "why": "시간 부사절에서는 미래 대신 현재시제를 씁니다."
+        },
+        {
+          "w": "I think when he is my friend.",
+          "r": "I think that he is my friend.",
+          "why": "think의 목적어절을 이끌 때는 that을 씁니다."
+        },
+        {
+          "w": "If it will snow tomorrow, let's make a snowman.",
+          "r": "If it snows tomorrow, let's make a snowman.",
+          "why": "조건 부사절에서는 미래 대신 현재시제를 씁니다."
+        },
+        {
+          "w": "That I was young, I played the piano.",
+          "r": "When I was young, I played the piano.",
+          "why": "과거의 때를 나타내므로 When을 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내일 날씨가 좋으면 할 일을 말해요.",
+          "frame": "If it is sunny tomorrow, I will ____."
+        },
+        {
+          "task": "친구가 아플 때 바라는 점을 말해요.",
+          "frame": "I hope that ____."
+        },
+        {
+          "task": "어제 일어났을 때의 상황을 말해요.",
+          "frame": "When I woke up yesterday, ____."
+        },
+        {
+          "task": "내가 아는 사실을 말해요.",
+          "frame": "I know that ____."
+        },
+        {
+          "task": "시간이 있다면 하고 싶은 일을 말해요.",
+          "frame": "If I have free time, I will ____."
+        },
+        {
+          "task": "초등학생이었을 때의 일을 말해요.",
+          "frame": "When I was an elementary school student, ____."
+        }
+      ],
+      "mission": {
+        "title": "릴레이 문장 만들기",
+        "scene": "짝과 함께 when, if, that을 사용하여 문장을 이어갑니다.",
+        "steps": [
+          "한 학생이 'If I have money,'와 같이 조건이나 때를 말합니다.",
+          "짝은 'I will buy a bike.'처럼 뒷부분을 완성합니다.",
+          "역할을 바꾸어 'I think that...'으로 시작하는 문장도 만들어 봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "내가 열 살이었을 때, 나는 서울에 살았다.",
+          "cond": "When을 써요.",
+          "model": "When I was ten, I lived in Seoul."
+        },
+        {
+          "ko": "내일 날씨가 맑으면, 우리는 축구를 할 것이다.",
+          "cond": "If와 현재시제를 써요.",
+          "model": "If it is sunny tomorrow, we will play soccer."
+        },
+        {
+          "ko": "나는 그녀가 사과를 좋아한다는 것을 안다.",
+          "cond": "that을 써요.",
+          "model": "I know that she likes apples."
+        },
+        {
+          "ko": "네가 빨리 달리면, 너는 버스를 잡을 것이다.",
+          "cond": "If를 써요.",
+          "model": "If you run fast, you will catch the bus."
+        },
+        {
+          "ko": "나는 이 책이 재미있다고 생각한다.",
+          "cond": "that을 써요.",
+          "model": "I think that this book is interesting."
+        },
+        {
+          "ko": "내일 눈이 오면, 눈사람을 만들자.",
+          "cond": "If와 현재시제를 써요.",
+          "model": "If it snows tomorrow, let's make a snowman."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-because-although",
+    "discover": {
+      "q": "because, because of, although가 쓰인 문장을 보세요. because와 because of 뒤에는 각각 어떤 말이 오나요? although와 but은 함께 쓸 수 있나요?",
+      "a": "because 뒤에는 주어 + 동사, because of 뒤에는 명사가 온다. although는 '~이지만'이며 but과 함께 쓰지 않는다."
+    },
+    "choose": [
+      {
+        "p": "I stayed home ____ I had a cold.",
+        "c": [
+          "because",
+          "because of"
+        ],
+        "a": 0,
+        "why": "뒤에 주어 + 동사(I had)가 오므로 because입니다."
+      },
+      {
+        "p": "We canceled the game ____ the rain.",
+        "c": [
+          "because of",
+          "because"
+        ],
+        "a": 0,
+        "why": "뒤에 명사(the rain)가 오므로 because of입니다."
+      },
+      {
+        "p": "____ he was tired, he kept working.",
+        "c": [
+          "Although",
+          "Because"
+        ],
+        "a": 0,
+        "why": "피곤했지만 계속 일했다는 대조이므로 Although입니다."
+      },
+      {
+        "p": "____ it was cold, we went swimming.",
+        "c": [
+          "Though",
+          "So"
+        ],
+        "a": 0,
+        "why": "추웠지만이라는 대조이므로 Though입니다."
+      },
+      {
+        "p": "I was late ____ I missed the bus.",
+        "c": [
+          "because",
+          "although"
+        ],
+        "a": 0,
+        "why": "버스를 놓쳤다는 이유이므로 because입니다."
+      },
+      {
+        "p": "I couldn't sleep ____ the loud noise.",
+        "c": [
+          "because",
+          "because of"
+        ],
+        "a": 1,
+        "why": "뒤에 주어와 동사가 아닌 명사구(the loud noise)가 오므로 because of입니다."
+      },
+      {
+        "p": "____ she was sick, she went to school.",
+        "c": [
+          "Although",
+          "Because"
+        ],
+        "a": 0,
+        "why": "아팠지만 학교에 갔다는 대조의 의미이므로 Although입니다."
+      },
+      {
+        "p": "He was happy ____ he passed the math exam.",
+        "c": [
+          "because of",
+          "because"
+        ],
+        "a": 1,
+        "why": "뒤에 주어(he)와 동사(passed)가 오므로 because입니다."
+      },
+      {
+        "p": "____ I studied hard, I failed the test.",
+        "c": [
+          "Though",
+          "Because of"
+        ],
+        "a": 0,
+        "why": "열심히 공부했지만 떨어졌다는 대조의 의미이고 뒤에 주어와 동사가 오므로 Though입니다."
+      },
+      {
+        "p": "We couldn't play soccer ____ the heavy snow.",
+        "c": [
+          "because",
+          "because of"
+        ],
+        "a": 1,
+        "why": "뒤에 명사구(the heavy snow)가 오므로 because of입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Because of it rained, we stayed home.",
+        "r": "Because it rained, we stayed home.",
+        "why": "주어 + 동사 앞에는 because를 씁니다."
+      },
+      {
+        "w": "Although it was cold, but we went out.",
+        "r": "Although it was cold, we went out.",
+        "why": "although와 but은 함께 쓰지 않습니다."
+      },
+      {
+        "w": "We stayed home because the rain.",
+        "r": "We stayed home because of the rain.",
+        "why": "명사 앞에는 because of를 씁니다."
+      },
+      {
+        "w": "Although I was full, but I ate dessert.",
+        "r": "Although I was full, I ate dessert.",
+        "why": "Although와 but은 한 문장에 같이 쓰지 않습니다."
+      },
+      {
+        "w": "I was late because of I woke up late.",
+        "r": "I was late because I woke up late.",
+        "why": "뒤에 주어(I)와 동사(woke up)가 오므로 because를 써야 합니다."
+      },
+      {
+        "w": "We stayed inside because the bad weather.",
+        "r": "We stayed inside because of the bad weather.",
+        "why": "뒤에 명사구(the bad weather)가 오므로 because of를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "하지 못한 일의 이유를 because로 말해요.",
+        "frame": "I couldn't ____ because ____."
+      },
+      {
+        "task": "날씨 때문에 바뀐 일을 because of로 말해요.",
+        "frame": "We ____ because of the ____."
+      },
+      {
+        "task": "힘들었지만 해낸 일을 말해요.",
+        "frame": "Although it was ____, I ____."
+      },
+      {
+        "task": "짝의 이유를 묻고 대답해요.",
+        "frame": "Why were you late? — Because ____. / Because of ____."
+      },
+      {
+        "task": "자신이 좋아하는 음식과 그 이유를 because를 써서 말해요.",
+        "frame": "I like ____ because it is ____."
+      },
+      {
+        "task": "비록 ~했지만 ~했다는 경험을 Although를 써서 말해요.",
+        "frame": "Although I was ____, I ____."
+      }
+    ],
+    "mission": {
+      "title": "이유와 양보 이야기 만들기",
+      "scene": "모둠이 한 문장씩 이어서 because와 although가 들어간 이야기를 만들어요.",
+      "steps": [
+        "첫 사람이 문장을 시작한다.",
+        "다음 사람은 because 또는 although로 이어서 말한다.",
+        "because of와 because를 구별해서 썼는지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "감기에 걸려서 집에 있었다.",
+        "cond": "because를 써요.",
+        "model": "I stayed home because I had a cold."
+      },
+      {
+        "ko": "비 때문에 경기를 취소했다.",
+        "cond": "because of를 써요.",
+        "model": "We canceled the game because of the rain."
+      },
+      {
+        "ko": "그는 피곤했지만 계속 일했다.",
+        "cond": "Although로 시작해요.",
+        "model": "Although he was tired, he kept working."
+      },
+      {
+        "ko": "나는 피곤했기 때문에 일찍 잤다.",
+        "cond": "because를 사용하세요.",
+        "model": "I went to bed early because I was tired."
+      },
+      {
+        "ko": "그 소음 때문에 아기는 깼다.",
+        "cond": "because of를 사용하세요.",
+        "model": "The baby woke up because of the noise."
+      },
+      {
+        "ko": "비가 왔지만, 우리는 소풍을 갔다.",
+        "cond": "Although로 시작하세요.",
+        "model": "Although it rained, we went on a picnic."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I wore a jacket **because** it was windy.",
+        "ko": "바람이 불어서 나는 재킷을 입었다."
+      },
+      {
+        "en": "They lost the game **because of** him.",
+        "ko": "그 사람 때문에 그들은 경기에 졌다."
+      },
+      {
+        "en": "**Although** he is young, he is very smart.",
+        "ko": "그는 어리지만 매우 똑똑하다."
+      },
+      {
+        "en": "She didn't eat **because** she wasn't hungry.",
+        "ko": "그녀는 배가 고프지 않아서 먹지 않았다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "because와 because of 뒤에는 각각 어떤 형태의 말이 오나요?",
+        "a": "because 뒤에는 주어와 동사가 오고, because of 뒤에는 명사나 명사구가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "I bought the shoes ____ they were cheap.",
+          "c": [
+            "because",
+            "because of",
+            "although"
+          ],
+          "a": 0,
+          "why": "신발이 싼 것이 산 이유이고, 뒤에 주어와 동사가 오므로 because입니다."
+        },
+        {
+          "p": "____ there was a traffic jam, we arrived on time.",
+          "c": [
+            "Although",
+            "Because"
+          ],
+          "a": 0,
+          "why": "교통체증이 있었지만 제시간에 도착했다는 대조이므로 Although입니다."
+        },
+        {
+          "p": "I couldn't read the book ____ the dark.",
+          "c": [
+            "because",
+            "because of"
+          ],
+          "a": 1,
+          "why": "뒤에 명사(the dark)가 오므로 because of입니다."
+        },
+        {
+          "p": "____ he ran fast, he didn't win the race.",
+          "c": [
+            "Because",
+            "Though"
+          ],
+          "a": 1,
+          "why": "빨리 달렸지만 이기지 못했다는 대조이므로 Though입니다."
+        },
+        {
+          "p": "She was crying ____ she lost her dog.",
+          "c": [
+            "because",
+            "because of"
+          ],
+          "a": 0,
+          "why": "강아지를 잃어버린 것이 우는 이유이고, 주어와 동사가 오므로 because입니다."
+        },
+        {
+          "p": "The flight was delayed ____ the thick fog.",
+          "c": [
+            "because",
+            "because of"
+          ],
+          "a": 1,
+          "why": "짙은 안개라는 명사구(the thick fog)가 오므로 because of입니다."
+        },
+        {
+          "p": "____ it is a small car, it is very fast.",
+          "c": [
+            "Although",
+            "Because of"
+          ],
+          "a": 0,
+          "why": "작은 차이지만 매우 빠르다는 대조이고 주어와 동사가 오므로 Although입니다."
+        },
+        {
+          "p": "He didn't buy the phone ____ the high price.",
+          "c": [
+            "because",
+            "because of"
+          ],
+          "a": 1,
+          "why": "비싼 가격이라는 명사구(the high price)가 오므로 because of입니다."
+        },
+        {
+          "p": "I like this city ____ the weather is nice.",
+          "c": [
+            "because",
+            "because of"
+          ],
+          "a": 0,
+          "why": "날씨가 좋은 것이 좋아하는 이유이고 주어와 동사가 오므로 because입니다."
+        },
+        {
+          "p": "____ she was scared, she watched the horror movie.",
+          "c": [
+            "Because",
+            "Although"
+          ],
+          "a": 1,
+          "why": "무서웠지만 공포 영화를 봤다는 대조이므로 Although입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I drank water **because** I was thirsty.",
+          "ko": "나는 목이 말라서 물을 마셨다."
+        },
+        {
+          "en": "We didn't go out **because of** the fine dust.",
+          "ko": "우리는 미세먼지 때문에 나가지 않았다."
+        },
+        {
+          "en": "**Although** it was expensive, I bought the bag.",
+          "ko": "비쌌지만, 나는 그 가방을 샀다."
+        },
+        {
+          "en": "He was angry **because** someone broke his window.",
+          "ko": "누군가 그의 창문을 깨서 그는 화가 났다."
+        },
+        {
+          "en": "My eyes hurt **because of** the smoke.",
+          "ko": "연기 때문에 내 눈이 아프다."
+        },
+        {
+          "en": "**Though** she was busy, she helped me.",
+          "ko": "그녀는 바빴지만 나를 도와주었다."
+        },
+        {
+          "en": "I failed the math test **because** I didn't study.",
+          "ko": "나는 공부를 하지 않아서 수학 시험에 떨어졌다."
+        },
+        {
+          "en": "The road is closed **because of** the accident.",
+          "ko": "사고 때문에 그 도로는 폐쇄되었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Though he was sick, but he came to the party.",
+          "r": "Though he was sick, he came to the party.",
+          "why": "Though와 but은 한 문장에 함께 쓸 수 없습니다."
+        },
+        {
+          "w": "I can't sleep because of I drank too much coffee.",
+          "r": "I can't sleep because I drank too much coffee.",
+          "why": "뒤에 주어와 동사가 이어지므로 because를 써야 합니다."
+        },
+        {
+          "w": "She got a bad grade because her mistakes.",
+          "r": "She got a bad grade because of her mistakes.",
+          "why": "명사구 앞에는 because of를 써야 합니다."
+        },
+        {
+          "w": "Although it was raining, but they played baseball.",
+          "r": "Although it was raining, they played baseball.",
+          "why": "Although와 but은 중복해서 쓰지 않습니다."
+        },
+        {
+          "w": "We moved to the country because of the air is clean.",
+          "r": "We moved to the country because the air is clean.",
+          "why": "주어와 동사가 있으므로 because를 써야 합니다."
+        },
+        {
+          "w": "He couldn't finish the project because lack of time.",
+          "r": "He couldn't finish the project because of lack of time.",
+          "why": "명사구 앞이므로 because of를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "무언가를 좋아하는 이유를 because를 써서 말해요.",
+          "frame": "I love ____ because ____."
+        },
+        {
+          "task": "날씨나 상황 때문에 취소된 일을 because of로 말해요.",
+          "frame": "We canceled ____ because of ____."
+        },
+        {
+          "task": "피곤하거나 바빴지만 한 일을 Although로 말해요.",
+          "frame": "Although I was ____, I ____."
+        },
+        {
+          "task": "늦은 이유를 because of로 변명해 봐요.",
+          "frame": "I was late because of ____."
+        },
+        {
+          "task": "사고 싶었지만 사지 못한 이유를 말해요.",
+          "frame": "I didn't buy ____ because ____."
+        },
+        {
+          "task": "맛이 없었지만 다 먹은 음식을 말해요.",
+          "frame": "Though the ____ was bad, I ate it all."
+        }
+      ],
+      "mission": {
+        "title": "변명과 반전의 달인",
+        "scene": "친구가 왜 약속에 늦었는지, 또는 왜 숙제를 안 했는지 물어봅니다. 기발한 이유나 반전 상황을 만들어 대답해 봅시다.",
+        "steps": [
+          "짝이 'Why didn't you do your homework?'라고 묻습니다.",
+          "because 또는 because of를 사용하여 기발한 변명을 합니다. (예: I couldn't do it because of my cat.)",
+          "Although를 사용하여 칭찬받을 만한 반전 행동을 덧붙입니다. (예: Although I didn't do it, I read a book.)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 배가 불렀기 때문에 피자를 먹지 않았다.",
+          "cond": "because를 사용하세요.",
+          "model": "I didn't eat pizza because I was full."
+        },
+        {
+          "ko": "폭우 때문에 우리는 집에 머물렀다.",
+          "cond": "because of를 사용하세요.",
+          "model": "We stayed home because of the heavy rain."
+        },
+        {
+          "ko": "그는 열심히 공부했지만 시험에 떨어졌다.",
+          "cond": "Although로 시작하세요.",
+          "model": "Although he studied hard, he failed the test."
+        },
+        {
+          "ko": "나는 무서웠기 때문에 뛰었다.",
+          "cond": "because를 사용하세요.",
+          "model": "I ran because I was scared."
+        },
+        {
+          "ko": "그녀는 교통체증 때문에 늦었다.",
+          "cond": "because of를 사용하세요.",
+          "model": "She was late because of the traffic jam."
+        },
+        {
+          "ko": "날씨가 맑았지만, 우리는 외출하지 않았다.",
+          "cond": "Though로 시작하세요.",
+          "model": "Though the weather was clear, we didn't go out."
+        }
+      ]
+    }
+  },
+  {
+    "id": "as-long-as",
+    "discover": {
+      "q": "as long as가 쓰인 문장을 보세요. 어떤 조건을 나타내나요? as long as 뒤의 절에서 미래를 나타낼 때 will을 썼나요?",
+      "a": "'~하기만 하면'이라는 조건을 나타낸다. 조건을 말하는 부분에서는 미래라도 will 대신 현재형을 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I don't care as long as you ____ me.",
+        "c": [
+          "love",
+          "will love"
+        ],
+        "a": 0,
+        "why": "조건 부분에서는 will 대신 현재형을 씁니다."
+      },
+      {
+        "p": "You can stay here as ____ as you keep quiet.",
+        "c": [
+          "long",
+          "far"
+        ],
+        "a": 0,
+        "why": "'~하기만 하면'은 as long as입니다."
+      },
+      {
+        "p": "I'm happy as long as I ____ you.",
+        "c": [
+          "have",
+          "will have"
+        ],
+        "a": 0,
+        "why": "조건 부분에서는 현재형을 씁니다."
+      },
+      {
+        "p": "As long as it ____ rain, we will go to the park.",
+        "c": [
+          "doesn't",
+          "won't"
+        ],
+        "a": 0,
+        "why": "조건 부분에서는 will이 아닌 현재형 부정을 씁니다."
+      },
+      {
+        "p": "You can borrow my book as long as you ____ care of it.",
+        "c": [
+          "take",
+          "will take"
+        ],
+        "a": 0,
+        "why": "조건 부분에서는 현재형을 씁니다."
+      },
+      {
+        "p": "You can watch TV as long as you ____ your homework.",
+        "c": [
+          "finish",
+          "will finish"
+        ],
+        "a": 0,
+        "why": "조건을 나타내는 as long as 절에서는 미래 대신 현재 시제를 씁니다."
+      },
+      {
+        "p": "I will buy it as ____ as it is cheap.",
+        "c": [
+          "long",
+          "much"
+        ],
+        "a": 0,
+        "why": "'~하기만 하면'이라는 뜻의 조건은 as long as를 사용합니다."
+      },
+      {
+        "p": "As long as he ____ hard, he will pass the test.",
+        "c": [
+          "studies",
+          "will study"
+        ],
+        "a": 0,
+        "why": "조건을 나타내는 절에서는 will 대신 현재 시제를 씁니다. 주어가 3인칭 단수이므로 studies가 맞습니다."
+      },
+      {
+        "p": "We can play soccer as long as it ____ snow.",
+        "c": [
+          "doesn't",
+          "won't"
+        ],
+        "a": 0,
+        "why": "조건 절에서는 미래의 일도 현재 시제로 나타냅니다."
+      },
+      {
+        "p": "You can use my phone as long as you ____ it back.",
+        "c": [
+          "give",
+          "will give"
+        ],
+        "a": 0,
+        "why": "조건을 나타내는 부분에서는 현재형을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "As long as you will love me, I will be happy.",
+        "r": "As long as you love me, I will be happy.",
+        "why": "조건 부분에서는 will 대신 현재형을 씁니다."
+      },
+      {
+        "w": "As long as you love me, but I don't care.",
+        "r": "As long as you love me, I don't care.",
+        "why": "as long as와 but은 함께 쓰지 않습니다."
+      },
+      {
+        "w": "You can stay here as long you keep quiet.",
+        "r": "You can stay here as long as you keep quiet.",
+        "why": "as long as에서 as를 빠뜨리면 안 됩니다."
+      },
+      {
+        "w": "You can go out as long as you will come back early.",
+        "r": "You can go out as long as you come back early.",
+        "why": "as long as가 이끄는 조건 절에서는 미래 대신 현재 시제를 씁니다."
+      },
+      {
+        "w": "As long as he will call me, I will go.",
+        "r": "As long as he calls me, I will go.",
+        "why": "조건을 나타내는 절에서는 will을 쓰지 않고 현재 시제를 씁니다."
+      },
+      {
+        "w": "You can watch TV as long you finish your homework.",
+        "r": "You can watch TV as long as you finish your homework.",
+        "why": "'~하기만 하면'은 as long as입니다. as를 빠뜨리면 안 됩니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "허락하는 조건을 말해요.",
+        "frame": "You can ____ as long as you ____."
+      },
+      {
+        "task": "내가 행복해지는 조건을 말해요.",
+        "frame": "I'm happy as long as ____."
+      },
+      {
+        "task": "내일 날씨 조건에 따른 계획을 말해요.",
+        "frame": "As long as it doesn't rain, we will ____."
+      },
+      {
+        "task": "짝에게 조건을 걸어 부탁해요.",
+        "frame": "You can borrow my ____ as long as you ____."
+      },
+      {
+        "task": "내가 도와줄 수 있는 조건을 말해요.",
+        "frame": "I will help you as long as you ____."
+      },
+      {
+        "task": "게임을 할 수 있는 조건을 말해요.",
+        "frame": "You can play games as long as you ____."
+      }
+    ],
+    "mission": {
+      "title": "조건 협상 게임",
+      "scene": "서로 조건을 걸어 약속하는 협상 놀이예요.",
+      "steps": [
+        "원하는 것을 말한다. (예: Can I use your pen?)",
+        "상대는 Yes, as long as you ____. 로 조건을 건다.",
+        "조건에 동의하면 악수한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "네가 나를 사랑하기만 하면 난 상관없어.",
+        "cond": "as long as를 써요.",
+        "model": "I don't care as long as you love me."
+      },
+      {
+        "ko": "조용히 하기만 하면 여기 있어도 돼.",
+        "cond": "as long as를 써요.",
+        "model": "You can stay here as long as you keep quiet."
+      },
+      {
+        "ko": "비만 오지 않으면 우리는 공원에 갈 거야.",
+        "cond": "As long as로 시작해요.",
+        "model": "As long as it doesn't rain, we will go to the park."
+      },
+      {
+        "ko": "네가 숙제를 끝내기만 하면 TV를 봐도 돼.",
+        "cond": "as long as를 써요.",
+        "model": "You can watch TV as long as you finish your homework."
+      },
+      {
+        "ko": "그가 열심히 공부하기만 하면, 그는 시험에 통과할 거야.",
+        "cond": "As long as로 시작해요.",
+        "model": "As long as he studies hard, he will pass the test."
+      },
+      {
+        "ko": "눈만 오지 않으면 우리는 축구를 할 수 있어.",
+        "cond": "as long as를 써요.",
+        "model": "We can play soccer as long as it doesn't snow."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "You can play **as long as** you finish.",
+        "ko": "네가 끝내기만 하면 놀아도 돼."
+      },
+      {
+        "en": "I will help **as long as** you try.",
+        "ko": "네가 노력하기만 하면 내가 도와줄게."
+      },
+      {
+        "en": "**As long as** we are together, I'm fine.",
+        "ko": "우리가 함께 있기만 하면 나는 괜찮아."
+      },
+      {
+        "en": "He will win **as long as** he runs.",
+        "ko": "그가 달리기만 하면 그는 이길 거야."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 조건(~하기만 하면)을 나타내는 부분에 쓰인 동사의 시제는 무엇인가요?",
+        "a": "미래의 일이라도 will을 쓰지 않고 현재 시제를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "I will go with you as long as you ____ for the ticket.",
+          "c": [
+            "pay",
+            "will pay"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 절에서는 미래 대신 현재 시제를 씁니다."
+        },
+        {
+          "p": "You can eat this cake as ____ as you wash your hands.",
+          "c": [
+            "long",
+            "soon"
+          ],
+          "a": 0,
+          "why": "'~하기만 하면'이라는 뜻은 as long as입니다."
+        },
+        {
+          "p": "As long as she ____ me, I will do my best.",
+          "c": [
+            "trusts",
+            "will trust"
+          ],
+          "a": 0,
+          "why": "조건 절에서는 미래 시제 대신 현재 시제를 씁니다."
+        },
+        {
+          "p": "They will win the game as long as they ____ together.",
+          "c": [
+            "work",
+            "will work"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 부분에서는 현재형을 씁니다."
+        },
+        {
+          "p": "You can sleep here as long as you ____ your teeth.",
+          "c": [
+            "brush",
+            "will brush"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 절에서는 미래 대신 현재 시제를 씁니다."
+        },
+        {
+          "p": "As long as we ____ early, we can catch the bus.",
+          "c": [
+            "leave",
+            "will leave"
+          ],
+          "a": 0,
+          "why": "조건 절에서는 미래의 일도 현재 시제로 나타냅니다."
+        },
+        {
+          "p": "I can fix it as long as I ____ the tools.",
+          "c": [
+            "have",
+            "will have"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 부분에서는 현재형을 씁니다."
+        },
+        {
+          "p": "You can join us as long as you ____ late.",
+          "c": [
+            "aren't",
+            "won't be"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 절에서는 미래 대신 현재 시제를 씁니다."
+        },
+        {
+          "p": "He will be fine as long as he ____ some rest.",
+          "c": [
+            "takes",
+            "will take"
+          ],
+          "a": 0,
+          "why": "조건 절에서는 미래 시제 대신 현재 시제를 씁니다."
+        },
+        {
+          "p": "As long as you ____ the rules, you can play.",
+          "c": [
+            "follow",
+            "will follow"
+          ],
+          "a": 0,
+          "why": "조건을 나타내는 부분에서는 현재형을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "You can go **as long as** you return.",
+          "ko": "네가 돌아오기만 하면 가도 돼."
+        },
+        {
+          "en": "I will wait **as long as** you need.",
+          "ko": "네가 필요로 하는 한 나는 기다릴 거야."
+        },
+        {
+          "en": "**As long as** you smile, I am happy.",
+          "ko": "네가 웃기만 하면 나는 행복해."
+        },
+        {
+          "en": "She can sing **as long as** she wants.",
+          "ko": "그녀가 원하기만 하면 그녀는 노래할 수 있어."
+        },
+        {
+          "en": "We can start **as long as** you're ready.",
+          "ko": "네가 준비되기만 하면 우리는 시작할 수 있어."
+        },
+        {
+          "en": "He is safe **as long as** he stays.",
+          "ko": "그가 머물기만 하면 그는 안전해."
+        },
+        {
+          "en": "I will listen **as long as** you talk.",
+          "ko": "네가 말하기만 하면 나는 들을 거야."
+        },
+        {
+          "en": "**As long as** it is sunny, we'll play.",
+          "ko": "날씨가 맑기만 하면 우리는 놀 거야."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I will wait for you as long as you will need.",
+          "r": "I will wait for you as long as you need.",
+          "why": "조건 절에서는 미래 대신 현재 시제를 씁니다."
+        },
+        {
+          "w": "As long as it will be sunny, we will go hiking.",
+          "r": "As long as it is sunny, we will go hiking.",
+          "why": "조건을 나타내는 절에서는 will을 쓰지 않고 현재 시제(is)를 씁니다."
+        },
+        {
+          "w": "You can eat the pizza as long you share it.",
+          "r": "You can eat the pizza as long as you share it.",
+          "why": "'~하기만 하면'은 as long as입니다."
+        },
+        {
+          "w": "As long as she will study hard, she will pass.",
+          "r": "As long as she studies hard, she will pass.",
+          "why": "조건 절에서는 미래 대신 현재 시제를 씁니다."
+        },
+        {
+          "w": "We can start the game as long as everyone will be ready.",
+          "r": "We can start the game as long as everyone is ready.",
+          "why": "조건을 나타내는 절에서는 will을 쓰지 않고 현재 시제를 씁니다."
+        },
+        {
+          "w": "You can ride my bike as long as you will be careful.",
+          "r": "You can ride my bike as long as you are careful.",
+          "why": "조건 절에서는 미래 대신 현재 시제를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "외출을 허락하는 조건을 말해요.",
+          "frame": "You can go out as long as you ____."
+        },
+        {
+          "task": "내가 기다려줄 수 있는 조건을 말해요.",
+          "frame": "I will wait as long as you ____."
+        },
+        {
+          "task": "성공할 수 있는 조건을 말해요.",
+          "frame": "You will succeed as long as you ____."
+        },
+        {
+          "task": "내 물건을 빌려주는 조건을 말해요.",
+          "frame": "You can use my ____ as long as you ____."
+        },
+        {
+          "task": "우리가 이길 수 있는 조건을 말해요.",
+          "frame": "We will win as long as we ____."
+        },
+        {
+          "task": "건강해질 수 있는 조건을 말해요.",
+          "frame": "You will be healthy as long as you ____."
+        }
+      ],
+      "mission": {
+        "title": "조건 교환하기",
+        "scene": "친구와 서로 원하는 것을 말하고, 조건을 걸어 허락해 봅니다.",
+        "steps": [
+          "짝에게 자신이 하고 싶은 일을 말합니다. (예: I want to use your pen.)",
+          "짝은 'as long as'를 사용하여 조건을 걸고 허락합니다. (예: You can use it as long as you give it back.)",
+          "역할을 바꾸어 조건을 걸어 봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "네가 손을 씻기만 하면 이 케이크를 먹어도 돼.",
+          "cond": "as long as를 써요.",
+          "model": "You can eat this cake as long as you wash your hands."
+        },
+        {
+          "ko": "그녀가 나를 믿기만 하면, 나는 최선을 다할 거야.",
+          "cond": "As long as로 시작해요.",
+          "model": "As long as she trusts me, I will do my best."
+        },
+        {
+          "ko": "우리가 일찍 떠나기만 하면, 우리는 버스를 탈 수 있어.",
+          "cond": "As long as로 시작해요.",
+          "model": "As long as we leave early, we can catch the bus."
+        },
+        {
+          "ko": "네가 늦지만 않으면 우리와 함께해도 돼.",
+          "cond": "as long as를 써요.",
+          "model": "You can join us as long as you aren't late."
+        },
+        {
+          "ko": "그가 휴식을 취하기만 하면 그는 괜찮을 거야.",
+          "cond": "as long as를 써요.",
+          "model": "He will be fine as long as he takes some rest."
+        },
+        {
+          "ko": "네가 규칙을 따르기만 하면, 너는 놀아도 돼.",
+          "cond": "As long as로 시작해요.",
+          "model": "As long as you follow the rules, you can play."
+        }
+      ]
+    }
+  }
+]

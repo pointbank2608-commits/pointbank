@@ -1,0 +1,5871 @@
+[
+  {
+    "id": "h-gerund-idioms",
+    "discover": {
+      "q": "look forward to seeing, be used to getting, couldn't help laughing을 보세요. 이 표현들 뒤에는 어떤 모양의 동사가 오나요? look forward to의 to는 to부정사의 to와 같은 것일까요?",
+      "a": "뒤에 동사ing(동명사)가 온다. look forward to, be used to의 to는 전치사라서 동사원형이 아니라 -ing를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I look forward to ____ you.",
+        "c": [
+          "seeing",
+          "see"
+        ],
+        "a": 0,
+        "why": "look forward to의 to는 전치사이므로 -ing를 씁니다."
+      },
+      {
+        "p": "She is used to ____ up early.",
+        "c": [
+          "getting",
+          "get"
+        ],
+        "a": 0,
+        "why": "be used to 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "I couldn't help ____.",
+        "c": [
+          "laughing",
+          "to laugh"
+        ],
+        "a": 0,
+        "why": "cannot help 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "He spent all day ____ games.",
+        "c": [
+          "playing",
+          "to play"
+        ],
+        "a": 0,
+        "why": "spend 시간 -ing 형태입니다."
+      },
+      {
+        "p": "I don't feel like ____ now.",
+        "c": [
+          "eating",
+          "to eat"
+        ],
+        "a": 0,
+        "why": "feel like 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "Many students object to ____ school uniforms.",
+        "c": [
+          "wear",
+          "wearing",
+          "worn"
+        ],
+        "a": 1,
+        "why": "object to의 to는 전치사이므로 동명사를 씁니다."
+      },
+      {
+        "p": "My brother is busy ____ for his midterm exams.",
+        "c": [
+          "preparing",
+          "to prepare"
+        ],
+        "a": 0,
+        "why": "be busy 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "We spent the whole weekend ____ the house.",
+        "c": [
+          "clean",
+          "to clean",
+          "cleaning"
+        ],
+        "a": 2,
+        "why": "spend 시간 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "I couldn't help ____ when I heard the joke.",
+        "c": [
+          "smiling",
+          "to smile"
+        ],
+        "a": 0,
+        "why": "cannot help 뒤에는 동명사를 씁니다."
+      },
+      {
+        "p": "Do you feel like ____ a movie tonight?",
+        "c": [
+          "watching",
+          "to watch"
+        ],
+        "a": 0,
+        "why": "feel like 뒤에는 동명사를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I look forward to see you.",
+        "r": "I look forward to seeing you.",
+        "why": "여기서 to는 전치사이므로 -ing를 씁니다."
+      },
+      {
+        "w": "I am used to get up early.",
+        "r": "I am used to getting up early.",
+        "why": "be used to 뒤에는 동명사를 씁니다."
+      },
+      {
+        "w": "He spent all day to play games.",
+        "r": "He spent all day playing games.",
+        "why": "spend 시간 뒤에는 -ing를 씁니다."
+      },
+      {
+        "w": "He is used to stay up late.",
+        "r": "He is used to staying up late.",
+        "why": "be used to의 to는 전치사이므로 동명사를 써야 합니다."
+      },
+      {
+        "w": "I couldn't help cry at the sad ending.",
+        "r": "I couldn't help crying at the sad ending.",
+        "why": "cannot help 뒤에는 동명사를 써야 합니다."
+      },
+      {
+        "w": "We are busy to prepare for the festival.",
+        "r": "We are busy preparing for the festival.",
+        "why": "be busy 뒤에는 동명사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "기대하는 일을 말해요.",
+        "frame": "I'm looking forward to ____ing."
+      },
+      {
+        "task": "익숙한 일을 말해요.",
+        "frame": "I'm used to ____ing."
+      },
+      {
+        "task": "하루를 어떻게 보냈는지 말해요.",
+        "frame": "I spent ____ ____ing."
+      },
+      {
+        "task": "지금 하고 싶은 일을 말해요.",
+        "frame": "I feel like ____ing."
+      },
+      {
+        "task": "반대하는 의견을 말해요.",
+        "frame": "I object to ____ing."
+      },
+      {
+        "task": "바쁜 이유를 말해요.",
+        "frame": "I am busy ____ing."
+      }
+    ],
+    "mission": {
+      "title": "방학 기대감 발표",
+      "scene": "다가오는 방학을 기대하는 마음을 친구들과 나눠요.",
+      "steps": [
+        "I'm looking forward to ____ing. 으로 기대하는 일 두 가지를 말한다.",
+        "I feel like ____ing. 으로 지금 하고 싶은 일을 말한다.",
+        "친구의 기대를 듣고 Me too. 로 맞장구친다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "너를 만나기를 기대하고 있어.",
+        "cond": "look forward to를 써요.",
+        "model": "I look forward to seeing you."
+      },
+      {
+        "ko": "그녀는 일찍 일어나는 데 익숙하다.",
+        "cond": "be used to를 써요.",
+        "model": "She is used to getting up early."
+      },
+      {
+        "ko": "나는 웃지 않을 수 없었다.",
+        "cond": "couldn't help를 써요.",
+        "model": "I couldn't help laughing."
+      },
+      {
+        "ko": "그는 하루 종일 책을 읽으며 보냈다.",
+        "cond": "spend를 써요.",
+        "model": "He spent all day reading books."
+      },
+      {
+        "ko": "나는 지금 외출하고 싶지 않다.",
+        "cond": "feel like를 써요.",
+        "model": "I don't feel like going out now."
+      },
+      {
+        "ko": "우리는 새 계획을 변경하는 것에 반대한다.",
+        "cond": "object to를 써요.",
+        "model": "We object to changing the new plan."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I **am used to eating** spicy food.",
+        "ko": "나는 매운 음식을 먹는 데 익숙하다."
+      },
+      {
+        "en": "They **object to building** a new factory.",
+        "ko": "그들은 새 공장을 짓는 것에 반대한다."
+      },
+      {
+        "en": "She **was busy doing** her homework.",
+        "ko": "그녀는 숙제를 하느라 바빴다."
+      },
+      {
+        "en": "I **feel like taking** a walk.",
+        "ko": "나는 산책하고 싶은 기분이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "look forward to, be used to, object to 뒤에 오는 동사의 형태는 무엇인가요?",
+        "a": "동사원형이 아니라 동명사(-ing) 형태가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "The children look forward to ____ their grandparents.",
+          "c": [
+            "visiting",
+            "visit"
+          ],
+          "a": 0,
+          "why": "look forward to의 to는 전치사이므로 동명사를 씁니다."
+        },
+        {
+          "p": "I am not used to ____ in front of many people.",
+          "c": [
+            "speak",
+            "speaking"
+          ],
+          "a": 1,
+          "why": "be used to의 to는 전치사이므로 동명사를 씁니다."
+        },
+        {
+          "p": "Some residents object to ____ the old park.",
+          "c": [
+            "destroying",
+            "destroy"
+          ],
+          "a": 0,
+          "why": "object to의 to는 전치사이므로 동명사를 씁니다."
+        },
+        {
+          "p": "She couldn't help ____ in love with the puppy.",
+          "c": [
+            "falling",
+            "to fall"
+          ],
+          "a": 0,
+          "why": "cannot help 뒤에는 동명사를 씁니다."
+        },
+        {
+          "p": "The chef is busy ____ dinner for the guests.",
+          "c": [
+            "cooking",
+            "to cook"
+          ],
+          "a": 0,
+          "why": "be busy 뒤에는 동명사를 씁니다."
+        },
+        {
+          "p": "I usually spend my free time ____ to music.",
+          "c": [
+            "listen",
+            "listening",
+            "to listen"
+          ],
+          "a": 1,
+          "why": "spend 시간 뒤에는 동명사를 씁니다."
+        },
+        {
+          "p": "I feel like ____ some hot chocolate.",
+          "c": [
+            "drinking",
+            "to drink"
+          ],
+          "a": 0,
+          "why": "feel like 뒤에는 동명사를 씁니다."
+        },
+        {
+          "p": "We are looking forward to ____ the new museum.",
+          "c": [
+            "tour",
+            "touring"
+          ],
+          "a": 1,
+          "why": "look forward to의 to는 전치사이므로 동명사를 씁니다."
+        },
+        {
+          "p": "My father is used to ____ the subway to work.",
+          "c": [
+            "taking",
+            "take"
+          ],
+          "a": 0,
+          "why": "be used to의 to는 전치사이므로 동명사를 씁니다."
+        },
+        {
+          "p": "I cannot help ____ about my future.",
+          "c": [
+            "worrying",
+            "worry"
+          ],
+          "a": 0,
+          "why": "cannot help 뒤에는 동명사를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "We **look forward to hearing** from you.",
+          "ko": "우리는 당신의 소식을 듣기를 고대합니다."
+        },
+        {
+          "en": "He **is used to living** alone.",
+          "ko": "그는 혼자 사는 데 익숙하다."
+        },
+        {
+          "en": "I **object to working** on weekends.",
+          "ko": "나는 주말에 일하는 것에 반대한다."
+        },
+        {
+          "en": "She **couldn't help buying** the shoes.",
+          "ko": "그녀는 그 신발을 사지 않을 수 없었다."
+        },
+        {
+          "en": "They **are busy cleaning** the classroom.",
+          "ko": "그들은 교실을 청소하느라 바쁘다."
+        },
+        {
+          "en": "I **spent two hours fixing** my bike.",
+          "ko": "나는 내 자전거를 고치는 데 두 시간을 보냈다."
+        },
+        {
+          "en": "Do you **feel like having** pizza?",
+          "ko": "피자 먹고 싶은 기분이니?"
+        },
+        {
+          "en": "I **cannot help agreeing** with him.",
+          "ko": "나는 그에게 동의하지 않을 수 없다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I look forward to meet my favorite singer.",
+          "r": "I look forward to meeting my favorite singer.",
+          "why": "look forward to의 to는 전치사이므로 동명사를 써야 합니다."
+        },
+        {
+          "w": "She is used to drink coffee without sugar.",
+          "r": "She is used to drinking coffee without sugar.",
+          "why": "be used to의 to는 전치사이므로 동명사를 써야 합니다."
+        },
+        {
+          "w": "They object to build a parking lot here.",
+          "r": "They object to building a parking lot here.",
+          "why": "object to의 to는 전치사이므로 동명사를 써야 합니다."
+        },
+        {
+          "w": "I couldn't help to laugh at his mistake.",
+          "r": "I couldn't help laughing at his mistake.",
+          "why": "cannot help 뒤에는 동명사를 써야 합니다."
+        },
+        {
+          "w": "He is busy to write an essay.",
+          "r": "He is busy writing an essay.",
+          "why": "be busy 뒤에는 동명사를 써야 합니다."
+        },
+        {
+          "w": "I feel like to go for a drive.",
+          "r": "I feel like going for a drive.",
+          "why": "feel like 뒤에는 동명사를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "주말에 기대되는 일을 말해요.",
+          "frame": "I look forward to ____ing this weekend."
+        },
+        {
+          "task": "자신이 익숙한 습관을 말해요.",
+          "frame": "I am used to ____ing."
+        },
+        {
+          "task": "반대하는 규칙을 말해요.",
+          "frame": "I object to ____ing."
+        },
+        {
+          "task": "어쩔 수 없이 하게 되는 행동을 말해요.",
+          "frame": "I cannot help ____ing."
+        },
+        {
+          "task": "최근에 무엇을 하느라 바쁜지 말해요.",
+          "frame": "I am busy ____ing lately."
+        },
+        {
+          "task": "여가 시간을 어떻게 보내는지 말해요.",
+          "frame": "I spend my free time ____ing."
+        }
+      ],
+      "mission": {
+        "title": "나의 동명사 라이프스타일",
+        "scene": "친구와 함께 자신의 습관, 기대하는 일, 바쁜 일상을 공유해 봅니다.",
+        "steps": [
+          "\"I am used to ____ing.\"를 사용하여 자신이 익숙한 일상(예: 일찍 일어나기)을 적어보세요.",
+          "짝에게 \"What are you busy ____ing?\"라고 질문하고 대답을 들어보세요.",
+          "서로 \"I look forward to ____ing.\"를 사용하여 주말에 기대되는 일을 나누고 발표해 보세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 요리사는 저녁을 요리하느라 바쁘다.",
+          "cond": "be busy를 써요.",
+          "model": "The chef is busy cooking dinner."
+        },
+        {
+          "ko": "그녀는 자유 시간을 음악을 들으며 보낸다.",
+          "cond": "spend를 써요.",
+          "model": "She spends her free time listening to music."
+        },
+        {
+          "ko": "우리는 콘서트에 가기를 고대하고 있다.",
+          "cond": "look forward to를 써요.",
+          "model": "We look forward to going to the concert."
+        },
+        {
+          "ko": "그들은 오늘 밤 영화를 보고 싶은 기분이다.",
+          "cond": "feel like를 써요.",
+          "model": "They feel like watching a movie tonight."
+        },
+        {
+          "ko": "나는 주말에 일하는 것에 반대한다.",
+          "cond": "object to를 써요.",
+          "model": "I object to working on weekends."
+        },
+        {
+          "ko": "그는 그 신발을 사지 않을 수 없었다.",
+          "cond": "couldn't help를 써요.",
+          "model": "He couldn't help buying the shoes."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-participle",
+    "discover": {
+      "q": "sleeping baby와 broken glass를 비교해 보세요. 명사를 꾸밀 때 -ing와 -ed(과거분사)는 어떻게 다른가요? exciting과 excited는 무엇이 다른가요?",
+      "a": "-ing는 '~하는(능동·진행)', -ed/p.p.는 '~된(수동·완료)'이다. exciting은 흥분을 일으키는 것, excited는 흥분을 느끼는 사람에 쓴다."
+    },
+    "choose": [
+      {
+        "p": "Look at the ____ baby.",
+        "c": [
+          "sleeping",
+          "slept"
+        ],
+        "a": 0,
+        "why": "자고 있는 아기는 현재분사 sleeping입니다."
+      },
+      {
+        "p": "Don't touch the ____ glass.",
+        "c": [
+          "broken",
+          "break"
+        ],
+        "a": 0,
+        "why": "깨진 유리는 과거분사 broken입니다."
+      },
+      {
+        "p": "The game was really ____.",
+        "c": [
+          "exciting",
+          "excited"
+        ],
+        "a": 0,
+        "why": "경기가 흥분을 일으키므로 exciting입니다."
+      },
+      {
+        "p": "I was ____ about the trip.",
+        "c": [
+          "excited",
+          "exciting"
+        ],
+        "a": 0,
+        "why": "내가 흥분을 느끼므로 excited입니다."
+      },
+      {
+        "p": "The boy ____ a cap is my brother.",
+        "c": [
+          "wearing",
+          "worn"
+        ],
+        "a": 0,
+        "why": "모자를 쓰고 있는 남자아이는 현재분사 wearing입니다."
+      },
+      {
+        "p": "The ____ dog kept me awake.",
+        "c": [
+          "barking",
+          "barked"
+        ],
+        "a": 0,
+        "why": "개가 능동적으로 짖고 있으므로 현재분사 barking을 씁니다."
+      },
+      {
+        "p": "He found his ____ bike in the park.",
+        "c": [
+          "stealing",
+          "stolen"
+        ],
+        "a": 1,
+        "why": "자전거는 도난당한 것이므로 과거분사 stolen을 씁니다."
+      },
+      {
+        "p": "The movie was so ____ that I fell asleep.",
+        "c": [
+          "boring",
+          "bored"
+        ],
+        "a": 0,
+        "why": "영화가 지루함을 유발하므로 boring을 씁니다."
+      },
+      {
+        "p": "The ____ girl couldn't say a word.",
+        "c": [
+          "surprising",
+          "surprised"
+        ],
+        "a": 1,
+        "why": "소녀가 놀라움을 느꼈으므로 surprised를 씁니다."
+      },
+      {
+        "p": "The girl ____ a book is Jane.",
+        "c": [
+          "reading",
+          "read"
+        ],
+        "a": 0,
+        "why": "소녀가 책을 읽고 있는 능동의 의미이므로 현재분사 reading을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The game was very excited.",
+        "r": "The game was very exciting.",
+        "why": "경기가 흥미를 주는 쪽이면 exciting입니다."
+      },
+      {
+        "w": "Look at the sleeped baby.",
+        "r": "Look at the sleeping baby.",
+        "why": "자고 있는 아기는 sleeping입니다."
+      },
+      {
+        "w": "Don't touch the break glass.",
+        "r": "Don't touch the broken glass.",
+        "why": "깨진 유리는 과거분사 broken입니다."
+      },
+      {
+        "w": "I am very boring today.",
+        "r": "I am very bored today.",
+        "why": "내가 지루함을 느끼는 것이므로 bored를 써야 합니다."
+      },
+      {
+        "w": "He fixed the break chair.",
+        "r": "He fixed the broken chair.",
+        "why": "부서진 의자는 수동의 의미를 가진 과거분사 broken으로 표현합니다."
+      },
+      {
+        "w": "The girl play tennis is my sister.",
+        "r": "The girl playing tennis is my sister.",
+        "why": "테니스를 치고 있는 소녀는 능동의 의미이므로 playing을 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "교실에서 보이는 사람이나 사물을 분사로 설명해요.",
+        "frame": "Look at the ____ing ____."
+      },
+      {
+        "task": "깨지거나 닫힌 물건을 설명해요.",
+        "frame": "I see a broken/closed ____."
+      },
+      {
+        "task": "내 기분을 -ed 형용사로 말해요.",
+        "frame": "I'm ____ed about ____."
+      },
+      {
+        "task": "경기나 영화를 -ing 형용사로 평가해요.",
+        "frame": "The movie was ____ing."
+      },
+      {
+        "task": "감정을 나타내는 분사를 사용해 친구의 기분을 물어보세요.",
+        "frame": "Are you ____ed about the ____?"
+      },
+      {
+        "task": "현재분사를 사용하여 진행 중인 동작을 묘사해요.",
+        "frame": "I can see a ____ing ____."
+      }
+    ],
+    "mission": {
+      "title": "그림 속 분사 찾기",
+      "scene": "그림에서 하고 있는 일과 상태를 분사로 묘사하는 게임이에요.",
+      "steps": [
+        "그림을 보고 -ing로 하고 있는 일을 두 가지 찾는다.",
+        "-ed로 상태를 한 가지 찾는다.",
+        "the ____ing ____ / the ____ed ____ 로 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "자고 있는 아기를 봐.",
+        "cond": "sleeping을 써요.",
+        "model": "Look at the sleeping baby."
+      },
+      {
+        "ko": "깨진 유리를 만지지 마.",
+        "cond": "broken을 써요.",
+        "model": "Don't touch the broken glass."
+      },
+      {
+        "ko": "나는 여행 때문에 신이 났다.",
+        "cond": "excited를 써요.",
+        "model": "I was excited about the trip."
+      },
+      {
+        "ko": "짖고 있는 개가 나를 놀라게 했다.",
+        "cond": "barking을 써요.",
+        "model": "The barking dog surprised me."
+      },
+      {
+        "ko": "그 지루한 책은 탁자 위에 있다.",
+        "cond": "boring을 써요.",
+        "model": "The boring book is on the table."
+      },
+      {
+        "ko": "피아노를 치고 있는 남자는 나의 삼촌이다.",
+        "cond": "playing을 써요.",
+        "model": "The man playing the piano is my uncle."
+      }
+    ],
+    "dropPitfalls": [
+      "I was very boring in class."
+    ],
+    "buildExtra": [
+      {
+        "en": "I saw a **flying** bird.",
+        "ko": "나는 날아가는 새를 보았다."
+      },
+      {
+        "en": "She fixed the **torn** dress.",
+        "ko": "그녀는 찢어진 드레스를 고쳤다."
+      },
+      {
+        "en": "The news was very **surprising**.",
+        "ko": "그 뉴스는 매우 놀라웠다."
+      },
+      {
+        "en": "The man **playing** the piano is my uncle.",
+        "ko": "피아노를 치고 있는 남자는 나의 삼촌이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 **-ing**와 **-ed(또는 p.p.)** 형태는 각각 어떤 의미를 나타내나요?",
+        "a": "-ing는 능동이나 진행(~하는), -ed나 p.p.는 수동이나 완료(~된)를 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "Look at the ____ leaves on the ground.",
+          "c": [
+            "fallen",
+            "falling"
+          ],
+          "a": 0,
+          "why": "이미 땅에 떨어진 완료 상태이므로 과거분사 fallen을 씁니다."
+        },
+        {
+          "p": "The ____ baby is smiling.",
+          "c": [
+            "crying",
+            "cried"
+          ],
+          "a": 0,
+          "why": "아기가 능동적으로 울고 있으므로 현재분사 crying을 씁니다."
+        },
+        {
+          "p": "I am ____ in Korean history.",
+          "c": [
+            "interesting",
+            "interested"
+          ],
+          "a": 1,
+          "why": "내가 흥미를 느끼는 것이므로 interested를 씁니다."
+        },
+        {
+          "p": "The book was very ____.",
+          "c": [
+            "interesting",
+            "interested"
+          ],
+          "a": 0,
+          "why": "책이 흥미를 유발하므로 interesting을 씁니다."
+        },
+        {
+          "p": "The car ____ in front of the house is mine.",
+          "c": [
+            "parking",
+            "parked"
+          ],
+          "a": 1,
+          "why": "자동차가 주차된 수동의 의미이므로 과거분사 parked를 씁니다."
+        },
+        {
+          "p": "Do you know the boy ____ the guitar?",
+          "c": [
+            "playing",
+            "played"
+          ],
+          "a": 0,
+          "why": "소년이 기타를 치고 있는 능동의 의미이므로 playing을 씁니다."
+        },
+        {
+          "p": "We need a ____ machine.",
+          "c": [
+            "working",
+            "worked"
+          ],
+          "a": 0,
+          "why": "기계가 작동하고 있는 능동의 의미이므로 working을 씁니다."
+        },
+        {
+          "p": "She bought a ____ car.",
+          "c": [
+            "using",
+            "used"
+          ],
+          "a": 1,
+          "why": "이미 사용된 중고차이므로 과거분사 used를 씁니다."
+        },
+        {
+          "p": "The result was ____.",
+          "c": [
+            "disappointing",
+            "disappointed"
+          ],
+          "a": 0,
+          "why": "결과가 실망감을 주므로 disappointing을 씁니다."
+        },
+        {
+          "p": "I was ____ to hear the news.",
+          "c": [
+            "surprising",
+            "surprised"
+          ],
+          "a": 1,
+          "why": "내가 놀라움을 느꼈으므로 surprised를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The **crying** boy needs help.",
+          "ko": "울고 있는 소년은 도움이 필요하다."
+        },
+        {
+          "en": "I like the **painted** wall.",
+          "ko": "나는 색칠된 벽이 마음에 든다."
+        },
+        {
+          "en": "The story is very **interesting**.",
+          "ko": "그 이야기는 매우 흥미롭다."
+        },
+        {
+          "en": "We are **interested** in science.",
+          "ko": "우리는 과학에 관심이 있다."
+        },
+        {
+          "en": "The dog **running** fast is mine.",
+          "ko": "빠르게 달리고 있는 개는 내 것이다."
+        },
+        {
+          "en": "The picture **drawn** by him is beautiful.",
+          "ko": "그가 그린 그림은 아름답다."
+        },
+        {
+          "en": "I have a **used** computer.",
+          "ko": "나는 중고 컴퓨터를 가지고 있다."
+        },
+        {
+          "en": "The match was **disappointing**.",
+          "ko": "그 경기는 실망스러웠다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Look at the cry boy.",
+          "r": "Look at the crying boy.",
+          "why": "울고 있는 소년은 능동의 의미인 현재분사 crying으로 꾸며야 합니다."
+        },
+        {
+          "w": "I am very interesting in music.",
+          "r": "I am very interested in music.",
+          "why": "내가 흥미를 느끼는 것이므로 interested를 써야 합니다."
+        },
+        {
+          "w": "The using car is very cheap.",
+          "r": "The used car is very cheap.",
+          "why": "중고차는 이미 사용된 것이므로 과거분사 used를 써야 합니다."
+        },
+        {
+          "w": "The book writing by him is good.",
+          "r": "The book written by him is good.",
+          "why": "그에 의해 쓰인 책이므로 수동의 의미인 과거분사 written을 써야 합니다."
+        },
+        {
+          "w": "The news was very surprised.",
+          "r": "The news was very surprising.",
+          "why": "뉴스가 놀라움을 주는 것이므로 surprising을 써야 합니다."
+        },
+        {
+          "w": "Do you know the girl play soccer?",
+          "r": "Do you know the girl playing soccer?",
+          "why": "축구를 하고 있는 소녀는 능동의 의미이므로 playing을 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "현재분사를 사용해 지금 무엇을 하고 있는 사람을 설명해요.",
+          "frame": "The boy ____ing ____ is my friend."
+        },
+        {
+          "task": "과거분사를 사용해 수리된 물건을 말해요.",
+          "frame": "I have a fixed ____."
+        },
+        {
+          "task": "감정 분사를 사용해 흥미로운 과목을 말해요.",
+          "frame": "____ is an interesting subject."
+        },
+        {
+          "task": "감정 분사를 사용해 자신이 관심 있는 것을 말해요.",
+          "frame": "I am interested in ____."
+        },
+        {
+          "task": "과거분사를 사용해 중고 물품을 묘사해요.",
+          "frame": "I want to buy a used ____."
+        },
+        {
+          "task": "현재분사를 사용해 움직이는 동물을 묘사해요.",
+          "frame": "Look at the ____ing animal."
+        }
+      ],
+      "mission": {
+        "title": "분사 탐정 놀이",
+        "scene": "교실 안에서 현재분사와 과거분사로 설명할 수 있는 사람이나 사물을 찾아 친구와 퀴즈를 냅니다.",
+        "steps": [
+          "교실에서 진행 중인 동작이나 완료된 상태를 나타내는 대상을 하나 정합니다.",
+          "친구에게 분사를 사용하여 힌트를 줍니다. (예: Look at the boy reading a book.)",
+          "친구가 그 힌트를 듣고 누구인지 또는 무엇인지 맞힙니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "저기 달리고 있는 개를 봐.",
+          "cond": "running을 써요.",
+          "model": "Look at the running dog there."
+        },
+        {
+          "ko": "나는 중고차를 샀다.",
+          "cond": "used를 써요.",
+          "model": "I bought a used car."
+        },
+        {
+          "ko": "우리는 그 소식에 놀랐다.",
+          "cond": "surprised를 써요.",
+          "model": "We were surprised at the news."
+        },
+        {
+          "ko": "그 영화는 지루했다.",
+          "cond": "boring을 써요.",
+          "model": "The movie was boring."
+        },
+        {
+          "ko": "기타를 치고 있는 소년은 탐이다.",
+          "cond": "playing을 써요.",
+          "model": "The boy playing the guitar is Tom."
+        },
+        {
+          "ko": "그녀가 만든 쿠키는 맛있다.",
+          "cond": "made를 써요.",
+          "model": "The cookies made by her are delicious."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-emotion-participle",
+    "discover": {
+      "q": "exciting과 excited, boring과 bored가 쓰인 문장을 비교해 보세요. 감정을 일으키는 것과 감정을 느끼는 것은 어떤 모양을 썼나요?",
+      "a": "감정을 일으키는 것(사물·상황)에는 -ing, 감정을 느끼는 사람에는 -ed를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "The game was ____.",
+        "c": [
+          "exciting",
+          "excited"
+        ],
+        "a": 0,
+        "why": "경기가 흥미를 일으키므로 -ing입니다."
+      },
+      {
+        "p": "The students were ____ about the trip.",
+        "c": [
+          "excited",
+          "exciting"
+        ],
+        "a": 0,
+        "why": "학생들이 느끼는 감정이므로 -ed입니다."
+      },
+      {
+        "p": "I was ____ with the long speech.",
+        "c": [
+          "bored",
+          "boring"
+        ],
+        "a": 0,
+        "why": "내가 지루함을 느끼므로 -ed입니다."
+      },
+      {
+        "p": "The news was ____.",
+        "c": [
+          "surprising",
+          "surprised"
+        ],
+        "a": 0,
+        "why": "소식이 놀라움을 일으키므로 -ing입니다."
+      },
+      {
+        "p": "She was ____ at the result.",
+        "c": [
+          "disappointed",
+          "disappointing"
+        ],
+        "a": 0,
+        "why": "그녀가 실망을 느끼므로 -ed입니다."
+      },
+      {
+        "p": "The documentary about space was quite ____.",
+        "c": [
+          "boring",
+          "bored"
+        ],
+        "a": 0,
+        "why": "다큐멘터리가 지루함을 유발하는 사물이므로 -ing입니다."
+      },
+      {
+        "p": "My parents were ____ to hear about my grades.",
+        "c": [
+          "pleased",
+          "pleasing"
+        ],
+        "a": 0,
+        "why": "부모님이 기쁨을 느끼는 주체이므로 -ed입니다."
+      },
+      {
+        "p": "The magic trick at the festival was absolutely ____.",
+        "c": [
+          "amazed",
+          "amazing"
+        ],
+        "a": 1,
+        "why": "마술이 놀라움을 일으키는 사물이므로 -ing입니다."
+      },
+      {
+        "p": "Kevin felt ____ because he couldn't solve the math problem.",
+        "c": [
+          "frustrated",
+          "frustrating"
+        ],
+        "a": 0,
+        "why": "Kevin이 답답함을 느끼는 사람이므로 -ed입니다."
+      },
+      {
+        "p": "The sudden noise from the dark room was ____.",
+        "c": [
+          "terrified",
+          "terrifying"
+        ],
+        "a": 1,
+        "why": "갑작스러운 소음이 무서움을 유발하므로 -ing입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I am boring with this class.",
+        "r": "I am bored with this class.",
+        "why": "내가 지루함을 느끼니 -ed입니다."
+      },
+      {
+        "w": "The story was very interested.",
+        "r": "The story was very interesting.",
+        "why": "이야기가 흥미를 일으키니 -ing입니다."
+      },
+      {
+        "w": "The students were exciting about the trip.",
+        "r": "The students were excited about the trip.",
+        "why": "학생들이 느끼는 감정이므로 -ed입니다."
+      },
+      {
+        "w": "The ending of the movie was very shocked.",
+        "r": "The ending of the movie was very shocking.",
+        "why": "영화의 결말이 충격을 주는 원인이므로 -ing를 써야 합니다."
+      },
+      {
+        "w": "She felt confusing when she read the map.",
+        "r": "She felt confused when she read the map.",
+        "why": "그녀가 혼란을 느끼는 주체이므로 -ed를 써야 합니다."
+      },
+      {
+        "w": "The long flight to Europe was tired.",
+        "r": "The long flight to Europe was tiring.",
+        "why": "비행이 피로를 유발하는 사물이므로 -ing를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "본 영화나 읽은 책을 -ing로 평가해요.",
+        "frame": "The ____ was ____ing."
+      },
+      {
+        "task": "그때의 내 기분을 -ed로 말해요.",
+        "frame": "I was ____ed."
+      },
+      {
+        "task": "짝에게 기분을 묻고 이유를 들어요.",
+        "frame": "Were you ____ed? — Yes, because the ____ was ____ing."
+      },
+      {
+        "task": "놀랐던 일을 말해요.",
+        "frame": "I was surprised because ____."
+      },
+      {
+        "task": "최근에 겪은 혼란스러웠던 상황을 말해요.",
+        "frame": "The situation was ____ing, so I was ____ed."
+      },
+      {
+        "task": "친구가 추천한 책이나 영화에 대한 감상을 나눠요.",
+        "frame": "I read the book, and it was really ____ing."
+      }
+    ],
+    "mission": {
+      "title": "느낌 반 평가 설문",
+      "scene": "수업과 행사에 대한 느낌을 설문해서 결과를 발표해요.",
+      "steps": [
+        "The class was ____ing. 처럼 사물의 특징을 한 문장 만든다.",
+        "친구에게 How did you feel? 라고 묻는다.",
+        "I was ____ed. 로 대답한 결과를 정리해 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그 경기는 흥미진진했다.",
+        "cond": "exciting을 써요.",
+        "model": "The game was exciting."
+      },
+      {
+        "ko": "나는 긴 연설이 지루했다.",
+        "cond": "bored를 써요.",
+        "model": "I was bored with the long speech."
+      },
+      {
+        "ko": "그녀는 그 결과에 실망했다.",
+        "cond": "disappointed를 써요.",
+        "model": "She was disappointed at the result."
+      },
+      {
+        "ko": "그 다큐멘터리는 매우 흥미로워 보였다.",
+        "cond": "interesting을 써요.",
+        "model": "The documentary seemed very interesting."
+      },
+      {
+        "ko": "관객들은 그 공연에 놀라움을 느꼈다.",
+        "cond": "amazed를 써요.",
+        "model": "The audience felt amazed at the performance."
+      },
+      {
+        "ko": "나는 내 시험 점수에 만족했다.",
+        "cond": "satisfied를 써요.",
+        "model": "I was satisfied with my test score."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The final match was really **thrilling**.",
+        "ko": "그 결승전은 정말 짜릿했다."
+      },
+      {
+        "en": "We were **shocked** by the terrible news.",
+        "ko": "우리는 그 끔찍한 소식에 충격을 받았다."
+      },
+      {
+        "en": "His explanation was very **confusing**.",
+        "ko": "그의 설명은 매우 혼란스러웠다."
+      },
+      {
+        "en": "I am **satisfied** with my new smartphone.",
+        "ko": "나는 내 새 스마트폰에 만족한다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "사물이 감정을 일으킬 때와 사람이 감정을 느낄 때, 각각 어떤 형태(-ing/-ed)를 쓰나요?",
+        "a": "사물이 감정을 일으킬 때는 -ing를 쓰고, 사람이 감정을 느낄 때는 -ed를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "The instructions for this new camera are ____.",
+          "c": [
+            "confused",
+            "confusing"
+          ],
+          "a": 1,
+          "why": "설명서가 혼란을 유발하는 사물이므로 -ing입니다."
+        },
+        {
+          "p": "I was ____ to see my old friend at the mall.",
+          "c": [
+            "surprised",
+            "surprising"
+          ],
+          "a": 0,
+          "why": "내가 놀라움을 느끼는 주체이므로 -ed입니다."
+        },
+        {
+          "p": "The roller coaster ride was truly ____.",
+          "c": [
+            "thrilled",
+            "thrilling"
+          ],
+          "a": 1,
+          "why": "롤러코스터가 짜릿함을 일으키는 사물이므로 -ing입니다."
+        },
+        {
+          "p": "The little boy was ____ of the big dog.",
+          "c": [
+            "terrified",
+            "terrifying"
+          ],
+          "a": 0,
+          "why": "어린 소년이 무서움을 느끼는 사람이므로 -ed입니다."
+        },
+        {
+          "p": "This novel is so ____ that I can't stop reading it.",
+          "c": [
+            "interested",
+            "interesting"
+          ],
+          "a": 1,
+          "why": "소설이 흥미를 유발하는 사물이므로 -ing입니다."
+        },
+        {
+          "p": "We were ____ with the poor service at the restaurant.",
+          "c": [
+            "disappointed",
+            "disappointing"
+          ],
+          "a": 0,
+          "why": "우리가 실망감을 느끼는 주체이므로 -ed입니다."
+        },
+        {
+          "p": "Washing the car all afternoon was ____.",
+          "c": [
+            "tired",
+            "tiring"
+          ],
+          "a": 1,
+          "why": "세차하는 행동이 피로를 유발하므로 -ing입니다."
+        },
+        {
+          "p": "The fans were ____ when their team won the championship.",
+          "c": [
+            "excited",
+            "exciting"
+          ],
+          "a": 0,
+          "why": "팬들이 신남을 느끼는 사람들이므로 -ed입니다."
+        },
+        {
+          "p": "The science lecture was so ____ that some students fell asleep.",
+          "c": [
+            "bored",
+            "boring"
+          ],
+          "a": 1,
+          "why": "과학 강의가 지루함을 유발하는 사물이므로 -ing입니다."
+        },
+        {
+          "p": "My sister is ____ with her birthday present.",
+          "c": [
+            "pleased",
+            "pleasing"
+          ],
+          "a": 0,
+          "why": "여동생이 기쁨을 느끼는 사람이므로 -ed입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The magic show was **amazing**.",
+          "ko": "그 마술 쇼는 놀라웠다."
+        },
+        {
+          "en": "He was **frustrated** by the slow internet.",
+          "ko": "그는 느린 인터넷 때문에 답답했다."
+        },
+        {
+          "en": "The horror movie was really **terrifying**.",
+          "ko": "그 공포 영화는 정말 무서웠다."
+        },
+        {
+          "en": "They were **thrilled** to win the prize.",
+          "ko": "그들은 상을 받아서 신이 났다."
+        },
+        {
+          "en": "The new project sounds **interesting**.",
+          "ko": "새 프로젝트는 흥미롭게 들린다."
+        },
+        {
+          "en": "I feel **exhausted** after the marathon.",
+          "ko": "나는 마라톤 후에 기진맥진함을 느낀다."
+        },
+        {
+          "en": "Her sudden resignation was **shocking**.",
+          "ko": "그녀의 갑작스러운 사임은 충격적이었다."
+        },
+        {
+          "en": "The teacher was **pleased** with our work.",
+          "ko": "선생님은 우리의 결과물에 기뻐하셨다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The baseball match was really excited.",
+          "r": "The baseball match was really exciting.",
+          "why": "야구 경기가 흥미를 유발하는 사물이므로 -ing를 써야 합니다."
+        },
+        {
+          "w": "I am very interesting in Korean history.",
+          "r": "I am very interested in Korean history.",
+          "why": "내가 흥미를 느끼는 주체이므로 -ed를 써야 합니다."
+        },
+        {
+          "w": "The heavy rain during our picnic was disappointed.",
+          "r": "The heavy rain during our picnic was disappointing.",
+          "why": "폭우가 실망감을 주는 원인이므로 -ing를 써야 합니다."
+        },
+        {
+          "w": "He was surprising when he heard the loud noise.",
+          "r": "He was surprised when he heard the loud noise.",
+          "why": "그가 놀라움을 느꼈으므로 -ed를 써야 합니다."
+        },
+        {
+          "w": "This puzzle is too confused for me.",
+          "r": "This puzzle is too confusing for me.",
+          "why": "퍼즐이 혼란을 주는 사물이므로 -ing를 써야 합니다."
+        },
+        {
+          "w": "The workers were tiring after moving the heavy boxes.",
+          "r": "The workers were tired after moving the heavy boxes.",
+          "why": "작업자들이 피로를 느끼는 사람들이므로 -ed를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "주말에 했던 활동이 어땠는지 말해요.",
+          "frame": "My weekend was ____ing."
+        },
+        {
+          "task": "특정 과목에 대한 나의 감정을 말해요.",
+          "frame": "I am ____ed in ____ class."
+        },
+        {
+          "task": "친구에게 최근에 본 영화가 어땠는지 물어봐요.",
+          "frame": "Was the movie ____ing?"
+        },
+        {
+          "task": "예상치 못한 일을 겪었을 때의 기분을 말해요.",
+          "frame": "I was ____ed to hear that."
+        },
+        {
+          "task": "피곤하게 만드는 일에 대해 불평해요.",
+          "frame": "Doing homework for hours is ____ing."
+        },
+        {
+          "task": "선물을 받았을 때의 기분을 표현해요.",
+          "frame": "I was so ____ed with the gift."
+        }
+      ],
+      "mission": {
+        "title": "감정 리뷰어 되기",
+        "scene": "여러분은 영화, 책, 음식점 등을 평가하는 리뷰어입니다. 짝과 함께 리뷰를 나눠보세요.",
+        "steps": [
+          "각자 최근에 경험한 것(영화, 식당 등)을 하나 떠올립니다.",
+          "짝에게 \"How was the movie?\"라고 묻고, \"-ing\"를 써서 대답합니다. (예: It was boring.)",
+          "이어서 그 경험 때문에 내가 느낀 감정을 \"-ed\"를 써서 덧붙입니다. (예: I was bored.)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 수학 문제는 혼란스러워 보였다.",
+          "cond": "confusing을 써요.",
+          "model": "The math problem looked confusing."
+        },
+        {
+          "ko": "그녀는 그 깜짝 파티에 놀랐다.",
+          "cond": "surprised를 써요.",
+          "model": "She was surprised at the surprise party."
+        },
+        {
+          "ko": "우리는 그 축구 경기에 신이 났다.",
+          "cond": "excited를 써요.",
+          "model": "We felt excited about the soccer match."
+        },
+        {
+          "ko": "그의 변명은 실망스럽게 들렸다.",
+          "cond": "disappointing을 써요.",
+          "model": "His excuse sounded disappointing."
+        },
+        {
+          "ko": "나는 긴 여행 후에 피곤해졌다.",
+          "cond": "tired를 써요.",
+          "model": "I became tired after the long trip."
+        },
+        {
+          "ko": "이 책은 매우 흥미롭다.",
+          "cond": "interesting을 써요.",
+          "model": "This book is very interesting."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-participle-clause",
+    "discover": {
+      "q": "Walking down the street, I met an old friend.를 보세요. 접속사와 주어가 어떻게 되었나요? 분사구문의 주어는 뒤 문장의 주어와 같은가요?",
+      "a": "접속사와 반복되는 주어를 없애고 동사를 -ing로 바꾼다. 분사구문의 주어는 뒤 문장의 주어와 같아야 한다."
+    },
+    "choose": [
+      {
+        "p": "____ down the street, I met an old friend.",
+        "c": [
+          "Walking",
+          "Walked"
+        ],
+        "a": 0,
+        "why": "내가 능동적으로 걷고 있었으므로 현재분사 Walking입니다."
+      },
+      {
+        "p": "____ tired, she went to bed early.",
+        "c": [
+          "Feeling",
+          "Felt"
+        ],
+        "a": 0,
+        "why": "그녀가 피곤함을 느끼는 능동이므로 Feeling입니다."
+      },
+      {
+        "p": "____ finished my homework, I watched TV.",
+        "c": [
+          "Having",
+          "Being"
+        ],
+        "a": 0,
+        "why": "숙제를 먼저 끝낸 것이므로 Having + p.p.입니다."
+      },
+      {
+        "p": "____ from the sky, the island looks like a heart.",
+        "c": [
+          "Seen",
+          "Seeing"
+        ],
+        "a": 0,
+        "why": "섬은 보이는 대상이므로 과거분사 Seen입니다."
+      },
+      {
+        "p": "____ what to say, he just smiled.",
+        "c": [
+          "Not knowing",
+          "Knowing not"
+        ],
+        "a": 0,
+        "why": "분사구문의 부정은 분사 앞에 Not을 씁니다."
+      },
+      {
+        "p": "____ in easy English, the book is popular among beginners.",
+        "c": [
+          "Written",
+          "Writing"
+        ],
+        "a": 0,
+        "why": "책은 쓰여지는 수동의 대상이므로 과거분사 Written을 씁니다."
+      },
+      {
+        "p": "____ lunch already, I am not hungry now.",
+        "c": [
+          "Eating",
+          "Having eaten"
+        ],
+        "a": 1,
+        "why": "지금 배고프지 않은 것보다 점심을 먹은 것이 먼저 일어난 일이므로 Having p.p.를 씁니다."
+      },
+      {
+        "p": "____ what to do, she asked her teacher for help.",
+        "c": [
+          "Knowing not",
+          "Not knowing"
+        ],
+        "a": 1,
+        "why": "분사구문의 부정은 분사 바로 앞에 Not을 씁니다."
+      },
+      {
+        "p": "____ to the radio, he fell asleep.",
+        "c": [
+          "Listening",
+          "Listened"
+        ],
+        "a": 0,
+        "why": "그가 능동적으로 라디오를 듣고 있었으므로 현재분사 Listening을 씁니다."
+      },
+      {
+        "p": "____ in the country, the boy was very healthy.",
+        "c": [
+          "Raising",
+          "Raised"
+        ],
+        "a": 1,
+        "why": "소년이 시골에서 길러진(양육된) 수동의 의미이므로 과거분사 Raised를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Walk down the street, I met an old friend.",
+        "r": "Walking down the street, I met an old friend.",
+        "why": "분사구문에서는 동사를 -ing 형태로 바꿉니다."
+      },
+      {
+        "w": "Seeing from the sky, the island looks like a heart.",
+        "r": "Seen from the sky, the island looks like a heart.",
+        "why": "섬은 보이는 대상이므로 과거분사입니다."
+      },
+      {
+        "w": "Knowing not what to say, he just smiled.",
+        "r": "Not knowing what to say, he just smiled.",
+        "why": "분사구문의 부정은 분사 앞에 Not을 둡니다."
+      },
+      {
+        "w": "Not have a ticket, I couldn't enter the hall.",
+        "r": "Not having a ticket, I couldn't enter the hall.",
+        "why": "접속사와 주어를 생략하고 동사를 -ing 형태인 having으로 바꿔야 합니다."
+      },
+      {
+        "w": "Write in haste, the letter had many mistakes.",
+        "r": "Written in haste, the letter had many mistakes.",
+        "why": "편지는 쓰여지는 대상이므로 과거분사 Written을 써야 합니다."
+      },
+      {
+        "w": "Having lose his map, he got lost in the forest.",
+        "r": "Having lost his map, he got lost in the forest.",
+        "why": "이전 시점의 일을 나타낼 때는 Having 다음에 과거분사(p.p.)를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "동시에 한 두 가지 일을 말해요.",
+        "frame": "Walking/Listening ____, I ____."
+      },
+      {
+        "task": "이유를 분사구문으로 말해요.",
+        "frame": "Feeling ____, I ____."
+      },
+      {
+        "task": "먼저 끝낸 일을 말해요.",
+        "frame": "Having finished ____, I ____."
+      },
+      {
+        "task": "몰라서 한 행동을 말해요.",
+        "frame": "Not knowing ____, I ____."
+      },
+      {
+        "task": "두 가지 동작을 동시에 하는 상황을 말해요.",
+        "frame": "____ing a book, I ____."
+      },
+      {
+        "task": "과거에 겪은 일 때문에 생긴 결과를 말해요.",
+        "frame": "Having lost ____, I ____."
+      }
+    ],
+    "mission": {
+      "title": "긴 문장 줄이기 게임",
+      "scene": "접속사가 들어간 문장을 분사구문으로 짧게 바꾸는 게임이에요.",
+      "steps": [
+        "When I was walking, I met a friend. 같은 문장 카드를 뽑는다.",
+        "접속사와 주어를 없애고 Walking ~, I met ... 로 바꿔 말한다.",
+        "주어가 같은지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "길을 걷다가 나는 옛 친구를 만났다.",
+        "cond": "분사구문 Walking을 써요.",
+        "model": "Walking down the street, I met an old friend."
+      },
+      {
+        "ko": "피곤해서 그녀는 일찍 잤다.",
+        "cond": "분사구문 Feeling을 써요.",
+        "model": "Feeling tired, she went to bed early."
+      },
+      {
+        "ko": "무슨 말을 할지 몰라서 그는 그냥 웃었다.",
+        "cond": "Not knowing을 써요.",
+        "model": "Not knowing what to say, he just smiled."
+      },
+      {
+        "ko": "쉬운 영어로 쓰여서, 그 책은 초보자들에게 좋다.",
+        "cond": "Written으로 시작하세요.",
+        "model": "Written in easy English, the book is good for beginners."
+      },
+      {
+        "ko": "점심을 이미 먹어서, 나는 지금 배가 고프지 않다.",
+        "cond": "Having eaten을 쓰세요.",
+        "model": "Having eaten lunch already, I am not hungry now."
+      },
+      {
+        "ko": "차가 없어서, 우리는 그곳에 걸어갔다.",
+        "cond": "Not having을 쓰세요.",
+        "model": "Not having a car, we walked there."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Arriving** at the station, he called me.",
+        "ko": "역에 도착했을 때, 그는 나에게 전화했다."
+      },
+      {
+        "en": "**Having read** the book, I returned it.",
+        "ko": "그 책을 다 읽고 나서, 나는 그것을 반납했다."
+      },
+      {
+        "en": "**Not having** a car, we walked there.",
+        "ko": "차가 없어서, 우리는 그곳에 걸어갔다."
+      },
+      {
+        "en": "**Left** alone, the baby began to cry.",
+        "ko": "혼자 남겨졌을 때, 아기는 울기 시작했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 부분(V-ing, Having p.p., p.p.)은 원래 문장의 어떤 단어들을 대신하고 있나요?",
+        "a": "접속사와 주어를 생략하고 동사의 형태를 분사로 바꾼 것입니다."
+      },
+      "choose": [
+        {
+          "p": "____ a newspaper, my father was drinking coffee.",
+          "c": [
+            "Read",
+            "Reading"
+          ],
+          "a": 1,
+          "why": "아버지가 능동적으로 신문을 읽고 있었으므로 현재분사 Reading을 씁니다."
+        },
+        {
+          "p": "____ in Korea, the car is exported to many countries.",
+          "c": [
+            "Made",
+            "Making"
+          ],
+          "a": 0,
+          "why": "자동차는 만들어지는 수동의 대상이므로 과거분사 Made를 씁니다."
+        },
+        {
+          "p": "____ my phone, I couldn't call my mom.",
+          "c": [
+            "Losing",
+            "Having lost"
+          ],
+          "a": 1,
+          "why": "전화를 걸지 못한 것보다 폰을 잃어버린 것이 먼저 일어난 일이므로 Having p.p.를 씁니다."
+        },
+        {
+          "p": "____ the rules, they made a mistake.",
+          "c": [
+            "Not knowing",
+            "Knowing not"
+          ],
+          "a": 0,
+          "why": "분사구문의 부정은 분사 바로 앞에 Not을 붙입니다."
+        },
+        {
+          "p": "____ the street, she saw a famous actor.",
+          "c": [
+            "Crossed",
+            "Crossing"
+          ],
+          "a": 1,
+          "why": "그녀가 길을 건너는 능동적 동작을 하므로 현재분사 Crossing을 씁니다."
+        },
+        {
+          "p": "____ by the noise, the baby woke up.",
+          "c": [
+            "Surprising",
+            "Surprised"
+          ],
+          "a": 1,
+          "why": "아기가 소음에 놀람을 당한(느낀) 수동의 의미이므로 과거분사 Surprised를 씁니다."
+        },
+        {
+          "p": "____ his work, he went out for a walk.",
+          "c": [
+            "Having finished",
+            "Finishing"
+          ],
+          "a": 0,
+          "why": "산책을 나간 것보다 일을 끝낸 것이 먼저 일어난 일이므로 Having p.p.를 씁니다."
+        },
+        {
+          "p": "____ much money, I decided to stay home.",
+          "c": [
+            "Having not",
+            "Not having"
+          ],
+          "a": 1,
+          "why": "분사구문의 부정은 Not을 분사 앞에 씁니다."
+        },
+        {
+          "p": "____ from a distance, the rock looks like a bear.",
+          "c": [
+            "Seeing",
+            "Seen"
+          ],
+          "a": 1,
+          "why": "바위는 보이는 대상이므로 수동을 나타내는 과거분사 Seen을 씁니다."
+        },
+        {
+          "p": "____ to music, the students cleaned the classroom.",
+          "c": [
+            "Listening",
+            "Listened"
+          ],
+          "a": 0,
+          "why": "학생들이 음악을 듣는 능동적 행동이므로 현재분사 Listening을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Smiling** brightly, she welcomed the guests.",
+          "ko": "밝게 웃으면서, 그녀는 손님들을 맞이했다."
+        },
+        {
+          "en": "**Built** of wood, the house is very warm.",
+          "ko": "나무로 지어져서, 그 집은 매우 따뜻하다."
+        },
+        {
+          "en": "**Having seen** the movie, I knew the ending.",
+          "ko": "그 영화를 봤기 때문에, 나는 결말을 알았다."
+        },
+        {
+          "en": "**Not wanting** to go, he stayed home.",
+          "ko": "가고 싶지 않아서, 그는 집에 머물렀다."
+        },
+        {
+          "en": "**Looking** out the window, I saw a bird.",
+          "ko": "창밖을 보다가, 나는 새 한 마리를 보았다."
+        },
+        {
+          "en": "**Covered** with snow, the mountain looked beautiful.",
+          "ko": "눈으로 덮여서, 그 산은 아름다워 보였다."
+        },
+        {
+          "en": "**Having met** him before, she remembered his name.",
+          "ko": "그를 전에 만난 적이 있어서, 그녀는 그의 이름을 기억했다."
+        },
+        {
+          "en": "**Not receiving** an answer, I wrote again.",
+          "ko": "답장을 받지 못해서, 나는 다시 편지를 썼다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Read a book, I fell asleep on the sofa.",
+          "r": "Reading a book, I fell asleep on the sofa.",
+          "why": "내가 책을 읽는 능동의 의미이므로 현재분사 Reading을 써야 합니다."
+        },
+        {
+          "w": "Make in Korea, the smartphone is very popular.",
+          "r": "Made in Korea, the smartphone is very popular.",
+          "why": "스마트폰은 만들어지는 수동의 대상이므로 과거분사 Made를 써야 합니다."
+        },
+        {
+          "w": "Having finish the project, we had a party.",
+          "r": "Having finished the project, we had a party.",
+          "why": "이전 시점을 나타내는 완료 분사구문은 Having 뒤에 과거분사(p.p.)를 써야 합니다."
+        },
+        {
+          "w": "Wanting not to study, the boy turned on the TV.",
+          "r": "Not wanting to study, the boy turned on the TV.",
+          "why": "분사구문의 부정은 Not을 분사 앞에 두어야 합니다."
+        },
+        {
+          "w": "Surprising by the news, she started to cry.",
+          "r": "Surprised by the news, she started to cry.",
+          "why": "그녀가 뉴스에 놀란 수동의 의미이므로 과거분사 Surprised를 써야 합니다."
+        },
+        {
+          "w": "Not have enough time, I skipped breakfast.",
+          "r": "Not having enough time, I skipped breakfast.",
+          "why": "접속사와 주어를 생략한 후 동사를 -ing 형태인 having으로 바꿔야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "음악을 들으며 하는 행동을 말해요.",
+          "frame": "Listening to music, I ____."
+        },
+        {
+          "task": "피곤함을 느꼈을 때 한 행동을 말해요.",
+          "frame": "Feeling tired, I ____."
+        },
+        {
+          "task": "숙제를 끝낸 후 한 행동을 말해요.",
+          "frame": "Having finished my homework, I ____."
+        },
+        {
+          "task": "돈이 없어서 한 행동을 말해요.",
+          "frame": "Not having enough money, I ____."
+        },
+        {
+          "task": "길을 걷다 본 것을 말해요.",
+          "frame": "Walking down the street, I saw ____."
+        },
+        {
+          "task": "시간이 없어서 하지 못한 일을 말해요.",
+          "frame": "Not having enough time, I didn't ____."
+        }
+      ],
+      "mission": {
+        "title": "셜록 홈즈의 추리 일지",
+        "scene": "탐정이 되어 용의자들의 행동을 분사구문으로 묘사해 봅시다.",
+        "steps": [
+          "짝과 함께 용의자가 한 두 가지 행동을 고릅니다.",
+          "분사구문을 사용하여 문장을 만듭니다. (예: Drinking coffee, he read a book.)",
+          "완성된 문장을 발표하고 다른 팀이 용의자를 맞히게 합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "밝게 웃으면서, 그녀는 손님들을 맞이했다.",
+          "cond": "Smiling을 쓰세요.",
+          "model": "Smiling brightly, she welcomed the guests."
+        },
+        {
+          "ko": "나무로 지어져서, 그 집은 매우 따뜻하다.",
+          "cond": "Built를 쓰세요.",
+          "model": "Built of wood, the house is very warm."
+        },
+        {
+          "ko": "그 영화를 이미 봐서, 나는 결말을 알았다.",
+          "cond": "Having seen을 쓰세요.",
+          "model": "Having seen the movie already, I knew the ending."
+        },
+        {
+          "ko": "가고 싶지 않아서, 소년은 집에 머물렀다.",
+          "cond": "Not wanting을 쓰세요.",
+          "model": "Not wanting to go, the boy stayed home."
+        },
+        {
+          "ko": "눈으로 덮여서, 그 산은 아름다워 보였다.",
+          "cond": "Covered를 쓰세요.",
+          "model": "Covered with snow, the mountain looked beautiful."
+        },
+        {
+          "ko": "답장을 받지 못해서, 우리는 다시 이메일을 썼다.",
+          "cond": "Not receiving을 쓰세요.",
+          "model": "Not receiving an answer, we wrote an email again."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-with-absolute",
+    "discover": {
+      "q": "with his eyes closed, with the TV on, with its tail wagging을 보세요. with 뒤의 명사와 분사는 어떤 관계인가요? 눈이 '감겨진' 것과 꼬리가 '흔들리는' 것은 분사의 모양이 어떻게 다른가요?",
+      "a": "'~한 채로'라는 동시 상황을 나타낸다. 명사가 어떤 행동을 당하면 과거분사(eyes closed), 스스로 하면 현재분사(tail wagging)를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "He listened to music with his eyes ____.",
+        "c": [
+          "closed",
+          "closing"
+        ],
+        "a": 0,
+        "why": "눈은 감겨지는 대상이므로 과거분사입니다."
+      },
+      {
+        "p": "She fell asleep with the TV ____.",
+        "c": [
+          "on",
+          "in"
+        ],
+        "a": 0,
+        "why": "TV가 켜진 상태는 on입니다."
+      },
+      {
+        "p": "Don't talk with your mouth ____.",
+        "c": [
+          "full",
+          "fully"
+        ],
+        "a": 0,
+        "why": "입이 가득 찬 상태는 형용사 full입니다."
+      },
+      {
+        "p": "He stood there with his arms ____.",
+        "c": [
+          "folded",
+          "folding"
+        ],
+        "a": 0,
+        "why": "팔은 접어지는 대상이므로 과거분사입니다."
+      },
+      {
+        "p": "The dog came in with its tail ____.",
+        "c": [
+          "wagging",
+          "wagged"
+        ],
+        "a": 0,
+        "why": "꼬리가 스스로 흔드는 동작이므로 현재분사입니다."
+      },
+      {
+        "p": "She sat on the sofa with her legs ____.",
+        "c": [
+          "crossing",
+          "crossed"
+        ],
+        "a": 1,
+        "why": "다리는 꼬아지는 대상이므로 과거분사를 써야 합니다."
+      },
+      {
+        "p": "He left the car with the engine ____.",
+        "c": [
+          "run",
+          "running"
+        ],
+        "a": 1,
+        "why": "엔진이 작동하는 것은 능동의 의미이므로 현재분사를 써야 합니다."
+      },
+      {
+        "p": "The boy was crying with tears ____ down his face.",
+        "c": [
+          "rolling",
+          "rolled"
+        ],
+        "a": 0,
+        "why": "눈물이 흐르는 것은 능동이므로 현재분사를 써야 합니다."
+      },
+      {
+        "p": "I can't concentrate with the radio ____.",
+        "c": [
+          "at",
+          "on",
+          "in"
+        ],
+        "a": 1,
+        "why": "기기가 켜진 상태를 나타낼 때는 전치사 on을 씁니다."
+      },
+      {
+        "p": "He fell asleep with the window ____.",
+        "c": [
+          "openly",
+          "open"
+        ],
+        "a": 1,
+        "why": "창문이 열린 상태를 나타낼 때는 형용사 open을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "He listened to music with his eyes closing.",
+        "r": "He listened to music with his eyes closed.",
+        "why": "눈은 감겨지는 대상이므로 과거분사입니다."
+      },
+      {
+        "w": "He stood there with his arms folding.",
+        "r": "He stood there with his arms folded.",
+        "why": "팔은 접어지는 대상이므로 과거분사입니다."
+      },
+      {
+        "w": "The dog came in with its tail wagged.",
+        "r": "The dog came in with its tail wagging.",
+        "why": "꼬리가 흔드는 동작이므로 현재분사입니다."
+      },
+      {
+        "w": "She sat on the chair with her legs crossing.",
+        "r": "She sat on the chair with her legs crossed.",
+        "why": "다리는 꼬아지는 대상이므로 과거분사를 써야 합니다."
+      },
+      {
+        "w": "He parked the car with the engine run.",
+        "r": "He parked the car with the engine running.",
+        "why": "엔진이 작동하는 것은 능동이므로 현재분사를 써야 합니다."
+      },
+      {
+        "w": "The girl smiled with tears roll down her cheeks.",
+        "r": "The girl smiled with tears rolling down her cheeks.",
+        "why": "눈물이 흐르는 것은 능동이므로 현재분사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "어떤 상태로 한 행동을 말해요.",
+        "frame": "I ____ with my ____ closed/folded/open."
+      },
+      {
+        "task": "하면 안 되는 행동을 말해요.",
+        "frame": "Don't ____ with your mouth full."
+      },
+      {
+        "task": "동물이나 사람의 모습을 묘사해요.",
+        "frame": "He/The dog came in with his/its ____ ____ing."
+      },
+      {
+        "task": "짝의 자세를 보고 설명해요.",
+        "frame": "You are sitting with your ____ ____ed."
+      },
+      {
+        "task": "어떤 자세로 기다렸는지 말해봅시다.",
+        "frame": "I waited for my friend with my legs ____."
+      },
+      {
+        "task": "주변 환경이 어떤 상태인지 묘사해봅시다.",
+        "frame": "We had dinner with the lights ____."
+      }
+    ],
+    "mission": {
+      "title": "자세 따라 하기 게임",
+      "scene": "자세 카드를 보고 with 구문으로 설명하며 따라 하는 게임이에요.",
+      "steps": [
+        "자세 카드(팔짱, 눈 감기 등)를 뽑는다.",
+        "with my ____ ____ed 로 설명한다.",
+        "짝이 같은 자세를 취한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그는 눈을 감은 채 음악을 들었다.",
+        "cond": "with his eyes closed를 써요.",
+        "model": "He listened to music with his eyes closed."
+      },
+      {
+        "ko": "그녀는 TV를 켜 놓은 채 잠이 들었다.",
+        "cond": "with the TV on을 써요.",
+        "model": "She fell asleep with the TV on."
+      },
+      {
+        "ko": "그는 팔짱을 낀 채 거기 서 있었다.",
+        "cond": "with his arms folded를 써요.",
+        "model": "He stood there with his arms folded."
+      },
+      {
+        "ko": "그녀는 다리를 꼰 채로 소파에 앉아 있었다.",
+        "cond": "with her legs crossed를 활용할 것.",
+        "model": "She sat on the sofa with her legs crossed."
+      },
+      {
+        "ko": "그는 엔진을 켜 둔 채로 차를 떠났다.",
+        "cond": "with the engine running을 활용할 것.",
+        "model": "He left the car with the engine running."
+      },
+      {
+        "ko": "나는 휴대전화를 끈 채로 공부했다.",
+        "cond": "with my phone turned off를 활용할 것.",
+        "model": "I studied with my phone turned off."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "She was reading a book **with her legs crossed**.",
+        "ko": "그녀는 다리를 꼰 채로 책을 읽고 있었다."
+      },
+      {
+        "en": "He walked in the rain **with his umbrella folded**.",
+        "ko": "그는 우산을 접은 채로 빗속을 걸었다."
+      },
+      {
+        "en": "I studied hard **with my phone turned off**.",
+        "ko": "나는 휴대전화를 끈 채로 열심히 공부했다."
+      },
+      {
+        "en": "The man ran away **with his heart beating fast**.",
+        "ko": "그 남자는 심장이 빠르게 뛰는 채로 도망쳤다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "with 뒤에 오는 명사가 동작을 직접 할 때와 동작을 당할 때, 각각 어떤 형태의 분사가 쓰였나요?",
+        "a": "명사가 동작을 직접 할 때는 현재분사(~ing)가, 동작을 당할 때는 과거분사(p.p.)가 쓰였습니다."
+      },
+      "choose": [
+        {
+          "p": "I cannot sleep with the lights ____.",
+          "c": [
+            "turning on",
+            "turned on"
+          ],
+          "a": 1,
+          "why": "전등은 켜지는 대상이므로 과거분사를 써야 합니다."
+        },
+        {
+          "p": "He was talking on the phone with his hand ____.",
+          "c": [
+            "raised",
+            "raising"
+          ],
+          "a": 0,
+          "why": "손은 올려지는 대상이므로 과거분사를 써야 합니다."
+        },
+        {
+          "p": "The students listened to the teacher with their books ____.",
+          "c": [
+            "openly",
+            "open"
+          ],
+          "a": 1,
+          "why": "책이 열린 상태를 나타내므로 형용사 open을 씁니다."
+        },
+        {
+          "p": "She walked along the beach with the wind ____.",
+          "c": [
+            "blowing",
+            "blown"
+          ],
+          "a": 0,
+          "why": "바람이 부는 것은 능동이므로 현재분사를 써야 합니다."
+        },
+        {
+          "p": "He sat by the fire with his dog ____ beside him.",
+          "c": [
+            "slept",
+            "sleeping"
+          ],
+          "a": 1,
+          "why": "개가 잠을 자는 것은 능동이므로 현재분사를 써야 합니다."
+        },
+        {
+          "p": "Don't leave the house with the water ____.",
+          "c": [
+            "running",
+            "run"
+          ],
+          "a": 0,
+          "why": "물이 흐르는 것은 능동이므로 현재분사를 써야 합니다."
+        },
+        {
+          "p": "The thief ran away with his face ____.",
+          "c": [
+            "covering",
+            "covered"
+          ],
+          "a": 1,
+          "why": "얼굴은 가려지는 대상이므로 과거분사를 써야 합니다."
+        },
+        {
+          "p": "She typed the report with her headphones ____.",
+          "c": [
+            "on",
+            "at",
+            "to"
+          ],
+          "a": 0,
+          "why": "헤드폰을 착용한 상태를 나타낼 때는 전치사 on을 씁니다."
+        },
+        {
+          "p": "He went outside with his coat ____.",
+          "c": [
+            "buttoning",
+            "buttoned"
+          ],
+          "a": 1,
+          "why": "코트의 단추가 채워지는 것이므로 과거분사를 써야 합니다."
+        },
+        {
+          "p": "She hoped for the best with her fingers ____.",
+          "c": [
+            "crossed",
+            "crossing"
+          ],
+          "a": 0,
+          "why": "손가락이 꼬아지는 것이므로 과거분사를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "He slept **with the window open**.",
+          "ko": "그는 창문을 열어둔 채로 잤다."
+        },
+        {
+          "en": "She watched the movie **with the lights turned off**.",
+          "ko": "그녀는 불을 끈 채로 영화를 보았다."
+        },
+        {
+          "en": "The boy stood **with his hands in his pockets**.",
+          "ko": "그 소년은 주머니에 손을 넣은 채로 서 있었다."
+        },
+        {
+          "en": "I took a walk **with the wind blowing**.",
+          "ko": "나는 바람이 부는 채로 산책을 했다."
+        },
+        {
+          "en": "He drove the car **with the radio on**.",
+          "ko": "그는 라디오를 켠 채로 차를 운전했다."
+        },
+        {
+          "en": "She smiled **with her arms crossed**.",
+          "ko": "그녀는 팔짱을 낀 채로 미소 지었다."
+        },
+        {
+          "en": "The cat lay **with its eyes closed**.",
+          "ko": "고양이는 눈을 감은 채로 누워 있었다."
+        },
+        {
+          "en": "He waited for her **with his heart beating fast**.",
+          "ko": "그는 심장이 빠르게 뛰는 채로 그녀를 기다렸다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She walked in the park with the wind blown.",
+          "r": "She walked in the park with the wind blowing.",
+          "why": "바람이 부는 것은 능동이므로 현재분사를 써야 합니다."
+        },
+        {
+          "w": "The man hid in the dark with his face covering.",
+          "r": "The man hid in the dark with his face covered.",
+          "why": "얼굴은 가려지는 대상이므로 과거분사를 써야 합니다."
+        },
+        {
+          "w": "I can't focus on my work with the TV turn on.",
+          "r": "I can't focus on my work with the TV turned on.",
+          "why": "TV가 켜지는 것은 수동이므로 과거분사를 써야 합니다."
+        },
+        {
+          "w": "He spoke to the audience with his hands raise.",
+          "r": "He spoke to the audience with his hands raised.",
+          "why": "손은 올려지는 대상이므로 과거분사를 써야 합니다."
+        },
+        {
+          "w": "Don't leave the room with the water run.",
+          "r": "Don't leave the room with the water running.",
+          "why": "물이 흐르는 것은 능동이므로 현재분사를 써야 합니다."
+        },
+        {
+          "w": "She fell asleep with the heater turning on.",
+          "r": "She fell asleep with the heater turned on.",
+          "why": "히터가 켜지는 것은 수동이므로 과거분사를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "어떤 신체 부위를 특정한 상태로 하고 있는지 말해봅시다.",
+          "frame": "I am listening to you with my arms ____."
+        },
+        {
+          "task": "날씨나 주변 환경을 묘사해봅시다.",
+          "frame": "We walked outside with the wind ____."
+        },
+        {
+          "task": "방 안의 기기 상태를 말해봅시다.",
+          "frame": "I usually study with the radio ____."
+        },
+        {
+          "task": "친구의 옷차림 상태를 묘사해봅시다.",
+          "frame": "You are standing with your coat ____."
+        },
+        {
+          "task": "자신의 감정이나 신체 상태를 표현해봅시다.",
+          "frame": "I waited for the result with my heart ____ fast."
+        },
+        {
+          "task": "반려동물의 행동을 묘사해봅시다.",
+          "frame": "My dog is sleeping with its mouth ____."
+        }
+      ],
+      "mission": {
+        "title": "범인 몽타주 그리기",
+        "scene": "목격자가 되어 범인이 도망칠 때의 모습을 묘사하고, 경찰 역할을 맡은 짝이 그 모습을 그립니다.",
+        "steps": [
+          "목격자는 범인의 모습을 \"The suspect ran away with his face covered.\"처럼 영어로 묘사하세요.",
+          "경찰은 묘사를 듣고 종이에 범인의 모습을 간단히 스케치하세요.",
+          "역할을 바꾸어 새로운 범인의 모습을 묘사하고 그려보세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그녀는 불을 끈 채로 영화를 보았다.",
+          "cond": "with the lights turned off를 활용할 것.",
+          "model": "She watched the movie with the lights turned off."
+        },
+        {
+          "ko": "그 소년은 주머니에 손을 넣은 채로 서 있었다.",
+          "cond": "with his hands in his pockets를 활용할 것.",
+          "model": "The boy stood with his hands in his pockets."
+        },
+        {
+          "ko": "나는 바람이 부는 채로 산책을 했다.",
+          "cond": "with the wind blowing을 활용할 것.",
+          "model": "I took a walk with the wind blowing."
+        },
+        {
+          "ko": "그는 라디오를 켠 채로 차를 운전했다.",
+          "cond": "with the radio on을 활용할 것.",
+          "model": "He drove the car with the radio on."
+        },
+        {
+          "ko": "고양이는 눈을 감은 채로 누워 있었다.",
+          "cond": "with its eyes closed를 활용할 것.",
+          "model": "The cat lay with its eyes closed."
+        },
+        {
+          "ko": "그는 심장이 빠르게 뛰는 채로 그녀를 기다렸다.",
+          "cond": "with his heart beating fast를 활용할 것.",
+          "model": "He waited for her with his heart beating fast."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-dative",
+    "discover": {
+      "q": "My mom made me a cake와 He sent a letter to his grandma를 비교해 보세요. 사람이 앞에 올 때와 물건이 앞에 올 때 to나 for가 어떻게 달라졌나요?",
+      "a": "사람 + 물건 순서이면 to/for 없이 쓴다. 물건을 앞으로 보내면 send, give 등은 to, buy, make, cook 등은 for를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "My mom made ____ a cake.",
+        "c": [
+          "me",
+          "to me"
+        ],
+        "a": 0,
+        "why": "사람이 바로 오면 to/for 없이 씁니다."
+      },
+      {
+        "p": "He sent a letter ____ his grandma.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "send는 물건 뒤에 to를 씁니다."
+      },
+      {
+        "p": "I bought a present ____ my sister.",
+        "c": [
+          "for",
+          "to"
+        ],
+        "a": 0,
+        "why": "buy는 물건 뒤에 for를 씁니다."
+      },
+      {
+        "p": "Ms. Kim teaches ____ English.",
+        "c": [
+          "us",
+          "to us"
+        ],
+        "a": 0,
+        "why": "사람이 바로 오면 to 없이 씁니다."
+      },
+      {
+        "p": "Can you show ____ your picture?",
+        "c": [
+          "me",
+          "to me"
+        ],
+        "a": 0,
+        "why": "show 뒤에 사람이 바로 올 때는 to를 쓰지 않습니다."
+      },
+      {
+        "p": "My dad cooked dinner ____ us.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 1,
+        "why": "cook은 물건 뒤에 for를 씁니다."
+      },
+      {
+        "p": "She told a funny story ____ her friends.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "tell은 물건(내용) 뒤에 to를 씁니다."
+      },
+      {
+        "p": "I will give ____ a pen.",
+        "c": [
+          "to him",
+          "for him",
+          "him"
+        ],
+        "a": 2,
+        "why": "give 뒤에 사람이 바로 올 때는 전치사를 쓰지 않습니다."
+      },
+      {
+        "p": "He bought a new bag ____ his son.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 1,
+        "why": "buy는 물건 뒤에 for를 씁니다."
+      },
+      {
+        "p": "Please send an email ____ the teacher.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "send는 물건 뒤에 to를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "He gave to me a gift.",
+        "r": "He gave me a gift.",
+        "why": "사람이 바로 오면 to 없이 씁니다."
+      },
+      {
+        "w": "She made a cake to me.",
+        "r": "She made a cake for me.",
+        "why": "make는 물건 뒤에 for를 씁니다."
+      },
+      {
+        "w": "I bought a present to my sister.",
+        "r": "I bought a present for my sister.",
+        "why": "buy는 물건 뒤에 for를 씁니다."
+      },
+      {
+        "w": "He told to me a secret.",
+        "r": "He told me a secret.",
+        "why": "tell 뒤에 사람이 바로 올 때는 to를 쓰지 않습니다."
+      },
+      {
+        "w": "I cooked some soup to him.",
+        "r": "I cooked some soup for him.",
+        "why": "cook은 물건 뒤에 for를 씁니다."
+      },
+      {
+        "w": "She showed her new shoes for me.",
+        "r": "She showed her new shoes to me.",
+        "why": "show는 물건 뒤에 to를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "친구에게 주고 싶은 선물을 말해요.",
+        "frame": "I will give you a ____."
+      },
+      {
+        "task": "가족에게 해 준 일을 말해요.",
+        "frame": "I made/bought/cooked ____ for my ____."
+      },
+      {
+        "task": "짝에게 보여 달라고 부탁해요.",
+        "frame": "Can you show me your ____?"
+      },
+      {
+        "task": "선생님이 해 주시는 일을 말해요.",
+        "frame": "My teacher teaches us ____."
+      },
+      {
+        "task": "친구에게 요리해 준 음식을 말해요.",
+        "frame": "I cooked ____ for my friend."
+      },
+      {
+        "task": "가족이 나에게 사준 물건을 말해요.",
+        "frame": "My ____ bought me a ____."
+      }
+    ],
+    "mission": {
+      "title": "선물 교환 파티",
+      "scene": "선물 카드를 주고받으며 주는 문장을 말하는 파티 놀이예요.",
+      "steps": [
+        "I will give you a ____. 으로 선물을 준다.",
+        "받은 사람은 Thank you. 라고 인사한다.",
+        "I bought a ____ for my friend. 처럼 for를 뒤에 쓴 문장도 하나 만든다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "엄마가 나에게 케이크를 만들어 주셨다.",
+        "cond": "made me를 써요.",
+        "model": "My mom made me a cake."
+      },
+      {
+        "ko": "그는 할머니께 편지를 보냈다.",
+        "cond": "to를 써요.",
+        "model": "He sent a letter to his grandma."
+      },
+      {
+        "ko": "나는 여동생에게 선물을 샀다.",
+        "cond": "for를 써요.",
+        "model": "I bought a present for my sister."
+      },
+      {
+        "ko": "아빠가 우리에게 저녁을 요리해 주셨다.",
+        "cond": "for를 써요.",
+        "model": "My dad cooked dinner for us."
+      },
+      {
+        "ko": "그녀는 우리에게 수학을 가르친다.",
+        "cond": "us를 먼저 써요.",
+        "model": "She teaches us math."
+      },
+      {
+        "ko": "나는 톰에게 이메일을 보냈다.",
+        "cond": "to를 써요.",
+        "model": "I sent an email to Tom."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **told us** the truth.",
+        "ko": "그는 우리에게 진실을 말했다."
+      },
+      {
+        "en": "I **cooked** lunch **for** my brother.",
+        "ko": "나는 내 남동생을 위해 점심을 요리했다."
+      },
+      {
+        "en": "She **showed** her ticket **to** the man.",
+        "ko": "그녀는 그 남자에게 그녀의 표를 보여주었다."
+      },
+      {
+        "en": "They **gave** the dog a bone.",
+        "ko": "그들은 그 개에게 뼈다귀를 주었다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "\"He gave me a gift.\"와 \"He gave a gift to me.\"에서 사람(me)과 물건(a gift)의 위치가 바뀔 때 무엇이 추가되나요?",
+        "a": "물건이 사람보다 먼저 오면 사람 앞에 to나 for 같은 전치사가 추가됩니다."
+      },
+      "choose": [
+        {
+          "p": "The teacher gave a book ____ the student.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "give는 물건 뒤에 to를 씁니다."
+        },
+        {
+          "p": "My uncle bought a bike ____ me.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 1,
+          "why": "buy는 물건 뒤에 for를 씁니다."
+        },
+        {
+          "p": "Can you tell ____ the time?",
+          "c": [
+            "me",
+            "to me"
+          ],
+          "a": 0,
+          "why": "tell 뒤에 사람이 바로 올 때는 to를 쓰지 않습니다."
+        },
+        {
+          "p": "She made some cookies ____ her classmates.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 1,
+          "why": "make는 물건 뒤에 for를 씁니다."
+        },
+        {
+          "p": "I sent a text message ____ my mom.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "send는 물건 뒤에 to를 씁니다."
+        },
+        {
+          "p": "He showed ____ his new phone.",
+          "c": [
+            "us",
+            "to us"
+          ],
+          "a": 0,
+          "why": "show 뒤에 사람이 바로 올 때는 to를 쓰지 않습니다."
+        },
+        {
+          "p": "Mr. Smith teaches science ____ the students.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "teach는 물건(과목) 뒤에 to를 씁니다."
+        },
+        {
+          "p": "My sister cooked breakfast ____ our family.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 1,
+          "why": "cook은 물건 뒤에 for를 씁니다."
+        },
+        {
+          "p": "Please give ____ a cup of water.",
+          "c": [
+            "to me",
+            "for me",
+            "me"
+          ],
+          "a": 2,
+          "why": "give 뒤에 사람이 바로 올 때는 전치사를 쓰지 않습니다."
+        },
+        {
+          "p": "I bought ____ a cute doll.",
+          "c": [
+            "to her",
+            "for her",
+            "her"
+          ],
+          "a": 2,
+          "why": "buy 뒤에 사람이 바로 올 때는 전치사를 쓰지 않습니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "My grandmother **told me** an old story.",
+          "ko": "나의 할머니는 나에게 옛날 이야기를 해주셨다."
+        },
+        {
+          "en": "He **bought** a ring **for** his wife.",
+          "ko": "그는 그의 아내를 위해 반지를 샀다."
+        },
+        {
+          "en": "I **sent** a package **to** my friend.",
+          "ko": "나는 내 친구에게 소포를 보냈다."
+        },
+        {
+          "en": "She **made us** some sandwiches.",
+          "ko": "그녀는 우리에게 샌드위치를 만들어 주었다."
+        },
+        {
+          "en": "Mr. Brown **teaches** history **to** us.",
+          "ko": "브라운 선생님은 우리에게 역사를 가르치신다."
+        },
+        {
+          "en": "Can you **give me** a hint?",
+          "ko": "나에게 힌트를 줄 수 있니?"
+        },
+        {
+          "en": "My brother **cooked** pasta **for** me.",
+          "ko": "내 남동생은 나를 위해 파스타를 요리했다."
+        },
+        {
+          "en": "They **showed** the map **to** the police.",
+          "ko": "그들은 경찰에게 그 지도를 보여주었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She bought a watch to her dad.",
+          "r": "She bought a watch for her dad.",
+          "why": "buy는 물건 뒤에 for를 씁니다."
+        },
+        {
+          "w": "He sent to me a pretty postcard.",
+          "r": "He sent me a pretty postcard.",
+          "why": "사람이 바로 올 때는 to를 쓰지 않습니다."
+        },
+        {
+          "w": "Can you give a pencil for me?",
+          "r": "Can you give a pencil to me?",
+          "why": "give는 물건 뒤에 to를 씁니다."
+        },
+        {
+          "w": "My mom made a pizza to us.",
+          "r": "My mom made a pizza for us.",
+          "why": "make는 물건 뒤에 for를 씁니다."
+        },
+        {
+          "w": "The guide showed to us the museum.",
+          "r": "The guide showed us the museum.",
+          "why": "사람이 바로 올 때는 to를 쓰지 않습니다."
+        },
+        {
+          "w": "I told my name for him.",
+          "r": "I told my name to him.",
+          "why": "tell은 물건(내용) 뒤에 to를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "짝에게 물건을 달라고 부탁해요.",
+          "frame": "Please give me ____."
+        },
+        {
+          "task": "친구를 위해 만들어 준 것을 말해요.",
+          "frame": "I made ____ for you."
+        },
+        {
+          "task": "좋아하는 선생님이 가르치는 과목을 말해요.",
+          "frame": "Mr./Ms. ____ teaches us ____."
+        },
+        {
+          "task": "친구에게 재미있는 이야기를 해 주겠다고 말해요.",
+          "frame": "I will tell you a ____."
+        },
+        {
+          "task": "주말에 가족에게 요리해 준 음식을 말해요.",
+          "frame": "I cooked ____ for my family."
+        },
+        {
+          "task": "친구에게 새로 산 물건을 보여주며 말해요.",
+          "frame": "I will show my ____ to you."
+        }
+      ],
+      "mission": {
+        "title": "비밀 마니또 선물하기",
+        "scene": "반 친구의 마니또가 되어 주고 싶은 선물을 고르고 편지를 씁니다.",
+        "steps": [
+          "마니또에게 주고 싶은 선물을 고르고 \"I will buy a ____ for ____.\"라고 적어보세요.",
+          "그 선물을 주는 이유를 생각하며 \"I will give this to him/her.\"라고 말해보세요.",
+          "짝과 함께 각자의 마니또에게 줄 선물과 편지 내용을 영어로 발표해 보세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그녀는 나에게 재미있는 이야기를 해주었다.",
+          "cond": "told me를 써요.",
+          "model": "She told me a funny story."
+        },
+        {
+          "ko": "삼촌이 나를 위해 자전거를 사주셨다.",
+          "cond": "for를 써요.",
+          "model": "My uncle bought a bike for me."
+        },
+        {
+          "ko": "나는 내 친구에게 문자를 보냈다.",
+          "cond": "to를 써요.",
+          "model": "I sent a text message to my friend."
+        },
+        {
+          "ko": "엄마가 우리에게 샌드위치를 만들어 주셨다.",
+          "cond": "made us를 써요.",
+          "model": "My mom made us sandwiches."
+        },
+        {
+          "ko": "브라운 선생님은 학생들에게 역사를 가르치신다.",
+          "cond": "to를 써요.",
+          "model": "Mr. Brown teaches history to the students."
+        },
+        {
+          "ko": "그는 나에게 그의 새 가방을 보여주었다.",
+          "cond": "showed me를 써요.",
+          "model": "He showed me his new bag."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-linking-verbs",
+    "discover": {
+      "q": "look, taste, sound, feel 뒤에 오는 말을 보세요. 부사(happily)가 아니라 어떤 품사가 왔나요? 명사가 올 때는 어떻게 쓰였나요?",
+      "a": "look, sound, smell, taste, feel 뒤에는 형용사가 온다. 명사가 올 때는 look like + 명사로 쓴다."
+    },
+    "choose": [
+      {
+        "p": "You look ____ today.",
+        "c": [
+          "tired",
+          "tiredly"
+        ],
+        "a": 0,
+        "why": "look 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "This soup tastes ____.",
+        "c": [
+          "great",
+          "greatly"
+        ],
+        "a": 0,
+        "why": "taste 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "That sounds ____.",
+        "c": [
+          "interesting",
+          "interestingly"
+        ],
+        "a": 0,
+        "why": "sound 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "The blanket feels ____.",
+        "c": [
+          "soft",
+          "softly"
+        ],
+        "a": 0,
+        "why": "feel 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "She looks ____ her mom.",
+        "c": [
+          "like",
+          "as"
+        ],
+        "a": 0,
+        "why": "명사가 오면 look like를 씁니다."
+      },
+      {
+        "p": "The music sounds ____.",
+        "c": [
+          "loud",
+          "loudly"
+        ],
+        "a": 0,
+        "why": "sound 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "p": "This medicine tastes ____.",
+        "c": [
+          "bitterly",
+          "bitter"
+        ],
+        "a": 1,
+        "why": "taste 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "p": "The puppy looks ____.",
+        "c": [
+          "cute",
+          "cutely"
+        ],
+        "a": 0,
+        "why": "look 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "p": "Your idea sounds ____.",
+        "c": [
+          "perfectly",
+          "perfect"
+        ],
+        "a": 1,
+        "why": "sound 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "p": "The cloud looks ____ a rabbit.",
+        "c": [
+          "like",
+          "as"
+        ],
+        "a": 0,
+        "why": "뒤에 명사가 오면 look like를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "You look happily.",
+        "r": "You look happy.",
+        "why": "look 뒤에는 형용사를 씁니다."
+      },
+      {
+        "w": "He looks a movie star.",
+        "r": "He looks like a movie star.",
+        "why": "명사가 오면 look like를 씁니다."
+      },
+      {
+        "w": "The soup smells well.",
+        "r": "The soup smells good.",
+        "why": "smell 뒤에는 형용사를 씁니다."
+      },
+      {
+        "w": "The flowers smell sweetly.",
+        "r": "The flowers smell sweet.",
+        "why": "smell 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "w": "Your voice sounds beautifully.",
+        "r": "Your voice sounds beautiful.",
+        "why": "sound 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "w": "That man looks a teacher.",
+        "r": "That man looks like a teacher.",
+        "why": "명사가 오면 look like를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "친구의 표정을 보고 말해요.",
+        "frame": "You look ____."
+      },
+      {
+        "task": "음식의 맛과 냄새를 설명해요.",
+        "frame": "It tastes/smells ____."
+      },
+      {
+        "task": "친구의 제안에 반응해요.",
+        "frame": "That sounds ____!"
+      },
+      {
+        "task": "누구를 닮았는지 말해요.",
+        "frame": "I look like my ____."
+      },
+      {
+        "task": "음악을 듣고 느낌을 말해요.",
+        "frame": "The song sounds ____."
+      },
+      {
+        "task": "물건을 만져보고 느낌을 말해요.",
+        "frame": "This ____ feels ____."
+      }
+    ],
+    "mission": {
+      "title": "오감 체험 상자",
+      "scene": "상자 속 물건을 만지고 느낌을 형용사로 말하는 게임이에요.",
+      "steps": [
+        "눈을 감고 상자 속 물건을 만진다.",
+        "It feels ____. 로 느낌을 설명한다.",
+        "짝이 무엇인지 맞힌다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "너 오늘 피곤해 보여.",
+        "cond": "look을 써요.",
+        "model": "You look tired today."
+      },
+      {
+        "ko": "이 수프 정말 맛있다.",
+        "cond": "taste를 써요.",
+        "model": "This soup tastes great."
+      },
+      {
+        "ko": "그녀는 엄마를 닮았다.",
+        "cond": "look like를 써요.",
+        "model": "She looks like her mom."
+      },
+      {
+        "ko": "그 쿠키들은 맛있는 냄새가 난다.",
+        "cond": "smell을 써요.",
+        "model": "The cookies smell delicious."
+      },
+      {
+        "ko": "이 우유는 신맛이 난다.",
+        "cond": "taste를 써요.",
+        "model": "This milk tastes sour."
+      },
+      {
+        "ko": "그는 천사처럼 보인다.",
+        "cond": "look like를 써요.",
+        "model": "He looks like an angel."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The cake **smells sweet**.",
+        "ko": "그 케이크는 달콤한 냄새가 난다."
+      },
+      {
+        "en": "He **looks angry**.",
+        "ko": "그는 화가 나 보인다."
+      },
+      {
+        "en": "The story **sounds strange**.",
+        "ko": "그 이야기는 이상하게 들린다."
+      },
+      {
+        "en": "It **feels cold**.",
+        "ko": "그것은 차갑게 느껴진다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "look, sound, smell 등의 감각동사 뒤에는 어떤 품사가 오나요? 명사가 올 때는 어떻게 써야 하나요?",
+        "a": "감각동사 뒤에는 형용사가 오고, 명사가 올 때는 '감각동사 + like + 명사' 형태로 씁니다."
+      },
+      "choose": [
+        {
+          "p": "The fresh bread smells ____.",
+          "c": [
+            "wonderfully",
+            "wonderful"
+          ],
+          "a": 1,
+          "why": "smell 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "She looks ____ today.",
+          "c": [
+            "sad",
+            "sadly"
+          ],
+          "a": 0,
+          "why": "look 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "This sofa feels ____.",
+          "c": [
+            "comfortable",
+            "comfortably"
+          ],
+          "a": 0,
+          "why": "feel 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "The new song sounds ____.",
+          "c": [
+            "amazingly",
+            "amazing"
+          ],
+          "a": 1,
+          "why": "sound 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "The lemon tastes ____.",
+          "c": [
+            "sour",
+            "sourly"
+          ],
+          "a": 0,
+          "why": "taste 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "He looks ____ a famous singer.",
+          "c": [
+            "like",
+            "to"
+          ],
+          "a": 0,
+          "why": "명사가 오면 look like를 씁니다."
+        },
+        {
+          "p": "The plan sounds ____ to me.",
+          "c": [
+            "greatly",
+            "great"
+          ],
+          "a": 1,
+          "why": "sound 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "This fabric feels ____.",
+          "c": [
+            "smooth",
+            "smoothly"
+          ],
+          "a": 0,
+          "why": "feel 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "The building looks ____ a castle.",
+          "c": [
+            "of",
+            "like"
+          ],
+          "a": 1,
+          "why": "명사가 오면 look like를 씁니다."
+        },
+        {
+          "p": "The soup smells ____.",
+          "c": [
+            "bad",
+            "badly"
+          ],
+          "a": 0,
+          "why": "smell 뒤에는 형용사를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The pizza **tastes salty**.",
+          "ko": "그 피자는 짠맛이 난다."
+        },
+        {
+          "en": "You **look like** a doctor.",
+          "ko": "너는 의사처럼 보인다."
+        },
+        {
+          "en": "The music **sounds peaceful**.",
+          "ko": "그 음악은 평화롭게 들린다."
+        },
+        {
+          "en": "The towel **feels wet**.",
+          "ko": "그 수건은 축축하게 느껴진다."
+        },
+        {
+          "en": "They **look excited**.",
+          "ko": "그들은 신나 보인다."
+        },
+        {
+          "en": "The coffee **smells strong**.",
+          "ko": "그 커피는 진한 냄새가 난다."
+        },
+        {
+          "en": "It **tastes spicy**.",
+          "ko": "그것은 매운맛이 난다."
+        },
+        {
+          "en": "The toy **sounds noisy**.",
+          "ko": "그 장난감은 시끄럽게 들린다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The boy looks sadly.",
+          "r": "The boy looks sad.",
+          "why": "look 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "This apple tastes sourly.",
+          "r": "This apple tastes sour.",
+          "why": "taste 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "The bed feels hardly.",
+          "r": "The bed feels hard.",
+          "why": "feel 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "She looks a princess.",
+          "r": "She looks like a princess.",
+          "why": "명사가 오면 look like를 씁니다."
+        },
+        {
+          "w": "The idea sounds badly.",
+          "r": "The idea sounds bad.",
+          "why": "sound 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "The cheese smells terribly.",
+          "r": "The cheese smells terrible.",
+          "why": "smell 뒤에는 부사가 아닌 형용사를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "새로운 아이디어를 듣고 평가해요.",
+          "frame": "That sounds ____."
+        },
+        {
+          "task": "음식을 먹어보고 맛을 표현해요.",
+          "frame": "This food tastes ____."
+        },
+        {
+          "task": "구름의 모양이 무엇과 닮았는지 말해요.",
+          "frame": "It looks like a ____."
+        },
+        {
+          "task": "옷감의 촉감을 설명해요.",
+          "frame": "The shirt feels ____."
+        },
+        {
+          "task": "꽃의 향기를 맡고 말해요.",
+          "frame": "These flowers smell ____."
+        },
+        {
+          "task": "친구의 기분을 추측해서 말해요.",
+          "frame": "You look ____ today."
+        }
+      ],
+      "mission": {
+        "title": "오감 탐정 놀이",
+        "scene": "눈을 감고 물건을 만지거나 냄새를 맡으며 무엇인지 맞혀봅시다.",
+        "steps": [
+          "한 친구가 눈을 감으면, 다른 친구가 물건을 건네줍니다.",
+          "눈을 감은 친구는 물건을 만지거나 냄새를 맡고 느낌을 말합니다. (예: It feels soft. / It smells sweet.)",
+          "느낌을 바탕으로 물건이 무엇인지 영어로 추측합니다. (예: I think it is an eraser.)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 빵은 훌륭한 냄새가 난다.",
+          "cond": "smell을 써요.",
+          "model": "The bread smells wonderful."
+        },
+        {
+          "ko": "이 주스는 단맛이 난다.",
+          "cond": "taste를 써요.",
+          "model": "This juice tastes sweet."
+        },
+        {
+          "ko": "그녀의 목소리는 슬프게 들린다.",
+          "cond": "sound를 써요.",
+          "model": "Her voice sounds sad."
+        },
+        {
+          "ko": "이 의자는 편안하게 느껴진다.",
+          "cond": "feel을 써요.",
+          "model": "This chair feels comfortable."
+        },
+        {
+          "ko": "그 소년은 피곤해 보인다.",
+          "cond": "look을 써요.",
+          "model": "The boy looks tired."
+        },
+        {
+          "ko": "저 구름은 곰처럼 보인다.",
+          "cond": "look like를 써요.",
+          "model": "That cloud looks like a bear."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-object-complement",
+    "discover": {
+      "q": "makes me happy, wants me to clean, call our dog Coco를 비교해 보세요. 목적어 뒤에 형용사·to부정사·명사가 각각 올 때 동사가 어떻게 다른가요?",
+      "a": "make, keep, find는 목적어 뒤에 형용사, want, ask, tell, allow는 to부정사, call, name은 명사가 온다."
+    },
+    "choose": [
+      {
+        "p": "This song makes me ____.",
+        "c": [
+          "happy",
+          "happily"
+        ],
+        "a": 0,
+        "why": "make + 목적어 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "My mom wants me ____ my room.",
+        "c": [
+          "to clean",
+          "clean"
+        ],
+        "a": 0,
+        "why": "want + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "We call our dog ____.",
+        "c": [
+          "Coco",
+          "to Coco"
+        ],
+        "a": 0,
+        "why": "call + 목적어 뒤에는 명사를 씁니다."
+      },
+      {
+        "p": "Please keep the door ____.",
+        "c": [
+          "open",
+          "openly"
+        ],
+        "a": 0,
+        "why": "keep + 목적어 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "The teacher told us ____ quiet.",
+        "c": [
+          "to be",
+          "be"
+        ],
+        "a": 0,
+        "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "My dad asked me ____ the car.",
+        "c": [
+          "wash",
+          "to wash"
+        ],
+        "a": 1,
+        "why": "ask + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "The thick coat kept me ____ in winter.",
+        "c": [
+          "warm",
+          "warmly"
+        ],
+        "a": 0,
+        "why": "keep + 목적어 뒤에는 부사가 아닌 형용사를 씁니다."
+      },
+      {
+        "p": "I found the math test very ____.",
+        "c": [
+          "difficult",
+          "difficultly"
+        ],
+        "a": 0,
+        "why": "find + 목적어 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "Our teacher allows us ____ smartphones after class.",
+        "c": [
+          "use",
+          "to use"
+        ],
+        "a": 1,
+        "why": "allow + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "They named their new baby ____.",
+        "c": [
+          "to Lily",
+          "Lily"
+        ],
+        "a": 1,
+        "why": "name + 목적어 뒤에는 명사를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She wants me clean my room.",
+        "r": "She wants me to clean my room.",
+        "why": "want + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "w": "The movie made me sadly.",
+        "r": "The movie made me sad.",
+        "why": "목적어 뒤에는 형용사를 씁니다."
+      },
+      {
+        "w": "The teacher told us be quiet.",
+        "r": "The teacher told us to be quiet.",
+        "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "w": "My parents don't allow me play computer games.",
+        "r": "My parents don't allow me to play computer games.",
+        "why": "allow + 목적어 뒤에는 to부정사를 써야 합니다."
+      },
+      {
+        "w": "I found the box heavily.",
+        "r": "I found the box heavy.",
+        "why": "find + 목적어 뒤에는 부사가 아닌 형용사를 써야 합니다."
+      },
+      {
+        "w": "We named the street to Pine Road.",
+        "r": "We named the street Pine Road.",
+        "why": "name + 목적어 뒤에는 전치사 없이 바로 명사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "나를 기분 좋게 하는 것을 말해요.",
+        "frame": "____ makes me happy."
+      },
+      {
+        "task": "가족이 나에게 바라는 일을 말해요.",
+        "frame": "My mom wants me to ____."
+      },
+      {
+        "task": "애완동물이나 별명을 말해요.",
+        "frame": "We call our ____ ____."
+      },
+      {
+        "task": "선생님이 하신 말씀을 전달해요.",
+        "frame": "The teacher told us to ____."
+      },
+      {
+        "task": "친구에게 부탁하고 싶은 일을 말해요.",
+        "frame": "I want you to ____."
+      },
+      {
+        "task": "방을 어떤 상태로 유지할지 말해요.",
+        "frame": "I keep my room ____."
+      }
+    ],
+    "mission": {
+      "title": "나를 행복하게 하는 것 인터뷰",
+      "scene": "친구에게 무엇이 기분을 좋게 하는지 묻고 정리해요.",
+      "steps": [
+        "What makes you happy? 로 묻는다.",
+        "____ makes him/her happy. 로 정리한다.",
+        "부모님이나 선생님이 바라는 일도 wants me to ____. 로 말해 본다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이 노래는 나를 행복하게 한다.",
+        "cond": "makes me를 써요.",
+        "model": "This song makes me happy."
+      },
+      {
+        "ko": "엄마는 내가 방을 청소하기를 원하신다.",
+        "cond": "wants me to를 써요.",
+        "model": "My mom wants me to clean my room."
+      },
+      {
+        "ko": "우리는 우리 개를 코코라고 부른다.",
+        "cond": "call을 써요.",
+        "model": "We call our dog Coco."
+      },
+      {
+        "ko": "아빠는 나에게 세차를 하라고 부탁하셨다.",
+        "cond": "asked를 써요.",
+        "model": "My dad asked me to wash the car."
+      },
+      {
+        "ko": "우리는 그 고양이를 나비라고 부른다.",
+        "cond": "call을 써요.",
+        "model": "We call the cat Nabi."
+      },
+      {
+        "ko": "두꺼운 코트가 나를 따뜻하게 유지해 주었다.",
+        "cond": "kept를 써요.",
+        "model": "The thick coat kept me warm."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The news **made us** sad.",
+        "ko": "그 소식은 우리를 슬프게 했다."
+      },
+      {
+        "en": "He **told me to** wait here.",
+        "ko": "그는 나에게 여기서 기다리라고 말했다."
+      },
+      {
+        "en": "We must **keep** the park clean.",
+        "ko": "우리는 공원을 깨끗하게 유지해야 한다."
+      },
+      {
+        "en": "I **asked him to** help me.",
+        "ko": "나는 그에게 나를 도와달라고 부탁했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문의 굵은 글씨를 보고, 동사 make와 want 뒤에 오는 목적격 보어의 형태가 어떻게 다른지 찾아보세요.",
+        "a": "make 뒤에는 형용사가 오고, want 뒤에는 to부정사가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "The bad weather made us ____.",
+          "c": [
+            "tired",
+            "tiredly"
+          ],
+          "a": 0,
+          "why": "make + 목적어 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "I want my brother ____ me his bike.",
+          "c": [
+            "lend",
+            "to lend",
+            "lending"
+          ],
+          "a": 1,
+          "why": "want + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "People call the tall boy ____.",
+          "c": [
+            "a giant",
+            "to a giant"
+          ],
+          "a": 0,
+          "why": "call + 목적어 뒤에는 명사를 씁니다."
+        },
+        {
+          "p": "You should keep your hands ____.",
+          "c": [
+            "clean",
+            "cleanly"
+          ],
+          "a": 0,
+          "why": "keep + 목적어 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "The doctor told him ____ more water.",
+          "c": [
+            "drink",
+            "to drink"
+          ],
+          "a": 1,
+          "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "I found the science puzzle very ____.",
+          "c": [
+            "interesting",
+            "interestingly"
+          ],
+          "a": 0,
+          "why": "find + 목적어 뒤에는 형용사를 씁니다."
+        },
+        {
+          "p": "The museum does not allow visitors ____ pictures.",
+          "c": [
+            "take",
+            "to take"
+          ],
+          "a": 1,
+          "why": "allow + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "She named her new plant ____.",
+          "c": [
+            "Greeny",
+            "to Greeny"
+          ],
+          "a": 0,
+          "why": "name + 목적어 뒤에는 명사를 씁니다."
+        },
+        {
+          "p": "The tourist asked me ____ him the way.",
+          "c": [
+            "show",
+            "to show"
+          ],
+          "a": 1,
+          "why": "ask + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "Drinking milk makes my bones ____.",
+          "c": [
+            "strong",
+            "strongly"
+          ],
+          "a": 0,
+          "why": "make + 목적어 뒤에는 형용사를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The funny story **made everyone** happy.",
+          "ko": "그 재미있는 이야기는 모두를 행복하게 했다."
+        },
+        {
+          "en": "She **wants us to** join the club.",
+          "ko": "그녀는 우리가 동아리에 가입하기를 원한다."
+        },
+        {
+          "en": "My friends **call me** a genius.",
+          "ko": "내 친구들은 나를 천재라고 부른다."
+        },
+        {
+          "en": "Please **keep** your teeth clean.",
+          "ko": "치아를 깨끗하게 유지하세요."
+        },
+        {
+          "en": "Mom **told me to** go to bed.",
+          "ko": "엄마는 나에게 자러 가라고 말씀하셨다."
+        },
+        {
+          "en": "He **found** the game boring.",
+          "ko": "그는 그 게임이 지루하다고 생각했다."
+        },
+        {
+          "en": "They **allowed me to** enter the room.",
+          "ko": "그들은 내가 방에 들어가는 것을 허락했다."
+        },
+        {
+          "en": "I **asked her to** bring some water.",
+          "ko": "나는 그녀에게 물을 좀 가져다 달라고 부탁했다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The scary movie made me nervously.",
+          "r": "The scary movie made me nervous.",
+          "why": "make + 목적어 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "I want you help me with my homework.",
+          "r": "I want you to help me with my homework.",
+          "why": "want + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "w": "Keep the fresh milk coldly.",
+          "r": "Keep the fresh milk cold.",
+          "why": "keep + 목적어 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "The police officer told the man stop.",
+          "r": "The police officer told the man to stop.",
+          "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "w": "I found the soup saltily.",
+          "r": "I found the soup salty.",
+          "why": "find + 목적어 뒤에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "w": "She asked her friend open the window.",
+          "r": "She asked her friend to open the window.",
+          "why": "ask + 목적어 뒤에는 to부정사를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내가 좋아하는 음식이 나를 어떻게 만드는지 말해요.",
+          "frame": "Eating pizza makes me ____."
+        },
+        {
+          "task": "부모님이 나에게 허락하신 일을 말해요.",
+          "frame": "My parents allow me to ____."
+        },
+        {
+          "task": "친구들이 나를 부르는 별명을 말해요.",
+          "frame": "My friends call me ____."
+        },
+        {
+          "task": "건강을 위해 유지해야 하는 습관을 말해요.",
+          "frame": "I keep my body ____."
+        },
+        {
+          "task": "의사 선생님이 나에게 하신 조언을 전달해요.",
+          "frame": "The doctor told me to ____."
+        },
+        {
+          "task": "친구에게 같이 하자고 부탁해요.",
+          "frame": "I want you to ____ with me."
+        }
+      ],
+      "mission": {
+        "title": "5형식 문장 만들기 게임",
+        "scene": "친구들과 함께 5형식 문장을 완성하며 서로의 생각을 알아보는 활동입니다.",
+        "steps": [
+          "종이에 '____ makes me ____.'와 'I want you to ____.'를 적습니다.",
+          "짝과 종이를 교환하여 빈칸을 채워 문장을 완성합니다.",
+          "완성된 문장을 소리 내어 읽고, 문법에 맞는지 서로 확인해 줍니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 나쁜 날씨는 우리를 피곤하게 만들었다.",
+          "cond": "made를 써요.",
+          "model": "The bad weather made us tired."
+        },
+        {
+          "ko": "나는 내 동생이 나에게 그의 자전거를 빌려주기를 원한다.",
+          "cond": "want를 써요.",
+          "model": "I want my brother to lend me his bike."
+        },
+        {
+          "ko": "사람들은 그 키 큰 소년을 거인이라고 부른다.",
+          "cond": "call을 써요.",
+          "model": "People call the tall boy a giant."
+        },
+        {
+          "ko": "너는 너의 손을 깨끗하게 유지해야 한다.",
+          "cond": "keep을 써요.",
+          "model": "You should keep your hands clean."
+        },
+        {
+          "ko": "의사 선생님은 그에게 물을 더 많이 마시라고 말씀하셨다.",
+          "cond": "told를 써요.",
+          "model": "The doctor told him to drink more water."
+        },
+        {
+          "ko": "그 박물관은 방문객들이 사진 찍는 것을 허락하지 않는다.",
+          "cond": "allow를 써요.",
+          "model": "The museum does not allow visitors to take pictures."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-causative",
+    "discover": {
+      "q": "made me clean, had him fix, let us go, helped me carry를 보세요. 목적어 뒤의 동사는 어떤 모양인가요? get은 어떻게 다른가요?",
+      "a": "make, let, have + 목적어 뒤에는 동사원형이 온다. help는 동사원형이나 to부정사 모두 쓰고, get은 to부정사를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "My mom made me ____ my room.",
+        "c": [
+          "clean",
+          "to clean"
+        ],
+        "a": 0,
+        "why": "make + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Let me ____ myself.",
+        "c": [
+          "introduce",
+          "to introduce"
+        ],
+        "a": 0,
+        "why": "let + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "I had him ____ my bike.",
+        "c": [
+          "fix",
+          "to fix"
+        ],
+        "a": 0,
+        "why": "have + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "He helped me ____ the boxes.",
+        "c": [
+          "carry",
+          "carried"
+        ],
+        "a": 0,
+        "why": "help + 목적어 뒤에는 동사원형(또는 to부정사)을 씁니다."
+      },
+      {
+        "p": "I got him ____ my bike.",
+        "c": [
+          "to fix",
+          "fix"
+        ],
+        "a": 0,
+        "why": "get + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "The sad movie made her ____.",
+        "c": [
+          "cry",
+          "to cry"
+        ],
+        "a": 0,
+        "why": "make + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "The teacher had the students ____ the poem.",
+        "c": [
+          "to memorize",
+          "memorize"
+        ],
+        "a": 1,
+        "why": "have + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "My dad didn't let me ____ TV late at night.",
+        "c": [
+          "watch",
+          "to watch",
+          "watching"
+        ],
+        "a": 0,
+        "why": "let + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "I got my brother ____ the dishes.",
+        "c": [
+          "wash",
+          "to wash"
+        ],
+        "a": 1,
+        "why": "get + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "She helped the old man ____ his bag.",
+        "c": [
+          "carrying",
+          "carry"
+        ],
+        "a": 1,
+        "why": "help + 목적어 뒤에는 동사원형이나 to부정사를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She made me to wait.",
+        "r": "She made me wait.",
+        "why": "make + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "The teacher let us to go home early.",
+        "r": "The teacher let us go home early.",
+        "why": "let + 목적어 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "I got him fix my bike.",
+        "r": "I got him to fix my bike.",
+        "why": "get + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "w": "The joke made everyone to smile.",
+        "r": "The joke made everyone smile.",
+        "why": "make + 목적어 뒤에는 동사원형을 써야 합니다."
+      },
+      {
+        "w": "I had my sister to bring some water.",
+        "r": "I had my sister bring some water.",
+        "why": "have + 목적어 뒤에는 동사원형을 써야 합니다."
+      },
+      {
+        "w": "He helped me finding my keys.",
+        "r": "He helped me find my keys.",
+        "why": "help + 목적어 뒤에는 동사원형 또는 to부정사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "누군가 나에게 시킨 일을 말해요.",
+        "frame": "My ____ made me ____."
+      },
+      {
+        "task": "허락을 구해요.",
+        "frame": "Let me ____, please."
+      },
+      {
+        "task": "누군가에게 부탁한 일을 말해요.",
+        "frame": "I had/got him/her ____."
+      },
+      {
+        "task": "도움을 준 일을 말해요.",
+        "frame": "I helped my ____ ____."
+      },
+      {
+        "task": "친구가 나를 어떻게 만들었는지 말해요.",
+        "frame": "My friend made me ____."
+      },
+      {
+        "task": "부모님이 허락해주신 일을 말해요.",
+        "frame": "My parents let me ____."
+      }
+    ],
+    "mission": {
+      "title": "누가 시켰을까? 퀴즈",
+      "scene": "행동 카드와 사람 카드를 뽑아 사역동사 문장을 만드는 게임이에요.",
+      "steps": [
+        "사람 카드(mom, teacher)와 행동 카드(clean, wait)를 뽑는다.",
+        "My mom made me ____. 처럼 문장을 만든다.",
+        "let, have, help도 한 번씩 써 본다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "엄마가 나에게 방을 청소하게 하셨다.",
+        "cond": "made me를 써요.",
+        "model": "My mom made me clean my room."
+      },
+      {
+        "ko": "제 소개를 할게요.",
+        "cond": "Let me를 써요.",
+        "model": "Let me introduce myself."
+      },
+      {
+        "ko": "선생님이 우리를 일찍 집에 가게 해 주셨다.",
+        "cond": "let us를 써요.",
+        "model": "The teacher let us go home early."
+      },
+      {
+        "ko": "그 슬픈 영화는 그녀를 울게 만들었다.",
+        "cond": "made her를 써요.",
+        "model": "The sad movie made her cry."
+      },
+      {
+        "ko": "아빠는 내가 그의 컴퓨터를 쓰게 허락하셨다.",
+        "cond": "let me를 써요.",
+        "model": "Dad let me use his computer."
+      },
+      {
+        "ko": "나는 내 남동생에게 창문을 닦게 했다.",
+        "cond": "got my brother를 써요.",
+        "model": "I got my brother to wash the window."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **made** us **laugh** out loud.",
+        "ko": "그는 우리가 큰 소리로 웃게 만들었다."
+      },
+      {
+        "en": "Please **let** me **use** your phone.",
+        "ko": "제발 제가 당신의 휴대전화를 쓰게 해주세요."
+      },
+      {
+        "en": "I **had** the mechanic **check** my car.",
+        "ko": "나는 정비사에게 내 차를 점검하게 했다."
+      },
+      {
+        "en": "She **got** him **to read** the book.",
+        "ko": "그녀는 그가 그 책을 읽게 했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 make, let, have 뒤에 '목적어'가 온 후, 그 다음 단어들은 어떤 형태로 쓰였나요?",
+        "a": "모두 동사원형으로 쓰였습니다."
+      },
+      "choose": [
+        {
+          "p": "The coach made the players ____ ten times.",
+          "c": [
+            "run",
+            "to run",
+            "running"
+          ],
+          "a": 0,
+          "why": "make + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Will you let me ____ your bike?",
+          "c": [
+            "to ride",
+            "ride"
+          ],
+          "a": 1,
+          "why": "let + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "The boss had his secretary ____ the email.",
+          "c": [
+            "send",
+            "sending"
+          ],
+          "a": 0,
+          "why": "have + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "We got the teacher ____ the test.",
+          "c": [
+            "delay",
+            "to delay"
+          ],
+          "a": 1,
+          "why": "get + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "Can you help me ____ this math problem?",
+          "c": [
+            "solve",
+            "solving"
+          ],
+          "a": 0,
+          "why": "help + 목적어 뒤에는 동사원형이나 to부정사를 씁니다."
+        },
+        {
+          "p": "Hot weather makes people ____ tired.",
+          "c": [
+            "to feel",
+            "feel"
+          ],
+          "a": 1,
+          "why": "make + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Don't let the dog ____ the house.",
+          "c": [
+            "enter",
+            "to enter"
+          ],
+          "a": 0,
+          "why": "let + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "She had her son ____ his hands before dinner.",
+          "c": [
+            "to wash",
+            "wash"
+          ],
+          "a": 1,
+          "why": "have + 목적어 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "I will get my friend ____ me with the project.",
+          "c": [
+            "help",
+            "to help"
+          ],
+          "a": 1,
+          "why": "get + 목적어 뒤에는 to부정사를 씁니다."
+        },
+        {
+          "p": "Music helps us ____.",
+          "c": [
+            "relaxing",
+            "relax"
+          ],
+          "a": 1,
+          "why": "help + 목적어 뒤에는 동사원형이나 to부정사를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The news **made** them **feel** happy.",
+          "ko": "그 소식은 그들을 행복하게 만들었다."
+        },
+        {
+          "en": "**Let** him **choose** the menu.",
+          "ko": "그가 메뉴를 고르게 해줘."
+        },
+        {
+          "en": "We **had** the waiter **bring** more water.",
+          "ko": "우리는 웨이터에게 물을 더 가져오게 했다."
+        },
+        {
+          "en": "I **got** my dad **to buy** a pizza.",
+          "ko": "나는 아빠가 피자를 사주시게 했다."
+        },
+        {
+          "en": "She **helped** us **finish** the homework.",
+          "ko": "그녀는 우리가 숙제를 끝내는 것을 도왔다."
+        },
+        {
+          "en": "His words **made** me **think** again.",
+          "ko": "그의 말은 내가 다시 생각하게 만들었다."
+        },
+        {
+          "en": "My mom **lets** me **play** games on weekends.",
+          "ko": "우리 엄마는 주말에 내가 게임을 하게 허락하신다."
+        },
+        {
+          "en": "He **got** the dog **to sit** down.",
+          "ko": "그는 개가 앉게 했다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The scary story made me to scream.",
+          "r": "The scary story made me scream.",
+          "why": "make + 목적어 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "Please let me to ask a question.",
+          "r": "Please let me ask a question.",
+          "why": "let + 목적어 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "I had the dentist to pull out my tooth.",
+          "r": "I had the dentist pull out my tooth.",
+          "why": "have + 목적어 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "She got her brother clean the living room.",
+          "r": "She got her brother to clean the living room.",
+          "why": "get + 목적어 뒤에는 to부정사를 써야 합니다."
+        },
+        {
+          "w": "My brother helped me doing the dishes.",
+          "r": "My brother helped me do the dishes.",
+          "why": "help + 목적어 뒤에는 동사원형이나 to부정사를 써야 합니다."
+        },
+        {
+          "w": "The heavy rain made us to stay inside.",
+          "r": "The heavy rain made us stay inside.",
+          "why": "make + 목적어 뒤에는 동사원형을 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "선생님이 우리에게 시키신 일을 말해요.",
+          "frame": "Our teacher had us ____."
+        },
+        {
+          "task": "친구가 나를 설득해서 하게 한 일을 말해요.",
+          "frame": "My friend got me to ____."
+        },
+        {
+          "task": "내가 누군가를 도와준 경험을 말해요.",
+          "frame": "I helped ____ ____."
+        },
+        {
+          "task": "나를 기분 좋게 만드는 것을 말해요.",
+          "frame": "____ makes me feel good."
+        },
+        {
+          "task": "부모님이 허락하지 않으시는 일을 말해요.",
+          "frame": "My parents don't let me ____."
+        },
+        {
+          "task": "동생에게 부탁해서 하게 한 일을 말해요.",
+          "frame": "I had my brother/sister ____."
+        }
+      ],
+      "mission": {
+        "title": "사역동사 인터뷰",
+        "scene": "친구들이 최근에 겪은 일들을 사역동사를 사용해 묻고 답해봅시다.",
+        "steps": [
+          "짝에게 최근 부모님이 시킨 일을 물어보세요. (What did your parents make you do?)",
+          "짝은 사역동사 make나 have를 써서 대답합니다. (My mom made me...)",
+          "역할을 바꿔서 부모님이 허락해주신 일을 묻고 let을 써서 대답해보세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "코치는 선수들이 운동장을 뛰게 만들었다.",
+          "cond": "made the players를 써요.",
+          "model": "The coach made the players run."
+        },
+        {
+          "ko": "내가 너의 가방을 드는 것을 도와줄게.",
+          "cond": "help you를 써요.",
+          "model": "I will help you carry your bag."
+        },
+        {
+          "ko": "그녀는 남동생이 방을 청소하게 했다.",
+          "cond": "got her brother를 써요.",
+          "model": "She got her brother to clean the room."
+        },
+        {
+          "ko": "사장님은 그에게 보고서를 다시 쓰게 했다.",
+          "cond": "had him을 써요.",
+          "model": "The boss had him rewrite the report."
+        },
+        {
+          "ko": "개가 소파에서 자게 내버려 두지 마.",
+          "cond": "let the dog를 써요.",
+          "model": "Don't let the dog sleep on the sofa."
+        },
+        {
+          "ko": "그 음악은 나를 미소 짓게 만들었다.",
+          "cond": "made me를 써요.",
+          "model": "The music made me smile."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-perception",
+    "discover": {
+      "q": "saw him cross, heard someone singing을 보세요. 지각동사 뒤의 동사는 어떤 모양인가요? -ing를 쓰면 어떤 느낌이 더해지나요?",
+      "a": "지각동사(see, hear, watch, feel) + 목적어 뒤에는 동사원형이나 -ing가 온다. -ing를 쓰면 하고 있는 중임을 강조한다."
+    },
+    "choose": [
+      {
+        "p": "I saw him ____ the street.",
+        "c": [
+          "cross",
+          "to cross"
+        ],
+        "a": 0,
+        "why": "지각동사 뒤에는 to 없이 동사원형을 씁니다."
+      },
+      {
+        "p": "We heard someone ____.",
+        "c": [
+          "singing",
+          "to sing"
+        ],
+        "a": 0,
+        "why": "하고 있는 중임을 나타내는 -ing를 쓸 수 있습니다."
+      },
+      {
+        "p": "She watched the kids ____ outside.",
+        "c": [
+          "play",
+          "to play"
+        ],
+        "a": 0,
+        "why": "지각동사 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "I felt the ground ____.",
+        "c": [
+          "shake",
+          "to shake"
+        ],
+        "a": 0,
+        "why": "지각동사 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Did you hear the phone ____?",
+        "c": [
+          "ring",
+          "to ring"
+        ],
+        "a": 0,
+        "why": "지각동사 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "I watched the dog ____ in the park.",
+        "c": [
+          "run",
+          "to run",
+          "ran"
+        ],
+        "a": 0,
+        "why": "지각동사(watch)의 목적격 보어로는 to가 없는 동사원형이나 -ing를 씁니다."
+      },
+      {
+        "p": "She heard her brother ____ loudly.",
+        "c": [
+          "to cry",
+          "cry",
+          "cried"
+        ],
+        "a": 1,
+        "why": "지각동사(hear) 뒤에는 동사원형을 목적격 보어로 사용합니다."
+      },
+      {
+        "p": "We saw a bird ____ in the sky.",
+        "c": [
+          "to fly",
+          "flew",
+          "flying"
+        ],
+        "a": 2,
+        "why": "진행 중인 동작을 강조할 때 지각동사 뒤에 현재분사(-ing)를 쓸 수 있습니다."
+      },
+      {
+        "p": "He felt something ____ his arm.",
+        "c": [
+          "touch",
+          "to touch",
+          "touches"
+        ],
+        "a": 0,
+        "why": "지각동사(feel) 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Did you see the man ____ the building?",
+        "c": [
+          "entered",
+          "to enter",
+          "enter"
+        ],
+        "a": 2,
+        "why": "지각동사(see) 뒤에는 to 없이 동사원형을 써야 합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I saw him to dance.",
+        "r": "I saw him dance.",
+        "why": "지각동사 뒤에는 to 없이 동사원형을 씁니다."
+      },
+      {
+        "w": "We heard someone to sing.",
+        "r": "We heard someone sing.",
+        "why": "지각동사 뒤에는 to를 쓰지 않습니다."
+      },
+      {
+        "w": "She watched the kids played outside.",
+        "r": "She watched the kids play outside.",
+        "why": "지각동사 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "I heard him to play the piano.",
+        "r": "I heard him play the piano.",
+        "why": "지각동사 뒤에는 to 부정사를 쓸 수 없고 동사원형을 써야 합니다."
+      },
+      {
+        "w": "She watched the cat caught a mouse.",
+        "r": "She watched the cat catch a mouse.",
+        "why": "지각동사 뒤에는 과거형이 아닌 동사원형을 씁니다."
+      },
+      {
+        "w": "We saw the boys to swim in the pool.",
+        "r": "We saw the boys swim in the pool.",
+        "why": "지각동사 뒤에는 to 없이 동사원형이나 -ing를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "오늘 본 장면을 말해요.",
+        "frame": "I saw ____ ____ ."
+      },
+      {
+        "task": "들은 소리를 말해요.",
+        "frame": "I heard ____ ____ing."
+      },
+      {
+        "task": "친구가 하는 일을 지켜봤다고 말해요.",
+        "frame": "I watched my friend ____."
+      },
+      {
+        "task": "느낀 것을 말해요.",
+        "frame": "I felt the ground/wind ____."
+      },
+      {
+        "task": "누군가 하고 있던 행동을 봤다고 말해요.",
+        "frame": "I saw ____ ____ing."
+      },
+      {
+        "task": "몸으로 느낀 것을 말해요.",
+        "frame": "I felt ____ ____."
+      }
+    ],
+    "mission": {
+      "title": "소리 보고서",
+      "scene": "눈을 감고 교실 소리를 듣고 무엇이 들렸는지 보고해요.",
+      "steps": [
+        "눈을 감고 30초 동안 소리를 듣는다.",
+        "I heard ____ ____ing. 로 세 가지를 말한다.",
+        "짝은 I heard it, too. 로 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 그가 길을 건너는 걸 봤다.",
+        "cond": "saw him을 써요.",
+        "model": "I saw him cross the street."
+      },
+      {
+        "ko": "우리는 누군가 노래하고 있는 걸 들었다.",
+        "cond": "heard와 singing을 써요.",
+        "model": "We heard someone singing."
+      },
+      {
+        "ko": "전화벨 울리는 거 들었어?",
+        "cond": "Did you hear로 시작해요.",
+        "model": "Did you hear the phone ring?"
+      },
+      {
+        "ko": "그녀는 아이들이 축구하는 것을 지켜봤다.",
+        "cond": "watched를 사용하세요.",
+        "model": "She watched the kids play soccer."
+      },
+      {
+        "ko": "그는 누군가 문을 두드리는 것을 들었다.",
+        "cond": "heard를 사용하세요.",
+        "model": "He heard someone knock on the door."
+      },
+      {
+        "ko": "나는 고양이가 나무에 오르는 것을 봤다.",
+        "cond": "saw를 사용하세요.",
+        "model": "I saw the cat climb the tree."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I **saw** my sister **cleaning** her room.",
+        "ko": "나는 내 여동생이 방을 청소하고 있는 것을 봤다."
+      },
+      {
+        "en": "He **heard** the dog **bark** outside.",
+        "ko": "그는 밖에서 개가 짖는 것을 들었다."
+      },
+      {
+        "en": "They **watched** the sun **rise**.",
+        "ko": "그들은 해가 뜨는 것을 지켜봤다."
+      },
+      {
+        "en": "She **felt** the wind **blowing**.",
+        "ko": "그녀는 바람이 불고 있는 것을 느꼈다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 지각동사(see, hear 등) 뒤에 오는 목적어 다음에는 어떤 형태의 동사가 쓰였나요?",
+        "a": "동사원형이나 -ing(현재분사) 형태가 쓰였습니다."
+      },
+      "choose": [
+        {
+          "p": "I saw the teacher ____ at me.",
+          "c": [
+            "to smile",
+            "smile",
+            "smiled"
+          ],
+          "a": 1,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "We heard the baby ____ in the bedroom.",
+          "c": [
+            "crying",
+            "to cry",
+            "cries"
+          ],
+          "a": 0,
+          "why": "지각동사 뒤에는 현재분사(-ing)를 써서 진행 중임을 나타낼 수 있습니다."
+        },
+        {
+          "p": "She watched the monkeys ____ bananas.",
+          "c": [
+            "ate",
+            "to eat",
+            "eat"
+          ],
+          "a": 2,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "He felt a spider ____ on his leg.",
+          "c": [
+            "crawl",
+            "to crawl",
+            "crawled"
+          ],
+          "a": 0,
+          "why": "지각동사 뒤에는 to 없이 동사원형을 씁니다."
+        },
+        {
+          "p": "Did you hear the bell ____?",
+          "c": [
+            "rang",
+            "ring",
+            "to ring"
+          ],
+          "a": 1,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "They saw the car ____ suddenly.",
+          "c": [
+            "to stop",
+            "stopped",
+            "stop"
+          ],
+          "a": 2,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "I watched the chef ____ the meal.",
+          "c": [
+            "cooking",
+            "to cook",
+            "cooks"
+          ],
+          "a": 0,
+          "why": "지각동사 뒤에는 -ing를 써서 동작이 진행 중임을 나타낼 수 있습니다."
+        },
+        {
+          "p": "She felt her heart ____ fast.",
+          "c": [
+            "beats",
+            "to beat",
+            "beat"
+          ],
+          "a": 2,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "We heard the rain ____ on the roof.",
+          "c": [
+            "fall",
+            "to fall",
+            "fell"
+          ],
+          "a": 0,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Did he see the thief ____ away?",
+          "c": [
+            "to run",
+            "ran",
+            "run"
+          ],
+          "a": 2,
+          "why": "지각동사 뒤에는 동사원형을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **saw** the boys **playing** basketball.",
+          "ko": "나는 소년들이 농구하고 있는 것을 봤다."
+        },
+        {
+          "en": "She **heard** her mom **call** her name.",
+          "ko": "그녀는 엄마가 자신의 이름을 부르는 것을 들었다."
+        },
+        {
+          "en": "We **watched** the airplane **take** off.",
+          "ko": "우리는 비행기가 이륙하는 것을 지켜봤다."
+        },
+        {
+          "en": "He **felt** the floor **shaking**.",
+          "ko": "그는 바닥이 흔들리고 있는 것을 느꼈다."
+        },
+        {
+          "en": "They **saw** the star **fall**.",
+          "ko": "그들은 별이 떨어지는 것을 봤다."
+        },
+        {
+          "en": "I **heard** the wind **blow**.",
+          "ko": "나는 바람이 부는 것을 들었다."
+        },
+        {
+          "en": "She **watched** the ducks **swimming**.",
+          "ko": "그녀는 오리들이 수영하고 있는 것을 지켜봤다."
+        },
+        {
+          "en": "He **felt** the water **touch** his feet.",
+          "ko": "그는 물이 발에 닿는 것을 느꼈다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I saw the girl to read a book.",
+          "r": "I saw the girl read a book.",
+          "why": "지각동사 뒤에는 to 부정사를 쓰지 않습니다."
+        },
+        {
+          "w": "He heard the alarm rang.",
+          "r": "He heard the alarm ring.",
+          "why": "지각동사 뒤에는 과거형이 아닌 동사원형을 씁니다."
+        },
+        {
+          "w": "We watched the dancers to perform.",
+          "r": "We watched the dancers perform.",
+          "why": "지각동사 뒤에는 to 없이 동사원형을 씁니다."
+        },
+        {
+          "w": "She felt the building shook.",
+          "r": "She felt the building shake.",
+          "why": "지각동사 뒤에는 과거형이 아닌 동사원형을 씁니다."
+        },
+        {
+          "w": "They saw the dog to chase a ball.",
+          "r": "They saw the dog chase a ball.",
+          "why": "지각동사 뒤에는 to 부정사를 쓰지 않습니다."
+        },
+        {
+          "w": "I heard the birds to sing.",
+          "r": "I heard the birds sing.",
+          "why": "지각동사 뒤에는 to 없이 동사원형이나 -ing를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구가 운동하는 것을 봤다고 말해요.",
+          "frame": "I saw my friend ____."
+        },
+        {
+          "task": "동물들이 내는 소리를 들었다고 말해요.",
+          "frame": "I heard the animals ____."
+        },
+        {
+          "task": "TV에서 누군가 요리하는 것을 지켜봤다고 말해요.",
+          "frame": "I watched a chef ____."
+        },
+        {
+          "task": "날씨의 변화를 느꼈다고 말해요.",
+          "frame": "I felt the cold wind ____."
+        },
+        {
+          "task": "가족이 나가는 것을 봤다고 말해요.",
+          "frame": "I saw my dad ____ out."
+        },
+        {
+          "task": "음악 소리를 들었다고 질문해요.",
+          "frame": "Did you hear the music ____?"
+        }
+      ],
+      "mission": {
+        "title": "명탐정의 목격자 진술",
+        "scene": "여러분은 탐정입니다. 사건 현장에서 목격자들의 진술을 듣고 기록해야 합니다.",
+        "steps": [
+          "짝과 함께 탐정과 목격자 역할을 정하세요.",
+          "목격자는 자신이 본 것을 지각동사를 써서 말하세요. (예: I saw a man run away.)",
+          "탐정은 들은 내용을 기록하고 역할을 바꾸어 연습하세요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 내 여동생이 춤추는 것을 봤다.",
+          "cond": "saw를 사용하세요.",
+          "model": "I saw my sister dance."
+        },
+        {
+          "ko": "그는 개가 크게 짖는 것을 들었다.",
+          "cond": "heard를 사용하세요.",
+          "model": "He heard the dog bark loudly."
+        },
+        {
+          "ko": "우리는 기차가 떠나는 것을 지켜봤다.",
+          "cond": "watched를 사용하세요.",
+          "model": "We watched the train leave."
+        },
+        {
+          "ko": "그녀는 누군가 그녀의 어깨를 만지는 것을 느꼈다.",
+          "cond": "felt를 사용하세요.",
+          "model": "She felt someone touch her shoulder."
+        },
+        {
+          "ko": "너는 제인이 노래하는 것을 들었니?",
+          "cond": "hear를 사용하세요.",
+          "model": "Did you hear Jane sing?"
+        },
+        {
+          "ko": "그들은 눈이 내리고 있는 것을 봤다.",
+          "cond": "saw와 falling을 사용하세요.",
+          "model": "They saw the snow falling."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-passive",
+    "discover": {
+      "q": "was built, is spoken, was broken by Tom을 보세요. 수동태는 어떤 형태로 만드나요? by는 무엇을 나타내나요?",
+      "a": "be동사 + 과거분사로 만든다. by는 행동한 사람(행위자)을 나타내며, 중요하지 않으면 생략한다."
+    },
+    "choose": [
+      {
+        "p": "This bridge ____ built in 1990.",
+        "c": [
+          "was",
+          "is"
+        ],
+        "a": 0,
+        "why": "1990년의 일이므로 과거 was입니다."
+      },
+      {
+        "p": "English is ____ in many countries.",
+        "c": [
+          "spoken",
+          "speaking"
+        ],
+        "a": 0,
+        "why": "수동태는 be동사 + 과거분사입니다."
+      },
+      {
+        "p": "The window was broken ____ Tom.",
+        "c": [
+          "by",
+          "from"
+        ],
+        "a": 0,
+        "why": "행위자 앞에는 by를 씁니다."
+      },
+      {
+        "p": "The cookies ____ made by my dad.",
+        "c": [
+          "were",
+          "was"
+        ],
+        "a": 0,
+        "why": "cookies는 복수이므로 were입니다."
+      },
+      {
+        "p": "The letter will be ____ tomorrow.",
+        "c": [
+          "sent",
+          "send"
+        ],
+        "a": 0,
+        "why": "will be 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "p": "These computers ____ used by students every day.",
+        "c": [
+          "are",
+          "is",
+          "was"
+        ],
+        "a": 0,
+        "why": "computers가 복수이고 every day(매일) 일어나는 일이므로 현재형 복수 be동사 are를 씁니다."
+      },
+      {
+        "p": "The picture was ____ by my sister yesterday.",
+        "c": [
+          "drawn",
+          "draw",
+          "drawing"
+        ],
+        "a": 0,
+        "why": "수동태는 be동사 뒤에 과거분사를 써야 하므로 draw의 과거분사인 drawn이 정답입니다."
+      },
+      {
+        "p": "The room ____ be cleaned tomorrow.",
+        "c": [
+          "will",
+          "is",
+          "was"
+        ],
+        "a": 0,
+        "why": "tomorrow(내일) 일어날 일이므로 미래를 나타내는 조동사 will이 필요합니다."
+      },
+      {
+        "p": "The book was written ____ a famous author.",
+        "c": [
+          "by",
+          "to",
+          "with"
+        ],
+        "a": 0,
+        "why": "수동태에서 '~에 의해'라는 행위자를 나타낼 때는 전치사 by를 씁니다."
+      },
+      {
+        "p": "The boxes ____ moved to the classroom last night.",
+        "c": [
+          "were",
+          "was",
+          "are"
+        ],
+        "a": 0,
+        "why": "last night(어젯밤)의 일이고 주어 boxes가 복수이므로 과거형 복수 be동사 were를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The car was wash by him.",
+        "r": "The car was washed by him.",
+        "why": "be동사 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "w": "This song is loving by many people.",
+        "r": "This song is loved by many people.",
+        "why": "수동태는 -ing가 아니라 과거분사입니다."
+      },
+      {
+        "w": "The window was broke by Tom.",
+        "r": "The window was broken by Tom.",
+        "why": "break의 과거분사는 broken입니다."
+      },
+      {
+        "w": "The room is clean by my brother.",
+        "r": "The room is cleaned by my brother.",
+        "why": "수동태는 be동사 뒤에 동사원형이 아닌 과거분사를 써야 합니다."
+      },
+      {
+        "w": "The smart phone was invent in 1992.",
+        "r": "The smart phone was invented in 1992.",
+        "why": "invent의 과거분사는 invented입니다."
+      },
+      {
+        "w": "The walls was painted green.",
+        "r": "The walls were painted green.",
+        "why": "주어 The walls가 복수이므로 was가 아니라 were를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내가 만든 것이 아니라 누가 만든 것인지 말해요.",
+        "frame": "This ____ was made by ____."
+      },
+      {
+        "task": "유명한 장소의 역사를 말해요.",
+        "frame": "The ____ was built in ____."
+      },
+      {
+        "task": "여러 나라에서 쓰이는 것을 말해요.",
+        "frame": "____ is spoken/eaten in ____."
+      },
+      {
+        "task": "내일 이루어질 일을 말해요.",
+        "frame": "The ____ will be ____ed tomorrow."
+      },
+      {
+        "task": "누가 그 책을 썼는지 말해요.",
+        "frame": "The book was written by ____."
+      },
+      {
+        "task": "어떤 물건이 언제 발명되었는지 말해요.",
+        "frame": "The ____ was invented in ____."
+      }
+    ],
+    "mission": {
+      "title": "누가 했을까? 수동태 퀴즈",
+      "scene": "유명한 작품이나 건물의 만든 사람을 수동태로 소개하는 퀴즈예요.",
+      "steps": [
+        "작품 카드를 뽑는다. (예: a painting)",
+        "This ____ was painted/built/written by ____. 로 소개한다.",
+        "짝이 맞는지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이 다리는 1990년에 지어졌다.",
+        "cond": "was built를 써요.",
+        "model": "This bridge was built in 1990."
+      },
+      {
+        "ko": "영어는 많은 나라에서 쓰인다.",
+        "cond": "is spoken을 써요.",
+        "model": "English is spoken in many countries."
+      },
+      {
+        "ko": "창문은 톰에 의해 깨졌다.",
+        "cond": "by를 써요.",
+        "model": "The window was broken by Tom."
+      },
+      {
+        "ko": "이 방은 매일 청소된다.",
+        "cond": "is cleaned를 써요.",
+        "model": "This room is cleaned every day."
+      },
+      {
+        "ko": "내 자전거는 어제 도난당했다.",
+        "cond": "was stolen을 써요.",
+        "model": "My bike was stolen yesterday."
+      },
+      {
+        "ko": "그 컴퓨터는 내일 고쳐질 것이다.",
+        "cond": "will be fixed를 써요.",
+        "model": "The computer will be fixed tomorrow."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The room **is cleaned** every morning.",
+        "ko": "그 방은 매일 아침 청소된다."
+      },
+      {
+        "en": "My bike **was stolen** yesterday.",
+        "ko": "내 자전거는 어제 도난당했다."
+      },
+      {
+        "en": "The work **will be finished** soon.",
+        "ko": "그 일은 곧 끝날 것이다."
+      },
+      {
+        "en": "This picture **was painted** by him.",
+        "ko": "이 그림은 그에 의해 그려졌다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵게 표시된 부분(be동사 + 과거분사)은 문장에서 어떤 의미를 나타내나요?",
+        "a": "주어가 스스로 행동하는 것이 아니라, 다른 사람이나 사물에 의해 동작을 당하거나 받게 됨을 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "This game ____ played all over the world.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "주어 This game이 단수이고 일반적인 사실이므로 is를 씁니다."
+        },
+        {
+          "p": "The wallet ____ found on the street yesterday.",
+          "c": [
+            "was",
+            "is",
+            "were"
+          ],
+          "a": 0,
+          "why": "yesterday(어제) 일어난 일이고 주어 The wallet이 단수이므로 was를 씁니다."
+        },
+        {
+          "p": "The test results will ____ announced next week.",
+          "c": [
+            "be",
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "조동사 will 뒤에는 반드시 동사원형 be를 써야 합니다."
+        },
+        {
+          "p": "Harry Potter was written ____ J.K. Rowling.",
+          "c": [
+            "by",
+            "of",
+            "in"
+          ],
+          "a": 0,
+          "why": "수동태에서 행위자를 나타낼 때는 전치사 by를 사용합니다."
+        },
+        {
+          "p": "The cake was ____ by my sister.",
+          "c": [
+            "eaten",
+            "ate",
+            "eat"
+          ],
+          "a": 0,
+          "why": "be동사 was 뒤에는 과거분사가 와야 하므로 eaten이 맞습니다."
+        },
+        {
+          "p": "Many trees ____ planted in spring.",
+          "c": [
+            "are",
+            "is",
+            "was"
+          ],
+          "a": 0,
+          "why": "주어 Many trees가 복수이고 일반적인 사실이므로 are를 씁니다."
+        },
+        {
+          "p": "The photos ____ taken by my uncle last weekend.",
+          "c": [
+            "were",
+            "was",
+            "are"
+          ],
+          "a": 0,
+          "why": "last weekend(지난 주말)의 일이고 주어 The photos가 복수이므로 were를 씁니다."
+        },
+        {
+          "p": "The new school will be ____ next year.",
+          "c": [
+            "opened",
+            "open",
+            "opening"
+          ],
+          "a": 0,
+          "why": "조동사가 있는 수동태는 will be + 과거분사 형태이므로 opened를 씁니다."
+        },
+        {
+          "p": "This song was ____ by a famous singer.",
+          "c": [
+            "sung",
+            "sang",
+            "sing"
+          ],
+          "a": 0,
+          "why": "be동사 was 뒤에는 sing의 과거분사인 sung을 써야 합니다."
+        },
+        {
+          "p": "Two tickets ____ given to me yesterday.",
+          "c": [
+            "were",
+            "was",
+            "is"
+          ],
+          "a": 0,
+          "why": "주어 Two tickets가 복수이고 yesterday(어제)의 일이므로 were를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "French **is spoken** in Canada.",
+          "ko": "캐나다에서는 프랑스어가 쓰인다."
+        },
+        {
+          "en": "The cake **was baked** by my mom.",
+          "ko": "그 케이크는 엄마에 의해 구워졌다."
+        },
+        {
+          "en": "The problem **will be solved** soon.",
+          "ko": "그 문제는 곧 해결될 것이다."
+        },
+        {
+          "en": "These shoes **were made** in Italy.",
+          "ko": "이 신발은 이탈리아에서 만들어졌다."
+        },
+        {
+          "en": "He **was invited** to the party.",
+          "ko": "그는 파티에 초대받았다."
+        },
+        {
+          "en": "The email **was sent** yesterday.",
+          "ko": "그 이메일은 어제 전송되었다."
+        },
+        {
+          "en": "My watch **was broken** by my brother.",
+          "ko": "내 시계는 남동생에 의해 망가졌다."
+        },
+        {
+          "en": "The museum **is visited** by many people.",
+          "ko": "그 박물관은 많은 사람들에 의해 방문된다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The letter is write by Jane.",
+          "r": "The letter is written by Jane.",
+          "why": "수동태는 be동사 뒤에 과거분사를 쓰므로 write를 written으로 고쳐야 합니다."
+        },
+        {
+          "w": "The bags was carried by the students.",
+          "r": "The bags were carried by the students.",
+          "why": "주어 The bags가 복수이므로 was를 were로 고쳐야 합니다."
+        },
+        {
+          "w": "The door will be close at 9 p.m.",
+          "r": "The door will be closed at 9 p.m.",
+          "why": "조동사 수동태는 will be + 과거분사 형태이므로 close를 closed로 고쳐야 합니다."
+        },
+        {
+          "w": "This picture painted by my aunt.",
+          "r": "This picture was painted by my aunt.",
+          "why": "수동태 문장이므로 과거분사 앞에 알맞은 be동사(was)가 필요합니다."
+        },
+        {
+          "w": "English is spoke in Australia.",
+          "r": "English is spoken in Australia.",
+          "why": "speak의 과거분사는 spoke가 아니라 spoken입니다."
+        },
+        {
+          "w": "The room is cleaned with him.",
+          "r": "The room is cleaned by him.",
+          "why": "수동태에서 행위자를 나타낼 때는 with가 아니라 by를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "어떤 언어가 어느 나라에서 쓰이는지 말해요.",
+          "frame": "____ is spoken in ____."
+        },
+        {
+          "task": "물건이 어디에서 만들어졌는지 말해요.",
+          "frame": "These ____ were made in ____."
+        },
+        {
+          "task": "누가 이 사진을 찍었는지 말해요.",
+          "frame": "This photo was taken by ____."
+        },
+        {
+          "task": "파티에 누가 초대되었는지 말해요.",
+          "frame": "____ was invited to the party."
+        },
+        {
+          "task": "내일 어떤 일이 끝날 것인지 말해요.",
+          "frame": "The ____ will be finished tomorrow."
+        },
+        {
+          "task": "어떤 음식이 누구에 의해 요리되었는지 말해요.",
+          "frame": "The ____ was cooked by ____."
+        }
+      ],
+      "mission": {
+        "title": "명탐정의 단서 찾기",
+        "scene": "탐정이 되어 사건 현장에서 발견된 단서들이 누구에 의해 어떻게 되었는지 기록합니다.",
+        "steps": [
+          "짝과 함께 교실에 숨겨진 단서 카드 3장을 찾습니다.",
+          "카드에 적힌 물건을 보고 'The bag was found by Minho.'처럼 수동태 문장을 만듭니다.",
+          "각자 만든 문장을 발표하고, 누가 가장 먼저 단서를 찾았는지 확인합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "이 시계는 스위스에서 만들어졌다.",
+          "cond": "was made를 써요.",
+          "model": "This watch was made in Switzerland."
+        },
+        {
+          "ko": "그 파티는 다음 주에 열릴 것이다.",
+          "cond": "will be held를 써요.",
+          "model": "The party will be held next week."
+        },
+        {
+          "ko": "많은 나무들이 매년 심어진다.",
+          "cond": "are planted를 써요.",
+          "model": "Many trees are planted every year."
+        },
+        {
+          "ko": "그 지갑은 경찰관에 의해 발견되었다.",
+          "cond": "was found를 써요.",
+          "model": "The wallet was found by a police officer."
+        },
+        {
+          "ko": "이 책은 셰익스피어에 의해 쓰였다.",
+          "cond": "was written을 써요.",
+          "model": "This book was written by Shakespeare."
+        },
+        {
+          "ko": "그 문은 밤 10시에 닫힌다.",
+          "cond": "is closed를 써요.",
+          "model": "The door is closed at 10 p.m."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-passive-advanced",
+    "discover": {
+      "q": "can be solved, must be finished, be interested in, be filled with를 보세요. 조동사가 있을 때 수동태는 어떤 모양인가요? 전치사는 어떤 짝으로 쓰였나요?",
+      "a": "조동사 + be + 과거분사 형태이다. be interested in, be filled with, be covered with, be known for처럼 전치사가 정해진 표현도 있다."
+    },
+    "choose": [
+      {
+        "p": "This problem can be ____ easily.",
+        "c": [
+          "solved",
+          "solve"
+        ],
+        "a": 0,
+        "why": "조동사 + be + 과거분사입니다."
+      },
+      {
+        "p": "The work must ____ finished by Friday.",
+        "c": [
+          "be",
+          "is"
+        ],
+        "a": 0,
+        "why": "조동사 뒤에는 be를 씁니다."
+      },
+      {
+        "p": "I'm interested ____ science.",
+        "c": [
+          "in",
+          "at"
+        ],
+        "a": 0,
+        "why": "be interested in 표현입니다."
+      },
+      {
+        "p": "The box was filled ____ toys.",
+        "c": [
+          "with",
+          "of"
+        ],
+        "a": 0,
+        "why": "be filled with 표현입니다."
+      },
+      {
+        "p": "The mountain is covered ____ snow.",
+        "c": [
+          "with",
+          "by"
+        ],
+        "a": 0,
+        "why": "be covered with 표현입니다."
+      },
+      {
+        "p": "The room should be ____ before dinner.",
+        "c": [
+          "clean",
+          "cleaned",
+          "cleaning"
+        ],
+        "a": 1,
+        "why": "조동사 뒤에는 'be + 과거분사' 형태의 수동태를 씁니다."
+      },
+      {
+        "p": "Korea is known ____ its delicious food.",
+        "c": [
+          "as",
+          "to",
+          "for"
+        ],
+        "a": 2,
+        "why": "'~로 유명하다'는 뜻의 be known for 표현입니다."
+      },
+      {
+        "p": "The glass is filled ____ cold water.",
+        "c": [
+          "with",
+          "in",
+          "of"
+        ],
+        "a": 0,
+        "why": "'~로 가득 차다'는 뜻의 be filled with 표현입니다."
+      },
+      {
+        "p": "This desk is made ____ wood.",
+        "c": [
+          "with",
+          "of",
+          "from"
+        ],
+        "a": 1,
+        "why": "재료를 나타낼 때는 be made of를 씁니다."
+      },
+      {
+        "p": "The tickets can ____ bought online.",
+        "c": [
+          "are",
+          "is",
+          "be"
+        ],
+        "a": 2,
+        "why": "조동사 뒤에는 반드시 동사원형 be를 써야 합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The work must finished today.",
+        "r": "The work must be finished today.",
+        "why": "조동사 뒤에 be를 빼먹으면 안 됩니다."
+      },
+      {
+        "w": "I'm interested at science.",
+        "r": "I'm interested in science.",
+        "why": "be interested in 표현입니다."
+      },
+      {
+        "w": "The box was filled of toys.",
+        "r": "The box was filled with toys.",
+        "why": "be filled with 표현입니다."
+      },
+      {
+        "w": "The cake can be make in 30 minutes.",
+        "r": "The cake can be made in 30 minutes.",
+        "why": "조동사 수동태는 'be + 과거분사' 형태이므로 make를 made로 고쳐야 합니다."
+      },
+      {
+        "w": "She is interested on Korean history.",
+        "r": "She is interested in Korean history.",
+        "why": "'~에 관심이 있다'는 be interested in을 씁니다."
+      },
+      {
+        "w": "The bottle is filled of milk.",
+        "r": "The bottle is filled with milk.",
+        "why": "'~로 가득 차다'는 be filled with를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내가 관심 있는 분야를 말해요.",
+        "frame": "I'm interested in ____."
+      },
+      {
+        "task": "해야 하는 일을 수동태로 말해요.",
+        "frame": "The ____ must be ____ed by ____."
+      },
+      {
+        "task": "그림 속 물건의 상태를 말해요.",
+        "frame": "The ____ is covered with/filled with ____."
+      },
+      {
+        "task": "내가 사는 곳이 유명한 이유를 말해요.",
+        "frame": "My town is known for ____."
+      },
+      {
+        "task": "어떤 재료로 만들어졌는지 묻고 답해요.",
+        "frame": "What is this ____ made of? It is made of ____."
+      },
+      {
+        "task": "어떤 장소가 무엇으로 유명한지 말해요.",
+        "frame": "____ is known for ____."
+      }
+    ],
+    "mission": {
+      "title": "우리 동네 홍보 포스터",
+      "scene": "우리 동네의 특징을 수동태 표현으로 소개하는 포스터를 만들어요.",
+      "steps": [
+        "My town is known for ____. 로 유명한 것을 쓴다.",
+        "The park is covered with ____. 처럼 모습을 설명한다.",
+        "I'm interested in ____. 로 관심사도 덧붙여 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "이 문제는 쉽게 풀 수 있다.",
+        "cond": "can be solved를 써요.",
+        "model": "This problem can be solved easily."
+      },
+      {
+        "ko": "나는 과학에 관심이 있다.",
+        "cond": "interested in을 써요.",
+        "model": "I'm interested in science."
+      },
+      {
+        "ko": "산은 눈으로 덮여 있다.",
+        "cond": "covered with를 써요.",
+        "model": "The mountain is covered with snow."
+      },
+      {
+        "ko": "그 창문은 내일까지 수리되어야 한다.",
+        "cond": "must be를 써요.",
+        "model": "The window must be fixed by tomorrow."
+      },
+      {
+        "ko": "이 빵은 밀가루로 만들어진다.",
+        "cond": "made of를 써요.",
+        "model": "This bread is made of flour."
+      },
+      {
+        "ko": "그녀는 한국 음악에 관심이 있다.",
+        "cond": "interested in을 써요.",
+        "model": "She is interested in Korean music."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The rules **must be followed** by everyone.",
+        "ko": "규칙은 모든 사람에 의해 지켜져야 한다."
+      },
+      {
+        "en": "He **is interested in** playing the guitar.",
+        "ko": "그는 기타 치는 것에 관심이 있다."
+      },
+      {
+        "en": "The table **is made of** glass.",
+        "ko": "그 탁자는 유리로 만들어져 있다."
+      },
+      {
+        "en": "The city **is known for** its beautiful parks.",
+        "ko": "그 도시는 아름다운 공원들로 유명하다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "조동사가 있는 수동태 문장과 전치사를 쓰는 수동태 표현의 형태는 각각 어떻게 되나요?",
+        "a": "조동사 뒤에는 'be + 과거분사'를 쓰고, 관심이나 상태를 나타낼 때는 'be + 과거분사 + 특정 전치사'를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "The message can be ____ to him now.",
+          "c": [
+            "send",
+            "sent"
+          ],
+          "a": 1,
+          "why": "조동사 수동태는 'be + 과거분사' 형태이므로 sent가 맞습니다."
+        },
+        {
+          "p": "The floor is covered ____ dust.",
+          "c": [
+            "with",
+            "in",
+            "by"
+          ],
+          "a": 0,
+          "why": "'~로 덮여 있다'는 be covered with 표현입니다."
+        },
+        {
+          "p": "My brother is interested ____ taking pictures.",
+          "c": [
+            "at",
+            "on",
+            "in"
+          ],
+          "a": 2,
+          "why": "'~에 관심이 있다'는 be interested in 표현입니다."
+        },
+        {
+          "p": "The mistake should ____ corrected immediately.",
+          "c": [
+            "is",
+            "be",
+            "been"
+          ],
+          "a": 1,
+          "why": "조동사 뒤에는 동사원형 be를 써야 합니다."
+        },
+        {
+          "p": "This ring is made ____ gold.",
+          "c": [
+            "of",
+            "in",
+            "for"
+          ],
+          "a": 0,
+          "why": "재료를 나타낼 때는 be made of를 씁니다."
+        },
+        {
+          "p": "The town is known ____ its hot springs.",
+          "c": [
+            "to",
+            "as",
+            "for"
+          ],
+          "a": 2,
+          "why": "'~로 유명하다'는 be known for 표현입니다."
+        },
+        {
+          "p": "The game will be ____ on TV.",
+          "c": [
+            "show",
+            "shown",
+            "showing"
+          ],
+          "a": 1,
+          "why": "조동사 수동태는 'be + 과거분사' 형태이므로 shown이 맞습니다."
+        },
+        {
+          "p": "The cup was filled ____ hot coffee.",
+          "c": [
+            "to",
+            "of",
+            "with"
+          ],
+          "a": 2,
+          "why": "'~로 가득 차다'는 be filled with 표현입니다."
+        },
+        {
+          "p": "The walls must be ____ white.",
+          "c": [
+            "painted",
+            "paint"
+          ],
+          "a": 0,
+          "why": "조동사 수동태는 'be + 과거분사' 형태이므로 painted가 맞습니다."
+        },
+        {
+          "p": "The roof is covered ____ red leaves.",
+          "c": [
+            "over",
+            "with",
+            "by"
+          ],
+          "a": 1,
+          "why": "'~로 덮여 있다'는 be covered with 표현입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The email **can be sent** later.",
+          "ko": "그 이메일은 나중에 보내질 수 있다."
+        },
+        {
+          "en": "The street **is covered with** fallen leaves.",
+          "ko": "그 거리는 낙엽으로 덮여 있다."
+        },
+        {
+          "en": "I **am interested in** reading comic books.",
+          "ko": "나는 만화책 읽는 것에 관심이 있다."
+        },
+        {
+          "en": "The bag **is made of** leather.",
+          "ko": "그 가방은 가죽으로 만들어져 있다."
+        },
+        {
+          "en": "The actor **is known for** his action movies.",
+          "ko": "그 배우는 액션 영화로 유명하다."
+        },
+        {
+          "en": "The room **was filled with** balloons.",
+          "ko": "그 방은 풍선으로 가득 차 있었다."
+        },
+        {
+          "en": "The car **should be washed** today.",
+          "ko": "그 차는 오늘 세차되어야 한다."
+        },
+        {
+          "en": "The door **will be locked** at night.",
+          "ko": "그 문은 밤에 잠길 것이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The letter will be send tomorrow.",
+          "r": "The letter will be sent tomorrow.",
+          "why": "조동사 수동태는 'be + 과거분사' 형태이므로 send를 sent로 고쳐야 합니다."
+        },
+        {
+          "w": "The box is covered of paper.",
+          "r": "The box is covered with paper.",
+          "why": "'~로 덮여 있다'는 be covered with를 씁니다."
+        },
+        {
+          "w": "He is known as his beautiful voice.",
+          "r": "He is known for his beautiful voice.",
+          "why": "유명한 이유를 나타낼 때는 be known for를 씁니다."
+        },
+        {
+          "w": "The ring is made in silver.",
+          "r": "The ring is made of silver.",
+          "why": "재료를 나타낼 때는 be made of를 씁니다."
+        },
+        {
+          "w": "I am interested at learning French.",
+          "r": "I am interested in learning French.",
+          "why": "'~에 관심이 있다'는 be interested in을 씁니다."
+        },
+        {
+          "w": "The homework must be finish now.",
+          "r": "The homework must be finished now.",
+          "why": "조동사 수동태는 'be + 과거분사' 형태이므로 finish를 finished로 고쳐야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "규칙에 따라 언제까지 완료되어야 하는지 말해요.",
+          "frame": "The ____ must be done by ____."
+        },
+        {
+          "task": "친구의 취미나 관심사를 물어봐요.",
+          "frame": "Are you interested in ____?"
+        },
+        {
+          "task": "그릇이나 컵 안에 무엇이 가득 차 있는지 말해요.",
+          "frame": "The ____ is filled with ____."
+        },
+        {
+          "task": "물건의 재질을 추측해서 말해요.",
+          "frame": "I think this ____ is made of ____."
+        },
+        {
+          "task": "특정 지역의 유명한 특산물이나 장소를 말해요.",
+          "frame": "This city is known for ____."
+        },
+        {
+          "task": "미래에 일어날 수 있는 일을 수동태로 말해요.",
+          "frame": "The ____ will be ____ed soon."
+        }
+      ],
+      "mission": {
+        "title": "우리 동네 홍보 대사",
+        "scene": "외국인 친구들에게 우리 동네나 학교를 소개하는 문장을 만들어 봅시다.",
+        "steps": [
+          "우리 동네나 학교가 무엇으로 유명한지 생각합니다. (예: My school is known for...)",
+          "동네의 장소가 무엇으로 가득 차 있거나 덮여 있는지 묘사합니다. (예: The park is filled with...)",
+          "짝과 함께 만든 문장을 발표하고, 서로의 문장을 확인해 줍니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 편지는 내일 배달될 수 있다.",
+          "cond": "can be를 써요.",
+          "model": "The letter can be delivered tomorrow."
+        },
+        {
+          "ko": "그의 방은 책들로 가득 차 있다.",
+          "cond": "filled with를 써요.",
+          "model": "His room is filled with books."
+        },
+        {
+          "ko": "이 셔츠는 면으로 만들어졌다.",
+          "cond": "made of를 써요.",
+          "model": "This shirt is made of cotton."
+        },
+        {
+          "ko": "그 식당은 매운 음식으로 유명하다.",
+          "cond": "known for를 써요.",
+          "model": "The restaurant is known for spicy food."
+        },
+        {
+          "ko": "그녀는 그림 그리는 것에 관심이 있다.",
+          "cond": "interested in을 써요.",
+          "model": "She is interested in drawing pictures."
+        },
+        {
+          "ko": "그 지붕은 눈으로 덮여 있다.",
+          "cond": "covered with를 써요.",
+          "model": "The roof is covered with snow."
+        }
+      ]
+    }
+  },
+  {
+    "id": "h-passive-advanced",
+    "discover": {
+      "q": "was given, is being cleaned, has been repaired, was elected, It is said that을 보세요. 진행과 완료의 수동태는 어떤 모양인가요? It is said that은 무슨 뜻인가요?",
+      "a": "진행 수동은 be being + p.p., 완료 수동은 have been + p.p.이다. It is said that ~은 '~라고 한다'는 뜻이다."
+    },
+    "choose": [
+      {
+        "p": "The room is ____ cleaned now.",
+        "c": [
+          "being",
+          "been"
+        ],
+        "a": 0,
+        "why": "진행 수동은 is being + p.p.입니다."
+      },
+      {
+        "p": "The bridge has ____ repaired.",
+        "c": [
+          "been",
+          "being"
+        ],
+        "a": 0,
+        "why": "완료 수동은 has been + p.p.입니다."
+      },
+      {
+        "p": "She was made ____ wait.",
+        "c": [
+          "to",
+          "—"
+        ],
+        "a": 0,
+        "why": "make의 수동태 뒤에는 to부정사가 옵니다."
+      },
+      {
+        "p": "It is ____ that the house is haunted.",
+        "c": [
+          "said",
+          "saying"
+        ],
+        "a": 0,
+        "why": "It is said that ~은 '~라고 한다'입니다."
+      },
+      {
+        "p": "He was elected ____ president.",
+        "c": [
+          "class",
+          "a class"
+        ],
+        "a": 0,
+        "why": "직책 보어에는 관사를 쓰지 않습니다."
+      },
+      {
+        "p": "The car is ____ repaired at the moment.",
+        "c": [
+          "being",
+          "been",
+          "be"
+        ],
+        "a": 0,
+        "why": "at the moment(지금)가 있으므로 현재진행 수동태(is being p.p.)를 써야 합니다."
+      },
+      {
+        "p": "The lost dog has finally ____ found.",
+        "c": [
+          "been",
+          "being",
+          "be"
+        ],
+        "a": 0,
+        "why": "완료 수동태는 have/has been + p.p. 형태를 사용합니다."
+      },
+      {
+        "p": "The students were made ____ in the hallway.",
+        "c": [
+          "to stand",
+          "stand"
+        ],
+        "a": 0,
+        "why": "사역동사 make가 수동태로 쓰일 때는 목적격 보어로 to부정사가 와야 합니다."
+      },
+      {
+        "p": "I was ____ a beautiful watch by my uncle.",
+        "c": [
+          "given",
+          "giving"
+        ],
+        "a": 0,
+        "why": "내가 시계를 '받은' 것이므로 수동태인 was given을 써야 합니다."
+      },
+      {
+        "p": "The man is said ____ rich.",
+        "c": [
+          "to be",
+          "be"
+        ],
+        "a": 0,
+        "why": "주어가 문장 앞으로 나온 'S is said to V' 구문이므로 to부정사를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She was made wait.",
+        "r": "She was made to wait.",
+        "why": "make의 수동태 뒤에는 to부정사가 옵니다."
+      },
+      {
+        "w": "The room is cleaning now.",
+        "r": "The room is being cleaned now.",
+        "why": "방은 청소되는 대상이므로 being cleaned입니다."
+      },
+      {
+        "w": "The bridge has repaired.",
+        "r": "The bridge has been repaired.",
+        "why": "완료 수동은 have been + p.p.입니다."
+      },
+      {
+        "w": "The computer is fixing now.",
+        "r": "The computer is being fixed now.",
+        "why": "컴퓨터는 수리되는 대상이므로 진행 수동태(is being fixed)를 써야 합니다."
+      },
+      {
+        "w": "The homework has finished.",
+        "r": "The homework has been finished.",
+        "why": "숙제는 끝마쳐지는 대상이므로 완료 수동태(has been finished)를 써야 합니다."
+      },
+      {
+        "w": "She was seen cross the street.",
+        "r": "She was seen to cross the street.",
+        "why": "지각동사의 수동태 뒤에는 동사원형이 아니라 to부정사나 현재분사가 와야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "지금 진행되고 있는 일을 수동태로 말해요.",
+        "frame": "The ____ is being ____ed now."
+      },
+      {
+        "task": "이미 끝난 일을 수동태로 말해요.",
+        "frame": "The ____ has been ____ed."
+      },
+      {
+        "task": "소문이나 전설을 전해요.",
+        "frame": "It is said that ____."
+      },
+      {
+        "task": "받은 것을 수동태로 말해요.",
+        "frame": "I was given a ____."
+      },
+      {
+        "task": "억지로 하게 된 일을 수동태로 말해요.",
+        "frame": "I was made to ____."
+      },
+      {
+        "task": "완료된 일을 수동태로 말해요.",
+        "frame": "My ____ has been ____ed."
+      }
+    ],
+    "mission": {
+      "title": "도시 공사 현장 리포트",
+      "scene": "공사 중인 건물을 보고 진행과 완료를 수동태로 리포트해요.",
+      "steps": [
+        "The building is being ____ed. 로 진행 중인 일을 말한다.",
+        "The road has been ____ed. 로 끝난 일을 말한다.",
+        "It is said that ____. 로 소문을 덧붙인다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "방이 지금 청소되고 있다.",
+        "cond": "is being을 써요.",
+        "model": "The room is being cleaned now."
+      },
+      {
+        "ko": "다리가 수리되었다.",
+        "cond": "has been을 써요.",
+        "model": "The bridge has been repaired."
+      },
+      {
+        "ko": "그 집에는 귀신이 나온다고 한다.",
+        "cond": "It is said that을 써요.",
+        "model": "It is said that the house is haunted."
+      },
+      {
+        "ko": "내 지갑을 도둑맞았다.",
+        "cond": "has been을 써요.",
+        "model": "My wallet has been stolen."
+      },
+      {
+        "ko": "그 차는 지금 수리되고 있다.",
+        "cond": "is being을 써요.",
+        "model": "The car is being repaired now."
+      },
+      {
+        "ko": "그 남자는 부자라고 한다.",
+        "cond": "is said to를 써요.",
+        "model": "The man is said to be rich."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The cake **is being baked** now.",
+        "ko": "케이크가 지금 구워지고 있다."
+      },
+      {
+        "en": "My bike **has been stolen**.",
+        "ko": "내 자전거를 도둑맞았다."
+      },
+      {
+        "en": "He **was made to** apologize.",
+        "ko": "그는 억지로 사과해야 했다."
+      },
+      {
+        "en": "She **is said to** be very smart.",
+        "ko": "그녀는 매우 똑똑하다고 한다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'She was made to wait.'에서 능동태 문장(They made her wait.)과 비교할 때, 사역동사의 수동태 뒤에는 어떤 형태가 오나요?",
+        "a": "동사원형 대신 to부정사가 옵니다."
+      },
+      "choose": [
+        {
+          "p": "A new hospital is ____ built in our town.",
+          "c": [
+            "being",
+            "been"
+          ],
+          "a": 0,
+          "why": "진행 수동태는 be being p.p. 형태를 사용합니다."
+        },
+        {
+          "p": "The tickets have already ____ sold out.",
+          "c": [
+            "been",
+            "being"
+          ],
+          "a": 0,
+          "why": "완료 수동태는 have been p.p. 형태를 사용합니다."
+        },
+        {
+          "p": "I was made ____ the whole house.",
+          "c": [
+            "clean",
+            "to clean"
+          ],
+          "a": 1,
+          "why": "사역동사 make의 수동태 뒤에는 to부정사가 와야 합니다."
+        },
+        {
+          "p": "We were ____ a free meal at the restaurant.",
+          "c": [
+            "offered",
+            "offering"
+          ],
+          "a": 0,
+          "why": "우리가 무료 식사를 '제공받은' 것이므로 수동태(were offered)를 써야 합니다."
+        },
+        {
+          "p": "It is said ____ he lives in New York.",
+          "c": [
+            "that",
+            "to"
+          ],
+          "a": 0,
+          "why": "가주어 It으로 시작하는 구문은 It is said that 주어+동사 형태를 취합니다."
+        },
+        {
+          "p": "The actor is said ____ a lot of money.",
+          "c": [
+            "to make",
+            "making"
+          ],
+          "a": 0,
+          "why": "주어가 문장 앞으로 나온 경우 'S is said to V' 형태를 사용합니다."
+        },
+        {
+          "p": "The thief was seen ____ away.",
+          "c": [
+            "to run",
+            "run"
+          ],
+          "a": 0,
+          "why": "지각동사의 수동태 뒤에는 동사원형을 쓸 수 없고 to부정사나 현재분사를 씁니다."
+        },
+        {
+          "p": "The baby was ____ named James.",
+          "c": [
+            "naming",
+            "named"
+          ],
+          "a": 1,
+          "why": "아기가 제임스라고 '이름 지어진' 것이므로 수동태(was named)를 써야 합니다."
+        },
+        {
+          "p": "All the cookies have ____ eaten by the kids.",
+          "c": [
+            "been",
+            "be"
+          ],
+          "a": 0,
+          "why": "현재완료 수동태는 have been p.p. 형태입니다."
+        },
+        {
+          "p": "My favorite song is ____ played on the radio now.",
+          "c": [
+            "being",
+            "been"
+          ],
+          "a": 0,
+          "why": "now(지금)가 있으므로 현재진행 수동태(is being p.p.)를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The problem **is being solved** now.",
+          "ko": "그 문제는 지금 해결되고 있다."
+        },
+        {
+          "en": "The rules **have been changed**.",
+          "ko": "규칙이 변경되었다."
+        },
+        {
+          "en": "I **was offered** a good job.",
+          "ko": "나는 좋은 일자리를 제안받았다."
+        },
+        {
+          "en": "He **was named** team captain.",
+          "ko": "그는 팀 주장으로 임명되었다."
+        },
+        {
+          "en": "It **is said that** she is a princess.",
+          "ko": "그녀는 공주라고 한다."
+        },
+        {
+          "en": "The building **is said to** be very old.",
+          "ko": "그 건물은 매우 오래되었다고 한다."
+        },
+        {
+          "en": "We **were made to** run outside.",
+          "ko": "우리는 억지로 밖에서 뛰어야 했다."
+        },
+        {
+          "en": "The dog **was seen to** jump over the fence.",
+          "ko": "그 개가 울타리를 넘는 것이 목격되었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "A new mall is building in the city.",
+          "r": "A new mall is being built in the city.",
+          "why": "쇼핑몰은 지어지는 대상이므로 진행 수동태(is being built)를 써야 합니다."
+        },
+        {
+          "w": "The window has broken by the wind.",
+          "r": "The window has been broken by the wind.",
+          "why": "창문은 깨지는 대상이므로 완료 수동태(has been broken)를 써야 합니다."
+        },
+        {
+          "w": "He was made wash the dishes.",
+          "r": "He was made to wash the dishes.",
+          "why": "사역동사 make의 수동태 뒤에는 to부정사가 와야 합니다."
+        },
+        {
+          "w": "It is said to the earth is getting warmer.",
+          "r": "It is said that the earth is getting warmer.",
+          "why": "뒤에 주어와 동사가 있는 절이 오므로 to가 아니라 접속사 that을 써야 합니다."
+        },
+        {
+          "w": "I was giving a present by my friend.",
+          "r": "I was given a present by my friend.",
+          "why": "선물을 '받은' 것이므로 과거분사 given을 써야 합니다."
+        },
+        {
+          "w": "She is said that be a great singer.",
+          "r": "She is said to be a great singer.",
+          "why": "주어가 앞으로 나온 구문에서는 'S is said to V' 형태를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "지금 만들어지고 있는 것을 수동태로 말해요.",
+          "frame": "A new ____ is being made now."
+        },
+        {
+          "task": "이미 끝난 숙제나 일을 수동태로 말해요.",
+          "frame": "The project has been ____ed."
+        },
+        {
+          "task": "다른 사람에게 받은 것을 수동태로 말해요.",
+          "frame": "I was given ____ by my ____."
+        },
+        {
+          "task": "억지로 해야 했던 일을 수동태로 말해요.",
+          "frame": "I was made to ____ yesterday."
+        },
+        {
+          "task": "어떤 장소에 대한 소문을 말해요.",
+          "frame": "It is said that the ____ is ____."
+        },
+        {
+          "task": "누군가에 대해 들은 이야기를 말해요.",
+          "frame": "He is said to be ____."
+        }
+      ],
+      "mission": {
+        "title": "소문과 진실 찾기",
+        "scene": "마을에 떠도는 소문을 수동태를 사용해 친구와 이야기해 봅시다.",
+        "steps": [
+          "친구에게 마을의 소문을 'It is said that ____.' 형태로 말합니다.",
+          "친구는 그 소문이 사실인지 'Is it being ____ now?'로 묻습니다.",
+          "서로 역할을 바꾸어 새로운 소문을 만들어 묻고 답합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "새 병원이 지금 지어지고 있다.",
+          "cond": "is being을 써요.",
+          "model": "A new hospital is being built now."
+        },
+        {
+          "ko": "그 규칙들은 이미 변경되었다.",
+          "cond": "have been을 써요.",
+          "model": "The rules have already been changed."
+        },
+        {
+          "ko": "나는 좋은 일자리를 제안받았다.",
+          "cond": "4형식 수동태를 써요.",
+          "model": "I was offered a good job."
+        },
+        {
+          "ko": "우리는 억지로 청소를 해야 했다.",
+          "cond": "made to를 써요.",
+          "model": "We were made to clean up."
+        },
+        {
+          "ko": "그 고양이는 매우 영리하다고 한다.",
+          "cond": "It is said that을 써요.",
+          "model": "It is said that the cat is very smart."
+        },
+        {
+          "ko": "그 배우는 부자라고 한다.",
+          "cond": "is said to를 써요.",
+          "model": "The actor is said to be rich."
+        }
+      ]
+    }
+  }
+]

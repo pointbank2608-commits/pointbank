@@ -1,0 +1,5426 @@
+[
+  {
+    "id": "tense-present-perfect",
+    "discover": {
+      "q": "have/has + 과거분사 문장을 보세요. 계속, 완료, 경험, 결과는 각각 어떤 말(for, already, ever, yet)과 함께 쓰였나요? yesterday와 함께 쓸 수 있나요?",
+      "a": "계속은 for/since, 완료는 already/yet, 경험은 ever/never와 함께 쓴다. yesterday, ago 같은 과거 시점 표현과는 함께 쓰지 않는다."
+    },
+    "choose": [
+      {
+        "p": "I have ____ here for ten years.",
+        "c": [
+          "lived",
+          "live"
+        ],
+        "a": 0,
+        "why": "have 뒤에는 과거분사 lived를 씁니다."
+      },
+      {
+        "p": "She has already ____ lunch.",
+        "c": [
+          "eaten",
+          "ate"
+        ],
+        "a": 0,
+        "why": "has 뒤에는 과거분사 eaten을 씁니다."
+      },
+      {
+        "p": "Have you ever ____ to Japan?",
+        "c": [
+          "been",
+          "went"
+        ],
+        "a": 0,
+        "why": "have 뒤에는 과거분사 been을 씁니다."
+      },
+      {
+        "p": "I ____ him yesterday.",
+        "c": [
+          "met",
+          "have met"
+        ],
+        "a": 0,
+        "why": "yesterday가 있으면 과거시제를 씁니다."
+      },
+      {
+        "p": "We ____ finished yet.",
+        "c": [
+          "haven't",
+          "didn't"
+        ],
+        "a": 0,
+        "why": "yet과 함께 쓰는 완료의 부정은 haven't입니다."
+      },
+      {
+        "p": "He ____ just finished his homework.",
+        "c": [
+          "has",
+          "have"
+        ],
+        "a": 0,
+        "why": "주어가 3인칭 단수(He)이므로 has를 씁니다."
+      },
+      {
+        "p": "They have ____ each other since 2020.",
+        "c": [
+          "knew",
+          "known"
+        ],
+        "a": 1,
+        "why": "have 뒤에는 과거분사(known)를 써야 합니다."
+      },
+      {
+        "p": "I ____ that movie last night.",
+        "c": [
+          "saw",
+          "have seen"
+        ],
+        "a": 0,
+        "why": "last night과 같은 명백한 과거 시점 표현이 있으면 과거시제를 씁니다."
+      },
+      {
+        "p": "My brother has ____ his leg.",
+        "c": [
+          "broken",
+          "broke"
+        ],
+        "a": 0,
+        "why": "has 뒤에는 과거분사(broken)를 써야 합니다."
+      },
+      {
+        "p": "____ you ever tried Mexican food?",
+        "c": [
+          "Have",
+          "Did"
+        ],
+        "a": 0,
+        "why": "과거분사(tried)와 함께 경험을 묻는 현재완료 의문문은 Have로 시작합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I have met him yesterday.",
+        "r": "I met him yesterday.",
+        "why": "yesterday가 있으면 과거시제를 씁니다."
+      },
+      {
+        "w": "Have you ever went there?",
+        "r": "Have you ever been there?",
+        "why": "have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "w": "She have already eaten lunch.",
+        "r": "She has already eaten lunch.",
+        "why": "She에는 has를 씁니다."
+      },
+      {
+        "w": "I have bought a new bike two days ago.",
+        "r": "I bought a new bike two days ago.",
+        "why": "ago와 같은 명백한 과거 시점 표현은 현재완료가 아닌 과거시제와 써야 합니다."
+      },
+      {
+        "w": "He have studied English for three years.",
+        "r": "He has studied English for three years.",
+        "why": "주어가 3인칭 단수(He)일 때는 have가 아니라 has를 씁니다."
+      },
+      {
+        "w": "Have you ever ate Thai food?",
+        "r": "Have you ever eaten Thai food?",
+        "why": "Have 뒤에는 동사원형이나 과거형이 아닌 과거분사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "얼마나 오래 해 왔는지 말해요.",
+        "frame": "I have ____ed/lived ____ for ____ years."
+      },
+      {
+        "task": "해 본 경험을 묻고 답해요.",
+        "frame": "Have you ever ____? — Yes, I have. / No, I haven't."
+      },
+      {
+        "task": "이미 끝낸 일을 말해요.",
+        "frame": "I have already ____ed."
+      },
+      {
+        "task": "아직 끝내지 못한 일을 말해요.",
+        "frame": "I haven't ____ed yet."
+      },
+      {
+        "task": "친구가 방금 끝낸 일을 물어보고 답해요.",
+        "frame": "Have you just ____ed your ____? — Yes, I have."
+      },
+      {
+        "task": "물건을 잃어버려서 지금 없는 상태를 말해요.",
+        "frame": "I have lost my ____."
+      }
+    ],
+    "mission": {
+      "title": "경험 인터뷰 빙고",
+      "scene": "경험 빙고판을 들고 친구들에게 Have you ever ~? 를 묻는 빙고 놀이예요.",
+      "steps": [
+        "빙고판의 경험을 보고 Have you ever ____? 라고 묻는다.",
+        "Yes, I have. 라고 답한 친구의 이름을 칸에 적는다.",
+        "한 줄을 먼저 완성하면 승리."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 10년 동안 여기 살아 왔어요.",
+        "cond": "have lived와 for를 써요.",
+        "model": "I have lived here for ten years."
+      },
+      {
+        "ko": "일본에 가 본 적 있니?",
+        "cond": "Have you ever로 시작해요.",
+        "model": "Have you ever been to Japan?"
+      },
+      {
+        "ko": "우리는 아직 못 끝냈어요.",
+        "cond": "haven't와 yet을 써요.",
+        "model": "We haven't finished yet."
+      },
+      {
+        "ko": "그녀는 방금 숙제를 끝냈어요.",
+        "cond": "has와 just를 써요.",
+        "model": "She has just finished her homework."
+      },
+      {
+        "ko": "나는 2015년부터 피아노를 쳐 왔어요.",
+        "cond": "have played와 since를 써요.",
+        "model": "I have played the piano since 2015."
+      },
+      {
+        "ko": "너는 전에 파리에 가 본 적 있니?",
+        "cond": "ever와 been을 써요.",
+        "model": "Have you ever been to Paris before?"
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **has** just **arrived** home.",
+        "ko": "그는 방금 집에 도착했다."
+      },
+      {
+        "en": "We **have known** him since childhood.",
+        "ko": "우리는 어릴 때부터 그를 알고 지냈다."
+      },
+      {
+        "en": "I **have lost** my smartphone.",
+        "ko": "나는 스마트폰을 잃어버렸다."
+      },
+      {
+        "en": "She **has never seen** a panda.",
+        "ko": "그녀는 판다를 본 적이 한 번도 없다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 부분(have/has + 과거분사)은 어떤 의미를 나타내나요?",
+        "a": "과거에 일어난 일이 현재까지 영향을 미치거나 계속됨을 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "I have ____ this book three times.",
+          "c": [
+            "read",
+            "reading",
+            "reads"
+          ],
+          "a": 0,
+          "why": "have 뒤에는 과거분사를 씁니다. (read의 과거분사는 형태가 같은 read입니다.)"
+        },
+        {
+          "p": "She ____ lost her umbrella.",
+          "c": [
+            "has",
+            "have"
+          ],
+          "a": 0,
+          "why": "주어가 3인칭 단수(She)이므로 has를 씁니다."
+        },
+        {
+          "p": "We ____ London in 2018.",
+          "c": [
+            "have visited",
+            "visited"
+          ],
+          "a": 1,
+          "why": "in 2018과 같은 명백한 과거 시점은 과거시제와 써야 합니다."
+        },
+        {
+          "p": "Have you ____ met a famous person?",
+          "c": [
+            "ever",
+            "ago"
+          ],
+          "a": 0,
+          "why": "경험을 물어볼 때는 ever(~해 본 적)를 사용하며, ago는 현재완료와 쓸 수 없습니다."
+        },
+        {
+          "p": "They haven't ____ at the station yet.",
+          "c": [
+            "arrive",
+            "arrived"
+          ],
+          "a": 1,
+          "why": "haven't 뒤에는 과거분사(arrived)를 써야 합니다."
+        },
+        {
+          "p": "He has ____ soccer since he was ten.",
+          "c": [
+            "played",
+            "play"
+          ],
+          "a": 0,
+          "why": "has 뒤에는 과거분사(played)를 써야 합니다."
+        },
+        {
+          "p": "I ____ my wallet yesterday.",
+          "c": [
+            "have lost",
+            "lost"
+          ],
+          "a": 1,
+          "why": "yesterday가 있으므로 현재완료가 아닌 과거시제를 써야 합니다."
+        },
+        {
+          "p": "____ your sister ever made a cake?",
+          "c": [
+            "Has",
+            "Have"
+          ],
+          "a": 0,
+          "why": "주어가 3인칭 단수(your sister)이므로 Has로 질문을 시작합니다."
+        },
+        {
+          "p": "I have ____ washed my hands.",
+          "c": [
+            "yet",
+            "just"
+          ],
+          "a": 1,
+          "why": "긍정문에서 방금 끝냈다는 의미를 나타낼 때는 just를 씁니다. (yet은 주로 부정문이나 의문문에 씁니다.)"
+        },
+        {
+          "p": "She has ____ sick for two days.",
+          "c": [
+            "been",
+            "be"
+          ],
+          "a": 0,
+          "why": "has 뒤에는 be동사의 과거분사인 been을 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **have read** this book twice.",
+          "ko": "나는 이 책을 두 번 읽은 적이 있다."
+        },
+        {
+          "en": "She **has gone** to New York.",
+          "ko": "그녀는 뉴욕으로 가버렸다."
+        },
+        {
+          "en": "They **have played** baseball since morning.",
+          "ko": "그들은 아침부터 야구를 해 왔다."
+        },
+        {
+          "en": "He **hasn't done** his homework yet.",
+          "ko": "그는 아직 숙제를 하지 않았다."
+        },
+        {
+          "en": "**Have** you **heard** the news?",
+          "ko": "그 소식 들었어?"
+        },
+        {
+          "en": "We **have been** friends for five years.",
+          "ko": "우리는 5년 동안 친구로 지내왔다."
+        },
+        {
+          "en": "I **have** already **cleaned** my room.",
+          "ko": "나는 이미 내 방을 청소했다."
+        },
+        {
+          "en": "My dad **has** just **washed** his car.",
+          "ko": "우리 아빠는 방금 세차를 하셨다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I have seen him last week.",
+          "r": "I saw him last week.",
+          "why": "last week와 같은 과거 시점 표현은 현재완료와 쓸 수 없으므로 과거시제를 씁니다."
+        },
+        {
+          "w": "She have lived in Seoul since 2010.",
+          "r": "She has lived in Seoul since 2010.",
+          "why": "주어가 3인칭 단수일 때는 have가 아니라 has를 씁니다."
+        },
+        {
+          "w": "Have you ever saw a tiger?",
+          "r": "Have you ever seen a tiger?",
+          "why": "Have 뒤에는 과거형(saw)이 아니라 과거분사(seen)를 써야 합니다."
+        },
+        {
+          "w": "They didn't finished the project yet.",
+          "r": "They haven't finished the project yet.",
+          "why": "yet과 함께 완료의 부정 의미를 나타낼 때는 haven't + 과거분사를 씁니다."
+        },
+        {
+          "w": "He has go to Canada.",
+          "r": "He has gone to Canada.",
+          "why": "has 뒤에는 동사원형이 아니라 과거분사(gone)를 써야 합니다."
+        },
+        {
+          "w": "We have played tennis yesterday.",
+          "r": "We played tennis yesterday.",
+          "why": "yesterday가 있으므로 현재완료가 아닌 과거시제를 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구에게 어떤 음식을 먹어본 적 있는지 물어봐요.",
+          "frame": "Have you ever eaten ____?"
+        },
+        {
+          "task": "언제부터 특정 취미를 계속해 왔는지 말해요.",
+          "frame": "I have ____ed since ____."
+        },
+        {
+          "task": "아직 하지 못한 일을 친구에게 말해요.",
+          "frame": "I haven't ____ed yet."
+        },
+        {
+          "task": "누군가 어디로 떠나서 지금 없다고 말해요.",
+          "frame": "____ has gone to ____."
+        },
+        {
+          "task": "방금 끝낸 집안일을 자랑스럽게 말해요.",
+          "frame": "I have just cleaned my ____."
+        },
+        {
+          "task": "몇 번이나 그 영화를 봤는지 말해요.",
+          "frame": "I have seen that movie ____ times."
+        }
+      ],
+      "mission": {
+        "title": "나의 경험 빙고 게임",
+        "scene": "친구들과 해본 적 있는 특별한 경험을 찾아 빙고를 완성해 봅시다.",
+        "steps": [
+          "빙고 칸에 다양한 경험(예: ride a horse, eat Mexican food)을 영어로 적습니다.",
+          "친구에게 'Have you ever ~?'라고 질문하여 'Yes, I have.'라는 대답을 들으면 동그라미를 칩니다.",
+          "가장 먼저 3줄 빙고를 완성한 사람이 'Bingo!'를 외칩니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 이 영화를 세 번 본 적이 있다.",
+          "cond": "have seen과 times를 써요.",
+          "model": "I have seen this movie three times."
+        },
+        {
+          "ko": "그녀는 2020년부터 영어를 공부해 왔다.",
+          "cond": "has studied와 since를 써요.",
+          "model": "She has studied English since 2020."
+        },
+        {
+          "ko": "우리는 아직 점심을 먹지 않았다.",
+          "cond": "haven't와 yet을 써요.",
+          "model": "We haven't eaten lunch yet."
+        },
+        {
+          "ko": "너는 캐나다에 가 본 적 있니?",
+          "cond": "Have you ever를 써요.",
+          "model": "Have you ever been to Canada?"
+        },
+        {
+          "ko": "그는 방금 창문을 깼다.",
+          "cond": "has just와 broken을 써요.",
+          "model": "He has just broken the window."
+        },
+        {
+          "ko": "내 남동생은 지갑을 잃어버렸다. (그래서 지금 없다)",
+          "cond": "has lost를 써요.",
+          "model": "My brother has lost his wallet."
+        }
+      ]
+    }
+  },
+  {
+    "id": "tense-past-perfect",
+    "discover": {
+      "q": "had + 과거분사가 쓰인 문장을 보세요. 두 가지 과거의 일 중 어느 쪽에 had p.p.를 썼나요?",
+      "a": "두 가지 과거의 일 중 더 먼저 일어난 일(대과거)에 had + 과거분사를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "When I arrived, the movie ____ already started.",
+        "c": [
+          "had",
+          "has"
+        ],
+        "a": 0,
+        "why": "도착한 시점보다 먼저 시작했으므로 had입니다."
+      },
+      {
+        "p": "She had never ____ the sea before that trip.",
+        "c": [
+          "seen",
+          "saw"
+        ],
+        "a": 0,
+        "why": "had 뒤에는 과거분사 seen을 씁니다."
+      },
+      {
+        "p": "Yesterday, I ____ finished my homework before dinner.",
+        "c": [
+          "had",
+          "have"
+        ],
+        "a": 0,
+        "why": "저녁보다 먼저 끝낸 일이므로 had입니다."
+      },
+      {
+        "p": "He told me he ____ lost his bag.",
+        "c": [
+          "had",
+          "has"
+        ],
+        "a": 0,
+        "why": "말한 시점보다 이전의 일이므로 had입니다."
+      },
+      {
+        "p": "They had ____ there for years before they moved.",
+        "c": [
+          "lived",
+          "live"
+        ],
+        "a": 0,
+        "why": "had 뒤에는 과거분사 lived를 씁니다."
+      },
+      {
+        "p": "When we got to the station, the train ____ already left.",
+        "c": [
+          "had",
+          "has",
+          "have"
+        ],
+        "a": 0,
+        "why": "역에 도착한 과거 시점보다 기차가 먼저 떠났으므로 과거완료 had를 씁니다."
+      },
+      {
+        "p": "I was hungry because I had not ____ breakfast.",
+        "c": [
+          "ate",
+          "eaten",
+          "eat"
+        ],
+        "a": 1,
+        "why": "had 뒤에는 과거분사를 써야 하므로 eaten이 맞습니다."
+      },
+      {
+        "p": "She didn't have her umbrella because she had ____ it on the bus.",
+        "c": [
+          "leave",
+          "left"
+        ],
+        "a": 1,
+        "why": "had 뒤에는 과거분사 형태인 left를 써야 합니다."
+      },
+      {
+        "p": "Minho said that he ____ read the book before.",
+        "c": [
+          "has",
+          "had"
+        ],
+        "a": 1,
+        "why": "말한 시점(과거)보다 이전에 책을 읽은 것이므로 대과거인 had를 씁니다."
+      },
+      {
+        "p": "By the time the police arrived, the thief had ____ away.",
+        "c": [
+          "run",
+          "ran",
+          "running"
+        ],
+        "a": 0,
+        "why": "had 뒤에는 과거분사를 써야 하며, run의 과거분사는 run입니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "When I arrived, the movie has already started.",
+        "r": "When I arrived, the movie had already started.",
+        "why": "과거보다 더 이전의 일은 had + p.p.입니다."
+      },
+      {
+        "w": "She had never saw the sea.",
+        "r": "She had never seen the sea.",
+        "why": "had 뒤에는 과거분사 seen을 씁니다."
+      },
+      {
+        "w": "I have finished my homework before dinner yesterday.",
+        "r": "I had finished my homework before dinner yesterday.",
+        "why": "과거의 한 시점보다 먼저 끝낸 일이므로 had finished입니다."
+      },
+      {
+        "w": "I couldn't buy it because I have lost my wallet.",
+        "r": "I couldn't buy it because I had lost my wallet.",
+        "why": "살 수 없었던 과거 시점보다 지갑을 잃어버린 것이 먼저이므로 had lost를 씁니다."
+      },
+      {
+        "w": "When I woke up, my parents had went to work.",
+        "r": "When I woke up, my parents had gone to work.",
+        "why": "had 뒤에는 과거분사를 써야 하므로 went를 gone으로 고쳐야 합니다."
+      },
+      {
+        "w": "She said she has finished the project.",
+        "r": "She said she had finished the project.",
+        "why": "말한 시점(과거)보다 먼저 끝낸 일이므로 has가 아닌 had를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "어떤 일이 일어나기 전에 이미 끝난 일을 말해요.",
+        "frame": "When I ____ed, ____ had already ____ed."
+      },
+      {
+        "task": "여행 전에 해 보지 못한 일을 말해요.",
+        "frame": "I had never ____ before ____."
+      },
+      {
+        "task": "저녁 전에 끝낸 일을 말해요.",
+        "frame": "I had finished ____ before ____."
+      },
+      {
+        "task": "친구의 말을 전달해요.",
+        "frame": "He/She told me that he/she had ____ed."
+      },
+      {
+        "task": "과거에 어떤 일이 일어나기 전에 있었던 원인을 말해 보세요.",
+        "frame": "I was ____ because I had ____."
+      },
+      {
+        "task": "다른 사람이 과거에 했던 말을 전달해 보세요.",
+        "frame": "My friend said that he/she had ____."
+      }
+    ],
+    "mission": {
+      "title": "더 먼저 일어난 일 찾기",
+      "scene": "두 사건 카드를 보고 어느 쪽이 먼저인지 정해 had p.p.로 말하는 게임이에요.",
+      "steps": [
+        "사건 카드 두 장을 뽑는다.",
+        "먼저 일어난 일을 had p.p.로 말한다.",
+        "When ____ed, ____ had already ____ed. 형태로 문장을 완성한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "내가 도착했을 때 영화는 이미 시작했었다.",
+        "cond": "had already를 써요.",
+        "model": "When I arrived, the movie had already started."
+      },
+      {
+        "ko": "그녀는 그 여행 전까지 바다를 본 적이 없었다.",
+        "cond": "had never를 써요.",
+        "model": "She had never seen the sea before that trip."
+      },
+      {
+        "ko": "그는 가방을 잃어버렸었다고 나에게 말했다.",
+        "cond": "had lost를 써요.",
+        "model": "He told me he had lost his bag."
+      },
+      {
+        "ko": "내가 역에 도착했을 때 기차는 이미 떠났었다.",
+        "cond": "had already를 써요.",
+        "model": "When I arrived at the station, the train had already left."
+      },
+      {
+        "ko": "나는 아침을 먹지 않았기 때문에 배가 고팠다.",
+        "cond": "because와 had not을 써요.",
+        "model": "I was hungry because I had not eaten breakfast."
+      },
+      {
+        "ko": "그녀는 우산을 버스에 두고 내렸다고 말했다.",
+        "cond": "had left를 써요.",
+        "model": "She said she had left her umbrella on the bus."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The train **had left** when I arrived.",
+        "ko": "내가 도착했을 때 기차는 떠났었다."
+      },
+      {
+        "en": "I **had lost** my ticket before the concert.",
+        "ko": "나는 콘서트 전에 표를 잃어버렸었다."
+      },
+      {
+        "en": "She said she **had met** him.",
+        "ko": "그녀는 그를 만난 적이 있다고 말했다."
+      },
+      {
+        "en": "He was sad because his dog **had run** away.",
+        "ko": "그는 그의 개가 도망가 버려서 슬펐다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵은 글씨로 표시된 'had + 과거분사'는 문장에서 어떤 순서로 일어난 일을 나타낼 때 사용하나요?",
+        "a": "과거의 어떤 시점이나 일보다 더 먼저 일어난 일(대과거)을 나타낼 때 사용합니다."
+      },
+      "choose": [
+        {
+          "p": "When I turned on the TV, the game ____ ended.",
+          "c": [
+            "has",
+            "have",
+            "had"
+          ],
+          "a": 2,
+          "why": "TV를 켠 과거 시점보다 경기가 끝난 것이 먼저이므로 had를 씁니다."
+        },
+        {
+          "p": "I couldn't enter the house because I had ____ my key.",
+          "c": [
+            "forgotten",
+            "forgot",
+            "forget"
+          ],
+          "a": 0,
+          "why": "had 뒤에는 과거분사를 써야 하므로 forgotten이 맞습니다."
+        },
+        {
+          "p": "He was very tired because he ____ worked all night.",
+          "c": [
+            "had",
+            "has"
+          ],
+          "a": 0,
+          "why": "피곤했던 과거 시점보다 밤새 일한 것이 먼저이므로 과거완료 had를 씁니다."
+        },
+        {
+          "p": "Sujin told me she had ____ a new smartphone.",
+          "c": [
+            "buy",
+            "bought",
+            "buys"
+          ],
+          "a": 1,
+          "why": "had 뒤에는 동사의 과거분사형인 bought를 써야 합니다."
+        },
+        {
+          "p": "Before I met him, I ____ heard a lot about him.",
+          "c": [
+            "had",
+            "has"
+          ],
+          "a": 0,
+          "why": "만난 과거 시점보다 이전에 들은 것이므로 had를 씁니다."
+        },
+        {
+          "p": "When we reached the theater, all the tickets had ____ sold out.",
+          "c": [
+            "be",
+            "was",
+            "been"
+          ],
+          "a": 2,
+          "why": "had 뒤에는 be동사의 과거분사인 been을 써야 합니다."
+        },
+        {
+          "p": "I didn't recognize her because she ____ changed a lot.",
+          "c": [
+            "had",
+            "has"
+          ],
+          "a": 0,
+          "why": "알아보지 못한 과거 시점 이전에 변한 것이므로 had를 씁니다."
+        },
+        {
+          "p": "The teacher asked if I had ____ my homework.",
+          "c": [
+            "did",
+            "do",
+            "done"
+          ],
+          "a": 2,
+          "why": "had 뒤에는 과거분사 done을 써야 합니다."
+        },
+        {
+          "p": "By the time I called him, he had already ____ to bed.",
+          "c": [
+            "went",
+            "gone"
+          ],
+          "a": 1,
+          "why": "had 뒤에는 과거분사 gone을 써야 합니다."
+        },
+        {
+          "p": "She failed the test because she had not ____ hard.",
+          "c": [
+            "studied",
+            "study"
+          ],
+          "a": 0,
+          "why": "had not 뒤에는 과거분사 studied를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **had eaten** all the cookies before he came.",
+          "ko": "그가 오기 전에 내가 쿠키를 다 먹었었다."
+        },
+        {
+          "en": "She **had gone** home when the party ended.",
+          "ko": "파티가 끝났을 때 그녀는 집에 갔었다."
+        },
+        {
+          "en": "He **had bought** the tickets before Sunday.",
+          "ko": "그는 일요일 전에 그 표들을 샀었다."
+        },
+        {
+          "en": "I knew the story because I **had read** it.",
+          "ko": "나는 그것을 읽었었기 때문에 그 이야기를 알았다."
+        },
+        {
+          "en": "They **had played** soccer before it rained.",
+          "ko": "비가 오기 전에 그들은 축구를 했었다."
+        },
+        {
+          "en": "She **had forgotten** my name when we met.",
+          "ko": "우리가 만났을 때 그녀는 내 이름을 잊어버렸었다."
+        },
+        {
+          "en": "The store **had closed** when I got there.",
+          "ko": "내가 거기에 도착했을 때 그 가게는 문을 닫았었다."
+        },
+        {
+          "en": "I **had washed** my hands before I ate.",
+          "ko": "나는 밥을 먹기 전에 손을 씻었었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "When I got home, my brother has eaten the pizza.",
+          "r": "When I got home, my brother had eaten the pizza.",
+          "why": "집에 도착한 과거 시점보다 피자를 먹은 것이 먼저이므로 has가 아닌 had를 씁니다."
+        },
+        {
+          "w": "I was late because I had miss the bus.",
+          "r": "I was late because I had missed the bus.",
+          "why": "had 뒤에는 과거분사를 써야 하므로 missed로 고쳐야 합니다."
+        },
+        {
+          "w": "She said that she had broke the window.",
+          "r": "She said that she had broken the window.",
+          "why": "had 뒤에는 과거분사를 써야 하므로 broken으로 고쳐야 합니다."
+        },
+        {
+          "w": "By the time it rained, we have finished the game.",
+          "r": "By the time it rained, we had finished the game.",
+          "why": "비가 온 과거 시점보다 먼저 끝났으므로 have가 아닌 had를 씁니다."
+        },
+        {
+          "w": "He didn't know the answer because he hasn't studied.",
+          "r": "He didn't know the answer because he hadn't studied.",
+          "why": "몰랐던 과거 시점보다 이전의 일이므로 hasn't를 hadn't로 고쳐야 합니다."
+        },
+        {
+          "w": "I had never ate Mexican food before yesterday.",
+          "r": "I had never eaten Mexican food before yesterday.",
+          "why": "had 뒤에는 과거분사를 써야 하므로 ate를 eaten으로 고쳐야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "어딘가에 도착했을 때 이미 벌어진 상황을 말해 보세요.",
+          "frame": "When I arrived at ____, ____ had already ____."
+        },
+        {
+          "task": "과거에 어떤 일을 하지 않아서 겪은 결과를 말해 보세요.",
+          "frame": "I couldn't ____ because I had not ____."
+        },
+        {
+          "task": "다른 사람이 과거에 한 경험을 전달해 보세요.",
+          "frame": "He/She told me that he/she had ____ before."
+        },
+        {
+          "task": "어떤 일이 일어나기 전에 내가 끝낸 일을 말해 보세요.",
+          "frame": "I had already ____ before ____ started."
+        },
+        {
+          "task": "물건을 잃어버려서 겪은 불편함을 말해 보세요.",
+          "frame": "I didn't have my ____ because I had lost it."
+        },
+        {
+          "task": "친구를 만나기 전에 있었던 일을 말해 보세요.",
+          "frame": "Before I met my friend, I had ____."
+        }
+      ],
+      "mission": {
+        "title": "명탐정의 사건 일지",
+        "scene": "탐정이 되어 사건 현장에 도착하기 전에 무슨 일이 있었는지 추리해 봅시다.",
+        "steps": [
+          "짝과 함께 사건 현장 그림을 보고, 도착했을 때 이미 일어난 일을 찾습니다.",
+          "'When I arrived, the thief had already escaped.'처럼 과거완료를 써서 문장을 만듭니다.",
+          "서로 만든 문장을 비교하며 범인의 동선을 추리해 봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "내가 집에 도착했을 때 동생은 피자를 다 먹었었다.",
+          "cond": "had eaten을 써요.",
+          "model": "When I got home, my brother had eaten the pizza."
+        },
+        {
+          "ko": "나는 버스를 놓쳤었기 때문에 늦었다.",
+          "cond": "because와 had missed를 써요.",
+          "model": "I was late because I had missed the bus."
+        },
+        {
+          "ko": "그녀는 전에 나를 만난 적이 있다고 말했다.",
+          "cond": "had met을 써요.",
+          "model": "She said she had met me before."
+        },
+        {
+          "ko": "우리가 극장에 도착했을 때 영화는 이미 끝났었다.",
+          "cond": "had already ended를 써요.",
+          "model": "When we arrived at the theater, the movie had already ended."
+        },
+        {
+          "ko": "그는 지갑을 잃어버려서 돈이 없었다.",
+          "cond": "had lost를 써요.",
+          "model": "He had no money because he had lost his wallet."
+        },
+        {
+          "ko": "비가 오기 전에 그들은 경기를 끝냈었다.",
+          "cond": "had finished를 써요.",
+          "model": "They had finished the game before it rained."
+        }
+      ]
+    }
+  },
+  {
+    "id": "tense-future-perfect",
+    "discover": {
+      "q": "will have + 과거분사 문장을 보세요. by가 가리키는 시점은 언제인가요? 그 시점까지 무엇이 되어 있을 것이라고 말하나요?",
+      "a": "미래의 어느 시점(by + 미래 시점)까지 완료되어 있을 일을 will have + 과거분사로 나타낸다."
+    },
+    "choose": [
+      {
+        "p": "I will have ____ this book by Friday.",
+        "c": [
+          "finished",
+          "finish"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "p": "By next year, she will have ____.",
+        "c": [
+          "graduated",
+          "graduate"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "p": "Next month, we will have ____ here for ten years.",
+        "c": [
+          "lived",
+          "live"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "p": "The store will have ____ by then.",
+        "c": [
+          "closed",
+          "close"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "p": "By 9 p.m., I will have ____ my homework.",
+        "c": [
+          "done",
+          "did"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사 done을 씁니다."
+      },
+      {
+        "p": "By tomorrow morning, the snow will have ____.",
+        "c": [
+          "melted",
+          "melt",
+          "melting"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 동사의 과거분사(p.p.) 형태를 씁니다."
+      },
+      {
+        "p": "They ____ have arrived by 5 o'clock.",
+        "c": [
+          "will",
+          "are",
+          "do"
+        ],
+        "a": 0,
+        "why": "미래의 특정 시점(by 5 o'clock)까지 완료될 일은 미래완료(will have + 과거분사)로 나타냅니다."
+      },
+      {
+        "p": "By next week, he will ____ fixed the bike.",
+        "c": [
+          "have",
+          "has",
+          "had"
+        ],
+        "a": 0,
+        "why": "조동사 will 뒤에는 항상 동사원형인 have를 씁니다."
+      },
+      {
+        "p": "I will have ____ my room by noon.",
+        "c": [
+          "cleaned",
+          "clean",
+          "cleans"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사를 써야 하므로 cleaned가 맞습니다."
+      },
+      {
+        "p": "By 2030, we will have ____ a new house.",
+        "c": [
+          "built",
+          "build",
+          "building"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사 built를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I will have finish this book by Friday.",
+        "r": "I will have finished this book by Friday.",
+        "why": "will have 뒤에는 과거분사를 씁니다."
+      },
+      {
+        "w": "By 9 p.m., I will have did my homework.",
+        "r": "By 9 p.m., I will have done my homework.",
+        "why": "do의 과거분사는 done입니다."
+      },
+      {
+        "w": "The store will closed by then.",
+        "r": "The store will have closed by then.",
+        "why": "will 뒤에 have + 과거분사가 필요합니다."
+      },
+      {
+        "w": "By tomorrow, he will has finished the project.",
+        "r": "By tomorrow, he will have finished the project.",
+        "why": "조동사 will 뒤에는 주어에 상관없이 항상 동사원형 have를 써야 합니다."
+      },
+      {
+        "w": "They will have arrive by 6 p.m.",
+        "r": "They will have arrived by 6 p.m.",
+        "why": "will have 뒤에는 동사원형이 아니라 과거분사 형태를 써야 합니다."
+      },
+      {
+        "w": "By next month, I will have learn French.",
+        "r": "By next month, I will have learned French.",
+        "why": "will have 뒤에는 과거분사를 써야 하므로 learn을 learned로 고칩니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "주말까지 끝내 놓을 일을 말해요.",
+        "frame": "By ____, I will have ____ed."
+      },
+      {
+        "task": "내년까지 이루어질 일을 말해요.",
+        "frame": "By next year, I will have ____."
+      },
+      {
+        "task": "몇 년째가 되는지 말해요.",
+        "frame": "Next month, I will have ____ed here for ____ years."
+      },
+      {
+        "task": "그때쯤 끝나 있을 일을 말해요.",
+        "frame": "The ____ will have ____ed by then."
+      },
+      {
+        "task": "내일 특정 시간까지 완료할 숙제를 말해봅시다.",
+        "frame": "By ____ tomorrow, I will have finished my ____ homework."
+      },
+      {
+        "task": "친구가 도착하기 전에 다 먹을 간식을 말해봅시다.",
+        "frame": "I will have eaten the ____ by the time you arrive."
+      }
+    ],
+    "mission": {
+      "title": "그때까지 해 놓을게요! 약속 카드",
+      "scene": "마감일까지 끝낼 일을 약속하는 카드를 쓰고 발표해요.",
+      "steps": [
+        "By ____, I will have ____ed. 로 약속을 세 가지 쓴다.",
+        "친구들에게 읽어 준다.",
+        "친구는 Will you really have ____ed by then? 로 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "금요일까지는 이 책을 다 읽었을 거야.",
+        "cond": "will have finished를 써요.",
+        "model": "I will have finished this book by Friday."
+      },
+      {
+        "ko": "내년이면 그녀는 졸업했을 거야.",
+        "cond": "will have graduated를 써요.",
+        "model": "By next year, she will have graduated."
+      },
+      {
+        "ko": "그때쯤이면 가게는 문을 닫았을 거야.",
+        "cond": "will have closed를 써요.",
+        "model": "The store will have closed by then."
+      },
+      {
+        "ko": "내일까지 그들은 도착해 있을 것이다.",
+        "cond": "will have arrived를 써요.",
+        "model": "By tomorrow, they will have arrived."
+      },
+      {
+        "ko": "월요일까지 나는 그 보고서를 다 읽었을 것이다.",
+        "cond": "will have read를 써요.",
+        "model": "I will have read the report by Monday."
+      },
+      {
+        "ko": "오늘 밤까지 그녀는 떠났을 것이다.",
+        "cond": "will have left를 써요.",
+        "model": "By tonight, she will have left."
+      }
+    ],
+    "dropPitfalls": [
+      "By Friday, I will finish it. (끝나 있음을 강조)"
+    ],
+    "buildExtra": [
+      {
+        "en": "By tonight, she **will have left**.",
+        "ko": "오늘 밤까지 그녀는 떠났을 것이다."
+      },
+      {
+        "en": "He **will have eaten** lunch by then.",
+        "ko": "그때쯤이면 그는 점심을 다 먹었을 것이다."
+      },
+      {
+        "en": "By tomorrow, they **will have arrived**.",
+        "ko": "내일까지 그들은 도착해 있을 것이다."
+      },
+      {
+        "en": "I **will have read** the report by Monday.",
+        "ko": "월요일까지 나는 그 보고서를 다 읽었을 것이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 조동사 will과 have 뒤에 오는 동사는 어떤 형태인가요?",
+        "a": "동사의 과거분사(p.p.) 형태입니다."
+      },
+      "choose": [
+        {
+          "p": "By next Sunday, I will have ____ this puzzle.",
+          "c": [
+            "completed",
+            "complete",
+            "completing"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사를 씁니다."
+        },
+        {
+          "p": "She will have ____ the letter by tomorrow.",
+          "c": [
+            "written",
+            "wrote",
+            "write"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사 written을 씁니다."
+        },
+        {
+          "p": "By 8 p.m., the train will have ____.",
+          "c": [
+            "left",
+            "leave",
+            "leaving"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사 left를 씁니다."
+        },
+        {
+          "p": "They will ____ painted the fence by the weekend.",
+          "c": [
+            "have",
+            "has",
+            "had"
+          ],
+          "a": 0,
+          "why": "조동사 will 뒤에는 동사원형 have를 씁니다."
+        },
+        {
+          "p": "By next year, he will have ____ a famous singer.",
+          "c": [
+            "become",
+            "became",
+            "becomes"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사를 씁니다. become의 과거분사는 become입니다."
+        },
+        {
+          "p": "I will have ____ all the milk by tomorrow morning.",
+          "c": [
+            "drunk",
+            "drank",
+            "drink"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사 drunk를 씁니다."
+        },
+        {
+          "p": "By the time you wake up, I ____ have gone to school.",
+          "c": [
+            "will",
+            "am",
+            "do"
+          ],
+          "a": 0,
+          "why": "미래의 특정 시점까지 완료될 일은 will have + 과거분사로 나타냅니다."
+        },
+        {
+          "p": "The movie will have ____ by 10 o'clock.",
+          "c": [
+            "ended",
+            "end",
+            "ends"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사를 씁니다."
+        },
+        {
+          "p": "By next month, we will have ____ each other for a year.",
+          "c": [
+            "known",
+            "knew",
+            "know"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사 known을 씁니다."
+        },
+        {
+          "p": "He will have ____ his car by Friday.",
+          "c": [
+            "sold",
+            "sell",
+            "selling"
+          ],
+          "a": 0,
+          "why": "will have 뒤에는 과거분사 sold를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "By Sunday, I **will have completed** this puzzle.",
+          "ko": "일요일까지 나는 이 퍼즐을 다 맞췄을 것이다."
+        },
+        {
+          "en": "She **will have written** the letter by tomorrow.",
+          "ko": "내일까지 그녀는 그 편지를 다 썼을 것이다."
+        },
+        {
+          "en": "By 8 p.m., the train **will have left**.",
+          "ko": "오후 8시까지 기차는 떠났을 것이다."
+        },
+        {
+          "en": "They **will have painted** the fence by the weekend.",
+          "ko": "주말까지 그들은 울타리 칠을 끝냈을 것이다."
+        },
+        {
+          "en": "By next year, he **will have become** a singer.",
+          "ko": "내년이면 그는 가수가 되어 있을 것이다."
+        },
+        {
+          "en": "I **will have drunk** the milk by morning.",
+          "ko": "아침까지 나는 그 우유를 다 마셨을 것이다."
+        },
+        {
+          "en": "The movie **will have ended** by 10 o'clock.",
+          "ko": "10시까지 그 영화는 끝났을 것이다."
+        },
+        {
+          "en": "He **will have sold** his car by Friday.",
+          "ko": "금요일까지 그는 자신의 차를 팔았을 것이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "By next Sunday, I will have complete this puzzle.",
+          "r": "By next Sunday, I will have completed this puzzle.",
+          "why": "will have 뒤에는 과거분사를 써야 합니다."
+        },
+        {
+          "w": "She will has written the letter by tomorrow.",
+          "r": "She will have written the letter by tomorrow.",
+          "why": "조동사 will 뒤에는 주어에 상관없이 동사원형 have를 씁니다."
+        },
+        {
+          "w": "By 8 p.m., the train will have leave.",
+          "r": "By 8 p.m., the train will have left.",
+          "why": "leave의 과거분사는 left입니다."
+        },
+        {
+          "w": "They will have paint the fence by the weekend.",
+          "r": "They will have painted the fence by the weekend.",
+          "why": "will have 뒤에는 과거분사를 써야 합니다."
+        },
+        {
+          "w": "By next year, he will have became a singer.",
+          "r": "By next year, he will have become a singer.",
+          "why": "become의 과거분사는 become입니다."
+        },
+        {
+          "w": "The movie will have end by 10 o'clock.",
+          "r": "The movie will have ended by 10 o'clock.",
+          "why": "end의 과거분사는 ended입니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "주말까지 끝마칠 취미 활동을 말해봅시다.",
+          "frame": "By the weekend, I will have completed my ____."
+        },
+        {
+          "task": "내일 특정 시간까지 다 마실 음료를 말해봅시다.",
+          "frame": "By ____ tomorrow, I will have drunk the ____."
+        },
+        {
+          "task": "특정 시간까지 떠날 교통수단을 말해봅시다.",
+          "frame": "By ____, the ____ will have left."
+        },
+        {
+          "task": "내년까지 되어 있을 장래 희망을 말해봅시다.",
+          "frame": "By next year, I will have become a ____."
+        },
+        {
+          "task": "금요일까지 다 쓸 글의 종류를 말해봅시다.",
+          "frame": "I will have written a ____ by Friday."
+        },
+        {
+          "task": "특정 시간까지 끝날 행사를 말해봅시다.",
+          "frame": "The ____ will have ended by ____ o'clock."
+        }
+      ],
+      "mission": {
+        "title": "타임캡슐 2030",
+        "scene": "2030년에 열어볼 타임캡슐에 들어갈 편지를 쓰며, 그때쯤 우리가 무엇을 이루었을지 상상해 봅니다.",
+        "steps": [
+          "2030년까지 자신이 이루고 싶은 목표 세 가지를 생각합니다.",
+          "\"By 2030, I will have...\" 패턴을 사용하여 짝에게 자신의 목표를 영어로 말합니다.",
+          "짝의 목표를 듣고 가장 멋진 목표 하나를 골라 종이에 적어 타임캡슐 상자에 넣습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "일요일까지 나는 이 퍼즐을 다 맞췄을 것이다.",
+          "cond": "will have completed를 써요.",
+          "model": "By Sunday, I will have completed this puzzle."
+        },
+        {
+          "ko": "내일까지 그녀는 그 편지를 다 썼을 것이다.",
+          "cond": "will have written을 써요.",
+          "model": "She will have written the letter by tomorrow."
+        },
+        {
+          "ko": "오후 8시까지 기차는 떠났을 것이다.",
+          "cond": "will have left를 써요.",
+          "model": "By 8 p.m., the train will have left."
+        },
+        {
+          "ko": "주말까지 그들은 울타리 칠을 끝냈을 것이다.",
+          "cond": "will have painted를 써요.",
+          "model": "They will have painted the fence by the weekend."
+        },
+        {
+          "ko": "내년이면 그는 가수가 되어 있을 것이다.",
+          "cond": "will have become을 써요.",
+          "model": "By next year, he will have become a singer."
+        },
+        {
+          "ko": "10시까지 그 영화는 끝났을 것이다.",
+          "cond": "will have ended를 써요.",
+          "model": "The movie will have ended by 10 o'clock."
+        }
+      ]
+    }
+  },
+  {
+    "id": "tense-present-perfect-progressive",
+    "discover": {
+      "q": "have/has been + 동사ing 문장을 보세요. 어떤 일이 얼마나 계속되고 있다는 뜻인가요? since와 for는 어떻게 쓰였나요?",
+      "a": "과거에 시작해 지금까지 계속 진행 중인 일을 나타낸다. since는 시작 시점, for는 기간 앞에 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I have been ____ for you for an hour.",
+        "c": [
+          "waiting",
+          "wait"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "It has been raining ____ morning.",
+        "c": [
+          "since",
+          "for"
+        ],
+        "a": 0,
+        "why": "시작 시점(morning) 앞에는 since를 씁니다."
+      },
+      {
+        "p": "She has been studying English ____ three years.",
+        "c": [
+          "for",
+          "since"
+        ],
+        "a": 0,
+        "why": "기간(three years) 앞에는 for를 씁니다."
+      },
+      {
+        "p": "How long have you ____ learning the piano?",
+        "c": [
+          "been",
+          "be"
+        ],
+        "a": 0,
+        "why": "현재완료진행은 have been + ing입니다."
+      },
+      {
+        "p": "We have been ____ on the phone all night.",
+        "c": [
+          "talking",
+          "talk"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "He ____ been playing soccer for two hours.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 1,
+        "why": "주어가 3인칭 단수(He)일 때는 has를 씁니다."
+      },
+      {
+        "p": "They have been ____ TV since 2 o'clock.",
+        "c": [
+          "watched",
+          "watching"
+        ],
+        "a": 1,
+        "why": "현재완료진행은 have been 뒤에 동사ing를 씁니다."
+      },
+      {
+        "p": "I have been reading this book ____ last Monday.",
+        "c": [
+          "for",
+          "since"
+        ],
+        "a": 1,
+        "why": "과거의 특정 시점(last Monday) 앞에는 since를 씁니다."
+      },
+      {
+        "p": "My sister has ____ sleeping all afternoon.",
+        "c": [
+          "be",
+          "being",
+          "been"
+        ],
+        "a": 2,
+        "why": "현재완료진행은 have/has been + ing 형태를 씁니다."
+      },
+      {
+        "p": "We have been living here ____ five years.",
+        "c": [
+          "since",
+          "for"
+        ],
+        "a": 1,
+        "why": "기간(five years) 앞에는 for를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I have been wait for an hour.",
+        "r": "I have been waiting for an hour.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "It has been rain since morning.",
+        "r": "It has been raining since morning.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "She has been studying English since three years.",
+        "r": "She has been studying English for three years.",
+        "why": "기간 앞에는 for를 씁니다."
+      },
+      {
+        "w": "He have been playing soccer for two hours.",
+        "r": "He has been playing soccer for two hours.",
+        "why": "주어가 3인칭 단수일 때는 has를 씁니다."
+      },
+      {
+        "w": "They have been watch TV since 2 o'clock.",
+        "r": "They have been watching TV since 2 o'clock.",
+        "why": "현재완료진행은 have been 뒤에 동사ing를 씁니다."
+      },
+      {
+        "w": "I have been reading this book for last Monday.",
+        "r": "I have been reading this book since last Monday.",
+        "why": "과거의 특정 시점 앞에는 since를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "계속하고 있는 일과 시간을 말해요.",
+        "frame": "I have been ____ing for ____ hours."
+      },
+      {
+        "task": "시작한 때부터 계속하고 있는 일을 말해요.",
+        "frame": "I have been ____ing since ____."
+      },
+      {
+        "task": "짝이 얼마나 했는지 물어요.",
+        "frame": "How long have you been ____ing? — For ____."
+      },
+      {
+        "task": "밤새 계속한 일을 말해요.",
+        "frame": "We have been ____ing all night."
+      },
+      {
+        "task": "친구가 언제부터 그 취미를 계속해 왔는지 물어봐요.",
+        "frame": "How long have you been ____ing?"
+      },
+      {
+        "task": "내가 특정 시점부터 계속 해온 활동을 말해요.",
+        "frame": "I have been ____ing since ____."
+      }
+    ],
+    "mission": {
+      "title": "얼마나 오래 했을까요? 인터뷰",
+      "scene": "친구가 오랫동안 계속하고 있는 취미를 인터뷰해요.",
+      "steps": [
+        "How long have you been ____ing? 으로 묻는다.",
+        "I have been ____ing for/since ____. 로 대답한다.",
+        "He/She has been ____ing for ____. 로 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "너를 한 시간째 기다리고 있어.",
+        "cond": "have been waiting을 써요.",
+        "model": "I have been waiting for you for an hour."
+      },
+      {
+        "ko": "아침부터 계속 비가 오고 있어.",
+        "cond": "has been raining과 since를 써요.",
+        "model": "It has been raining since morning."
+      },
+      {
+        "ko": "피아노를 배운 지 얼마나 됐어?",
+        "cond": "How long으로 시작해요.",
+        "model": "How long have you been learning the piano?"
+      },
+      {
+        "ko": "그는 2시간 동안 계속 축구를 하고 있어.",
+        "cond": "has been playing을 써요.",
+        "model": "He has been playing soccer for two hours."
+      },
+      {
+        "ko": "그들은 2시부터 계속 TV를 보고 있어.",
+        "cond": "have been watching과 since를 써요.",
+        "model": "They have been watching TV since 2 o'clock."
+      },
+      {
+        "ko": "나는 지난 월요일부터 계속 이 책을 읽고 있어.",
+        "cond": "have been reading을 써요.",
+        "model": "I have been reading this book since last Monday."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **has been playing** games since noon.",
+        "ko": "그는 정오부터 계속 게임을 하고 있다."
+      },
+      {
+        "en": "They **have been sleeping** for ten hours.",
+        "ko": "그들은 10시간째 자고 있다."
+      },
+      {
+        "en": "I **have been running** for thirty minutes.",
+        "ko": "나는 30분 동안 계속 달리고 있다."
+      },
+      {
+        "en": "She **has been cooking** dinner since 5 p.m.",
+        "ko": "그녀는 오후 5시부터 계속 저녁을 요리하고 있다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 부분의 공통된 형태는 무엇인가요?",
+        "a": "have(has) been + 동사ing 형태입니다."
+      },
+      "choose": [
+        {
+          "p": "The dog ____ been barking for a long time.",
+          "c": [
+            "has",
+            "have"
+          ],
+          "a": 0,
+          "why": "주어가 3인칭 단수일 때는 has를 씁니다."
+        },
+        {
+          "p": "I have ____ listening to music since this morning.",
+          "c": [
+            "be",
+            "been"
+          ],
+          "a": 1,
+          "why": "현재완료진행은 have been + ing 형태를 씁니다."
+        },
+        {
+          "p": "She has been ____ a letter for an hour.",
+          "c": [
+            "writing",
+            "write"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        },
+        {
+          "p": "We have been practicing soccer ____ three weeks.",
+          "c": [
+            "since",
+            "for"
+          ],
+          "a": 1,
+          "why": "기간(three weeks) 앞에는 for를 씁니다."
+        },
+        {
+          "p": "How long ____ he been working here?",
+          "c": [
+            "has",
+            "have"
+          ],
+          "a": 0,
+          "why": "주어가 he이므로 has를 씁니다."
+        },
+        {
+          "p": "They have been cleaning the room ____ 10 a.m.",
+          "c": [
+            "since",
+            "for"
+          ],
+          "a": 0,
+          "why": "시작 시점(10 a.m.) 앞에는 since를 씁니다."
+        },
+        {
+          "p": "You have been ____ on the sofa all day.",
+          "c": [
+            "lie",
+            "lying"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        },
+        {
+          "p": "It has been ____ heavily since yesterday.",
+          "c": [
+            "snowing",
+            "snow"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        },
+        {
+          "p": "Kevin has been studying math ____ two hours.",
+          "c": [
+            "since",
+            "for"
+          ],
+          "a": 1,
+          "why": "기간(two hours) 앞에는 for를 씁니다."
+        },
+        {
+          "p": "My parents have been ____ in the garden since morning.",
+          "c": [
+            "working",
+            "work"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The baby **has been crying** for twenty minutes.",
+          "ko": "아기가 20분 동안 계속 울고 있다."
+        },
+        {
+          "en": "We **have been walking** since 3 o'clock.",
+          "ko": "우리는 3시부터 계속 걷고 있다."
+        },
+        {
+          "en": "He **has been painting** the wall all day.",
+          "ko": "그는 하루 종일 계속 벽을 칠하고 있다."
+        },
+        {
+          "en": "I **have been looking** for my keys.",
+          "ko": "나는 계속 내 열쇠를 찾고 있다."
+        },
+        {
+          "en": "They **have been swimming** for an hour.",
+          "ko": "그들은 한 시간 동안 계속 수영하고 있다."
+        },
+        {
+          "en": "She **has been practicing** the guitar since yesterday.",
+          "ko": "그녀는 어제부터 계속 기타를 연습하고 있다."
+        },
+        {
+          "en": "It **has been blowing** hard since morning.",
+          "ko": "아침부터 바람이 계속 세게 불고 있다."
+        },
+        {
+          "en": "You **have been playing** chess for three hours.",
+          "ko": "너는 3시간 동안 계속 체스를 두고 있다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The dog have been barking for a long time.",
+          "r": "The dog has been barking for a long time.",
+          "why": "주어가 3인칭 단수일 때는 has를 씁니다."
+        },
+        {
+          "w": "I have be listening to music since this morning.",
+          "r": "I have been listening to music since this morning.",
+          "why": "현재완료진행은 have been 또는 has been을 씁니다."
+        },
+        {
+          "w": "She has been write a letter for an hour.",
+          "r": "She has been writing a letter for an hour.",
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        },
+        {
+          "w": "We have been practicing soccer since three weeks.",
+          "r": "We have been practicing soccer for three weeks.",
+          "why": "기간 앞에는 since가 아니라 for를 씁니다."
+        },
+        {
+          "w": "How long have he been working here?",
+          "r": "How long has he been working here?",
+          "why": "주어가 3인칭 단수이므로 has를 씁니다."
+        },
+        {
+          "w": "They have been cleaning the room for 10 a.m.",
+          "r": "They have been cleaning the room since 10 a.m.",
+          "why": "시작 시점 앞에는 for가 아니라 since를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "특정 기간 동안 계속 해온 운동을 말해요.",
+          "frame": "I have been playing ____ for ____ months."
+        },
+        {
+          "task": "오늘 아침부터 계속 날씨가 어떤지 말해요.",
+          "frame": "It has been ____ing since this morning."
+        },
+        {
+          "task": "친구가 얼마나 오랫동안 숙제를 하고 있는지 물어봐요.",
+          "frame": "How long have you been doing your ____?"
+        },
+        {
+          "task": "가족 중 한 명이 하루 종일 하고 있는 일을 말해요.",
+          "frame": "My ____ has been ____ing all day."
+        },
+        {
+          "task": "친구들과 함께 특정 시점부터 계속 해온 게임을 말해요.",
+          "frame": "We have been playing ____ since ____."
+        },
+        {
+          "task": "누군가를 얼마나 오랫동안 기다렸는지 말해요.",
+          "frame": "I have been waiting for ____ for ____ minutes."
+        }
+      ],
+      "mission": {
+        "title": "탐정 사무소: 누가 가장 오래 했나?",
+        "scene": "여러분은 탐정이 되어 친구들이 오늘 하루 동안 어떤 일을 가장 오래 했는지 알아내야 합니다.",
+        "steps": [
+          "친구 세 명에게 다가가 \"How long have you been studying today?\"라고 질문합니다.",
+          "친구가 \"I have been studying for ~ hours.\"라고 대답하면 수첩에 기록합니다.",
+          "가장 오랜 시간 동안 공부한 친구를 찾아 반 전체에 발표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "아기가 20분 동안 계속 울고 있어.",
+          "cond": "The baby로 시작하고 for를 써요.",
+          "model": "The baby has been crying for twenty minutes."
+        },
+        {
+          "ko": "우리는 3시부터 계속 걷고 있어.",
+          "cond": "We로 시작하고 since를 써요.",
+          "model": "We have been walking since 3 o'clock."
+        },
+        {
+          "ko": "그는 하루 종일 계속 벽을 칠하고 있어.",
+          "cond": "He로 시작하고 all day를 써요.",
+          "model": "He has been painting the wall all day."
+        },
+        {
+          "ko": "나는 계속 내 열쇠를 찾고 있어.",
+          "cond": "I로 시작하고 look for를 써요.",
+          "model": "I have been looking for my keys."
+        },
+        {
+          "ko": "그녀는 어제부터 계속 기타를 연습하고 있어.",
+          "cond": "She로 시작하고 practice를 써요.",
+          "model": "She has been practicing the guitar since yesterday."
+        },
+        {
+          "ko": "그들은 한 시간 동안 계속 수영하고 있어.",
+          "cond": "They로 시작하고 swim을 써요.",
+          "model": "They have been swimming for an hour."
+        }
+      ]
+    }
+  },
+  {
+    "id": "tense-past-perfect-progressive",
+    "discover": {
+      "q": "had been + 동사ing 문장을 보세요. 과거의 어느 시점까지 얼마 동안 계속되고 있었던 일인가요?",
+      "a": "과거의 한 시점까지 계속 진행되고 있었던 일을 had been + 동사ing로 나타낸다."
+    },
+    "choose": [
+      {
+        "p": "I had been ____ for an hour when he finally came.",
+        "c": [
+          "waiting",
+          "wait"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "She was tired because she had been ____.",
+        "c": [
+          "running",
+          "run"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "They had ____ living in Seoul before they moved.",
+        "c": [
+          "been",
+          "be"
+        ],
+        "a": 0,
+        "why": "과거완료진행은 had been + ing입니다."
+      },
+      {
+        "p": "It had been ____ all night, so the roads were white.",
+        "c": [
+          "snowing",
+          "snow"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "He had been working there ____ five years when he quit.",
+        "c": [
+          "for",
+          "since"
+        ],
+        "a": 0,
+        "why": "기간 앞에는 for를 씁니다."
+      },
+      {
+        "p": "The boys were sweating because they had been ____ soccer.",
+        "c": [
+          "play",
+          "playing",
+          "played"
+        ],
+        "a": 1,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "I had ____ studying English for two hours when my mom called.",
+        "c": [
+          "be",
+          "being",
+          "been"
+        ],
+        "a": 2,
+        "why": "과거완료진행은 had been + ing입니다."
+      },
+      {
+        "p": "She had been ____ a book before she fell asleep.",
+        "c": [
+          "read",
+          "to read",
+          "reading"
+        ],
+        "a": 2,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "We had been walking in the park ____ it started to rain.",
+        "c": [
+          "when",
+          "during",
+          "while"
+        ],
+        "a": 0,
+        "why": "과거의 특정 시점을 나타낼 때는 접속사 when을 씁니다."
+      },
+      {
+        "p": "Tom was very hungry because he had been ____ all morning.",
+        "c": [
+          "work",
+          "working"
+        ],
+        "a": 1,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I had been wait for an hour.",
+        "r": "I had been waiting for an hour.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "She had been run, so she was tired.",
+        "r": "She had been running, so she was tired.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "They had be living in Seoul.",
+        "r": "They had been living in Seoul.",
+        "why": "had 뒤에는 been을 씁니다."
+      },
+      {
+        "w": "We had been watch TV for a long time.",
+        "r": "We had been watching TV for a long time.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "He had be playing games when I entered the room.",
+        "r": "He had been playing games when I entered the room.",
+        "why": "과거완료진행은 had been + ing입니다."
+      },
+      {
+        "w": "I had been studied math before the test.",
+        "r": "I had been studying math before the test.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "누군가 오기 전까지 하고 있던 일을 말해요.",
+        "frame": "I had been ____ing for ____ when ____."
+      },
+      {
+        "task": "피곤한 이유를 말해요.",
+        "frame": "I was tired because I had been ____ing."
+      },
+      {
+        "task": "이사 가기 전의 생활을 말해요.",
+        "frame": "I had been living in ____ before ____."
+      },
+      {
+        "task": "밤새 계속된 일의 결과를 말해요.",
+        "frame": "It had been ____ing all night, so ____."
+      },
+      {
+        "task": "친구가 도착했을 때 내가 하고 있던 일을 말해요.",
+        "frame": "I had been ____ing when my friend arrived."
+      },
+      {
+        "task": "과거의 특정 시점 이전에 계속 하던 취미를 말해요.",
+        "frame": "I had been ____ing before I started ____."
+      }
+    ],
+    "mission": {
+      "title": "그때까지 계속하고 있었어요! 이야기",
+      "scene": "과거의 한 순간 전까지 계속되던 일을 이야기로 만들어 발표해요.",
+      "steps": [
+        "사건 하나를 정한다. (예: 친구가 도착했다)",
+        "그 전까지 하고 있던 일을 had been ____ing 으로 말한다.",
+        "결과를 so로 이어 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그가 마침내 왔을 때 나는 한 시간째 기다리고 있었다.",
+        "cond": "had been waiting을 써요.",
+        "model": "I had been waiting for an hour when he finally came."
+      },
+      {
+        "ko": "그녀는 계속 달려서 피곤했다.",
+        "cond": "had been running을 써요.",
+        "model": "She was tired because she had been running."
+      },
+      {
+        "ko": "밤새 눈이 와서 길이 하얬다.",
+        "cond": "had been snowing을 써요.",
+        "model": "It had been snowing all night, so the roads were white."
+      },
+      {
+        "ko": "전화가 울렸을 때 그는 자고 있었다.",
+        "cond": "had been sleeping을 써요.",
+        "model": "He had been sleeping when the phone rang."
+      },
+      {
+        "ko": "그들은 한 시간째 이야기하고 있었다.",
+        "cond": "had been talking을 써요.",
+        "model": "They had been talking for an hour."
+      },
+      {
+        "ko": "나는 저녁 식사 전에 내 방을 청소하고 있었다.",
+        "cond": "had been cleaning을 써요.",
+        "model": "I had been cleaning my room before dinner."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **had been sleeping** when the phone rang.",
+        "ko": "전화가 울렸을 때 그는 자고 있었다."
+      },
+      {
+        "en": "They **had been talking** for an hour.",
+        "ko": "그들은 한 시간째 이야기하고 있었다."
+      },
+      {
+        "en": "I **had been cleaning** my room before dinner.",
+        "ko": "나는 저녁 식사 전에 내 방을 청소하고 있었다."
+      },
+      {
+        "en": "She **had been practicing** the piano all afternoon.",
+        "ko": "그녀는 오후 내내 피아노를 연습하고 있었다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵은 글씨로 표시된 부분(had been ~ing)은 어떤 의미를 나타낼까요?",
+        "a": "과거의 어느 시점 이전에 시작된 일이 그 시점까지 계속 진행 중이었음을 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "My eyes were red because I had been ____.",
+          "c": [
+            "cry",
+            "crying"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "They had been ____ for the bus when it finally arrived.",
+          "c": [
+            "waiting",
+            "waited"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "The ground was wet because it had ____ raining.",
+          "c": [
+            "be",
+            "been"
+          ],
+          "a": 1,
+          "why": "과거완료진행은 had been + ing입니다."
+        },
+        {
+          "p": "He had been ____ English for three years before he went to London.",
+          "c": [
+            "study",
+            "studying"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "I had been ____ to music when the teacher came in.",
+          "c": [
+            "listen",
+            "listening",
+            "listened"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "She was out of breath because she had been ____ fast.",
+          "c": [
+            "running",
+            "run",
+            "ran"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "We had been ____ video games all night.",
+          "c": [
+            "play",
+            "played",
+            "playing"
+          ],
+          "a": 2,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "The dog had been ____ loudly before the owner returned.",
+          "c": [
+            "barked",
+            "barking"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "I had been ____ dinner when my dad arrived.",
+          "c": [
+            "cooking",
+            "cook",
+            "to cook"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "They had been ____ in the pool for an hour.",
+          "c": [
+            "swim",
+            "swimming",
+            "swam"
+          ],
+          "a": 1,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **had been cooking** dinner.",
+          "ko": "나는 저녁을 요리하고 있었다."
+        },
+        {
+          "en": "She **had been crying** in her room.",
+          "ko": "그녀는 방에서 울고 있었다."
+        },
+        {
+          "en": "We **had been swimming** for an hour.",
+          "ko": "우리는 한 시간째 수영하고 있었다."
+        },
+        {
+          "en": "The dog **had been barking** loudly.",
+          "ko": "개가 크게 짖고 있었다."
+        },
+        {
+          "en": "He **had been driving** for three hours.",
+          "ko": "그는 세 시간째 운전하고 있었다."
+        },
+        {
+          "en": "They **had been playing** chess together.",
+          "ko": "그들은 함께 체스를 두고 있었다."
+        },
+        {
+          "en": "My brother **had been painting** the wall.",
+          "ko": "내 남동생은 벽을 칠하고 있었다."
+        },
+        {
+          "en": "The girls **had been singing** a song.",
+          "ko": "그 소녀들은 노래를 부르고 있었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I had been cook dinner when he came.",
+          "r": "I had been cooking dinner when he came.",
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "w": "She had be crying in her room.",
+          "r": "She had been crying in her room.",
+          "why": "과거완료진행은 had been + ing입니다."
+        },
+        {
+          "w": "We had been swam for an hour.",
+          "r": "We had been swimming for an hour.",
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "w": "The dog has been barking before I arrived.",
+          "r": "The dog had been barking before I arrived.",
+          "why": "과거 시점 이전의 일이므로 과거완료진행을 씁니다."
+        },
+        {
+          "w": "He had been drive for three hours.",
+          "r": "He had been driving for three hours.",
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "w": "They had been play chess together.",
+          "r": "They had been playing chess together.",
+          "why": "been 뒤에는 동사ing를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내가 지쳤던 이유를 과거완료진행으로 말해요.",
+          "frame": "I was exhausted because I had been ____ing."
+        },
+        {
+          "task": "부모님이 집에 오셨을 때 내가 하던 일을 말해요.",
+          "frame": "I had been ____ing when my parents came home."
+        },
+        {
+          "task": "친구를 만나기 전까지 하던 일을 말해요.",
+          "frame": "I had been ____ing before I met my friend."
+        },
+        {
+          "task": "강아지가 주인이 오기 전까지 하던 행동을 말해요.",
+          "frame": "My dog had been ____ing before I returned."
+        },
+        {
+          "task": "비가 오기 전까지 밖에서 하던 놀이를 말해요.",
+          "frame": "We had been ____ing outside before it rained."
+        },
+        {
+          "task": "시험 전에 얼마나 오래 공부했는지 말해요.",
+          "frame": "I had been studying for ____ before the test."
+        }
+      ],
+      "mission": {
+        "title": "명탐정의 추리",
+        "scene": "사건 현장에 도착한 탐정이 되어 용의자들이 사건 발생 전에 무엇을 하고 있었는지 알아냅니다.",
+        "steps": [
+          "친구와 탐정, 용의자 역할을 정합니다.",
+          "탐정은 \"What had you been doing before the alarm rang?\"이라고 묻습니다.",
+          "용의자는 \"I had been ____ing.\"이라고 알리바이를 대답합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 그가 왔을 때 저녁을 요리하고 있었다.",
+          "cond": "had been cooking을 써요.",
+          "model": "I had been cooking dinner when he came."
+        },
+        {
+          "ko": "그녀는 방에서 계속 울고 있었다.",
+          "cond": "had been crying을 써요.",
+          "model": "She had been crying in her room."
+        },
+        {
+          "ko": "우리는 한 시간째 수영하고 있었다.",
+          "cond": "had been swimming을 써요.",
+          "model": "We had been swimming for an hour."
+        },
+        {
+          "ko": "내가 도착하기 전에 개가 짖고 있었다.",
+          "cond": "had been barking을 써요.",
+          "model": "The dog had been barking before I arrived."
+        },
+        {
+          "ko": "그는 세 시간째 운전하고 있었다.",
+          "cond": "had been driving을 써요.",
+          "model": "He had been driving for three hours."
+        },
+        {
+          "ko": "그들은 함께 체스를 두고 있었다.",
+          "cond": "had been playing을 써요.",
+          "model": "They had been playing chess together."
+        }
+      ]
+    }
+  },
+  {
+    "id": "tense-future-perfect-progressive",
+    "discover": {
+      "q": "will have been + 동사ing 문장을 보세요. 미래의 어느 시점에 그때까지 얼마나 계속한 셈이 되는지를 말하고 있나요?",
+      "a": "미래의 한 시점까지 계속 진행한 기간이 얼마가 되는지를 will have been + 동사ing로 나타낸다."
+    },
+    "choose": [
+      {
+        "p": "By next month, I will have been ____ here for a year.",
+        "c": [
+          "working",
+          "work"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "At 6, we will have been ____ for five hours.",
+        "c": [
+          "driving",
+          "drive"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "Next spring, she will ____ been teaching for 20 years.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "will 뒤에는 동사원형 have를 씁니다."
+      },
+      {
+        "p": "By noon, they will have been ____ for three hours.",
+        "c": [
+          "playing",
+          "play"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "In June, I will have been ____ English for ten years.",
+        "c": [
+          "learning",
+          "learn"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "p": "By tomorrow, he will have ____ sleeping for ten hours.",
+        "c": [
+          "been",
+          "be",
+          "being"
+        ],
+        "a": 0,
+        "why": "미래완료진행형은 will have been 동사ing 형태를 씁니다."
+      },
+      {
+        "p": "At 8 o'clock, we will have been ____ TV for two hours.",
+        "c": [
+          "watching",
+          "watch",
+          "watched"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 현재분사(동사ing)를 씁니다."
+      },
+      {
+        "p": "Next year, they ____ have been living in Seoul for five years.",
+        "c": [
+          "will",
+          "are",
+          "do"
+        ],
+        "a": 0,
+        "why": "미래의 시점(Next year)까지 계속되는 일이므로 조동사 will이 필요합니다."
+      },
+      {
+        "p": "By 5 p.m., she will have been ____ a book for three hours.",
+        "c": [
+          "reading",
+          "read"
+        ],
+        "a": 0,
+        "why": "been 뒤에는 동사ing를 써야 진행의 의미가 됩니다."
+      },
+      {
+        "p": "Tomorrow morning, it will have ____ raining for two days.",
+        "c": [
+          "been",
+          "be"
+        ],
+        "a": 0,
+        "why": "will have 뒤에는 과거분사 been을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I will have been work here for a year.",
+        "r": "I will have been working here for a year.",
+        "why": "been 뒤에는 동사ing를 씁니다."
+      },
+      {
+        "w": "She will has been teaching for 20 years.",
+        "r": "She will have been teaching for 20 years.",
+        "why": "will 뒤에는 동사원형 have를 씁니다."
+      },
+      {
+        "w": "By noon, they will been playing for three hours.",
+        "r": "By noon, they will have been playing for three hours.",
+        "why": "will 뒤에 have been이 필요합니다."
+      },
+      {
+        "w": "By tonight, I will has been studying.",
+        "r": "By tonight, I will have been studying.",
+        "why": "조동사 will 뒤에는 항상 동사원형 have를 써야 합니다."
+      },
+      {
+        "w": "He will have be running for an hour.",
+        "r": "He will have been running for an hour.",
+        "why": "미래완료진행형은 have been 동사ing 형태를 씁니다."
+      },
+      {
+        "w": "They will have been walk for hours.",
+        "r": "They will have been walking for hours.",
+        "why": "been 뒤에는 현재분사(동사ing)를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "다음 달이면 몇 년째가 되는지 말해요.",
+        "frame": "Next month, I will have been ____ing for ____ year(s)."
+      },
+      {
+        "task": "특정 시각까지 계속한 시간을 말해요.",
+        "frame": "By ____, I will have been ____ing for ____ hours."
+      },
+      {
+        "task": "가족의 경력을 말해요.",
+        "frame": "My ____ will have been ____ing for ____ years."
+      },
+      {
+        "task": "영어를 배운 기간을 말해요.",
+        "frame": "In ____, I will have been learning English for ____ years."
+      },
+      {
+        "task": "미래의 특정 시점까지 계속하고 있을 동작을 말해요.",
+        "frame": "By tomorrow, I will have been ____ing."
+      },
+      {
+        "task": "친구가 얼마나 오랫동안 기다리고 있을지 추측해 봐요.",
+        "frame": "He will have been waiting for ____ hours."
+      }
+    ],
+    "mission": {
+      "title": "몇 년째가 될까요? 기념일 퀴즈",
+      "scene": "기념일(생일, 입학일 등)까지 계속한 기간을 계산해서 말하는 퀴즈예요.",
+      "steps": [
+        "기념일 카드를 뽑는다.",
+        "By ____, I will have been ____ing for ____. 로 기간을 계산해 말한다.",
+        "짝은 맞는지 계산을 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "다음 달이면 여기서 일한 지 1년째가 된다.",
+        "cond": "will have been working을 써요.",
+        "model": "By next month, I will have been working here for a year."
+      },
+      {
+        "ko": "6시가 되면 우리는 다섯 시간째 운전하고 있는 셈이다.",
+        "cond": "will have been driving을 써요.",
+        "model": "At 6, we will have been driving for five hours."
+      },
+      {
+        "ko": "6월이면 나는 영어를 배운 지 10년째가 된다.",
+        "cond": "will have been learning을 써요.",
+        "model": "In June, I will have been learning English for ten years."
+      },
+      {
+        "ko": "내년이면 우리는 서울에 5년째 살고 있게 된다.",
+        "cond": "will have been living을 써요.",
+        "model": "Next year, we will have been living in Seoul for five years."
+      },
+      {
+        "ko": "8시가 되면 그녀는 두 시간째 TV를 보고 있을 것이다.",
+        "cond": "will have been watching을 써요.",
+        "model": "At 8, she will have been watching TV for two hours."
+      },
+      {
+        "ko": "내일이면 비가 이틀째 내리고 있는 셈이 된다.",
+        "cond": "will have been raining을 써요.",
+        "model": "By tomorrow, it will have been raining for two days."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "By 9, I **will have been** read**ing**.",
+        "ko": "9시가 되면 나는 계속 책을 읽고 있는 중일 것이다."
+      },
+      {
+        "en": "He **will have been** wait**ing** for hours.",
+        "ko": "그는 몇 시간째 기다리고 있는 중일 것이다."
+      },
+      {
+        "en": "They **will have been** sleep**ing** since noon.",
+        "ko": "그들은 정오부터 계속 자고 있는 중일 것이다."
+      },
+      {
+        "en": "We **will have been** talk**ing** all day.",
+        "ko": "우리는 하루 종일 이야기하고 있는 중일 것이다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵게 표시된 부분(will have been ~ing)은 어떤 의미를 나타내나요?",
+        "a": "미래의 특정 시점까지 어떤 동작이 계속 진행되고 있음을 나타냅니다."
+      },
+      "choose": [
+        {
+          "p": "By Friday, I will have been ____ this project for a week.",
+          "c": [
+            "doing",
+            "do",
+            "did"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 써야 합니다."
+        },
+        {
+          "p": "Next month, my dad will ____ been working there for ten years.",
+          "c": [
+            "have",
+            "has",
+            "had"
+          ],
+          "a": 0,
+          "why": "조동사 will 뒤에는 동사원형 have를 씁니다."
+        },
+        {
+          "p": "At midnight, we will have ____ studying for six hours.",
+          "c": [
+            "been",
+            "be",
+            "was"
+          ],
+          "a": 0,
+          "why": "미래완료진행형은 will have been 동사ing 형태를 씁니다."
+        },
+        {
+          "p": "By 3 p.m., they will have been ____ soccer for two hours.",
+          "c": [
+            "playing",
+            "play",
+            "played"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 현재분사(동사ing)를 씁니다."
+        },
+        {
+          "p": "Tomorrow, she will have been ____ for a month.",
+          "c": [
+            "traveling",
+            "travel",
+            "travels"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "By dinner time, he will have been ____ games all afternoon.",
+          "c": [
+            "playing",
+            "play"
+          ],
+          "a": 0,
+          "why": "진행의 의미를 나타내기 위해 been 뒤에 동사ing를 씁니다."
+        },
+        {
+          "p": "Next week, we will have been ____ here for a year.",
+          "c": [
+            "staying",
+            "stay"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "By 10 o'clock, I will have been ____ for three hours.",
+          "c": [
+            "walking",
+            "walk"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 써야 합니다."
+        },
+        {
+          "p": "In 2025, she will have been ____ math for five years.",
+          "c": [
+            "teaching",
+            "teach"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 씁니다."
+        },
+        {
+          "p": "By tomorrow, the snow will have been ____ for two days.",
+          "c": [
+            "falling",
+            "fall"
+          ],
+          "a": 0,
+          "why": "been 뒤에는 동사ing를 써야 진행의 의미가 됩니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **will have been** cook**ing** dinner.",
+          "ko": "나는 계속 저녁을 요리하고 있는 중일 것이다."
+        },
+        {
+          "en": "She **will have been** danc**ing** for hours.",
+          "ko": "그녀는 몇 시간째 춤을 추고 있는 중일 것이다."
+        },
+        {
+          "en": "We **will have been** clean**ing** the room.",
+          "ko": "우리는 계속 방을 청소하고 있는 중일 것이다."
+        },
+        {
+          "en": "They **will have been** swimm**ing** all morning.",
+          "ko": "그들은 아침 내내 수영을 하고 있는 중일 것이다."
+        },
+        {
+          "en": "He **will have been** paint**ing** the wall.",
+          "ko": "그는 계속 벽을 칠하고 있는 중일 것이다."
+        },
+        {
+          "en": "I **will have been** writ**ing** a letter.",
+          "ko": "나는 계속 편지를 쓰고 있는 중일 것이다."
+        },
+        {
+          "en": "You **will have been** practic**ing** the piano.",
+          "ko": "너는 계속 피아노를 연습하고 있는 중일 것이다."
+        },
+        {
+          "en": "It **will have been** snow**ing** since Sunday.",
+          "ko": "일요일부터 계속 눈이 내리고 있는 중일 것이다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "By tonight, I will has been reading.",
+          "r": "By tonight, I will have been reading.",
+          "why": "조동사 will 뒤에는 동사원형 have를 씁니다."
+        },
+        {
+          "w": "She will have be sleeping for hours.",
+          "r": "She will have been sleeping for hours.",
+          "why": "미래완료진행형은 will have been 동사ing를 씁니다."
+        },
+        {
+          "w": "They will have been play tennis.",
+          "r": "They will have been playing tennis.",
+          "why": "been 뒤에는 동사ing 형태를 써야 합니다."
+        },
+        {
+          "w": "We will had been walking all day.",
+          "r": "We will have been walking all day.",
+          "why": "will 뒤에는 항상 동사원형 have가 와야 합니다."
+        },
+        {
+          "w": "He will have been paints the wall.",
+          "r": "He will have been painting the wall.",
+          "why": "been 뒤에는 동사ing를 써야 진행의 의미가 됩니다."
+        },
+        {
+          "w": "By noon, it will have been snow.",
+          "r": "By noon, it will have been snowing.",
+          "why": "계속 진행되는 동작을 나타내려면 동사ing를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내일 특정 시각까지 계속 공부하고 있을 시간을 말해요.",
+          "frame": "By ____, I will have been studying for ____ hours."
+        },
+        {
+          "task": "미래의 시점까지 얼마나 오래 피아노를 쳤을지 말해요.",
+          "frame": "Next year, I will have been playing the piano for ____ years."
+        },
+        {
+          "task": "친구가 얼마나 오랫동안 게임을 하고 있을지 말해요.",
+          "frame": "By tonight, he will have been playing games for ____ hours."
+        },
+        {
+          "task": "특정 시점까지 계속 비가 내리고 있을 기간을 말해요.",
+          "frame": "By tomorrow, it will have been raining for ____ days."
+        },
+        {
+          "task": "선생님이 얼마나 오랫동안 영어를 가르치셨을지 말해요.",
+          "frame": "In ____, my teacher will have been teaching for ____ years."
+        },
+        {
+          "task": "미래의 시점에 내가 계속 하고 있을 일을 말해요.",
+          "frame": "By ____, I will have been ____ing."
+        }
+      ],
+      "mission": {
+        "title": "미래의 나 상상하기",
+        "scene": "10년 뒤의 내 모습을 상상하며 친구들과 이야기해 봅시다.",
+        "steps": [
+          "10년 뒤에 내가 어떤 일을 계속 하고 있을지 생각합니다.",
+          "'In 10 years, I will have been ____ing.' 문장을 완성합니다.",
+          "친구와 번갈아 가며 자신의 미래 모습을 발표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "금요일이 되면 나는 이 프로젝트를 일주일째 하고 있는 셈이 된다.",
+          "cond": "will have been doing을 써요.",
+          "model": "By Friday, I will have been doing this project for a week."
+        },
+        {
+          "ko": "자정이 되면 우리는 6시간째 공부하고 있을 것이다.",
+          "cond": "will have been studying을 써요.",
+          "model": "At midnight, we will have been studying for six hours."
+        },
+        {
+          "ko": "오후 3시가 되면 그들은 두 시간째 축구를 하고 있을 것이다.",
+          "cond": "will have been playing을 써요.",
+          "model": "By 3 p.m., they will have been playing soccer for two hours."
+        },
+        {
+          "ko": "내일이면 그녀는 한 달째 여행하고 있는 셈이다.",
+          "cond": "will have been traveling을 써요.",
+          "model": "Tomorrow, she will have been traveling for a month."
+        },
+        {
+          "ko": "다음 주면 우리는 여기서 지낸 지 1년째가 된다.",
+          "cond": "will have been staying을 써요.",
+          "model": "Next week, we will have been staying here for a year."
+        },
+        {
+          "ko": "내일이면 눈이 이틀째 내리고 있는 셈이 될 것이다.",
+          "cond": "will have been falling을 써요.",
+          "model": "By tomorrow, the snow will have been falling for two days."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-overview",
+    "discover": {
+      "q": "Birds sing., She is a nurse., I love music., He gave me a book., The news made me sad.를 비교해 보세요. 문장을 이루는 요소(주어·동사·목적어·보어)가 각각 어떻게 다른가요?",
+      "a": "1형식은 주어 + 동사, 2형식은 주어 + 동사 + 보어, 3형식은 주어 + 동사 + 목적어, 4형식은 주어 + 동사 + 간접목적어 + 직접목적어, 5형식은 주어 + 동사 + 목적어 + 목적격 보어이다."
+    },
+    "choose": [
+      {
+        "p": "Birds sing. 은 ____형식입니다.",
+        "c": [
+          "1",
+          "3"
+        ],
+        "a": 0,
+        "why": "주어와 동사만 있으므로 1형식입니다."
+      },
+      {
+        "p": "She is a nurse. 에서 a nurse는 ____입니다.",
+        "c": [
+          "보어",
+          "목적어"
+        ],
+        "a": 0,
+        "why": "주어와 같은 것을 설명하므로 보어입니다."
+      },
+      {
+        "p": "I love music. 은 ____형식입니다.",
+        "c": [
+          "3",
+          "2"
+        ],
+        "a": 0,
+        "why": "주어 + 동사 + 목적어이므로 3형식입니다."
+      },
+      {
+        "p": "He gave me a book. 은 ____형식입니다.",
+        "c": [
+          "4",
+          "3"
+        ],
+        "a": 0,
+        "why": "목적어가 두 개(me, a book)이므로 4형식입니다."
+      },
+      {
+        "p": "The news made me sad. 에서 sad는 ____입니다.",
+        "c": [
+          "목적격 보어",
+          "목적어"
+        ],
+        "a": 0,
+        "why": "목적어(me)의 상태를 설명하므로 목적격 보어입니다."
+      },
+      {
+        "p": "The soup smells ____.",
+        "c": [
+          "good",
+          "well"
+        ],
+        "a": 0,
+        "why": "2형식 감각동사 뒤에는 주어의 상태를 설명하는 형용사 보어가 와야 합니다."
+      },
+      {
+        "p": "My dad bought ____ a bike.",
+        "c": [
+          "I",
+          "me"
+        ],
+        "a": 1,
+        "why": "4형식에서 '~에게'에 해당하는 간접목적어는 목적격 대명사를 씁니다."
+      },
+      {
+        "p": "We call the dog ____.",
+        "c": [
+          "Max",
+          "happily"
+        ],
+        "a": 0,
+        "why": "5형식에서 목적격 보어 자리에는 명사나 형용사가 올 수 있습니다."
+      },
+      {
+        "p": "They play ____ after school.",
+        "c": [
+          "soccer",
+          "tall"
+        ],
+        "a": 0,
+        "why": "3형식 동사 뒤에는 '~을/를'에 해당하는 명사 목적어가 필요합니다."
+      },
+      {
+        "p": "The baby sleeps ____.",
+        "c": [
+          "peaceful",
+          "peacefully"
+        ],
+        "a": 1,
+        "why": "1형식 문장에서는 동사를 꾸며주는 부사가 올 수 있습니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The news made me sadly.",
+        "r": "The news made me sad.",
+        "why": "목적격 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "w": "She is happily.",
+        "r": "She is happy.",
+        "why": "보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "w": "He gave a book me.",
+        "r": "He gave me a book.",
+        "why": "4형식은 간접목적어(사람)가 먼저 옵니다."
+      },
+      {
+        "w": "The food tastes badly.",
+        "r": "The food tastes bad.",
+        "why": "2형식 감각동사의 보어 자리에는 부사가 아닌 형용사를 써야 합니다."
+      },
+      {
+        "w": "She showed to me her pictures.",
+        "r": "She showed me her pictures.",
+        "why": "4형식 문장은 전치사 없이 간접목적어 뒤에 직접목적어가 바로 옵니다."
+      },
+      {
+        "w": "He kept the room cleanly.",
+        "r": "He kept the room clean.",
+        "why": "5형식 목적격 보어 자리에는 부사가 아닌 형용사를 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "교실에서 일어나는 일을 1형식으로 말해요.",
+        "frame": "The ____ ____s. (S + V)"
+      },
+      {
+        "task": "친구를 2형식으로 소개해요.",
+        "frame": "He/She is a(n) ____."
+      },
+      {
+        "task": "좋아하는 것을 3형식으로 말해요.",
+        "frame": "I like/love ____."
+      },
+      {
+        "task": "선물을 주는 문장을 4형식으로 말해요.",
+        "frame": "I gave him/her a ____."
+      },
+      {
+        "task": "친구의 기분이나 상태를 5형식으로 표현해요.",
+        "frame": "The joke made him ____."
+      },
+      {
+        "task": "물건의 겉모습을 2형식으로 묘사해요.",
+        "frame": "The ____ looks ____."
+      }
+    ],
+    "mission": {
+      "title": "문장 형식 퍼즐 맞추기",
+      "scene": "주어·동사·목적어·보어 카드를 맞춰 5가지 형식의 문장을 만드는 퍼즐 게임이에요.",
+      "steps": [
+        "카드를 섞어 문장 틀(S + V + O 등)에 맞춰 놓는다.",
+        "완성된 문장을 소리 내어 읽는다.",
+        "몇 형식인지 짝에게 알려 준다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "새들이 노래한다.",
+        "cond": "1형식으로 써요.",
+        "model": "Birds sing."
+      },
+      {
+        "ko": "그는 나에게 책을 줬다.",
+        "cond": "4형식으로 써요.",
+        "model": "He gave me a book."
+      },
+      {
+        "ko": "그 소식은 나를 슬프게 했다.",
+        "cond": "5형식으로 써요.",
+        "model": "The news made me sad."
+      },
+      {
+        "ko": "그 개는 빠르게 달린다.",
+        "cond": "1형식으로 써요.",
+        "model": "The dog runs fast."
+      },
+      {
+        "ko": "나는 그 이야기가 흥미롭다고 생각했다.",
+        "cond": "5형식으로 써요.",
+        "model": "I found the story interesting."
+      },
+      {
+        "ko": "그녀는 피아노를 친다.",
+        "cond": "3형식으로 써요.",
+        "model": "She plays the piano."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The weather **became cold**.",
+        "ko": "날씨가 추워졌다."
+      },
+      {
+        "en": "She **found her keys**.",
+        "ko": "그녀는 그녀의 열쇠를 찾았다."
+      },
+      {
+        "en": "He **sent me an email**.",
+        "ko": "그는 나에게 이메일을 보냈다."
+      },
+      {
+        "en": "The movie **made us excited**.",
+        "ko": "그 영화는 우리를 신나게 만들었다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "1형식부터 5형식까지 문장을 만들 때, 동사 뒤에 오는 단어들의 역할은 어떻게 달라지나요?",
+        "a": "동사의 종류에 따라 보어, 목적어, 간접/직접목적어, 목적격 보어 등 필요한 문장 성분이 달라집니다."
+      },
+      "choose": [
+        {
+          "p": "The sun rises. 은 ____형식입니다.",
+          "c": [
+            "1",
+            "3"
+          ],
+          "a": 0,
+          "why": "주어와 동사만으로 의미가 완전하므로 1형식입니다."
+        },
+        {
+          "p": "This cake looks ____.",
+          "c": [
+            "delicious",
+            "deliciously"
+          ],
+          "a": 0,
+          "why": "2형식 감각동사 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "I drank some water. 은 ____형식입니다.",
+          "c": [
+            "3",
+            "4"
+          ],
+          "a": 0,
+          "why": "주어, 동사, 목적어로 이루어져 있으므로 3형식입니다."
+        },
+        {
+          "p": "Mr. Kim teaches us math. 은 ____형식입니다.",
+          "c": [
+            "4",
+            "5"
+          ],
+          "a": 0,
+          "why": "간접목적어(us)와 직접목적어(math)가 있으므로 4형식입니다."
+        },
+        {
+          "p": "They elected him ____.",
+          "c": [
+            "president",
+            "quickly"
+          ],
+          "a": 0,
+          "why": "5형식 문장에서 목적어의 신분이나 지위를 나타내는 명사가 목적격 보어로 옵니다."
+        },
+        {
+          "p": "The flowers smell ____.",
+          "c": [
+            "sweet",
+            "sweetly"
+          ],
+          "a": 0,
+          "why": "2형식 감각동사의 보어로는 형용사를 사용해야 합니다."
+        },
+        {
+          "p": "She told ____ a funny story.",
+          "c": [
+            "we",
+            "us"
+          ],
+          "a": 1,
+          "why": "4형식의 간접목적어 자리에는 목적격 대명사가 와야 합니다."
+        },
+        {
+          "p": "The music kept me ____.",
+          "c": [
+            "awake",
+            "awakely"
+          ],
+          "a": 0,
+          "why": "5형식에서 목적어의 상태를 설명하는 목적격 보어는 형용사입니다."
+        },
+        {
+          "p": "He painted the wall ____.",
+          "c": [
+            "green",
+            "greenly"
+          ],
+          "a": 0,
+          "why": "5형식 동사 paint 뒤에는 목적어와 그 상태를 나타내는 형용사 보어가 옵니다."
+        },
+        {
+          "p": "We arrived early. 은 ____형식입니다.",
+          "c": [
+            "1",
+            "2"
+          ],
+          "a": 0,
+          "why": "early는 부사이므로 주어와 동사만 있는 1형식 문장입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The stars **shine brightly**.",
+          "ko": "별들이 밝게 빛난다."
+        },
+        {
+          "en": "He **looks tired** today.",
+          "ko": "그는 오늘 피곤해 보인다."
+        },
+        {
+          "en": "We **ate delicious pizza**.",
+          "ko": "우리는 맛있는 피자를 먹었다."
+        },
+        {
+          "en": "Mom **made me a doll**.",
+          "ko": "엄마는 나에게 인형을 만들어 주셨다."
+        },
+        {
+          "en": "I **found the book easy**.",
+          "ko": "나는 그 책이 쉽다고 생각했다."
+        },
+        {
+          "en": "The leaves **turned red**.",
+          "ko": "나뭇잎들이 붉게 변했다."
+        },
+        {
+          "en": "Can you **ask him a question**?",
+          "ko": "그에게 질문을 하나 해 줄 수 있니?"
+        },
+        {
+          "en": "They **left the door open**.",
+          "ko": "그들은 문을 열어 두었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The river flows fastly.",
+          "r": "The river flows fast.",
+          "why": "fast는 형용사와 부사의 형태가 같으므로 fastly라는 단어는 쓰지 않습니다."
+        },
+        {
+          "w": "She feels happily today.",
+          "r": "She feels happy today.",
+          "why": "2형식 감각동사 뒤에는 부사가 아닌 형용사가 와야 합니다."
+        },
+        {
+          "w": "He sent a text me.",
+          "r": "He sent me a text.",
+          "why": "4형식 문장은 간접목적어(사람)가 직접목적어(사물)보다 먼저 옵니다."
+        },
+        {
+          "w": "The news made us surprisingly.",
+          "r": "The news made us surprised.",
+          "why": "5형식 목적격 보어 자리에는 부사가 아닌 형용사(분사)를 씁니다."
+        },
+        {
+          "w": "I painted the door bluely.",
+          "r": "I painted the door blue.",
+          "why": "5형식 목적격 보어로 색상을 나타낼 때는 형용사를 사용합니다."
+        },
+        {
+          "w": "My mom bought to me a new bag.",
+          "r": "My mom bought me a new bag.",
+          "why": "4형식 문장에서는 간접목적어 앞에 전치사를 쓰지 않습니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "자연의 움직임을 1형식으로 묘사해요.",
+          "frame": "The wind ____s."
+        },
+        {
+          "task": "음식의 맛을 2형식으로 표현해요.",
+          "frame": "This food tastes ____."
+        },
+        {
+          "task": "어제 한 일을 3형식으로 말해요.",
+          "frame": "I ____ed my room."
+        },
+        {
+          "task": "친구에게 물건을 빌려주는 문장을 4형식으로 말해요.",
+          "frame": "I lent him my ____."
+        },
+        {
+          "task": "내 방의 상태를 5형식으로 표현해요.",
+          "frame": "I keep my room ____."
+        },
+        {
+          "task": "친구를 부르는 별명을 5형식으로 말해요.",
+          "frame": "We call him ____."
+        }
+      ],
+      "mission": {
+        "title": "문장 형식 탐정단",
+        "scene": "교실 곳곳에 숨겨진 문장 카드를 찾고, 몇 형식인지 알아맞히는 게임입니다.",
+        "steps": [
+          "선생님이 칠판에 1형식부터 5형식까지의 바구니를 그립니다.",
+          "짝과 함께 교실에 숨겨진 문장 카드를 찾습니다.",
+          "찾은 문장을 읽고 알맞은 형식의 바구니에 카드를 붙입니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "비가 오늘 심하게 내린다.",
+          "cond": "1형식으로 써요.",
+          "model": "It rains heavily today."
+        },
+        {
+          "ko": "그 소년은 화가 났다.",
+          "cond": "2형식으로 써요.",
+          "model": "The boy got angry."
+        },
+        {
+          "ko": "우리는 영어를 열심히 공부한다.",
+          "cond": "3형식으로 써요.",
+          "model": "We study English hard."
+        },
+        {
+          "ko": "그녀는 나에게 편지를 썼다.",
+          "cond": "4형식으로 써요.",
+          "model": "She wrote me a letter."
+        },
+        {
+          "ko": "그들은 그 고양이를 키티라고 부른다.",
+          "cond": "5형식으로 써요.",
+          "model": "They call the cat Kitty."
+        },
+        {
+          "ko": "나는 내 방을 깨끗하게 유지한다.",
+          "cond": "5형식으로 써요.",
+          "model": "I keep my room clean."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-1",
+    "discover": {
+      "q": "The baby cried., We walked in the park.를 보세요. 문장에 꼭 필요한 요소는 무엇인가요? in the park는 꼭 필요한 요소인가요?",
+      "a": "주어와 동사만으로 문장이 완성된다. in the park 같은 부사구는 꾸며 주는 말(수식어)이라 빼도 문장이 성립한다."
+    },
+    "choose": [
+      {
+        "p": "The baby ____.",
+        "c": [
+          "cried",
+          "cry the"
+        ],
+        "a": 0,
+        "why": "주어와 동사만으로 완성되는 1형식 문장입니다."
+      },
+      {
+        "p": "We ____ in the park.",
+        "c": [
+          "walked",
+          "walked it"
+        ],
+        "a": 0,
+        "why": "walk는 목적어 없이 쓰는 1형식 동사입니다."
+      },
+      {
+        "p": "My dad ____ in Canada.",
+        "c": [
+          "lives",
+          "live"
+        ],
+        "a": 0,
+        "why": "My dad는 3인칭 단수이므로 lives입니다."
+      },
+      {
+        "p": "The accident ____ last night.",
+        "c": [
+          "happened",
+          "was happened"
+        ],
+        "a": 0,
+        "why": "happen은 수동태로 쓰지 않습니다."
+      },
+      {
+        "p": "There ____ a cat on the roof.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "a cat은 단수이므로 is입니다."
+      },
+      {
+        "p": "The train ____ at the station early.",
+        "c": [
+          "arrived",
+          "was arrived"
+        ],
+        "a": 0,
+        "why": "arrive는 목적어가 필요 없는 1형식 동사이므로 수동태로 쓰지 않습니다."
+      },
+      {
+        "p": "Many students ____ to school by bus every day.",
+        "c": [
+          "goes",
+          "go"
+        ],
+        "a": 1,
+        "why": "주어(Many students)가 복수이므로 동사원형 go를 씁니다."
+      },
+      {
+        "p": "A big dog ____ fast in the yard yesterday.",
+        "c": [
+          "ran it",
+          "ran"
+        ],
+        "a": 1,
+        "why": "run은 목적어 없이 주어와 동사만으로 의미가 통하는 1형식 동사입니다."
+      },
+      {
+        "p": "There ____ two apples on the table.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 1,
+        "why": "주어가 복수(two apples)이므로 be동사는 are를 씁니다."
+      },
+      {
+        "p": "My grandparents ____ in a small town.",
+        "c": [
+          "live",
+          "lives"
+        ],
+        "a": 0,
+        "why": "주어(My grandparents)가 복수이므로 동사원형 live를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The accident was happened.",
+        "r": "The accident happened.",
+        "why": "happen은 목적어가 없어 수동태로 쓰지 않습니다."
+      },
+      {
+        "w": "The baby cry yesterday.",
+        "r": "The baby cried yesterday.",
+        "why": "yesterday가 있으므로 과거형 cried를 씁니다."
+      },
+      {
+        "w": "My dad live in Canada.",
+        "r": "My dad lives in Canada.",
+        "why": "My dad는 3인칭 단수이므로 lives입니다."
+      },
+      {
+        "w": "The train was arrived at the station.",
+        "r": "The train arrived at the station.",
+        "why": "arrive는 목적어가 없는 1형식 동사이므로 수동태로 쓸 수 없습니다."
+      },
+      {
+        "w": "There is two apples on the table.",
+        "r": "There are two apples on the table.",
+        "why": "주어가 복수(two apples)이므로 동사는 are를 써야 합니다."
+      },
+      {
+        "w": "My grandparents lives in a small town.",
+        "r": "My grandparents live in a small town.",
+        "why": "주어가 복수이므로 동사에 -s를 붙이지 않고 live를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "주어와 동사로만 된 문장을 말해요.",
+        "frame": "The ____ ____s."
+      },
+      {
+        "task": "어디에서 무엇을 하는지 덧붙여 말해요.",
+        "frame": "We ____ in/at/on the ____."
+      },
+      {
+        "task": "가족이 사는 곳을 말해요.",
+        "frame": "My ____ lives in ____."
+      },
+      {
+        "task": "어떤 일이 일어났는지 말해요.",
+        "frame": "The ____ happened ____."
+      },
+      {
+        "task": "교통수단을 이용해 어디로 가는지 묻고 답해요.",
+        "frame": "How do you ____ to ____? / I ____ to ____ by ____."
+      },
+      {
+        "task": "어떤 장소에 무엇이 있는지 말해요.",
+        "frame": "There ____ a/an ____ in the ____."
+      }
+    ],
+    "mission": {
+      "title": "짧은 문장 만들기 릴레이",
+      "scene": "주어와 동사만으로 짧은 문장을 만들고 한 사람씩 장소·시간을 덧붙이는 릴레이예요.",
+      "steps": [
+        "첫 사람이 The baby cried. 처럼 짧은 문장을 말한다.",
+        "다음 사람이 in the park를 덧붙인다.",
+        "그다음 사람이 last night를 덧붙인다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "아기가 울었다.",
+        "cond": "cried를 써요.",
+        "model": "The baby cried."
+      },
+      {
+        "ko": "우리 아빠는 캐나다에 사신다.",
+        "cond": "lives를 써요.",
+        "model": "My dad lives in Canada."
+      },
+      {
+        "ko": "그 사고는 어젯밤에 일어났다.",
+        "cond": "happened를 써요.",
+        "model": "The accident happened last night."
+      },
+      {
+        "ko": "기차가 역에 도착했다.",
+        "cond": "arrived를 써요.",
+        "model": "The train arrived at the station."
+      },
+      {
+        "ko": "많은 학생들이 버스를 타고 학교에 간다.",
+        "cond": "go를 써요.",
+        "model": "Many students go to school by bus."
+      },
+      {
+        "ko": "탁자 위에 사과가 두 개 있다.",
+        "cond": "are를 써요.",
+        "model": "There are two apples on the table."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The train **arrived** at the station.",
+        "ko": "기차가 역에 도착했다."
+      },
+      {
+        "en": "Many students **go** to school by bus.",
+        "ko": "많은 학생들이 버스를 타고 학교에 간다."
+      },
+      {
+        "en": "A big dog **ran** fast.",
+        "ko": "큰 개가 빠르게 달렸다."
+      },
+      {
+        "en": "There **are** two apples on the table.",
+        "ko": "탁자 위에 사과가 두 개 있다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 1형식 동사들 뒤에는 주로 어떤 말들이 오나요?",
+        "a": "장소, 시간, 방법 등을 나타내는 부사나 전치사구가 옵니다. (또는 아무것도 오지 않습니다.)"
+      },
+      "choose": [
+        {
+          "p": "A cute cat ____ into the room.",
+          "c": [
+            "was come",
+            "came"
+          ],
+          "a": 1,
+          "why": "come은 목적어가 필요 없는 동사이므로 수동태로 쓰지 않습니다."
+        },
+        {
+          "p": "My brother ____ very fast.",
+          "c": [
+            "runs",
+            "run"
+          ],
+          "a": 0,
+          "why": "주어(My brother)가 3인칭 단수이므로 동사에 -s를 붙입니다."
+        },
+        {
+          "p": "The bus ____ at the bus stop late.",
+          "c": [
+            "arrived",
+            "was arrived"
+          ],
+          "a": 0,
+          "why": "arrive는 1형식 동사이므로 수동태로 쓰지 않습니다."
+        },
+        {
+          "p": "A funny thing ____ in class today.",
+          "c": [
+            "was happened",
+            "happened"
+          ],
+          "a": 1,
+          "why": "happen은 수동태로 쓸 수 없는 1형식 동사입니다."
+        },
+        {
+          "p": "We ____ in a big apartment.",
+          "c": [
+            "lives",
+            "live"
+          ],
+          "a": 1,
+          "why": "주어가 1인칭 복수(We)이므로 동사원형 live를 씁니다."
+        },
+        {
+          "p": "There ____ a book on the desk.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 0,
+          "why": "주어가 단수(a book)이므로 be동사는 is를 씁니다."
+        },
+        {
+          "p": "There ____ three pens in my pencil case.",
+          "c": [
+            "is",
+            "are"
+          ],
+          "a": 1,
+          "why": "주어가 복수(three pens)이므로 be동사는 are를 씁니다."
+        },
+        {
+          "p": "The students ____ to the library after school.",
+          "c": [
+            "went",
+            "went it"
+          ],
+          "a": 0,
+          "why": "go는 목적어 없이 전치사구와 함께 쓰이는 1형식 동사입니다."
+        },
+        {
+          "p": "The river ____ into the sea.",
+          "c": [
+            "flows",
+            "is flowed"
+          ],
+          "a": 0,
+          "why": "flow(흐르다)는 목적어가 필요 없는 1형식 동사이므로 수동태로 쓰지 않습니다."
+        },
+        {
+          "p": "The children ____ on the bed.",
+          "c": [
+            "jumped them",
+            "jumped"
+          ],
+          "a": 1,
+          "why": "jump는 목적어 없이 쓸 수 있는 1형식 동사입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "A cute cat **came** into the room.",
+          "ko": "귀여운 고양이가 방으로 들어왔다."
+        },
+        {
+          "en": "My brother **runs** very fast.",
+          "ko": "내 남동생은 매우 빠르게 달린다."
+        },
+        {
+          "en": "The bus **arrived** at the bus stop.",
+          "ko": "버스가 정류장에 도착했다."
+        },
+        {
+          "en": "A funny thing **happened** in class.",
+          "ko": "수업 시간에 재미있는 일이 일어났다."
+        },
+        {
+          "en": "We **live** in a big apartment.",
+          "ko": "우리는 큰 아파트에 산다."
+        },
+        {
+          "en": "There **is** a book on the desk.",
+          "ko": "책상 위에 책이 한 권 있다."
+        },
+        {
+          "en": "The students **went** to the library.",
+          "ko": "학생들은 도서관에 갔다."
+        },
+        {
+          "en": "The children **jumped** on the bed.",
+          "ko": "아이들이 침대 위에서 뛰었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "A funny thing was happened in class.",
+          "r": "A funny thing happened in class.",
+          "why": "happen은 수동태로 쓸 수 없는 1형식 동사입니다."
+        },
+        {
+          "w": "The bus was arrived at the bus stop.",
+          "r": "The bus arrived at the bus stop.",
+          "why": "arrive는 목적어가 없어 수동태로 만들 수 없습니다."
+        },
+        {
+          "w": "My brother run very fast.",
+          "r": "My brother runs very fast.",
+          "why": "주어가 3인칭 단수이므로 동사 뒤에 -s를 붙여야 합니다."
+        },
+        {
+          "w": "There are a book on the desk.",
+          "r": "There is a book on the desk.",
+          "why": "주어가 단수(a book)이므로 동사는 is를 써야 합니다."
+        },
+        {
+          "w": "We lives in a big apartment.",
+          "r": "We live in a big apartment.",
+          "why": "주어가 복수(We)이므로 동사원형 live를 써야 합니다."
+        },
+        {
+          "w": "A cute cat was come into the room.",
+          "r": "A cute cat came into the room.",
+          "why": "come은 1형식 동사이므로 수동태로 쓰지 않습니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구가 어디에 사는지 묻고 답해요.",
+          "frame": "Where do you ____? / I ____ in ____."
+        },
+        {
+          "task": "어제 어디에 갔는지 묻고 답해요.",
+          "frame": "Where did you ____ yesterday? / I ____ to the ____."
+        },
+        {
+          "task": "누가 가장 빨리 달리는지 말해요.",
+          "frame": "____ ____s very fast."
+        },
+        {
+          "task": "방 안에 무엇이 여러 개 있는지 말해요.",
+          "frame": "There ____ some ____s in my room."
+        },
+        {
+          "task": "언제 학교에 도착하는지 말해요.",
+          "frame": "I usually ____ at school at ____."
+        },
+        {
+          "task": "주말에 무슨 일이 있었는지 말해요.",
+          "frame": "A fun thing ____ on the weekend."
+        }
+      ],
+      "mission": {
+        "title": "우리 동네 지도 그리기",
+        "scene": "짝과 함께 상상 속의 동네 지도를 그리고, 어디에 무엇이 있는지 1형식 문장으로 설명해 봅시다.",
+        "steps": [
+          "종이에 길, 건물, 공원 등이 있는 동네 지도를 간단히 그립니다.",
+          "지도 위의 장소에 무엇이 있는지 'There is/are...'를 사용하여 3문장 이상 적어봅니다.",
+          "짝에게 지도를 보여주며 'There is a park in my town.'처럼 영어로 설명합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "귀여운 고양이가 방으로 들어왔다.",
+          "cond": "came을 써요.",
+          "model": "A cute cat came into the room."
+        },
+        {
+          "ko": "내 남동생은 매우 빠르게 달린다.",
+          "cond": "runs를 써요.",
+          "model": "My brother runs very fast."
+        },
+        {
+          "ko": "버스가 정류장에 도착했다.",
+          "cond": "arrived를 써요.",
+          "model": "The bus arrived at the bus stop."
+        },
+        {
+          "ko": "우리는 큰 아파트에 산다.",
+          "cond": "live를 써요.",
+          "model": "We live in a big apartment."
+        },
+        {
+          "ko": "책상 위에 책이 한 권 있다.",
+          "cond": "is를 써요.",
+          "model": "There is a book on the desk."
+        },
+        {
+          "ko": "학생들은 도서관에 갔다.",
+          "cond": "went를 써요.",
+          "model": "The students went to the library."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-2",
+    "discover": {
+      "q": "My sister is a teacher.와 The leaves turned red.를 보세요. 동사 뒤의 말(보어)은 주어와 어떤 관계인가요? 보어 자리에는 어떤 품사가 왔나요?",
+      "a": "보어는 주어와 같은 것이거나 주어의 상태를 설명한다(언니 = 선생님, 나뭇잎 = 빨간). 보어 자리에는 명사나 형용사가 오고 부사는 쓸 수 없다."
+    },
+    "choose": [
+      {
+        "p": "My sister ____ a teacher.",
+        "c": [
+          "is",
+          "have"
+        ],
+        "a": 0,
+        "why": "주어 = 보어 관계를 나타내는 be동사입니다."
+      },
+      {
+        "p": "He became a famous ____.",
+        "c": [
+          "singer",
+          "sing"
+        ],
+        "a": 0,
+        "why": "보어 자리에는 명사 singer가 옵니다."
+      },
+      {
+        "p": "The leaves turned ____.",
+        "c": [
+          "red",
+          "redly"
+        ],
+        "a": 0,
+        "why": "보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "p": "This milk smells ____.",
+        "c": [
+          "bad",
+          "badly"
+        ],
+        "a": 0,
+        "why": "smell 뒤 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "p": "Please stay ____.",
+        "c": [
+          "calm",
+          "calmly"
+        ],
+        "a": 0,
+        "why": "stay 뒤 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "p": "The music sounds ____.",
+        "c": [
+          "loud",
+          "loudly",
+          "loudness"
+        ],
+        "a": 0,
+        "why": "감각동사 sound 뒤의 보어 자리에는 형용사가 와야 합니다."
+      },
+      {
+        "p": "The weather got ____.",
+        "c": [
+          "coldly",
+          "cold",
+          "colds"
+        ],
+        "a": 1,
+        "why": "상태 변화를 나타내는 동사 get 뒤에는 형용사 보어가 옵니다."
+      },
+      {
+        "p": "He kept ____ during the test.",
+        "c": [
+          "quiet",
+          "quietly"
+        ],
+        "a": 0,
+        "why": "상태 유지를 나타내는 동사 keep 뒤에는 형용사 보어가 옵니다."
+      },
+      {
+        "p": "The idea sounds ____.",
+        "c": [
+          "great",
+          "greatly"
+        ],
+        "a": 0,
+        "why": "감각동사 sound 뒤에는 형용사 보어가 옵니다."
+      },
+      {
+        "p": "The dog looks ____.",
+        "c": [
+          "angrily",
+          "angry"
+        ],
+        "a": 1,
+        "why": "감각동사 look 뒤에는 형용사 보어가 옵니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "This soup tastes well.",
+        "r": "This soup tastes good.",
+        "why": "보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "w": "She became happily.",
+        "r": "She became happy.",
+        "why": "보어는 부사가 될 수 없습니다."
+      },
+      {
+        "w": "Please stay calmly.",
+        "r": "Please stay calm.",
+        "why": "보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "w": "The pizza tastes deliciously.",
+        "r": "The pizza tastes delicious.",
+        "why": "감각동사 taste 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+      },
+      {
+        "w": "The story sounds interestingly.",
+        "r": "The story sounds interesting.",
+        "why": "감각동사 sound 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+      },
+      {
+        "w": "The boy kept quietly.",
+        "r": "The boy kept quiet.",
+        "why": "상태 유지 동사 keep 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "가족의 직업을 말해요.",
+        "frame": "My ____ is a(n) ____."
+      },
+      {
+        "task": "되고 싶은 것을 말해요.",
+        "frame": "I want to become a(n) ____."
+      },
+      {
+        "task": "변화를 말해요.",
+        "frame": "The ____ turned/got ____."
+      },
+      {
+        "task": "감각을 말해요.",
+        "frame": "It smells/tastes/feels ____."
+      },
+      {
+        "task": "친구의 기분이나 상태를 추측해 말해요.",
+        "frame": "You look ____ today."
+      },
+      {
+        "task": "음식의 맛을 표현해요.",
+        "frame": "This ____ tastes ____."
+      }
+    ],
+    "mission": {
+      "title": "변신 이야기 만들기",
+      "scene": "become, turn, get 카드를 뽑아 무엇이 어떻게 변했는지 말하는 이야기 놀이예요.",
+      "steps": [
+        "동사 카드(become, turn, get)를 뽑는다.",
+        "The ____ became/turned/got ____. 로 한 문장을 만든다.",
+        "보어가 형용사나 명사인지 확인한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "우리 언니는 선생님이다.",
+        "cond": "is를 써요.",
+        "model": "My sister is a teacher."
+      },
+      {
+        "ko": "나뭇잎이 빨갛게 변했다.",
+        "cond": "turned를 써요.",
+        "model": "The leaves turned red."
+      },
+      {
+        "ko": "침착하세요.",
+        "cond": "stay를 써요.",
+        "model": "Please stay calm."
+      },
+      {
+        "ko": "그 음악은 시끄럽게 들린다.",
+        "cond": "sound를 활용하세요.",
+        "model": "The music sounds loud."
+      },
+      {
+        "ko": "날씨가 추워졌다.",
+        "cond": "got을 활용하세요.",
+        "model": "The weather got cold."
+      },
+      {
+        "ko": "그는 조용히 있었다.",
+        "cond": "kept를 활용하세요.",
+        "model": "He kept quiet."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The cookies **smell** sweet.",
+        "ko": "그 쿠키들은 달콤한 냄새가 난다."
+      },
+      {
+        "en": "She **looks** tired today.",
+        "ko": "그녀는 오늘 피곤해 보인다."
+      },
+      {
+        "en": "The room **kept** warm.",
+        "ko": "그 방은 따뜻하게 유지되었다."
+      },
+      {
+        "en": "He **grew** tall.",
+        "ko": "그는 키가 컸다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 동사 뒤에 오는 단어(보어)의 품사는 무엇인가요?",
+        "a": "명사 또는 형용사입니다. (부사는 올 수 없습니다.)"
+      },
+      "choose": [
+        {
+          "p": "The soup tastes ____.",
+          "c": [
+            "salt",
+            "salty",
+            "saltily"
+          ],
+          "a": 1,
+          "why": "감각동사 taste 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "Her voice sounded ____.",
+          "c": [
+            "soft",
+            "softly"
+          ],
+          "a": 0,
+          "why": "감각동사 sound 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The blanket feels ____.",
+          "c": [
+            "softly",
+            "soft",
+            "softness"
+          ],
+          "a": 1,
+          "why": "감각동사 feel 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The students remained ____.",
+          "c": [
+            "silently",
+            "silence",
+            "silent"
+          ],
+          "a": 2,
+          "why": "상태 유지 동사 remain 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The sky grew ____.",
+          "c": [
+            "dark",
+            "darkly"
+          ],
+          "a": 0,
+          "why": "상태 변화 동사 grow 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The plan seems ____.",
+          "c": [
+            "perfect",
+            "perfectly"
+          ],
+          "a": 0,
+          "why": "동사 seem 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "His face turned ____.",
+          "c": [
+            "pale",
+            "palely"
+          ],
+          "a": 0,
+          "why": "상태 변화 동사 turn 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The flowers smell ____.",
+          "c": [
+            "nicely",
+            "nice"
+          ],
+          "a": 1,
+          "why": "감각동사 smell 뒤에는 형용사 보어를 씁니다."
+        },
+        {
+          "p": "The baby fell ____.",
+          "c": [
+            "asleep",
+            "sleep"
+          ],
+          "a": 0,
+          "why": "상태 변화 동사 fall 뒤에는 형용사 보어가 옵니다."
+        },
+        {
+          "p": "She is a good ____.",
+          "c": [
+            "student",
+            "study"
+          ],
+          "a": 0,
+          "why": "be동사 뒤의 보어 자리에는 명사가 올 수 있습니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The coffee **tastes** bitter.",
+          "ko": "그 커피는 쓴맛이 난다."
+        },
+        {
+          "en": "The test **seems** easy.",
+          "ko": "그 시험은 쉬워 보인다."
+        },
+        {
+          "en": "The children **stayed** healthy.",
+          "ko": "아이들은 건강을 유지했다."
+        },
+        {
+          "en": "My brother **became** a doctor.",
+          "ko": "내 남동생은 의사가 되었다."
+        },
+        {
+          "en": "The apple **turned** brown.",
+          "ko": "그 사과는 갈색으로 변했다."
+        },
+        {
+          "en": "The music **sounds** beautiful.",
+          "ko": "그 음악은 아름답게 들린다."
+        },
+        {
+          "en": "The fabric **feels** smooth.",
+          "ko": "그 천은 부드럽게 느껴진다."
+        },
+        {
+          "en": "The joke **was** funny.",
+          "ko": "그 농담은 재미있었다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The cake smells sweetly.",
+          "r": "The cake smells sweet.",
+          "why": "감각동사 smell 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        },
+        {
+          "w": "The problem seems easily.",
+          "r": "The problem seems easy.",
+          "why": "동사 seem 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        },
+        {
+          "w": "The man looks angrily.",
+          "r": "The man looks angry.",
+          "why": "감각동사 look 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        },
+        {
+          "w": "The room remained silently.",
+          "r": "The room remained silent.",
+          "why": "상태 유지 동사 remain 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        },
+        {
+          "w": "The weather grew coldly.",
+          "r": "The weather grew cold.",
+          "why": "상태 변화 동사 grow 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        },
+        {
+          "w": "The idea sounds perfectly.",
+          "r": "The idea sounds perfect.",
+          "why": "감각동사 sound 뒤에는 부사가 아닌 형용사 보어를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "날씨의 변화를 말해요.",
+          "frame": "The weather is getting ____."
+        },
+        {
+          "task": "물건의 촉감을 말해요.",
+          "frame": "This ____ feels ____."
+        },
+        {
+          "task": "음악이나 소리에 대한 느낌을 말해요.",
+          "frame": "That song sounds ____."
+        },
+        {
+          "task": "어떤 사람의 직업을 소개해요.",
+          "frame": "My ____ is a(n) ____."
+        },
+        {
+          "task": "냄새에 대해 말해요.",
+          "frame": "The ____ smells ____."
+        },
+        {
+          "task": "친구의 제안에 답해요.",
+          "frame": "That sounds ____."
+        }
+      ],
+      "mission": {
+        "title": "오감 탐험가",
+        "scene": "교실에 있는 물건들의 촉감, 냄새, 보이는 모습을 친구와 함께 관찰하고 표현해 봅니다.",
+        "steps": [
+          "교실 안의 물건 세 가지를 고릅니다.",
+          "친구와 번갈아 가며 'This desk feels hard.'처럼 2형식 문장으로 물건을 묘사합니다.",
+          "묘사를 듣고 친구가 어떤 물건인지 맞힙니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 수프는 짠맛이 난다.",
+          "cond": "taste를 활용하세요.",
+          "model": "The soup tastes salty."
+        },
+        {
+          "ko": "그녀의 목소리는 부드럽게 들렸다.",
+          "cond": "sound를 활용하세요.",
+          "model": "Her voice sounded soft."
+        },
+        {
+          "ko": "그 담요는 부드럽게 느껴진다.",
+          "cond": "feel을 활용하세요.",
+          "model": "The blanket feels soft."
+        },
+        {
+          "ko": "학생들은 조용히 있었다.",
+          "cond": "remain을 활용하세요.",
+          "model": "The students remained silent."
+        },
+        {
+          "ko": "하늘이 어두워졌다.",
+          "cond": "grew를 활용하세요.",
+          "model": "The sky grew dark."
+        },
+        {
+          "ko": "그의 얼굴이 창백해졌다.",
+          "cond": "turned를 활용하세요.",
+          "model": "His face turned pale."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-3",
+    "discover": {
+      "q": "I like chocolate., She wants to be a vet., We enjoyed watching the show.를 보세요. 동사 뒤의 목적어는 어떤 모양들이 올 수 있나요? discuss 뒤에 about이 있나요?",
+      "a": "목적어에는 명사, 대명사, to부정사, 동명사, that절이 올 수 있다. discuss, marry 같은 동사는 전치사 없이 바로 목적어를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I ____ chocolate.",
+        "c": [
+          "like",
+          "like to"
+        ],
+        "a": 0,
+        "why": "명사 목적어는 동사 뒤에 바로 옵니다."
+      },
+      {
+        "p": "She wants ____ a vet.",
+        "c": [
+          "to be",
+          "being"
+        ],
+        "a": 0,
+        "why": "want는 to부정사를 목적어로 씁니다."
+      },
+      {
+        "p": "We enjoyed ____ the show.",
+        "c": [
+          "watching",
+          "to watch"
+        ],
+        "a": 0,
+        "why": "enjoy는 동명사를 목적어로 씁니다."
+      },
+      {
+        "p": "They discussed ____ the problem.",
+        "c": [
+          "—",
+          "about"
+        ],
+        "a": 0,
+        "why": "discuss는 전치사 없이 바로 목적어를 씁니다."
+      },
+      {
+        "p": "He married ____ her.",
+        "c": [
+          "—",
+          "with"
+        ],
+        "a": 0,
+        "why": "marry는 전치사 없이 바로 목적어를 씁니다."
+      },
+      {
+        "p": "He finished ____ the book.",
+        "c": [
+          "to read",
+          "reading"
+        ],
+        "a": 1,
+        "why": "finish는 동명사를 목적어로 씁니다."
+      },
+      {
+        "p": "Please answer ____ my question.",
+        "c": [
+          "to",
+          "—"
+        ],
+        "a": 1,
+        "why": "answer는 전치사 없이 바로 목적어를 씁니다."
+      },
+      {
+        "p": "I hope ____ you again.",
+        "c": [
+          "to see",
+          "seeing"
+        ],
+        "a": 0,
+        "why": "hope는 to부정사를 목적어로 씁니다."
+      },
+      {
+        "p": "We know ____ the Earth is round.",
+        "c": [
+          "what",
+          "that"
+        ],
+        "a": 1,
+        "why": "문장을 목적어로 이끌 때는 접속사 that을 씁니다."
+      },
+      {
+        "p": "She entered ____ the room.",
+        "c": [
+          "into",
+          "—"
+        ],
+        "a": 1,
+        "why": "enter는 전치사 없이 바로 목적어를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Let's discuss about it.",
+        "r": "Let's discuss it.",
+        "why": "discuss는 바로 목적어를 씁니다."
+      },
+      {
+        "w": "He married with her.",
+        "r": "He married her.",
+        "why": "marry도 바로 목적어를 씁니다."
+      },
+      {
+        "w": "She wants being a vet.",
+        "r": "She wants to be a vet.",
+        "why": "want는 to부정사를 목적어로 씁니다."
+      },
+      {
+        "w": "He entered into the classroom.",
+        "r": "He entered the classroom.",
+        "why": "enter는 전치사 없이 바로 목적어를 씁니다."
+      },
+      {
+        "w": "I plan going to the park.",
+        "r": "I plan to go to the park.",
+        "why": "plan은 to부정사를 목적어로 씁니다."
+      },
+      {
+        "w": "Answer to the phone, please.",
+        "r": "Answer the phone, please.",
+        "why": "answer는 전치사 없이 바로 목적어를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 것을 목적어로 말해요.",
+        "frame": "I like/love ____."
+      },
+      {
+        "task": "하고 싶은 일을 to부정사로 말해요.",
+        "frame": "I want to ____."
+      },
+      {
+        "task": "즐기는 일을 동명사로 말해요.",
+        "frame": "I enjoy ____ing."
+      },
+      {
+        "task": "생각을 that절로 말해요.",
+        "frame": "I think that ____."
+      },
+      {
+        "task": "계획을 to부정사로 말해요.",
+        "frame": "I plan to ____ this weekend."
+      },
+      {
+        "task": "끝낸 일을 동명사로 말해요.",
+        "frame": "I finished ____ing yesterday."
+      }
+    ],
+    "mission": {
+      "title": "목적어 모양 찾기 게임",
+      "scene": "문장 카드를 읽고 목적어가 어떤 모양인지 찾아 분류하는 게임이에요.",
+      "steps": [
+        "문장 카드를 뽑는다.",
+        "목적어에 밑줄을 긋는다.",
+        "명사·to부정사·동명사·that절 중 어느 것인지 분류한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 초콜릿을 좋아해요.",
+        "cond": "like를 써요.",
+        "model": "I like chocolate."
+      },
+      {
+        "ko": "그녀는 수의사가 되기를 원해요.",
+        "cond": "to부정사를 써요.",
+        "model": "She wants to be a vet."
+      },
+      {
+        "ko": "그들은 그 문제를 의논했다.",
+        "cond": "discussed를 써요.",
+        "model": "They discussed the problem."
+      },
+      {
+        "ko": "우리는 방 청소하는 것을 끝냈다.",
+        "cond": "finished와 동명사를 써요.",
+        "model": "We finished cleaning the room."
+      },
+      {
+        "ko": "나는 그녀가 친절하다고 생각한다.",
+        "cond": "think와 that절을 써요.",
+        "model": "I think that she is kind."
+      },
+      {
+        "ko": "그는 내 질문에 대답했다.",
+        "cond": "answered를 써요.",
+        "model": "He answered my question."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I **need** some water.",
+        "ko": "나는 물이 약간 필요하다."
+      },
+      {
+        "en": "He **plans** to visit Paris.",
+        "ko": "그는 파리를 방문할 계획이다."
+      },
+      {
+        "en": "They **finished** cleaning the classroom.",
+        "ko": "그들은 교실 청소하는 것을 끝냈다."
+      },
+      {
+        "en": "She **believes** that he is honest.",
+        "ko": "그녀는 그가 정직하다고 믿는다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 동사 뒤에 오는 목적어의 형태는 각각 어떻게 다른가요?",
+        "a": "명사, to부정사, 동명사, that절 등 동사에 따라 목적어의 형태가 다릅니다."
+      },
+      "choose": [
+        {
+          "p": "We decided ____ a movie.",
+          "c": [
+            "watching",
+            "to watch",
+            "watch"
+          ],
+          "a": 1,
+          "why": "decide는 to부정사를 목적어로 씁니다."
+        },
+        {
+          "p": "Do you mind ____ the window?",
+          "c": [
+            "opening",
+            "to open",
+            "open"
+          ],
+          "a": 0,
+          "why": "mind는 동명사를 목적어로 씁니다."
+        },
+        {
+          "p": "He attended ____ the meeting.",
+          "c": [
+            "at",
+            "—",
+            "in"
+          ],
+          "a": 1,
+          "why": "attend는 전치사 없이 바로 목적어를 씁니다."
+        },
+        {
+          "p": "I believe ____ you can do it.",
+          "c": [
+            "to",
+            "if",
+            "that"
+          ],
+          "a": 2,
+          "why": "문장을 목적어로 이끌 때는 접속사 that을 씁니다."
+        },
+        {
+          "p": "They reached ____ the station.",
+          "c": [
+            "at",
+            "to",
+            "—"
+          ],
+          "a": 2,
+          "why": "reach는 전치사 없이 바로 목적어를 씁니다."
+        },
+        {
+          "p": "She promised ____ early.",
+          "c": [
+            "coming",
+            "to come",
+            "come"
+          ],
+          "a": 1,
+          "why": "promise는 to부정사를 목적어로 씁니다."
+        },
+        {
+          "p": "Don't give up ____ English.",
+          "c": [
+            "studying",
+            "to study",
+            "study"
+          ],
+          "a": 0,
+          "why": "give up은 동명사를 목적어로 씁니다."
+        },
+        {
+          "p": "He mentioned ____ the plan.",
+          "c": [
+            "about",
+            "on",
+            "—"
+          ],
+          "a": 2,
+          "why": "mention은 전치사 없이 바로 목적어를 씁니다."
+        },
+        {
+          "p": "I expect ____ a good grade.",
+          "c": [
+            "getting",
+            "to get",
+            "get"
+          ],
+          "a": 1,
+          "why": "expect는 to부정사를 목적어로 씁니다."
+        },
+        {
+          "p": "You should avoid ____ junk food.",
+          "c": [
+            "to eat",
+            "eating",
+            "eat"
+          ],
+          "a": 1,
+          "why": "avoid는 동명사를 목적어로 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The dog **chased** the cat.",
+          "ko": "그 개가 고양이를 쫓아갔다."
+        },
+        {
+          "en": "I **decided** to study hard.",
+          "ko": "나는 열심히 공부하기로 결정했다."
+        },
+        {
+          "en": "He **avoids** meeting people.",
+          "ko": "그는 사람들을 만나는 것을 피한다."
+        },
+        {
+          "en": "We **know** that she is smart.",
+          "ko": "우리는 그녀가 똑똑하다는 것을 안다."
+        },
+        {
+          "en": "They **attended** the wedding.",
+          "ko": "그들은 결혼식에 참석했다."
+        },
+        {
+          "en": "She **promised** to help me.",
+          "ko": "그녀는 나를 돕기로 약속했다."
+        },
+        {
+          "en": "I **mind** working late.",
+          "ko": "나는 늦게까지 일하는 것을 꺼린다."
+        },
+        {
+          "en": "The train **reached** London.",
+          "ko": "그 기차가 런던에 도착했다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She attended at the class.",
+          "r": "She attended the class.",
+          "why": "attend는 전치사 없이 바로 목적어를 씁니다."
+        },
+        {
+          "w": "He decided buying a new car.",
+          "r": "He decided to buy a new car.",
+          "why": "decide는 to부정사를 목적어로 씁니다."
+        },
+        {
+          "w": "I don't mind to wait.",
+          "r": "I don't mind waiting.",
+          "why": "mind는 동명사를 목적어로 씁니다."
+        },
+        {
+          "w": "We reached at the airport.",
+          "r": "We reached the airport.",
+          "why": "reach는 전치사 없이 바로 목적어를 씁니다."
+        },
+        {
+          "w": "They promised keeping the secret.",
+          "r": "They promised to keep the secret.",
+          "why": "promise는 to부정사를 목적어로 씁니다."
+        },
+        {
+          "w": "Don't mention about it.",
+          "r": "Don't mention it.",
+          "why": "mention은 전치사 없이 바로 목적어를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "약속한 일을 to부정사로 말해요.",
+          "frame": "I promise to ____."
+        },
+        {
+          "task": "꺼리는 일을 동명사로 말해요.",
+          "frame": "I mind ____ing."
+        },
+        {
+          "task": "피하고 싶은 일을 동명사로 말해요.",
+          "frame": "I avoid ____ing."
+        },
+        {
+          "task": "믿는 사실을 that절로 말해요.",
+          "frame": "I believe that ____."
+        },
+        {
+          "task": "결정한 일을 to부정사로 말해요.",
+          "frame": "I decided to ____."
+        },
+        {
+          "task": "도착한 장소를 전치사 없이 말해요.",
+          "frame": "I reached ____."
+        }
+      ],
+      "mission": {
+        "title": "3형식 문장 릴레이",
+        "scene": "친구들과 돌아가며 다양한 형태의 목적어를 가진 3형식 문장을 만들어 봅니다.",
+        "steps": [
+          "첫 번째 학생이 'I want to...'로 문장을 시작하여 완성합니다. (예: I want to eat pizza.)",
+          "다음 학생은 동사를 바꿔서 새로운 3형식 문장을 만듭니다. (예: I enjoy eating pizza.)",
+          "전치사를 쓰기 쉬운 동사(discuss, reach 등)도 활용해 봅니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 일찍 일어나는 것을 약속한다.",
+          "cond": "promise와 to부정사를 써요.",
+          "model": "I promise to get up early."
+        },
+        {
+          "ko": "그녀는 밤에 혼자 걷는 것을 피한다.",
+          "cond": "avoids와 동명사를 써요.",
+          "model": "She avoids walking alone at night."
+        },
+        {
+          "ko": "우리는 그 회의에 참석했다.",
+          "cond": "attended를 써요.",
+          "model": "We attended the meeting."
+        },
+        {
+          "ko": "그는 새 자전거를 사기로 결정했다.",
+          "cond": "decided와 to부정사를 써요.",
+          "model": "He decided to buy a new bike."
+        },
+        {
+          "ko": "나는 창문을 여는 것을 꺼리지 않는다.",
+          "cond": "don't mind와 동명사를 써요.",
+          "model": "I don't mind opening the window."
+        },
+        {
+          "ko": "그들은 서울에 도착했다.",
+          "cond": "reached를 써요.",
+          "model": "They reached Seoul."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-4",
+    "discover": {
+      "q": "My dad bought me a bike.와 She bought a bike for me.를 비교해 보세요. 두 문장은 어순과 전치사가 어떻게 다른가요? buy 대신 explain은 4형식으로 쓸 수 있나요?",
+      "a": "4형식은 동사 + 사람 + 물건 순서이고, 3형식으로 바꾸면 물건 + to/for/of + 사람이 된다. buy는 for를 쓰고, explain은 4형식으로 쓰지 못하고 explain + 물건 + to + 사람으로 쓴다."
+    },
+    "choose": [
+      {
+        "p": "My dad bought ____ a bike.",
+        "c": [
+          "me",
+          "to me"
+        ],
+        "a": 0,
+        "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+      },
+      {
+        "p": "She bought a bike ____ me.",
+        "c": [
+          "for",
+          "to"
+        ],
+        "a": 0,
+        "why": "buy는 for를 씁니다."
+      },
+      {
+        "p": "He explained the rule ____ me.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "explain은 to를 쓴 3형식으로 씁니다."
+      },
+      {
+        "p": "Can you lend ____ your pen?",
+        "c": [
+          "me",
+          "to me"
+        ],
+        "a": 0,
+        "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+      },
+      {
+        "p": "I asked ____ a question.",
+        "c": [
+          "him",
+          "to him"
+        ],
+        "a": 0,
+        "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+      },
+      {
+        "p": "I will send ____ an email.",
+        "c": [
+          "him",
+          "to him"
+        ],
+        "a": 0,
+        "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+      },
+      {
+        "p": "My mom made a cake ____ me.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 1,
+        "why": "make는 3형식으로 바꿀 때 for를 씁니다."
+      },
+      {
+        "p": "Mr. Smith teaches English ____ us.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "teach는 3형식으로 바꿀 때 to를 씁니다."
+      },
+      {
+        "p": "Can I ask a favor ____ you?",
+        "c": [
+          "of",
+          "to"
+        ],
+        "a": 0,
+        "why": "ask는 3형식으로 바꿀 때 of를 씁니다."
+      },
+      {
+        "p": "He gave a present ____ his sister.",
+        "c": [
+          "to",
+          "for"
+        ],
+        "a": 0,
+        "why": "give는 3형식으로 바꿀 때 to를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She bought a bike to me.",
+        "r": "She bought a bike for me.",
+        "why": "buy는 for를 씁니다."
+      },
+      {
+        "w": "He explained me the rule.",
+        "r": "He explained the rule to me.",
+        "why": "explain은 4형식으로 쓰지 않습니다."
+      },
+      {
+        "w": "He told me to the truth.",
+        "r": "He told me the truth.",
+        "why": "4형식에는 to가 필요 없습니다."
+      },
+      {
+        "w": "My uncle sent a gift for me.",
+        "r": "My uncle sent a gift to me.",
+        "why": "send는 3형식으로 바꿀 때 to를 씁니다."
+      },
+      {
+        "w": "She explained us the game.",
+        "r": "She explained the game to us.",
+        "why": "explain은 4형식으로 쓰지 않고 3형식으로 씁니다."
+      },
+      {
+        "w": "I made him to a sandwich.",
+        "r": "I made him a sandwich.",
+        "why": "4형식에서는 사람 앞에 전치사를 쓰지 않습니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "선물을 주는 문장을 말해요.",
+        "frame": "I gave ____ a ____."
+      },
+      {
+        "task": "받은 선물을 말해요.",
+        "frame": "My ____ bought me a ____."
+      },
+      {
+        "task": "빌려 달라고 부탁해요.",
+        "frame": "Can you lend me your ____?"
+      },
+      {
+        "task": "질문이나 이야기를 전해요.",
+        "frame": "I asked/told him/her ____."
+      },
+      {
+        "task": "친구에게 이메일이나 메시지를 보냈다고 말해요.",
+        "frame": "I sent ____ a ____."
+      },
+      {
+        "task": "누군가 나를 위해 만들어 준 것을 자랑해요.",
+        "frame": "My ____ made me a ____."
+      }
+    ],
+    "mission": {
+      "title": "선물 가게 역할극",
+      "scene": "손님과 직원이 되어 선물을 사고 주는 대화를 해요.",
+      "steps": [
+        "I'd like to buy my mom a ____. 로 말한다.",
+        "직원은 I'll show you some ____. 로 보여 준다.",
+        "I'll buy it for her. 처럼 3형식으로도 한 번 바꿔 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "아빠가 나에게 자전거를 사 주셨어요.",
+        "cond": "bought me를 써요.",
+        "model": "My dad bought me a bike."
+      },
+      {
+        "ko": "그는 나에게 사실을 말했어요.",
+        "cond": "told me를 써요.",
+        "model": "He told me the truth."
+      },
+      {
+        "ko": "그는 나에게 규칙을 설명했어요.",
+        "cond": "explained와 to me를 써요.",
+        "model": "He explained the rule to me."
+      },
+      {
+        "ko": "엄마가 나에게 케이크를 만들어 주셨어요.",
+        "cond": "made me를 써요.",
+        "model": "My mom made me a cake."
+      },
+      {
+        "ko": "나는 그들에게 메시지를 보냈어요.",
+        "cond": "sent them을 써요.",
+        "model": "I sent them a message."
+      },
+      {
+        "ko": "그녀는 우리에게 그 게임을 설명했어요.",
+        "cond": "explained와 to us를 써요.",
+        "model": "She explained the game to us."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "My brother **made** me a toy.",
+        "ko": "우리 형이 나에게 장난감을 만들어 주었다."
+      },
+      {
+        "en": "I **sent** them a message.",
+        "ko": "나는 그들에게 메시지를 보냈다."
+      },
+      {
+        "en": "She **cooked** dinner **for** us.",
+        "ko": "그녀는 우리를 위해 저녁을 요리했다."
+      },
+      {
+        "en": "He **asked** a favor **of** me.",
+        "ko": "그는 나에게 부탁을 했다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "'I gave him a book.'과 'I gave a book to him.'의 차이점은 무엇일까요?",
+        "a": "사람(~에게)이 사물(~을) 뒤로 가면 앞에 to, for, of 같은 전치사가 붙습니다."
+      },
+      "choose": [
+        {
+          "p": "The teacher gave ____ some homework.",
+          "c": [
+            "us",
+            "to us"
+          ],
+          "a": 0,
+          "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+        },
+        {
+          "p": "I will cook dinner ____ my family.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 1,
+          "why": "cook은 3형식으로 바꿀 때 for를 씁니다."
+        },
+        {
+          "p": "Please pass the salt ____ me.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "pass는 3형식으로 바꿀 때 to를 씁니다."
+        },
+        {
+          "p": "He found a nice shirt ____ his son.",
+          "c": [
+            "for",
+            "of"
+          ],
+          "a": 0,
+          "why": "find는 3형식으로 바꿀 때 for를 씁니다."
+        },
+        {
+          "p": "Can you teach ____ math?",
+          "c": [
+            "me",
+            "to me"
+          ],
+          "a": 0,
+          "why": "4형식은 동사 뒤에 사람이 바로 옵니다."
+        },
+        {
+          "p": "She wrote a letter ____ her grandmother.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "write는 3형식으로 바꿀 때 to를 씁니다."
+        },
+        {
+          "p": "My dad read a story ____ me.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "read는 3형식으로 바꿀 때 to를 씁니다."
+        },
+        {
+          "p": "They asked a difficult question ____ the teacher.",
+          "c": [
+            "of",
+            "to"
+          ],
+          "a": 0,
+          "why": "ask는 3형식으로 바꿀 때 of를 씁니다."
+        },
+        {
+          "p": "I sent a text message ____ my friend.",
+          "c": [
+            "to",
+            "for"
+          ],
+          "a": 0,
+          "why": "send는 3형식으로 바꿀 때 to를 씁니다."
+        },
+        {
+          "p": "We bought some flowers ____ our teacher.",
+          "c": [
+            "for",
+            "to"
+          ],
+          "a": 0,
+          "why": "buy는 3형식으로 바꿀 때 for를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "They **gave** me a chance.",
+          "ko": "그들은 나에게 기회를 주었다."
+        },
+        {
+          "en": "I **wrote** him a letter.",
+          "ko": "나는 그에게 편지를 썼다."
+        },
+        {
+          "en": "She **found** me a good book.",
+          "ko": "그녀는 나에게 좋은 책을 찾아 주었다."
+        },
+        {
+          "en": "He **taught** us history.",
+          "ko": "그는 우리에게 역사를 가르쳤다."
+        },
+        {
+          "en": "Please **pass** me the cup.",
+          "ko": "나에게 그 컵을 건네주세요."
+        },
+        {
+          "en": "I **got** a ticket **for** you.",
+          "ko": "내가 너를 위해 표를 구했어."
+        },
+        {
+          "en": "We **read** a book **to** the children.",
+          "ko": "우리는 아이들에게 책을 읽어 주었다."
+        },
+        {
+          "en": "He **explained** the problem **to** us.",
+          "ko": "그는 우리에게 그 문제를 설명했다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The teacher gave some homework for us.",
+          "r": "The teacher gave some homework to us.",
+          "why": "give는 3형식으로 바꿀 때 to를 씁니다."
+        },
+        {
+          "w": "I cooked my family to dinner.",
+          "r": "I cooked my family dinner.",
+          "why": "4형식에서는 사람 앞에 전치사를 쓰지 않습니다."
+        },
+        {
+          "w": "He explained me the problem.",
+          "r": "He explained the problem to me.",
+          "why": "explain은 4형식으로 쓰지 않고 3형식으로 씁니다."
+        },
+        {
+          "w": "She asked a question to him.",
+          "r": "She asked a question of him.",
+          "why": "ask는 3형식으로 바꿀 때 of를 씁니다."
+        },
+        {
+          "w": "Please pass to me the salt.",
+          "r": "Please pass me the salt.",
+          "why": "4형식에서는 동사 뒤에 사람이 바로 옵니다."
+        },
+        {
+          "w": "My dad read me to a story.",
+          "r": "My dad read me a story.",
+          "why": "4형식에서는 동사 뒤에 사람, 사물 순서로 옵니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "친구에게 물건을 건네 달라고 부탁해요.",
+          "frame": "Please pass me the ____."
+        },
+        {
+          "task": "누군가에게 무언가를 가르쳐 주었다고 말해요.",
+          "frame": "I taught ____ ____."
+        },
+        {
+          "task": "가족을 위해 요리한 것을 말해요.",
+          "frame": "I cooked ____ for my ____."
+        },
+        {
+          "task": "누군가에게 편지를 썼다고 말해요.",
+          "frame": "I wrote a letter to ____."
+        },
+        {
+          "task": "어려운 문제를 설명해 주었다고 말해요.",
+          "frame": "I explained the problem to ____."
+        },
+        {
+          "task": "선생님께 어려운 질문을 했다고 말해요.",
+          "frame": "I asked a difficult question of ____."
+        }
+      ],
+      "mission": {
+        "title": "비밀 마니또 선물하기",
+        "scene": "우리 반 친구들에게 몰래 선물을 주고 메모를 남기는 활동입니다.",
+        "steps": [
+          "마니또 친구를 위해 무엇을 해 줄지 생각합니다. (예: I will make him a card.)",
+          "친구에게 줄 선물이나 도움을 준비하여 책상에 몰래 둡니다.",
+          "나중에 누가 나에게 선물을 주었는지 영어로 물어봅니다. (예: Did you give me this candy?)"
+        ]
+      },
+      "review": [
+        {
+          "ko": "선생님이 우리에게 숙제를 주셨어요.",
+          "cond": "gave us를 써요.",
+          "model": "The teacher gave us some homework."
+        },
+        {
+          "ko": "나는 내 가족을 위해 저녁을 요리할 거예요.",
+          "cond": "cook dinner를 써요.",
+          "model": "I will cook dinner for my family."
+        },
+        {
+          "ko": "나에게 소금을 건네주세요.",
+          "cond": "pass me를 써요.",
+          "model": "Please pass me the salt."
+        },
+        {
+          "ko": "그녀는 할머니께 편지를 썼어요.",
+          "cond": "wrote a letter를 써요.",
+          "model": "She wrote a letter to her grandmother."
+        },
+        {
+          "ko": "그는 나에게 그 문제를 설명했어요.",
+          "cond": "explained와 to me를 써요.",
+          "model": "He explained the problem to me."
+        },
+        {
+          "ko": "그들은 선생님께 어려운 질문을 했어요.",
+          "cond": "asked와 of를 써요.",
+          "model": "They asked a difficult question of the teacher."
+        }
+      ]
+    }
+  },
+  {
+    "id": "forms-5",
+    "discover": {
+      "q": "The movie made me sad., We call him Captain., My mom told me to clean my room.을 보세요. 목적어 뒤에 오는 말(목적격 보어)은 어떤 모양들인가요? 목적어와 어떤 관계인가요?",
+      "a": "목적어 뒤에 형용사, 명사, to부정사, 동사원형이 올 수 있고, 목적어의 상태나 하는 일을 설명한다(나 = 슬픈, 그 = 캡틴)."
+    },
+    "choose": [
+      {
+        "p": "The movie made me ____.",
+        "c": [
+          "sad",
+          "sadly"
+        ],
+        "a": 0,
+        "why": "목적격 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "p": "We call him ____.",
+        "c": [
+          "Captain",
+          "to Captain"
+        ],
+        "a": 0,
+        "why": "목적격 보어 자리에는 명사를 씁니다."
+      },
+      {
+        "p": "My mom told me ____ my room.",
+        "c": [
+          "to clean",
+          "clean"
+        ],
+        "a": 0,
+        "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "p": "Keep your room ____.",
+        "c": [
+          "clean",
+          "cleanly"
+        ],
+        "a": 0,
+        "why": "keep + 목적어 뒤에는 형용사를 씁니다."
+      },
+      {
+        "p": "I saw her ____ on the stage.",
+        "c": [
+          "dance",
+          "to dance"
+        ],
+        "a": 0,
+        "why": "지각동사 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Please keep the door ____.",
+        "c": [
+          "open",
+          "openly"
+        ],
+        "a": 0,
+        "why": "keep + 목적어 뒤의 목적격 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "p": "I want you ____ me with my homework.",
+        "c": [
+          "help",
+          "to help"
+        ],
+        "a": 1,
+        "why": "want는 목적격 보어로 to부정사를 취합니다."
+      },
+      {
+        "p": "They named their baby ____.",
+        "c": [
+          "Lily",
+          "to Lily"
+        ],
+        "a": 0,
+        "why": "name + 목적어 뒤의 목적격 보어 자리에는 명사를 씁니다."
+      },
+      {
+        "p": "I heard someone ____ my name.",
+        "c": [
+          "to call",
+          "call"
+        ],
+        "a": 1,
+        "why": "hear와 같은 지각동사는 목적격 보어로 동사원형을 취합니다."
+      },
+      {
+        "p": "My dad let me ____ TV late.",
+        "c": [
+          "watch",
+          "to watch"
+        ],
+        "a": 0,
+        "why": "let과 같은 사역동사는 목적격 보어로 동사원형을 취합니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "The news made me sadly.",
+        "r": "The news made me sad.",
+        "why": "목적격 보어 자리에는 형용사를 씁니다."
+      },
+      {
+        "w": "She told me clean my room.",
+        "r": "She told me to clean my room.",
+        "why": "tell + 목적어 뒤에는 to부정사를 씁니다."
+      },
+      {
+        "w": "I saw her to dance on the stage.",
+        "r": "I saw her dance on the stage.",
+        "why": "지각동사 뒤에는 to 없이 동사원형을 씁니다."
+      },
+      {
+        "w": "You should keep your hands cleanly.",
+        "r": "You should keep your hands clean.",
+        "why": "목적격 보어 자리에는 부사가 아닌 형용사를 써야 합니다."
+      },
+      {
+        "w": "He asked me open the window.",
+        "r": "He asked me to open the window.",
+        "why": "ask는 목적격 보어로 to부정사를 취합니다."
+      },
+      {
+        "w": "I watched the boys to play soccer.",
+        "r": "I watched the boys play soccer.",
+        "why": "지각동사 watch는 목적격 보어로 to 없이 동사원형을 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "나를 기분 좋게 만드는 것을 말해요.",
+        "frame": "____ makes me happy."
+      },
+      {
+        "task": "별명이나 이름을 부르는 방식을 말해요.",
+        "frame": "We call him/her/it ____."
+      },
+      {
+        "task": "가족이 나에게 바라는 일을 말해요.",
+        "frame": "My ____ told me to ____."
+      },
+      {
+        "task": "본 장면을 말해요.",
+        "frame": "I saw him/her ____ on/in ____."
+      },
+      {
+        "task": "친구가 해주었으면 하는 일을 말해요.",
+        "frame": "I want you to ____."
+      },
+      {
+        "task": "주변에서 들리는 소리를 묘사해요.",
+        "frame": "I heard ____ ____."
+      }
+    ],
+    "mission": {
+      "title": "기분 만들기 인터뷰",
+      "scene": "무엇이 친구를 기쁘게, 슬프게, 화나게 만드는지 인터뷰해요.",
+      "steps": [
+        "What makes you happy/sad/angry? 로 묻는다.",
+        "____ makes me ____. 로 대답한다.",
+        "Games make him happy. 처럼 친구에 대해 5형식 문장으로 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그 영화는 나를 슬프게 했다.",
+        "cond": "made me를 써요.",
+        "model": "The movie made me sad."
+      },
+      {
+        "ko": "우리는 그를 캡틴이라고 부른다.",
+        "cond": "call을 써요.",
+        "model": "We call him Captain."
+      },
+      {
+        "ko": "엄마가 나에게 방을 청소하라고 하셨다.",
+        "cond": "told me to를 써요.",
+        "model": "My mom told me to clean my room."
+      },
+      {
+        "ko": "나는 네가 나를 돕기를 바란다.",
+        "cond": "want를 써요.",
+        "model": "I want you to help me."
+      },
+      {
+        "ko": "그들은 그 개를 맥스라고 이름 지었다.",
+        "cond": "named를 써요.",
+        "model": "They named the dog Max."
+      },
+      {
+        "ko": "그녀는 그가 피아노 치는 것을 들었다.",
+        "cond": "heard를 써요.",
+        "model": "She heard him play the piano."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "He **found** the book **boring**.",
+        "ko": "그는 그 책이 지루하다고 생각했다."
+      },
+      {
+        "en": "She **named** the cat **Kitty**.",
+        "ko": "그녀는 그 고양이를 키티라고 이름 지었다."
+      },
+      {
+        "en": "I **want** you **to stay**.",
+        "ko": "나는 네가 머무르기를 바란다."
+      },
+      {
+        "en": "We **heard** him **sing**.",
+        "ko": "우리는 그가 노래하는 것을 들었다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 굵게 표시된 동사 뒤에 오는 두 부분(목적어와 목적격 보어)은 서로 어떤 관계를 가지나요?",
+        "a": "목적격 보어가 목적어의 상태, 이름, 또는 행동을 보충해서 설명해 줍니다."
+      },
+      "choose": [
+        {
+          "p": "The funny story made us ____.",
+          "c": [
+            "happy",
+            "happily"
+          ],
+          "a": 0,
+          "why": "make의 목적격 보어 자리에는 부사가 아닌 형용사를 씁니다."
+        },
+        {
+          "p": "I found the math test ____.",
+          "c": [
+            "easily",
+            "easy"
+          ],
+          "a": 1,
+          "why": "find의 목적격 보어 자리에는 형용사를 씁니다."
+        },
+        {
+          "p": "We named our team ____.",
+          "c": [
+            "to Tigers",
+            "Tigers"
+          ],
+          "a": 1,
+          "why": "name의 목적격 보어 자리에는 명사를 씁니다."
+        },
+        {
+          "p": "People call New York the Big ____.",
+          "c": [
+            "Apple",
+            "to Apple"
+          ],
+          "a": 0,
+          "why": "call의 목적격 보어 자리에는 명사를 씁니다."
+        },
+        {
+          "p": "The teacher asked us ____ quiet.",
+          "c": [
+            "to be",
+            "be"
+          ],
+          "a": 0,
+          "why": "ask는 목적격 보어로 to부정사를 취합니다."
+        },
+        {
+          "p": "My parents expect me ____ hard.",
+          "c": [
+            "study",
+            "to study"
+          ],
+          "a": 1,
+          "why": "expect는 목적격 보어로 to부정사를 취합니다."
+        },
+        {
+          "p": "The doctor advised him ____ more water.",
+          "c": [
+            "to drink",
+            "drink"
+          ],
+          "a": 0,
+          "why": "advise는 목적격 보어로 to부정사를 취합니다."
+        },
+        {
+          "p": "I saw a bird ____ into the room.",
+          "c": [
+            "fly",
+            "to fly"
+          ],
+          "a": 0,
+          "why": "지각동사 see는 목적격 보어로 동사원형을 취합니다."
+        },
+        {
+          "p": "She felt the ground ____.",
+          "c": [
+            "to shake",
+            "shake"
+          ],
+          "a": 1,
+          "why": "지각동사 feel은 목적격 보어로 동사원형을 취합니다."
+        },
+        {
+          "p": "Please let me ____ to the party.",
+          "c": [
+            "to go",
+            "go"
+          ],
+          "a": 1,
+          "why": "사역동사 let은 목적격 보어로 동사원형을 취합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "The music **makes** me **sleepy**.",
+          "ko": "그 음악은 나를 졸리게 만든다."
+        },
+        {
+          "en": "Please **keep** the water **cold**.",
+          "ko": "물을 차갑게 유지해 주세요."
+        },
+        {
+          "en": "They **elected** him **president**.",
+          "ko": "그들은 그를 회장으로 선출했다."
+        },
+        {
+          "en": "I **advise** you **to exercise**.",
+          "ko": "나는 네가 운동할 것을 조언한다."
+        },
+        {
+          "en": "He **expected** her **to win**.",
+          "ko": "그는 그녀가 이길 것이라고 기대했다."
+        },
+        {
+          "en": "We **watched** the sun **rise**.",
+          "ko": "우리는 해가 뜨는 것을 지켜보았다."
+        },
+        {
+          "en": "She **felt** the wind **blow**.",
+          "ko": "그녀는 바람이 부는 것을 느꼈다."
+        },
+        {
+          "en": "My mom **let** me **rest**.",
+          "ko": "엄마는 내가 쉬도록 허락하셨다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "The loud noise made him angrily.",
+          "r": "The loud noise made him angry.",
+          "why": "목적격 보어 자리에는 부사가 아닌 형용사를 써야 합니다."
+        },
+        {
+          "w": "I found the movie very interestingly.",
+          "r": "I found the movie very interesting.",
+          "why": "목적격 보어 자리에는 부사가 아닌 형용사를 써야 합니다."
+        },
+        {
+          "w": "She wants me wash the dishes.",
+          "r": "She wants me to wash the dishes.",
+          "why": "want는 목적격 보어로 to부정사를 취합니다."
+        },
+        {
+          "w": "My dad allowed me use his computer.",
+          "r": "My dad allowed me to use his computer.",
+          "why": "allow는 목적격 보어로 to부정사를 취합니다."
+        },
+        {
+          "w": "We heard the baby to cry loudly.",
+          "r": "We heard the baby cry loudly.",
+          "why": "지각동사 hear는 목적격 보어로 to 없이 동사원형을 씁니다."
+        },
+        {
+          "w": "The teacher let us to go home early.",
+          "r": "The teacher let us go home early.",
+          "why": "사역동사 let은 목적격 보어로 to 없이 동사원형을 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "어떤 사물이나 상황이 내 기분을 어떻게 만드는지 말해요.",
+          "frame": "____ makes me ____."
+        },
+        {
+          "task": "특정 물건을 어떤 상태로 유지해야 하는지 말해요.",
+          "frame": "We should keep ____ ____."
+        },
+        {
+          "task": "반려동물이나 아끼는 물건의 이름을 지어준 경험을 말해요.",
+          "frame": "I named my ____ ____."
+        },
+        {
+          "task": "다른 사람에게 부탁할 일을 말해요.",
+          "frame": "I will ask him to ____."
+        },
+        {
+          "task": "누군가가 하는 행동을 지켜본 경험을 말해요.",
+          "frame": "I watched ____ ____."
+        },
+        {
+          "task": "부모님이 허락해주신 일을 말해요.",
+          "frame": "My parents let me ____."
+        }
+      ],
+      "mission": {
+        "title": "오감 관찰 보고서",
+        "scene": "교실 안팎에서 일어나는 일들을 5형식 문장으로 묘사해 봅니다.",
+        "steps": [
+          "짝과 함께 교실에서 들리거나 보이는 행동을 하나 찾습니다.",
+          "지각동사를 사용하여 'I saw/heard [친구 이름] [행동].' 문장을 만듭니다.",
+          "만든 문장을 반 친구들 앞에서 발표하고 올바른지 확인받습니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그 소음은 나를 화나게 했다.",
+          "cond": "made를 써요.",
+          "model": "The noise made me angry."
+        },
+        {
+          "ko": "그는 그 상자가 비어있다는 것을 알았다.",
+          "cond": "found를 써요.",
+          "model": "He found the box empty."
+        },
+        {
+          "ko": "우리는 그 고양이를 레오라고 부른다.",
+          "cond": "call을 써요.",
+          "model": "We call the cat Leo."
+        },
+        {
+          "ko": "선생님은 우리에게 조용히 하라고 부탁하셨다.",
+          "cond": "asked를 써요.",
+          "model": "The teacher asked us to be quiet."
+        },
+        {
+          "ko": "그들은 내 남동생이 수영하는 것을 보았다.",
+          "cond": "watched를 써요.",
+          "model": "They watched my brother swim."
+        },
+        {
+          "ko": "그녀는 땅이 흔들리는 것을 느꼈다.",
+          "cond": "felt를 써요.",
+          "model": "She felt the ground shake."
+        }
+      ]
+    }
+  }
+]

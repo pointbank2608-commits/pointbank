@@ -1,0 +1,4513 @@
+[
+  {
+    "id": "m-be-verb",
+    "discover": {
+      "q": "굵게 표시한 be동사(am, are, is)를 보세요. 주어가 I일 때, you·we·they일 때, he·she·it일 때 각각 어떤 be동사를 썼나요?",
+      "a": "I는 am, you·we·they와 복수는 are, he·she·it과 단수는 is를 쓴다."
+    },
+    "choose": [
+      {
+        "p": "She ____ my friend.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "She는 3인칭 단수이므로 is를 씁니다."
+      },
+      {
+        "p": "You ____ very kind.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 1,
+        "why": "you 뒤에는 are를 씁니다."
+      },
+      {
+        "p": "We ____ in the same class.",
+        "c": [
+          "are",
+          "am"
+        ],
+        "a": 0,
+        "why": "We 뒤에는 are를 씁니다."
+      },
+      {
+        "p": "____ they at home?",
+        "c": [
+          "Is",
+          "Are"
+        ],
+        "a": 1,
+        "why": "they는 복수이므로 Are로 묻습니다."
+      },
+      {
+        "p": "My brother ____ not tall.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "My brother는 한 사람이므로 is를 씁니다."
+      },
+      {
+        "p": "It ____ a cute dog.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 0,
+        "why": "It은 3인칭 단수이므로 is를 씁니다."
+      },
+      {
+        "p": "The boys ____ in the park.",
+        "c": [
+          "is",
+          "are"
+        ],
+        "a": 1,
+        "why": "The boys는 여러 명(복수)이므로 are를 씁니다."
+      },
+      {
+        "p": "I ____ not angry.",
+        "c": [
+          "am",
+          "is"
+        ],
+        "a": 0,
+        "why": "주어가 I이므로 am을 씁니다."
+      },
+      {
+        "p": "____ he a doctor?",
+        "c": [
+          "Is",
+          "Are"
+        ],
+        "a": 0,
+        "why": "he는 3인칭 단수이므로 Is로 묻습니다."
+      },
+      {
+        "p": "Minho and I ____ good friends.",
+        "c": [
+          "am",
+          "are"
+        ],
+        "a": 1,
+        "why": "Minho and I는 두 명(복수)이므로 are를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "They is not at home.",
+        "r": "They are not at home.",
+        "why": "They 뒤에는 are를 씁니다."
+      },
+      {
+        "w": "Is you ready?",
+        "r": "Are you ready?",
+        "why": "you에는 Are를 씁니다."
+      },
+      {
+        "w": "I are a student.",
+        "r": "I am a student.",
+        "why": "I 뒤에는 am을 씁니다."
+      },
+      {
+        "w": "The cat are hungry.",
+        "r": "The cat is hungry.",
+        "why": "The cat은 한 마리(3인칭 단수)이므로 is를 씁니다."
+      },
+      {
+        "w": "Am you a new student?",
+        "r": "Are you a new student?",
+        "why": "주어 you에는 Are를 씁니다."
+      },
+      {
+        "w": "He am a good soccer player.",
+        "r": "He is a good soccer player.",
+        "why": "주어 He 뒤에는 is를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내 자기소개를 be동사 문장 세 개로 말해요.",
+        "frame": "I am ____. I am ____ years old. I am in class ____."
+      },
+      {
+        "task": "짝에게 Are you로 시작하는 질문을 두 개 하고 대답해요.",
+        "frame": "Are you ____? — Yes, I am. / No, I'm not."
+      },
+      {
+        "task": "가족이나 친구를 He is/She is로 소개해요.",
+        "frame": "He/She is ____. He/She is not ____."
+      },
+      {
+        "task": "우리 반 친구들을 We are/They are로 설명해요.",
+        "frame": "We are ____. They are not ____."
+      },
+      {
+        "task": "좋아하는 동물이나 물건을 It is로 묘사해요.",
+        "frame": "It is ____. It is not ____."
+      },
+      {
+        "task": "짝의 기분이나 상태를 추측해서 물어봐요.",
+        "frame": "Are you ____ today? — Yes, I am. / No, I'm not."
+      }
+    ],
+    "mission": {
+      "title": "교실 인터뷰 신문",
+      "scene": "세 명의 친구를 인터뷰해서 짧은 소개 기사를 써요.",
+      "steps": [
+        "Are you ~? 질문으로 친구 세 명에게 기분·나이·반을 묻는다.",
+        "알게 된 내용을 He is / She is 문장으로 정리한다.",
+        "다섯 줄짜리 기사를 짝에게 읽어 준다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그들은 집에 없어요.",
+        "cond": "be동사 부정문으로 써요.",
+        "model": "They are not at home."
+      },
+      {
+        "ko": "그녀는 네 언니니?",
+        "cond": "Is로 시작해요.",
+        "model": "Is she your sister?"
+      },
+      {
+        "ko": "우리는 같은 반이에요.",
+        "cond": "We are로 시작해요.",
+        "model": "We are in the same class."
+      },
+      {
+        "ko": "나는 화나지 않았어.",
+        "cond": "I로 시작해요.",
+        "model": "I am not angry."
+      },
+      {
+        "ko": "그 소년들은 공원에 있니?",
+        "cond": "Are로 시작해요.",
+        "model": "Are the boys in the park?"
+      },
+      {
+        "ko": "민호와 나는 좋은 친구야.",
+        "cond": "Minho and I로 시작해요.",
+        "model": "Minho and I are good friends."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "It **is** a sunny day.",
+        "ko": "오늘은 화창한 날이다."
+      },
+      {
+        "en": "The apples **are** sweet.",
+        "ko": "그 사과들은 달다."
+      },
+      {
+        "en": "**Is** your father busy?",
+        "ko": "너의 아버지는 바쁘시니?"
+      },
+      {
+        "en": "I **am not** tired.",
+        "ko": "나는 피곤하지 않아."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵은 글씨로 표시된 be동사(am, are, is)는 주어에 따라 어떻게 달라지나요?",
+        "a": "주어가 I일 때는 am, you나 복수일 때는 are, 3인칭 단수(he, she, it 등)일 때는 is를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "My parents ____ busy today.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 1,
+          "why": "My parents는 두 분(복수)이므로 are를 씁니다."
+        },
+        {
+          "p": "____ the movie interesting?",
+          "c": [
+            "Is",
+            "Are",
+            "Am"
+          ],
+          "a": 0,
+          "why": "the movie는 3인칭 단수이므로 Is로 묻습니다."
+        },
+        {
+          "p": "I ____ a middle school student.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 2,
+          "why": "주어가 I이므로 am을 씁니다."
+        },
+        {
+          "p": "The water ____ very cold.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 0,
+          "why": "The water는 셀 수 없는 명사(단수 취급)이므로 is를 씁니다."
+        },
+        {
+          "p": "You and Tom ____ late for school.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 1,
+          "why": "You and Tom은 두 명(복수)이므로 are를 씁니다."
+        },
+        {
+          "p": "____ your shoes new?",
+          "c": [
+            "Is",
+            "Are",
+            "Am"
+          ],
+          "a": 1,
+          "why": "your shoes는 복수이므로 Are로 묻습니다."
+        },
+        {
+          "p": "She ____ not a math teacher.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 0,
+          "why": "She는 3인칭 단수이므로 is를 씁니다."
+        },
+        {
+          "p": "The dogs ____ under the table.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 1,
+          "why": "The dogs는 여러 마리(복수)이므로 are를 씁니다."
+        },
+        {
+          "p": "____ I wrong?",
+          "c": [
+            "Is",
+            "Are",
+            "Am"
+          ],
+          "a": 2,
+          "why": "주어가 I이므로 Am으로 묻습니다."
+        },
+        {
+          "p": "This book ____ mine.",
+          "c": [
+            "is",
+            "are",
+            "am"
+          ],
+          "a": 0,
+          "why": "This book은 3인칭 단수이므로 is를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "My sister **is** ten years old.",
+          "ko": "내 여동생은 10살이다."
+        },
+        {
+          "en": "They **are** my favorite shoes.",
+          "ko": "그것들은 내가 가장 좋아하는 신발이다."
+        },
+        {
+          "en": "**Are** your hands clean?",
+          "ko": "네 손은 깨끗하니?"
+        },
+        {
+          "en": "I **am not** afraid of the dark.",
+          "ko": "나는 어둠이 무섭지 않다."
+        },
+        {
+          "en": "The weather **is** very nice.",
+          "ko": "날씨가 매우 좋다."
+        },
+        {
+          "en": "We **are not** hungry now.",
+          "ko": "우리는 지금 배고프지 않다."
+        },
+        {
+          "en": "**Is** the library open?",
+          "ko": "도서관은 문을 열었나요?"
+        },
+        {
+          "en": "You **are** a great singer.",
+          "ko": "너는 훌륭한 가수야."
+        }
+      ],
+      "correct": [
+        {
+          "w": "My eyes is brown.",
+          "r": "My eyes are brown.",
+          "why": "My eyes는 복수이므로 are를 씁니다."
+        },
+        {
+          "w": "Are she your cousin?",
+          "r": "Is she your cousin?",
+          "why": "she는 3인칭 단수이므로 Is로 묻습니다."
+        },
+        {
+          "w": "I is very happy today.",
+          "r": "I am very happy today.",
+          "why": "주어 I 뒤에는 am을 씁니다."
+        },
+        {
+          "w": "The bags is heavy.",
+          "r": "The bags are heavy.",
+          "why": "The bags는 복수이므로 are를 씁니다."
+        },
+        {
+          "w": "He are not my uncle.",
+          "r": "He is not my uncle.",
+          "why": "He 뒤에는 is를 씁니다."
+        },
+        {
+          "w": "Am you a good cook?",
+          "r": "Are you a good cook?",
+          "why": "주어 you에는 Are를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내 기분이나 상태를 I am으로 표현해요.",
+          "frame": "I am ____ today. I am not ____."
+        },
+        {
+          "task": "짝의 물건에 대해 단수형(Is it...?)으로 물어봐요.",
+          "frame": "Is your ____ new? — Yes, it is. / No, it isn't."
+        },
+        {
+          "task": "짝의 물건에 대해 복수형(Are they...?)으로 물어봐요.",
+          "frame": "Are your ____ heavy? — Yes, they are. / No, they aren't."
+        },
+        {
+          "task": "우리 가족 중 한 명을 골라 직업이나 상태를 말해요.",
+          "frame": "My ____ is a ____. He/She is very ____."
+        },
+        {
+          "task": "교실에 있는 물건들의 위치를 They are로 설명해요.",
+          "frame": "The ____ are on the desk. They are not under the chair."
+        },
+        {
+          "task": "짝과 함께 우리가 어떤지 We are로 말해요.",
+          "frame": "We are ____ students. We are not ____."
+        }
+      ],
+      "mission": {
+        "title": "스무고개 인물 맞히기",
+        "scene": "반 친구나 유명한 사람을 한 명 마음속으로 정하고, 짝이 be동사 질문을 통해 누구인지 맞혀봅니다.",
+        "steps": [
+          "한 명은 마음속으로 인물을 정하고, 다른 한 명은 'Is he/she ____?'라고 질문합니다.",
+          "질문을 받은 사람은 'Yes, he/she is.' 또는 'No, he/she isn't.'로만 대답합니다.",
+          "5번의 질문 안에 'Is he/she (이름)?'이라고 물어 정답을 맞힙니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "우리 부모님은 오늘 바쁘셔.",
+          "cond": "My parents로 시작해요.",
+          "model": "My parents are busy today."
+        },
+        {
+          "ko": "그 영화는 재미있니?",
+          "cond": "Is로 시작해요.",
+          "model": "Is the movie interesting?"
+        },
+        {
+          "ko": "나는 중학생이야.",
+          "cond": "I로 시작해요.",
+          "model": "I am a middle school student."
+        },
+        {
+          "ko": "그녀는 수학 선생님이 아니야.",
+          "cond": "She로 시작해요.",
+          "model": "She is not a math teacher."
+        },
+        {
+          "ko": "네 신발은 새 것이니?",
+          "cond": "Are로 시작해요.",
+          "model": "Are your shoes new?"
+        },
+        {
+          "ko": "그 물은 매우 차가워.",
+          "cond": "The water로 시작해요.",
+          "model": "The water is very cold."
+        }
+      ]
+    }
+  },
+  {
+    "id": "i-like",
+    "discover": {
+      "q": "I like 뒤에 오는 낱말을 살펴보세요. 여러 개 있는 것을 좋아할 때 명사의 모양은 어떻게 되나요? red, soccer, music은 어떤가요?",
+      "a": "셀 수 있는 것은 apples, dogs처럼 복수형(-s)으로 쓴다. red, soccer, music처럼 셀 수 없는 것은 그대로 쓴다."
+    },
+    "choose": [
+      {
+        "p": "I like these ____.",
+        "c": [
+          "apples",
+          "apple"
+        ],
+        "a": 0,
+        "why": "these 뒤에는 둘 이상을 나타내는 복수 명사가 와요."
+      },
+      {
+        "p": "I ____ soccer.",
+        "c": [
+          "like",
+          "likes"
+        ],
+        "a": 0,
+        "why": "I 뒤에는 동사원형 like를 씁니다."
+      },
+      {
+        "p": "I like ____ very much.",
+        "c": [
+          "music",
+          "musics"
+        ],
+        "a": 0,
+        "why": "music은 셀 수 없는 명사라서 -s를 붙이지 않아요."
+      },
+      {
+        "p": "I like those ____.",
+        "c": [
+          "dogs",
+          "dog"
+        ],
+        "a": 0,
+        "why": "those 뒤에는 복수 명사가 와요."
+      },
+      {
+        "p": "I like ____ apples.",
+        "c": [
+          "red",
+          "reds"
+        ],
+        "a": 0,
+        "why": "apples를 꾸미는 말은 red이고, 꾸미는 말에는 -s를 붙이지 않아요."
+      },
+      {
+        "p": "I like ____. (나는 바나나를 좋아해)",
+        "c": [
+          "bananas",
+          "banana"
+        ],
+        "a": 0,
+        "why": "셀 수 있는 과일 이름은 복수형으로 써야 자연스러워요."
+      },
+      {
+        "p": "I like ____. (나는 우유를 좋아해)",
+        "c": [
+          "milk",
+          "milks"
+        ],
+        "a": 0,
+        "why": "우유는 셀 수 없는 명사라서 -s를 붙이지 않아요."
+      },
+      {
+        "p": "I like ____. (나는 고양이를 좋아해)",
+        "c": [
+          "cats",
+          "cat"
+        ],
+        "a": 0,
+        "why": "동물을 좋아한다고 할 때는 셀 수 있는 명사의 복수형을 써요."
+      },
+      {
+        "p": "I ____ baseball.",
+        "c": [
+          "like",
+          "likes"
+        ],
+        "a": 0,
+        "why": "주어가 I일 때는 동사원형 like를 써요."
+      },
+      {
+        "p": "I like ____. (나는 파란색을 좋아해)",
+        "c": [
+          "blue",
+          "blues"
+        ],
+        "a": 0,
+        "why": "색깔을 나타내는 말에는 -s를 붙이지 않아요."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I like apple.",
+        "r": "I like apples.",
+        "why": "좋아하는 것은 복수형으로 말합니다."
+      },
+      {
+        "w": "I likes soccer.",
+        "r": "I like soccer.",
+        "why": "I 뒤에는 동사원형 like를 씁니다."
+      },
+      {
+        "w": "I like musics.",
+        "r": "I like music.",
+        "why": "music은 셀 수 없는 명사입니다."
+      },
+      {
+        "w": "I like cat.",
+        "r": "I like cats.",
+        "why": "좋아하는 동물을 말할 때는 복수형(-s)으로 써요."
+      },
+      {
+        "w": "I like milks.",
+        "r": "I like milk.",
+        "why": "우유는 셀 수 없으므로 -s를 붙이지 않아요."
+      },
+      {
+        "w": "I likes bananas.",
+        "r": "I like bananas.",
+        "why": "주어가 I일 때는 동사원형 like를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "좋아하는 음식을 세 가지 말해요.",
+        "frame": "I like ____, ____, and ____."
+      },
+      {
+        "task": "좋아하는 운동이나 놀이를 말해요.",
+        "frame": "I like ____."
+      },
+      {
+        "task": "짝과 같은 것을 좋아하는지 확인해요.",
+        "frame": "I like ____. Do you like ____? — Me too."
+      },
+      {
+        "task": "좋아하는 색과 동물을 말해요.",
+        "frame": "I like ____ (color). I like ____s (animal)."
+      },
+      {
+        "task": "좋아하는 과일과 마실 것을 연결해서 말해요.",
+        "frame": "I like ____s and ____."
+      },
+      {
+        "task": "친구에게 좋아하는 운동을 말하고 물어봐요.",
+        "frame": "I like ____. How about you?"
+      }
+    ],
+    "mission": {
+      "title": "같은 취향 찾기 빙고",
+      "scene": "교실을 돌아다니며 나와 같은 것을 좋아하는 친구를 찾아요.",
+      "steps": [
+        "빙고판 칸에 좋아하는 것을 아홉 가지 쓴다.",
+        "친구에게 I like ____. 라고 말하고 같은 것을 좋아하면 이름을 받는다.",
+        "가로·세로·대각선 한 줄을 먼저 채우면 승리."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 사과를 좋아해요.",
+        "cond": "apple을 알맞은 모양으로 써요.",
+        "model": "I like apples."
+      },
+      {
+        "ko": "나는 음악을 좋아해요.",
+        "cond": "music을 그대로 써요.",
+        "model": "I like music."
+      },
+      {
+        "ko": "나는 개를 좋아해요.",
+        "cond": "dog를 알맞은 모양으로 써요.",
+        "model": "I like dogs."
+      },
+      {
+        "ko": "나는 바나나를 좋아해요.",
+        "cond": "banana를 알맞은 모양으로 써요.",
+        "model": "I like bananas."
+      },
+      {
+        "ko": "나는 우유를 좋아해요.",
+        "cond": "milk를 알맞은 모양으로 써요.",
+        "model": "I like milk."
+      },
+      {
+        "ko": "나는 고양이를 좋아해요.",
+        "cond": "cat을 알맞은 모양으로 써요.",
+        "model": "I like cats."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**I like** cats.",
+        "ko": "나는 고양이를 좋아해."
+      },
+      {
+        "en": "**I like** milk.",
+        "ko": "나는 우유를 좋아해."
+      },
+      {
+        "en": "**I like** bananas.",
+        "ko": "나는 바나나를 좋아해."
+      },
+      {
+        "en": "**I like** baseball.",
+        "ko": "나는 야구를 좋아해."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 좋아하는 것을 말할 때, 셀 수 있는 명사(사과, 개)와 셀 수 없는 명사(색깔, 운동, 음악)의 형태가 어떻게 다른가요?",
+        "a": "셀 수 있는 명사에는 -s를 붙여 복수형으로 쓰고, 셀 수 없는 명사에는 -s를 붙이지 않아요."
+      },
+      "choose": [
+        {
+          "p": "I like ____. (나는 곰을 좋아해)",
+          "c": [
+            "bears",
+            "bear"
+          ],
+          "a": 0,
+          "why": "동물을 좋아한다고 할 때는 복수형으로 씁니다."
+        },
+        {
+          "p": "I like ____. (나는 주스를 좋아해)",
+          "c": [
+            "juice",
+            "juices"
+          ],
+          "a": 0,
+          "why": "주스는 셀 수 없는 명사이므로 -s를 붙이지 않아요."
+        },
+        {
+          "p": "I like ____. (나는 포도를 좋아해)",
+          "c": [
+            "grapes",
+            "grape"
+          ],
+          "a": 0,
+          "why": "셀 수 있는 과일은 복수형으로 씁니다."
+        },
+        {
+          "p": "I ____ tennis.",
+          "c": [
+            "like",
+            "likes"
+          ],
+          "a": 0,
+          "why": "주어 I 뒤에는 동사원형 like를 씁니다."
+        },
+        {
+          "p": "I like ____. (나는 노란색을 좋아해)",
+          "c": [
+            "yellow",
+            "yellows"
+          ],
+          "a": 0,
+          "why": "색깔 이름에는 -s를 붙이지 않아요."
+        },
+        {
+          "p": "I like ____. (나는 책을 좋아해)",
+          "c": [
+            "books",
+            "book"
+          ],
+          "a": 0,
+          "why": "셀 수 있는 사물을 좋아한다고 할 때는 복수형을 씁니다."
+        },
+        {
+          "p": "I like ____. (나는 자동차를 좋아해)",
+          "c": [
+            "cars",
+            "car"
+          ],
+          "a": 0,
+          "why": "자동차는 셀 수 있으므로 복수형으로 씁니다."
+        },
+        {
+          "p": "I like ____. (나는 물을 좋아해)",
+          "c": [
+            "water",
+            "waters"
+          ],
+          "a": 0,
+          "why": "물은 셀 수 없는 명사입니다."
+        },
+        {
+          "p": "I like ____. (나는 돼지를 좋아해)",
+          "c": [
+            "pigs",
+            "pig"
+          ],
+          "a": 0,
+          "why": "동물을 좋아한다고 할 때는 복수형으로 씁니다."
+        },
+        {
+          "p": "I like ____. (나는 분홍색을 좋아해)",
+          "c": [
+            "pink",
+            "pinks"
+          ],
+          "a": 0,
+          "why": "색깔 이름은 셀 수 없는 명사입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**I like** bears.",
+          "ko": "나는 곰을 좋아해."
+        },
+        {
+          "en": "**I like** juice.",
+          "ko": "나는 주스를 좋아해."
+        },
+        {
+          "en": "**I like** grapes.",
+          "ko": "나는 포도를 좋아해."
+        },
+        {
+          "en": "**I like** tennis.",
+          "ko": "나는 테니스를 좋아해."
+        },
+        {
+          "en": "**I like** books.",
+          "ko": "나는 책을 좋아해."
+        },
+        {
+          "en": "**I like** yellow.",
+          "ko": "나는 노란색을 좋아해."
+        },
+        {
+          "en": "**I like** cars.",
+          "ko": "나는 자동차를 좋아해."
+        },
+        {
+          "en": "**I like** water.",
+          "ko": "나는 물을 좋아해."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I like bear.",
+          "r": "I like bears.",
+          "why": "좋아하는 동물을 말할 때는 복수형으로 씁니다."
+        },
+        {
+          "w": "I like juices.",
+          "r": "I like juice.",
+          "why": "주스는 셀 수 없는 명사이므로 -s를 붙이지 않아요."
+        },
+        {
+          "w": "I likes books.",
+          "r": "I like books.",
+          "why": "주어가 I일 때는 동사원형 like를 씁니다."
+        },
+        {
+          "w": "I like grape.",
+          "r": "I like grapes.",
+          "why": "좋아하는 과일을 말할 때는 복수형으로 씁니다."
+        },
+        {
+          "w": "I like tenniss.",
+          "r": "I like tennis.",
+          "why": "운동 이름에는 -s를 붙이지 않아요."
+        },
+        {
+          "w": "I like car.",
+          "r": "I like cars.",
+          "why": "좋아하는 사물을 말할 때는 복수형으로 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "좋아하는 동물과 과일을 말해요.",
+          "frame": "I like ____s and ____s."
+        },
+        {
+          "task": "좋아하는 색깔과 마실 것을 말해요.",
+          "frame": "I like ____ and ____."
+        },
+        {
+          "task": "친구가 좋아하는 것을 묻고 대답해요.",
+          "frame": "Do you like ____s? — Yes, I do."
+        },
+        {
+          "task": "자기가 좋아하는 운동을 말해요.",
+          "frame": "I like ____. Let's play!"
+        },
+        {
+          "task": "좋아하는 장난감이나 물건을 말해요.",
+          "frame": "I like ____s. Look at this."
+        },
+        {
+          "task": "세 가지 좋아하는 것을 연속해서 말해요.",
+          "frame": "I like ____s, ____, and ____s."
+        }
+      ],
+      "mission": {
+        "title": "좋아하는 것 빙고 게임",
+        "scene": "빈칸이 있는 빙고판에 좋아하는 동물, 과일, 색깔, 운동을 적어 빙고를 완성해 보아요.",
+        "steps": [
+          "빙고판의 빈칸에 좋아하는 것들을 영어로 채워 넣어요. (예: bears, juice, tennis)",
+          "돌아가면서 \"I like ____.\"라고 자신이 적은 단어를 하나씩 말해요.",
+          "친구가 말한 단어가 내 빙고판에 있으면 동그라미를 치고, 먼저 3줄을 완성하면 \"Bingo!\"를 외쳐요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 곰을 좋아해요.",
+          "cond": "bear를 알맞은 모양으로 써요.",
+          "model": "I like bears."
+        },
+        {
+          "ko": "나는 주스를 좋아해요.",
+          "cond": "juice를 알맞은 모양으로 써요.",
+          "model": "I like juice."
+        },
+        {
+          "ko": "나는 포도를 좋아해요.",
+          "cond": "grape를 알맞은 모양으로 써요.",
+          "model": "I like grapes."
+        },
+        {
+          "ko": "나는 테니스를 좋아해요.",
+          "cond": "tennis를 알맞은 모양으로 써요.",
+          "model": "I like tennis."
+        },
+        {
+          "ko": "나는 책을 좋아해요.",
+          "cond": "book을 알맞은 모양으로 써요.",
+          "model": "I like books."
+        },
+        {
+          "ko": "나는 노란색을 좋아해요.",
+          "cond": "yellow를 알맞은 모양으로 써요.",
+          "model": "I like yellow."
+        }
+      ]
+    }
+  },
+  {
+    "id": "i-have",
+    "discover": {
+      "q": "I have 뒤에 오는 낱말을 보세요. 하나일 때와 두 개 이상일 때 명사 앞과 뒤가 어떻게 다른가요?",
+      "a": "하나일 때는 a/an을 붙이고, 두 개 이상일 때는 숫자를 쓰고 명사에 -s를 붙인다."
+    },
+    "choose": [
+      {
+        "p": "I have ____ dog.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "dog는 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "p": "I have ____ orange.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "orange는 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "p": "I have two ____.",
+        "c": [
+          "pen",
+          "pens"
+        ],
+        "a": 1,
+        "why": "두 개이므로 복수형 pens를 씁니다."
+      },
+      {
+        "p": "I ____ a sister.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "I 뒤에는 have를 씁니다."
+      },
+      {
+        "p": "I have ____ new bag.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "new는 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "p": "I have ____ apple.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "apple은 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "p": "I have three ____.",
+        "c": [
+          "cat",
+          "cats"
+        ],
+        "a": 1,
+        "why": "세 마리이므로 복수형 cats를 씁니다."
+      },
+      {
+        "p": "I ____ an umbrella.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "I 뒤에는 have를 씁니다."
+      },
+      {
+        "p": "I have ____ big book.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "big은 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "p": "I have four ____.",
+        "c": [
+          "cup",
+          "cups"
+        ],
+        "a": 1,
+        "why": "네 개이므로 복수형 cups를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I have dog.",
+        "r": "I have a dog.",
+        "why": "하나일 때는 a가 필요합니다."
+      },
+      {
+        "w": "I has a red cap.",
+        "r": "I have a red cap.",
+        "why": "I 뒤에는 have를 씁니다."
+      },
+      {
+        "w": "I have two pen.",
+        "r": "I have two pens.",
+        "why": "둘 이상이므로 pens입니다."
+      },
+      {
+        "w": "I have an cat.",
+        "r": "I have a cat.",
+        "why": "cat은 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "w": "I have three book.",
+        "r": "I have three books.",
+        "why": "셋 이상이므로 books를 씁니다."
+      },
+      {
+        "w": "I has an apple.",
+        "r": "I have an apple.",
+        "why": "I 뒤에는 have를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내 가방에 있는 물건을 세 가지 말해요.",
+        "frame": "I have a ____, a ____, and two ____s."
+      },
+      {
+        "task": "가족 중 누가 있는지 말해요.",
+        "frame": "I have a(n) ____."
+      },
+      {
+        "task": "짝에게 물어보고 대답을 들어요.",
+        "frame": "What do you have? — I have a ____."
+      },
+      {
+        "task": "없는 것을 말하고 갖고 싶은 것을 이어 말해요.",
+        "frame": "I don't have a ____. I want a ____."
+      },
+      {
+        "task": "자신이 가진 학용품의 개수를 말해요.",
+        "frame": "I have ____ ____s."
+      },
+      {
+        "task": "친구에게 내가 가진 과일을 자랑해요.",
+        "frame": "Look! I have a(n) ____."
+      }
+    ],
+    "mission": {
+      "title": "가방 속 보물 소개",
+      "scene": "각자 가방에서 물건 다섯 개를 꺼내 짝에게 소개해요.",
+      "steps": [
+        "가방에서 물건 다섯 개를 꺼낸다.",
+        "I have a/an ____. 또는 I have two ____s. 로 소개한다.",
+        "짝은 들은 물건을 기억해서 다시 말한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 개 한 마리가 있어요.",
+        "cond": "a를 써요.",
+        "model": "I have a dog."
+      },
+      {
+        "ko": "나는 펜이 두 자루 있어요.",
+        "cond": "two를 쓰고 pen을 알맞게 써요.",
+        "model": "I have two pens."
+      },
+      {
+        "ko": "나는 새 가방이 있어요.",
+        "cond": "a와 new를 써요.",
+        "model": "I have a new bag."
+      },
+      {
+        "ko": "나는 사과가 하나 있어요.",
+        "cond": "an을 써요.",
+        "model": "I have an apple."
+      },
+      {
+        "ko": "나는 책이 세 권 있어요.",
+        "cond": "three를 쓰고 book을 알맞게 써요.",
+        "model": "I have three books."
+      },
+      {
+        "ko": "나는 남자 형제가 한 명 있어요.",
+        "cond": "a를 써요.",
+        "model": "I have a brother."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**I have** a cat.",
+        "ko": "나는 고양이 한 마리가 있어."
+      },
+      {
+        "en": "**I have** an eraser.",
+        "ko": "나는 지우개가 하나 있어."
+      },
+      {
+        "en": "**I have** three books.",
+        "ko": "나는 책이 세 권 있어."
+      },
+      {
+        "en": "**I have** a brother.",
+        "ko": "나는 남자 형제가 있어."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 물건이 하나일 때와 두 개 이상일 때 단어의 형태가 어떻게 달라지나요?",
+        "a": "하나일 때는 앞에 a나 an을 쓰고, 두 개 이상일 때는 단어 끝에 s를 붙여요."
+      },
+      "choose": [
+        {
+          "p": "I have ____ egg.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "egg는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "I have five ____.",
+          "c": [
+            "desk",
+            "desks"
+          ],
+          "a": 1,
+          "why": "다섯 개이므로 복수형 desks를 씁니다."
+        },
+        {
+          "p": "I ____ a blue bike.",
+          "c": [
+            "have",
+            "has"
+          ],
+          "a": 0,
+          "why": "I 뒤에는 have를 씁니다."
+        },
+        {
+          "p": "I have ____ cute rabbit.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 0,
+          "why": "cute는 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "p": "I have ten ____.",
+          "c": [
+            "finger",
+            "fingers"
+          ],
+          "a": 1,
+          "why": "열 개이므로 복수형 fingers를 씁니다."
+        },
+        {
+          "p": "I have ____ old car.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "old는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "I have six ____.",
+          "c": [
+            "ball",
+            "balls"
+          ],
+          "a": 1,
+          "why": "여섯 개이므로 복수형 balls를 씁니다."
+        },
+        {
+          "p": "I ____ a yellow shirt.",
+          "c": [
+            "have",
+            "has"
+          ],
+          "a": 0,
+          "why": "I 뒤에는 have를 씁니다."
+        },
+        {
+          "p": "I have ____ eraser.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "eraser는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "I have seven ____.",
+          "c": [
+            "star",
+            "stars"
+          ],
+          "a": 1,
+          "why": "일곱 개이므로 복수형 stars를 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**I have** a bike.",
+          "ko": "나는 자전거가 한 대 있어."
+        },
+        {
+          "en": "**I have** an egg.",
+          "ko": "나는 달걀이 하나 있어."
+        },
+        {
+          "en": "**I have** five balls.",
+          "ko": "나는 공이 다섯 개 있어."
+        },
+        {
+          "en": "**I have** a yellow shirt.",
+          "ko": "나는 노란색 셔츠가 있어."
+        },
+        {
+          "en": "**I have** two eyes.",
+          "ko": "나는 눈이 두 개 있어."
+        },
+        {
+          "en": "**I have** a cute rabbit.",
+          "ko": "나는 귀여운 토끼가 있어."
+        },
+        {
+          "en": "**I have** an old car.",
+          "ko": "나는 낡은 자동차가 있어."
+        },
+        {
+          "en": "**I have** four cups.",
+          "ko": "나는 컵이 네 개 있어."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I have an ball.",
+          "r": "I have a ball.",
+          "why": "ball은 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "w": "I have five desk.",
+          "r": "I have five desks.",
+          "why": "다섯 개이므로 desks를 씁니다."
+        },
+        {
+          "w": "I has a blue bike.",
+          "r": "I have a blue bike.",
+          "why": "I 뒤에는 have를 씁니다."
+        },
+        {
+          "w": "I have a egg.",
+          "r": "I have an egg.",
+          "why": "egg는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "w": "I have six star.",
+          "r": "I have six stars.",
+          "why": "여섯 개이므로 stars를 씁니다."
+        },
+        {
+          "w": "I have an cute rabbit.",
+          "r": "I have a cute rabbit.",
+          "why": "cute는 자음 소리로 시작하므로 a를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "자신이 가진 장난감의 수를 말해요.",
+          "frame": "I have ____ toy(s)."
+        },
+        {
+          "task": "내가 입고 있는 옷의 색깔을 말해요.",
+          "frame": "I have a ____ shirt."
+        },
+        {
+          "task": "내 얼굴에 있는 눈, 코, 입을 영어로 말해봐요.",
+          "frame": "I have two ____s, a ____, and a ____."
+        },
+        {
+          "task": "자신이 좋아하는 동물을 몇 마리 키우는지 상상해서 말해요.",
+          "frame": "I have ____ ____s."
+        },
+        {
+          "task": "필통 안에 있는 연필과 지우개 개수를 말해요.",
+          "frame": "I have ____ pencil(s) and ____ eraser(s)."
+        },
+        {
+          "task": "친구와 서로 가진 색연필의 색깔을 말해요.",
+          "frame": "I have a ____ pencil."
+        }
+      ],
+      "mission": {
+        "title": "내 가방 속 보물찾기",
+        "scene": "친구와 가방 속에 무엇이 있는지 영어로 묻고 답하며 확인해 보아요.",
+        "steps": [
+          "가방에서 학용품이나 물건 세 가지를 꺼내 책상에 올려요.",
+          "친구에게 'I have a/an/숫자 ~'를 사용해 내 물건을 소개해요. (예: I have a ruler.)",
+          "친구의 물건 소개를 듣고, 알맞게 말했는지 서로 확인해 줘요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 자전거가 한 대 있어요.",
+          "cond": "a를 써요.",
+          "model": "I have a bike."
+        },
+        {
+          "ko": "나는 달걀이 하나 있어요.",
+          "cond": "an을 써요.",
+          "model": "I have an egg."
+        },
+        {
+          "ko": "나는 공이 다섯 개 있어요.",
+          "cond": "five를 쓰고 ball을 알맞게 써요.",
+          "model": "I have five balls."
+        },
+        {
+          "ko": "나는 노란색 셔츠가 있어요.",
+          "cond": "a와 yellow를 써요.",
+          "model": "I have a yellow shirt."
+        },
+        {
+          "ko": "나는 눈이 두 개 있어요.",
+          "cond": "two를 쓰고 eye를 알맞게 써요.",
+          "model": "I have two eyes."
+        },
+        {
+          "ko": "나는 낡은 자동차가 있어요.",
+          "cond": "an과 old를 써요.",
+          "model": "I have an old car."
+        }
+      ]
+    }
+  },
+  {
+    "id": "i-want",
+    "discover": {
+      "q": "I want 뒤에 오는 말을 보세요. a/an이 붙는 것과 붙지 않는 것(pizza, water)은 무엇이 다른가요?",
+      "a": "셀 수 있는 하나의 물건에는 a/an을 붙이고, 셀 수 없는 것(milk, water)에는 a를 붙이지 않고 some을 쓸 수 있다."
+    },
+    "choose": [
+      {
+        "p": "I want ____ robot.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 0,
+        "why": "robot은 자음 소리로 시작하므로 a를 씁니다."
+      },
+      {
+        "p": "I want ____ milk.",
+        "c": [
+          "a",
+          "some"
+        ],
+        "a": 1,
+        "why": "milk는 셀 수 없는 명사라 some을 씁니다."
+      },
+      {
+        "p": "I want ____ apple.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "apple은 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "p": "I ____ pizza.",
+        "c": [
+          "want",
+          "wants"
+        ],
+        "a": 0,
+        "why": "I 뒤에는 want를 씁니다."
+      },
+      {
+        "p": "I want ____ water.",
+        "c": [
+          "a",
+          "some"
+        ],
+        "a": 1,
+        "why": "water는 셀 수 없는 명사입니다."
+      },
+      {
+        "p": "I want ____ dog.",
+        "c": [
+          "a",
+          "an",
+          "some"
+        ],
+        "a": 0,
+        "why": "dog는 자음 소리로 시작하는 셀 수 있는 명사이므로 a를 씁니다."
+      },
+      {
+        "p": "I want ____ ice cream.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "ice cream은 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "p": "I want ____ juice.",
+        "c": [
+          "a",
+          "some"
+        ],
+        "a": 1,
+        "why": "juice는 셀 수 없는 명사이므로 some을 씁니다."
+      },
+      {
+        "p": "I want ____ orange.",
+        "c": [
+          "a",
+          "an"
+        ],
+        "a": 1,
+        "why": "orange는 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "p": "I want ____ book.",
+        "c": [
+          "a",
+          "some"
+        ],
+        "a": 0,
+        "why": "book은 셀 수 있는 명사 하나이므로 a를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I want a milk.",
+        "r": "I want some milk.",
+        "why": "milk는 셀 수 없어서 a를 쓰지 않습니다."
+      },
+      {
+        "w": "I wants a robot.",
+        "r": "I want a robot.",
+        "why": "I 뒤에는 want를 씁니다."
+      },
+      {
+        "w": "I want robot.",
+        "r": "I want a robot.",
+        "why": "하나의 물건에는 a가 필요합니다."
+      },
+      {
+        "w": "I want a juice.",
+        "r": "I want some juice.",
+        "why": "juice는 셀 수 없는 명사이므로 a를 쓰지 않습니다."
+      },
+      {
+        "w": "I want a orange.",
+        "r": "I want an orange.",
+        "why": "orange는 모음 소리로 시작하므로 an을 씁니다."
+      },
+      {
+        "w": "I want some book.",
+        "r": "I want a book.",
+        "why": "book은 셀 수 있는 명사 하나이므로 a를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "생일 선물로 받고 싶은 것을 말해요.",
+        "frame": "I want a(n) ____ for my birthday."
+      },
+      {
+        "task": "식당에서 주문하는 것처럼 말해요.",
+        "frame": "I want some ____, please."
+      },
+      {
+        "task": "짝이 원하는 것을 묻고 대답해요.",
+        "frame": "What do you want? — I want a(n) ____."
+      },
+      {
+        "task": "오늘 가장 먹고 싶은 것을 말해요.",
+        "frame": "I want ____ today."
+      },
+      {
+        "task": "애완동물 가게에서 키우고 싶은 동물을 말해요.",
+        "frame": "I want a ____."
+      },
+      {
+        "task": "간식 시간에 먹고 싶은 것을 말해요.",
+        "frame": "I want some ____."
+      }
+    ],
+    "mission": {
+      "title": "소원 카드 교환 시장",
+      "scene": "원하는 물건 카드를 가지고 돌아다니며 짝을 찾아요.",
+      "steps": [
+        "자기가 원하는 물건 카드 세 장을 고른다.",
+        "I want a(n) ____. 라고 말하며 친구와 카드를 바꾼다.",
+        "원하는 카드 세 장을 먼저 모으면 승리."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 피자를 원해요.",
+        "cond": "I want로 시작해요.",
+        "model": "I want pizza."
+      },
+      {
+        "ko": "나는 우유를 좀 마시고 싶어요.",
+        "cond": "some을 써요.",
+        "model": "I want some milk."
+      },
+      {
+        "ko": "나는 로봇을 갖고 싶어요.",
+        "cond": "a를 써요.",
+        "model": "I want a robot."
+      },
+      {
+        "ko": "나는 오렌지를 원해요.",
+        "cond": "an을 써요.",
+        "model": "I want an orange."
+      },
+      {
+        "ko": "나는 개를 갖고 싶어요.",
+        "cond": "a를 써요.",
+        "model": "I want a dog."
+      },
+      {
+        "ko": "나는 주스를 좀 마시고 싶어요.",
+        "cond": "some을 써요.",
+        "model": "I want some juice."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**I want** a cat.",
+        "ko": "나는 고양이를 원해."
+      },
+      {
+        "en": "**I want** an umbrella.",
+        "ko": "나는 우산이 필요해."
+      },
+      {
+        "en": "**I want** some bread.",
+        "ko": "나는 빵을 좀 먹고 싶어."
+      },
+      {
+        "en": "**I want** a bicycle.",
+        "ko": "나는 자전거를 갖고 싶어."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "I want 뒤에 셀 수 있는 명사 하나가 올 때와 셀 수 없는 명사가 올 때, 앞에 붙는 말이 어떻게 다른가요?",
+        "a": "셀 수 있는 명사 하나 앞에는 a나 an을 쓰고, 셀 수 없는 명사 앞에는 some을 쓰거나 아무것도 쓰지 않습니다."
+      },
+      "choose": [
+        {
+          "p": "I want ____ banana.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 0,
+          "why": "banana는 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "p": "I want ____ egg.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "egg는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "I want ____ cheese.",
+          "c": [
+            "a",
+            "an",
+            "some"
+          ],
+          "a": 2,
+          "why": "cheese는 셀 수 없는 명사이므로 some을 씁니다."
+        },
+        {
+          "p": "I want ____ pencil.",
+          "c": [
+            "a",
+            "some"
+          ],
+          "a": 0,
+          "why": "pencil은 셀 수 있는 명사 하나이므로 a를 씁니다."
+        },
+        {
+          "p": "I want ____ soup.",
+          "c": [
+            "a",
+            "some"
+          ],
+          "a": 1,
+          "why": "soup은 셀 수 없는 명사이므로 some을 씁니다."
+        },
+        {
+          "p": "I ____ a toy.",
+          "c": [
+            "want",
+            "wants"
+          ],
+          "a": 0,
+          "why": "주어가 I일 때는 want를 씁니다."
+        },
+        {
+          "p": "I want ____ eraser.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "eraser는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "p": "I want ____ meat.",
+          "c": [
+            "a",
+            "an",
+            "some"
+          ],
+          "a": 2,
+          "why": "meat는 셀 수 없는 명사이므로 some을 씁니다."
+        },
+        {
+          "p": "I want ____ desk.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 0,
+          "why": "desk는 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "p": "I want ____ elephant.",
+          "c": [
+            "a",
+            "an"
+          ],
+          "a": 1,
+          "why": "elephant는 모음 소리로 시작하므로 an을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**I want** a camera.",
+          "ko": "나는 카메라를 원해."
+        },
+        {
+          "en": "**I want** a doll.",
+          "ko": "나는 인형을 갖고 싶어."
+        },
+        {
+          "en": "**I want** some cake.",
+          "ko": "나는 케이크를 좀 먹고 싶어."
+        },
+        {
+          "en": "**I want** a pen.",
+          "ko": "나는 펜을 원해."
+        },
+        {
+          "en": "**I want** some rice.",
+          "ko": "나는 밥을 좀 먹고 싶어."
+        },
+        {
+          "en": "**I want** an egg.",
+          "ko": "나는 계란을 원해."
+        },
+        {
+          "en": "**I want** a bag.",
+          "ko": "나는 가방을 갖고 싶어."
+        },
+        {
+          "en": "**I want** some salad.",
+          "ko": "나는 샐러드를 좀 먹고 싶어."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I want a cheese.",
+          "r": "I want some cheese.",
+          "why": "cheese는 셀 수 없는 명사이므로 a를 쓰지 않습니다."
+        },
+        {
+          "w": "I want a egg.",
+          "r": "I want an egg.",
+          "why": "egg는 모음 소리로 시작하므로 an을 씁니다."
+        },
+        {
+          "w": "I wants a bag.",
+          "r": "I want a bag.",
+          "why": "주어가 I일 때는 want를 씁니다."
+        },
+        {
+          "w": "I want a soup.",
+          "r": "I want some soup.",
+          "why": "soup은 셀 수 없는 명사이므로 a를 쓰지 않습니다."
+        },
+        {
+          "w": "I want an banana.",
+          "r": "I want a banana.",
+          "why": "banana는 자음 소리로 시작하므로 a를 씁니다."
+        },
+        {
+          "w": "I want onion.",
+          "r": "I want an onion.",
+          "why": "셀 수 있는 명사 하나 앞에는 a나 an을 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "장난감 가게에서 사고 싶은 것을 말해요.",
+          "frame": "I want a ____."
+        },
+        {
+          "task": "아침 식사로 먹고 싶은 것을 말해요.",
+          "frame": "I want an ____."
+        },
+        {
+          "task": "목이 마를 때 마시고 싶은 것을 말해요.",
+          "frame": "I want some ____."
+        },
+        {
+          "task": "학용품 중에 필요한 것을 말해요.",
+          "frame": "I want a ____."
+        },
+        {
+          "task": "동물 인형 중에 갖고 싶은 것을 말해요.",
+          "frame": "I want an ____."
+        },
+        {
+          "task": "뷔페에서 덜어오고 싶은 음식을 말해요.",
+          "frame": "I want some ____."
+        }
+      ],
+      "mission": {
+        "title": "소원 나무 만들기",
+        "scene": "나뭇잎 모양 종이에 내가 원하는 것을 적고 친구들과 이야기해 봐요.",
+        "steps": [
+          "나뭇잎 종이에 'I want a/an/some ~.' 문장을 하나 씁니다.",
+          "친구를 만나 'What do you want?'라고 묻습니다.",
+          "자신의 나뭇잎을 보여주며 'I want ~.'라고 대답하고 서로 교환합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 바나나를 원해요.",
+          "cond": "a를 써요.",
+          "model": "I want a banana."
+        },
+        {
+          "ko": "나는 치즈를 좀 먹고 싶어요.",
+          "cond": "some을 써요.",
+          "model": "I want some cheese."
+        },
+        {
+          "ko": "나는 달걀을 원해요.",
+          "cond": "an을 써요.",
+          "model": "I want an egg."
+        },
+        {
+          "ko": "나는 장난감을 갖고 싶어요.",
+          "cond": "a를 써요.",
+          "model": "I want a toy."
+        },
+        {
+          "ko": "나는 수프를 좀 먹고 싶어요.",
+          "cond": "some을 써요.",
+          "model": "I want some soup."
+        },
+        {
+          "ko": "나는 지우개를 원해요.",
+          "cond": "an을 써요.",
+          "model": "I want an eraser."
+        }
+      ]
+    }
+  },
+  {
+    "id": "do-you-like",
+    "discover": {
+      "q": "Do you ~?로 묻는 문장과 대답을 보세요. 질문은 어떤 낱말로 시작하고, 대답은 어떻게 하나요?",
+      "a": "질문은 Do you로 시작하고 뒤에 동사원형을 쓴다. 대답은 Yes, I do. 또는 No, I don't.로 한다."
+    },
+    "choose": [
+      {
+        "p": "____ you like milk?",
+        "c": [
+          "Do",
+          "Are"
+        ],
+        "a": 0,
+        "why": "일반동사 like의 질문은 Do you로 시작합니다."
+      },
+      {
+        "p": "Do you like pizza? — Yes, I ____.",
+        "c": [
+          "do",
+          "am"
+        ],
+        "a": 0,
+        "why": "Do로 물었으니 Yes, I do.로 답합니다."
+      },
+      {
+        "p": "Do you have a pet? — No, I ____.",
+        "c": [
+          "don't",
+          "isn't"
+        ],
+        "a": 0,
+        "why": "Do로 물었으니 No, I don't.로 답합니다."
+      },
+      {
+        "p": "Do you ____ soccer?",
+        "c": [
+          "play",
+          "plays"
+        ],
+        "a": 0,
+        "why": "Do 뒤에는 동사원형 play를 씁니다."
+      },
+      {
+        "p": "Do you ____ a pen?",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "Do you 뒤에는 동사원형 have를 씁니다."
+      },
+      {
+        "p": "____ you read books?",
+        "c": [
+          "Do",
+          "Are"
+        ],
+        "a": 0,
+        "why": "일반동사 read로 묻는 질문은 Do you로 시작해요."
+      },
+      {
+        "p": "Do you like apples? — Yes, I ____.",
+        "c": [
+          "do",
+          "don't"
+        ],
+        "a": 0,
+        "why": "Yes로 긍정의 대답을 할 때는 do를 씁니다."
+      },
+      {
+        "p": "Do you play tennis? — No, I ____.",
+        "c": [
+          "do",
+          "don't"
+        ],
+        "a": 1,
+        "why": "No로 부정의 대답을 할 때는 don't를 씁니다."
+      },
+      {
+        "p": "Do you ____ a bike?",
+        "c": [
+          "ride",
+          "rides"
+        ],
+        "a": 0,
+        "why": "Do you 뒤에는 동사원형을 써야 해요."
+      },
+      {
+        "p": "Do you like dogs? — ____, I don't.",
+        "c": [
+          "Yes",
+          "No"
+        ],
+        "a": 1,
+        "why": "뒤에 don't가 있으므로 No로 대답해야 해요."
+      }
+    ],
+    "correct": [
+      {
+        "w": "You like milk?",
+        "r": "Do you like milk?",
+        "why": "일반동사의 질문은 Do로 시작합니다."
+      },
+      {
+        "w": "Do you likes pizza?",
+        "r": "Do you like pizza?",
+        "why": "Do 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Do you like pizza? Yes, I am.",
+        "r": "Do you like pizza? Yes, I do.",
+        "why": "Do로 물으면 do로 대답합니다."
+      },
+      {
+        "w": "Are you play baseball?",
+        "r": "Do you play baseball?",
+        "why": "일반동사 play의 의문문은 Do you로 시작해요."
+      },
+      {
+        "w": "Do you have a brother? No, I do.",
+        "r": "Do you have a brother? No, I don't.",
+        "why": "No로 대답할 때는 don't를 써야 해요."
+      },
+      {
+        "w": "Do you wants a robot?",
+        "r": "Do you want a robot?",
+        "why": "Do you 뒤에는 동사원형을 써야 해요."
+      }
+    ],
+    "say": [
+      {
+        "task": "짝에게 좋아하는 음식을 묻고 대답해요.",
+        "frame": "Do you like ____? — Yes, I do. / No, I don't."
+      },
+      {
+        "task": "짝이 가진 것을 묻고 대답해요.",
+        "frame": "Do you have a(n) ____? — Yes, I do. / No, I don't."
+      },
+      {
+        "task": "짝이 하는 운동을 묻고 대답해요.",
+        "frame": "Do you play ____? — Yes, I do."
+      },
+      {
+        "task": "대답을 듣고 한 번 더 이어서 물어요.",
+        "frame": "Do you like ____ too?"
+      },
+      {
+        "task": "짝에게 좋아하는 동물을 묻고 대답해요.",
+        "frame": "Do you like ____? — Yes, I do."
+      },
+      {
+        "task": "짝에게 취미가 있는지 묻고 대답해요.",
+        "frame": "Do you read ____? — No, I don't."
+      }
+    ],
+    "mission": {
+      "title": "같은 친구 찾기 설문조사",
+      "scene": "다섯 명의 친구에게 설문조사를 하고 결과를 발표해요.",
+      "steps": [
+        "Do you like ____? 질문 세 개를 정한다.",
+        "다섯 명에게 묻고 Yes/No를 표에 체크한다.",
+        "Four students like ____. 처럼 결과를 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "너는 우유를 좋아하니?",
+        "cond": "Do you로 시작해요.",
+        "model": "Do you like milk?"
+      },
+      {
+        "ko": "응, 좋아해.",
+        "cond": "Yes로 시작하고 do를 써요.",
+        "model": "Yes, I do."
+      },
+      {
+        "ko": "아니, 없어.",
+        "cond": "No로 시작하고 don't를 써요.",
+        "model": "No, I don't."
+      },
+      {
+        "ko": "너는 사과를 좋아하니?",
+        "cond": "Do you로 시작해요.",
+        "model": "Do you like apples?"
+      },
+      {
+        "ko": "너는 수영을 하니?",
+        "cond": "swim을 사용해요.",
+        "model": "Do you swim?"
+      },
+      {
+        "ko": "응, 수영해.",
+        "cond": "Yes로 시작해요.",
+        "model": "Yes, I do."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Do you** like apples?",
+        "ko": "너는 사과를 좋아하니?"
+      },
+      {
+        "en": "**Do you** read books? Yes, I **do**.",
+        "ko": "너는 책을 읽니? 응, 읽어."
+      },
+      {
+        "en": "**Do you** swim? No, I **don't**.",
+        "ko": "너는 수영하니? 아니, 안 해."
+      },
+      {
+        "en": "**Do you** want some water?",
+        "ko": "너는 물을 좀 원하니?"
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "질문할 때 문장 맨 앞에 어떤 단어가 오고, 대답할 때 Yes와 No 뒤에 각각 어떤 단어가 오나요?",
+        "a": "질문은 Do로 시작하고, 대답은 Yes, I do. 또는 No, I don't.로 합니다."
+      },
+      "choose": [
+        {
+          "p": "____ you like cats?",
+          "c": [
+            "Do",
+            "Is",
+            "Are"
+          ],
+          "a": 0,
+          "why": "일반동사 like의 의문문은 Do로 시작해요."
+        },
+        {
+          "p": "Do you have a brother? — Yes, I ____.",
+          "c": [
+            "am",
+            "do",
+            "don't"
+          ],
+          "a": 1,
+          "why": "Yes로 대답할 때는 do를 씁니다."
+        },
+        {
+          "p": "Do you play the piano? — No, I ____.",
+          "c": [
+            "do",
+            "don't",
+            "not"
+          ],
+          "a": 1,
+          "why": "No로 대답할 때는 don't를 씁니다."
+        },
+        {
+          "p": "Do you ____ English?",
+          "c": [
+            "study",
+            "studies",
+            "studying"
+          ],
+          "a": 0,
+          "why": "Do you 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Do you like math? — ____, I do.",
+          "c": [
+            "Yes",
+            "No",
+            "Not"
+          ],
+          "a": 0,
+          "why": "뒤에 do가 있으므로 Yes로 대답해야 해요."
+        },
+        {
+          "p": "____ you want a bag?",
+          "c": [
+            "Do",
+            "Are",
+            "Does"
+          ],
+          "a": 0,
+          "why": "주어가 you이고 일반동사 want가 있으므로 Do를 씁니다."
+        },
+        {
+          "p": "Do you ____ a sister?",
+          "c": [
+            "has",
+            "have",
+            "having"
+          ],
+          "a": 1,
+          "why": "Do you 뒤에는 동사원형 have를 씁니다."
+        },
+        {
+          "p": "Do you run fast? — No, I ____.",
+          "c": [
+            "am not",
+            "do",
+            "don't"
+          ],
+          "a": 2,
+          "why": "Do로 물어보는 질문에 No로 답할 때는 don't를 씁니다."
+        },
+        {
+          "p": "Do you ____ movies?",
+          "c": [
+            "watch",
+            "watches",
+            "watching"
+          ],
+          "a": 0,
+          "why": "Do you 뒤에는 동사원형 watch를 씁니다."
+        },
+        {
+          "p": "Do you like bananas? — Yes, I ____.",
+          "c": [
+            "do",
+            "don't",
+            "like"
+          ],
+          "a": 0,
+          "why": "Do로 물었으니 Yes, I do.로 대답합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Do you** like cats?",
+          "ko": "너는 고양이를 좋아하니?"
+        },
+        {
+          "en": "**Do you** have a sister? Yes, I **do**.",
+          "ko": "너는 여동생이 있니? 응, 있어."
+        },
+        {
+          "en": "**Do you** play the piano?",
+          "ko": "너는 피아노를 치니?"
+        },
+        {
+          "en": "**Do you** study English? No, I **don't**.",
+          "ko": "너는 영어를 공부하니? 아니, 안 해."
+        },
+        {
+          "en": "**Do you** watch movies? Yes, I **do**.",
+          "ko": "너는 영화를 보니? 응, 봐."
+        },
+        {
+          "en": "**Do you** run fast? No, I **don't**.",
+          "ko": "너는 빨리 달리니? 아니, 안 달려."
+        },
+        {
+          "en": "**Do you** want a bag?",
+          "ko": "너는 가방을 원하니?"
+        },
+        {
+          "en": "**Do you** like math? No, I **don't**.",
+          "ko": "너는 수학을 좋아하니? 아니, 안 좋아해."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Are you like cats?",
+          "r": "Do you like cats?",
+          "why": "일반동사 like의 의문문은 Do로 시작해요."
+        },
+        {
+          "w": "Do you plays the piano?",
+          "r": "Do you play the piano?",
+          "why": "Do you 뒤에는 동사원형을 써야 해요."
+        },
+        {
+          "w": "Do you have a sister? Yes, I am.",
+          "r": "Do you have a sister? Yes, I do.",
+          "why": "Do로 물어보면 do로 대답해요."
+        },
+        {
+          "w": "Do you watch movies? No, I do.",
+          "r": "Do you watch movies? No, I don't.",
+          "why": "No로 대답할 때는 don't를 써야 해요."
+        },
+        {
+          "w": "Do you has a bag?",
+          "r": "Do you have a bag?",
+          "why": "Do you 뒤에는 동사원형 have를 써야 해요."
+        },
+        {
+          "w": "You study English?",
+          "r": "Do you study English?",
+          "why": "일반동사의 의문문은 Do you로 시작해요."
+        }
+      ],
+      "say": [
+        {
+          "task": "짝에게 좋아하는 과일을 묻고 대답해요.",
+          "frame": "Do you like ____? — Yes, I do."
+        },
+        {
+          "task": "짝에게 형제자매가 있는지 묻고 대답해요.",
+          "frame": "Do you have a ____? — No, I don't."
+        },
+        {
+          "task": "짝에게 악기를 연주하는지 묻고 대답해요.",
+          "frame": "Do you play the ____? — Yes, I do."
+        },
+        {
+          "task": "짝에게 좋아하는 과목을 묻고 대답해요.",
+          "frame": "Do you like ____? — No, I don't."
+        },
+        {
+          "task": "짝에게 원하는 물건이 있는지 묻고 대답해요.",
+          "frame": "Do you want a ____? — Yes, I do."
+        },
+        {
+          "task": "짝에게 주말에 영화를 보는지 묻고 대답해요.",
+          "frame": "Do you watch ____? — No, I don't."
+        }
+      ],
+      "mission": {
+        "title": "친구의 취향 알아보기 인터뷰",
+        "scene": "기자가 되어 반 친구들에게 좋아하는 것과 하는 일에 대해 인터뷰해 봅시다.",
+        "steps": [
+          "인터뷰할 친구를 찾아가 'Do you like ~?' 또는 'Do you play ~?'로 질문해요.",
+          "질문을 받은 친구는 'Yes, I do.'나 'No, I don't.'로 솔직하게 대답해요.",
+          "세 명의 친구에게 질문하고 대답을 활동지에 기록해요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "너는 고양이를 좋아하니?",
+          "cond": "Do you로 시작해요.",
+          "model": "Do you like cats?"
+        },
+        {
+          "ko": "응, 좋아해.",
+          "cond": "Yes로 시작하고 do를 써요.",
+          "model": "Yes, I do."
+        },
+        {
+          "ko": "너는 피아노를 치니?",
+          "cond": "play the piano를 사용해요.",
+          "model": "Do you play the piano?"
+        },
+        {
+          "ko": "아니, 안 쳐.",
+          "cond": "No로 시작하고 don't를 써요.",
+          "model": "No, I don't."
+        },
+        {
+          "ko": "너는 여동생이 있니?",
+          "cond": "have를 사용해요.",
+          "model": "Do you have a sister?"
+        },
+        {
+          "ko": "너는 영어를 공부하니?",
+          "cond": "study를 사용해요.",
+          "model": "Do you study English?"
+        }
+      ]
+    }
+  },
+  {
+    "id": "i-dont",
+    "discover": {
+      "q": "don't가 들어간 문장을 보세요. don't 뒤의 동사는 어떤 모양이고, don't는 어디에 있나요?",
+      "a": "don't는 주어 바로 뒤, 동사 앞에 오고, 뒤의 동사는 원형(like, have)이다."
+    },
+    "choose": [
+      {
+        "p": "I ____ like carrots.",
+        "c": [
+          "don't",
+          "not"
+        ],
+        "a": 0,
+        "why": "일반동사 앞에는 don't를 씁니다."
+      },
+      {
+        "p": "We don't ____ meat.",
+        "c": [
+          "eat",
+          "eats"
+        ],
+        "a": 0,
+        "why": "don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "They ____ swim.",
+        "c": [
+          "don't",
+          "isn't"
+        ],
+        "a": 0,
+        "why": "일반동사 swim의 부정은 don't입니다."
+      },
+      {
+        "p": "I don't ____ a cat.",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "don't 뒤에는 동사원형 have를 씁니다."
+      },
+      {
+        "p": "You ____ like rain.",
+        "c": [
+          "don't",
+          "aren't"
+        ],
+        "a": 0,
+        "why": "일반동사 like의 부정은 don't입니다."
+      },
+      {
+        "p": "I ____ drink milk.",
+        "c": [
+          "not",
+          "don't",
+          "am not"
+        ],
+        "a": 1,
+        "why": "일반동사 앞에는 don't를 씁니다."
+      },
+      {
+        "p": "We don't ____ soccer.",
+        "c": [
+          "plays",
+          "playing",
+          "play"
+        ],
+        "a": 2,
+        "why": "don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "You ____ have a dog.",
+        "c": [
+          "don't",
+          "isn't"
+        ],
+        "a": 0,
+        "why": "일반동사 have의 부정은 don't입니다."
+      },
+      {
+        "p": "They don't ____ books.",
+        "c": [
+          "reads",
+          "read"
+        ],
+        "a": 1,
+        "why": "don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "I don't ____ spiders.",
+        "c": [
+          "like",
+          "likes",
+          "liking"
+        ],
+        "a": 0,
+        "why": "don't 뒤에는 동사원형 like를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "I not like carrots.",
+        "r": "I don't like carrots.",
+        "why": "동사 앞에 don't를 씁니다."
+      },
+      {
+        "w": "I don't likes rain.",
+        "r": "I don't like rain.",
+        "why": "don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "They isn't swim.",
+        "r": "They don't swim.",
+        "why": "일반동사의 부정은 don't입니다."
+      },
+      {
+        "w": "I not have a dog.",
+        "r": "I don't have a dog.",
+        "why": "일반동사 앞에는 don't를 씁니다."
+      },
+      {
+        "w": "We don't plays soccer.",
+        "r": "We don't play soccer.",
+        "why": "don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "They aren't read books.",
+        "r": "They don't read books.",
+        "why": "일반동사의 부정은 don't를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내가 안 좋아하는 음식을 말해요.",
+        "frame": "I don't like ____."
+      },
+      {
+        "task": "내가 갖고 있지 않은 것을 말해요.",
+        "frame": "I don't have a(n) ____."
+      },
+      {
+        "task": "좋아하는 것과 싫어하는 것을 한 문장씩 말해요.",
+        "frame": "I like ____, but I don't like ____."
+      },
+      {
+        "task": "짝의 말에 같은 생각이면 맞장구쳐요.",
+        "frame": "I don't like ____ either."
+      },
+      {
+        "task": "내가 하지 않는 운동을 말해요.",
+        "frame": "I don't play ____."
+      },
+      {
+        "task": "내가 마시지 않는 음료를 말해요.",
+        "frame": "I don't drink ____."
+      }
+    ],
+    "mission": {
+      "title": "호불호 카드 게임",
+      "scene": "음식·동물 카드를 뽑아 좋아하는지 싫어하는지 말하고 짝이 맞장구쳐요.",
+      "steps": [
+        "카드를 한 장 뽑는다.",
+        "I like ____. 또는 I don't like ____. 로 말한다.",
+        "짝은 Me too. 또는 Me neither. 로 대답한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "나는 당근을 안 좋아해요.",
+        "cond": "don't를 써요.",
+        "model": "I don't like carrots."
+      },
+      {
+        "ko": "나는 고양이가 없어요.",
+        "cond": "have와 don't를 써요.",
+        "model": "I don't have a cat."
+      },
+      {
+        "ko": "우리는 수영을 하지 않아요.",
+        "cond": "We로 시작하고 don't를 써요.",
+        "model": "We don't swim."
+      },
+      {
+        "ko": "나는 개가 없어요.",
+        "cond": "have와 don't를 써요.",
+        "model": "I don't have a dog."
+      },
+      {
+        "ko": "우리는 축구를 하지 않아요.",
+        "cond": "We로 시작하고 don't를 써요.",
+        "model": "We don't play soccer."
+      },
+      {
+        "ko": "그들은 책을 읽지 않아요.",
+        "cond": "They로 시작하고 don't를 써요.",
+        "model": "They don't read books."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "I **don't** play tennis.",
+        "ko": "나는 테니스를 치지 않아."
+      },
+      {
+        "en": "They **don't** drink juice.",
+        "ko": "그들은 주스를 마시지 않아."
+      },
+      {
+        "en": "You **don't** sing.",
+        "ko": "너는 노래를 부르지 않아."
+      },
+      {
+        "en": "We **don't** want milk.",
+        "ko": "우리는 우유를 원하지 않아."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "굵은 글씨로 표시된 단어들을 보고, 일반동사를 부정할 때 어떤 단어를 쓰는지 찾아보세요.",
+        "a": "일반동사 앞에는 don't를 씁니다."
+      },
+      "choose": [
+        {
+          "p": "I ____ play the piano.",
+          "c": [
+            "not",
+            "don't"
+          ],
+          "a": 1,
+          "why": "일반동사 앞에는 don't를 씁니다."
+        },
+        {
+          "p": "We don't ____ TV.",
+          "c": [
+            "watch",
+            "watches",
+            "watching"
+          ],
+          "a": 0,
+          "why": "don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "They ____ run fast.",
+          "c": [
+            "aren't",
+            "isn't",
+            "don't"
+          ],
+          "a": 2,
+          "why": "일반동사 run의 부정은 don't입니다."
+        },
+        {
+          "p": "You don't ____ math.",
+          "c": [
+            "studies",
+            "study"
+          ],
+          "a": 1,
+          "why": "don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "I ____ want an apple.",
+          "c": [
+            "don't",
+            "am not"
+          ],
+          "a": 0,
+          "why": "일반동사 want의 부정은 don't입니다."
+        },
+        {
+          "p": "We don't ____ to school on Sunday.",
+          "c": [
+            "goes",
+            "going",
+            "go"
+          ],
+          "a": 2,
+          "why": "don't 뒤에는 동사원형 go를 씁니다."
+        },
+        {
+          "p": "They ____ sleep here.",
+          "c": [
+            "not",
+            "don't"
+          ],
+          "a": 1,
+          "why": "일반동사 앞에는 don't를 씁니다."
+        },
+        {
+          "p": "You don't ____ the answer.",
+          "c": [
+            "know",
+            "knows"
+          ],
+          "a": 0,
+          "why": "don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "I don't ____ a bike.",
+          "c": [
+            "rides",
+            "ride"
+          ],
+          "a": 1,
+          "why": "don't 뒤에는 동사원형 ride를 씁니다."
+        },
+        {
+          "p": "We ____ eat breakfast.",
+          "c": [
+            "don't",
+            "isn't",
+            "aren't"
+          ],
+          "a": 0,
+          "why": "일반동사 eat의 부정은 don't입니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "I **don't** watch TV.",
+          "ko": "나는 TV를 보지 않아."
+        },
+        {
+          "en": "They **don't** run fast.",
+          "ko": "그들은 빨리 달리지 않아."
+        },
+        {
+          "en": "We **don't** go to school.",
+          "ko": "우리는 학교에 가지 않아."
+        },
+        {
+          "en": "You **don't** know the answer.",
+          "ko": "너는 정답을 알지 못해."
+        },
+        {
+          "en": "I **don't** ride a bike.",
+          "ko": "나는 자전거를 타지 않아."
+        },
+        {
+          "en": "They **don't** study math.",
+          "ko": "그들은 수학을 공부하지 않아."
+        },
+        {
+          "en": "We **don't** sleep here.",
+          "ko": "우리는 여기서 자지 않아."
+        },
+        {
+          "en": "You **don't** play the piano.",
+          "ko": "너는 피아노를 치지 않아."
+        }
+      ],
+      "correct": [
+        {
+          "w": "I not watch TV.",
+          "r": "I don't watch TV.",
+          "why": "일반동사 앞에는 don't를 씁니다."
+        },
+        {
+          "w": "They don't runs fast.",
+          "r": "They don't run fast.",
+          "why": "don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "w": "We aren't go to school.",
+          "r": "We don't go to school.",
+          "why": "일반동사의 부정은 don't를 씁니다."
+        },
+        {
+          "w": "You don't knows the answer.",
+          "r": "You don't know the answer.",
+          "why": "don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "w": "I am not ride a bike.",
+          "r": "I don't ride a bike.",
+          "why": "일반동사의 부정은 don't를 씁니다."
+        },
+        {
+          "w": "They not study math.",
+          "r": "They don't study math.",
+          "why": "일반동사 앞에는 don't를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "내가 보지 않는 TV 프로그램을 말해요.",
+          "frame": "I don't watch ____."
+        },
+        {
+          "task": "내가 배우지 않는 과목을 말해요.",
+          "frame": "I don't study ____."
+        },
+        {
+          "task": "내가 연주하지 않는 악기를 말해요.",
+          "frame": "I don't play the ____."
+        },
+        {
+          "task": "내가 원하지 않는 물건을 말해요.",
+          "frame": "I don't want a(n) ____."
+        },
+        {
+          "task": "주말에 가지 않는 장소를 말해요.",
+          "frame": "I don't go to ____."
+        },
+        {
+          "task": "친구와 함께 하지 않는 활동을 말해요.",
+          "frame": "We don't ____ together."
+        }
+      ],
+      "mission": {
+        "title": "거짓말 탐지기 게임",
+        "scene": "친구와 서로에 대해 잘 아는지 확인하는 게임을 해봅시다.",
+        "steps": [
+          "종이에 내가 하지 않는 것 3가지를 적어요. (예: I don't play soccer.)",
+          "짝에게 내 문장을 읽어주되, 하나는 거짓으로 말해요.",
+          "짝은 내 말을 듣고 거짓인 문장을 찾아내요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "나는 TV를 보지 않아요.",
+          "cond": "don't를 써요.",
+          "model": "I don't watch TV."
+        },
+        {
+          "ko": "너는 정답을 몰라요.",
+          "cond": "know와 don't를 써요.",
+          "model": "You don't know the answer."
+        },
+        {
+          "ko": "우리는 학교에 가지 않아요.",
+          "cond": "We로 시작하고 don't를 써요.",
+          "model": "We don't go to school."
+        },
+        {
+          "ko": "그들은 빨리 달리지 않아요.",
+          "cond": "They로 시작하고 don't를 써요.",
+          "model": "They don't run fast."
+        },
+        {
+          "ko": "그 소년들은 수학을 공부하지 않아요.",
+          "cond": "The boys로 시작하고 don't를 써요.",
+          "model": "The boys don't study math."
+        },
+        {
+          "ko": "내 고양이들은 사과를 먹지 않아요.",
+          "cond": "My cats로 시작하고 don't를 써요.",
+          "model": "My cats don't eat apples."
+        }
+      ]
+    }
+  },
+  {
+    "id": "does-he",
+    "discover": {
+      "q": "Does가 들어간 질문과 doesn't가 들어간 문장을 보세요. Does/doesn't 뒤의 동사는 어떤 모양인가요? 주어는 누구인가요?",
+      "a": "주어는 he/she(한 사람)이고, Does/doesn't 뒤의 동사는 원형이다."
+    },
+    "choose": [
+      {
+        "p": "____ he like cats?",
+        "c": [
+          "Does",
+          "Do"
+        ],
+        "a": 0,
+        "why": "he에는 Does를 씁니다."
+      },
+      {
+        "p": "Does she ____ a dog?",
+        "c": [
+          "have",
+          "has"
+        ],
+        "a": 0,
+        "why": "Does 뒤에는 동사원형 have를 씁니다."
+      },
+      {
+        "p": "She ____ eat fish.",
+        "c": [
+          "doesn't",
+          "don't"
+        ],
+        "a": 0,
+        "why": "She에는 doesn't를 씁니다."
+      },
+      {
+        "p": "Does he like cats? — Yes, he ____.",
+        "c": [
+          "does",
+          "do"
+        ],
+        "a": 0,
+        "why": "Does로 물었으니 Yes, he does.로 답합니다."
+      },
+      {
+        "p": "Does she have a dog? — No, she ____.",
+        "c": [
+          "doesn't",
+          "isn't"
+        ],
+        "a": 0,
+        "why": "Does로 물었으니 No, she doesn't.로 답합니다."
+      },
+      {
+        "p": "____ she play tennis?",
+        "c": [
+          "Does",
+          "Do"
+        ],
+        "a": 0,
+        "why": "she 앞에는 Does를 써서 질문합니다."
+      },
+      {
+        "p": "He ____ read books.",
+        "c": [
+          "doesn't",
+          "don't"
+        ],
+        "a": 0,
+        "why": "He 뒤에는 doesn't를 씁니다."
+      },
+      {
+        "p": "Does your brother ____ milk?",
+        "c": [
+          "drink",
+          "drinks"
+        ],
+        "a": 0,
+        "why": "Does로 물을 때는 동사원형을 씁니다."
+      },
+      {
+        "p": "Does she like apples? — Yes, she ____.",
+        "c": [
+          "does",
+          "do"
+        ],
+        "a": 0,
+        "why": "Does로 물었으므로 does로 대답합니다."
+      },
+      {
+        "p": "Does he have a sister? — No, he ____.",
+        "c": [
+          "doesn't",
+          "don't"
+        ],
+        "a": 0,
+        "why": "Does로 묻고 No로 답할 때는 doesn't를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Does he likes cats?",
+        "r": "Does he like cats?",
+        "why": "Does 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "She don't eat fish.",
+        "r": "She doesn't eat fish.",
+        "why": "She에는 doesn't를 씁니다."
+      },
+      {
+        "w": "Do she have a dog?",
+        "r": "Does she have a dog?",
+        "why": "she에는 Does를 씁니다."
+      },
+      {
+        "w": "Do he play baseball?",
+        "r": "Does he play baseball?",
+        "why": "he 앞에는 Does를 써서 질문합니다."
+      },
+      {
+        "w": "He doesn't likes carrots.",
+        "r": "He doesn't like carrots.",
+        "why": "doesn't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Does she has a bike?",
+        "r": "Does she have a bike?",
+        "why": "Does가 있는 의문문에서는 동사원형(have)을 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "가족 한 명에 대해 Does로 묻고 대답해요.",
+        "frame": "Does your dad like ____? — Yes, he does. / No, he doesn't."
+      },
+      {
+        "task": "친구에 대해 짝과 추측하며 질문해요.",
+        "frame": "Does he/she have a ____?"
+      },
+      {
+        "task": "내 가족이 하지 않는 일을 말해요.",
+        "frame": "My mom doesn't ____."
+      },
+      {
+        "task": "짝이 말한 가족의 습관을 한 번 더 전해요.",
+        "frame": "She/He doesn't ____. She/He likes ____."
+      },
+      {
+        "task": "짝의 남자 형제나 친구에 대해 질문해요.",
+        "frame": "Does your brother ____?"
+      },
+      {
+        "task": "짝의 여자 형제나 친구가 좋아하는 것을 물어봐요.",
+        "frame": "Does your sister like ____?"
+      }
+    ],
+    "mission": {
+      "title": "비밀 인물 맞히기",
+      "scene": "한 사람이 비밀 인물을 정하고 다른 사람은 Does he ~? 질문으로 알아내요.",
+      "steps": [
+        "비밀 인물(가족·연예인)을 마음속으로 정한다.",
+        "짝은 Does he like ____? 로 다섯 번까지 묻는다.",
+        "맞히면 역할을 바꾼다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그는 고양이를 좋아하니?",
+        "cond": "Does로 시작해요.",
+        "model": "Does he like cats?"
+      },
+      {
+        "ko": "그녀는 생선을 먹지 않아요.",
+        "cond": "doesn't를 써요.",
+        "model": "She doesn't eat fish."
+      },
+      {
+        "ko": "아니요, 그녀는 안 그래요.",
+        "cond": "No로 시작하고 doesn't를 써요.",
+        "model": "No, she doesn't."
+      },
+      {
+        "ko": "그는 피자를 좋아하니?",
+        "cond": "Does로 시작해요.",
+        "model": "Does he like pizza?"
+      },
+      {
+        "ko": "그녀는 우유를 마시지 않아.",
+        "cond": "doesn't를 써요.",
+        "model": "She doesn't drink milk."
+      },
+      {
+        "ko": "네, 내 남동생은 그래요.",
+        "cond": "Yes로 시작해요.",
+        "model": "Yes, my brother does."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Does** he play soccer?",
+        "ko": "그는 축구를 하니?"
+      },
+      {
+        "en": "He **doesn't** run fast.",
+        "ko": "그는 빨리 달리지 않아."
+      },
+      {
+        "en": "**Does** she study English?",
+        "ko": "그녀는 영어를 공부하니?"
+      },
+      {
+        "en": "She **doesn't** like spiders.",
+        "ko": "그녀는 거미를 좋아하지 않아."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "Does나 doesn't 뒤에 오는 동사(like, have 등)의 형태는 어떤가요?",
+        "a": "원래 모양(동사원형) 그대로 씁니다."
+      },
+      "choose": [
+        {
+          "p": "____ your dad cook well?",
+          "c": [
+            "Does",
+            "Do"
+          ],
+          "a": 0,
+          "why": "your dad는 he와 같으므로 Does를 씁니다."
+        },
+        {
+          "p": "My sister ____ like bugs.",
+          "c": [
+            "doesn't",
+            "don't"
+          ],
+          "a": 0,
+          "why": "My sister는 she와 같으므로 doesn't를 씁니다."
+        },
+        {
+          "p": "Does the boy ____ a bag?",
+          "c": [
+            "have",
+            "has"
+          ],
+          "a": 0,
+          "why": "Does 뒤에는 동사원형 have를 씁니다."
+        },
+        {
+          "p": "Does your mom drive a car? — Yes, she ____.",
+          "c": [
+            "does",
+            "doesn't"
+          ],
+          "a": 0,
+          "why": "Yes로 대답할 때는 does를 씁니다."
+        },
+        {
+          "p": "Does Tom play the piano? — No, he ____.",
+          "c": [
+            "doesn't",
+            "does"
+          ],
+          "a": 0,
+          "why": "No로 대답할 때는 doesn't를 씁니다."
+        },
+        {
+          "p": "____ she watch TV every day?",
+          "c": [
+            "Does",
+            "Do"
+          ],
+          "a": 0,
+          "why": "she 앞에는 Does를 씁니다."
+        },
+        {
+          "p": "He doesn't ____ early.",
+          "c": [
+            "get up",
+            "gets up"
+          ],
+          "a": 0,
+          "why": "doesn't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Does the dog ____ fast?",
+          "c": [
+            "run",
+            "runs"
+          ],
+          "a": 0,
+          "why": "Does가 있는 문장에서는 동사원형을 씁니다."
+        },
+        {
+          "p": "Does Jane like math? — Yes, ____ does.",
+          "c": [
+            "she",
+            "he"
+          ],
+          "a": 0,
+          "why": "Jane은 여자이므로 she로 받습니다."
+        },
+        {
+          "p": "Does Mike have a pen? — No, ____ doesn't.",
+          "c": [
+            "he",
+            "she"
+          ],
+          "a": 0,
+          "why": "Mike는 남자이므로 he로 받습니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Does** your dad cook?",
+          "ko": "너의 아빠는 요리를 하시니?"
+        },
+        {
+          "en": "My mom **doesn't** play games.",
+          "ko": "나의 엄마는 게임을 하지 않으셔."
+        },
+        {
+          "en": "**Does** the boy have a cap?",
+          "ko": "그 소년은 모자가 있니?"
+        },
+        {
+          "en": "He **doesn't** eat meat.",
+          "ko": "그는 고기를 먹지 않아."
+        },
+        {
+          "en": "**Does** she sing well?",
+          "ko": "그녀는 노래를 잘 하니?"
+        },
+        {
+          "en": "She **doesn't** wear glasses.",
+          "ko": "그녀는 안경을 쓰지 않아."
+        },
+        {
+          "en": "Yes, my brother **does**.",
+          "ko": "응, 내 남자 형제는 그래."
+        },
+        {
+          "en": "No, my sister **doesn't**.",
+          "ko": "아니, 내 여자 형제는 그렇지 않아."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Do your dad work here?",
+          "r": "Does your dad work here?",
+          "why": "your dad(he) 앞에는 Does를 씁니다."
+        },
+        {
+          "w": "My mom don't like snakes.",
+          "r": "My mom doesn't like snakes.",
+          "why": "My mom(she) 뒤에는 doesn't를 씁니다."
+        },
+        {
+          "w": "Does he plays tennis?",
+          "r": "Does he play tennis?",
+          "why": "Does 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "w": "She doesn't has a brother.",
+          "r": "She doesn't have a brother.",
+          "why": "doesn't 뒤에는 동사원형(have)을 씁니다."
+        },
+        {
+          "w": "Does she like music? — Yes, she do.",
+          "r": "Does she like music? — Yes, she does.",
+          "why": "Does로 물었으므로 does로 답합니다."
+        },
+        {
+          "w": "Does Tom have a dog? — No, he don't.",
+          "r": "Does Tom have a dog? — No, he doesn't.",
+          "why": "he 뒤에는 doesn't를 씁니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "선생님이 좋아하는 것을 추측해서 물어봐요.",
+          "frame": "Does the teacher like ____?"
+        },
+        {
+          "task": "짝의 가족이 가지고 있는 물건을 물어봐요.",
+          "frame": "Does your mom have a ____?"
+        },
+        {
+          "task": "친구의 남동생이나 오빠가 하는 운동을 물어봐요.",
+          "frame": "Does he play ____?"
+        },
+        {
+          "task": "우리 아빠가 하지 않는 일을 말해요.",
+          "frame": "My dad doesn't ____."
+        },
+        {
+          "task": "짝의 대답을 듣고 다른 친구에게 전달해요 (긍정).",
+          "frame": "Yes, he/she does. He/She likes ____."
+        },
+        {
+          "task": "짝의 대답을 듣고 다른 친구에게 전달해요 (부정).",
+          "frame": "No, he/she doesn't. He/She doesn't like ____."
+        }
+      ],
+      "mission": {
+        "title": "가족의 비밀 취향 찾기",
+        "scene": "친구의 가족 중 한 명이 좋아하는 음식이나 동물을 스무고개처럼 맞춰봅니다.",
+        "steps": [
+          "짝이 마음속으로 가족 중 한 명(엄마, 아빠 등)을 정합니다.",
+          "돌아가며 'Does he/she like...?'를 사용해 질문합니다.",
+          "'Yes, he/she does.' 대답을 3번 먼저 얻어내는 사람이 이깁니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "너의 아빠는 요리를 하시니?",
+          "cond": "Does로 시작해요.",
+          "model": "Does your dad cook?"
+        },
+        {
+          "ko": "나의 엄마는 게임을 하지 않으셔.",
+          "cond": "doesn't를 써요.",
+          "model": "My mom doesn't play games."
+        },
+        {
+          "ko": "그 소년은 모자가 있니?",
+          "cond": "have를 써요.",
+          "model": "Does the boy have a cap?"
+        },
+        {
+          "ko": "그는 고기를 먹지 않아.",
+          "cond": "doesn't를 써요.",
+          "model": "He doesn't eat meat."
+        },
+        {
+          "ko": "그녀는 노래를 잘 하니?",
+          "cond": "Does로 시작해요.",
+          "model": "Does she sing well?"
+        },
+        {
+          "ko": "아니요, 내 여동생은 안 그래요.",
+          "cond": "No로 시작해요.",
+          "model": "No, my sister doesn't."
+        }
+      ]
+    }
+  },
+  {
+    "id": "imperative",
+    "discover": {
+      "q": "명령하는 문장을 보세요. 문장은 어떤 낱말로 시작하나요? 하지 말라고 할 때는 무엇이 앞에 붙었나요?",
+      "a": "명령문은 동사원형으로 시작한다. 하지 말라고 할 때는 동사 앞에 Don't를 붙인다."
+    },
+    "choose": [
+      {
+        "p": "____ down, please.",
+        "c": [
+          "Sit",
+          "Sits"
+        ],
+        "a": 0,
+        "why": "명령문은 동사원형으로 시작합니다."
+      },
+      {
+        "p": "____ run in the classroom.",
+        "c": [
+          "Not",
+          "Don't"
+        ],
+        "a": 1,
+        "why": "하지 말라고 할 때는 Don't를 씁니다."
+      },
+      {
+        "p": "____ the door, please.",
+        "c": [
+          "Open",
+          "Opens"
+        ],
+        "a": 0,
+        "why": "명령문은 동사원형으로 시작합니다."
+      },
+      {
+        "p": "Don't ____.",
+        "c": [
+          "shout",
+          "shouts"
+        ],
+        "a": 0,
+        "why": "Don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "____ up.",
+        "c": [
+          "Stand",
+          "Standing"
+        ],
+        "a": 0,
+        "why": "명령문은 동사원형으로 시작합니다."
+      },
+      {
+        "p": "____ your book, please.",
+        "c": [
+          "Read",
+          "Reads"
+        ],
+        "a": 0,
+        "why": "명령문은 동사원형으로 시작합니다."
+      },
+      {
+        "p": "____ eat in the library.",
+        "c": [
+          "Not",
+          "Don't"
+        ],
+        "a": 1,
+        "why": "무언가를 하지 말라고 할 때는 Don't를 사용합니다."
+      },
+      {
+        "p": "Don't ____ the window.",
+        "c": [
+          "touch",
+          "touches"
+        ],
+        "a": 0,
+        "why": "Don't 뒤에는 항상 동사원형을 써야 합니다."
+      },
+      {
+        "p": "____ to the teacher.",
+        "c": [
+          "Listen",
+          "Listening"
+        ],
+        "a": 0,
+        "why": "상대방에게 지시할 때는 동사원형으로 문장을 시작합니다."
+      },
+      {
+        "p": "____ sleep in class.",
+        "c": [
+          "Don't",
+          "Doesn't"
+        ],
+        "a": 0,
+        "why": "명령문에서 금지를 나타낼 때는 항상 Don't를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Not run.",
+        "r": "Don't run.",
+        "why": "하지 말라고 할 때는 Don't를 씁니다."
+      },
+      {
+        "w": "Sits down, please.",
+        "r": "Sit down, please.",
+        "why": "명령문은 동사원형으로 시작합니다."
+      },
+      {
+        "w": "Don't shouts.",
+        "r": "Don't shout.",
+        "why": "Don't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Not touch the dog.",
+        "r": "Don't touch the dog.",
+        "why": "금지하는 명령문은 Not이 아니라 Don't로 시작합니다."
+      },
+      {
+        "w": "Reads the book, please.",
+        "r": "Read the book, please.",
+        "why": "명령문은 항상 동사원형으로 시작해야 합니다."
+      },
+      {
+        "w": "Don't sleeping.",
+        "r": "Don't sleep.",
+        "why": "Don't 다음에는 동사의 원래 형태(동사원형)를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "짝에게 교실에서 해야 할 일을 명령해요.",
+        "frame": "Open the ____. / Close the ____. / Stand up."
+      },
+      {
+        "task": "교실 규칙을 Don't로 말해요.",
+        "frame": "Don't ____ in the classroom."
+      },
+      {
+        "task": "친구에게 정중하게 부탁해요.",
+        "frame": "Please ____."
+      },
+      {
+        "task": "짝이 명령한 대로 행동해요(사이먼 가라사대).",
+        "frame": "Simon says, '____.'"
+      },
+      {
+        "task": "친구에게 물건을 만지지 말라고 주의를 줘요.",
+        "frame": "Don't touch the ____."
+      },
+      {
+        "task": "선생님의 말씀을 잘 들으라고 친구에게 말해요.",
+        "frame": "Listen to ____."
+      }
+    ],
+    "mission": {
+      "title": "사이먼 가라사대 대회",
+      "scene": "한 사람이 선생님이 되어 명령하고, 나머지는 Simon says가 붙을 때만 따라 해요.",
+      "steps": [
+        "선생님 역할은 Simon says, 'Stand up.'처럼 명령한다.",
+        "Simon says가 없으면 따라 하지 않는다.",
+        "틀린 사람은 선생님과 역할을 바꾼다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "앉아 주세요.",
+        "cond": "Sit으로 시작하고 please를 써요.",
+        "model": "Sit down, please."
+      },
+      {
+        "ko": "뛰지 마세요.",
+        "cond": "Don't로 시작해요.",
+        "model": "Don't run."
+      },
+      {
+        "ko": "문을 여세요.",
+        "cond": "동사원형으로 시작해요.",
+        "model": "Open the door."
+      },
+      {
+        "ko": "창문을 닫아 주세요.",
+        "cond": "Close로 시작하고 please를 써요.",
+        "model": "Close the window, please."
+      },
+      {
+        "ko": "너의 영어 책을 읽으세요.",
+        "cond": "동사원형으로 시작해요.",
+        "model": "Read your English book."
+      },
+      {
+        "ko": "교실에서 자지 마세요.",
+        "cond": "Don't로 시작해요.",
+        "model": "Don't sleep in class."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Close** the window.",
+        "ko": "창문을 닫으세요."
+      },
+      {
+        "en": "**Don't talk** now.",
+        "ko": "지금 이야기하지 마세요."
+      },
+      {
+        "en": "**Look** at me.",
+        "ko": "나를 보세요."
+      },
+      {
+        "en": "**Don't eat** the cake.",
+        "ko": "그 케이크를 먹지 마세요."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문들을 보고 규칙을 찾아보세요. '~해라'라고 할 때와 '~하지 마라'라고 할 때 문장 맨 앞에 오는 말은 각각 어떤 형태인가요?",
+        "a": "~해라: 동사원형, ~하지 마라: Don't"
+      },
+      "choose": [
+        {
+          "p": "____ your hands.",
+          "c": [
+            "Wash",
+            "Washes"
+          ],
+          "a": 0,
+          "why": "명령문은 동사원형으로 시작합니다."
+        },
+        {
+          "p": "____ play here.",
+          "c": [
+            "Not",
+            "Don't"
+          ],
+          "a": 1,
+          "why": "금지할 때는 Don't를 사용합니다."
+        },
+        {
+          "p": "Don't ____ the milk.",
+          "c": [
+            "drink",
+            "drinks"
+          ],
+          "a": 0,
+          "why": "Don't 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "p": "____ your room, please.",
+          "c": [
+            "Clean",
+            "Cleans"
+          ],
+          "a": 0,
+          "why": "명령하는 문장은 동사원형으로 시작합니다."
+        },
+        {
+          "p": "____ jump on the bed.",
+          "c": [
+            "Don't",
+            "Doesn't"
+          ],
+          "a": 0,
+          "why": "상대방에게 하지 말라고 할 때는 Don't를 씁니다."
+        },
+        {
+          "p": "____ a song, please.",
+          "c": [
+            "Sing",
+            "Singing"
+          ],
+          "a": 0,
+          "why": "부탁이나 명령을 할 때는 동사원형으로 시작합니다."
+        },
+        {
+          "p": "Don't ____ the apple.",
+          "c": [
+            "eat",
+            "eating"
+          ],
+          "a": 0,
+          "why": "Don't 다음에는 동사원형이 와야 합니다."
+        },
+        {
+          "p": "____ your name here.",
+          "c": [
+            "Write",
+            "Writes"
+          ],
+          "a": 0,
+          "why": "명령문은 동사원형으로 시작합니다."
+        },
+        {
+          "p": "____ push your friends.",
+          "c": [
+            "No",
+            "Don't"
+          ],
+          "a": 1,
+          "why": "금지하는 명령문은 Don't로 시작합니다."
+        },
+        {
+          "p": "____ the ball.",
+          "c": [
+            "Catch",
+            "Catches"
+          ],
+          "a": 0,
+          "why": "명령문은 동사원형으로 시작해야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Wash** your hands.",
+          "ko": "손을 씻으세요."
+        },
+        {
+          "en": "**Don't push** your friends.",
+          "ko": "친구들을 밀지 마세요."
+        },
+        {
+          "en": "**Write** your name.",
+          "ko": "이름을 쓰세요."
+        },
+        {
+          "en": "**Don't jump** on the bed.",
+          "ko": "침대 위에서 뛰지 마세요."
+        },
+        {
+          "en": "**Clean** your room.",
+          "ko": "방을 청소하세요."
+        },
+        {
+          "en": "**Don't drink** the water.",
+          "ko": "그 물을 마시지 마세요."
+        },
+        {
+          "en": "**Sing** a song.",
+          "ko": "노래를 부르세요."
+        },
+        {
+          "en": "**Don't play** here.",
+          "ko": "여기서 놀지 마세요."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Washes your hands.",
+          "r": "Wash your hands.",
+          "why": "명령문은 동사원형으로 시작합니다."
+        },
+        {
+          "w": "Not jump on the bed.",
+          "r": "Don't jump on the bed.",
+          "why": "하지 말라고 할 때는 Don't를 씁니다."
+        },
+        {
+          "w": "Don't sings.",
+          "r": "Don't sing.",
+          "why": "Don't 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "Cleans your room, please.",
+          "r": "Clean your room, please.",
+          "why": "명령문은 동사원형으로 시작해야 합니다."
+        },
+        {
+          "w": "Don't drinking the milk.",
+          "r": "Don't drink the milk.",
+          "why": "Don't 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "w": "No push your friends.",
+          "r": "Don't push your friends.",
+          "why": "금지하는 명령문은 Don't로 시작합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "식사 전에 손을 씻으라고 말해요.",
+          "frame": "Wash your ____."
+        },
+        {
+          "task": "위험한 곳에서 놀지 말라고 경고해요.",
+          "frame": "Don't play ____."
+        },
+        {
+          "task": "친구에게 노래를 불러 달라고 부탁해요.",
+          "frame": "Sing a ____, please."
+        },
+        {
+          "task": "침대 위에서 뛰지 말라고 동생에게 말해요.",
+          "frame": "Don't jump on the ____."
+        },
+        {
+          "task": "칠판에 이름을 쓰라고 지시해요.",
+          "frame": "Write your ____."
+        },
+        {
+          "task": "친구를 밀지 말라고 규칙을 말해요.",
+          "frame": "Don't push your ____."
+        }
+      ],
+      "mission": {
+        "title": "우리가 만드는 교실 규칙",
+        "scene": "새 학기를 맞아 친구들과 함께 지켜야 할 교실 규칙 포스터를 만들어요.",
+        "steps": [
+          "짝과 함께 교실에서 해야 할 일(예: Clean the desk.)을 하나 정해요.",
+          "교실에서 하지 말아야 할 일(예: Don't push.)을 하나 정해요.",
+          "종이에 규칙을 영어로 적고 반 친구들 앞에서 발표해요."
+        ]
+      },
+      "review": [
+        {
+          "ko": "손을 씻어 주세요.",
+          "cond": "Wash로 시작하고 please를 써요.",
+          "model": "Wash your hands, please."
+        },
+        {
+          "ko": "방에서 놀지 마세요.",
+          "cond": "Don't로 시작해요.",
+          "model": "Don't play in the room."
+        },
+        {
+          "ko": "방을 청소해 주세요.",
+          "cond": "Clean으로 시작하고 please를 써요.",
+          "model": "Clean your room, please."
+        },
+        {
+          "ko": "침대 위에서 뛰지 마세요.",
+          "cond": "Don't로 시작하고 jump를 써요.",
+          "model": "Don't jump on the bed."
+        },
+        {
+          "ko": "여기에 이름을 쓰세요.",
+          "cond": "Write로 시작해요.",
+          "model": "Write your name here."
+        },
+        {
+          "ko": "그 물을 마시지 마세요.",
+          "cond": "Don't로 시작해요.",
+          "model": "Don't drink the water."
+        }
+      ]
+    }
+  },
+  {
+    "id": "lets",
+    "discover": {
+      "q": "Let's로 시작하는 문장을 보세요. Let's 뒤에는 어떤 모양의 동사가 오나요?",
+      "a": "Let's 뒤에는 동사원형이 온다."
+    },
+    "choose": [
+      {
+        "p": "Let's ____.",
+        "c": [
+          "play",
+          "playing"
+        ],
+        "a": 0,
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Let's ____ home.",
+        "c": [
+          "go",
+          "goes"
+        ],
+        "a": 0,
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Let's ____ lunch.",
+        "c": [
+          "eat",
+          "eating"
+        ],
+        "a": 0,
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "____ sing.",
+        "c": [
+          "Let's",
+          "Let"
+        ],
+        "a": 0,
+        "why": "함께 하자고 제안할 때는 Let's를 씁니다."
+      },
+      {
+        "p": "Let's ____ together.",
+        "c": [
+          "dance",
+          "dances"
+        ],
+        "a": 0,
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "Let's ____ a book.",
+        "c": [
+          "reading",
+          "read"
+        ],
+        "a": 1,
+        "why": "Let's 뒤에는 동사원형(원래 형태)을 써야 합니다."
+      },
+      {
+        "p": "Let's ____ soccer.",
+        "c": [
+          "plays",
+          "playing",
+          "play"
+        ],
+        "a": 2,
+        "why": "Let's 뒤에는 s나 ing가 붙지 않은 동사원형을 씁니다."
+      },
+      {
+        "p": "____ draw a picture.",
+        "c": [
+          "Lets",
+          "Let's"
+        ],
+        "a": 1,
+        "why": "함께 무언가를 하자고 제안할 때는 아포스트로피(')가 있는 Let's를 사용합니다."
+      },
+      {
+        "p": "Let's ____ English.",
+        "c": [
+          "study",
+          "studying"
+        ],
+        "a": 0,
+        "why": "Let's 다음에는 반드시 동사원형이 옵니다."
+      },
+      {
+        "p": "Let's ____ the room.",
+        "c": [
+          "cleans",
+          "clean",
+          "cleaning"
+        ],
+        "a": 1,
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "Let's playing.",
+        "r": "Let's play.",
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Let's goes home.",
+        "r": "Let's go home.",
+        "why": "Let's 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Lets sing.",
+        "r": "Let's sing.",
+        "why": "Let us의 줄임말이라 아포스트로피(')가 필요합니다."
+      },
+      {
+        "w": "Let's reading a book.",
+        "r": "Let's read a book.",
+        "why": "Let's 뒤에는 ing를 빼고 동사원형을 써야 합니다."
+      },
+      {
+        "w": "Lets play soccer.",
+        "r": "Let's play soccer.",
+        "why": "Let us의 줄임말이므로 아포스트로피(')를 넣어 Let's로 써야 합니다."
+      },
+      {
+        "w": "Let's makes a robot.",
+        "r": "Let's make a robot.",
+        "why": "Let's 뒤에는 s를 빼고 동사원형을 써야 합니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "쉬는 시간에 무엇을 할지 제안해요.",
+        "frame": "Let's ____."
+      },
+      {
+        "task": "제안을 받아들이거나 다른 의견을 말해요.",
+        "frame": "OK, let's ____. / Sorry, I can't."
+      },
+      {
+        "task": "점심시간에 함께 할 일을 정해요.",
+        "frame": "Let's ____ after lunch."
+      },
+      {
+        "task": "모둠 친구에게 게임을 제안해요.",
+        "frame": "Let's play ____!"
+      },
+      {
+        "task": "방과 후에 친구에게 같이 운동하자고 제안해요.",
+        "frame": "Let's play ____."
+      },
+      {
+        "task": "도서관에서 친구에게 책을 읽자고 제안해요.",
+        "frame": "Let's read ____."
+      }
+    ],
+    "mission": {
+      "title": "주말 계획 회의",
+      "scene": "친구와 함께 주말에 할 일을 세 가지 정해요.",
+      "steps": [
+        "Let's ____. 로 번갈아 제안한다.",
+        "마음에 들면 OK! Let's do it. 로 대답한다.",
+        "정해진 세 가지를 반에 발표한다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "놀자.",
+        "cond": "Let's로 시작해요.",
+        "model": "Let's play."
+      },
+      {
+        "ko": "집에 가자.",
+        "cond": "Let's로 시작하고 go를 써요.",
+        "model": "Let's go home."
+      },
+      {
+        "ko": "점심 먹자.",
+        "cond": "Let's로 시작해요.",
+        "model": "Let's eat lunch."
+      },
+      {
+        "ko": "다 같이 축구하자.",
+        "cond": "Let's로 시작하고 together를 써요.",
+        "model": "Let's play soccer together."
+      },
+      {
+        "ko": "책을 읽자.",
+        "cond": "Let's로 시작하고 read를 써요.",
+        "model": "Let's read a book."
+      },
+      {
+        "ko": "방을 청소하자.",
+        "cond": "Let's로 시작하고 clean을 써요.",
+        "model": "Let's clean the room."
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "**Let's** **run** fast.",
+        "ko": "빨리 달리자."
+      },
+      {
+        "en": "**Let's** **make** a robot.",
+        "ko": "로봇을 만들자."
+      },
+      {
+        "en": "**Let's** **read** a book.",
+        "ko": "책을 읽자."
+      },
+      {
+        "en": "**Let's** **swim** together.",
+        "ko": "함께 수영하자."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "예문에서 Let's 뒤에 오는 단어들(play, go, sing 등)은 어떤 형태인가요?",
+        "a": "s나 ing가 붙지 않은 동사원형(원래 형태)입니다."
+      },
+      "choose": [
+        {
+          "p": "Let's ____ milk.",
+          "c": [
+            "drinks",
+            "drink"
+          ],
+          "a": 1,
+          "why": "Let's 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "p": "Let's ____ to school.",
+          "c": [
+            "go",
+            "going",
+            "goes"
+          ],
+          "a": 0,
+          "why": "Let's 뒤에는 동사원형이 와야 합니다."
+        },
+        {
+          "p": "____ jump together.",
+          "c": [
+            "Let",
+            "Lets",
+            "Let's"
+          ],
+          "a": 2,
+          "why": "~하자고 제안할 때는 Let's를 씁니다."
+        },
+        {
+          "p": "Let's ____ a picture.",
+          "c": [
+            "drawing",
+            "draw"
+          ],
+          "a": 1,
+          "why": "Let's 뒤에는 ing가 없는 동사원형을 씁니다."
+        },
+        {
+          "p": "Let's ____ hands.",
+          "c": [
+            "wash",
+            "washes"
+          ],
+          "a": 0,
+          "why": "Let's 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "p": "Let's ____ an apple.",
+          "c": [
+            "eating",
+            "eats",
+            "eat"
+          ],
+          "a": 2,
+          "why": "Let's 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "Let's ____ a snowman.",
+          "c": [
+            "make",
+            "making"
+          ],
+          "a": 0,
+          "why": "Let's 뒤에는 동사원형을 써야 합니다."
+        },
+        {
+          "p": "Let's ____ a bike.",
+          "c": [
+            "riding",
+            "ride",
+            "rides"
+          ],
+          "a": 1,
+          "why": "Let's 뒤에는 동사원형을 씁니다."
+        },
+        {
+          "p": "____ walk to the park.",
+          "c": [
+            "Let's",
+            "Lets"
+          ],
+          "a": 0,
+          "why": "함께 하자는 의미를 나타낼 때는 아포스트로피(')가 있는 Let's를 씁니다."
+        },
+        {
+          "p": "Let's ____ dad.",
+          "c": [
+            "helping",
+            "helps",
+            "help"
+          ],
+          "a": 2,
+          "why": "Let's 뒤에는 동사원형을 써야 합니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "**Let's** **draw** a dog.",
+          "ko": "개를 그리자."
+        },
+        {
+          "en": "**Let's** **wash** our hands.",
+          "ko": "우리 손을 씻자."
+        },
+        {
+          "en": "**Let's** **ride** a bike.",
+          "ko": "자전거를 타자."
+        },
+        {
+          "en": "**Let's** **help** dad.",
+          "ko": "아빠를 돕자."
+        },
+        {
+          "en": "**Let's** **walk** to school.",
+          "ko": "학교까지 걷자."
+        },
+        {
+          "en": "**Let's** **drink** some milk.",
+          "ko": "우유를 좀 마시자."
+        },
+        {
+          "en": "**Let's** **make** a snowman.",
+          "ko": "눈사람을 만들자."
+        },
+        {
+          "en": "**Let's** **eat** an apple.",
+          "ko": "사과를 먹자."
+        }
+      ],
+      "correct": [
+        {
+          "w": "Let's drawing a dog.",
+          "r": "Let's draw a dog.",
+          "why": "Let's 뒤에는 동사원형을 써야 하므로 ing를 뺍니다."
+        },
+        {
+          "w": "Lets wash our hands.",
+          "r": "Let's wash our hands.",
+          "why": "제안할 때는 아포스트로피(')를 넣어 Let's로 써야 합니다."
+        },
+        {
+          "w": "Let's rides a bike.",
+          "r": "Let's ride a bike.",
+          "why": "Let's 뒤에는 동사원형을 써야 하므로 s를 뺍니다."
+        },
+        {
+          "w": "Let's helping dad.",
+          "r": "Let's help dad.",
+          "why": "Let's 뒤에는 동사원형을 써야 하므로 ing를 뺍니다."
+        },
+        {
+          "w": "Let's walks to school.",
+          "r": "Let's walk to school.",
+          "why": "Let's 뒤에는 동사원형을 써야 하므로 s를 뺍니다."
+        },
+        {
+          "w": "Let's making a snowman.",
+          "r": "Let's make a snowman.",
+          "why": "Let's 뒤에는 동사원형을 써야 하므로 making을 make로 바꿉니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "미술 시간에 친구에게 그림을 그리자고 제안해요.",
+          "frame": "Let's draw ____."
+        },
+        {
+          "task": "체육 시간에 친구에게 같이 뛰자고 제안해요.",
+          "frame": "Let's run ____."
+        },
+        {
+          "task": "공원에서 친구에게 자전거를 타자고 제안해요.",
+          "frame": "Let's ride ____."
+        },
+        {
+          "task": "눈이 올 때 친구에게 눈사람을 만들자고 제안해요.",
+          "frame": "Let's make ____."
+        },
+        {
+          "task": "목마를 때 친구에게 물을 마시자고 제안해요.",
+          "frame": "Let's drink ____."
+        },
+        {
+          "task": "간식 시간에 친구에게 과일을 먹자고 제안해요.",
+          "frame": "Let's eat ____."
+        }
+      ],
+      "mission": {
+        "title": "주말 계획 세우기",
+        "scene": "친구와 이번 주말에 함께 할 일들을 정해 봅시다.",
+        "steps": [
+          "각자 주말에 하고 싶은 일 세 가지를 영어로 생각합니다.",
+          "짝에게 \"Let's ____.\"를 사용하여 하고 싶은 일을 제안합니다.",
+          "제안을 들은 친구는 \"OK!\" 또는 \"Sorry, I can't.\"로 대답합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "개를 그리자.",
+          "cond": "Let's로 시작하고 draw를 써요.",
+          "model": "Let's draw a dog."
+        },
+        {
+          "ko": "우리 손을 씻자.",
+          "cond": "Let's로 시작하고 wash를 써요.",
+          "model": "Let's wash our hands."
+        },
+        {
+          "ko": "자전거를 타자.",
+          "cond": "Let's로 시작하고 ride를 써요.",
+          "model": "Let's ride a bike."
+        },
+        {
+          "ko": "눈사람을 만들자.",
+          "cond": "Let's로 시작하고 make를 써요.",
+          "model": "Let's make a snowman."
+        },
+        {
+          "ko": "학교까지 걷자.",
+          "cond": "Let's로 시작하고 walk를 써요.",
+          "model": "Let's walk to school."
+        },
+        {
+          "ko": "우리 아빠를 돕자.",
+          "cond": "Let's로 시작하고 help를 써요.",
+          "model": "Let's help our dad."
+        }
+      ]
+    }
+  },
+  {
+    "id": "m-general-verb",
+    "discover": {
+      "q": "주어가 He/She/It일 때 긍정문의 동사 모양을 보세요. 그리고 does/doesn't가 있는 문장에서는 동사가 어떤 모양인가요?",
+      "a": "주어가 3인칭 단수이면 동사에 -s/-es를 붙인다. 부정문과 의문문에서는 doesn't/does를 쓰고 동사는 원형으로 쓴다."
+    },
+    "choose": [
+      {
+        "p": "He ____ soccer every day.",
+        "c": [
+          "play",
+          "plays"
+        ],
+        "a": 1,
+        "why": "He는 3인칭 단수이므로 plays입니다."
+      },
+      {
+        "p": "She doesn't ____ carrots.",
+        "c": [
+          "like",
+          "likes"
+        ],
+        "a": 0,
+        "why": "doesn't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "____ you walk to school?",
+        "c": [
+          "Do",
+          "Does"
+        ],
+        "a": 0,
+        "why": "you에는 Do를 씁니다."
+      },
+      {
+        "p": "Does she ____ English?",
+        "c": [
+          "study",
+          "studies"
+        ],
+        "a": 0,
+        "why": "Does 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "p": "My brother ____ TV after dinner.",
+        "c": [
+          "watches",
+          "watch"
+        ],
+        "a": 0,
+        "why": "My brother는 한 사람이므로 watches입니다."
+      },
+      {
+        "p": "Tom ____ his room on Sundays.",
+        "c": [
+          "clean",
+          "cleans"
+        ],
+        "a": 1,
+        "why": "Tom은 3인칭 단수이므로 동사원형 뒤에 -s를 붙입니다."
+      },
+      {
+        "p": "We ____ drink coffee in the morning.",
+        "c": [
+          "don't",
+          "doesn't"
+        ],
+        "a": 0,
+        "why": "주어가 We일 때는 부정문에서 don't를 씁니다."
+      },
+      {
+        "p": "My sister doesn't ____ comic books.",
+        "c": [
+          "reads",
+          "read",
+          "reading"
+        ],
+        "a": 1,
+        "why": "doesn't 뒤에는 반드시 동사원형을 써야 합니다."
+      },
+      {
+        "p": "____ your dog sleep on the sofa?",
+        "c": [
+          "Do",
+          "Does",
+          "Are"
+        ],
+        "a": 1,
+        "why": "your dog은 3인칭 단수이므로 의문문은 Does로 시작합니다."
+      },
+      {
+        "p": "Do they ____ lunch at school?",
+        "c": [
+          "has",
+          "have"
+        ],
+        "a": 1,
+        "why": "Do로 시작하는 의문문이므로 주어 뒤에 동사원형 have를 씁니다."
+      }
+    ],
+    "correct": [
+      {
+        "w": "She doesn't likes carrots.",
+        "r": "She doesn't like carrots.",
+        "why": "doesn't 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "Does he plays soccer?",
+        "r": "Does he play soccer?",
+        "why": "Does 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "w": "My sister study English every day.",
+        "r": "My sister studies English every day.",
+        "why": "study는 y를 i로 바꾸고 -es를 붙입니다."
+      },
+      {
+        "w": "My mom make cookies on weekends.",
+        "r": "My mom makes cookies on weekends.",
+        "why": "My mom은 3인칭 단수이므로 동사 make에 -s를 붙여야 합니다."
+      },
+      {
+        "w": "Does your friend plays the piano?",
+        "r": "Does your friend play the piano?",
+        "why": "Does로 시작하는 의문문에서는 주어 뒤에 동사원형을 써야 합니다."
+      },
+      {
+        "w": "They doesn't go to the library.",
+        "r": "They don't go to the library.",
+        "why": "주어가 They일 때는 부정문에 don't를 씁니다."
+      }
+    ],
+    "say": [
+      {
+        "task": "내 하루 일과를 세 문장으로 말해요.",
+        "frame": "I ____ at ____. I ____ after school."
+      },
+      {
+        "task": "가족의 습관을 3인칭으로 말해요.",
+        "frame": "My dad ____s every ____."
+      },
+      {
+        "task": "짝의 일과를 묻고 대답해요.",
+        "frame": "Do you ____ every day? — Yes, I do. / No, I don't."
+      },
+      {
+        "task": "친구에 대해 Does로 묻고 대답해요.",
+        "frame": "Does he/she ____? — Yes, he/she does."
+      },
+      {
+        "task": "친구가 주말에 하는 일을 묻고 대답해요.",
+        "frame": "What do you do on weekends? — I ____."
+      },
+      {
+        "task": "가족이 좋아하지 않는 음식을 말해요.",
+        "frame": "My ____ doesn't like ____."
+      }
+    ],
+    "mission": {
+      "title": "하루 일과 인터뷰 방송",
+      "scene": "아나운서가 되어 친구의 하루를 인터뷰하고 3인칭으로 방송해요.",
+      "steps": [
+        "짝에게 Do you ~? 로 하루 일과 다섯 가지를 묻는다.",
+        "방송에서는 He/She ____s ~. 로 바꿔 전달한다.",
+        "짝은 틀린 점이 있으면 고쳐 준다."
+      ]
+    },
+    "review": [
+      {
+        "ko": "그는 매일 축구를 해요.",
+        "cond": "He로 시작하고 play를 알맞게 써요.",
+        "model": "He plays soccer every day."
+      },
+      {
+        "ko": "그녀는 당근을 좋아하지 않아요.",
+        "cond": "doesn't를 써요.",
+        "model": "She doesn't like carrots."
+      },
+      {
+        "ko": "그녀는 영어를 공부하니?",
+        "cond": "Does로 시작해요.",
+        "model": "Does she study English?"
+      },
+      {
+        "ko": "그 고양이는 탁자 아래에서 자요.",
+        "cond": "The cat으로 시작하고 sleep을 알맞게 써요.",
+        "model": "The cat sleeps under the table."
+      },
+      {
+        "ko": "나는 패스트푸드를 먹지 않아요.",
+        "cond": "don't를 써요.",
+        "model": "I don't eat fast food."
+      },
+      {
+        "ko": "그는 음악을 듣니?",
+        "cond": "Does로 시작해요.",
+        "model": "Does he listen to music?"
+      }
+    ],
+    "buildExtra": [
+      {
+        "en": "The cat **sleeps** under the table.",
+        "ko": "그 고양이는 탁자 아래에서 잔다."
+      },
+      {
+        "en": "I **don't eat** fast food.",
+        "ko": "나는 패스트푸드를 먹지 않는다."
+      },
+      {
+        "en": "**Does** he **listen** to music?",
+        "ko": "그는 음악을 듣니?"
+      },
+      {
+        "en": "My dad **washes** his car.",
+        "ko": "우리 아빠는 그의 차를 세차하신다."
+      }
+    ],
+    "b": {
+      "discover": {
+        "q": "주어가 I, You일 때와 He, She일 때 동사의 형태가 어떻게 다른가요?",
+        "a": "주어가 He, She 같은 3인칭 단수일 때는 동사원형 뒤에 -s나 -es를 붙입니다."
+      },
+      "choose": [
+        {
+          "p": "I ____ up early every morning.",
+          "c": [
+            "get",
+            "gets"
+          ],
+          "a": 0,
+          "why": "주어가 I일 때는 동사원형을 씁니다."
+        },
+        {
+          "p": "Jane ____ math very hard.",
+          "c": [
+            "study",
+            "studies",
+            "studys"
+          ],
+          "a": 1,
+          "why": "Jane은 3인칭 단수이고, 자음+y로 끝나는 동사는 y를 i로 바꾸고 -es를 붙입니다."
+        },
+        {
+          "p": "We ____ have a computer in our room.",
+          "c": [
+            "don't",
+            "doesn't"
+          ],
+          "a": 0,
+          "why": "주어가 We일 때는 don't를 사용하여 부정문을 만듭니다."
+        },
+        {
+          "p": "____ your parents work on Saturdays?",
+          "c": [
+            "Do",
+            "Does"
+          ],
+          "a": 0,
+          "why": "your parents는 복수형이므로 Do로 질문합니다."
+        },
+        {
+          "p": "He doesn't ____ his teeth after lunch.",
+          "c": [
+            "brush",
+            "brushes"
+          ],
+          "a": 0,
+          "why": "doesn't 뒤에는 항상 동사원형이 와야 합니다."
+        },
+        {
+          "p": "The baby ____ a lot at night.",
+          "c": [
+            "cry",
+            "cries"
+          ],
+          "a": 1,
+          "why": "The baby는 3인칭 단수이므로 y를 i로 고치고 -es를 붙입니다."
+        },
+        {
+          "p": "____ she ride a bike to the park?",
+          "c": [
+            "Do",
+            "Does",
+            "Is"
+          ],
+          "a": 1,
+          "why": "주어가 she이므로 Does로 시작하는 일반동사 의문문을 만듭니다."
+        },
+        {
+          "p": "My uncle ____ in New York.",
+          "c": [
+            "live",
+            "lives"
+          ],
+          "a": 1,
+          "why": "My uncle은 3인칭 단수이므로 동사에 -s를 붙입니다."
+        },
+        {
+          "p": "Does the bus ____ at this bus stop?",
+          "c": [
+            "stop",
+            "stops"
+          ],
+          "a": 0,
+          "why": "Does가 쓰인 의문문이므로 주어 뒤에 동사원형을 씁니다."
+        },
+        {
+          "p": "You and I ____ the same shoes.",
+          "c": [
+            "wear",
+            "wears"
+          ],
+          "a": 0,
+          "why": "You and I는 복수(We)이므로 동사원형을 씁니다."
+        }
+      ],
+      "build": [
+        {
+          "en": "She **reads** a book every night.",
+          "ko": "그녀는 매일 밤 책을 읽는다."
+        },
+        {
+          "en": "They **don't play** tennis.",
+          "ko": "그들은 테니스를 치지 않는다."
+        },
+        {
+          "en": "**Do** you **know** his name?",
+          "ko": "너는 그의 이름을 아니?"
+        },
+        {
+          "en": "My brother **goes** to bed late.",
+          "ko": "내 남동생은 늦게 잠자리에 든다."
+        },
+        {
+          "en": "He **doesn't drink** milk.",
+          "ko": "그는 우유를 마시지 않는다."
+        },
+        {
+          "en": "**Does** your mom **make** pizza?",
+          "ko": "너의 엄마는 피자를 만드시니?"
+        },
+        {
+          "en": "We **wash** our hands.",
+          "ko": "우리는 손을 씻는다."
+        },
+        {
+          "en": "The dog **catches** the ball.",
+          "ko": "그 개가 공을 잡는다."
+        }
+      ],
+      "correct": [
+        {
+          "w": "She don't like scary movies.",
+          "r": "She doesn't like scary movies.",
+          "why": "주어가 3인칭 단수(She)일 때는 부정문에 doesn't를 씁니다."
+        },
+        {
+          "w": "Does he goes to the gym?",
+          "r": "Does he go to the gym?",
+          "why": "Does로 시작하는 의문문에서는 동사원형을 써야 합니다."
+        },
+        {
+          "w": "My father wash his face.",
+          "r": "My father washes his face.",
+          "why": "My father는 3인칭 단수이고, -sh로 끝나는 동사에는 -es를 붙입니다."
+        },
+        {
+          "w": "Do your sister have a smartphone?",
+          "r": "Does your sister have a smartphone?",
+          "why": "your sister는 3인칭 단수이므로 Does로 질문해야 합니다."
+        },
+        {
+          "w": "The bird flys in the sky.",
+          "r": "The bird flies in the sky.",
+          "why": "자음+y로 끝나는 동사는 y를 i로 바꾸고 -es를 붙여야 합니다."
+        },
+        {
+          "w": "He doesn't drinks cold water.",
+          "r": "He doesn't drink cold water.",
+          "why": "doesn't 뒤에는 동사원형을 써야 합니다."
+        }
+      ],
+      "say": [
+        {
+          "task": "자신이 좋아하는 것과 좋아하지 않는 것을 말해요.",
+          "frame": "I like ____, but I don't like ____."
+        },
+        {
+          "task": "짝에게 취미가 무엇인지 물어봐요.",
+          "frame": "Do you ____ in your free time?"
+        },
+        {
+          "task": "가족 중 한 명의 일과를 설명해요.",
+          "frame": "My ____ gets up at ____."
+        },
+        {
+          "task": "친구가 반려동물을 키우는지 묻고 대답해요.",
+          "frame": "Does your family have a ____? — Yes, we do. / No, we don't."
+        },
+        {
+          "task": "방과 후에 친구들이 무엇을 하는지 말해요.",
+          "frame": "My friends ____ after school."
+        },
+        {
+          "task": "특정 음식을 먹는지 짝에게 물어봐요.",
+          "frame": "Do you eat ____? — Yes, I do. / No, I don't."
+        }
+      ],
+      "mission": {
+        "title": "우리 반 친구들의 습관 조사하기",
+        "scene": "기자증을 달고 반 친구들에게 인터뷰를 해서, 친구들의 매일 습관을 알아봅시다.",
+        "steps": [
+          "세 명의 친구에게 다가가 'Do you ~ every day?'라고 질문합니다.",
+          "친구가 'Yes, I do.' 또는 'No, I don't.'로 대답하면 활동지에 기록합니다.",
+          "조사한 내용을 바탕으로 'Minho reads a book every day.'처럼 3인칭 단수 문장으로 발표합니다."
+        ]
+      },
+      "review": [
+        {
+          "ko": "그녀는 매일 밤 책을 읽어요.",
+          "cond": "She로 시작하고 read를 알맞게 써요.",
+          "model": "She reads a book every night."
+        },
+        {
+          "ko": "그들은 테니스를 치지 않아요.",
+          "cond": "don't를 써요.",
+          "model": "They don't play tennis."
+        },
+        {
+          "ko": "너는 그의 이름을 아니?",
+          "cond": "Do로 시작해요.",
+          "model": "Do you know his name?"
+        },
+        {
+          "ko": "내 남동생은 늦게 잠자리에 들어요.",
+          "cond": "My brother로 시작하고 go를 알맞게 써요.",
+          "model": "My brother goes to bed late."
+        },
+        {
+          "ko": "그는 우유를 마시지 않아요.",
+          "cond": "doesn't를 써요.",
+          "model": "He doesn't drink milk."
+        },
+        {
+          "ko": "너의 엄마는 피자를 만드시니?",
+          "cond": "Does로 시작해요.",
+          "model": "Does your mom make pizza?"
+        }
+      ]
+    }
+  }
+]

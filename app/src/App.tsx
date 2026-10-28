@@ -131,7 +131,7 @@ const MysteryBoxPrintPage = lazyPage(() => import('./pages/MysteryBoxPrintPage')
 const LiveJoinPage = lazyPage(() => import('./pages/LiveJoinPage'));
 const CvcWorkbookPage = lazyPage(() => import('./pages/CvcWorkbookPage'));
 const PhonicsWorkbookPage = lazyPage(() => import('./pages/PhonicsWorkbookPage'));
-const GrammarWorkbookPage = lazyPage(() => import('./pages/GrammarWorkbookPage'));
+const GrammarSheetsPage = lazyPage(() => import('./pages/GrammarSheetsPage'));
 const WordSearchPage = lazyPage(() => import('./pages/WordSearchPage'));
 const PhonicsWorksheetLibraryPage = lazyPage(() => import('./pages/PhonicsWorksheetLibraryPage'));
 const WorksheetLibraryPage = lazyPage(() => import('./pages/WorksheetLibraryPage'));
@@ -326,7 +326,8 @@ function AppRoutes() {
             <Route path="/materials/cvc-workbook" element={<CvcWorkbookPage />} />
             <Route path="/materials/phonics-stage-4-workbook" element={<PhonicsWorkbookPage key="stage4" step={4} />} />
             <Route path="/materials/phonics-stage-5-workbook" element={<PhonicsWorkbookPage key="stage5" step={5} />} />
-            <Route path="/materials/grammar-workbook" element={<GrammarWorkbookPage />} />
+            <Route path="/materials/grammar-workbook" element={<GrammarSheetsPage />} />
+            <Route path="/materials/grammar-sheets" element={<GrammarSheetsPage />} />
             <Route path="/materials/long-vowel-workbook" element={<CvcWorkbookPage key="long" book="long" />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/wheel" element={<GameWorkspace><WheelPage /></GameWorkspace>} />

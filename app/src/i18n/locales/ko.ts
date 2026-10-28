@@ -14,6 +14,7 @@ import { homeKo } from '../homeLocales';
 import { sourceKo } from '../sourceLocales';
 import { guideKo } from '../guideLocales';
 import { workbookKo } from '../workbookLocales';
+import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
   launchUx:launchUxKo,
@@ -34,6 +35,7 @@ const ko = {
   whiteboard: boardKo,
   wordMemory: wordMemoryKo,
   workbook: workbookKo,
+  grammarSheets: grammarSheetsKo,
   phonicsCourse: phonicsCourseKo,
   bombSound: bombSoundKo,
   turnDisplay: turnDisplayKo,
@@ -2770,8 +2772,8 @@ const ko = {
     stage4WorkbookDesc: '자음군과 이중자음 규칙을 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
     stage5WorkbookName: '파닉스 5단계 워크북 · 모음 조합·이중모음·R 모음',
     stage5WorkbookDesc: '모음 조합·이중모음·R 모음을 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
-    grammarWorkbookName: '문법 기본 연습과 활동 미션',
-    grammarWorkbookDesc: '3인칭 단수 현재형 13문항과 로봇 탐정 미션. 학생용·교사용을 골라 인쇄해요.',
+    grammarWorkbookName: '문법 워크북 · 개념부터 심화까지',
+    grammarWorkbookDesc: '문법 169개 전부 · 규칙 발견·고르기·빈칸 배열·고쳐 쓰기·말하기 미션·총정리 6가지 시트와 도움 수준 3단계. 학생용·교사용 정답을 골라 인쇄해요.',
     cvcWorkbookDesc: '단모음 a·e·i·o·u와 CVC 단어를 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
     longVowelWorkbookName: '파닉스 3단계 워크북 · 매직 e',
     longVowelWorkbookDesc: '매직 e 규칙과 단어를 연습하는 유닛별 워크북이에요. 필요한 유닛을 골라 유닛당 A4 두 쪽으로 인쇄해요.',
