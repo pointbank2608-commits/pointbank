@@ -1564,6 +1564,12 @@ const en: Ko = {
   sentenceBank: {
     open: 'Add from sentence bank',
     draftNote: 'All sentences in the bank are drafts (not yet reviewed). Please read them before class.',
+    axisLabel: 'Browse by',
+    axis_situation: 'Situation / topic',
+    axis_purpose: 'Speaking purpose',
+    purposeLabel: 'Speaking purpose',
+    patternLabel: 'Pick a pattern to practise one structure (collected from every topic and purpose)',
+    axis_pattern: 'Sentence pattern',
     levelLabel: 'Level',
     level_kinder: 'Kindergarten',
     level_elem: 'Elementary',

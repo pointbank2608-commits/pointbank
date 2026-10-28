@@ -4,6 +4,8 @@
  * **전부 Claude 초안(선생님 검수 전)** — 화면에 "초안"으로 표시한다. 문장은 `영어 | 우리말` 한 줄이다.
  * 레벨 기준: kinder = 유치~초1(낱말·아주 짧은 문장) / elem = 초등 2~6(교육부 800 안팎) / middle = 중등 / high = 고등(수능 어휘).
  */
+import { PURPOSE_BANK } from './sentencePurposes';
+
 export type BankLevel = 'kinder' | 'elem' | 'middle' | 'high';
 export const BANK_LEVELS: BankLevel[] = ['kinder', 'elem', 'middle', 'high'];
 
@@ -604,7 +606,9 @@ export interface BankSentence {
 /** 상황·레벨에 맞는 문장 목록 */
 export function bankSentences(situationId: string | null, level: BankLevel | null): BankSentence[] {
   const out: BankSentence[] = [];
-  for (const s of SENTENCE_BANK) {
+  // 'p:' 로 시작하는 id 는 말하기 목적별 모음(sentencePurposes.ts)
+  const bank = situationId?.startsWith('p:') ? PURPOSE_BANK : SENTENCE_BANK;
+  for (const s of bank) {
     if (situationId && s.id !== situationId) continue;
     for (const lv of BANK_LEVELS) {
       if (level && lv !== level) continue;
@@ -615,4 +619,35 @@ export function bankSentences(situationId: string | null, level: BankLevel | nul
     }
   }
   return out;
+}
+
+/** 문장 패턴: 처음 두 낱말("I like", "Can you", "What is"). 같은 패턴을 반복 연습하려고 모아 볼 때 쓴다. */
+export function sentencePattern(en: string): string {
+  const words = en.replace(/[.?!,]/g, '').trim().split(/\s+/).slice(0, 2);
+  if (words.length < 2) return '';
+  return words.map((w, i) => (i === 0 ? w[0].toUpperCase() + w.slice(1) : w.toLowerCase().replace(/^i$/, 'I'))).join(' ');
+}
+
+/** 상황 은행 + 목적 모음 전체의 문장(레벨 하나) — 패턴으로 모아 볼 때 쓴다 */
+export function allBankSentences(level: BankLevel): BankSentence[] {
+  const out: BankSentence[] = [];
+  for (const bank of [SENTENCE_BANK, PURPOSE_BANK]) {
+    for (const s of bank) {
+      for (const raw of s.lines[level]) {
+        const cut = raw.indexOf(' | ');
+        out.push({ en: cut >= 0 ? raw.slice(0, cut) : raw, ko: cut >= 0 ? raw.slice(cut + 3) : '', level, situation: s.id });
+      }
+    }
+  }
+  return out;
+}
+
+/** 레벨 안에서 3문장 이상 나오는 패턴(많은 순) */
+export function commonPatterns(level: BankLevel, limit = 24): [string, number][] {
+  const count = new Map<string, number>();
+  for (const s of allBankSentences(level)) {
+    const p = sentencePattern(s.en);
+    if (p) count.set(p, (count.get(p) ?? 0) + 1);
+  }
+  return [...count.entries()].filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1]).slice(0, limit);
 }

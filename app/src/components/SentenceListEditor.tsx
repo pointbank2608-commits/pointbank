@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { updateWordListItems } from '../lib/api';
 import { newSentenceItems, parseSentenceLines } from '../lib/sentenceLists';
 import type { WordList, WordListItem } from '../lib/types';
+import SentenceBankPicker from './SentenceBankPicker';
 
 /**
  * 문장 목록(내 단어장의 "문장" 종류, 066) 편집 — 영어 문장 + 해석을 하나씩 넣거나 여러 줄을 붙여 넣는다.
@@ -91,6 +92,19 @@ export default function SentenceListEditor({ list, onChange }: { list: WordList;
           {t('wordLists.sentence.addButton')}
         </button>
       </div>
+
+      <SentenceBankPicker
+        hideSaveAsList
+        classId={list.class_id}
+        onImportLabels={(labels) => {
+          const fresh = newSentenceItems(list.items, parseSentenceLines(labels.join('\n')), () => crypto.randomUUID());
+          if (fresh.length === 0) {
+            notify(t('wordLists.sentence.nothingNew'));
+            return;
+          }
+          void save([...list.items, ...fresh], t('wordLists.sentence.added', { count: fresh.length }));
+        }}
+      />
 
       <details className="rounded-lg bg-surface-container-low px-3 py-2">
         <summary className="cursor-pointer font-label-md text-label-md text-primary">{t('wordLists.sentence.pasteTitle')}</summary>

@@ -1561,6 +1561,12 @@ const ko = {
   sentenceBank: {
     open: '문장 은행에서 담기',
     draftNote: '문장 은행의 문장은 모두 초안이에요(선생님 검수 전). 수업에 쓰기 전에 한 번 읽어 보세요.',
+    axisLabel: '모아 보는 기준',
+    axis_situation: '상황·주제',
+    axis_purpose: '말하기 목적',
+    purposeLabel: '말하기 목적',
+    patternLabel: '같은 구조를 반복 연습할 패턴 (모든 상황·목적에서 모아 줘요)',
+    axis_pattern: '문장 패턴',
     levelLabel: '레벨',
     level_kinder: '유치',
     level_elem: '초등',
