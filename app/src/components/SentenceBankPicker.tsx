@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BANK_LEVELS, SENTENCE_BANK, allBankSentences, bankSentences, commonPatterns, sentencePattern, type BankLevel } from '../data/sentenceBank';
+import { BANK_LEVELS, SENTENCE_BANK, allBankSentences, bankSentences, commonPatterns, sentencePattern, type BankLevel, type BankSentence } from '../data/sentenceBank';
 import { PURPOSE_BANK } from '../data/sentencePurposes';
+import { QA_BANK } from '../data/sentenceQA';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createWordList } from '../lib/api';
@@ -27,10 +28,11 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
   const isKo = i18n.language.startsWith('ko');
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState<BankLevel>('elem');
-  const [axis, setAxis] = useState<'situation' | 'purpose' | 'pattern'>('situation');
+  const [axis, setAxis] = useState<'situation' | 'purpose' | 'pattern' | 'qa'>('situation');
   const [situation, setSituation] = useState<string>(SENTENCE_BANK[0].id);
   const [purpose, setPurpose] = useState<string>(PURPOSE_BANK[0].id);
   const [pattern, setPattern] = useState<string | null>(null);
+  const [qaTopic, setQaTopic] = useState<string>(QA_BANK[0].id);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   // 검수: 문장·해석을 고쳐서 쓴다(원문 키 → 고친 값)
   const [edits, setEdits] = useState<Record<string, { en: string; ko: string }>>({});
@@ -40,11 +42,21 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
 
   const topic = axis === 'purpose' ? purpose : situation;
   const patterns = useMemo(() => commonPatterns(level), [level]);
-  const list = useMemo(() => {
+  const list = useMemo<(BankSentence & { answer?: { en: string; ko: string } })[]>(() => {
+    if (axis === 'qa') {
+      const split = (line: string) => {
+        const cut = line.indexOf(' | ');
+        return { en: cut >= 0 ? line.slice(0, cut) : line, ko: cut >= 0 ? line.slice(cut + 3) : '' };
+      };
+      return (QA_BANK.find((x) => x.id === qaTopic)?.pairs[level] ?? []).map((pair) => {
+        const q = split(pair.q);
+        return { ...q, level, situation: `qa:${qaTopic}`, answer: split(pair.a) };
+      });
+    }
     if (axis !== 'pattern') return bankSentences(topic, level);
     const p = pattern ?? patterns[0]?.[0] ?? null;
     return p ? allBankSentences(level).filter((x) => sentencePattern(x.en) === p) : [];
-  }, [axis, topic, level, pattern, patterns]);
+  }, [axis, topic, level, pattern, patterns, qaTopic]);
   const keyOf = (s: { situation: string; en: string }) => `${s.situation}|${level}|${s.en}`;
   const pickedHere = list.filter((s) => picked.has(keyOf(s)));
 
@@ -82,6 +94,16 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
         }
       }
     }
+    for (const tp of QA_BANK) {
+      for (const lv of BANK_LEVELS) {
+        for (const pair of tp.pairs[lv]) {
+          const q = pair.q.split(' | ');
+          if (!picked.has(`qa:${tp.id}|${lv}|${q[0]}`)) continue;
+          const a = pair.a.split(' | ');
+          out.push({ en: q[0].trim(), ko: (q[1] ?? '').trim() }, { en: a[0].trim(), ko: (a[1] ?? '').trim() });
+        }
+      }
+    }
     return out.filter((s) => s.en);
   }
 
@@ -95,7 +117,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
   async function saveAsList() {
     const sentences = collect();
     if (sentences.length === 0 || !academy || !profile) return;
-    const sit = [...SENTENCE_BANK, ...PURPOSE_BANK].find((s) => s.id === topic);
+    const sit = [...SENTENCE_BANK, ...PURPOSE_BANK, ...QA_BANK].find((s) => s.id === (axis === 'qa' ? qaTopic : topic));
     const name = listName.trim() || `${isKo ? sit?.ko : sit?.en} · ${t(`sentenceBank.level_${level}`)}`;
     setSaving(true);
     try {
@@ -147,14 +169,25 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
           <div>
             <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('sentenceBank.axisLabel')}</div>
             <div className="flex flex-wrap gap-1.5">
-              {(['situation', 'purpose', 'pattern'] as const).map((a) => (
+              {(['situation', 'purpose', 'pattern', 'qa'] as const).map((a) => (
                 <button key={a} type="button" onClick={() => setAxis(a)} className={chip(axis === a)}>
                   {t(`sentenceBank.axis_${a}`)}
                 </button>
               ))}
             </div>
           </div>
-          {axis !== 'pattern' ? (
+          {axis === 'qa' ? (
+            <div>
+              <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('sentenceBank.qaLabel')}</div>
+              <div className="flex flex-wrap gap-1.5">
+                {QA_BANK.map((entry) => (
+                  <button key={entry.id} type="button" onClick={() => setQaTopic(entry.id)} className={chip(qaTopic === entry.id)}>
+                    {isKo ? entry.ko : entry.en}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : axis !== 'pattern' ? (
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t(axis === 'purpose' ? 'sentenceBank.purposeLabel' : 'sentenceBank.situationLabel')}</div>
               <div className="flex flex-wrap gap-1.5">
@@ -180,6 +213,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
               </div>
             </div>
           )}
+          {axis === 'qa' && <div className="font-caption text-caption text-on-surface-variant">{t('sentenceBank.qaHint')}</div>}
           <ul className="divide-y divide-surface-container rounded-lg border border-outline-variant/40">
             {list.map((s) => {
               const k = keyOf(s);
@@ -205,18 +239,24 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
                       </span>
                     ) : (
                       <span className="flex-1">
-                        <span className="block font-body-md text-body-md text-on-surface">{shown.en}</span>
+                        <span className="block font-body-md text-body-md text-on-surface">{axis === 'qa' ? 'Q. ' : ''}{shown.en}</span>
                         <span className="block font-caption text-caption text-on-surface-variant">{shown.ko}</span>
+                        {s.answer && (
+                          <span className="mt-1 block border-l-2 border-primary/40 pl-2">
+                            <span className="block font-body-md text-body-md text-on-surface">A. {s.answer.en}</span>
+                            <span className="block font-caption text-caption text-on-surface-variant">{s.answer.ko}</span>
+                          </span>
+                        )}
                       </span>
                     )}
-                    <button
+                    {!s.answer && <button
                       type="button"
                       onClick={() => setEditing(isEdit ? null : k)}
                       className="shrink-0 rounded-md px-2 py-1 font-label-md text-label-md text-primary hover:bg-primary/10"
                       title={t('sentenceBank.edit')}
                     >
                       {isEdit ? '✔' : '✎'}
-                    </button>
+                    </button>}
                   </div>
                 </li>
               );

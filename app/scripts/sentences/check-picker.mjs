@@ -49,6 +49,20 @@ const got = await page.evaluate(() => window.got);
 assert.equal(got.length, 3);
 assert(got.every((l) => l.includes(' | ')), got.join('\n'));
 await page.screenshot({ path: 'scripts/sentences/picker.png' });
+
+// 4) 질문·대답 짝 — 질문 뒤에 대답이 이어서 담긴다
+await page.getByRole('button', { name: '질문·대답 짝', exact: true }).click();
+assert.equal(await rows(), 6);
+const qaTexts = await page.locator('ul li').first().innerText();
+assert(/Q\./.test(qaTexts) && /A\./.test(qaTexts), '질문과 대답이 한 칸에 보임');
+await box.nth(0).check();
+await box.nth(1).check();
+await page.getByRole('button', { name: /2개 담기/ }).click();
+const qa = await page.evaluate(() => window.got);
+assert.equal(qa.length, 4);
+assert(qa[0].split(' | ')[0].endsWith('?') && !qa[1].split(' | ')[0].endsWith('?'), `질문→대답 순서: ${qa.join(' / ')}`);
+assert(qa[2].split(' | ')[0].endsWith('?') && !qa[3].split(' | ')[0].endsWith('?'));
+await page.screenshot({ path: 'scripts/sentences/picker-qa.png' });
 assert.deepEqual(errors, []);
 console.log(`통과: 패턴 칩 ${nChips}개, 첫 패턴 "${pat}" ${firstCount}문장, 담기 ${got.length}개`);
 await browser.close();
