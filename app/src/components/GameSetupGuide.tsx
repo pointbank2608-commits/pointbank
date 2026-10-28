@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import { isBombReading, guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
+import { isBombReading, guideKindProblem, guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 
 import { useRecoverableField } from '../lib/useRecoverableField';
@@ -149,6 +149,8 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           if(unplaced>=0){setDiagramTarget(unplaced);setError(t('guide.diagramMissingPoint',{row:unplaced+1}));return;}
         }
         if(isBombReading(info.gameType,kind)&&!work.some(r=>r[0]?.trim())){setError(t('guide.incomplete'));return;}
+        const mismatch=guideKindProblem(info.gameType,work,kind);
+        if(mismatch){setError(t(`launchUx.kind_${mismatch.reason}`,{row:mismatch.row+1}));requestAnimationFrame(()=>{heading.current?.parentElement?.querySelectorAll<HTMLInputElement>(`[data-guide-row="${mismatch.row}"] input`)[mismatch.col]?.focus();});return;}
         const content=guideContent(info.gameType,work,kind,{...info.selected.config,...(family==='diagram'?{diagramImageUrl:diagram}:{}),...(family==='slots'?{watermelonPatternId:pattern}:{})},towerStart,bombPeople());
         if(info.gameType==='ladder'){
           const slots=ladderSlots(resultDraft,content.items.length);
@@ -169,7 +171,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
       if(advanced)workspace?.open('settings');else complete();
     }
   }
-  const columns=asNames?[kind==='numbers'?'numberColumn':['wheel','ladder','order'].includes(info.gameType)?'itemColumn':'nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question','answer']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['sentenceColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:['wheel','ladder','order'].includes(info.gameType)?['itemColumn']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
+  const columns=asNames?[kind==='numbers'?'numberColumn':['wheel','ladder','order'].includes(info.gameType)?'itemColumn':'nameColumn']:family==='diagram'?['answer']:family==='slots'?['wordColumn','position']:family==='pairs'?info.gameType==='typeanswer'?['question',kind==='sentence'?'answerSentence':'answerWord']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning']:['quiz','online','bridge','monster'].includes(family)?['question','answer','wrong','wrong']:family==='ox'?['statementColumn','ox']:family==='groups'?['wordColumn','group']:family==='image'?['answer','image']:family==='tower'?['phrase','position','wrong','wrong']:['wheel','ladder','order'].includes(info.gameType)?[kind==='sentence'?'sentenceColumn':kind==='word'?'wordColumn':'itemColumn']:kind==='sentence'?['sentenceColumn','translation']:['wordColumn','meaning'];
   const gameHint=t(`guide.gameHints.${info.gameType}_${kind}`,{defaultValue:t(`guide.gameHints.${info.gameType}`,{defaultValue:''})});
   let previous=towerStart;
   const towerPrevious=rows.map(r=>{const p=previous;previous=insertPhrase(previous,r[0]||'',Number(r[1])||0);return p;});
@@ -181,7 +183,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     {step===0&&<div className="grid grid-cols-2 gap-3">{(['sample','word','sentence','names'] as GuideKind[]).map(k=><button className={`${button} min-h-28 text-left disabled:opacity-100! disabled:bg-slate-100 disabled:text-slate-600 ${k==='sample'?'bg-sky-50! border-primary':''}`} key={k} disabled={busy||info.loading||!guideKinds(info.gameType).includes(k)} aria-disabled={!guideKinds(info.gameType).includes(k)} onClick={()=>void choose(k)}><span className="block text-xl">{t(`guide.${k}`)}</span><span className="mt-2 block font-normal">{t(guideKinds(info.gameType).includes(k)?`guide.${k}Hint`:`launchUx.unsupported_${k}`)}</span></button>)}{dedicated&&<button className={button} onClick={()=>void choose(info.gameType==='timer'?'names':'word')}>{t('guide.keepDefault')}</button>}</div>}
     {step===1&&<>
       <p className="text-sm text-on-surface-variant">{t('launchUx.contentRestart')}</p>
-      <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}`)}</p>
+      <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}_${kind}`,{defaultValue:t(`guide.hints.${family}`)})}</p>
       {gameHint&&<p>{gameHint}</p>}
       {!native&&kind==='numbers'&&<NumberRangeFill existingLabels={rows.map(r=>r[0]||'').filter(Boolean)} onFill={(labels,replace)=>{const keep=replace?[]:rows.filter(r=>r[0]?.trim());const next=[...keep,...labels.map(l=>[l])];write(next.length?next:[['']]);}} />}
       {!native&&kind!=='sample'&&kind!=='numbers'&&<GameSourcePicker kind={kind} onPick={importSource} canUse={sourceReason} onDirect={()=>{setNative(false);requestAnimationFrame(()=>heading.current?.parentElement?.querySelector<HTMLInputElement>('fieldset input')?.focus());}} />}
@@ -197,7 +199,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           <div className="grid gap-3 sm:grid-cols-2">{columns.map((col,j)=>family==='tower'&&j===1?null:<label key={`${col}-${j}`} className="block font-bold">{t(`guide.${col}`)}{col==='wrong'?` ${j-1}`:''}{family==='slots'&&j===1?<select aria-label={t('gameWatermelon.slotLabel')} className="mt-1 w-full rounded-xl border p-3" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)}><option value="">—</option>{getSentencePattern(pattern).slots.map(slot=><option key={slot} value={slot}>{t(slotLabelKey(slot as SentenceSlot))}</option>)}</select>:col==='image'?<GameImagePicker academyId={info.academyId} value={row[j]||null} onChange={url=>setCell(i,j,url||'')} previewHeight={96}/>:col==='ox'?<select aria-label={t('guide.ox')} className="mt-1 w-full rounded-xl border bg-white p-3" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)}><option value="">—</option><option>O</option><option>X</option></select>:<input className="mt-1 w-full rounded-xl border bg-white p-3 font-normal" value={row[j]||''} onChange={e=>setCell(i,j,e.target.value)} />}</label>)}</div>
           <button className={`${button} mt-3`} aria-label={`${t('guide.remove')} ${i+1}`} onClick={()=>write(rows.filter((_,n)=>n!==i))}>{t('guide.remove')}</button>
         </fieldset>)}</div>{family!=='diagram'&&<button className={button} onClick={()=>write([...rows,columns.map(()=> '')])}>+ {t('guide.add')}</button>}
-        <details><summary className="cursor-pointer py-3 font-bold text-primary">{t('guide.paste')}</summary><label className="block">{t('guide.pasteHint')}<textarea className="mt-2 min-h-32 w-full rounded-xl border p-3" value={paste} onChange={e=>setPaste(e.target.value)}/></label><button className={button} disabled={!paste.trim()} onClick={()=>{const next=paste.split(/\r?\n/).filter(s=>s.trim()).map(s=>s.split(/\t|\s*\|\s*/));write([...rows.filter(r=>r.some(s=>s.trim())),...next]);}}>{t('guide.applyPaste')}</button></details>
+        <details><summary className="cursor-pointer py-3 font-bold text-primary">{t('guide.paste')}</summary><label className="block">{t(`guide.pasteHint_${kind}`,{defaultValue:t('guide.pasteHint')})}<textarea className="mt-2 min-h-32 w-full rounded-xl border p-3" value={paste} onChange={e=>setPaste(e.target.value)}/></label><button className={button} disabled={!paste.trim()} onClick={()=>{const next=paste.split(/\r?\n/).filter(s=>s.trim()).map(s=>s.split(/\t|\s*\|\s*/));write([...rows.filter(r=>r.some(s=>s.trim())),...next]);}}>{t('guide.applyPaste')}</button></details>
         {info.gameType==='ladder'&&<div ref={resultSection}><LadderResultSetup draft={resultDraft} count={resultCount} onChange={draft=>{setExtra(JSON.stringify(draft));setError('');}} /></div>}
       </>}
       <button className={button} onClick={()=>dedicated?workspace?.open('settings'):void next(true)}>{t('guide.native')}</button>

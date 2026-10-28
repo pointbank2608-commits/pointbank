@@ -147,6 +147,27 @@ export function guideContent(type: GameType, rows: string[][], kind: GuideKind, 
   if(bombReading)return {items:participants.some(p=>p.label.trim())?participants:bombParticipants(),config};
   return {items:['quiz','online','ox','diagram','bridge','tower','monster'].includes(family)?[]:items,config};
 }
+const TERMINAL=/[.!?…]["'”’)\]]*$/;
+const wordCount=(text:string)=>text.trim().split(/\s+/).filter(Boolean).length;
+/** 문장처럼 보이는지: 마침표·물음표·느낌표로 끝나는 두 단어 이상, 또는 다섯 단어 이상 */
+export const looksLikeSentence=(text:string)=>{const t=text.trim();const n=wordCount(t);return n>=5||(n>=2&&TERMINAL.test(t));};
+/** 문장이 아닌 한 단어인지: 단어 하나이고 마침표 같은 끝 부호가 없는 것 */
+export const looksLikeWordOnly=(text:string)=>{const t=text.trim();return wordCount(t)<2&&!TERMINAL.test(t);};
+export type GuideKindReason='sentenceInWords'|'wordInSentences';
+/** 단어로 만들기에는 단어·짧은 표현만, 문장으로 만들기에는 문장만 넣을 수 있다. 첫 번째로 어긋난 줄을 알려 준다. */
+export function guideKindProblem(type:GameType,rows:string[][],kind:GuideKind):{row:number;col:number;reason:GuideKindReason}|null{
+  if(kind!=='word'&&kind!=='sentence')return null;
+  const family=guideFamily(type);
+  // 문제·보기·참거짓처럼 게임 형식이 문장/문제 자체인 입력은 단어·문장 구분 대상이 아니다.
+  if(!['list','pairs','groups','sentence','slots','image'].includes(family))return null;
+  const col=family==='pairs'&&type==='typeanswer'?1:0;
+  for(let row=0;row<rows.length;row++){
+    const text=rows[row]?.[col]?.trim();if(!text)continue;
+    if(kind==='word'&&looksLikeSentence(text))return {row,col,reason:'sentenceInWords'};
+    if(kind==='sentence'&&looksLikeWordOnly(text))return {row,col,reason:'wordInSentences'};
+  }
+  return null;
+}
 export function guideProblem(template:GameTemplate): string | null {
   const type=template.game_type,c=template.config;
   if(type==='ladder'&&c.results&&(c.results.length!==template.items.length||c.results.some(r=>!r.label.trim())))return 'ladderIncomplete';
