@@ -87,6 +87,15 @@ export function patternKey(u:CourseUnit,e:PhonicsBankEntry):string{
 export function patternLabel(u:CourseUnit,e:PhonicsBankEntry):string{
  return u.groups.some(g=>g.entries.some(x=>x.id===e.id))?groupLabel(u,e):e.rule;
 }
+/** 빈칸 게임에서 한 낱말의 빈칸 위치·정답·가려진 모양. 한 문제에 낱말이 여러 개인 규칙(batch)도 같은 계산을 쓴다. */
+export function blankOf(g:Pick<PhonicsGame,'id'>,entry:PhonicsBankEntry){
+ let positions=entry.targets??[];
+ if(g.id==='vowel-repair')positions=[...entry.word].flatMap((c,i)=>/[aeiou]/i.test(c)?[i]:[]);
+ if(g.id==='rescue-e')positions=[entry.word.length-1];
+ const answer=positions.map(i=>entry.word[i]).join('');
+ const masked=[...entry.word].map((c,i)=>positions.includes(i)?'_':c).join('');
+ return {answer,masked,positions};
+}
 export interface GameRound {entry:PhonicsBankEntry;options:PhonicsBankEntry[];tokens:string[];answer:string;masked:string;source?:PhonicsBankEntry;sentence?:string;}
 export function makeRound(g:PhonicsGame,u:CourseUnit,index:number,seed:number):GameRound{
  const pool=gamePool(g,u);if(!pool.length)throw new Error('No eligible phonics entries');
@@ -101,11 +110,7 @@ export function makeRound(g:PhonicsGame,u:CourseUnit,index:number,seed:number):G
  const optionPool=['sound-fishing','monster-diner','word-treasure','picture-puzzle'].includes(g.id)?picturePool:pool;
  const unique=[...new Map(optionPool.filter(e=>e.word!==entry.word).map(e=>[e.word,e])).values()];
  const options=shuffled([entry,...shuffled(unique,seed+index+31).slice(0,3)],seed+index+17);
- let positions=entry.targets??[];
- if(g.id==='vowel-repair')positions=[...entry.word].flatMap((c,i)=>/[aeiou]/i.test(c)?[i]:[]);
- if(g.id==='rescue-e')positions=[entry.word.length-1];
- const answer=positions.map(i=>entry.word[i]).join('');
- const masked=[...entry.word].map((c,i)=>positions.includes(i)?'_':c).join('');
+ const {answer,masked,positions}=blankOf(g,entry);
  let tokens=[...entry.word];
  if(g.id==='sound-train'){
   const family=groupOf(u,entry).label.replace(/^-/,'');const onset=entry.word.slice(0,-family.length);tokens=onset?[onset,family]:[family];

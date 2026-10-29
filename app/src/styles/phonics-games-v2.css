@@ -236,3 +236,11 @@
 .pg-v2 .pg-phoneme b{margin-left:4px;padding:1px 8px;border-radius:8px;background:#fff3c4;color:#6b4a00}
 .pg-v2 .pg-phoneme small{margin-left:6px;color:#8a1f0d}
 .pg-v2 .pg-compare{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
+.pg-v2 .pg-hearts{display:inline-flex;gap:2px;margin:0 6px}
+.pg-v2 .pg-hearts b{color:#d9c9c4;display:inline-flex}
+.pg-v2 .pg-hearts b.on{color:#e0454f}
+.pg-v2 .pg-boss,.pg-v2 .pg-heart-note{display:flex;align-items:center;gap:8px;margin:6px 0;padding:8px 14px;border-radius:14px;font-weight:800}
+.pg-v2 .pg-boss{background:#3b2a58;color:#ffe7a3;border:2px solid #ffd25a}
+.pg-v2 .pg-heart-note{background:#ffe9e7;color:#8a1f26;border:2px solid #f4b6b0}
+/* 하트 알림은 화면 크기를 바꾸지 않도록 위쪽에 떠 있는 알림으로 보인다 */
+.pg-v2 .pg-heart-note{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:80;max-width:min(92vw,560px);margin:0;box-shadow:0 8px 20px #0003}

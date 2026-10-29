@@ -12,6 +12,7 @@ try {
  const model=await server.ssrLoadModule('/src/lib/phonicsGames.ts');
  const {PHONICS_GAMES:games,phonicsGameUnits,gameAvailability,gamePool,makeRound,patternKey,shuffled,targetText,pictureEligible,alphabetGlyph}=model;
  const units=phonicsGameUnits();assert.equal(games.length,40);assert.equal(new Set(games.map(g=>g.id)).size,40);assert.equal(units.length,42);
+ const twists=await server.ssrLoadModule('/src/lib/phonicsTwists.ts');
  const visuals=await server.ssrLoadModule('/src/lib/phonicsGameVisuals.ts');
  assert.deepEqual(Object.keys(visuals.PHONICS_VISUALS).sort(),games.map(g=>g.id).sort());
  for(const world of Object.keys(visuals.PHONICS_WORLDS))assert((await readFile(`public${visuals.worldBackground(world)}`)).length>1000);
@@ -86,7 +87,7 @@ try {
     if(g.mechanic==='sentence')await area.getByRole('button',{name:'문장 가리고 시작'}).click();
     const tokens=shuffled(r.tokens.map((text,id)=>({text,id})),123+index+24);for(let i=0;i<r.tokens.length;i++)await area.locator('.pg-token-bank>button').nth(tokens.findIndex(c=>c.id===i)).click();
    }else if(g.mechanic==='fill'||g.mechanic==='change'){
-    const answer=g.mechanic==='change'?r.entry.word[0]:r.answer;await area.locator('.pg-token-bank').getByRole('button',{name:answer,exact:true}).click();
+    if(g.mechanic==='fill'&&twists.twistOf(g).batch>1){const uniq=[...new Map(gamePool(g,u).map(e=>[e.word,e])).values()];const cards=[r.entry,...shuffled(uniq.filter(e=>e.id!==r.entry.id&&e.word!==r.entry.word),123+index+5)].slice(0,twists.twistOf(g).batch);for(const e of cards){await area.locator('.pg-token-bank').getByRole('button',{name:model.blankOf(g,e).answer,exact:true}).first().click();await page.waitForTimeout(80);}}else{const answer=g.mechanic==='change'?r.entry.word[0]:r.answer;await area.locator('.pg-token-bank').getByRole('button',{name:answer,exact:true}).click();}
    }else if(g.mechanic==='bridge'||g.mechanic==='lab'){
     for(const i of g.mechanic==='lab'?[r.entry.word.length-1]:r.entry.targets)await area.locator('.pg-magic-word button').nth(i).click();
    }else if(g.mechanic==='position'){

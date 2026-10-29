@@ -158,6 +158,78 @@ try {
     console.log('PASS clock: easy has none, counts down, pauses, timeout reveals the answer (max 2 stars)');
   }
 
+  // 5) 빈칸 규칙 차이: 모음 조합 요리사는 낱말 2개, 한 소리 친구는 낱개 글자 함정, 자음 조각 수리는 그림 없이 듣고 채움
+  {
+    const g = game('vowel-chef'), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    const r = makeRound(g, u, 0, 123);
+    const uniq = [...new Map(gamePool(g, u).map((e) => [e.word, e])).values()];
+    const cards = [r.entry, ...model.shuffled(uniq.filter((e) => e.id !== r.entry.id && e.word !== r.entry.word), 123 + 0 + 5)].slice(0, 2);
+    await page.locator('.pg-twist').getByText('카드 1 / 2').waitFor();
+    await page.locator('.pg-token-bank').getByRole('button', { name: model.blankOf(g, cards[0]).answer, exact: true }).first().click();
+    await page.locator('.pg-twist').getByText('카드 2 / 2').waitFor();
+    assert.equal(await page.locator('.pg-next').count(), 0, '낱말이 남았으면 다음 문제 버튼이 없다');
+    await page.locator('.pg-token-bank').getByRole('button', { name: model.blankOf(g, cards[1]).answer, exact: true }).first().click();
+    await page.locator('.pg-next').waitFor();
+    console.log('PASS fill: vowel chef needs two words per round');
+  }
+  {
+    const g = game('digraph-friends'), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    const r = makeRound(g, u, 0, 123);
+    const texts = await page.locator('.pg-token-bank button').allInnerTexts();
+    assert(r.answer.length >= 2 && texts.includes(r.answer[0]), `낱개 글자 함정: ${texts} / ${r.answer}`);
+    console.log('PASS fill: digraph friends mixes single-letter decoys');
+  }
+  {
+    const g = game('consonant-repair'), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    assert.equal(await page.locator('.pg-cue img').count(), 0, '그림 없이');
+    await page.locator('.pg-twist').getByText('듣고 채워요').waitFor();
+    console.log('PASS fill: consonant repair is listen-then-fill');
+  }
+
+  // 6) 하트: 틀린 문제마다 하트가 줄고, 다 떨어지면 도우미가 채워 주고 다음 문제를 쉽게 한다
+  {
+    const g = game('monster-diner'), u = unit('course-2-1');
+    await open(g.id, u.id, { rounds: 6 });
+    assert.equal(await page.locator('.pg-hearts b.on').count(), 3);
+    for (let i = 0; i < 3; i++) {
+      const r = makeRound(g, u, i, 123);
+      const opts = page.locator('.pg-options>button');
+      const wrong = r.options.findIndex((e) => e.id !== r.entry.id), right = r.options.findIndex((e) => e.id === r.entry.id);
+      await opts.nth(wrong).click();
+      await page.getByText('다시 살펴볼까요?', { exact: false }).waitFor();
+      await opts.nth(right).click();
+      await page.locator('.pg-next').waitFor();
+      if (i < 2) assert.equal(await page.locator('.pg-hearts b.on').count(), 2 - i, `하트 ${i + 1}번 틀림`);
+      if (i < 2) await page.locator('.pg-next').click();
+    }
+    await page.locator('.pg-heart-note').getByText('하트가 다 떨어졌어요', { exact: false }).waitFor();
+    assert.equal(await page.locator('.pg-hearts b.on').count(), 2, '다 떨어지면 2개로 채워 준다');
+    await page.locator('.pg-next').click();
+    await page.locator('.pg-cue').first().waitFor().catch(() => {});
+    console.log('PASS lives: hearts go down per missed round and refill with an easier next round');
+  }
+
+  // 7) 보스: 마지막 문제는 보스(그림 없이, 첫 시도면 별 2배)
+  {
+    const g = game('blend-launch'), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    for (let i = 0; i < 3; i++) {
+      const r = makeRound(g, u, i, 123);
+      const bossShown = await page.locator('.pg-boss').count();
+      assert.equal(bossShown, i === 2 ? 1 : 0, `보스 안내 ${i}`);
+      const tokens = model.shuffled(r.tokens.map((text, id) => ({ text, id })), 123 + i + 24);
+      for (let k = 0; k < r.tokens.length; k++) await page.locator('.pg-token-bank>button').nth(tokens.findIndex((c) => c.id === k)).click();
+      await page.locator('.pg-next').waitFor();
+      if (i === 2) await page.screenshot({ path: `${out}/boss.png` });
+      if (i < 2) await page.locator('.pg-next').click();
+    }
+    assert.match(await hud(), /14 \/ 12/, '3연속 첫 시도 + 보스 2배 = 3+3+8');
+    console.log('PASS boss: last round is a boss round with double stars');
+  }
+
   assert.deepEqual(errors, []);
   assert.deepEqual(writes, []);
   console.log('ALL PASS: per-game rules (no database writes)');

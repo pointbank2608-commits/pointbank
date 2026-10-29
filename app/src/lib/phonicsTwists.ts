@@ -15,18 +15,35 @@ export interface Twist {
   batch?: number;
   /** 글자 없이 소리만 듣고 고른다(소리 구별 게임). */
   listenOnly?: boolean;
+  /** 세션 하트(문제를 틀리면 줄고 0이 되면 도우미가 다음 문제를 쉽게 해 준다). 팀 대결에서는 쓰지 않는다. */
+  lives?: number;
+  /** 마지막 문제는 보스 문제: 도전 난이도(그림 없음)로 풀고 별이 2배. */
+  boss?: boolean;
+  /** 그림 없이 소리만 듣고 채운다(받아쓰기처럼). */
+  blind?: boolean;
+  /** 비슷한 낱말 조각(한 소리 묶음의 낱개 글자)을 보기에 섞는다. */
+  decoys?: boolean;
 }
 export const TWISTS: Record<string, Twist> = {
   'sound-balloons': { clock: 12 },
   'sound-fishing': { clock: 12, forms: ['hear-picture', 'picture-word', 'hear-picture', 'word-picture'] },
   'r-journey': { forms: ['hear-picture', 'hear-word'] },
-  'monster-diner': { forms: ['word-picture', 'picture-word'] },
-  'word-treasure': { forms: ['word-picture', 'hear-word'] },
-  'rescue-e': { clock: 15 },
+  'rescue-e': { clock: 15, lives: 3 },
   'sound-steps': { clock: 25 },
   'sorting-factory': { batch: 3 },
   'magic-families': { batch: 3 },
   'two-oo': { listenOnly: true },
+  'vowel-chef': { batch: 2 },
+  'digraph-friends': { decoys: true },
+  'consonant-repair': { blind: true, lives: 3 },
+  'monster-diner': { forms: ['word-picture', 'picture-word'], lives: 3 },
+  'space-rescue': { lives: 3, boss: true },
+  'dino-expedition': { lives: 3, boss: true },
+  'phonics-farm': { boss: true },
+  'phonics-island': { boss: true },
+  'our-storybook': { boss: true },
+  'word-treasure': { forms: ['word-picture', 'hear-word'], boss: true },
+  'blend-launch': { boss: true },
   'ow-crossroads': { listenOnly: true },
 };
 export const twistOf = (g: Pick<PhonicsGame, 'id'>): Twist => TWISTS[g.id] ?? {};

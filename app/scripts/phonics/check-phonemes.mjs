@@ -117,6 +117,17 @@ try {
     await open(g.id, u.id, { rounds: 3 });
     assert((await page.locator('.pg-phoneme').count()) >= 1, `${id}: 소리 듣기 버튼`);
   }
+  for (const id of ['sound-baskets', 'same-sound-roads']) {
+    const g = game(id), u = units.find((x) => !model.gameAvailability(g, x) && new Set(gamePool(g, x).map((e) => e.ruleId)).size >= 2);
+    assert(u, `${id}: 서로 다른 소리 규칙이 있는 유닛`);
+    await open(g.id, u.id, { rounds: 3 });
+    assert((await page.locator('.pg-compare .pg-phoneme').count()) >= 2, `${id}: 소리 비교 줄`);
+  }
+  {
+    const g = game('r-journey'), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    assert((await page.locator('.pg-phoneme').count()) >= 1, 'r-journey: 소리 듣기');
+  }
   for (const id of ['two-oo', 'ow-crossroads']) {
     const g = game(id), u = units.find((x) => !model.gameAvailability(g, x));
     await open(g.id, u.id, { rounds: 3 });
