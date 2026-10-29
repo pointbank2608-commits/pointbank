@@ -223,3 +223,13 @@
 @keyframes pg-hint-pop{from{transform:scale(.85);opacity:.4}to{transform:scale(1);opacity:1}}
 @keyframes pg-hint-glow{0%,100%{box-shadow:0 0 0 0 #ffd45a00,0 0 14px #ffe48a88}50%{box-shadow:0 0 0 10px #ffd45a55,0 0 30px #ffe48acc}}
 @media(prefers-reduced-motion:reduce){.pg-v2 [data-hint=true]{animation:none!important;box-shadow:0 0 0 8px #ffd45a88}}
+
+/* 게임별 규칙(3단계): 시간 도전·카드 여러 장·소리만 듣기·다른 모습 안내 */
+.pg-v2 .pg-twist{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 6px}
+.pg-v2 .pg-twist>span{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:#fff8dc;color:#6b4a00;font-weight:800;font-size:.9rem;border:2px solid #f3d27a}
+.pg-v2 .pg-twist .material-symbols-outlined{font-size:1.15rem}
+.pg-v2 .pg-clock{position:relative;overflow:hidden;min-width:150px;justify-content:center;isolation:isolate}
+.pg-v2 .pg-clock>i{position:absolute;inset:0;z-index:-1;background:#ffd25a;transform-origin:left center;transition:transform 1s linear}
+.pg-v2 .pg-clock[data-low="true"]{border-color:#e0573c;color:#8a1f0d}
+.pg-v2 .pg-clock[data-low="true"]>i{background:#ffb4a2}
+@media (prefers-reduced-motion:reduce){.pg-v2 .pg-clock>i{transition:none}}

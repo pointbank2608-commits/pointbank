@@ -76,7 +76,7 @@ try {
     else{const pool=[...new Map(gamePool(g,u).map(e=>[e.word,e])).values()],pics=pool.filter(pictureEligible),entries=shuffled(pics.length>=2?pics:pool,123+index).slice(0,3);cards=shuffled(entries.flatMap((e,p)=>[{id:p,kind:0},{id:p,kind:1}]),123+index);}
     for(const id of new Set(cards.map(c=>c.id)))for(const i of cards.flatMap((c,i)=>c.id===id?[i]:[]))await area.locator('.pg-memory-card').nth(i).click();
    }else if(g.mechanic==='sort'){
-    const groups=[...new Map(gamePool(g,u).map(e=>[patternKey(u,e),e])).values()];await area.locator('.pg-options>button').nth(groups.findIndex(e=>patternKey(u,e)===patternKey(u,r.entry))).click();
+    const groups=[...new Map(gamePool(g,u).map(e=>[patternKey(u,e),e])).values()];for(let n=0;n<4&&!await page.locator('.pg-next').count();n++){const wl=area.locator('.pg-drag-card .pg-word');const word=(await wl.count()?await wl.first().innerText():'').replace(/\s+/g,'');const cur=gamePool(g,u).find(e=>e.word===word)??r.entry;await area.locator('.pg-options>button').nth(groups.findIndex(e=>patternKey(u,e)===patternKey(u,cur))).click();await page.waitForTimeout(80);}
    }else if(g.mechanic==='hunt'){
     const target=alphabetGlyph(r.entry).toLowerCase(),letters=shuffled([...u.groups.map(g=>g.label[0]),...u.groups.map(g=>g.label[0].toLowerCase()),...u.groups.map(g=>g.label[0])],123+index);
     for(let i=0;i<letters.length;i++)if(letters[i].toLowerCase()===target)await area.locator('.pg-letter-field button').nth(i).click();
@@ -99,7 +99,7 @@ try {
     for(let n=0;n<9&&!await page.locator('.pg-next').count();n++){await area.getByRole('button',{name:'단어·문장 듣기',exact:true}).first().click();const word=await page.evaluate(()=>window.__spoken.at(-1));await area.locator('.pg-bingo').getByRole('button',{name:word,exact:true}).click();}
    }else{
     if(g.id==='sound-balloons'){const groups=shuffled([...new Map(gamePool(g,u).map(e=>[targetText(e).toLowerCase(),e])).values()],123+index);await area.locator('.pg-balloons>button').nth(groups.findIndex(e=>targetText(e).toLowerCase()===targetText(r.entry).toLowerCase())).click();}
-    else {if(g.mechanic==='puzzle')for(let i=0;i<4;i++)await area.getByRole('button',{name:`${i+1}번 조각 열기`}).click();if(g.id==='word-treasure')await area.getByRole('button',{name:'읽었어요 · 상자 열기'}).click();await area.locator('.pg-options>button').nth(r.options.findIndex(e=>e.id===r.entry.id)).click();}
+    else {if(g.mechanic==='puzzle')for(let i=0;i<4;i++)await area.getByRole('button',{name:`${i+1}번 조각 열기`}).click();if(g.id==='word-treasure'){const open=area.getByRole('button',{name:'읽었어요 · 상자 열기'});if(await open.count())await open.click();}await area.locator('.pg-options>button').nth(r.options.findIndex(e=>e.id===r.entry.id)).click();}
    }
    await page.locator('.pg-next').waitFor();
   };
