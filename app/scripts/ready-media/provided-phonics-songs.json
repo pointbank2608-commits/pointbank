@@ -1,0 +1,719 @@
+[
+  {
+    "youtubeId": "9o3RmdiLnI8",
+    "step": 1,
+    "title": "ABC 글자 이름 따라 부르기",
+    "ruleIds": [],
+    "unitIds": [
+      "course-1-1",
+      "course-1-2",
+      "course-1-3",
+      "course-1-4",
+      "course-1-5",
+      "course-1-6",
+      "course-1-7",
+      "course-1-8",
+      "course-1-9"
+    ],
+    "purpose": "warmup",
+    "tip": "수업 시작에 알파벳표를 짚으며 불러요. 글자 이름과 실제 소리는 따로 확인해 주세요.",
+    "sourceTitle": "The Super Simple Alphabet Song (Uppercase) | Super Simple ABCs",
+    "sourceUrl": "https://www.youtube.com/watch?v=9o3RmdiLnI8",
+    "channel": "Super Simple ABCs",
+    "channelUrl": "https://www.youtube.com/@SuperSimpleABCs",
+    "duration": 93,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "Wvns1A5hmOs",
+    "step": 1,
+    "title": "알파벳 소리 A–Z 따라 부르기",
+    "ruleIds": [],
+    "unitIds": [
+      "course-1-1",
+      "course-1-2",
+      "course-1-3",
+      "course-1-4",
+      "course-1-5",
+      "course-1-6",
+      "course-1-7",
+      "course-1-8",
+      "course-1-9"
+    ],
+    "purpose": "warmup",
+    "tip": "오늘 배울 글자가 나오면 손을 들어요. 노래가 끝나면 해당 글자의 소리를 다시 말해요.",
+    "sourceTitle": "Phonics Alphabet Song (Lowercase) | Super Simple ABCs",
+    "sourceUrl": "https://www.youtube.com/watch?v=Wvns1A5hmOs",
+    "channel": "Super Simple ABCs",
+    "channelUrl": "https://www.youtube.com/@SuperSimpleABCs",
+    "duration": 83,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "SRycDOK-_eE",
+    "step": 1,
+    "title": "A–I 소리 복습 챈트",
+    "ruleIds": [],
+    "unitIds": [
+      "course-1-3"
+    ],
+    "purpose": "review",
+    "tip": "Aa–Ii를 배운 뒤 사용해요. 오늘 유닛에 없는 글자는 복습 범위로 구분해 주세요.",
+    "sourceTitle": "A-I Review Chant (Lowercase) | Super Simple ABCs",
+    "sourceUrl": "https://www.youtube.com/watch?v=SRycDOK-_eE",
+    "channel": "Super Simple ABCs",
+    "channelUrl": "https://www.youtube.com/@SuperSimpleABCs",
+    "duration": 87,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "ZKMUaPCF5L0",
+    "step": 1,
+    "title": "J–R 소리 복습 챈트",
+    "ruleIds": [],
+    "unitIds": [
+      "course-1-6"
+    ],
+    "purpose": "review",
+    "tip": "Jj–Rr를 배운 뒤 소리를 따라 말해요. 교재와 다른 예시 단어는 뜻을 짧게 확인해 주세요.",
+    "sourceTitle": "J-R Review Chant (Lowercase) | Super Simple ABCs",
+    "sourceUrl": "https://www.youtube.com/watch?v=ZKMUaPCF5L0",
+    "channel": "Super Simple ABCs",
+    "channelUrl": "https://www.youtube.com/@SuperSimpleABCs",
+    "duration": 87,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "zqAKir8FJL0",
+    "step": 1,
+    "title": "R–Z 소리 복습 챈트",
+    "ruleIds": [],
+    "unitIds": [
+      "course-1-9"
+    ],
+    "purpose": "review",
+    "tip": "Rr–Zz를 배운 뒤 사용해요. Rr는 이전 학습 복습으로 연결해 주세요.",
+    "sourceTitle": "R-Z Review Chant (Lowercase) | Super Simple ABCs",
+    "sourceUrl": "https://www.youtube.com/watch?v=zqAKir8FJL0",
+    "channel": "Super Simple ABCs",
+    "channelUrl": "https://www.youtube.com/@SuperSimpleABCs",
+    "duration": 87,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "-EbzKgs6Aiw",
+    "step": 2,
+    "title": "단모음 a·e·i·o·u 소리 준비",
+    "ruleIds": [],
+    "unitIds": [
+      "course-2-1",
+      "course-2-2",
+      "course-2-3",
+      "course-2-4",
+      "course-2-5",
+      "course-2-6",
+      "course-2-7",
+      "course-2-8"
+    ],
+    "purpose": "warmup",
+    "tip": "모음 소리를 따라 말한 뒤 오늘 배울 모음 하나를 찾아요. CVC 단어 읽기는 별도로 이어 가요.",
+    "sourceTitle": "These Are the Short Vowel Sounds | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=-EbzKgs6Aiw",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 184,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "oDVAhDyHZaA",
+    "step": 2,
+    "title": "단모음 a · 세 소리 합쳐 읽기",
+    "ruleIds": [
+      "short-a"
+    ],
+    "unitIds": [
+      "course-2-1",
+      "course-2-2"
+    ],
+    "purpose": "practice",
+    "tip": "각 소리를 손가락으로 짚고 합쳐 읽어요. 영상 뒤에는 우리 유닛 단어 3개로 다시 연습해요.",
+    "sourceTitle": "CVC Words | Letter a | Consonant Vowel Consonant | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=oDVAhDyHZaA",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 139,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "_lM8cVG_xoQ",
+    "step": 2,
+    "title": "단모음 e · 세 소리 합쳐 읽기",
+    "ruleIds": [
+      "short-e"
+    ],
+    "unitIds": [
+      "course-2-3"
+    ],
+    "purpose": "practice",
+    "tip": "각 소리를 손가락으로 짚고 합쳐 읽어요. 영상 뒤에는 우리 유닛 단어 3개로 다시 연습해요.",
+    "sourceTitle": "CVC Words | Letter e | Consonant Vowel Consonant | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=_lM8cVG_xoQ",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 139,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "13clYehVJHo",
+    "step": 2,
+    "title": "단모음 i · 세 소리 합쳐 읽기",
+    "ruleIds": [
+      "short-i"
+    ],
+    "unitIds": [
+      "course-2-4",
+      "course-2-5"
+    ],
+    "purpose": "practice",
+    "tip": "각 소리를 손가락으로 짚고 합쳐 읽어요. 영상 뒤에는 우리 유닛 단어 3개로 다시 연습해요.",
+    "sourceTitle": "CVC Words | Letter i | Consonant Vowel Consonant | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=13clYehVJHo",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 139,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "tkYDoNKit6o",
+    "step": 2,
+    "title": "단모음 o · 세 소리 합쳐 읽기",
+    "ruleIds": [
+      "short-o"
+    ],
+    "unitIds": [
+      "course-2-6"
+    ],
+    "purpose": "practice",
+    "tip": "각 소리를 손가락으로 짚고 합쳐 읽어요. 영상 뒤에는 우리 유닛 단어 3개로 다시 연습해요.",
+    "sourceTitle": "CVC Words | Letter o | Consonant Vowel Consonant | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=tkYDoNKit6o",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 139,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "FLfl_uY83Os",
+    "step": 2,
+    "title": "단모음 u · 세 소리 합쳐 읽기",
+    "ruleIds": [
+      "short-u"
+    ],
+    "unitIds": [
+      "course-2-7",
+      "course-2-8"
+    ],
+    "purpose": "practice",
+    "tip": "각 소리를 손가락으로 짚고 합쳐 읽어요. 영상 뒤에는 우리 유닛 단어 3개로 다시 연습해요.",
+    "sourceTitle": "CVC Words | Letter u | Consonant Vowel Consonant | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=FLfl_uY83Os",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 139,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "mxVWScxsOsc",
+    "step": 3,
+    "title": "매직 e 규칙 알아보기",
+    "ruleIds": [],
+    "unitIds": [
+      "course-3-1",
+      "course-3-2",
+      "course-3-3",
+      "course-3-4",
+      "course-3-5",
+      "course-3-6",
+      "course-3-7",
+      "course-3-8"
+    ],
+    "purpose": "warmup",
+    "tip": "끝의 e를 더하기 전과 후를 비교해요. 모든 끝 e에 적용되는 규칙으로 일반화하지 않아요.",
+    "sourceTitle": "Silent E | Phonics Song for Kids | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=mxVWScxsOsc",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 175,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "hryR-aXaOaQ",
+    "step": 3,
+    "title": "매직 e a_e 소리 연습",
+    "ruleIds": [
+      "magic-a"
+    ],
+    "unitIds": [
+      "course-3-1",
+      "course-3-2"
+    ],
+    "purpose": "practice",
+    "tip": "앞 모음과 끝 e를 함께 찾아요. 소리가 달라지는 것을 듣고 우리 교재의 단어로 다시 읽어요.",
+    "sourceTitle": "The Magic e / Long Vowel a-e / Phonics Mix!",
+    "sourceUrl": "https://www.youtube.com/watch?v=hryR-aXaOaQ",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 205,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "S5URW8zhbw0",
+    "step": 3,
+    "title": "매직 e i_e 소리 연습",
+    "ruleIds": [
+      "magic-i"
+    ],
+    "unitIds": [
+      "course-3-3",
+      "course-3-4"
+    ],
+    "purpose": "practice",
+    "tip": "앞 모음과 끝 e를 함께 찾아요. 소리가 달라지는 것을 듣고 우리 교재의 단어로 다시 읽어요.",
+    "sourceTitle": "The Magic e / Long Vowel i-e / Phonics Mix!",
+    "sourceUrl": "https://www.youtube.com/watch?v=S5URW8zhbw0",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 163,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "r_yWJQzDhxY",
+    "step": 3,
+    "title": "매직 e o_e 소리 연습",
+    "ruleIds": [
+      "magic-o"
+    ],
+    "unitIds": [
+      "course-3-5",
+      "course-3-6"
+    ],
+    "purpose": "practice",
+    "tip": "앞 모음과 끝 e를 함께 찾아요. 소리가 달라지는 것을 듣고 우리 교재의 단어로 다시 읽어요.",
+    "sourceTitle": "The Magic e / Long Vowel o-e / Phonics Mix!",
+    "sourceUrl": "https://www.youtube.com/watch?v=r_yWJQzDhxY",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 158,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "cl82zAHzkmM",
+    "step": 3,
+    "title": "매직 e u_e 소리 연습",
+    "ruleIds": [
+      "magic-u"
+    ],
+    "unitIds": [
+      "course-3-7",
+      "course-3-8"
+    ],
+    "purpose": "practice",
+    "tip": "앞 모음과 끝 e를 함께 찾아요. 소리가 달라지는 것을 듣고 우리 교재의 단어로 다시 읽어요.",
+    "sourceTitle": "The Magic e / Long Vowel u-e / Phonics Mix!",
+    "sourceUrl": "https://www.youtube.com/watch?v=cl82zAHzkmM",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 170,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "RCCFqWV8S7E",
+    "step": 4,
+    "title": "첫소리 자음군 소리 합치기",
+    "ruleIds": [],
+    "unitIds": [
+      "course-4-4"
+    ],
+    "purpose": "review",
+    "tip": "첫소리 자음군을 배운 뒤 복습해요. 두 자음의 소리를 각각 살려 이어 말해요.",
+    "sourceTitle": "Blends Song | Letter Blends | Consonant Blends | Two Letters that Work Together | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=RCCFqWV8S7E",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 212,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "QZ1Uu2MRXTY",
+    "step": 4,
+    "title": "L 자음군 bl·cl·gl 소리 연습",
+    "ruleIds": [
+      "blend-bl",
+      "blend-cl",
+      "blend-gl"
+    ],
+    "unitIds": [
+      "course-4-1",
+      "course-4-2"
+    ],
+    "purpose": "practice",
+    "tip": "각 자음의 소리를 살려 붙여 읽어요. 영상의 sl은 확장 예시이며 fl·pl은 교재로 별도 연습해요.",
+    "sourceTitle": "What Is a Blend? | bl, cl, gl, sl | Writing & Reading Skills for Kids | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=QZ1Uu2MRXTY",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 126,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "pQgJnpE7IL8",
+    "step": 4,
+    "title": "R 자음군 br·cr·dr·fr 소리 연습",
+    "ruleIds": [
+      "blend-br",
+      "blend-cr",
+      "blend-dr",
+      "blend-fr"
+    ],
+    "unitIds": [
+      "course-4-2",
+      "course-4-3"
+    ],
+    "purpose": "practice",
+    "tip": "두 소리를 하나씩 말한 뒤 빠르게 이어 말해요. gr·pr·tr까지 배운 자료로 오해하지 않게 해요.",
+    "sourceTitle": "What Is a Blend? | br, cr, dr, fr | Writing & Reading Skills for Kids | Phonics Song | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=pQgJnpE7IL8",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 126,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "hFBu8wkO_fM",
+    "step": 4,
+    "title": "끝소리 자음군 합쳐 읽기",
+    "ruleIds": [],
+    "unitIds": [
+      "course-4-6"
+    ],
+    "purpose": "review",
+    "tip": "끝소리 자음군을 배운 뒤 활용해요. 영상 예시와 별도로 mp·nd·nk 및 끝 sk를 교재에서 확인해요.",
+    "sourceTitle": "Onsets and Rimes | Set 3 | Final Blends | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=hFBu8wkO_fM",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 176,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "HfMtsRVZWfE",
+    "step": 4,
+    "title": "sh 소리 따라 부르기",
+    "ruleIds": [
+      "blend-sh"
+    ],
+    "unitIds": [
+      "course-4-7"
+    ],
+    "purpose": "practice",
+    "tip": "두 글자를 함께 찾아 소리를 따라 말해요. 노래 뒤에는 해당 유닛의 단어 카드로 다시 읽어요.",
+    "sourceTitle": "Digraphs | Let's Learn About the Digraph sh | Phonics Song for Kids | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=HfMtsRVZWfE",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 137,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "FWg2uzAuSe4",
+    "step": 4,
+    "title": "ch 소리 따라 부르기",
+    "ruleIds": [
+      "blend-ch"
+    ],
+    "unitIds": [
+      "course-4-7"
+    ],
+    "purpose": "practice",
+    "tip": "두 글자를 함께 찾아 소리를 따라 말해요. 노래 뒤에는 해당 유닛의 단어 카드로 다시 읽어요.",
+    "sourceTitle": "Digraphs | Let's Learn About the Digraph ch | Phonics Song for Kids | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=FWg2uzAuSe4",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 140,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "o3INXFPrfJM",
+    "step": 4,
+    "title": "th 소리 따라 부르기",
+    "ruleIds": [
+      "th-voiceless",
+      "th-voiced"
+    ],
+    "unitIds": [
+      "course-4-7",
+      "course-4-8"
+    ],
+    "purpose": "practice",
+    "tip": "두 글자를 함께 찾아 소리를 따라 말해요. thin의 /θ/와 this의 /ð/는 나누어 확인해요.",
+    "sourceTitle": "Digraphs | Let's Learn About the Digraph th | Phonics Song for Kids | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=o3INXFPrfJM",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 137,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "GO3UxDydumA",
+    "step": 4,
+    "title": "wh 소리 따라 부르기",
+    "ruleIds": [
+      "blend-wh"
+    ],
+    "unitIds": [
+      "course-4-8"
+    ],
+    "purpose": "practice",
+    "tip": "두 글자를 함께 찾아 소리를 따라 말해요. 노래 뒤에는 해당 유닛의 단어 카드로 다시 읽어요.",
+    "sourceTitle": "Digraphs | Let's Learn About the Digraph wh | Phonics Song for Kids | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=GO3UxDydumA",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 137,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "94eOpBrVmwY",
+    "step": 4,
+    "title": "ng 소리 따라 부르기",
+    "ruleIds": [
+      "blend-ng"
+    ],
+    "unitIds": [
+      "course-4-8"
+    ],
+    "purpose": "practice",
+    "tip": "두 글자를 함께 찾아 소리를 따라 말해요. 노래 뒤에는 해당 유닛의 단어 카드로 다시 읽어요.",
+    "sourceTitle": "Digraphs/Final Sound/The Engma Sound /ng/Phonics Song",
+    "sourceUrl": "https://www.youtube.com/watch?v=94eOpBrVmwY",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 164,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "3PJGqbCeRU4",
+    "step": 5,
+    "title": "ee·ea 긴 e 소리 연습",
+    "ruleIds": [
+      "vowel-ee",
+      "vowel-ea"
+    ],
+    "unitIds": [
+      "course-5-1"
+    ],
+    "purpose": "practice",
+    "tip": "ee와 ea 예시를 나눠 읽어요. ea가 언제나 같은 소리를 낸다고 설명하지 않아요.",
+    "sourceTitle": "Long Vowel Letter e - ee/ea - English4abc - Phonics song",
+    "sourceUrl": "https://www.youtube.com/watch?v=3PJGqbCeRU4",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 170,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "m-uLFJp5ZtI",
+    "step": 5,
+    "title": "ai·ay와 a_e 비교 복습",
+    "ruleIds": [
+      "vowel-ai",
+      "vowel-ay"
+    ],
+    "unitIds": [
+      "course-5-2"
+    ],
+    "purpose": "review",
+    "tip": "ai·ay를 배우고 이전 a_e와 비교해요. 같은 긴 a 소리를 서로 다른 철자로 찾아요.",
+    "sourceTitle": "Long Vowel Letter a - ai/a-e/ay - English4abc - Phonics song",
+    "sourceUrl": "https://www.youtube.com/watch?v=m-uLFJp5ZtI",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 146,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "NZHn2UhrLZM",
+    "step": 5,
+    "title": "oa·ow와 o_e 비교 복습",
+    "ruleIds": [
+      "vowel-oa",
+      "ow-long-o"
+    ],
+    "unitIds": [
+      "course-5-3"
+    ],
+    "purpose": "review",
+    "tip": "긴 o의 oa·ow를 o_e와 비교해요. cow의 ow /aʊ/는 다음 규칙으로 구분해 주세요.",
+    "sourceTitle": "Long Vowel Letter o - oa/o-e/ow - English4abc - Phonics song",
+    "sourceUrl": "https://www.youtube.com/watch?v=NZHn2UhrLZM",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 142,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "Dbvp5ZNxabI",
+    "step": 5,
+    "title": "oo의 두 소리 나눠 듣기",
+    "ruleIds": [
+      "oo-short",
+      "oo-long"
+    ],
+    "unitIds": [
+      "course-5-4"
+    ],
+    "purpose": "practice",
+    "tip": "book의 /ʊ/와 moon의 /uː/를 따로 듣고 두 모둠으로 분류해요.",
+    "sourceTitle": "Digraphs/ OO and oo / Long + Short Vowels / Phonics Song",
+    "sourceUrl": "https://www.youtube.com/watch?v=Dbvp5ZNxabI",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 182,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "OdWkgYQnFcw",
+    "step": 5,
+    "title": "oi·oy /ɔɪ/ 소리 연습",
+    "ruleIds": [
+      "vowel-oi",
+      "vowel-oy"
+    ],
+    "unitIds": [
+      "course-5-5"
+    ],
+    "purpose": "practice",
+    "tip": "같은 /ɔɪ/ 소리를 듣고 oi와 oy 철자를 나눠 찾아요. 일반 장모음과 구분해요.",
+    "sourceTitle": "The Sound of Oi/Oy - Vowel Diphthong 'oi/oy' / Long Vowel 'oi/oy' - English4abc - Phonics song",
+    "sourceUrl": "https://www.youtube.com/watch?v=OdWkgYQnFcw",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 163,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "i-6i0INcX40",
+    "step": 5,
+    "title": "ou·ow /aʊ/ 소리 연습",
+    "ruleIds": [
+      "vowel-ou",
+      "ow-diphthong"
+    ],
+    "unitIds": [
+      "course-5-6"
+    ],
+    "purpose": "practice",
+    "tip": "입모양이 변하는 /aʊ/를 따라 해요. snow의 긴 o ow와 별도로 분류해요.",
+    "sourceTitle": "The Sound of Ou/Ow - Diphthong 'ou/ow' - Long Vowel 'ou/ow' - English4abc - Phonics song",
+    "sourceUrl": "https://www.youtube.com/watch?v=i-6i0INcX40",
+    "channel": "English4abc",
+    "channelUrl": "https://www.youtube.com/@JayUKThai",
+    "duration": 148,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "QI4bVIW4qK4",
+    "step": 5,
+    "title": "ar 소리 따라 부르기",
+    "ruleIds": [
+      "vowel-ar"
+    ],
+    "unitIds": [
+      "course-5-7"
+    ],
+    "purpose": "practice",
+    "tip": "ar를 함께 표시하고 소리를 말해요. 노래 후 우리 유닛 단어를 찾아 읽어요.",
+    "sourceTitle": "Bossy R! | AR Words | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=QI4bVIW4qK4",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 219,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "mr6TitJodII",
+    "step": 5,
+    "title": "er·ir·ur 같은 소리 비교",
+    "ruleIds": [
+      "vowel-er",
+      "vowel-ir",
+      "vowel-ur"
+    ],
+    "unitIds": [
+      "course-5-8",
+      "course-5-9"
+    ],
+    "purpose": "review",
+    "tip": "er·ir를 배운 뒤 ur 예시도 함께 비교해요. 철자는 달라도 소리가 비슷한 단어를 분류해요.",
+    "sourceTitle": "Bossy R! | ER, IR and UR Words | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=mr6TitJodII",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 249,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  },
+  {
+    "youtubeId": "jpZvFbTXW_o",
+    "step": 5,
+    "title": "or 소리 따라 부르기",
+    "ruleIds": [
+      "vowel-or"
+    ],
+    "unitIds": [
+      "course-5-9"
+    ],
+    "purpose": "practice",
+    "tip": "or를 함께 짚으며 소리를 따라 말해요. 교재의 ur 소리와는 따로 비교해요.",
+    "sourceTitle": "Bossy R | OR Words | Jack Hartmann",
+    "sourceUrl": "https://www.youtube.com/watch?v=jpZvFbTXW_o",
+    "channel": "Jack Hartmann Kids Music Channel",
+    "channelUrl": "https://www.youtube.com/@JackHartmann",
+    "duration": 236,
+    "checkedAt": "2026-10-29",
+    "verification": "Official YouTube oEmbed + public player metadata; embed allowed. No full-video viewing claim."
+  }
+]

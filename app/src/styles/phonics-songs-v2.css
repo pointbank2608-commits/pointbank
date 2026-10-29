@@ -4,3 +4,5 @@
 
 .song-card-title,.song-preview strong{overflow-wrap:anywhere}
 .song-card[data-source=personal] .song-thumb>.song-badge{background:#ae80dc;color:white}
+
+.song-purpose{display:inline-block;margin-top:9px;padding:4px 8px;border-radius:7px;background:#e7f6f2;color:#186655;font-size:11px;font-weight:700}.song-card-content p.song-tip{font-size:13px;line-height:1.65;color:#35516f;margin-top:9px}.song-source{margin-top:8px;font-size:11px;color:#697f9a}.song-source summary{cursor:pointer}.song-source p{overflow-wrap:anywhere}.song-preview .song-tip{max-width:760px;line-height:1.6}

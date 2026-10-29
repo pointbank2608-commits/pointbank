@@ -93,7 +93,7 @@ export default function ShadowBoard({
 
   const playerRef = useRef<YoutubePlayer | null>(null);
   const [elementId] = useState(() => `shadow-yt-${Math.random().toString(36).slice(2)}`);
-  const requestTimeout=useRef<number|undefined>(undefined);
+  const requestTimeout=useRef<number|undefined>(undefined);const wantsPlayback=useRef(false);
   const timerRef = useRef<number | null>(null);
   const pollRef = useRef<number | null>(null);
   const state = useRef({ idx, rep, flow, repeat, speed, lines });
@@ -110,23 +110,23 @@ export default function ShadowBoard({
   useEffect(() => {
     if (!usePlayer || !videoId) return;
     let cancelled = false;
-    setMediaError('');setReady(false);
+    wantsPlayback.current=false;setMediaError('');setReady(false);
     const loadingTimeout=window.setTimeout(()=>{if(!cancelled)setMediaError('API_TIMEOUT');},15000);
     void loadYoutubeIframeApi().then(() => {
       if (cancelled || !window.YT) return;
       playerRef.current = new window.YT.Player(elementId, {
         videoId,
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, fs: 0 },
-        events: { onReady: () => {clearTimeout(loadingTimeout);setReady(true);if(restored.current?.time)playerRef.current?.seekTo(restored.current.time,true);},onStateChange:(e:{data:number})=>{setActualPlaying(e.data===1);if(e.data===1){clearTimeout(requestTimeout.current);setPhase('listen');}if(e.data===2)setPhase(p=>p==='speak'?p:'wait');},onError:(e:{data:number})=>{setActualPlaying(false);clearTimers();setReady(false);setMediaError(String(e.data));setPhase('wait');} },
+        events: { onReady: () => {clearTimeout(loadingTimeout);setReady(true);if(restored.current?.time)playerRef.current?.seekTo(restored.current.time,true);},onStateChange:(e:{data:number})=>{if(e.data===1&&!wantsPlayback.current){playerRef.current?.pauseVideo();setActualPlaying(false);return;}setActualPlaying(e.data===1);if(e.data===1){clearTimeout(requestTimeout.current);setPhase('listen');}if(e.data===2)setPhase(p=>p==='speak'?p:'wait');},onError:(e:{data:number})=>{setActualPlaying(false);clearTimers();setReady(false);setMediaError(String(e.data));setPhase('wait');} },
       });
     }).catch(()=>{if(!cancelled)setMediaError('API');});
     return () => {
       cancelled = true;
       clearTimeout(loadingTimeout);
       clearTimers();
-      writePlaybackMemory(memoryKey,{...remember.current,time:playerRef.current?.getCurrentTime()??resumeAt.current??0});
-      playerRef.current?.pauseVideo();
-      playerRef.current?.destroy();
+      writePlaybackMemory(memoryKey,{...remember.current,time:playerRef.current?.getCurrentTime?.()??resumeAt.current??0});
+      playerRef.current?.pauseVideo?.();
+      playerRef.current?.destroy?.();
       playerRef.current = null;
       setReady(false);
     };
@@ -150,7 +150,7 @@ export default function ShadowBoard({
       startSpeak(line, i, repNo);
       return;
     }
-    setPhase('loading');
+    wantsPlayback.current=true;setPhase('loading');
     player.setPlaybackRate(sp);
     player.seekTo(from??Math.max(0, line.start - 0.05), true);
     resumeAt.current=undefined;
@@ -214,7 +214,7 @@ export default function ShadowBoard({
   }
 
   function stop() {
-    clearTimers();
+    wantsPlayback.current=false;clearTimers();
     playerRef.current?.pauseVideo();
     resumeAt.current=playerRef.current?.getCurrentTime();
     setPhase((p) => (p === 'idle' ? 'idle' : 'wait'));

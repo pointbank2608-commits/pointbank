@@ -13,6 +13,6 @@ export async function savePhonicsSong(input:{id?:string;title:string;url:string;
  const invalid=validatePhonicsSong(input);if(invalid)throw Error(invalid);
  const original=input.id?(await fetchVideoClips()).find(c=>c.id===input.id&&isPhonicsSong(c)):undefined;
  if(input.id&&!original)throw Error('invalid_song');
- await adminSaveVideoClip({id:input.id,series:'Phonics Songs & Chants',title:input.title.trim(),summary:original?.summary??'',youtube_id:songYoutubeId(input.url)!,channel:input.channel.trim(),start_sec:0,end_sec:input.duration,level:Math.min(...courseUnits().filter(u=>input.unitIds.includes(u.id)).map(u=>u.step)),tags:[PHONICS_SONG_TAG],script:original?.script??'',words:original?.words??[],pack:{...original?.pack,phonicsSong:{unitIds:[...new Set(input.unitIds)]}},sort_order:original?.sort_order??0});
+ await adminSaveVideoClip({id:input.id,series:'Phonics Songs & Chants',title:input.title.trim(),summary:original?.summary??'',youtube_id:songYoutubeId(input.url)!,channel:input.channel.trim(),start_sec:0,end_sec:input.duration,level:Math.min(...courseUnits().filter(u=>input.unitIds.includes(u.id)).map(u=>u.step)),tags:[PHONICS_SONG_TAG],script:original?.script??'',words:original?.words??[],pack:{...original?.pack,phonicsSong:{...original?.pack?.phonicsSong,unitIds:[...new Set(input.unitIds)]}},sort_order:original?.sort_order??0});
  window.dispatchEvent(new Event('classbank:phonics-songs-changed'));
 }
