@@ -12,6 +12,7 @@ import {PHONICS_WORLDS,addVillageReward,gameVisual,readVillageRewards,type Phoni
 import {PhonicsSoundContext,usePhonicsGameSound,usePhonicsSound} from '../lib/phonicsGameSound';
 import {PhonicsSoundControls} from '../components/PhonicsSoundControls';
 import {DragBox,DragButton} from '../components/PhonicsDrag';
+import {hasPhoneme,playPhoneme} from '../lib/phonicsPhonemes';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
 import '../styles/phonics-games.css';
 import '../styles/phonics-games-v2.css';
@@ -28,6 +29,12 @@ function MarkedWord({entry}:{entry:PhonicsBankEntry}){return <span className="pg
 function BlankWord({text,filled,answer,label}:{text:string;filled:boolean;answer:string;label:string}){
  const m=text.match(/_+/);if(!m)return <>{text}</>;const i=m.index??0;
  return <>{text.slice(0,i)}<span className={'pg-blank '+(filled?'pg-blank-filled':'')} data-drop="blank" role="img" aria-label={label}>{filled?answer:'\u00a0'.repeat(Math.max(2,m[0].length))}</span>{text.slice(i+m[0].length)}</>;
+}
+/** 목표 소리(음가)를 들려 준다. 녹음 파일이 있는 규칙에만 보인다. */
+function PhonemeButton({ruleId,label,en}:{ruleId:string;label:string;en:boolean}){
+ const [failed,setFailed]=useState(false);
+ if(!hasPhoneme(ruleId))return null;
+ return <button className="pg-button pg-phoneme" type="button" data-learning-audio onClick={()=>{void playPhoneme(ruleId).then(ok=>setFailed(!ok));}}>{icon('graphic_eq')}{l(en,'소리 듣기','Hear the sound')} <b lang="en">{label}</b>{failed&&<small role="status">{l(en,'소리를 재생할 수 없어요.','Could not play the sound.')}</small>}</button>;
 }
 function WordPicture({entry,en}:{entry:PhonicsBankEntry;en:boolean}){
  const [broken,setBroken]=useState(false);
@@ -228,7 +235,7 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
   </div>}
   {!solved&&toast&&<div className="pg-dock-card pg-dock-wrong" data-state="wrong" role="status"><strong>{timedOut?l(en,'시간이 다 됐어요! 정답이 반짝여요.','Time is up! The answer is glowing.'):l(en,'다시 살펴볼까요?','Take another look. You can retry.')}</strong></div>}
  </div>;
- const cue=(showWord=false,e=round.entry)=><div className="pg-cue">{level==='hard'?<p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'그림 없이 소리를 듣고 풀어요.','No picture — listen and solve.')}</p>:pictureEligible(e)?<WordPicture entry={e} en={en}/>:<p className="pg-note">{l(en,'선생님이 단어를 읽고 뜻을 설명해 주세요.','Ask your teacher to read and explain this word.')}</p>}{(showWord||level==='easy')&&<MarkedWord entry={e}/>}<Audio text={e.word} en={en}/></div>;
+ const cue=(showWord=false,e=round.entry)=><div className="pg-cue">{level==='hard'?<p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'그림 없이 소리를 듣고 풀어요.','No picture — listen and solve.')}</p>:pictureEligible(e)?<WordPicture entry={e} en={en}/>:<p className="pg-note">{l(en,'선생님이 단어를 읽고 뜻을 설명해 주세요.','Ask your teacher to read and explain this word.')}</p>}{(showWord||level==='easy')&&<MarkedWord entry={e}/>}<Audio text={e.word} en={en}/>{e.ruleId&&<PhonemeButton ruleId={e.ruleId} label={targetText(e)} en={en}/>}</div>;
  const contentRef=useRef<HTMLDivElement>(null);
  /** 글을 못 읽는 친구를 위해 이번 문제의 설명을 소리로 읽어 준다(첫 설명 문단, 없으면 게임 종류별 기본 문장). */
  const speakText=(text:string,lang:string)=>{

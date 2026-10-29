@@ -117,3 +117,19 @@ npm run build
 
 새 규칙은 `TWISTS`에 한 줄 + 필요하면 `RoundActivity`(`PhonicsGamesPage.tsx`)에서 분기. 확인: `node --experimental-websocket scripts/phonics/check-twists.mjs`(합성 계정·DB 쓰기 0건, 약 30초).
 **아직 없는 것**: 목숨·보스 문제, 빈칸·조립 게임의 규칙 차이(모음 수리소/자음 수리 등), 개별 음가 소리(4단계).
+
+## 음가 음원 연결 (2026-10-30, 4단계 준비)
+
+- 목록: [phonics-sound-list.md](phonics-sound-list.md) — 규칙 76개 × 파일 1개(`app/public/phonics-sounds/<규칙 id>.mp3`, 1초 안팎, 글자 이름이 아니라 /s/ 같은 소리). 합성 TTS는 글자 이름을 읽을 뿐 음가를 못 내므로 녹음·검수한 파일만 쓴다. 라이선스는 직접 녹음, CC0, CC-BY(출처 표시)만 — 비상업(NC) 금지.
+- 코드: `lib/phonicsPhonemes.ts`(`hasPhoneme`·`playPhoneme`), 매니페스트 `src/data/phonics/phoneme-audio.json`(파일이 있는 규칙 id). 파일을 넣은 뒤 `node app/scripts/phonics/sync-phonemes.mjs` 를 돌리면 매니페스트와 목록 표가 갱신된다.
+- 화면: 낱말 단서(`cue`)를 쓰는 게임(분류·빈칸·조립·변신 등)에 "소리 듣기 /목표 글자/" 버튼이 **파일이 있는 규칙에만** 나온다. 지금은 파일이 없어 버튼이 안 보이고 기존 화면은 그대로다.
+- 확인: `node --experimental-websocket scripts/phonics/check-phonemes.mjs`(임시 무음 파일을 만들었다가 지우며 버튼·재생 요청을 확인, DB 쓰기 0건).
+- 아직: 실제 음원(0/76), 알파벳 게임(소리 풍선·글자 탐험)과 소리 비교 게임에서 음가 버튼 노출.
+
+### 음가 음원 AI 생성 (2026-10-30)
+
+- `node app/scripts/phonics/gen-phonemes.mjs` — 구글 클라우드 음성 합성(en-US-Neural2-H)으로 76개를 만들어 `app/scripts/phonics/out/phonemes/`(git 제외)에 둔다. **검수 전 파일은 앱(`public/`)에 들어가지 않는다.**
+- **알아낸 한계**: 이 음성 합성은 모음이 없는 소리 기호(`ʃ` 하나)를 무시하고 안쪽 글자를 그대로 읽는다(처음 만든 76개는 이 때문에 글자 이름을 읽어 전부 버렸다). 그래서 자음은 모음 /ɑ/ 를 붙인 음절(`ʃɑ`)로 만든 뒤, 모음만 따로 만든 소리의 스펙트럼 모양과 비교해 모음이 시작되는 곳을 찾아 자음만 잘라 낸다(`segment-phoneme.py`). 숨을 길게 낼 수 있는 소리(s f sh m n l …)는 가운데 부분을 이어 붙여 0.7초로 늘린다. 끊어지는 소리(b d g p t k)는 0.1~0.2초의 짧은 소리다.
+- **검수 필수**: `out/phonemes/review.html`을 열어 하나씩 들어 보고, 그 글자의 소리(/s/)가 정확할 때만 체크 → "합격 목록 내려받기"(approved.json)를 같은 폴더에 두고 `node app/scripts/phonics/gen-phonemes.mjs --approve` → `node app/scripts/phonics/sync-phonemes.mjs`. 합격하지 못한 소리는 직접 녹음한 mp3를 `public/phonics-sounds/<규칙 id>.mp3`에 넣으면 된다.
+- 자동 확인(숫자)은 소리 높이 분포 정도만 한다(s 5.6kHz·sh 4.8kHz·m 1.1kHz 등 예상과 같은 방향). 정확도는 귀로 확인해야 한다.
+- **결과(2026-10-30)**: 1차(`out/phonemes`) 58개 + 2차 `--v2`(늘이기·약한 모음 포함, 11개) + 3차 `--v3`(늘이지 않은 0.15~0.2초, 7개) = **76 / 76 합격**, 모두 사용자가 `review.html`에서 귀로 확인했다. 앞으로 소리를 바꾸려면 같은 폴더에 직접 녹음한 mp3를 넣고 `sync-phonemes.mjs`를 실행한다. 아직: 알파벳 게임·소리 비교 게임의 음가 버튼 노출.
