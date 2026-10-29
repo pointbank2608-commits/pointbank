@@ -110,6 +110,19 @@ try {
       console.log(`PASS phoneme: ${ruleId} button shown and plays`);
     }
   }
+  // 알파벳·소리 비교 게임에도 음가 버튼이 있다
+  for (const id of ['sound-balloons', 'letter-explorers', 'letter-trails', 'sound-position', 'magic-bridge', 'magic-lab']) {
+    const g = game(id), u = units.find((x) => !model.gameAvailability(g, x));
+    assert(u, `${id}: 가능한 유닛`);
+    await open(g.id, u.id, { rounds: 3 });
+    assert((await page.locator('.pg-phoneme').count()) >= 1, `${id}: 소리 듣기 버튼`);
+  }
+  for (const id of ['two-oo', 'ow-crossroads']) {
+    const g = game(id), u = units.find((x) => !model.gameAvailability(g, x));
+    await open(g.id, u.id, { rounds: 3 });
+    assert.equal(await page.locator('.pg-compare .pg-phoneme').count(), 2, `${id}: 두 소리를 비교하는 버튼`);
+  }
+  console.log('PASS phoneme buttons in alphabet, magic-e and sound-comparison games');
   assert.deepEqual(errors, []);
   assert.deepEqual(writes, []);
   console.log('ALL PASS: phoneme audio hook (no database writes)');

@@ -235,3 +235,4 @@
 @media (prefers-reduced-motion:reduce){.pg-v2 .pg-clock>i{transition:none}}
 .pg-v2 .pg-phoneme b{margin-left:4px;padding:1px 8px;border-radius:8px;background:#fff3c4;color:#6b4a00}
 .pg-v2 .pg-phoneme small{margin-left:6px;color:#8a1f0d}
+.pg-v2 .pg-compare{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
