@@ -1,0 +1,21 @@
+import {useAuth} from '../context/AuthContext';
+import {useEffect,useState} from 'react';
+import {supabase} from './supabase';
+import {fetchVideoClips} from './videoClips';
+import {isPhonicsSong,linkedSongUnits,songYoutubeId} from './phonicsSongs';
+import {courseUnits} from '../data/phonicsLessons';
+export interface SongMedia{id:string;source:'personal'|'provided';title:string;youtubeId:string;level:number|null;unitIds:string[];duration:number|null;channel:string;hidden:boolean;}
+export interface PersonalSongInput{id?:string;url:string;title:string;level:number|null;unitIds:string[];}
+export const SONG_MEDIA_EVENT='classbank:personal-songs-changed';
+export function validatePersonalSong(s:PersonalSongInput){if(!songYoutubeId(s.url))return 'url';if(!s.title.trim()||s.title.trim().length>200)return 'title';if(s.level!==null&&![1,2,3,4,5].includes(s.level))return 'units';if(s.unitIds.some(id=>!courseUnits().some(u=>u.id===id&&u.step===s.level)))return 'units';return null;}
+export async function fetchSongMedia():Promise<{songs:SongMedia[];personalReady:boolean}>{
+ const [provided,personal,hides]=await Promise.all([fetchVideoClips(true),supabase.from('phonics_personal_songs').select('*').order('updated_at',{ascending:false}),supabase.from('phonics_song_hides').select('clip_id')]);
+ const hidden=new Set((hides.data??[]).map((h:{clip_id:string})=>h.clip_id));
+ return {personalReady:!personal.error&&!hides.error,songs:[...provided.filter(isPhonicsSong).map(c=>({id:c.id,source:'provided' as const,title:c.title,youtubeId:c.youtube_id,level:c.level,unitIds:linkedSongUnits(c),duration:c.end_sec!==null&&Number(c.end_sec)>Number(c.start_sec)?Number(c.end_sec)-Number(c.start_sec):null,channel:c.channel,hidden:hidden.has(c.id)})),...(personal.data??[]).map((c:Record<string,unknown>)=>({id:String(c.id),source:'personal' as const,title:String(c.title),youtubeId:String(c.youtube_id),level:c.level as number|null,unitIds:c.unit_ids as string[],duration:c.duration as number|null,channel:String(c.channel??''),hidden:false}))]};
+}
+export function useSongMedia(){const {profile,academy}=useAuth();const account=(profile?.id??'')+':'+(academy?.id??'');const [loadedFor,setLoadedFor]=useState('');const [songs,setSongs]=useState<SongMedia[]|null>(null),[ready,setReady]=useState(false),[error,setError]=useState(false);useEffect(()=>{let live=true;const load=()=>{void fetchSongMedia().then(r=>{if(live){setSongs(r.songs);setReady(r.personalReady);setError(false);setLoadedFor(account);}}).catch(()=>{if(live){setError(true);setSongs([]);setLoadedFor(account);}});};load();window.addEventListener(SONG_MEDIA_EVENT,load);return()=>{live=false;window.removeEventListener(SONG_MEDIA_EVENT,load);};},[account]);return {songs:loadedFor===account?songs:null,ready:loadedFor===account&&ready,error:loadedFor===account&&error};}
+const changed=()=>window.dispatchEvent(new Event(SONG_MEDIA_EVENT));
+export async function savePersonalSong(s:PersonalSongInput){const invalid=validatePersonalSong(s);if(invalid)throw Error(invalid);const payload={title:s.title.trim(),youtube_id:songYoutubeId(s.url)!,level:s.level,unit_ids:s.unitIds,updated_at:new Date().toISOString()};const result=s.id?await supabase.from('phonics_personal_songs').update(payload).eq('id',s.id).select('id').single():await supabase.from('phonics_personal_songs').insert(payload).select('id').single();if(result.error)throw result.error;changed();return result.data.id as string;}
+export async function deletePersonalSong(id:string){const {data,error}=await supabase.from('phonics_personal_songs').delete().eq('id',id).select('id');if(error||!data?.length)throw Error(error?.message??'song_not_owned');changed();}
+export async function setProvidedSongHidden(id:string,hidden:boolean){const r=hidden?await supabase.from('phonics_song_hides').insert({clip_id:id}):await supabase.from('phonics_song_hides').delete().eq('clip_id',id);if(r.error)throw r.error;changed();}
+export async function appendSongToLesson(lessonId:string,song:SongMedia,updatedAt:string){const r=await supabase.rpc('append_song_to_lesson',{p_lesson:lessonId,p_song:song.id,p_source:song.source,p_expected:updatedAt});if(r.error)throw r.error;return r.data as string;}

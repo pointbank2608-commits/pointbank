@@ -2402,7 +2402,7 @@ function ShadowSlideDetail({ slide, onUpdate }: { slide: ShadowSlide; onUpdate: 
         </div>
       )}
       {!down && (
-        <div className="aspect-video w-full max-w-3xl">
+        <div className="h-[560px] w-full max-w-3xl">
           <ShadowBoard
             source={slide.source}
             title={slide.title}

@@ -134,7 +134,7 @@ export default function LessonSlideContent({
       );
     }
     return (
-      <div className={boardBox}>
+      <div className={fill?boardBox:"h-[560px] w-full max-w-5xl"}>
         <ShadowBoard
           key={slide.id}
           rememberKey={`lesson:${slide.id}`}
@@ -268,14 +268,14 @@ export default function LessonSlideContent({
     if (fill) {
       return (
         <div className="absolute inset-0 p-2 md:p-3">
-          <YoutubeShadowingPlayer videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
+          <YoutubeShadowingPlayer title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
         </div>
       );
     }
     return (
       <div className="space-y-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{lessonName}</h2>
-        <YoutubeShadowingPlayer videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
+        <YoutubeShadowingPlayer title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
       </div>
     );
   }

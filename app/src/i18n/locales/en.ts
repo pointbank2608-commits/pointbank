@@ -1,3 +1,4 @@
+import {mediaV2En} from '../mediaV2Locales';
 import {readyMediaEn} from '../readyMediaLocales';
 import {launchUxEn} from '../launchUxLocales';
 import { phonicsLessonEn } from '../phonicsLessonLocales';
@@ -20,6 +21,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  mediaV2:mediaV2En,
   readyMedia: readyMediaEn,
  launchUx:launchUxEn,
   phonicsGamesTitle: 'Phonics Games',

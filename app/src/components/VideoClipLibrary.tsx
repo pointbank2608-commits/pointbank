@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { parseShadowText, shadowSpeakers } from '../lib/shadowLines';
+import { parseShadowText } from '../lib/shadowLines';
 import { clipLength, clipThumb, formatClipTime, useVideoClips, type VideoClip } from '../lib/videoClips';
 import ShadowBoard from './ShadowBoard';
 import ClipThumbnail from './ClipThumbnail';
 import {clipActivities,clipSearchText,clipTopics,estimateClipMinutes,type ClipActivity} from '../lib/clipActivities';
 import {Link} from 'react-router-dom';
+import '../styles/video-library-v2.css';
 
 /**
  * 영상 라이브러리 고르기(2026-10-03) — 쉐도잉 슬라이드 추가 패널·"영상 하나로 수업" 레시피에서 쓴다.
@@ -142,92 +143,15 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
   );
 }
 
-function ClipPreview({ clip, onPick, onClose, pickLabel }: { clip: VideoClip; onPick: (activities:ClipActivity[]) => void; onClose: () => void; pickLabel?: string }) {
-  const { t } = useTranslation();
-  const lines = parseShadowText(clip.script);
-  const speakers = shadowSpeakers(lines);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const choices=useMemo(()=>clipActivities(clip),[clip]);
-  const [activities,setActivities]=useState<ClipActivity[]>(()=>choices.filter(x=>['words','shadow','questions'].includes(x)));
-  useEffect(()=>setActivities(choices.filter(x=>['words','shadow','questions'].includes(x))),[clip.id,choices]);
-  const [fallbackFull,setFallbackFull]=useState(false);
-  const [isFull, setIsFull] = useState(false);
-  useEffect(() => {
-    const onChange = () => setIsFull(document.fullscreenElement === stageRef.current);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
-  useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape')setFallbackFull(false);};document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key);},[]);
-  async function toggleFullscreen() {
-    if(fallbackFull){setFallbackFull(false);return;}
-    if (document.fullscreenElement) {await document.exitFullscreen();return;}
-    try{if(!stageRef.current?.requestFullscreen)throw Error('unsupported');await stageRef.current.requestFullscreen();}catch{setFallbackFull(true);}
-  }
-  return (
-    <div className="space-y-3 rounded-xl border border-primary/30 bg-secondary-container/20 p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="font-caption text-caption text-on-surface-variant">
-            {clip.series} · Lv.{clip.level} · {formatClipTime(Number(clip.start_sec))}–{formatClipTime(Number(clip.end_sec))}
-          </div>
-          <div className="font-title-md text-title-md text-deep-navy">{clip.title}</div>
-          {clip.summary && <p className="font-body-md text-body-md text-on-surface-variant">{clip.summary}</p>}
-          <div className="mt-1 font-caption text-caption text-on-surface-variant">
-            {t('curriculum.shadow.lineCount', { count: lines.length })}
-            {speakers.length > 0 && ` · ${t('curriculum.shadow.speakers', { names: speakers.join(', ') })}`}
-          </div>
-          {clip.words.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
-              {clip.words.map((w) => (
-                <span key={w} className="rounded-full bg-surface-container-lowest px-2 py-0.5 text-xs text-on-surface">
-                  {w}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            aria-label={t('readyMedia.fullscreen')}
-            className="flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 font-label-md text-label-md text-on-surface hover:bg-surface-container-low"
-          >
-            <span className="material-symbols-outlined text-[18px]">fullscreen</span>
-            {t('readyMedia.fullscreen')}
-          </button>
-          <button
-            type="button"
-            onClick={()=>onPick(activities)}
-            aria-label={pickLabel ?? t('readyMedia.makeLesson')}
-            disabled={!activities.length}
-            className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container"
-          >
-            <span className="material-symbols-outlined text-[18px]">add_circle</span>
-            {pickLabel ?? t('readyMedia.makeLesson')}
-          </button>
-          <button type="button" onClick={onClose} aria-label={t('common.close')} className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-      </div>
-      <p className="text-sm">{t('readyMedia.time',{time:formatClipTime(clipLength(clip))})} · {t('readyMedia.levelHint',{level:clip.level})} · {t('readyMedia.estimate',estimateClipMinutes(clip,activities))}</p><p className="text-xs text-slate-600">{t('readyMedia.estimateBasis')}</p>
-      <details open className="rounded-xl border bg-white p-3"><summary className="font-bold">{t('readyMedia.recommend')}</summary><div className="my-3 flex flex-wrap gap-4">{choices.map(activity=><label key={activity}><input type="checkbox" checked={activities.includes(activity)} onChange={e=>setActivities(prev=>e.target.checked?[...prev,activity]:prev.filter(x=>x!==activity))}/> {t('readyMedia.'+activity)}</label>)}</div>{clip.pack?.words?.length&&<p>{clip.pack.words.map(w=>w.word+' — '+w.meaning).join(' · ')}</p>}{clip.pack?.questions?.map((q,i)=><p key={i}>{i+1}. {q.q}</p>)}</details>
-      <div className="flex flex-wrap gap-3"><button type="button" className="rounded-lg border bg-white px-4 py-2" onClick={()=>stageRef.current?.scrollIntoView({block:'center',behavior:'smooth'})}>{t('readyMedia.watch')}</button>{(clip.script.trim()||clip.pack?.questions?.length)&&<Link className="rounded-lg border bg-white px-4 py-2" to={`/materials/video-worksheet?clip=${clip.id}`}>{t('readyMedia.printSheet')}</Link>}</div>
-      {/* 화면에 맞춰 크게(가로는 칸 전체, 세로는 창 높이의 약 75%까지) + 전체 화면(2026-10-05 사용자 요청) */}
-      <div ref={stageRef} data-video-full={isFull||fallbackFull} className={(fallbackFull?'fixed inset-0 z-[200] h-dvh max-w-none bg-black p-5 ':'')+"relative mx-auto aspect-video w-full max-w-[calc(75vh*16/9)] bg-surface-container-low [&:fullscreen]:max-w-none [&:fullscreen]:bg-black [&:fullscreen]:px-[2vh] [&:fullscreen]:pb-[2vh] [&:fullscreen]:pt-[5vh]"}>
-        <ShadowBoard flow="video" expanded={isFull||fallbackFull} rememberKey={`clip:${clip.id}`} key={clip.id} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} />
-        {(isFull||fallbackFull) && (
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="absolute left-1/2 top-[0.4vh] z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm text-white hover:bg-white/30"
-          >
-            <span className="material-symbols-outlined text-[18px]">fullscreen_exit</span>
-            {t('videoLibrary.exitFullscreen')}
-          </button>
-        )}
-      </div>
-    </div>
-  );
+function ClipPreview({clip,onPick,onClose,pickLabel}:{clip:VideoClip;onPick:(activities:ClipActivity[])=>void;onClose:()=>void;pickLabel?:string}){
+ const {t}=useTranslation();const choices=useMemo(()=>clipActivities(clip),[clip]);const [activities,setActivities]=useState<ClipActivity[]>(()=>choices.filter(x=>['words','shadow','questions'].includes(x)));const [learning,setLearning]=useState(false);const stage=useRef<HTMLDivElement>(null);
+ useEffect(()=>{setLearning(false);setActivities(choices.filter(x=>['words','shadow','questions'].includes(x)));},[clip.id,choices]);
+ const lines=parseShadowText(clip.script);const expressions=clip.pack?.grammar?.sentence?[clip.pack.grammar.sentence]:lines.slice(0,2).map(l=>l.en.replace(/\*\*/g,''));
+ return <article className="vl-detail"><header className="vl-detail-heading"><div><div className="vl-badges"><span>{clip.series}</span><span>Lv.{clip.level}</span>{clip.tags.slice(0,2).map(tag=><span key={tag}>{tag}</span>)}</div><h2>{clip.title}</h2><p>{clip.summary}</p></div><button type="button" aria-label={t('mediaV2.close')} onClick={onClose}>×</button></header>
+  <div className="vl-meta"><span>{t('readyMedia.time',{time:formatClipTime(clipLength(clip))})}</span><span>{t('readyMedia.estimate',estimateClipMinutes(clip,activities))}</span></div>
+  <div className="vl-detail-grid"><div ref={stage} className="vl-stage"><ShadowBoard key={clip.id} flow="video" rememberKey={`clip:${clip.id}`} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`}/></div><aside className="vl-learning-card"><h3>{t('readyMedia.words')}</h3><div className="vl-expression-list">{expressions.map((text,i)=><p key={i}>{text}</p>)}</div><div className="vl-core-words">{(clip.pack.words??[]).slice(0,4).map(w=><div key={w.word}><strong>{w.word}</strong><span>{w.meaning}</span></div>)}</div><button type="button" aria-expanded={learning} onClick={()=>setLearning(v=>!v)}>{t(learning?'mediaV2.hidePreview':'mediaV2.preview')} →</button></aside></div>
+  {learning&&<section className="vl-full-learning" data-learning-preview><h3>{t('mediaV2.preview')}</h3><p>{(clip.pack.words??[]).map(w=>w.word+' — '+w.meaning).join(' · ')}</p>{clip.pack.questions?.map((q,i)=><p key={i}>{i+1}. {q.q}</p>)}</section>}
+  <fieldset className="vl-activity-order"><legend>{t('readyMedia.recommend')}</legend>{choices.map((activity,i)=><label key={activity} className={activities.includes(activity)?'is-selected':''}><input type="checkbox" checked={activities.includes(activity)} onChange={e=>setActivities(prev=>e.target.checked?[...prev,activity]:prev.filter(x=>x!==activity))}/><b>{i+1}</b><span>{t('readyMedia.'+activity)}</span></label>)}</fieldset>
+  <div className="vl-action-bar"><button type="button" onClick={()=>stage.current?.scrollIntoView({block:'center',behavior:'smooth'})}>{t('readyMedia.watch')}</button>{(clip.script.trim()||clip.pack.questions?.length)&&<Link to={`/materials/video-worksheet?clip=${clip.id}`}>{t('readyMedia.printSheet')}</Link>}<button type="button" className="is-primary" disabled={!activities.length} aria-label={pickLabel??t('readyMedia.makeLesson')} onClick={()=>onPick(activities)}>{pickLabel??t('readyMedia.makeLesson')}</button></div><p className="vl-time-note">{t('readyMedia.estimateBasis')}</p>
+ </article>;
 }

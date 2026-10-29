@@ -33,10 +33,22 @@ export interface YoutubePlayer {
   setPlaybackRate: (rate: number) => void;
   getCurrentTime: () => number;
   getDuration?: () => number;
+  getPlayerState?: () => number;
+  setVolume?: (volume:number) => void;
+  getVolume?: () => number;
+  getAvailablePlaybackRates?: () => number[];
   destroy: () => void;
 }
 
 let apiPromise: Promise<void> | null = null;
+
+/** Retry a failed script load without disturbing already constructed players. */
+export function retryYoutubeIframeApi(): Promise<void> {
+  if(window.YT?.Player)return Promise.resolve();
+  document.querySelector('script[src="https://www.youtube.com/iframe_api"]')?.remove();
+  apiPromise=null;
+  return loadYoutubeIframeApi();
+}
 
 /** 유튜브 IFrame Player API 스크립트를 한 번만 로드한다(여러 컴포넌트가 동시에 불러도 안전). */
 export function loadYoutubeIframeApi(): Promise<void> {

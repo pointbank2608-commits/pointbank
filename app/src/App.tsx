@@ -15,7 +15,7 @@ import { lazyPage } from './lib/lazyPage';
 const PhonicsLessonPage = lazyPage(() => import('./pages/PhonicsLessonPage'));
 const ReadyClassWorkbookPage = lazyPage(() => import('./pages/ReadyClassWorkbookPage'));
 const VideoWorksheetPage = lazyPage(() => import('./pages/VideoWorksheetPage'));
-const PhonicsSongsAdminPage = lazyPage(() => import('./components/phonicsStage1/PhonicsSongs'));
+const PhonicsSongsAdminPage = lazyPage(() => import('./components/phonicsStage1/AdminPhonicsSongs'));
 const PhonicsGamesPage = lazyPage(() => import('./pages/PhonicsGamesPage'));
 const AdminTodayPage = lazyPage(() => import('./pages/AdminTodayPage'));
 const AdminAcademyDetailPage = lazyPage(() => import('./pages/AdminAcademyDetailPage'));

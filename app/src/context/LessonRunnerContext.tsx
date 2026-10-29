@@ -510,3 +510,7 @@ export function usePresenting(): boolean {
   const ctx = useContext(LessonRunnerContext);
   return ctx?.runner != null;
 }
+
+/** Shared video controls can use the existing lesson fullscreen without requiring a lesson provider. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useOptionalLessonRunner() { return useContext(LessonRunnerContext); }

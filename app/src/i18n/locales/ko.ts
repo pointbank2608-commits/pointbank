@@ -1,3 +1,4 @@
+import {mediaV2Ko} from '../mediaV2Locales';
 import {readyMediaKo} from '../readyMediaLocales';
 import {launchUxKo} from '../launchUxLocales';
 import { phonicsLessonKo } from '../phonicsLessonLocales';
@@ -18,6 +19,7 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  mediaV2:mediaV2Ko,
   readyMedia: readyMediaKo,
   launchUx:launchUxKo,
   phonicsGamesTitle: '파닉스 게임',

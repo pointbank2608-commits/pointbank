@@ -718,6 +718,7 @@ export interface ImageSlide {
 }
 
 export interface VideoSlide {
+  title?: string;
   id: string;
   kind: 'video';
   videoUrl: string;
