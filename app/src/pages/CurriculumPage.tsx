@@ -8,6 +8,7 @@ import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
 import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
 import LessonLibraryModal from '../components/LessonLibraryModal';
+import { SaveStyleModal, StartFromStyleModal } from '../components/LessonStyleModals';
 import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
@@ -67,6 +68,8 @@ export default function CurriculumPage() {
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const soloOpen = useFeature('solo');
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [styleStartOpen, setStyleStartOpen] = useState(false);
+  const [styleSaveLesson, setStyleSaveLesson] = useState<CurriculumLesson | null>(null);
   const homeworkOpen = useFeature('homework');
   // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
   const [mode, setModeRaw] = useState<'group' | 'solo'>(() => {
@@ -720,6 +723,29 @@ export default function CurriculumPage() {
         />
       )}
       {wrapUp && <LessonWrapUp info={{ ...wrapUp, className: classes.find((c) => c.id === wrapUp.classId)?.name }} onClose={() => setWrapUp(null)} />}
+      {styleSaveLesson && academy?.id && <SaveStyleModal academyId={academy.id} lesson={styleSaveLesson} onClose={() => setStyleSaveLesson(null)} />}
+      {styleStartOpen && academy?.id && profile && (
+        <StartFromStyleModal
+          academyId={academy.id}
+          teacherId={profile.id}
+          classes={classes}
+          defaultClassId={staffClassId ?? null}
+          wordLists={wordLists}
+          onClose={() => setStyleStartOpen(false)}
+          onCreated={(lesson) => {
+            if (lesson.class_id === staffClassId) setLessons((prev) => [lesson, ...prev]);
+          }}
+          onEdit={(lesson) => {
+            setStyleStartOpen(false);
+            if (lesson.class_id && lesson.class_id !== staffClassId) selectClass(lesson.class_id);
+            openEditForm(lesson);
+          }}
+          onStart={(lesson) => {
+            setStyleStartOpen(false);
+            void handleStart(lesson);
+          }}
+        />
+      )}
       {libraryOpen && academy?.id && profile && (
         <LessonLibraryModal
           academyId={academy.id}
@@ -1143,6 +1169,16 @@ export default function CurriculumPage() {
       {!showForm && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display-lg text-[clamp(1.4rem,2.4vw,1.8rem)] font-black text-deep-navy">{t('curriculum.mineTitle')}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setStyleStartOpen(true)}
+            disabled={!staffClassId}
+            className="flex min-h-11 items-center gap-2 rounded-full border border-primary px-5 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-[20px]" aria-hidden>dashboard_customize</span>
+            {t('lessonStyle.startButton')}
+          </button>
           <button
             type="button"
             onClick={() => setLibraryOpen(true)}
@@ -1153,6 +1189,7 @@ export default function CurriculumPage() {
             {t('curriculum.browseLibrary')}
             <span className="material-symbols-outlined text-[20px]" aria-hidden>chevron_right</span>
           </button>
+          </div>
         </div>
       )}
 
@@ -1279,6 +1316,7 @@ export default function CurriculumPage() {
                       ...(homeworkOpen
                         ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id, fromClassId: lesson.class_id ?? staffClassId } }) }]
                         : []),
+                      { key: 'style', label: t('lessonStyle.saveButton'), icon: 'dashboard_customize', onSelect: () => setStyleSaveLesson(lesson) },
                       { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
                       { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },
                       { key: 'history', label: t('curriculum.history.button'), icon: 'history', onSelect: () => setHistoryLesson(lesson) },
