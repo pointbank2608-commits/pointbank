@@ -183,7 +183,7 @@ try {
   await page.locator('.pg-token-bank button').nth(tokens.findIndex(t=>t.id===0)).click();assert.equal(await page.locator('.pg-filled').count(),1);
   assert.equal(await page.locator('.pg-word-carriage b').first().textContent(),first.tokens[0]);
   await page.getByRole('button',{name:'잠시 멈춤',exact:true}).click();await page.getByRole('button',{name:'이어서 하기',exact:true}).click();assert.equal(await page.locator('.pg-filled').count(),1);
-  await page.locator('.pg-hint summary').click();await page.locator('.pg-hint[open]').waitFor();
+  await page.getByRole('button',{name:'힌트 보기'}).click();await page.locator('.pg-caption-hint').waitFor();
   await page.locator('.pg-token-bank button').nth(tokens.findIndex(t=>t.id===1)).click();await page.locator('.pg-next').click();
   for(let i=1;i<3;i++){await solve(train,trainUnit,i);await page.locator('.pg-next').click();}
   await page.getByText('첫 시도에 혼자 맞힘: 2',{exact:false}).waitFor();

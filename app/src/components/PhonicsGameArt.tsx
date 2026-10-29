@@ -22,12 +22,12 @@ export function PlayWorld({world,children}:{world:PhonicsWorld;children:ReactNod
 }
 
 /** Reactions are driven only by real clicks, partial work and checked answers. */
-export function LearningStage({game,en,solved,wrong,progress,word,pieces=[],slots=3}:{game:PhonicsGame;en:boolean;solved:boolean;wrong:boolean;progress:number;word:string;pieces?:string[];slots?:number}){
+export function LearningStage({game,en,solved,wrong,progress,word,hint=null,pieces=[],slots=3}:{game:PhonicsGame;en:boolean;solved:boolean;wrong:boolean;progress:number;word:string;hint?:string|null;pieces?:string[];slots?:number}){
  const visual=gameVisual(game);
  const growth=Math.min(1,progress);
  const status=solved?'success':wrong?'retry':progress>0?'working':'waiting';
  return <div className={'pg-learning-stage pg-action-'+visual.action} data-learning-action={visual.action} data-reaction={status} style={{'--pg-work':growth} as CSSProperties}>
-  <span className="pg-stage-caption">{en?visual.en:visual.ko}</span>
+  {hint?<span className="pg-stage-caption pg-caption-hint" title={hint} style={hint.length>42?{fontSize:'.78em'}:undefined}><span className="material-symbols-outlined" aria-hidden="true">lightbulb</span><span lang="en">{hint}</span></span>:<span className="pg-stage-caption">{en?visual.en:visual.ko}</span>}
   <div className="pg-stage-track" aria-hidden="true">
    {visual.world==='train'?<div className="pg-stage-train"><ClaySprite kind="engine"/>{Array.from({length:game.id==='sound-train'?Math.min(slots,6):3},(_,i)=><span className={'pg-word-carriage '+(pieces[i]||solved?'pg-carriage-ready':'')} key={i}><ClaySprite kind="carriage"/><b lang="en">{game.id==='sound-train'?pieces[i]??'·':solved&&i===0?word:''}</b></span>)}</div>:
     visual.action==='connect'&&visual.prop==='bridge'?<><ClaySprite kind="bridge" className="pg-stage-bridge"/><ClaySprite kind="robot" className="pg-stage-crosser"/></>:
