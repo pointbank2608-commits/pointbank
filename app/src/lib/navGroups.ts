@@ -36,6 +36,7 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
       { to: '/my-games', labelKey: 'launchUx.myGames', icon: 'sports_esports' },
       { to: '/whiteboard', labelKey: 'whiteboard.navLabel', icon: 'draw' },
       { to: '/phonics?tab=course', labelKey: 'launchUx.readyClass', icon: 'spellcheck' },
+      { to: '/stem', labelKey: 'videoUi.stemNav', icon: 'science' },
     ],
   },
   {

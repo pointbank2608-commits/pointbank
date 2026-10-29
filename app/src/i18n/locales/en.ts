@@ -1,3 +1,4 @@
+import {videoUiEn} from '../videoUiLocales';
 import {mediaV2En} from '../mediaV2Locales';
 import {readyMediaEn} from '../readyMediaLocales';
 import {launchUxEn} from '../launchUxLocales';
@@ -21,6 +22,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  videoUi:videoUiEn,
   mediaV2:mediaV2En,
   readyMedia: readyMediaEn,
  launchUx:launchUxEn,

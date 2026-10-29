@@ -1,0 +1,35 @@
+/* Classroom controls: large targets without changing the simple song preview. */
+.tv-player[data-simple=false]{min-height:0;padding:16px 22px;overflow:auto;-webkit-tap-highlight-color:transparent;--tv-nav-space:0px}
+body:has([data-lesson-video-nav]) .tv-player[data-simple=false]{padding-bottom:84px}
+.tv-player[data-simple=false] .tv-title{min-height:40px;font-size:18px;flex-shrink:0}
+.tv-player[data-simple=false] .tv-title button{min-height:44px;font-size:15px}
+.tv-player[data-simple=false] .tv-video{min-height:130px}
+.tv-player[data-simple=false] .tv-caption{min-height:76px;padding:10px 16px}
+.tv-player[data-simple=false] .tv-caption .tv-en{font-size:clamp(24px,2.6vw,38px)}
+.tv-player[data-simple=false] .tv-caption .tv-ko{font-size:clamp(16px,1.6vw,23px)}
+.tv-player[data-simple=false] .tv-control{min-width:90px;min-height:68px;font-size:16px;gap:7px}
+.tv-player[data-simple=false] .tv-control .material-symbols-outlined{font-size:32px}
+.tv-player[data-simple=false] .tv-main-controls{gap:28px;padding:8px}
+.tv-player[data-simple=false] .tv-controls-space{min-height:182px}
+.tv-player[data-simple=false] .tv-progress{font-size:14px;gap:14px}
+.tv-player[data-simple=false] .tv-progress input{min-height:32px}
+.tv-player[data-simple=false] .tv-tool-controls>button,.tv-player[data-simple=false] .tv-setting-anchor>button{min-height:44px;padding:10px 16px;font-size:16px}
+.tv-player[data-simple=false] .tv-summary{font-size:15px;line-height:1.6}
+.tv-player[data-simple=false] .tv-popup{position:static;order:-1;width: min(680px,calc(100cqw - 30px));max-width:none;max-height:none;overflow:visible;margin:0 0 10px;gap:12px;padding:18px;font-size:16px;box-sizing:border-box}
+.tv-player[data-simple=false] .tv-setting-anchor:has(.tv-popup){display:flex;flex-direction:column;align-items:center;flex-basis:100%}
+.tv-player[data-simple=false] .tv-popup:after{display:none}
+.tv-player[data-simple=false]:has(.tv-popup) .tv-video{flex:1 0 130px}
+.tv-player[data-simple=false]:has(.tv-popup) .tv-caption>div{max-width:100%;align-items:center;margin:0;text-align:center}
+.tv-player[data-simple=false] .tv-controls:has(.tv-popup) .tv-main-controls,.tv-player[data-simple=false] .tv-controls:has(.tv-popup) .tv-progress{width:100%;justify-content:center}
+.tv-player[data-simple=false] .tv-popup button{min-height:44px;padding:8px 12px;font-size:15px}
+.tv-player[data-simple=false] .tv-popup>header{font-size:18px}
+.tv-choice-row{display:grid;grid-template-columns:108px minmax(0,1fr);align-items:center;gap:10px;min-width:0}
+.tv-choice-row legend{float:left;font-size:15px;font-weight:700;width:108px}
+.tv-choice-row>div{display:flex;flex-wrap:wrap;gap:6px}
+.tv-choice-row button{border:1px solid #c9d9ed;border-radius:8px;background:#f4f8fd;color:#203f68;min-width:48px}
+.tv-choice-row button[aria-pressed=true]{background:#116dff;color:#fff;border-color:#116dff}
+.tv-modes summary{cursor:pointer;padding:8px 0;font-weight:700;min-height:44px}.tv-modes .tv-mode-options{margin-top:8px}
+.tv-player[data-simple=false] .tv-popup input[type=checkbox]{width:22px;height:22px}
+.tv-player[data-simple=false] .tv-sub-popup{width:min(420px,calc(100cqw - 30px));display:flex;flex-wrap:wrap}
+@media(max-width:650px){.tv-player[data-simple=false]{padding:10px}.tv-player[data-simple=false] .tv-main-controls{gap:4px;padding:6px 0}.tv-player[data-simple=false] .tv-control{min-width:0;flex:1;font-size:13px;min-height:64px}.tv-player[data-simple=false] .tv-control .material-symbols-outlined{font-size:28px}.tv-player[data-simple=false] .tv-tool-controls>button,.tv-player[data-simple=false] .tv-setting-anchor>button{font-size:14px;padding:8px 10px}.tv-choice-row{grid-template-columns:1fr}.tv-choice-row legend{float:none;width:auto}.tv-player[data-simple=false] .tv-popup{padding:12px}.tv-player[data-simple=false] .tv-title{font-size:15px}.tv-player[data-simple=false] .tv-caption{min-height:72px}.tv-player[data-simple=false] .tv-title button{font-size:13px}.tv-player[data-simple=false] .tv-popup select{max-width:140px}}
+@media(max-height:600px) and (orientation:landscape){.tv-player[data-simple=false] .tv-control>span:last-child{display:block}.tv-player[data-simple=false] .tv-caption{min-height:55px}.tv-player[data-simple=false] .tv-controls-space{min-height:150px}.tv-player[data-simple=false] .tv-video{min-height:90px}}

@@ -1,3 +1,4 @@
+import {videoUiKo} from '../videoUiLocales';
 import {mediaV2Ko} from '../mediaV2Locales';
 import {readyMediaKo} from '../readyMediaLocales';
 import {launchUxKo} from '../launchUxLocales';
@@ -19,6 +20,7 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  videoUi:videoUiKo,
   mediaV2:mediaV2Ko,
   readyMedia: readyMediaKo,
   launchUx:launchUxKo,

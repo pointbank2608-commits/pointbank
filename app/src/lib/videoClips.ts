@@ -17,7 +17,7 @@ export interface ClipPack {
   /** 내용 질문(Q&A) */
   questions?: { q: string; a: string; qKo?: string; aKo?: string; time?: number }[];
   /** 핵심 단어 — 영화 속 예문과 그 문장이 나오는 시간(단어 소개의 "장면 보기") */
-  words?: { word: string; meaning: string; pos?: string; example: string; exampleKo?: string; time: number }[];
+  words?: { word: string; meaning: string; pos?: string; example: string; exampleKo?: string; time: number; imageUrl?:string }[];
   /** 문법 포인트 — 영화 문장 하나를 틀로 바꿔 말하기 */
   grammar?: {
     grammarId?: string | null;

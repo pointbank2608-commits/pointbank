@@ -12,6 +12,7 @@ import PageLoading from './components/PageLoading';
 import { lazyPage } from './lib/lazyPage';
 
 // 화면 코드 분할(2026-10-17): 화면을 처음 열 때 그 조각만 받는다. 레이아웃(AppLayout/AdminLayout)만 처음부터 들어 있다.
+const StemReadyClassPage = lazyPage(() => import('./pages/StemReadyClassPage'));
 const PhonicsLessonPage = lazyPage(() => import('./pages/PhonicsLessonPage'));
 const ReadyClassWorkbookPage = lazyPage(() => import('./pages/ReadyClassWorkbookPage'));
 const VideoWorksheetPage = lazyPage(() => import('./pages/VideoWorksheetPage'));
@@ -290,6 +291,7 @@ function AppRoutes() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/curriculum" element={<CurriculumPage />} />
+            <Route path="/stem" element={<StemReadyClassPage />} />
             <Route path="/curriculum/:id/slide/:slideId" element={<LessonSlideViewerPage />} />
             <Route path="/board" element={<ClassBoardPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
