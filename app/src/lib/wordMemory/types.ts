@@ -13,7 +13,7 @@ export interface WmCard {
   example?: string | null;
 }
 
-export type WmDailyMode = 'light' | 'normal';
+export type WmDailyMode = 'light' | 'normal' | 'plus';
 
 /** 낱말 상태: 아직 안 만남 → 처음 만남 → 연습 중 → 혼자 맞힘 → 며칠 뒤에도 기억함 */
 export type WmWordState = 'unseen' | 'seen' | 'practicing' | 'alone' | 'kept';
@@ -167,3 +167,95 @@ export interface WmPlanResults {
 }
 
 export type WmErrorKind = 'not_found' | 'closed' | 'feature_closed' | 'stale' | 'network' | 'too_few_words' | 'bad_student' | 'no_students' | 'unknown';
+
+/* ---------- 프로젝트: 아침 브리핑 · 다음 단계 카드 · 진행(096) ---------- */
+
+export interface WmBriefStudent {
+  student_id: string;
+  name: string;
+  yesterday: 'done' | 'partial' | 'none';
+  answered_yesterday: number;
+  correct_yesterday: number;
+  today: 'done' | 'started' | 'not_started';
+  streak_days: number;
+  inactive_days: number | null;
+  due_today: number;
+  hard: number;
+  stages: WmStageCounts;
+}
+
+export interface WmHotWord {
+  key: string;
+  word: string;
+  meaning: string;
+  students: number;
+  misses: number;
+}
+
+export interface WmBriefing {
+  today: string;
+  yesterday: string;
+  day_index: number;
+  closed: boolean;
+  students: WmBriefStudent[];
+  hot_words: WmHotWord[];
+}
+
+export type WmStepAction = 'lighter' | 'heavier' | 'focus_spelling' | 'focus_listening' | 'focus_meaning' | 'focus_context' | 'clear_focus';
+
+export interface WmStepReason {
+  code: 'inactive' | 'low_accuracy' | 'steady' | 'weak_skill' | 'focus_improved';
+  days?: number;
+  pct?: number;
+  skill?: string;
+  count?: number;
+}
+
+export interface WmStudentSteps {
+  student_id: string;
+  name: string;
+  mode: WmDailyMode;
+  focus: string | null;
+  answers_7d: number;
+  accuracy_7d: number | null;
+  steps: { action: WmStepAction; reason: WmStepReason }[];
+}
+
+export interface WmSection {
+  n: number;
+  from: number;
+  to: number;
+  size: number;
+  met: number;
+  kept: number;
+}
+
+export interface WmProgressStudent {
+  student_id: string;
+  name: string;
+  met: number;
+  kept: number;
+  completed: boolean;
+  sections: WmSection[];
+  pace: { intro_date: string | null; graduate_date: string | null; on_track: boolean | null };
+}
+
+export interface WmProgress {
+  words: number;
+  section_size: number;
+  need_to_graduate: number;
+  day: number;
+  intro_deadline: string;
+  final_deadline: string;
+  students: WmProgressStudent[];
+}
+
+export interface WmCardRow {
+  ord?: number;
+  key: string;
+  word: string;
+  meaning: string;
+  pos?: string | null;
+  imageUrl?: string | null;
+  example?: string | null;
+}

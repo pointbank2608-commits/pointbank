@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toWmError, wmPlanClose, wmPlanLinks, wmPlanList, wmPlanResults, wmStudentUrl } from '../../lib/wordMemory/api';
 import type { WmPlanResults, WmPlanSummary, WmStudentResult } from '../../lib/wordMemory/types';
+import WordMemoryCoach from './WordMemoryCoach';
 
 const SKILLS = ['meaning', 'spelling', 'listening', 'context', 'picture'] as const;
 
@@ -102,7 +103,7 @@ export default function WordMemoryResults({ classId, initialPlanId }: { classId:
                   {!p.closed && p.ended && <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-xs">{t('wordMemory.planEnded')}</span>}
                 </span>
                 <span className="block text-sm text-on-surface-variant">
-                  {t('wordMemory.planMeta', { words: p.words, mode: t(p.daily_mode === 'light' ? 'wordMemory.dailyLight' : 'wordMemory.dailyNormal'), day: p.day_index + 1, study: p.study_days, review: p.review_days })}
+                  {t('wordMemory.planMeta', { words: p.words, mode: t(p.daily_mode === 'light' ? 'wordMemory.dailyLight' : p.daily_mode === 'plus' ? 'wordMemory.dailyPlus' : 'wordMemory.dailyNormal'), day: p.day_index + 1, study: p.study_days, review: p.review_days })}
                 </span>
               </span>
               <span className="text-sm font-bold text-primary">{t('wordMemory.todayDone', { done: p.today_done, total: p.students })}</span>
@@ -143,6 +144,7 @@ export default function WordMemoryResults({ classId, initialPlanId }: { classId:
                     </tbody>
                   </table>
                 </div>
+                <WordMemoryCoach planId={p.id} classId={classId} planTitle={p.title} words={p.words} closed={p.closed} />
                 <details>
                   <summary className="cursor-pointer font-bold text-primary">{t('wordMemory.studentLinks')}</summary>
                   <ul className="mt-2 flex flex-wrap gap-2">

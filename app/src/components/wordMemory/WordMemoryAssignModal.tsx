@@ -231,9 +231,9 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
             <section>
               <div className="mb-2 text-sm font-bold text-on-surface-variant">{t('wordMemory.daily')}</div>
               <div className="flex flex-wrap gap-2" role="group" aria-label={t('wordMemory.daily')}>
-                {(['light', 'normal'] as const).map((m) => (
+                {(['light', 'normal', 'plus'] as const).map((m) => (
                   <button key={m} type="button" aria-pressed={mode === m} className={chip(mode === m)} onClick={() => setMode(m)} data-wm-mode={m}>
-                    {t(m === 'light' ? 'wordMemory.dailyLight' : 'wordMemory.dailyNormal')}
+                    {t(m === 'light' ? 'wordMemory.dailyLight' : m === 'plus' ? 'wordMemory.dailyPlus' : 'wordMemory.dailyNormal')}
                   </button>
                 ))}
               </div>
@@ -280,7 +280,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                 <label className="block text-sm font-bold text-on-surface-variant">
                   {t('wordMemory.studyDays')}
                   <select className={`${field} mt-1 w-full text-deep-navy`} value={study} onChange={(e) => setStudyDays(Number(e.target.value))} data-wm-study-days>
-                    {[...new Set([7, 10, 14, 21, 30, 45, 60, study])].sort((a, b) => a - b).map((d) => (
+                    {[...new Set([7, 10, 14, 21, 30, 45, 60, 90, 120, 180, 240, study])].sort((a, b) => a - b).map((d) => (
                       <option key={d} value={d}>
                         {t('wordMemory.days', { count: d })}
                       </option>
@@ -290,7 +290,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                 <label className="block text-sm font-bold text-on-surface-variant">
                   {t('wordMemory.reviewDays')}
                   <select className={`${field} mt-1 w-full text-deep-navy`} value={reviewDays} onChange={(e) => setReviewDays(Number(e.target.value))}>
-                    {[0, 7, 14, 21, 30].map((d) => (
+                    {[0, 7, 14, 21, 30, 45, 60, 90].map((d) => (
                       <option key={d} value={d}>
                         {t('wordMemory.days', { count: d })}
                       </option>

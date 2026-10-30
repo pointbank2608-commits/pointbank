@@ -7,7 +7,7 @@ import type { WmCard, WmDailyMode } from './types';
 
 export const WM_RULE_VERSION = 'wm-v1';
 export const WM_MIN_WORDS = 4;
-export const WM_MAX_WORDS = 400;
+export const WM_MAX_WORDS = 1000;
 
 export interface DailyBudget {
   asks: number;
@@ -15,7 +15,7 @@ export interface DailyBudget {
   retryReserve: number;
 }
 
-export const dailyBudget = (mode: WmDailyMode): DailyBudget => (mode === 'light' ? { asks: 12, newMax: 3, retryReserve: 2 } : { asks: 20, newMax: 5, retryReserve: 4 });
+export const dailyBudget = (mode: WmDailyMode): DailyBudget => (mode === 'light' ? { asks: 12, newMax: 3, retryReserve: 2 } : mode === 'plus' ? { asks: 30, newMax: 10, retryReserve: 5 } : { asks: 20, newMax: 5, retryReserve: 4 });
 
 /** 서버 wm_key 와 같은 열쇠(낱말|뜻, 소문자·공백 정리) */
 export const cardKey = (word: string, meaning: string) => `${word.trim().replace(/\s+/g, ' ').toLowerCase()}|${meaning.trim().replace(/\s+/g, ' ').toLowerCase()}`;
@@ -79,8 +79,8 @@ export function analyzeCards(cards: readonly WmCard[]): CardAnalysis {
 /** 낱말을 모두 소개하는 데 걸리는 날 수(새 낱말 상한 기준) */
 export const introDays = (words: number, mode: WmDailyMode) => Math.max(1, Math.ceil(words / dailyBudget(mode).newMax));
 
-/** 공부 기간 기본값: 소개에 걸리는 날 + 여유, 7~60일 */
-export const defaultStudyDays = (words: number, mode: WmDailyMode) => Math.min(60, Math.max(7, introDays(words, mode) + 3));
+/** 공부 기간 기본값: 소개에 걸리는 날 + 여유, 7~240일 */
+export const defaultStudyDays = (words: number, mode: WmDailyMode) => Math.min(240, Math.max(7, introDays(words, mode) + 3));
 
 /** 하루 문항 한 개에 15~30초쯤 걸린다고 어림한 분(학생마다 다르다 — 정확한 시간이 아니다) */
 export function estimateMinutes(mode: WmDailyMode): { min: number; max: number } {

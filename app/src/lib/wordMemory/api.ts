@@ -4,7 +4,8 @@
  */
 import { supabase } from '../supabase';
 import type {
-  WmAnswerResult, WmAssignInput, WmAssignResult, WmCollectionWord, WmErrorKind, WmHint, WmOpen, WmPlanResults, WmPlanSummary, WmStageCounts, WmToday,
+  WmAnswerResult, WmAssignInput, WmAssignResult, WmBriefing, WmCardRow, WmCollectionWord, WmErrorKind, WmHint, WmOpen, WmPlanResults, WmPlanSummary, WmProgress, WmStageCounts, WmStepAction,
+  WmStudentSteps, WmToday,
 } from './types';
 
 export class WmError extends Error {
@@ -52,6 +53,13 @@ export const wmPlanList = (classId: string | null) => rpc<WmPlanSummary[]>('wm_p
 export const wmPlanResults = (planId: string) => rpc<WmPlanResults>('wm_plan_results', { p_plan: planId });
 export const wmPlanLinks = (planId: string) => rpc<{ student_id: string; name: string; access: string }[]>('wm_plan_links', { p_plan: planId });
 export const wmPlanClose = (planId: string) => rpc<null>('wm_plan_close', { p_plan: planId });
+
+export const wmPlanBriefing = (planId: string) => rpc<WmBriefing>('wm_plan_briefing', { p_plan: planId });
+export const wmPlanSteps = (planId: string) => rpc<WmStudentSteps[]>('wm_plan_steps', { p_plan: planId });
+export const wmApplyStep = (planId: string, studentId: string, action: WmStepAction) => rpc<{ mode: string; focus: string | null }>('wm_apply_step', { p_plan: planId, p_student: studentId, p_action: action });
+export const wmPlanProgress = (planId: string) => rpc<WmProgress>('wm_plan_progress', { p_plan: planId });
+export const wmPlanCards = (planId: string, from: number, to: number) => rpc<WmCardRow[]>('wm_plan_cards', { p_plan: planId, p_from: from, p_to: to });
+export const wmPlanWeakCards = (planId: string, limit = 100) => rpc<WmCardRow[]>('wm_plan_weak_cards', { p_plan: planId, p_limit: limit });
 
 /* ---------- 학생 ---------- */
 

@@ -4,6 +4,9 @@ import { makeDb } from './lib.mjs';
 export const WM_FILES = [
   '090a_wm_tables.sql', '090b_wm_helpers.sql', '090c_wm_make_q.sql', '090d_wm_styles.sql', '090e_wm_build_session.sql', '090f_wm_session.sql',
   '090g_wm_assign.sql', '090h_wm_student.sql', '090i_wm_apply.sql', '090j_wm_answer.sql', '090k_wm_views.sql', '090l_wm_student_links.sql', '090m_wm_grants.sql',
+  // 096: 프로젝트(큰 범위)·새 방식·학생별 조정 — 090 위에 더한다
+  '096a_wm_project_tables.sql', '096b_wm_assign_big.sql', '096c_wm_session_override.sql', '096d_wm_make_q_more.sql', '096e_wm_pick_styles_more.sql',
+  '096f_wm_briefing.sql', '096g_wm_steps.sql', '096h_wm_progress.sql',
 ];
 
 const EXTRA = `

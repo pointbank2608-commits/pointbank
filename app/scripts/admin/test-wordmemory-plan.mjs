@@ -57,15 +57,17 @@ try {
   check('그림·예문·빈칸 가능·활용형 제외 수', a.total === 10 && a.withImage === 0 && a.withExample === 9 && a.blankUsable + a.exampleUnusable === a.withExample);
   check('활용형 예문은 "빈칸 불가"로 센다(jump·sun)', a.exampleUnusable >= 2);
   check('같은 철자 묶음 수', P.analyzeCards(cards).homographs === 1);
-  check('단어 4개 미만·400개 초과를 알린다', P.analyzeCards(cards).issues.includes('too_few') && P.analyzeCards(Array.from({ length: 401 }, (_, i) => ({ word: `w${i}`, meaning: `m${i}` }))).issues.includes('too_many'));
+  check('단어 4개 미만·1000개 초과를 알린다', P.analyzeCards(cards).issues.includes('too_few') && P.analyzeCards(Array.from({ length: 1001 }, (_, i) => ({ word: `w${i}`, meaning: `m${i}` }))).issues.includes('too_many'));
 
   console.log('5. 하루 학습량·기간');
   check('가볍게/보통 상한이 서버 규칙과 같다', JSON.stringify(P.dailyBudget('light')) === '{"asks":12,"newMax":3,"retryReserve":2}' && JSON.stringify(P.dailyBudget('normal')) === '{"asks":20,"newMax":5,"retryReserve":4}');
   const par = (m) => db.query('select public.wm_mode_params($1) as p', [m]).then((r) => r.rows[0].p);
   const [pl, pn] = [await par('light'), await par('normal')];
   check('서버 파라미터와 앱 숫자 일치', pl.asks === 12 && pl.reserve === 2 && pl.new_max === 3 && pn.asks === 20 && pn.reserve === 4 && pn.new_max === 5);
+  const pp = await par('plus');
+  check('넉넉히(plus) 분량도 서버와 앱 숫자가 같다', pp.asks === 30 && pp.reserve === 5 && pp.new_max === 10 && JSON.stringify(P.dailyBudget('plus')) === '{"asks":30,"newMax":10,"retryReserve":5}');
   check('100개 단어를 모두 소개하는 데 가볍게 34일 / 보통 20일', P.introDays(100, 'light') === 34 && P.introDays(100, 'normal') === 20);
-  check('공부 기간 기본값은 7~60일 안', P.defaultStudyDays(10, 'normal') === 7 && P.defaultStudyDays(400, 'light') === 60 && P.defaultStudyDays(100, 'normal') === 23);
+  check('공부 기간 기본값은 7~240일 안', P.defaultStudyDays(10, 'normal') === 7 && P.defaultStudyDays(400, 'light') === 137 && P.defaultStudyDays(1000, 'light') === 240 && P.defaultStudyDays(100, 'normal') === 23);
   const m = P.estimateMinutes('light');
   check('예상 시간은 범위로(정확한 수치를 단정하지 않는다)', m.min < m.max && m.min >= 2);
 } finally {
