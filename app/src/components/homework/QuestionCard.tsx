@@ -4,6 +4,8 @@ import { speak } from '../../lib/speech';
 import type { HwQuestion } from '../../lib/homework/types';
 import { TextAnswer } from '../../pages/LiveJoinPage';
 
+/** 게임 모양 문제의 머리 그림 */
+const SKIN_ICON: Record<string, string> = { monster: '👾', claw: '🧸', maze: '🧭', plane: '✈️', group: '🗂️', cross: '🧩', detective: '🔍', train: '🚂', rocket: '🚀', tower: '🏰', bridge: '🌉', splash: '🌊', whack: '🐹', fish: '🐟', balloon: '🎈', hangman: '🔤' };
 const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#12a594'];
 
 /**
@@ -12,7 +14,7 @@ const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#
  */
 export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
   const { t } = useTranslation();
-  const listen = q.style === 'listen' || q.style === 'whack' || q.style === 'dictation';
+  const listen = q.style === 'listen' || q.style === 'whack' || q.style === 'dictation' || q.style === 'plane';
 
   useEffect(() => {
     if (listen && q.speak) speak(q.speak);
@@ -38,6 +40,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-col items-center gap-3 px-5 py-4 text-center">
+        {q.style && SKIN_ICON[q.style] && <div className="text-4xl" aria-hidden="true">{SKIN_ICON[q.style]}</div>}
         <div className="text-base text-white/75">{guide}</div>
         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-36 w-36 rounded-2xl bg-white object-contain p-2 sm:h-44 sm:w-44" />}
         {memo ? null : listen ? (
@@ -68,11 +71,16 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
 function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
   const choices = q.choices ?? [];
   const ox = choices.length === 2 && choices[0] === 'O' && choices[1] === 'X';
-  if (q.style === 'whack' || q.style === 'fish' || q.style === 'balloon') {
+  if (q.style === 'whack' || q.style === 'fish' || q.style === 'balloon' || q.style === 'monster' || q.style === 'claw' || q.style === 'maze' || q.style === 'plane' || q.style === 'group') {
     const look = {
       whack: { icon: '🐹', wrap: 'grid-cols-2', btn: 'rounded-t-[3rem] rounded-b-2xl bg-[#6b4a2b] pt-4' },
       fish: { icon: '🐟', wrap: 'grid-cols-1 sm:grid-cols-2', btn: 'rounded-full bg-[#2f6fdb]' },
       balloon: { icon: '🎈', wrap: 'grid-cols-2', btn: 'rounded-[3rem] bg-[#e5484d]' },
+      monster: { icon: '🍖', wrap: 'grid-cols-1', btn: 'rounded-2xl bg-[#6d3fb2]' },
+      claw: { icon: '🧸', wrap: 'grid-cols-2', btn: 'rounded-[2rem] bg-[#d97706]' },
+      maze: { icon: '🧭', wrap: 'grid-cols-1', btn: 'rounded-xl bg-[#0f766e]' },
+      plane: { icon: '☁️', wrap: 'grid-cols-2', btn: 'rounded-full bg-[#0369a1]' },
+      group: { icon: '🗂️', wrap: 'grid-cols-1', btn: 'rounded-xl bg-[#4f46e5]' },
     }[q.style];
     return (
       <div className={`grid flex-1 content-start gap-4 p-4 ${look.wrap}`}>

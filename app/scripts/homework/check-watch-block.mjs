@@ -210,7 +210,12 @@ try {
       assert(it, m);
       await db.query(`select hw_validate_items(${json([it])})`);
     }
-    for (const g of ["whack", "fish", "balloon", "hangman"]) await db.query(`select hw_validate_items(${json([blocks.gameItemFromCards(cards, g, g)])})`);
+    for (const g of Object.keys(blocks.SOLO_GAME_NAMES)) {
+      const src = ["train", "rocket", "tower", "bridge", "splash", "detective"].includes(g) ? sents : g === "group" ? pics.map((c, i) => ({ ...c, category: i % 2 ? "과일" : "동물" })) : pics;
+      const it = blocks.gameItemFromCards(src, g, g);
+      assert(it, g);
+      await db.query(`select hw_validate_items(${json([it])})`);
+    }
   });
   await test("재료가 모자라거나 영어 글자가 아니면 게임을 만들지 않는다", () => {
     assert.equal(blocks.gameItemFromCards([cards[0]], "matchup", "x"), null);

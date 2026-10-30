@@ -12,8 +12,16 @@ import { SPEAKING_ITEMS } from "../rainbow";
 import { grammarPoint, sentencesForUnscramble } from "../grammar";
 import {
   balloonQ,
+  clawQ,
+  crossQ,
+  detectiveQ,
   fishQ,
+  groupQ,
   hangmanQ,
+  mazeQ,
+  monsterQ,
+  orderGameQ,
+  planeQ,
   lettersQ,
   matchupQs,
   meaningQ,
@@ -22,7 +30,7 @@ import {
   takeCards,
   whackQ,
 } from "./build";
-import type { HwItemDraft } from "./types";
+import type { HwItemDraft, HwQuestion } from "./types";
 import { isMeaning } from "./quality";
 export { isMeaning } from "./quality";
 
@@ -302,7 +310,7 @@ export function validateItems(items: HwItemDraft[]): string[] {
         errors.push(prefix + "문제 그림 필요 / Picture required");
       if (
         typeof q.prompt !== "string" ||
-        (q.style !== "listen" && q.style !== "picture" && q.style !== "whack" && q.style !== "dictation" && q.style !== "typepic" && !q.prompt.trim())
+        (q.style !== "listen" && q.style !== "picture" && q.style !== "whack" && q.style !== "dictation" && q.style !== "typepic" && q.style !== "claw" && q.style !== "plane" && !q.prompt.trim())
       )
         errors.push(prefix + "문제 안내 필요 / Prompt required");
       if (
@@ -384,7 +392,10 @@ export function blocksFromCards(
  * 숙제에 넣을 수 있는 "혼자 하는 게임"(2026-10-30). 선생님이 진행하는 팀 대결 게임은 집에서 못 하므로 넣지 않는다.
  * 문제·정답은 만들 때의 단어로 굳혀 저장하고(배정본 복사), 서버가 채점한다 — 게임 점수가 아니라 처음 답이 기록에 들어간다.
  */
-export type SoloGame = "matchup" | "anagram" | "spelling" | "whack" | "fish" | "balloon" | "hangman";
+export type SoloGame =
+  | "matchup" | "anagram" | "spelling" | "whack" | "fish" | "balloon" | "hangman"
+  | "monster" | "claw" | "maze" | "plane" | "group" | "cross"
+  | "train" | "rocket" | "tower" | "bridge" | "splash" | "detective";
 export const SOLO_GAME_NAMES: Record<SoloGame, [string, string]> = {
   matchup: ["짝 맞추기", "Matchup"],
   anagram: ["글자 섞기", "Letter scramble"],
@@ -393,6 +404,18 @@ export const SOLO_GAME_NAMES: Record<SoloGame, [string, string]> = {
   fish: ["단어 낚시", "Word fishing"],
   balloon: ["풍선 터뜨리기", "Balloon pop"],
   hangman: ["행맨", "Hangman"],
+  monster: ["괴물 먹이기", "Feed the monster"],
+  claw: ["단어 뽑기", "Word claw"],
+  maze: ["미로 추격", "Maze chase"],
+  plane: ["비행기", "Airplane"],
+  group: ["그룹 정렬", "Group sort"],
+  cross: ["크로스워드", "Crossword"],
+  train: ["문장 기차", "Sentence train"],
+  rocket: ["문장 로켓", "Sentence rocket"],
+  tower: ["문장 탑", "Sentence tower"],
+  bridge: ["문장 다리", "Sentence bridge"],
+  splash: ["Sentence Splash", "Sentence Splash"],
+  detective: ["문법 탐정", "Grammar detective"],
 };
 const LETTERS = /^[A-Za-z][A-Za-z' -]*$/;
 export function gameItemFromCards(
@@ -402,25 +425,30 @@ export function gameItemFromCards(
   rng: () => number = Math.random,
 ): HwItemDraft | null {
   const usable = cards.filter((c) => c.word.trim());
-  const looks = { whack: whackQ, fish: fishQ, balloon: balloonQ } as const;
-  const questions =
-    game === "matchup"
-      ? usable.length >= 2
-        ? matchupQs(takeCards(usable, 8, rng), rng)
-        : []
-      : game === "whack" || game === "fish" || game === "balloon"
-        ? usable.length >= 2
-          ? takeCards(usable, 8, rng)
-              .map((c) => looks[game](c, usable, rng))
-              .filter((q) => q !== null)
-          : []
-        : game === "hangman"
-          ? takeCards(usable, 6, rng, (c) => LETTERS.test(c.word.trim()))
-              .map((c) => hangmanQ(c))
-              .filter((q) => q !== null)
-          : takeCards(usable, 6, rng, game === "anagram" ? (c) => LETTERS.test(c.word.trim()) : () => true)
-              .map((c) => (game === "anagram" ? lettersQ(c, rng) : spellQ(c)))
-              .filter((q) => q !== null);
+  const looks = { whack: whackQ, fish: fishQ, balloon: balloonQ, monster: monsterQ, claw: clawQ, maze: mazeQ, plane: planeQ } as const;
+  const orders = { train: 1, rocket: 1, tower: 1, bridge: 1, splash: 1 } as const;
+  let questions: HwQuestion[];
+  if (game === "matchup") {
+    questions = usable.length >= 2 ? matchupQs(takeCards(usable, 8, rng), rng) : [];
+  } else if (game in looks) {
+    questions = usable.length >= 2
+      ? takeCards(usable, 8, rng).map((c) => looks[game as keyof typeof looks](c, usable, rng)).filter((q) => q !== null)
+      : [];
+  } else if (game === "group") {
+    questions = takeCards(usable.filter((c) => c.category), 8, rng).map((c) => groupQ(c, usable, rng)).filter((q) => q !== null);
+  } else if (game in orders) {
+    questions = takeCards(usable, 6, rng, (c) => !!orderGameQ(c, rng, "train")).map((c) => orderGameQ(c, rng, game as keyof typeof orders)).filter((q) => q !== null);
+  } else if (game === "detective") {
+    questions = takeCards(usable, 6, rng, (c) => !!detectiveQ(c)).map((c) => detectiveQ(c)).filter((q) => q !== null);
+  } else if (game === "hangman") {
+    questions = takeCards(usable, 6, rng, (c) => LETTERS.test(c.word.trim())).map((c) => hangmanQ(c)).filter((q) => q !== null);
+  } else if (game === "cross") {
+    questions = takeCards(usable, 6, rng, (c) => !!crossQ(c)).map((c) => crossQ(c)).filter((q) => q !== null);
+  } else {
+    questions = takeCards(usable, 6, rng, game === "anagram" ? (c) => LETTERS.test(c.word.trim()) : () => true)
+      .map((c) => (game === "anagram" ? lettersQ(c, rng) : spellQ(c)))
+      .filter((q) => q !== null);
+  }
   if (!questions.length) return null;
   return { kind: "game", title, config: { game }, content: { questions } };
 }

@@ -242,6 +242,58 @@ export function frameQ(c: FullCardItem, pool: FullCardItem[], rng: Rng): HwQuest
   return { ...base(c, SKILL.sentence, 2), qtype: 'text', style: 'frame', prompt: clean(c.meaning), sub: clean(model.word), correct: sentenceAnswer(sentence), word: sentence };
 }
 
+const withStyle = (q: HwQuestion | null, style: NonNullable<HwQuestion['style']>): HwQuestion | null => (q ? { ...q, style } : null);
+
+/** 괴물 먹이기: 괴물이 말하는 뜻에 맞는 낱말을 먹인다(뜻 → 낱말 고르기를 괴물 모양으로) */
+export const monsterQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) => withStyle(reverseQ(c, pool, rng), 'monster');
+/** 단어 뽑기: 알맞은 캡슐을 뽑는다(그림이 있으면 그림 → 낱말, 없으면 뜻 → 낱말) */
+export const clawQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) => withStyle(c.imageUrl ? pictureQ(c, pool, rng) : reverseQ(c, pool, rng), 'claw');
+/** 미로 추격: 알맞은 길(낱말)을 고른다(문장 속 빈칸이 있으면 빈칸 → 낱말, 없으면 뜻 → 낱말) */
+export const mazeQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) => withStyle(blankQ(c, pool, rng) ?? reverseQ(c, pool, rng), 'maze');
+/** 비행기: 소리를 듣고 구름 위의 낱말을 고른다 */
+export const planeQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) => withStyle(listenQ(c, pool, rng), 'plane');
+
+/** 그룹 정렬: 이 낱말이 어느 주제(카테고리)인지 고른다 — 사전에서 담은 낱말처럼 주제가 있는 낱말만 */
+export function groupQ(c: FullCardItem, pool: FullCardItem[], rng: Rng): HwQuestion | null {
+  const cat = clean(c.category);
+  if (!cat) return null;
+  const others = [...new Set(pool.map((x) => clean(x.category)).filter((v) => v && v !== cat))];
+  if (others.length < 1) return null;
+  return choiceQ(c, cat, shuffleWith(others, rng).slice(0, 2), rng, { skill: SKILL.meaning, style: 'group', prompt: clean(c.word), speak: clean(c.word), difficulty: 2 });
+}
+
+/** 크로스워드: 뜻과 글자 칸(첫 글자 + 빈칸, 글자 수)을 보고 낱말을 쓴다 */
+export function crossQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z]{3,12}$/i.test(w)) return null;
+  const boxes = [...w].map((ch, i) => (i === 0 ? ch : '_')).join(' ');
+  return { ...base(c, SKILL.spelling, 2), qtype: 'text', style: 'cross', prompt: clean(c.meaning), sub: `${boxes}  (${w.length})`, imageUrl: c.imageUrl ?? null, speak: w, correct: w };
+}
+
+const sentenceOf = (c: FullCardItem) => (isSentenceCard(c) ? clean(c.word) : clean(c.example));
+
+/** 문장 게임(문장 기차·로켓·탑·다리·Splash): 섞인 낱말을 순서대로 눌러 문장을 만든다 — 문장 목록의 문장, 또는 낱말의 예문 */
+export function orderGameQ(c: FullCardItem, rng: Rng, style: 'train' | 'rocket' | 'tower' | 'bridge' | 'splash'): HwQuestion | null {
+  const sentence = sentenceOf(c);
+  const words = sentence.split(/\s+/).filter(Boolean);
+  if (words.length < 3 || words.length > 8) return null;
+  let tokens = shuffleWith(words, rng);
+  for (let i = 0; i < 6 && tokens.join(' ') === words.join(' '); i++) tokens = shuffleWith(words, rng);
+  return { ...base(c, SKILL.sentence, 3), qtype: 'order', style, prompt: clean(c.meaning), sub: isSentenceCard(c) ? undefined : clean(c.word), tokens, correct: words, joiner: ' ', word: sentence };
+}
+
+/** 문법 탐정: 낱말 순서가 뒤바뀐 틀린 문장을 보고 바른 문장으로 고쳐 쓴다(끝 낱말은 그대로 두어 마침표를 지킨다) */
+export function detectiveQ(c: FullCardItem): HwQuestion | null {
+  const sentence = sentenceOf(c);
+  const words = sentence.split(/\s+/).filter(Boolean);
+  if (words.length < 3 || words.length > 10) return null;
+  const at = words.findIndex((w, i) => i <= words.length - 3 && w.toLowerCase() !== words[i + 1].toLowerCase());
+  if (at < 0) return null;
+  const wrong = [...words];
+  [wrong[at], wrong[at + 1]] = [wrong[at + 1], wrong[at]];
+  return { ...base(c, SKILL.correct, 3), qtype: 'text', style: 'detective', prompt: wrong.join(' '), sub: isSentenceCard(c) ? clean(c.meaning) : clean(c.meaning), correct: sentenceAnswer(sentence), word: sentence };
+}
+
 /** 두더지잡기: 소리를 듣고 두더지(보기) 중 맞는 낱말을 잡는다 — 듣고 고르기 문제를 두더지 모양으로 보여 준다 */
 export const whackQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
   choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.listen, style: 'whack', prompt: '', speak: clean(c.word), difficulty: 2 });

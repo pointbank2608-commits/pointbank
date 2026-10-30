@@ -7,7 +7,7 @@
 export type HwQType = 'choice' | 'text' | 'order';
 
 /** 문제 화면 모양(채점과 무관, 그리기만) */
-export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content' | 'flash' | 'fade' | 'confuse' | 'whack' | 'fish' | 'balloon' | 'hangman' | 'dictation' | 'typepic' | 'hint' | 'copy' | 'swrite' | 'sfade' | 'frame';
+export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content' | 'flash' | 'fade' | 'confuse' | 'whack' | 'fish' | 'balloon' | 'hangman' | 'dictation' | 'typepic' | 'hint' | 'copy' | 'swrite' | 'sfade' | 'frame' | 'monster' | 'claw' | 'maze' | 'plane' | 'group' | 'cross' | 'detective' | 'train' | 'rocket' | 'tower' | 'bridge' | 'splash';
 
 /** 문제를 만든 낱말 카드 스냅샷 — 학습 기록에 같이 남아 추천 숙제 재료가 된다 */
 export interface HwCard {
@@ -48,7 +48,8 @@ export interface HwQuestion {
 }
 
 export type HwItemKind = 'quiz' | 'worksheet' | 'game' | 'shadowing';
-export type HwGameKind = 'matchup' | 'anagram' | 'spelling' | 'whack' | 'fish' | 'balloon' | 'hangman';export type HwSheetKind = 'choose' | 'blank' | 'order';
+export type HwGameKind = 'matchup' | 'anagram' | 'spelling' | 'whack' | 'fish' | 'balloon' | 'hangman' | 'monster' | 'claw' | 'maze' | 'plane' | 'group' | 'cross' | 'detective' | 'train' | 'rocket' | 'tower' | 'bridge' | 'splash';
+export type HwSheetKind = 'choose' | 'blank' | 'order';
 
 export interface HwShadowLine {
   s: number;

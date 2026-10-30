@@ -186,6 +186,37 @@ await test('틀 바꿔 쓰기: 처음 두 낱말이 같은 보기 문장이 있�
   assert.deepEqual(blocks.validateItems([it]), []);
 });
 
+await test('게임 모양 12종 추가(괴물·뽑기·미로·비행기·그룹·크로스워드·문장 5종·문법 탐정)는 문제로 만들어지고 검사를 통과한다', () => {
+  const cats = cards.map((c, i) => ({ ...c, category: i % 3 === 0 ? '과일' : i % 3 === 1 ? '동물' : '탈것' }));
+  const pairs = [['monster', cards], ['claw', cards], ['maze', cards], ['plane', cards], ['group', cats], ['cross', cards],
+    ['train', sents], ['rocket', sents], ['tower', sents], ['bridge', sents], ['splash', sents], ['detective', sents]];
+  for (const [g, src] of pairs) {
+    const it = blocks.gameItemFromCards(src, g, g, rng);
+    assert.ok(it, g);
+    assert.equal(it.config.game, g);
+    assert.ok(it.content.questions.length >= 1, g);
+    assert.ok(it.content.questions.every((q) => q.style === g || (g === 'claw' && q.style === 'claw') || q.style === g), g);
+    assert.deepEqual(blocks.validateItems([it]), [], g);
+  }
+});
+await test('문법 탐정: 낱말 순서만 바뀐 틀린 문장을 보여 주고 바른 문장이 정답이다', () => {
+  const q = build.detectiveQ(sents[1]);
+  assert.notEqual(q.prompt, 'I want an apple.');
+  assert.equal([...q.prompt.split(' ')].sort().join(' '), 'I want an apple.'.split(' ').sort().join(' '));
+  assert.ok(q.prompt.endsWith('apple.'));
+  assert.equal(q.correct, 'I want an apple.');
+});
+await test('그룹 정렬: 주제가 없거나 주제가 하나뿐이면 만들지 않는다', () => {
+  assert.equal(blocks.gameItemFromCards(cards, 'group', 'g', rng), null);
+  const one = cards.map((c) => ({ ...c, category: '과일' }));
+  assert.equal(blocks.gameItemFromCards(one, 'group', 'g', rng), null);
+});
+await test('문장 게임: 문장 목록은 물론 예문이 있는 낱말도 재료가 된다', () => {
+  const it = blocks.gameItemFromCards(cards, 'train', 't', rng);
+  assert.ok(it && it.content.questions.length >= 1);
+  assert.deepEqual(it.content.questions[0].correct.join(' ').includes('I see') || it.content.questions[0].correct.length >= 3, true);
+});
+
 await server.close();
 console.log(failed ? `\n${failed} failed` : '\nall passed');
 process.exit(failed ? 1 : 0);
