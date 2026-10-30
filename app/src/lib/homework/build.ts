@@ -165,6 +165,35 @@ export function confuseQ(c: FullCardItem, pool: FullCardItem[], rng: Rng, extraN
   return choiceQ(c, w, wrong, rng, { skill: SKILL.meaning, style: 'confuse', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, difficulty: 3 });
 }
 
+/** 받아쓰기: 소리를 듣고 낱말을 직접 친다 */
+export function dictationQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{1,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.dictation, 3), qtype: 'text', style: 'dictation', prompt: '', speak: w, correct: w };
+}
+
+/** 그림 보고 쓰기: 그림만 보고 낱말을 직접 친다(그림이 있는 낱말만) */
+export function typePictureQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!c.imageUrl || !/^[a-z][a-z' -]{1,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.spelling, 2), qtype: 'text', style: 'typepic', prompt: '', imageUrl: c.imageUrl, correct: w };
+}
+
+/** 힌트 글자 보고 쓰기: 뜻과 첫·끝 글자(a _ _ _ e)를 보고 낱말을 직접 친다 */
+export function hintQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{2,20}$/i.test(w)) return null;
+  const hint = [...w].map((ch, i) => (i === 0 || i === w.length - 1 || !/[a-z]/i.test(ch) ? ch : '_')).join(' ');
+  return { ...base(c, SKILL.spelling, 2), qtype: 'text', style: 'hint', prompt: clean(c.meaning), sub: hint, imageUrl: c.imageUrl ?? null, speak: w, correct: w };
+}
+
+/** 따라 쓰기: 낱말을 보면서(소리도 들으며) 똑같이 친다 — 가장 쉬운 타이핑 */
+export function copyQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{1,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.spelling, 1), qtype: 'text', style: 'copy', prompt: w, sub: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w };
+}
+
 /** 두더지잡기: 소리를 듣고 두더지(보기) 중 맞는 낱말을 잡는다 — 듣고 고르기 문제를 두더지 모양으로 보여 준다 */
 export const whackQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
   choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.listen, style: 'whack', prompt: '', speak: clean(c.word), difficulty: 2 });

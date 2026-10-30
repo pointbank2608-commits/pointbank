@@ -5,11 +5,11 @@
  */
 import { blankSentence } from '../liveQuiz';
 import type { FullCardItem } from '../types';
-import { blankQ, confuseQ, fadeQ, flashQ, lettersQ, listenQ, meaningQ, pictureQ, reverseQ, sentenceOrderQ, shuffleWith, spellQ, takeCards, type Rng } from './build';
+import { blankQ, confuseQ, copyQ, dictationQ, fadeQ, flashQ, hintQ, lettersQ, listenQ, meaningQ, pictureQ, reverseQ, sentenceOrderQ, shuffleWith, spellQ, takeCards, typePictureQ, type Rng } from './build';
 import { newBlock } from './blocks';
 import type { HwItemDraft, HwQuestion } from './types';
 
-export type MemoryMethod = 'meaning' | 'reverse' | 'listen' | 'picture' | 'blank' | 'spell' | 'letters' | 'sentence' | 'flash' | 'fade' | 'confuse' | 'graduate';
+export type MemoryMethod = 'meaning' | 'reverse' | 'listen' | 'picture' | 'blank' | 'spell' | 'letters' | 'sentence' | 'flash' | 'fade' | 'confuse' | 'graduate' | 'copy' | 'hint' | 'typepic' | 'dictation';
 
 interface MethodInfo {
   name: [string, string];
@@ -32,6 +32,10 @@ export const MEMORY_METHODS: Record<MemoryMethod, MethodInfo> = {
   flash: { name: ['섬광 카드', 'Flash card'], help: ['낱말을 1.5초만 보여 주고 가린 뒤, 기억해서 써요', 'Shown for 1.5s, then write it'], build: (c) => pick(c.map((x) => flashQ(x))) },
   fade: { name: ['점점 가리기', 'Fading letters'], help: ['읽을 때마다 글자가 지워지고, 끝에는 모두 가려져서 직접 써요', 'Letters fade each round'], build: (c) => pick(c.map((x) => fadeQ(x))) },
   confuse: { name: ['헷갈리는 짝 고르기', 'Look-alike words'], help: ['철자가 비슷한 낱말 속에서 뜻에 맞는 낱말을 골라요', 'Pick among look-alike words'], build: (c, p, r) => pick(c.map((x) => confuseQ(x, p, r))) },
+  copy: { name: ['따라 쓰기', 'Copy typing'], help: ['낱말을 보면서 똑같이 쳐요(가장 쉬운 타이핑)', 'Type the word while seeing it'], build: (c) => pick(c.map((x) => copyQ(x))) },
+  hint: { name: ['힌트 글자 보고 쓰기', 'Type with letter hints'], help: ['뜻과 첫·끝 글자(a _ _ _ e)를 보고 쳐요', 'Meaning plus first/last letters'], build: (c) => pick(c.map((x) => hintQ(x))) },
+  typepic: { name: ['그림 보고 쓰기', 'Picture typing'], help: ['그림만 보고 낱말을 쳐요(그림이 있는 낱말만)', 'Type from the picture only'], build: (c) => pick(c.map((x) => typePictureQ(x))) },
+  dictation: { name: ['듣고 받아쓰기', 'Dictation'], help: ['소리를 듣고 낱말을 쳐요', 'Hear it, then type it'], build: (c) => pick(c.map((x) => dictationQ(x))) },
   graduate: { name: ['졸업 시험', 'Graduation test'], help: ['여러 방식을 섞어 마지막에 종합 확인해요', 'Mixed final check'], build: (c, p, r) => graduationQs(c, p, r) },
 };
 

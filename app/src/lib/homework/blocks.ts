@@ -302,7 +302,7 @@ export function validateItems(items: HwItemDraft[]): string[] {
         errors.push(prefix + "문제 그림 필요 / Picture required");
       if (
         typeof q.prompt !== "string" ||
-        (q.style !== "listen" && q.style !== "picture" && q.style !== "whack" && !q.prompt.trim())
+        (q.style !== "listen" && q.style !== "picture" && q.style !== "whack" && q.style !== "dictation" && q.style !== "typepic" && !q.prompt.trim())
       )
         errors.push(prefix + "문제 안내 필요 / Prompt required");
       if (

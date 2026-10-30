@@ -12,7 +12,7 @@ const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#
  */
 export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
   const { t } = useTranslation();
-  const listen = q.style === 'listen' || q.style === 'whack';
+  const listen = q.style === 'listen' || q.style === 'whack' || q.style === 'dictation';
 
   useEffect(() => {
     if (listen && q.speak) speak(q.speak);

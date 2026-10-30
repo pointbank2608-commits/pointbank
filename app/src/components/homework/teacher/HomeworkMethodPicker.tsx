@@ -7,6 +7,7 @@ const LEVEL: Record<MemoryMethod, 0 | 1 | 2> = {
   meaning: 0, reverse: 0, listen: 0, picture: 0,
   blank: 1, confuse: 1, letters: 1, sentence: 1,
   spell: 2, flash: 2, fade: 2, graduate: 2,
+  copy: 0, hint: 1, typepic: 1, dictation: 2,
 };
 const LEVEL_NAME: [string, string][] = [['쉬움', 'Easy'], ['보통', 'Medium'], ['어려움', 'Hard']];
 const LEVEL_STYLE = ['bg-emerald-100 text-emerald-900', 'bg-amber-100 text-amber-900', 'bg-rose-100 text-rose-900'];
@@ -66,6 +67,14 @@ export function MethodIllustration({ method, en }: { method: MemoryMethod; en: b
             <Frame label={k('직접 쓰기', 'write')}><Mono>?</Mono></Frame>
           </span>
         );
+      case 'copy':
+        return (<><Mono>apple</Mono><Row><Tile>a</Tile><Tile>p</Tile><Tile>p</Tile><Tile>l</Tile><Tile>e</Tile></Row><span className="text-[10px] text-on-surface-variant">{k('보면서 똑같이', 'Copy it')}</span></>);
+      case 'hint':
+        return (<><span className="text-sm font-bold text-on-surface-variant">{k('사과', 'apple')}</span><Mono>a _ _ _ e</Mono><Row><Tile>a</Tile><Tile ghost>p</Tile><Tile ghost>p</Tile><Tile ghost>l</Tile><Tile>e</Tile></Row></>);
+      case 'typepic':
+        return (<><span className="text-4xl" aria-hidden="true">🍎</span><Row><Tile ghost>a</Tile><Tile ghost>p</Tile><Tile ghost>p</Tile><Tile ghost>l</Tile><Tile ghost>e</Tile></Row><span className="text-[10px] text-on-surface-variant">{k('그림만 보고 써요', 'Picture only')}</span></>);
+      case 'dictation':
+        return (<><span className="text-3xl" aria-hidden="true">🔊</span><Row><Tile ghost>a</Tile><Tile ghost>p</Tile><Tile ghost>p</Tile><Tile ghost>l</Tile><Tile ghost>e</Tile></Row><span className="text-[10px] text-on-surface-variant">{k('듣고 써요', 'Hear and type')}</span></>);
       case 'confuse':
         return (<><span className="text-sm font-bold text-on-surface-variant">{k('사과', 'apple')}</span><Row><Pill on>apple</Pill><Pill>apply</Pill><Pill>ample</Pill></Row><span className="text-[10px] text-on-surface-variant">{k('철자가 비슷해요', 'Look-alikes')}</span></>);
       case 'graduate':

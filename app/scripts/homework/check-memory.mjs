@@ -114,6 +114,19 @@ await test('게임 모양: 낱말이 모자라면 만들지 않는다', () => {
   assert.equal(blocks.gameItemFromCards([{ id: 'k', word: '사과', meaning: 'apple' }], 'hangman', 'x'), null);
 });
 
+await test('타이핑 4종: 정답은 낱말, 힌트는 첫·끝 글자만, 그림 쓰기는 그림이 있는 낱말만', () => {
+  const dict = build.dictationQ(cards[0]);
+  assert.equal(dict.qtype, 'text'); assert.equal(dict.style, 'dictation'); assert.equal(dict.correct, 'apple'); assert.equal(dict.prompt, '');
+  const hint = build.hintQ(cards[0]);
+  assert.equal(hint.sub, 'a _ _ _ e'); assert.equal(hint.correct, 'apple');
+  const cp = build.copyQ(cards[0]);
+  assert.equal(cp.prompt, 'apple'); assert.equal(cp.correct, 'apple');
+  assert.equal(build.typePictureQ(cards[0]), null, '짝수 번호 카드는 그림 없음');
+  const pic = build.typePictureQ(cards[1]);
+  assert.ok(pic.imageUrl); assert.equal(pic.correct, 'apply'); assert.equal(pic.prompt, '');
+  assert.equal(build.hintQ({ id: 'x', word: 'at', meaning: '에' }), null, '두 글자 낱말은 힌트가 없다');
+});
+
 await server.close();
 console.log(failed ? `\n${failed} failed` : '\nall passed');
 process.exit(failed ? 1 : 0);
