@@ -17,6 +17,8 @@ import {
   hwOpen,
   hwOpenPersonal,
   hwState,
+  hwWatchReport,
+  hwWatchState,
   pendingCount,
   pendingOps,
   readToken,
@@ -389,6 +391,11 @@ function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state:
         run(async () => {
           await enqueue(token, { op: 'progress', clientId: newId(), itemId, event, meta });
         }),
+      // 시청 기록은 5초마다 가는 작은 호출이라 저장 상태 표시(run)에 올리지 않는다
+      watch: {
+        report: (itemId, viewKey, durationSec, watchedSec) => hwWatchReport(token, itemId, viewKey, durationSec, watchedSec),
+        state: () => hwWatchState(token),
+      },
       finish: async () => {
         setSaveState('saving');
         try {

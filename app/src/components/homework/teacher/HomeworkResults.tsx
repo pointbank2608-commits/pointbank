@@ -6,6 +6,7 @@ import type { FullCardItem } from '../../../lib/types';
 import { cardFromSnapshot } from '../../../lib/homework/teacherHelpers';
 import HomeworkRewardPanel from './HomeworkRewardPanel';
 import BlockResults from './BlockResults';
+import WatchResults from './WatchResults';
 
 const POLL_MS = 15000;
 
@@ -77,6 +78,7 @@ export default function HomeworkResults({
   return (
     <div className="space-y-4 border-t border-outline-variant/40 p-4">
       <BlockResults assignmentId={hw.id} />
+      <WatchResults assignmentId={hw.id} itemTitles={new Map(sum.items.map((it) => [it.id, it.title]))} />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-base">
         <span>
           {t('studentHw.doneOf', { done: done.length, total: sum.target_count })}

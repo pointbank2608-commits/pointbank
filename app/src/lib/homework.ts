@@ -100,7 +100,33 @@ export async function createHomework(a: CreateHomeworkArgs): Promise<{ id: strin
 
 export const fetchHomeworkOverview = (classId: string) => rpc<HomeworkOverviewRow[]>('hw_class_overview', { p_class_id: classId });
 export const fetchHomeworkSummary = (assignmentId: string) => rpc<HomeworkSummary>('hw_assignment_summary', { p_assignment_id: assignmentId });
-export const fetchPersonalLinks = (assignmentId: string) => rpc<PersonalLink[]>('hw_personal_links', { p_assignment_id: assignmentId });
+/** 영상 숙제 시청 현황(093): 대상 학생 × 영상별 본 횟수·마지막 날·지금 본 정도 */
+export interface WatchSummaryRow {
+  student_id: string;
+  name: string;
+  item_id: string;
+  target: number;
+  views: number;
+  last_at: string | null;
+  partial_pct: number | null;
+}
+export const fetchWatchSummary = (assignmentId: string) => rpc<WatchSummaryRow[]>('hw_watch_summary', { p_assignment_id: assignmentId });
+
+/** "이 영상은 광고가 나와요" 표시(학원 단위, 093). 표가 없으면(093 전) 빈 목록 */
+export async function fetchAdFlags(videoIds: string[]): Promise<Set<string>> {
+  if (!videoIds.length) return new Set();
+  const { data, error } = await supabase.from('video_ad_flags').select('video_id').eq('has_ads', true).in('video_id', videoIds);
+  if (error) return new Set();
+  return new Set((data ?? []).map((r) => r.video_id as string));
+}
+export async function setAdFlag(academyId: string, videoId: string, hasAds: boolean): Promise<void> {
+  const { error } = hasAds
+    ? await supabase.from('video_ad_flags').upsert({ academy_id: academyId, video_id: videoId, has_ads: true, flagged_at: new Date().toISOString() })
+    : await supabase.from('video_ad_flags').delete().eq('academy_id', academyId).eq('video_id', videoId);
+  if (error) throw error;
+}
+
+export const fetchPersonalLinks =(assignmentId: string) => rpc<PersonalLink[]>('hw_personal_links', { p_assignment_id: assignmentId });
 /** 새 PIN — 이 순간에만 원문을 알 수 있다(서버엔 해시만) */
 export const resetStudentPin = (studentId: string) => rpc<string>('hw_reset_pin', { p_student_id: studentId });
 /** 반 학생의 PIN 있음/없음(원문·해시는 오지 않는다) */

@@ -56,7 +56,7 @@ export default function HomeworkRunner({
   // 유치원 친구용: 활동이 모두 쉐도잉이고 kids 표시가 있을 때
   const kids = items.length > 0 && items.every((it) => it.config.kids && it.kind === 'shadowing');
 
-  const damaged = items.some((it) => !it.content || !Array.isArray(it.content.questions) || (it.config.block && (it.config.block.schemaVersion !== 1 || !['study','recall','speak','sentence','video'].includes(it.config.block.type))));
+  const damaged = items.some((it) => !it.content || !Array.isArray(it.content.questions) || (it.config.block && (it.config.block.schemaVersion !== 1 || !['study','recall','speak','sentence','video','watch'].includes(it.config.block.type))));
   const total = useMemo(() => items.reduce((n, it) => n + (it.content?.questions?.length ?? 0), 0), [items]);
   const answeredCount = useMemo(() => items.reduce((n, it) => n + (it.content?.questions ?? []).filter((_, qi) => answers.has(answerKey(it.id, qi))).length, 0), [items, answers]);
   const progressTotal = total + items.filter((it) => !it.content?.questions?.length).length;
@@ -315,10 +315,11 @@ export default function HomeworkRunner({
     content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
-    if (it.config.block && it.config.block.completion !== 'answers') {
+    // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
+    if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
       content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onDone={(meta) => completeItem(phase.i, meta)} />;
     } else if (it.config.watch) {
-      content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} onDone={() => void completeItem(phase.i)} />;
+      content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;
     } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
       const Shadow = kids ? KidsShadowing : ShadowingActivity;
       content = (

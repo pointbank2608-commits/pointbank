@@ -13,16 +13,45 @@ import {
 import {
   BLOCK_NAMES,
   blocksFromCards,
+  gameItemFromCards,
   lessonCandidates,
   newBlock,
   newDraft,
+  SOLO_GAME_NAMES,
+  syncWatchItem,
   validateItems,
   isEditableDraft,
   type BlockType,
   type HomeworkDraft,
+  type SoloGame,
 } from "../../../lib/homework/blocks";
+import {
+  createHomework,
+  fetchAdFlags,
+  fetchReviewCandidates,
+  setAdFlag,
+} from "../../../lib/homework";
+import { recommendForStudent } from "../../../lib/homework/recommend";
+import {
+  expandSlots,
+  hasSlots,
+  newSlot,
+  SLOT_NAMES,
+  type SlotWant,
+} from "../../../lib/homework/slots";
+import {
+  fetchClassWrongCards,
+  useBuildLabels,
+} from "../../../lib/homework/teacherHelpers";
+import { enrichCards, loadWordBank } from "../../../lib/wordBankCache";
+import { extractYoutubeId } from "../../../lib/youtube";
 import type { HwItemDraft, HwQuestion } from "../../../lib/homework/types";
-import type { CurriculumLesson, Student, WordList } from "../../../lib/types";
+import type {
+  CurriculumLesson,
+  FullCardItem,
+  Student,
+  WordList,
+} from "../../../lib/types";
 import { wordListToCards } from "../../../lib/gameFromWords";
 import HomeworkPreview from "./HomeworkPreview";
 import AccessibleDialog from "../../AccessibleDialog";
@@ -31,6 +60,15 @@ const button =
   "min-h-11 rounded-xl border border-outline-variant px-3 py-2 text-base font-bold disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary";
 const field =
   "min-h-11 w-full rounded-lg border border-outline-variant bg-white p-2 text-base text-deep-navy focus:outline-2 focus:outline-primary";
+
+interface PersonalPlan {
+  student: Student;
+  items: HwItemDraft[];
+  empty: number;
+  reasons: import("../../../lib/homework/recommend").RecReason[];
+  personal: boolean;
+  rule: string;
+}
 
 export default function HomeworkBlockEditor({
   academyId,
@@ -42,9 +80,12 @@ export default function HomeworkBlockEditor({
   startWithLessonImport,
   initialStudentIds,
   initialDue,
+  classOptions,
   onClose,
   onCreated,
 }: {
+  /** 이 틀을 복사해 갈 수 있는 다른 반 */
+  classOptions?: { id: string; name: string }[];
   academyId: string;
   classId: string;
   ownerId: string;
@@ -137,6 +178,135 @@ export default function HomeworkBlockEditor({
   const dirty = serialized !== saved;
   const item = draft.items[selected];
   const block = item?.config.block;
+  // 영상 반복 보기 블록: "광고가 나와요" 표시(학원 단위, 093 전에는 빈 목록)
+  const watchVideoId = block?.type === "watch" ? extractYoutubeId(block.videoUrl) : null;
+  const [adFlagged, setAdFlagged] = useState<Set<string>>(new Set());
+  // 혼자 하는 게임 넣기(매치업·글자 섞기·철자 쓰기)
+  const [gameKind, setGameKind] = useState<SoloGame>("matchup");
+  const [gameList, setGameList] = useState("");
+  const [copyTo, setCopyTo] = useState("");
+  // 맞춤 칸: 학생마다 다른 낱말로 채워 학생별 숙제로 보낸다
+  const labels = useBuildLabels();
+  const [personal, setPersonal] = useState<PersonalPlan[] | null>(null);
+  const personalGroup = useRef(crypto.randomUUID());
+  const personalRequests = useRef(new Map<string, string>());
+  const personalDone = useRef(new Set<string>());
+  async function buildPersonal(): Promise<PersonalPlan[]> {
+    const people = students.filter((s) => all || targets.includes(s.id));
+    const latest = [...lists]
+      .filter((w) => w.kind !== "sentence")
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+    const byWord = new Map<string, FullCardItem>();
+    for (const it of draft.items) {
+      if (!it.config.slot) continue;
+      const wl = it.config.slot.listId
+        ? lists.find((w) => w.id === it.config.slot!.listId)
+        : latest;
+      for (const c of wordListToCards(wl)) byWord.set(c.word.toLowerCase(), c);
+    }
+    const bank = await loadWordBank().catch(() => []);
+    const pool = enrichCards([...byWord.values()], bank);
+    const common = await fetchClassWrongCards(classId).catch(() => []);
+    const out: PersonalPlan[] = [];
+    for (const s of people) {
+      const rec = recommendForStudent(
+        await fetchReviewCandidates(s.id),
+        pool,
+        common,
+        labels,
+      );
+      const r = expandSlots(draft.items, rec);
+      out.push({
+        student: s,
+        items: r.items,
+        empty: r.empty,
+        reasons: rec.reasons,
+        personal: rec.personal,
+        rule: rec.ruleVersion,
+      });
+    }
+    return out;
+  }
+  async function sendPersonal() {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      const plan = personal ?? (await buildPersonal());
+      let first: { id: string; code: string } | null = null;
+      for (const p of plan) {
+        if (personalDone.current.has(p.student.id) || !p.items.length) continue;
+        const key = p.student.id + JSON.stringify(p.items).length;
+        if (!personalRequests.current.has(key))
+          personalRequests.current.set(key, crypto.randomUUID());
+        const made = await createHomework({
+          requestId: personalRequests.current.get(key),
+          classId,
+          title: `${draft.title || l("맞춤 숙제", "Personal homework")} · ${p.student.name}`,
+          items: p.items,
+          studentIds: [p.student.id],
+          dueAt: due ? new Date(due).toISOString() : null,
+          kind: "custom",
+          groupId: personalGroup.current,
+          recommendation: {
+            rule_version: p.rule,
+            personal: p.personal,
+            reasons: p.reasons,
+            template: draft.id,
+            slots: true,
+          },
+        });
+        personalDone.current.add(p.student.id);
+        first ??= made;
+      }
+      localStorage.removeItem(cache);
+      if (first) onCreated(first);
+      else
+        setMessage(
+          l(
+            "보낼 학생별 활동이 없어요. 재료 단어장을 확인하세요.",
+            "No per-student activities to send. Check the word list.",
+          ),
+        );
+    } catch {
+      setMessage(
+        l(
+          "일부 학생에게 보내지 못했어요. 다시 누르면 아직 못 보낸 학생만 보냅니다.",
+          "Some students were not sent. Retry sends only the remaining ones.",
+        ),
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    if (!watchVideoId) return;
+    let alive = true;
+    void fetchAdFlags([watchVideoId]).then(
+      (s) => alive && setAdFlagged((cur) => new Set([...cur, ...s])),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [watchVideoId]);
+  function toggleAd(videoId: string) {
+    const next = !adFlagged.has(videoId);
+    setAdFlagged((cur) => {
+      const n = new Set(cur);
+      if (next) n.add(videoId);
+      else n.delete(videoId);
+      return n;
+    });
+    void setAdFlag(academyId, videoId, next).catch(() =>
+      setAdFlagged((cur) => {
+        const n = new Set(cur);
+        if (next) n.delete(videoId);
+        else n.add(videoId);
+        return n;
+      }),
+    );
+  }
   const candidates = lessons.find((x) => x.id === importId);
   const options = candidates ? lessonCandidates(candidates, lists) : [];
   const importedItems = options
@@ -230,9 +400,11 @@ export default function HomeworkBlockEditor({
     request.current = crypto.randomUUID();
   }
   function patch(next: HwItemDraft) {
+    // 영상 반복 보기 블록은 학생 화면이 읽는 모양(영상 id·목표 횟수)을 늘 같이 맞춘다
+    const synced = syncWatchItem(next);
     change({
       ...draft,
-      items: draft.items.map((it, i) => (i === selected ? next : it)),
+      items: draft.items.map((it, i) => (i === selected ? synced : it)),
     });
   }
   function move(from: number, to: number) {
@@ -419,6 +591,53 @@ export default function HomeworkBlockEditor({
         >
           {l("새 사본", "New copy")}
         </button>
+        {classOptions && classOptions.length > 0 && (
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <select
+              className={`${field} max-w-[10rem]`}
+              aria-label={l("복사할 반", "Class to copy to")}
+              value={copyTo}
+              onChange={(e) => setCopyTo(e.target.value)}
+            >
+              <option value="">{l("다른 반으로 복사…", "Copy to another class…")}</option>
+              {classOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className={button}
+              disabled={!copyTo || busy}
+              onClick={async () => {
+                // 학생 선택은 반마다 달라 빼고, 틀 그대로 그 반의 템플릿으로 저장한다
+                const { assignment: _assignment, ...rest } = structuredClone(draft);
+                void _assignment;
+                setBusy(true);
+                try {
+                  await saveDraft(copyTo, {
+                    ...rest,
+                    id: crypto.randomUUID(),
+                    revision: 1,
+                    template: true,
+                  });
+                  const name = classOptions.find((c) => c.id === copyTo)?.name ?? "";
+                  setMessage(
+                    l(`"${name}" 반에 템플릿으로 복사했어요.`, `Copied as a template to "${name}".`),
+                  );
+                  setCopyTo("");
+                } catch {
+                  setMessage(l("복사하지 못했어요. 다시 시도해 주세요.", "Could not copy. Try again."));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {l("복사", "Copy")}
+            </button>
+          </span>
+        )}
         <button
           className={button}
           onClick={() => {
@@ -682,9 +901,111 @@ export default function HomeworkBlockEditor({
               + {BLOCK_NAMES[type][en ? 1 : 0]}
             </button>
           ))}
+          <fieldset className="space-y-2 rounded-xl border border-outline-variant p-2">
+            <legend className="px-1 text-sm font-bold">
+              {l("학생별 맞춤 칸", "Per-student slot")}
+            </legend>
+            {(["quiz", "game"] as SlotWant[]).map((want) => (
+              <button
+                key={want}
+                type="button"
+                className={`${button} w-full text-left`}
+                onClick={() => {
+                  change({ ...draft, items: [...draft.items, newSlot(want, en)] });
+                  setSelected(draft.items.length);
+                }}
+              >
+                + {SLOT_NAMES[want][en ? 1 : 0]}
+              </button>
+            ))}
+            <p className="text-xs">
+              {l(
+                "칸은 하나지만 보낼 때 학생마다 다른 낱말로 채워져요.",
+                "One slot, filled with different words per student.",
+              )}
+            </p>
+          </fieldset>
+          <fieldset className="space-y-2 rounded-xl border border-outline-variant p-2">
+            <legend className="px-1 text-sm font-bold">
+              {l("혼자 하는 게임 넣기", "Add a solo game")}
+            </legend>
+            <select
+              className={field}
+              aria-label={l("게임 종류", "Game")}
+              value={gameKind}
+              onChange={(e) => setGameKind(e.target.value as SoloGame)}
+            >
+              {(Object.keys(SOLO_GAME_NAMES) as SoloGame[]).map((g) => (
+                <option key={g} value={g}>
+                  {SOLO_GAME_NAMES[g][en ? 1 : 0]}
+                </option>
+              ))}
+            </select>
+            <select
+              className={field}
+              aria-label={l("게임에 쓸 단어장", "Word list for the game")}
+              value={gameList}
+              onChange={(e) => setGameList(e.target.value)}
+            >
+              <option value="">{l("단어장 고르기", "Choose a word list")}</option>
+              {lists
+                .filter((w) => w.kind !== "sentence")
+                .map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+            </select>
+            <button
+              type="button"
+              className={`${button} w-full`}
+              disabled={!gameList}
+              onClick={() => {
+                const wl = lists.find((w) => w.id === gameList);
+                const made = wl
+                  ? gameItemFromCards(
+                      wordListToCards(wl),
+                      gameKind,
+                      SOLO_GAME_NAMES[gameKind][en ? 1 : 0],
+                    )
+                  : null;
+                if (!made) {
+                  setMessage(
+                    l(
+                      "이 단어장으로는 이 게임을 만들 수 없어요(단어가 모자라거나 영어 글자가 아니에요).",
+                      "This list cannot make that game (too few words or not letters).",
+                    ),
+                  );
+                  return;
+                }
+                change({ ...draft, items: [...draft.items, made] });
+                setSelected(draft.items.length);
+              }}
+            >
+              + {l("게임 추가", "Add game")}
+            </button>
+            <p className="text-xs">
+              {l(
+                "집에서 혼자 할 수 있는 게임만 넣을 수 있어요. 점수가 아니라 처음 답이 기록돼요.",
+                "Only games a child can do alone. First answers are recorded, not game scores.",
+              )}
+            </p>
+          </fieldset>
         </aside>
         <main className="rounded-2xl bg-[#16213e] p-3 text-white">
-          {item ? (
+          {item?.config.slot ? (
+            <div className="space-y-2 p-6 text-center">
+              <p className="text-lg font-bold">
+                {l("학생마다 다른 낱말이 들어가는 칸이에요", "Filled differently per student")}
+              </p>
+              <p className="text-sm">
+                {l(
+                  "보낼 때 학생의 학습 기록(틀린 낱말, 복습할 때가 된 낱말)으로 채워져요. 보내기 전에 학생별 구성을 미리 볼 수 있어요.",
+                  "Filled from each student's record when sending. Preview per-student content before sending.",
+                )}
+              </p>
+            </div>
+          ) : item ? (
             <HomeworkPreview
               key={JSON.stringify(item)}
               title={draft.title}
@@ -711,18 +1032,99 @@ export default function HomeworkBlockEditor({
                   onChange={(e) => patch({ ...item, title: e.target.value })}
                 />
               </label>
+              {item.config.slot && (
+                <fieldset className="space-y-2 rounded-xl border border-outline-variant p-3">
+                  <legend className="px-1 font-bold">
+                    {l("맞춤 칸 설정", "Slot settings")}
+                  </legend>
+                  <label className="block">
+                    {l("종류", "Kind")}
+                    <select
+                      className={field}
+                      value={item.config.slot.want}
+                      onChange={(e) =>
+                        patch({
+                          ...item,
+                          kind: e.target.value === "game" ? "game" : "quiz",
+                          config: {
+                            ...item.config,
+                            slot: { ...item.config.slot!, want: e.target.value as SlotWant },
+                          },
+                        })
+                      }
+                    >
+                      {(["quiz", "game"] as SlotWant[]).map((w) => (
+                        <option key={w} value={w}>
+                          {SLOT_NAMES[w][en ? 1 : 0]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    {l("문제 수(1~12)", "Questions (1–12)")}
+                    <input
+                      className={field}
+                      type="number"
+                      min={1}
+                      max={12}
+                      value={item.config.slot.count}
+                      onChange={(e) =>
+                        patch({
+                          ...item,
+                          config: {
+                            ...item.config,
+                            slot: {
+                              ...item.config.slot!,
+                              count: Math.max(1, Math.min(12, Number(e.target.value) || 1)),
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="block">
+                    {l("재료 단어장", "Word list")}
+                    <select
+                      className={field}
+                      value={item.config.slot.listId}
+                      onChange={(e) =>
+                        patch({
+                          ...item,
+                          config: {
+                            ...item.config,
+                            slot: { ...item.config.slot!, listId: e.target.value },
+                          },
+                        })
+                      }
+                    >
+                      <option value="">
+                        {l("반의 가장 최근 단어장", "Most recent list of the class")}
+                      </option>
+                      {lists
+                        .filter((w) => w.kind !== "sentence")
+                        .map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </fieldset>
+              )}
               {block && (
                 <>
                   {(
-                    [
-                      "text",
-                      "translation",
-                      "imageUrl",
-                      "audioUrl",
-                      ...(block.type === "video"
-                        ? ["videoUrl", "question"]
-                        : []),
-                    ] as const
+                    (block.type === "watch"
+                      ? ["videoUrl"]
+                      : [
+                          "text",
+                          "translation",
+                          "imageUrl",
+                          "audioUrl",
+                          ...(block.type === "video"
+                            ? ["videoUrl", "question"]
+                            : []),
+                        ]) as readonly string[]
                   ).map((key) => (
                     <label className="block" key={key}>
                       {l(
@@ -766,6 +1168,49 @@ export default function HomeworkBlockEditor({
                       />
                     </label>
                   ))}
+                  {block.type === "watch" && (
+                    <fieldset className="space-y-2 rounded-xl border border-outline-variant p-3">
+                      <legend className="px-1 font-bold">
+                        {l("한 영상을 몇 번 보게 할까요?", "How many times?")}
+                      </legend>
+                      <div className="flex flex-wrap gap-2">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            aria-pressed={(block.views ?? 1) === n}
+                            className={`${button} min-w-14 ${(block.views ?? 1) === n ? "bg-primary text-on-primary" : ""}`}
+                            onClick={() =>
+                              patch({
+                                ...item,
+                                config: { ...item.config, block: { ...block, views: n } },
+                              })
+                            }
+                          >
+                            {l(`${n}번`, `${n}x`)}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-sm">
+                        {l(
+                          "끝까지 보면 한 번으로 세요. 건너뛰면 세지 않아요. 며칠에 나눠 봐도 이어서 셉니다.",
+                          "A watch counts when played to the end. Skipping ahead does not count; views can be spread over days.",
+                        )}
+                      </p>
+                      {watchVideoId && (
+                        <button
+                          type="button"
+                          aria-pressed={adFlagged.has(watchVideoId)}
+                          className={`${button} ${adFlagged.has(watchVideoId) ? "border-error bg-error-container/50" : ""}`}
+                          onClick={() => toggleAd(watchVideoId)}
+                        >
+                          {adFlagged.has(watchVideoId)
+                            ? l("광고 표시됨 (눌러서 해제)", "Marked as showing ads")
+                            : l("광고가 나와요", "This video shows ads")}
+                        </button>
+                      )}
+                    </fieldset>
+                  )}
                   {["study", "recall", "speak", "sentence"].includes(
                     block.type,
                   ) && (
@@ -1099,6 +1544,61 @@ export default function HomeworkBlockEditor({
               }}
             />
           </label>
+          {hasSlots(draft.items) && (
+            <div className="space-y-2 rounded-xl bg-primary/5 p-3">
+              <p className="text-sm">
+                {l(
+                  "맞춤 칸이 있어서 학생마다 다른 숙제로 보내요. 공통 활동은 모두 같고, 맞춤 칸만 학생 기록으로 채워져요.",
+                  "This template has per-student slots. Each student gets their own homework; common activities stay the same.",
+                )}
+              </p>
+              <button
+                type="button"
+                className={button}
+                disabled={busy || (!all && !targets.length) || !students.length}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    setPersonal(await buildPersonal());
+                  } catch {
+                    setMessage(l("학생 기록을 불러오지 못했어요.", "Could not load student records."));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                {l("학생별 구성 미리 보기", "Preview per student")}
+              </button>
+              {personal && (
+                <ul className="space-y-1 text-sm">
+                  {personal.map((p) => (
+                    <li key={p.student.id}>
+                      <b>{p.student.name}</b> ·{" "}
+                      {l(`활동 ${p.items.length}개`, `${p.items.length} activities`)}{" "}
+                      ·{" "}
+                      {l(
+                        `문제 ${p.items.reduce((n, x) => n + x.content.questions.length, 0)}개`,
+                        `${p.items.reduce((n, x) => n + x.content.questions.length, 0)} questions`,
+                      )}
+                      {!p.personal &&
+                        ` · ${l("기록이 적어 반 공통 복습", "class review (little record)")}`}
+                      {p.empty > 0 &&
+                        ` · ${l(`빈 칸 ${p.empty}개 제외`, `${p.empty} empty slot(s) dropped`)}`}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button
+                type="button"
+                className={`${button} bg-primary text-white`}
+                disabled={busy || (!all && !targets.length) || !students.length}
+                onClick={() => void sendPersonal()}
+              >
+                {l("학생별로 확인하고 보내기", "Confirm and send per student")}
+              </button>
+            </div>
+          )}
+          {!hasSlots(draft.items) && (
           <button
             className={`${button} bg-primary text-white`}
             disabled={
@@ -1155,6 +1655,7 @@ export default function HomeworkBlockEditor({
           >
             {l("확인하고 배정", "Confirm assignment")}
           </button>
+          )}
           <button
             className={`${button} ml-2`}
             onClick={() => setAssigning(false)}

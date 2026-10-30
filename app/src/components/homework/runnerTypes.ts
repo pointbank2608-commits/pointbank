@@ -13,6 +13,11 @@ export interface RunnerApi {
   uploadRecording?: (itemId: string, blob: Blob, duration: number) => Promise<string>;
   submit: (itemId: string, qIndex: number, response: string, ms: number) => Promise<AnswerResult>;
   progress: (itemId: string, event: 'shadow_line' | 'item_complete', meta: Record<string, unknown>) => Promise<void>;
+  /** 영상 시청 기록(093). 없으면(미리보기·093 전) 영상 끝(ENDED)만으로 끝난 것으로 본다 */
+  watch?: {
+    report: (itemId: string, viewKey: string, durationSec: number, watchedSec: number) => Promise<{ completed: boolean; views: number; target: number }>;
+    state: () => Promise<{ item_id: string; target: number; days: string[] }[]>;
+  };
   /** 끝내기. answers 가 오면(서버가 다시 채점한 결과) 결과 화면이 그걸 쓴다 */
   finish: () => Promise<{ score: number; total: number; answers?: Map<string, AnswerResult> }>;
 }

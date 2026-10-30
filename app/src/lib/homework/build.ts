@@ -259,11 +259,13 @@ export function buildKidsItems(cards: FullCardItem[], count: number, label: stri
  * 유치원 영상 보기 숙제(2026-10-13): 유튜브 영상 몇 개를 끝까지 보면 끝난다. 문제·채점·대사표가 없다.
  * 활동 하나 = 영상 하나(쉐도잉 종류에 watch 표시만 붙여 서버·SQL 변경 없이 쓴다 — 문제가 0개라 item_complete 만 보내면 끝난다).
  */
-export function buildWatchItems(videos: { id: string; title: string }[], label: string): HwItemDraft[] {
+export function buildWatchItems(videos: { id: string; title: string }[], label: string, targetViews = 1): HwItemDraft[] {
+  const views = Math.max(1, Math.min(Math.round(targetViews) || 1, 10));
   return videos.map((v, i) => ({
     kind: 'shadowing' as const,
     title: v.title.trim() || `${label} ${i + 1}`,
-    config: { kids: true, watch: true },
+    // targetViews: 한 영상을 몇 번 끝까지 보면 끝나는지(093 서버가 센다)
+    config: { kids: true, watch: true, targetViews: views },
     content: { videoId: v.id, lines: [], questions: [] },
   }));
 }
@@ -382,7 +384,7 @@ export function presetPlan(minutes: HwDuration, cards: FullCardItem[], hasClip: 
 export function estimateMinutes(items: HwItemDraft[]): number {
   let sec = 0;
   for (const it of items) {
-    if (it.config.watch) sec += 240;
+    if (it.config.watch) sec += 240 * Math.max(1, Number(it.config.targetViews) || 1);
     else if (it.kind === 'shadowing') sec += (it.content.lines?.length ?? 0) * 45;
     for (const q of it.content.questions)
       sec += q.style === 'match' ? 12 : q.style === 'sentence' ? 40 : q.style === 'letters' ? 30 : q.style === 'spell' ? 35 : q.style === 'blank' ? 30 : q.style === 'content' ? 25 : 20;

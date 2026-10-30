@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HwItem } from '../../lib/homework/types';
+import type { RunnerApi } from './runnerTypes';
 import { playSfx } from '../../lib/gameSfx';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
@@ -257,19 +258,94 @@ export default function KidsShadowing({
  * 영상 하나를 끝까지 보는 화면 — 큰 "보자!" 버튼 하나, 화면을 누르면 멈춤/재생, 크게 보기, 끝나면 저절로 다음.
  * 건너뛰기 막대는 없다(유튜브 컨트롤을 껐다). 끝(ENDED)이 와야 이 활동이 끝난다.
  */
-export function KidsWatch({ item, index, total, onDone }: { item: HwItem; index: number; total: number; onDone: () => void }) {
+export function KidsWatch({ item, index, total, watchApi, onDone }: { item: HwItem; index: number; total: number; watchApi?: RunnerApi['watch']; onDone: () => void }) {
   const { t } = useTranslation();
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [started, setStarted] = useState(false);
   const [full, setFull] = useState(false);
   const [finished, setFinished] = useState(false);
+  // 같은 영상을 여러 번 보는 숙제(093): 목표 횟수·지금까지 다 본 횟수·본 날짜
+  const configTarget = Math.max(1, Math.min(Number(item.config.targetViews) || 1, 10));
+  const [target, setTarget] = useState(configTarget);
+  const [views, setViews] = useState(0);
+  const [days, setDays] = useState<string[]>([]);
+  const [between, setBetween] = useState<'again' | 'redo' | null>(null);
+  const viewKey = useRef(crypto.randomUUID());
   const doneRef = useRef(onDone);
   doneRef.current = onDone;
-  const w = useYoutubeWatch(item.content.videoId, () => {
-    setFinished(true);
+  const viewsRef = useRef(0);
+  viewsRef.current = views;
+  const targetRef = useRef(target);
+  targetRef.current = target;
+  const watchRef = useRef(watchApi);
+  watchRef.current = watchApi;
+
+  // 이전에 본 기록(다른 날 본 것 포함)을 불러온다 — 못 불러와도 숙제는 된다
+  useEffect(() => {
+    let alive = true;
+    void watchApi?.state().then(
+      (rows) => {
+        const mine = rows.find((r) => r.item_id === item.id);
+        if (!alive || !mine) return;
+        setTarget(mine.target);
+        setDays(mine.days);
+        setViews(mine.days.length);
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id]);
+
+  const w = useYoutubeWatch(
+    item.content.videoId,
+    () => void handleEnded(),
+    (watchedSec, durationSec) => void watchRef.current?.report(item.id, viewKey.current, durationSec, watchedSec).catch(() => undefined),
+  );
+  const wRef = useRef(w);
+  wRef.current = w;
+
+  /** 영상이 끝났다 — 서버가 본 구간을 확인해 "한 번 봤다"로 인정하면 횟수가 오른다 */
+  async function handleEnded() {
+    const { watchedSec, durationSec } = wRef.current.snapshot();
+    let count: number | null = null;
+    let ok = true;
+    try {
+      const r = watchRef.current ? await watchRef.current.report(item.id, viewKey.current, durationSec, watchedSec) : null;
+      if (r) {
+        ok = r.completed;
+        count = r.views;
+        setTarget(r.target);
+      }
+    } catch {
+      /* 인터넷이 끊겼다 — 이 기기에서 센다(이전처럼 끝까지 보면 인정) */
+    }
+    if (!ok) {
+      setBetween('redo');
+      return;
+    }
+    const next = count ?? viewsRef.current + 1;
+    setViews(next);
+    setDays((d) => [...d, new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' })]);
     playSfx(4015);
-    window.setTimeout(() => doneRef.current(), 900);
-  });
+    if (next >= targetRef.current) {
+      setFinished(true);
+      window.setTimeout(() => doneRef.current(), 900);
+    } else {
+      setBetween('again');
+    }
+  }
+
+  function again() {
+    viewKey.current = crypto.randomUUID();
+    setBetween(null);
+    w.replay();
+  }
+
+  const left = Math.max(0, target - views);
+  const dayLabel = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
 
   // 크게 보기: 전체화면 API 가 있으면 쓰고, 없으면(아이폰) 화면 가득 덮는다
   useEffect(() => {
@@ -317,6 +393,25 @@ export function KidsWatch({ item, index, total, onDone }: { item: HwItem; index:
           ))}
         </div>
         <div className="text-center text-2xl font-bold">{item.title}</div>
+        {target > 1 && (
+          <div className="flex flex-col items-center gap-1" aria-live="polite">
+            <div className="flex items-center gap-1" aria-label={t('studentHw.kidsWatchCount', { done: views, target })}>
+              {Array.from({ length: target }, (_, i) => (
+                <span key={i} className={`material-symbols-outlined text-[30px] ${i < views ? 'text-[#ffc83d]' : 'text-deep-navy/20'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                  star
+                </span>
+              ))}
+            </div>
+            <div className="text-xl font-bold">
+              {t('studentHw.kidsWatchCount', { done: views, target })} · {left > 0 ? t('studentHw.kidsWatchLeft', { n: left }) : t('studentHw.kidsWatchAllDone')}
+            </div>
+            {days.length > 0 && (
+              <div className="text-base text-deep-navy/60">
+                {t('studentHw.kidsWatchDays')}: {days.map(dayLabel).join(' · ')}
+              </div>
+            )}
+          </div>
+        )}
 
         <div
           ref={boxRef}
@@ -324,10 +419,25 @@ export function KidsWatch({ item, index, total, onDone }: { item: HwItem; index:
         >
           <div id={w.elementId} className="absolute inset-0 h-full w-full" />
           {/* 영상 위 투명 막: 누르면 멈춤/재생(유튜브 화면의 링크·추천이 눌리지 않게 막는다) */}
-          {started && !finished && !w.failed && (
+          {started && !finished && !between && !w.failed && (
             <button type="button" aria-label={w.playing ? t('studentHw.kidsPause') : t('studentHw.kidsResume')} onClick={() => (w.playing ? w.pause() : w.play())} className="absolute inset-0 z-[1] bg-transparent" />
           )}
-          {started && !w.playing && !finished && !w.failed && (
+          {between && !w.failed && (
+            <div className="absolute inset-0 z-[4] flex flex-col items-center justify-center gap-4 bg-black/60 p-6 text-center text-white">
+              <StarFriend size={110} cheer={between === 'again'} />
+              <p className="text-2xl font-bold">
+                {between === 'again' ? `${t('studentHw.kidsWatchCount', { done: views, target })} · ${t('studentHw.kidsWatchLeft', { n: left })}` : t('studentHw.kidsWatchRedo')}
+              </p>
+              <button type="button" onClick={again} className="kids-btn flex min-h-16 items-center gap-2 rounded-[2rem] bg-[#ff6b6b] px-8 text-2xl font-bold text-white">
+                <span className="material-symbols-outlined text-[36px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  replay
+                </span>
+                {between === 'again' ? t('studentHw.kidsWatchAgain') : t('studentHw.kidsWatchRetry')}
+              </button>
+              {between === 'again' && <p className="text-lg text-white/80">{t('studentHw.kidsWatchLater')}</p>}
+            </div>
+          )}
+          {started && !w.playing && !finished && !between && !w.failed && (
             <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center bg-black/30">
               <span className="material-symbols-outlined text-[96px] text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
                 play_circle

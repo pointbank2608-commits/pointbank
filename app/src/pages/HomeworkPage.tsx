@@ -172,6 +172,7 @@ export default function HomeworkPage() {
         initialItems={panel.items} initialTitle={panel.title} lessonId={panel.lessonId}
         startWithLessonImport={panel.importLesson}
         initialStudentIds={panel.studentIds} initialDue={panel.due}
+        classOptions={classes.filter((c) => c.id !== classId).map((c) => ({ id: c.id, name: c.name }))}
         onClose={() => setPanel({ k: 'none' })}
         onCreated={async (hw) => { setPanel({ k: 'none' }); await reload(); setShareId(hw.id); }}
       />}
@@ -208,6 +209,7 @@ export default function HomeworkPage() {
           students={students.filter((s) => panel.studentIds.includes(s.id)).map((s) => ({ id: s.id, name: s.name }))}
           onClose={() => setPanel({ k: 'none' })}
           onCommonReview={() => setPanel({ k: 'editor', importLesson: true })}
+          onEditBlocks={(a) => setPanel({ k: 'editor', items: a.items, title: t('studentHw.recTitle', { name: a.name }), studentIds: [a.studentId] })}
           onSent={async () => {
             setPanel({ k: 'none' });
             await reload();

@@ -78,6 +78,22 @@ export async function hwOpenPersonal(access: string): Promise<{ token: string; c
 
 export const hwState = (token: string) => rpc<HwStudentState>('hw_state', { p_token: token });
 
+/** 영상 시청 기록(093) — 본 초를 서버에 알리고, 한 번 다 봤으면 completed */
+export interface WatchReport {
+  completed: boolean;
+  views: number;
+  target: number;
+}
+export const hwWatchReport = (token: string, itemId: string, viewKey: string, durationSec: number, watchedSec: number) =>
+  rpc<WatchReport>('hw_watch_report', { p_token: token, p_item_id: itemId, p_view: viewKey, p_duration: Math.round(durationSec), p_watched: Math.round(watchedSec) });
+/** 영상마다 목표 횟수와 본 날짜(한국 시간 YYYY-MM-DD) */
+export interface WatchItemState {
+  item_id: string;
+  target: number;
+  days: string[];
+}
+export const hwWatchState = (token: string) => rpc<WatchItemState[]>('hw_watch_state', { p_token: token });
+
 /* ---------- 대기열 ---------- */
 
 export type QueuedOp =

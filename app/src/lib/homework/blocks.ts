@@ -10,16 +10,25 @@ import { extractYoutubeId } from "../youtube";
 import { effectiveSlides } from "../lessonSlides";
 import { SPEAKING_ITEMS } from "../rainbow";
 import { grammarPoint, sentencesForUnscramble } from "../grammar";
-import { meaningQ, sentenceOrderQ, spellQ } from "./build";
+import {
+  lettersQ,
+  matchupQs,
+  meaningQ,
+  sentenceOrderQ,
+  spellQ,
+  takeCards,
+} from "./build";
 import type { HwItemDraft } from "./types";
 import { isMeaning } from "./quality";
 export { isMeaning } from "./quality";
 
-export type BlockType = "study" | "recall" | "speak" | "sentence" | "video";
+export type BlockType = "study" | "recall" | "speak" | "sentence" | "video" | "watch";
 export interface HomeworkBlock {
   schemaVersion: 1;
   type: BlockType;
   completion: "confirm" | "answers" | "recording" | "review" | "watch";
+  /** watch 블록: 한 영상을 끝까지 몇 번 보면 끝나는지(1~5, 093 서버가 시청 기록으로 센다) */
+  views?: number;
   text: string;
   translation: string;
   imageUrl: string;
@@ -52,8 +61,51 @@ export const BLOCK_NAMES: Record<BlockType, [string, string]> = {
   speak: ["말하기", "Speaking"],
   sentence: ["문장 만들기", "Build a sentence"],
   video: ["영상 미션", "Video mission"],
+  watch: ["영상 반복 보기", "Watch video"],
 };
+
+/**
+ * watch 블록은 학생 화면(KidsWatch)과 093 시청 기록이 읽는 모양(config.watch·kids·targetViews, content.videoId)을
+ * 블록 설정(config.block.videoUrl·views)에서 늘 같이 맞춰 둔다 — 편집기에서 바꿀 때마다 호출한다.
+ */
+export function syncWatchItem(item: HwItemDraft): HwItemDraft {
+  const b = item.config.block as HomeworkBlock | undefined;
+  if (!b || b.type !== "watch") return item;
+  const views = Math.max(1, Math.min(Math.round(Number(b.views) || 1), 5));
+  return {
+    ...item,
+    kind: "shadowing",
+    config: { ...item.config, kids: true, watch: true, targetViews: views, block: { ...b, views } },
+    content: { ...item.content, videoId: extractYoutubeId(b.videoUrl) ?? "", lines: [], questions: [] },
+  };
+}
+
 export function newBlock(type: BlockType): HwItemDraft {
+  if (type === "watch")
+    return syncWatchItem({
+      kind: "shadowing",
+      title: BLOCK_NAMES.watch[0],
+      config: {
+        block: {
+          schemaVersion: 1,
+          type: "watch",
+          completion: "watch",
+          views: 1,
+          text: "",
+          translation: "",
+          imageUrl: "",
+          audioUrl: "",
+          videoUrl: "",
+          start: 0,
+          end: 30,
+          question: "",
+          stages: ["model", "hidden", "picture"],
+          hiddenWords: [],
+          repeats: 1,
+        },
+      },
+      content: { questions: [] },
+    });
   return {
     kind: type === "recall" ? "quiz" : "worksheet",
     title: BLOCK_NAMES[type][0],
@@ -176,6 +228,8 @@ export function validateItems(items: HwItemDraft[]): string[] {
       errors.push(prefix + "손상된 자료 / Damaged activity");
       return;
     }
+    // 맞춤 칸은 보낼 때 학생마다 채워지므로(slots.ts) 문제가 비어 있어도 초안에서는 정상이다
+    if (it.config.slot) return;
     const b = it.config.block;
     if (b) {
       if (
@@ -189,8 +243,14 @@ export function validateItems(items: HwItemDraft[]): string[] {
       }
       if (b.schemaVersion !== 1 || !Object.hasOwn(BLOCK_NAMES, b.type))
         errors.push(prefix + "지원하지 않는 블록 버전 / Unsupported block");
-      if (b.type !== "video" && b.type !== "recall" && !b.text.trim())
+      if (b.type !== "video" && b.type !== "recall" && b.type !== "watch" && !b.text.trim())
         errors.push(prefix + "학습 내용 필요 / Content required");
+      if (b.type === "watch") {
+        if (!extractYoutubeId(b.videoUrl))
+          errors.push(prefix + "지원하는 YouTube 주소 필요 / Check video address");
+        if (!Number.isInteger(b.views) || (b.views ?? 0) < 1 || (b.views ?? 0) > 5)
+          errors.push(prefix + "시청 횟수는 1~5번 / Views must be 1–5");
+      }
       if (
         b.type === "video" &&
         (!extractYoutubeId(b.videoUrl) ||
@@ -213,6 +273,7 @@ export function validateItems(items: HwItemDraft[]): string[] {
         speak: ["recording"],
         sentence: ["answers", "review"],
         video: ["watch", "review", "recording"],
+        watch: ["watch"],
       };
       if (!allowed[b.type]?.includes(b.completion))
         errors.push(prefix + "완료 조건 확인 / Check completion rule");
@@ -312,6 +373,53 @@ export function blocksFromCards(
     return it;
   });
 }
+/**
+ * 숙제에 넣을 수 있는 "혼자 하는 게임"(2026-10-30). 선생님이 진행하는 팀 대결 게임은 집에서 못 하므로 넣지 않는다.
+ * 문제·정답은 만들 때의 단어로 굳혀 저장하고(배정본 복사), 서버가 채점한다 — 게임 점수가 아니라 처음 답이 기록에 들어간다.
+ */
+export type SoloGame = "matchup" | "anagram" | "spelling";
+export const SOLO_GAME_NAMES: Record<SoloGame, [string, string]> = {
+  matchup: ["짝 맞추기", "Matchup"],
+  anagram: ["글자 섞기", "Letter scramble"],
+  spelling: ["철자 쓰기", "Spelling"],
+};
+const LETTERS = /^[A-Za-z][A-Za-z' -]*$/;
+export function gameItemFromCards(
+  cards: FullCardItem[],
+  game: SoloGame,
+  title: string,
+  rng: () => number = Math.random,
+): HwItemDraft | null {
+  const usable = cards.filter((c) => c.word.trim());
+  const questions =
+    game === "matchup"
+      ? usable.length >= 2
+        ? matchupQs(takeCards(usable, 8, rng), rng)
+        : []
+      : takeCards(usable, 6, rng, game === "anagram" ? (c) => LETTERS.test(c.word.trim()) : () => true)
+          .map((c) => (game === "anagram" ? lettersQ(c, rng) : spellQ(c)))
+          .filter((q) => q !== null);
+  if (!questions.length) return null;
+  return { kind: "game", title, config: { game }, content: { questions } };
+}
+
+/**
+ * 규칙으로 고른 추천 활동(HwItemDraft)을 블록 편집기에서 고칠 수 있게 한다 — 문제 활동은 "기억해서 답하기" 블록으로 감싼다.
+ * 게임·영상 같은 다른 모양은 그대로 둔다(편집기가 제목·순서·삭제는 모두 다룬다).
+ */
+export function quizItemsToBlocks(items: HwItemDraft[]): HwItemDraft[] {
+  return items.map((it) => {
+    if (it.config.block || it.config.game || it.config.watch || it.kind === "shadowing") return it;
+    if (!it.content.questions.length) return it;
+    const base = newBlock("recall");
+    return {
+      ...it,
+      kind: it.kind === "worksheet" ? "worksheet" : "quiz",
+      config: { ...it.config, block: base.config.block },
+    };
+  });
+}
+
 export interface ImportCandidate {
   slideId: string;
   label: string;

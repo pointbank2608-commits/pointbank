@@ -75,6 +75,10 @@ export interface HwItemConfig {
   kids?: boolean;
   /** 영상 하나를 끝까지 보면 끝나는 활동(유치원 영상 보기 숙제) */
   watch?: boolean;
+  /** 영상 보기 활동: 한 영상을 끝까지 몇 번 보면 끝나는지(1~10, 093) */
+  targetViews?: number;
+  /** 맞춤 칸(초안 전용): 보낼 때 학생마다 추천 엔진이 활동으로 채운다 — 배정된 숙제에는 남지 않는다 */
+  slot?: import('./slots').SlotConfig;
 }
 
 export interface HwItemDraft {

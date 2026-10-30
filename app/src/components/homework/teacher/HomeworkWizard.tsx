@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchCurriculumLessons, fetchStudentsOfClass, fetchWordLists } from '../../../lib/api';
 import { wordListToCards } from '../../../lib/gameFromWords';
-import { createHomework, teacherErrorKey } from '../../../lib/homework';
+import { createHomework, fetchAdFlags, setAdFlag, teacherErrorKey } from '../../../lib/homework';
 import { fetchClassWrongCards, useBuildLabels } from '../../../lib/homework/teacherHelpers';
 import { buildItems, buildKidsItems, buildWatchItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
 import type { HwPlan, HwItemDraft } from '../../../lib/homework/types';
@@ -84,6 +84,36 @@ export default function HomeworkWizard({
     }),
     [watchRows],
   );
+  // 한 영상을 몇 번 끝까지 보게 할지(093 서버가 시청 기록으로 센다)
+  const [watchViews, setWatchViews] = useState(1);
+  // "광고가 나와요"로 표시해 둔 영상(학원 단위로 기억, 093 전에는 빈 목록)
+  const [adFlags, setAdFlags] = useState<Set<string>>(new Set());
+  const watchIdsKey = watchVideos.map((v) => v.id).join(',');
+  useEffect(() => {
+    let alive = true;
+    void fetchAdFlags(watchVideos.map((v) => v.id)).then((s) => alive && setAdFlags(s));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchIdsKey]);
+  function toggleAd(videoId: string) {
+    const next = !adFlags.has(videoId);
+    setAdFlags((s) => {
+      const n = new Set(s);
+      if (next) n.add(videoId);
+      else n.delete(videoId);
+      return n;
+    });
+    void setAdFlag(academyId, videoId, next).catch(() => {
+      setAdFlags((s) => {
+        const n = new Set(s);
+        if (next) n.delete(videoId);
+        else n.add(videoId);
+        return n;
+      });
+    });
+  }
   const [cards, setCards] = useState<FullCardItem[]>(initialCards ?? pickedCards ?? []);
   const [sourceName, setSourceName] = useState(initialTitle ?? '');
   const [missingLessonWords, setMissingLessonWords] = useState(false);
@@ -191,7 +221,7 @@ export default function HomeworkWizard({
   }, [minutes, custom, cards, clip]);
 
   const items = useMemo(() => {
-    if (source === 'watch') return buildWatchItems(watchVideos, t('studentHw.watchItemLabel'));
+    if (source === 'watch') return buildWatchItems(watchVideos, t('studentHw.watchItemLabel'), watchViews);
     let s = seed * 9301 + 49297;
     const rng = () => {
       s = (s * 9301 + 49297) % 233280;
@@ -200,7 +230,7 @@ export default function HomeworkWizard({
     if (kids) return buildKidsItems(cards, kidsLines, labels.shadowing, clipSource, rng);
     return buildItems(cards, plan, labels, clipSource, rng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos]);
+  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
   const sourceOk = source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
@@ -431,9 +461,40 @@ export default function HomeworkWizard({
                       onChange={(e) => setWatchRows((rows) => rows.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
                       placeholder={t('studentHw.watchTitleOptional')}
                     />
+                    {ok && (
+                      <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
+                        <button
+                          type="button"
+                          aria-pressed={adFlags.has(extractYoutubeId(r.url) ?? '')}
+                          onClick={() => toggleAd(extractYoutubeId(r.url) ?? '')}
+                          className={`flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-bold ${adFlags.has(extractYoutubeId(r.url) ?? '') ? 'border-error bg-error-container/50 text-on-error-container' : 'border-outline-variant text-on-surface-variant'}`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">{adFlags.has(extractYoutubeId(r.url) ?? '') ? 'campaign' : 'check'}</span>
+                          {adFlags.has(extractYoutubeId(r.url) ?? '') ? t('studentHw.watchAdFlagged') : t('studentHw.watchAdFlag')}
+                        </button>
+                        {adFlags.has(extractYoutubeId(r.url) ?? '') && <span className="text-sm text-error">{t('studentHw.watchAdFlaggedNote')}</span>}
+                      </div>
+                    )}
                   </div>
                 );
               })}
+              <div className="rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3">
+                <div className="mb-2 font-label-md text-label-md text-on-surface">{t('studentHw.watchViews')}</div>
+                <div className="flex flex-wrap gap-2" role="group" aria-label={t('studentHw.watchViews')}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      aria-pressed={watchViews === n}
+                      onClick={() => setWatchViews(n)}
+                      className={`min-h-11 min-w-14 rounded-full border px-4 text-base font-bold ${watchViews === n ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant bg-white text-on-surface'}`}
+                    >
+                      {t('studentHw.watchViewsN', { n })}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-sm text-on-surface-variant">{t('studentHw.watchViewsHint')}</p>
+              </div>
               {watchRows.length < 6 && (
                 <button type="button" onClick={() => setWatchRows((rows) => [...rows, { url: '', title: '' }])} className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant px-4 font-label-md text-label-md">
                   <span className="material-symbols-outlined text-[18px]">add</span>

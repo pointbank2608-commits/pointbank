@@ -9,6 +9,8 @@ import {
   teacherErrorKey,
 } from '../../../lib/homework';
 import { countQuestions, estimateMinutes } from '../../../lib/homework/build';
+import { quizItemsToBlocks } from '../../../lib/homework/blocks';
+import type { HwItemDraft } from '../../../lib/homework/types';
 import {
   recommendForStudent,
   type Recommendation,
@@ -58,6 +60,7 @@ export default function RecommendReview({
   onClose,
   onSent,
   onCommonReview,
+  onEditBlocks,
   initialGamesOnly = false,
   initialSource,
 }: {
@@ -67,6 +70,8 @@ export default function RecommendReview({
   onClose: () => void;
   onSent: (groupId: string) => void;
   onCommonReview?: () => void;
+  /** 이 학생의 추천 활동을 블록 편집기로 열어 순서·문제·게임을 고친다 */
+  onEditBlocks?: (args: { studentId: string; name: string; items: HwItemDraft[] }) => void;
   initialGamesOnly?: boolean;
   initialSource?: { cards: FullCardItem[]; name: string };
 }) {
@@ -504,6 +509,24 @@ export default function RecommendReview({
                     </span>
                     {t('studentHw.recRemake')}
                   </button>
+                  {onEditBlocks && currentItems.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onEditBlocks({
+                          studentId: row.studentId,
+                          name: row.name,
+                          items: quizItemsToBlocks(structuredClone(currentItems)),
+                        })
+                      }
+                      className={`${btn} border border-outline-variant text-on-surface`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        view_agenda
+                      </span>
+                      {en ? 'Edit as blocks' : '블록으로 고치기'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() =>
