@@ -874,8 +874,8 @@ export default function HomeworkWizard({
       {pickingMethod && (
         <HomeworkMethodPicker
           onClose={() => setPickingMethod(false)}
-          onPick={(method) => {
-            setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'method', method, count: Math.min(10, Math.max(cards.length, 1)) }]);
+          onPick={(methods) => {
+            setMemEntries((cur) => [...cur, ...methods.map((method): MemEntry => ({ key: crypto.randomUUID(), kind: 'method', method, count: Math.min(10, Math.max(cards.length, 1)) }))]);
             setPickingMethod(false);
           }}
         />
@@ -883,8 +883,8 @@ export default function HomeworkWizard({
       {pickingGame && (
         <HomeworkGamePicker
           onClose={() => setPickingGame(false)}
-          onPick={(game) => {
-            setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'game', game }]);
+          onPick={(games) => {
+            setMemEntries((cur) => [...cur, ...games.map((game): MemEntry => ({ key: crypto.randomUUID(), kind: 'game', game }))]);
             setPickingGame(false);
           }}
         />

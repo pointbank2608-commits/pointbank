@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from '../../AccessibleDialog';
 import { MEMORY_METHODS, MEMORY_METHOD_LIST, type MemoryMethod } from '../../../lib/homework/memory';
@@ -76,9 +76,11 @@ export function MethodIllustration({ method, en }: { method: MemoryMethod; en: b
 }
 
 /** 암기 방식을 그림 카드로 보여 주고 고르게 하는 창 */
-export default function HomeworkMethodPicker({ onPick, onClose }: { onPick: (method: MemoryMethod) => void; onClose: () => void }) {
+export default function HomeworkMethodPicker({ onPick, onClose }: { onPick: (methods: MemoryMethod[]) => void; onClose: () => void }) {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith('en');
+  const [sel, setSel] = useState<MemoryMethod[]>([]);
+  const toggle = (m: MemoryMethod) => setSel((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]));
   return (
     <AccessibleDialog label={en ? 'Choose a method' : '암기 방식 고르기'} onClose={onClose}>
       <div className="hw-game-picker bg-white p-4 text-deep-navy sm:p-6">
@@ -87,12 +89,13 @@ export default function HomeworkMethodPicker({ onPick, onClose }: { onPick: (met
           <button type="button" onClick={onClose} className="min-h-11 rounded-full border border-outline-variant px-4 font-bold">{en ? 'Close' : '닫기'}</button>
         </div>
         <p className="mb-4 text-sm text-on-surface-variant">
-          {en ? 'Small pictures show what the student sees (example: apple). Start easy, then add harder ones.' : '학생이 보는 화면을 작게 그렸어요(예: apple). 쉬운 방식부터 시작해 어려운 방식을 더해 보세요.'}
+          {en ? 'Small pictures show what the student sees (example: apple). Tap to select several, then add.' : '학생이 보는 화면을 작게 그렸어요(예: apple). 여러 개를 눌러 고른 뒤 한꺼번에 추가할 수 있어요. 번호 순서대로 이어져요.'}
         </p>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {MEMORY_METHOD_LIST.map((m) => (
             <li key={m}>
-              <button type="button" onClick={() => onPick(m)} className="flex h-full w-full flex-col gap-2 rounded-2xl bg-white p-3 text-left shadow-card ring-1 ring-outline-variant transition hover:-translate-y-0.5 hover:ring-primary focus-visible:outline-2 focus-visible:outline-primary">
+              <button type="button" aria-pressed={sel.includes(m)} onClick={() => toggle(m)} className={`relative flex h-full w-full flex-col gap-2 rounded-2xl bg-white p-3 text-left shadow-card transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-primary ${sel.includes(m) ? 'ring-4 ring-primary' : 'ring-1 ring-outline-variant hover:ring-primary'}`}>
+                <span className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${sel.includes(m) ? 'bg-primary text-on-primary' : 'border-2 border-outline-variant bg-white/80 text-transparent'}`} aria-hidden="true">{sel.includes(m) ? sel.indexOf(m) + 1 : '○'}</span>
                 <MethodIllustration method={m} en={en} />
                 <span className="flex items-center gap-2">
                   <span className="text-lg font-bold">{MEMORY_METHODS[m].name[en ? 1 : 0]}</span>
@@ -103,6 +106,13 @@ export default function HomeworkMethodPicker({ onPick, onClose }: { onPick: (met
             </li>
           ))}
         </ul>
+        <div className="sticky -bottom-4 -mx-4 mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant bg-white px-4 py-3 sm:-bottom-6 sm:-mx-6 sm:px-6">
+          <span className="text-base font-bold">{en ? `${sel.length} selected` : `${sel.length}개 선택됨`}</span>
+          <span className="flex gap-2">
+            <button type="button" disabled={sel.length === 0} onClick={() => setSel([])} className="min-h-11 rounded-full border border-outline-variant px-4 font-bold disabled:opacity-40">{en ? 'Clear' : '선택 해제'}</button>
+            <button type="button" disabled={sel.length === 0} onClick={() => onPick(sel)} className="min-h-11 rounded-full bg-primary px-6 font-bold text-on-primary disabled:opacity-40">{en ? 'Add selected' : '선택한 것 추가'}</button>
+          </span>
+        </div>
       </div>
     </AccessibleDialog>
   );

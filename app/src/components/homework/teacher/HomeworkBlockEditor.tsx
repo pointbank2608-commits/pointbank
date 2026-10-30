@@ -190,9 +190,9 @@ export default function HomeworkBlockEditor({
   const watchVideoId = block?.type === "watch" ? extractYoutubeId(block.videoUrl) : null;
   const [adFlagged, setAdFlagged] = useState<Set<string>>(new Set());
   // 혼자 하는 게임 넣기(매치업·글자 섞기·철자 쓰기)
-  const [gameKind, setGameKind] = useState<SoloGame>("matchup");
+  const [gameKinds, setGameKinds] = useState<SoloGame[]>(["matchup"]);
   const [pickingGame, setPickingGame] = useState(false);
-  const [memMethod, setMemMethod] = useState<MemoryMethod>("flash");
+  const [memMethods, setMemMethods] = useState<MemoryMethod[]>(["flash"]);
   const [pickingMethod, setPickingMethod] = useState(false);
   const [memList, setMemList] = useState("");
   const [memCount, setMemCount] = useState(10);
@@ -947,18 +947,17 @@ export default function HomeworkBlockEditor({
               className={`${button} w-full text-left`}
               onClick={() => setPickingMethod(true)}
             >
-              {MEMORY_METHODS[memMethod].name[en ? 1 : 0]} · {l("방식 고르기", "Choose method")}
+              {memMethods.map((m) => MEMORY_METHODS[m].name[en ? 1 : 0]).join(", ") || l("방식", "Method")} · {l("방식 고르기(여러 개 가능)", "Choose methods")}
             </button>
             {pickingMethod && (
               <HomeworkMethodPicker
                 onClose={() => setPickingMethod(false)}
                 onPick={(m) => {
-                  setMemMethod(m);
+                  setMemMethods(m);
                   setPickingMethod(false);
                 }}
               />
             )}
-            <p className="text-xs">{MEMORY_METHODS[memMethod].help[en ? 1 : 0]}</p>
             <select
               className={field}
               aria-label={l("단어장", "Word list")}
@@ -998,8 +997,10 @@ export default function HomeworkBlockEditor({
                 const cards = wl
                   ? enrichCards(wordListToCards(wl), await loadWordBank().catch(() => []))
                   : [];
-                const made = memoryItemFromCards(cards, memMethod, memCount, en);
-                if (!made) {
+                const madeAll = memMethods
+                  .map((m) => memoryItemFromCards(cards, m, memCount, en))
+                  .filter((x): x is HwItemDraft => !!x);
+                if (!madeAll.length) {
                   setMessage(
                     l(
                       "이 단어장으로는 이 방식을 만들 수 없어요(예문·그림이 없거나 낱말이 모자라요).",
@@ -1008,7 +1009,7 @@ export default function HomeworkBlockEditor({
                   );
                   return;
                 }
-                change({ ...draft, items: [...draft.items, made] });
+                change({ ...draft, items: [...draft.items, ...madeAll] });
                 setSelected(draft.items.length);
               }}
             >
@@ -1030,13 +1031,13 @@ export default function HomeworkBlockEditor({
               className={`${button} w-full text-left`}
               onClick={() => setPickingGame(true)}
             >
-              {SOLO_GAME_NAMES[gameKind][en ? 1 : 0]} · {l("게임 고르기", "Choose game")}
+              {gameKinds.map((g) => SOLO_GAME_NAMES[g][en ? 1 : 0]).join(", ") || l("게임", "Game")} · {l("게임 고르기(여러 개 가능)", "Choose games")}
             </button>
             {pickingGame && (
               <HomeworkGamePicker
                 onClose={() => setPickingGame(false)}
                 onPick={(g) => {
-                  setGameKind(g);
+                  setGameKinds(g);
                   setPickingGame(false);
                 }}
               />
@@ -1062,14 +1063,18 @@ export default function HomeworkBlockEditor({
               disabled={!gameList}
               onClick={() => {
                 const wl = lists.find((w) => w.id === gameList);
-                const made = wl
-                  ? gameItemFromCards(
-                      wordListToCards(wl),
-                      gameKind,
-                      SOLO_GAME_NAMES[gameKind][en ? 1 : 0],
-                    )
-                  : null;
-                if (!made) {
+                const madeAll = wl
+                  ? gameKinds
+                      .map((g) =>
+                        gameItemFromCards(
+                          wordListToCards(wl),
+                          g,
+                          SOLO_GAME_NAMES[g][en ? 1 : 0],
+                        ),
+                      )
+                      .filter((x): x is HwItemDraft => !!x)
+                  : [];
+                if (!madeAll.length) {
                   setMessage(
                     l(
                       "이 단어장으로는 이 게임을 만들 수 없어요(단어가 모자라거나 영어 글자가 아니에요).",
@@ -1078,7 +1083,7 @@ export default function HomeworkBlockEditor({
                   );
                   return;
                 }
-                change({ ...draft, items: [...draft.items, made] });
+                change({ ...draft, items: [...draft.items, ...madeAll] });
                 setSelected(draft.items.length);
               }}
             >
