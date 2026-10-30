@@ -607,7 +607,7 @@ export default function HomeworkWizard({
           <div className="grid grid-cols-2 gap-2">
             <button type="button" aria-pressed={!memMode} onClick={() => setMemMode(false)} className={`${big} flex-col text-center ${on(!memMode)}`}>
               <span className="material-symbols-outlined">timer</span>
-              {l('시간으로 구성(5·10·15분)', 'By time (5/10/15 min)')}
+              {l('추천 분량으로 구성', 'By suggested amount')}
             </button>
             <button type="button" aria-pressed={memMode} onClick={() => { setMemMode(true); setKids(false); }} className={`${big} flex-col text-center ${on(memMode)}`}>
               <span className="material-symbols-outlined">psychology</span>
@@ -682,7 +682,7 @@ export default function HomeworkWizard({
                 }}
                 className={`flex min-h-20 flex-col items-center justify-center rounded-2xl border-2 ${on(!custom && minutes === m)}`}
               >
-                <span className="text-2xl font-bold">{t('studentHw.minutesN', { n: m })}</span>
+                <span className="text-2xl font-bold">{t(`studentHw.amount_${m}`)}</span>
                 <span className="text-sm text-on-surface-variant">{t(`studentHw.preset_${m}`)}</span>
               </button>
             ))}
