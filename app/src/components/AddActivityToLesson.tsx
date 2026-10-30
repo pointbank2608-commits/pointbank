@@ -21,6 +21,7 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [added,setAdded]=useState<{lesson:CurriculumLesson;slideId:string}|null>(null);
   useEffect(() => {
     let active = true;
     if (academy) fetchAllCurriculumLessons(academy.id).then(rows => { if (active) setLessons(rows); }).catch(() => { if (active) setError(t('quick.failed')); });
@@ -46,13 +47,13 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
       if (lesson) await appendActivityToLesson(lesson, slide);
       announceLessonChange(academy.id,saved.id);
       notify(t('launchUx.lessonAdded',{name:saved.name}));
-      navigate('/curriculum', { state: { focusClassId: saved.class_id, reopenLessonId: saved.id } });
-      onClose();
+      setAdded({lesson:saved,slideId:slide.id});
     } catch { setError(t('quick.addFailed')); } finally { adding.current=false;setBusy(false); }
   }
   return <AccessibleDialog label={t('quick.addLesson')} onClose={() => { if (!busy) onClose(); }}>
     <div className="space-y-4 p-6">
       <h2 className="text-xl font-bold">{t('quick.addLesson')}</h2>
+      {added ? <div className="space-y-4" role="status"><p className="rounded-xl bg-green-50 p-4 font-bold text-green-800">{t('launchUx.lessonAdded',{name:added.lesson.name})}</p><div className="flex flex-wrap gap-3"><button className="min-h-12 rounded-xl bg-primary px-5 font-bold text-white" onClick={()=>{navigate('/curriculum',{state:{focusClassId:added.lesson.class_id,reopenLessonId:added.lesson.id,reopenSlideId:added.slideId,addedActivity:true}});onClose();}}>{t('prelaunchUx.viewLesson')}</button><button className="min-h-12 rounded-xl border px-4" onClick={onClose}>{t('common.close')}</button></div></div> : <>
       <p>{t('quick.lessonHint')}</p>
       <label className="block">{t('quick.chooseLesson')}<select aria-label={t('quick.chooseLesson')} className="mt-2 min-h-12 w-full rounded-xl border p-3" value={target} disabled={busy || !lessons} onChange={e => setTarget(e.target.value)}>
         <option value="">{t(lessons ? 'quick.chooseLesson' : 'common.loading')}</option>
@@ -62,7 +63,7 @@ export default function AddActivityToLesson({ activity, source, onClose }: {
       {target === 'new' && <label className="block">{t('quick.lessonName')}<input placeholder={activityName('',t('flow.defaultLesson'),lessons?.map(row=>row.name))} className="mt-2 min-h-12 w-full rounded-xl border p-3" value={name} onChange={e => setName(e.target.value)} /></label>}
       {error && <p role="alert" className="text-error">{error}</p>}
       <div className="flex gap-3"><button className="min-h-12 rounded-xl border px-4" disabled={busy} onClick={onClose}>{t('common.close')}</button>
-        <button className="min-h-12 rounded-xl bg-primary px-4 font-bold text-white disabled:opacity-50" disabled={busy || !lessons || !target} onClick={() => void add()}>{t(busy ? 'common.loading' : 'quick.addLesson')}</button></div>
+        <button className="min-h-12 rounded-xl bg-primary px-4 font-bold text-white disabled:opacity-50" disabled={busy || !lessons || !target} onClick={() => void add()}>{t(busy ? 'common.loading' : 'quick.addLesson')}</button></div></>}
     </div>
   </AccessibleDialog>;
 }

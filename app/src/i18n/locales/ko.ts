@@ -1,3 +1,4 @@
+import {stemKo} from '../stemLocales';
 import {videoUiKo} from '../videoUiLocales';
 import {mediaV2Ko} from '../mediaV2Locales';
 import {readyMediaKo} from '../readyMediaLocales';
@@ -20,6 +21,8 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  prelaunchUx: { script: '스크립트 보기·수정', viewLesson: '수업 보기', wheelLegend: '전체 {{count}}개 · 목록을 내려 확인하세요' },
+  stem:stemKo,
   videoUi:videoUiKo,
   mediaV2:mediaV2Ko,
   readyMedia: readyMediaKo,

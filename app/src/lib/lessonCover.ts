@@ -15,6 +15,7 @@ export interface LessonCover {
 export type TagKey = 'vocab' | 'game' | 'grammar' | 'video' | 'material' | 'reading' | 'custom';
 
 const TAG_OF: Record<LessonSlide['kind'], TagKey> = {
+  stem: 'custom',
   image: 'custom',
   canvas: 'custom',
   web: 'custom',

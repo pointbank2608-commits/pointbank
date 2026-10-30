@@ -1,3 +1,4 @@
+import {stemEn} from '../stemLocales';
 import {videoUiEn} from '../videoUiLocales';
 import {mediaV2En} from '../mediaV2Locales';
 import {readyMediaEn} from '../readyMediaLocales';
@@ -22,6 +23,8 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  prelaunchUx: { script: 'View / edit script', viewLesson: 'View lesson', wheelLegend: '{{count}} items · Scroll to see all' },
+  stem:stemEn,
   videoUi:videoUiEn,
   mediaV2:mediaV2En,
   readyMedia: readyMediaEn,

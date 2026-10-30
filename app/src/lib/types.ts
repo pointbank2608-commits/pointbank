@@ -718,6 +718,8 @@ export interface ImageSlide {
 }
 
 export interface VideoSlide {
+  stemFrame?: import('./stemTypes').StemFrame;
+  stemMeta?: import('./stemTypes').StemMeta;
   title?: string;
   id: string;
   kind: 'video';
@@ -728,6 +730,8 @@ export interface VideoSlide {
 }
 
 export interface GameSlide {
+  stemFrame?: import('./stemTypes').StemFrame;
+  stemMeta?: import('./stemTypes').StemMeta;
   id: string;
   kind: 'game';
   gameType: GameType;
@@ -1055,6 +1059,7 @@ export type SlideHelper =
 export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[]; ownWordListId?: string };
 
 export type LessonSlideBase =
+  | import('./stemTypes').StemSlide
   | ImageSlide
   | VideoSlide
   | GameSlide

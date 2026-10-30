@@ -417,13 +417,14 @@ export default function CurriculumPage() {
   // 고른 채로 다시 연다(LessonRunnerContext.exit 가 state 로 넘겨줌).
   const reopenHandled = useRef<string | null>(null);
   useEffect(() => {
-    const st = location.state as { reopenLessonId?: string; reopenSlideId?: string } | null;
+    const st = location.state as { reopenLessonId?: string; reopenSlideId?: string; addedActivity?: boolean } | null;
     if (!st?.reopenLessonId || loading || reopenHandled.current === location.key) return;
     const lesson = lessons.find((l) => l.id === st.reopenLessonId);
     if (!lesson) return;
     reopenHandled.current = location.key;
     openEditForm(lesson);
     setReopenSlideId(st.reopenSlideId ?? null);
+    if(st.addedActivity)notify(t('launchUx.lessonAdded',{name:lesson.name}));
     navigate('/curriculum', { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key, loading, lessons]);
@@ -649,7 +650,7 @@ export default function CurriculumPage() {
     if (st?.focusClassId || st?.startLessonId) {
       if (st.startLessonId) pendingFocus.current = { ...st, focusClassId: st.focusClassId || staffClassId };
       if (st.focusClassId) selectClass(st.focusClassId);
-      navigate('/curriculum', { replace: true, state: st.reopenLessonId ? { reopenLessonId: st.reopenLessonId } : undefined });
+      navigate('/curriculum', { replace: true, state: st.reopenLessonId ? { ...location.state, focusClassId:undefined, reopenLessonId: st.reopenLessonId } : undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);

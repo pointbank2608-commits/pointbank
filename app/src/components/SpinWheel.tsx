@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { playMusic, playWheelSpinTicks, playWheelTickOnce } from '../lib/gameMusic';
-import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex, shortenLabel } from '../lib/wheel';
+import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
@@ -110,7 +110,10 @@ export default function SpinWheel({
 
   const count = items.length;
   const slice = count > 0 ? 360 / count : 0;
-  const fontSize = fontSizeFor(count);
+  // A horizontal word must fit the chord at its label radius. Use a numbered
+  // legend instead of clipping words or shrinking below classroom reading size.
+  const numbered = count > 12 || items.some(item => Array.from(item.label).length * fontSizeFor(count) * .62 > 2 * R * .58 * Math.sin(Math.PI / Math.max(2,count)) - 8);
+  const fontSize = numbered ? Math.max(14, Math.min(24, 2 * R * .7 * Math.sin(Math.PI / Math.max(2,count)) / 1.2)) : fontSizeFor(count);
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
@@ -127,9 +130,9 @@ export default function SpinWheel({
       const largeArc = a1 - a0 > 180 ? 1 : 0;
       const path = `M ${CX} ${CY} L ${p0.x.toFixed(2)} ${p0.y.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Z`;
       const mid = a0 + slice / 2;
-      return { id: item.id, path, mid, color: colorFor(i), label: shortenLabel(item.label, slice) };
+      return { id: item.id, path, mid, color: colorFor(i), label: numbered ? String(i + 1) : item.label };
     });
-  }, [items, slice]);
+  }, [items, slice, numbered]);
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -342,7 +345,7 @@ export default function SpinWheel({
   return (
     <div className="flex w-full flex-col items-center py-4 pb-2">
       <div
-        className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+        className={`flex w-full flex-col items-center gap-6 ${editable || numbered ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex w-full max-w-[560px] flex-col items-center">
           {editable && !itemsHidden &&
@@ -393,7 +396,7 @@ export default function SpinWheel({
                   <text
                     key={s.id + '-label'}
                     x={CX}
-                    y={CY - R * 0.58}
+                    y={CY - R * (numbered ? .7 : .58)}
                     transform={`rotate(${s.mid} ${CX} ${CY})`}
                     textAnchor="middle"
                     dominantBaseline="middle"
@@ -452,14 +455,19 @@ export default function SpinWheel({
           {result && !spinning && (
             <div
               key={result.id + result.label}
-              className="mt-4 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
+              data-wheel-result role="status" aria-live="polite"
+              className="mt-4 w-full min-w-0 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
             >
               <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
-              <div className="font-display-lg text-[28px] text-deep-navy mt-0.5">{result.label}</div>
+              <div className="font-display-lg text-[28px] text-deep-navy mt-0.5 break-words [overflow-wrap:anywhere]">{result.label}</div>
             </div>
           )}
         </div>
 
+        {numbered && (!editable || itemsHidden) && <ol aria-label={t('gameAdmin.itemCountLabel', { count })} tabIndex={0} className="grid w-full min-w-0 max-h-[32vh] gap-2 overflow-y-auto overscroll-contain rounded-xl focus-visible:outline-4 focus-visible:outline-primary md:max-w-[320px] md:max-h-[560px] md:self-center">
+          <li className="sticky top-0 rounded-xl bg-white p-2 text-sm font-bold text-deep-navy">{t('prelaunchUx.wheelLegend',{count})}</li>
+          {items.map((item,i)=><li key={item.id} className="flex items-start gap-3 rounded-xl border border-outline-variant bg-white p-3 text-lg font-bold text-deep-navy"><span className="flex h-8 min-w-8 items-center justify-center rounded-full text-white" style={{background:colorFor(i)}}>{i+1}</span><span className="min-w-0 break-words [overflow-wrap:anywhere]">{item.label}</span></li>)}
+        </ol>}
         {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
@@ -478,15 +486,18 @@ export default function SpinWheel({
             <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
               {items.map((item, i) => (
                 <div key={item.id} className="flex items-center gap-1">
-                  <input
+                  <span className="min-w-7 text-center font-bold text-deep-navy">{i+1}</span>
+                  <textarea
+                  rows={2}
+                  aria-label={`${i+1}. ${item.label}`}
                   value={itemDrafts[item.id] ?? item.label}
                   onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
                   onBlur={() => commitItemDraft(item.id)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur(); }
                   }}
                   style={{ color: colorFor(i) }}
-                  className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="min-w-0 flex-1 resize-none rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-base font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                   <button
                     type="button"

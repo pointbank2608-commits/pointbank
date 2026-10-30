@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
@@ -67,6 +68,8 @@ export default function LessonSlideContent({
   );
 
   const boardBox = fill ? 'absolute inset-0 p-2 md:p-4' : 'h-[75vh]';
+
+  if(slide.kind==='stem')return <div className={fill?'stem-lesson-content':''}><StemFrameView key={slide.id} frame={slide.frame} meta={slide.stemMeta} interactive={!student}/></div>;
 
   if ((slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill') && clipDown) {
     return (

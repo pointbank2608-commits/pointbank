@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState,type ReactNode} from 'react';
+import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useVideoChrome} from '../lib/videoChrome';
 import {usePresenting,useOptionalLessonRunner} from '../context/LessonRunnerContext';
@@ -10,8 +10,30 @@ export default function TeachingVideoFrame({title,video,caption,playing,ready,er
  title?:string;video:ReactNode;caption?:ReactNode;playing:boolean;ready:boolean;error?:string;pending?:boolean;onPlay:()=>void;onReplay:()=>void;onPrev?:()=>void;onNext?:()=>void;previousDisabled?:boolean;nextDisabled?:boolean;follow?:ReactNode;settings?:(always:boolean,setAlways:(v:boolean)=>void)=>ReactNode;subtitles?:ReactNode;summary?:ReactNode;progress?:ReactNode;expanded?:boolean;retry?:()=>void;youtube?:string;simple?:boolean;subtitleLabel?:string;
 }){
  const {t}=useTranslation();const presenting=usePresenting();const runner=useOptionalLessonRunner();const root=useRef<HTMLDivElement>(null);const revealOnly=useRef(false);const [full,setFull]=useState(()=>!!document.fullscreenElement||document.documentElement.dataset.lessonExpanded==='true'),[fallback,setFallback]=useState(false),[popup,setPopup]=useState<'settings'|'subtitles'|null>(null);
+ const popupTrigger=useRef<HTMLElement|null>(null);
+ useLayoutEffect(()=>{
+  const section=root.current,video=section?.querySelector<HTMLElement>('.tv-video');
+  if(!section||!video)return;
+  const measure=()=>{
+   const bounds=video.getBoundingClientRect(),outer=section.getBoundingClientRect();
+   section.style.setProperty('--tv-popup-top',`${bounds.top-outer.top}px`);
+   section.style.setProperty('--tv-popup-height',`${bounds.height}px`);
+  };
+  const observer=new ResizeObserver(measure);observer.observe(section);observer.observe(video);measure();
+  return()=>observer.disconnect();
+ },[]);
+ useEffect(()=>{
+  if(!popup)return;
+  popupTrigger.current=document.activeElement as HTMLElement;
+  const panel=root.current?.querySelector<HTMLElement>('[data-video-popup]');
+  const buttons=()=>Array.from(panel?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),select:not([disabled]),summary,[tabindex="0"]')??[]).filter(el=>el.getClientRects().length>0);
+  buttons()[0]?.focus({preventScroll:true});
+  const key=(e:KeyboardEvent)=>{if(e.key!=='Tab')return;const list=buttons();const first=list[0],last=list.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}};
+  panel?.addEventListener('keydown',key);
+  return()=>{panel?.removeEventListener('keydown',key);popupTrigger.current?.focus({preventScroll:true});};
+ },[popup]);
  const chrome=useVideoChrome(playing,popup!==null,full||fallback||expanded);
- useEffect(()=>{const change=()=>setFull(!!document.fullscreenElement||document.documentElement.dataset.lessonExpanded==='true');const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(document.fullscreenElement||fallback||document.documentElement.dataset.lessonExpanded==='true'){e.preventDefault();e.stopPropagation();if(document.documentElement.dataset.lessonExpanded==='true'&&runner?.runner)runner.toggleFullscreen();else if(document.fullscreenElement)void document.exitFullscreen();setFallback(false);}setPopup(null);}};document.addEventListener('fullscreenchange',change);window.addEventListener('classbank:lesson-expanded',change);document.addEventListener('keydown',key,true);return()=>{document.removeEventListener('fullscreenchange',change);window.removeEventListener('classbank:lesson-expanded',change);document.removeEventListener('keydown',key,true);};},[fallback,runner]);
+ useEffect(()=>{const change=()=>setFull(!!document.fullscreenElement||document.documentElement.dataset.lessonExpanded==='true');const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){if(popup){e.preventDefault();e.stopImmediatePropagation();setPopup(null);return;}if(document.fullscreenElement||fallback||document.documentElement.dataset.lessonExpanded==='true'){e.preventDefault();e.stopPropagation();if(document.documentElement.dataset.lessonExpanded==='true'&&runner?.runner)runner.toggleFullscreen();else if(document.fullscreenElement)void document.exitFullscreen();setFallback(false);}setPopup(null);}};document.addEventListener('fullscreenchange',change);window.addEventListener('classbank:lesson-expanded',change);document.addEventListener('keydown',key,true);return()=>{document.removeEventListener('fullscreenchange',change);window.removeEventListener('classbank:lesson-expanded',change);document.removeEventListener('keydown',key,true);};},[fallback,runner,popup]);
  // The lesson provider also handles fullscreenchange and can render before this
  // listener receives it. Reconcile its snapshot when that provider updates.
  useEffect(()=>{setFull(!!document.fullscreenElement||document.documentElement.dataset.lessonExpanded==='true');},[runner?.isFullscreen]);
@@ -23,7 +45,7 @@ export default function TeachingVideoFrame({title,video,caption,playing,ready,er
   <div className="tv-controls-space"><div className={'tv-controls '+(!chrome.visible?'is-hidden':'')} data-video-controls {...chrome.lock}>
    {progress&&<div className="tv-progress">{progress}</div>}
    <div className="tv-main-controls">{onPrev&&<VideoControl name="skip_previous" label={t('mediaV2.prev')} onClick={onPrev} disabled={previousDisabled}/>}<VideoControl primary name={playing?'pause':'play_arrow'} label={t(playing?'mediaV2.pause':'mediaV2.play')} onClick={onPlay} disabled={!ready||!!error}/><VideoControl name="replay" label={t('mediaV2.replay')} onClick={onReplay} disabled={!ready||!!error}/>{onNext&&<VideoControl name="skip_next" label={t('mediaV2.next')} onClick={onNext} disabled={nextDisabled}/>}</div>
-   <div className="tv-tool-controls">{follow}<div className="tv-setting-anchor">{settings&&<button type="button" className={popup==='settings'?'is-active':''} aria-expanded={popup==='settings'} onClick={()=>setPopup(p=>p==='settings'?null:'settings')}>{icon('settings')}{t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}</button>}{popup==='settings'&&<div className="tv-popup" data-video-popup role="group" aria-label={t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}><header><strong>{t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}</strong><button onClick={()=>setPopup(null)} aria-label={t('mediaV2.close')}>×</button></header>{settings?.(chrome.always,chrome.setAlways)}</div>}</div>{summary&&<span className="tv-summary">{summary}</span>}<div className="tv-setting-anchor">{subtitles&&<button type="button" aria-expanded={popup==='subtitles'} onClick={()=>setPopup(p=>p==='subtitles'?null:'subtitles')}>{icon('subtitles')}{subtitleLabel??t('mediaV2.subtitles')}</button>}{popup==='subtitles'&&<div className="tv-popup tv-sub-popup" data-video-popup role="group" aria-label={t('mediaV2.subtitles')}><button className="tv-popup-close" onClick={()=>setPopup(null)}>{t('mediaV2.close')}</button>{subtitles}</div>}</div>{!simple&&<button type="button" onClick={()=>{setPopup(null);chrome.hide();}}>{icon('visibility_off')}{t('videoUi.hide')}</button>}</div>
+   <div className="tv-tool-controls">{follow}<div className="tv-setting-anchor">{settings&&<button type="button" className={popup==='settings'?'is-active':''} aria-expanded={popup==='settings'} onClick={()=>setPopup(p=>p==='settings'?null:'settings')}>{icon('settings')}{t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}</button>}{popup==='settings'&&<div className="tv-popup" data-video-popup role="dialog" aria-modal="false" aria-label={t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}><header><strong>{t(simple?'mediaV2.playbackSettings':'mediaV2.settings')}</strong><button onClick={()=>setPopup(null)} aria-label={t('mediaV2.close')}>×</button></header>{settings?.(chrome.always,chrome.setAlways)}</div>}</div>{summary&&<span className="tv-summary">{summary}</span>}<div className="tv-setting-anchor">{subtitles&&<button type="button" aria-expanded={popup==='subtitles'} onClick={()=>setPopup(p=>p==='subtitles'?null:'subtitles')}>{icon('subtitles')}{subtitleLabel??t('mediaV2.subtitles')}</button>}{popup==='subtitles'&&<div className="tv-popup tv-sub-popup" data-video-popup role="dialog" aria-modal="false" aria-label={t('mediaV2.subtitles')}><button className="tv-popup-close" onClick={()=>setPopup(null)}>{t('mediaV2.close')}</button>{subtitles}</div>}</div>{!simple&&<button type="button" onClick={()=>{setPopup(null);chrome.hide();}}>{icon('visibility_off')}{t('videoUi.hide')}</button>}</div>
   </div></div>
  </section>;
 }

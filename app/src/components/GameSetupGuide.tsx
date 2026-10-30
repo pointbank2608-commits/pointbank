@@ -115,6 +115,18 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
     const initial=guideRows(info.selected,kind);if(initial.length)write(initial);else write([['','']]);
   },[active,step,raw,info.selected,kind]); // eslint-disable-line react-hooks/exhaustive-deps
   const edited=useRef(0);
+  const missingSourceHandled=useRef('');
+  useEffect(()=>{
+    const incoming=(location.state as {quickSource?:{ownerId?:string;academyId?:string;id?:string}}|null)?.quickSource;
+    const supplied=info.selected?.config.classroomSource;
+    if(!active||info.loading||!supplied||incoming?.ownerId!==session?.user.id||incoming?.academyId!==academy?.id||incoming?.id!==supplied.id||missingSourceHandled.current===location.key)return;
+    if(prepareClassroomGame(info.gameType,supplied.cards,supplied.kind))return;
+    missingSourceHandled.current=location.key;
+    setKind(supplied.kind);setStep(1);
+    write(supplied.cards.map(card=>family==='image'?[card.word,card.imageUrl||'']:family==='groups'?[card.word,card.category||'']:[card.word,card.meaning]));
+    const requirement=classroomGameRequirement(info.gameType,supplied.kind);
+    setError(t(requirement.key,{count:requirement.count}));
+  },[active,info.loading,info.selected,info.gameType,location.state,location.key,session?.user.id,academy?.id,family,write,t]);
   useEffect(()=>{if(!active||!editRevision||edited.current===editRevision||!info.selected)return;
     edited.current=editRevision;const k=info.selected.config.setupKind || info.selected.config.classroomSource?.kind || (guideKinds(info.gameType).includes('word')?'word':guideKinds(info.gameType).includes('names')?'names':'sentence');
     setKind(k);write(guideRows(info.selected,k));setNative(dedicated);setStep(1);setError('');

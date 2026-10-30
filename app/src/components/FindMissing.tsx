@@ -10,6 +10,8 @@ import { playBuiltin, playShuffleSwish, preloadCardSwish } from '../lib/gameMusi
 import type { GameItem } from '../lib/types';
 
 interface Props {
+  /** Optional picture cards, used by STEM without changing existing text games. */
+  cardImages?: Record<string,string>;
   items: GameItem[];
   revealCount: number;
   shuffleCards: boolean;
@@ -75,6 +77,7 @@ function hideCountFor(boardLen: number, revealCount: number): number {
  * 난이도에서 카드 섞기를 켜면, 숨긴 뒤에 나무 카드(물음표 포함)가 자리를 바꾼다.
  */
 export default function FindMissing({
+  cardImages,
   items,
   revealCount,
   shuffleCards,
@@ -495,7 +498,9 @@ export default function FindMissing({
                   <img src={Q_SRC} alt="" draggable={false} className="pointer-events-none h-[78%] w-auto select-none object-contain" />
                 ) : (
                   <span className="block h-full w-full min-h-0">
+                    {cardImages?.[item.id] ? <span className="flex h-full flex-col items-center justify-center"><img src={cardImages[item.id]} alt="" className="min-h-0 flex-1 object-contain"/><span className="text-center text-sm font-bold">{item.label}</span></span> :
                     <GameFitText text={item.label} />
+                    }
                   </span>
                 )}
               </div>

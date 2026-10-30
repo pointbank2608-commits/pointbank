@@ -7,16 +7,19 @@ import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import { wordListToCards } from '../lib/gameFromWords';
+import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, GameType, SlideHelper, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'stem' | 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
+  activityTitle?: string;
+  sourceClipId?: string;
+  sourceVideoUrl?: string | null;
   icon: string;
   /** 이동할 때 같이 넘길 router state — 워크시트 탭 미리 지정 등(materialsHandoff.ts 의
    * MaterialsHandoffState 모양). */
@@ -145,15 +148,24 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   const start = useCallback(
     (lesson: CurriculumLesson, wordList: WordList | null, classId: string | null, opts?: StartOptions) => {
-      const materialsWords = wordListToCards(wordList);
+      const sourceSlides=effectiveSlides(lesson);
+      const isStem=sourceSlides.some(s=>s.kind==='stem'||(s.kind==='game'||s.kind==='video')&&s.stemMeta);
+      const listWords=wordListToCards(wordList);
+      const materialsWords=listWords.length||!isStem?listWords:lessonSlideWords(sourceSlides);
       const steps: RunnerStep[] = [];
       let currentSlideId: string | undefined;
+      let activityTitle: string | undefined, sourceClipId: string | undefined, sourceVideoUrl: string | null | undefined;
       let currentHelpers: SlideHelper[] | undefined;
-      const push = (step: RunnerStep) => steps.push({ ...step, slideId: currentSlideId, helpers: currentHelpers });
+      const push = (step: RunnerStep) => steps.push({ ...step, slideId: currentSlideId, helpers: currentHelpers, activityTitle, sourceClipId, sourceVideoUrl });
       for (const slide of effectiveSlides(lesson)) {
         currentSlideId = slide.id;
+        activityTitle = 'title' in slide && typeof slide.title === 'string' ? slide.title : undefined;
+        sourceClipId = 'clipId' in slide ? slide.clipId : undefined;
+        sourceVideoUrl = 'videoUrl' in slide ? slide.videoUrl : undefined;
         currentHelpers = slide.helpers && slide.helpers.length > 0 ? slide.helpers : undefined;
-        if (slide.kind === 'image') {
+        if(slide.kind==='stem'){
+          push({kind:'stem',path:`/curriculum/${lesson.id}/slide/${slide.id}`,label:slide.frame.title,icon:'science'});
+        } else if (slide.kind === 'image') {
           push({
             kind: 'image',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
@@ -299,7 +311,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           });
         }
       }
-      steps.push({
+      if(!isStem)steps.push({
         kind: 'print',
         path: '/materials/worksheet',
         label: t('curriculum.play.stepPrint'),
@@ -318,7 +330,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         stepIndex: startIndex,
         returnToEdit: !!opts?.returnToEdit,
         startedAt: Date.now(),
-        words: (wordList?.items ?? []).map((i) => i.word),
+        words: (wordList?.items ?? materialsWords).map((i) => i.word),
         viewSnapshot: { slides: effectiveSlides(lesson), words: materialsWords },
       });
       try {

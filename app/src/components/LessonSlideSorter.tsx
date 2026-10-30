@@ -8,6 +8,8 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import WordShowBoard from './WordShowBoard';
+import StemFrameView from './stem/StemFrameView';
+import {emptyStem} from '../lib/stem';
 import AttendanceBoard from './AttendanceBoard';
 import { PhonicsOptionsFields, phonicsTabLabel, WordSourcePicker } from './LessonWordSources';
 import { PHONICS_SLIDE_TABS } from '../pages/PhonicsWorksheetLibraryPage';
@@ -198,6 +200,18 @@ export default function LessonSlideSorter({
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
   const [addMode, setAddMode] = useState<AddMode>(null);
+  useEffect(()=>{
+    if(!initialSelectedId)return;
+    setSelectedId(initialSelectedId);
+    let nextFrame=0;
+    // The parent first reveals/focuses the edit form. Scroll to the appended
+    // activity after that focus, so it cannot move the page back to the top.
+    const frame=requestAnimationFrame(()=>{nextFrame=requestAnimationFrame(()=>{
+      document.querySelector<HTMLElement>(`[data-slide-id="${window.CSS.escape(initialSelectedId)}"]`)?.scrollIntoView({block:'nearest',inline:'nearest'});
+      document.querySelector<HTMLElement>('[data-lesson-slide-detail]')?.scrollIntoView({block:'nearest'});
+    });});
+    return()=>{cancelAnimationFrame(frame);cancelAnimationFrame(nextFrame);};
+  },[initialSelectedId]);
   const { profile: teacher } = useAuth();
   // "단어장으로 단어 수업 더하기" — 수업 단어장은 그대로 두고, 고른 단어장으로 단어 소개·카드·게임 슬라이드를 묶음으로 넣는다
   const [setListId, setSetListId] = useState('');
@@ -488,6 +502,10 @@ export default function LessonSlideSorter({
     }
     const ref = block.slide;
     if (!ref) return;
+    if(ref.kind==='stem'){
+      const source=emptyStem('');source.meta.title=lessonName||'STEM';const frame={...source.frames[0],lines:['What do you see?']};
+      addSlide({id:frame.id,kind:'stem',frame,stemMeta:source.meta});setAddMode(null);return;
+    }
     if (ref.kind === 'game' && ref.gameType) {
       addGameSlide(ref.gameType);
       return;
@@ -606,7 +624,7 @@ export default function LessonSlideSorter({
       </div>
 
       {/* 오른쪽: 슬라이드 추가 패널 또는 선택된 슬라이드 상세 */}
-      <div className="min-w-0 flex-1 rounded-xl bg-surface-container-low p-4">
+      <div data-lesson-slide-detail className="min-w-0 flex-1 rounded-xl bg-surface-container-low p-4">
         {addMode && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="font-title-md text-title-md font-bold text-deep-navy">
@@ -1185,6 +1203,7 @@ function RainbowAddPanel({ onAdd }: { onAdd: (d: RainbowDraft) => void }) {
 }
 
 function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; label: string } {
+  if(slide.kind==='stem')return {icon:'science',label:slide.frame.title};
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
@@ -1253,6 +1272,7 @@ function SlideThumb({
 
   return (
     <div
+      data-slide-id={slide.id}
       ref={setNodeRef}
       style={style}
       {...attributes}
@@ -1292,7 +1312,7 @@ function SlideThumb({
         </button>
       </div>
       <div className="flex h-24 w-40 shrink-0 items-center justify-center bg-surface-container lg:w-full">
-        {slide.kind === 'canvas' ? (
+        {slide.kind === 'stem' ? <StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/> : slide.kind === 'canvas' ? (
           <CanvasSlideView slide={slide} className="pointer-events-none" />
         ) : slide.kind === 'grammar' && grammarPoint(slide.grammarId) ? (
           <GrammarBoard
@@ -1357,7 +1377,7 @@ function SlideDetail({
   const { t } = useTranslation();
 
   if (slide.kind === 'shadow') {
-    return <ShadowSlideDetail slide={slide} onUpdate={onUpdate} />;
+    return <ShadowSlideDetail key={slide.id} slide={slide} onUpdate={onUpdate} />;
   }
 
   if (slide.kind === 'rainbow') {
@@ -1600,6 +1620,8 @@ function SlideDetail({
       />
     );
   }
+
+  if(slide.kind==='stem')return <div className="space-y-4"><StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/><label className="block">{t('stem.titleLabel')}<input className="w-full rounded-xl border p-3" value={slide.frame.title} onChange={e=>onUpdate({frame:{...slide.frame,title:e.target.value}} as Partial<LessonSlide>)}/></label><label className="block">{t('stem.lines')}<textarea className="w-full rounded-xl border p-3" value={slide.frame.lines.join('\n')} onChange={e=>onUpdate({frame:{...slide.frame,mode:'text',lines:e.target.value.split('\n')}} as Partial<LessonSlide>)}/></label><p>{t('stem.existingEdit')}</p><a className="text-primary underline" href="/stem">{t('stem.openLessons')} · STEM</a></div>;
 
   // material slide
   if (slide.materialId === 'phonicsstage1') {
@@ -2404,6 +2426,7 @@ function ShadowSlideDetail({ slide, onUpdate }: { slide: ShadowSlide; onUpdate: 
       {!down && (
         <div className="h-[560px] w-full max-w-3xl">
           <ShadowBoard
+            preparation
             source={slide.source}
             title={slide.title}
             videoUrl={slide.videoUrl}
@@ -2455,6 +2478,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
         <input className={input} value={draft.title ?? ''} onChange={(e) => set({ title: e.target.value })} placeholder={t('curriculum.shadow.titlePlaceholder')} />
         <input className={input} value={draft.videoUrl ?? ''} onChange={(e) => set({ videoUrl: e.target.value })} placeholder={t('curriculum.shadow.videoPlaceholder')} />
       </div>
+      <details className="rounded-xl border border-outline-variant bg-white p-3" data-preparation-settings><summary className="min-h-11 cursor-pointer font-bold">{t('mediaV2.settings')}</summary>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-label-md text-label-md text-on-surface-variant">{t('curriculum.shadow.flowLabel')}</span>
         {(['video', 'auto', 'manual'] as const).map((f) => (
@@ -2477,7 +2501,10 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
           </select>
         )}
       </div>
+      </details>
+      <details className="rounded-xl border border-outline-variant bg-white p-3" data-script-editor><summary className="min-h-11 cursor-pointer font-bold">{t('prelaunchUx.script')}</summary>
       <textarea
+        aria-label={t('prelaunchUx.script')}
         className={`${input} min-h-[200px] font-mono`}
         value={draft.source}
         onChange={(e) => set({ source: e.target.value })}
@@ -2516,7 +2543,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
           {speakers.length > 0 && ` · ${t('curriculum.shadow.speakers', { names: speakers.join(', ') })}`}
         </span>
       </div>
-      <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.shadow.formatHint')}</p>
+      <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.shadow.formatHint')}</p></details>
       {onAdd && (
         <button
           type="button"

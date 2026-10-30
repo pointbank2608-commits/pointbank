@@ -1,0 +1,14 @@
+import {useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import AccessibleDialog from '../AccessibleDialog';
+import {STEM_BLOCKS,type StemFrame} from '../../lib/stemTypes';
+import {createStemFrame} from '../../lib/stemBlocks';
+import {youtubeUrl} from '../../lib/stem';
+import type {GameTemplate} from '../../lib/types';
+
+export default function StemBlockPicker({position,games,onInsert,onClose}:{position:number;games:GameTemplate[];onInsert:(frame:StemFrame)=>void;onClose:()=>void}){
+ const {t}=useTranslation();const [tab,setTab]=useState<'content'|'video'|'game'>('content'),[url,setUrl]=useState(''),[gameId,setGameId]=useState('');
+ return <AccessibleDialog label={t('stem.blockTools.insertAt',{n:position+1})} onClose={onClose}><div className="stem-block-picker"><div className="stem-toolbar"><h2>{t('stem.blockTools.insertAt',{n:position+1})}</h2><button onClick={onClose}>{t('stem.close')}</button></div><nav className="stem-actions" aria-label={t('stem.blockTools.chooseKind')}>{(['content','video','game']as const).map(k=><button key={k} aria-pressed={tab===k} className={tab===k?'stem-primary':''} onClick={()=>setTab(k)}>{t(`stem.blockTools.${k}`)}</button>)}</nav>
+ {tab==='content'?<><p>{t('stem.blockTools.insertHint')}</p><div className="stem-insert-grid">{STEM_BLOCKS.map(kind=><button key={kind} onClick={()=>onInsert(createStemFrame(kind))}><b>{t(`stem.blockTools.stageNames.${kind}`)}</b><span>{t(`stem.blockTools.hints.${kind}`)}</span></button>)}<button onClick={()=>onInsert(createStemFrame('image'))}><b>{t('stem.image')}</b><span>{t('stem.blockTools.imageHint')}</span></button><button onClick={()=>onInsert(createStemFrame('missing'))}><b>{t('stem.missing')}</b><span>{t('stem.blockTools.missingHint')}</span></button></div></>:tab==='video'?<div className="stem-field"><label htmlFor="stem-insert-video">{t('stem.videoUrl')}</label><input id="stem-insert-video" type="url" value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=…"/><p>{t('stem.blockTools.videoHint')}</p><button className="stem-primary" disabled={!youtubeUrl(url.trim())} onClick={()=>onInsert({...createStemFrame('video'),videoUrl:url.trim()})}>{t('stem.blockTools.insertVideo')}</button></div>:<div className="stem-field"><label htmlFor="stem-insert-game">{t('stem.gameSelect')}</label><select id="stem-insert-game" value={gameId} onChange={e=>setGameId(e.target.value)}><option value="">{t('stem.gameSelect')}</option>{games.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select><p>{t(games.length?'stem.savedGames':'stem.noGames')}</p><button className="stem-primary" disabled={!games.some(g=>g.id===gameId)} onClick={()=>{const game=games.find(g=>g.id===gameId);if(game)onInsert({...createStemFrame('game'),title:game.name,gameType:game.game_type,templateId:game.id});}}>{t('stem.blockTools.insertGame')}</button></div>}
+ </div></AccessibleDialog>;
+}

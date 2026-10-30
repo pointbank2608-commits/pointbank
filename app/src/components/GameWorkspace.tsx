@@ -112,7 +112,17 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); setSettingsSaved(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
-  useEffect(()=>{if(!presenting&&info&&!info.loading&&info.temporary&&info.selected&&isActivityDraft(info.selected.id)&&guideOpened.current!==identity){guideOpened.current=identity;setPanel(info.gameType==='quizshow'?'settings':'guide');}},[info,identity,presenting]);
+  useEffect(()=>{
+    const entry=`${identity}:${location.key}`;
+    if(presenting||!info||info.loading||!info.temporary||!info.selected||!isActivityDraft(info.selected.id)||guideOpened.current===entry)return;
+    guideOpened.current=entry;
+    const supplied=info.selected.config.classroomSource;
+    const incoming=(location.state as {quickSource?:{ownerId?:string;academyId?:string;id?:string}}|null)?.quickSource;
+    const ready=incoming?.ownerId===session?.user.id&&incoming?.academyId===academy?.id&&incoming?.id===supplied?.id&&!!supplied
+      &&!['sample','temporary'].includes(supplied.id)&&!!prepareClassroomGame(info.gameType,supplied.cards,supplied.kind)
+      &&isNativeGameReady(info.selected)&&!guideProblem(info.selected);
+    setPanel(ready?null:info.gameType==='quizshow'?'settings':'guide');
+  },[info,identity,presenting,location.key,location.state,session?.user.id,academy?.id]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
     setOrdered(false);

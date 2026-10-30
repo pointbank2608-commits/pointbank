@@ -26,8 +26,9 @@ export function lessonSlideWords(slides: LessonSlide[]): FullCardItem[] {
   const seen = new Set<string>();
   const out: FullCardItem[] = [];
   for (const s of slides) {
-    if ((s.kind !== 'wordshow' && s.kind !== 'study') || !s.words?.length) continue;
-    for (const w of s.words) {
+    const words=s.kind==='stem'?s.stemMeta.vocabulary:(s.kind==='wordshow'||s.kind==='study')?s.words:undefined;
+    if(!words?.length)continue;
+    for (const w of words) {
       const key = `${w.word.toLowerCase()}::${w.meaning}`;
       if (seen.has(key)) continue;
       seen.add(key);

@@ -33,3 +33,16 @@ body:has([data-lesson-video-nav]) .tv-player[data-simple=false]{padding-bottom:8
 .tv-player[data-simple=false] .tv-sub-popup{width:min(420px,calc(100cqw - 30px));display:flex;flex-wrap:wrap}
 @media(max-width:650px){.tv-player[data-simple=false]{padding:10px}.tv-player[data-simple=false] .tv-main-controls{gap:4px;padding:6px 0}.tv-player[data-simple=false] .tv-control{min-width:0;flex:1;font-size:13px;min-height:64px}.tv-player[data-simple=false] .tv-control .material-symbols-outlined{font-size:28px}.tv-player[data-simple=false] .tv-tool-controls>button,.tv-player[data-simple=false] .tv-setting-anchor>button{font-size:14px;padding:8px 10px}.tv-choice-row{grid-template-columns:1fr}.tv-choice-row legend{float:none;width:auto}.tv-player[data-simple=false] .tv-popup{padding:12px}.tv-player[data-simple=false] .tv-title{font-size:15px}.tv-player[data-simple=false] .tv-caption{min-height:72px}.tv-player[data-simple=false] .tv-title button{font-size:13px}.tv-player[data-simple=false] .tv-popup select{max-width:140px}}
 @media(max-height:600px) and (orientation:landscape){.tv-player[data-simple=false] .tv-control>span:last-child{display:block}.tv-player[data-simple=false] .tv-caption{min-height:55px}.tv-player[data-simple=false] .tv-controls-space{min-height:150px}.tv-player[data-simple=false] .tv-video{min-height:90px}}
+
+/* Settings belong to an overlay, never the video's flex layout. These rules
+   override the older inline/mobile/container popup rules for both players. */
+.tv-player.tv-player .tv-setting-anchor:has(.tv-popup){display:contents;width:auto;flex-basis:auto}
+.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{position:absolute;inset:56px 16px auto auto;order:initial;width:min(560px,calc(100% - 32px));max-width:calc(100% - 32px);max-height:calc(100% - 310px);overflow:auto;overscroll-behavior:contain;margin:0;z-index:30;box-shadow:0 12px 40px #0008}
+.tv-player.tv-player .tv-sub-popup{width:min(420px,calc(100% - 32px))}
+.tv-player.tv-player:has(.tv-popup) .tv-video{flex:1;min-height:130px}
+.tv-player.tv-player:has(.tv-popup) .tv-caption>div{max-width:100%;align-items:center;margin:0;text-align:center}
+.tv-player.tv-player .tv-controls:has(.tv-popup) .tv-main-controls,.tv-player.tv-player .tv-controls:has(.tv-popup) .tv-progress{width:auto;justify-content:center}
+.tv-player.tv-player[data-video-full=true]{overflow:hidden;min-height:0}
+@media(max-width:650px){.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{inset:50px 8px auto auto;width:calc(100% - 16px);max-width:calc(100% - 16px);max-height:calc(100% - 305px)}.tv-player.tv-player:has(.tv-popup){overflow:hidden}}
+@media(max-height:600px){.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{inset:42px 8px auto auto;max-height:calc(100% - 85px)}.tv-player.tv-player:has(.tv-popup) .tv-video{min-height:90px}}
+.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{top:var(--tv-popup-top,56px);max-height:var(--tv-popup-height,calc(100% - 310px))}

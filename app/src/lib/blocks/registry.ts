@@ -78,6 +78,7 @@ const printBlocks: BlockDef[] = MATERIALS_CATALOG.map((m) => ({
 
 /** 단체수업의 배우기 화면 — 슬라이드 종류 하나 = 블록 하나 */
 const learnBlocks: BlockDef[] = [
+  {id:'learn.stem',role:'main',category:'learn',icon:'science',uses:['group','print'],status:'ready',name:{ko:'STEM 수업',en:'STEM lesson'},slide:{kind:'stem'}},
   { id: 'learn.wordShow', role: 'main', category: 'learn', icon: 'style', uses: ['group'], status: 'ready', name: { ko: '단어 소개', en: 'Word introduction' }, needs: { words: { min: 1 } }, slide: { kind: 'wordshow' }, concept: 'wordIntro' },
   { id: 'learn.study', role: 'main', category: 'learn', icon: 'view_carousel', uses: ['group'], status: 'ready', name: { ko: '카드로 외우기', en: 'Study cards' }, needs: { words: { min: 1 } }, slide: { kind: 'study' } },
   { id: 'learn.grammar', role: 'main', category: 'learn', icon: 'rule', uses: ['group'], status: 'ready', name: { ko: '문법 칠판', en: 'Grammar board' }, slide: { kind: 'grammar' }, concept: 'grammarRule' },
@@ -137,6 +138,8 @@ export const isGradedSolo = (b: BlockDef): boolean => !!b.soloStep && SOLO_GRADE
 /** 단체수업 슬라이드가 어떤 블록인지 — 기존 수업을 그대로 읽는다(저장 형식 변경 없음). 몰라보면 null. */
 export function blockOfSlide(slide: LessonSlide): BlockDef | null {
   switch (slide.kind) {
+    case 'stem':
+      return findBlock('learn.stem');
     case 'game':
       return findBlock(`${PRACTICE_GAMES.includes(slide.gameType) ? 'practice' : 'game'}.${slide.gameType}`);
     case 'material':

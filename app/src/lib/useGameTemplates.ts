@@ -185,13 +185,14 @@ export function useGameTemplates(params: {
     const kind = source?.kind || (listKind === 'sentence' ? 'sentence' : 'word');
     const cards = source?.cards || params.sampleCards?.() || sampleActivityCards(kind);
     const content = !source && gamePreparation(gameType).dedicated ? null : prepareClassroomGame(gameType, cards, kind);
-    if (source && !content) throw new Error('incompatible_content');
+    // Keep an incompatible source intact so preparation can explain what is missing.
+    // Never replace it with an unrelated restored draft or sample.
     if (source?.id && session?.user.id && academy?.id) rememberSourceUse(session.user.id, academy.id, source.id);
     const now = new Date().toISOString();
     return { id: `${temporaryId}:${crypto.randomUUID()}`, academy_id: academy!.id, class_id: null, game_type: gameType,
       name: source?.name || t('quick.sampleTitle'), created_by: profile?.id || null, created_at: now, updated_at: now,
-      items: content?.items || defaultItems(), config: { ...defaultConfig?.(), ...content?.config,
-        ...(content ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sampleTitle'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
+      items: content?.items || (source ? cards.map(card=>({id:card.id,label:card.word})) : defaultItems()), config: { ...defaultConfig?.(), ...content?.config,
+        ...((content || source) ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sampleTitle'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
   }
   function chooseDraft(draft: GameTemplate) {
     writeActivityDraft(draft);

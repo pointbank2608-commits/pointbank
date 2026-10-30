@@ -1,0 +1,68 @@
+/* Full-scene science slides; original PPT images keep their existing rendering. */
+.stem-stage.stem-illustrated[data-stem-theme=science-lab]{display:block;padding:0;border:0;background:#a0e1ff url('/stem/theme/science-sky.webp') center/cover;font-family:Fredoka,Andika,sans-serif;isolation:isolate}
+.stem-illustrated::after{content:'';position:absolute;inset:auto 0 0;height:9%;border-radius:60% 40% 0 0;background:#64ccee66;z-index:-1}
+.stem-scene-background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+.stem-science-tag{position:absolute;top:1.1cqw;left:3cqw;background:#ffe760;color:#123e80;font-size:1.5cqw;font-weight:700;padding:.15cqw 1.8cqw;border-radius:3cqw;transform:rotate(-3deg);border:.25cqw solid white}
+.stem-stage.stem-illustrated[data-stem-theme=science-lab]>.stem-discovery-title{position:absolute;top:4.1cqw;left:5%;width:90%;margin:0;padding:0;background:none;border:0;border-radius:0;box-shadow:none;font-size:5.65cqw;line-height:1.05;color:#0751aa;font-weight:700;text-align:center;letter-spacing:-.07cqw;-webkit-text-stroke:1.2cqw white;paint-order:stroke fill;filter:drop-shadow(0 .35cqw 0 #368bb854);z-index:3}
+.stem-spark{position:absolute;width:1cqw;height:3.3cqw;background:#ffe34d;border:.22cqw solid white;border-radius:2cqw;transform:rotate(-35deg);z-index:2}
+.stem-spark::after{content:'';position:absolute;width:.7cqw;height:2.7cqw;background:#ffe34d;border:.22cqw solid white;border-radius:2cqw;left:1.6cqw;top:.3cqw;transform:rotate(34deg)}
+.stem-spark-one{left:4%;top:14cqw}.stem-spark-two{right:5%;bottom:5cqw;transform:rotate(55deg)}
+.stem-discovery-subject{position:absolute;left:0;top:16cqw;width:60%;height:37cqw;object-fit:contain;filter:drop-shadow(0 .8cqw .5cqw #143a6025);z-index:1}
+.stem-stage.stem-illustrated .stem-discovery-speech{position:absolute;top:17cqw;right:3%;width:38%;height:34cqw;display:flex;flex-direction:column;justify-content:center;gap:1.5cqw;z-index:2}
+.stem-stage.stem-illustrated .stem-discovery-speech p{display:flex;align-items:center;justify-content:center;margin:0;padding:1.25cqw 1.6cqw;background:#ffffffeb;border:.32cqw solid white;box-shadow:0 .4cqw 0 #1b7cb72b;border-radius:3cqw 3cqw 3cqw .6cqw;font-family:Fredoka,Andika,sans-serif;font-size:2.9cqw;font-weight:600;color:#093873;line-height:1.16;transform:rotate(-1deg)}
+.stem-stage.stem-illustrated .stem-discovery-speech p:nth-child(2){background:#ffe679;transform:rotate(1deg);border-radius:3cqw .6cqw 3cqw 3cqw}
+.stem-stage.stem-illustrated .stem-discovery-speech p:nth-child(3){background:#d2ffe9;transform:rotate(-1deg)}
+.stem-stage.stem-illustrated .stem-discovery-speech p:nth-child(4){background:#ffe0ef;transform:rotate(1deg)}
+.stem-discovery-mascot{position:absolute;bottom:1.3cqw;left:2%;width:12%;height:15cqw;object-fit:contain;z-index:2;transform:rotate(-8deg);filter:drop-shadow(.25cqw .5cqw .2cqw #12559522)}
+/* Cover: one full-bleed experiment scene and asymmetric callouts. */
+.stem-stage.stem-composition-hero[data-stem-theme=science-lab]>.stem-discovery-title{top:4cqw;font-size:8.2cqw;left:3%;width:94%}
+.stem-composition-hero .stem-science-tag{left:41%;top:.8cqw;transform:rotate(-2deg);font-size:1.6cqw}
+.stem-stage.stem-composition-hero .stem-discovery-speech{top:15cqw;right:4%;width:62%;height:auto;display:flex;align-items:flex-end;gap:1cqw}
+.stem-stage.stem-composition-hero .stem-discovery-speech p:first-child{font-size:3.3cqw;padding:1cqw 2.6cqw;border-radius:5cqw;background:#ffe765;transform:rotate(2deg)}
+.stem-stage.stem-composition-hero .stem-discovery-speech p:nth-child(2){position:absolute;top:33cqw;right:0;font-size:2.25cqw;padding:.7cqw 2cqw;background:#d7fff3;max-width:90%;transform:rotate(-2deg)}
+.stem-composition-hero .stem-spark-one{top:10cqw;left:7%}
+/* Compare two unboxed experiments; reserve the bottom for the conclusion. */
+.stem-stage.stem-illustrated .stem-discovery-comparison{position:absolute;left:4%;right:4%;top:15cqw;height:25cqw;display:flex;align-items:center;gap:3cqw}
+.stem-stage.stem-illustrated .stem-discovery-comparison figure{width:50%;height:100%;margin:0;background:none;border:0;overflow:visible;display:flex;flex-direction:column;align-items:center}
+.stem-stage.stem-illustrated .stem-discovery-comparison img{width:100%;height:21cqw;object-fit:contain;filter:drop-shadow(0 .6cqw .5cqw #143a6025)}
+.stem-stage.stem-illustrated .stem-discovery-comparison figcaption{border:.25cqw solid white;background:#e8fff8;border-radius:4cqw;padding:.2cqw 2.5cqw;font-size:2cqw;transform:rotate(-2deg);font-weight:600}
+.stem-stage.stem-composition-compare .stem-discovery-speech{left:15%;top:41cqw;width:81%;height:auto;gap:.6cqw;display:flex;flex-direction:row;flex-wrap:wrap}
+.stem-stage.stem-composition-compare .stem-discovery-speech p{font-size:2.2cqw;flex:1 1 35%;padding:.6cqw 1cqw}
+.stem-stage.stem-composition-compare .stem-discovery-speech p:last-child{flex:1 0 80%;font-size:2.8cqw;background:#ffe765}
+.stem-stage.stem-composition-compare .stem-discovery-speech:has(p:nth-child(4)) p{font-size:1.85cqw;flex:1 1 40%;padding:.6cqw 1cqw}
+.stem-stage.stem-composition-compare .stem-discovery-speech:has(p:nth-child(4)) p:last-child{flex:1 1 40%;font-size:1.85cqw}
+.stem-discovery-step{display:grid;place-items:center;flex-shrink:0;background:#0878d4;border:.2cqw solid white;color:white;width:2.7cqw;height:2.7cqw;border-radius:50%;margin-right:.8cqw;font-size:1.8cqw}
+/* Speaking bubbles surround a helper, rather than following a worksheet grid. */
+.stem-stage.stem-composition-speaking .stem-discovery-speech{left:5%;right:5%;top:16cqw;width:90%;height:35cqw;display:grid;grid-template-columns:1fr 1fr;gap:3cqw 12cqw}
+.stem-stage.stem-composition-speaking .stem-discovery-speech p{font-size:3.8cqw;min-height:12cqw}
+.stem-composition-speaking .stem-discovery-mascot{left:42%;bottom:3cqw;width:16%;height:19cqw}
+/* Vocabulary keeps useful grouping with stronger type and playful offsets. */
+.stem-stage.stem-illustrated .stem-discovery-words{position:absolute;inset:16cqw 3% 4cqw 3%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.6cqw}
+.stem-stage.stem-illustrated .stem-discovery-words>div{position:relative;padding:1cqw .7cqw;background:#fff7b8;border:.45cqw solid white;border-radius:2cqw;box-shadow:0 .6cqw 0 #3398c354;transform:rotate(-2deg)}
+.stem-stage.stem-illustrated .stem-discovery-words>div:nth-child(2n){transform:rotate(2deg);background:#d5ffed}
+.stem-stage.stem-illustrated .stem-discovery-words>div:nth-child(3){background:#ffe0ef}
+.stem-stage.stem-illustrated .stem-discovery-words>div:nth-child(4){background:#e7ddff}
+.stem-stage.stem-illustrated .stem-discovery-words img{width:100%;height:20cqw;object-fit:contain;background:none;border-radius:1cqw}
+.stem-stage.stem-illustrated .stem-discovery-words b{font-size:3.25cqw;font-family:Fredoka,Andika,sans-serif;padding:.3cqw 0;display:block}
+.stem-stage.stem-illustrated .stem-discovery-words p{font-family:Andika,Arial,sans-serif;font-size:1.4cqw;line-height:1.3;margin:.6cqw 0}
+.stem-word-number{position:absolute;left:-.7cqw;top:-1cqw;background:#0674ca;color:white;border:.2cqw solid white;border-radius:50%;width:3cqw;height:3cqw;display:grid;place-items:center;font-size:2cqw;z-index:1}
+.stem-composition-words .stem-discovery-mascot{display:none}
+.stem-stage.stem-composition-steps .stem-discovery-speech{top:15.5cqw;height:37cqw}
+.stem-stage.stem-composition-steps .stem-discovery-speech p{font-size:2.25cqw;padding:1cqw 1.3cqw;min-height:6cqw}
+.stem-stage.stem-composition-celebrate .stem-discovery-subject{left:44%;width:56%}
+.stem-stage.stem-composition-celebrate .stem-discovery-speech{left:3%;right:auto;width:43%;top:15cqw;height:37cqw}
+.stem-stage.stem-composition-celebrate .stem-discovery-speech p{font-size:2.6cqw}
+.stem-composition-celebrate .stem-discovery-mascot{left:auto;right:3%;width:17%;height:21cqw}
+.stem-missing[data-stem-theme=science-lab]>h2{font-family:Fredoka,Andika,sans-serif;font-size:5.5cqw;color:#0751aa!important;background:none!important;border:0!important;box-shadow:none!important;-webkit-text-stroke:1cqw white;paint-order:stroke fill;filter:drop-shadow(0 .3cqw 0 #368bb854)}
+.stem-report-stage[data-stem-theme=science-lab]{background:linear-gradient(145deg,#7ed7fa,#d5f9ff 60%,#b1f5df);padding:3cqw;isolation:isolate}
+.stem-report-stage[data-stem-theme=science-lab]>div:first-child>h2{font-family:Fredoka,Andika,sans-serif;font-size:4.5cqw;color:#0751aa;-webkit-text-stroke:.8cqw white;paint-order:stroke fill;line-height:1.1}
+.stem-report-stage[data-stem-theme=science-lab]>div:first-child{align-self:start;padding-top:4cqw}
+.stem-report-stage[data-stem-theme=science-lab]>div:first-child p{font-family:Fredoka,Andika,sans-serif;font-size:2.5cqw;margin:1.2cqw 0}
+.stem-report-stage[data-stem-theme=science-lab]>div:first-child p:first-of-type{display:inline-block;background:#ffe765;border:.3cqw solid white;border-radius:3cqw;padding:.5cqw 2cqw;transform:rotate(-2deg);font-size:3cqw}
+.stem-report-stage[data-stem-theme=science-lab] .stem-mini-report{box-shadow:0 .7cqw 1.5cqw #0751aa25;transform:rotate(2deg);z-index:1}
+.stem-report-mascot{position:absolute;bottom:1cqw;left:36%;height:17cqw;width:16%;object-fit:contain;transform:rotate(-8deg);z-index:0}
+/* Match the print sheet's small captions/options inside the scaled preview. */
+.stem-mini-report .stem-report-sheet .stem-report-steps p{font-size:8.5pt}
+.stem-mini-report .stem-report-sheet .stem-report-options{font-size:9.5pt}
+.stem-stage.stem-composition-text .stem-discovery-speech{left:14%;right:4%;width:82%;top:16cqw;height:35cqw}
+.stem-stage.stem-composition-text .stem-discovery-speech p{font-size:3.4cqw}
