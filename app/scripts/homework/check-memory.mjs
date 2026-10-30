@@ -91,6 +91,29 @@ await test('자동 암기 칸: 추천이 비면 칸이 빠진다', () => {
   assert.equal(r.empty, 1); assert.equal(r.items.length, 0);
 });
 
+await test('게임 모양 4종(두더지·낚시·풍선·행맨)은 서버가 채점하는 문제로 만들어지고 편집기 검사를 통과한다', () => {
+  for (const g of ['whack', 'fish', 'balloon', 'hangman']) {
+    const it = blocks.gameItemFromCards(cards, g, g, rng);
+    assert.ok(it, g);
+    assert.equal(it.kind, 'game');
+    assert.equal(it.config.game, g);
+    assert.ok(it.content.questions.length >= 2, g);
+    assert.ok(it.content.questions.every((q) => q.style === g), g);
+    assert.deepEqual(blocks.validateItems([it]), [], g);
+  }
+  const w = blocks.gameItemFromCards(cards, 'whack', 'w', rng).content.questions[0];
+  assert.equal(w.qtype, 'choice');
+  assert.equal(w.choices[w.correct], w.word);
+  assert.ok(w.speak);
+  const h = blocks.gameItemFromCards(cards, 'hangman', 'h', rng).content.questions[0];
+  assert.equal(h.qtype, 'text');
+  assert.equal(h.correct, h.speak);
+});
+await test('게임 모양: 낱말이 모자라면 만들지 않는다', () => {
+  assert.equal(blocks.gameItemFromCards([cards[0]], 'whack', 'x'), null);
+  assert.equal(blocks.gameItemFromCards([{ id: 'k', word: '사과', meaning: 'apple' }], 'hangman', 'x'), null);
+});
+
 await server.close();
 console.log(failed ? `\n${failed} failed` : '\nall passed');
 process.exit(failed ? 1 : 0);

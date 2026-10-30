@@ -165,6 +165,25 @@ export function confuseQ(c: FullCardItem, pool: FullCardItem[], rng: Rng, extraN
   return choiceQ(c, w, wrong, rng, { skill: SKILL.meaning, style: 'confuse', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, difficulty: 3 });
 }
 
+/** 두더지잡기: 소리를 듣고 두더지(보기) 중 맞는 낱말을 잡는다 — 듣고 고르기 문제를 두더지 모양으로 보여 준다 */
+export const whackQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
+  choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.listen, style: 'whack', prompt: '', speak: clean(c.word), difficulty: 2 });
+
+/** 단어 낚시: 낱말을 보고 알맞은 뜻(물고기)을 낚는다 */
+export const fishQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
+  isMeaning(c.meaning) ? choiceQ(c, clean(c.meaning), otherValues(pool.filter((x) => isMeaning(x.meaning)), c, (x) => x.meaning, 3, rng), rng, { skill: SKILL.meaning, style: 'fish', prompt: clean(c.word), speak: clean(c.word) }) : null;
+
+/** 풍선 터뜨리기: 뜻을 보고 알맞은 낱말 풍선을 터뜨린다 */
+export const balloonQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
+  choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.meaning, style: 'balloon', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null });
+
+/** 행맨: 글자를 하나씩 골라 낱말을 맞힌다(목숨 6개). 끝에 낱말 전체를 한 번 내고 서버가 처음 답을 채점한다 */
+export function hangmanQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{1,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.spelling, 3), qtype: 'text', style: 'hangman', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w };
+}
+
 /** 매치업: 5개씩 한 판, 판마다 같은 뜻 보기(순서 같음) */
 export function matchupQs(cards: FullCardItem[], rng: Rng): HwQuestion[] {
   const out: HwQuestion[] = [];

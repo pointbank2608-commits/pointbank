@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
 import type { HwQuestion } from '../../lib/homework/types';
@@ -12,7 +12,7 @@ const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#
  */
 export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
   const { t } = useTranslation();
-  const listen = q.style === 'listen';
+  const listen = q.style === 'listen' || q.style === 'whack';
 
   useEffect(() => {
     if (listen && q.speak) speak(q.speak);
@@ -57,7 +57,8 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
       {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />}
       {q.style === 'flash' && <FlashThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
-      {q.qtype === 'text' && !memo && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
+      {q.style === 'hangman' && <HangmanInput key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
     </div>
   );
@@ -66,6 +67,30 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
 function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
   const choices = q.choices ?? [];
   const ox = choices.length === 2 && choices[0] === 'O' && choices[1] === 'X';
+  if (q.style === 'whack' || q.style === 'fish' || q.style === 'balloon') {
+    const look = {
+      whack: { icon: '🐹', wrap: 'grid-cols-2', btn: 'rounded-t-[3rem] rounded-b-2xl bg-[#6b4a2b] pt-4' },
+      fish: { icon: '🐟', wrap: 'grid-cols-1 sm:grid-cols-2', btn: 'rounded-full bg-[#2f6fdb]' },
+      balloon: { icon: '🎈', wrap: 'grid-cols-2', btn: 'rounded-[3rem] bg-[#e5484d]' },
+    }[q.style];
+    return (
+      <div className={`grid flex-1 content-start gap-4 p-4 ${look.wrap}`}>
+        {choices.map((c, i) => (
+          <button
+            key={i}
+            type="button"
+            disabled={disabled || eliminated.includes(i)}
+            data-choice={i}
+            onClick={() => onAnswer(String(i))}
+            className={`flex min-h-28 flex-col items-center justify-center gap-1 px-3 py-3 text-center text-xl font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 ${look.btn} ${eliminated.includes(i) ? 'line-through opacity-40!' : ''}`}
+          >
+            <span className="text-4xl" aria-hidden="true">{look.icon}</span>
+            {c}
+          </button>
+        ))}
+      </div>
+    );
+  }
   if (ox) {
     return (
       <div className="grid flex-1 grid-cols-2 gap-3 p-4">
@@ -221,6 +246,57 @@ function FadeThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
           <div className="w-full"><TextInput onAnswer={onAnswer} disabled={disabled} /></div>
         </>
       )}
+    </div>
+  );
+}
+
+/** 행맨: 글자를 하나씩 골라 낱말을 맞힌다(목숨 6개). 끝나면 낱말 전체를 한 번 내고, 서버가 처음 답을 채점한다 */
+function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+  const { t } = useTranslation();
+  const word = q.speak ?? '';
+  const MAX = 6;
+  const [picked, setPicked] = useState<string[]>([]);
+  const isLetter = (ch: string) => /[a-z]/i.test(ch);
+  const shown = (ch: string) => !isLetter(ch) || picked.includes(ch.toLowerCase());
+  const wrong = picked.filter((l) => !word.toLowerCase().includes(l)).length;
+  const solved = word.length > 0 && [...word].every(shown);
+  const dead = wrong >= MAX;
+  const sent = useRef(false);
+  useEffect(() => {
+    if (sent.current || disabled || !word) return;
+    if (solved) {
+      sent.current = true;
+      onAnswer(word);
+    } else if (dead) {
+      sent.current = true;
+      onAnswer('-');
+    }
+  }, [solved, dead, disabled, word, onAnswer]);
+  return (
+    <div className="flex flex-col items-center gap-4 px-4 pb-4">
+      <div className="text-lg text-white/80" aria-live="polite">
+        {t('studentHw.hangmanLives', { n: Math.max(MAX - wrong, 0) })} {'❤'.repeat(Math.max(MAX - wrong, 0))}
+      </div>
+      <div className="flex flex-wrap justify-center gap-2 font-mono text-4xl font-bold tracking-widest" aria-label={t('studentHw.hangmanWord')}>
+        {[...word].map((ch, i) => (
+          <span key={i} className="min-w-8 border-b-4 border-white/60 text-center">
+            {shown(ch) || dead ? ch : ' '}
+          </span>
+        ))}
+      </div>
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {'abcdefghijklmnopqrstuvwxyz'.split('').map((l) => (
+          <button
+            key={l}
+            type="button"
+            disabled={disabled || solved || dead || picked.includes(l)}
+            onClick={() => setPicked((p) => [...p, l])}
+            className={`h-11 w-11 rounded-xl text-lg font-bold uppercase shadow active:scale-95 ${picked.includes(l) ? (word.toLowerCase().includes(l) ? 'bg-emerald-300 text-deep-navy' : 'bg-white/20 text-white/50 line-through') : 'bg-white text-deep-navy'}`}
+          >
+            {l}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

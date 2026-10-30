@@ -11,12 +11,16 @@ import { effectiveSlides } from "../lessonSlides";
 import { SPEAKING_ITEMS } from "../rainbow";
 import { grammarPoint, sentencesForUnscramble } from "../grammar";
 import {
+  balloonQ,
+  fishQ,
+  hangmanQ,
   lettersQ,
   matchupQs,
   meaningQ,
   sentenceOrderQ,
   spellQ,
   takeCards,
+  whackQ,
 } from "./build";
 import type { HwItemDraft } from "./types";
 import { isMeaning } from "./quality";
@@ -298,7 +302,7 @@ export function validateItems(items: HwItemDraft[]): string[] {
         errors.push(prefix + "문제 그림 필요 / Picture required");
       if (
         typeof q.prompt !== "string" ||
-        (q.style !== "listen" && q.style !== "picture" && !q.prompt.trim())
+        (q.style !== "listen" && q.style !== "picture" && q.style !== "whack" && !q.prompt.trim())
       )
         errors.push(prefix + "문제 안내 필요 / Prompt required");
       if (
@@ -380,11 +384,15 @@ export function blocksFromCards(
  * 숙제에 넣을 수 있는 "혼자 하는 게임"(2026-10-30). 선생님이 진행하는 팀 대결 게임은 집에서 못 하므로 넣지 않는다.
  * 문제·정답은 만들 때의 단어로 굳혀 저장하고(배정본 복사), 서버가 채점한다 — 게임 점수가 아니라 처음 답이 기록에 들어간다.
  */
-export type SoloGame = "matchup" | "anagram" | "spelling";
+export type SoloGame = "matchup" | "anagram" | "spelling" | "whack" | "fish" | "balloon" | "hangman";
 export const SOLO_GAME_NAMES: Record<SoloGame, [string, string]> = {
   matchup: ["짝 맞추기", "Matchup"],
   anagram: ["글자 섞기", "Letter scramble"],
   spelling: ["철자 쓰기", "Spelling"],
+  whack: ["두더지잡기", "Whack-a-mole"],
+  fish: ["단어 낚시", "Word fishing"],
+  balloon: ["풍선 터뜨리기", "Balloon pop"],
+  hangman: ["행맨", "Hangman"],
 };
 const LETTERS = /^[A-Za-z][A-Za-z' -]*$/;
 export function gameItemFromCards(
@@ -394,14 +402,25 @@ export function gameItemFromCards(
   rng: () => number = Math.random,
 ): HwItemDraft | null {
   const usable = cards.filter((c) => c.word.trim());
+  const looks = { whack: whackQ, fish: fishQ, balloon: balloonQ } as const;
   const questions =
     game === "matchup"
       ? usable.length >= 2
         ? matchupQs(takeCards(usable, 8, rng), rng)
         : []
-      : takeCards(usable, 6, rng, game === "anagram" ? (c) => LETTERS.test(c.word.trim()) : () => true)
-          .map((c) => (game === "anagram" ? lettersQ(c, rng) : spellQ(c)))
-          .filter((q) => q !== null);
+      : game === "whack" || game === "fish" || game === "balloon"
+        ? usable.length >= 2
+          ? takeCards(usable, 8, rng)
+              .map((c) => looks[game](c, usable, rng))
+              .filter((q) => q !== null)
+          : []
+        : game === "hangman"
+          ? takeCards(usable, 6, rng, (c) => LETTERS.test(c.word.trim()))
+              .map((c) => hangmanQ(c))
+              .filter((q) => q !== null)
+          : takeCards(usable, 6, rng, game === "anagram" ? (c) => LETTERS.test(c.word.trim()) : () => true)
+              .map((c) => (game === "anagram" ? lettersQ(c, rng) : spellQ(c)))
+              .filter((q) => q !== null);
   if (!questions.length) return null;
   return { kind: "game", title, config: { game }, content: { questions } };
 }
@@ -581,3 +600,4 @@ export function lessonCandidates(
     };
   });
 }
+

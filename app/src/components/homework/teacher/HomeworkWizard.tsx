@@ -247,7 +247,8 @@ export default function HomeworkWizard({
       return memEntries
         .map((e): HwItemDraft | null => {
           if (e.kind === 'method') return memoryItemFromCards(cards, e.method, e.count, en, rng);
-          if (e.kind === 'game') return gameItemFromCards(cards, e.game, SOLO_GAME_NAMES[e.game][en ? 1 : 0], rng);
+          if (e.kind === 'game')
+            return gameItemFromCards(cards, e.game, SOLO_GAME_NAMES[e.game][en ? 1 : 0], rng);
           const slot = newSlot('memory', en);
           slot.config.slot!.count = e.count;
           return slot;
