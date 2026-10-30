@@ -33,6 +33,13 @@ import {
 } from "../../../lib/homework";
 import { recommendForStudent } from "../../../lib/homework/recommend";
 import {
+  MAX_MEMORY_COUNT,
+  MEMORY_METHODS,
+  MEMORY_METHOD_LIST,
+  memoryItemFromCards,
+  type MemoryMethod,
+} from "../../../lib/homework/memory";
+import {
   expandSlots,
   hasSlots,
   newSlot,
@@ -183,6 +190,9 @@ export default function HomeworkBlockEditor({
   const [adFlagged, setAdFlagged] = useState<Set<string>>(new Set());
   // 혼자 하는 게임 넣기(매치업·글자 섞기·철자 쓰기)
   const [gameKind, setGameKind] = useState<SoloGame>("matchup");
+  const [memMethod, setMemMethod] = useState<MemoryMethod>("flash");
+  const [memList, setMemList] = useState("");
+  const [memCount, setMemCount] = useState(10);
   const [gameList, setGameList] = useState("");
   const [copyTo, setCopyTo] = useState("");
   // 맞춤 칸: 학생마다 다른 낱말로 채워 학생별 숙제로 보낸다
@@ -215,7 +225,7 @@ export default function HomeworkBlockEditor({
         common,
         labels,
       );
-      const r = expandSlots(draft.items, rec);
+      const r = expandSlots(draft.items, rec, pool);
       out.push({
         student: s,
         items: r.items,
@@ -905,7 +915,7 @@ export default function HomeworkBlockEditor({
             <legend className="px-1 text-sm font-bold">
               {l("학생별 맞춤 칸", "Per-student slot")}
             </legend>
-            {(["quiz", "game"] as SlotWant[]).map((want) => (
+            {(["quiz", "game", "memory"] as SlotWant[]).map((want) => (
               <button
                 key={want}
                 type="button"
@@ -922,6 +932,85 @@ export default function HomeworkBlockEditor({
               {l(
                 "칸은 하나지만 보낼 때 학생마다 다른 낱말로 채워져요.",
                 "One slot, filled with different words per student.",
+              )}
+            </p>
+          </fieldset>
+          <fieldset className="space-y-2 rounded-xl border border-outline-variant p-2">
+            <legend className="px-1 text-sm font-bold">
+              {l("암기 방식 블록", "Memorize block")}
+            </legend>
+            <select
+              className={field}
+              aria-label={l("암기 방식", "Method")}
+              value={memMethod}
+              onChange={(e) => setMemMethod(e.target.value as MemoryMethod)}
+            >
+              {MEMORY_METHOD_LIST.map((m) => (
+                <option key={m} value={m}>
+                  {MEMORY_METHODS[m].name[en ? 1 : 0]}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs">{MEMORY_METHODS[memMethod].help[en ? 1 : 0]}</p>
+            <select
+              className={field}
+              aria-label={l("단어장", "Word list")}
+              value={memList}
+              onChange={(e) => setMemList(e.target.value)}
+            >
+              <option value="">{l("단어장 고르기", "Choose a word list")}</option>
+              {lists
+                .filter((w) => w.kind !== "sentence")
+                .map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+            </select>
+            <label className="flex items-center gap-2 text-sm">
+              {l("문항 수", "Questions")}
+              <input
+                type="number"
+                min={1}
+                max={MAX_MEMORY_COUNT}
+                className={`${field} w-24`}
+                value={memCount}
+                onChange={(e) =>
+                  setMemCount(
+                    Math.max(1, Math.min(Number(e.target.value) || 1, MAX_MEMORY_COUNT)),
+                  )
+                }
+              />
+            </label>
+            <button
+              type="button"
+              className={`${button} w-full`}
+              disabled={!memList}
+              onClick={async () => {
+                const wl = lists.find((w) => w.id === memList);
+                const cards = wl
+                  ? enrichCards(wordListToCards(wl), await loadWordBank().catch(() => []))
+                  : [];
+                const made = memoryItemFromCards(cards, memMethod, memCount, en);
+                if (!made) {
+                  setMessage(
+                    l(
+                      "이 단어장으로는 이 방식을 만들 수 없어요(예문·그림이 없거나 낱말이 모자라요).",
+                      "This list cannot make that method (missing examples/pictures or too few words).",
+                    ),
+                  );
+                  return;
+                }
+                change({ ...draft, items: [...draft.items, made] });
+                setSelected(draft.items.length);
+              }}
+            >
+              + {l("암기 방식 추가", "Add method")}
+            </button>
+            <p className="text-xs">
+              {l(
+                "방식마다 문제 수를 정해 이어 붙이면 쉬운 방식에서 어려운 방식으로 외우게 할 수 있어요.",
+                "Chain methods from easy to hard to build a study sequence.",
               )}
             </p>
           </fieldset>

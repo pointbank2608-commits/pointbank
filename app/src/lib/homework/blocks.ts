@@ -29,6 +29,9 @@ export interface HomeworkBlock {
   completion: "confirm" | "answers" | "recording" | "review" | "watch";
   /** watch 블록: 한 영상을 끝까지 몇 번 보면 끝나는지(1~5, 093 서버가 시청 기록으로 센다) */
   views?: number;
+  /** recall 블록: 암기 방식(memory.ts)과 만들 때의 문제 수 — 같은 방식으로 다시 만들 때 쓴다 */
+  method?: string;
+  count?: number;
   text: string;
   translation: string;
   imageUrl: string;
@@ -295,7 +298,7 @@ export function validateItems(items: HwItemDraft[]): string[] {
         errors.push(prefix + "문제 그림 필요 / Picture required");
       if (
         typeof q.prompt !== "string" ||
-        (q.style !== "listen" && !q.prompt.trim())
+        (q.style !== "listen" && q.style !== "picture" && !q.prompt.trim())
       )
         errors.push(prefix + "문제 안내 필요 / Prompt required");
       if (

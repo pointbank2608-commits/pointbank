@@ -18,6 +18,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
     if (listen && q.speak) speak(q.speak);
   }, [q.id, listen, q.speak]);
 
+  const memo = q.style === 'flash' || q.style === 'fade';
   const guide = t(`studentHw.guide_${q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
   const speakBtn = (big: boolean) =>
     q.speak ? (
@@ -39,7 +40,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
       <div className="flex flex-col items-center gap-3 px-5 py-4 text-center">
         <div className="text-base text-white/75">{guide}</div>
         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-36 w-36 rounded-2xl bg-white object-contain p-2 sm:h-44 sm:w-44" />}
-        {listen ? (
+        {memo ? null : listen ? (
           speakBtn(true)
         ) : (
           <>
@@ -54,7 +55,9 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
       </div>
 
       {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />}
-      {q.qtype === 'text' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
+      {q.style === 'flash' && <FlashThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.qtype === 'text' && !memo && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
     </div>
   );
@@ -144,6 +147,80 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
           {t('studentHw.check')}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** 섬광 카드: 낱말(과 뜻·그림)을 잠깐 보여 주고 가린 뒤 떠올려 쓴다 */
+function FlashThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+  const { t } = useTranslation();
+  const [phase, setPhase] = useState<'ready' | 'show' | 'hide'>('ready');
+  useEffect(() => {
+    if (phase !== 'show') return;
+    const id = window.setTimeout(() => setPhase('hide'), q.flashMs ?? 1500);
+    return () => window.clearTimeout(id);
+  }, [phase, q.flashMs]);
+  return (
+    <div className="flex flex-1 flex-col items-center gap-4 px-5 pb-4">
+      {phase === 'ready' && (
+        <button type="button" onClick={() => { setPhase('show'); if (q.speak) speak(q.speak); }} className="mt-6 min-h-16 rounded-full bg-warm-yellow px-10 text-2xl font-bold text-deep-navy shadow-lg active:scale-95">
+          {t('studentHw.flashStart')}
+        </button>
+      )}
+      {phase === 'show' && (
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-3xl bg-white/10 px-8 py-6">
+          {q.imageUrl && <img src={q.imageUrl} alt="" className="h-32 w-32 rounded-2xl bg-white object-contain p-2" />}
+          <div className="text-5xl font-bold">{q.prompt}</div>
+          {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+        </div>
+      )}
+      {phase === 'hide' && (
+        <>
+          <div className="mt-2 text-2xl font-bold">{t('studentHw.flashRecall')}</div>
+          {q.sub && <div className="text-base text-white/70">({q.sub})</div>}
+          <div className="w-full"><TextInput onAnswer={onAnswer} disabled={disabled} /></div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** 낱말에서 round 번째 가림(0 = 모두 보임). 같은 낱말은 늘 같은 글자가 지워지게 글자 위치로 정한다 */
+export function fadeMask(word: string, round: number, rounds: number): string {
+  const idx = [...word].map((ch, i) => (/[a-z]/i.test(ch) ? i : -1)).filter((i) => i >= 0);
+  const order = [...idx].sort((a, b) => ((a * 7 + 3) % 11) - ((b * 7 + 3) % 11));
+  const hide = new Set(order.slice(0, Math.round((idx.length * round) / rounds)));
+  return [...word].map((ch, i) => (hide.has(i) ? '_' : ch)).join('');
+}
+
+/** 점점 가리기: 읽을 때마다 글자가 지워지고 마지막엔 모두 가려져 직접 쓴다 */
+function FadeThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+  const { t } = useTranslation();
+  const rounds = 3;
+  const [round, setRound] = useState(0);
+  const word = q.prompt;
+  const typing = round >= rounds;
+  return (
+    <div className="flex flex-1 flex-col items-center gap-4 px-5 pb-4">
+      {q.imageUrl && <img src={q.imageUrl} alt="" className="h-28 w-28 rounded-2xl bg-white object-contain p-2" />}
+      {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+      {!typing ? (
+        <>
+          <div className="font-mono text-5xl font-bold tracking-widest" aria-live="polite">{fadeMask(word, round, rounds)}</div>
+          <div className="text-base text-white/70">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
+          <div className="flex gap-3">
+            {q.speak && (
+              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-white/15 px-5 text-base font-bold text-white">{t('studentHw.listen')}</button>
+            )}
+            <button type="button" onClick={() => setRound((r) => r + 1)} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy active:scale-95">{t('studentHw.fadeRead')}</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-2xl font-bold">{t('studentHw.fadeWrite')}</div>
+          <div className="w-full"><TextInput onAnswer={onAnswer} disabled={disabled} /></div>
+        </>
+      )}
     </div>
   );
 }

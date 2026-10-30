@@ -7,7 +7,7 @@
 export type HwQType = 'choice' | 'text' | 'order';
 
 /** 문제 화면 모양(채점과 무관, 그리기만) */
-export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content';
+export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content' | 'flash' | 'fade' | 'confuse';
 
 /** 문제를 만든 낱말 카드 스냅샷 — 학습 기록에 같이 남아 추천 숙제 재료가 된다 */
 export interface HwCard {
@@ -43,6 +43,8 @@ export interface HwQuestion {
   gen: string;
   card?: HwCard;
   round?: string;
+  /** flash 문제: 낱말을 보여 주는 시간(밀리초). 지나면 가려지고 떠올려 쓴다 */
+  flashMs?: number;
 }
 
 export type HwItemKind = 'quiz' | 'worksheet' | 'game' | 'shadowing';

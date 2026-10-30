@@ -122,6 +122,49 @@ export function spellQ(c: FullCardItem): HwQuestion | null {
   return { ...base(c, SKILL.spelling, 3), qtype: 'text', style: 'spell', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w };
 }
 
+
+/** 두 낱말의 철자가 얼마나 비슷한지(글자 편집 거리) */
+export function editDistance(a: string, b: string): number {
+  const x = a.toLowerCase();
+  const y = b.toLowerCase();
+  let prev = Array.from({ length: y.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= x.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= y.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[y.length];
+}
+
+/** 섬광 카드: 낱말(과 뜻·그림)을 잠깐 보여 주고 가린 뒤, 떠올려 쓴다 */
+export function flashQ(c: FullCardItem, ms = 1500): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{1,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.spelling, 3), qtype: 'text', style: 'flash', prompt: w, sub: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w, flashMs: ms };
+}
+
+/** 점점 가리기: 낱말을 읽으며 글자가 하나씩 지워지고, 끝에는 모두 가려져 직접 쓴다 */
+export function fadeQ(c: FullCardItem): HwQuestion | null {
+  const w = clean(c.word);
+  if (!/^[a-z][a-z' -]{2,20}$/i.test(w)) return null;
+  return { ...base(c, SKILL.spelling, 3), qtype: 'text', style: 'fade', prompt: w, sub: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w };
+}
+
+/** 헷갈리는 짝: 철자가 비슷한 낱말들 속에서 뜻에 맞는 낱말 고르기(철자 거리가 가까운 것부터) */
+export function confuseQ(c: FullCardItem, pool: FullCardItem[], rng: Rng, extraNear: string[] = []): HwQuestion | null {
+  const w = clean(c.word);
+  const near = new Map<string, number>();
+  for (const x of pool) {
+    const v = clean(x.word);
+    if (!v || v.toLowerCase() === w.toLowerCase() || clean(x.meaning) === clean(c.meaning)) continue;
+    near.set(v, editDistance(w, v));
+  }
+  for (const v of extraNear) if (v && v.toLowerCase() !== w.toLowerCase()) near.set(v, 0);
+  const wrong = [...near.entries()].sort((a, b) => a[1] - b[1] || rng() - 0.5).slice(0, 3).map(([v]) => v);
+  if (wrong.length < 2) return null;
+  return choiceQ(c, w, wrong, rng, { skill: SKILL.meaning, style: 'confuse', prompt: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, difficulty: 3 });
+}
+
 /** 매치업: 5개씩 한 판, 판마다 같은 뜻 보기(순서 같음) */
 export function matchupQs(cards: FullCardItem[], rng: Rng): HwQuestion[] {
   const out: HwQuestion[] = [];
