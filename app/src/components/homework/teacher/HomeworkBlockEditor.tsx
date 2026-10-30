@@ -1441,6 +1441,7 @@ export default function HomeworkBlockEditor({
               )}
               {(!block || block.completion === "answers") && (
                 <QuestionEditor
+                  key={selected}
                   items={item.content.questions}
                   onChange={(qs) =>
                     patch({
@@ -1668,6 +1669,17 @@ export default function HomeworkBlockEditor({
   );
 }
 
+const blankQuestion = (): HwQuestion => ({
+  id: crypto.randomUUID(),
+  qtype: "text",
+  style: "spell",
+  prompt: "",
+  correct: "",
+  skill: "sentence.correct",
+  word: "",
+  gen: "block-v1",
+});
+
 function QuestionEditor({
   items,
   onChange,
@@ -1680,9 +1692,43 @@ function QuestionEditor({
   function update(i: number, q: HwQuestion) {
     onChange(items.map((old, j) => (i === j ? q : old)));
   }
+  // Questions trimmed by the count control, so "+" can bring them back.
+  const [spare, setSpare] = useState<HwQuestion[]>([]);
+  function setCount(raw: number) {
+    const n = Math.max(1, Math.min(30, Math.round(raw) || 1));
+    if (n === items.length) return;
+    if (n < items.length) {
+      setSpare([...items.slice(n), ...spare]);
+      onChange(items.slice(0, n));
+      return;
+    }
+    const back = spare.slice(0, n - items.length);
+    setSpare(spare.slice(back.length));
+    const blanks = Array.from({ length: n - items.length - back.length }, () => blankQuestion());
+    onChange([...items, ...back, ...blanks]);
+  }
   return (
     <fieldset className="space-y-3">
       <legend>{en ? "Questions and answers" : "문제·정답·오답 보기"}</legend>
+      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-primary-fixed p-2">
+        <span className="font-bold">{en ? "Questions in this block" : "이 블록의 문항 수"}</span>
+        <button type="button" className={`${button} min-w-11`} aria-label={en ? "Fewer questions" : "문항 줄이기"} disabled={items.length <= 1} onClick={() => setCount(items.length - 1)}>−</button>
+        <input
+          className={`${field} w-16 text-center`}
+          type="number"
+          min={1}
+          max={30}
+          aria-label={en ? "Question count" : "문항 수"}
+          value={items.length}
+          onChange={(e) => setCount(Number(e.target.value))}
+        />
+        <button type="button" className={`${button} min-w-11`} aria-label={en ? "More questions" : "문항 늘리기"} disabled={items.length >= 30} onClick={() => setCount(items.length + 1)}>＋</button>
+        <span className="text-sm">
+          {spare.length
+            ? en ? `${spare.length} trimmed — raise the count to restore` : `줄인 문제 ${spare.length}개는 다시 늘리면 돌아와요`
+            : en ? "Lowering removes questions from the end." : "줄이면 뒤쪽 문제부터 빠져요."}
+        </span>
+      </div>
       {items.map((q, i) => (
         <div
           key={q.id}
