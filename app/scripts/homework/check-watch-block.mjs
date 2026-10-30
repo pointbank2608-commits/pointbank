@@ -196,6 +196,22 @@ try {
       await db.query(`select hw_validate_items(${json([it])})`);
     }
   });
+  await test("서버가 새 암기 방식(플립·O·X·문장·타이핑·게임 모양)을 그대로 받아들인다", async () => {
+    const mem = await vite.ssrLoadModule("/src/lib/homework/memory.ts");
+    const sents = [
+      { id: "s1", word: "I want a cat.", meaning: "나는 고양이를 원해요." },
+      { id: "s2", word: "I want an apple.", meaning: "나는 사과를 원해요." },
+      { id: "s3", word: "She likes red, blue and green.", meaning: "그녀는 빨강, 파랑, 초록을 좋아해요." },
+    ];
+    const pics = cards.map((c, i) => ({ ...c, imageUrl: i % 2 ? "/x.webp" : null }));
+    for (const m of mem.MEMORY_METHOD_LIST) {
+      const src = mem.MEMORY_METHODS[m].sentence ? sents : pics;
+      const it = mem.memoryItemFromCards(src, m, 5, false, () => 0.4);
+      assert(it, m);
+      await db.query(`select hw_validate_items(${json([it])})`);
+    }
+    for (const g of ["whack", "fish", "balloon", "hangman"]) await db.query(`select hw_validate_items(${json([blocks.gameItemFromCards(cards, g, g)])})`);
+  });
   await test("재료가 모자라거나 영어 글자가 아니면 게임을 만들지 않는다", () => {
     assert.equal(blocks.gameItemFromCards([cards[0]], "matchup", "x"), null);
     assert.equal(blocks.gameItemFromCards([{ id: "k", word: "사과", meaning: "apple" }], "anagram", "x"), null);

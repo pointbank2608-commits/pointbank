@@ -150,7 +150,7 @@ export default function HomeworkWizard({
 
   useEffect(() => {
     void fetchStudentsOfClass(classId).then(setStudents).catch(() => setStudents([]));
-    void Promise.all([fetchCurriculumLessons(academyId, classId).catch(() => []), fetchWordLists(academyId, classId).catch(() => [])]).then(([ls, wl]) => {
+    void Promise.all([fetchCurriculumLessons(academyId, classId).catch(() => []), fetchWordLists(academyId, classId, 'all').catch(() => [])]).then(([ls, wl]) => {
       const withWords = ls.filter((l) => l.word_list_id);
       const recent = withWords.slice(0, 8);
       // 수업 카드에서 넘어온 수업은 8개 밖이어도 목록에 넣고 미리 고른다
@@ -456,9 +456,9 @@ export default function HomeworkWizard({
                       void applyWordList(w, w.name);
                     }}
                   >
-                    <span className="material-symbols-outlined">menu_book</span>
+                    <span className="material-symbols-outlined">{w.kind === 'sentence' ? 'format_quote' : 'menu_book'}</span>
                     <span className="min-w-0 flex-1 truncate">{w.name}</span>
-                    <span className="text-sm text-on-surface-variant">{t('studentHw.wordsN', { count: w.items.length })}</span>
+                    <span className="text-sm text-on-surface-variant">{w.kind === 'sentence' ? `${w.items.length}문장` : t('studentHw.wordsN', { count: w.items.length })}</span>
                   </button>
                 ))}
               </div>
@@ -710,6 +710,7 @@ export default function HomeworkWizard({
               </div>
               {cards.length > MAX_MEMORY_COUNT && <p className="text-sm text-on-surface-variant">{l(`낱말이 ${cards.length}개예요. 방식 하나에 최대 ${MAX_MEMORY_COUNT}개까지 넣을 수 있어요.`, `${cards.length} words; up to ${MAX_MEMORY_COUNT} per method.`)}</p>}
               {memEntries.some((x) => x.kind === 'auto') && <p className="rounded-lg bg-primary/5 px-3 py-2 text-sm">{l('자동 구성은 학생마다 다른 숙제로 보내요. 학생의 틀린 낱말·복습할 낱말로 채워지고, 나머지 줄은 모두에게 같아요.', 'The auto set is sent as separate homework per student; other lines stay the same for everyone.')}</p>}
+              {items.length < memEntries.length && <p className="rounded-lg bg-amber-100 px-3 py-2 text-sm text-amber-900">{l('일부 방식은 이 자료로 만들 수 없어 빠졌어요(문장 방식은 문장 목록, 그림 방식은 그림이 있는 낱말이 필요해요).', 'Some methods could not be made from this material.')}</p>}
               <ItemSummary items={items} />
             </div>
           )}
@@ -906,7 +907,7 @@ export function ItemSummary({ items }: { items: ReturnType<typeof buildItems> })
             <span className="tabular-nums text-on-surface-variant">
               {it.config.watch ? t('studentHw.watchOne') : it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : ''}
               {it.kind === 'shadowing' && it.content.questions.length ? ' + ' : ''}
-              {it.config.slot ? `${it.config.slot.count}문제 · 학생마다` : it.content.questions.length ? t('studentHw.questionCount', { count: it.content.questions.length }) : ''}
+              {it.config.block?.method === 'flip' ? `${it.config.block.count ?? 0}장 · 뒤집어 보기` : it.config.slot ? `${it.config.slot.count}문제 · 학생마다` : it.content.questions.length ? t('studentHw.questionCount', { count: it.content.questions.length }) : ''}
             </span>
           </li>
         ))}

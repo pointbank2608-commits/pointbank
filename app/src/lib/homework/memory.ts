@@ -5,17 +5,21 @@
  */
 import { blankSentence } from '../liveQuiz';
 import type { FullCardItem } from '../types';
-import { blankQ, confuseQ, copyQ, dictationQ, fadeQ, flashQ, hintQ, lettersQ, listenQ, meaningQ, pictureQ, reverseQ, sentenceOrderQ, shuffleWith, spellQ, takeCards, typePictureQ, type Rng } from './build';
+import { blankQ, confuseQ, copyQ, dictationQ, fadeQ, flashQ, frameQ, hintQ, oxQ, sentenceFadeQ, sentenceWriteQ, lettersQ, listenQ, meaningQ, pictureQ, reverseQ, sentenceOrderQ, shuffleWith, spellQ, takeCards, typePictureQ, type Rng } from './build';
 import { newBlock } from './blocks';
 import type { HwItemDraft, HwQuestion } from './types';
 
-export type MemoryMethod = 'meaning' | 'reverse' | 'listen' | 'picture' | 'blank' | 'spell' | 'letters' | 'sentence' | 'flash' | 'fade' | 'confuse' | 'graduate' | 'copy' | 'hint' | 'typepic' | 'dictation';
+export type MemoryMethod = 'meaning' | 'reverse' | 'listen' | 'picture' | 'blank' | 'spell' | 'letters' | 'sentence' | 'flash' | 'fade' | 'confuse' | 'graduate' | 'copy' | 'hint' | 'typepic' | 'dictation' | 'flip' | 'ox' | 'swrite' | 'sfade' | 'frame';
 
 interface MethodInfo {
   name: [string, string];
   help: [string, string];
   /** 이 방식을 만들 수 있는 카드 조건 설명(안 되면 건너뜀) */
   build: (cards: FullCardItem[], pool: FullCardItem[], rng: Rng) => HwQuestion[];
+  /** 문장 목록(영어 문장 + 우리말 뜻)으로만 만들어지는 방식 */
+  sentence?: true;
+  /** 문제 대신 한 활동(예: 플립 카드 한 벌)을 만드는 방식 */
+  item?: (cards: FullCardItem[], count: number, en: boolean) => HwItemDraft | null;
 }
 
 const pick = (qs: (HwQuestion | null)[]) => qs.filter((q): q is HwQuestion => !!q);
@@ -36,6 +40,16 @@ export const MEMORY_METHODS: Record<MemoryMethod, MethodInfo> = {
   hint: { name: ['힌트 글자 보고 쓰기', 'Type with letter hints'], help: ['뜻과 첫·끝 글자(a _ _ _ e)를 보고 쳐요', 'Meaning plus first/last letters'], build: (c) => pick(c.map((x) => hintQ(x))) },
   typepic: { name: ['그림 보고 쓰기', 'Picture typing'], help: ['그림만 보고 낱말을 쳐요(그림이 있는 낱말만)', 'Type from the picture only'], build: (c) => pick(c.map((x) => typePictureQ(x))) },
   dictation: { name: ['듣고 받아쓰기', 'Dictation'], help: ['소리를 듣고 낱말을 쳐요', 'Hear it, then type it'], build: (c) => pick(c.map((x) => dictationQ(x))) },
+  flip: {
+    name: ['플립 카드', 'Flip cards'],
+    help: ['낱말을 보고 카드를 뒤집어 뜻·예문을 확인해요(정답 없음, 다 뒤집으면 완료)', 'Flip each card to see meaning and example'],
+    build: () => [],
+    item: (c, n, en) => flipDeckItem(c, n, en),
+  },
+  ox: { name: ['맞다/아니다(O·X)', 'True or false'], help: ['"apple = 사과"처럼 짝이 맞는지 O·X로 골라요', 'Is the pair right? O or X'], build: (c, p, r) => pick(c.map((x, i) => oxQ(x, p, r, i % 2 === 0))) },
+  swrite: { name: ['한글 보고 영어 문장 쓰기', 'Write the English sentence'], help: ['우리말을 보고 영어 문장을 써요(문장 목록용)', 'Sentence lists only'], sentence: true, build: (c) => pick(c.map((x) => sentenceWriteQ(x))) },
+  sfade: { name: ['문장 지우며 읽기', 'Fading sentence'], help: ['끝 낱말부터 가려지는 문장을 읽고 마지막엔 직접 써요(문장 목록용)', 'Sentence lists only'], sentence: true, build: (c) => pick(c.map((x) => sentenceFadeQ(x))) },
+  frame: { name: ['틀 바꿔 쓰기', 'Same pattern'], help: ['같은 틀의 보기 문장을 보고 다른 문장을 써요(처음 두 낱말이 같은 문장이 있어야 해요)', 'Needs sentences sharing the first two words'], sentence: true, build: (c, p, r) => pick(c.map((x) => frameQ(x, p, r))) },
   graduate: { name: ['졸업 시험', 'Graduation test'], help: ['여러 방식을 섞어 마지막에 종합 확인해요', 'Mixed final check'], build: (c, p, r) => graduationQs(c, p, r) },
 };
 
@@ -60,11 +74,31 @@ export function graduationQs(cards: FullCardItem[], pool: FullCardItem[], rng: R
 
 export const MAX_MEMORY_COUNT = 100;
 
+/** 플립 카드 한 벌: 보고 듣기 블록 하나에 "낱말 | 뜻 | 예문" 줄로 담는다(정답 없음, 다 뒤집으면 완료) */
+export function flipDeckItem(cards: FullCardItem[], count: number, en: boolean): HwItemDraft | null {
+  const lines: string[] = [];
+  let used = 0;
+  for (const c of cards) {
+    if (lines.length >= Math.min(count, 60)) break;
+    const clean = (v: string | null | undefined) => (v ?? '').replace(/[|\n\r]/g, ' ').trim();
+    const line = `${clean(c.word)} | ${clean(c.meaning)} | ${clean(c.example)}`;
+    if (!clean(c.word) || !clean(c.meaning) || used + line.length + 1 > 4800) continue;
+    lines.push(line);
+    used += line.length + 1;
+  }
+  if (lines.length < 1) return null;
+  const it = newBlock('study');
+  it.title = MEMORY_METHODS.flip.name[en ? 1 : 0];
+  Object.assign(it.config.block!, { text: lines.join('\n'), method: 'flip', count: lines.length });
+  return it;
+}
+
 /** 방식 하나로 문제 count 개(낱말이 모자라면 있는 만큼)를 만들어 기억해서 답하기 블록으로 감싼다. 만들 수 없으면 null */
 export function memoryItemFromCards(cards: FullCardItem[], method: MemoryMethod, count: number, en = false, rng: Rng = Math.random): HwItemDraft | null {
   const usable = cards.filter((c) => c.word.trim() && c.meaning?.trim());
   const n = Math.max(1, Math.min(Math.round(count) || 1, MAX_MEMORY_COUNT));
   const info = MEMORY_METHODS[method];
+  if (info.item) return info.item(takeCards(usable, n, rng), n, en);
   const questions = info.build(takeCards(usable, n, rng), usable, rng).slice(0, n);
   if (!questions.length) return null;
   const it = newBlock('recall');

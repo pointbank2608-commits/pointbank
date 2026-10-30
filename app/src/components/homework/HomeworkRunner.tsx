@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playSfx } from '../../lib/gameSfx';
 import type { HwItem } from '../../lib/homework/types';
+import FlipDeck from './FlipDeck';
 import MatchupGame from './MatchupGame';
 import QuestionCard from './QuestionCard';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
@@ -316,7 +317,9 @@ export default function HomeworkRunner({
   } else if (phase.k === 'item') {
     const it = items[phase.i];
     // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
-    if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
+    if (it.config.block?.type === 'study' && it.config.block.method === 'flip') {
+      content = <FlipDeck key={it.id} text={it.config.block.text} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
+    } else if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
       content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onDone={(meta) => completeItem(phase.i, meta)} />;
     } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;

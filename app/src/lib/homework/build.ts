@@ -194,6 +194,54 @@ export function copyQ(c: FullCardItem): HwQuestion | null {
   return { ...base(c, SKILL.spelling, 1), qtype: 'text', style: 'copy', prompt: w, sub: clean(c.meaning), imageUrl: c.imageUrl ?? null, speak: w, correct: w };
 }
 
+/** 문장 카드: 영어 문장(낱말 3개 이상)과 우리말 뜻이 있는 카드 — 문장 목록에서 온 카드 */
+export const isSentenceCard = (c: FullCardItem) => clean(c.word).split(/\s+/).filter(Boolean).length >= 3 && clean(c.meaning).length > 0;
+
+/** 문장 정답: 원문과, 문장 안 쉼표·따옴표 같은 부호를 뺀 글(화면 자판으로 부호를 못 쳐도 맞게) — '/' 로 이어 서버가 둘 다 정답으로 본다 */
+export function sentenceAnswer(sentence: string): string {
+  const s = clean(sentence);
+  const bare = s.replace(/[,;:"“”()]/g, '').replace(/\s+/g, ' ').trim();
+  return bare !== s && !s.includes('/') ? `${s} / ${bare}` : s;
+}
+
+/** 맞다/아니다: "apple = 사과" 같은 짝이 맞는지 O·X 로 고른다(절반은 일부러 틀린 짝) */
+export function oxQ(c: FullCardItem, pool: FullCardItem[], rng: Rng, wantTrue: boolean): HwQuestion | null {
+  if (!isMeaning(c.meaning)) return null;
+  let shown = clean(c.meaning);
+  if (!wantTrue) {
+    const other = otherValues(pool.filter((x) => isMeaning(x.meaning)), c, (x) => x.meaning, 1, rng)[0];
+    if (!other) return null;
+    shown = other;
+  }
+  return { ...base(c, SKILL.meaning, 1), qtype: 'choice', style: 'ox', prompt: `${clean(c.word)} = ${shown}`, speak: clean(c.word), choices: ['O', 'X'], correct: wantTrue ? 0 : 1 };
+}
+
+/** 한글 보고 영어 문장 쓰기(문장 카드) */
+export function sentenceWriteQ(c: FullCardItem): HwQuestion | null {
+  if (!isSentenceCard(c)) return null;
+  const sentence = clean(c.word);
+  return { ...base(c, SKILL.sentence, 3), qtype: 'text', style: 'swrite', prompt: clean(c.meaning), correct: sentenceAnswer(sentence), word: sentence };
+}
+
+/** 문장 지우며 읽기: 끝 낱말부터 가려지며 읽고, 마지막에는 문장 전체를 쓴다(문장 카드) */
+export function sentenceFadeQ(c: FullCardItem): HwQuestion | null {
+  if (!isSentenceCard(c)) return null;
+  const sentence = clean(c.word);
+  return { ...base(c, SKILL.sentence, 3), qtype: 'text', style: 'sfade', prompt: sentence, sub: clean(c.meaning), speak: sentence, correct: sentenceAnswer(sentence), word: sentence };
+}
+
+const frameKey = (s: string) => clean(s).toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+
+/** 틀 바꿔 쓰기: 같은 틀(처음 두 낱말이 같은 문장)의 보기 문장을 보고, 우리말에 맞는 다른 문장을 쓴다(문장 카드) */
+export function frameQ(c: FullCardItem, pool: FullCardItem[], rng: Rng): HwQuestion | null {
+  if (!isSentenceCard(c)) return null;
+  const sentence = clean(c.word);
+  const mates = pool.filter((x) => isSentenceCard(x) && clean(x.word) !== sentence && frameKey(x.word) === frameKey(sentence));
+  if (mates.length === 0) return null;
+  const model = shuffleWith(mates, rng)[0];
+  return { ...base(c, SKILL.sentence, 2), qtype: 'text', style: 'frame', prompt: clean(c.meaning), sub: clean(model.word), correct: sentenceAnswer(sentence), word: sentence };
+}
+
 /** 두더지잡기: 소리를 듣고 두더지(보기) 중 맞는 낱말을 잡는다 — 듣고 고르기 문제를 두더지 모양으로 보여 준다 */
 export const whackQ = (c: FullCardItem, pool: FullCardItem[], rng: Rng) =>
   choiceQ(c, clean(c.word), otherValues(pool, c, (x) => x.word, 3, rng), rng, { skill: SKILL.listen, style: 'whack', prompt: '', speak: clean(c.word), difficulty: 2 });

@@ -7,7 +7,7 @@
 export type HwQType = 'choice' | 'text' | 'order';
 
 /** 문제 화면 모양(채점과 무관, 그리기만) */
-export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content' | 'flash' | 'fade' | 'confuse' | 'whack' | 'fish' | 'balloon' | 'hangman' | 'dictation' | 'typepic' | 'hint' | 'copy';
+export type HwQStyle = 'meaning' | 'reverse' | 'picture' | 'listen' | 'blank' | 'spell' | 'letters' | 'sentence' | 'ox' | 'match' | 'content' | 'flash' | 'fade' | 'confuse' | 'whack' | 'fish' | 'balloon' | 'hangman' | 'dictation' | 'typepic' | 'hint' | 'copy' | 'swrite' | 'sfade' | 'frame';
 
 /** 문제를 만든 낱말 카드 스냅샷 — 학습 기록에 같이 남아 추천 숙제 재료가 된다 */
 export interface HwCard {

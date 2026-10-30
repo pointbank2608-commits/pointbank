@@ -18,7 +18,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
     if (listen && q.speak) speak(q.speak);
   }, [q.id, listen, q.speak]);
 
-  const memo = q.style === 'flash' || q.style === 'fade';
+  const memo = q.style === 'flash' || q.style === 'fade' || q.style === 'sfade';
   const guide = t(`studentHw.guide_${q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
   const speakBtn = (big: boolean) =>
     q.speak ? (
@@ -56,6 +56,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
 
       {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />}
       {q.style === 'flash' && <FlashThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.style === 'sfade' && <SentenceFadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'hangman' && <HangmanInput key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
@@ -297,6 +298,44 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** 문장 지우며 읽기: 읽을 때마다 끝 낱말부터 가려지고, 마지막엔 문장 전체를 직접 쓴다 */
+function SentenceFadeThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+  const { t } = useTranslation();
+  const rounds = 3;
+  const [round, setRound] = useState(0);
+  const words = q.prompt.split(/\s+/).filter(Boolean);
+  const hide = Math.ceil((words.length * round) / rounds);
+  const typing = round >= rounds;
+  return (
+    <div className="flex flex-1 flex-col items-center gap-4 px-5 pb-4">
+      {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+      {!typing ? (
+        <>
+          <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 text-3xl font-bold leading-snug" aria-live="polite">
+            {words.map((w, i) => (
+              <span key={i} className={i >= words.length - hide ? 'border-b-4 border-white/60 text-transparent' : ''}>
+                {w}
+              </span>
+            ))}
+          </div>
+          <div className="text-base text-white/70">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
+          <div className="flex gap-3">
+            {q.speak && (
+              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-white/15 px-5 text-base font-bold text-white">{t('studentHw.listen')}</button>
+            )}
+            <button type="button" onClick={() => setRound((r) => r + 1)} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy active:scale-95">{t('studentHw.sfadeRead')}</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-2xl font-bold">{t('studentHw.sfadeWrite')}</div>
+          <div className="w-full"><TextInput onAnswer={onAnswer} disabled={disabled} /></div>
+        </>
+      )}
     </div>
   );
 }

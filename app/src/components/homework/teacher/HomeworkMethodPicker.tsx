@@ -8,6 +8,7 @@ const LEVEL: Record<MemoryMethod, 0 | 1 | 2> = {
   blank: 1, confuse: 1, letters: 1, sentence: 1,
   spell: 2, flash: 2, fade: 2, graduate: 2,
   copy: 0, hint: 1, typepic: 1, dictation: 2,
+  flip: 0, ox: 0, swrite: 2, sfade: 2, frame: 1,
 };
 const LEVEL_NAME: [string, string][] = [['쉬움', 'Easy'], ['보통', 'Medium'], ['어려움', 'Hard']];
 const LEVEL_STYLE = ['bg-emerald-100 text-emerald-900', 'bg-amber-100 text-amber-900', 'bg-rose-100 text-rose-900'];
@@ -75,6 +76,21 @@ export function MethodIllustration({ method, en }: { method: MemoryMethod; en: b
         return (<><span className="text-4xl" aria-hidden="true">🍎</span><Row><Tile ghost>a</Tile><Tile ghost>p</Tile><Tile ghost>p</Tile><Tile ghost>l</Tile><Tile ghost>e</Tile></Row><span className="text-[10px] text-on-surface-variant">{k('그림만 보고 써요', 'Picture only')}</span></>);
       case 'dictation':
         return (<><span className="text-3xl" aria-hidden="true">🔊</span><Row><Tile ghost>a</Tile><Tile ghost>p</Tile><Tile ghost>p</Tile><Tile ghost>l</Tile><Tile ghost>e</Tile></Row><span className="text-[10px] text-on-surface-variant">{k('듣고 써요', 'Hear and type')}</span></>);
+      case 'flip':
+        return (
+          <span className="flex w-full items-stretch gap-1">
+            <Frame label={k('보고', 'front')}><Big>apple</Big></Frame><Arrow />
+            <Frame label={k('뒤집으면', 'back')}><span className="text-lg font-extrabold">{k('사과', 'apple')}</span><span className="text-[10px] text-on-surface-variant">I eat an apple.</span></Frame>
+          </span>
+        );
+      case 'ox':
+        return (<><span className="text-base font-bold text-deep-navy">apple = {k('사과', 'apple')}</span><Row><Pill on>O</Pill><Pill>X</Pill></Row></>);
+      case 'swrite':
+        return (<><span className="text-sm font-bold text-deep-navy">{k('나는 사과를 좋아해요.', 'I like apples.')}</span><Row><Tile>I</Tile><Tile ghost>like</Tile><Tile ghost>apples</Tile></Row></>);
+      case 'sfade':
+        return (<><Mono>I like apples</Mono><Mono>I like ______</Mono><Mono>I ____ ______</Mono></>);
+      case 'frame':
+        return (<><span className="text-[11px] font-bold text-on-surface-variant">{k('보기', 'Model')}: I want a cat.</span><span className="text-sm font-bold text-deep-navy">{k('나는 사과를 원해요.', 'I want an apple.')}</span><Row><Tile>I</Tile><Tile>want</Tile><Tile ghost>an apple</Tile></Row></>);
       case 'confuse':
         return (<><span className="text-sm font-bold text-on-surface-variant">{k('사과', 'apple')}</span><Row><Pill on>apple</Pill><Pill>apply</Pill><Pill>ample</Pill></Row><span className="text-[10px] text-on-surface-variant">{k('철자가 비슷해요', 'Look-alikes')}</span></>);
       case 'graduate':
@@ -109,6 +125,7 @@ export default function HomeworkMethodPicker({ onPick, onClose }: { onPick: (met
                 <span className="flex items-center gap-2">
                   <span className="text-lg font-bold">{MEMORY_METHODS[m].name[en ? 1 : 0]}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${LEVEL_STYLE[LEVEL[m]]}`}>{LEVEL_NAME[LEVEL[m]][en ? 1 : 0]}</span>
+                  {MEMORY_METHODS[m].sentence && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-bold text-sky-900">{en ? 'Sentence list' : '문장 목록용'}</span>}
                 </span>
                 <span className="text-sm text-on-surface-variant">{MEMORY_METHODS[m].help[en ? 1 : 0]}</span>
               </button>

@@ -23,11 +23,13 @@ const rng = () => 0.4;
 
 await test('방식 12가지가 모두 문제를 만든다', () => {
   for (const m of mem.MEMORY_METHOD_LIST) {
+    if (mem.MEMORY_METHODS[m].sentence) continue; // 문장 목록용은 아래 별도 검사
     const it = mem.memoryItemFromCards(cards, m, 6, false, rng);
     assert.ok(it, m);
-    assert.equal(it.config.block.type, 'recall');
+    assert.equal(it.config.block.type, m === 'flip' ? 'study' : 'recall');
     assert.equal(it.config.block.method, m);
-    assert.ok(it.content.questions.length >= 1 && it.content.questions.length <= 6, m);
+    if (m === 'flip') assert.equal(it.content.questions.length, 0, 'flip 은 문제 없이 카드 한 벌');
+    else assert.ok(it.content.questions.length >= 1 && it.content.questions.length <= 6, m);
   }
 });
 await test('문항 수 상한(100)과 모자란 낱말', () => {
@@ -66,6 +68,7 @@ await test('졸업 시험: 낱말마다 한 문제, 여러 방식이 섞인다',
 });
 await test('만든 블록은 편집기 검사를 통과한다', () => {
   for (const m of mem.MEMORY_METHOD_LIST) {
+    if (mem.MEMORY_METHODS[m].sentence) continue;
     const it = mem.memoryItemFromCards(cards, m, 6, false, rng);
     const errs = blocks.validateItems([it]);
     assert.deepEqual(errs, [], m + ': ' + errs.join());
@@ -125,6 +128,62 @@ await test('타이핑 4종: 정답은 낱말, 힌트는 첫·끝 글자만, 그�
   const pic = build.typePictureQ(cards[1]);
   assert.ok(pic.imageUrl); assert.equal(pic.correct, 'apply'); assert.equal(pic.prompt, '');
   assert.equal(build.hintQ({ id: 'x', word: 'at', meaning: '에' }), null, '두 글자 낱말은 힌트가 없다');
+});
+
+const sents = [
+  { id: 's1', word: 'I want a cat.', meaning: '나는 고양이를 원해요.' },
+  { id: 's2', word: 'I want an apple.', meaning: '나는 사과를 원해요.' },
+  { id: 's3', word: 'She likes red, blue and green.', meaning: '그녀는 빨강, 파랑, 초록을 좋아해요.' },
+  { id: 's4', word: 'We go to school.', meaning: '우리는 학교에 가요.' },
+];
+await test('플립 카드: 보고 듣기 블록 하나에 낱말 | 뜻 | 예문 줄로 담기고 검사를 통과한다', () => {
+  const it = mem.memoryItemFromCards(cards, 'flip', 5, false, rng);
+  assert.equal(it.config.block.type, 'study');
+  assert.equal(it.config.block.completion, 'confirm');
+  assert.equal(it.config.block.method, 'flip');
+  assert.deepEqual(it.content.questions, []);
+  const lines = it.config.block.text.split(String.fromCharCode(10));
+  assert.equal(lines.length, 5);
+  assert.ok(lines.every((l) => l.split('|').length === 3));
+  assert.deepEqual(blocks.validateItems([it]), []);
+  const big = Array.from({ length: 300 }, (_, i) => ({ id: 'b' + i, word: 'word' + i, meaning: '뜻' + i, example: 'This is a fairly long example sentence number ' + i + ' for the card.' }));
+  const deck = mem.memoryItemFromCards(big, 'flip', 100, false, rng);
+  assert.ok(deck.config.block.text.length <= 5000 && deck.config.block.count <= 60, String(deck.config.block.text.length));
+});
+await test('맞다/아니다: 짝이 맞으면 O, 틀린 짝이면 X가 정답이고 둘이 섞인다', () => {
+  const qs = mem.MEMORY_METHODS.ox.build(cards, cards, rng);
+  assert.ok(qs.length >= 6);
+  assert.deepEqual(qs[0].choices, ['O', 'X']);
+  const t0 = qs.find((q) => q.correct === 0), f0 = qs.find((q) => q.correct === 1);
+  assert.ok(t0 && f0);
+  const [w0, m0] = t0.prompt.split(' = ');
+  assert.equal(cards.find((c) => c.word === w0).meaning, m0);
+  const [w1, m1] = f0.prompt.split(' = ');
+  assert.notEqual(cards.find((c) => c.word === w1).meaning, m1);
+});
+await test('문장 방식 3종은 문장 카드에서만 만들어지고, 단어 카드에서는 만들지 않는다', () => {
+  for (const m of ['swrite', 'sfade']) {
+    assert.equal(mem.MEMORY_METHODS[m].sentence, true);
+    assert.equal(mem.memoryItemFromCards(cards, m, 5, false, rng), null, m + ' 단어 카드');
+    const it = mem.memoryItemFromCards(sents, m, 5, false, rng);
+    assert.equal(it.content.questions.length, 4, m);
+    assert.deepEqual(blocks.validateItems([it]), [], m);
+  }
+});
+await test('문장 정답: 쉼표를 뺀 글도 정답으로 인정한다(화면 자판에 쉼표가 없어서)', () => {
+  const q = build.sentenceWriteQ(sents[2]);
+  assert.equal(q.correct, 'She likes red, blue and green. / She likes red blue and green.');
+  assert.equal(build.sentenceWriteQ(sents[0]).correct, 'I want a cat.');
+  assert.equal(q.prompt, sents[2].meaning);
+});
+await test('틀 바꿔 쓰기: 처음 두 낱말이 같은 보기 문장이 있을 때만 만들어진다', () => {
+  const q = build.frameQ(sents[0], sents, rng);
+  assert.equal(q.sub, 'I want an apple.');
+  assert.equal(q.correct, 'I want a cat.');
+  assert.equal(build.frameQ(sents[3], sents, rng), null);
+  const it = mem.memoryItemFromCards(sents, 'frame', 5, false, rng);
+  assert.equal(it.content.questions.length, 2);
+  assert.deepEqual(blocks.validateItems([it]), []);
 });
 
 await server.close();
