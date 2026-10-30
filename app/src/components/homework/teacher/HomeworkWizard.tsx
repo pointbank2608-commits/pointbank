@@ -13,7 +13,13 @@ import { extractYoutubeId } from '../../../lib/youtube';
 import { enrichCards, loadWordBank } from '../../../lib/wordBankCache';
 import VideoClipLibrary from '../../VideoClipLibrary';
 import { MAX_MEMORY_COUNT, MEMORY_METHODS, MEMORY_METHOD_LIST, memoryItemFromCards, type MemoryMethod } from '../../../lib/homework/memory';
+import { gameItemFromCards, SOLO_GAME_NAMES, type SoloGame } from '../../../lib/homework/blocks';
+import { hasSlots, isSlot, newSlot } from '../../../lib/homework/slots';
+import { buildPersonalPlans, newPersonalSendState, sendPersonalPlans, type PersonalPlan } from '../../../lib/homework/personalSend';
 import HomeworkPreview from './HomeworkPreview';
+
+/** 암기 방식 구성의 한 줄: 방식(문항 수) · 혼자 하는 게임 · 학생별 자동 암기 칸 */
+type MemEntry = { key: string; kind: 'method'; method: MemoryMethod; count: number } | { key: string; kind: 'game'; game: SoloGame } | { key: string; kind: 'auto'; count: number };
 
 type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked' | 'watch';
 
@@ -126,8 +132,11 @@ export default function HomeworkWizard({
   const [kids, setKids] = useState(false);
   /** 암기 방식으로 구성: 시간(5·10·15분) 대신 방식과 문항 수를 고른다 */
   const [memMode, setMemMode] = useState(false);
-  const [memMethods, setMemMethods] = useState<MemoryMethod[]>(['meaning', 'listen', 'fade', 'spell']);
-  const [memCount, setMemCount] = useState(10);
+  const [memEntries, setMemEntries] = useState<MemEntry[]>(() => (['meaning', 'listen', 'fade', 'spell'] as MemoryMethod[]).map((m) => ({ key: crypto.randomUUID(), kind: 'method', method: m, count: 10 })));
+  const [addMethod, setAddMethod] = useState<MemoryMethod>('flash');
+  const [addGame, setAddGame] = useState<SoloGame>('matchup');
+  const [plans, setPlans] = useState<PersonalPlan[] | null>(null);
+  const sendState = useRef(newPersonalSendState());
   const [kidsLines, setKidsLines] = useState(5);
   const [custom, setCustom] = useState(false);
   const [plan, setPlan] = useState<HwPlan>(EMPTY_PLAN);
@@ -234,16 +243,40 @@ export default function HomeworkWizard({
       s = (s * 9301 + 49297) % 233280;
       return s / 233280;
     };
-    if (memMode) return MEMORY_METHOD_LIST.filter((m) => memMethods.includes(m)).map((m) => memoryItemFromCards(cards, m, memCount, en, rng)).filter((x): x is HwItemDraft => !!x);
+    if (memMode)
+      return memEntries
+        .map((e): HwItemDraft | null => {
+          if (e.kind === 'method') return memoryItemFromCards(cards, e.method, e.count, en, rng);
+          if (e.kind === 'game') return gameItemFromCards(cards, e.game, SOLO_GAME_NAMES[e.game][en ? 1 : 0], rng);
+          const slot = newSlot('memory', en);
+          slot.config.slot!.count = e.count;
+          return slot;
+        })
+        .filter((x): x is HwItemDraft => !!x);
     if (kids) return buildKidsItems(cards, kidsLines, labels.shadowing, clipSource, rng);
     return buildItems(cards, plan, labels, clipSource, rng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews, memMode, memMethods, memCount, en]);
+  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews, memMode, memEntries, en]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
   const sourceOk = source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
   const canNext = [targetIds.length > 0, sourceOk, items.length > 0, items.length > 0][step];
   const finalTitle = title.trim() || sourceName || t('studentHw.defaultTitle');
+
+  useEffect(() => setPlans(null), [items]);
+  const targetStudents = () => students.filter((s) => targetIds.includes(s.id));
+  async function loadPlans() {
+    if (createLock.current) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      setPlans(await buildPersonalPlans({ items, students: targetStudents(), pool: cards, classId, labels }));
+    } catch {
+      setErr(l('학생 기록을 불러오지 못했어요.', 'Could not load student records.'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function create() {
     if (createLock.current) return;
@@ -251,6 +284,14 @@ export default function HomeworkWizard({
     setBusy(true);
     setErr(null);
     try {
+      if (hasSlots(items)) {
+        // 학생별 자동 구성: 학생마다 다른 숙제로 보낸다(못 보낸 학생은 다시 누르면 이어서)
+        const pl = plans ?? (await buildPersonalPlans({ items, students: targetStudents(), pool: cards, classId, labels }));
+        const first = await sendPersonalPlans({ plans: pl, classId, title: finalTitle, due, templateId: sendState.current.group, state: sendState.current });
+        if (first) onCreated(first);
+        else setErr(l('보낼 학생별 활동이 없어요. 낱말을 확인하세요.', 'No per-student activities to send. Check the words.'));
+        return;
+      }
       const key = JSON.stringify([classId, finalTitle, items, everyone, targetIds, due]);
       if (createRequest.current.key !== key) createRequest.current = { key, id: crypto.randomUUID() };
       const hw = await createHomework({
@@ -616,30 +657,62 @@ export default function HomeworkWizard({
           </div>
           {memMode && (
             <div className="space-y-3 rounded-2xl border border-outline-variant p-4">
-              <p className="text-base text-on-surface-variant">{l('외우게 할 방식을 고르면 쉬운 방식부터 차례로 이어져요. 시간 제한은 없어요.', 'Pick methods; they run from easy to hard. No time limit.')}</p>
-              <div className="flex flex-wrap gap-2">
-                {MEMORY_METHOD_LIST.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    title={MEMORY_METHODS[m].help[en ? 1 : 0]}
-                    aria-pressed={memMethods.includes(m)}
-                    onClick={() => setMemMethods((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]))}
-                    className={`min-h-11 rounded-full border-2 px-4 text-base font-bold ${on(memMethods.includes(m))}`}
-                  >
-                    {MEMORY_METHODS[m].name[en ? 1 : 0]}
-                  </button>
+              <p className="text-base text-on-surface-variant">{l('아래 순서대로 이어져요(쉬운 것 → 어려운 것 추천). 방식마다 문항 수를 정하고, 게임이나 학생별 자동 구성도 넣을 수 있어요. 시간 제한은 없어요.', 'Runs in this order. Set the count per method; add games or a per-student auto set. No time limit.')}</p>
+              <ol className="space-y-2">
+                {memEntries.map((e, i) => (
+                  <li key={e.key} className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-container-low px-3 py-2">
+                    <span className="material-symbols-outlined text-primary">{e.kind === 'game' ? 'sports_esports' : e.kind === 'auto' ? 'auto_awesome' : 'psychology'}</span>
+                    <span className="min-w-0 flex-1 text-base font-bold text-deep-navy">
+                      {e.kind === 'method' ? MEMORY_METHODS[e.method].name[en ? 1 : 0] : e.kind === 'game' ? SOLO_GAME_NAMES[e.game][en ? 1 : 0] : l('자동 암기 세트(학생별)', 'Auto memorize set (per student)')}
+                    </span>
+                    {e.kind !== 'game' && (
+                      <label className="flex items-center gap-1 text-sm">
+                        {l('문항', 'Qs')}
+                        <input
+                          type="number"
+                          min={1}
+                          max={e.kind === 'auto' ? 60 : MAX_MEMORY_COUNT}
+                          value={e.count}
+                          onChange={(ev) => {
+                            const v = Math.max(1, Math.min(Number(ev.target.value) || 1, e.kind === 'auto' ? 60 : MAX_MEMORY_COUNT));
+                            setMemEntries((cur) => cur.map((x) => (x.key === e.key && x.kind !== 'game' ? { ...x, count: v } : x)));
+                          }}
+                          className="min-h-11 w-20 rounded-xl border border-outline-variant px-2"
+                        />
+                      </label>
+                    )}
+                    <button type="button" aria-label={l('위로', 'Up')} disabled={i === 0} className="h-11 w-11 rounded-full border border-outline-variant disabled:opacity-30" onClick={() => setMemEntries((cur) => { const a = [...cur]; [a[i - 1], a[i]] = [a[i], a[i - 1]]; return a; })}>↑</button>
+                    <button type="button" aria-label={l('아래로', 'Down')} disabled={i === memEntries.length - 1} className="h-11 w-11 rounded-full border border-outline-variant disabled:opacity-30" onClick={() => setMemEntries((cur) => { const a = [...cur]; [a[i + 1], a[i]] = [a[i], a[i + 1]]; return a; })}>↓</button>
+                    <button type="button" aria-label={l('삭제', 'Remove')} className="h-11 w-11 rounded-full border border-outline-variant text-error" onClick={() => setMemEntries((cur) => cur.filter((x) => x.key !== e.key))}>×</button>
+                  </li>
                 ))}
-              </div>
-              <label className="flex flex-wrap items-center gap-2 text-base">
-                {l('방식마다 낱말 수', 'Words per method')}
-                <input type="number" min={1} max={MAX_MEMORY_COUNT} value={memCount} onChange={(e) => setMemCount(Math.max(1, Math.min(Number(e.target.value) || 1, MAX_MEMORY_COUNT)))} className="min-h-11 w-24 rounded-xl border border-outline-variant px-3" />
-                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemCount(Math.min(cards.length || 1, MAX_MEMORY_COUNT))}>
-                  {l(`전부(${Math.min(cards.length, MAX_MEMORY_COUNT)}개)`, `All (${Math.min(cards.length, MAX_MEMORY_COUNT)})`)}
+              </ol>
+              {memEntries.length === 0 && <p className="text-sm text-error">{l('아래에서 방식을 하나 이상 추가하세요.', 'Add at least one below.')}</p>}
+              <div className="flex flex-wrap items-center gap-2">
+                <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2" aria-label={l('암기 방식', 'Method')} value={addMethod} onChange={(e) => setAddMethod(e.target.value as MemoryMethod)}>
+                  {MEMORY_METHOD_LIST.map((m) => <option key={m} value={m}>{MEMORY_METHODS[m].name[en ? 1 : 0]}</option>)}
+                </select>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'method', method: addMethod, count: Math.min(10, Math.max(cards.length, 1)) }])}>
+                  + {l('방식 추가', 'Add method')}
                 </button>
-              </label>
-              {cards.length > MAX_MEMORY_COUNT && <p className="text-sm text-on-surface-variant">{l(`낱말이 ${cards.length}개예요. 한 방식에 최대 ${MAX_MEMORY_COUNT}개까지 넣을 수 있어요.`, `${cards.length} words; up to ${MAX_MEMORY_COUNT} per method.`)}</p>}
-              {memMethods.length === 0 && <p className="text-sm text-error">{l('방식을 하나 이상 고르세요.', 'Pick at least one method.')}</p>}
+                <span className="text-sm text-on-surface-variant">{MEMORY_METHODS[addMethod].help[en ? 1 : 0]}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2" aria-label={l('게임', 'Game')} value={addGame} onChange={(e) => setAddGame(e.target.value as SoloGame)}>
+                  {(Object.keys(SOLO_GAME_NAMES) as SoloGame[]).map((g) => <option key={g} value={g}>{SOLO_GAME_NAMES[g][en ? 1 : 0]}</option>)}
+                </select>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'game', game: addGame }])}>
+                  + {l('게임 추가', 'Add game')}
+                </button>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" disabled={memEntries.some((x) => x.kind === 'auto')} onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'auto', count: 20 }])}>
+                  + {l('학생별 자동 구성', 'Per-student auto set')}
+                </button>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemEntries((cur) => cur.map((x) => (x.kind === 'method' ? { ...x, count: Math.min(cards.length || 1, MAX_MEMORY_COUNT) } : x)))}>
+                  {l(`방식 문항 모두 전부(${Math.min(cards.length, MAX_MEMORY_COUNT)}개)`, `All words (${Math.min(cards.length, MAX_MEMORY_COUNT)})`)}
+                </button>
+              </div>
+              {cards.length > MAX_MEMORY_COUNT && <p className="text-sm text-on-surface-variant">{l(`낱말이 ${cards.length}개예요. 방식 하나에 최대 ${MAX_MEMORY_COUNT}개까지 넣을 수 있어요.`, `${cards.length} words; up to ${MAX_MEMORY_COUNT} per method.`)}</p>}
+              {memEntries.some((x) => x.kind === 'auto') && <p className="rounded-lg bg-primary/5 px-3 py-2 text-sm">{l('자동 구성은 학생마다 다른 숙제로 보내요. 학생의 틀린 낱말·복습할 낱말로 채워지고, 나머지 줄은 모두에게 같아요.', 'The auto set is sent as separate homework per student; other lines stay the same for everyone.')}</p>}
               <ItemSummary items={items} />
             </div>
           )}
@@ -744,6 +817,25 @@ export default function HomeworkWizard({
               <dd>{due ? new Date(due).toLocaleString() : t('studentHw.noDue')}</dd>
             </dl>
             <ItemSummary items={items} />
+            {hasSlots(items) && (
+              <div className="space-y-2 rounded-xl bg-primary/5 p-3">
+                <p className="text-sm">{l('학생마다 다른 숙제로 보내요. 자동 구성 줄만 학생 기록으로 채워지고, 나머지 줄은 모두 같아요.', 'Sent as separate homework per student; only the auto line differs.')}</p>
+                <button type="button" disabled={busy || targetIds.length === 0} onClick={() => void loadPlans()} className="min-h-11 rounded-xl border border-outline-variant px-4 font-bold">
+                  {l('학생별 구성 미리 보기', 'Preview per student')}
+                </button>
+                {plans && (
+                  <ul className="space-y-1 text-sm">
+                    {plans.map((p) => (
+                      <li key={p.student.id}>
+                        <b>{p.student.name}</b> · {l(`문제 ${p.items.reduce((n, x) => n + x.content.questions.length, 0)}개`, `${p.items.reduce((n, x) => n + x.content.questions.length, 0)} questions`)}
+                        {!p.personal && ` · ${l('기록이 적어 반 공통 복습', 'class review (little record)')}`}
+                        {p.empty > 0 && ` · ${l(`빈 칸 ${p.empty}개 제외`, `${p.empty} empty slot(s) dropped`)}`}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <button type="button" onClick={() => setSeed((s) => s + 1)} className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant px-4 font-label-md text-label-md">
               <span className="material-symbols-outlined text-[18px]">shuffle</span>
               {t('studentHw.reshuffle')}
@@ -751,7 +843,7 @@ export default function HomeworkWizard({
             <p className="text-sm text-on-surface-variant">{t('studentHw.previewNote')}</p>
           </div>
           {onEdit && <button type="button" className="min-h-12 rounded-xl bg-warm-yellow px-5 font-bold text-deep-navy" onClick={() => onEdit(items, finalTitle, everyone ? null : targetIds, due)}>{t('studentHw.editBlocks')}</button>}
-          <HomeworkPreview title={finalTitle} items={items} />
+          <HomeworkPreview title={finalTitle} items={items.filter((it) => !isSlot(it))} />
         </div>
       )}
 
@@ -799,7 +891,7 @@ export function ItemSummary({ items }: { items: ReturnType<typeof buildItems> })
             <span className="tabular-nums text-on-surface-variant">
               {it.config.watch ? t('studentHw.watchOne') : it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : ''}
               {it.kind === 'shadowing' && it.content.questions.length ? ' + ' : ''}
-              {it.content.questions.length ? t('studentHw.questionCount', { count: it.content.questions.length }) : ''}
+              {it.config.slot ? `${it.config.slot.count}문제 · 학생마다` : it.content.questions.length ? t('studentHw.questionCount', { count: it.content.questions.length }) : ''}
             </span>
           </li>
         ))}
