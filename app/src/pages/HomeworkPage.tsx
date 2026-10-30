@@ -15,7 +15,7 @@ import RecommendReview from '../components/homework/teacher/RecommendReview';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchStudentsOfClass } from '../lib/api';
-import { fetchHomeworkOverview, fetchHomeworkUsage, teacherErrorKey, type HomeworkOverviewRow } from '../lib/homework';
+import { deleteHomework, fetchHomeworkOverview, fetchHomeworkUsage, teacherErrorKey, type HomeworkOverviewRow } from '../lib/homework';
 import type { FullCardItem, Student } from '../lib/types';
 import { useClasses } from '../lib/useClasses';
 
@@ -227,9 +227,9 @@ export default function HomeworkPage() {
         <div className="space-y-3">
           {groups.map((g) =>
             g.rows.length > 1 || g.rows[0].kind === 'custom' ? (
-              <CustomGroup key={g.key} rows={g.rows} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
+              <CustomGroup key={g.key} rows={g.rows} onChanged={() => void reload()} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
             ) : (
-              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)}>
+              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)} onChanged={() => void reload()}>
                 {renderPanels(g.rows[0])}
               </HomeworkCard>
             ),
@@ -271,6 +271,7 @@ function HomeworkCard({
   resultsOpen,
   onShare,
   onResults,
+  onChanged,
   children,
   compact = false,
 }: {
@@ -279,10 +280,13 @@ function HomeworkCard({
   resultsOpen: boolean;
   onShare: () => void;
   onResults: () => void;
+  onChanged: () => void;
   children: React.ReactNode;
   compact?: boolean;
 }) {
   const { t } = useTranslation();
+  const { notify } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const pastDue = !!hw.due_at && new Date(hw.due_at).getTime() < Date.now();
   const btn = 'flex min-h-11 items-center gap-1 rounded-full px-4 text-base font-bold';
   return (
@@ -327,6 +331,34 @@ function HomeworkCard({
             <span className="material-symbols-outlined text-[18px]">monitoring</span>
             {t('studentHw.results')}
           </button>
+          {confirmDelete ? (
+            <span className="flex flex-wrap items-center gap-1.5 rounded-full bg-error-container/40 px-3" role="alert">
+              <span className="text-sm text-on-error-container">{t('studentHw.deleteConfirm')}</span>
+              <button
+                type="button"
+                className={`${btn} bg-error text-on-error`}
+                onClick={() =>
+                  void deleteHomework(hw.id).then(
+                    () => {
+                      notify(t('studentHw.deleted'));
+                      onChanged();
+                    },
+                    (e) => notify(t(teacherErrorKey(e)), 'error'),
+                  )
+                }
+              >
+                {t('studentHw.delete')}
+              </button>
+              <button type="button" className={`${btn} border border-outline-variant`} onClick={() => setConfirmDelete(false)}>
+                {t('common.cancel')}
+              </button>
+            </span>
+          ) : (
+            <button type="button" onClick={() => setConfirmDelete(true)} className={`${btn} text-error hover:bg-error-container/40`}>
+              <span className="material-symbols-outlined text-[18px]">delete</span>
+              {t('studentHw.delete')}
+            </button>
+          )}
         </div>
       </div>
       {children}
@@ -341,7 +373,9 @@ function CustomGroup({
   setShareId,
   setOpenId,
   renderOpen,
+  onChanged,
 }: {
+  onChanged: () => void;
   rows: HomeworkOverviewRow[];
   shareId: string | null;
   openId: string | null;
@@ -375,6 +409,7 @@ function CustomGroup({
             resultsOpen={openId === hw.id}
             onShare={() => setShareId(shareId === hw.id ? null : hw.id)}
             onResults={() => setOpenId(openId === hw.id ? null : hw.id)}
+            onChanged={onChanged}
           >
             {renderOpen(hw)}
           </HomeworkCard>
