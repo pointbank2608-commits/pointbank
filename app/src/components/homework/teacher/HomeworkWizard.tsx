@@ -12,10 +12,12 @@ import { parseShadowText } from '../../../lib/shadowLines';
 import { extractYoutubeId } from '../../../lib/youtube';
 import { enrichCards, loadWordBank } from '../../../lib/wordBankCache';
 import VideoClipLibrary from '../../VideoClipLibrary';
-import { MAX_MEMORY_COUNT, MEMORY_METHODS, MEMORY_METHOD_LIST, memoryItemFromCards, type MemoryMethod } from '../../../lib/homework/memory';
+import { MAX_MEMORY_COUNT, MEMORY_METHODS, memoryItemFromCards, type MemoryMethod } from '../../../lib/homework/memory';
 import { gameItemFromCards, SOLO_GAME_NAMES, type SoloGame } from '../../../lib/homework/blocks';
 import { hasSlots, isSlot, newSlot } from '../../../lib/homework/slots';
 import { buildPersonalPlans, newPersonalSendState, sendPersonalPlans, type PersonalPlan } from '../../../lib/homework/personalSend';
+import HomeworkGamePicker from './HomeworkGamePicker';
+import HomeworkMethodPicker from './HomeworkMethodPicker';
 import HomeworkPreview from './HomeworkPreview';
 
 /** 암기 방식 구성의 한 줄: 방식(문항 수) · 혼자 하는 게임 · 학생별 자동 암기 칸 */
@@ -133,8 +135,8 @@ export default function HomeworkWizard({
   /** 암기 방식으로 구성: 시간(5·10·15분) 대신 방식과 문항 수를 고른다 */
   const [memMode, setMemMode] = useState(false);
   const [memEntries, setMemEntries] = useState<MemEntry[]>(() => (['meaning', 'listen', 'fade', 'spell'] as MemoryMethod[]).map((m) => ({ key: crypto.randomUUID(), kind: 'method', method: m, count: 10 })));
-  const [addMethod, setAddMethod] = useState<MemoryMethod>('flash');
-  const [addGame, setAddGame] = useState<SoloGame>('matchup');
+  const [pickingMethod, setPickingMethod] = useState(false);
+  const [pickingGame, setPickingGame] = useState(false);
   const [plans, setPlans] = useState<PersonalPlan[] | null>(null);
   const sendState = useRef(newPersonalSendState());
   const [kidsLines, setKidsLines] = useState(5);
@@ -690,19 +692,13 @@ export default function HomeworkWizard({
               </ol>
               {memEntries.length === 0 && <p className="text-sm text-error">{l('아래에서 방식을 하나 이상 추가하세요.', 'Add at least one below.')}</p>}
               <div className="flex flex-wrap items-center gap-2">
-                <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2" aria-label={l('암기 방식', 'Method')} value={addMethod} onChange={(e) => setAddMethod(e.target.value as MemoryMethod)}>
-                  {MEMORY_METHOD_LIST.map((m) => <option key={m} value={m}>{MEMORY_METHODS[m].name[en ? 1 : 0]}</option>)}
-                </select>
-                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'method', method: addMethod, count: Math.min(10, Math.max(cards.length, 1)) }])}>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setPickingMethod(true)}>
                   + {l('방식 추가', 'Add method')}
                 </button>
-                <span className="text-sm text-on-surface-variant">{MEMORY_METHODS[addMethod].help[en ? 1 : 0]}</span>
+                <span className="text-sm text-on-surface-variant">{l('그림으로 보고 고를 수 있어요', 'Pick with pictures')}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2" aria-label={l('게임', 'Game')} value={addGame} onChange={(e) => setAddGame(e.target.value as SoloGame)}>
-                  {(Object.keys(SOLO_GAME_NAMES) as SoloGame[]).map((g) => <option key={g} value={g}>{SOLO_GAME_NAMES[g][en ? 1 : 0]}</option>)}
-                </select>
-                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'game', game: addGame }])}>
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setPickingGame(true)}>
                   + {l('게임 추가', 'Add game')}
                 </button>
                 <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" disabled={memEntries.some((x) => x.kind === 'auto')} onClick={() => setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'auto', count: 20 }])}>
@@ -875,6 +871,24 @@ export default function HomeworkWizard({
           </button>
         )}
       </div>
+      {pickingMethod && (
+        <HomeworkMethodPicker
+          onClose={() => setPickingMethod(false)}
+          onPick={(method) => {
+            setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'method', method, count: Math.min(10, Math.max(cards.length, 1)) }]);
+            setPickingMethod(false);
+          }}
+        />
+      )}
+      {pickingGame && (
+        <HomeworkGamePicker
+          onClose={() => setPickingGame(false)}
+          onPick={(game) => {
+            setMemEntries((cur) => [...cur, { key: crypto.randomUUID(), kind: 'game', game }]);
+            setPickingGame(false);
+          }}
+        />
+      )}
     </section>
   );
 }

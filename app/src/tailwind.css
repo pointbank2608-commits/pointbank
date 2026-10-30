@@ -5037,6 +5037,7 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
   color: var(--color-on-surface);
   box-shadow: 0 20px 80px #142a4650;
 }
+.classroom-dialog:has(.hw-game-picker) { width: min(1000px, calc(100vw - 32px)); max-width: calc(100vw - 32px); }
 .classroom-dialog::backdrop { background: #142a4699; }
 .classroom-dialog button:focus-visible,
 .game-fs button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }

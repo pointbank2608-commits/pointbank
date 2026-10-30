@@ -35,7 +35,6 @@ import { recommendForStudent } from "../../../lib/homework/recommend";
 import {
   MAX_MEMORY_COUNT,
   MEMORY_METHODS,
-  MEMORY_METHOD_LIST,
   memoryItemFromCards,
   type MemoryMethod,
 } from "../../../lib/homework/memory";
@@ -60,6 +59,8 @@ import type {
   WordList,
 } from "../../../lib/types";
 import { wordListToCards } from "../../../lib/gameFromWords";
+import HomeworkGamePicker from "./HomeworkGamePicker";
+import HomeworkMethodPicker from "./HomeworkMethodPicker";
 import HomeworkPreview from "./HomeworkPreview";
 import AccessibleDialog from "../../AccessibleDialog";
 
@@ -190,7 +191,9 @@ export default function HomeworkBlockEditor({
   const [adFlagged, setAdFlagged] = useState<Set<string>>(new Set());
   // 혼자 하는 게임 넣기(매치업·글자 섞기·철자 쓰기)
   const [gameKind, setGameKind] = useState<SoloGame>("matchup");
+  const [pickingGame, setPickingGame] = useState(false);
   const [memMethod, setMemMethod] = useState<MemoryMethod>("flash");
+  const [pickingMethod, setPickingMethod] = useState(false);
   const [memList, setMemList] = useState("");
   const [memCount, setMemCount] = useState(10);
   const [gameList, setGameList] = useState("");
@@ -939,18 +942,22 @@ export default function HomeworkBlockEditor({
             <legend className="px-1 text-sm font-bold">
               {l("암기 방식 블록", "Memorize block")}
             </legend>
-            <select
-              className={field}
-              aria-label={l("암기 방식", "Method")}
-              value={memMethod}
-              onChange={(e) => setMemMethod(e.target.value as MemoryMethod)}
+            <button
+              type="button"
+              className={`${button} w-full text-left`}
+              onClick={() => setPickingMethod(true)}
             >
-              {MEMORY_METHOD_LIST.map((m) => (
-                <option key={m} value={m}>
-                  {MEMORY_METHODS[m].name[en ? 1 : 0]}
-                </option>
-              ))}
-            </select>
+              {MEMORY_METHODS[memMethod].name[en ? 1 : 0]} · {l("방식 고르기", "Choose method")}
+            </button>
+            {pickingMethod && (
+              <HomeworkMethodPicker
+                onClose={() => setPickingMethod(false)}
+                onPick={(m) => {
+                  setMemMethod(m);
+                  setPickingMethod(false);
+                }}
+              />
+            )}
             <p className="text-xs">{MEMORY_METHODS[memMethod].help[en ? 1 : 0]}</p>
             <select
               className={field}
@@ -1018,18 +1025,22 @@ export default function HomeworkBlockEditor({
             <legend className="px-1 text-sm font-bold">
               {l("혼자 하는 게임 넣기", "Add a solo game")}
             </legend>
-            <select
-              className={field}
-              aria-label={l("게임 종류", "Game")}
-              value={gameKind}
-              onChange={(e) => setGameKind(e.target.value as SoloGame)}
+            <button
+              type="button"
+              className={`${button} w-full text-left`}
+              onClick={() => setPickingGame(true)}
             >
-              {(Object.keys(SOLO_GAME_NAMES) as SoloGame[]).map((g) => (
-                <option key={g} value={g}>
-                  {SOLO_GAME_NAMES[g][en ? 1 : 0]}
-                </option>
-              ))}
-            </select>
+              {SOLO_GAME_NAMES[gameKind][en ? 1 : 0]} · {l("게임 고르기", "Choose game")}
+            </button>
+            {pickingGame && (
+              <HomeworkGamePicker
+                onClose={() => setPickingGame(false)}
+                onPick={(g) => {
+                  setGameKind(g);
+                  setPickingGame(false);
+                }}
+              />
+            )}
             <select
               className={field}
               aria-label={l("게임에 쓸 단어장", "Word list for the game")}
