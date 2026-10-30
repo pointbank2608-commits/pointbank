@@ -12,6 +12,7 @@ import { parseShadowText } from '../../../lib/shadowLines';
 import { extractYoutubeId } from '../../../lib/youtube';
 import { enrichCards, loadWordBank } from '../../../lib/wordBankCache';
 import VideoClipLibrary from '../../VideoClipLibrary';
+import { MAX_MEMORY_COUNT, MEMORY_METHODS, MEMORY_METHOD_LIST, memoryItemFromCards, type MemoryMethod } from '../../../lib/homework/memory';
 import HomeworkPreview from './HomeworkPreview';
 
 type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked' | 'watch';
@@ -50,7 +51,9 @@ export default function HomeworkWizard({
   onCreated: (hw: { id: string; code: string }) => void;
   onEdit?: (items: HwItemDraft[], title: string, studentIds: string[] | null, due: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
+  const l = (ko: string, e: string) => (en ? e : ko);
   const labels = useBuildLabels();
   const [step, setStep] = useState(0);
   const [students, setStudents] = useState<Student[]>([]);
@@ -121,6 +124,10 @@ export default function HomeworkWizard({
   const [minutes, setMinutes] = useState<HwDuration | null>(10);
   // 유치원 친구용: 큰 버튼·목소리 안내·도장, 문장을 듣고 따라 읽기만 한다
   const [kids, setKids] = useState(false);
+  /** 암기 방식으로 구성: 시간(5·10·15분) 대신 방식과 문항 수를 고른다 */
+  const [memMode, setMemMode] = useState(false);
+  const [memMethods, setMemMethods] = useState<MemoryMethod[]>(['meaning', 'listen', 'fade', 'spell']);
+  const [memCount, setMemCount] = useState(10);
   const [kidsLines, setKidsLines] = useState(5);
   const [custom, setCustom] = useState(false);
   const [plan, setPlan] = useState<HwPlan>(EMPTY_PLAN);
@@ -227,10 +234,11 @@ export default function HomeworkWizard({
       s = (s * 9301 + 49297) % 233280;
       return s / 233280;
     };
+    if (memMode) return MEMORY_METHOD_LIST.filter((m) => memMethods.includes(m)).map((m) => memoryItemFromCards(cards, m, memCount, en, rng)).filter((x): x is HwItemDraft => !!x);
     if (kids) return buildKidsItems(cards, kidsLines, labels.shadowing, clipSource, rng);
     return buildItems(cards, plan, labels, clipSource, rng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews]);
+  }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews, memMode, memMethods, memCount, en]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
   const sourceOk = source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
@@ -293,7 +301,7 @@ export default function HomeworkWizard({
               }`}
             >
               <span>{i < step ? '✓' : i + 1}</span>
-              <span>{t(`studentHw.step_${s}`)}</span>
+              <span>{s === 'time' && memMode ? l('방식', 'Method') : t(`studentHw.step_${s}`)}</span>
             </button>
           </li>
         ))}
@@ -596,6 +604,46 @@ export default function HomeworkWizard({
 
       {step === 2 && source !== 'watch' && (
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" aria-pressed={!memMode} onClick={() => setMemMode(false)} className={`${big} flex-col text-center ${on(!memMode)}`}>
+              <span className="material-symbols-outlined">timer</span>
+              {l('시간으로 구성(5·10·15분)', 'By time (5/10/15 min)')}
+            </button>
+            <button type="button" aria-pressed={memMode} onClick={() => { setMemMode(true); setKids(false); }} className={`${big} flex-col text-center ${on(memMode)}`}>
+              <span className="material-symbols-outlined">psychology</span>
+              {l('암기 방식으로 구성', 'By memorize method')}
+            </button>
+          </div>
+          {memMode && (
+            <div className="space-y-3 rounded-2xl border border-outline-variant p-4">
+              <p className="text-base text-on-surface-variant">{l('외우게 할 방식을 고르면 쉬운 방식부터 차례로 이어져요. 시간 제한은 없어요.', 'Pick methods; they run from easy to hard. No time limit.')}</p>
+              <div className="flex flex-wrap gap-2">
+                {MEMORY_METHOD_LIST.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    title={MEMORY_METHODS[m].help[en ? 1 : 0]}
+                    aria-pressed={memMethods.includes(m)}
+                    onClick={() => setMemMethods((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]))}
+                    className={`min-h-11 rounded-full border-2 px-4 text-base font-bold ${on(memMethods.includes(m))}`}
+                  >
+                    {MEMORY_METHODS[m].name[en ? 1 : 0]}
+                  </button>
+                ))}
+              </div>
+              <label className="flex flex-wrap items-center gap-2 text-base">
+                {l('방식마다 낱말 수', 'Words per method')}
+                <input type="number" min={1} max={MAX_MEMORY_COUNT} value={memCount} onChange={(e) => setMemCount(Math.max(1, Math.min(Number(e.target.value) || 1, MAX_MEMORY_COUNT)))} className="min-h-11 w-24 rounded-xl border border-outline-variant px-3" />
+                <button type="button" className="min-h-11 rounded-full border border-outline-variant px-4 font-bold" onClick={() => setMemCount(Math.min(cards.length || 1, MAX_MEMORY_COUNT))}>
+                  {l(`전부(${Math.min(cards.length, MAX_MEMORY_COUNT)}개)`, `All (${Math.min(cards.length, MAX_MEMORY_COUNT)})`)}
+                </button>
+              </label>
+              {cards.length > MAX_MEMORY_COUNT && <p className="text-sm text-on-surface-variant">{l(`낱말이 ${cards.length}개예요. 한 방식에 최대 ${MAX_MEMORY_COUNT}개까지 넣을 수 있어요.`, `${cards.length} words; up to ${MAX_MEMORY_COUNT} per method.`)}</p>}
+              {memMethods.length === 0 && <p className="text-sm text-error">{l('방식을 하나 이상 고르세요.', 'Pick at least one method.')}</p>}
+              <ItemSummary items={items} />
+            </div>
+          )}
+          {!memMode && (<>
           <button
             type="button"
             aria-pressed={kids}
@@ -680,6 +728,7 @@ export default function HomeworkWizard({
             </div>
           </details>
           )}
+          </>)}
         </div>
       )}
 
