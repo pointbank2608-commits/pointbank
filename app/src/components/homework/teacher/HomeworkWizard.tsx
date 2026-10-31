@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchCurriculumLessons, fetchStudentsOfClass, fetchWordLists } from '../../../lib/api';
 import { wordListToCards } from '../../../lib/gameFromWords';
+import WordMemoryAssignModal from '../../wordMemory/WordMemoryAssignModal';
+import { WM_MIN_WORDS } from '../../../lib/wordMemory/plan';
 import { createHomework, fetchAdFlags, setAdFlag, teacherErrorKey } from '../../../lib/homework';
 import { fetchClassWrongCards, useBuildLabels } from '../../../lib/homework/teacherHelpers';
 import { buildItems, buildKidsItems, buildWatchItems, countQuestions, EMPTY_PLAN, estimateMinutes, presetPlan, type ClipSource, type HwDuration } from '../../../lib/homework/build';
@@ -23,7 +25,7 @@ import HomeworkPreview from './HomeworkPreview';
 /** 암기 방식 구성의 한 줄: 방식(문항 수) · 혼자 하는 게임 · 학생별 자동 암기 칸 */
 type MemEntry = { key: string; kind: 'method'; method: MemoryMethod; count: number } | { key: string; kind: 'game'; game: SoloGame } | { key: string; kind: 'auto'; count: number };
 
-type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked' | 'watch';
+type Source = 'lesson' | 'wordlist' | 'video' | 'wrong' | 'picked' | 'watch' | 'project';
 
 const STEPS = ['target', 'source', 'time', 'confirm'] as const;
 
@@ -76,6 +78,7 @@ export default function HomeworkWizard({
   const [wrongCards, setWrongCards] = useState<FullCardItem[] | null>(initialCards ?? null);
   const [lessonId, setLessonId] = useState('');
   const [wordListId, setWordListId] = useState('');
+  const [projectOpen, setProjectOpen] = useState(false);
   const [clip, setClip] = useState<VideoClip | null>(null);
   // 내 유튜브 링크 + 대사표(선생님이 붙여 넣은 글 — 이 숙제 안에만 저장된다)
   const [customUrl, setCustomUrl] = useState('');
@@ -262,7 +265,7 @@ export default function HomeworkWizard({
   }, [cards, plan, labels, clip, seed, kids, kidsLines, source, watchVideos, watchViews, memMode, memEntries, en]);
 
   const targetIds = everyone ? students.map((s) => s.id) : [...picked];
-  const sourceOk = source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
+  const sourceOk = source === 'project' ? false : source === 'watch' ? watchVideos.length >= 1 : cards.length >= 2 || !!clip;
   const canNext = [targetIds.length > 0, sourceOk, items.length > 0, items.length > 0][step];
   const finalTitle = title.trim() || sourceName || t('studentHw.defaultTitle');
 
@@ -405,10 +408,10 @@ export default function HomeworkWizard({
 
       {step === 1 && (
         <div className="space-y-4">
-          <div className={`grid grid-cols-2 gap-2 ${pickedCards?.length ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}>
-            {((pickedCards?.length ? ['picked', 'lesson', 'wordlist', 'video', 'wrong', 'watch'] : ['lesson', 'wordlist', 'video', 'wrong', 'watch']) as Source[]).map((s) => (
+          <div className={`grid grid-cols-2 gap-2 ${pickedCards?.length ? 'lg:grid-cols-7' : 'lg:grid-cols-6'}`}>
+            {((pickedCards?.length ? ['picked', 'lesson', 'wordlist', 'video', 'wrong', 'watch', 'project'] : ['lesson', 'wordlist', 'video', 'wrong', 'watch', 'project']) as Source[]).map((s) => (
               <button key={s} type="button" className={`${big} flex-col text-center ${on(source === s)}`} onClick={() => { setSource(s); if (s === 'watch') setSourceName(t('studentHw.watchDefaultName')); }} aria-pressed={source === s}>
-                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay', picked: 'checklist', watch: 'smart_display' }[s]}</span>
+                <span className="material-symbols-outlined">{{ lesson: 'co_present', wordlist: 'menu_book', video: 'movie', wrong: 'replay', picked: 'checklist', watch: 'smart_display', project: 'psychology' }[s]}</span>
                 {t(`studentHw.src_${s}`)}
               </button>
             ))}
@@ -463,6 +466,46 @@ export default function HomeworkWizard({
                 ))}
               </div>
             ))}
+
+          {source === 'project' && (
+            <div className="space-y-3">
+              <p className="rounded-xl bg-primary/10 px-4 py-3 text-base text-deep-navy">
+                {l('단어장 하나를 여러 날에 나눠 외우게 하는 숙제예요. 매일 오늘 분량(새 단어 + 복습)이 나오고, 며칠 뒤에도 기억하는지로 "졸업"을 판정해요. 이 방식은 다음 단계 없이 아래 버튼으로 바로 배정해요.', 'Spread one word list over many days: a daily set (new + review), graduating words that are still remembered days later. This one is assigned directly with the button below.')}
+              </p>
+              {wordLists.filter((w) => w.kind !== 'sentence').length === 0 ? (
+                <p className="text-base text-on-surface-variant">{t('studentHw.noWordLists')}</p>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {wordLists.filter((w) => w.kind !== 'sentence').map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      className={`${big} justify-start ${on(wordListId === w.id)}`}
+                      onClick={() => {
+                        setWordListId(w.id);
+                        void applyWordList(w, w.name);
+                      }}
+                    >
+                      <span className="material-symbols-outlined">menu_book</span>
+                      <span className="min-w-0 flex-1 truncate">{w.name}</span>
+                      <span className="text-sm text-on-surface-variant">{t('studentHw.wordsN', { count: w.items.length })}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={!wordListId || cards.length < WM_MIN_WORDS}
+                onClick={() => setProjectOpen(true)}
+                className={`${big} w-full justify-center bg-primary text-white disabled:opacity-40`}
+              >
+                <span className="material-symbols-outlined">psychology</span>
+                {l('단어암기 프로젝트로 배정하기', 'Assign as a word memory project')}
+              </button>
+              {wordListId && cards.length < WM_MIN_WORDS && <p className="text-sm text-on-surface-variant">{l(`단어가 ${WM_MIN_WORDS}개 이상 필요해요.`, `Needs at least ${WM_MIN_WORDS} words.`)}</p>}
+              <p className="text-sm text-on-surface-variant">{l('초등 800단어를 통째로 쓰려면 그림 사전에서 레벨을 고른 뒤 "단어암기숙제"를 눌러 주세요.', 'For the elementary 800, use the Memorize button in the picture dictionary.')}</p>
+            </div>
+          )}
 
           {source === 'picked' && pickedCards && (
             <div className="space-y-2">
@@ -890,6 +933,7 @@ export default function HomeworkWizard({
           }}
         />
       )}
+      {projectOpen && wordListId && (<WordMemoryAssignModal source={{ type: 'wordlist', id: wordListId, name: sourceName }} cards={cards} defaultClassId={classId} onClose={() => setProjectOpen(false)} />)}
     </section>
   );
 }

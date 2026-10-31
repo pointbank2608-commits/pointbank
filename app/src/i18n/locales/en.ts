@@ -4895,6 +4895,7 @@ const en: Ko = {
     src_wrong: 'Past mistakes',
     src_picked: 'Words picked in the dictionary',
     src_watch: 'Kindergarten videos',
+    src_project: 'Word memory project',
     watchDefaultName: "Today's videos",
     watchItemLabel: 'Video',
     watchIntro: 'Paste 3-4 YouTube addresses. When a student watches every video to the end, a "Good job!" stamp lands and the homework calendar is marked. No questions or grading.',

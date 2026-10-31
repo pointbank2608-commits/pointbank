@@ -4892,6 +4892,7 @@ const ko = {
     src_wrong: '지난 오답',
     src_picked: '사전에서 고른 단어',
     src_watch: '유치원 영상 보기',
+    src_project: '단어암기 프로젝트',
     watchDefaultName: '오늘의 영상',
     watchItemLabel: '영상',
     watchIntro: '유튜브 영상 주소를 3~4개 붙여 넣으세요. 학생이 영상을 끝까지 다 보면 "Good job!" 도장이 찍히고 숙제 캘린더에 표시돼요. 문제나 채점은 없어요.',
