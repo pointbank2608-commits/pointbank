@@ -1599,7 +1599,16 @@ export default function HomeworkBlockEditor({
         </AccessibleDialog>
       )}
       {assigning && (
-        <div className="space-y-3 rounded-xl border-2 border-primary p-4">
+        <AccessibleDialog
+          label={l("숙제 배정", "Assign homework")}
+          onClose={() => setAssigning(false)}
+        >
+        <div className="max-h-[85vh] space-y-3 overflow-auto bg-white p-5">
+          {message && (
+            <p role="status" className="rounded-lg bg-warm-yellow/30 p-3 text-sm">
+              {message}
+            </p>
+          )}
           <h3 className="font-bold">
             {l(
               "배정 시 내용과 평가 기준이 고정됩니다. 이후 초안 수정은 새 배정에만 적용됩니다.",
@@ -1769,6 +1778,7 @@ export default function HomeworkBlockEditor({
             {l("편집 계속", "Continue editing")}
           </button>
         </div>
+        </AccessibleDialog>
       )}
     </section>
   );
