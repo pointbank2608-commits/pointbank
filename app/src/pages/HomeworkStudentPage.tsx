@@ -5,6 +5,7 @@ import HomeworkRunner from '../components/homework/HomeworkRunner';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
+import { savedToken } from '../lib/studentPortal';
 import { uploadRecording } from '../lib/homework/blockApi';
 import {
   enqueue,
@@ -137,10 +138,7 @@ export default function HomeworkStudentPage() {
       token={screen.token}
       state={screen.state}
       onFatal={(kind) => setScreen({ k: 'error', kind, retry: kind === 'network' ? () => void start() : undefined })}
-      onSwitch={() => {
-        forgetToken(code);
-        void start();
-      }}
+      onHome={savedToken() ? () => navigate('/s') : undefined}
     />
   );
 }
@@ -320,8 +318,7 @@ function ErrorScreen({ kind, onRetry, onHome }: { kind: HwErrorKind; onRetry?: (
 
 /* ---------- 푸는 화면 ---------- */
 
-function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state: HwStudentState; onFatal: (k: HwErrorKind) => void; onSwitch: () => void }) {
-  const { t } = useTranslation();
+function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: HwStudentState; onFatal: (k: HwErrorKind) => void; onHome?: () => void }) {
   const [saveState, setSaveState] = useState<SaveState>(() => (pendingCount(token) ? 'offline' : 'saved'));
   const finishedRef = useRef(state.finished);
 
@@ -431,12 +428,8 @@ function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state:
           alreadyFinished={state.finished}
           api={api}
           saveState={saveState}
+          onHome={onHome}
         />
-        <div className="flex justify-center pb-4">
-          <button type="button" onClick={onSwitch} className="min-h-11 rounded-full px-4 text-sm text-white/60 underline">
-            {t('studentHw.switchUser')}
-          </button>
-        </div>
       </div>
     </div>
   );

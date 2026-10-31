@@ -34,6 +34,7 @@ export default function HomeworkRunner({
   saveState,
   preview = false,
   startImmediately = false,
+  onHome,
 }: {
   title: string;
   studentName?: string;
@@ -46,8 +47,11 @@ export default function HomeworkRunner({
   saveState: SaveState;
   preview?: boolean;
   startImmediately?: boolean;
+  /** 끝 화면의 "홈으로" 버튼(없으면 버튼을 숨긴다) */
+  onHome?: () => void;
 }) {
   const { t } = useTranslation();
+  const [showWrong, setShowWrong] = useState(false);
   const [answers, setAnswers] = useState(initialAnswers);
   const [doneItems, setDoneItems] = useState(finishedItems);
   const [phase, setPhase] = useState<Phase>(() => alreadyFinished ? { k: 'finishing' } : startImmediately && items.length ? { k: 'item', i: 0, sub: items[0].kind === 'shadowing' && items[0].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
@@ -283,25 +287,39 @@ export default function HomeworkRunner({
         )}
         {wrongKeys.length > 0 && (
           <div className="w-full max-w-md space-y-2 rounded-2xl bg-white/10 p-4 text-left">
-            <div className="text-lg font-bold">{t('studentHw.wrongList')}</div>
-            {wrongKeys.map((k) => {
-              const q = qOf(k);
-              const ans = answers.get(k)?.answer ?? '';
-              const left = q?.word || q?.prompt || '';
-              // 정답이 낱말 그대로면(듣기·철자·글자 순서) 뜻을 대신 보여 준다
-              const right = ans.trim().toLowerCase() === left.trim().toLowerCase() ? (q?.card?.meaning ?? '') : ans;
-              return (
-                <div key={k} className="flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-base">
-                  <span className="truncate">{left}</span>
-                  <span className="min-w-0 truncate text-right font-bold text-warm-yellow">{right}</span>
-                </div>
-              );
-            })}
-            <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-2 min-h-12 w-full rounded-full bg-warm-yellow text-lg font-bold text-deep-navy">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-lg font-bold">{t('studentHw.wrongCount', { count: wrongKeys.length })}</div>
+              <button type="button" onClick={() => setShowWrong((v) => !v)} aria-expanded={showWrong} className="min-h-10 rounded-full bg-white/15 px-4 text-sm font-bold">
+                {showWrong ? t('studentHw.hideDetails') : t('studentHw.showDetails')}
+              </button>
+            </div>
+            {showWrong && (
+              <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                {wrongKeys.map((k) => {
+                  const q = qOf(k);
+                  const ans = answers.get(k)?.answer ?? '';
+                  const left = q?.word || q?.prompt || '';
+                  // 정답이 낱말 그대로면(듣기·철자·글자 순서) 뜻을 대신 보여 준다
+                  const right = ans.trim().toLowerCase() === left.trim().toLowerCase() ? (q?.card?.meaning ?? '') : ans;
+                  return (
+                    <div key={k} className="flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-base">
+                      <span className="truncate">{left}</span>
+                      <span className="min-w-0 truncate text-right font-bold text-warm-yellow">{right}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-1 min-h-12 w-full rounded-full bg-warm-yellow text-lg font-bold text-deep-navy">
               {t('studentHw.retryWrong')}
             </button>
             <p className="text-sm text-white/60">{t('studentHw.retryNote')}</p>
           </div>
+        )}
+        {onHome && (
+          <button type="button" onClick={onHome} className="min-h-12 w-full max-w-md rounded-full border border-white/30 text-lg font-bold text-white hover:bg-white/10">
+            {t('studentHw.goHome')}
+          </button>
         )}
       </div>
     );
