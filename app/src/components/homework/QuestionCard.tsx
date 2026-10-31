@@ -6,7 +6,22 @@ import { TextAnswer } from '../../pages/LiveJoinPage';
 
 /** 게임 모양 문제의 머리 그림 */
 const SKIN_ICON: Record<string, string> = { monster: '👾', claw: '🧸', maze: '🧭', plane: '✈️', group: '🗂️', cross: '🧩', detective: '🔍', train: '🚂', rocket: '🚀', tower: '🏰', bridge: '🌉', splash: '🌊', whack: '🐹', fish: '🐟', balloon: '🎈', hangman: '🔤' };
-const CHOICE_COLORS = ['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#12a594'];
+/** 교실 게임과 같은 장면 그림(배경)과 보기에 붙는 캐릭터. 그림이 없는 모양은 예전 이모지 머리 그림을 쓴다 */
+const STAGE: Record<string, { bg: string; veil: string; sprite?: string }> = {
+  fish: { bg: '/skins/adventure/fishing.webp', veil: 'bg-[#06304a]/25', sprite: '/skins/adventure/goldfish.webp' },
+  balloon: { bg: '/skins/adventure/balloon.webp', veil: 'bg-[#0b2a4a]/30' },
+  whack: { bg: '/skins/bg/whackamole.webp', veil: 'bg-[#2b1a0a]/30', sprite: '/skins/wm-mole.png' },
+  claw: { bg: '/skins/adventure/arcade.webp', veil: 'bg-[#3a1246]/35' },
+  maze: { bg: '/skins/bg/mazechase.webp', veil: 'bg-[#071a24]/40' },
+  plane: { bg: '/skins/bg/airplane.webp', veil: 'bg-[#06223d]/30' },
+  group: { bg: '/skins/bg/groupsort.webp', veil: 'bg-[#101a3a]/40' },
+  hangman: { bg: '/skins/bg/hangman.webp', veil: 'bg-[#101a3a]/40' },
+  train: { bg: '/skins/adventure/train.webp', veil: 'bg-[#101a3a]/35' },
+  rocket: { bg: '/skins/adventure/rocket.webp', veil: 'bg-[#0a1230]/35' },
+  detective: { bg: '/skins/adventure/detective.webp', veil: 'bg-[#101a3a]/40' },
+  cross: { bg: '/skins/bg/crossword.webp', veil: 'bg-[#101a3a]/40' },
+};
+const CHOICE_COLORS =['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#12a594'];
 
 /**
  * 숙제 문제 한 개(학생 화면·선생님 미리보기 공용) — 보기 고르기 · 철자 입력 · 낱말/글자 순서(탭으로 놓기).
@@ -37,10 +52,12 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
       </button>
     ) : null;
 
+  const stage = q.style ? STAGE[q.style] : undefined;
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="relative isolate flex flex-1 flex-col bg-cover bg-center" style={stage ? { backgroundImage: `url(${stage.bg})` } : undefined}>
+      {stage && <div className={`pointer-events-none absolute inset-0 -z-10 ${stage.veil}`} aria-hidden="true" />}
       <div className="flex flex-col items-center gap-3 px-5 py-4 text-center">
-        {q.style && SKIN_ICON[q.style] && <div className="text-4xl" aria-hidden="true">{SKIN_ICON[q.style]}</div>}
+        {q.style && !stage && SKIN_ICON[q.style] && <div className="text-4xl" aria-hidden="true">{SKIN_ICON[q.style]}</div>}
         <div className="text-base text-white/75">{guide}</div>
         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-36 w-36 rounded-2xl bg-white object-contain p-2 sm:h-44 sm:w-44" />}
         {memo ? null : listen ? (
@@ -71,7 +88,9 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
 function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
   const choices = q.choices ?? [];
   const ox = choices.length === 2 && choices[0] === 'O' && choices[1] === 'X';
-  if (q.style === 'whack' || q.style === 'fish' || q.style === 'balloon' || q.style === 'monster' || q.style === 'claw' || q.style === 'maze' || q.style === 'plane' || q.style === 'group') {
+  if (q.style === 'whack') return <MoleBoard choices={choices} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />;
+  if (q.style === 'fish') return <FishPond choices={choices} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />;
+  if (q.style === 'balloon' || q.style === 'monster' || q.style === 'claw' || q.style === 'maze' || q.style === 'plane' || q.style === 'group') {
     const look = {
       whack: { icon: '🐹', wrap: 'grid-cols-2', btn: 'rounded-t-[3rem] rounded-b-2xl bg-[#6b4a2b] pt-4' },
       fish: { icon: '🐟', wrap: 'grid-cols-1 sm:grid-cols-2', btn: 'rounded-full bg-[#2f6fdb]' },
@@ -82,6 +101,7 @@ function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion;
       plane: { icon: '☁️', wrap: 'grid-cols-2', btn: 'rounded-full bg-[#0369a1]' },
       group: { icon: '🗂️', wrap: 'grid-cols-1', btn: 'rounded-xl bg-[#4f46e5]' },
     }[q.style];
+    const sprite = STAGE[q.style]?.sprite;
     return (
       <div className={`grid flex-1 content-start gap-4 p-4 ${look.wrap}`}>
         {choices.map((c, i) => (
@@ -93,7 +113,11 @@ function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion;
             onClick={() => onAnswer(String(i))}
             className={`flex min-h-28 flex-col items-center justify-center gap-1 px-3 py-3 text-center text-xl font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 ${look.btn} ${eliminated.includes(i) ? 'line-through opacity-40!' : ''}`}
           >
-            <span className="text-4xl" aria-hidden="true">{look.icon}</span>
+            {sprite ? (
+              <img src={sprite} alt="" className="h-14 w-14 object-contain drop-shadow" />
+            ) : (
+              <span className="text-4xl" aria-hidden="true">{look.icon}</span>
+            )}
             {c}
           </button>
         ))}
@@ -127,6 +151,104 @@ function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion;
           {c}
         </button>
       ))}
+    </div>
+  );
+}
+
+const FISH_CSS = `
+@keyframes hwfish-swim { 0%,100% { left: 0 } 50% { left: calc(100% - 9.5rem) } }
+@keyframes hwfish-face { 0%,49.9% { transform: scaleX(-1) } 50%,100% { transform: scaleX(1) } }
+@keyframes hwfish-bob { 0%,100% { transform: translateY(-5px) } 50% { transform: translateY(6px) } }
+@keyframes hwfish-caught { 0% { transform: scale(1) } 40% { transform: scale(1.35) rotate(-8deg) } 100% { transform: scale(1.1) translateY(-4rem); opacity: 0 } }
+@media (prefers-reduced-motion: reduce) { .hwfish, .hwfish * { animation: none !important } }
+`;
+
+/** 물고기 연못: 낱말이 적힌 물고기가 물속을 헤엄치고, 알맞은 뜻의 물고기를 눌러 낚는다. 채점은 처음 누른 물고기(보기 번호) 그대로 */
+function FishPond({ choices, onAnswer, disabled, eliminated = [] }: { choices: string[]; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const n = Math.max(choices.length, 1);
+  const lane = 6.5; // rem
+  return (
+    <div className="relative mx-3 mb-3 flex-1 overflow-hidden rounded-3xl" style={{ minHeight: `${n * lane + 10}rem` }}>
+      <style>{FISH_CSS}</style>
+      {choices.map((c, i) => {
+        const gone = eliminated.includes(i);
+        const caught = picked === i;
+        return (
+          <button
+            key={i}
+            type="button"
+            data-choice={i}
+            disabled={disabled || gone || picked !== null}
+            onClick={() => {
+              setPicked(i);
+              onAnswer(String(i));
+            }}
+            className="hwfish absolute flex w-[9.5rem] flex-col items-center active:scale-95 disabled:cursor-default"
+            style={{
+              top: `${9 + i * lane}rem`,
+              left: 0,
+              opacity: gone ? 0.25 : picked !== null && !caught ? 0.5 : 1,
+              animation: `hwfish-swim ${10 + ((i * 3) % 5)}s ease-in-out ${-i * 2.6}s infinite`,
+              animationPlayState: picked !== null ? 'paused' : 'running',
+            }}
+          >
+            <span className="block" style={{ animation: caught ? 'hwfish-caught .7s ease-out forwards' : `hwfish-bob ${1.6 + (i % 3) * 0.4}s ease-in-out infinite` }}>
+              <span className="block" style={{ animation: `hwfish-face ${10 + ((i * 3) % 5)}s step-end ${-i * 2.6}s infinite`, animationPlayState: picked !== null ? 'paused' : 'running' }}>
+                <img src="/skins/adventure/goldfish.webp" alt="" draggable={false} className="h-20 w-24 object-contain drop-shadow-lg" style={{ filter: `hue-rotate(${i * 55}deg)` }} />
+              </span>
+              <span className="-mt-1 block max-w-full rounded-full bg-white/95 px-3 py-1 text-base font-bold text-deep-navy shadow">{c}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const MOLE_CSS = `
+@keyframes hwmole-up { 0%,8% { transform: translateY(108%) } 20%,62% { transform: translateY(0) } 74%,100% { transform: translateY(108%) } }
+@keyframes hwmole-hit { 0% { transform: translateY(0) scale(1) } 30% { transform: translateY(6%) scale(1.12,.88) } 100% { transform: translateY(108%) } }
+@media (prefers-reduced-motion: reduce) { .hwmole { animation: none !important } }
+`;
+
+/** 두더지 밭: 두더지가 구멍에서 나왔다 들어갔다 하고, 낱말 팻말을 든 두더지 중 알맞은 뜻을 눌러 잡는다. 채점은 처음 누른 두더지(보기 번호) 그대로 */
+function MoleBoard({ choices, onAnswer, disabled, eliminated = [] }: { choices: string[]; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const n = Math.max(choices.length, 1);
+  const period = 4.6;
+  return (
+    <div className="grid flex-1 grid-cols-2 content-end gap-x-4 gap-y-2 px-4 pb-6 pt-[34vh]">
+      <style>{MOLE_CSS}</style>
+      {choices.map((c, i) => {
+        const gone = eliminated.includes(i);
+        const hit = picked === i;
+        return (
+          <div key={i} className="relative h-48">
+            <div className="absolute inset-x-0 top-0 bottom-7 overflow-hidden">
+              <button
+                type="button"
+                data-choice={i}
+                disabled={disabled || gone || picked !== null}
+                onClick={() => {
+                  setPicked(i);
+                  onAnswer(String(i));
+                }}
+                className="hwmole absolute inset-x-0 bottom-0 mx-auto flex w-32 flex-col items-center active:scale-95 disabled:cursor-default"
+                style={{
+                  opacity: gone ? 0.25 : picked !== null && !hit ? 0.6 : 1,
+                  animation: hit ? 'hwmole-hit .7s ease-in forwards' : `hwmole-up ${period}s ease-in-out ${-(i * period) / n}s infinite`,
+                  animationPlayState: picked !== null && !hit ? 'paused' : 'running',
+                }}
+              >
+                <span className="relative z-10 -mb-3 block max-w-full rounded-lg bg-[#f3d9a4] px-3 py-1 text-base font-bold text-[#4a2d12] shadow ring-2 ring-[#8b5a2b]">{c}</span>
+                <img src={hit ? '/skins/wm-mole-hurt.png' : '/skins/wm-mole.png'} alt="" draggable={false} className="h-24 w-24 object-contain drop-shadow-lg" />
+              </button>
+            </div>
+            <div className="pointer-events-none absolute inset-x-1 bottom-0 h-12 rounded-[50%] bg-[#6b4a2b] shadow-[inset_0_8px_0_#4a2f17]" aria-hidden="true" />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -284,7 +406,10 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
   return (
     <div className="flex flex-col items-center gap-4 px-4 pb-4">
       <div className="text-lg text-white/80" aria-live="polite">
-        {t('studentHw.hangmanLives', { n: Math.max(MAX - wrong, 0) })} {'❤'.repeat(Math.max(MAX - wrong, 0))}
+        {t('studentHw.hangmanLives', { n: Math.max(MAX - wrong, 0) })}{' '}
+        {Array.from({ length: MAX }, (_, i) => (
+          <img key={i} src={i < MAX - wrong ? '/skins/hangman-heart.png' : '/skins/hangman-heart-empty.png'} alt="" className="mx-0.5 inline-block h-7 w-7 align-middle" />
+        ))}
       </div>
       <div className="flex flex-wrap justify-center gap-2 font-mono text-4xl font-bold tracking-widest" aria-label={t('studentHw.hangmanWord')}>
         {[...word].map((ch, i) => (
@@ -293,17 +418,21 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
           </span>
         ))}
       </div>
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {'abcdefghijklmnopqrstuvwxyz'.split('').map((l) => (
-          <button
-            key={l}
-            type="button"
-            disabled={disabled || solved || dead || picked.includes(l)}
-            onClick={() => setPicked((p) => [...p, l])}
-            className={`h-11 w-11 rounded-xl text-lg font-bold uppercase shadow active:scale-95 ${picked.includes(l) ? (word.toLowerCase().includes(l) ? 'bg-emerald-300 text-deep-navy' : 'bg-white/20 text-white/50 line-through') : 'bg-white text-deep-navy'}`}
-          >
-            {l}
-          </button>
+      <div className="flex w-full max-w-md flex-col gap-1.5">
+        {['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((row) => (
+          <div key={row} className={`flex justify-center gap-1 ${row.length === 9 ? 'px-[5%]' : row.length === 7 ? 'px-[15%]' : ''}`}>
+            {row.split('').map((l) => (
+              <button
+                key={l}
+                type="button"
+                disabled={disabled || solved || dead || picked.includes(l)}
+                onClick={() => setPicked((p) => [...p, l])}
+                className={`h-12 min-w-0 flex-1 rounded-lg text-lg font-bold uppercase shadow active:scale-95 ${picked.includes(l) ? (word.toLowerCase().includes(l) ? 'bg-emerald-300 text-deep-navy' : 'bg-white/20 text-white/50 line-through') : 'bg-white text-deep-navy'}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
     </div>

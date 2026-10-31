@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import HomeworkRunner from '../components/homework/HomeworkRunner';
-import SoloChat from '../components/solo/SoloChat';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
@@ -433,10 +432,6 @@ function PlayScreen({ token, state, onFatal, onSwitch }: { token: string; state:
           api={api}
           saveState={saveState}
         />
-        {/* 선생님과 대화(반이 채팅을 켠 경우에만 보인다) */}
-        <div className="fixed bottom-4 right-4 z-30">
-          <SoloChat token={token} homework />
-        </div>
         <div className="flex justify-center pb-4">
           <button type="button" onClick={onSwitch} className="min-h-11 rounded-full px-4 text-sm text-white/60 underline">
             {t('studentHw.switchUser')}
