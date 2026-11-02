@@ -51,6 +51,21 @@ export function planQuickLesson(minutes: QuickMinutes): QuickRow[] {
   ];
 }
 
+/** "바꾸기" 창에 보여 줄, 이 칸에서 고를 수 있는 게임 목록 */
+export function quickGameChoices(row: QuickRow): GameType[] {
+  if (row.slot === 'learn' || row.slot === 'sheet') return [];
+  return QUICK_ALTERNATIVES[row.slot].filter((g) => canBuildFromWords(g));
+}
+
+/** 칸의 게임 하나를 골라 고른 게임으로 바꾼다(다른 자리에 이미 쓴 게임이면 서로 자리를 맞바꾼다) */
+export function setQuickGame(row: QuickRow, index: number, game: GameType): QuickRow {
+  const games = [...row.games];
+  const other = games.indexOf(game);
+  if (other >= 0 && other !== index) games[other] = games[index];
+  games[index] = game;
+  return { ...row, games };
+}
+
 /** 칸의 게임 하나를 같은 칸의 다음 후보로 바꾼다(이미 쓴 게임은 건너뜀) */
 export function swapQuickGame(row: QuickRow, index: number): QuickRow {
   if (row.slot === 'learn' || row.slot === 'sheet') return row;

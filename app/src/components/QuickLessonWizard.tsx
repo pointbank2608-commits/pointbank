@@ -18,7 +18,8 @@ import {
   parsePastedWords,
   planQuickLesson,
   quickRowsToSlides,
-  swapQuickGame,
+  quickGameChoices,
+  setQuickGame,
   type QuickKind,
   type QuickMinutes,
   type QuickRow,
@@ -93,6 +94,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
   // 노래
   const [songId, setSongId] = useState('');
   const [busy, setBusy] = useState(false);
+  const [swapRow, setSwapRow] = useState<number | null>(null);
 
   const { clips } = useVideoClips();
   const wordSets = useMemo(() => LESSON_SETS.filter((s) => s.kind === 'word').slice(0, 12), []);
@@ -589,7 +591,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                     {r.games.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => setRows((cur) => cur.map((x, j) => (j === i ? swapQuickGame(x, x.games.length - 1) : x)))}
+                        onClick={() => setSwapRow(i)}
                         className="min-h-11 rounded-full border border-outline-variant px-3 font-label-md text-label-md text-primary hover:bg-primary/10"
                       >
                         {t('quickLesson.swap')}
@@ -599,6 +601,32 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                 ))}
               </ul>
             </section>
+            {swapRow !== null && rows[swapRow] && (
+              <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label={t('quickLesson.swap')} onClick={() => setSwapRow(null)}>
+                <div className="w-full max-w-sm space-y-2 rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="font-title-md text-title-md text-on-surface">{t(`quickLesson.slot_${rows[swapRow].slot}`)} · {t('quickLesson.swap')}</h3>
+                  <ul className="space-y-2">
+                    {quickGameChoices(rows[swapRow]).map((g) => {
+                      const row = rows[swapRow];
+                      const current = row.games[row.games.length - 1] === g;
+                      return (
+                        <li key={g}>
+                          <button
+                            type="button"
+                            aria-pressed={current}
+                            onClick={() => { setRows((cur) => cur.map((x, j) => (j === swapRow ? setQuickGame(x, x.games.length - 1, g) : x))); setSwapRow(null); }}
+                            className={`min-h-11 w-full rounded-xl border px-4 text-left font-label-md text-label-md ${current ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant text-on-surface hover:bg-surface-container-low'}`}
+                          >
+                            {t(getGameCatalogEntry(g)?.nameKey ?? '')}{current ? ' ✓' : ''}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <button type="button" onClick={() => setSwapRow(null)} className="min-h-11 w-full rounded-xl border border-outline-variant font-label-md text-label-md">{t('common.close')}</button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <section className="space-y-1 rounded-xl bg-surface-container-low p-4">
