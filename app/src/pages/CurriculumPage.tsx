@@ -61,7 +61,7 @@ const LESSON_SORT_KEY = 'classbank.lessonSort2';
 const firstDir = (k: LessonSortKey): 'asc' | 'desc' => (k === 'name' ? 'asc' : 'desc');
 
 export default function CurriculumPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { start } = useLessonRunner();
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
@@ -1310,13 +1310,11 @@ export default function CurriculumPage() {
                     <span className="material-symbols-outlined text-[18px]" aria-hidden>edit</span>
                     {t('curriculum.editButton')}
                   </button>
+                  {homeworkOpen&&<button type="button" onClick={()=>navigate('/homework',{state:{fromLessonId:lesson.id,fromClassId:lesson.class_id??staffClassId}})} className="flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-outline-variant bg-white px-3 text-[15px] font-bold text-primary">{i18n.language.startsWith('en')?'Set homework':'이 수업으로 숙제 내기'}</button>}
                   <MoreMenu
                     className="min-w-[4.5rem] flex-1"
                     triggerLabel={t('curriculum.moreButton')}
                     items={[
-                      ...(homeworkOpen
-                        ? [{ key: 'homework', label: t('curriculum.homeworkButton'), icon: 'edit_note', onSelect: () => navigate('/homework', { state: { fromLessonId: lesson.id, fromClassId: lesson.class_id ?? staffClassId } }) }]
-                        : []),
                       { key: 'style', label: t('lessonStyle.saveButton'), icon: 'dashboard_customize', onSelect: () => setStyleSaveLesson(lesson) },
                       { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },
                       { key: 'copy', label: t('curriculum.copy.button'), icon: 'content_copy', onSelect: () => setCopyLesson(lesson) },

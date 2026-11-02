@@ -1,0 +1,10 @@
+import {createRoot} from 'react-dom/client';
+import {BrowserRouter,Routes,Route} from 'react-router-dom';
+import AppLayout from '../../src/pages/AppLayout';
+import HomeworkPage from '../../src/pages/HomeworkPage';
+import CurriculumPage from '../../src/pages/CurriculumPage';
+import {LessonRunnerProvider} from '../../src/context/LessonRunnerContext';
+import i18n from '../../src/i18n';
+import '../../src/tailwind.css';
+const params=new URLSearchParams(location.search);void i18n.changeLanguage(params.get('lang')||'ko');const go=params.get('go');if(go)history.replaceState({},'',go);
+createRoot(document.getElementById('root')!).render(<BrowserRouter><LessonRunnerProvider><Routes><Route element={<AppLayout/>}><Route path="/homework" element={<HomeworkPage/>}/><Route path="/curriculum" element={<CurriculumPage/>}/></Route></Routes></LessonRunnerProvider></BrowserRouter>);

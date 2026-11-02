@@ -7,6 +7,7 @@ import HomeworkResults from '../components/homework/teacher/HomeworkResults';
 import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
 import HomeworkWizard from '../components/homework/teacher/HomeworkWizard';
 import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEditor';
+import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
 import { useFeature } from '../lib/features';
 import type { HwItemDraft } from '../lib/homework/types';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
@@ -21,6 +22,7 @@ import { useClasses } from '../lib/useClasses';
 
 type Panel =
   | { k: 'none' }
+  | { k: 'compose'; mode?:'lesson'|'list'; cards?:FullCardItem[]; title?:string; lessonId?:string }
   | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
   | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
   | { k: 'recommend'; studentIds: string[]; gamesOnly?: boolean; source?:{cards:FullCardItem[];name:string} };
@@ -127,12 +129,12 @@ export default function HomeworkPage() {
     }
     // 단어 사전·파닉스에서 고른 낱말로 숙제 내기
     if (st?.pickedCards?.length) {
-      setPanel({ k: 'wizard', pickedCards: st.pickedCards, title: st.pickedTitle });
+      setPanel({ k: 'compose', cards: st.pickedCards, title: st.pickedTitle });
       navigate(location.pathname, { replace: true, state: null });
       return;
     }
     if (!st?.fromLessonId) return;
-    setPanel({ k: 'editor', lessonId: st.fromLessonId });
+    setPanel({ k: 'compose', lessonId: st.fromLessonId });
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, classId, navigate, select,loadedClass,students,notify,t]);
 
@@ -144,11 +146,12 @@ export default function HomeworkPage() {
         <div>
           <div className="font-label-md text-label-md text-primary">Classbank Student</div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('studentHw.pageTitle')}</h1>
-          <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{t('studentHw.pageIntro')}</p>
+          <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{i18n.language.startsWith('en')?'Choose a lesson or collection, preview the practice, then send it to your students.':'수업이나 단어장을 고르고, 학생 화면을 확인한 뒤 숙제를 보내세요.'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <details className="relative"><summary className={`${headerBtn} cursor-pointer border border-outline-variant bg-white`}>{i18n.language.startsWith('en')?'More':'더보기'}</summary><div className="absolute right-0 top-full z-20 mt-2 grid w-72 max-w-[85vw] gap-2 rounded-2xl border border-outline-variant bg-white p-3 shadow-xl">
           <button type="button" disabled={!classId||!students.length} onClick={()=>setPanel({k:'recommend',studentIds:students.map(s=>s.id),gamesOnly:true})} className={`${headerBtn} bg-deep-navy text-white`}>{i18n.language.startsWith('en')?'Personal game practice':'학생별 맞춤 게임'}</button>
-          <button type="button" onClick={() => setPanel({ k: 'editor' })} disabled={!classId} className={`${headerBtn} bg-warm-yellow text-deep-navy disabled:opacity-40`}>{i18n.language.startsWith('en') ? 'Homework block editor' : '숙제 블록 편집기'}</button>
+          <button type="button" onClick={() => setPanel({ k: 'editor' })} disabled={!classId} className={`${headerBtn} bg-warm-yellow text-deep-navy disabled:opacity-40`}>{i18n.language.startsWith('en') ? 'Detailed editing' : '직접 세부 편집'}</button>
           <button type="button" onClick={() => setPinsOpen(true)} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">key</span>
             {t('studentHw.pinsButton')}
@@ -157,7 +160,9 @@ export default function HomeworkPage() {
             <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
             {t('studentHw.checkRecommend')}
           </button>
-          <button type="button" onClick={() => setPanel({ k: 'wizard' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-40`}>
+          <button type="button" onClick={() => setPanel({k:'wizard'})} disabled={!classId} className={`${headerBtn} border border-outline-variant`}>{i18n.language.startsWith('en')?'Use the previous wizard':'기존 방식으로 만들기'}</button>
+          </div></details>
+          <button type="button" onClick={() => setPanel({ k: 'compose' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-white shadow-sm hover:bg-primary-container disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">add</span>
             {t('studentHw.newButton')}
           </button>
@@ -166,6 +171,20 @@ export default function HomeworkPage() {
 
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
+
+      {panel.k==='none'&&classId&&<div className="hw-source-choices rounded-2xl border border-outline-variant bg-white p-5">
+        <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
+        <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
+      </div>}
+      {panel.k==='compose'&&classId&&academy?.id&&profile&&<HomeworkComposer
+        key={`${classId}:${panel.lessonId||panel.mode||'new'}:${panel.cards?.length||0}`}
+        academyId={academy.id} ownerId={profile.id} classId={classId} className={className}
+        initialLessonId={panel.lessonId} initialMode={panel.mode} initialCards={panel.cards} initialTitle={panel.title}
+        onClose={()=>setPanel({k:'none'})}
+        onLegacy={()=>setPanel({k:'wizard',lessonId:panel.lessonId,pickedCards:panel.cards,title:panel.title})}
+        onEdit={(items,title,studentIds,due)=>setPanel({k:'editor',items,title,studentIds,due})}
+        onCreated={async hw=>{setPanel({k:'none'});notify(t('studentHw.created'));await reload();setShareId(hw.id);}}
+      />}
 
       {panel.k === 'editor' && classId && academy?.id && profile && <HomeworkBlockEditor
         key={`${classId}-${panel.lessonId ?? ''}`} academyId={academy.id} classId={classId} ownerId={profile.id}
