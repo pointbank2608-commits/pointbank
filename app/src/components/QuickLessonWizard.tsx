@@ -603,21 +603,26 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
             </section>
             {swapRow !== null && rows[swapRow] && (
               <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label={t('quickLesson.swap')} onClick={() => setSwapRow(null)}>
-                <div className="w-full max-w-sm space-y-2 rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+                <div className="max-h-[90vh] w-full max-w-2xl space-y-3 overflow-y-auto rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
                   <h3 className="font-title-md text-title-md text-on-surface">{t(`quickLesson.slot_${rows[swapRow].slot}`)} · {t('quickLesson.swap')}</h3>
-                  <ul className="space-y-2">
+                  <ul className="grid gap-3 sm:grid-cols-2">
                     {quickGameChoices(rows[swapRow]).map((g) => {
                       const row = rows[swapRow];
                       const current = row.games[row.games.length - 1] === g;
+                      const entry = getGameCatalogEntry(g);
                       return (
                         <li key={g}>
                           <button
                             type="button"
                             aria-pressed={current}
                             onClick={() => { setRows((cur) => cur.map((x, j) => (j === swapRow ? setQuickGame(x, x.games.length - 1, g) : x))); setSwapRow(null); }}
-                            className={`min-h-11 w-full rounded-xl border px-4 text-left font-label-md text-label-md ${current ? 'border-primary bg-primary/10 text-primary' : 'border-outline-variant text-on-surface hover:bg-surface-container-low'}`}
+                            className={`h-full w-full overflow-hidden rounded-xl border-2 text-left ${current ? 'border-primary bg-primary/5' : 'border-outline-variant hover:border-primary/50'}`}
                           >
-                            {t(getGameCatalogEntry(g)?.nameKey ?? '')}{current ? ' ✓' : ''}
+                            {entry?.cover && <img src={entry.cover} alt="" loading="lazy" className="h-28 w-full object-cover" />}
+                            <span className="block space-y-1 p-3">
+                              <span className="block font-label-md text-label-md font-bold text-on-surface">{t(entry?.nameKey ?? '')}{current ? ' ✓' : ''}</span>
+                              <span className="block font-caption text-caption text-on-surface-variant">{t(entry?.descKey ?? '')}</span>
+                            </span>
                           </button>
                         </li>
                       );
