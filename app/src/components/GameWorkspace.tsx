@@ -176,6 +176,15 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     if (!canStart) { setPanel('settings'); return; }
     setPanel(null); setPlaying(true); setRunning(true);
   }
+  // 수업 발표 중에는 이미 준비된 게임이면 시작 화면을 한 번 더 거치지 않고 바로 시작한다.
+  // 선생님이 메뉴에서 "게임 준비로 돌아가기"를 눌러 멈춘 뒤에는 다시 자동으로 시작하지 않는다.
+  const autoStarted=useRef('');
+  useEffect(()=>{
+    if(!presenting||!canStart||panel||teams||running||playing)return;
+    const key=`${identity}:${info?.selected?.id}:${location.key}`;
+    if(autoStarted.current===key)return;
+    autoStarted.current=key;setPlaying(true);setRunning(true);
+  },[presenting,canStart,panel,teams,running,playing,identity,info?.selected?.id,location.key]);
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
   function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
   async function startFromEditor() {
