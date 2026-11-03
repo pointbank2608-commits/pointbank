@@ -43,3 +43,9 @@
 - 수업 게임① 자동 배정(`AFFINITY`)에 5개를 더했다: 수동태 → 카메라, if 조건문 → 조건문 모험, 관계사 → 인물 찾기, 의문문(does-he·is-it·i-can·do-you-like) → 친구 찾기, 수량 표현 → 장보기.
 - 자료는 직접 쓴 초안(사실이 분명한 것만)이라 선생님 검수 전이다. 장보기의 some/any 문장은 의문문의 some 같은 예외를 피해 보기를 골랐다.
 - 확인: `check-grammar-games.mjs`(문제 생성 전수 + 3차 5개), `check-grammar-games-browser.mjs`(실제 Chrome 21개, 임시 하네스 필요).
+
+## 표지 그림 (2026-11-04)
+게임 61~74의 표지는 구글 AI 점토 화풍 그림이다(`public/covers/game-<type>.jpg`, 1264×848, 14장 약 $1). 처음의 임시 SVG는 지웠다.
+- 프롬프트: `app/scripts/grammar/cover-jobs.json`. 만드는 법(앱 폴더에서): `ASPECT=3:2`, `STYLE_REFS=<기존 표지 경로 2장>`, `STYLE_TEXT=<화풍 지시문, 글자 금지>` 환경 변수를 주고 `node scripts/vocab/gemini-image.mjs scripts/grammar/cover-jobs.json <출력 폴더>` → PNG를 1264×848 JPG(품질 82)로 저장.
+- 그림 안에 글자·숫자는 넣지 않는다(AI가 깨뜨림). 점토 인물에 분홍·자홍 옷은 쓰지 않는다.
+- 문법 탐정(`grammardetective`)은 기존 모험 게임 표지를 그대로 쓴다.
