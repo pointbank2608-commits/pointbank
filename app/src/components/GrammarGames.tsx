@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
 import {
@@ -28,7 +28,7 @@ export function useText() {
 export function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) => void }) {
   const text = useText();
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap justify-center items-center gap-2">
       <span className="font-semibold">{text('팀 수', 'Teams')}</span>
       {[1, 2, 3, 4].map((n) => (
         <button key={n} className={`${btn} ${teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => setTeams(n)} aria-pressed={teams === n}>{n}</button>
@@ -40,7 +40,7 @@ export function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: nu
 export function Scores({ scores, turn, unit }: { scores: number[]; turn: number | null; unit?: string }) {
   const text = useText();
   return (
-    <ul className="flex flex-wrap gap-2" aria-label={text('팀 점수', 'Team scores')}>
+    <ul className="flex flex-wrap justify-center gap-2" aria-label={text('팀 점수', 'Team scores')}>
       {scores.map((s, i) => (
         <li key={i} className={`rounded-xl px-4 py-2 text-lg font-extrabold ${TEAM_COLORS[i]} ${turn === i ? 'ring-4 ring-deep-navy/40' : 'opacity-90'}`}>
           {i + 1}{text('팀', '')} · {s}{unit ?? ''}
@@ -50,12 +50,47 @@ export function Scores({ scores, turn, unit }: { scores: number[]; turn: number 
   );
 }
 
+/** 큰 화면(전체화면·전자칠판)에서는 게임 판을 화면 크기에 맞게 키워 가운데에 놓는다. 좁은 화면은 그대로 폭을 채운다. */
+const STAGE_BASE = 900;
+export function Stage({ children }: { children: React.ReactNode }) {
+  const outer = useRef<HTMLDivElement>(null);
+  const inner = useRef<HTMLDivElement>(null);
+  const [m, setM] = useState({ z: 1, w: STAGE_BASE, h: 0, minH: 0 });
+  useLayoutEffect(() => {
+    const calc = () => {
+      const o = outer.current;
+      const i = inner.current;
+      if (!o || !i) return;
+      const W = o.clientWidth;
+      const avail = Math.max(420, window.innerHeight - o.getBoundingClientRect().top - 16);
+      const ih = i.offsetHeight;
+      const w = Math.min(STAGE_BASE, W);
+      const z = W < STAGE_BASE ? 1 : Math.max(1, Math.min(W / STAGE_BASE, avail / Math.max(ih, 1), 2.6));
+      setM((p) => (Math.abs(p.z - z) < 0.005 && p.w === w && p.h === ih && p.minH === avail ? p : { z, w, h: ih, minH: avail }));
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    if (outer.current) ro.observe(outer.current);
+    if (inner.current) ro.observe(inner.current);
+    window.addEventListener('resize', calc);
+    document.addEventListener('fullscreenchange', calc);
+    return () => { ro.disconnect(); window.removeEventListener('resize', calc); document.removeEventListener('fullscreenchange', calc); };
+  }, []);
+  return (
+    <div ref={outer} className="flex w-full items-center justify-center" style={{ minHeight: m.z > 1 ? m.minH : undefined }}>
+      <div style={{ width: m.w * m.z, height: m.h ? m.h * m.z : undefined }}>
+        <div ref={inner} style={{ width: m.w, transform: m.z > 1 ? `scale(${m.z})` : undefined, transformOrigin: 'top left' }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
 export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
   const text = useText();
   useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
   const top = Math.max(...scores);
   return (
-    <div className="space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
+    <Stage><div className="space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
       <h2 className="text-3xl font-extrabold">{text('게임 끝!', 'Game over!')}</h2>
       <Scores scores={scores} turn={null} unit={unit} />
       {scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? `${i + 1}${text('팀', '')}` : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
@@ -63,21 +98,21 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
         <button className={primary} onClick={onAgain}>{text('다시 하기', 'Play again')}</button>
         {onExit && <button className={btn} onClick={onExit}>{text('나가기', 'Exit')}</button>}
       </div>
-    </div>
+    </div></Stage>
   );
 }
 
 export function Frame({ grammarId, title, children }: { grammarId: string; title: string; children: React.ReactNode }) {
   const point = grammarPoint(grammarId);
   return (
-    <section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4 sm:p-6">
+    <Stage><section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4 text-center sm:p-6">
       <header>
         <p className="text-sm font-semibold text-primary">{title}</p>
         <h2 className="text-2xl font-extrabold">{point?.name ?? grammarId}</h2>
         {point && <p className="font-mono text-lg text-on-surface-variant">{point.pattern.replace(/\*\*/g, '')}</p>}
       </header>
       {children}
-    </section>
+    </section></Stage>
   );
 }
 
@@ -125,14 +160,14 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
       <div className="space-y-3 rounded-2xl bg-white p-4 shadow-card">
         <p className="text-lg font-bold text-primary">{t(`grammarLesson.factory.${round.kind}`)}</p>
         <p className="text-3xl font-extrabold" lang="en">{round.from}</p>
-        <div className="flex min-h-16 flex-wrap items-center gap-2 rounded-xl border-2 border-dashed border-outline-variant p-3" aria-label={text('만든 문장', 'Your sentence')}>
+        <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant p-3" aria-label={text('만든 문장', 'Your sentence')}>
           {answerWords.length === 0 && <span className="text-on-surface-variant">{text('아래 낱말을 눌러 문장을 만들어요', 'Tap the words below')}</span>}
           {answerWords.map((w, k) => (
             <button key={k} className={`${btn} text-xl`} disabled={Boolean(result)} onClick={() => setPicked((p) => p.filter((_, n) => n !== k))} lang="en">{w}</button>
           ))}
           {answerWords.length > 0 && <span className="text-2xl font-bold">{punctOf(round.to)}</span>}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {round.chips.map((c, k) => (
             <button key={k} className={`${btn} text-xl ${picked.includes(k) ? 'opacity-30' : ''}`} disabled={picked.includes(k) || Boolean(result)} onClick={() => setPicked((p) => [...p, k])} lang="en">{c}</button>
           ))}
@@ -142,7 +177,7 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
             {result === 'ok' ? text('정답! +1점', 'Correct! +1') : `${text('정답은', 'Answer:')} ${round.to}`}
           </p>
         )}
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           {!result ? <button className={primary} disabled={picked.length === 0} onClick={check}>{text('확인', 'Check')}</button> : <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
           <button className={btn} disabled={Boolean(result) || picked.length === 0} onClick={() => setPicked([])}>{text('지우기', 'Clear')}</button>
         </div>
@@ -184,7 +219,7 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
         <p className="text-3xl font-extrabold" lang="en">
           {round.before} <span className="inline-block min-w-24 border-b-4 border-primary text-center text-primary">{chosen ?? ' '}</span> {round.after}
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {round.options.map((o) => {
             const state = !chosen ? '' : o === round.answer ? 'bg-emerald-100 ring-2 ring-emerald-600' : o === chosen ? 'bg-rose-100 ring-2 ring-rose-600' : 'opacity-50';
             return <button key={o} className={`${btn} min-w-28 text-2xl ${state}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{o}</button>;
@@ -257,7 +292,7 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
             <p>{reveal.winner === null ? text('낙찰한 팀이 없어요.', 'No one bought it.') : `${reveal.winner + 1}${text('팀이', '')} ${reveal.bid}🪙 ${text(lot.ok ? '낙찰! +' + reveal.bid : '낙찰… −' + reveal.bid, lot.ok ? 'won +' + reveal.bid : 'won, −' + reveal.bid)}`}</p>
             {!lot.ok && lot.fix && <p className="text-xl" lang="en">✏️ <b>{lot.fix}</b></p>}
             <p className="text-on-surface-variant">{lot.why}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {!lot.ok && reveal.winner !== null && !fixed && reveal.bid >= 2 && <button className={btn} onClick={fixIt}>{text(`고쳐 말했어요 (+${Math.floor(reveal.bid / 2)}🪙 되돌려 받기)`, `Fixed it (+${Math.floor(reveal.bid / 2)}🪙 back)`)}</button>}
               <button className={primary} onClick={next}>{i + 1 === lots.length ? text('결과 보기', 'See results') : text('다음 물건', 'Next lot')}</button>
             </div>
@@ -302,7 +337,7 @@ function Write({ grammarId, seed = 1, onExit }: CommonProps) {
           <div className="space-y-3" role="status">
             <p className="rounded-xl bg-emerald-100 p-3 text-2xl font-extrabold" lang="en">{round.model}</p>
             <p className="text-sm text-on-surface-variant">{text('조건을 모두 지키고 문법이 맞은 팀을 눌러 점수를 줘요. 뜻이 다른 표현도 조건에 맞으면 인정해도 좋아요.', 'Tap teams whose sentence meets every condition. Other valid wordings are fine.')}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {given.map((g, k) => <button key={k} className={`min-h-11 rounded-xl px-4 py-2 font-extrabold shadow-card ${TEAM_COLORS[k]} ${g ? 'ring-4 ring-deep-navy/50' : 'opacity-70'}`} aria-pressed={g} onClick={() => toggle(k)}>{k + 1}{text('팀', '')} {g ? '✓' : '+1'}</button>)}
             </div>
             <button className={primary} onClick={next}>{i + 1 === rounds.length ? text('결과 보기', 'See results') : text('다음', 'Next')}</button>

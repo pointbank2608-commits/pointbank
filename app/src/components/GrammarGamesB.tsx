@@ -65,7 +65,7 @@ function Pos({ grammarId, seed = 1, onExit }: CommonProps) {
       <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
         <p className="text-xl font-bold text-primary">{text(`문장에서 ${name[0]}를 찾아 눌러요!`, `Tap the ${name[1]} in the sentence!`)}</p>
         <p className="text-on-surface-variant">{text(POS_HINT[round.cat][0], POS_HINT[round.cat][1])}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {round.tokens.map((w, k) => {
             const ok = round.correct.includes(k);
             const st = chosen === null ? '' : ok ? 'bg-emerald-100 ring-2 ring-emerald-600' : k === chosen ? 'bg-rose-100 ring-2 ring-rose-600' : 'opacity-60';
@@ -129,13 +129,13 @@ function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
             );
           })}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {round.order.map((p) => (
             <button key={p} className={`${btn} text-2xl ${held === p ? 'ring-4 ring-primary' : ''} ${used.has(p) ? 'opacity-30' : ''}`} disabled={used.has(p) || done} onClick={() => setHeld(p)} lang="en">{round[p]}</button>
           ))}
         </div>
         {done && <p role="status" className={`rounded-xl p-3 text-xl font-bold ${correct ? 'bg-emerald-100' : 'bg-rose-100'}`} lang="en">{correct ? `✅ ${round.sentence}` : `${round.subject} | ${round.verb} | ${round.rest}`}</p>}
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           {!done ? <button className={primary} disabled={!full} onClick={check}>{text('확인', 'Check')}</button> : <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
           <button className={btn} disabled={done} onClick={reset}>{text('다시 놓기', 'Reset')}</button>
         </div>
@@ -170,7 +170,7 @@ function Choice<T extends { id: string; options: string[]; answer: string }>(pro
       <Scores scores={r.scores} turn={r.turn} />
       <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
         {props.stem(round, chosen)}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {round.options.map((o) => (
             <button key={o} className={`${btn} min-w-28 text-2xl ${stateOf(chosen, o, round.answer)}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{props.label ? props.label(o) : o}</button>
           ))}
@@ -196,9 +196,9 @@ function Compare({ grammarId, seed = 1, onExit }: CommonProps) {
         <>
           <ul className="space-y-2" aria-label={text('비교', 'Compare')}>
             {r.things.map((t) => (
-              <li key={t.n} className="flex items-center gap-3">
-                <span className="w-32 text-xl font-bold" lang="en">{t.e} {t.n}</span>
-                <span className="h-6 rounded-full bg-primary" style={{ width: `${t.pct}%`, maxWidth: '55%' }} />
+              <li key={t.n} className="grid grid-cols-[9rem_1fr_5.5rem] items-center gap-3 text-left">
+                <span className="text-xl font-bold" lang="en">{t.e} {t.n}</span>
+                <span className="h-6 rounded-full bg-primary" style={{ width: `${t.pct}%` }} />
                 <span className="text-sm text-on-surface-variant">{t.v} {t.unit}</span>
               </li>
             ))}
