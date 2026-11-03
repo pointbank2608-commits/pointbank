@@ -51,11 +51,11 @@ export function Scores({ scores, turn, unit }: { scores: number[]; turn: number 
 }
 
 /**
- * 게임 판은 폭 900px 안에서 가운데에 놓는다. 전체화면에서 화면에 맞춰 키우는 일은 GameThemeFrame 이 한다
+ * 게임 판(section)은 폭 900px 안에서 가운데에 놓는다. 전체화면에서 화면에 맞춰 키우는 일은 GameThemeFrame 이 한다
  * (판이 가로로 끝까지 늘어나 있으면 키울 여지가 없어 작고 왼쪽에 붙어 보였다). 여기서 따로 키우면 두 확대가 서로 흔든다.
  */
 export function Stage({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-[900px]">{children}</div>;
+  return <div>{children}</div>;
 }
 
 export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
@@ -63,7 +63,7 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
   useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
   const top = Math.max(...scores);
   return (
-    <Stage><div className="space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
+    <Stage><section className="mx-auto max-w-[900px] space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
       <h2 className="text-3xl font-extrabold">{text('게임 끝!', 'Game over!')}</h2>
       <Scores scores={scores} turn={null} unit={unit} />
       {scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? `${i + 1}${text('팀', '')}` : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
@@ -71,14 +71,14 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
         <button className={primary} onClick={onAgain}>{text('다시 하기', 'Play again')}</button>
         {onExit && <button className={btn} onClick={onExit}>{text('나가기', 'Exit')}</button>}
       </div>
-    </div></Stage>
+    </section></Stage>
   );
 }
 
 export function Frame({ grammarId, title, children }: { grammarId: string; title: string; children: React.ReactNode }) {
   const point = grammarPoint(grammarId);
   return (
-    <Stage><section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4 text-center sm:p-6">
+    <Stage><section className="mx-auto max-w-[900px] space-y-4 rounded-2xl bg-surface-container-lowest p-4 text-center sm:p-6">
       <header>
         <p className="text-sm font-semibold text-primary">{title}</p>
         <h2 className="text-2xl font-extrabold">{point?.name ?? grammarId}</h2>
@@ -133,7 +133,7 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
       <div className="space-y-3 rounded-2xl bg-white p-4 shadow-card">
         <p className="text-lg font-bold text-primary">{t(`grammarLesson.factory.${round.kind}`)}</p>
         <p className="text-3xl font-extrabold" lang="en">{round.from}</p>
-        <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant p-3" aria-label={text('만든 문장', 'Your sentence')}>
+        <div className="flex min-h-24 flex-wrap items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant p-3" aria-label={text('만든 문장', 'Your sentence')}>
           {answerWords.length === 0 && <span className="text-on-surface-variant">{text('아래 낱말을 눌러 문장을 만들어요', 'Tap the words below')}</span>}
           {answerWords.map((w, k) => (
             <button key={k} className={`${btn} text-xl`} disabled={Boolean(result)} onClick={() => setPicked((p) => p.filter((_, n) => n !== k))} lang="en">{w}</button>
@@ -145,11 +145,9 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
             <button key={k} className={`${btn} text-xl ${picked.includes(k) ? 'opacity-30' : ''}`} disabled={picked.includes(k) || Boolean(result)} onClick={() => setPicked((p) => [...p, k])} lang="en">{c}</button>
           ))}
         </div>
-        {result && (
-          <p role="status" className={`rounded-xl p-3 text-lg font-bold ${result === 'ok' ? 'bg-emerald-100' : 'bg-rose-100'}`}>
-            {result === 'ok' ? text('정답! +1점', 'Correct! +1') : `${text('정답은', 'Answer:')} ${round.to}`}
-          </p>
-        )}
+        <p role="status" aria-hidden={!result} className={`rounded-xl p-3 text-lg font-bold ${result === 'bad' ? 'bg-rose-100' : 'bg-emerald-100'} ${result ? '' : 'invisible'}`}>
+          {result === 'bad' ? `${text('정답은', 'Answer:')} ${round.to}` : text('정답! +1점', 'Correct! +1')}
+        </p>
         <div className="flex justify-center gap-2">
           {!result ? <button className={primary} disabled={picked.length === 0} onClick={check}>{text('확인', 'Check')}</button> : <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
           <button className={btn} disabled={Boolean(result) || picked.length === 0} onClick={() => setPicked([])}>{text('지우기', 'Clear')}</button>
@@ -218,6 +216,7 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
   const [fixed, setFixed] = useState(false);
   const lot = lots[i];
   const title = text('문법 경매', 'Grammar Auction');
+  const rv = reveal ?? { winner: null as number | null, bid: 0 };
   const reset = (n: number) => { setTeams(n); setCoins(Array(n).fill(START_COINS)); setBids(Array(n).fill(0)); setI(0); setReveal(null); setFixed(false); };
   const adjust = (k: number, d: number) => setBids((b) => b.map((v, n) => (n === k ? Math.max(0, Math.min(coins[k], v + d)) : v)));
   const close = () => {
@@ -259,18 +258,17 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
             </li>
           ))}
         </ul>
-        {!reveal ? <button className={primary} onClick={close}>{text('경매 마감!', 'Close bidding')}</button> : (
-          <div className="space-y-2" role="status">
+        <button className={`${primary} ${reveal ? 'invisible' : ''}`} tabIndex={reveal ? -1 : 0} aria-hidden={Boolean(reveal)} onClick={close}>{text('경매 마감!', 'Close bidding')}</button>
+        <div className={`space-y-2 ${reveal ? '' : 'invisible'}`} role="status" aria-hidden={!reveal}>
             <p className={`rounded-xl p-3 text-xl font-extrabold ${lot.ok ? 'bg-emerald-100' : 'bg-rose-100'}`}>{lot.ok ? text('✅ 맞는 문장이에요!', '✅ A correct sentence!') : text('❌ 틀린 문장이에요!', '❌ A wrong sentence!')}</p>
-            <p>{reveal.winner === null ? text('낙찰한 팀이 없어요.', 'No one bought it.') : `${reveal.winner + 1}${text('팀이', '')} ${reveal.bid}🪙 ${text(lot.ok ? '낙찰! +' + reveal.bid : '낙찰… −' + reveal.bid, lot.ok ? 'won +' + reveal.bid : 'won, −' + reveal.bid)}`}</p>
+            <p>{rv.winner === null ? text('낙찰한 팀이 없어요.', 'No one bought it.') : `${rv.winner + 1}${text('팀이', '')} ${rv.bid}🪙 ${text(lot.ok ? '낙찰! +' + rv.bid : '낙찰… −' + rv.bid, lot.ok ? 'won +' + rv.bid : 'won, −' + rv.bid)}`}</p>
             {!lot.ok && lot.fix && <p className="text-xl" lang="en">✏️ <b>{lot.fix}</b></p>}
             <p className="text-on-surface-variant">{lot.why}</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {!lot.ok && reveal.winner !== null && !fixed && reveal.bid >= 2 && <button className={btn} onClick={fixIt}>{text(`고쳐 말했어요 (+${Math.floor(reveal.bid / 2)}🪙 되돌려 받기)`, `Fixed it (+${Math.floor(reveal.bid / 2)}🪙 back)`)}</button>}
+              {!lot.ok && rv.winner !== null && !fixed && rv.bid >= 2 && <button className={btn} onClick={fixIt}>{text(`고쳐 말했어요 (+${Math.floor(rv.bid / 2)}🪙 되돌려 받기)`, `Fixed it (+${Math.floor(rv.bid / 2)}🪙 back)`)}</button>}
               <button className={primary} onClick={next}>{i + 1 === lots.length ? text('결과 보기', 'See results') : text('다음 물건', 'Next lot')}</button>
             </div>
-          </div>
-        )}
+        </div>
       </div>
     </Frame>
   );
@@ -306,16 +304,15 @@ function Write({ grammarId, seed = 1, onExit }: CommonProps) {
         <p className="text-sm font-semibold text-primary">{text('팀마다 공책에 영어 문장을 써요.', 'Each team writes the sentence on paper.')}</p>
         <p className="text-3xl font-extrabold">{round.ko}</p>
         <p className="rounded-xl bg-warm-yellow/40 p-3 text-xl font-bold">📌 {round.cond}</p>
-        {!shown ? <button className={primary} onClick={() => setShown(true)}>{text('모범 답 보기', 'Show answer')}</button> : (
-          <div className="space-y-3" role="status">
+        <button className={`${primary} ${shown ? 'invisible' : ''}`} tabIndex={shown ? -1 : 0} aria-hidden={shown} onClick={() => setShown(true)}>{text('모범 답 보기', 'Show answer')}</button>
+        <div className={`space-y-3 ${shown ? '' : 'invisible'}`} role="status" aria-hidden={!shown}>
             <p className="rounded-xl bg-emerald-100 p-3 text-2xl font-extrabold" lang="en">{round.model}</p>
             <p className="text-sm text-on-surface-variant">{text('조건을 모두 지키고 문법이 맞은 팀을 눌러 점수를 줘요. 뜻이 다른 표현도 조건에 맞으면 인정해도 좋아요.', 'Tap teams whose sentence meets every condition. Other valid wordings are fine.')}</p>
             <div className="flex flex-wrap justify-center gap-2">
               {given.map((g, k) => <button key={k} className={`min-h-11 rounded-xl px-4 py-2 font-extrabold shadow-card ${TEAM_COLORS[k]} ${g ? 'ring-4 ring-deep-navy/50' : 'opacity-70'}`} aria-pressed={g} onClick={() => toggle(k)}>{k + 1}{text('팀', '')} {g ? '✓' : '+1'}</button>)}
             </div>
             <button className={primary} onClick={next}>{i + 1 === rounds.length ? text('결과 보기', 'See results') : text('다음', 'Next')}</button>
-          </div>
-        )}
+        </div>
       </div>
     </Frame>
   );

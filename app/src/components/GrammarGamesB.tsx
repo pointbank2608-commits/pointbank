@@ -132,7 +132,7 @@ function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
             <button key={p} className={`${btn} text-2xl ${held === p ? 'ring-4 ring-primary' : ''} ${used.has(p) ? 'opacity-30' : ''}`} disabled={used.has(p) || done} onClick={() => setHeld(p)} lang="en">{round[p]}</button>
           ))}
         </div>
-        {done && <p role="status" className={`rounded-xl p-3 text-xl font-bold ${correct ? 'bg-emerald-100' : 'bg-rose-100'}`} lang="en">{correct ? `✅ ${round.sentence}` : `${round.subject} | ${round.verb} | ${round.rest}`}</p>}
+        <p role="status" aria-hidden={!done} className={`rounded-xl p-3 text-xl font-bold ${done && !correct ? 'bg-rose-100' : 'bg-emerald-100'} ${done ? '' : 'invisible'}`} lang="en">{done && !correct ? `${round.subject} | ${round.verb} | ${round.rest}` : `✅ ${round.sentence}`}</p>
         <div className="flex justify-center gap-2">
           {!done ? <button className={primary} disabled={!full} onClick={check}>{text('확인', 'Check')}</button> : <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
           <button className={btn} disabled={done} onClick={reset}>{text('다시 놓기', 'Reset')}</button>
