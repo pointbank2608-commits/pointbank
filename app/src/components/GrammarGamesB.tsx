@@ -27,7 +27,7 @@ function useRun<T extends { id: string }>(make: (seed: number) => T[], seed: num
 }
 
 const stateOf = (chosen: string | null, opt: string, answer: string) =>
-  !chosen ? '' : opt === answer ? 'bg-emerald-100 ring-2 ring-emerald-600' : opt === chosen ? 'bg-rose-100 ring-2 ring-rose-600' : 'opacity-50';
+  !chosen ? '' : opt === answer ? 'bg-emerald-100 ring-2 ring-emerald-600 disabled:opacity-100' : opt === chosen ? 'bg-rose-100 ring-2 ring-rose-600 disabled:opacity-100' : 'opacity-50';
 
 /* ---------------- 문장 속 품사 탐험 ---------------- */
 const POS_NAME: Record<PosCat, [string, string]> = {
@@ -68,16 +68,14 @@ function Pos({ grammarId, seed = 1, onExit }: CommonProps) {
         <div className="flex flex-wrap justify-center gap-2">
           {round.tokens.map((w, k) => {
             const ok = round.correct.includes(k);
-            const st = chosen === null ? '' : ok ? 'bg-emerald-100 ring-2 ring-emerald-600' : k === chosen ? 'bg-rose-100 ring-2 ring-rose-600' : 'opacity-60';
+            const st = chosen === null ? '' : ok ? 'bg-emerald-100 ring-2 ring-emerald-600 disabled:opacity-100' : k === chosen ? 'bg-rose-100 ring-2 ring-rose-600 disabled:opacity-100' : 'opacity-60';
             return <button key={k} className={`${btn} text-2xl ${st}`} disabled={chosen !== null} onClick={() => pick(k)} lang="en">{w}</button>;
           })}
         </div>
-        {chosen !== null && (
-          <p role="status" className="rounded-xl bg-primary-fixed p-3 text-lg font-bold">
-            {round.correct.includes(chosen) ? text('정답! +1점', 'Correct! +1') : text(`정답은 ${round.correct.map((k) => round.tokens[k]).join(', ')}`, `Answer: ${round.correct.map((k) => round.tokens[k]).join(', ')}`)}
-          </p>
-        )}
-        {chosen !== null && <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
+        <p role="status" aria-hidden={chosen === null} className={`rounded-xl bg-primary-fixed p-3 text-lg font-bold ${chosen === null ? 'invisible' : ''}`}>
+          {chosen === null || round.correct.includes(chosen) ? text('정답! +1점', 'Correct! +1') : text(`정답은 ${round.correct.map((k) => round.tokens[k]).join(', ')}`, `Answer: ${round.correct.map((k) => round.tokens[k]).join(', ')}`)}
+        </p>
+        <button className={`${primary} ${chosen === null ? 'invisible' : ''}`} tabIndex={chosen === null ? -1 : 0} aria-hidden={chosen === null} onClick={next}>{text('다음', 'Next')}</button>
       </div>
     </Frame>
   );
@@ -175,13 +173,11 @@ function Choice<T extends { id: string; options: string[]; answer: string }>(pro
             <button key={o} className={`${btn} min-w-28 text-2xl ${stateOf(chosen, o, round.answer)}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{props.label ? props.label(o) : o}</button>
           ))}
         </div>
-        {chosen && (
-          <div role="status" className="space-y-2">
-            <p className={`rounded-xl p-3 text-lg font-bold ${chosen === round.answer ? 'bg-emerald-100' : 'bg-rose-100'}`}>{chosen === round.answer ? text('정답! +1점', 'Correct! +1') : text(`정답은 ${props.label ? props.label(round.answer) : round.answer}`, `Answer: ${props.label ? props.label(round.answer) : round.answer}`)}</p>
-            {props.explain && <p className="text-on-surface-variant">{props.explain(round)}</p>}
-            <button className={primary} onClick={next}>{text('다음', 'Next')}</button>
-          </div>
-        )}
+        <div role="status" aria-hidden={!chosen} className={`space-y-2 ${chosen ? '' : 'invisible'}`}>
+          <p className={`rounded-xl p-3 text-lg font-bold ${chosen === round.answer ? 'bg-emerald-100' : 'bg-rose-100'}`}>{!chosen || chosen === round.answer ? text('정답! +1점', 'Correct! +1') : text(`정답은 ${props.label ? props.label(round.answer) : round.answer}`, `Answer: ${props.label ? props.label(round.answer) : round.answer}`)}</p>
+          {props.explain && <p className="text-on-surface-variant">{props.explain(round)}</p>}
+          <button className={primary} tabIndex={chosen ? 0 : -1} onClick={next}>{text('다음', 'Next')}</button>
+        </div>
       </div>
     </Frame>
   );

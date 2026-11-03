@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
 import {
@@ -50,39 +50,12 @@ export function Scores({ scores, turn, unit }: { scores: number[]; turn: number 
   );
 }
 
-/** 큰 화면(전체화면·전자칠판)에서는 게임 판을 화면 크기에 맞게 키워 가운데에 놓는다. 좁은 화면은 그대로 폭을 채운다. */
-const STAGE_BASE = 900;
+/**
+ * 게임 판은 폭 900px 안에서 가운데에 놓는다. 전체화면에서 화면에 맞춰 키우는 일은 GameThemeFrame 이 한다
+ * (판이 가로로 끝까지 늘어나 있으면 키울 여지가 없어 작고 왼쪽에 붙어 보였다). 여기서 따로 키우면 두 확대가 서로 흔든다.
+ */
 export function Stage({ children }: { children: React.ReactNode }) {
-  const outer = useRef<HTMLDivElement>(null);
-  const inner = useRef<HTMLDivElement>(null);
-  const [m, setM] = useState({ z: 1, w: STAGE_BASE, h: 0, minH: 0 });
-  useLayoutEffect(() => {
-    const calc = () => {
-      const o = outer.current;
-      const i = inner.current;
-      if (!o || !i) return;
-      const W = o.clientWidth;
-      const avail = Math.max(420, window.innerHeight - o.getBoundingClientRect().top - 16);
-      const ih = i.offsetHeight;
-      const w = Math.min(STAGE_BASE, W);
-      const z = W < STAGE_BASE ? 1 : Math.max(1, Math.min(W / STAGE_BASE, avail / Math.max(ih, 1), 2.6));
-      setM((p) => (Math.abs(p.z - z) < 0.005 && p.w === w && p.h === ih && p.minH === avail ? p : { z, w, h: ih, minH: avail }));
-    };
-    calc();
-    const ro = new ResizeObserver(calc);
-    if (outer.current) ro.observe(outer.current);
-    if (inner.current) ro.observe(inner.current);
-    window.addEventListener('resize', calc);
-    document.addEventListener('fullscreenchange', calc);
-    return () => { ro.disconnect(); window.removeEventListener('resize', calc); document.removeEventListener('fullscreenchange', calc); };
-  }, []);
-  return (
-    <div ref={outer} className="flex w-full items-center justify-center" style={{ minHeight: m.z > 1 ? m.minH : undefined }}>
-      <div style={{ width: m.w * m.z, height: m.h ? m.h * m.z : undefined }}>
-        <div ref={inner} style={{ width: m.w, transform: m.z > 1 ? `scale(${m.z})` : undefined, transformOrigin: 'top left' }}>{children}</div>
-      </div>
-    </div>
-  );
+  return <div className="mx-auto w-full max-w-[900px]">{children}</div>;
 }
 
 export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
@@ -221,11 +194,11 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           {round.options.map((o) => {
-            const state = !chosen ? '' : o === round.answer ? 'bg-emerald-100 ring-2 ring-emerald-600' : o === chosen ? 'bg-rose-100 ring-2 ring-rose-600' : 'opacity-50';
+            const state = !chosen ? '' : o === round.answer ? 'bg-emerald-100 ring-2 ring-emerald-600 disabled:opacity-100' : o === chosen ? 'bg-rose-100 ring-2 ring-rose-600 disabled:opacity-100' : 'opacity-50';
             return <button key={o} className={`${btn} min-w-28 text-2xl ${state}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{o}</button>;
           })}
         </div>
-        {chosen && <button className={primary} onClick={next}>{text('다음', 'Next')}</button>}
+        <button className={`${primary} ${chosen ? '' : 'invisible'}`} tabIndex={chosen ? 0 : -1} aria-hidden={!chosen} onClick={next}>{text('다음', 'Next')}</button>
       </div>
     </Frame>
   );
