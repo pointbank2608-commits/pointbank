@@ -4215,7 +4215,7 @@ const en: Ko = {
     watch_prescribeName: "{{name}} review homework",
     watch_prescribed: "Gave {{name}} homework with {{count}} words, due in 3 days.",
     lengthTitle: 'Lesson length',
-    length_basic: 'Short (about 15 min)',
+    length_basic: 'Basic (15–25 min)',
     length_standard: 'Standard 50-minute flow',
     lengthHint_basic: 'A short lesson that practises one thing lightly.',
     lengthHint_standard: 'Words → grammar/expressions → speaking → writing → game, filling one class period. Each stage shows its number and time. Applies to word, grammar and daily-conversation lessons.',

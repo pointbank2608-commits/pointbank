@@ -5,7 +5,8 @@ import { factorySources, verbRounds } from './grammarGames';
 import { compareRounds, linkRounds, linkSentence } from './grammarGamesB';
 import { condRounds, passiveRounds, shopRounds } from './grammarGamesC';
 import { buildFactoryItems, type FactoryKind } from './sentenceFactory';
-import type { SoloStep } from './soloLessons';
+import { secondsOf } from './soloBoard';
+import { buildSoloGrammarLesson, evenIndexes, type SoloStep } from './soloLessons';
 import { wordTokens } from './writeBlocks';
 
 /**
@@ -151,4 +152,33 @@ export function soloGrammarBank(grammarId: string, seed = 1): SoloGrammarBank {
     chooseA: shuffled(chooseA, seed), chooseB: shuffled(chooseB, seed + 1),
     fix, build: shuffled(build, seed + 2), factory, write: shuffled(write, seed + 3), drills: shuffled(drills, seed + 4),
   };
+}
+
+const evenPick = <T,>(arr: T[], n: number): T[] => (arr.length <= n ? arr : evenIndexes(arr.length, n).map((i) => arr[i]));
+
+/**
+ * 기본 개별수업의 문법 수업(약 25분): 예전 기본 구성(소개 → 규칙 → 예문 읽기 → 해석·맞는 문장 → 문장 배열하기)에
+ * 워크북 빈칸·오류 고치기·영작·문장 공장·문법 게임 문제를 더한다. 그룹 나눔 화면 없이 한 줄로 이어 가는 짧은 수업 틀이다.
+ * 3단계 틀·표준 50분 흐름은 예전 기본 수업(buildSoloGrammarLesson)을 그대로 재료로 쓰므로 그 함수는 바꾸지 않았다.
+ */
+export function buildBasicGrammarLesson(point: Parameters<typeof buildSoloGrammarLesson>[0]): ReturnType<typeof buildSoloGrammarLesson> {
+  const base = buildSoloGrammarLesson(point);
+  const bank = soloGrammarBank(point.id);
+  if (!bank.has) return base;
+  const tip = point.tip ?? point.explain;
+  const withTip = (list: SoloStep[]): SoloStep[] =>
+    list.map((st) => (st.t === 'pickCorrect' || st.t === 'orderWrite' || st.t === 'unscramble' ? ({ ...st, tip } as SoloStep) : st));
+  // 예전 기본 구성은 마지막에 문장 배열하기가 몰려 있다 → 그 앞에 이해 문제를, 뒤에 쓰기 문제를 넣는다
+  const firstUnscramble = base.steps.findIndex((st) => st.t === 'unscramble');
+  const cut = firstUnscramble < 0 ? base.steps.length : firstUnscramble;
+  const steps: SoloStep[] = [
+    ...base.steps.slice(0, cut),
+    ...withTip([...evenPick(bank.chooseA, 4), ...bank.drills.slice(0, 2)]),
+    ...base.steps.slice(cut),
+    ...evenPick(bank.fix, 3),
+    ...withTip([...evenPick(bank.build, 1), ...evenPick(bank.factory, 2)]),
+    ...evenPick(bank.write, 2),
+  ];
+  const minutes = Math.max(8, Math.round(steps.reduce((n, st) => n + secondsOf(st), 0) / 60));
+  return { name: base.name, steps, minutes };
 }

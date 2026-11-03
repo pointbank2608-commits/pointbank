@@ -4212,7 +4212,7 @@ const ko = {
     watch_prescribeName: "{{name}} 복습 숙제",
     watch_prescribed: "{{name}} 학생에게 낱말 {{count}}개 숙제를 냈어요. 기한은 3일 뒤예요.",
     lengthTitle: '수업 길이',
-    length_basic: '기본 (약 15분)',
+    length_basic: '기본 (15~25분)',
     length_standard: '표준 50분 흐름',
     lengthHint_basic: '한 가지를 가볍게 익히는 짧은 수업이에요.',
     lengthHint_standard: '낱말 → 문법·표현 → 말하기 → 쓰기 → 게임 순서로 한 차시를 채워요. 단계마다 번호와 시간이 보여요. 단어·문법·일상 대화에 적용돼요.',

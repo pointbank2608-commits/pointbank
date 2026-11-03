@@ -76,6 +76,22 @@ try {
       assert.ok(Math.abs(sum - x.l.minutes) <= heads.length, `${x.p.id} ${sum} vs ${x.l.minutes}`);
     }
   });
+  await test('기본 수업도 늘어난다(약 25분)이고 저장 전 검사를 통과하며 예전 기본 수업은 그대로다', () => {
+    const lessons = withBank.map((b) => ({ p: b.p, l: bankMod.buildBasicGrammarLesson(b.p), old: solo.buildSoloGrammarLesson(b.p) }));
+    const m = lessons.map((x) => minutesOf(x.l.steps));
+    console.log(`     기본 문법: ${Math.min(...m).toFixed(0)}~${Math.max(...m).toFixed(0)}분 (평균 ${(m.reduce((a, b) => a + b, 0) / m.length).toFixed(0)}분)`);
+    for (const x of lessons) {
+      assert.ok(minutesOf(x.l.steps) >= 20 && minutesOf(x.l.steps) <= 34, `${x.p.id} ${minutesOf(x.l.steps).toFixed(1)}분`);
+      assert.ok(x.l.steps.length > x.old.steps.length + 8, x.p.id);
+      assert.equal(edit.lessonProblems(x.l.steps).length, 0, x.p.id);
+      // 예전 기본 수업의 처음 단계(소개·규칙)는 그대로 앞에 온다
+      assert.equal(x.l.steps[0].t, 'intro');
+      assert.equal(x.l.steps[1].t, 'rule');
+      assert.equal(x.l.steps.at(-1).t, 'condWrite');
+    }
+    const none = built.find((b) => !b.bank.has);
+    if (none) assert.equal(bankMod.buildBasicGrammarLesson(none.p).steps.length > 5, true);
+  });
   await test('문제 은행이 없는 문법도 3단계 수업이 그대로 만들어진다', () => {
     const none = built.filter((b) => !b.bank.has);
     for (const b of none) assert.ok(b.lesson.steps.length > 8, b.p.id);

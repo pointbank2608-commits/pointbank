@@ -8,7 +8,6 @@ import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios
 import { buildSoloPosLesson } from '../../lib/soloPosLessons';
 import {
   buildSoloDayLessons,
-  buildSoloGrammarLesson,
   buildSoloRainbowLesson,
   buildSoloSongLesson,
   buildSoloWordSteps,
@@ -19,6 +18,7 @@ import {
   type SoloWordStyle,
 } from '../../lib/soloLessons';
 import { parseShadowText } from '../../lib/shadowLines';
+import { buildBasicGrammarLesson } from '../../lib/soloGrammarBank';
 import { buildStagedGrammarLesson, buildStagedWordLesson, DEFAULT_STAGED_PASS, type StagedGame } from '../../lib/soloCurriculum';
 import type { SoloPass } from '../../lib/soloLessons';
 import StagedGameSlots from './StagedGameSlots';
@@ -230,11 +230,11 @@ export default function SoloCatalogModal({
         icon: 'rule',
         title: p.name,
         desc: grammarLevelTag(p),
-        minutes: 15,
+        minutes: stages ? 40 : standard ? 42 : 25,
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
         levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
-          lessons: [stages ? buildStagedGrammarLesson(p, stagedOpts) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildSoloGrammarLesson(p)],
+          lessons: [stages ? buildStagedGrammarLesson(p, stagedOpts) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildBasicGrammarLesson(p)],
           level: grammarLevelTag(p),
           source: `solo-grammar-${p.id}${stages ? '-stages' : standard ? '-std' : ''}`,
         }),
@@ -336,7 +336,7 @@ export default function SoloCatalogModal({
   async function makeGrammarAll(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
     setBusy(label);
     try {
-      setPending({ title: label, lessons: points.map(buildSoloGrammarLesson), level: label, source: `solo-grammar-${points[0]?.id ?? ''}` });
+      setPending({ title: label, lessons: points.map((p) => buildBasicGrammarLesson(p)), level: label, source: `solo-grammar-${points[0]?.id ?? ''}` });
     } finally {
       setBusy(null);
     }
