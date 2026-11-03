@@ -7,10 +7,12 @@ import { useGameEmbed } from '../context/GameEmbedContext';
 import EditOnly from '../components/EditOnly';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GrammarGame from '../components/GrammarGames';
+import GrammarGameB from '../components/GrammarGamesB';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import { createGameTemplate, updateGameTemplate } from '../lib/api';
 import { GRAMMAR_POINTS, grammarLevelTag, grammarPoint } from '../lib/grammar';
-import { grammarGameSupport, MIN_ROUNDS, type GrammarGameType } from '../lib/grammarGames';
+import type { GrammarGameType } from '../lib/grammarGames';
+import { grammarGameSupport, MIN_ROUNDS } from '../lib/grammarGamesB';
 import type { GameItem } from '../lib/types';
 
 /** 문법별 게임 4종이 같이 쓰는 페이지: 문법 항목 하나를 고르면 문제는 규칙으로 만들어진다(config.grammarId). */
@@ -24,6 +26,11 @@ export const GrammarLabPage = () => <GrammarGamePage type="grammarlab" />;
 export const GrammarVerbPage = () => <GrammarGamePage type="grammarverb" />;
 export const GrammarAuctionPage = () => <GrammarGamePage type="grammarauction" />;
 export const GrammarWritePage = () => <GrammarGamePage type="grammarwrite" />;
+export const GrammarPosPage = () => <GrammarGamePage type="grammarpos" />;
+export const GrammarFramePage = () => <GrammarGamePage type="grammarframe" />;
+export const GrammarComparePage = () => <GrammarGamePage type="grammarcompare" />;
+export const GrammarLinkPage = () => <GrammarGamePage type="grammarlink" />;
+export const GrammarHabitPage = () => <GrammarGamePage type="grammarhabit" />;
 
 export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
   const { i18n } = useTranslation();
@@ -95,7 +102,9 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
     <div className="space-y-4">
       {!g.loading && (
         <GameThemeFrame gameType={type} roster={g.roster} onRestart={() => setRestart((k) => k + 1)}>
-          <GrammarGame key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
+          {(['grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit'] as const).some((b) => b === type)
+            ? <GrammarGameB key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type as 'grammarpos'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
+            : <GrammarGame key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />}
         </GameThemeFrame>
       )}
       {g.loading && <p role="status">{text('불러오는 중…', 'Loading…')}</p>}

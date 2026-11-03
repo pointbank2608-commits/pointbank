@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { GRAMMAR_POINTS, grammarLevelTag } from '../../lib/grammar';
-import { detectiveCases, MIN_ROUNDS } from '../../lib/grammarGames';
+import { detectiveCases } from '../../lib/grammarGames';
+import { MIN_ROUNDS } from '../../lib/grammarGamesB';
 import { adventureId, type DetectiveCase } from '../../lib/adventureGames';
 
 /** 문법 탐정 편집: 문법 항목의 "틀리기 쉬운 것"·워크북 오류 고치기로 사건집을 한꺼번에 가져온다. */

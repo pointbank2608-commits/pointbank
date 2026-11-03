@@ -13,19 +13,19 @@ import '../i18n/grammarLessonLocales';
  * 문법별 게임 4종(문장 변신 연구소·주어·동사 짝꿍·문법 경매·조건 영작 대결).
  * 팀 점수(1~4팀)는 이 화면 안의 놀이 점수다 — 실제 칭찬 통장 포인트와 연결되지 않는다.
  */
-const TEAM_COLORS = ['bg-primary text-white', 'bg-warm-yellow text-deep-navy', 'bg-emerald-600 text-white', 'bg-rose-600 text-white'];
-const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 font-semibold shadow-card disabled:opacity-40';
-const primary = 'min-h-11 rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-card disabled:opacity-40';
+export const TEAM_COLORS = ['bg-primary text-white', 'bg-warm-yellow text-deep-navy', 'bg-emerald-600 text-white', 'bg-rose-600 text-white'];
+export const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 font-semibold shadow-card disabled:opacity-40';
+export const primary = 'min-h-11 rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-card disabled:opacity-40';
 
-interface CommonProps { grammarId: string; seed?: number; onExit?: () => void }
+export interface CommonProps { grammarId: string; seed?: number; onExit?: () => void }
 
-function useText() {
+export function useText() {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith('en');
   return (ko: string, english: string) => (en ? english : ko);
 }
 
-function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) => void }) {
+export function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) => void }) {
   const text = useText();
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -37,7 +37,7 @@ function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) =
   );
 }
 
-function Scores({ scores, turn, unit }: { scores: number[]; turn: number | null; unit?: string }) {
+export function Scores({ scores, turn, unit }: { scores: number[]; turn: number | null; unit?: string }) {
   const text = useText();
   return (
     <ul className="flex flex-wrap gap-2" aria-label={text('팀 점수', 'Team scores')}>
@@ -50,7 +50,7 @@ function Scores({ scores, turn, unit }: { scores: number[]; turn: number | null;
   );
 }
 
-function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
+export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
   const text = useText();
   useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
   const top = Math.max(...scores);
@@ -67,7 +67,7 @@ function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: 
   );
 }
 
-function Frame({ grammarId, title, children }: { grammarId: string; title: string; children: React.ReactNode }) {
+export function Frame({ grammarId, title, children }: { grammarId: string; title: string; children: React.ReactNode }) {
   const point = grammarPoint(grammarId);
   return (
     <section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4 sm:p-6">
@@ -81,7 +81,7 @@ function Frame({ grammarId, title, children }: { grammarId: string; title: strin
   );
 }
 
-function Empty({ grammarId, title }: { grammarId: string; title: string }) {
+export function Empty({ grammarId, title }: { grammarId: string; title: string }) {
   const text = useText();
   return (
     <Frame grammarId={grammarId} title={title}>

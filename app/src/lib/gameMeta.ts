@@ -28,6 +28,12 @@ export const GAME_META: Record<string, GameMeta> = {
   grammarverb: { minutes: 6, play: 'team' },
   grammarauction: { minutes: 10, play: 'team' },
   grammarwrite: { minutes: 10, play: 'team', paper: true },
+  grammarpos: { minutes: 7, play: 'team' },
+  grammarframe: { minutes: 7, play: 'team' },
+  grammarcompare: { minutes: 7, play: 'team' },
+  grammarlink: { minutes: 7, play: 'team' },
+  grammarhabit: { minutes: 7, play: 'team' },
+
   shufflefind: { minutes: 8, play: 'team' },
   telepathy: { minutes: 10, play: 'team', paper: true },
   wheel: { minutes: 3, play: 'whole' },

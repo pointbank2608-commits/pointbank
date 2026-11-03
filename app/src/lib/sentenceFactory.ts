@@ -16,6 +16,8 @@ interface Parsed {
   tense: Tense;
   head: string; // be 는 'be', 조동사는 그 조동사, 일반동사는 원형
   rest: string[];
+  /** 문장에 쓰인 동사 낱말 그대로 */
+  verbText: string;
 }
 
 const IRREGULAR: Record<string, string> = {
@@ -40,7 +42,7 @@ const DETERMINERS = new Set(['the', 'a', 'an', 'my', 'your', 'his', 'her', 'our'
 const BLOCK_REST = /\b(yesterday|tomorrow|today|now|every|always|usually|often|sometimes|never|last|next|ago|tonight|already|yet|ever|not|no)\b|n't/i;
 const BLOCK_SUBJ = /\b(my|your|his|her|our|their|me|him|us|them|myself|yourself|himself|herself|itself|ourselves|themselves|a|an|each other)\b/i;
 
-function third(base: string): string {
+export function third(base: string): string {
   if (base === 'have') return 'has';
   if (/(s|x|z|ch|sh|o)$/.test(base)) return `${base}es`;
   if (/[^aeiou]y$/.test(base)) return `${base.slice(0, -1)}ies`;
@@ -53,7 +55,7 @@ function past(base: string): string {
   if (/[^aeiou]y$/.test(base)) return `${base.slice(0, -1)}ied`;
   return `${base}ed`;
 }
-function baseOf(word: string): { base: string; tense: Tense; third: boolean } | null {
+export function baseOf(word: string): { base: string; tense: Tense; third: boolean } | null {
   const w = word.toLowerCase();
   for (const b of BASES) {
     if (w === past(b) && w !== b) return { base: b, tense: 'past', third: false };
@@ -90,7 +92,7 @@ function parse(sentence: string): Parsed | null {
   if (!verbTok) return null;
   const v = verbTok.toLowerCase();
   if (BLOCK_REST.test(rest.join(' ')) || /n't$/.test(v)) return null;
-  const base = { subj, person, pronoun, rest };
+  const base = { subj, person, pronoun, rest, verbText: verbTok };
   if (AUX_BE.has(v)) return { ...base, kind: 'be', tense: v === 'was' || v === 'were' ? 'past' : 'present', head: 'be' };
   if (MODALS.has(v)) {
     return { ...base, kind: 'modal', tense: 'present', head: v };
@@ -187,4 +189,19 @@ export function buildFactoryItems(sentences: string[], opts: { perSentence?: num
     }
   }
   return out;
+}
+
+/** 간단한 문장을 주어 / 동사 / 나머지로 나눈다(문장 뼈대 조립소). 나눌 수 없으면 null. */
+export function splitSimple(sentence: string): { subject: string; verb: string; rest: string } | null {
+  const p = parse(sentence);
+  if (!p) return null;
+  let verb = p.verbText;
+  let rest = p.rest;
+  if (p.kind === 'modal') {
+    if (!rest.length) return null;
+    verb = `${verb} ${rest[0]}`;
+    rest = rest.slice(1);
+  }
+  if (!rest.length) return null;
+  return { subject: p.subj, verb, rest: rest.join(' ') };
 }
