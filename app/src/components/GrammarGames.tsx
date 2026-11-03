@@ -7,6 +7,7 @@ import {
 } from '../lib/grammarGames';
 import { useRemoteActions } from '../lib/remote';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
+import { initialTeams, setGrammarPlay, useGrammarPlay } from '../lib/grammarPlay';
 import '../i18n/grammarLessonLocales';
 
 /**
@@ -25,25 +26,70 @@ export function useText() {
   return (ko: string, english: string) => (en ? english : ko);
 }
 
+/** 팀 이름: 혼자 풀기에서는 "나", 팀이 있으면 "1팀" */
+export function useTeamLabel() {
+  const text = useText();
+  const { teams } = useGrammarPlay();
+  return (k: number) => (teams === 0 ? text('나', 'Me') : text(`${k + 1}팀`, `Team ${k + 1}`));
+}
+export function useSolo(): boolean {
+  return useGrammarPlay().teams === 0;
+}
+
+/** 팀·점수 설정(접어 둠): 팀 없이 혼자 풀기 / 1~4팀, 점수 보이기. 이 브라우저에 기억해 모든 문법 게임이 같이 쓴다. */
 export function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) => void }) {
   const text = useText();
+  const play = useGrammarPlay();
+  const [open, setOpen] = useState(false);
+  const summary = `${play.teams === 0 ? text('혼자 풀기', 'Solo') : text(`${play.teams}팀`, `${play.teams} team${play.teams > 1 ? 's' : ''}`)} · ${play.showScore ? text('점수 보임', 'score on') : text('점수 숨김', 'score off')}`;
+  const choose = (n: number) => {
+    setGrammarPlay({ teams: n });
+    setTeams(Math.max(1, n));
+  };
   return (
-    <div className="flex flex-wrap justify-center items-center gap-2">
-      <span className="font-semibold">{text('팀 수', 'Teams')}</span>
-      {[1, 2, 3, 4].map((n) => (
-        <button key={n} className={`${btn} ${teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => setTeams(n)} aria-pressed={teams === n}>{n}</button>
-      ))}
+    <div className="space-y-2">
+      <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant bg-white px-4 py-1 text-sm font-semibold text-on-surface-variant shadow-card" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span aria-hidden>⚙</span>{text('팀·점수 설정', 'Teams & score')} <span className="font-bold text-primary">{summary}</span>
+      </button>
+      {open && (
+        <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-outline-variant bg-white p-3 text-left shadow-card" role="group" aria-label={text('팀·점수 설정', 'Teams & score')}>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="font-semibold">{text('누가 풀어요?', 'Who plays?')}</span>
+            {[0, 1, 2, 3, 4].map((n) => (
+              <button key={n} className={`${btn} min-w-12 ${play.teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => choose(n)} aria-pressed={play.teams === n}>
+                {n === 0 ? text('혼자', 'Solo') : n === 1 ? text('1팀', '1') : text(`${n}팀`, String(n))}
+              </button>
+            ))}
+          </div>
+          <label className="flex items-center justify-center gap-2 font-semibold">
+            <input type="checkbox" className="h-5 w-5" checked={play.showScore} onChange={(e) => setGrammarPlay({ showScore: e.target.checked })} />
+            {text('점수 보이기', 'Show score')}
+          </label>
+          <p className="text-center text-xs text-on-surface-variant">{text('혼자 풀기는 과외·복습용이에요. 점수는 이 화면 안에서만 쓰고 칭찬 통장 포인트와 관계없어요.', 'Solo is for one-to-one lessons and review. Scores stay on this screen and are separate from praise points.')}</p>
+        </div>
+      )}
+      <span className="sr-only">{teams}</span>
     </div>
   );
 }
 
 export function Scores({ scores, turn, unit }: { scores: number[]; turn: number | null; unit?: string }) {
   const text = useText();
+  const play = useGrammarPlay();
+  const label = useTeamLabel();
+  if (play.teams === 0) {
+    if (!play.showScore) return null;
+    return (
+      <ul className="flex flex-wrap justify-center gap-2" aria-label={text('내 점수', 'My score')}>
+        <li className={`rounded-xl px-5 py-2 text-lg font-extrabold ${TEAM_COLORS[0]}`}>{text('내 점수', 'Score')} · {scores[0] ?? 0}{unit ?? ''}</li>
+      </ul>
+    );
+  }
   return (
     <ul className="flex flex-wrap justify-center gap-2" aria-label={text('팀 점수', 'Team scores')}>
       {scores.map((s, i) => (
         <li key={i} className={`rounded-xl px-4 py-2 text-lg font-extrabold ${TEAM_COLORS[i]} ${turn === i ? 'ring-4 ring-deep-navy/40' : 'opacity-90'}`}>
-          {i + 1}{text('팀', '')} · {s}{unit ?? ''}
+          {label(i)}{play.showScore ? ` · ${s}${unit ?? ''}` : ''}
         </li>
       ))}
     </ul>
@@ -60,13 +106,15 @@ export function Stage({ children }: { children: React.ReactNode }) {
 
 export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
   const text = useText();
+  const play = useGrammarPlay();
+  const label = useTeamLabel();
   useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
   const top = Math.max(...scores);
   return (
     <Stage><section className="mx-auto max-w-[900px] space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
-      <h2 className="text-3xl font-extrabold">{text('게임 끝!', 'Game over!')}</h2>
+      <h2 className="text-3xl font-extrabold">{play.teams === 0 ? text('수고했어요!', 'Well done!') : text('게임 끝!', 'Game over!')}</h2>
       <Scores scores={scores} turn={null} unit={unit} />
-      {scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? `${i + 1}${text('팀', '')}` : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
+      {play.teams > 0 && play.showScore && scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? label(i) : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
       <div className="flex justify-center gap-2">
         <button className={primary} onClick={onAgain}>{text('다시 하기', 'Play again')}</button>
         {onExit && <button className={btn} onClick={onExit}>{text('나가기', 'Exit')}</button>}
@@ -104,8 +152,8 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
   const text = useText();
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => labRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(2);
-  const [scores, setScores] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number[]>([]);
   const [result, setResult] = useState<'ok' | 'bad' | null>(null);
@@ -162,8 +210,8 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
   const text = useText();
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => verbRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(2);
-  const [scores, setScores] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [i, setI] = useState(0);
   const [chosen, setChosen] = useState<string | null>(null);
   const turn = i % teams;
@@ -206,11 +254,13 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
 const START_COINS = 100;
 function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
   const text = useText();
+  const label = useTeamLabel();
+  const solo = useSolo();
   const [run, setRun] = useState(seed);
   const lots = useMemo<Lot[]>(() => auctionLots(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(2);
-  const [coins, setCoins] = useState<number[]>([START_COINS, START_COINS]);
-  const [bids, setBids] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [coins, setCoins] = useState<number[]>(() => Array(initialTeams()).fill(START_COINS));
+  const [bids, setBids] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [i, setI] = useState(0);
   const [reveal, setReveal] = useState<null | { winner: number | null; bid: number }>(null);
   const [fixed, setFixed] = useState(false);
@@ -240,8 +290,8 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
   if (!lot) return <Finish scores={coins} unit="🪙" onAgain={() => { setRun((r) => r + 1); reset(teams); }} onExit={onExit} />;
   return (
     <Frame grammarId={grammarId} title={`${title} · ${i + 1}/${lots.length}`}>
-      <TeamSetup teams={teams} setTeams={(n) => reset(Math.max(2, n))} />
-      <p className="text-sm text-on-surface-variant">{text('게임용 코인이에요. 칭찬 통장 포인트와 관계없어요. (2팀 이상)', 'Game coins only — not your real praise points. (2+ teams)')}</p>
+      <TeamSetup teams={teams} setTeams={reset} />
+      <p className="text-sm text-on-surface-variant">{text('게임용 코인이에요. 칭찬 통장 포인트와 관계없어요. 가장 많이 건 쪽이 사요.', 'Game coins only — not your real praise points. The highest bid buys it.')}</p>
       <Scores scores={coins} turn={null} unit="🪙" />
       <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
         <p className="text-lg font-bold text-primary">{text('이 문장이 맞을 것 같으면 코인을 걸어 사요! 틀린 문장을 사면 코인을 잃어요.', 'Bid if you think the sentence is correct. Buying a wrong one loses coins!')}</p>
@@ -249,7 +299,7 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
         <ul className="grid gap-2 sm:grid-cols-2">
           {bids.map((b, k) => (
             <li key={k} className={`flex items-center justify-between gap-2 rounded-xl p-3 ${TEAM_COLORS[k]}`}>
-              <span className="font-extrabold">{k + 1}{text('팀', '')}</span>
+              <span className="font-extrabold">{label(k)}</span>
               <span className="flex items-center gap-1">
                 <button className="min-h-10 min-w-10 rounded-lg bg-white/90 text-xl font-bold text-deep-navy" disabled={Boolean(reveal)} onClick={() => adjust(k, -10)} aria-label={text('10 내리기', 'Down 10')}>−</button>
                 <span className="min-w-16 text-center text-2xl font-extrabold">{b}</span>
@@ -261,7 +311,7 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
         <button className={`${primary} ${reveal ? 'invisible' : ''}`} tabIndex={reveal ? -1 : 0} aria-hidden={Boolean(reveal)} onClick={close}>{text('경매 마감!', 'Close bidding')}</button>
         <div className={`space-y-2 ${reveal ? '' : 'invisible'}`} role="status" aria-hidden={!reveal}>
             <p className={`rounded-xl p-3 text-xl font-extrabold ${lot.ok ? 'bg-emerald-100' : 'bg-rose-100'}`}>{lot.ok ? text('✅ 맞는 문장이에요!', '✅ A correct sentence!') : text('❌ 틀린 문장이에요!', '❌ A wrong sentence!')}</p>
-            <p>{rv.winner === null ? text('낙찰한 팀이 없어요.', 'No one bought it.') : `${rv.winner + 1}${text('팀이', '')} ${rv.bid}🪙 ${text(lot.ok ? '낙찰! +' + rv.bid : '낙찰… −' + rv.bid, lot.ok ? 'won +' + rv.bid : 'won, −' + rv.bid)}`}</p>
+            <p>{rv.winner === null ? text(solo ? '아무도 사지 않았어요.' : '낙찰한 팀이 없어요.', 'No one bought it.') : `${solo ? text('내가', 'I') : `${label(rv.winner)}${text('이', '')}`} ${rv.bid}🪙 ${text(lot.ok ? '낙찰! +' + rv.bid : '낙찰… −' + rv.bid, lot.ok ? 'won +' + rv.bid : 'won, −' + rv.bid)}`}</p>
             {!lot.ok && lot.fix && <p className="text-xl" lang="en">✏️ <b>{lot.fix}</b></p>}
             <p className="text-on-surface-variant">{lot.why}</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -277,13 +327,15 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
 /* ---------------- 조건 영작 대결 ---------------- */
 function Write({ grammarId, seed = 1, onExit }: CommonProps) {
   const text = useText();
+  const label = useTeamLabel();
+  const solo = useSolo();
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => writeRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(2);
-  const [scores, setScores] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [i, setI] = useState(0);
   const [shown, setShown] = useState(false);
-  const [given, setGiven] = useState<boolean[]>([false, false]);
+  const [given, setGiven] = useState<boolean[]>(() => Array(initialTeams()).fill(false));
   const round = rounds[i];
   const title = text('조건 영작 대결', 'Write-off');
   const reset = (n: number) => { setTeams(n); setScores(Array(n).fill(0)); setGiven(Array(n).fill(false)); setI(0); setShown(false); };
@@ -301,15 +353,15 @@ function Write({ grammarId, seed = 1, onExit }: CommonProps) {
       <TeamSetup teams={teams} setTeams={reset} />
       <Scores scores={scores} turn={null} />
       <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
-        <p className="text-sm font-semibold text-primary">{text('팀마다 공책에 영어 문장을 써요.', 'Each team writes the sentence on paper.')}</p>
+        <p className="text-sm font-semibold text-primary">{solo ? text('공책에 영어 문장을 써요.', 'Write the sentence on paper.') : text('팀마다 공책에 영어 문장을 써요.', 'Each team writes the sentence on paper.')}</p>
         <p className="text-3xl font-extrabold">{round.ko}</p>
         <p className="rounded-xl bg-warm-yellow/40 p-3 text-xl font-bold">📌 {round.cond}</p>
         <button className={`${primary} ${shown ? 'invisible' : ''}`} tabIndex={shown ? -1 : 0} aria-hidden={shown} onClick={() => setShown(true)}>{text('모범 답 보기', 'Show answer')}</button>
         <div className={`space-y-3 ${shown ? '' : 'invisible'}`} role="status" aria-hidden={!shown}>
             <p className="rounded-xl bg-emerald-100 p-3 text-2xl font-extrabold" lang="en">{round.model}</p>
-            <p className="text-sm text-on-surface-variant">{text('조건을 모두 지키고 문법이 맞은 팀을 눌러 점수를 줘요. 뜻이 다른 표현도 조건에 맞으면 인정해도 좋아요.', 'Tap teams whose sentence meets every condition. Other valid wordings are fine.')}</p>
+            <p className="text-sm text-on-surface-variant">{solo ? text('모범 답과 비교해 조건을 모두 지켰고 문법이 맞으면 "맞았어요"를 눌러요. 뜻이 다른 표현도 조건에 맞으면 괜찮아요.', 'Compare with the model. If you met every condition, tap "Got it".') : text('조건을 모두 지키고 문법이 맞은 팀을 눌러 점수를 줘요. 뜻이 다른 표현도 조건에 맞으면 인정해도 좋아요.', 'Tap teams whose sentence meets every condition. Other valid wordings are fine.')}</p>
             <div className="flex flex-wrap justify-center gap-2">
-              {given.map((g, k) => <button key={k} className={`min-h-11 rounded-xl px-4 py-2 font-extrabold shadow-card ${TEAM_COLORS[k]} ${g ? 'ring-4 ring-deep-navy/50' : 'opacity-70'}`} aria-pressed={g} onClick={() => toggle(k)}>{k + 1}{text('팀', '')} {g ? '✓' : '+1'}</button>)}
+              {given.map((g, k) => <button key={k} className={`min-h-11 rounded-xl px-4 py-2 font-extrabold shadow-card ${TEAM_COLORS[k]} ${g ? 'ring-4 ring-deep-navy/50' : 'opacity-70'}`} aria-pressed={g} onClick={() => toggle(k)}>{solo ? text('맞았어요', 'Got it') : label(k)} {g ? '✓' : '+1'}</button>)}
             </div>
             <button className={primary} onClick={next}>{i + 1 === rounds.length ? text('결과 보기', 'See results') : text('다음', 'Next')}</button>
         </div>

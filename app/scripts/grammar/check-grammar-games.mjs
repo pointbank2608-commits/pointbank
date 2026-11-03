@@ -180,6 +180,21 @@ try {
     assert.ok(gc.askRounds('is-it')[0].questions[0].text.startsWith('Is the friend'));
     assert.ok(gc.askRounds('i-can')[0].questions[0].text.startsWith('Can the friend'));
   });
+  await test('주어·동사 짝꿍: 보기에 존재하지 않는 낱말(gos 같은)이 없다', () => {
+    const BE = ['am', 'is', 'are', 'was', 'were'];
+    let n = 0;
+    for (const id of ids) for (const r of gg.verbRounds(id)) {
+      const first = r.from.split(' ')[1];
+      for (const o of r.options) {
+        n++;
+        const ok = o === r.answer || o === first || BE.includes(o) || /ing$/.test(o);
+        assert.ok(ok, `${id}: "${o}" in ${JSON.stringify(r.options)} (${r.from})`);
+      }
+    }
+    assert.ok(n > 100);
+    const go = gg.verbRounds('third-s').find((r) => r.answer === 'go');
+    if (go) assert.ok(!go.options.includes('gos'));
+  });
   await test('시드가 같으면 같은 문제, 다르면 순서가 바뀐다', () => {
     const id = ids.find((x) => gg.labRounds(x).length >= 6);
     assert.deepEqual(gg.labRounds(id, 3), gg.labRounds(id, 3));

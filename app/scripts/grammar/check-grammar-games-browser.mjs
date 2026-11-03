@@ -189,6 +189,63 @@ try {
     await page.getByText(/2팀 차례/).waitFor();
     await page.close();
   });
+
+  // ---- 팀·점수 설정(혼자 풀기) ----
+  const soloCtx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+  await soloCtx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); localStorage.setItem('classbank.grammarPlay', JSON.stringify({ teams: 0, showScore: true })); });
+  const openSolo = async (type, g = 'third-s') => { const page = await soloCtx.newPage(); page.on('pageerror', (e) => errors.push(e.message)); await page.goto(`${base}?type=${type}&g=${g}`); return page; };
+  await test('혼자 풀기: 팀 표시 없이 내 점수만, 조건 영작은 "맞았어요"', async () => {
+    const page = await openSolo('grammarwrite');
+    await page.getByText('내 점수').first().waitFor();
+    assert.equal(await page.getByText(/^1팀|2팀/).count(), 0);
+    await page.getByRole('button', { name: '모범 답 보기' }).first().click();
+    await page.getByRole('button', { name: /맞았어요/ }).click();
+    assert.ok((await page.locator('ul[aria-label="내 점수"]').innerText()).includes('1'));
+    await page.close();
+  });
+  await test('혼자 풀기: 주어·동사 짝꿍을 끝까지 풀면 "수고했어요" (우승 문구 없음)', async () => {
+    const page = await openSolo('grammarverb');
+    for (const r of gb.verbRounds ? [] : []) void r;
+    const rounds = gg.verbRounds('third-s', 1);
+    for (const r of rounds) {
+      await page.getByRole('button', { name: new RegExp(`^${r.answer}$`) }).first().click();
+      await page.getByRole('button', { name: '다음' }).first().click();
+    }
+    await page.getByText('수고했어요!').waitFor();
+    assert.equal(await page.getByText('우승!').count(), 0);
+    await page.close();
+  });
+  await test('혼자 풀기: 문법 경매(혼자 입찰)와 질문으로 친구 찾기가 돈다', async () => {
+    const page = await openSolo('grammarauction');
+    await page.getByRole('button', { name: '10 올리기' }).first().click();
+    await page.getByRole('button', { name: '경매 마감!' }).click();
+    await page.getByText(/내가 10🪙/).waitFor();
+    await page.close();
+    const ask = await openSolo('grammarask', 'does-he');
+    await ask.getByText(/^질문을 하나 고르거나/).waitFor();
+    await ask.close();
+  });
+  await test('설정 패널: 혼자/팀·점수 숨김을 고르면 바로 반영되고 새로고침 뒤에도 남는다', async () => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+    await ctx.addInitScript(() => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('classbank.lang', 'ko'); sessionStorage.setItem('seeded', '1'); } });
+    const page = await ctx.newPage();
+    await page.goto(`${base}?type=grammarpos&g=prepositions`);
+    await page.getByText('2팀').first().waitFor();
+    await page.getByRole('button', { name: /팀·점수 설정/ }).click();
+    await page.getByRole('button', { name: '혼자', exact: true }).click();
+    await page.getByText('내 점수').first().waitFor();
+    await page.getByLabel('점수 보이기').uncheck();
+    assert.equal(await page.locator('ul[aria-label="내 점수"]').count(), 0);
+    await page.reload();
+    assert.equal(await page.locator('ul[aria-label="내 점수"]').count(), 0);
+    await page.getByRole('button', { name: /혼자 풀기 · 점수 숨김/ }).waitFor();
+    await page.getByRole('button', { name: /팀·점수 설정/ }).click();
+    await page.getByRole('button', { name: '3팀', exact: true }).click();
+    await page.getByLabel('점수 보이기').check();
+    await page.getByText('3팀').first().waitFor();
+    await ctx.close();
+  });
+  await soloCtx.close();
   await test('자료가 부족한 문법은 안내 문구', async () => {
     const page = await open('grammarverb', 'no-such-grammar');
     await page.getByText('아직 이 게임을 만들 수 없어요').waitFor();

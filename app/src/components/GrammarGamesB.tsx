@@ -6,6 +6,7 @@ import {
 import type { GrammarGameType } from '../lib/grammarGames';
 import { useRemoteActions } from '../lib/remote';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
+import { initialTeams } from '../lib/grammarPlay';
 import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useText, type CommonProps } from './GrammarGames';
 
 /** 문법별 게임 2차 묶음 화면 5종. 팀 점수는 이 화면 안의 놀이 점수다(칭찬 통장과 무관). */
@@ -15,8 +16,8 @@ type BGameType = Extract<GrammarGameType, 'grammarpos' | 'grammarframe' | 'gramm
 export function useRun<T extends { id: string }>(make: (seed: number) => T[], seed: number, min: number) {
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => make(run), [make, run]);
-  const [teams, setTeams] = useState(2);
-  const [scores, setScores] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [i, setI] = useState(0);
   const turn = i % teams;
   const award = (ok: boolean) => { if (ok) setScores((s) => s.map((v, k) => (k === turn ? v + 1 : v))); };

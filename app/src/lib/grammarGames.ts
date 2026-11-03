@@ -1,7 +1,7 @@
 import { GRAMMAR_SHEET_BANK } from '../data/grammarSheets';
 import type { GrammarSheetContent } from '../data/grammarSheets/types';
-import { grammarPoint, plainText } from './grammar';
-import { buildFactoryItems, type FactoryKind } from './sentenceFactory';
+import { grammarPoint, ingForm, plainText } from './grammar';
+import { baseOf, buildFactoryItems, type FactoryKind } from './sentenceFactory';
 import { detectiveSuggestion } from './detectiveSuggestion';
 import type { DetectiveCase } from './adventureGames';
 
@@ -78,7 +78,9 @@ export function verbRounds(grammarId: string, seed = 1, max = 10): VerbRound[] {
       const vi = diff[1];
       const answer = b[vi];
       const original = a[vi];
-      const pool = BE_FORMS.includes(answer.toLowerCase()) ? BE_FORMS : [answer.endsWith('s') ? answer.replace(/(es|s)$/, '') : `${answer}s`];
+      // 틀린 보기는 실제 있는 낱말만(예: go/goes 에 gos 를 만들지 않는다): be 는 be 꼴들, 일반동사는 -ing 꼴
+      const baseVerb = baseOf(answer)?.base ?? baseOf(original)?.base ?? answer;
+      const pool = BE_FORMS.includes(answer.toLowerCase()) ? BE_FORMS : [ingForm(baseVerb)];
       const options = [...new Set([answer, original, ...pool])].filter((w) => w !== '').slice(0, 3);
       if (options.length < 3 && !options.includes(answer)) options.push(answer);
       if (options.length < 2) continue;

@@ -5,7 +5,8 @@ import {
 } from '../lib/grammarGamesC';
 import type { GrammarGameType } from '../lib/grammarGames';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
-import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useText, type CommonProps } from './GrammarGames';
+import { initialTeams } from '../lib/grammarPlay';
+import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useSolo, useTeamLabel, useText, type CommonProps } from './GrammarGames';
 import { Choice } from './GrammarGamesB';
 
 /** 문법별 게임 3차 묶음 화면 5종. 팀 점수는 이 화면 안의 놀이 점수다(칭찬 통장과 무관). */
@@ -96,10 +97,12 @@ function Shop({ grammarId, seed = 1, onExit }: CommonProps) {
 /* ---------------- 질문으로 친구 찾기 ---------------- */
 function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
   const text = useText();
+  const label = useTeamLabel();
+  const solo = useSolo();
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => askRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(2);
-  const [scores, setScores] = useState<number[]>([0, 0]);
+  const [teams, setTeams] = useState(initialTeams);
+  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
   const [r, setR] = useState(0);
   const [turn, setTurn] = useState(0);
   const [asked, setAsked] = useState<{ q: number; yes: boolean }[]>([]);
@@ -145,7 +148,9 @@ function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
       <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
         <p className="text-lg font-bold text-primary">
           {found === null
-            ? text(`${turn + 1}팀 차례! 질문을 하나 고르거나, 누구인지 맞혀 봐요. (남은 친구 ${left}명)`, `Team ${turn + 1}'s turn! Ask a question or guess who it is. (${left} left)`)
+            ? solo
+              ? text(`질문을 하나 고르거나, 누구인지 맞혀 봐요. (남은 친구 ${left}명)`, `Ask a question or guess who it is. (${left} left)`)
+              : text(`${label(turn)} 차례! 질문을 하나 고르거나, 누구인지 맞혀 봐요. (남은 친구 ${left}명)`, `${label(turn)}'s turn! Ask a question or guess who it is. (${left} left)`)
             : text(`정답! ${secret.n} 이에요! +${Math.max(1, 5 - asked.length)}점`, `Correct! It's ${secret.n}! +${Math.max(1, 5 - asked.length)}`)}
         </p>
         <ul className="grid grid-cols-4 gap-2" aria-label={text('친구들', 'Friends')}>

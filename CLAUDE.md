@@ -26,6 +26,8 @@
 
 > **문장 은행 말하기 목적·패턴 (2026-10-28):** 문장 은행 선택기(`SentenceBankPicker`)에 "말하기 목적"(11가지 × 레벨 4 × 8문장, `data/sentencePurposes.ts`)과 "문장 패턴"(처음 두 낱말이 같은 문장을 모든 상황·목적에서 모아 반복 연습) 보기를 더했고, 내 단어장 > 문장 목록 편집에서도 은행에서 바로 골라 담는다. **질문·대답 짝**(상황 12 × 레벨 4 × 6쌍, `data/sentenceQA.ts`, 고르면 질문 다음 줄에 대답이 이어서 담김)도 같은 선택기의 네 번째 보기다. 문장은 AI 초안(자동 검수만)이라 화면에 초안으로 알린다. 만든 법·한계·확인은 [docs/sentence-purpose-bank.md](docs/sentence-purpose-bank.md). 커밋·배포는 사용자 요청 시에만.
 
+> **문법 게임 팀·점수 설정 (2026-11-04):** 15개 문법 게임의 팀 수·점수 표시를 화면 위 "⚙ 팀·점수 설정"으로 옮겼다(혼자 풀기/1~4팀, 점수 보이기, `lib/grammarPlay.ts`, 이 브라우저에 기억) — 과외처럼 팀 없이 혼자 쓸 수 있다. 새 문법 게임은 `TeamSetup`·`Scores`·`Finish`·`useTeamLabel`을 쓰고 팀 수는 `initialTeams()`로 시작할 것. 확인 `check-grammar-games-browser.mjs`.
+
 > **문법별 게임 1·2·3차 묶음 (2026-11-04):** 문법 항목 하나로 규칙 기반 문제를 만드는 게임 61~74(3차: 수동태 카메라·조건문 선택 모험·관계사 인물 찾기·질문으로 친구 찾기·문법 장보기, 문장 변신 연구소·주어·동사 짝꿍·문법 경매·조건 영작 대결·문장 속 품사 탐험·문장 뼈대 조립소·비교급 챔피언·이유·결과 연결 다리·습관 캘린더)와 문법 탐정 사건집 가져오기. 템플릿에는 `config.grammarId` 만 저장. [docs/grammar-games.md](docs/grammar-games.md), 확인 `check-grammar-games.mjs`·`check-grammar-games-browser.mjs`. **새 문법 게임은 `GRAMMAR_GAME_TYPES`·`GrammarGames(B·C).tsx`·`grammarGamesB.ts`(+`C.ts`)의 지원 표·수업 자동 배정 `AFFINITY`·카탈로그·`gamePages.ts`·App 라우트를 같이 고칠 것.** 커밋·배포는 사용자 요청 시에만.
 
 > **개별수업 문법 수업 늘리기 (2026-11-04):** 단체수업과 같은 워크북·문장 공장·문법별 게임 문제를 개별수업의 기존 채점 단계로 옮겨(`lib/soloGrammarBank.ts`) 3단계 틀 문법 수업이 평균 40분, 표준 50분 흐름이 평균 42분, 기본 수업이 평균 25분(전엔 14분)이 됐다(`buildBasicGrammarLesson`). 그룹 안내 시간은 실제 문제 수로 계산. [docs/grammar-lesson-30min.md](docs/grammar-lesson-30min.md), 확인 `check-solo-grammar-long.mjs`. 사용자 요청으로 커밋·푸시·자동 배포한다.
