@@ -167,7 +167,7 @@ export function buildUnscramblePages(words: FullCardItem[], rng: Rng, perPage = 
     const text = toLetterGameText(w.word, { min: 3, max: 12 });
     if (!text || seen.has(text)) continue;
     seen.add(text);
-    rows.push({ word: w.word, scrambled: scramble(text, rng), imageUrl: w.imageUrl, meaning: w.meaning });
+    rows.push({ word: text.toLowerCase(), scrambled: scramble(text.toLowerCase(), rng), imageUrl: w.imageUrl, meaning: w.meaning });
   }
   return chunk(rows, perPage);
 }

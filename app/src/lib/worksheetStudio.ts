@@ -1,6 +1,7 @@
 import type { FullCardItem, PhonicsBankEntry } from './types';
 import { worksheetActivity } from './worksheetActivityCatalog';
 import { buildWorksheet, chunk, makeRng, shuffled, DEFAULT_COLORING_OPTIONS, isWorksheetEmpty, sentenceTokens, type WorksheetData } from './worksheetGenerators';
+import {lineartUrlForWord} from './lineart';
 import { parsePattern } from './phonicsPattern';
 
 export interface StudioWord extends FullCardItem {
@@ -11,6 +12,8 @@ export interface StudioWord extends FullCardItem {
 }
 export interface StudioTask { id:string; prompt:string; answer:string; detail:string; options:string[]; wordId?:string; order?:number; }
 export interface WorksheetDocument {
+ source?:{id:string;name:string;kind:'word'|'sentence';total:number;revision?:string};
+ selectedWordIds?:string[];
  schema:'classbank-worksheet-v1'; activityId:string; title:string; instruction:string;
  words:StudioWord[]; tasks:StudioTask[]; passage:string; topic:string; left:string; right:string; columns:string; route:string; seed:number;
  editedTasks?:boolean; needsReview?:boolean;
@@ -55,7 +58,7 @@ export function studioWordsFromCards(cards:FullCardItem[],bank:PhonicsBankEntry[
   const hits=bank.filter(e=>e.word.toLowerCase()===card.word.trim().toLowerCase()&&(e.meaning||'').trim()===card.meaning.trim()&&(!card.patternMarked||e.pattern_marked===card.patternMarked));
   const hit=hits.find(e=>e.rule===card.category)||hits.find(e=>e.step>=2)||hits[0];
   return {...existing,id:`${card.id||'word'}:${i}`,imageUrl:card.imageUrl??hit?.image_url??null,
-   lineartUrl:existing.lineartUrl===undefined?(!card.imageUrl||card.imageUrl===hit?.image_url?hit?.lineart_url??null:null):existing.lineartUrl,
+   lineartUrl:existing.lineartUrl===undefined?(!card.imageUrl||card.imageUrl===hit?.image_url?hit?.lineart_url??lineartUrlForWord(card.word):null):existing.lineartUrl,
    patternMarked:card.patternMarked||hit?.pattern_marked,soundGroup:existing.soundGroup||hit?.rule||'', sounds:existing.sounds||'',phonemes:existing.phonemes||'',syllables:existing.syllables||'',partner:existing.partner||'',parts:existing.parts||''};
  });
 }
@@ -82,7 +85,7 @@ export function legacyWorksheet(doc:WorksheetDocument):WorksheetData|null {
   }return {kind,pages};
  }
  const words=doc.activityId==='soundSort'?doc.words.map(w=>({...w,category:w.soundGroup||''})):doc.words;
- return kind?buildWorksheet(kind,words,doc.seed,{askTemplate:'like',sheetTitle:doc.title,coloring:{...DEFAULT_COLORING_OPTIONS,title:doc.title,preserveWords:true}}):null;
+ return kind?buildWorksheet(kind,doc.activityId==='pictureMatch'?words.filter(w=>!!w.imageUrl):words,doc.seed,{askTemplate:'like',sheetTitle:doc.title,coloring:{...DEFAULT_COLORING_OPTIONS,title:doc.title,preserveWords:true}}):null;
 }
 export function studioLegacyPages(doc:WorksheetDocument):WorksheetData[] {
  const data=legacyWorksheet(doc);if(!data)return [];
@@ -113,7 +116,7 @@ export function worksheetIssues(doc:WorksheetDocument):WorksheetIssue[] {
  }
  if(doc.words.length>60||doc.tasks.length>60)add('tooLong',undefined,{field:'questions',count:60});
  if(activity.mode==='words'){
-  const minimum=['minimalPairs','meaningPairs','collocations','domino','memory','wordChain'].includes(doc.activityId)?2:doc.activityId==='bingo'?4:['listenChoice','difference'].includes(doc.activityId)?3:doc.activityId==='barrier'?4:1;
+  const minimum=['meaningPairs','collocations','domino','memory','wordChain'].includes(doc.activityId)?2:doc.activityId==='bingo'?4:['listenChoice','difference'].includes(doc.activityId)?3:doc.activityId==='barrier'?4:1;
   if(doc.words.length<minimum)add('missingWords',undefined,{count:minimum});
   const names=doc.words.map(w=>w.word.trim().toLowerCase());
   if(new Set(names).size!==names.length)add('duplicateWord');
@@ -200,7 +203,7 @@ export function parseWorksheetFile(input:unknown):WorksheetDocument {
  const tasks:StudioTask[]=o.tasks.map(raw=>{if(!raw||typeof raw!=='object')throw Error('invalid_file');const r=raw as Record<string,unknown>;if(!Array.isArray(r.options)||r.options.length>12)throw Error('invalid_file');return {id:str(r.id,180),prompt:str(r.prompt,260),answer:str(r.answer,300),detail:str(r.detail,350),options:r.options.map(v=>str(v,180)),wordId:r.wordId?str(r.wordId,180):undefined,order:typeof r.order==='number'&&Number.isFinite(r.order)?r.order:undefined};});
  if(new Set(tasks.map(r=>r.id)).size!==tasks.length)throw Error('invalid_file');
  const seed=typeof o.seed==='number'&&Number.isFinite(o.seed)?o.seed:1;
- return {schema:'classbank-worksheet-v1',activityId:o.activityId,title:str(o.title,100),instruction:str(o.instruction,300),words,tasks,passage:str(o.passage,6000),topic:str(o.topic,250),left:str(o.left,90),right:str(o.right,90),columns:str(o.columns,1200),route:str(o.route,200),seed,editedTasks:o.editedTasks===true,needsReview:o.needsReview===true};
+ return {schema:'classbank-worksheet-v1',...(o.source&&typeof o.source==='object'&&typeof (o.source as Record<string,unknown>).id==='string'&&typeof (o.source as Record<string,unknown>).name==='string'?{source:{id:str((o.source as Record<string,unknown>).id,200),name:str((o.source as Record<string,unknown>).name,200),revision:typeof (o.source as Record<string,unknown>).revision==='string'?str((o.source as Record<string,unknown>).revision,100):undefined,kind:(o.source as Record<string,unknown>).kind==='sentence'?'sentence' as const:'word' as const,total:Math.max(0,Math.min(60,Number((o.source as Record<string,unknown>).total)||words.length))}}:{}),...(Array.isArray(o.selectedWordIds)?{selectedWordIds:o.selectedWordIds.filter((id):id is string=>typeof id==='string'&&words.some(w=>w.id===id))}:{}),activityId:o.activityId,title:str(o.title,100),instruction:str(o.instruction,300),words,tasks,passage:str(o.passage,6000),topic:str(o.topic,250),left:str(o.left,90),right:str(o.right,90),columns:str(o.columns,1200),route:str(o.route,200),seed,editedTasks:o.editedTasks===true,needsReview:o.needsReview===true};
 }
 
 export interface WorksheetStore {current:Record<string,WorksheetDocument>; copies:{id:string;name:string;document:WorksheetDocument;updatedAt:string}[];}

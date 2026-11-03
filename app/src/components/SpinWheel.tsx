@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { playMusic, playWheelSpinTicks, playWheelTickOnce } from '../lib/gameMusic';
-import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex } from '../lib/wheel';
+import { colorFor, computeSpinRotation, fontSizeFor, pickRandomIndex,wheelNumberFontSize } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
 
 interface Props {
@@ -113,7 +113,7 @@ export default function SpinWheel({
   // A horizontal word must fit the chord at its label radius. Use a numbered
   // legend instead of clipping words or shrinking below classroom reading size.
   const numbered = count > 12 || items.some(item => Array.from(item.label).length * fontSizeFor(count) * .62 > 2 * R * .58 * Math.sin(Math.PI / Math.max(2,count)) - 8);
-  const fontSize = numbered ? Math.max(14, Math.min(24, 2 * R * .7 * Math.sin(Math.PI / Math.max(2,count)) / 1.2)) : fontSizeFor(count);
+  const fontSize = numbered ? wheelNumberFontSize(count,R*.7) : fontSizeFor(count);
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.

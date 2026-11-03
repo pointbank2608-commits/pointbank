@@ -1,3 +1,4 @@
+import {prepareWorksheet} from '../../lib/worksheetPreparation';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chunk, makeRng, shuffled } from '../../lib/worksheetGenerators';
@@ -34,7 +35,7 @@ function StudentBlock({doc,block}:{doc:WorksheetDocument;block:StudioPaperBlock}
  case 'alphabet':return <div className="ws-exercises">{ws.map((w,i)=>{const letter=w.word.charAt(0);return <div className="ws-alphabet-row" key={w.id}><b>{offset+i+1}.</b><div><TracingRow word={`${letter.toUpperCase()} ${letter.toLowerCase()}`} trace last/><p>{letter.toUpperCase()} → ______</p></div></div>;})}</div>;
  case 'wordList':return <DataTable heads={[tr('word'),tr('meaning'),tr('example')]} rows={ws.map(w=>[<span key={w.id}><Picture src={w.imageUrl}/><b>{w.word}</b></span>,w.meaning,w.example||''])}/>;
  case 'wordCards':return <div className="ws-cut-grid">{ws.map(w=><div key={w.id}><Picture src={w.imageUrl}/><b>{w.word}</b><small>{w.meaning}</small></div>)}</div>;
- case 'wordTracing':return <div className="ws-exercises">{ws.map(w=><section key={w.id}><p><b>{w.word}</b> · {w.meaning}</p><TracingRow word={w.word} trace last={false} gapMm={3} emMm={Math.min(15,130/Math.max(w.word.length,1))}/><TracingRow word={w.word} trace={false} last/></section>)}</div>;
+ case 'wordTracing':return <div className="ws-exercises">{ws.map(w=><section key={w.id}><Picture src={w.imageUrl}/><p><b>{w.word}</b> · {w.meaning}</p><TracingRow word={w.word} trace last={false} gapMm={3} emMm={Math.min(15,130/Math.max(w.word.length,1))}/><TracingRow word={w.word} trace={false} last/></section>)}</div>;
  case 'sounds':return <div className="ws-exercises">{ws.map((w,i)=><div className="ws-sound-row" key={w.id}><b>{offset+i+1}.</b><Picture src={w.imageUrl}/><div className="ws-sound-boxes">{(soundGroups(w.word,w.sounds||'')||[]).map((g,j)=><span key={j} className={g.span===2?'ws-double-sound':''} style={{width:`${g.span*14}mm`}}/>)}</div></div>)}</div>;
  case 'chain':return <div className="ws-exercises">{ws.map((w,i)=><div className="ws-chain-row" key={w.id}><b>{offset+i+1}.</b><div>{i===0?<strong>{w.word}</strong>:<><p>{chainCue(ws[i-1],w)}</p><Lines count={1}/></>}</div></div>)}</div>;
  case 'syllables':return <div className="ws-exercises">{ws.map((w,i)=><div className="ws-exercise" key={w.id}><p><b>{offset+i+1}. {w.word}</b></p><Lines count={2}/></div>)}</div>;
@@ -101,11 +102,14 @@ function StudentBlock({doc,block}:{doc:WorksheetDocument;block:StudioPaperBlock}
  }
 }
 
-export default function WorksheetActivitySheets({doc,audience}:{doc:WorksheetDocument;audience:'student'|'teacher'}) {
+export default function WorksheetActivitySheets({doc,audience,maxPages}:{doc:WorksheetDocument;audience:'student'|'teacher';maxPages?:number}) {
+ const prepared=prepareWorksheet(doc);if(!prepared.ready)return null;return <PreparedSheets doc={prepared.doc} audience={audience} maxPages={maxPages}/>;
+}
+function PreparedSheets({doc,audience,maxPages}:{doc:WorksheetDocument;audience:'student'|'teacher';maxPages?:number}) {
  const {t}=useTranslation();const activity=worksheetActivity(doc.activityId)!;
  const legacy=studioLegacyPages(doc);let page=0;
- if(audience==='student'&&legacy.length)return <>{legacy.map((data,i)=><WorksheetSheets key={i} data={data} includeAnswers={false} heading={{title:doc.title,instruction:doc.instruction}}/>)}</>;
- if(audience==='student')return <>{studentBlocks(doc).map((block,i)=><Paper key={i} doc={doc} label={block.role?`${t('worksheetStudio.section')} ${block.role}`:undefined} page={++page}><StudentBlock doc={doc} block={block}/></Paper>)}</>;
+ if(audience==='student'&&legacy.length)return <>{legacy.slice(0,maxPages).map((data,i)=><WorksheetSheets key={i} data={maxPages&&'pages' in data?{...data,pages:data.pages.slice(0,maxPages)} as typeof data:data} includeAnswers={false} heading={{title:doc.title,instruction:doc.instruction}}/>)}</>;
+ if(audience==='student')return <>{studentBlocks(doc).slice(0,maxPages).map((block,i)=><Paper key={i} doc={doc} label={block.role?`${t('worksheetStudio.section')} ${block.role}`:undefined} page={++page}><StudentBlock doc={doc} block={block}/></Paper>)}</>;
  const cues=teacherCues(doc),answers=teacherAnswers(doc),cuePages:string[][]=[];let cuePage:string[]=[];let cueLength=0;
  for(const cue of cues){if(cuePage.length&&(cueLength+cue.length>1000||cuePage.length===5)){cuePages.push(cuePage);cuePage=[];cueLength=0;}cuePage.push(cue);cueLength+=cue.length;}if(cuePage.length)cuePages.push(cuePage);
  const dedicatedLegacy=legacy.some(d=>!['askAnswer','boardGame','coloring','miniBook'].includes(d.kind));

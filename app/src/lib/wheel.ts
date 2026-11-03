@@ -31,6 +31,13 @@ export function fontSizeFor(count: number): number {
   return Math.max(11, Math.min(20, 280 / Math.max(count, 1)));
 }
 
+/** SVG units scale with the actual wheel diameter; fit the widest numeric label to its chord. */
+export function wheelNumberFontSize(count:number,radius:number){
+ const digits=String(Math.max(1,count)).length;
+ const chord=2*radius*Math.sin(Math.PI/Math.max(2,count));
+ return Math.max(8,Math.min(64,(chord-6)/(digits*.7)));
+}
+
 /**
  * 화면 12시 방향을 0도로 두고 시계 방향으로 재는 각도계 기준,
  * targetIndex 조각이 포인터(12시) 밑에 오도록 필요한 "새 누적 회전각"을 계산한다.

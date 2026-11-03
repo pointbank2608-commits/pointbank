@@ -60,6 +60,7 @@ const gameBlocks: BlockDef[] = GAME_CATALOG.map((g) => ({
   uses: ['group'],
   status: 'ready',
   nameKey: g.nameKey,
+  descriptionKey:g.descKey,
   needs: { words: { min: g.minItems } },
   slide: { kind: 'game', gameType: g.type },
   concept: GAME_CONCEPT[g.type],

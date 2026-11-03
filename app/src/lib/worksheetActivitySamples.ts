@@ -4,6 +4,7 @@ import { newTask, rebuildWordTasks, type StudioTask, type StudioWord, type Works
 
 // This is pronunciation metadata for examples, not a second curriculum or asset list.
 const soundData:Record<string,[string,string,string,number]>={
+ road:['r|oa|d','r|oʊ|d','road',1],load:['l|oa|d','l|oʊ|d','load',1],trip:['t|r|i|p','t|r|ɪ|p','trip',1],flat:['f|l|a|t','f|l|æ|t','flat',1],
  cat:['c|a|t','k|æ|t','cat',1],cap:['c|a|p','k|æ|p','cap',1],cup:['c|u|p','k|ʌ|p','cup',1],cot:['c|o|t','k|ɒ|t','cot',1],dot:['d|o|t','d|ɒ|t','dot',1],dog:['d|o|g','d|ɒ|g','dog',1],fog:['f|o|g','f|ɒ|g','fog',1],log:['l|o|g','l|ɒ|g','log',1],
  fish:['f|i|sh','f|ɪ|ʃ','fish',1],dish:['d|i|sh','d|ɪ|ʃ','dish',1],ship:['sh|i|p','ʃ|ɪ|p','ship',1],shop:['sh|o|p','ʃ|ɒ|p','shop',1],pig:['p|i|g','p|ɪ|g','pig',1],big:['b|i|g','b|ɪ|g','big',1],hen:['h|e|n','h|e|n','hen',1],pen:['p|e|n','p|e|n','pen',1],
  fox:['f|o|x:x','f|ɒ|k|s','fox',1],cow:['c|ow','k|aʊ','cow',1],bee:['b|ee','b|iː','bee',1],tea:['t|ea','t|iː','tea',1],hat:['h|a|t','h|æ|t','hat',1],bag:['b|a|g','b|æ|g','bag',1],

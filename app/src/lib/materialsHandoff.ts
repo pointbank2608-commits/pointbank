@@ -6,6 +6,8 @@ import type { FullCardItem, WorksheetSlideOptions, PhonicsSlideOptions } from '.
  * 나중에 열어본 자료실 페이지를 몰래 채워두는 일이 없다.
  */
 export interface MaterialsHandoffState {
+  materialsSourceId?:string;
+  materialsSourceName?:string;
   materialsWords?: FullCardItem[];
   materialsOwnerId?: string;
   materialsAcademyId?: string;

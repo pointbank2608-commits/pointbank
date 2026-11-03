@@ -48,6 +48,7 @@ export default function LessonActivityPicker({onPick,onBundle,onClose,canAttachH
       const info=INFO[b.id];const helper=b.category==='helper';const disabled=!!info||(helper&&!canAttachHelper);
       return <button type="button" key={b.id} data-activity-id={b.id} disabled={disabled} onClick={()=>choose(b)}>
        <span className="material-symbols-outlined activity-icon" aria-hidden>{b.icon}</span><span><strong>{name(b)}</strong>
+       {b.descriptionKey&&<small>{t(b.descriptionKey)}</small>}
        {info?<small>{t('curriculum.library.'+info)}</small>:helper?<small>{t(canAttachHelper?'curriculum.library.helperHint':'lessonUx.needSlide')}</small>:b.needs?.words&&b.needs.words.min>1&&b.needs.words.min<=30?<small>{t('curriculum.library.needWords',{n:b.needs.words.min})}</small>:null}
        </span>
       </button>;

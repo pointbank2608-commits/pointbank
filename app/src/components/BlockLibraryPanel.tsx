@@ -76,6 +76,7 @@ export default function BlockLibraryPanel({ onPick, canAttachHelper }: { onPick:
                   <span className="material-symbols-outlined text-[22px] text-primary">{b.icon}</span>
                   <span className="min-w-0 flex-1 font-label-md text-label-md font-bold text-on-surface">{nameOf(b)}</span>
                 </div>
+                {b.descriptionKey&&<p className="text-sm leading-relaxed text-on-surface-variant">{t(b.descriptionKey)}</p>}
                 <div className="flex flex-wrap items-center gap-1.5 font-caption text-caption text-on-surface-variant">
                   <span className="rounded bg-primary/10 px-1.5 py-0.5 text-primary">{t(`curriculum.blockOptions.category_${b.category}`)}</span>
                   {b.needs?.words && b.needs.words.min > 1 && b.needs.words.min <= 30 && <span>{t('curriculum.library.needWords', { n: b.needs.words.min })}</span>}

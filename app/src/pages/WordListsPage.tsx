@@ -940,7 +940,8 @@ export default function WordListsPage() {
                 <div className="mt-3 rounded-lg bg-surface-container-low p-3">
                   <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('wordLists.printHint')}</div>
                   <MaterialsLaunchButtons
-                    words={list.items.map((i) => ({ id: i.id, word: i.word, meaning: i.meaning, imageUrl: i.image_url }))}
+                    sourceId={list.id} sourceName={list.name} kind={wordListKindOf(list)}
+                    words={wordListToCards(list)}
                   />
                 </div>
               )}

@@ -49,6 +49,7 @@ export interface BlockSlideRef {
 }
 
 export interface BlockDef {
+  descriptionKey?:string;
   /** 'game.wheel' · 'practice.quiz' · 'learn.wordShow' · 'print.worksheet' · 'solo.pickMeaning' · 'helper.timer' */
   id: string;
   role: BlockRole;

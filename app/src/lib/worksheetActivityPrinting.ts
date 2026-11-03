@@ -42,7 +42,7 @@ export function listeningChoices(doc:WorksheetDocument) {
  return doc.words.map(word=>{const choices=shuffled([word,...shuffled(doc.words.filter(w=>w.id!==word.id),rng).slice(0,2)],rng);return {word,choices,correct:choices.findIndex(w=>w.id===word.id)};});
 }
 export function chainCue(previous:StudioWord,next:StudioWord):string {
- const a=phonemeParts(previous.phonemes),b=phonemeParts(next.phonemes);let i=0;while(i<Math.min(a.length,b.length)&&a[i]===b[i])i++;
+ const a=phonemeParts(previous.phonemes),b=phonemeParts(next.phonemes);if(!a.length||!b.length||a.join('|')===b.join('|'))return '';let i=0;while(i<Math.min(a.length,b.length)&&a[i]===b[i])i++;
  return a.length===b.length?`Change sound ${i+1}: /${a[i]}/ → /${b[i]}/.`:a.length<b.length?`Add /${b[i]}/ at sound position ${i+1}.`:`Remove /${a[i]}/ at sound position ${i+1}.`;
 }
 export function teacherCues(doc:WorksheetDocument):string[] {
@@ -64,10 +64,10 @@ export function teacherAnswers(doc:WorksheetDocument):{prompt:string;answer:stri
  if(layout==='listenChoice')return listeningChoices(doc).map((c,i)=>({prompt:String(i+1),answer:`${String.fromCharCode(65+c.correct)} · ${c.word.word}`}));
  if(layout==='listenColor')return doc.tasks.map(r=>({prompt:`${doc.words.findIndex(w=>w.id===r.wordId)+1}. ${doc.words.find(w=>w.id===r.wordId)?.word||''}`,answer:r.answer}));
  if(layout==='map'){const cells=routeCells(doc.route)||[];return [{prompt:doc.route,answer:cells.map(c=>`${'ABC'[c%3]}${Math.floor(c/3)+1}`).join(' → ')}];}
- if(layout==='pairs')return doc.activityId==='minimalPairs'?teacherCues(doc).map(s=>({prompt:s.split('.')[0],answer:s.slice(s.indexOf('.')+2)})):doc.words.map(w=>({prompt:w.word,answer:w.partner||w.meaning}));
+ if(layout==='pairs')return doc.activityId==='minimalPairs'?teacherCues(doc).map(s=>({prompt:s.split('.')[0],answer:s.slice(s.indexOf('.')+2)})):doc.words.filter(w=>doc.activityId!=='collocations'||!!w.partner?.trim()&&/^[a-z][a-z '-]*$/i.test(w.partner)).map(w=>({prompt:w.word,answer:w.partner||w.meaning}));
  if(layout==='sounds')return doc.words.map(w=>({prompt:w.word,answer:(soundGroups(w.word,w.sounds||'')||[]).map(g=>g.text+(g.span===2?' (2 sounds)':'')).join(' | ')}));
  if(layout==='chain')return doc.words.map((w,i)=>({prompt:i?chainCue(doc.words[i-1],w):'Start',answer:w.word}));
- if(layout==='syllables')return doc.words.map(w=>({prompt:w.word,answer:`${w.syllables} · stress ${w.stress}`}));
+ if(layout==='syllables')return doc.words.filter(w=>w.syllables&&Number.isInteger(w.stress)).map(w=>({prompt:w.word,answer:`${w.syllables} · stress ${w.stress}`}));
  if(layout==='morphology')return doc.words.map(w=>({prompt:w.parts||'',answer:`${w.word} — ${w.meaning}`}));
  if(layout==='sequence')return [...doc.tasks].sort((a,b)=>a.order!-b.order!).map(r=>({prompt:String(r.order),answer:r.prompt}));
  if(layout==='difference')return [{prompt:'A → B',answer:'The first three occupied positions are rotated. Compare positions 1, 2 and 3 on each pair of boards.'}];

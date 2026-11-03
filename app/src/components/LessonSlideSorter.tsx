@@ -561,7 +561,7 @@ export default function LessonSlideSorter({
 
   function addGameSlide(gameType: GameSlide['gameType']) {
     const draft:GameSlide={id:uid(),kind:'game',gameType};
-    if(!gameSlideReady(draft,gameCards)){setGameDraft(draft);setAddMode('game');return;}
+    if(gameType==='wheel'||!gameSlideReady(draft,gameCards)){setGameDraft(draft);setAddMode('game');return;}
     addSlide(draft);
     // 추가하자마자 그 게임의 설정 화면을 보여준다(게임 내용을 바로 고르고 고칠 수 있게).
     setAddMode(null);
@@ -984,7 +984,7 @@ export default function LessonSlideSorter({
                 wordList={wordList} cards={gameCards} wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange}
                 onUpdate={patch=>setGameDraft(d=>d?{...d,...patch}:null)}/>
               <button type="button" className="min-h-11 rounded-xl bg-primary px-5 font-bold text-white disabled:opacity-40"
-                disabled={!gameSlideReady(gameDraft,gameCards)} onClick={()=>{addSlide(gameDraft);setGameDraft(null);setAddMode(null);}}>{t('curriculum.study.addButton')}</button>
+                disabled={!gameSlideReady(gameDraft,gameCards)||(gameDraft.gameType==='wheel'&&!gameDraft.templateId)} onClick={()=>{addSlide(gameDraft);setGameDraft(null);setAddMode(null);}}>{t('curriculum.study.addButton')}</button>
             </div>}
             {addMode === 'game' && !gameDraft && (
               <div className="space-y-2">

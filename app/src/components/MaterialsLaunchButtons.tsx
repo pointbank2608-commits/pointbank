@@ -2,15 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { MATERIAL_TARGETS, type MaterialsHandoffState } from '../lib/materialsHandoff';
 import type { FullCardItem } from '../lib/types';
+import {useAuth} from '../context/AuthContext';
 
 /** 고른 단어를 들고 수업 자료실 4종(플래시카드·워크시트·빙고·메모리 카드)으로 바로 넘어가는 버튼 묶음.
  * 플래시카드가 주 버튼(가장 자주 쓴다), 나머지는 보조 버튼. */
-export default function MaterialsLaunchButtons({ words, phonics = false }: { words: FullCardItem[]; phonics?: boolean }) {
+export default function MaterialsLaunchButtons({ words, phonics = false,sourceId,sourceName,kind='word' }: { words: FullCardItem[]; phonics?: boolean;sourceId?:string;sourceName?:string;kind?:'word'|'sentence' }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const {session,academy}=useAuth();
 
   function go(path: string, tab?: string) {
-    const state: MaterialsHandoffState = { materialsWords: words, materialsTab: tab };
+    const state: MaterialsHandoffState = { materialsWords: words, materialsTab: tab,materialsSourceId:sourceId,materialsSourceName:sourceName,materialsKind:kind,materialsOwnerId:session?.user.id,materialsAcademyId:academy?.id };
     navigate(path, { state });
   }
 

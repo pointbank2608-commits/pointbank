@@ -5,12 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { fetchAllWordLists, fetchPhonicsBankResult } from '../../lib/api';
 import { ACTIVITY_PURPOSES, WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES, worksheetActivity, type ActivityPurpose } from '../../lib/worksheetActivityCatalog';
-import { addKnownWorksheetSounds, exampleWorksheet } from '../../lib/worksheetActivitySamples';
-import { parseWorksheetFile, readWorksheetStore, rebuildWordTasks, replaceStudioWords, studioKey, studioWordsFromCards, worksheetIssues, writeWorksheetStore, type StudioWord, type WorksheetDocument, type WorksheetStore } from '../../lib/worksheetStudio';
+import { addKnownWorksheetSounds } from '../../lib/worksheetActivitySamples';
+import { parseWorksheetFile, readWorksheetStore, rebuildWordTasks, replaceStudioWords, studioKey, studioWordsFromCards, writeWorksheetStore, type StudioWord, type WorksheetDocument, type WorksheetStore } from '../../lib/worksheetStudio';
 import { teacherCues } from '../../lib/worksheetActivityPrinting';
-import { handoffFromLocationState, wordsFromLocationState } from '../../lib/materialsHandoff';
+import { handoffFromLocationState } from '../../lib/materialsHandoff';
 import { speakSequence } from '../../lib/speech';
 import type { FullCardItem, PhonicsBankEntry, WordList } from '../../lib/types';
+import {prepareWorksheet,worksheetRequirement} from '../../lib/worksheetPreparation';
+import {documentFromSource,sourceFromList,sourceFromHandoff,rememberWorksheetSource,restoreWorksheetSource,worksheetSource,type WorksheetSource} from '../../lib/worksheetSources';
+import WorksheetSourceDialog from './WorksheetSourceDialog';
 import WorksheetActivitySheets from './WorksheetActivitySheets';
 import WorksheetSourceEditor from './WorksheetSourceEditor';
 import WorksheetTaskEditor from './WorksheetTaskEditor';
@@ -34,23 +37,28 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
  const active=useRef(true);useEffect(()=>{active.current=true;return()=>{active.current=false;window.speechSynthesis?.cancel();};},[]);
  const persist=useCallback((value:WorksheetStore)=>{store.current=value;const success=writeWorksheetStore(owner,value);setSaved(success);return success;},[owner]);
  const change=useCallback((next:WorksheetDocument)=>{docRef.current=next;setDoc(next);persist({...store.current,current:{...store.current.current,[next.activityId]:next}});},[persist]);
- const requested=params.get('activity');
+ const requested=params.get('activity'),sourceId=params.get('source');
  const incoming=handoffFromLocationState(location.state),allowed=!incoming.materialsOwnerId||(incoming.materialsOwnerId===session?.user.id&&incoming.materialsAcademyId===academy?.id);
- const incomingWords=wordsFromLocationState(allowed?location.state:null);
- const consumed=useRef('');
- const [sampleId,setSampleId]=useState<string|null>(null);
- const navigationInput=useRef({incomingWords,bank,location});navigationInput.current={incomingWords,bank,location};
+ const [source,setSource]=useState<WorksheetSource|null>(()=>sourceFromHandoff(allowed?incoming:{})||(params.get('source')?restoreWorksheetSource(owner,params.get('source')!):null));
+ const [sourceDialog,setSourceDialog]=useState(false),[showAll,setShowAll]=useState(false),[sampleId,setSampleId]=useState<string|null>(null);
+ const sourceRef=useRef(source);sourceRef.current=source;
+ const route=useCallback((id?:string,selection:WorksheetSource|null=sourceRef.current)=>'/materials/worksheet'+((id||selection)?'?'+new URLSearchParams({...id?{activity:id}:{},...selection?{source:selection.id}:{}}).toString():''),[]);
+ useEffect(()=>{const h=handoffFromLocationState(location.state);if(h.materialsOwnerId&&(h.materialsOwnerId!==session?.user.id||h.materialsAcademyId!==academy?.id))return;const selected=sourceFromHandoff(h);if(selected){rememberWorksheetSource(owner,selected);setSource(selected);navigate(route(requested||undefined,selected),{replace:true,state:{}});}},[location.key,location.state,session?.user.id,academy?.id,owner,requested,navigate,route]); // consume an explicit handoff once; format navigation carries the source ID
+ useEffect(()=>{const id=sourceId;if(id&&id!==sourceRef.current?.id){setSource(restoreWorksheetSource(owner,id));}},[sourceId,owner]);
+ useEffect(()=>{const id=sourceId;if(!id||sourceRef.current?.id===id||loading)return;const list=lists.find(l=>l.id===id);if(list){const selected=sourceFromList(list);setSource(selected);rememberWorksheetSource(owner,selected);}},[lists,loading,sourceId,owner,sourceError]);
  useEffect(()=>{
-  const {incomingWords:cards,bank:media,location:route}=navigationInput.current;
   if(!requested||!worksheetActivity(requested)){docRef.current=null;setDoc(null);return;}
-  if(docRef.current?.activityId!==requested){const next=store.current.current[requested]||exampleWorksheet(requested);docRef.current=next;setDoc(next);setAudience('student');setUndo(null);}
-  if(cards.length&&consumed.current!==route.key){consumed.current=route.key;const next=replaceStudioWords(docRef.current!,studioWordsFromCards(cards,media).map(addKnownWorksheetSounds));change(next);navigate(route.pathname+route.search,{replace:true,state:{}});}
- },[requested,location.key,change,navigate]);
+  if(sourceId&&!source)return;
+  if(source&&loading&&!bank.length)return;
+  if(docRef.current?.activityId===requested&&docRef.current.source?.id===source?.id)return;
+  const next=documentFromSource(requested,source,bank,store.current.current[requested]);docRef.current=next;setDoc(next);setAudience('student');setUndo(null);change(next);
+  if(!source&&next.source){const restored={...worksheetSource(next.source.id,next.source.name,next.source.kind,next.words),revision:next.source.revision||''};sourceRef.current=restored;setSource(restored);rememberWorksheetSource(owner,restored);navigate(route(requested,restored),{replace:true,state:{}});}
+ },[requested,source,sourceId,loading,bank,change,navigate,owner,route]);
  const reloadSources=useCallback(async()=>{
   if(!academy?.id){setLoading(false);return;}setLoading(true);setSourceError(false);
   const results=await Promise.allSettled([fetchAllWordLists(academy.id,'all'),fetchPhonicsBankResult({includeExtensions:true})]);if(!active.current)return;
   if(results[0].status==='fulfilled')setLists(results[0].value);else setSourceError(true);
-  if(results[1].status==='fulfilled'&&results[1].value.mediaAvailable)setBank(results[1].value.entries);else setSourceError(true);setLoading(false);
+  if(results[1].status==='fulfilled')setBank(results[1].value.entries);setLoading(false);
  },[academy?.id]);
  useEffect(()=>{void reloadSources();},[reloadSources]);
  useEffect(()=>{
@@ -66,7 +74,14 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
    Promise.all(imgs.map(img=>img.decode().then(()=>{if(!img.naturalWidth)throw Error('image');}))).then(()=>{if(!cancelled)setImageStatus('ready');},()=>{if(!cancelled)setImageStatus('error');});
   });return()=>{cancelled=true;cancelAnimationFrame(frame);};
  },[doc,audience]);
- function choose(id:string){let next=store.current.current[id]||exampleWorksheet(id);if(incomingWords.length)next=replaceStudioWords(next,studioWordsFromCards(incomingWords,bank).map(addKnownWorksheetSounds));change(next);setUndo(null);setAudience('student');navigate(`/materials/worksheet?activity=${encodeURIComponent(id)}`,{state:{}});}
+ function choose(id:string){setUndo(null);setAudience('student');navigate(route(id),{state:{}});}
+ function applySource(list:WordList,append:boolean){
+  if(docRef.current?.editedTasks&&!confirm(tr('confirmReplace')))return;
+  const selected=sourceFromList(list);if(append&&docRef.current){const combined=[...docRef.current.words,...selected.cards.map(c=>({...c,id:crypto.randomUUID()}))];selected.id='combined:'+crypto.randomUUID();selected.name=(source?.name||docRef.current.source?.name||'자료')+' + '+list.name;selected.cards=combined;selected.revision=worksheetSource(selected.id,selected.name,selected.kind,combined).revision;}
+  if(docRef.current)setUndo(structuredClone(docRef.current));rememberWorksheetSource(owner,selected);sourceRef.current=selected;setSource(selected);setSourceDialog(false);
+  if(docRef.current){const next=documentFromSource(docRef.current.activityId,selected,bank);change(next);}navigate(route(requested||undefined,selected),{state:{}});
+ }
+ function openStored(next:WorksheetDocument){let selected:WorksheetSource|null=null;if(next.source){selected={...worksheetSource(next.source.id,next.source.name,next.source.kind,next.words),revision:next.source.revision||''};rememberWorksheetSource(owner,selected);}sourceRef.current=selected;setSource(selected);change(next);navigate(route(next.activityId,selected),{state:{}});}
  function useSample(next:WorksheetDocument){
   const previous=store.current.current[next.activityId];
   if(previous&&copies.length>=30){notify(tr('storageLimit'),'error');return 'storageLimit' as const;}
@@ -74,7 +89,7 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
   const nextStore={...store.current,copies:nextCopies,current:{...store.current.current,[next.activityId]:next}};
   // Write atomically before replacing the screen so a quota failure cannot discard earlier work.
   if(!writeWorksheetStore(owner,nextStore)){setSaved(false);notify(tr('saveFailed'),'error');return 'saveFailed' as const;}
-  store.current=nextStore;setCopies(nextCopies);setSaved(true);docRef.current=next;setDoc(next);setUndo(previous?structuredClone(previous):null);setAudience('student');setSampleId(null);
+  store.current=nextStore;setCopies(nextCopies);setSaved(true);docRef.current=next;setDoc(next);sourceRef.current=null;setSource(null);setUndo(previous?structuredClone(previous):null);setAudience('student');setSampleId(null);
   navigate(`/materials/worksheet?activity=${encodeURIComponent(next.activityId)}`,{state:{}});
   return null;
  }
@@ -85,37 +100,53 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
   }change(next);}
  function saveCopy(){if(!doc)return;if(copies.length>=30){notify(tr('storageLimit'),'error');return;}const row={id:crypto.randomUUID(),name:copyName.trim()||doc.title,document:structuredClone(doc),updatedAt:new Date().toISOString()};const next=[row,...copies];const success=persist({...store.current,copies:next});setCopies(next);setCopyName('');notify(tr(success?'copySaved':'saveFailed'),success?undefined:'error');}
  function download(){if(!doc)return;const blob=new Blob([JSON.stringify(doc,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${doc.title.replace(/[^\p{L}\p{N} _-]/gu,'').slice(0,60)||'ClassBank'}-editable.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
- async function openFile(file:File){try{if(file.size>1024*1024)throw Error('size');const next=parseWorksheetFile(JSON.parse(await file.text()));if(!active.current)return;if(docRef.current)setUndo(structuredClone(docRef.current));change(next);navigate(`/materials/worksheet?activity=${encodeURIComponent(next.activityId)}`,{state:{}});}catch{if(active.current)notify(tr('importFailed'),'error');}}
+ async function openFile(file:File){try{if(file.size>1024*1024)throw Error('size');const next=parseWorksheetFile(JSON.parse(await file.text()));if(!active.current)return;if(docRef.current)setUndo(structuredClone(docRef.current));openStored(next);}catch{if(active.current)notify(tr('importFailed'),'error');}}
  async function print(target:'student'|'teacher'){
-  if(!doc||worksheetIssues(doc).length||printing||loading)return;setPrinting(true);setAudience(target);
+  if(!doc||!plan?.ready||sourceBlocked||!pageCount||printing||loading)return;setPrinting(true);setAudience(target);
   try{await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));await document.fonts.ready;const imgs=[...preview.current!.querySelectorAll('img')];await Promise.all(imgs.map(i=>i.decode()));if(imgs.some(i=>!i.naturalWidth))throw Error('image');window.print();}catch{notify(tr('imageFailed'),'error');setImageStatus('error');}finally{setPrinting(false);}
  }
- const activity=doc?worksheetActivity(doc.activityId):undefined,issues=useMemo(()=>doc?worksheetIssues(doc):[],[doc]);
- const filtered=WORKSHEET_ACTIVITIES.filter(a=>(purpose==='all'||a.purpose===purpose)&&`${a.ko} ${a.en} ${a.goalKo} ${a.goalEn}`.toLowerCase().includes(search.trim().toLowerCase()));
- const cues=doc?teacherCues(doc):[];
+ const activity=doc?worksheetActivity(doc.activityId):undefined,plan=useMemo(()=>doc?prepareWorksheet(doc):null,[doc]);
+ const issues=plan?.issues||[];const sourceBlocked=!!params.get('source')&&!source;
+ const sourceName=source?.name||doc?.source?.name;const allActivities=[...WORKSHEET_BASIC_ACTIVITIES,...WORKSHEET_ACTIVITIES];
+ const cardDocument=(id:string)=>documentFromSource(id,source,bank,store.current.current[id]);
+ const recommended=['basic-tracing','pictureMatch','scramble','basic-fillBlank','wordSearch'];
+ const recommendedCards=source?.kind==='sentence'?['sentenceOrder','dictation','readMatch']:recommended;
+ const visibleCards=source&&!showAll?recommendedCards.map(id=>worksheetActivity(id)!):null;
+ const cues=plan?.ready?teacherCues(plan.doc):[];
  const editFile=<label className="ws-button ws-file-button">{tr('import')}<input type="file" accept="application/json,.json" onChange={e=>{const f=e.target.files?.[0];if(f)void openFile(f);e.target.value='';}}/></label>;
- const copyShelf=<details className="ws-copy-shelf no-print"><summary>{tr('savedList')} · {copies.length}</summary>{copies.map(copy=><div className="ws-saved-copy" key={copy.id}><span>{copy.name}</span><button type="button" className="ws-button" onClick={()=>{change(structuredClone(copy.document));navigate(`/materials/worksheet?activity=${copy.document.activityId}`,{state:{}});}}>{tr('load')}</button><button type="button" className="ws-button" onClick={()=>{if(confirm(tr('deleteConfirm'))){const next=copies.filter(c=>c.id!==copy.id);setCopies(next);persist({...store.current,copies:next});}}}>{tr('deleteCopy')}</button></div>)}</details>;
+ const copyShelf=<details className="ws-copy-shelf no-print"><summary>{tr('savedList')} · {copies.length}</summary>{copies.map(copy=><div className="ws-saved-copy" key={copy.id}><span>{copy.name}</span><button type="button" className="ws-button" onClick={()=>{openStored(structuredClone(copy.document));}}>{tr('load')}</button><button type="button" className="ws-button" onClick={()=>{if(confirm(tr('deleteConfirm'))){const next=copies.filter(c=>c.id!==copy.id);setCopies(next);persist({...store.current,copies:next});}}}>{tr('deleteCopy')}</button></div>)}</details>;
+ const sourceBar=<div className="ws-current-source" data-worksheet-source data-source-id={source?.id||doc?.source?.id||''}><span>{sourceName?tr('usingSource'):tr('sampleSource')}</span><strong>{sourceName||tr('samplePreview')}</strong><span>{source||doc?<>{source?.cards.length??doc?.source?.total??doc?.words.length} {tr('itemsUnit')}</>:null}</span><button type="button" className="ws-button" onClick={()=>setSourceDialog(true)}>{tr('changeSource')}</button></div>;
+ const cardsToShow=(visibleCards?visibleCards.filter(a=>prepareWorksheet(cardDocument(a.id)).ready):allActivities.filter(a=>(purpose==='all'||a.purpose===purpose)&&`${a.ko} ${a.en} ${a.goalKo} ${a.goalEn}`.toLowerCase().includes(search.trim().toLowerCase())));
  return <div className="worksheet-studio">
-  {!doc?<div className="no-print" data-worksheet-hub><Link to="/materials" className="ws-back">← {t('materials.backToMaterials')}</Link><header className="ws-hub-heading"><h1>{tr('title')}</h1><p>{tr('subtitle')}</p><span>{tr('recommended')}</span></header>
-   <div className="ws-actions">{editFile}</div>{copyShelf}
-   <label className="ws-search">{tr('search')}<input type="search" value={search} onChange={e=>{setSearch(e.target.value);setLimit(18);}}/></label>
-   <nav className="ws-purpose-nav" aria-label={tr('title')}><button type="button" aria-pressed={purpose==='all'} onClick={()=>{setPurpose('all');setLimit(18);}}>{tr('all')} <small>{WORKSHEET_ACTIVITIES.length}</small></button>{ACTIVITY_PURPOSES.map(p=><button type="button" key={p} aria-pressed={purpose===p} onClick={()=>{setPurpose(p);setLimit(18);}}>{tr(`purpose.${p}`)} <small>{WORKSHEET_ACTIVITIES.filter(a=>a.purpose===p).length}</small></button>)}</nav>
-   <p role="status">{tr('count',{count:filtered.length})}</p><div className="ws-activity-grid">{filtered.slice(0,limit).map(a=><WorksheetSampleCard key={a.id} activity={a} onPreview={()=>setSampleId(a.id)} onEdit={()=>choose(a.id)}/>)}</div>{!filtered.length&&<p>{tr('noResults')}</p>}{filtered.length>limit&&<button type="button" className="ws-button" onClick={()=>setLimit(n=>n+18)}>{tr('more')}</button>}
-   <section className="ws-basics"><h2>{tr('basics')}</h2><div className="ws-activity-grid">{WORKSHEET_BASIC_ACTIVITIES.map(a=><WorksheetSampleCard key={a.id} activity={a} onPreview={()=>setSampleId(a.id)} onEdit={()=>choose(a.id)}/>)}</div></section>
+  {sourceBlocked&&requested?<div className="no-print" data-source-blocked><h1>{tr('title')}</h1><p role={loading?'status':'alert'}>{loading?tr('loadingSource'):tr('loadSourceFailed')}</p>{!loading&&<button type="button" className="ws-button" onClick={()=>void reloadSources()}>{tr('retrySource')}</button>}</div>:!doc?<div className="no-print" data-worksheet-hub>
+   <Link to="/materials" className="ws-back">← {t('materials.backToMaterials')}</Link><header className="ws-hub-heading"><h1>{tr('title')}</h1><p>{tr('subtitle')}</p></header>{sourceBar}
+   <h2>{source&&!showAll?tr('usableFormats'):tr('allFormats')}</h2>
+   {(!source||showAll)&&<><label className="ws-search">{tr('search')}<input type="search" value={search} onChange={e=>{setSearch(e.target.value);setLimit(18);}}/></label><nav className="ws-purpose-nav" aria-label={tr('title')}><button type="button" aria-pressed={purpose==='all'} onClick={()=>{setPurpose('all');setLimit(18);}}>{tr('all')}</button>{ACTIVITY_PURPOSES.map(p=><button type="button" key={p} aria-pressed={purpose===p} onClick={()=>{setPurpose(p);setLimit(18);}}>{tr(`purpose.${p}`)}</button>)}</nav></>}
+   {sourceBlocked&&<p role="alert">{loading?tr('loadingSource'):tr('loadSourceFailed')} <button type="button" onClick={()=>void reloadSources()}>{tr('retrySource')}</button></p>}
+   <div className="ws-activity-grid">{cardsToShow.slice(0,limit).map(a=><WorksheetSampleCard key={a.id} activity={a} document={source?cardDocument(a.id):undefined} onPreview={()=>setSampleId(a.id)} onEdit={()=>choose(a.id)}/>)}</div>
+   {!cardsToShow.length&&<p>{tr('noResults')}</p>}{source&&!showAll&&<button type="button" className="ws-button ws-all-formats" onClick={()=>{setShowAll(true);setPurpose('all');setLimit(30);}}>{tr('allFormats')}</button>}{cardsToShow.length>limit&&<button type="button" className="ws-button" onClick={()=>setLimit(n=>n+18)}>{tr('more')}</button>}
+   <details className="ws-editor-section"><summary>{tr('savedList')}</summary><div className="ws-actions">{editFile}</div>{copyShelf}</details>
   </div>:<>
-   <div className="ws-preparation no-print" data-worksheet-editor={doc.activityId}><button type="button" className="ws-back" onClick={()=>navigate('/materials/worksheet',{state:{}})}>← {tr('back')}</button><header><span className="ws-purpose-label">{tr(`purpose.${activity!.purpose}`)}</span><h1>{tr(`activities.${doc.activityId}.title`)}</h1><p>{tr(`activities.${doc.activityId}.goal`)}</p></header>
-    <details open className="ws-help"><summary>{tr('help')}</summary><p>{tr(`people.${activity!.people}`)} · {tr('time',{count:activity!.minutes})}</p><ol><li>{tr('prepare')}</li><li>{tr('model')}</li><li>{tr('finish')}</li></ol><p className="ws-tip"><strong>{tr('tip')}: </strong>{tr(`activities.${doc.activityId}.tip`)}</p></details>
-    <section className="ws-editor-section"><h2>{tr('stepSource')}</h2>{sourceError&&<p role="alert">{tr('sourceError')}</p>}<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>void reloadSources()} disabled={loading}>{tr('refresh')}</button><button type="button" className="ws-button" onClick={()=>setSampleId(doc.activityId)}>{tr('samplePreview')}</button>{undo&&<button type="button" className="ws-button" onClick={()=>{change(undo);navigate(`/materials/worksheet?activity=${encodeURIComponent(undo.activityId)}`,{state:{}});setUndo(null);}}>{tr('undo')}</button>}</div>{activity!.mode==='content'&&<p className="ws-note">{tr('contentHint')}</p>}<WorksheetSourceEditor key={owner+doc.activityId} words={doc.words} onChange={editWords} onImport={importWords} lists={lists} loading={loading} activityId={doc.activityId}/></section>
-    <section className="ws-editor-section"><h2>{tr('stepEdit')}</h2><WorksheetTaskEditor doc={doc} onChange={change}/>{activity!.mode==='words'&&<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>{if(!doc.editedTasks||confirm(tr('confirmReplace'))){setUndo(structuredClone(doc));change(rebuildWordTasks(doc));}}}>{tr('regenerate')}</button>{doc.needsReview&&<button type="button" className="ws-button" onClick={()=>change({...doc,needsReview:false})}>{tr('reviewDone')}</button>}</div>}</section>
-    <section className="ws-editor-section"><h2>{tr('stepPreview')}</h2><p role="status">{saved?tr('autosave'):tr('saveFailed')}</p><div className="ws-actions"><button type="button" className="ws-button" onClick={()=>persist(store.current)}>{tr('save')}</button><button type="button" className="ws-button" onClick={download}>{tr('download')}</button>{editFile}</div><p className="ws-file-hint">{tr('fileHint')}</p><div className="ws-copy-controls"><label>{tr('copyName')}<input value={copyName} maxLength={100} onChange={e=>setCopyName(e.target.value)}/></label><button type="button" className="ws-button" onClick={saveCopy}>{tr('saveCopy')}</button></div>{copyShelf}
-     {issues.length>0?<div role="alert" className="ws-validation"><strong>{tr('needs')}</strong><ul>{issues.map((issue,i)=>{const values={...issue.values,...(issue.values?.field?{field:tr(`field.${issue.values.field}`)}:{})};const message=tr(issue.key,values);return <li key={i}>{issue.index===undefined?message:tr('questionNumber',{number:issue.index+1,message})}</li>;})}</ul></div>:<p className="ws-ready">{tr('ready')}</p>}
-     {imageStatus==='loading'&&<p>{tr('imageLoading')}</p>}{imageStatus==='error'&&<p role="alert">{tr('imageFailed')}</p>}
-     <div className="ws-actions"><button type="button" className="ws-button ws-primary" disabled={!!issues.length||imageStatus!=='ready'||printing||loading} onClick={()=>void print('student')}>{tr('printStudent')}</button><button type="button" className="ws-button" disabled={!!issues.length||imageStatus!=='ready'||printing||loading} onClick={()=>void print('teacher')}>{tr('printTeacher')}</button></div>
-    </section>
+   <div className="ws-preparation no-print" data-worksheet-editor={doc.activityId}>
+    <button type="button" className="ws-back" onClick={()=>navigate(route(),{state:{}})}>← {tr('back')}</button><header><h1>{tr(`activities.${doc.activityId}.title`)}</h1></header>
+    <details className="ws-help"><summary>{tr('help')}</summary><p>{tr(`activities.${doc.activityId}.goal`)}</p><p>{tr(`people.${activity!.people}`)} · {tr('time',{count:activity!.minutes})}</p><ol><li>{tr('prepare')}</li><li>{tr('model')}</li><li>{tr('finish')}</li></ol><p className="ws-tip">{tr(`activities.${doc.activityId}.tip`)}</p></details>
+    {sourceBar}
+    {activity!.mode==='content'&&<p className="ws-note" data-content-source>{tr('builtInSource')}</p>}
+    <div className="ws-preview-controls"><h2>{tr('preview')}</h2><span role="status" data-worksheet-usage>{tr('usedPages',{total:plan!.totalCount,used:plan!.usedCount,pages:plan!.pages})}</span></div>
+    {doc.activityId==='targetLetters'&&plan!.ready&&<p data-used-rules>{tr('appliedRules')}: {[...new Set(plan!.doc.words.map(w=>w.soundGroup||w.category||w.patternMarked))].join(', ')}</p>}
+    {doc.activityId==='frayer'&&<details className="ws-editor-section"><summary>{tr('chooseWords')} · {plan!.pages} {tr('pagesUnit')}</summary><p>{tr('oneWordPage')}</p><div className="ws-word-checks">{doc.words.map(word=><label key={word.id}><input type="checkbox" checked={(doc.selectedWordIds||doc.words.slice(0,1).map(w=>w.id)).includes(word.id)} onChange={e=>{const selected=doc.selectedWordIds||doc.words.slice(0,1).map(w=>w.id);change({...doc,selectedWordIds:e.target.checked?[...selected,word.id]:selected.filter(id=>id!==word.id)});}}/>{word.word}</label>)}</div></details>}
+    {!plan!.ready&&<div role="alert" className="ws-validation" data-worksheet-requirement><strong>{tr('cannotPrint')}</strong><p>{tr('requirement.'+worksheetRequirement(doc.activityId))}</p><button type="button" className="ws-button" onClick={()=>setSourceDialog(true)}>{tr(worksheetRequirement(doc.activityId)==='sentences'?'chooseSentences':'changeSource')}</button><ul>{issues.slice(0,6).map((issue,i)=><li key={i}>{tr(issue.key,{...issue.values,...issue.values?.field?{field:tr(`field.${issue.values.field}`)}:{}})}</li>)}</ul></div>}
+    {plan!.excluded.length>0&&plan!.ready&&<p className="ws-note">{tr('excludedCount',{count:plan!.excluded.length})}</p>}
+    <div className="ws-actions ws-print-actions"><button type="button" className="ws-button" onClick={()=>document.getElementById('worksheet-detail-edit')?.click()}>{tr('editWords')}</button><button type="button" className="ws-button ws-primary" disabled={!plan!.ready||!pageCount||imageStatus!=='ready'||printing||loading||sourceBlocked} onClick={()=>void print('student')}>{tr('printStudent')}</button><button type="button" className="ws-button" disabled={!plan!.ready||!pageCount||imageStatus!=='ready'||printing||loading||sourceBlocked} onClick={()=>void print('teacher')}>{tr('printTeacher')}</button></div>
+    {imageStatus==='loading'&&plan!.ready&&<p role="status">{tr('imageLoading')}</p>}{imageStatus==='error'&&<p role="alert">{tr('imageFailed')}</p>}
     <div className="ws-preview-controls"><div className="ws-actions"><button type="button" className="ws-button" aria-pressed={audience==='student'} onClick={()=>setAudience('student')}>{tr('student')}</button><button type="button" className="ws-button" aria-pressed={audience==='teacher'} onClick={()=>setAudience('teacher')}>{tr('teacher')}</button></div><span>{tr('pages',{count:pageCount})}</span></div>
-    {audience==='teacher'&&cues.length>0&&<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>speakSequence(cues)}>{tr('listen')}</button><button type="button" className="ws-button" onClick={()=>window.speechSynthesis?.cancel()}>{tr('stop')}</button><small>{tr('voiceHint')}</small></div>}
-   </div><div className="ws-preview-viewport" ref={viewport}><div className={`ws-preview-stack print-sheet${landscape?' ws-landscape-stack':''}`} ref={preview} style={{zoom:previewScale}} data-audience={audience}><WorksheetActivitySheets doc={doc} audience={audience}/></div></div>
+    {audience==='teacher'&&cues.length>0&&<div className="ws-actions"><button type="button" className="ws-button" onClick={()=>speakSequence(cues)}>{tr('listen')}</button><button type="button" className="ws-button" onClick={()=>window.speechSynthesis?.cancel()}>{tr('stop')}</button></div>}
+   </div>
+   <div className="ws-preview-viewport" ref={viewport}><div className={`ws-preview-stack print-sheet${landscape?' ws-landscape-stack':''}`} ref={preview} style={{zoom:previewScale}} data-audience={audience}><WorksheetActivitySheets doc={doc} audience={audience}/></div></div>
+   <details className="ws-editor-section no-print"><summary id="worksheet-detail-edit">{tr('editWords')}</summary><WorksheetSourceEditor key={owner+doc.activityId} compact words={doc.words} onChange={editWords} onImport={importWords} lists={lists} loading={loading} activityId={doc.activityId}/><details><summary>{tr('stepEdit')}</summary><WorksheetTaskEditor doc={doc} onChange={change}/>{activity!.mode==='words'&&<button type="button" className="ws-button" onClick={()=>{if(!doc.editedTasks||confirm(tr('confirmReplace'))){setUndo(structuredClone(doc));change(rebuildWordTasks(doc));}}}>{tr('regenerate')}</button>}</details>{undo&&<button type="button" className="ws-button" onClick={()=>{openStored(undo);setUndo(null);}}>{tr('undo')}</button>}</details>
+   <details className="ws-editor-section no-print"><summary>{tr('savedList')}</summary><p role="status">{saved?tr('autosave'):tr('saveFailed')}</p><div className="ws-actions"><button type="button" className="ws-button" onClick={()=>persist(store.current)}>{tr('save')}</button><button type="button" className="ws-button" onClick={download}>{tr('download')}</button>{editFile}</div><div className="ws-copy-controls"><label>{tr('copyName')}<input value={copyName} maxLength={100} onChange={e=>setCopyName(e.target.value)}/></label><button type="button" className="ws-button" onClick={saveCopy}>{tr('saveCopy')}</button></div>{copyShelf}</details>
   </>}
+  {sourceDialog&&<WorksheetSourceDialog lists={lists} loading={loading} failed={sourceError} kind={requested&&['sentenceOrder','readMatch'].includes(requested)?'sentence':undefined} onReload={()=>void reloadSources()} onApply={applySource} onClose={()=>setSourceDialog(false)} canAppend={!!doc||!!source}/>}
   {sampleId&&<WorksheetSampleDialog key={sampleId} activityId={sampleId} onClose={()=>setSampleId(null)} onUse={useSample}/>}
  </div>;
 }
