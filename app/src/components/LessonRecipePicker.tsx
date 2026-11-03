@@ -73,7 +73,7 @@ export default function LessonRecipePicker({
   // 영상 수업: 이미 단어장을 골라 뒀을 때 그 단어장을 계속 쓸지(기본은 영상 낱말로 새로 만든다)
   const [keepMyList, setKeepMyList] = useState(false);
   // 기본은 펼침, 접으면 제목 줄만 남아 화면을 덜 차지한다(2026-09-27 사용자 요청)
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(!!autoClip || !!autoSample);
   // 수업 대상(초등·중등·고등) — 처음에 고르면 그 대상의 세트·레시피·노래만 보인다
   const [level, setLevel] = useLessonLevel();
   const upper = level === 'middle' || level === 'high';

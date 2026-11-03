@@ -33,7 +33,9 @@ import { prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
-import BlockLibraryPanel from './BlockLibraryPanel';
+import LessonActivityPicker from './LessonActivityPicker';
+import { rememberActivity } from '../lib/lessonActivities';
+import { blockOfSlide } from '../lib/blocks/registry';
 import type { BlockDef } from '../lib/blocks/types';
 import { newHelper, type HelperType } from '../lib/slideHelpers';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
@@ -166,7 +168,7 @@ interface Props {
 /** 게임 슬라이드가 발표 때 열 내용이 정해졌는지 — 템플릿을 골랐거나, 저장할 때 수업 단어장으로
  * 자동으로 만들 수 있으면 OK. */
 function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
-  return !!slide.templateId || buildGameContent(slide.gameType, cards) !== null;
+  return !!slide.templateId || (cards.length >= (GAME_CATALOG.find(g=>g.type===slide.gameType)?.minItems??1) && buildGameContent(slide.gameType, cards) !== null);
 }
 
 type AddMode = 'library' | 'wordset' | 'canvas' | 'image' | 'video' | 'web' | 'study' | 'wordshow' | 'attendance' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'game' | 'material' | null;
@@ -200,6 +202,15 @@ export default function LessonSlideSorter({
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
   const [addMode, setAddMode] = useState<AddMode>(null);
+  const inputSession=useMemo(()=>({mode:addMode,active:true}),[addMode]);
+  useEffect(()=>{inputSession.active=true;return()=>{inputSession.active=false;};},[inputSession]);
+  const [pickerOpen,setPickerOpen]=useState(false);
+  const [gameDraft,setGameDraft]=useState<GameSlide|null>(null);
+  const [readingMode,setReadingMode]=useState<'lines'|'cloze'>('lines');
+  const [rainbowMode,setRainbowMode]=useState<'speak'|'structure'>('speak');
+  const pendingActivity=useRef<string|null>(null);
+  const additionLock=useRef(false);
+  const setLock=useRef(false);
   useEffect(()=>{
     if(!initialSelectedId)return;
     setSelectedId(initialSelectedId);
@@ -213,13 +224,15 @@ export default function LessonSlideSorter({
     return()=>{cancelAnimationFrame(frame);cancelAnimationFrame(nextFrame);};
   },[initialSelectedId]);
   const { profile: teacher } = useAuth();
+  const recentKey=`classbank.lessonActivities.v1.${academyId}.${teacher?.id??'staff'}`;
   // "단어장으로 단어 수업 더하기" — 수업 단어장은 그대로 두고, 고른 단어장으로 단어 소개·카드·게임 슬라이드를 묶음으로 넣는다
   const [setListId, setSetListId] = useState('');
   const [setBusy, setSetBusy] = useState(false);
 
   async function addWordSet() {
     const list = wordLists.find((wl) => wl.id === setListId);
-    if (!list || setBusy) return;
+    if (!list || !teacher || setBusy || setLock.current) return;
+    setLock.current=true;
     const words = wordListToCards(list);
     if (words.length === 0) return;
     setSetBusy(true);
@@ -231,6 +244,7 @@ export default function LessonSlideSorter({
       // 게임은 이 단어장으로 내용을 만들어 붙인다(수업 단어장이 바뀌어도 건드리지 않게 ownWordListId 를 남긴다)
       if (teacher) {
         const enriched = enrichCards(words, await loadWordBank());
+        if(['matchup','quiz'].some(type=>!buildGameContent(type as GameSlide['gameType'],enriched)))throw new Error(t('lessonUx.bundleNeed'));
         for (const gameType of ['matchup', 'quiz'] as const) {
           const content = buildGameContent(gameType, enriched);
           if (!content) continue;
@@ -246,6 +260,7 @@ export default function LessonSlideSorter({
           made.push({ id: uid(), kind: 'game', gameType, templateId: tpl.id, ownWordListId: list.id });
         }
       }
+      if(!inputSession.active)return;
       placeSlides(made);
       setAddMode(null);
       notify(t('curriculum.slides.wordSet.addedToast', { count: made.length, name: list.name }));
@@ -253,6 +268,7 @@ export default function LessonSlideSorter({
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
       setSetBusy(false);
+      setLock.current=false;
     }
   }
   const [videoDraft, setVideoDraft] = useState('');
@@ -361,7 +377,11 @@ export default function LessonSlideSorter({
   }, [addMode]);
 
   function placeSlides(made: LessonSlide[]) {
-    if (made.length === 0) return;
+    if (made.length === 0 || additionLock.current) return;
+    additionLock.current=true;
+    requestAnimationFrame(()=>{additionLock.current=false;});
+    rememberActivity(recentKey,pendingActivity.current??blockOfSlide(made[0])?.id??'');
+    pendingActivity.current=null;
     const idx = replaceTargetId ? slides.findIndex((sl) => sl.id === replaceTargetId) : -1;
     if (idx >= 0) {
       // 주 블록을 바꿔도 제목·타이머 같은 보조 블록은 그대로 남는다(BLOCK_SPEC §6)
@@ -377,6 +397,10 @@ export default function LessonSlideSorter({
     // 묶는다 — 안 그러면 되돌리기를 한 번 눌러도 그 자동 변경만 되돌아가 "안 되는 것"처럼 보인다.
     lastKeyRef.current = { key: `update:${made[0].id}`, at: Date.now(), win: 5000 };
     setSelectedId(made[0].id);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      document.querySelector<HTMLElement>(`[data-slide-id="${window.CSS.escape(made[0].id)}"]`)?.scrollIntoView({block:'nearest',inline:'nearest'});
+      document.querySelector<HTMLElement>('[data-lesson-slide-detail]')?.scrollIntoView({block:'nearest'});
+    }));
   }
 
   function addSlide(slide: LessonSlide) {
@@ -490,11 +514,17 @@ export default function LessonSlideSorter({
 
   /** 블록 보관함에서 고른 블록을 슬라이드로 — 입력이 필요한 블록은 기존 입력 화면으로 이어 주고, 게임·인쇄물은 바로 넣는다 */
   function pickBlock(block: BlockDef) {
+    setPickerOpen(false);
+    setGameDraft(null);
+    pendingActivity.current=block.id;
+    if(block.slide?.kind==='reading')setReadingMode(block.slide.mode==='cloze'?'cloze':'lines');
+    if(block.slide?.kind==='rainbow')setRainbowMode(block.slide.mode==='structure'?'structure':'speak');
     if (block.category === 'helper') {
       // 보조 블록은 지금 고른 슬라이드에 붙인다
       const type = block.id.replace('helper.', '') as HelperType;
       const target = selectedId ? slides.find((s) => s.id === selectedId) : null;
       if (!target || !['title', 'timer', 'scoreboard'].includes(type)) return;
+      rememberActivity(recentKey,block.id);
       updateSlide(target.id, { helpers: [...(target.helpers ?? []), newHelper(type)] });
       notify(t('curriculum.library.helperAdded', { name: t(`curriculum.helpers.name_${type}`) }));
       setAddMode(null);
@@ -530,7 +560,9 @@ export default function LessonSlideSorter({
   }
 
   function addGameSlide(gameType: GameSlide['gameType']) {
-    addSlide({ id: uid(), kind: 'game', gameType });
+    const draft:GameSlide={id:uid(),kind:'game',gameType};
+    if(!gameSlideReady(draft,gameCards)){setGameDraft(draft);setAddMode('game');return;}
+    addSlide(draft);
     // 추가하자마자 그 게임의 설정 화면을 보여준다(게임 내용을 바로 고르고 고칠 수 있게).
     setAddMode(null);
   }
@@ -555,6 +587,10 @@ export default function LessonSlideSorter({
 
   return (
     <WordListManageContext.Provider value={onManageWordList}>
+    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} canAttachHelper={!!selectedId&&!replaceTargetId}
+      onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
+      onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
+
     <div className="flex flex-col gap-4 lg:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
       <div className="flex shrink-0 flex-row gap-2 overflow-x-auto pb-2 lg:w-56 lg:flex-col lg:overflow-x-visible lg:overflow-y-auto lg:pb-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start">
@@ -609,7 +645,7 @@ export default function LessonSlideSorter({
           // 헷갈린다(2026-09-26 사용자 피드백) — 항상 "추가 중" 상태로 연다. 닫기는 패널의 닫기 버튼으로.
           onClick={() => {
             setReplaceTargetId(null);
-            setAddMode((m) => m ?? 'library');
+            setPickerOpen(true);
           }}
           aria-pressed={!!addMode && !replaceTargetId}
           className={`flex shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 py-3 font-label-md text-label-md transition-colors lg:w-full ${
@@ -619,13 +655,13 @@ export default function LessonSlideSorter({
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">{addMode && !replaceTargetId ? 'edit_square' : 'add'}</span>
-          {addMode && !replaceTargetId ? t('curriculum.slides.addingSlide', { n: slides.length + 1 }) : t('curriculum.slides.addSlide')}
+          {t('lessonUx.add')}
         </button>
       </div>
 
       {/* 오른쪽: 슬라이드 추가 패널 또는 선택된 슬라이드 상세 */}
       <div data-lesson-slide-detail className="min-w-0 flex-1 rounded-xl bg-surface-container-low p-4">
-        {addMode && (
+        {addMode && addMode !== 'library' && (
           <div className="mb-4 space-y-3 rounded-lg bg-surface-container-lowest p-4 shadow-sm">
             <div className="font-title-md text-title-md font-bold text-deep-navy">
               {replaceTargetId
@@ -633,30 +669,9 @@ export default function LessonSlideSorter({
                 : t('curriculum.slides.addPanelTitle', { n: slides.length + 1 })}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(['library', 'wordset', 'canvas', 'image', 'video', 'shadow', 'qna', 'web', 'reading', 'wordshow', 'study', 'grammar', 'drill', 'rainbow', 'game', 'material', 'attendance'] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setAddMode(m)}
-                  className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
-                    addMode === m ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'
-                  }`}
-                >
-                  {t(`curriculum.slides.addMode.${m}`)}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => setAddMode(null)}
-                className="ml-auto font-label-md text-label-md text-on-surface-variant hover:text-error"
-              >
-                {replaceTargetId ? t('curriculum.slides.cancelReplace') : t('curriculum.slides.closeAddPanel')}
-              </button>
+              <button type="button" className="min-h-11 rounded-xl border px-4 text-primary" onClick={()=>setPickerOpen(true)}>{t('lessonUx.change')}</button>
+              <button type="button" className="ml-auto min-h-11 px-4" onClick={()=>{setAddMode(null);pendingActivity.current=null;}}>{t('curriculum.slides.closeAddPanel')}</button>
             </div>
-
-            {addMode === 'library' && (
-              <BlockLibraryPanel canAttachHelper={!!selectedId && !replaceTargetId} onPick={pickBlock} />
-            )}
 
             {addMode === 'image' && (
               <GameImagePicker
@@ -665,6 +680,7 @@ export default function LessonSlideSorter({
                 onChange={() => {}}
                 uploadFn={uploadLessonSlideImage}
                 onUploaded={(img) => {
+                  if(!inputSession.active)return;
                   const slide: ImageSlide = { id: uid(), kind: 'image', imagePath: img.path, imageUrl: img.url };
                   addSlide(slide);
                   setAddMode(null);
@@ -682,7 +698,7 @@ export default function LessonSlideSorter({
             )}
 
             {addMode === 'rainbow' && (
-              <RainbowAddPanel
+              <RainbowAddPanel key={rainbowMode} initialMode={rainbowMode}
                 onAdd={(d) => {
                   addSlide({ id: uid(), kind: 'rainbow', mode: d.mode, itemIds: d.itemIds, showKo: d.showKo });
                   setAddMode(null);
@@ -709,7 +725,7 @@ export default function LessonSlideSorter({
             )}
 
             {addMode === 'reading' && (
-              <ReadingSlideForm
+              <ReadingSlideForm key={readingMode} initial={{source:'',title:'',videoUrl:'',mode:readingMode}}
                 onAdd={(draft) => {
                   addSlide({ id: uid(), kind: 'reading', boardTheme: 'green', ...draft });
                   setAddMode(null);
@@ -731,6 +747,7 @@ export default function LessonSlideSorter({
                 <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.slides.wordSet.intro')}</p>
                 <select
                   value={setListId}
+                  disabled={setBusy}
                   onChange={(e) => setSetListId(e.target.value)}
                   aria-label={t('curriculum.slides.wordSet.pick')}
                   className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
@@ -751,7 +768,7 @@ export default function LessonSlideSorter({
                     </optgroup>
                   ))}
                 </select>
-                <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.wordSet.what')}</p>
+                <p className="font-caption text-caption text-on-surface-variant">{t('lessonUx.bundleFlow')} · {t('lessonUx.bundleCount')}</p>
                 <button
                   type="button"
                   disabled={!setListId || setBusy}
@@ -759,7 +776,7 @@ export default function LessonSlideSorter({
                   className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
                 >
                   <span className="material-symbols-outlined text-[18px]">add_circle</span>
-                  {setBusy ? t('common.loading') : t('curriculum.slides.wordSet.add')}
+                  {setBusy ? t('common.loading') : t('lessonUx.bundle')}
                 </button>
               </div>
             )}
@@ -962,7 +979,14 @@ export default function LessonSlideSorter({
               />
             )}
 
-            {addMode === 'game' && (
+            {addMode === 'game' && gameDraft && <div className="space-y-3">
+              <GameSlideEditor key={gameDraft.id} slide={gameDraft} academyId={academyId} classId={classId} lessonName={lessonName}
+                wordList={wordList} cards={gameCards} wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange}
+                onUpdate={patch=>setGameDraft(d=>d?{...d,...patch}:null)}/>
+              <button type="button" className="min-h-11 rounded-xl bg-primary px-5 font-bold text-white disabled:opacity-40"
+                disabled={!gameSlideReady(gameDraft,gameCards)} onClick={()=>{addSlide(gameDraft);setGameDraft(null);setAddMode(null);}}>{t('curriculum.study.addButton')}</button>
+            </div>}
+            {addMode === 'game' && !gameDraft && (
               <div className="space-y-2">
                 {GAME_MOMENTS.map((cat) => (
                   <div key={cat} className="flex flex-wrap gap-1.5">
@@ -1137,7 +1161,8 @@ export default function LessonSlideSorter({
                 type="button"
                 onClick={() => {
                   setReplaceTargetId(selected.id);
-                  setAddMode(selected.kind as Exclude<AddMode, null>);
+                  setAddMode('library');
+                  setPickerOpen(true);
                 }}
                 title={t('curriculum.slides.replaceKindHint')}
                 className="flex items-center gap-1 rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary-fixed"
@@ -1197,8 +1222,8 @@ export default function LessonSlideSorter({
   );
 }
 
-function RainbowAddPanel({ onAdd }: { onAdd: (d: RainbowDraft) => void }) {
-  const [draft, setDraft] = useState<RainbowDraft>({ mode: 'speak', itemIds: [], showKo: false });
+function RainbowAddPanel({ onAdd, initialMode='speak' }: { onAdd: (d: RainbowDraft) => void; initialMode?:'speak'|'structure' }) {
+  const [draft, setDraft] = useState<RainbowDraft>({ mode: initialMode, itemIds: [], showKo: false });
   return <RainbowSlideForm value={draft} onChange={setDraft} onAdd={() => onAdd(draft)} />;
 }
 

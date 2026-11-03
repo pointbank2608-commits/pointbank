@@ -1,3 +1,4 @@
+import '../styles/lesson-activity-picker.css';
 import BackButton from '../components/BackButton';
 import { useFeature } from '../lib/features';
 import QuickLessonWizard from '../components/QuickLessonWizard';
@@ -61,7 +62,7 @@ const LESSON_SORT_KEY = 'classbank.lessonSort2';
 const firstDir = (k: LessonSortKey): 'asc' | 'desc' => (k === 'name' ? 'asc' : 'desc');
 
 export default function CurriculumPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { start } = useLessonRunner();
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
@@ -106,7 +107,11 @@ export default function CurriculumPage() {
   const [historyLesson, setHistoryLesson] = useState<CurriculumLesson | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const reloadVersion=useRef(0);
+  const loadedScope=useRef('');
+  const invalidateReload=useCallback(()=>{++reloadVersion.current;},[]);
   const reload=useCallback(async () => {
+    const version=++reloadVersion.current;
     if (!academy?.id) {
       setWordLists([]);
       setLessons([]);
@@ -115,28 +120,34 @@ export default function CurriculumPage() {
       return;
     }
     setLoading(true);
+    const scope=`${academy.id}:${staffClassId??''}`;
+    if(loadedScope.current!==scope){setWordLists([]);setLessons([]);setDeletedLessons([]);}
     try {
       const [wl, ls] = await Promise.all([
         fetchWordLists(academy.id, staffClassId || ''),
         fetchCurriculumLessons(academy.id, staffClassId || ''),
       ]);
+      if(version!==reloadVersion.current)return;
+      loadedScope.current=scope;
       setWordLists(wl);
       setLessons(ls);
       try {
-        setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId || ''));
+        const deleted=await fetchDeletedLessons(academy.id, staffClassId || '');
+        if(version===reloadVersion.current)setDeletedLessons(deleted);
       } catch {
-        setDeletedLessons([]);
+        if(version===reloadVersion.current)setDeletedLessons([]);
       }
     } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
+      if(version===reloadVersion.current)notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
-      setLoading(false);
+      if(version===reloadVersion.current)setLoading(false);
     }
   },[academy?.id,staffClassId,notify]);
 
   useEffect(() => {
     void reload();
-  }, [reload]);
+    return invalidateReload;
+  }, [reload,invalidateReload]);
 
   useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent).detail?.academyId===academy?.id)void reload();};window.addEventListener(LESSON_CHANGED,changed);return()=>window.removeEventListener(LESSON_CHANGED,changed);},[academy?.id,reload]);
   const [showForm, setShowForm] = useState(false);
@@ -174,7 +185,8 @@ export default function CurriculumPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [level, setLevel] = useState('');
   // 편집 중인 레슨의 반(없으면 지금 보고 있는 반) — 게임 내용(템플릿)을 이 반 것으로 고르고 만든다.
-  const formClassId = (editingId ? lessons.find((l) => l.id === editingId)?.class_id : null) ?? staffClassId ?? null;
+  const [formTarget,setFormTarget]=useState<{id:string|null}|null>(null);
+  const formClassId = formTarget ? formTarget.id : staffClassId ?? null;
   const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -304,6 +316,7 @@ export default function CurriculumPage() {
       setSavedSnapshot(JSON.stringify({ name: '', wordListId: '', level: '', playlist: [] }));
       setShowForm(true);
     }
+    setFormTarget({id:d.classId});
     setName(d.name);
     setWordListId(d.wordListId);
     setLevel(d.level);
@@ -342,6 +355,7 @@ export default function CurriculumPage() {
   },[showForm,editingId]);
   function resetForm() {
     setReopenSlideId(null);
+    setFormTarget({id:staffClassId??null});
     setEditingId(null);
     setName('');
     setWordListId('');
@@ -368,6 +382,7 @@ export default function CurriculumPage() {
    * 컬럼(video_url)이었을 수 있어 effectiveSlides()로 슬라이드 형태로 통일해서 불러온다. */
   function openEditForm(lesson: CurriculumLesson) {
     if(!showForm)editReturn.current={y:window.scrollY,trigger:document.activeElement as HTMLElement};
+    setFormTarget({id:lesson.class_id});
     setEditingId(lesson.id);
     setName(lesson.name);
     setWordListId(lesson.word_list_id ?? '');
@@ -436,7 +451,7 @@ export default function CurriculumPage() {
     try {
       const list = await createWordList({
         academyId: academy.id,
-        classId: formClassId ?? staffClassId,
+        classId: formClassId,
         name: listName,
         items: words.map((w) => ({
           id: uid(),
@@ -532,6 +547,7 @@ export default function CurriculumPage() {
           teacherId: profile.id,
         });
         setLessons((prev) => [...prev, lesson]);
+        setFormTarget({id:lesson.class_id});
         setEditingId(lesson.id);
         saved = lesson;
       }
@@ -772,8 +788,15 @@ export default function CurriculumPage() {
         <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.v2Subtitle')}</p>
       </div>
 
+      <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={id=>{
+        if(id===staffClassId)return;
+        if(showForm){if(dirty&&!confirm(t('curriculum.discardConfirm')))return;resetForm();}
+        selectClass(id);
+      }} onReorder={reorderClasses} />
+
+      {!showForm && (mode === 'group' || !soloOpen) && <h2 className="text-xl font-bold text-deep-navy">{t('lessonUx.create')}</h2>}
       {!showForm && (mode === 'group' || !soloOpen) && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="lesson-create-actions grid gap-4">
           <button
             type="button"
             onClick={() => setQuickOpen(true)}
@@ -813,7 +836,7 @@ export default function CurriculumPage() {
         </div>
       )}
 
-      <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
+
 
       {!showForm && soloOpen && (
         <div className="flex flex-wrap gap-2" role="tablist">
@@ -877,6 +900,7 @@ export default function CurriculumPage() {
           <h3 className="font-title-md text-title-md text-on-surface">
             {t(editingId ? 'curriculum.editFormTitle' : 'curriculum.createFormTitle')}
           </h3>
+          <p className="text-sm font-bold text-primary">{t('lessonUx.target',{name:classes.find(c=>c.id===formClassId)?.name??t('lessonUx.shared')})}</p>
           <div>
             <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('curriculum.nameLabel')}</label>
             <input
@@ -988,7 +1012,7 @@ export default function CurriculumPage() {
                     makeUnscrambleTemplate({
                       grammarId: gid,
                       academyId: academy.id,
-                      classId: formClassId ?? staffClassId,
+                      classId: formClassId,
                       teacherId: profile.id,
                       name: (pointName) => t('grammar.gameTemplateName', { name: pointName }),
                     })
@@ -1001,7 +1025,7 @@ export default function CurriculumPage() {
                       made.push(
                         await createWordList({
                           academyId: academy.id,
-                          classId: formClassId ?? staffClassId,
+                          classId: formClassId,
                           name: l.name,
                           groupName: group,
                           items: setToCards(l.entries).map((w) => ({ id: uid(), word: w.word, meaning: w.meaning, image_url: w.imageUrl, category: w.category ?? null, partOfSpeech: w.partOfSpeech ?? null })),
@@ -1018,7 +1042,7 @@ export default function CurriculumPage() {
                     try {
                       const tpl = await createGameTemplate({
                         academyId: academy.id,
-                        classId: formClassId ?? staffClassId,
+                        classId: formClassId,
                         gameType,
                         name: listName,
                         items: content.items,
@@ -1034,7 +1058,7 @@ export default function CurriculumPage() {
                     try {
                       const tpl = await createGameTemplate({
                         academyId: academy.id,
-                        classId: formClassId ?? staffClassId,
+                        classId: formClassId,
                         gameType: 'unscramble',
                         name: listName,
                         items: sentences.map((label) => ({ id: uid(), label })),
@@ -1072,7 +1096,7 @@ export default function CurriculumPage() {
             {wordListModal && academy?.id && profile && (
               <LessonWordListModal
                 academyId={academy.id}
-                classId={formClassId ?? staffClassId}
+                classId={formClassId}
                 teacherId={profile.id}
                 list={wordLists.find((wl) => wl.id === wordListModal.listId) ?? null}
                 defaultName={t('curriculum.wordListTools.defaultName', { name: name.trim() || t('curriculum.wordListTools.untitled') })}
@@ -1244,7 +1268,7 @@ export default function CurriculumPage() {
         <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.sort.noMatch')}</div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="lesson-card-grid grid gap-5">
         {sortedLessons.map((lesson) => {
           const wl = wordLists.find((w) => w.id === lesson.word_list_id);
           return (
@@ -1293,11 +1317,11 @@ export default function CurriculumPage() {
                   <span className="material-symbols-outlined text-[18px]" aria-hidden>deployed_code</span>
                   {t('curriculum.slideCount', { count: effectiveSlides(lesson).length })}
                 </div>
-                <div className="mt-auto flex flex-wrap gap-2 pt-1">
+                <div className="lesson-card-actions mt-auto grid grid-cols-[1fr_1fr_48px] gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => requestStart(lesson)}
-                    className="flex min-h-11 min-w-[6.5rem] flex-[1.4] items-center justify-center gap-1.5 rounded-[10px] bg-primary px-3 font-label-md text-[15px] font-bold text-on-primary transition-colors hover:bg-primary-container"
+                    className="col-span-3 flex min-h-12 w-full whitespace-nowrap items-center justify-center gap-1.5 rounded-[10px] bg-primary px-3 font-label-md text-[15px] font-bold text-on-primary transition-colors hover:bg-primary-container"
                   >
                     <span className="material-symbols-outlined text-[20px]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
                     {t('curriculum.startButton')}
@@ -1305,15 +1329,15 @@ export default function CurriculumPage() {
                   <button
                     type="button"
                     onClick={() => openEditForm(lesson)}
-                    className="flex min-h-11 min-w-[4.5rem] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-outline-variant px-3 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed"
+                    className="flex min-h-12 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-[10px] border border-outline-variant px-3 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed"
                   >
                     <span className="material-symbols-outlined text-[18px]" aria-hidden>edit</span>
-                    {t('curriculum.editButton')}
+                    {t('lessonUx.edit')}
                   </button>
-                  {homeworkOpen&&<button type="button" onClick={()=>navigate('/homework',{state:{fromLessonId:lesson.id,fromClassId:lesson.class_id??staffClassId}})} className="flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-outline-variant bg-white px-3 text-[15px] font-bold text-primary">{i18n.language.startsWith('en')?'Set homework':'이 수업으로 숙제 내기'}</button>}
+                  {homeworkOpen&&<button type="button" onClick={()=>navigate('/homework',{state:{fromLessonId:lesson.id,fromClassId:lesson.class_id??staffClassId}})} className="flex min-h-12 min-w-0 items-center justify-center whitespace-nowrap rounded-[10px] border border-outline-variant bg-white px-2 text-[15px] font-bold text-primary">{t('lessonUx.homework')}</button>}
                   <MoreMenu
-                    className="min-w-[4.5rem] flex-1"
-                    triggerLabel={t('curriculum.moreButton')}
+                    className="lesson-card-more"
+                    triggerLabel={t('lessonUx.more')}
                     items={[
                       { key: 'style', label: t('lessonStyle.saveButton'), icon: 'dashboard_customize', onSelect: () => setStyleSaveLesson(lesson) },
                       { key: 'share', label: t('lessonShare.button'), icon: 'share', onSelect: () => setShareLesson(lesson) },

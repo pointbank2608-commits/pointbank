@@ -3,14 +3,15 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 import en from './locales/en';
 import ko from './locales/ko';
+import { lessonUxKo, lessonUxEn } from './lessonUxLocales';
 
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ko: { translation: ko },
-      en: { translation: en },
+      ko: { translation: { ...ko, lessonUx: lessonUxKo } },
+      en: { translation: { ...en, lessonUx: lessonUxEn } },
     },
     fallbackLng: 'ko',
     supportedLngs: ['ko', 'en'],

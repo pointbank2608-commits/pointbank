@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useClassWordLists } from '../lib/useClassWordLists';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BANK_LEVELS, SENTENCE_BANK, bankSentences, type BankLevel } from '../data/sentenceBank';
 import { createCurriculumLesson, createWordList } from '../lib/api';
@@ -61,7 +62,7 @@ const uid = () => crypto.randomUUID();
 const KIND_MINUTES: Record<string, number> = { grammar: 30, phonics: 40, bank: 25, video: 45, song: 40, contest: 40, review: 10 };
 
 /** 질문 3개(반 · 무엇을 · 몇 분)로 수업 구성을 만든다. 종류(단어·문법·파닉스·상황 표현·영상·노래)마다 있는 수업 구성을 그대로 쓴다. */
-export default function QuickLessonWizard({ academyId, teacherId, classes, defaultClassId, wordLists, onClose, onDone }: Props) {
+export default function QuickLessonWizard({ academyId, teacherId, classes, defaultClassId, onClose, onDone }: Props) {
   const { t, i18n } = useTranslation();
   const { notify } = useToast();
   const ko = i18n.language.startsWith('ko');
@@ -98,7 +99,8 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
 
   const { clips } = useVideoClips();
   const wordSets = useMemo(() => LESSON_SETS.filter((s) => s.kind === 'word').slice(0, 12), []);
-  const myLists = wordLists.filter((l) => (l.kind ?? 'word') === 'word' && (!l.class_id || l.class_id === classId));
+  const {lists:myLists,loading:listsLoading,error:listsError,reload:reloadLists}=useClassWordLists(academyId,classId);
+  useEffect(()=>{setListId('');},[classId]);
   const pastedCount = useMemo(() => parsePastedWords(pasted, []).length, [pasted]);
   const grades = useMemo(() => curriculumFor(school), [school]);
   const clipLevels = useMemo(() => [...new Set((clips ?? []).map((c) => c.level))].sort((a, b) => a - b), [clips]);
@@ -112,7 +114,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
     setRows(planQuickLesson(m));
   }
 
-  const wordsReady = source === 'paste' ? pastedCount >= 4 : source === 'mine' ? !!listId : !!setId;
+  const wordsReady = source === 'paste' ? pastedCount >= 4 : source === 'mine' ? !listsLoading && !listsError && myLists.some(l=>l.id===listId) : !!setId;
   const ready =
     !!classId &&
     (kind === 'vocab'
@@ -171,7 +173,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
       if (kind === 'vocab') {
         let listName: string;
         if (source === 'mine') {
-          list = wordLists.find((l) => l.id === listId) ?? null;
+          list = myLists.find((l) => l.id === listId) ?? null;
           if (!list) throw new Error('list');
           listName = list.name;
           cards = enrichCards(wordListToCards(list), bank);
@@ -302,7 +304,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
           <h3 className="font-title-md text-title-md text-on-surface">1. {t('quickLesson.q1')}</h3>
           <div className="flex flex-wrap gap-2">
             {classes.map((c) => (
-              <button key={c.id} type="button" aria-pressed={classId === c.id} onClick={() => setClassId(c.id)} className={chip(classId === c.id)}>
+              <button key={c.id} type="button" disabled={busy} aria-pressed={classId === c.id} onClick={() => setClassId(c.id)} className={chip(classId === c.id)}>
                 {c.name}
               </button>
             ))}
@@ -355,7 +357,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                 </div>
               )}
               {source === 'mine' &&
-                (myLists.length === 0 ? (
+                (listsLoading ? <p role="status">{t('lessonUx.loading')}</p> : listsError ? <div role="alert">{t('lessonUx.failed')} <button type="button" className="min-h-11 rounded-xl border px-4 text-primary" onClick={reloadLists}>{t('lessonUx.retry')}</button></div> : myLists.length === 0 ? (
                   <p className="font-body-md text-body-md text-on-surface-variant">{t('quickLesson.noLists')}</p>
                 ) : (
                   <select value={listId} onChange={(e) => setListId(e.target.value)} className="min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3">
