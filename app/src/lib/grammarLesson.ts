@@ -1,5 +1,6 @@
 import { newCanvasSlide, newTextElement, themeTextDefaults } from '../components/CanvasSlideEditor';
 import { createGameTemplate } from './api';
+import { recommendGrammarGames } from './grammarGamesB';
 import { GRAMMAR_SHEET_BANK } from '../data/grammarSheets';
 import type { ChooseItem, GrammarSheetContent } from '../data/grammarSheets/types';
 import { grammarPoint, plainText, sentencesForUnscramble } from './grammar';
@@ -19,6 +20,8 @@ export type TFn = (k: string, o?: Record<string, unknown>) => string;
 export interface GrammarGames {
   unscrambleId: string | null;
   teamQuizId: string | null;
+  /** 게임① 자리에 자동으로 들어가는 문법별 게임(문법 종류에 어울리는 것). 없으면 문장 배열하기가 들어간다. */
+  focus?: { gameType: GameType; templateId: string } | null;
 }
 
 const uid = () => crypto.randomUUID();
@@ -65,6 +68,7 @@ export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; ha
   const attendance: LessonSlide = { id: uid(), kind: 'attendance', boardTheme: 'green' };
   const grammarBoard: LessonSlide = { id: uid(), kind: 'grammar', grammarId, useWordList: hasWords, boardTheme: 'green' };
   const unscramble = (): LessonSlide[] => (games.unscrambleId ? [{ id: uid(), kind: 'game', gameType: 'unscramble', templateId: games.unscrambleId }] : []);
+  const focusGame = (): LessonSlide[] => (games.focus ? [{ id: uid(), kind: 'game', gameType: games.focus.gameType, templateId: games.focus.templateId }] : unscramble());
   // 워크북 자료가 없는 문법은 예전 짧은 수업
   if (!point || !sheet || !hasGrammarLessonBank(grammarId)) {
     return [attendance, grammarBoard, ...unscramble(), ...(hasWords ? [{ id: uid(), kind: 'wordshow', boardTheme: 'green' } as LessonSlide] : [])];
@@ -93,8 +97,8 @@ export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; ha
     qna(t('grammarLesson.discoverTitle'), [{ q: sheet.discover.q, a: sheet.discover.a }], 120),
     // 개념 이해 문제 10~16분
     qna(t('grammarLesson.conceptTitle'), conceptQs, 360, [scoreboard()]),
-    // 게임 ① 16~19분
-    ...unscramble().map((s) => ({ ...s, helpers: [timer(180)] }) as LessonSlide),
+    // 게임 ① 16~19분: 문법에 어울리는 게임(없으면 문장 배열하기)
+    ...focusGame().map((s) => ({ ...s, helpers: [timer(180)] }) as LessonSlide),
     // 심화 19~26분: 틀린 곳 고치기 + 조건 영작
     qna(t('grammarLesson.fixTitle'), fixQs, 240),
     qna(t('grammarLesson.writeTitle'), writeQs, 180),
@@ -119,10 +123,12 @@ export async function makeGrammarGameTemplates(params: {
   teacherId: string;
   name: (pointName: string) => string;
   teamName: (pointName: string) => string;
+  /** 문법별 게임 템플릿 이름 (게임 종류, 문법 이름) */
+  focusName?: (gameType: GameType, pointName: string) => string;
 }): Promise<GrammarGames> {
   const point = grammarPoint(params.grammarId);
   const sheet = GRAMMAR_SHEET_BANK[params.grammarId] as GrammarSheetContent | undefined;
-  const out: GrammarGames = { unscrambleId: null, teamQuizId: null };
+  const out: GrammarGames = { unscrambleId: null, teamQuizId: null, focus: null };
   if (!point) return out;
   const base = sentencesForUnscramble(point, []);
   const extra = (sheet?.buildExtra ?? []).concat(sheet?.b?.build ?? []).map((x) => plainText(x.en));
@@ -142,6 +148,20 @@ export async function makeGrammarGameTemplates(params: {
       items: [], config: { questions: chooseToQuiz(quiz) }, teacherId: params.teacherId,
     });
     out.teamQuizId = tpl.id;
+  }
+  // 문법에 어울리는 게임 하나를 게임 ① 자리용으로 만든다(문제는 config.grammarId 로 규칙이 만든다)
+  const best = recommendGrammarGames(params.grammarId)[0];
+  if (best) {
+    try {
+      const tpl = await createGameTemplate({
+        academyId: params.academyId, classId: params.classId, gameType: best as GameType,
+        name: params.focusName ? params.focusName(best as GameType, point.name) : params.name(point.name),
+        items: [{ id: `grammar-${params.grammarId}`, label: point.name }], config: { grammarId: params.grammarId }, teacherId: params.teacherId,
+      });
+      out.focus = { gameType: best as GameType, templateId: tpl.id };
+    } catch {
+      out.focus = null;
+    }
   }
   return out;
 }

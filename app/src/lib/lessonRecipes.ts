@@ -342,7 +342,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
       if (!ctx.grammarId) return [];
       // 30분 수업(2026-11-03): 도입 → 개념 → 개념 확인 → 게임 ① → 심화 → 게임 ② 팀 대항 퀴즈 → 정리 (lib/grammarLesson.ts)
       const games: GrammarGames = ctx.makeGrammarGames
-        ? await ctx.makeGrammarGames(ctx.grammarId).catch(() => ({ unscrambleId: null, teamQuizId: null }))
+        ? await ctx.makeGrammarGames(ctx.grammarId).catch(() => ({ unscrambleId: null, teamQuizId: null, focus: null }))
         : { unscrambleId: await ctx.makeUnscramble(ctx.grammarId), teamQuizId: null };
       return buildGrammarLessonSlides({ t: ctx.t, grammarId: ctx.grammarId, hasWords: ctx.hasWords, games });
     },

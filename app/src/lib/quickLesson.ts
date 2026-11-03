@@ -243,6 +243,7 @@ export function createQuickHelpers(p: { academyId: string; classId: string; teac
         teacherId: p.teacherId,
         name: (pointName) => p.t('grammarLesson.gameTemplateName', { name: pointName }),
         teamName: (pointName) => p.t('grammarLesson.teamQuizName', { name: pointName }),
+        focusName: (gameType, pointName) => p.t('grammarLesson.focusName', { game: p.t(`gamesList.${gameType}Name`), name: pointName }),
       }),
     makeUnscramble: (grammarId) =>
       makeUnscrambleTemplate({

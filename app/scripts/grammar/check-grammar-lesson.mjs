@@ -10,7 +10,13 @@ const stubSupabase = {
   name: 'stub-supabase', enforce: 'pre',
   load(id) { if (id.split('\\').join('/').endsWith('/src/lib/supabase.ts')) return 'export const supabase = {};'; },
 };
-const server = await createServer({ root, logLevel: 'error', plugins: [stubSupabase], server: { middlewareMode: true, hmr: false }, appType: 'custom' });
+const calls = [];
+const stubApi = {
+  name: 'stub-api', enforce: 'pre',
+  load(id) { if (id.split(String.fromCharCode(92)).join('/').endsWith('/src/lib/api.ts')) return 'export const createGameTemplate = async (x) => { globalThis.__tplCalls.push(x); return { id: "tpl-" + globalThis.__tplCalls.length, ...x }; };'; },
+};
+globalThis.__tplCalls = calls;
+const server = await createServer({ root, logLevel: 'error', plugins: [stubSupabase, stubApi], server: { middlewareMode: true, hmr: false }, appType: 'custom' });
 let failed = 0;
 const test = async (name, fn) => { try { await fn(); console.log('ok  ', name); } catch (e) { failed += 1; console.log('FAIL', name, '\n     ', e.message); } };
 const t = (k) => k;
@@ -51,6 +57,48 @@ try {
       assert.ok(f.questions.length >= 6 && f.questions.every((q) => q.q && q.a && q.a.endsWith('.') || q.a.endsWith('?')));
     }
     assert.ok(withFactory >= 10, `factory on ${withFactory}`);
+  });
+  await test('문법별 게임 자동 배정: 어울리는 게임이 게임① 자리에 들어간다', async () => {
+    const gb = await server.ssrLoadModule('/src/lib/grammarGamesB.ts');
+    const first = (id) => gb.recommendGrammarGames(id)[0];
+    assert.equal(first('comparative'), 'grammarcompare');
+    assert.equal(first('superlative'), 'grammarcompare');
+    assert.equal(first('because'), 'grammarlink');
+    assert.equal(first('and-but'), 'grammarlink');
+    assert.equal(first('frequency'), 'grammarhabit');
+    assert.equal(first('pos-noun'), 'grammarpos');
+    assert.equal(first('forms-3'), 'grammarframe');
+    assert.equal(first('third-s'), 'grammarverb');
+    assert.equal(first('past-regular'), 'grammarlab');
+    // 어떤 문법이든 추천 목록의 게임은 실제로 문제가 만들어지는 것만
+    const sup = (id) => gb.grammarGameSupport(id);
+    const dist = {};
+    let none = 0;
+    for (const id of ids) {
+      const rec = gb.recommendGrammarGames(id);
+      if (!rec.length) none += 1;
+      for (const g of rec) assert.ok(sup(id)[g] >= gb.MIN_ROUNDS[g], `${id} ${g}`);
+      dist[rec[0] ?? 'none'] = (dist[rec[0] ?? 'none'] ?? 0) + 1;
+    }
+    console.log('     자동 배정 분포:', JSON.stringify(dist));
+    assert.ok(none <= 15, `no game for ${none} grammars`);
+    const slides = gl.buildGrammarLessonSlides({ t, grammarId: 'comparative', hasWords: false, games: { unscrambleId: 'u1', teamQuizId: 'q1', focus: { gameType: 'grammarcompare', templateId: 'f1' } } });
+    const games = slides.filter((x) => x.kind === 'game').map((x) => `${x.gameType}:${x.templateId}`);
+    assert.deepEqual(games, ['grammarcompare:f1', 'gameshowquiz:q1']);
+    const noFocus = gl.buildGrammarLessonSlides({ t, grammarId: 'comparative', hasWords: false, games: { unscrambleId: 'u1', teamQuizId: 'q1', focus: null } });
+    assert.deepEqual(noFocus.filter((x) => x.kind === 'game').map((x) => x.gameType), ['unscramble', 'gameshowquiz']);
+  });
+  await test('수업 만들기: 게임① 템플릿이 문법 id로 만들어진다', async () => {
+    calls.length = 0;
+    const games = await gl.makeGrammarGameTemplates({ grammarId: 'comparative', academyId: 'a', classId: null, teacherId: 't', name: (n) => `U ${n}`, teamName: (n) => `Q ${n}`, focusName: (g, n) => `${g} ${n}` });
+    assert.ok(games.unscrambleId && games.teamQuizId && games.focus);
+    assert.equal(games.focus.gameType, 'grammarcompare');
+    const f = calls.find((c) => c.gameType === 'grammarcompare');
+    assert.deepEqual(f.config, { grammarId: 'comparative' });
+    assert.equal(f.items.length, 1);
+    assert.match(f.name, /^grammarcompare /);
+    const slides = gl.buildGrammarLessonSlides({ t, grammarId: 'comparative', hasWords: false, games });
+    assert.equal(slides.find((x) => x.kind === 'game' && x.gameType === 'grammarcompare').templateId, games.focus.templateId);
   });
   await test('게임이 없으면 게임 슬라이드만 빠진다', () => {
     const slides = gl.buildGrammarLessonSlides({ t, grammarId: id, hasWords: false, games: { unscrambleId: null, teamQuizId: null } });

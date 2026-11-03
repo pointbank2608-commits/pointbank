@@ -1026,6 +1026,7 @@ export default function CurriculumPage() {
                       teacherId: profile.id,
                       name: (pointName) => t('grammarLesson.gameTemplateName', { name: pointName }),
                       teamName: (pointName) => t('grammarLesson.teamQuizName', { name: pointName }),
+                      focusName: (gameType, pointName) => t('grammarLesson.focusName', { game: t(`gamesList.${gameType}Name`), name: pointName }),
                     })
                   }
                   makeWordList={(words, listName) => saveWordsAsList(words, listName, true)}

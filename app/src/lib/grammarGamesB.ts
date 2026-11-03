@@ -136,6 +136,37 @@ export function habitRounds(grammarId: string, seed = 1, max = 8): HabitRound[] 
   return out.map((r, i) => ({ ...r, id: `habit-${i}` }));
 }
 
+/* ---------- 문법 종류 → 어울리는 게임 (수업 게임 자리에 자동 연결) ---------- */
+type PlayGame = Exclude<GrammarGameType, 'grammarauction' | 'grammarwrite'>;
+/** 위에서부터 처음 맞는 규칙을 쓴다. 앞쪽 게임일수록 그 문법에 더 어울린다. */
+const AFFINITY: { test: (id: string) => boolean; games: PlayGame[] }[] = [
+  { test: (id) => id in COMPARE_MODE, games: ['grammarcompare'] },
+  { test: (id) => LINK_GRAMMARS.has(id), games: ['grammarlink'] },
+  { test: (id) => HABIT_GRAMMARS.has(id), games: ['grammarhabit', 'grammarverb'] },
+  { test: (id) => id.startsWith('pos-'), games: ['grammarpos', 'grammarframe'] },
+  { test: (id) => id.startsWith('forms-'), games: ['grammarframe', 'grammarpos'] },
+  { test: (id) => /(^|-)(third|he-she|he-she-is|does|is-it|i-am|be|be-not)(-|$)/.test(id), games: ['grammarverb', 'grammarlab'] },
+  { test: (id) => /(past|future|will|progressive|perfect|negative|not|dont|did|wh-|question|tense)/.test(id), games: ['grammarlab', 'grammarverb'] },
+];
+const DEFAULT_PLAY: PlayGame[] = ['grammarlab', 'grammarframe', 'grammarpos', 'grammarverb'];
+
+/** 이 문법으로 플레이할 수 있는 게임을 어울리는 순서대로(없으면 빈 목록). 첫 번째가 수업 게임 자리에 자동으로 들어간다. */
+export function recommendGrammarGames(grammarId: string): GrammarGameType[] {
+  const rule = AFFINITY.find((r) => r.test(grammarId));
+  // 규칙이 없는 문법은 같은 게임만 반복되지 않게, 문법 id 로 고정된 순서로 나눠 배정한다(같은 문법은 늘 같은 게임)
+  let h = 0;
+  for (const ch of grammarId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const spin = h % DEFAULT_PLAY.length;
+  const rotated = [...DEFAULT_PLAY.slice(spin), ...DEFAULT_PLAY.slice(0, spin)];
+  const order: PlayGame[] = [...new Set<PlayGame>([...(rule?.games ?? []), ...(rule ? DEFAULT_PLAY : rotated), 'grammarcompare', 'grammarlink', 'grammarhabit'])];
+  const sup = grammarGameSupportOf(order, grammarId);
+  return order.filter((g) => sup[g] >= MIN_ROUNDS[g]);
+}
+function grammarGameSupportOf(games: PlayGame[], grammarId: string): Record<string, number> {
+  const all = grammarGameSupport(grammarId);
+  return Object.fromEntries(games.map((g) => [g, all[g]]));
+}
+
 /** 이 문법으로 만들 수 있는 게임 (게임 종류별 문제 수) */
 export function grammarGameSupport(grammarId: string): Record<GrammarGameType | 'detective', number> {
   return {

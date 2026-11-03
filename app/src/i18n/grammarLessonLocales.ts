@@ -14,6 +14,7 @@ const ko = {
   fixPrompt: '틀린 곳을 찾아 고쳐요 →',
   gameTemplateName: '문법 · {{name}}',
   teamQuizName: '문법 팀 대항 퀴즈 · {{name}}',
+  focusName: '{{game}} · {{name}}',
   factoryTitle: '문장 공장 미션',
   factory: {
     past: '과거형으로 바꿔요',
@@ -38,6 +39,7 @@ const en = {
   fixPrompt: 'Find and fix the mistake →',
   gameTemplateName: 'Grammar · {{name}}',
   teamQuizName: 'Grammar team quiz · {{name}}',
+  focusName: '{{game}} · {{name}}',
   factoryTitle: 'Sentence factory missions',
   factory: {
     past: 'Change to the past',
