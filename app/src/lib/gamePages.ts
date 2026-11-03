@@ -2,6 +2,7 @@ import { BalloonPopPage, WordTrainPage, WordFishingPage, SentenceRocketPage, Gra
 import type { ComponentType } from 'react';
 import { FeedMonsterPage, SentenceBridgePage, SentenceTowerPage } from '../pages/StorybookGamePage';
 import SentenceSplashPage from '../pages/SentenceSplashPage';
+import { GrammarLabPage, GrammarVerbPage, GrammarAuctionPage, GrammarWritePage } from '../pages/GrammarGamePage';
 import WheelPage from '../pages/WheelPage';
 import LadderPage from '../pages/LadderPage';
 import OrderPage from '../pages/OrderPage';
@@ -66,6 +67,10 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/sentencebridge': SentenceBridgePage,
   '/games/sentencetower': SentenceTowerPage,
   '/games/sentencesplash': SentenceSplashPage,
+  '/games/grammarlab': GrammarLabPage,
+  '/games/grammarverb': GrammarVerbPage,
+  '/games/grammarauction': GrammarAuctionPage,
+  '/games/grammarwrite': GrammarWritePage,
   '/games/wheel': WheelPage,
   '/games/ladder': LadderPage,
   '/games/order': OrderPage,

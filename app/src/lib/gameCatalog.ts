@@ -68,6 +68,11 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-shufflefind.jpg',
     nameKey: 'gamesList.shufflefindName', descKey: 'gamesList.shufflefindDesc',
   },
+  // 문법별 게임(2026-11-03): 문법 항목 하나(config.grammarId)로 문제를 규칙으로 만든다.
+  { type: 'grammarlab', number: 61, moment: 'practice', category: 'sentence', minItems: 1, icon: 'science', path: '/games/grammarlab', cover: '/covers/game-grammarlab.svg', nameKey: 'gamesList.grammarlabName', descKey: 'gamesList.grammarlabDesc' },
+  { type: 'grammarverb', number: 62, moment: 'practice', category: 'sentence', minItems: 1, icon: 'link', path: '/games/grammarverb', cover: '/covers/game-grammarverb.svg', nameKey: 'gamesList.grammarverbName', descKey: 'gamesList.grammarverbDesc' },
+  { type: 'grammarauction', number: 63, moment: 'team', category: 'sentence', minItems: 1, icon: 'gavel', path: '/games/grammarauction', cover: '/covers/game-grammarauction.svg', nameKey: 'gamesList.grammarauctionName', descKey: 'gamesList.grammarauctionDesc' },
+  { type: 'grammarwrite', number: 64, moment: 'team', category: 'sentence', minItems: 1, icon: 'edit_note', path: '/games/grammarwrite', cover: '/covers/game-grammarwrite.svg', nameKey: 'gamesList.grammarwriteName', descKey: 'gamesList.grammarwriteDesc' },
   {
     type: 'sentencesplash', number: 48, moment: 'practice', category: 'sentence',
     minItems: 1, icon: 'water', path: '/games/sentencesplash',

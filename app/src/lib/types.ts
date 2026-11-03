@@ -208,6 +208,10 @@ export type GameType =
   | 'groupsort'
   | 'unscramble'
   | 'sentencesplash'
+  | 'grammarlab'
+  | 'grammarverb'
+  | 'grammarauction'
+  | 'grammarwrite'
   | 'shufflefind'
   | 'telepathy'
   | 'typeanswer'
@@ -312,6 +316,8 @@ export interface GameTemplateConfig {
   lessonSnapshot?: boolean;
   adventure?: import('./adventureGames').AdventureConfig;
   storybook?: import('./storybook').StorybookConfig;
+  /** 문법별 게임(문장 변신 연구소 등): 문제를 만들 문법 항목 id */
+  grammarId?: string;
   /** Sentence Splash: time limit in seconds for each sentence. */
   splashSeconds?: number;
   classroomSource?: { id: string; name: string; kind: 'word' | 'sentence'; version: string; cards: FullCardItem[] };
