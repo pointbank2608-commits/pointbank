@@ -8,14 +8,15 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const stub = { name: 's', enforce: 'pre', load(id) { if (id.split('\\').join('/').endsWith('/src/lib/supabase.ts')) return 'export const supabase = {};'; } };
 const server = await createServer({ root, logLevel: 'error', plugins: [stub], server: { middlewareMode: true, hmr: false }, appType: 'custom' });
 let failed = 0;
-const MIN_COUNT = { grammarverb: 40, grammarcompare: 4, grammarlink: 4, grammarhabit: 1, grammarpos: 60, grammarframe: 40 };
+const MIN_COUNT = { grammarverb: 40, grammarcompare: 4, grammarlink: 4, grammarhabit: 1, grammarpos: 60, grammarframe: 40, grammarpassive: 3, grammarcond: 2, grammarrelative: 4, grammarask: 3, grammarshop: 3 };
 const test = async (n, f) => { try { await f(); console.log('ok  ', n); } catch (e) { failed++; console.log('FAIL', n, '\n     ', e.message); } };
 try {
   const gg = await server.ssrLoadModule('/src/lib/grammarGames.ts');
   const gb = await server.ssrLoadModule('/src/lib/grammarGamesB.ts');
+  const gc = await server.ssrLoadModule('/src/lib/grammarGamesC.ts');
   const { GRAMMAR_POINTS } = await server.ssrLoadModule('/src/lib/grammar.ts');
   const ids = GRAMMAR_POINTS.map((p) => p.id);
-  const count = { grammarlab: 0, grammarverb: 0, grammarauction: 0, grammarwrite: 0, grammarpos: 0, grammarframe: 0, grammarcompare: 0, grammarlink: 0, grammarhabit: 0, detective: 0 };
+  const count = { grammarlab: 0, grammarverb: 0, grammarauction: 0, grammarwrite: 0, grammarpos: 0, grammarframe: 0, grammarcompare: 0, grammarlink: 0, grammarhabit: 0, grammarpassive: 0, grammarcond: 0, grammarrelative: 0, grammarask: 0, grammarshop: 0, detective: 0 };
   for (const id of ids) {
     const s = gb.grammarGameSupport(id);
     for (const k of Object.keys(count)) if (s[k] >= gb.MIN_ROUNDS[k]) count[k]++;
@@ -106,6 +107,78 @@ try {
     }
     assert.ok(rs.some((x) => x.kind === 'calendar' && /^(He|She) \w+s /.test(`${x.before} ${x.after}`)) || true);
     assert.ok(rs.filter((x) => x.kind === 'order').every((x) => x.options.includes(x.answer)));
+  });
+
+  await test('수동태 카메라: 정답은 be + 과거분사, 보기 3개가 서로 다르다', () => {
+    for (const id of ['m-passive', 'm-passive-advanced', 'h-passive-advanced']) {
+      const rs = gc.passiveRounds(id);
+      assert.ok(rs.length >= 8, id);
+      for (const r of rs) {
+        assert.ok(r.options.includes(r.answer) && new Set(r.options).size === 3, JSON.stringify(r));
+        assert.match(r.answer, /^(was|were|is|are) \w+$/);
+        assert.match(r.after, /^by /);
+        assert.ok(r.active.endsWith('.'));
+      }
+    }
+    const past = gc.passiveRounds('m-passive', 1).find((r) => r.tense === 'past' && /window/.test(r.focus));
+    if (past) assert.equal(past.answer, 'was broken');
+    assert.equal(gc.passiveRounds('past-regular').length, 0);
+  });
+  await test('조건문 선택 모험: if 절은 현재형, 결과는 will + 동사원형', () => {
+    for (const id of ['m-if-conditional', 'm-conj-when-if-that']) {
+      const rs = gc.condRounds(id);
+      assert.ok(rs.length >= 8);
+      for (const r of rs) {
+        assert.ok(r.options.includes(r.answer) && new Set(r.options).size === 3, JSON.stringify(r));
+        if (r.kind === 'main') assert.match(r.answer, /^will \w+$/);
+        else assert.ok(!/^will /.test(r.answer));
+        assert.match(r.full, /^If .+, .+ will \w+ ?.*\.$/);
+      }
+    }
+    assert.ok(gc.condRounds('m-if-conditional').some((r) => r.kind === 'if') && gc.condRounds('m-if-conditional').some((r) => r.kind === 'main'));
+  });
+  await test('관계사 인물 찾기: 단서와 정답 카드가 일치한다', () => {
+    for (const id of ['m-relative-subject', 'm-relative-whose', 'm-relative-object', 'm-relative-adverb']) {
+      const rs = gc.relativeRounds(id);
+      assert.ok(rs.length >= 8, id);
+      for (const r of rs) {
+        assert.ok(r.options.includes(r.answer) && new Set(r.options).size === 4, JSON.stringify(r));
+        assert.match(r.clue, /^Find the .+\.$/);
+      }
+    }
+    assert.match(gc.relativeRounds('m-relative-whose')[0].clue, / whose /);
+    assert.match(gc.relativeRounds('m-relative-adverb')[0].clue, / where /);
+  });
+  await test('문법 장보기: 가산·불가산에 맞는 수량 표현', () => {
+    for (const id of ['countable-uncountable', 'how-many', 'h-quantifiers']) {
+      const rs = gc.shopRounds(id);
+      assert.ok(rs.length >= 8, id);
+      for (const r of rs) assert.ok(r.options.includes(r.answer) && new Set(r.options).size === 3, JSON.stringify(r));
+    }
+    for (const r of gc.shopRounds('how-many')) {
+      const w = r.after.split(' ')[0];
+      const uncount = ['milk', 'rice', 'bread', 'water', 'juice', 'cheese'].includes(w);
+      assert.equal(r.answer, uncount ? 'much' : 'many', w);
+    }
+    for (const r of gc.shopRounds('countable-uncountable').filter((x) => x.before === 'I want')) assert.ok(['a', 'an'].includes(r.answer));
+  });
+  await test('질문으로 친구 찾기: 친구마다 특징 조합이 달라 질문으로 반드시 가려낼 수 있다', () => {
+    for (const id of ['does-he', 'is-it', 'i-can', 'do-you-like']) {
+      const rs = gc.askRounds(id);
+      assert.equal(rs.length, 3);
+      for (const r of rs) {
+        assert.equal(r.chars.length, 8);
+        assert.equal(new Set(r.chars.map((c) => c.traits.join(''))).size, 8, id);
+        assert.equal(r.questions.length, 5);
+        assert.ok(r.secret >= 0 && r.secret < 8);
+        // 5개 질문을 모두 하면 비밀 친구 한 명만 남는다
+        const left = r.chars.filter((c) => r.questions.every((q) => c.traits[q.id] === r.chars[r.secret].traits[q.id]));
+        assert.equal(left.length, 1);
+      }
+    }
+    assert.ok(gc.askRounds('does-he')[0].questions[0].text.startsWith('Does the friend'));
+    assert.ok(gc.askRounds('is-it')[0].questions[0].text.startsWith('Is the friend'));
+    assert.ok(gc.askRounds('i-can')[0].questions[0].text.startsWith('Can the friend'));
   });
   await test('시드가 같으면 같은 문제, 다르면 순서가 바뀐다', () => {
     const id = ids.find((x) => gg.labRounds(x).length >= 6);

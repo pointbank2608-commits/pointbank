@@ -2,7 +2,7 @@ import { BalloonPopPage, WordTrainPage, WordFishingPage, SentenceRocketPage, Gra
 import type { ComponentType } from 'react';
 import { FeedMonsterPage, SentenceBridgePage, SentenceTowerPage } from '../pages/StorybookGamePage';
 import SentenceSplashPage from '../pages/SentenceSplashPage';
-import { GrammarLabPage, GrammarVerbPage, GrammarAuctionPage, GrammarWritePage, GrammarPosPage, GrammarFramePage, GrammarComparePage, GrammarLinkPage, GrammarHabitPage } from '../pages/GrammarGamePage';
+import { GrammarLabPage, GrammarVerbPage, GrammarAuctionPage, GrammarWritePage, GrammarPosPage, GrammarFramePage, GrammarComparePage, GrammarLinkPage, GrammarHabitPage, GrammarPassivePage, GrammarCondPage, GrammarRelativePage, GrammarAskPage, GrammarShopPage } from '../pages/GrammarGamePage';
 import WheelPage from '../pages/WheelPage';
 import LadderPage from '../pages/LadderPage';
 import OrderPage from '../pages/OrderPage';
@@ -76,6 +76,12 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/grammarcompare': GrammarComparePage,
   '/games/grammarlink': GrammarLinkPage,
   '/games/grammarhabit': GrammarHabitPage,
+  '/games/grammarpassive': GrammarPassivePage,
+  '/games/grammarcond': GrammarCondPage,
+  '/games/grammarrelative': GrammarRelativePage,
+  '/games/grammarask': GrammarAskPage,
+  '/games/grammarshop': GrammarShopPage,
+
 
   '/games/wheel': WheelPage,
   '/games/ladder': LadderPage,

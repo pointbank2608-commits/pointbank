@@ -33,6 +33,12 @@ export const GAME_META: Record<string, GameMeta> = {
   grammarcompare: { minutes: 7, play: 'team' },
   grammarlink: { minutes: 7, play: 'team' },
   grammarhabit: { minutes: 7, play: 'team' },
+  grammarpassive: { minutes: 7, play: 'team' },
+  grammarcond: { minutes: 7, play: 'team' },
+  grammarrelative: { minutes: 7, play: 'team' },
+  grammarask: { minutes: 10, play: 'team' },
+  grammarshop: { minutes: 7, play: 'team' },
+
 
   shufflefind: { minutes: 8, play: 'team' },
   telepathy: { minutes: 10, play: 'team', paper: true },

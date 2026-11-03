@@ -1,5 +1,6 @@
 import { auctionLots, detectiveCases, factorySources, labRounds, shuffleSeeded, verbRounds, writeRounds, type GrammarGameType } from './grammarGames';
 import { baseOf, splitSimple, third } from './sentenceFactory';
+import { thirdSupport, THIRD_MIN } from './grammarGamesC';
 import { COMPARE_DATA, FREQ_DAYS, HABIT_ACTS, HABIT_ORDER, HABIT_SUBJECTS, LINK_DATA, type Connector, type Freq } from './grammarGameData';
 
 /** 문법별 게임 2차 묶음(2026-11-03): 문장 속 품사 탐험·문장 뼈대 조립소·비교급 챔피언·이유·결과 연결 다리·습관 캘린더. */
@@ -140,6 +141,11 @@ export function habitRounds(grammarId: string, seed = 1, max = 8): HabitRound[] 
 type PlayGame = Exclude<GrammarGameType, 'grammarauction' | 'grammarwrite'>;
 /** 위에서부터 처음 맞는 규칙을 쓴다. 앞쪽 게임일수록 그 문법에 더 어울린다. */
 const AFFINITY: { test: (id: string) => boolean; games: PlayGame[] }[] = [
+  { test: (id) => ['m-passive', 'm-passive-advanced', 'h-passive-advanced'].includes(id), games: ['grammarpassive'] },
+  { test: (id) => ['m-if-conditional', 'm-conj-when-if-that'].includes(id), games: ['grammarcond'] },
+  { test: (id) => id.startsWith('m-relative-') && id !== 'm-relative-what', games: ['grammarrelative'] },
+  { test: (id) => ['does-he', 'do-you-like', 'is-it', 'i-can'].includes(id), games: ['grammarask', 'grammarverb'] },
+  { test: (id) => ['countable-uncountable', 'how-many', 'h-quantifiers'].includes(id), games: ['grammarshop'] },
   { test: (id) => id in COMPARE_MODE, games: ['grammarcompare'] },
   { test: (id) => LINK_GRAMMARS.has(id), games: ['grammarlink'] },
   { test: (id) => HABIT_GRAMMARS.has(id), games: ['grammarhabit', 'grammarverb'] },
@@ -158,7 +164,7 @@ export function recommendGrammarGames(grammarId: string): GrammarGameType[] {
   for (const ch of grammarId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const spin = h % DEFAULT_PLAY.length;
   const rotated = [...DEFAULT_PLAY.slice(spin), ...DEFAULT_PLAY.slice(0, spin)];
-  const order: PlayGame[] = [...new Set<PlayGame>([...(rule?.games ?? []), ...(rule ? DEFAULT_PLAY : rotated), 'grammarcompare', 'grammarlink', 'grammarhabit'])];
+  const order: PlayGame[] = [...new Set<PlayGame>([...(rule?.games ?? []), ...(rule ? DEFAULT_PLAY : rotated), 'grammarcompare', 'grammarlink', 'grammarhabit', 'grammarpassive', 'grammarcond', 'grammarrelative', 'grammarask', 'grammarshop'])];
   const sup = grammarGameSupportOf(order, grammarId);
   return order.filter((g) => sup[g] >= MIN_ROUNDS[g]);
 }
@@ -179,9 +185,10 @@ export function grammarGameSupport(grammarId: string): Record<GrammarGameType | 
     grammarcompare: compareRounds(grammarId).length,
     grammarlink: linkRounds(grammarId).length,
     grammarhabit: habitRounds(grammarId).length,
+    ...thirdSupport(grammarId),
     detective: detectiveCases(grammarId).length,
   };
 }
 export const MIN_ROUNDS: Record<GrammarGameType | 'detective', number> = {
-  grammarlab: 4, grammarverb: 4, grammarauction: 4, grammarwrite: 3, grammarpos: 4, grammarframe: 4, grammarcompare: 4, grammarlink: 4, grammarhabit: 4, detective: 2,
+  grammarlab: 4, grammarverb: 4, grammarauction: 4, grammarwrite: 3, grammarpos: 4, grammarframe: 4, grammarcompare: 4, grammarlink: 4, grammarhabit: 4, ...THIRD_MIN, detective: 2,
 };

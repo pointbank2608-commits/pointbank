@@ -46,6 +46,12 @@ export const GAME_SFX = {
   grammarcompare: { ok: 4015, wrong: 4025, done: 5037 },
   grammarlink: { ok: 4015, wrong: 4025, done: 5037 },
   grammarhabit: { ok: 4015, wrong: 4025, done: 5037 },
+  grammarpassive: { ok: 4015, wrong: 4025, done: 5037 },
+  grammarcond: { ok: 4015, wrong: 4025, done: 5037 },
+  grammarrelative: { ok: 4015, wrong: 4025, done: 5037 },
+  grammarask: { ok: 4015, wrong: 4025, done: 5037 },
+  grammarshop: { ok: 4015, wrong: 4025, done: 5037 },
+
 
   shufflefind: { show: 4041, swap: 1011, hit: 5037, miss: 4025, finish: 5037 },
   icecream: { line: 1013, pick: 6001, scoop: 4041, done: 5037 },

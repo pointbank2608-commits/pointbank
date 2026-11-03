@@ -12,7 +12,7 @@ import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useText, type Co
 type BGameType = Extract<GrammarGameType, 'grammarpos' | 'grammarframe' | 'grammarcompare' | 'grammarlink' | 'grammarhabit'>;
 
 /** 팀 점수·차례·다음 버튼·결과 화면을 한곳에 모은 진행 틀 */
-function useRun<T extends { id: string }>(make: (seed: number) => T[], seed: number, min: number) {
+export function useRun<T extends { id: string }>(make: (seed: number) => T[], seed: number, min: number) {
   const [run, setRun] = useState(seed);
   const rounds = useMemo(() => make(run), [make, run]);
   const [teams, setTeams] = useState(2);
@@ -143,8 +143,8 @@ function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
 }
 
 /* ---------------- 객관식 공용 틀: 비교급·연결·습관 ---------------- */
-function Choice<T extends { id: string; options: string[]; answer: string }>(props: {
-  grammarId: string; seed: number; onExit?: () => void; title: string; game: BGameType; make: (seed: number) => T[];
+export function Choice<T extends { id: string; options: string[]; answer: string }>(props: {
+  grammarId: string; seed: number; onExit?: () => void; title: string; game: GrammarGameType; make: (seed: number) => T[];
   stem: (round: T, chosen: string | null) => React.ReactNode; explain?: (round: T) => string; label?: (opt: string) => string;
 }) {
   const text = useText();
@@ -155,7 +155,8 @@ function Choice<T extends { id: string; options: string[]; answer: string }>(pro
     if (!r.round || chosen) return;
     setChosen(o);
     const ok = o === r.round.answer;
-    playSfx(ok ? GAME_SFX[props.game].ok : GAME_SFX[props.game].wrong);
+    const sfx = GAME_SFX[props.game] as { ok: number; wrong?: number };
+    playSfx(ok ? sfx.ok : sfx.wrong);
     r.award(ok);
   };
   useRemoteActions(r.round && chosen ? [{ id: 'next', label: text('다음', 'Next'), tone: 'primary', run: next }] : []);

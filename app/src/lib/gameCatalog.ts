@@ -78,6 +78,11 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   { type: 'grammarcompare', number: 67, moment: 'practice', category: 'sentence', minItems: 1, icon: 'balance', path: '/games/grammarcompare', cover: '/covers/game-grammarcompare.svg', nameKey: 'gamesList.grammarcompareName', descKey: 'gamesList.grammarcompareDesc' },
   { type: 'grammarlink', number: 68, moment: 'practice', category: 'sentence', minItems: 1, icon: 'link', path: '/games/grammarlink', cover: '/covers/game-grammarlink.svg', nameKey: 'gamesList.grammarlinkName', descKey: 'gamesList.grammarlinkDesc' },
   { type: 'grammarhabit', number: 69, moment: 'practice', category: 'sentence', minItems: 1, icon: 'calendar_month', path: '/games/grammarhabit', cover: '/covers/game-grammarhabit.svg', nameKey: 'gamesList.grammarhabitName', descKey: 'gamesList.grammarhabitDesc' },
+  { type: 'grammarpassive', number: 70, moment: 'practice', category: 'sentence', minItems: 1, icon: 'photo_camera', path: '/games/grammarpassive', cover: '/covers/game-grammarpassive.svg', nameKey: 'gamesList.grammarpassiveName', descKey: 'gamesList.grammarpassiveDesc' },
+  { type: 'grammarcond', number: 71, moment: 'practice', category: 'sentence', minItems: 1, icon: 'explore', path: '/games/grammarcond', cover: '/covers/game-grammarcond.svg', nameKey: 'gamesList.grammarcondName', descKey: 'gamesList.grammarcondDesc' },
+  { type: 'grammarrelative', number: 72, moment: 'practice', category: 'sentence', minItems: 1, icon: 'person_search', path: '/games/grammarrelative', cover: '/covers/game-grammarrelative.svg', nameKey: 'gamesList.grammarrelativeName', descKey: 'gamesList.grammarrelativeDesc' },
+  { type: 'grammarask', number: 73, moment: 'team', category: 'sentence', minItems: 1, icon: 'quiz', path: '/games/grammarask', cover: '/covers/game-grammarask.svg', nameKey: 'gamesList.grammaraskName', descKey: 'gamesList.grammaraskDesc' },
+  { type: 'grammarshop', number: 74, moment: 'practice', category: 'sentence', minItems: 1, icon: 'shopping_basket', path: '/games/grammarshop', cover: '/covers/game-grammarshop.svg', nameKey: 'gamesList.grammarshopName', descKey: 'gamesList.grammarshopDesc' },
   {
     type: 'sentencesplash', number: 48, moment: 'practice', category: 'sentence',
     minItems: 1, icon: 'water', path: '/games/sentencesplash',

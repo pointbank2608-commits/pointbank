@@ -9,6 +9,7 @@ await server.listen();
 const base = 'http://127.0.0.1:5271/gharness.html';
 const gg = await server.ssrLoadModule('/src/lib/grammarGames.ts');
 const gb = await server.ssrLoadModule('/src/lib/grammarGamesB.ts');
+const gc = await server.ssrLoadModule('/src/lib/grammarGamesC.ts');
 let browser; let failed = 0;
 const test = async (n, f) => { try { await f(); console.log('ok  ', n); } catch (e) { failed++; console.log('FAIL', n, '\n     ', e.message.split('\n')[0]); } };
 try {
@@ -143,6 +144,51 @@ try {
       await page.close();
     });
   }
+
+  const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, (m) => '\\' + m);
+  for (const [type, gid, rounds] of [
+    ['grammarpassive', 'm-passive', () => gc.passiveRounds('m-passive', 1)],
+    ['grammarcond', 'm-if-conditional', () => gc.condRounds('m-if-conditional', 1)],
+    ['grammarrelative', 'm-relative-subject', () => gc.relativeRounds('m-relative-subject', 1)],
+    ['grammarrelative', 'm-relative-adverb', () => gc.relativeRounds('m-relative-adverb', 1)],
+    ['grammarshop', 'how-many', () => gc.shopRounds('how-many', 1)],
+    ['grammarshop', 'countable-uncountable', () => gc.shopRounds('countable-uncountable', 1)],
+  ]) {
+    await test(`${type}(${gid}): 정답을 골라 끝까지`, async () => {
+      const page = await open(type, gid);
+      for (const r of rounds()) {
+        await page.locator('button[lang=en]').filter({ hasText: new RegExp(`^${esc(r.answer)}$`) }).first().click();
+        await page.getByText('정답! +1점').first().waitFor({ state: 'visible' });
+        await page.getByRole('button', { name: '다음' }).first().click();
+      }
+      await page.getByText('게임 끝!').waitFor();
+      await page.close();
+    });
+  }
+  await test('질문으로 친구 찾기: 질문 → 맞히기 → 다음 판 → 결과', async () => {
+    const page = await open('grammarask', 'does-he');
+    const rounds = gc.askRounds('does-he', 1);
+    for (let k = 0; k < rounds.length; k++) {
+      const r = rounds[k];
+      await page.getByRole('button', { name: new RegExp(esc(r.questions[0].text)) }).click();
+      await page.getByText(/Yes, it does|No, it doesn/).first().waitFor({ state: 'visible' });
+      await page.getByRole('button', { name: '누구인지 맞히기' }).click();
+      await page.getByRole('button', { name: r.chars[r.secret].n, exact: true }).click();
+      await page.getByText(/정답! .* 이에요/).waitFor();
+      await page.getByRole('button', { name: /다음 판|결과 보기/ }).click();
+    }
+    await page.getByText('게임 끝!').waitFor();
+    await page.close();
+  });
+  await test('질문으로 친구 찾기: 틀리게 맞히면 그 친구가 지워지고 차례가 넘어간다', async () => {
+    const page = await open('grammarask', 'is-it');
+    const r = gc.askRounds('is-it', 1)[0];
+    const wrongName = r.chars.find((_, i) => i !== r.secret).n;
+    await page.getByRole('button', { name: '누구인지 맞히기' }).click();
+    await page.getByRole('button', { name: wrongName, exact: true }).click();
+    await page.getByText(/2팀 차례/).waitFor();
+    await page.close();
+  });
   await test('자료가 부족한 문법은 안내 문구', async () => {
     const page = await open('grammarverb', 'no-such-grammar');
     await page.getByText('아직 이 게임을 만들 수 없어요').waitFor();

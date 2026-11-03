@@ -1,4 +1,4 @@
-# 문법별 게임 (2026-11-03, 1차 5종 + 2차 5종)
+# 문법별 게임 (2026-11-03~04, 1·2·3차 15종)
 
 문법 항목 하나(`config.grammarId`)로 문제를 **규칙으로** 만든다. 게임 템플릿에는 문법 id 만 저장하고 `items` 에는 문법 이름 한 줄만 둔다.
 재료: 문법 데이터(예문·틀리기 쉬운 것) + 워크북 A·B 자료(오류 고치기·조건 영작) + 문장 공장(`lib/sentenceFactory.ts`). AI 가 새 문제를 쓰지 않는다.
@@ -29,3 +29,17 @@
 - 습관 캘린더는 always=7·usually=5~6·sometimes=1~2·never=0 의 **뚜렷한 구간만** 쓴다(경계가 모호한 횟수는 출제하지 않음). 달력 ✓ 가 정답의 근거이므로 "often 은 4번" 같은 규칙을 가르치지 않는다.
 - 비교급·연결 다리·습관은 해당 문법에서만 열린다(다른 문법에서는 목록에서 빠진다).
 - 확인: `check-grammar-games.mjs`(문제 생성 전수), `check-grammar-games-browser.mjs`(13개, 임시 하네스 `app/gharness.html` + `src/gharness.tsx` 필요 — 검증 때만 만들고 지운다).
+
+## 3차 묶음 (2026-11-04)
+| 번호 | 게임 | 하는 일 | 문제 출처 | 만들 수 있는 문법 |
+|---|---|---|---|---|
+| 70 | 수동태 카메라 `grammarpassive` | 행동을 당한 것을 주어로 be + 과거분사 고르기, 카메라가 비추는 쪽 이모지 | 손으로 쓴 사건 12개(`grammarGameDataC.ts`), 시제·단복수는 규칙 | m-passive 등 3 |
+| 71 | 조건문 선택 모험 `grammarcond` | if 절(현재형)·결과(will + 동사원형) 고르기 | 손으로 쓴 장면 12개 | m-if-conditional·m-conj-when-if-that |
+| 72 | 관계사 인물 찾기 `grammarrelative` | who/whose/that/where 단서 문장을 읽고 알맞은 카드 고르기 | 사람 특징 7·사물 10·장소 8 표 | m-relative-subject·whose·object·adverb |
+| 73 | 질문으로 친구 찾기 `grammarask` | 팀이 Does/Is/Can 질문을 골라 8명 중 비밀 친구를 좁히고 맞히기(적게 물을수록 점수↑, 최대 5점) | 규칙(특징 5가지 조합이 겹치지 않게 생성 → 5개 질문으로 반드시 한 명만 남음) | does-he·do-you-like·is-it·i-can |
+| 74 | 문법 장보기 `grammarshop` | some/any, a/an, many/much, a few/a little 고르기 | 가산·불가산 12품목 표 + 템플릿 | countable-uncountable·how-many·h-quantifiers |
+
+- 코드: `lib/grammarGamesC.ts`(문제 생성·`thirdSupport`), `lib/grammarGameDataC.ts`(손으로 쓴 자료), `components/GrammarGamesC.tsx`. 객관식 4종은 2차의 `Choice` 틀(정답 전에도 결과 자리를 잡아 전체화면 배율이 안 흔들림)을 재사용하고, 질문으로 친구 찾기만 별도 화면이다.
+- 수업 게임① 자동 배정(`AFFINITY`)에 5개를 더했다: 수동태 → 카메라, if 조건문 → 조건문 모험, 관계사 → 인물 찾기, 의문문(does-he·is-it·i-can·do-you-like) → 친구 찾기, 수량 표현 → 장보기.
+- 자료는 직접 쓴 초안(사실이 분명한 것만)이라 선생님 검수 전이다. 장보기의 some/any 문장은 의문문의 some 같은 예외를 피해 보기를 골랐다.
+- 확인: `check-grammar-games.mjs`(문제 생성 전수 + 3차 5개), `check-grammar-games-browser.mjs`(실제 Chrome 21개, 임시 하네스 필요).

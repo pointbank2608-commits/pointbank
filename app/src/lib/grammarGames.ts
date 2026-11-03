@@ -9,7 +9,7 @@ import type { DetectiveCase } from './adventureGames';
  * 문법별 게임(2026-11-03): 문법 항목 하나(grammarId)에서 규칙으로 문제를 만든다. 게임 템플릿에는 `config.grammarId` 만 저장한다.
  * 재료는 문법 데이터(예문·틀리기 쉬운 것)·워크북 자료(오류 고치기·조건 영작)·문장 공장이며, AI 로 새 문제를 쓰지 않는다.
  */
-export const GRAMMAR_GAME_TYPES = ['grammarlab', 'grammarverb', 'grammarauction', 'grammarwrite', 'grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit'] as const;
+export const GRAMMAR_GAME_TYPES = ['grammarlab', 'grammarverb', 'grammarauction', 'grammarwrite', 'grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit', 'grammarpassive', 'grammarcond', 'grammarrelative', 'grammarask', 'grammarshop'] as const;
 export type GrammarGameType = (typeof GRAMMAR_GAME_TYPES)[number];
 
 function rng(seed: number) {

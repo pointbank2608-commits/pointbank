@@ -109,6 +109,11 @@ const GrammarFramePage = lazyPage(() => import('./pages/GrammarGamePage').then((
 const GrammarComparePage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarComparePage })));
 const GrammarLinkPage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarLinkPage })));
 const GrammarHabitPage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarHabitPage })));
+const GrammarPassivePage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarPassivePage })));
+const GrammarCondPage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarCondPage })));
+const GrammarRelativePage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarRelativePage })));
+const GrammarAskPage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarAskPage })));
+const GrammarShopPage = lazyPage(() => import('./pages/GrammarGamePage').then((m) => ({ default: m.GrammarShopPage })));
 const StudentHistoryPage = lazyPage(() => import('./pages/StudentHistoryPage'));
 const StudentPage = lazyPage(() => import('./pages/StudentPage'));
 const TicTacToePage = lazyPage(() => import('./pages/TicTacToePage'));
@@ -391,6 +396,11 @@ function AppRoutes() {
             <Route path="/games/grammarcompare" element={<GameWorkspace><GrammarComparePage /></GameWorkspace>} />
             <Route path="/games/grammarlink" element={<GameWorkspace><GrammarLinkPage /></GameWorkspace>} />
             <Route path="/games/grammarhabit" element={<GameWorkspace><GrammarHabitPage /></GameWorkspace>} />
+            <Route path="/games/grammarpassive" element={<GameWorkspace><GrammarPassivePage /></GameWorkspace>} />
+            <Route path="/games/grammarcond" element={<GameWorkspace><GrammarCondPage /></GameWorkspace>} />
+            <Route path="/games/grammarrelative" element={<GameWorkspace><GrammarRelativePage /></GameWorkspace>} />
+            <Route path="/games/grammarask" element={<GameWorkspace><GrammarAskPage /></GameWorkspace>} />
+            <Route path="/games/grammarshop" element={<GameWorkspace><GrammarShopPage /></GameWorkspace>} />
             <Route path="/games/rankorder" element={<GameWorkspace><RankOrderPage /></GameWorkspace>} />
             <Route path="/games/wordsearch" element={<GameWorkspace><WordSearchPage /></GameWorkspace>} />
             <Route path="/games/crossword" element={<GameWorkspace><CrosswordPage /></GameWorkspace>} />
@@ -467,6 +477,11 @@ function AppRoutes() {
             <Route path="/games/grammarcompare" element={<GrammarComparePage />} />
             <Route path="/games/grammarlink" element={<GrammarLinkPage />} />
             <Route path="/games/grammarhabit" element={<GrammarHabitPage />} />
+            <Route path="/games/grammarpassive" element={<GrammarPassivePage />} />
+            <Route path="/games/grammarcond" element={<GrammarCondPage />} />
+            <Route path="/games/grammarrelative" element={<GrammarRelativePage />} />
+            <Route path="/games/grammarask" element={<GrammarAskPage />} />
+            <Route path="/games/grammarshop" element={<GrammarShopPage />} />
             <Route path="/games/rankorder" element={<RankOrderPage />} />
             <Route path="/games/wordsearch" element={<WordSearchPage />} />
             <Route path="/games/crossword" element={<CrosswordPage />} />

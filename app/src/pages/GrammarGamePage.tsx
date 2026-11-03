@@ -8,6 +8,7 @@ import EditOnly from '../components/EditOnly';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GrammarGame from '../components/GrammarGames';
 import GrammarGameB from '../components/GrammarGamesB';
+import GrammarGameC from '../components/GrammarGamesC';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import { createGameTemplate, updateGameTemplate } from '../lib/api';
 import { GRAMMAR_POINTS, grammarLevelTag, grammarPoint } from '../lib/grammar';
@@ -31,6 +32,11 @@ export const GrammarFramePage = () => <GrammarGamePage type="grammarframe" />;
 export const GrammarComparePage = () => <GrammarGamePage type="grammarcompare" />;
 export const GrammarLinkPage = () => <GrammarGamePage type="grammarlink" />;
 export const GrammarHabitPage = () => <GrammarGamePage type="grammarhabit" />;
+export const GrammarPassivePage = () => <GrammarGamePage type="grammarpassive" />;
+export const GrammarCondPage = () => <GrammarGamePage type="grammarcond" />;
+export const GrammarRelativePage = () => <GrammarGamePage type="grammarrelative" />;
+export const GrammarAskPage = () => <GrammarGamePage type="grammarask" />;
+export const GrammarShopPage = () => <GrammarGamePage type="grammarshop" />;
 
 export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
   const { i18n } = useTranslation();
@@ -102,7 +108,9 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
     <div className="space-y-4">
       {!g.loading && (
         <GameThemeFrame gameType={type} roster={g.roster} onRestart={() => setRestart((k) => k + 1)}>
-          {(['grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit'] as const).some((b) => b === type)
+          {(['grammarpassive', 'grammarcond', 'grammarrelative', 'grammarask', 'grammarshop'] as const).some((c) => c === type)
+            ? <GrammarGameC key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type as 'grammarpassive'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
+            : (['grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit'] as const).some((b) => b === type)
             ? <GrammarGameB key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type as 'grammarpos'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
             : <GrammarGame key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />}
         </GameThemeFrame>

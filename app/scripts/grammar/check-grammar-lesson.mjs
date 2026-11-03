@@ -70,6 +70,16 @@ try {
     assert.equal(first('forms-3'), 'grammarframe');
     assert.equal(first('third-s'), 'grammarverb');
     assert.equal(first('past-regular'), 'grammarlab');
+    assert.equal(first('m-passive'), 'grammarpassive');
+    assert.equal(first('h-passive-advanced'), 'grammarpassive');
+    assert.equal(first('m-if-conditional'), 'grammarcond');
+    assert.equal(first('m-conj-when-if-that'), 'grammarcond');
+    assert.equal(first('m-relative-subject'), 'grammarrelative');
+    assert.equal(first('m-relative-adverb'), 'grammarrelative');
+    assert.equal(first('does-he'), 'grammarask');
+    assert.equal(first('i-can'), 'grammarask');
+    assert.equal(first('how-many'), 'grammarshop');
+    assert.equal(first('countable-uncountable'), 'grammarshop');
     // 어떤 문법이든 추천 목록의 게임은 실제로 문제가 만들어지는 것만
     const sup = (id) => gb.grammarGameSupport(id);
     const dist = {};
