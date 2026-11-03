@@ -162,7 +162,8 @@ export function shuffle<T>(arr: T[]): T[] {
 
 /** 정답 하나 + 풀의 다른 값으로 보기 만들기(정답 자리는 무작위) */
 export function options<T>(correct: T, pool: T[], n = 4): { list: T[]; answer: number } {
-  const others = shuffle(pool.filter((x) => x !== correct)).slice(0, n - 1);
+  // 같은 보기가 두 번 들어가지 않게 풀을 중복 없이 만든다(해석 풀에는 같은 문장이 여러 문법에 있다)
+  const others = shuffle([...new Set(pool)].filter((x) => x !== correct)).slice(0, n - 1);
   const list = shuffle([correct, ...others]);
   return { list, answer: list.indexOf(correct) };
 }

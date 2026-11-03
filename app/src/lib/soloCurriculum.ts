@@ -1,6 +1,8 @@
 import { plainText, type GrammarPoint } from './grammar';
 import { buildFixErrorSteps } from './grammarBlocks';
 import { buildSoloGrammarLesson, buildWordBlock, evenIndexes, type SoloGameType, type SoloPass, type SoloStep } from './soloLessons';
+import { relabelGroupMinutes } from './soloBoard';
+import { soloGrammarBank } from './soloGrammarBank';
 import { buildTestStep } from './soloTest';
 import { buildCondWriteSteps, buildOrderWriteSteps, sentencesFromPoints } from './writeBlocks';
 import type { FullCardItem } from './types';
@@ -78,7 +80,7 @@ const pitfallLine = (p: { wrong: string; right: string }): string =>
 
 export const STAGED_MIN_WORDS = 6;
 
-/** 문법 항목 하나 → 3단계 수업 */
+/** 문법 항목 하나 → 3단계 수업 (워크북 자료·문장 공장·문법별 게임 문제로 단체수업처럼 30분 넘게) */
 export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOptions = {}): Built {
   const G = opts.games ?? [];
   const base = buildSoloGrammarLesson(point);
@@ -88,6 +90,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   const detail = [...(point.detail ?? [])].map(plainText);
   const ruleLines = [...(point.rule ?? [])].map(plainText);
   const questions = (t: SoloStep['t']) => base.steps.filter((s) => s.t === t);
+  const bank = soloGrammarBank(point.id);
 
   // ── 1. 기본 개념 ──
   steps.push(stage(1, '기본 개념', 10, '규칙과 예문을 카드로 배워요', passOf(opts)));
@@ -96,6 +99,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   for (const e of examples.slice(0, 3)) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
   steps.push(part('문제 풀기', '배운 것을 확인해요'));
   steps.push(...pick(questions('translatePick'), 3), ...pick(questions('pickCorrect'), 2));
+  if (bank.has) steps.push(...pick(bank.chooseA, 4), ...bank.drills.slice(0, 2));
   steps.push(part('게임', '문장을 조립하며 한 번 더 익혀요'));
   steps.push(...(G[0] ? [gameStep(G[0])] : pick(questions('unscramble'), 3)));
 
@@ -120,9 +124,17 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   }
   for (const e of examples.slice(3, 5)) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
   steps.push(part('문제 풀기', '틀린 곳을 고치고 직접 써 봐요'));
-  steps.push(...buildFixErrorSteps([point.id], 3));
   const sents = sentencesFromPoints([point]);
-  steps.push(...buildOrderWriteSteps(sents, 3), ...buildCondWriteSteps(sents, 1));
+  if (bank.has) {
+    const fromPitfalls = buildFixErrorSteps([point.id], 3).filter((f) => !bank.fix.some((b) => b.t === 'fixError' && f.t === 'fixError' && b.wrong === f.wrong));
+    steps.push(...pick(bank.fix, 3), ...fromPitfalls.slice(0, 1));
+    steps.push(...buildOrderWriteSteps(sents, 1), ...pick(bank.build, 1), ...pick(bank.factory, 2));
+    steps.push(...bank.drills.slice(2, 4));
+    steps.push(...pick(bank.write, 2));
+  } else {
+    steps.push(...buildFixErrorSteps([point.id], 3));
+    steps.push(...buildOrderWriteSteps(sents, 3), ...buildCondWriteSteps(sents, 1));
+  }
   steps.push(part('게임', '소리 내어 말하며 한 번 더 익혀요'));
   steps.push(...(G[1] ? [gameStep(G[1])] : pick(questions('fadeRead'), 3)));
 
@@ -130,12 +142,13 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   steps.push(stage(3, '총정리와 최종 테스트', 12, '한 줄로 정리하고 시험을 봐요'));
   steps.push(part('정리', '오늘 배운 것을 한 장으로 정리해요'));
   steps.push({ t: 'rule', title: '한 줄 정리', pattern: point.tip ?? plainText(point.pattern), explain: point.explain, lines: usage.slice(0, 3), tip: '' });
-  const test = buildTestStep(steps, { count: 10, timed: false, title: '최종 테스트' });
+  const test = buildTestStep(steps, { count: bank.has ? 8 : 10, timed: false, title: '최종 테스트' });
   if (test) {
     steps.push(part('최종 테스트', '오늘 배운 것으로 시험을 봐요'));
     steps.push(test);
   }
   steps.push(part('게임', '마지막으로 빠르게 확인해요'));
+  if (bank.has) steps.push(...pick(bank.chooseB.length >= 4 ? bank.chooseB : bank.chooseA.slice(5), 4));
   steps.push(...(G[2] ? [gameStep(G[2])] : pick(shuffle([...questions('translatePick'), ...questions('pickCorrect'), ...questions('unscramble')]), 4)));
 
   const tipText = point.tip ?? point.explain;
@@ -144,7 +157,8 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
       ? ({ ...st, tip: tipText } as SoloStep)
       : st,
   );
-  return { name: `${point.name} (3단계)`, steps: withTips, minutes: totalMinutes(withTips) };
+  const labeled = relabelGroupMinutes(withTips);
+  return { name: `${point.name} (3단계)`, steps: labeled, minutes: totalMinutes(labeled) };
 }
 
 /* ---------------- 단어·숙어·표현 ---------------- */

@@ -1,4 +1,6 @@
 import { plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
+import { relabelGroupMinutes, secondsOf } from './soloBoard';
+import { soloGrammarBank } from './soloGrammarBank';
 import { buildSoloGrammarLesson, buildWordBlock, blankSentence, evenIndexes, type SoloClip, type SoloStep } from './soloLessons';
 import type { SoloScenario } from './soloScenarios';
 import { parseShadowText } from './shadowLines';
@@ -15,6 +17,8 @@ import type { FullCardItem, WordBankEntry } from './types';
  * ② 한글 보고 영어 문장 쓰기·내 문장 만들기(서버 채점 목록 추가 필요) ③ 영상 더빙(영상 소리를 끄고 내 목소리를 얹기 —
  * 지금은 "한 줄씩 듣고 따라 말하기 녹음"으로 대신한다).
  */
+
+const evenPick = <T,>(arr: T[], n: number): T[] => (arr.length <= n ? arr : evenIndexes(arr.length, n).map((i) => arr[i]));
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -63,7 +67,9 @@ function blankFromSentence(sentence: string, poolWords: string[]): SoloStep | nu
   const target = [...cand].sort((a, b) => b.length - a.length)[0];
   const blank = blankSentence(sentence, target);
   if (!blank) return null;
-  const o = options(target.toLowerCase(), [target.toLowerCase(), ...poolWords.filter((w) => w.toLowerCase() !== target.toLowerCase())]);
+  // 보기는 소문자로 통일해 "Are"/"are" 처럼 대소문자만 다른 보기가 겹치지 않게 한다
+  const lowerPool = [...new Set(poolWords.map((w) => w.toLowerCase()))].filter((w) => w !== target.toLowerCase());
+  const o = options(target.toLowerCase(), [target.toLowerCase(), ...lowerPool]);
   if (o.list.length < 3) return null;
   return { t: 'fillBlank', sentence: blank, meaning: '', options: o.list, answer: o.answer };
 }
@@ -154,6 +160,7 @@ export function buildStandardWordLesson(title: string, words: FullCardItem[]): B
  */
 export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEntry[]): Built {
   const base = buildSoloGrammarLesson(point);
+  const gbank = soloGrammarBank(point.id);
   const steps: SoloStep[] = [];
   let n = 1;
   const examples = base.steps.filter((s): s is Extract<SoloStep, { t: 'fadeRead' }> => s.t === 'fadeRead');
@@ -178,6 +185,7 @@ export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEn
   if (check.length > 0) {
     steps.push(stage(n++, '이해 확인', 8, '뜻을 고르고 맞는 문장을 찾아요'));
     steps.push(...check);
+    if (gbank.has) steps.push(...evenPick(gbank.chooseA, 5), ...gbank.drills.slice(0, 3));
   }
 
   steps.push(stage(n++, '말해 보기', 10, '문장을 소리 내어 말해요'));
@@ -189,6 +197,9 @@ export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEn
     const u = scramble(s);
     if (u) steps.push(u);
   }
+  if (gbank.has) {
+    steps.push(...evenPick(gbank.fix, 4), ...evenPick(gbank.build, 2), ...evenPick(gbank.factory, 4), ...evenPick(gbank.write, 3));
+  }
   const poolWords = [...new Set(allSentences.flatMap((s) => (s.match(/[A-Za-z']+/g) ?? []).filter((w) => w.length >= 3)))];
   for (const s of shuffle(allSentences).slice(0, 6)) {
     const b = blankFromSentence(s, poolWords);
@@ -198,8 +209,10 @@ export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEn
   steps.push(stage(n++, '오늘의 정리', 7, '배운 문장을 다시 한 번 확인해요'));
   const again = shuffle(base.steps.filter((s) => s.t === 'unscramble' || s.t === 'translatePick' || s.t === 'pickCorrect'));
   steps.push(...again.slice(0, 5));
+  if (gbank.has) steps.push(...evenPick(gbank.chooseB.length >= 4 ? gbank.chooseB : gbank.chooseA.slice(5), 4));
 
-  return { name: point.name, steps, minutes: totalMinutes(steps) };
+  const labeled = gbank.has ? relabelGroupMinutes(steps) : steps;
+  return { name: point.name, steps: labeled, minutes: gbank.has ? Math.round(labeled.reduce((m, st) => m + secondsOf(st), 0) / 60) : totalMinutes(labeled) };
 }
 
 /* ---------------- 주제(상황·대화)형 ---------------- */

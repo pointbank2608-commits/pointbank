@@ -100,6 +100,21 @@ export const stepSeconds = (t: SoloStep['t']): number => SECONDS[t] ?? 20;
 /** 문제 하나의 예상 시간 — 시험 블록은 안에 든 문제들의 제한 시간 합 */
 export const secondsOf = (s: SoloStep): number => (s.t === 'test' ? s.items.reduce((n, it) => n + it.sec + 4, 0) + 20 : stepSeconds(s.t));
 
+/** 번호 있는 그룹 안내 화면의 "N분"을 그 그룹의 실제 문제 수(예상 시간)로 다시 적는다 */
+export function relabelGroupMinutes(steps: SoloStep[]): SoloStep[] {
+  const out = steps.map((st) => ({ ...st })) as SoloStep[];
+  const heads = out.map((st, i) => (st.t === 'intro' && /^\d+\./.test(st.title) ? i : -1)).filter((i) => i >= 0);
+  heads.forEach((h, k) => {
+    const end = k + 1 < heads.length ? heads[k + 1] : out.length;
+    const secs = out.slice(h + 1, end).reduce((n, st) => n + secondsOf(st), 0);
+    const head = out[h] as Extract<SoloStep, { t: 'intro' }>;
+    const hint = head.text.replace(/^\d+분 · /, '');
+    out[h] = { ...head, text: `${Math.max(1, Math.round(secs / 60))}분 · ${hint}` };
+  });
+  return out;
+}
+
+
 const wordOf = (s: SoloStep): string => {
   if ('word' in s && typeof s.word === 'string') return s.word;
   if (s.t === 'pickWord' || s.t === 'fillBlank') return s.options[s.answer] ?? '';
