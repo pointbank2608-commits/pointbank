@@ -149,7 +149,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="rounded-lg border border-primary/40 bg-primary/5 px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10"
+        className="rounded-lg border border-primary/40 bg-primary/5 px-4 py-2 font-label-md text-label-md text-primary-container transition-colors hover:bg-primary/10"
       >
         📚 {t('sentenceBank.open')} {open ? '▲' : '▼'}
       </button>
@@ -252,7 +252,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
                     {!s.answer && <button
                       type="button"
                       onClick={() => setEditing(isEdit ? null : k)}
-                      className="shrink-0 rounded-md px-2 py-1 font-label-md text-label-md text-primary hover:bg-primary/10"
+                      className="shrink-0 rounded-md px-2 py-1 font-label-md text-label-md text-primary-container hover:bg-primary/10"
                       title={t('sentenceBank.edit')}
                     >
                       {isEdit ? '✔' : '✎'}
@@ -263,7 +263,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
             })}
           </ul>
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={selectAll} className="font-label-md text-label-md text-primary hover:underline">
+            <button type="button" onClick={selectAll} className="font-label-md text-label-md text-primary-container hover:underline">
               {list.length > 0 && pickedHere.length === list.length ? t('sentenceBank.clearAll') : t('sentenceBank.selectAll')}
             </button>
             <button
@@ -286,7 +286,7 @@ export default function SentenceBankPicker({ onImportLabels, withKo = true, clas
               type="button"
               disabled={picked.size === 0 || saving}
               onClick={() => void saveAsList()}
-              className="rounded-lg border border-primary px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
+              className="rounded-lg border border-primary px-4 py-2 font-label-md text-label-md text-primary-container transition-colors hover:bg-primary/10 disabled:opacity-50"
             >
               {saving ? t('sentenceBank.saving') : t('sentenceBank.saveAsList', { n: picked.size })}
             </button>
