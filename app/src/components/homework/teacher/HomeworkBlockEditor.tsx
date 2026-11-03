@@ -64,6 +64,11 @@ import HomeworkMethodPicker from "./HomeworkMethodPicker";
 import HomeworkPreview from "./HomeworkPreview";
 import AccessibleDialog from "../../AccessibleDialog";
 
+const START_HINT: Record<string, [string, string]> = {
+  recall: ["단어를 보고 기억해서 답하는 숙제", "Recall words from memory"],
+  speak: ["문장을 따라 말하는 숙제", "Practice speaking sentences"],
+  video: ["영상을 보고 미션을 하는 숙제", "Watch a video and complete a mission"],
+};
 const button =
   "min-h-11 rounded-xl border border-outline-variant px-3 py-2 text-base font-bold disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-primary";
 const field =
@@ -182,6 +187,9 @@ export default function HomeworkBlockEditor({
     !!lessonId || !!startWithLessonImport,
   );
   const [assigning, setAssigning] = useState(false);
+  // 수업에서 가져온 직후에는 간단 보기(요약 + 배정)를 보여 주고, "블록 직접 편집"을 누르면 전체 편집기를 연다.
+  const [simple, setSimple] = useState(false);
+  const [autoPick, setAutoPick] = useState(!!lessonId);
   const serialized = JSON.stringify(draft);
   const dirty = serialized !== saved;
   const item = draft.items[selected];
@@ -322,6 +330,12 @@ export default function HomeworkBlockEditor({
   }
   const candidates = lessons.find((x) => x.id === importId);
   const options = candidates ? lessonCandidates(candidates, lists) : [];
+  // 수업을 고르면 숙제로 바꿀 수 있는 활동을 모두 미리 체크해 둔다(빼고 싶은 것만 끄면 됨)
+  useEffect(() => {
+    if (!autoPick || !candidates) return;
+    setImports(new Set(lessonCandidates(candidates, lists).filter((o) => o.status !== "unsupported").map((o) => o.slideId)));
+    setAutoPick(false);
+  }, [autoPick, candidates, lists]);
   const importedItems = options
     .filter((o) => imports.has(o.slideId))
     .flatMap((o) =>
@@ -486,37 +500,8 @@ export default function HomeworkBlockEditor({
               ? l("기기 복구본 · 서버 미저장", "Device recovery · Unsaved")
               : l("저장됨", "Saved")}
         </span>
-        <button className={button} onClick={() => void save()} disabled={busy}>
-          {l("초안 저장", "Save draft")}
-        </button>
         <button
-          className={button}
-          onClick={() => setPreview("all")}
-          disabled={!!errors.length}
-        >
-          {l("처음부터 미리보기", "Preview all")}
-        </button>
-        <button
-          className={button}
-          onClick={() => setPreview("current")}
-          disabled={!item || !!validateItems([item]).length}
-        >
-          {l("현재 블록 미리보기", "Preview current")}
-        </button>
-        <button
-          className={`${button} bg-primary text-white`}
-          onClick={() => setAssigning(true)}
-          disabled={!!errors.length}
-        >
-          {l("배정", "Assign")}
-        </button>
-        <button className={button} onClick={close}>
-          {l("닫기", "Close")}
-        </button>
-      </header>
-      <div className="flex flex-wrap gap-2">
-        <button
-          className={button}
+          className={`${button} min-w-11`}
           disabled={!past.length}
           onClick={() => {
             setFuture([draft, ...future]);
@@ -529,10 +514,10 @@ export default function HomeworkBlockEditor({
             setPast(past.slice(0, -1));
           }}
         >
-          {l("실행취소", "Undo")}
+          <span aria-label={l("실행취소", "Undo")} title={l("실행취소", "Undo")}>↶</span>
         </button>
         <button
-          className={button}
+          className={`${button} min-w-11`}
           disabled={!future.length}
           onClick={() => {
             setPast([...past, draft]);
@@ -544,10 +529,41 @@ export default function HomeworkBlockEditor({
             setFuture(future.slice(1));
           }}
         >
-          {l("다시 실행", "Redo")}
+          <span aria-label={l("다시 실행", "Redo")} title={l("다시 실행", "Redo")}>↷</span>
+        </button>
+        <button
+          className={button}
+          onClick={() => setPreview("all")}
+          disabled={!!errors.length}
+        >
+          {l("미리보기", "Preview")}
+        </button>
+        <button
+          className={`${button} bg-primary text-white`}
+          onClick={() => setAssigning(true)}
+          disabled={!!errors.length}
+        >
+          {l("배정", "Assign")}
+        </button>
+        <button className={button} onClick={close}>
+          {l("닫기", "Close")}
+        </button>
+      </header>
+      <details className="rounded-xl border border-outline-variant p-3" data-hw-more>
+        <summary className="cursor-pointer font-bold text-primary">⋯ {l("더보기", "More")}</summary>
+        <div className="mt-3 flex flex-wrap gap-2">
+        <button className={button} onClick={() => void save()} disabled={busy}>
+          {l("서버에 초안 저장", "Save draft to server")}
+        </button>
+        <button
+          className={button}
+          onClick={() => setPreview("current")}
+          disabled={!item || !!validateItems([item]).length}
+        >
+          {l("현재 블록만 미리보기", "Preview this block")}
         </button>
         <button className={button} onClick={() => setImporting(!importing)}>
-          {l("저장된 수업에서 가져오기", "Import saved lesson")}
+          {l("수업에서 내용 가져오기", "Import from a lesson")}
         </button>
         <select
           className={`${field} max-w-xs`}
@@ -687,42 +703,32 @@ export default function HomeworkBlockEditor({
             }}
           />
         </label>
-      </div>
+        </div>
+      </details>
       {message && (
         <p role="status" className="rounded-xl bg-amber-50 p-3 text-amber-950">
           {message}
         </p>
       )}
-      {!draft.items.length && (
-        <div className="flex flex-wrap gap-3 rounded-xl bg-primary/5 p-5">
-          <p className="w-full">
-            {l(
-              "시작 방법을 선택하세요. 템플릿을 연 뒤 내용을 입력·수정하세요.",
-              "Choose a starting point, then edit the content.",
-            )}
-          </p>
-          {(["recall", "speak", "video"] as BlockType[]).map((type) => (
-            <button
-              key={type}
-              className={button}
-              onClick={() => change({ ...draft, items: [newBlock(type)] })}
-            >
-              {l(BLOCK_NAMES[type][0], BLOCK_NAMES[type][1])}{" "}
-              {l("템플릿", "template")}
+      {!draft.items.length && !importing && (
+        <div className="space-y-3 rounded-xl bg-primary/5 p-5">
+          <p className="font-bold">{l("어떻게 시작할까요?", "How do you want to start?")}</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button className={`${button} !items-start !justify-start !text-left ring-2 ring-primary`} onClick={() => setImporting(true)}>
+              <span className="block"><b>{l("수업에서 가져오기", "From a lesson")}</b><small className="block font-normal">{l("만들어 둔 수업의 단어·문장으로 숙제를 만들어요 (추천)", "Build from a saved lesson (recommended)")}</small></span>
             </button>
-          ))}
-          <button className={button} onClick={() => setImporting(true)}>
-            {l("수업에서 가져오기", "Import lesson")}
-          </button>
+            {(["recall", "speak", "video"] as BlockType[]).map((type) => (
+              <button key={type} className={`${button} !items-start !justify-start !text-left`} onClick={() => { change({ ...draft, items: [newBlock(type)] }); }}>
+                <span className="block"><b>{l(BLOCK_NAMES[type][0], BLOCK_NAMES[type][1])}</b><small className="block font-normal">{l(START_HINT[type][0], START_HINT[type][1])}</small></span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {importing && (
         <div className="space-y-3 rounded-xl bg-surface-container-low p-4">
-          <p>
-            {l(
-              "수업 실행 기록은 없습니다. 저장된 수업의 블록과 핵심 내용을 골라 가져오세요.",
-              "No run history is available. Select blocks from a saved lesson.",
-            )}
+          <p className="font-bold">
+            {l("어느 수업의 내용으로 숙제를 낼까요?", "Which lesson should the homework come from?")}
           </p>
           <select
             className={field}
@@ -731,6 +737,8 @@ export default function HomeworkBlockEditor({
             onChange={(e) => {
               setImportId(e.target.value);
               setImports(new Set());
+              setExcludedImportItems(new Set());
+              setAutoPick(true);
             }}
           >
             <option value="">{l("수업 선택", "Choose lesson")}</option>
@@ -740,7 +748,15 @@ export default function HomeworkBlockEditor({
               </option>
             ))}
           </select>
-          {options.map((opt) => (
+          {options.some((o) => o.status === "unsupported") && (
+            <p className="text-sm text-on-surface-variant">
+              {l(
+                `${options.filter((o) => o.status === "unsupported").length}개 활동은 숙제로 바꿀 수 없어 보이지 않아요.`,
+                `${options.filter((o) => o.status === "unsupported").length} activities cannot become homework and are hidden.`,
+              )}
+            </p>
+          )}
+          {options.filter((o) => o.status !== "unsupported").map((opt) => (
             <div key={opt.slideId}>
               <label className="flex min-h-11 items-center gap-2">
                 <input
@@ -757,18 +773,19 @@ export default function HomeworkBlockEditor({
                   }
                 />
                 <span>
-                  {opt.label} ·{" "}
-                  {opt.status === "convert"
-                    ? l("변환 가능", "Convertible")
-                    : opt.status === "alternative"
-                      ? l("개인 활동 대체", "Alternative")
-                      : l("변환 불가", "Unsupported")}{" "}
-                  · {opt.items.length} {l("활동", "activities")}
-                  <small className="block">{opt.reason}</small>
+                  {opt.label} · {opt.items.length}
+                  {l("개", "")}
+                  {opt.status === "alternative" && (
+                    <small className="block">
+                      {l("팀 게임 대신 혼자 하는 복습으로 바꿔요", "Replaced by individual review")}
+                    </small>
+                  )}
                 </span>
               </label>
               {imports.has(opt.slideId) && opt.items.length > 1 && (
-                <div className="max-h-60 overflow-y-auto pl-6">
+                <details className="pl-6">
+                  <summary className="cursor-pointer text-sm text-primary">{l("자세히 고르기", "Choose items")}</summary>
+                <div className="max-h-60 overflow-y-auto">
                   {opt.items.map((it, i) => (
                     <label key={i} className="flex min-h-11 gap-2">
                       <input
@@ -790,6 +807,7 @@ export default function HomeworkBlockEditor({
                     </label>
                   ))}
                 </div>
+                </details>
               )}
             </div>
           ))}
@@ -813,12 +831,25 @@ export default function HomeworkBlockEditor({
                 items: [...draft.items, ...importedItems],
               });
               setImporting(false);
+              setSimple(true);
             }}
           >
             {l("선택한 내용 가져와서 추리기", "Import selected and refine")}
           </button>
         </div>
       )}
+      {simple && draft.items.length > 0 && (
+        <div className="space-y-3 rounded-xl border border-outline-variant bg-white p-5" data-hw-simple>
+          <p className="font-bold">{l(`숙제가 준비됐어요 · 활동 ${draft.items.length}개`, `Homework ready · ${draft.items.length} activities`)}</p>
+          <ol className="list-decimal space-y-1 pl-5 text-sm">
+            {draft.items.slice(0, 6).map((it, i) => (<li key={i}>{it.title}</li>))}
+            {draft.items.length > 6 && <li className="list-none">{l(`… 외 ${draft.items.length - 6}개`, `… and ${draft.items.length - 6} more`)}</li>}
+          </ol>
+          <p className="text-sm text-on-surface-variant">{l("미리 보고 마음에 들면 배정하세요. 문제를 고치거나 빼려면 블록 직접 편집을 누르세요.", "Preview, then assign. Use block editing to change or remove items.")}</p>
+          <button className={button} onClick={() => setSimple(false)}>{l("블록 직접 편집", "Edit blocks")}</button>
+        </div>
+      )}
+      {(!simple || !draft.items.length) && (
       <div className="grid gap-4 xl:grid-cols-[210px_minmax(300px,1fr)_300px]">
         <aside className="space-y-2" aria-label={l("블록 순서", "Block order")}>
           {draft.items.map((it, i) => (
@@ -1578,6 +1609,7 @@ export default function HomeworkBlockEditor({
           )}
         </aside>
       </div>
+      )}
       {preview && (
         <AccessibleDialog
           label={l("학생 미리보기", "Student preview")}

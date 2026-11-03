@@ -62,10 +62,11 @@ try {
   await page.getByRole("button", { name: "+ 보고 듣기", exact: true }).click();
   await page.getByLabel("숙제 이름", { exact: true }).fill("합성 숙제");
   await page.getByLabel("단어·문장", { exact: true }).fill("I like cats.");
-  await page.getByRole("button", { name: "초안 저장", exact: true }).click();
+  await page.evaluate(() => { document.querySelector("[data-hw-more]").open = true; });
+  await page.getByRole("button", { name: "서버에 초안 저장", exact: true }).click();
   await page.getByText("초안 저장 완료", { exact: true }).waitFor();
   await page
-    .getByRole("button", { name: "현재 블록 미리보기", exact: true })
+    .getByRole("button", { name: "현재 블록만 미리보기", exact: true })
     .click();
   await page
     .getByRole("button", { name: "미리보기 닫기", exact: true })
@@ -84,7 +85,8 @@ try {
     window.__hwTest.failSave = true;
   });
   await page.getByLabel("단어·문장", { exact: true }).fill("I like dogs.");
-  await page.getByRole("button", { name: "초안 저장", exact: true }).click();
+  await page.evaluate(() => { document.querySelector("[data-hw-more]").open = true; });
+  await page.getByRole("button", { name: "서버에 초안 저장", exact: true }).click();
   await page.getByText(/저장 실패 또는/).waitFor();
   await page.reload();
   await page.getByLabel("단어·문장", { exact: true }).waitFor();
@@ -123,24 +125,29 @@ try {
       await page.getByLabel(/허용 정답/).fill('apple');
     }
   }
-  await page.getByRole('button',{name:'초안 저장',exact:true}).click();
+  await page.evaluate(() => { document.querySelector("[data-hw-more]").open = true; });
+  await page.getByRole('button',{name:'서버에 초안 저장',exact:true}).click();
   await page.getByText('초안 저장 완료',{exact:true}).waitFor();
   const savedId=await page.evaluate(()=>window.__hwTest.drafts[0].id);
   await page.getByRole('combobox',{name:'초안·템플릿 다시 열기',exact:true}).selectOption(savedId);
   assert.equal(await page.getByRole('button',{name:'삭제',exact:true}).count(),5);
   console.log('ok all five block types authored, saved and reopened through the editor');
+  await page.evaluate(() => { document.querySelector("[data-hw-more]").open = true; });
   await page
-    .getByRole("button", { name: "저장된 수업에서 가져오기", exact: true })
+    .getByRole("button", { name: "수업에서 내용 가져오기", exact: true })
     .click();
   await page
     .getByRole("combobox", { name: "저장된 수업", exact: true })
     .selectOption("synthetic-lesson");
-  await page.getByLabel(/1\. study/).check();
+  await page.getByLabel(/1\. 카드로 외우기/).waitFor();
+  await page.locator("details", { hasText: "자세히 고르기" }).locator("summary").click();
   await page.getByLabel("dog", { exact: true }).uncheck();
-  await page.getByText(/변환 불가/).waitFor();
+  await page.getByText(/숙제로 바꿀 수 없어 보이지 않아요/).waitFor();
   await page
     .getByRole("button", { name: "선택한 내용 가져와서 추리기", exact: true })
     .click();
+  await page.locator("[data-hw-simple]").waitFor();
+  await page.getByRole("button", { name: "블록 직접 편집", exact: true }).click();
   assert.equal(
     await page.getByRole("button", { name: "삭제", exact: true }).count(),
     6,

@@ -470,6 +470,13 @@ export function quizItemsToBlocks(items: HwItemDraft[]): HwItemDraft[] {
   });
 }
 
+/** 수업 활동 종류의 화면용 이름 */
+const SLIDE_KIND_KO: Record<string, string> = {
+  study: "카드로 외우기", wordshow: "단어 소개", game: "게임", drill: "바꿔 말하기",
+  rainbow: "무지개 문법", grammar: "문법 칠판", reading: "지문·가사 읽기", shadow: "따라 말하기",
+  video: "영상", attendance: "출석 체크", material: "활동지", canvas: "직접 만든 화면",
+  image: "그림", web: "웹페이지", qna: "질문과 답", phonics: "파닉스",
+};
 export interface ImportCandidate {
   slideId: string;
   label: string;
@@ -621,7 +628,7 @@ export function lessonCandidates(
     });
     return {
       slideId: slide.id || String(index),
-      label: `${index + 1}. ${slide.kind || "legacy"}`,
+      label: `${index + 1}. ${SLIDE_KIND_KO[slide.kind || ""] ?? "수업 활동"}`,
       status,
       reason,
       items,
