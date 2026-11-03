@@ -7,6 +7,7 @@ import type { FullCardItem, GameType, LessonSlide, SlideHelper, WordBankEntry } 
 import type { VideoClip } from './videoClips';
 import type { LessonLevel } from './lessonLevel';
 import { newHelper } from './slideHelpers';
+import { buildGrammarLessonSlides, type GrammarGames } from './grammarLesson';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -33,6 +34,8 @@ export interface RecipeContext {
   makeGameFromWords?: (gameType: GameType, words: FullCardItem[], name: string) => Promise<string | null>;
   /** 문법 레시피: 예문으로 "문장 배열하기" 게임 내용을 만든다(없으면 null) */
   makeUnscramble: (grammarId: string) => Promise<string | null>;
+  /** 문법 30분 수업: 문장 배열하기 + 팀 대항 퀴즈 게임 내용을 만든다(없으면 문장 배열하기만) */
+  makeGrammarGames?: (grammarId: string) => Promise<GrammarGames>;
 }
 
 export interface LessonRecipe {
@@ -337,11 +340,11 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     preview: ['how_to_reg', 'rule', 'reorder', 'menu_book'],
     build: async (ctx) => {
       if (!ctx.grammarId) return [];
-      const slides: LessonSlide[] = [attendance(), { id: uid(), kind: 'grammar', grammarId: ctx.grammarId, useWordList: ctx.hasWords, boardTheme: 'green' }];
-      const tplId = await ctx.makeUnscramble(ctx.grammarId);
-      if (tplId) slides.push(game('unscramble', tplId));
-      if (ctx.hasWords) slides.push(wordshow());
-      return slides;
+      // 30분 수업(2026-11-03): 도입 → 개념 → 개념 확인 → 게임 ① → 심화 → 게임 ② 팀 대항 퀴즈 → 정리 (lib/grammarLesson.ts)
+      const games: GrammarGames = ctx.makeGrammarGames
+        ? await ctx.makeGrammarGames(ctx.grammarId).catch(() => ({ unscrambleId: null, teamQuizId: null }))
+        : { unscrambleId: await ctx.makeUnscramble(ctx.grammarId), teamQuizId: null };
+      return buildGrammarLessonSlides({ t: ctx.t, grammarId: ctx.grammarId, hasWords: ctx.hasWords, games });
     },
   },
   {

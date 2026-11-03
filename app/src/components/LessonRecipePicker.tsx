@@ -31,6 +31,7 @@ export default function LessonRecipePicker({
   wordListName,
   onManageWordList,
   makeUnscramble,
+  makeGrammarGames,
   makeWordList,
   makeUnscrambleFromSentences,
   makeGameFromWords,
@@ -45,6 +46,7 @@ export default function LessonRecipePicker({
   wordListName?: string;
   onManageWordList: (mode: 'new' | 'edit') => void;
   makeUnscramble: RecipeContext['makeUnscramble'];
+  makeGrammarGames?: RecipeContext['makeGrammarGames'];
   makeWordList?: RecipeContext['makeWordList'];
   makeUnscrambleFromSentences?: RecipeContext['makeUnscrambleFromSentences'];
   makeGameFromWords?: RecipeContext['makeGameFromWords'];
@@ -92,6 +94,7 @@ export default function LessonRecipePicker({
         grammarId: grammarId ?? undefined,
         reading: { source: reading.source, title: reading.title.trim() || undefined, videoUrl: reading.videoUrl.trim() || null },
         makeUnscramble,
+        makeGrammarGames,
         video: clip
           ? { source: clip.script, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clip, activities:autoClip?.id===clip.id?autoClipActivities:undefined }
           : { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
@@ -117,7 +120,7 @@ export default function LessonRecipePicker({
         return;
       }
       const recipe = LESSON_RECIPES.find((r) => r.id === 'vocab');
-      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
+      const common = { t, makeUnscramble, makeGrammarGames, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
       const slides = recipe ? await recipe.build({ ...common, hasWords: true }) : [];
       if (slides.length) onApply(slides, `${t('recipes.vocabName')} · ${title}`);
     } finally {
@@ -130,7 +133,7 @@ export default function LessonRecipePicker({
     setBusy(true);
     try {
       const name = lessonSetName(set, i18n.language);
-      const common = { t, makeUnscramble, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
+      const common = { t, makeUnscramble, makeGrammarGames, makeWordList, makeUnscrambleFromSentences, makeGameFromWords, reading: undefined, video: undefined };
       if (set.kind === 'word') {
         const cards = pickSetWords(set, await loadWordBank());
         if (cards.length < 5 || !makeWordList || !(await makeWordList(cards, name))) {

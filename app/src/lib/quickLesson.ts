@@ -1,5 +1,6 @@
 import { createGameTemplate, createWordList } from './api';
 import { makeUnscrambleTemplate } from './lessonRecipes';
+import { makeGrammarGameTemplates, type GrammarGames } from './grammarLesson';
 import { buildGameContent, canBuildFromWords, lessonGameTemplateName } from './gameFromWords';
 import type { FullCardItem, GameType, LessonSlide, WordBankEntry, WordList } from './types';
 
@@ -198,6 +199,7 @@ export type VocabStyle = 'normal' | 'contest' | 'review';
 export interface QuickHelpers {
   makeWordList: (words: FullCardItem[], name: string) => Promise<boolean>;
   makeUnscramble: (grammarId: string) => Promise<string | null>;
+  makeGrammarGames: (grammarId: string) => Promise<GrammarGames>;
   makeUnscrambleFromSentences: (sentences: string[], name: string) => Promise<string | null>;
   makeGameFromWords: (gameType: GameType, words: FullCardItem[], name: string) => Promise<string | null>;
   /** 레시피가 만든 단어장들(맨 뒤가 가장 최근) */
@@ -233,6 +235,15 @@ export function createQuickHelpers(p: { academyId: string; classId: string; teac
         return false;
       }
     },
+    makeGrammarGames: (grammarId) =>
+      makeGrammarGameTemplates({
+        grammarId,
+        academyId: p.academyId,
+        classId: p.classId,
+        teacherId: p.teacherId,
+        name: (pointName) => p.t('grammarLesson.gameTemplateName', { name: pointName }),
+        teamName: (pointName) => p.t('grammarLesson.teamQuizName', { name: pointName }),
+      }),
     makeUnscramble: (grammarId) =>
       makeUnscrambleTemplate({
         grammarId,

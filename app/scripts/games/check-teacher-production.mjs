@@ -1,0 +1,63 @@
+import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import { observedBank } from '../workbooks/observed-bank.mjs';
+const env=await readFile('.env.local','utf8');
+const ref=env.match(/VITE_SUPABASE_URL=https:\/\/([^.]+)/)[1];
+const uid='00000000-0000-4000-8000-000000000001',aid='00000000-0000-4000-8000-0000000000aa',exp=Math.floor(Date.now()/1000)+86400;
+const b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
+const user={id:uid,aud:'authenticated',role:'authenticated',email:'phonics-test@example.com',app_metadata:{},user_metadata:{}};
+const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
+const profile={id:uid,academy_id:aid,role:'owner',display_name:'Phonics QA'};
+const academy={id:aid,name:'QA',point_unit:'별',plan:'paid',plan_status:'active',deletion_requested_at:null,features:{group:true,solo:true,homework:true}};
+const browser=await chromium.launch({channel:'chrome',headless:true});
+const context=await browser.newContext({viewport:{width:1440,height:1000}});
+await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));localStorage.setItem('classbank.lang','ko');localStorage.setItem('classbank.printWatermark','off');},{key:`sb-${ref}-auth-token`,session});
+let mediaRows=[];
+await context.route('**/*.supabase.co/**',async route=>{
+ const req=route.request(),url=req.url(),headers={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'};
+ if(req.method()==='OPTIONS')return route.fulfill({status:204,headers});
+ const single=(req.headers().accept??'').includes('vnd.pgrst.object');let data=single?{}:[];
+ if(url.includes('/rest/v1/rpc/my_deletion_request'))data=null;else if(url.includes('/auth/v1/user'))data=user;else if(url.includes('/auth/v1/'))data=session;
+ else if(url.includes('/rest/v1/profiles'))data=single?profile:[profile];else if(url.includes('/rest/v1/academies'))data=single?academy:[academy];
+ else if(url.includes('/rest/v1/phonics_bank'))data=mediaRows;
+ return route.fulfill({status:200,headers,json:data});
+});
+const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+const root=process.env.PHONICS_QA_URL??'http://127.0.0.1:5180';
+
+
+
+await mkdir('../output/teacher-game-ux',{recursive:true});
+await page.goto('https://pointbank-ten.vercel.app/games/quiz');
+const guide=page.locator('[data-game-guide]');
+await guide.getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();
+await guide.getByRole('button',{name:'게임 시작',exact:false}).click();
+const bar=page.locator('[data-frame-controls]');
+await bar.getByRole('button',{name:'잠시 멈춤',exact:true}).waitFor();
+await bar.getByRole('button',{name:'잠시 멈춤',exact:true}).click();
+await page.getByRole('button',{name:'계속하기',exact:true}).click();
+await page.setViewportSize({width:390,height:844});
+const sizes=await bar.getByRole('button').evaluateAll(els=>els.map(el=>({text:el.textContent,height:el.getBoundingClientRect().height,font:parseFloat(getComputedStyle(el).fontSize)})));
+assert(sizes.every(s=>s.height>=48&&s.font>=16));
+assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+await page.screenshot({path:'../output/teacher-game-ux/production-mobile.png'});
+await bar.getByRole('button',{name:'☰ 메뉴',exact:true}).click();
+const menu=page.getByRole('dialog',{name:'메뉴',exact:true});
+await menu.getByText('이 단어로 더 해보기',{exact:true}).click();
+await menu.getByRole('button',{name:'다른 게임으로 바꾸기',exact:true}).waitFor();
+await menu.getByRole('button',{name:'활동지 만들기',exact:true}).waitFor();
+await menu.getByRole('button',{name:'내 수업에 넣기',exact:true}).waitFor();
+await page.screenshot({path:'../output/teacher-game-ux/production-word-copy.png'});
+await menu.getByRole('link',{name:'게임 목록으로 나가기',exact:true}).click();
+await page.waitForURL('**/games');
+await page.getByText('게임을 고르고 → 예시로 해보기 → 우리 반 자료로 바꾸기',{exact:true}).waitFor();
+await page.goto('https://pointbank-ten.vercel.app/games/sentencesplash');
+await page.locator('[data-game-guide]').waitFor();
+await page.getByRole('button',{name:'닫기',exact:true}).click();
+await page.locator('[data-game-preparation]').getByText('이 문장으로 더 해보기',{exact:true}).waitFor();
+await page.screenshot({path:'../output/teacher-game-ux/production-sentence-copy.png'});
+assert.deepEqual(errors,[]);
+await writeFile('../output/teacher-game-ux/production.json',JSON.stringify({passed:true,production:'https://pointbank-ten.vercel.app',sizes,pauseResume:true,listExit:true,errors},null,2));
+await browser.close();console.log('PASS production: real deployed quiz, pause/resume, 48px mobile controls, catalogue exit; backend requests isolated');
+

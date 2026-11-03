@@ -1,0 +1,20 @@
+{
+  "generator": "built-in image_gen",
+  "records": [
+    {
+      "word": "burn",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/word-bank-images/burn.webp",
+      "prompt": "Use case: style-transfer. Create a clean standalone ClassBank vocabulary illustration of BURN (a candle burning). The supplied image is an edit/reference target. Keep the warm rounded handmade 3D clay material, natural cream and beige background, soft lighting and contact shadows. Show one large cream wax candle with a clearly visible glowing orange flame and dark wick, softened melted wax drips. The candle is a normal object, NO face. Simple round terracotta saucer, minimal surrounding scenery. Remove ALL existing text including burn, Korean text, bottom sentence, label plaques, decorative border and any letters or numbers. No extra fire scenes, no harm to people or animals. Whole candle and flame fully visible, ample safe margins, centered square composition. No words, captions, logos or watermarks.",
+      "source": "C:/Users/likes/.codex/generated_images/01a156f2-a097-7241-a23f-7d6c190f6d55/exec-01926707-b38e-46e6-ab20-3733487fc72c.png",
+      "destination": "app/public/phonics-images/burn-course-v1.webp"
+    },
+    {
+      "word": "watch",
+      "reference": "C:/Users/likes/Desktop/pointbank/app/public/phonics-images/watch.webp",
+      "prompt": "Use case: style-transfer. The supplied ClassBank watch illustration is the edit target. Preserve exactly the recognizable rounded square wristwatch, orange/terracotta case, dark bezel, warm coral face with small sun icon, curved tan clay strap, muted green keeper, side crown and friendly handmade 3D clay material. Remove the smartwatch text, its caption plaque, and the surrounding picture frame completely. Place the complete watch large and centered on a simple warm cream/beige seamless background, gentle diffuse light and soft contact shadow. Keep all strap ends, buttons and watch face within safe margins. No text, letters, numbers, captions, labels, words, logos, watermark or border.",
+      "source": "C:/Users/likes/.codex/generated_images/01a156f2-a097-7241-a23f-7d6c190f6d55/exec-07aa458d-35d4-4be0-96d9-8a87811c6c50.png",
+      "destination": "app/public/phonics-images/watch-course-v1.webp"
+    }
+  ],
+  "preserved": "Existing original files remain untouched. line was inspected at full size and already has a real line, so it was retained."
+}

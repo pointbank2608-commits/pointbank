@@ -146,6 +146,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
         t,
         hasWords: false,
         makeUnscramble: helpers.makeUnscramble,
+        makeGrammarGames: helpers.makeGrammarGames,
         makeWordList: helpers.makeWordList,
         makeUnscrambleFromSentences: helpers.makeUnscrambleFromSentences,
         makeGameFromWords: helpers.makeGameFromWords,

@@ -10,6 +10,7 @@ import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
 import LessonLibraryModal from '../components/LessonLibraryModal';
 import { SaveStyleModal, StartFromStyleModal } from '../components/LessonStyleModals';
+import { makeGrammarGameTemplates } from '../lib/grammarLesson';
 import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
@@ -1015,6 +1016,16 @@ export default function CurriculumPage() {
                       classId: formClassId,
                       teacherId: profile.id,
                       name: (pointName) => t('grammar.gameTemplateName', { name: pointName }),
+                    })
+                  }
+                  makeGrammarGames={(gid) =>
+                    makeGrammarGameTemplates({
+                      grammarId: gid,
+                      academyId: academy.id,
+                      classId: formClassId,
+                      teacherId: profile.id,
+                      name: (pointName) => t('grammarLesson.gameTemplateName', { name: pointName }),
+                      teamName: (pointName) => t('grammarLesson.teamQuizName', { name: pointName }),
                     })
                   }
                   makeWordList={(words, listName) => saveWordsAsList(words, listName, true)}
