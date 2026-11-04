@@ -324,12 +324,30 @@ export function useGameTemplates(params: {
     if (ok) setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, name: next.trim() } : tpl)));
   }
 
+  /** 확인은 화면(저장/불러오기 패널)에서 이미 받았으니 바로 지운다 */
+  async function removeTemplateNow(id: string) {
+    const ok = await run(() => deleteGameTemplate(id), t('gameAdmin.deletedToast'));
+    if (ok) {
+      setSelectedId((prev) => (prev === id ? null : prev));
+      await load();
+    }
+  }
+
   /** id 를 안 주면 현재 선택된 템플릿을 지운다 — 목록 칩의 개별 삭제 버튼은 id 를 직접 넘긴다. */
+  const deleteArmed = useRef<{ id: string; timer: ReturnType<typeof setTimeout> } | null>(null);
   async function handleDeleteTemplate(id?: string) {
     const target = id ? templates.find((tpl) => tpl.id === id) : selected;
     if (!target) return;
     if (isActivityDraft(target.id)) { chooseDraft(makeDraft()); return; }
-    if (!confirm(t('gameAdmin.deleteConfirm', { name: target.name }))) return;
+    // window.confirm 은 앱 안 브라우저·태블릿에서 막히거나 뜨지 않아 "눌러도 안 지워진다"가 됐다 — 같은 항목을 4초 안에 한 번 더 누르면 지운다.
+    if (deleteArmed.current?.id !== target.id) {
+      if (deleteArmed.current) clearTimeout(deleteArmed.current.timer);
+      deleteArmed.current = { id: target.id, timer: setTimeout(() => { deleteArmed.current = null; }, 4000) };
+      notify(`"${target.name}" — 지우려면 ✕를 한 번 더 눌러 주세요.`);
+      return;
+    }
+    clearTimeout(deleteArmed.current.timer);
+    deleteArmed.current = null;
     const ok = await run(() => deleteGameTemplate(target.id), t('gameAdmin.deletedToast'));
     if (ok) {
       setSelectedId((prev) => (prev === target.id ? null : prev));
@@ -537,7 +555,7 @@ export function useGameTemplates(params: {
         if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
         const draft=makeDraft();const content=guideSample(gameType,draft);chooseDraft({...draft,...content});
       },
-      selectClass: chooseClass, selectTemplate, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
+      selectClass: chooseClass, selectTemplate, removeTemplate: removeTemplateNow, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
       renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
       saveTarget: selected?templates.find(row=>row.id===(savedTargets.current.get(selected.id)||selected.config.editingTemplateId||selected.id)&&!isActivityDraft(row.id))||null:null,
       saveSettings: async (name,copy=false) => {

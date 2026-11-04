@@ -122,35 +122,44 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
         <EditOnly>
           <section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4" aria-label={text('문법 게임 설정', 'Grammar game settings')}>
             <Link to="/games" className="text-primary underline">{text('게임 목록으로', 'Back to games')}</Link>
-            <p>{text('문법 항목을 고르면 그 문법의 예문·틀리기 쉬운 것·워크북 문제로 문제가 자동으로 만들어져요.', 'Pick a grammar point and the questions are built from its examples, common mistakes and workbook items.')}</p>
-            {g.classes.length > 0 && (
-              <label className="block">{text('반 선택', 'Class')}
-                <select className={input} value={g.staffClassId || ''} onChange={(e) => g.selectClass(e.target.value)}>
-                  {g.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </label>
-            )}
-            {g.templates.length > 0 && (
-              <label className="block">{text('저장한 게임', 'Saved game')}
-                <select className={input} value={g.selectedId || ''} onChange={(e) => g.setSelectedId(e.target.value)}>
-                  <option value="" disabled>{text('게임 선택', 'Choose game')}</option>
-                  {g.templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </label>
-            )}
-            <PlaySettings />
-            <label className="block">{text('문법 항목', 'Grammar point')}
-              <select className={input} value={grammarId} disabled={busy} onChange={(e) => void choose(e.target.value)}>
-                {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
-              </select>
-            </label>
-            <div className="space-y-2 border-t border-outline-variant pt-4">
-              <label className="block">{text('새 게임 이름', 'New game name')}
-                <input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={grammarPoint(grammarId)?.name} />
-              </label>
-              <button className={button} disabled={busy || !name.trim()} onClick={() => void saveCopy()}>{text('이 문법으로 새 게임 저장', 'Save as new game')}</button>
-              {g.selected && <button className={`${button} ml-2`} onClick={() => void g.handleRename(name.trim() || undefined)}>{text('이름 바꾸기', 'Rename')}</button>}
+            <div className="space-y-2">
+              <h2 className="text-lg font-extrabold">{text('① 참여자', '1. Players')}</h2>
+              <PlaySettings />
             </div>
+            <div className="space-y-3 border-t border-outline-variant pt-4">
+              <h2 className="text-lg font-extrabold">{text('② 문법', '2. Grammar')}</h2>
+              <p className="text-sm text-on-surface-variant">{text('문법 항목을 고르면 예문·틀리기 쉬운 것·워크북 문제로 문제가 자동으로 만들어져요.', 'Pick a grammar point and the questions are built from its examples, common mistakes and workbook items.')}</p>
+              <label className="block">{text('문법 항목', 'Grammar point')}
+                <select className={input} value={grammarId} disabled={busy} onChange={(e) => void choose(e.target.value)}>
+                  {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
+                </select>
+              </label>
+              {g.templates.length > 0 && (
+                <label className="block">{text('내가 저장한 게임', 'My saved games')}
+                  <select className={input} value={g.selectedId || ''} onChange={(e) => g.setSelectedId(e.target.value)}>
+                    <option value="" disabled>{text('게임 선택', 'Choose game')}</option>
+                    {g.templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </label>
+              )}
+            </div>
+            <details className="border-t border-outline-variant pt-4">
+              <summary className="cursor-pointer text-lg font-extrabold">{text('③ 게임 옵션·저장', '3. Options & save')}</summary>
+              <div className="mt-3 space-y-3">
+                {g.classes.length > 0 && (
+                  <label className="block">{text('반 선택', 'Class')}
+                    <select className={input} value={g.staffClassId || ''} onChange={(e) => g.selectClass(e.target.value)}>
+                      {g.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </label>
+                )}
+                <label className="block">{text('새 게임 이름', 'New game name')}
+                  <input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={grammarPoint(grammarId)?.name} />
+                </label>
+                <button className={button} disabled={busy || !name.trim()} onClick={() => void saveCopy()}>{text('이 문법으로 새 게임 저장', 'Save as new game')}</button>
+                {g.selected && <button className={`${button} ml-2`} onClick={() => void g.handleRename(name.trim() || undefined)}>{text('이름 바꾸기', 'Rename')}</button>}
+              </div>
+            </details>
           </section>
         </EditOnly>
       )}

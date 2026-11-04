@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
+import { useToast } from '../context/ToastContext';
 import { loadTeamOrder, saveTeamOrder } from '../lib/teamOrder';
 import type { GameItem } from '../lib/types';
 
@@ -70,11 +71,18 @@ function useSlotSpin() {
  * 관여하지 않는 순수 진행 보조 도구로 만들었다 — 결과를 저장하지 않고(그때그때 새로 뽑는
  * 용도), 화면에 크게 띄워서 학생들에게 보여주는 게 목적이다.
  */
-export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, scope = '' }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number; scope?: string }) {
-  const { t } = useTranslation();
+export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, fixedMode, scope = '' }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number; /** 참여 방식을 이미 정했으면 개인/팀 선택 없이 그 방식으로만 정한다 */ fixedMode?: 'individual' | 'team'; scope?: string }) {
+  const { t, i18n } = useTranslation();
+  const { notify } = useToast();
   // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
   const [saved] = useState(() => { const old=loadTeamOrder(roster, scope); return fixedTeams ? { ...old, teamCount:fixedTeams, teamOf:Object.fromEntries(Object.entries(old.teamOf).map(([id,team])=>[id,team%fixedTeams])), order:old.mode==='team'?Array.from({length:fixedTeams},(_,i)=>`team-${i}`):old.order } : old; });
   const [mode, setMode] = useState<'individual' | 'team'>(saved.mode);
+  const fixedApplied = useRef(false);
+  useEffect(() => {
+    if (!fixedMode || fixedApplied.current) return;
+    fixedApplied.current = true;
+    if (saved.mode !== fixedMode) { if (fixedMode === 'team') switchToTeamMode(); else switchToIndividualMode(); }
+  }); // eslint-disable-line react-hooks/exhaustive-deps
   const [teamCount, setTeamCount] = useState(saved.teamCount);
   const [teamOf, setTeamOf] = useState<Record<string, number>>(saved.teamOf);
   const [order, setOrder] = useState<string[]>(saved.order);
@@ -192,14 +200,23 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
       >
         <div className="flex items-center justify-between border-b border-surface-container px-5 py-4">
           <h3 className="font-title-md text-title-md text-deep-navy">{t('teamOrder.title')}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
-            aria-label={t('common.close')}
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { onClose(); notify(i18n.language.startsWith('en') ? 'Your settings have been applied.' : '설정이 적용되었습니다.'); }}
+              className="min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary"
+            >
+              {i18n.language.startsWith('en') ? 'Apply' : '적용'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low"
+              aria-label={t('common.close')}
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
 
         <div className="space-y-5 overflow-y-auto p-5">
@@ -210,6 +227,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
             </div>
           ) : (
             <>
+              {!fixedMode && (
               <div className="flex w-fit rounded-lg bg-surface-container-low p-1">
                 <button
                   type="button"
@@ -232,6 +250,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
                   {t('teamOrder.modeTeam')}
                 </button>
               </div>
+              )}
 
               {mode === 'team' && (
                 <div>

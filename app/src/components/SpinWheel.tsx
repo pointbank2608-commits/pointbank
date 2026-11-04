@@ -57,8 +57,6 @@ export default function SpinWheel({
   onResult,
   editable,
   onEditItem,
-  templateName,
-  onRenameTemplate,
   onAddItem,
   onRemoveItem,
 }: Props) {
@@ -68,10 +66,12 @@ export default function SpinWheel({
   const [spinning, setSpinning] = useState(false);
   const [useCssTransition, setUseCssTransition] = useState(false);
   const [result, setResult] = useState<GameItem | null>(null);
+  /** 돌아가는 동안 화살표 아래를 지나가는 항목(위쪽 당첨 칸이 계속 따라 바뀐다) */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [liveIndex, setLiveIndex] = useState<number | null>(null);
+  const spinLayerRef = useRef<HTMLDivElement>(null);
   const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
   const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
@@ -115,6 +115,27 @@ export default function SpinWheel({
   const numbered = count > 12 || items.some(item => Array.from(item.label).length * fontSizeFor(count) * .62 > 2 * R * .58 * Math.sin(Math.PI / Math.max(2,count)) - 8);
   const fontSize = numbered ? wheelNumberFontSize(count,R*.7) : fontSizeFor(count);
 
+  // 돌림판이 돌아가는 동안 화살표 아래 항목을 읽어 위쪽 당첨 칸을 계속 바꾼다.
+  // CSS 감속 회전은 JS 가 각도를 모르므로 실제로 그려진 transform 에서 각도를 읽는다.
+  useEffect(() => {
+    if (!spinning || count === 0) return;
+    let raf = 0;
+    let last = -1;
+    const read = () => {
+      const el = spinLayerRef.current;
+      if (el) {
+        const m = new DOMMatrix(getComputedStyle(el).transform);
+        const angle = (Math.atan2(m.b, m.a) * 180) / Math.PI;
+        const theta = ((-angle % 360) + 360) % 360;
+        const idx = Math.min(count - 1, Math.floor(theta / slice));
+        if (idx !== last) { last = idx; setLiveIndex(idx); }
+      }
+      raf = requestAnimationFrame(read);
+    };
+    raf = requestAnimationFrame(read);
+    return () => cancelAnimationFrame(raf);
+  }, [spinning, count, slice]);
+
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
   useEffect(() => {
@@ -141,17 +162,6 @@ export default function SpinWheel({
   function commitItemDraft(id: string) {
     const value = (itemDrafts[id] ?? '').trim();
     if (value) onEditItem?.(id, value);
-  }
-
-  function startEditTemplateName() {
-    setTemplateNameDraft(templateName ?? '');
-    setEditingTemplateName(true);
-  }
-
-  function commitTemplateNameEdit() {
-    const trimmed = templateNameDraft.trim();
-    setEditingTemplateName(false);
-    if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
   /** 12시를 0도, 시계 방향 증가로 재는 각도계 — pointOnCircle/computeSpinRotation과 동일. */
@@ -348,34 +358,36 @@ export default function SpinWheel({
         className={`flex w-full flex-col items-center gap-6 ${editable || numbered ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex w-full max-w-[560px] flex-col items-center">
-          {editable && !itemsHidden &&
-            (editingTemplateName ? (
-              <input
-                autoFocus
-                value={templateNameDraft}
-                onChange={(e) => setTemplateNameDraft(e.target.value)}
-                onBlur={commitTemplateNameEdit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') commitTemplateNameEdit();
-                  if (e.key === 'Escape') setEditingTemplateName(false);
-                }}
-                className="mb-2 w-full max-w-[420px] font-headline-lg-mobile text-headline-lg-mobile text-deep-navy bg-surface-container-lowest border border-primary rounded-lg px-2 outline-none text-center"
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={startEditTemplateName}
-                title={t('gameAdmin.renameInlineHint')}
-                className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
-              >
-                {templateName}
-              </button>
-            ))}
           {editable && !itemsHidden && (
             <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
               {t('gameWheel.editHint')}
             </div>
           )}
+          <div
+            data-wheel-result={result && !spinning ? '' : undefined}
+            role="status"
+            aria-live="polite"
+            className={`mb-6 w-full min-w-0 rounded-2xl border px-6 py-3 text-center transition-colors ${result && !spinning ? 'border-secondary-container bg-secondary-container/50' : 'border-outline-variant bg-white/90'}`}
+          >
+            <div className="font-caption text-caption font-bold uppercase tracking-wider text-secondary">
+              {spinning ? t('gameWheel.spinning') : result ? t('gameWheel.winnerLabel') : t('gameWheel.spinButton')}
+            </div>
+            <div className="mt-0.5 flex min-h-[44px] items-center justify-center gap-3 font-display-lg text-[28px] text-deep-navy [overflow-wrap:anywhere]">
+              {spinning && liveIndex !== null && items[liveIndex] ? (
+                <>
+                  {numbered && <span className="rounded-full bg-primary px-3 py-0.5 text-lg font-bold tabular-nums text-white">{liveIndex + 1}</span>}
+                  <span>{items[liveIndex].label}</span>
+                </>
+              ) : result ? (
+                <>
+                  {numbered && items.some((row) => row.id === result.id) && <span className="rounded-full bg-primary px-3 py-0.5 text-lg font-bold tabular-nums text-white">{items.findIndex((row) => row.id === result.id) + 1}</span>}
+                  <span key={result.id + result.label}>{result.label}</span>
+                </>
+              ) : (
+                <span className="text-on-surface-variant">?</span>
+              )}
+            </div>
+          </div>
           <div
             ref={wheelBoxRef}
             className="relative w-full max-w-[560px] aspect-square touch-none cursor-grab active:cursor-grabbing"
@@ -385,6 +397,7 @@ export default function SpinWheel({
             onPointerCancel={handleWheelPointerCancel}
           >
             <div
+              ref={spinLayerRef}
               className="absolute inset-0"
               style={{ ...spinStyle, filter: 'drop-shadow(0 14px 24px rgba(110, 62, 18, 0.28))' }}
             >
@@ -452,19 +465,9 @@ export default function SpinWheel({
             {spinning ? t('gameWheel.spinning') : t('gameWheel.spinButton')}
           </button>
 
-          {result && !spinning && (
-            <div
-              key={result.id + result.label}
-              data-wheel-result role="status" aria-live="polite"
-              className="mt-4 w-full min-w-0 text-center bg-secondary-container/50 border border-secondary-container rounded-2xl px-8 py-3.5"
-            >
-              <div className="font-caption text-caption font-bold tracking-wider text-secondary uppercase">{t('gameWheel.winnerLabel')}</div>
-              <div className="font-display-lg text-[28px] text-deep-navy mt-0.5 break-words [overflow-wrap:anywhere]">{result.label}</div>
-            </div>
-          )}
         </div>
 
-        {numbered && (!editable || itemsHidden) && <ol aria-label={t('gameAdmin.itemCountLabel', { count })} tabIndex={0} className="grid w-full min-w-0 max-h-[32vh] gap-2 overflow-y-auto overscroll-contain rounded-xl focus-visible:outline-4 focus-visible:outline-primary md:max-w-[320px] md:max-h-[560px] md:self-center">
+        {numbered && !editable && <ol aria-label={t('gameAdmin.itemCountLabel', { count })} tabIndex={0} className="grid w-full min-w-0 max-h-[32vh] gap-2 overflow-y-auto overscroll-contain rounded-xl focus-visible:outline-4 focus-visible:outline-primary md:max-w-[320px] md:max-h-[560px] md:self-center">
           <li className="sticky top-0 rounded-xl bg-white p-2 text-sm font-bold text-deep-navy">{t('prelaunchUx.wheelLegend',{count})}</li>
           {items.map((item,i)=><li key={item.id} className="flex items-start gap-3 rounded-xl border border-outline-variant bg-white p-3 text-lg font-bold text-deep-navy"><span className="flex h-8 min-w-8 items-center justify-center rounded-full text-white" style={{background:colorFor(i)}}>{i+1}</span><span className="min-w-0 break-words [overflow-wrap:anywhere]">{item.label}</span></li>)}
         </ol>}
@@ -483,22 +486,33 @@ export default function SpinWheel({
                 <span className="material-symbols-outlined text-[20px]">add</span>
               </button>
             </div>
-            <div className="max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
+            <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
               {items.map((item, i) => (
-                <div key={item.id} className="flex items-center gap-1">
-                  <span className="min-w-7 text-center font-bold text-deep-navy">{i+1}</span>
-                  <textarea
-                  rows={2}
-                  aria-label={`${i+1}. ${item.label}`}
-                  value={itemDrafts[item.id] ?? item.label}
-                  onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
-                  onBlur={() => commitItemDraft(item.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLTextAreaElement).blur(); }
-                  }}
-                  style={{ color: colorFor(i) }}
-                  className="min-w-0 flex-1 resize-none rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-base font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+                <div key={item.id} className="flex items-center gap-2 rounded-2xl border border-outline-variant/60 bg-white px-3 py-1.5 shadow-sm">
+                  <span className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-1 text-base font-bold tabular-nums text-white" style={{ backgroundColor: colorFor(i) }}>{i+1}</span>
+                  {editingId === item.id ? (
+                    <input
+                      autoFocus
+                      aria-label={`${i + 1}. ${item.label}`}
+                      value={itemDrafts[item.id] ?? item.label}
+                      onChange={(e) => handleItemDraftChange(item.id, e.target.value)}
+                      onBlur={() => { commitItemDraft(item.id); setEditingId(null); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); }
+                        if (e.key === 'Escape') { setItemDrafts((prev) => ({ ...prev, [item.id]: item.label })); setEditingId(null); }
+                      }}
+                      className="min-w-0 flex-1 rounded-lg border border-primary bg-white px-3 py-2 font-body-md text-base font-bold text-deep-navy outline-none"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(item.id)}
+                      title={t('gameAdmin.renameInlineHint')}
+                      className="min-w-0 flex-1 truncate rounded-lg px-3 py-2 text-left font-body-md text-base font-bold text-deep-navy hover:bg-surface-container-low"
+                    >
+                      {itemDrafts[item.id] ?? item.label}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => onRemoveItem?.(item.id)}

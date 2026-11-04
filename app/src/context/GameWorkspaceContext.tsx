@@ -34,11 +34,14 @@ export interface GameWorkspaceBridge {
   loading: boolean;
   selectClass: (id: string) => void;
   selectTemplate: (id: string) => void;
+  /** 저장한 게임을 바로 지운다(확인은 부르는 쪽 화면에서 한다). */
+  removeTemplate: (id: string) => Promise<void>;
   useList: (list: WordList) => Promise<void>;
   switchGame: (type: GameType) => Promise<void>;
   sourceCards: FullCardItem[] | null;
 }
 export interface WorkspaceContextValue {
+  info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;

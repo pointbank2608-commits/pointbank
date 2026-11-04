@@ -328,6 +328,8 @@ export interface GameTemplateConfig {
   storybook?: import('./storybook').StorybookConfig;
   /** 문법별 게임(문장 변신 연구소 등): 문제를 만들 문법 항목 id */
   grammarId?: string;
+  /** 문법별 게임: 저장할 때 같이 담는 참여 방식(0 = 없음/개인, 1~4 = 팀 수)과 점수 표시 */
+  grammarPlay?: { teams: number; showScore: boolean };
   /** Sentence Splash: time limit in seconds for each sentence. */
   splashSeconds?: number;
   classroomSource?: { id: string; name: string; kind: 'word' | 'sentence'; version: string; cards: FullCardItem[] };

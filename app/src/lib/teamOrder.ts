@@ -91,3 +91,14 @@ export function turnLabels(state: TeamOrderState, roster: GameItem[], teamLabel:
   const index = ((state.turn % state.order.length) + state.order.length) % state.order.length;
   return { current: label(state.order[index]), next: label(state.order[(index + 1) % state.order.length]) };
 }
+
+/** 게임이 "한 판이 끝났다"(돌림판에서 하나를 뽑았다 등)고 알리는 신호 — 차례 바가 자동 넘김을 켜 두었으면 다음 차례로 넘긴다. */
+export const ROUND_DONE_EVENT = 'classbank:round-done';
+export const announceRoundDone = (): void => { window.dispatchEvent(new Event(ROUND_DONE_EVENT)); };
+const AUTO_TURN_KEY = 'classbank.autoTurn';
+export function isAutoTurnOn(): boolean {
+  try { return localStorage.getItem(AUTO_TURN_KEY) !== '0'; } catch { return true; }
+}
+export function setAutoTurnOn(on: boolean): void {
+  try { localStorage.setItem(AUTO_TURN_KEY, on ? '1' : '0'); } catch { /* 저장이 막혀도 이번 화면에서는 적용 */ }
+}

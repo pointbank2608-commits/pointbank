@@ -9,6 +9,7 @@ import GameThemeFrame, { useGamePlay, GameManagement } from '../components/GameT
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
+import { announceRoundDone } from '../lib/teamOrder';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
 import SentenceSources from '../components/SentenceSources';
@@ -157,6 +158,7 @@ export default function WheelPage() {
   }
 
   function handleResult(item: GameItem) {
+    announceRoundDone();
     setRecent((prev) => [{ id: item.id, label: item.label, at: Date.now() }, ...prev].slice(0, 8));
     if (eliminateMode) {
       setPlayItems((prev) => prev.filter((i) => i.id !== item.id));
@@ -370,7 +372,7 @@ export default function WheelPage() {
 
           <GameThemeFrame bg="wheel"
             roster={roster}
-            onRestart={() => setRoundKey((k) => k + 1)}
+            onRestart={() => { resetPlayItems(); setRecent([]); setRoundKey((k) => k + 1); }}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <SpinWheel key={roundKey}

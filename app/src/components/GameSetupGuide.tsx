@@ -15,6 +15,8 @@ import { insertPhrase } from '../lib/storybook';
 import { SENTENCE_PATTERNS, getSentencePattern, slotLabelKey, type SentenceSlot } from '../lib/sentencePatterns';
 import type { FullCardItem, GameItem, GameTemplate, WordList } from '../lib/types';
 import GameSourcePicker from './GameSourcePicker';
+import GrammarGuideStep from './GrammarGuideStep';
+import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
 import LadderResultSetup from './LadderResultSetup';
 import { ladderResultDraft, ladderSlots } from '../lib/ladderSetup';
 import GameImagePicker from './GameImagePicker';
@@ -33,7 +35,7 @@ interface Props {
 type Launch={kind:GuideKind;cards?:FullCardItem[];ownerId?:string;academyId?:string};
 export default function GameSetupGuide({info,active,canStart,busy,run,complete,editRevision,nativeVisible,presetKind,onPresetUsed}:Props){
   const workspace=useGameWorkspace();
-  const {t}=useTranslation();const {session,academy}=useAuth();const location=useLocation();
+  const {t,i18n}=useTranslation();const {session,academy}=useAuth();const location=useLocation();
   const [kind,setKind]=useState<GuideKind>('word');const [step,setStep]=useState(0);const [native,setNative]=useState(false);const [error,setError]=useState('');
   const [raw,setRaw]=useRecoverableField(`guide:${info.gameType}:${kind}:rows`);
   const [paste,setPaste]=useRecoverableField(`guide:${info.gameType}:${kind}:paste`);
@@ -48,6 +50,7 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   const [pattern,setPattern]=useRecoverableField(`guide:${info.gameType}:pattern`,info.selected?.config.watermelonPatternId||'svo');
   const pendingRows=useRef<{kind:GuideKind;rows:string[][]}|null>(null);
   const asNames=kind==='names'||kind==='numbers';
+  const isGrammarGame=(GRAMMAR_GAME_TYPES as readonly string[]).includes(info.gameType);
   const family=guideFamily(info.gameType);const dedicated=family==='builtin'&&info.gameType!=='timer';
   // Built-in roleplay and generated activities need no extra input with their defaults.
   // Their optional editors remain in the separate settings panel.
@@ -190,9 +193,10 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
   if(!active)return null;
   return <section className="space-y-5 p-4 sm:p-6" data-game-guide data-guide-step={step}>
     <p className="font-bold text-primary" role="status">{t('guide.step',{current:steps.indexOf(step)+1,total:steps.length})} · {t(step===0?'guide.chooseSource':'guide.content')}</p>
-    <h2 ref={heading} tabIndex={-1} className="text-2xl font-black">{t(step===0?'guide.title':'guide.chooseContent')}</h2>
+    <h2 ref={heading} tabIndex={-1} className="text-2xl font-black">{step===0&&isGrammarGame?(i18n.language.startsWith('en')?'Which grammar should we play?':'어떤 문법으로 게임을 만들까요?'):t(step===0?'guide.title':'guide.chooseContent')}</h2>
     {error&&step!==1&&<p role="alert" className="rounded-xl bg-error-container p-4">{error}</p>}
-    {step===0&&<div className="grid grid-cols-2 gap-3">{(['sample','word','sentence','names'] as GuideKind[]).map(k=><button className={`${button} min-h-28 text-left disabled:opacity-100! disabled:bg-slate-100 disabled:text-slate-600 ${k==='sample'?'bg-sky-50! border-primary':''}`} key={k} disabled={busy||info.loading||!guideKinds(info.gameType).includes(k)} aria-disabled={!guideKinds(info.gameType).includes(k)} onClick={()=>void choose(k)}><span className="block text-xl">{t(`guide.${k}`)}</span><span className="mt-2 block font-normal">{t(guideKinds(info.gameType).includes(k)?`guide.${k}Hint`:`launchUx.unsupported_${k}`)}</span></button>)}{dedicated&&<button className={button} onClick={()=>void choose(info.gameType==='timer'?'names':'word')}>{t('guide.keepDefault')}</button>}</div>}
+    {step===0&&isGrammarGame&&<GrammarGuideStep info={info} busy={busy} onApply={content=>void run(()=>info.applyGuide(content)).then(ok=>{if(ok)complete();})} onSample={()=>void run(()=>info.sampleGuide()).then(ok=>{if(ok)complete();})} />}
+    {step===0&&!isGrammarGame&&<div className="grid grid-cols-2 gap-3">{(['sample','word','sentence','names'] as GuideKind[]).map(k=><button className={`${button} min-h-28 text-left disabled:opacity-100! disabled:bg-slate-100 disabled:text-slate-600 ${k==='sample'?'bg-sky-50! border-primary':''}`} key={k} disabled={busy||info.loading||!guideKinds(info.gameType).includes(k)} aria-disabled={!guideKinds(info.gameType).includes(k)} onClick={()=>void choose(k)}><span className="block text-xl">{t(`guide.${k}`)}</span><span className="mt-2 block font-normal">{t(guideKinds(info.gameType).includes(k)?`guide.${k}Hint`:`launchUx.unsupported_${k}`)}</span></button>)}{dedicated&&<button className={button} onClick={()=>void choose(info.gameType==='timer'?'names':'word')}>{t('guide.keepDefault')}</button>}</div>}
     {step===1&&<>
       <p className="text-sm text-on-surface-variant">{t('launchUx.contentRestart')}</p>
       <p className="rounded-xl bg-sky-50 p-4 text-lg">{t(`guide.hints.${family}_${kind}`,{defaultValue:t(`guide.hints.${family}`)})}</p>

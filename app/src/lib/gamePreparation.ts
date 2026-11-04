@@ -57,3 +57,10 @@ export function isNativeGameReady(template: GameTemplate): boolean {
   const minimum = GAME_CATALOG.find(g => g.type === type)?.minItems || 1;
   return items.filter(i => i.label.trim()).length >= minimum;
 }
+
+/**
+ * 들어오면 샘플로 바로 시작하고 위쪽 도구줄(내 단어/문장·반 설정·게임설정·저장/불러오기)을 쓰는 게임.
+ * 전용 편집기가 큰 어드벤처·스토리 게임과 학생 폰 참여형 대회 퀴즈쇼는 예전 준비 흐름을 그대로 쓴다(C단계).
+ */
+const KEEP_OLD_FLOW = new Set<string>([...ADVENTURE_TYPES, 'feedmonster', 'sentencebridge', 'sentencetower', 'quizshow']);
+export const instantStart = (type: GameType): boolean => !KEEP_OLD_FLOW.has(type);

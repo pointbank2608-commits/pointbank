@@ -6,6 +6,7 @@ import {
   type GrammarGameType, type Lot,
 } from '../lib/grammarGames';
 import { useRemoteActions } from '../lib/remote';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { initialTeams, setGrammarPlay, useGrammarPlay } from '../lib/grammarPlay';
 import '../i18n/grammarLessonLocales';
@@ -44,25 +45,57 @@ export function TeamSetup(_props: { teams: number; setTeams: (n: number) => void
   return null;
 }
 
-/** 참여자 설정: 혼자 풀기(기본) / 1~4팀, 점수 보이기. 이 브라우저에 기억해 모든 문법 게임이 같이 쓴다. */
+/**
+ * 반 설정: 반 선택(학생 명단 불러오기) → 참여 방식(없음 기본 / 개인 / 팀 2~4) → 순서 정하기(기존 팀·순서 패널).
+ * 이 브라우저에 기억하고, 저장/불러오기에서 게임과 함께 저장된다.
+ */
 export function PlaySettings() {
   const text = useText();
   const play = useGrammarPlay();
+  const workspace = useGameWorkspace();
+  const info = workspace?.info;
+  const mode = play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none';
+  const pick = (m: 'none' | 'solo' | 'team') => {
+    if (m === 'none') setGrammarPlay({ teams: 0, showScore: false });
+    else if (m === 'solo') setGrammarPlay({ teams: 0, showScore: true });
+    else setGrammarPlay({ teams: Math.max(2, play.teams), showScore: true });
+  };
+  const chip = (on: boolean) => `${btn} min-w-16 ${on ? 'ring-2 ring-primary' : ''}`;
+  const roster = info?.roster ?? [];
   return (
-    <div className="space-y-3 rounded-xl border border-outline-variant bg-white p-3" role="group" aria-label={text('게임 참여자 설정', 'Players')}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-semibold">{text('누가 풀어요?', 'Who plays?')}</span>
-        {[0, 1, 2, 3, 4].map((n) => (
-          <button key={n} type="button" className={`${btn} min-w-12 ${play.teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => setGrammarPlay({ teams: n })} aria-pressed={play.teams === n}>
-            {n === 0 ? text('설정 안 함', 'None') : text(`${n}팀`, String(n))}
-          </button>
-        ))}
+    <div className="space-y-3" role="group" aria-label={text('반 설정', 'Class settings')}>
+      {info && info.classes.length > 0 && (
+        <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
+          <label className="block text-sm font-bold">{text('반', 'Class')}
+            <select className="mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2 font-normal" value={info.classId || ''} onChange={(e) => info.selectClass(e.target.value)}>
+              <option value="">{text('반 없이 하기', 'No class')}</option>
+              {info.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+          {info.classId && (
+            <p className="text-sm" aria-live="polite">
+              {roster.length > 0
+                ? <>{text(`학생 ${roster.length}명을 불러왔어요: `, `${roster.length} students: `)}<span className="font-semibold">{roster.slice(0, 8).map((r) => r.label).join(', ')}{roster.length > 8 ? ' …' : ''}</span></>
+                : text('이 반에는 학생이 없어요. 학생·출석 메뉴에서 먼저 추가해 주세요.', 'This class has no students yet.')}
+            </p>
+          )}
+        </div>
+      )}
+      <div className="space-y-2">
+        <p className="text-sm font-bold">{text('참여 방식', 'How to play')}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className={chip(mode === 'none')} aria-pressed={mode === 'none'} onClick={() => pick('none')}>{text('없음', 'None')}</button>
+          <button type="button" className={chip(mode === 'solo')} aria-pressed={mode === 'solo'} onClick={() => pick('solo')}>{text('개인', 'Solo')}</button>
+          <button type="button" className={chip(mode === 'team')} aria-pressed={mode === 'team'} onClick={() => pick('team')}>{text('팀', 'Teams')}</button>
+          {mode === 'team' && [2, 3, 4].map((n) => (
+            <button key={n} type="button" className={chip(play.teams === n)} aria-pressed={play.teams === n} onClick={() => setGrammarPlay({ teams: n })}>{text(`${n}팀`, String(n))}</button>
+          ))}
+          {workspace && roster.length > 0 && (
+            <button type="button" className={btn} onClick={() => { workspace.open(null); workspace.openTeams(); }}>{text('순서 정하기', 'Set order')}</button>
+          )}
+        </div>
       </div>
-      <label className="flex items-center gap-2 font-semibold">
-        <input type="checkbox" className="h-5 w-5" checked={play.showScore} onChange={(e) => setGrammarPlay({ showScore: e.target.checked })} />
-        {text('혼자 풀 때도 점수 보이기', 'Show score when playing alone')}
-      </label>
-      <p className="text-xs text-on-surface-variant">{text('설정하지 않으면 게임 화면에는 문제만 나와요. 점수는 이 화면 안에서만 쓰고 칭찬 통장 포인트와 관계없어요.', 'Without a setting, only the questions are shown. Scores stay on this screen and are separate from praise points.')}</p>
+      <p className="text-xs text-on-surface-variant">{text('없음이면 게임 화면에 문제만 나와요. 점수는 이 화면 안에서만 쓰고 칭찬 통장 포인트와 관계없어요.', 'With none, only the questions are shown. Scores stay on this screen and are separate from praise points.')}</p>
     </div>
   );
 }

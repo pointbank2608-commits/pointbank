@@ -3,6 +3,8 @@ import {GameTurnContext} from '../context/GameTurnContext';
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
+import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
+import { instantStart } from '../lib/gamePreparation';
 import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -83,7 +85,7 @@ function useGameBackground(gameType?: GameType): string | null {
   return url;
 }
 
-const GamePlayContext = createContext({ fullscreen: false, itemsHidden: false });
+const GamePlayContext = createContext({ fullscreen: false, itemsHidden: false, toggleItems: () => {} });
 
 export function useGamePlay() {
   return useContext(GamePlayContext);
@@ -156,7 +158,9 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   }
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
-  useEffect(() => { if (workspace?.playing) setItemsHidden(true); }, [workspace?.playing]);
+  // 새 도구줄을 쓰는 게임은 들어오자마자 시작되므로(playing) 항목을 자동으로 숨기면 선생님이 항목을 못 고친다 — 도구줄의 "항목 숨기기"로 직접 숨긴다.
+  const playHides = !!workspace?.playing && !(workspace.info && instantStart(workspace.info.gameType));
+  useEffect(() => { if (playHides) setItemsHidden(true); }, [playHides]);
   const [restartOpen, setRestartOpen] = useState(false);
   const bgType = bg ?? gameType;
   const bgUrl = useGameBackground(bgType);
@@ -170,7 +174,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       if (!on) setScale(1);
       // 전체화면으로 들어가면 반 전체가 보는 화면이 되니 항목 목록을 기본으로 숨긴다(정답이
       // 미리 보이지 않게). 전체화면을 나오면 다시 보이게 — 선생님은 버튼으로 언제든 뒤집을 수 있다.
-      setItemsHidden(on || !!workspace?.playing || presenting);
+      setItemsHidden(on || playHides || presenting);
     }
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
@@ -365,7 +369,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     setFullscreenError(false);
     if (pseudoFs) {
       setPseudoFs(false);
-      setItemsHidden(!!workspace?.playing || presenting);
+      setItemsHidden(playHides || presenting);
       setScale(1);
       return;
     }
@@ -388,7 +392,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
         setPseudoFs(false);
-        setItemsHidden(!!workspace?.playing || presenting);
+        setItemsHidden(playHides || presenting);
         setScale(1);
       }
     }
@@ -525,7 +529,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         </div>
   );
   const frame = (
-    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden }}>
+    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden, toggleItems: () => setItemsHidden((v) => !v) }}>
       <div
         ref={containerRef}
         data-game={gameType ?? bg}
@@ -547,7 +551,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             {t('whiteboard.returnPill')}
           </button>
         )}
-        {workspace && <GameWorkspaceFrameControls onRestart={onRestart ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
+        {workspace && <GameWorkspaceFrameControls participants={!!gameType && GRAMMAR_GAME_TYPES.includes(gameType as never)} onRestart={onRestart ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
         {bgUrl && (
           <div
             aria-hidden

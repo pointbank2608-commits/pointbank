@@ -16,10 +16,14 @@ import { gamePreparation, gameReadyDetails, isNativeGameReady } from '../lib/gam
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { isActivityDraft, sampleActivityCards } from '../lib/quickActivity';
 import { pauseGameClock } from '../lib/gameClock';
-import { loadTeamOrder, saveTeamOrder, TEAM_ORDER_EVENT, turnLabels } from '../lib/teamOrder';
+import { isShowOrderOn, loadTeamOrder, saveTeamOrder, TEAM_ORDER_EVENT, turnLabels } from '../lib/teamOrder';
 import { useFeature } from '../lib/features';
 import TeamOrderPanel from './TeamOrderPanel';
 import AddActivityToLesson from './AddActivityToLesson';
+import { PlaySettings } from './GrammarGames';
+import GameToolbar from './GameToolbar';
+import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
+import { instantStart } from '../lib/gamePreparation';
 
 type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | 'guide' | null;
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
@@ -67,13 +71,25 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
-  const completePreparation=useCallback(()=>{setPanel(null);setPlaying(false);setRunning(false);notify(t('launchUx.applied'));},[notify,t]);
+  const completePreparation=useCallback(()=>{setPanel(null);setPlaying(false);setRunning(false);notify(i18n.resolvedLanguage?.startsWith('en')?'Your settings have been applied.':'설정이 적용되었습니다.');},[notify,t]);
   const guideOpened=useRef('');
   const [playing, setPlaying] = useState(false);
   const [fullscreen,setFullscreen]=useState(false);
   const [running, setRunning] = useState(false);
   const [teams, setTeams] = useState(false);
-  const [absent, setAbsent] = useState<string[]>([]);
+  const [absent, setAbsentRaw] = useState<string[]>([]);
+  const absentClass = info?.classId || '';
+  useEffect(() => {
+    const read = () => setAbsentRaw(absentClass ? loadAbsent(absentClass) : []);
+    read();
+    window.addEventListener(ABSENT_EVENT, read);
+    return () => window.removeEventListener(ABSENT_EVENT, read);
+  }, [absentClass]);
+  const setAbsent = (next: string[] | ((old: string[]) => string[])) => {
+    const value = typeof next === 'function' ? next(absent) : next;
+    setAbsentRaw(value);
+    if (absentClass) saveAbsent(absentClass, value);
+  };
   const [ordered, setOrdered] = useState(false);
   const [participantText, setParticipantText] = useState('');
   const [revision, setRevision] = useState(0);
@@ -96,6 +112,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const participantKey = `classbank:participants:${session?.user.id}:${academy?.id}`;
   const scope = `${session?.user.id}:${academy?.id}`;
   const capabilities = gamePreparation(info?.gameType || 'wheel');
+  const isGrammar = !!info && instantStart(info.gameType);
   const source = info?.selected?.config.classroomSource;
   const hasCustomContent=!!info?.selected&&(!isActivityDraft(info.selected.id)||!!info.selected.config.setupKind||!!source&&!['sample','temporary'].includes(source.id));
   const sourceKind = source?.kind || (capabilities.kinds[0] || 'word');
@@ -109,7 +126,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     bridge.current = next;
     setInfo(old => old && old.gameType === next.gameType && old.settingsPending === next.settingsPending && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
   }, []);
-  useEffect(() => { setRunning(false); setPlaying(false); setAbsent([]); setPanel(null); setSampleRequested(false); setSettingsSaved(false); }, [identity]);
+  useEffect(() => { setRunning(false); setPlaying(false); setPanel(null); setSampleRequested(false); setSettingsSaved(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(()=>{
@@ -121,7 +138,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     const ready=incoming?.ownerId===session?.user.id&&incoming?.academyId===academy?.id&&incoming?.id===supplied?.id&&!!supplied
       &&!['sample','temporary'].includes(supplied.id)&&!!prepareClassroomGame(info.gameType,supplied.cards,supplied.kind)
       &&isNativeGameReady(info.selected)&&!guideProblem(info.selected);
-    setPanel(ready?null:info.gameType==='quizshow'?'settings':'guide');
+    setPanel(ready||isGrammar?null:info.gameType==='quizshow'?'settings':'guide');
   },[info,identity,presenting,location.key,location.state,session?.user.id,academy?.id]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
@@ -180,11 +197,11 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   // 선생님이 메뉴에서 "게임 준비로 돌아가기"를 눌러 멈춘 뒤에는 다시 자동으로 시작하지 않는다.
   const autoStarted=useRef('');
   useEffect(()=>{
-    if(!presenting||!canStart||panel||teams||running||playing)return;
+    if((!presenting&&!isGrammar)||!canStart||panel||teams||running||playing)return;
     const key=`${identity}:${info?.selected?.id}:${location.key}`;
     if(autoStarted.current===key)return;
     autoStarted.current=key;setPlaying(true);setRunning(true);
-  },[presenting,canStart,panel,teams,running,playing,identity,info?.selected?.id,location.key]);
+  },[presenting,isGrammar,canStart,panel,teams,running,playing,identity,info?.selected?.id,location.key]);
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
   function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
   async function startFromEditor() {
@@ -223,7 +240,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, exitPlay, turn }), [info, stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
@@ -236,9 +253,15 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     {!presenting && groupOpen && info?.selected && <button className={btn} onClick={() => { setPanel(null); setAddLesson(true); }}>{t('teacherGame.addToLesson')}</button>}
   </div>;
   const saveOptions=<details data-game-save-options><summary className="cursor-pointer py-2 font-bold">{i18n.resolvedLanguage?.startsWith('en')?'Save options':'저장 옵션'}</summary><p>{info?.saveTarget?`${i18n.resolvedLanguage?.startsWith('en')?'Update saved game':'갱신할 저장 게임'}: ${info.saveTarget.name}`:t('settingsSave.temporaryHint')}</p><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveCopy} onChange={e=>setSaveCopy(e.target.checked)}/>{i18n.resolvedLanguage?.startsWith('en')?'Save as a new game':'새 이름으로 저장'}</label><label className="block">{t('quick.activityName')}<input className={btn} value={activityName} placeholder={info?.saveTarget?.name||defaultGameName} onChange={e=>setActivityName(e.target.value)}/></label></details>;
+  // 새 도구줄을 쓰는 게임은 들어오면 바로 시작하므로 "게임 준비" 안내 창을 보이지 않는다(시작할 수 없을 때만 보여 준다).
+  const showPrepHeader = !playing && !presenting && (info ? !instantStart(info.gameType) || (!info.loading && !canStart) : false);
+  // 도구줄 "반 설정"에서 참여 방식(개인/팀)을 이미 정했으면 팀·순서 창도 그 방식으로만 정한다
+  const participationFixed = teams && info && instantStart(info.gameType) && isShowOrderOn() && roster.length > 0
+    ? (() => { const o = loadTeamOrder(roster, scope); return { mode: o.mode, teams: o.mode === 'team' ? o.teamCount : undefined }; })()
+    : null;
   return <GameWorkspaceContext.Provider value={value}>
     <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
-      {!playing && !presenting && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
+      {showPrepHeader && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
         <Link to="/games" className={`${btn} inline-flex items-center`}>{t('gameAdmin.backToList')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div></div>
         <button className={`${btn} bg-primary! px-6! text-lg! text-white!`} disabled={!info||info.loading||!!info.sharedView} onClick={()=>hasCustomContent?editContent():setPanel('guide')}>{t(hasCustomContent?'launchUx.editContent':'launchUx.otherContent')}</button>
@@ -301,7 +324,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
             <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>
             <div className="flex flex-col gap-2 sm:flex-row">
               <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'launchUx.saveGame')}</button>
-              <button className={btn} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{t('launchUx.done')}</button>
+              <button className={btn} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
             </div>
             {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
             {error&&<p role="alert" className="text-error">{error}</p>}
@@ -310,7 +333,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           </div>
       </dialog>
       {addLesson && info?.selected && <AddActivityToLesson activity={info.selected} onClose={()=>setAddLesson(false)} />}
-      {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);}}>
+      {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} fixedMode={participationFixed?.mode} fixedTeams={participationFixed?.teams} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);}}>
         <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={ordered} onChange={event=>setOrdered(event.target.checked)} />{t('flow.showTurns')}</label>
         {!info?.roster.length && <label className="block">{t('flow.temporaryParticipants')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3" value={participantText} onChange={event=>{setParticipantText(event.target.value);setAbsent([]);try{sessionStorage.setItem(participantKey,event.target.value);}catch{/* tab only */}}} /></label>}
         <p>{t('flow.excludeParticipants')}</p>{allRoster.map(row=><label key={row.id} className="mr-3 inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={absent.includes(row.id)} onChange={event=>setAbsent(old=>event.target.checked?[...old,row.id]:old.filter(id=>id!==row.id))}/>{row.label}</label>)}
@@ -318,17 +341,20 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     </section>
   </GameWorkspaceContext.Provider>;
 }
-export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, onRestart, presenting=false }: {onRestart?:()=>void;fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean}) {
-  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace)return null;
+export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, onRestart, presenting=false, participants=false }: {onRestart?:()=>void;fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean;participants?:boolean}) {
+  const workspace=useGameWorkspace();const {t}=useTranslation();const [playersOpen,setPlayersOpen]=useState(false);if(!workspace)return null;
+  if(!presenting&&workspace.info&&instantStart(workspace.info.gameType))return <GameToolbar workspace={workspace} onRestart={onRestart} fullscreen={fullscreen} onFullscreen={onFullscreen} onExitFullscreen={onExitFullscreen} />;
   return <div className="teacher-game-controls relative z-30 shrink-0 bg-white p-2" data-frame-controls data-play-controls>
     <p className="teacher-game-status font-bold text-deep-navy" role="status">{t(workspace.playing ? workspace.running ? 'teacherGame.playing' : 'teacherGame.paused' : 'teacherGame.ready')}</p>
     <div className="teacher-game-actions">
       <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
+      {participants && !presenting && <button className={btn} aria-expanded={playersOpen} onClick={()=>setPlayersOpen(o=>!o)}>{t('flow.participation')}</button>}
       {workspace.playing && workspace.running && <button className={`${btn} teacher-game-primary`} onClick={workspace.pause}>{t('teacherGame.pause')}</button>}
       {workspace.playing && onRestart && <button className={btn} onClick={onRestart} data-frame-restart>{t('gamePlay.restart')}</button>}
       {workspace.playing && !presenting && <button className={btn} onClick={workspace.exitPlay}>{t('flow.backToPreparation')}</button>}
       {!presenting && <button className={btn} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{t(fullscreen ? 'gamePlay.exitFullscreen' : 'gamePlay.fullscreen')}</button>}
     </div>
+    {participants && playersOpen && <div className="absolute right-2 top-full z-40 mt-1 w-[min(28rem,92vw)] rounded-2xl border border-outline-variant bg-white p-4 text-left shadow-xl"><PlaySettings /></div>}
   </div>;
 }
 export function GameWorkspaceStartOverlay() {
