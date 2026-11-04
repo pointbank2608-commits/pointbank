@@ -1,7 +1,9 @@
 import type { TimerPlayMode } from './TimerPlaySettings';
 import {useNativeGameTurn} from '../context/GameTurnContext';
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
+import { TEAM_ORDER_EVENT, isShowOrderOn } from '../lib/teamOrder';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
@@ -99,9 +101,20 @@ export default function TimerMatch({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const n = participants.length;
+  const workspace = useGameWorkspace();
+  const sharedTurn = workspace?.turn;
+  const hasClass = !workspace || !!workspace.info?.classId;
+  const sharedRef = useRef(sharedTurn);
+  sharedRef.current = sharedTurn;
+  const n = sharedTurn?.total ?? participants.length;
   // 참가자가 있으면 항상 한 명씩 차례로 도전하고 기록이 쌓인다. 참가자가 없을 때만 자유 연습.
-  const mode: Mode = n > 0 ? 'ranked' : 'practice';
+  const [orderOn, setOrderOn] = useState(isShowOrderOn);
+  useEffect(() => {
+    const read = () => setOrderOn(isShowOrderOn());
+    window.addEventListener(TEAM_ORDER_EVENT, read);
+    return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
+  }, []);
+  const mode: Mode = n > 0 && orderOn && hasClass ? 'ranked' : 'practice';
   const [showTimer, setShowTimer] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -171,9 +184,9 @@ export default function TimerMatch({
     stopMusicRef.current();
     playMusic(resultSound);
 
-    if (mode === 'ranked' && participants[turnIndex]) {
+    const p = sharedTurn ? { id: sharedTurn.current, label: sharedTurn.current } : participants[turnIndex];
+    if (mode === 'ranked' && p) {
       const diffMs = Math.abs(finalElapsed - targetMs);
-      const p = participants[turnIndex];
       setAttempts((prev) => [...prev, { participantId: p.id, label: p.label, elapsedMs: finalElapsed, diffMs }]);
     }
   }
@@ -184,6 +197,7 @@ export default function TimerMatch({
   }
 
   function nextTurn() {
+    if (sharedTurn && turnIndex + 1 < n) sharedTurn.advance?.();
     setTurnIndex((prev) => prev + 1);
     setPhase('idle');
     setElapsedMs(0);
@@ -193,6 +207,7 @@ export default function TimerMatch({
     if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
     stopMusicRef.current();
     setTurnIndex(0);
+    sharedRef.current?.goto?.(0);
     setAttempts([]);
     setPhase('idle');
     setElapsedMs(0);
@@ -203,7 +218,9 @@ export default function TimerMatch({
   const rosterKey = participants.map((p) => p.id).join('|');
   useEffect(() => { restartAll(); }, [rosterKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hasTurnDisplay=useNativeGameTurn({current:participants[turnIndex]?.label||'',next:participants[turnIndex+1]?.label||'',index:turnIndex,total:n,enabled:mode==='ranked'&&n>0&&turnIndex<n,canAdvance:phase==='stopped'&&turnIndex+1<n,advance:nextTurn});
+  const curLabel = sharedTurn ? sharedTurn.current : participants[turnIndex]?.label || '';
+  const nextLabel = turnIndex + 1 >= n ? '' : sharedTurn ? sharedTurn.next : participants[turnIndex + 1]?.label || '';
+  const hasTurnDisplay=useNativeGameTurn({current:curLabel,next:nextLabel,index:turnIndex,total:n,enabled:mode==='ranked'&&n>0&&turnIndex<n,canAdvance:phase==='stopped'&&turnIndex+1<n,advance:nextTurn});
   const allDone = mode === 'ranked' && n > 0 && turnIndex >= n;
   const blockedForRanked = mode === 'ranked' && n === 0;
   const diffMs = phase === 'stopped' ? Math.abs(elapsedMs - targetMs) : null;
@@ -289,7 +306,7 @@ export default function TimerMatch({
         <>
           {mode === 'ranked' && phase !== 'stopped' && !hasTurnDisplay && (
             <div className="mb-4 text-center font-display-lg text-[34px] text-deep-navy">
-              {t('gameTimer.holderTurn', { name: participants[turnIndex]?.label })}
+              {t('gameTimer.holderTurn', { name: curLabel })}
             </div>
           )}
 
@@ -325,7 +342,7 @@ export default function TimerMatch({
           {(phase === 'idle' || phase === 'running') && (
             <button
               type="button"
-              data-initial-game-start={phase==='idle'||undefined} onClick={phase === 'running' ? stop : start}
+              onClick={phase === 'running' ? stop : start}
               aria-label={phase === 'running' ? 'STOP' : 'START'}
               className={`h-[110px] w-[110px] rounded-full bg-transparent p-0 transition-[filter] hover:not-disabled:brightness-105 active:not-disabled:brightness-95 ${
                 phase === 'running' ? 'timer-btn-pulse' : ''
@@ -360,7 +377,7 @@ export default function TimerMatch({
                 </button>
               ) : (
                 (!hasTurnDisplay||turnIndex+1>=n)&&<button onClick={nextTurn} className={pill}>
-                  {turnIndex+1>=n?t('gameTimer.seeResultsButton'):t('turnDisplay.pass',{name:participants[turnIndex+1]?.label})}
+                  {turnIndex+1>=n?t('gameTimer.seeResultsButton'):t('turnDisplay.pass',{name:nextLabel})}
                 </button>
               )}
             </>

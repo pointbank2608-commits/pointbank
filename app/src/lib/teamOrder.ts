@@ -80,6 +80,7 @@ export function setShowOrderOn(on: boolean): void {
   } catch {
     // 무시
   }
+  window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
 }
 
 /** One source of truth for the compact indicator, including circular/one-person order. */
