@@ -6,7 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
 import EditOnly from '../components/EditOnly';
 import GameThemeFrame from '../components/GameThemeFrame';
-import GrammarGame from '../components/GrammarGames';
+import GrammarGame, { PlaySettings } from '../components/GrammarGames';
+import { useGrammarPlay } from '../lib/grammarPlay';
 import GrammarGameB from '../components/GrammarGamesB';
 import GrammarGameC from '../components/GrammarGamesC';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -51,6 +52,7 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
     defaultConfig: () => ({ grammarId: DEFAULT_GRAMMAR_ID }),
   });
   const [restart, setRestart] = useState(0);
+  const play = useGrammarPlay();
   const [name, setName] = useState('');
   const [draftId, setDraftId] = useState(DEFAULT_GRAMMAR_ID);
   const [busy, setBusy] = useState(false);
@@ -109,10 +111,10 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
       {!g.loading && (
         <GameThemeFrame gameType={type} roster={g.roster} onRestart={() => setRestart((k) => k + 1)}>
           {(['grammarpassive', 'grammarcond', 'grammarrelative', 'grammarask', 'grammarshop'] as const).some((c) => c === type)
-            ? <GrammarGameC key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type as 'grammarpassive'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
+            ? <GrammarGameC key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}:${play.teams}:${play.showScore}`} type={type as 'grammarpassive'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
             : (['grammarpos', 'grammarframe', 'grammarcompare', 'grammarlink', 'grammarhabit'] as const).some((b) => b === type)
-            ? <GrammarGameB key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type as 'grammarpos'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
-            : <GrammarGame key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}`} type={type} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />}
+            ? <GrammarGameB key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}:${play.teams}:${play.showScore}`} type={type as 'grammarpos'} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />
+            : <GrammarGame key={`${g.selected?.id ?? 'draft'}:${grammarId}:${restart}:${play.teams}:${play.showScore}`} type={type} grammarId={grammarId} seed={restart + 1} onExit={() => navigate('/games')} />}
         </GameThemeFrame>
       )}
       {g.loading && <p role="status">{text('불러오는 중…', 'Loading…')}</p>}
@@ -136,6 +138,7 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
                 </select>
               </label>
             )}
+            <PlaySettings />
             <label className="block">{text('문법 항목', 'Grammar point')}
               <select className={input} value={grammarId} disabled={busy} onChange={(e) => void choose(e.target.value)}>
                 {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}

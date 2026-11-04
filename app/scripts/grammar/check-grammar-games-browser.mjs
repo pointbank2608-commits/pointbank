@@ -15,7 +15,7 @@ const test = async (n, f) => { try { await f(); console.log('ok  ', n); } catch 
 try {
   browser = await chromium.launch({ channel: 'chrome', headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
-  await ctx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); });
+  await ctx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); localStorage.setItem('classbank.grammarPlay.v2', JSON.stringify({ teams: 2, showScore: true })); });
   const errors = [];
   const open = async (type, g = 'third-s') => {
     const page = await ctx.newPage();
@@ -192,7 +192,7 @@ try {
 
   // ---- 팀·점수 설정(혼자 풀기) ----
   const soloCtx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
-  await soloCtx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); localStorage.setItem('classbank.grammarPlay', JSON.stringify({ teams: 0, showScore: true })); });
+  await soloCtx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); localStorage.setItem('classbank.grammarPlay.v2', JSON.stringify({ teams: 0, showScore: true })); });
   const openSolo = async (type, g = 'third-s') => { const page = await soloCtx.newPage(); page.on('pageerror', (e) => errors.push(e.message)); await page.goto(`${base}?type=${type}&g=${g}`); return page; };
   await test('혼자 풀기: 팀 표시 없이 내 점수만, 조건 영작은 "맞았어요"', async () => {
     const page = await openSolo('grammarwrite');
@@ -225,24 +225,14 @@ try {
     await ask.getByText(/^질문을 하나 고르거나/).waitFor();
     await ask.close();
   });
-  await test('설정 패널: 혼자/팀·점수 숨김을 고르면 바로 반영되고 새로고침 뒤에도 남는다', async () => {
+  await test('기본 화면: 팀·점수·설정 패널 없이 문제만 나온다', async () => {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
-    await ctx.addInitScript(() => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('classbank.lang', 'ko'); sessionStorage.setItem('seeded', '1'); } });
+    await ctx.addInitScript(() => { localStorage.setItem('classbank.lang', 'ko'); });
     const page = await ctx.newPage();
     await page.goto(`${base}?type=grammarpos&g=prepositions`);
-    await page.getByText('2팀').first().waitFor();
-    await page.getByRole('button', { name: /팀·점수 설정/ }).click();
-    await page.getByRole('button', { name: '혼자', exact: true }).click();
-    await page.getByText('내 점수').first().waitFor();
-    await page.getByLabel('점수 보이기').uncheck();
-    assert.equal(await page.locator('ul[aria-label="내 점수"]').count(), 0);
-    await page.reload();
-    assert.equal(await page.locator('ul[aria-label="내 점수"]').count(), 0);
-    await page.getByRole('button', { name: /혼자 풀기 · 점수 숨김/ }).waitFor();
-    await page.getByRole('button', { name: /팀·점수 설정/ }).click();
-    await page.getByRole('button', { name: '3팀', exact: true }).click();
-    await page.getByLabel('점수 보이기').check();
-    await page.getByText('3팀').first().waitFor();
+    await page.locator('section').first().waitFor();
+    assert.equal(await page.getByText('팀·점수 설정').count(), 0);
+    assert.equal(await page.locator('ul[aria-label="내 점수"], ul[aria-label="팀 점수"]').count(), 0);
     await ctx.close();
   });
   await soloCtx.close();

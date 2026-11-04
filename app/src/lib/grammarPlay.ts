@@ -11,8 +11,9 @@ export interface GrammarPlay {
   showScore: boolean;
 }
 
-const KEY = 'classbank.grammarPlay';
-const DEFAULT: GrammarPlay = { teams: 2, showScore: true };
+// 기본은 팀·점수 없이 문제만 나온다. 참여자 설정(게임 설정 칸)에서 켠 사람만 팀·점수가 보인다.
+const KEY = 'classbank.grammarPlay.v2';
+const DEFAULT: GrammarPlay = { teams: 0, showScore: false };
 
 function read(): GrammarPlay {
   try {
@@ -20,7 +21,7 @@ function read(): GrammarPlay {
     if (!raw) return DEFAULT;
     const v = JSON.parse(raw) as Partial<GrammarPlay>;
     const teams = Number.isInteger(v.teams) && (v.teams as number) >= 0 && (v.teams as number) <= 4 ? (v.teams as number) : DEFAULT.teams;
-    return { teams, showScore: v.showScore !== false };
+    return { teams, showScore: v.showScore === true };
   } catch {
     return DEFAULT;
   }

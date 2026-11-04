@@ -36,39 +36,33 @@ export function useSolo(): boolean {
   return useGrammarPlay().teams === 0;
 }
 
-/** 팀·점수 설정(접어 둠): 팀 없이 혼자 풀기 / 1~4팀, 점수 보이기. 이 브라우저에 기억해 모든 문법 게임이 같이 쓴다. */
-export function TeamSetup({ teams, setTeams }: { teams: number; setTeams: (n: number) => void }) {
+/**
+ * 게임 화면에는 팀·점수 설정을 두지 않는다(기본은 문제만). 설정은 게임 설정 칸의 PlaySettings 에서 한다.
+ * 게임들이 이 자리에 부르던 컴포넌트라 모양만 남겨 둔다.
+ */
+export function TeamSetup(_props: { teams: number; setTeams: (n: number) => void }) {
+  return null;
+}
+
+/** 참여자 설정: 혼자 풀기(기본) / 1~4팀, 점수 보이기. 이 브라우저에 기억해 모든 문법 게임이 같이 쓴다. */
+export function PlaySettings() {
   const text = useText();
   const play = useGrammarPlay();
-  const [open, setOpen] = useState(false);
-  const summary = `${play.teams === 0 ? text('혼자 풀기', 'Solo') : text(`${play.teams}팀`, `${play.teams} team${play.teams > 1 ? 's' : ''}`)} · ${play.showScore ? text('점수 보임', 'score on') : text('점수 숨김', 'score off')}`;
-  const choose = (n: number) => {
-    setGrammarPlay({ teams: n });
-    setTeams(Math.max(1, n));
-  };
   return (
-    <div className="space-y-2">
-      <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant bg-white px-4 py-1 text-sm font-semibold text-on-surface-variant shadow-card" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <span aria-hidden>⚙</span>{text('팀·점수 설정', 'Teams & score')} <span className="font-bold text-primary">{summary}</span>
-      </button>
-      {open && (
-        <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-outline-variant bg-white p-3 text-left shadow-card" role="group" aria-label={text('팀·점수 설정', 'Teams & score')}>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="font-semibold">{text('누가 풀어요?', 'Who plays?')}</span>
-            {[0, 1, 2, 3, 4].map((n) => (
-              <button key={n} className={`${btn} min-w-12 ${play.teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => choose(n)} aria-pressed={play.teams === n}>
-                {n === 0 ? text('혼자', 'Solo') : n === 1 ? text('1팀', '1') : text(`${n}팀`, String(n))}
-              </button>
-            ))}
-          </div>
-          <label className="flex items-center justify-center gap-2 font-semibold">
-            <input type="checkbox" className="h-5 w-5" checked={play.showScore} onChange={(e) => setGrammarPlay({ showScore: e.target.checked })} />
-            {text('점수 보이기', 'Show score')}
-          </label>
-          <p className="text-center text-xs text-on-surface-variant">{text('혼자 풀기는 과외·복습용이에요. 점수는 이 화면 안에서만 쓰고 칭찬 통장 포인트와 관계없어요.', 'Solo is for one-to-one lessons and review. Scores stay on this screen and are separate from praise points.')}</p>
-        </div>
-      )}
-      <span className="sr-only">{teams}</span>
+    <div className="space-y-3 rounded-xl border border-outline-variant bg-white p-3" role="group" aria-label={text('게임 참여자 설정', 'Players')}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold">{text('누가 풀어요?', 'Who plays?')}</span>
+        {[0, 1, 2, 3, 4].map((n) => (
+          <button key={n} type="button" className={`${btn} min-w-12 ${play.teams === n ? 'ring-2 ring-primary' : ''}`} onClick={() => setGrammarPlay({ teams: n })} aria-pressed={play.teams === n}>
+            {n === 0 ? text('설정 안 함', 'None') : text(`${n}팀`, String(n))}
+          </button>
+        ))}
+      </div>
+      <label className="flex items-center gap-2 font-semibold">
+        <input type="checkbox" className="h-5 w-5" checked={play.showScore} onChange={(e) => setGrammarPlay({ showScore: e.target.checked })} />
+        {text('혼자 풀 때도 점수 보이기', 'Show score when playing alone')}
+      </label>
+      <p className="text-xs text-on-surface-variant">{text('설정하지 않으면 게임 화면에는 문제만 나와요. 점수는 이 화면 안에서만 쓰고 칭찬 통장 포인트와 관계없어요.', 'Without a setting, only the questions are shown. Scores stay on this screen and are separate from praise points.')}</p>
     </div>
   );
 }
