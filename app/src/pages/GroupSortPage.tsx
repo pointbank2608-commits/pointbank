@@ -34,7 +34,14 @@ export default function GroupSortPage() {
   const g = useGameTemplates({
     gameType: 'groupsort',
     defaultItems,
-    defaultConfig: () => ({ groups: [] }),
+    // 들어오면 바로 해 볼 수 있게 샘플 그룹 3개로 시작한다
+    defaultConfig: () => ({
+      groups: [
+        { id: uid(), name: '동물', items: ['cat', 'dog', 'rabbit'].map((text) => ({ id: uid(), text })) },
+        { id: uid(), name: '음식', items: ['apple', 'bread', 'milk'].map((text) => ({ id: uid(), text })) },
+        { id: uid(), name: '탈것', items: ['bus', 'car', 'train'].map((text) => ({ id: uid(), text })) },
+      ],
+    }),
   });
   const {
     isStaff,

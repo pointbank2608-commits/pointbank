@@ -1,10 +1,11 @@
 import {GameTurnProvider,GameTurnDisplay} from './GameTurnDisplay';
 import {GameTurnContext} from '../context/GameTurnContext';
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
 import { instantStart } from '../lib/gamePreparation';
+import { GamePlayContext, useGamePlay } from '../context/GamePlayContext';
 import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -85,11 +86,7 @@ function useGameBackground(gameType?: GameType): string | null {
   return url;
 }
 
-const GamePlayContext = createContext({ fullscreen: false, itemsHidden: false, toggleItems: () => {} });
-
-export function useGamePlay() {
-  return useContext(GamePlayContext);
-}
+export { useGamePlay } from '../context/GamePlayContext';
 
 export function GameManagement({ children }: { children: ReactNode }) {
   const { itemsHidden } = useGamePlay();

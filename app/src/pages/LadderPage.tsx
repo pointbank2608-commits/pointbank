@@ -42,7 +42,8 @@ export default function LadderPage() {
     gameType: 'ladder',
     defaultItems: defaultParticipants,
     defaultConfig: () => ({
-      results: [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameLadder.defaultResult', { n }) })),
+      // 참가자 수만큼 결과 칸이 있어야 샘플이 바로 시작된다(예전엔 3칸이라 "결과를 적거나 꽝으로 표시해 주세요"가 먼저 떴다)
+      results: defaultParticipants().map((_, i) => ({ id: uid(), label: i18n.t('gameLadder.defaultResult', { n: i + 1 }) })),
     }),
   });
   const {

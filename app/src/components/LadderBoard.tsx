@@ -3,6 +3,7 @@ import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
+import { announceRoundDone } from '../lib/teamOrder';
 import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } from '../lib/ladder';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
@@ -77,6 +78,12 @@ export default function LadderBoard({
   const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
   const [mapping, setMapping] = useState<number[] | null>(null);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  // 결과가 열릴 때마다 "한 판 끝"을 알린다 — 차례 바가 자동 넘김을 켜 두었으면 다음 차례로 넘어간다
+  const revealedBefore = useRef(0);
+  useEffect(() => {
+    if (revealed.size > revealedBefore.current) announceRoundDone();
+    revealedBefore.current = revealed.size;
+  }, [revealed]);
   const [runningSet, setRunningSet] = useState<Set<number>>(new Set());
   const [participantDrafts, setParticipantDrafts] = useState<Record<string, string>>({});
   const [resultDrafts, setResultDrafts] = useState<Record<string, string>>({});

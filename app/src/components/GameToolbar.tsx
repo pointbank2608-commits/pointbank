@@ -11,7 +11,7 @@ import { gamePreparation } from '../lib/gamePreparation';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
-import { useGamePlay } from './GameThemeFrame';
+import { useGamePlay } from '../context/GamePlayContext';
 import { wordListToCards } from '../lib/gameFromWords';
 import { fetchStudentsOfClass } from '../lib/api';
 import TeamOrderPanel from './TeamOrderPanel';
@@ -50,6 +50,11 @@ function PanelHead({ title, onApply, busy, onClose, text }: {
  * 게임 상단 도구줄(2026-11-04): 내 단어/문장(문법 게임은 문법) · 반 설정 · 게임설정 · 저장/불러오기 · 다시하기 · 나가기 · 전체화면.
  * 들어오면 샘플로 바로 돌아가고, 위 버튼에서 고른 뒤 "적용"을 누르면 바뀐다.
  */
+/** 결과 칸을 참가자 수에 맞춘다: 모자라면 "꽝"으로 채우고, 남으면 뒤에서부터 줄인다. */
+function fitResults(results: { id: string; label: string }[], n: number): { id: string; label: string }[] {
+  return Array.from({ length: n }, (_, i) => ({ id: results[i]?.id ?? crypto.randomUUID(), label: results[i]?.label?.trim() ? results[i].label : '꽝' }));
+}
+
 export default function GameToolbar({ workspace, onRestart, fullscreen, onFullscreen, onExitFullscreen }: {
   workspace: WorkspaceContextValue;
   onRestart?: () => void;
@@ -79,6 +84,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pItemSource, setPItemSource] = useState<ItemSource>('list');
   const [pText, setPText] = useState('');
   const [pEliminate, setPEliminate] = useState(false);
+  const [pResMode, setPResMode] = useState<'type' | 'rank' | 'one'>('type');
+  const [pResText, setPResText] = useState('');
+  const [pWinner, setPWinner] = useState('');
+  const [pWin, setPWin] = useState(1);
+  const [pPartText, setPPartText] = useState('');
   const [pItemClass, setPItemClass] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { session, academy } = useAuth();
@@ -141,6 +151,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   };
   const turnMembers = (id: string) => (turnState?.mode === 'team' ? roster.filter((row) => (turnState.teamOf[row.id] ?? 0) === Number(id.split('-')[1])).map((row) => row.label).join(', ') : '');
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
+  const isLadder = type === 'ladder';
+  const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const gameName = (() => { const g = GAME_CATALOG.find((row) => row.type === type); return g ? t(g.nameKey) : ''; })();
   const hasContentButton = isGrammar || kinds.length > 0;
 
@@ -168,6 +180,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPItemClass(info?.classId || '');
     setPText((info?.selected?.items ?? []).map((row) => row.label).join('\n'));
     setPEliminate(!!info?.selected?.config.wheelEliminate);
+    setPResMode('type');
+    setPResText((info?.selected?.config.results ?? []).map((row) => row.label).join('\n'));
+    setPWinner('');
+    setPWin(1);
+    setPPartText((info?.selected?.items ?? []).map((row) => row.label).join('\n'));
     setSavedMsg('');
     setDeleteId(null);
     setPAutoTurn(isAutoTurnOn());
@@ -254,12 +271,35 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     } else {
       window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
     }
+    if (isLadder && pMode !== 'none' && info.selected) {
+      // 사다리의 참가자는 반 설정이 정한다: 개인 = 학생 이름, 팀 = 팀 이름. 결과 칸은 참가자 수에 자동으로 맞춘다(모자라면 꽝).
+      const labels = pMode === 'team' ? Array.from({ length: pTeams }, (_, i) => t('teamOrder.teamLabel', { n: i + 1 })) : eff.map((row) => row.label);
+      if (labels.length >= 2) {
+        const old = info.selected.items;
+        const items = labels.map((label, i): GameItem => ({ id: old[i]?.id ?? crypto.randomUUID(), label }));
+        const results = fitResults(info.selected.config.results ?? [], items.length);
+        await info.applyGuide({ items, config: { ...info.selected.config, results } });
+      }
+    }
     if (classChanged) info.selectClass(pClass);
     if (isGrammar) setGrammarPlay(pMode === 'none' ? { teams: 0, showScore: false } : pMode === 'solo' ? { teams: 0, showScore: true } : { teams: pTeams, showScore: true });
     if (nativeTeams && pMode === 'team' && pTeams !== info.teamCount) await info.configureTeams(pTeams);
   });
   const applySettings = () => run(async () => {
     setGameSoundOn(pSound);
+    if (info?.selected && isLadder) {
+      const parts = nonEmpty(pPartText);
+      if (parts.length < 2) throw new Error(text('참가자가 2명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 2 players.'));
+      const old = info.selected.items;
+      const items = parts.map((label, i): GameItem => (old[i]?.label === label ? old[i] : { id: old[i]?.id ?? crypto.randomUUID(), label }));
+      let labels: string[];
+      if (pResMode === 'rank') labels = items.map((_, i) => text(`${i + 1}등`, `#${i + 1}`));
+      else if (pResMode === 'one') labels = items.map((_, i) => (i < Math.min(pWin, Math.max(1, items.length - 1)) ? (pWinner.trim() || text('당첨!', 'Win!')) : '꽝'));
+      else labels = nonEmpty(pResText);
+      const results = fitResults(labels.map((label, i) => ({ id: info.selected!.config.results?.[i]?.id ?? crypto.randomUUID(), label })), items.length);
+      await info.applyGuide({ items, config: { ...info.selected.config, results, ladderResultOrder: pResMode === 'type' ? info.selected.config.ladderResultOrder : 'random' } });
+      return;
+    }
     if (!info || !itemSettings || !info.selected) return;
     const base = { ...info.selected.config, wheelEliminate: pEliminate };
     if (pItemSource === 'list' && pList) {
@@ -329,9 +369,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
-          {hasContentButton && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
+          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || isLadder ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -478,6 +519,54 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        {isLadder && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            <p className="font-bold">{text('결과 설정', 'Results')}</p>
+            <p className="text-sm text-on-surface-variant">{text(`참가자 ${nonEmpty(pPartText).length}명 · 결과도 같은 수만큼 만들어져요. 모자라면 "꽝"으로 채워요. 참가자는 반 설정에서 정해요.`, `${nonEmpty(pPartText).length} players. Missing results become "miss".`)}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={chip(pResMode === 'type')} aria-pressed={pResMode === 'type'} onClick={() => setPResMode('type')}>{text('직접 입력', 'Type')}</button>
+              <button type="button" className={chip(pResMode === 'rank')} aria-pressed={pResMode === 'rank'} onClick={() => setPResMode('rank')}>{text('등수 (1등, 2등…)', 'Ranks')}</button>
+              <button type="button" className={chip(pResMode === 'one')} aria-pressed={pResMode === 'one'} onClick={() => setPResMode('one')}>{text('당첨/꽝 자동', 'Prizes & misses')}</button>
+            </div>
+            {pResMode === 'type' && (
+              <label className="block text-sm font-bold">{text('결과 (한 줄에 하나)', 'Results (one per line)')}
+                <span className="ml-2 font-normal text-on-surface-variant">{text(`지금 ${nonEmpty(pResText).length}개`, `${nonEmpty(pResText).length}`)}</span>
+                <textarea className={`${field} min-h-40 text-base`} value={pResText} onChange={(e) => setPResText(e.target.value)} spellCheck={false} />
+              </label>
+            )}
+            {pResMode === 'one' && (() => {
+              const total = Math.max(2, nonEmpty(pPartText).length || (info?.selected?.items.length ?? 2));
+              const win = Math.min(pWin, total - 1);
+              return (
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold">{text('당첨 이름', 'Prize name')}
+                    <input className={field} value={pWinner} onChange={(e) => setPWinner(e.target.value)} placeholder={text('당첨!', 'Win!')} />
+                  </label>
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2" role="group" aria-label={text('당첨·꽝 개수', 'Prize and miss counts')}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold">{text('당첨', 'Prizes')}</span>
+                      <button type="button" className={btn} aria-label={text('당첨 하나 줄이기', 'Fewer prizes')} disabled={win <= 1} onClick={() => setPWin(Math.max(1, win - 1))}>−</button>
+                      <span className="min-w-8 text-center text-2xl font-extrabold tabular-nums text-deep-navy">{win}</span>
+                      <button type="button" className={btn} aria-label={text('당첨 하나 늘리기', 'More prizes')} disabled={win >= total - 1} onClick={() => setPWin(Math.min(total - 1, win + 1))}>＋</button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold">{text('꽝', 'Misses')}</span>
+                      <button type="button" className={btn} aria-label={text('꽝 하나 줄이기', 'Fewer misses')} disabled={total - win <= 1} onClick={() => setPWin(Math.min(total - 1, win + 1))}>−</button>
+                      <span className="min-w-8 text-center text-2xl font-extrabold tabular-nums text-deep-navy">{total - win}</span>
+                      <button type="button" className={btn} aria-label={text('꽝 하나 늘리기', 'More misses')} disabled={win <= 1} onClick={() => setPWin(Math.max(1, win - 1))}>＋</button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">{text(`당첨 + 꽝 = 참가자 ${total}명`, `Prizes + misses = ${total} players`)}</p>
+                </div>
+              );
+            })()}
+            {pResMode !== 'type' && <p className="text-xs text-on-surface-variant">{text('결과 자리는 매번 무작위로 섞여요.', 'Result positions are shuffled each time.')}</p>}
+            <details className="rounded-xl border border-outline-variant bg-white p-3">
+              <summary className="cursor-pointer font-bold">{text('참가자 직접 입력 (반 없이 할 때)', 'Type players (no class)')}</summary>
+              <textarea className={`${field} mt-2 min-h-32 text-base`} value={pPartText} onChange={(e) => setPPartText(e.target.value)} spellCheck={false} aria-label={text('참가자 (한 줄에 하나)', 'Players (one per line)')} />
+            </details>
+          </div>
+        )}
         {itemSettings && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('항목 설정', 'Items')}</p>
@@ -524,7 +613,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}
         </label>
-        {!isGrammar && !itemSettings && (
+        {!isGrammar && !itemSettings && !isLadder && (
           <div className="space-y-2 border-t border-outline-variant pt-3">
             <p className="text-sm text-on-surface-variant">{text('이 게임만의 자세한 옵션(시간·난이도·모양 등)은 아래 화면에서 고르고 "완료"를 누르세요.', 'Open the detailed options for this game below.')}</p>
             <button type="button" className={btn} onClick={() => { close(); workspace.open('settings'); }}>{text('자세한 설정 열기', 'Open detailed settings')}</button>

@@ -28,13 +28,19 @@ export const DRAFT_EVENT = 'classbank:activity-draft';
 export const isActivityDraft = (id: string) => id.startsWith('activity-draft:');
 export const draftId = (user: string, academy: string, game: GameType) => `activity-draft:${user}:${academy}:${game}`;
 const storageKey = (id: string) => id.split(':').slice(0, 4).join(':');
+/** 사다리는 참가자 수만큼 결과 칸이 있어야 시작된다 — 예전에 3칸으로 저장된 임시 활동이 남아 있어도 맞춰서 바로 시작되게 한다. */
+function repairDraft(draft: GameTemplate): GameTemplate {
+  const results = draft.config.results;
+  if (draft.game_type !== 'ladder' || !Array.isArray(results) || results.length === draft.items.length || draft.items.length === 0) return draft;
+  return { ...draft, config: { ...draft.config, results: draft.items.map((_, i) => results[i] ?? { id: crypto.randomUUID(), label: `결과 ${i + 1}` }) } };
+}
 export function readActivityDraft(id: string): GameTemplate | null {
   try {
     const value = JSON.parse(sessionStorage.getItem(storageKey(id)) || 'null');
-    if ((value?.id === id || (id === storageKey(id) && value?.id?.startsWith(id + ':'))) && Array.isArray(value.items) && value.config) return value;
+    if ((value?.id === id || (id === storageKey(id) && value?.id?.startsWith(id + ':'))) && Array.isArray(value.items) && value.config) return repairDraft(value);
   } catch { /* private browsing / damaged recovery data */ }
   const value = memory.get(storageKey(id));
-  return value && (value.id === id || id === storageKey(id)) ? structuredClone(value) : null;
+  return value && (value.id === id || id === storageKey(id)) ? repairDraft(structuredClone(value)) : null;
 }
 export function writeActivityDraft(draft: GameTemplate, announce=true) {
   memory.set(storageKey(draft.id), structuredClone(draft));

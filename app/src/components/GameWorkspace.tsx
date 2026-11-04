@@ -254,7 +254,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   </div>;
   const saveOptions=<details data-game-save-options><summary className="cursor-pointer py-2 font-bold">{i18n.resolvedLanguage?.startsWith('en')?'Save options':'저장 옵션'}</summary><p>{info?.saveTarget?`${i18n.resolvedLanguage?.startsWith('en')?'Update saved game':'갱신할 저장 게임'}: ${info.saveTarget.name}`:t('settingsSave.temporaryHint')}</p><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveCopy} onChange={e=>setSaveCopy(e.target.checked)}/>{i18n.resolvedLanguage?.startsWith('en')?'Save as a new game':'새 이름으로 저장'}</label><label className="block">{t('quick.activityName')}<input className={btn} value={activityName} placeholder={info?.saveTarget?.name||defaultGameName} onChange={e=>setActivityName(e.target.value)}/></label></details>;
   // 새 도구줄을 쓰는 게임은 들어오면 바로 시작하므로 "게임 준비" 안내 창을 보이지 않는다(시작할 수 없을 때만 보여 준다).
-  const showPrepHeader = !playing && !presenting && (info ? !instantStart(info.gameType) || (!info.loading && !canStart) : false);
+  const showPrepHeader = !playing && !presenting && (info ? !instantStart(info.gameType) : false);
   // 도구줄 "반 설정"에서 참여 방식(개인/팀)을 이미 정했으면 팀·순서 창도 그 방식으로만 정한다
   const participationFixed = teams && info && instantStart(info.gameType) && isShowOrderOn() && roster.length > 0
     ? (() => { const o = loadTeamOrder(roster, scope); return { mode: o.mode, teams: o.mode === 'team' ? o.teamCount : undefined }; })()
