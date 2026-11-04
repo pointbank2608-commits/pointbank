@@ -26,8 +26,8 @@ const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold
 const tab = (on: boolean) => `min-h-10 rounded-lg px-3.5 text-sm font-bold text-deep-navy transition-colors focus-visible:outline-4 focus-visible:outline-primary ${on ? 'bg-white shadow-sm ring-1 ring-primary/40' : 'hover:bg-white/70'}`;
 const util = 'min-h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm font-bold text-deep-navy hover:bg-surface-container-low focus-visible:outline-4 focus-visible:outline-primary';
 const field = 'mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2 font-normal';
-const ITEM_SETTINGS_GAMES = new Set<string>(['wheel']);
-type ItemSource = 'list' | 'class' | 'type';
+const ITEM_SETTINGS_GAMES = new Set<string>(['wheel', 'order']);
+type ItemSource = 'list' | 'class' | 'type' | 'number';
 type Open = 'content' | 'class' | 'settings' | 'saves' | null;
 type Mode = 'none' | 'solo' | 'team';
 
@@ -84,6 +84,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pItemSource, setPItemSource] = useState<ItemSource>('list');
   const [pText, setPText] = useState('');
   const [pEliminate, setPEliminate] = useState(false);
+  const [pFrom, setPFrom] = useState('1');
+  const [pTo, setPTo] = useState('30');
+  const [pStep, setPStep] = useState('1');
   const [pResMode, setPResMode] = useState<'type' | 'rank' | 'one'>('type');
   const [pResText, setPResText] = useState('');
   const [pWinner, setPWinner] = useState('');
@@ -152,6 +155,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const turnMembers = (id: string) => (turnState?.mode === 'team' ? roster.filter((row) => (turnState.teamOf[row.id] ?? 0) === Number(id.split('-')[1])).map((row) => row.label).join(', ') : '');
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
   const isLadder = type === 'ladder';
+  const isWheel = type === 'wheel';
+  const hasNumbers = type === 'order';
   const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const gameName = (() => { const g = GAME_CATALOG.find((row) => row.type === type); return g ? t(g.nameKey) : ''; })();
   const hasContentButton = isGrammar || kinds.length > 0;
@@ -301,12 +306,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       return;
     }
     if (!info || !itemSettings || !info.selected) return;
-    const base = { ...info.selected.config, wheelEliminate: pEliminate };
+    const base = isWheel ? { ...info.selected.config, wheelEliminate: pEliminate } : { ...info.selected.config };
     if (pItemSource === 'list' && pList) {
       const list = info.lists.find((row) => row.id === pList);
       const content = list ? prepareClassroomGame(info.gameType, list) : null;
       if (!list || !content) throw new Error(text('이 게임에 쓸 수 없는 단어장이에요.', 'This list cannot be used here.'));
-      await info.applyGuide({ items: content.items, config: { ...base, ...content.config, wheelEliminate: pEliminate, classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } } });
+      await info.applyGuide({ items: content.items, config: { ...base, ...content.config, ...(isWheel ? { wheelEliminate: pEliminate } : {}), classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } } });
     } else if (pItemSource === 'class') {
       if (!pItemClass) throw new Error(text('반을 먼저 골라 주세요.', 'Pick a class first.'));
       // 반을 바꾸는 데 시간이 걸리므로 학생 명단은 여기서 직접 불러온다
@@ -314,6 +319,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       const names = students.map((row) => row.name.trim()).filter(Boolean);
       if (names.length < 2) throw new Error(text('이 반에 학생이 2명 이상 있어야 해요. 학생·출석 메뉴에서 먼저 추가해 주세요.', 'This class needs at least 2 students.'));
       await info.applyGuide({ items: names.map((label): GameItem => ({ id: crypto.randomUUID(), label })), config: base });
+    } else if (pItemSource === 'number') {
+      const from = Number(pFrom);
+      const to = Number(pTo);
+      const step = Number(pStep);
+      if (![from, to, step].every(Number.isFinite) || step <= 0 || to < from) throw new Error(text('시작 숫자·끝 숫자·간격을 확인해 주세요. (끝 숫자는 시작보다 크고 간격은 1 이상)', 'Check the start, end and step numbers.'));
+      const count = Math.floor((to - from) / step) + 1;
+      if (count < 2) throw new Error(text('숫자가 2개 이상 나오게 범위를 넓혀 주세요.', 'The range needs at least 2 numbers.'));
+      if (count > 500) throw new Error(text('숫자는 500개까지만 만들 수 있어요.', 'At most 500 numbers.'));
+      await info.applyGuide({ items: Array.from({ length: count }, (_, i): GameItem => ({ id: crypto.randomUUID(), label: String(from + i * step) })), config: base });
     } else if (pItemSource === 'type') {
       const lines = pText.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
       if (lines.length < 2) throw new Error(text('항목을 2개 이상 입력해 주세요.', 'Enter at least 2 items.'));
@@ -572,7 +586,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <p className="font-bold">{text('항목 설정', 'Items')}</p>
             <div className="flex flex-wrap gap-2">
               <button type="button" className={chip(pItemSource === 'list')} aria-pressed={pItemSource === 'list'} onClick={() => setPItemSource('list')}>{text('내 단어장/문장', 'My lists')}</button>
-              <button type="button" className={chip(pItemSource === 'class')} aria-pressed={pItemSource === 'class'} onClick={() => setPItemSource('class')}>{text('참여자', 'Players')}</button>
+              <button type="button" className={chip(pItemSource === 'class')} aria-pressed={pItemSource === 'class'} onClick={() => setPItemSource('class')}>{hasNumbers ? text('이름(반 학생)', 'Names') : text('참여자', 'Players')}</button>
+              {hasNumbers && <button type="button" className={chip(pItemSource === 'number')} aria-pressed={pItemSource === 'number'} onClick={() => setPItemSource('number')}>{text('숫자', 'Numbers')}</button>}
               <button type="button" className={chip(pItemSource === 'type')} aria-pressed={pItemSource === 'type'} onClick={() => setPItemSource('type')}>{text('직접 입력·편집', 'Type / edit')}</button>
             </div>
             {pItemSource === 'list' && (
@@ -591,6 +606,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 </select>
               </label>
             )}
+            {pItemSource === 'number' && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <label className="block text-sm font-bold">{text('시작 숫자', 'Start')}<input className={field} inputMode="numeric" value={pFrom} onChange={(e) => setPFrom(e.target.value)} /></label>
+                  <label className="block text-sm font-bold">{text('끝 숫자', 'End')}<input className={field} inputMode="numeric" value={pTo} onChange={(e) => setPTo(e.target.value)} /></label>
+                  <label className="block text-sm font-bold">{text('간격', 'Step')}<input className={field} inputMode="numeric" value={pStep} onChange={(e) => setPStep(e.target.value)} /></label>
+                </div>
+                <p className="text-xs text-on-surface-variant">{text('예: 1 ~ 30, 간격 1이면 1, 2, 3 … 30', 'Example: 1 to 30, step 1')}</p>
+              </div>
+            )}
             {pItemSource === 'type' && (
               <>
               <label className="block text-sm font-bold">
@@ -601,7 +626,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <p className="text-xs text-on-surface-variant">{text('지금 항목이 채워져 있어요. 고치거나 지우거나 붙여 넣은 뒤 "적용"을 누르세요.', 'Your current items are filled in. Edit them and press Apply.')}</p>
               </>
             )}
-            {(
+            {isWheel && (
               <label className="flex min-h-11 items-center gap-2 font-bold">
                 <input type="checkbox" className="h-5 w-5" checked={pEliminate} onChange={(e) => setPEliminate(e.target.checked)} />
                 {text('순서 정하기 (한 번 뽑은 항목은 빼고 돌려요)', 'Set an order (picked items are removed)')}
@@ -613,12 +638,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}
         </label>
-        {!isGrammar && !itemSettings && !isLadder && (
-          <div className="space-y-2 border-t border-outline-variant pt-3">
-            <p className="text-sm text-on-surface-variant">{text('이 게임만의 자세한 옵션(시간·난이도·모양 등)은 아래 화면에서 고르고 "완료"를 누르세요.', 'Open the detailed options for this game below.')}</p>
-            <button type="button" className={btn} onClick={() => { close(); workspace.open('settings'); }}>{text('자세한 설정 열기', 'Open detailed settings')}</button>
-          </div>
-        )}
       </>)}
 
       {open === 'saves' && panel(<>
