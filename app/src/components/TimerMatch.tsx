@@ -1,11 +1,11 @@
-import TimerPlaySettings,{type TimerPlayMode} from './TimerPlaySettings';
+import type { TimerPlayMode } from './TimerPlaySettings';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
-import { useGamePlay, GameManagement } from './GameThemeFrame';
+import { useGamePlay } from './GameThemeFrame';
 import i18n from '../i18n';
 import type { GameItem, MusicSelection } from '../lib/types';
 
@@ -87,7 +87,7 @@ function DigitalReadout({ value, masked }: { value: string; masked: boolean }) {
 export default function TimerMatch({
   participants,
   targetMs,
-  playMode,showClock,onPlaySettingsChange,
+  showClock,
   music,
   resultSound,
   editable,
@@ -100,7 +100,8 @@ export default function TimerMatch({
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const n = participants.length;
-  const [mode, setMode] = useState<Mode>('practice');
+  // 참가자가 있으면 항상 한 명씩 차례로 도전하고 기록이 쌓인다. 참가자가 없을 때만 자유 연습.
+  const mode: Mode = n > 0 ? 'ranked' : 'practice';
   const [showTimer, setShowTimer] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -197,13 +198,10 @@ export default function TimerMatch({
     setElapsedMs(0);
   }
 
-  function switchMode(next: Mode) {
-    if (next === mode) return;
-    restartAll();
-    setMode(next);
-  }
-
-  useEffect(()=>{if(playMode!==undefined&&playMode!==mode){restartAll();setMode(playMode);}if(showClock!==undefined)setShowTimer(showClock);},[playMode,showClock]);
+  useEffect(() => { if (showClock !== undefined) setShowTimer(showClock); }, [showClock]);
+  // 참가자 명단이 바뀌면 처음부터
+  const rosterKey = participants.map((p) => p.id).join('|');
+  useEffect(() => { restartAll(); }, [rosterKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasTurnDisplay=useNativeGameTurn({current:participants[turnIndex]?.label||'',next:participants[turnIndex+1]?.label||'',index:turnIndex,total:n,enabled:mode==='ranked'&&n>0&&turnIndex<n,canAdvance:phase==='stopped'&&turnIndex+1<n,advance:nextTurn});
   const allDone = mode === 'ranked' && n > 0 && turnIndex >= n;
@@ -249,7 +247,6 @@ export default function TimerMatch({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <GameManagement><TimerPlaySettings mode={mode} showTimer={showTimer} onChange={patch=>{if(patch.mode)switchMode(patch.mode);if(patch.showTimer!==undefined)setShowTimer(patch.showTimer);onPlaySettingsChange?.(patch);}}/></GameManagement>
       <div className="mb-3.5 font-label-md text-label-md font-bold text-on-surface-variant">
         {t('gameTimer.targetPrefix', { time: fmt(targetMs) })}
       </div>

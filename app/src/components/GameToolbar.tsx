@@ -22,7 +22,9 @@ import { useAuth } from '../context/AuthContext';
 import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { ROUND_DONE_EVENT, TEAM_ORDER_EVENT, isAutoTurnOn, isShowOrderOn, loadTeamOrder, saveTeamOrder, setAutoTurnOn, setShowOrderOn } from '../lib/teamOrder';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import type { GameItem, WordList } from '../lib/types';
+import type { GameItem, MusicSelection, WordList } from '../lib/types';
+import GameMusicPicker from './GameMusicPicker';
+import { resolveResultSound } from '../lib/gameMusic';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -102,6 +104,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pBombSound, setPBombSound] = useState<BombSound>('clock');
   const [pBombMode, setPBombMode] = useState<'pass' | 'timer'>('pass');
   const [pBombCaught, setPBombCaught] = useState(true);
+  const [pTimerShow, setPTimerShow] = useState(false);
+  const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
+  const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
+  const [pTimerSec, setPTimerSec] = useState('10');
   const [pBombTW, setPBombTW] = useState<'none' | 'during' | 'after'>('none');
   const [pItemClass, setPItemClass] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -167,7 +173,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
   const isLadder = type === 'ladder';
   const isBomb = type === 'bomb';
-  const splitGame = isLadder || isBomb; // 참가자는 반 설정, 나머지는 게임설정
+  const isTimerMatch = type === 'timer';
+  const splitGame = isLadder || isBomb || isTimerMatch; // 참가자는 반 설정, 나머지는 게임설정
   const isWheel = type === 'wheel';
   const hasNumbers = type === 'order';
   const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
@@ -206,6 +213,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPBombSound(info?.selected?.config.bombSound ?? 'clock');
     setPBombMode(info?.selected?.config.bombMode ?? 'pass');
     setPBombCaught(info?.selected?.config.bombStartFromCaught !== false);
+    setPTimerShow(info?.selected?.config.timerShowClock ?? false);
+    setPTimerMusic(info?.selected?.config.music);
+    setPTimerResult(resolveResultSound(info?.selected?.config.resultSound));
+    setPTimerSec(String(((info?.selected?.config.targetMs ?? 10000) / 1000).toFixed(2)).replace(/\.?0+$/, ''));
     setPBombTW(info?.selected?.config.bombTimerWords ?? 'none');
     setPResText((info?.selected?.config.results ?? []).map((row) => row.label).join('\n'));
     setPWinner('');
@@ -338,6 +349,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       const old = info.selected.items;
       const items = parts.length >= 2 ? parts.map((label, i): GameItem => (old[i]?.label === label ? old[i] : { id: old[i]?.id ?? crypto.randomUUID(), label })) : old;
       await info.applyGuide({ items, config: { ...info.selected.config, bombMode: pBombMode, bombTimerWords: pBombTW, bombStartFromCaught: pBombCaught, bombRange: { min, max }, bombSound: pBombSound, classroomSource: undefined } });
+      return;
+    }
+    if (info?.selected && isTimerMatch) {
+      const sec = Number(pTimerSec);
+      if (!Number.isFinite(sec) || sec < 0.5) throw new Error(text('목표 시간은 0.5초 이상으로 적어 주세요.', 'Target must be at least 0.5 sec.'));
+      const parts = nonEmpty(pPartText);
+      if (parts.length < 1) throw new Error(text('참가자가 1명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 1 player.'));
+      const old = info.selected.items;
+      const items = parts.map((label, i): GameItem => (old[i]?.label === label ? old[i] : { id: old[i]?.id ?? crypto.randomUUID(), label }));
+      await info.applyGuide({ items, config: { ...info.selected.config, targetMs: Math.round(sec * 1000), timerShowClock: pTimerShow, music: pTimerMusic, resultSound: pTimerResult, classroomSource: undefined } });
       return;
     }
     if (info?.selected && isLadder) {
@@ -604,6 +625,38 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        {isTimerMatch && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            <p className="font-bold">{text('타이머 설정', 'Timer settings')}</p>
+            <div className="space-y-1">
+              <p className="text-sm font-bold">{text('시간 숫자', 'Clock digits')}</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className={chip(!pTimerShow)} aria-pressed={!pTimerShow} onClick={() => setPTimerShow(false)}>{text('숨기기 (감으로 맞히기)', 'Hidden')}</button>
+                <button type="button" className={chip(pTimerShow)} aria-pressed={pTimerShow} onClick={() => setPTimerShow(true)}>{text('보이기', 'Shown')}</button>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-bold">{text('목표 시간(초)', 'Target (sec)')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {[5, 10, 15, 30].map((sec) => (
+                  <button key={sec} type="button" className={chip(Number(pTimerSec) === sec)} aria-pressed={Number(pTimerSec) === sec} onClick={() => setPTimerSec(String(sec))}>{sec}{text('초', 's')}</button>
+                ))}
+                <input className={`${field} !mt-0 w-28`} inputMode="decimal" value={pTimerSec} onChange={(e) => setPTimerSec(e.target.value)} aria-label={text('목표 시간(초)', 'Target (sec)')} />
+              </div>
+            </div>
+            {academy && (
+              <div className="divide-y divide-surface-container">
+                <GameMusicPicker academyId={academy.id} isStaff value={pTimerMusic} onChange={setPTimerMusic} />
+                <GameMusicPicker academyId={academy.id} isStaff label={text('결과 소리', 'Result sound')} value={pTimerResult} onChange={setPTimerResult} />
+              </div>
+            )}
+            <p className="text-sm text-on-surface-variant">{text(`참가자 ${nonEmpty(pPartText).length}명 · 참가자는 반 설정에서 정해요.`, `${nonEmpty(pPartText).length} players. Set players in Class.`)}</p>
+            <details className="rounded-xl border border-outline-variant bg-white p-3">
+              <summary className="cursor-pointer font-bold">{text('참가자 직접 입력 (반 없이 할 때)', 'Type players (no class)')}</summary>
+              <textarea className={`${field} mt-2 min-h-32 text-base`} value={pPartText} onChange={(e) => setPPartText(e.target.value)} spellCheck={false} aria-label={text('참가자 (한 줄에 하나)', 'Players (one per line)')} />
+            </details>
+          </div>
+        )}
         {isBomb && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('폭탄 설정', 'Bomb settings')}</p>

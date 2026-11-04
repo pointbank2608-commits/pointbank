@@ -1,25 +1,15 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
-import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
-import TimerPlaySettings,{type TimerPlayMode} from '../components/TimerPlaySettings';
 import TimerMatch from '../components/TimerMatch';
-import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, MusicSelection } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -40,7 +30,6 @@ export default function TimerMatchPage() {
   });
   const {
     isStaff,
-    academy,
     classes,
     staffClassId,
     selectClass,
@@ -48,13 +37,7 @@ export default function TimerMatchPage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
-    setTemplates,
     selected,
     selectedId,
     setSelectedId,
@@ -67,126 +50,12 @@ export default function TimerMatchPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
-    reload,
   } = g;
-  const { notify } = useToast();
-
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
-  const [newParticipant, setNewParticipant] = useRecoverableField('game:timer:newParticipant');
   const targetMs = selected?.config.targetMs ?? DEFAULT_TARGET_MS;
-  const [targetInput, setTargetInput] = useState((targetMs / 1000).toFixed(2));
-
-  useEffect(() => {
-    setTargetInput((targetMs / 1000).toFixed(2));
-  }, [targetMs]);
-
-  async function persistItems(nextItems: GameItem[]): Promise<boolean> {
-    if (!selected) return false;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: nextItems });
-      return true;
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
-      return false;
-    }
-  }
-
-  async function addParticipant() {
-    const label = newParticipant.trim();
-    if (!label || !selected) return;
-    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
-    setNewParticipant('');
-  }
-
-  async function addParticipantsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
-      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
-    }
-  }
-
-  async function removeParticipant(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
-  }
-
-  /** 타이머 화면에서 참가자 이름을 바로 바꿀 때 쓴다. */
-  async function renameItemLabel(itemId: string, label: string) {
-    if (!selected) return;
-    await persistItems(selected.items.map((i) => (i.id === itemId ? { ...i, label } : i)));
-  }
-
-  async function addQuickItem() {
-    if (!selected) return;
-    const n = selected.items.length + 1;
-    if (await persistItems([...selected.items, { id: uid(), label: i18n.t('gameTimer.defaultParticipant', { n }) }])) {
-      notify(t('gameAdmin.itemAddedToast'));
-    }
-  }
-
-  /** 게임 화면 오른쪽 빠른 편집의 항목별 − 버튼. id 가 없으면 마지막 항목. 한 개는 남긴다. */
-  async function removeLastItem(itemId?: string) {
-    if (!selected || selected.items.length <= 1) return;
-    await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
-  }
-
-  async function clearAllParticipants() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameTimer.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function commitPlaySettings(patch:{mode?:TimerPlayMode;showTimer?:boolean}) {
-    if(!selected)return;
-    const config={...selected.config,...(patch.mode!==undefined?{timerMode:patch.mode}:{}),...(patch.showTimer!==undefined?{timerShowClock:patch.showTimer}:{})};
-    setTemplates(rows=>rows.map(row=>row.id===selected.id?{...row,config}:row));
-    try{await updateGameTemplate(selected.id,{config});}catch(err){notify(err instanceof Error?err.message:String(err),'error');await reload();}
-  }
-
-  async function commitTarget() {
-    if (!selected) return;
-    const seconds = Math.max(0.1, Number(targetInput) || 0.1);
-    const nextConfig = { ...selected.config, targetMs: Math.round(seconds * 1000) };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleMusicChange(music: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleResultSoundChange(resultSound: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
   if (g.noClasses) {
     return (
       <div className="text-center py-16 font-body-md text-on-surface-variant">
@@ -357,15 +226,9 @@ export default function TimerMatchPage() {
             <TimerMatch key={roundKey}
               participants={selected.items}
               targetMs={targetMs}
-              playMode={selected.config.timerMode??'practice'} showClock={selected.config.timerShowClock??false} onPlaySettingsChange={patch=>void commitPlaySettings(patch)}
+              showClock={selected.config.timerShowClock??false}
               music={selected.config.music}
               resultSound={resolveResultSound(selected.config.resultSound)}
-              editable={isStaff}
-              onEditItem={(id, label) => void renameItemLabel(id, label)}
-              templateName={selected.name}
-              onRenameTemplate={(name) => void handleRename(name)}
-              onAddItem={() => void addQuickItem()}
-              onRemoveItem={(id) => void removeLastItem(id)}
             />
           </GameThemeFrame>
 
@@ -374,137 +237,6 @@ export default function TimerMatchPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameTimer.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <TimerPlaySettings mode={selected.config.timerMode??'practice'} showTimer={selected.config.timerShowClock??false} onChange={patch=>void commitPlaySettings(patch)}/>
-                    <div className="pt-3">
-                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                    <div className="flex-1 [&>div]:my-0">
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addParticipantsBulk(labels)}
-                      />
-                    </div>
-                    <WordListPicker
-                      variant="label"
-                      wordLists={wordLists}
-                      loading={wordListsLoading}
-                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                    />
-                    <DictionaryPicker
-                      variant="label"
-                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                    />
-                    </div>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {selected.items.length === 0 ? (
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {t('gameAdmin.noParticipants')}
-                          </span>
-                        ) : (
-                          selected.items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                            >
-                              {item.label}
-                              <button
-                                onClick={() => void removeParticipant(item.id)}
-                                className="text-on-surface-variant hover:text-error"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void clearAllParticipants()}
-                          className="mt-2 font-label-md text-label-md text-error hover:underline"
-                        >
-                          {t('gameAdmin.clearAll')}
-                        </button>
-                      )}
-                      <div className="flex gap-2 mt-3">
-                        <input
-                          type="text"
-                          placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                          value={newParticipant}
-                          onChange={(e) => setNewParticipant(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addParticipant();
-                          }}
-                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <button
-                          onClick={() => void addParticipant()}
-                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                        >
-                          {t('gameAdmin.addParticipant')}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameTimer.targetLabel')}</div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={0.1}
-                          step={0.1}
-                          value={targetInput}
-                          onChange={(e) => setTargetInput(e.target.value)}
-                          onBlur={() => void commitTarget()}
-                          className="w-[90px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <span className="font-body-md text-body-md text-on-surface-variant">{t('gameTimer.seconds')}</span>
-                      </div>
-                    </div>
-
-                    {academy && (
-                      <div className="pt-3 divide-y divide-surface-container">
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={selected.config.music}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gameTimer.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </div>
-                    )}
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="timer" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
