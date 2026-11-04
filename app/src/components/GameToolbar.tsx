@@ -23,6 +23,7 @@ import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { ROUND_DONE_EVENT, TEAM_ORDER_EVENT, isAutoTurnOn, isShowOrderOn, loadTeamOrder, saveTeamOrder, setAutoTurnOn, setShowOrderOn } from '../lib/teamOrder';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import type { GameItem, MusicSelection, WordList } from '../lib/types';
+import { MAX_POP_CARDS, popcornCount } from '../lib/popcorn';
 import GameMusicPicker from './GameMusicPicker';
 import { resolveResultSound } from '../lib/gameMusic';
 
@@ -105,6 +106,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pBombMode, setPBombMode] = useState<'pass' | 'timer'>('pass');
   const [pBombCaught, setPBombCaught] = useState(true);
   const [pTimerShow, setPTimerShow] = useState(false);
+  const [pPop, setPPop] = useState('1');
   const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerSec, setPTimerSec] = useState('10');
@@ -174,6 +176,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isLadder = type === 'ladder';
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
+  const isPopcorn = type === 'popcorn';
   const splitGame = isLadder || isBomb || isTimerMatch; // 참가자는 반 설정, 나머지는 게임설정
   const isWheel = type === 'wheel';
   const hasNumbers = type === 'order';
@@ -214,6 +217,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPBombMode(info?.selected?.config.bombMode ?? 'pass');
     setPBombCaught(info?.selected?.config.bombStartFromCaught !== false);
     setPTimerShow(info?.selected?.config.timerShowClock ?? false);
+    setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount)));
     setPTimerMusic(info?.selected?.config.music);
     setPTimerResult(resolveResultSound(info?.selected?.config.resultSound));
     setPTimerSec(String(((info?.selected?.config.targetMs ?? 10000) / 1000).toFixed(2)).replace(/\.?0+$/, ''));
@@ -351,6 +355,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       await info.applyGuide({ items, config: { ...info.selected.config, bombMode: pBombMode, bombTimerWords: pBombTW, bombStartFromCaught: pBombCaught, bombRange: { min, max }, bombSound: pBombSound, classroomSource: undefined } });
       return;
     }
+    if (info?.selected && isPopcorn) {
+      const v = Number(pPop);
+      if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`터지는 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, popcornPopCount: v } });
+      return;
+    }
     if (info?.selected && isTimerMatch) {
       const sec = Number(pTimerSec);
       if (!Number.isFinite(sec) || sec < 0.5) throw new Error(text('목표 시간은 0.5초 이상으로 적어 주세요.', 'Target must be at least 0.5 sec.'));
@@ -455,7 +465,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -625,6 +635,18 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        {isPopcorn && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            <p className="font-bold">{text('팝콘 설정', 'Popcorn settings')}</p>
+            <div className="space-y-1">
+              <p className="text-sm font-bold">{text('터지는 카드 수', 'Pop cards')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input className={`${field} !mt-0 w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('터지는 카드 수', 'Pop cards')} />
+                <span className="text-sm text-on-surface-variant">{text(`낱말 ${info?.selected?.items.length ?? 0}개 중 뽑으면 점수가 0이 되는 카드`, 'Cards that reset the score')}</span>
+              </div>
+            </div>
+          </div>
+        )}
         {isTimerMatch && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('타이머 설정', 'Timer settings')}</p>

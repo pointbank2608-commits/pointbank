@@ -1,6 +1,8 @@
 import {popcornDeck as buildDeck} from '../lib/popcorn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
+import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import { useEffect, useState, type CSSProperties } from 'react';
+import { TEAM_ORDER_EVENT, isShowOrderOn } from '../lib/teamOrder';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
@@ -28,6 +30,7 @@ type Card = GameItem | 'pop';
 const KETTLE_SRC = '/skins/popcorn-kettle.png?v=2';
 const KERNEL_SRC = '/skins/popcorn-kernel.png';
 
+const PLAYER_COLORS = ['#e5604d', '#e39a1b', '#3aa66b', '#1f9d94', '#3b82d6', '#8a63d2', '#d9558f', '#5b7083'];
 const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
 
 export default function Popcorn({
@@ -45,10 +48,23 @@ export default function Popcorn({
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount));
   const [deckIndex, setDeckIndex] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
-  useNativeGameTurn({current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0});
+  const sharedTurn = useGameWorkspace()?.turn ?? null;
+  const players = sharedTurn?.all?.length ? sharedTurn.all : null;
+  const [lastScored, setLastScored] = useState<number | null>(null);
+  const [playerScores, setPlayerScores] = useState<Record<number, number>>({});
+  const playersKey = players ? players.join('|') : '';
+  useEffect(() => { setPlayerScores({}); setLastScored(null); }, [playersKey]);
+  const [teamsOn, setTeamsOn] = useState(isShowOrderOn);
+  useEffect(() => {
+    const read = () => setTeamsOn(isShowOrderOn());
+    window.addEventListener(TEAM_ORDER_EVENT, read);
+    return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
+  }, []);
+  useNativeGameTurn(players && sharedTurn ? {current:sharedTurn.current,next:sharedTurn.next,index:sharedTurn.index,total:sharedTurn.total,enabled:items.length>0&&teamsOn} : {current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&teamsOn});
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [lastCard, setLastCard] = useState<Card | null>(null);
   const [poppedTeam, setPoppedTeam] = useState<Team | null>(null);
+  const [poppedName, setPoppedName] = useState<string | null>(null);
   const [hop, setHop] = useState(0);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
@@ -96,6 +112,15 @@ export default function Popcorn({
 
     // 팝콘이 터지면 뽁, 아니면 점수 얻는 딩
     playSfx(card === 'pop' ? GAME_SFX.popcorn.pop : GAME_SFX.popcorn.result);
+    if (players && sharedTurn) {
+      const at = sharedTurn.index;
+      setLastScored(at);
+      setPoppedTeam(null);
+      setPoppedName(card === 'pop' ? sharedTurn.current : null);
+      setPlayerScores((prev) => ({ ...prev, [at]: card === 'pop' ? 0 : (prev[at] ?? 0) + 1 }));
+      sharedTurn.advance();
+      return;
+    }
     if (card === 'pop') {
       setPoppedTeam(turn);
       setScores((prev) => ({ ...prev, [turn]: 0 }));
@@ -104,16 +129,6 @@ export default function Popcorn({
       setScores((prev) => ({ ...prev, [turn]: prev[turn] + 1 }));
     }
     setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
-  }
-
-  function resetAll() {
-    setDeck(buildDeck(items,popCount));
-    setDeckIndex(0);
-    setTurn('blue');
-    setScores({ blue: 0, red: 0 });
-    setLastCard(null);
-    setPoppedTeam(null);
-    setHop(0);
   }
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gamePopcorn.teamBlue') : t('gamePopcorn.teamRed'));
@@ -183,15 +198,43 @@ export default function Popcorn({
             <span>P</span>
             <span>!</span>
           </span>
-          <span className="pc-pop-caption">{t('gamePopcorn.popMessage', { team: teamLabel(poppedTeam ?? turn) })}</span>
+          {teamsOn && <span className="pc-pop-caption">{t('gamePopcorn.popMessage', { team: players ? (poppedName ?? '') : teamLabel(poppedTeam ?? turn) })}</span>}
           <span className="pc-pop-hint">{t('gamePopcorn.popDismiss')}</span>
         </button>
       )}
-      <div className="mb-4 flex flex-wrap items-center justify-center gap-2.5">
+      {teamsOn && players && sharedTurn && (
+        <div className="mb-5 flex max-w-[900px] flex-wrap items-center justify-center gap-3">
+          {players.map((name, i) => {
+            const now = i === sharedTurn.index;
+            return (
+              <div
+                key={`${name}-${i}`}
+                data-skin-object="score-card"
+                className="min-w-[88px] rounded-2xl px-4 py-2 text-center"
+                style={{ backgroundColor: PLAYER_COLORS[i % PLAYER_COLORS.length], color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.25)', transform: now ? 'scale(1.12)' : undefined, boxShadow: now ? `${woodShadow}, 0 0 0 4px #fff, 0 0 0 8px #1f2a44` : woodShadow }}
+              >
+                <div className="max-w-[120px] truncate font-caption text-[13px] font-bold opacity-90">{name}</div>
+                <div className="font-title-md text-[24px] font-bold tabular-nums leading-none">{playerScores[i] ?? 0}</div>
+                {i === lastScored && (
+                  <button
+                    type="button"
+                    onClick={() => setPlayerScores((prev) => ({ ...prev, [i]: Math.max(0, (prev[i] ?? 0) - 1) }))}
+                    className="mt-1 rounded-full bg-black/15 px-2.5 py-0.5 font-caption text-[12px] font-bold hover:bg-black/25"
+                    aria-label={t('gamePopcorn.minusOne')}
+                  >
+                    {t('gamePopcorn.minusOne')}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {teamsOn && !players && <div className="mb-5 flex flex-wrap items-center justify-center gap-10">
         <div
           data-skin-object="score-card"
           className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-on-secondary"
-          style={{ backgroundColor: '#3dbea8', boxShadow: woodShadow }}
+          style={{ backgroundColor: '#3dbea8', boxShadow: turn === 'blue' ? `${woodShadow}, 0 0 0 4px #fff, 0 0 0 7px #0f6b5e` : woodShadow }}
         >
           <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('blue')}</div>
           <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.blue}</div>
@@ -205,17 +248,9 @@ export default function Popcorn({
           </button>
         </div>
         <div
-          className={`rounded-full px-7 py-2.5 font-title-md text-[18px] font-bold shadow-sm ${
-            turn === 'blue' ? 'bg-secondary text-on-secondary' : 'text-white'
-          }`}
-          style={turn === 'red' ? { backgroundColor: '#f28b73' } : undefined}
-        >
-          {t('gamePopcorn.turnLabel', { team: teamLabel(turn) })}
-        </div>
-        <div
           data-skin-object="score-card"
           className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-white"
-          style={{ backgroundColor: '#f28b73', boxShadow: woodShadow }}
+          style={{ backgroundColor: '#f28b73', boxShadow: turn === 'red' ? `${woodShadow}, 0 0 0 4px #fff, 0 0 0 7px #b8432a` : woodShadow }}
         >
           <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('red')}</div>
           <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{scores.red}</div>
@@ -228,7 +263,7 @@ export default function Popcorn({
             {t('gamePopcorn.minusOne')}
           </button>
         </div>
-      </div>
+      </div>}
 
       <button
         type="button"
@@ -291,13 +326,6 @@ export default function Popcorn({
         {t('gamePopcorn.drawButton')}
       </button>
 
-      <button
-        type="button"
-        onClick={resetAll}
-        className="mt-6 font-caption text-caption text-on-surface-variant hover:text-error transition-colors"
-      >
-        {t('gamePopcorn.resetButton')}
-      </button>
           </div>
         </div>
 

@@ -783,28 +783,30 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
   }
   12% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--pc-x, 72px)), -156px) scale(1.14) rotate(12deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px)), -92%) scale(1.14) rotate(12deg);
   }
   62% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.08), -140px) scale(1.08) rotate(-6deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.08), -82%) scale(1.08) rotate(-6deg);
   }
   82% {
     opacity: 1;
-    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.16), 28px) scale(0.98) rotate(10deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.16), 22%) scale(0.98) rotate(10deg);
   }
   100% {
     opacity: 0;
-    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.28), 168px) scale(0.74) rotate(22deg);
+    transform: translate(calc(-50% + var(--pc-x, 72px) * 1.28), 130%) scale(0.74) rotate(22deg);
   }
 }
 .pc-kernel {
   position: absolute;
   z-index: 5;
   left: 52%;
-  top: 28%;
-  width: 96px;
-  height: 96px;
+  top: 34%;
+  width: 22%;
+  min-width: 96px;
+  aspect-ratio: 1;
+  height: auto;
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 8px 8px rgba(90, 50, 18, 0.28));
