@@ -341,6 +341,12 @@ export interface GameTemplateConfig {
   /** Bomb-only running sound. Undefined preserves the original clock audio. */
   bombSound?: import('./bombSound').BombSound;
   bombRange?: { min: number; max: number };
+  /** 시한폭탄 진행 방식: 참가자 순서대로(pass) / 타이머만(timer) */
+  bombMode?: 'pass' | 'timer';
+  /** 타이머만 모드의 단어: none 없음 / during 한 단어씩 돌아가며 / after 터진 뒤 단어 보드 */
+  bombTimerWords?: 'none' | 'during' | 'after';
+  /** 시한폭탄: 터진 뒤 다음 판을 걸린 친구부터 시작(기본 켜짐) */
+  bombStartFromCaught?: boolean;
   /** 시한폭탄 전용: 폭탄이 넘어갈 때마다 무작위로 하나 보여주는 읽을 단어·문장 목록. */
   words?: GameItem[];
   /** 타이머 맞추기 전용: 목표 시간(밀리초). */

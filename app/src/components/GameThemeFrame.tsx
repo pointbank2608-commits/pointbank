@@ -4,7 +4,7 @@ import { useContext, useEffect, useLayoutEffect, useRef, useState, type CSSPrope
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
-import { instantStart } from '../lib/gamePreparation';
+import { instantStart, itemsAlwaysHidden } from '../lib/gamePreparation';
 import { GamePlayContext, useGamePlay } from '../context/GamePlayContext';
 import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
@@ -158,6 +158,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   // 새 도구줄을 쓰는 게임은 들어오자마자 시작되므로(playing) 항목을 자동으로 숨기면 선생님이 항목을 못 고친다 — 도구줄의 "항목 숨기기"로 직접 숨긴다.
   const playHides = !!workspace?.playing && !(workspace.info && instantStart(workspace.info.gameType));
   useEffect(() => { if (playHides) setItemsHidden(true); }, [playHides]);
+  const lockHidden = !!workspace?.info && itemsAlwaysHidden(workspace.info.gameType);
   const [restartOpen, setRestartOpen] = useState(false);
   const bgType = bg ?? gameType;
   const bgUrl = useGameBackground(bgType);
@@ -526,7 +527,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         </div>
   );
   const frame = (
-    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden, toggleItems: () => setItemsHidden((v) => !v) }}>
+    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden: itemsHidden || lockHidden, itemsLocked: lockHidden, toggleItems: () => { if (!lockHidden) setItemsHidden((v) => !v); } }}>
       <div
         ref={containerRef}
         data-game={gameType ?? bg}

@@ -180,8 +180,10 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     const now = Date.now(); if (now - turnClick.current < 250 || order.order.length < 2) return false;
     turnClick.current = now; saveTeamOrder(roster, { ...order, turn:(order.turn + 1) % order.order.length }, scope); return true;
   }, [roster, order, scope]);
+  const goto = useCallback((index: number) => { if (order.order.length < 1) return; saveTeamOrder(roster, { ...order, turn: ((index % order.order.length) + order.order.length) % order.order.length }, scope); }, [roster, order, scope]);
   const labels = turnLabels(order, roster, n => t('teamOrder.teamLabel',{n}));
-  const turn = capabilities.manualTurns && ordered && labels ? { ...labels, index:order.turn, total:order.order.length, advance } : null;
+  const sharedOrder = !!info && instantStart(info.gameType) && isShowOrderOn() && info.roster.length > 0;
+  const turn = capabilities.manualTurns && (ordered || sharedOrder) && labels ? { ...labels, index:order.turn, total:order.order.length, advance, goto } : null;
   async function action(fn: () => Promise<void>, close = true) {
     if (lock.current) return false;
     lock.current = true; setBusy(true); setError('');

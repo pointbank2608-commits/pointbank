@@ -52,7 +52,7 @@ export interface WorkspaceContextValue {
   playing: boolean;
   teacherToolsTarget: HTMLElement | null;
   exitPlay: () => void;
-  turn: { current: string; next: string; index: number; total: number; advance: () => boolean } | null;
+  turn: { current: string; next: string; index: number; total: number; advance: () => boolean; goto?: (index: number) => void } | null;
   hasSource: boolean;
   pause: () => void;
   openTeams: () => void;

@@ -30,6 +30,12 @@ interface Props {
   onRangeChange?: (min: number, max: number) => void;
   templateName?: string;
   onRenameTemplate?: (name: string) => void;
+  /** 터진 뒤 다음 판을 걸린 친구부터 시작할지 */
+  startFromCaught?: boolean;
+  /** 타이머만 모드에서 단어를 보여 주는 방식 */
+  timerWords?: 'none' | 'during' | 'after';
+  /** 게임설정에서 정한 진행 방식. 주면 화면 안의 방식 전환 버튼을 숨긴다. */
+  mode?: 'pass' | 'timer';
 }
 
 type Phase = 'idle' | 'active' | 'exploded';
@@ -62,17 +68,28 @@ export default function TimeBomb({
   onRangeChange,
   templateName,
   onRenameTemplate,
+  mode: modeProp,
+  startFromCaught = true,
+  timerWords = 'none',
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const workspace=useGameWorkspace();
   const soundOn=useGameSoundOn();
   const sharedTurn=workspace?.turn;
   const n = sharedTurn?.total ?? participants.length;
-  const [mode, setMode] = useState<Mode>('pass');
+  const [localMode, setMode] = useState<Mode>('pass');
+  const mode: Mode = modeProp ?? localMode;
   const [phase, setPhase] = useState<Phase>('idle');
   const [holderIndex, setHolderIndex] = useState(0);
   const [caughtHolder,setCaughtHolder]=useState('');
+  // 오늘 걸린 친구 기록: 다시하기·새로고침을 해도 이 탭에서는 남는다
+  const tallyKey = sharedTurn ? `classbank.bombTally.shared.${sharedTurn.total}` : `classbank.bombTally.${participants.map((p) => p.label).join('|')}`;
+  const readTally = (): Record<string, number> => { try { return JSON.parse(sessionStorage.getItem(tallyKey) || '{}'); } catch { return {}; } };
+  const [tally, setTally] = useState<Record<string, number>>(readTally);
+  useEffect(() => { setTally(readTally()); }, [tallyKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const writeTally = (next: Record<string, number>) => { setTally(next); try { sessionStorage.setItem(tallyKey, JSON.stringify(next)); } catch { /* 이 화면에서만 유지 */ } };
+  const nextStart = useRef(0);
   const currentHolder=sharedTurn?.current ?? participants[holderIndex % Math.max(1,n)]?.label ?? '';
   const nextHolder=sharedTurn?.next ?? participants[(holderIndex+1)%Math.max(1,n)]?.label ?? '';
   const holderRef=useRef(currentHolder);holderRef.current=currentHolder;
@@ -124,7 +141,13 @@ export default function TimeBomb({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
+  const wordSeq = useRef(0);
   function pickWord() {
+    if (mode === 'timer') {
+      if (timerWords === 'none' || words.length === 0) { setCurrentWord(null); return; }
+      setCurrentWord(words[wordSeq.current++ % words.length]);
+      return;
+    }
     if (words.length === 0) {
       setCurrentWord(null);
       return;
@@ -151,16 +174,24 @@ export default function TimeBomb({
     if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
 
-    setHolderIndex(0); setCaughtHolder(''); lastPass.current=0;
+    if (sharedTurn) { if (!startFromCaught && mode === 'pass') sharedTurn.goto?.(0); setHolderIndex(0); } else setHolderIndex(mode === 'pass' ? nextStart.current % Math.max(1, n) : 0);
+    setCaughtHolder(''); lastPass.current=0;
     setPhase('active');
-    pickWord();
+    wordSeq.current = 0;
+    if (mode === 'timer' && timerWords === 'after') setCurrentWord(null); else pickWord();
 
 
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;
     timerRef.current = gameClock.setTimeout(() => {
-      setCaughtHolder(holderRef.current);
+      const who = holderRef.current;
+      setCaughtHolder(who);
+      if (mode === 'pass' && who) {
+        writeTally({ ...readTally(), [who]: (readTally()[who] || 0) + 1 });
+        nextStart.current = startFromCaught ? Math.max(0, participants.findIndex((p) => p.label === who)) : 0;
+      }
       setPhase('exploded');
+      if (mode === 'timer' && timerWords === 'after') pickWord();
       stopMusicRef.current();
       playMusic(resultSound);
     }, delaySec * 1000);
@@ -226,6 +257,7 @@ export default function TimeBomb({
             </div>
           )}
 
+          {!modeProp && (
           <div className="mb-5 flex rounded-full bg-[#f3eee4] p-1">
             <button
               type="button"
@@ -246,6 +278,17 @@ export default function TimeBomb({
               {t('gameBomb.modeTimer')}
             </button>
           </div>
+          )}
+
+          {mode === 'pass' && Object.values(tally).some((v) => v > 0) && (
+            <div className="mb-4 flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-white/85 px-3 py-2 shadow-sm" data-bomb-tally>
+              <span className="text-sm font-bold text-deep-navy">{i18n.language.startsWith('en') ? 'Caught today' : '오늘 걸린 친구'} 💥</span>
+              {Object.entries(tally).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([name, v]) => (
+                <span key={name} className="rounded-full bg-warm-yellow/70 px-3 py-0.5 text-sm font-bold text-deep-navy">{name} ×{v}</span>
+              ))}
+              <button type="button" className="rounded-full border border-outline-variant bg-white px-3 py-0.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container-low" onClick={() => { writeTally({}); nextStart.current = 0; }}>{i18n.language.startsWith('en') ? 'Clear' : '기록 지우기'}</button>
+            </div>
+          )}
 
           {blockedForPassMode ? (
             <div className="border-2 border-dashed border-outline-variant rounded-xl py-12 px-5 text-center text-on-surface-variant">
@@ -316,6 +359,9 @@ export default function TimeBomb({
                 </>
               )}
 
+              {phase === 'active' && mode === 'timer' && timerWords === 'during' && words.length > 1 && (
+                <button onClick={pickWord} className={`${pill} mb-2`}>다음 단어</button>
+              )}
               {phase === 'active' && mode === 'timer' && (
                 <div className="mb-1 text-center font-title-md text-[22px] text-deep-navy md:text-[24px]">
                   {t('gameBomb.timerModeHint')}

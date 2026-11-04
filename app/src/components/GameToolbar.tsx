@@ -13,6 +13,9 @@ import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { useGamePlay } from '../context/GamePlayContext';
 import { wordListToCards } from '../lib/gameFromWords';
+import BombSoundPicker from './BombSoundPicker';
+import { hasOwnTurnDisplay } from '../lib/gamePreparation';
+import type { BombSound } from '../lib/bombSound';
 import { fetchStudentsOfClass } from '../lib/api';
 import TeamOrderPanel from './TeamOrderPanel';
 import { useAuth } from '../context/AuthContext';
@@ -68,7 +71,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const { notify } = useToast();
   const info = workspace.info;
   const soundOn = useGameSoundOn();
-  const { itemsHidden, toggleItems } = useGamePlay();
+  const { itemsHidden, toggleItems, itemsLocked } = useGamePlay();
   const [open, setOpen] = useState<Open>(null);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
@@ -92,6 +95,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pWinner, setPWinner] = useState('');
   const [pWin, setPWin] = useState(1);
   const [pPartText, setPPartText] = useState('');
+  const [pBombSrc, setPBombSrc] = useState<'type' | 'list' | 'none'>('type');
+  const [pBombWords, setPBombWords] = useState('');
+  const [pBombMin, setPBombMin] = useState('15');
+  const [pBombMax, setPBombMax] = useState('60');
+  const [pBombSound, setPBombSound] = useState<BombSound>('clock');
+  const [pBombMode, setPBombMode] = useState<'pass' | 'timer'>('pass');
+  const [pBombCaught, setPBombCaught] = useState(true);
+  const [pBombTW, setPBombTW] = useState<'none' | 'during' | 'after'>('none');
   const [pItemClass, setPItemClass] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { session, academy } = useAuth();
@@ -155,6 +166,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const turnMembers = (id: string) => (turnState?.mode === 'team' ? roster.filter((row) => (turnState.teamOf[row.id] ?? 0) === Number(id.split('-')[1])).map((row) => row.label).join(', ') : '');
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
   const isLadder = type === 'ladder';
+  const isBomb = type === 'bomb';
+  const splitGame = isLadder || isBomb; // 참가자는 반 설정, 나머지는 게임설정
   const isWheel = type === 'wheel';
   const hasNumbers = type === 'order';
   const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
@@ -186,6 +199,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPText((info?.selected?.items ?? []).map((row) => row.label).join('\n'));
     setPEliminate(!!info?.selected?.config.wheelEliminate);
     setPResMode('type');
+    setPBombSrc('type');
+    setPBombWords((info?.selected?.config.words ?? []).map((row) => row.label).join('\n'));
+    setPBombMin(String(info?.selected?.config.bombRange?.min ?? 15));
+    setPBombMax(String(info?.selected?.config.bombRange?.max ?? 60));
+    setPBombSound(info?.selected?.config.bombSound ?? 'clock');
+    setPBombMode(info?.selected?.config.bombMode ?? 'pass');
+    setPBombCaught(info?.selected?.config.bombStartFromCaught !== false);
+    setPBombTW(info?.selected?.config.bombTimerWords ?? 'none');
     setPResText((info?.selected?.config.results ?? []).map((row) => row.label).join('\n'));
     setPWinner('');
     setPWin(1);
@@ -237,6 +258,19 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
   const applyContent = () => run(async () => {
     if (!info) return;
+    if (isBomb && info.selected) {
+      let labels: string[] = [];
+      if (pBombSrc === 'type') labels = nonEmpty(pBombWords);
+      else if (pBombSrc === 'list') {
+        const list = info.lists.find((row) => row.id === pList);
+        if (!list) throw new Error(text('읽을 내용으로 쓸 단어장을 골라 주세요.', 'Pick a list.'));
+        labels = wordListToCards(list).map((card) => card.word);
+      }
+      const oldWords = info.selected.config.words ?? [];
+      const words = labels.map((label, i) => (oldWords[i]?.label === label ? oldWords[i] : { id: crypto.randomUUID(), label }));
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, words, classroomSource: undefined } });
+      return;
+    }
     if (isGrammar) {
       if (pGrammar !== current && info.selected) {
         await info.applyGuide({ items: [{ id: `grammar-${pGrammar}`, label: grammarPoint(pGrammar)?.name ?? pGrammar }], config: { ...info.selected.config, grammarId: pGrammar } });
@@ -276,14 +310,18 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     } else {
       window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
     }
-    if (isLadder && pMode !== 'none' && info.selected) {
+    if (splitGame && pMode !== 'none' && info.selected) {
       // 사다리의 참가자는 반 설정이 정한다: 개인 = 학생 이름, 팀 = 팀 이름. 결과 칸은 참가자 수에 자동으로 맞춘다(모자라면 꽝).
       const labels = pMode === 'team' ? Array.from({ length: pTeams }, (_, i) => t('teamOrder.teamLabel', { n: i + 1 })) : eff.map((row) => row.label);
       if (labels.length >= 2) {
         const old = info.selected.items;
         const items = labels.map((label, i): GameItem => ({ id: old[i]?.id ?? crypto.randomUUID(), label }));
-        const results = fitResults(info.selected.config.results ?? [], items.length);
-        await info.applyGuide({ items, config: { ...info.selected.config, results } });
+        if (isLadder) {
+          const results = fitResults(info.selected.config.results ?? [], items.length);
+          await info.applyGuide({ items, config: { ...info.selected.config, results } });
+        } else {
+          await info.applyGuide({ items, config: { ...info.selected.config, classroomSource: undefined } });
+        }
       }
     }
     if (classChanged) info.selectClass(pClass);
@@ -292,6 +330,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   });
   const applySettings = () => run(async () => {
     setGameSoundOn(pSound);
+    if (info?.selected && isBomb) {
+      const parts = nonEmpty(pPartText);
+      if (pBombMode === 'pass' && parts.length < 2) throw new Error(text('참가자 순서대로 하려면 참가자가 2명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 2 players.'));
+      const min = Math.max(1, Math.round(Number(pBombMin)) || 1);
+      const max = Math.max(min, Math.round(Number(pBombMax)) || min);
+      const old = info.selected.items;
+      const items = parts.length >= 2 ? parts.map((label, i): GameItem => (old[i]?.label === label ? old[i] : { id: old[i]?.id ?? crypto.randomUUID(), label })) : old;
+      await info.applyGuide({ items, config: { ...info.selected.config, bombMode: pBombMode, bombTimerWords: pBombTW, bombStartFromCaught: pBombCaught, bombRange: { min, max }, bombSound: pBombSound, classroomSource: undefined } });
+      return;
+    }
     if (info?.selected && isLadder) {
       const parts = nonEmpty(pPartText);
       if (parts.length < 2) throw new Error(text('참가자가 2명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 2 players.'));
@@ -386,17 +434,17 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || isLadder ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
-          <button className={util} aria-pressed={itemsHidden} onClick={toggleItems}>{itemsHidden ? text('항목 보기', 'Show items') : text('항목 숨기기', 'Hide items')}</button>
+          <button className={`${util} disabled:cursor-not-allowed disabled:opacity-40`} aria-pressed={itemsHidden} disabled={itemsLocked} title={itemsLocked ? text('이 게임은 항목을 늘 숨겨요', 'Items are always hidden in this game') : undefined} onClick={toggleItems}>{itemsLocked ? text('항목 숨김', 'Items hidden') : itemsHidden ? text('항목 보기', 'Show items') : text('항목 숨기기', 'Hide items')}</button>
           {onRestart && <button className={util} onClick={onRestart} data-frame-restart>{text('다시하기', 'Restart')}</button>}
           <button className={util} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{text(fullscreen ? '전체화면 끄기' : '전체화면', fullscreen ? 'Exit fullscreen' : 'Fullscreen')}</button>
           <button className={`${util} text-error`} onClick={() => navigate('/games')}>{text('나가기', 'Exit')}</button>
         </div>
       </div>
-      {showTurn && turnState && turnState.order.length > 0 && (() => {
+      {showTurn && !hasOwnTurnDisplay(info?.gameType ?? 'wheel', info?.selected?.config) && turnState && turnState.order.length > 0 && (() => {
         const n = turnState.order.length;
         const now = turnState.order[turnState.turn];
         const upcoming = [1, 2, 3].filter((k) => k < n).map((k) => turnState.order[(turnState.turn + k) % n]);
@@ -434,7 +482,30 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 : text(`지금 쓰는 자료: 직접 입력한 항목 ${info?.selected?.items.length ?? 0}개`, `Current: ${info?.selected?.items.length ?? 0} typed items`)}
           </p>
         )}
-        {isGrammar ? (
+        {isBomb ? (
+          <div className="space-y-3">
+            <p className="text-sm text-on-surface-variant">{text('폭탄이 터지기 전에 읽을 단어나 문장이에요. 참가자는 반 설정에서 정해요.', 'Words or sentences to read before the bomb goes off.')}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={chip(pBombSrc === 'type')} aria-pressed={pBombSrc === 'type'} onClick={() => setPBombSrc('type')}>{text('직접 입력·편집', 'Type / edit')}</button>
+              <button type="button" className={chip(pBombSrc === 'list')} aria-pressed={pBombSrc === 'list'} onClick={() => setPBombSrc('list')}>{text('내 단어장/문장', 'My lists')}</button>
+              <button type="button" className={chip(pBombSrc === 'none')} aria-pressed={pBombSrc === 'none'} onClick={() => setPBombSrc('none')}>{text('읽을 내용 없음', 'None')}</button>
+            </div>
+            {pBombSrc === 'type' && (
+              <label className="block text-sm font-bold">{text('읽을 내용 (한 줄에 하나)', 'Words to read (one per line)')}
+                <span className="ml-2 font-normal text-on-surface-variant">{text(`지금 ${nonEmpty(pBombWords).length}개`, `${nonEmpty(pBombWords).length}`)}</span>
+                <textarea className={`${field} min-h-36 text-base`} value={pBombWords} onChange={(e) => setPBombWords(e.target.value)} spellCheck={false} />
+              </label>
+            )}
+            {pBombSrc === 'list' && (
+              <label className="block text-sm font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
+                <select className={field} value={pList} onChange={(e) => setPList(e.target.value)}>
+                  <option value="">{text('선택하세요', 'Choose')}</option>
+                  {(info?.lists ?? []).map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
+                </select>
+              </label>
+            )}
+          </div>
+        ) : isGrammar ? (
           <label className="block font-bold">{text('문법 항목', 'Grammar point')}
             <select className={field} value={pGrammar} onChange={(e) => setPGrammar(e.target.value)}>
               {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
@@ -520,7 +591,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           )}
           <p className="text-xs text-on-surface-variant">{text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
         </div>
-        {pMode !== 'none' && (
+        {pMode !== 'none' && !isBomb && (
           <label className="flex min-h-11 items-center gap-2 font-bold">
             <input type="checkbox" className="h-5 w-5" checked={pAutoTurn} onChange={(e) => setPAutoTurn(e.target.checked)} />
             {text('한 판이 끝나면 자동으로 다음 차례로 넘기기', 'Move to the next turn automatically')}
@@ -533,6 +604,51 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        {isBomb && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            <p className="font-bold">{text('폭탄 설정', 'Bomb settings')}</p>
+            <div className="space-y-2">
+              <p className="text-sm font-bold">{text('진행 방식', 'Mode')}</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className={chip(pBombMode === 'pass')} aria-pressed={pBombMode === 'pass'} onClick={() => setPBombMode('pass')}>{text('참가자 순서대로', 'Pass in order')}</button>
+                <button type="button" className={chip(pBombMode === 'timer')} aria-pressed={pBombMode === 'timer'} onClick={() => setPBombMode('timer')}>{text('타이머만', 'Timer only')}</button>
+              </div>
+              <p className="text-xs text-on-surface-variant">{pBombMode === 'pass'
+                ? text('"다음 사람에게 넘기기"를 누를 때마다 폭탄을 든 사람이 바뀌고, 터질 때 들고 있던 사람이 걸려요.', 'The holder changes each time you pass; whoever holds it when it explodes is out.')
+                : text('참가자 없이 숨겨진 타이머와 폭발만 나와요. 실제 인형이나 공을 돌릴 때 쓰세요.', 'Only the hidden timer and the explosion. Use it with a real ball or toy.')}</p>
+              {pBombMode === 'timer' && (
+                <div className="space-y-1">
+                  <p className="text-sm font-bold">{text('단어 보여주기', 'Words')}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className={chip(pBombTW === 'none')} aria-pressed={pBombTW === 'none'} onClick={() => setPBombTW('none')}>{text('단어 없이 타이머만', 'Timer only')}</button>
+                    <button type="button" className={chip(pBombTW === 'during')} aria-pressed={pBombTW === 'during'} onClick={() => setPBombTW('during')}>{text('단어 하나씩 돌아가며', 'One word at a time')}</button>
+                    <button type="button" className={chip(pBombTW === 'after')} aria-pressed={pBombTW === 'after'} onClick={() => setPBombTW('after')}>{text('터진 뒤 단어 보드', 'Words after boom')}</button>
+                  </div>
+                </div>
+              )}
+              {pBombMode === 'pass' && (
+                <label className="flex min-h-11 items-center gap-2 font-bold">
+                  <input type="checkbox" className="h-5 w-5" checked={pBombCaught} onChange={(e) => setPBombCaught(e.target.checked)} />
+                  {text('폭탄이 터지면 걸린 친구부터 다음 판 시작', 'Next round starts with the caught student')}
+                </label>
+              )}
+            </div>
+            <p className="text-sm text-on-surface-variant">{text(`참가자 ${nonEmpty(pPartText).length}명 · 참가자는 반 설정에서, 읽을 내용은 내 단어/문장에서 정해요.`, `${nonEmpty(pPartText).length} players. Set players in Class and words in My words.`)}</p>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="block text-sm font-bold">{text('가장 빨리 터지는 시간(초)', 'Shortest (sec)')}<input className={field} inputMode="numeric" value={pBombMin} onChange={(e) => setPBombMin(e.target.value)} /></label>
+              <label className="block text-sm font-bold">{text('가장 늦게 터지는 시간(초)', 'Longest (sec)')}<input className={field} inputMode="numeric" value={pBombMax} onChange={(e) => setPBombMax(e.target.value)} /></label>
+            </div>
+            <p className="text-xs text-on-surface-variant">{text('폭탄은 이 범위 안에서 매번 무작위 시간에 터져요.', 'The bomb goes off at a random time in this range.')}</p>
+            <div>
+              <p className="mb-1 text-sm font-bold">{text('폭탄 소리', 'Bomb sound')}</p>
+              <BombSoundPicker value={pBombSound} onChange={setPBombSound} />
+            </div>
+            <details className="rounded-xl border border-outline-variant bg-white p-3">
+              <summary className="cursor-pointer font-bold">{text('참가자 직접 입력 (반 없이 할 때)', 'Type players (no class)')}</summary>
+              <textarea className={`${field} mt-2 min-h-32 text-base`} value={pPartText} onChange={(e) => setPPartText(e.target.value)} spellCheck={false} aria-label={text('참가자 (한 줄에 하나)', 'Players (one per line)')} />
+            </details>
+          </div>
+        )}
         {isLadder && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('결과 설정', 'Results')}</p>

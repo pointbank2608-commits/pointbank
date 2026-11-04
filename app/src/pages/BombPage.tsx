@@ -413,6 +413,9 @@ export default function BombPage() {
             <TimeBomb key={roundKey}
               participants={selected.config.classroomSource && turnWorkspace?.roster.length ? turnWorkspace.roster : selected.items}
               words={words.length?words:selected.config.classroomSource?selected.items:words}
+              mode={selected.config.bombMode ?? 'pass'}
+              timerWords={selected.config.bombTimerWords ?? 'none'}
+              startFromCaught={selected.config.bombStartFromCaught !== false}
               minSec={range.min}
               maxSec={range.max}
               music={bombSound(selected.config.bombSound)}
