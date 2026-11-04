@@ -357,7 +357,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     }
     if (info?.selected && isPopcorn) {
       const v = Number(pPop);
-      if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`터지는 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
+      if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`POP 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
       await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, popcornPopCount: v } });
       return;
     }
@@ -639,10 +639,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('팝콘 설정', 'Popcorn settings')}</p>
             <div className="space-y-1">
-              <p className="text-sm font-bold">{text('터지는 카드 수', 'Pop cards')}</p>
+              <p className="text-sm font-bold">{text('POP 카드 수', 'Pop cards')}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <input className={`${field} !mt-0 w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('터지는 카드 수', 'Pop cards')} />
-                <span className="text-sm text-on-surface-variant">{text(`낱말 ${info?.selected?.items.length ?? 0}개 중 뽑으면 점수가 0이 되는 카드`, 'Cards that reset the score')}</span>
+                <input className={`${field} !mt-0 w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('POP 카드 수', 'Pop cards')} />
+                <span className="text-sm text-on-surface-variant">{text(`낱말 ${info?.selected?.items.length ?? 0}개 중 뽑으면 점수가 0이 되는 POP 카드`, 'Cards that reset the score')}</span>
               </div>
             </div>
           </div>
