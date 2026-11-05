@@ -4,7 +4,7 @@
 
 ## 운영 빌드의 수집 플래그 (2026-11-06 사용자 승인)
 
-Vercel은 `npm run build:vercel`을 실행한다. `VERCEL_ENV=production`이고 플래그가 없으면 빌드 래퍼가 `VITE_LEARNING_SENSORS_ENABLED=true`를 명시적으로 주입한다. 로컬/preview는 여전히 기본 꺼짐이다. **운영에서 중지하려면 변수를 제거하지 말고 false로 지정**한다. 명시적 false/빈 값은 운영 기본값보다 우선한다. 097~100 스테이징/운영 DB 준비와 검증을 마쳤다. 이 빌드는 이번 main 푸시로 운영 자동 배포하며 해당 커밋의 성공 상태를 확인한다.
+Vercel은 `npm run build:vercel`을 실행한다. `VERCEL_ENV=production`이고 플래그가 없으면 빌드 래퍼가 `VITE_LEARNING_SENSORS_ENABLED=true`를 명시적으로 주입한다. 로컬/preview는 여전히 기본 꺼짐이다. **운영에서 중지하려면 변수를 제거하지 말고 false로 지정**한다. 명시적 false/빈 값은 운영 기본값보다 우선한다. 097~100 스테이징/운영 DB 준비와 검증을 마쳤다. 코드 커밋 0db13443의 운영 자동 배포 성공과 실제 서비스의 센서 true를 확인했다.
 
 ## 0. 로컬에서 먼저 (이미 가능한 것)
 
