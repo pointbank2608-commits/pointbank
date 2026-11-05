@@ -358,7 +358,7 @@ export default function PassBallPage() {
               maxSec={range.max}
               music={passBallMusic(selected.config.music)}
               resultSound={resolveResultSound(selected.config.resultSound)}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

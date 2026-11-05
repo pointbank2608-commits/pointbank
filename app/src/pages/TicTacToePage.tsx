@@ -270,7 +270,7 @@ export default function TicTacToePage() {
               key={roundKey}
               ref={gameRef}
               items={selected.items}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

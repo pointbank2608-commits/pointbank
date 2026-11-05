@@ -260,7 +260,7 @@ export default function AirplanePage() {
               key={roundKey}
               items={selected.items}
               boardStyle={selected.config.airplaneStyle === 'clay' ? 'clay' : 'wood'}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

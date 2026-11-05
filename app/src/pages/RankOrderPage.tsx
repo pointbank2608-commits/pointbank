@@ -259,7 +259,7 @@ export default function RankOrderPage() {
             <RankOrder key={roundKey}
               items={selected.items}
               boardStyle={selected.config.rankOrderStyle === 'plates' ? 'plates' : 'podium'}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

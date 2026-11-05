@@ -260,7 +260,7 @@ export default function MazeChasePage() {
               key={roundKey}
               items={selected.items}
               boardStyle={selected.config.mazeChaseStyle === 'garden' ? 'garden' : 'wood'}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

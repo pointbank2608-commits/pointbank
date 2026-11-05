@@ -269,7 +269,7 @@ export default function SpellTheWordPage() {
               items={selected.items}
               previewSeconds={previewSeconds}
               boardStyle={selected.config.spellwordStyle === 'stamps' ? 'stamps' : 'slate'}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

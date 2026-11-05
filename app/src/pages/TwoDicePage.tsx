@@ -262,7 +262,7 @@ export default function TwoDicePage() {
             <TwoDice
               key={roundKey}
               items={selected.items}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

@@ -380,7 +380,7 @@ export default function WheelPage() {
               music={WHEEL_SPIN_SOUND}
               resultSound={WHEEL_RESULT_SOUND}
               onResult={handleResult}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

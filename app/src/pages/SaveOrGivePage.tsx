@@ -404,7 +404,7 @@ export default function SaveOrGivePage() {
               items={selected.items}
               rewardPool={rewardPool}
               players={players}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

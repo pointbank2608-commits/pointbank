@@ -270,7 +270,7 @@ export default function Baskin31Page() {
               ref={gameRef}
               items={selected.items}
               targetCount={targetCount}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}

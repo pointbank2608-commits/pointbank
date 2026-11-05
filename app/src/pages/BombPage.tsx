@@ -420,7 +420,7 @@ export default function BombPage() {
               maxSec={range.max}
               music={bombSound(selected.config.bombSound)}
               resultSound={BOMB_EXPLODE_SOUND}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               onAddItem={() => void addQuickItem()}
               onRemoveItem={(id) => void removeLastItem(id)}

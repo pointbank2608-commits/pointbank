@@ -261,7 +261,7 @@ export default function CrosswordPage() {
               key={roundKey}
               items={selected.items}
               boardStyle={selected.config.crosswordStyle === 'blocks' ? 'blocks' : 'board'}
-              editable={isStaff}
+              editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}
