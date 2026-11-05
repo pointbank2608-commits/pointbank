@@ -143,6 +143,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pOpt, setPOpt] = useState<Record<string, string>>({});
   const [pBallMin, setPBallMin] = useState('10');
   const [pBallMax, setPBallMax] = useState('30');
+  const [pBallWords, setPBallWords] = useState('10');
   const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerSec, setPTimerSec] = useState('10');
@@ -273,6 +274,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount, info?.selected?.config.popcornRoundCards)));
     setPBallMin(String(info?.selected?.config.ballRange?.min ?? 10));
     setPBallMax(String(info?.selected?.config.ballRange?.max ?? 30));
+    setPBallWords(String(info?.selected?.config.passBallRoundWords ?? Math.min(info?.selected?.items.length ?? 10, 10)));
     setPRound(info?.selected?.config.popcornRoundCards ? String(info.selected.config.popcornRoundCards) : '');
     setPOpt(Object.fromEntries((SIMPLE_OPTS[type ?? ''] ?? []).map((o) => [o.key, (() => { const v = (info?.selected?.config as Record<string, unknown> | undefined)?.[o.key]; return v === null ? (o.nullAs ?? String(o.def)) : String(v ?? o.def); })()])));
     setPTimerMusic(info?.selected?.config.music);
@@ -430,7 +432,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       const min = Math.round(Number(pBallMin));
       const max = Math.round(Number(pBallMax));
       if (!Number.isFinite(min) || !Number.isFinite(max) || min < 1 || max < min) throw new Error(text('시간은 1초 이상, 최소 ≤ 최대로 적어 주세요.', 'Use at least 1 sec, with min ≤ max.'));
-      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ballRange: { min, max }, music: pTimerMusic, resultSound: pTimerResult } });
+      const words = Math.round(Number(pBallWords));
+      if (!Number.isFinite(words) || words < 1 || words > 100) throw new Error(text('라운드당 단어/문장 수는 1~100개로 적어 주세요.', 'Words per round: 1-100.'));
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ballRange: { min, max }, passBallRoundWords: words, music: pTimerMusic, resultSound: pTimerResult } });
       return;
     }
     if (info?.selected && isPopcorn) {
@@ -761,6 +765,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 <span>~</span>
                 <input className={`${field} !mt-0 w-24`} type="number" min={1} value={pBallMax} onChange={(e) => setPBallMax(e.target.value)} aria-label={text('최대(초)', 'Max (sec)')} />
                 <span className="text-sm text-on-surface-variant">{text('이 사이 무작위 시각에 멈춰요', 'at a random moment')}</span>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-bold">{text('라운드당 단어/문장 수', 'Words per round')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input className={`${field} !mt-0 w-24`} type="number" min={1} max={100} value={pBallWords} onChange={(e) => setPBallWords(e.target.value)} aria-label={text('라운드당 단어/문장 수', 'Words per round')} />
+                <span className="text-sm text-on-surface-variant">{text(`항목이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이만큼만 나와요`, 'Exactly this many per round')}</span>
               </div>
             </div>
             {academy && (

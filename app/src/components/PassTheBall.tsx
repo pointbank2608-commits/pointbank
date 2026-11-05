@@ -11,6 +11,8 @@ interface Props {
   items: GameItem[];
   minSec: number;
   maxSec: number;
+  /** 한 라운드에 나오는 단어/문장 수(단어가 몇 개든 정확히 이만큼, 모자라면 섞어서 반복) */
+  roundWords?: number;
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
@@ -37,6 +39,7 @@ export default function PassTheBall({
   items,
   minSec,
   maxSec,
+  roundWords,
   music,
   resultSound,
   editable,
@@ -50,6 +53,8 @@ export default function PassTheBall({
   const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
   const [missionWord, setMissionWord] = useState<GameItem | null>(null);
+  const [deck, setDeck] = useState<GameItem[]>([]);
+  const [shown, setShown] = useState(0);
   const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
   const stopMusicRef = useRef<() => void>(() => {});
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
@@ -89,24 +94,48 @@ export default function PassTheBall({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  function start() {
-    if (phase === 'active' || items.length === 0) return;
+  function makeDeck(): GameItem[] {
+    const total = Math.max(1, Math.min(100, Math.round(roundWords ?? Math.min(items.length, 10)) || 1));
+    const out: GameItem[] = [];
+    while (out.length < total) {
+      const pool = [...items];
+      for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+      out.push(...pool);
+    }
+    return out.slice(0, total);
+  }
+
+  /** 음악을 틀고, 정해진 범위 안의 무작위 시각에 멈추면 다음 단어를 보여 준다. */
+  function runMusic(nextDeck: GameItem[], nextShown: number) {
     if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
-
     setMissionWord(null);
     setPhase('active');
     stopMusicRef.current = playMusic(music, { loop: true });
-
-    const span = Math.max(maxSec - minSec, 0);
-    const delaySec = minSec + Math.random() * span;
+    const lo = Math.min(minSec, maxSec);
+    const span = Math.max(maxSec - lo, 0);
+    const delaySec = lo + Math.random() * span;
     timerRef.current = gameClock.setTimeout(() => {
-      const word = items[Math.floor(Math.random() * items.length)];
-      setMissionWord(word);
+      setMissionWord(nextDeck[nextShown]);
+      setShown(nextShown + 1);
       setPhase('revealed');
       stopMusicRef.current();
       playMusic(resultSound);
     }, delaySec * 1000);
+  }
+
+  function start() {
+    if (phase === 'active' || items.length === 0) return;
+    const nextDeck = makeDeck();
+    setDeck(nextDeck);
+    setShown(0);
+    runMusic(nextDeck, 0);
+  }
+
+  /** 단어를 읽은 뒤 "다시 시작": 음악이 다시 흐르고 다음 단어를 기다린다. 마지막 단어였다면 라운드 끝. */
+  function resume() {
+    if (shown >= deck.length) { reset(); return; }
+    runMusic(deck, shown);
   }
 
   function reset() {
@@ -114,6 +143,8 @@ export default function PassTheBall({
     stopMusicRef.current();
     setPhase('idle');
     setMissionWord(null);
+    setDeck([]);
+    setShown(0);
   }
 
   const pill =
@@ -210,8 +241,10 @@ export default function PassTheBall({
                   </span>
                 </div>
               </div>
-              <button type="button" onClick={reset} className={pill}>
-                {t('gamePassBall.resetButton')}
+              <div className="mb-2 font-caption text-caption tabular-nums text-on-surface-variant">{t('gamePassBall.progressLabel', { n: shown, total: deck.length })}</div>
+              {shown >= deck.length && <div className="mb-2 font-title-md text-title-md font-bold text-secondary">{t('gamePassBall.roundDoneLabel')}</div>}
+              <button type="button" onClick={resume} className={pill}>
+                {shown >= deck.length ? t('gamePassBall.newRoundButton') : t('gamePassBall.continueButton')}
               </button>
             </>
           )}

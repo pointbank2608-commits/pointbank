@@ -270,6 +270,7 @@ export default function PassBallPage() {
               items={selected.items}
               minSec={range.min}
               maxSec={range.max}
+              roundWords={selected.config.passBallRoundWords}
               music={passBallMusic(selected.config.music)}
               resultSound={resolveResultSound(selected.config.resultSound)}
               editable={false}
