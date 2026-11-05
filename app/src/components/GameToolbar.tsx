@@ -33,6 +33,12 @@ const tab = (on: boolean) => `min-h-10 rounded-lg px-3.5 text-sm font-bold text-
 const util = 'min-h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm font-bold text-deep-navy hover:bg-surface-container-low focus-visible:outline-4 focus-visible:outline-primary';
 const field = 'mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2 font-normal';
 const ITEM_SETTINGS_GAMES = new Set<string>(['wheel', 'order']);
+/** 게임설정 패널에서 바로 고르는 간단한 옵션(옛 페이지 아래 편집 카드를 대신한다). */
+type SimpleOpt = { key: string; ko: string; en: string; kind: 'choice' | 'number'; def: string | number; min?: number; max?: number; choices?: { v: string; ko: string; en: string }[] };
+const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
+  anagram: [{ key: 'anagramStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'rack', choices: [{ v: 'rack', ko: '나무 글자판', en: 'Wooden rack' }, { v: 'tags', ko: '나무 이름표', en: 'Wooden tags' }] }],
+  baskin31: [{ key: 'targetCount', ko: '목표 숫자', en: 'Target number', kind: 'number', def: 31, min: 2, max: 500 }],
+};
 type ItemSource = 'list' | 'class' | 'type' | 'number';
 type Open = 'content' | 'class' | 'settings' | 'saves' | null;
 type Mode = 'none' | 'solo' | 'team';
@@ -108,6 +114,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pTimerShow, setPTimerShow] = useState(false);
   const [pPop, setPPop] = useState('1');
   const [pRound, setPRound] = useState('');
+  const [pOpt, setPOpt] = useState<Record<string, string>>({});
   const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerSec, setPTimerSec] = useState('10');
@@ -178,6 +185,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
   const isPopcorn = type === 'popcorn';
+  const simpleOpts = SIMPLE_OPTS[type ?? ''] ?? [];
   // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
   function pickMode(next: Mode) {
     setPMode(next);
@@ -235,6 +243,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPTimerShow(info?.selected?.config.timerShowClock ?? false);
     setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount, info?.selected?.config.popcornRoundCards)));
     setPRound(info?.selected?.config.popcornRoundCards ? String(info.selected.config.popcornRoundCards) : '');
+    setPOpt(Object.fromEntries((SIMPLE_OPTS[type ?? ''] ?? []).map((o) => [o.key, String((info?.selected?.config as Record<string, unknown> | undefined)?.[o.key] ?? o.def)])));
     setPTimerMusic(info?.selected?.config.music);
     setPTimerResult(resolveResultSound(info?.selected?.config.resultSound));
     setPTimerSec(String(((info?.selected?.config.targetMs ?? 10000) / 1000).toFixed(2)).replace(/\.?0+$/, ''));
@@ -372,6 +381,19 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       await info.applyGuide({ items, config: { ...info.selected.config, bombMode: pBombMode, bombTimerWords: pBombTW, bombStartFromCaught: pBombCaught, bombRange: { min, max }, bombSound: pBombSound, classroomSource: undefined } });
       return;
     }
+    if (info?.selected && simpleOpts.length > 0) {
+      const patch: Record<string, string | number> = {};
+      for (const o of simpleOpts) {
+        const raw = pOpt[o.key] ?? String(o.def);
+        if (o.kind === 'number') {
+          const n = Math.round(Number(raw));
+          if (!Number.isFinite(n) || n < (o.min ?? 0) || n > (o.max ?? 9999)) throw new Error(text(`${o.ko}은(는) ${o.min ?? 0}~${o.max ?? 9999} 사이로 적어 주세요.`, `${o.en}: ${o.min ?? 0}-${o.max ?? 9999}.`));
+          patch[o.key] = n;
+        } else patch[o.key] = raw;
+      }
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ...patch } });
+      return;
+    }
     if (info?.selected && isPopcorn) {
       const v = Number(pPop);
       if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`POP 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
@@ -406,7 +428,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       return;
     }
     if (!info || !itemSettings || !info.selected) return;
-    const base = isWheel ? { ...info.selected.config, wheelEliminate: pEliminate } : { ...info.selected.config };
+    const base = isWheel ? { ...info.selected.config, wheelEliminate: pEliminate } : type === 'order' ? { ...info.selected.config, music: pTimerMusic, resultSound: pTimerResult } : { ...info.selected.config };
     if (pItemSource === 'list' && pList) {
       const list = info.lists.find((row) => row.id === pList);
       const content = list ? prepareClassroomGame(info.gameType, list) : null;
@@ -486,7 +508,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -675,6 +697,22 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </div>
           </div>
         )}
+        {simpleOpts.length > 0 && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            {simpleOpts.map((o) => (
+              <div key={o.key} className="space-y-1">
+                <p className="text-sm font-bold">{text(o.ko, o.en)}</p>
+                {o.kind === 'choice' ? (
+                  <div className="flex flex-wrap gap-2">
+                    {o.choices?.map((c) => <button key={c.v} type="button" className={chip(pOpt[o.key] === c.v)} aria-pressed={pOpt[o.key] === c.v} onClick={() => setPOpt((old) => ({ ...old, [o.key]: c.v }))}>{text(c.ko, c.en)}</button>)}
+                  </div>
+                ) : (
+                  <input className={`${field} !mt-0 w-28`} type="number" min={o.min} max={o.max} value={pOpt[o.key] ?? ''} onChange={(e) => setPOpt((old) => ({ ...old, [o.key]: e.target.value }))} aria-label={text(o.ko, o.en)} />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
         {isTimerMatch && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('타이머 설정', 'Timer settings')}</p>
@@ -844,6 +882,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               </label>
               <p className="text-xs text-on-surface-variant">{text('지금 항목이 채워져 있어요. 고치거나 지우거나 붙여 넣은 뒤 "적용"을 누르세요.', 'Your current items are filled in. Edit them and press Apply.')}</p>
               </>
+            )}
+            {type === 'order' && academy && (
+              <div className="divide-y divide-surface-container">
+                <GameMusicPicker academyId={academy.id} isStaff value={pTimerMusic} onChange={setPTimerMusic} />
+                <GameMusicPicker academyId={academy.id} isStaff label={text('결과 소리', 'Result sound')} value={pTimerResult} onChange={setPTimerResult} />
+              </div>
             )}
             {isWheel && (
               <label className="flex min-h-11 items-center gap-2 font-bold">

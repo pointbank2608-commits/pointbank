@@ -1,4 +1,3 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -6,12 +5,7 @@ import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
 import LadderBoard from '../components/LadderBoard';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { DEFAULT_RESULT_SOUND } from '../lib/gameMusic';
 import i18n from '../i18n';
@@ -55,11 +49,6 @@ export default function LadderPage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -77,20 +66,15 @@ export default function LadderPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
     reload,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoParticipants = useMemo(defaultParticipants, []);
   const demoResults = useMemo(
     () => [1, 2, 3].map((n) => ({ id: uid(), label: i18n.t('gameLadder.defaultResult', { n }) })),
     [],
   );
-  const [newParticipant, setNewParticipant] = useRecoverableField('game:ladder:newParticipant');
 
   const results = selected?.config.results ?? selected?.items ?? [];
 
@@ -105,23 +89,6 @@ export default function LadderPage() {
     }
   }
 
-  async function addParticipant() {
-    const label = newParticipant.trim();
-    if (!label || !selected) return;
-    await persist(
-      [...selected.items, { id: uid(), label }],
-      [...results, { id: uid(), label: t('gameLadder.defaultResult', { n: results.length + 1 }) }],
-    );
-    setNewParticipant('');
-  }
-
-  async function addParticipantsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    const newItems = labels.map((label) => ({ id: uid(), label }));
-    const newResults = labels.map((_, i) => ({ id: uid(), label: t('gameLadder.defaultResult', { n: results.length + i + 1 }) }));
-    await persist([...selected.items, ...newItems], [...results, ...newResults]);
-  }
-
   async function removeParticipant(index: number) {
     if (!selected) return;
     await persist(
@@ -130,26 +97,12 @@ export default function LadderPage() {
     );
   }
 
-  async function clearAllParticipants() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameLadder.clearAllConfirm'))) return;
-    await persist([], []);
-  }
-
   async function renameResultLabel(id: string, label: string) {
     if (!selected) return;
     await persist(
       selected.items,
       results.map((r) => (r.id === id ? { ...r, label } : r)),
     );
-  }
-
-  async function renameResult(index: number) {
-    if (!selected) return;
-    const target = results[index];
-    const next = prompt(t('gameLadder.renameResultPrompt'), target?.label ?? '');
-    if (next == null || !next.trim()) return;
-    await renameResultLabel(target.id, next.trim());
   }
 
   async function renameParticipant(id: string, label: string) {
@@ -172,14 +125,6 @@ export default function LadderPage() {
   async function removeColumn() {
     if (!selected || selected.items.length <= 2) return;
     await persist(selected.items.slice(0, -1), results.slice(0, -1));
-  }
-
-  async function resetResultsToParticipants() {
-    if (!selected) return;
-    await persist(
-      selected.items,
-      selected.items.map((it) => ({ id: uid(), label: it.label })),
-    );
   }
 
   if (g.noClasses) {
@@ -373,121 +318,6 @@ export default function LadderPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameLadder.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <div className="pt-3">
-                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                    <div className="flex-1 [&>div]:my-0">
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addParticipantsBulk(labels)}
-                      />
-                    </div>
-                    <WordListPicker
-                      variant="label"
-                      wordLists={wordLists}
-                      loading={wordListsLoading}
-                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                    />
-                    <DictionaryPicker
-                      variant="label"
-                      onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                    />
-                    </div>
-                    <div className="font-caption text-caption text-on-surface-variant mb-1">{t('gameLadder.participantsLabel')}</div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selected.items.map((item, i) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                        >
-                          {item.label}
-                          <button
-                            onClick={() => void removeParticipant(i)}
-                            className="text-on-surface-variant hover:text-error"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    {selected.items.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => void clearAllParticipants()}
-                        className="mt-2 font-label-md text-label-md text-error hover:underline"
-                      >
-                        {t('gameAdmin.clearAll')}
-                      </button>
-                    )}
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text"
-                        placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                        value={newParticipant}
-                        onChange={(e) => setNewParticipant(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addParticipant();
-                        }}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                      />
-                      <button
-                        onClick={() => void addParticipant()}
-                        className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                      >
-                        {t('gameAdmin.addParticipant')}
-                      </button>
-                    </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <div className="font-caption text-caption text-on-surface-variant mb-2">
-                        {t('gameLadder.resultsLabel')}
-                      </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {results.map((r, i) => (
-                          <button
-                            key={r.id}
-                            type="button"
-                            onClick={() => void renameResult(i)}
-                            className="px-3 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors"
-                          >
-                            {r.label}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => void resetResultsToParticipants()}
-                        className="mt-3 font-label-md text-label-md text-primary hover:underline"
-                      >
-                        {t('gameLadder.resetResultsButton')}
-                      </button>
-                    </div>
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="ladder" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

@@ -1,24 +1,15 @@
-import NumberRangeFill from '../components/NumberRangeFill';
-import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
-import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
 import OrderPicker from '../components/OrderPicker';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
-import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, MusicSelection } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -37,7 +28,6 @@ export default function OrderPage() {
   });
   const {
     isStaff,
-    academy,
     classes,
     staffClassId,
     selectClass,
@@ -45,13 +35,7 @@ export default function OrderPage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
-    setTemplates,
     selected,
     selectedId,
     setSelectedId,
@@ -64,88 +48,16 @@ export default function OrderPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
-    reload,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
-  const [newParticipant, setNewParticipant] = useRecoverableField('game:order:newParticipant');
 
   /** 아직 만든 목록이 없을 때, 빈 안내 문구 대신 실제로 돌아가는 예시 화면을 보여준다 —
    * 처음 온 선생님이 "아 이런 게임이구나" 하고 감으로 이해하게. 항목 수 고정(3개)이라
    * 매 렌더마다 새로 만들지 않고 한 번만 계산해 데모 중 상태가 리셋되지 않게 한다. */
   const demoPool = useMemo(defaultPool, []);
-
-  async function persist(nextItems: GameItem[]) {
-    if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: nextItems } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: nextItems });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function addItem(label: string) {
-    const trimmed = label.trim();
-    if (!trimmed || !selected) return;
-    await persist([...selected.items, { id: uid(), label: trimmed }]);
-  }
-
-  async function addParticipant() {
-    await addItem(newParticipant);
-    setNewParticipant('');
-  }
-
-  async function addParticipantsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    await persist([...selected.items, ...labels.map((label) => ({ id: uid(), label }))]);
-  }
-
-  async function fillNumbers(labels: string[], replace: boolean) {
-    if (!selected) return;
-    if (replace) await persist(labels.map((label) => ({ id: uid(), label })));
-    else await addParticipantsBulk(labels);
-  }
-
-  async function removeParticipant(index: number) {
-    if (!selected) return;
-    await persist(selected.items.filter((_, i) => i !== index));
-  }
-
-  async function clearAllParticipants() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameOrder.clearAllConfirm'))) return;
-    await persist([]);
-  }
-
-  async function handleMusicChange(music: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleResultSoundChange(resultSound: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
 
   if (g.noClasses) {
     return (
@@ -328,125 +240,6 @@ export default function OrderPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameOrder.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-4">
-                    <OpenInOtherGame currentType="order" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    {academy && (
-                      <div className="divide-y divide-surface-container">
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={selected.config.music}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gameOrder.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameOrder.itemsLabel')}</div>
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addParticipantsBulk(labels)}
-                      />
-                      <div className="flex flex-wrap items-start gap-3 my-3">
-                        <WordListPicker
-                          variant="label"
-                          wordLists={wordLists}
-                          loading={wordListsLoading}
-                          onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                        />
-                        <DictionaryPicker
-                          variant="label"
-                          onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                        />
-                      </div>
-                      <NumberRangeFill existingLabels={selected.items.map((i) => i.label)} onFill={(labels, replace) => void fillNumbers(labels, replace)} />
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {selected.items.length === 0 ? (
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {t('gameAdmin.noParticipants')}
-                          </span>
-                        ) : (
-                          selected.items.map((item, i) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                            >
-                              {item.label}
-                              <button
-                                onClick={() => void removeParticipant(i)}
-                                className="text-on-surface-variant hover:text-error"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void clearAllParticipants()}
-                          className="mt-2 font-label-md text-label-md text-error hover:underline"
-                        >
-                          {t('gameAdmin.clearAll')}
-                        </button>
-                      )}
-                      <div className="flex gap-2 mt-3">
-                        <input
-                          type="text"
-                          placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                          value={newParticipant}
-                          onChange={(e) => setNewParticipant(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addParticipant();
-                          }}
-                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <button
-                          onClick={() => void addParticipant()}
-                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                        >
-                          {t('gameAdmin.addParticipant')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
