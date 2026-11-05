@@ -1,23 +1,14 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
-import CatchSentenceSettings from '../components/CatchSentenceSettings';
 import CatchSentence, { CATCH_DEFAULT_SECONDS, type CatchLevel } from '../components/CatchSentence';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import SentenceBankPicker from '../components/SentenceBankPicker';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { FullCardItem, GameItem, UndoHandle } from '../lib/types';
+import type { GameItem, UndoHandle } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -48,11 +39,6 @@ export default function CatchSentencePage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -69,65 +55,17 @@ export default function CatchSentencePage() {
     handleCreate,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
     reload,
   } = g;
-  const { notify } = useToast();
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
-  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:catchsentence:newItemLabel');
   const teams = selected?.config.catchTeams ?? DEFAULT_TEAMS;
   const level = ((selected?.config.catchLevel as CatchLevel | undefined) ?? DEFAULT_LEVEL) as CatchLevel;
   const seconds = selected?.config.catchSeconds ?? CATCH_DEFAULT_SECONDS[level];
 
-  async function persistItems(next: GameItem[]): Promise<boolean> {
-    if (!selected) return false;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: next });
-      return true;
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
-      return false;
-    }
-  }
-
-  async function addItem() {
-    const label = newItemLabel.trim();
-    if (!label || !selected) return;
-    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
-    setNewItemLabel('');
-  }
-
-  async function addItemsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
-      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
-    }
-  }
-
   /** 문장 목록의 문장(+해석)을 "영어 | 해석" 한 줄로 담는다 */
-  async function addSentences(cards: FullCardItem[]) {
-    const labels = cards.map((c) => (c.meaning.trim() ? `${c.word.trim()} | ${c.meaning.trim()}` : c.word.trim())).filter(Boolean);
-    await addItemsBulk(labels);
-  }
-
-  async function removeItem(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
-  }
-
-  async function clearAllItems() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameCatchSentence.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
 
   async function commitConfig(patch: { catchTeams?: number; catchLevel?: number; catchSeconds?: number }) {
     if (!selected) return;
@@ -325,144 +263,6 @@ export default function CatchSentencePage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameCatchSentence.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <CatchSentenceSettings level={level} seconds={seconds} onChange={patch=>void commitConfig({catchLevel:patch.level,catchSeconds:patch.seconds})}/>
-                    <div className="pt-3">
-                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                    <div className="flex-1 [&>div]:my-0">
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addItemsBulk(labels)}
-                      />
-                    </div>
-                    <WordListPicker
-                      variant="label"
-                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
-                      loading={wordListsLoading}
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    <WordListPicker
-                      variant="full"
-                      kind="sentence"
-                      wordLists={wordLists.filter((l) => l.kind === 'sentence')}
-                      loading={wordListsLoading}
-                      onImportFull={(cards) => void addSentences(cards)}
-                    />
-                    <SentenceBankPicker classId={staffClassId} onImportLabels={(labels) => void addItemsBulk(labels)} />
-                    <DictionaryPicker
-                      variant="label"
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    </div>
-
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {selected.items.length === 0 ? (
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {t('gameAdmin.noParticipants')}
-                          </span>
-                        ) : (
-                          selected.items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                            >
-                              {item.label}
-                              <button
-                                onClick={() => void removeItem(item.id)}
-                                className="text-on-surface-variant hover:text-error"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void clearAllItems()}
-                          className="mt-2 font-label-md text-label-md text-error hover:underline"
-                        >
-                          {t('gameAdmin.clearAll')}
-                        </button>
-                      )}
-                      <div className="mt-3 rounded-lg bg-tertiary-container/40 px-3 py-2 font-caption text-caption text-on-surface">
-                        {t('gameCatchSentence.sentenceHint')}
-                      </div>
-                      <div className="flex gap-2 mt-3">
-                        <input
-                          type="text"
-                          placeholder={t('gameCatchSentence.itemPlaceholder')}
-                          value={newItemLabel}
-                          onChange={(e) => setNewItemLabel(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addItem();
-                          }}
-                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <button
-                          onClick={() => void addItem()}
-                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                        >
-                          {t('gameAdmin.addParticipant')}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 flex flex-wrap gap-6">
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameCatchSentence.teamsLabel')}</div>
-                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
-                          <button
-                            type="button"
-                            disabled={teams <= 2}
-                            onClick={() => void commitConfig({ catchTeams: Math.max(2, teams - 1) })}
-                            className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40"
-                            aria-label="-"
-                          >
-                            −
-                          </button>
-                          <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">
-                            {t('common.teamsCount', { n: teams })}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={teams >= 8}
-                            onClick={() => void commitConfig({ catchTeams: Math.min(8, teams + 1) })}
-                            className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40"
-                            aria-label="+"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="catchsentence" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

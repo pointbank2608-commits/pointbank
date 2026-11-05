@@ -6,9 +6,6 @@ import ClassChipRow from '../components/ClassChipRow';
 import DoctorVisit from '../components/DoctorVisit';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 
 /** 병원 롤플레이 — 낱말·그림·대화는 내장이고 해석 표시만 설정한다. */
@@ -29,7 +26,6 @@ export default function DoctorPage() {
     classId,
     roster,
     templates,
-    setTemplates,
     selected,
     selectedId,
     setSelectedId,
@@ -44,27 +40,10 @@ export default function DoctorPage() {
     handleCreate,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
-    reload,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const ko = selected?.config.doctorKo ?? false;
-
-  async function commitConfig(patch: { doctorKo?: boolean }) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, ...patch };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    setRoundKey((k) => k + 1);
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
 
   if (g.noClasses) {
     return <div className="text-center py-16 font-body-md text-on-surface-variant">{t('gameAdmin.noClasses')}</div>;
@@ -214,45 +193,6 @@ export default function DoctorPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameDoctor.settingsTitle')}</h4>
-                  <button onClick={() => setEditorOpen((v) => !v)} className="font-label-md text-label-md text-primary hover:underline">
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <div className="pt-3 flex flex-wrap gap-6">
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameDoctor.koLabel')}</div>
-                        <div className="flex bg-surface-container-low rounded-lg p-1 w-fit">
-                          {[false, true].map((v) => (
-                            <button
-                              key={String(v)}
-                              type="button"
-                              onClick={() => void commitConfig({ doctorKo: v })}
-                              className={`px-3 py-1.5 rounded-md font-label-md text-label-md transition-all ${
-                                ko === v ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant'
-                              }`}
-                            >
-                              {v ? t('gameDoctor.koOn') : t('gameDoctor.koOff')}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="doctor" itemCount={0} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

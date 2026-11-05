@@ -1,22 +1,14 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import ShuffleFind from '../components/ShuffleFind';
-import { normalizeShuffleConfig, SHUFFLE_DEFAULTS, type ShuffleSpeed } from '../lib/shuffleFind';
+import { normalizeShuffleConfig, SHUFFLE_DEFAULTS } from '../lib/shuffleFind';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import SentenceBankPicker from '../components/SentenceBankPicker';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
-import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { FullCardItem, GameItem } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -44,10 +36,7 @@ export default function ShuffleFindPage() {
     studentClassName,
     classId,
     roster,
-    wordLists,
-    wordListsLoading,
     templates,
-    setTemplates,
     selected,
     selectedId,
     setSelectedId,
@@ -62,74 +51,13 @@ export default function ShuffleFindPage() {
     handleCreate,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
-    reload,
   } = g;
-  const { notify } = useToast();
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:shufflefind:newItemLabel');
   const cfg = normalizeShuffleConfig(selected?.config);
 
-  async function persistItems(next: GameItem[]): Promise<boolean> {
-    if (!selected) return false;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, items: next } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { items: next });
-      return true;
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-      await reload();
-      return false;
-    }
-  }
-
-  async function addItem() {
-    const label = newItemLabel.trim();
-    if (!label || !selected) return;
-    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
-    setNewItemLabel('');
-  }
-
-  async function addItemsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
-      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
-    }
-  }
-
   /** 문장 목록의 문장(+해석)을 "영어 | 해석" 한 줄로 담는다 */
-  async function addSentences(cards: FullCardItem[]) {
-    const labels = cards.map((c) => (c.meaning.trim() ? `${c.word.trim()} | ${c.meaning.trim()}` : c.word.trim())).filter(Boolean);
-    await addItemsBulk(labels);
-  }
-
-  async function removeItem(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
-  }
-
-  async function clearAllItems() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameShuffle.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function commitConfig(patch: { shuffleTeams?: number; shuffleCups?: number; shuffleSpeed?: ShuffleSpeed; shuffleRounds?: number }) {
-    if (!selected) return;
-    const clean = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
-    const nextConfig = { ...selected.config, ...clean };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
 
   if (g.noClasses) {
     return (
@@ -306,147 +234,6 @@ export default function ShuffleFindPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameShuffle.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <div className="pt-3">
-                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                    <WordListPicker
-                      variant="label"
-                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
-                      loading={wordListsLoading}
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    <WordListPicker
-                      variant="full"
-                      kind="sentence"
-                      wordLists={wordLists.filter((l) => l.kind === 'sentence')}
-                      loading={wordListsLoading}
-                      onImportFull={(cards) => void addSentences(cards)}
-                    />
-                    <SentenceBankPicker classId={staffClassId} onImportLabels={(labels) => void addItemsBulk(labels)} />
-                    <DictionaryPicker
-                      variant="label"
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    </div>
-
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {selected.items.length === 0 ? (
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {t('gameAdmin.noParticipants')}
-                          </span>
-                        ) : (
-                          selected.items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                            >
-                              {item.label}
-                              <button
-                                onClick={() => void removeItem(item.id)}
-                                className="text-on-surface-variant hover:text-error"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void clearAllItems()}
-                          className="mt-2 font-label-md text-label-md text-error hover:underline"
-                        >
-                          {t('gameAdmin.clearAll')}
-                        </button>
-                      )}
-                      <div className="mt-3 rounded-lg bg-tertiary-container/40 px-3 py-2 font-caption text-caption text-on-surface">
-                        {t('gameShuffle.sentenceHint')}
-                      </div>
-                      <div className="flex gap-2 mt-3">
-                        <input
-                          type="text"
-                          placeholder={t('gameShuffle.itemPlaceholder')}
-                          value={newItemLabel}
-                          onChange={(e) => setNewItemLabel(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addItem();
-                          }}
-                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <button
-                          onClick={() => void addItem()}
-                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                        >
-                          {t('gameAdmin.addParticipant')}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 flex flex-wrap gap-6">
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameShuffle.teamsLabel')}</div>
-                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
-                          <button type="button" disabled={cfg.teams <= 1} onClick={() => void commitConfig({ shuffleTeams: Math.max(1, cfg.teams - 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="-">−</button>
-                          <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">{t('gameShuffle.teamsCount', { n: cfg.teams })}</span>
-                          <button type="button" disabled={cfg.teams >= 4} onClick={() => void commitConfig({ shuffleTeams: Math.min(4, cfg.teams + 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="+">＋</button>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameShuffle.cupsLabel')}</div>
-                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
-                          <button type="button" disabled={cfg.cups <= 3} onClick={() => void commitConfig({ shuffleCups: Math.max(3, cfg.cups - 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="-">−</button>
-                          <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">{t('gameShuffle.cupsCount', { n: cfg.cups })}</span>
-                          <button type="button" disabled={cfg.cups >= 5} onClick={() => void commitConfig({ shuffleCups: Math.min(5, cfg.cups + 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="+">＋</button>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameShuffle.roundsLabel')}</div>
-                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
-                          <button type="button" disabled={cfg.rounds <= 1} onClick={() => void commitConfig({ shuffleRounds: Math.max(1, cfg.rounds - 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="-">−</button>
-                          <span className="min-w-[4.5em] text-center font-label-md text-label-md text-on-surface">{t('gameShuffle.roundsCount', { n: cfg.rounds })}</span>
-                          <button type="button" disabled={cfg.rounds >= 30} onClick={() => void commitConfig({ shuffleRounds: Math.min(30, cfg.rounds + 1) })} className="h-9 w-9 rounded-md bg-surface-container-lowest font-bold text-primary shadow-sm disabled:opacity-40" aria-label="+">＋</button>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-caption text-caption text-on-surface-variant mb-2">{t('gameShuffle.speedLabel')}</div>
-                        <div className="flex items-center gap-1 bg-surface-container-low rounded-lg p-1 w-fit">
-                          {(['slow', 'normal', 'fast'] as const).map((sp) => (
-                            <button
-                              key={sp}
-                              type="button"
-                              aria-pressed={cfg.speed === sp}
-                              onClick={() => void commitConfig({ shuffleSpeed: sp })}
-                              className={`h-9 rounded-md px-3 font-label-md text-label-md shadow-sm ${cfg.speed === sp ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-primary'}`}
-                            >
-                              {t(`gameShuffle.speed_${sp}`)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="shufflefind" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
