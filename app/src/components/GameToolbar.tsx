@@ -178,6 +178,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
   const isPopcorn = type === 'popcorn';
+  // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
+  function pickMode(next: Mode) {
+    setPMode(next);
+    if (next !== 'none' && !pClass && info?.classes.length) {
+      const first = info.classes[0].id;
+      setPClass(first);
+      setAbsentOpen(false);
+      setPAbsent(loadAbsent(first));
+    }
+  }
   const splitGame = isLadder || isBomb || isTimerMatch; // 참가자는 반 설정, 나머지는 게임설정
   const isWheel = type === 'wheel';
   const hasNumbers = type === 'order';
@@ -204,6 +214,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPTeams(Math.min(teamCap, Math.max(2, nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
     setAbsentOpen(false);
+    if (!info?.classId && info?.classes.length && !(isGrammar ? play.teams === 0 && !play.showScore : !isShowOrderOn())) {
+      const first = info.classes[0].id;
+      setPClass(first);
+      setPAbsent(loadAbsent(first));
+    }
     setPSound(soundOn);
     setPItemSource('type');
     setPItemClass(info?.classId || '');
@@ -573,7 +588,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">{text('반', 'Class')}
               <select className={field} value={pClass} onChange={(e) => { const next = e.target.value; setPClass(next); setAbsentOpen(false); setPAbsent(next ? loadAbsent(next) : []); }}>
-                <option value="">{text('반 없이 하기', 'No class')}</option>
+                <option value="" disabled={pMode !== 'none'}>{text('반 없이 하기', 'No class')}</option>
                 {info.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
@@ -615,8 +630,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <p className="text-sm font-bold">{text('참여 방식', 'How to play')}</p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={chip(pMode === 'none')} aria-pressed={pMode === 'none'} onClick={() => setPMode('none')}>{text('없음', 'None')}</button>
-            <button type="button" className={chip(pMode === 'solo')} aria-pressed={pMode === 'solo'} onClick={() => setPMode('solo')}>{text('개인', 'Solo')}</button>
-            <button type="button" className={chip(pMode === 'team')} aria-pressed={pMode === 'team'} onClick={() => setPMode('team')}>{text('팀', 'Teams')}</button>
+            <button type="button" className={chip(pMode === 'solo')} aria-pressed={pMode === 'solo'} onClick={() => pickMode('solo')}>{text('개인', 'Solo')}</button>
+            <button type="button" className={chip(pMode === 'team')} aria-pressed={pMode === 'team'} onClick={() => pickMode('team')}>{text('팀', 'Teams')}</button>
           </div>
           {pMode === 'team' && (
             <div className="flex items-center gap-3" role="group" aria-label={text('팀 수', 'Number of teams')}>
