@@ -91,6 +91,8 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
   const currentId = useRef(saved.order[saved.turn]);
   const { spin, spinning } = useSlotSpin();
   const firstSave = useRef(true);
+  const prevOrderKey = useRef(saved.order.join('|'));
+  const explicitStart = useRef(false);
 
   // 바뀔 때마다 저장(슬롯머신처럼 돌아가는 동안의 중간 결과는 저장하지 않는다). 순서가 바뀌면 차례는 처음부터.
   useEffect(() => {
@@ -99,6 +101,13 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
       firstSave.current = false;
       return;
     }
+    // 순서(또는 팀 순서)가 바뀌면 새 순서의 맨 앞부터 시작한다. "여기서 시작"으로 직접 고른 경우만 그 자리를 지킨다.
+    const orderKey = order.join('|');
+    if (orderKey !== prevOrderKey.current) {
+      prevOrderKey.current = orderKey;
+      if (!explicitStart.current && order.length > 0) currentId.current = order[0];
+    }
+    explicitStart.current = false;
     const currentIndex = order.indexOf(currentId.current);
     const nextTurn = currentIndex >= 0 ? currentIndex : Math.min(turn, Math.max(0, order.length - 1));
     currentId.current = order[nextTurn];
@@ -348,7 +357,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
                       >
                         <span className="w-7 text-center font-title-md text-title-md text-primary tabular-nums">{i + 1}</span>
                         <span className="flex-1 font-label-md text-label-md text-on-surface">{label}</span>
-                        <button className="min-h-11 rounded-lg border px-3 text-primary" aria-pressed={turn===i} onClick={()=>{currentId.current=id;setTurn(i);}}>{t('flow.startHere')}</button>
+                        <button className="min-h-11 rounded-lg border px-3 text-primary" aria-pressed={turn===i} onClick={()=>{currentId.current=id;explicitStart.current=true;setTurn(i);}}>{t('flow.startHere')}</button>
                         <button
                           type="button"
                           onClick={() => move(i, -1)}
