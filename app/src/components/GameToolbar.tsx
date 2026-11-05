@@ -771,7 +771,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <p className="text-sm font-bold">{text('라운드당 단어/문장 수', 'Words per round')}</p>
               <div className="flex flex-wrap items-center gap-2">
                 <input className={`${field} !mt-0 !w-24`} type="number" min={1} max={100} value={pBallWords} onChange={(e) => setPBallWords(e.target.value)} aria-label={text('라운드당 단어/문장 수', 'Words per round')} />
-                <span className="text-sm text-on-surface-variant">{text(`항목이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이만큼만 나와요`, 'Exactly this many per round')}</span>
               </div>
             </div>
             {academy && (
