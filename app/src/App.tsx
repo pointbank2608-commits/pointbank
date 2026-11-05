@@ -180,6 +180,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/s" element={<StudentPortalPage />} />
         <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
+        <Route path="/s/homework/:assignmentId" element={<StudentSoloPage homework />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
       </>

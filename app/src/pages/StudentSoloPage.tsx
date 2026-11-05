@@ -32,7 +32,7 @@ const shell =
   'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
 
 /** 학생이 "오늘의 수업" 하나를 혼자 하는 화면(/s/lesson/:id). 로그인 열쇠가 없거나 끝났으면 학생 홈으로 돌려보낸다. */
-export default function StudentSoloPage() {
+export default function StudentSoloPage({homework=false}:{homework?:boolean}={}) {
   const { t } = useTranslation();
   const { assignmentId } = useParams();
   const navigate = useNavigate();
@@ -123,7 +123,7 @@ export default function StudentSoloPage() {
         {t('common.loading')}
       </div>
     );
-  if (lesson.learning_path || isLearningPath(lesson.steps)) return <LearningPathPlayer token={token as string} assignment={assignmentId as string} title={lesson.name} onExit={() => navigate('/s')} onHelp={async position => { await soloHelp(token as string, assignmentId as string, position); }}/>;
+  if (lesson.learning_path || isLearningPath(lesson.steps)) return <LearningPathPlayer homework={homework} token={token as string} assignment={assignmentId as string} title={lesson.name} onExit={() => navigate('/s')} onHelp={async position => { await soloHelp(token as string, assignmentId as string, position); }}/>;
   return (
     <SoloPlayer
       key={assignmentId}

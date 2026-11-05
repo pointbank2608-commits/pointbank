@@ -1,3 +1,4 @@
+import { buildAdaptiveFixture } from './adaptive-homework-fixture.mjs';
 // Multi-connection concurrency check for the 097/098/099 learning-path SQL on a REAL PostgreSQL server.
 //
 //   LEARNING_TEST_DISPOSABLE=yes PG_ADMIN_URL=postgres://postgres:secret@localhost:5432/postgres node scripts/admin/test-learning-concurrency.mjs
@@ -83,9 +84,9 @@ const runAll = async (fns) => {
 
 try {
 db = await makeAdminDb();
-const f = await buildFixture(db);
-await db.exec(f.read('099_learning_paths.sql'));
-if (args.has('research')) {
+const f = args.has('homework') ? await buildAdaptiveFixture(db) : await buildFixture(db);
+if (!args.has('homework')) await db.exec(f.read('099_learning_paths.sql'));
+if (args.has('research') && !args.has('homework')) {
   await db.exec(`create schema auth; create function auth.uid() returns uuid language sql as $$select 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid$$`);
   await db.exec(f.read('100_learning_research.sql'));
 }
@@ -204,9 +205,28 @@ for (let round = 1; round <= ROUNDS; round++) {
     await db.exec('reset role');
     assert.equal(await count('select count(*) n from learning_research_decisions where request_id=$1',[decisionReq]),1);
   }
+  if (args.has('homework')) {
+    const request = crypto.randomUUID(), workers=[];
+    try {
+      for (let i=0;i<WORKERS;i++) {
+        const w=await worker(db);workers.push(w);
+        await w.exec(`set role authenticated;select set_config('test.staff','yes',false),set_config('test.academy','${A}',false)`);
+      }
+      const approvals=await runAll(workers.map(w=>()=>call(w,'learning_homework_assign',request,HW,[ST],'Adaptive concurrent '+round,cards,'letters',4,null,'manual',null)));
+      noDeadlock(approvals,'adaptive homework approval');
+      assert.equal(ok(approvals).length,WORKERS);
+      assert.equal(ok(approvals).filter(x=>!x.value.duplicate).length,1);
+      const id=ok(approvals)[0].value.lesson_id;
+      assert.equal(new Set(ok(approvals).map(x=>x.value.lesson_id)).size,1);
+      await db.exec('reset role');
+      assert.equal(await count('select count(*) n from learning_homework_plans where lesson_id=$1',[id]),1);
+      assert.equal(await count("select count(*) n from solo_assignments where lesson_id=$1 and kind='homework'",[id]),1);
+    } finally {if(!SMOKE)await Promise.all(workers.map(w=>w.close()));}
+  }
   console.log(`round ${round}/${ROUNDS} ok`);
 }
 
+if (args.has('homework')) console.log('Adaptive homework extension: concurrent approval creates one approval receipt and one assignment.');
 if (args.has('research')) console.log('Research extension: actual aggregate queries and concurrent same-request admin decisions passed.');
 console.log(SMOKE
   ? 'SMOKE ONLY (serial PGlite): scenario code and SQL are valid. This is NOT a multi-connection concurrency verification.'

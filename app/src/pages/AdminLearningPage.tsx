@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LearningSensorsPanel from '../components/admin/LearningSensorsPanel';
+import AdaptiveHomeworkResearch from '../components/admin/AdaptiveHomeworkResearch';
 import {
   fetchResearch, fetchResearchRecords, fraction, researchInsights, ResearchError, saveResearchDecision,
   type ResearchCohort, type ResearchDecision, type ResearchFocus, type ResearchRecord, type ResearchReport, type ResearchSave,
@@ -185,6 +186,7 @@ export default function AdminLearningPage() {
       <ul className="mt-3 space-y-3">{records.map(r=><li className="rounded-xl border border-outline-variant p-4" key={r.request_id}><p className="text-sm font-bold">{focusLabel(r.focus)} · {decisionLabel(r.decision)}</p><p className="mt-1 text-xs text-on-surface-variant">{date(r.created_at)}</p>{r.note && <p className="mt-2 whitespace-pre-wrap break-words text-sm">{r.note}</p>}<details className="mt-3 text-sm"><summary className="cursor-pointer font-bold">{l('결정 당시 근거 보기','View evidence at decision time')}</summary><p className="mt-2">{l('분석 시각','Report time')}: {date(r.evidence.generated_at)}</p><p>{l('배정','Assignments')} {r.evidence.overview.assignments} · {l('학생','Students')} {r.evidence.overview.students} · {l('초기 완료','Initial completions')} {r.evidence.overview.first_completed}</p><ul>{r.evidence.rounds.map(x=><li key={x.round}>{l(`${x.round}차 지연 확인`,`Delayed round ${x.round}`)}: {l('정답/응답','Correct/answered')} {fraction(x.correct,x.answered)} · {l('미응답','Missing')} {x.missing}</li>)}</ul></details></li>)}</ul>
     </section>}
 
+    <AdaptiveHomeworkResearch/>
     <details className={box}><summary className="cursor-pointer text-lg font-bold">{l('전체 서비스의 센서 수집·연결 상태','Cross-service collection and evidence coverage')}</summary><div className="mt-5"><LearningSensorsPanel/></div></details>
   </div>;
 }

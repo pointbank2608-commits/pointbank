@@ -174,7 +174,7 @@ function HomeView({
   onRetry: () => void;
   onLogout: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (error) {
     return (
       <div className={`${shell} items-center justify-center gap-4 p-6 text-center`}>
@@ -190,7 +190,11 @@ function HomeView({
 
   const soloClosed = home.features?.solo === false;
   const hwClosed = home.features?.homework === false;
-  const firstOpenId = (home.lessons ?? []).find((l) => !l.done && !l.path_waiting)?.id ?? null;
+  const isAdaptiveHomework = (lesson: PortalHome['lessons'][number]) => lesson.kind==='homework' && lesson.learning_path;
+  const lessons = (home.lessons ?? []).filter(l=>!isAdaptiveHomework(l));
+  const adaptive = hwClosed||soloClosed?[]:(home.lessons ?? []).filter(isAdaptiveHomework);
+  const firstOpenId = lessons.find((l) => !l.done && !l.path_waiting)?.id ?? null;
+  const en=i18n.language.startsWith('en');
   const open = home.homework.filter((h) => !h.done);
   const done = home.homework.filter((h) => h.done);
   return (
@@ -214,9 +218,9 @@ function HomeView({
           {t('studentPortal.todayLesson')}
         </h2>
         {soloClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!soloClosed && (home.lessons ?? []).length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
+        {!soloClosed && lessons.length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
         <ul className="mt-3 flex flex-col gap-3">
-          {(home.lessons ?? []).map((l) => (
+          {lessons.map((l) => (
             <li key={l.id}>
               {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-warm-yellow">{t('studentPortal.todayPick')}</div>}
               <a
@@ -252,8 +256,16 @@ function HomeView({
           {t('studentPortal.homework')}
         </h2>
         {hwClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!hwClosed && home.homework.length === 0 && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
+        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
         <ul className="flex flex-col gap-3">
+          {adaptive.map(h=><li key={h.id}>
+            <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white/10 text-white/70':'bg-warm-yellow text-deep-navy'}`}>
+              <span className="material-symbols-outlined text-[26px]" aria-hidden="true">{h.done?'task_alt':h.path_waiting?'event':'play_circle'}</span>
+              <span className="min-w-0 flex-1"><span className="block break-words text-lg font-bold">{h.name}</span><span className="block text-sm opacity-80">{h.done?(en?'Planned reviews complete':'계획한 복습 확인 완료'):h.path_waiting?(en?'Today’s homework complete · Next check ':'오늘 숙제 완료 · 다음 확인 ')+(h.path_due_at?new Date(h.path_due_at).toLocaleDateString():''):h.path_first_completed?(en?'Review available':'복습 확인할 차례예요'):(en?'Learn and practise the words you need':'필요한 단어를 배우고 연습해요')}</span>
+              {!h.path_first_completed&&h.due_at&&<span className="block text-sm opacity-80">{en?'Initial deadline: ':'첫 학습 기한: '}{new Date(h.due_at).toLocaleString(undefined,{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>}</span>
+              <span className="shrink-0 font-bold">{h.done?(en?'View':'보기'):h.path_waiting?t('studentPortal.pathSchedule',{defaultValue:'일정 보기'}):h.path_first_completed?(en?'Review':'복습하기'):t('studentPortal.start')}</span>
+            </a>
+          </li>)}
           {[...open, ...done].map((h) => (
             <li key={h.access}>
               <a

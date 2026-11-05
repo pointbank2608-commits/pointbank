@@ -8,6 +8,8 @@ import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePane
 import HomeworkWizard from '../components/homework/teacher/HomeworkWizard';
 import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEditor';
 import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
+import AdaptiveHomeworkComposer from '../components/homework/teacher/AdaptiveHomeworkComposer';
+import AdaptiveHomeworkResults from '../components/homework/teacher/AdaptiveHomeworkResults';
 import { useFeature } from '../lib/features';
 import type { HwItemDraft } from '../lib/homework/types';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
@@ -22,6 +24,7 @@ import { useClasses } from '../lib/useClasses';
 
 type Panel =
   | { k: 'none' }
+  | { k: 'adaptive' }
   | { k: 'compose'; mode?:'lesson'|'list'; cards?:FullCardItem[]; title?:string; lessonId?:string }
   | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
   | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
@@ -35,6 +38,9 @@ export default function HomeworkPage() {
   const { t, i18n } = useTranslation();
   const { academy, profile } = useAuth();
   const homeworkOpen = useFeature('homework');
+  const soloOpen = useFeature('solo');
+  const [adaptiveRevision,setAdaptiveRevision]=useState(0);
+  const en=i18n.language.startsWith('en');
   const { notify } = useToast();
   const { classes, selectedId, select, reorder } = useClasses(academy?.id);
   const classId = selectedId ?? classes[0]?.id ?? null;
@@ -172,6 +178,11 @@ export default function HomeworkPage() {
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
 
+      {panel.k==='none'&&classId&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
+        <div><h2 className="text-lg font-bold text-deep-navy">{en?'Adaptive vocabulary homework':'필요한 만큼 배우는 단어 숙제'}</h2><p className="mt-1 text-sm text-on-surface-variant">{en?'Choose words, preview the plan and send. Students practise what they need and check their memory later.':'단어를 고르고 계획을 확인하면, 학생마다 필요한 연습과 이후 복습 확인이 이어져요.'}</p>{!soloOpen&&<p className="mt-2 text-sm">{en?'This homework uses the academy’s individual learning feature.':'이 숙제는 학원의 개별수업 기능이 열려 있어야 만들 수 있어요.'}</p>}</div>
+        <button type="button" className={`${headerBtn} bg-primary text-white disabled:opacity-40`} disabled={!soloOpen} onClick={()=>setPanel({k:'adaptive'})}>{en?'Create adaptive homework':'맞춤 단어 숙제 만들기'}</button>
+      </section>}
+      {panel.k==='adaptive'&&classId&&academy?.id&&<AdaptiveHomeworkComposer key={classId} academyId={academy.id} classId={classId} onClose={()=>setPanel({k:'none'})} onCreated={()=>{setPanel({k:'none'});setAdaptiveRevision(n=>n+1);notify(en?'Homework assigned. Students can start from their portal.':'숙제를 배정했어요. 학생 홈의 숙제에서 시작할 수 있어요.');}}/>}
       {panel.k==='none'&&classId&&<div className="hw-source-choices rounded-2xl border border-outline-variant bg-white p-5">
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
@@ -236,6 +247,7 @@ export default function HomeworkPage() {
         />
       )}
 
+      {classId && <AdaptiveHomeworkResults key={`adaptive-${classId}`} classId={classId} revision={adaptiveRevision}/> }
       {classId && <WordMemoryResults key={classId} classId={classId} initialPlanId={(location.state as { wmPlanId?: string } | null)?.wmPlanId} />}
 
       {list === null ? (
