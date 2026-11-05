@@ -679,7 +679,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
               {t(`gameShopping.modeHint_${mode}`)}
             </div>
             {missionCard(true)}
-            <div data-initial-game-start-container>{bigButton(t('gameShopping.startButton'), () => startRound())}</div>
+            <div>{bigButton(t('gameShopping.startButton'), () => startRound())}</div>
           </>,
         )}
 

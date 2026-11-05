@@ -414,7 +414,7 @@ export default function FindMissing({
         className="mb-5 w-[min(180px,55vw)]"
         style={{ filter: 'drop-shadow(0 8px 12px rgba(90, 50, 18, 0.22))' }}
       />
-      <button data-initial-game-start onClick={start} className={pill}>
+      <button onClick={start} className={pill}>
         {t('gameFindMissing.startButton')}
       </button>
     </div>
