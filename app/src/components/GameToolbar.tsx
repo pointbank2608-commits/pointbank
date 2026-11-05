@@ -727,14 +727,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <div className="space-y-1">
               <p className="text-sm font-bold">{text('라운드당 카드 수', 'Cards per round')}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <input className={`${field} !mt-0 w-28`} type="number" min={1} max={MAX_ROUND_CARDS} placeholder={text('전체', 'All')} value={pRound} onChange={(e) => setPRound(e.target.value)} aria-label={text('라운드당 카드 수', 'Cards per round')} />
+                <input className={`${field} !mt-0 !w-28`} type="number" min={1} max={MAX_ROUND_CARDS} placeholder={text('전체', 'All')} value={pRound} onChange={(e) => setPRound(e.target.value)} aria-label={text('라운드당 카드 수', 'Cards per round')} />
                 <span className="text-sm text-on-surface-variant">{text(`낱말이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이 장수만 나와요 (비우면 낱말 전부)`, 'Each round uses exactly this many cards (blank = all words)')}</span>
               </div>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-bold">{text('POP 카드 수', 'Pop cards')}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <input className={`${field} !mt-0 w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('POP 카드 수', 'Pop cards')} />
+                <input className={`${field} !mt-0 !w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('POP 카드 수', 'Pop cards')} />
                 <span className="text-sm text-on-surface-variant">{text('라운드 카드 중 뽑으면 점수가 0이 되는 POP 카드', 'Cards that reset the score')}</span>
               </div>
             </div>
@@ -750,7 +750,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                     {o.choices?.map((c) => <button key={c.v} type="button" className={chip(pOpt[o.key] === c.v)} aria-pressed={pOpt[o.key] === c.v} onClick={() => setPOpt((old) => ({ ...old, [o.key]: c.v }))}>{text(c.ko, c.en)}</button>)}
                   </div>
                 ) : (
-                  <input className={`${field} !mt-0 w-28`} type="number" min={o.min} max={o.max} value={pOpt[o.key] ?? ''} onChange={(e) => setPOpt((old) => ({ ...old, [o.key]: e.target.value }))} aria-label={text(o.ko, o.en)} />
+                  <input className={`${field} !mt-0 !w-28`} type="number" min={o.min} max={o.max} value={pOpt[o.key] ?? ''} onChange={(e) => setPOpt((old) => ({ ...old, [o.key]: e.target.value }))} aria-label={text(o.ko, o.en)} />
                 )}
               </div>
             ))}
@@ -761,16 +761,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <div className="space-y-1">
               <p className="text-sm font-bold">{text('음악이 멈추는 시간 범위(초)', 'Music stops between (sec)')}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <input className={`${field} !mt-0 w-24`} type="number" min={1} value={pBallMin} onChange={(e) => setPBallMin(e.target.value)} aria-label={text('최소(초)', 'Min (sec)')} />
+                <input className={`${field} !mt-0 !w-24`} type="number" min={1} value={pBallMin} onChange={(e) => setPBallMin(e.target.value)} aria-label={text('최소(초)', 'Min (sec)')} />
                 <span>~</span>
-                <input className={`${field} !mt-0 w-24`} type="number" min={1} value={pBallMax} onChange={(e) => setPBallMax(e.target.value)} aria-label={text('최대(초)', 'Max (sec)')} />
+                <input className={`${field} !mt-0 !w-24`} type="number" min={1} value={pBallMax} onChange={(e) => setPBallMax(e.target.value)} aria-label={text('최대(초)', 'Max (sec)')} />
                 <span className="text-sm text-on-surface-variant">{text('이 사이 무작위 시각에 멈춰요', 'at a random moment')}</span>
               </div>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-bold">{text('라운드당 단어/문장 수', 'Words per round')}</p>
               <div className="flex flex-wrap items-center gap-2">
-                <input className={`${field} !mt-0 w-24`} type="number" min={1} max={100} value={pBallWords} onChange={(e) => setPBallWords(e.target.value)} aria-label={text('라운드당 단어/문장 수', 'Words per round')} />
+                <input className={`${field} !mt-0 !w-24`} type="number" min={1} max={100} value={pBallWords} onChange={(e) => setPBallWords(e.target.value)} aria-label={text('라운드당 단어/문장 수', 'Words per round')} />
                 <span className="text-sm text-on-surface-variant">{text(`항목이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이만큼만 나와요`, 'Exactly this many per round')}</span>
               </div>
             </div>
@@ -798,7 +798,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 {[5, 10, 15, 30].map((sec) => (
                   <button key={sec} type="button" className={chip(Number(pTimerSec) === sec)} aria-pressed={Number(pTimerSec) === sec} onClick={() => setPTimerSec(String(sec))}>{sec}{text('초', 's')}</button>
                 ))}
-                <input className={`${field} !mt-0 w-28`} inputMode="decimal" value={pTimerSec} onChange={(e) => setPTimerSec(e.target.value)} aria-label={text('목표 시간(초)', 'Target (sec)')} />
+                <input className={`${field} !mt-0 !w-28`} inputMode="decimal" value={pTimerSec} onChange={(e) => setPTimerSec(e.target.value)} aria-label={text('목표 시간(초)', 'Target (sec)')} />
               </div>
             </div>
             {academy && (
