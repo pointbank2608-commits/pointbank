@@ -391,10 +391,6 @@ const en: Ko = {
     explodedCaught: 'Boom! Caught holding it',
     explodedTimerOnly: 'Boom! 💥',
     resetButton: 'Play again',
-    continueButton: 'Resume',
-    roundDoneLabel: 'Round complete!',
-    newRoundButton: 'Start a new round',
-    progressLabel: '{{n}} / {{total}}',
     infoDescription: 'Pass a bomb around that explodes at a random time.',
     infoSteps: [
       'In settings, add at least 2 participants and choose Pass mode or Timer mode.',
@@ -652,6 +648,10 @@ const en: Ko = {
     playingHint: 'Pass the ball while the music plays… no one knows when it stops!',
     missionLabel: "Today's mission word",
     resetButton: 'Play again',
+    continueButton: 'Resume',
+    roundDoneLabel: 'Round complete!',
+    newRoundButton: 'Start a new round',
+    progressLabel: '{{n}} / {{total}}',
     needParticipants: 'Register at least 1 item to get started.',
     infoDescription: "Pass the ball while the music plays — whoever's holding it when it stops reads the mission word.",
     infoSteps: [

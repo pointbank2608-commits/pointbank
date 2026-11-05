@@ -389,10 +389,6 @@ const ko = {
     explodedCaught: '펑! 걸린 사람',
     explodedTimerOnly: '펑! 💥',
     resetButton: '다시 하기',
-    continueButton: '다시 시작',
-    roundDoneLabel: '라운드 끝!',
-    newRoundButton: '새 라운드 시작',
-    progressLabel: '{{n}} / {{total}}',
     infoDescription: '무작위 시각에 터지는 폭탄을 참가자끼리 서로 돌리는 게임이에요.',
     infoSteps: [
       '설정에서 참가자를 2명 이상 등록하고, "패스" 모드와 "타이머" 모드 중 하나를 고르세요.',
@@ -649,6 +645,10 @@ const ko = {
     playingHint: '음악이 흐르는 동안 공을 돌리세요… 언제 멈출지 몰라요!',
     missionLabel: '오늘의 미션 단어',
     resetButton: '다시 하기',
+    continueButton: '다시 시작',
+    roundDoneLabel: '라운드 끝!',
+    newRoundButton: '새 라운드 시작',
+    progressLabel: '{{n}} / {{total}}',
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
     infoDescription: '음악이 흐르는 동안 공을 돌리다가, 음악이 멈췄을 때 공을 든 사람이 미션 단어를 읽는 게임이에요.',
     infoSteps: [
