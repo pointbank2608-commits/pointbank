@@ -25,6 +25,11 @@ export interface PortalHomework {
 }
 
 export interface PortalLesson {
+  learning_path?: boolean;
+  path_waiting?: boolean;
+  path_due_at?: string | null;
+  path_first_completed?: boolean;
+  path_round?: number;
   id: string;
   name: string;
   minutes: number;

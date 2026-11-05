@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
 import { lessonViewChannel, lessonViewCreate, lessonViewEnd, lessonViewUpdate, type LessonViewSnapshot } from '../lib/lessonView';
 import { PresentSyncContext, type PresentSyncApi, type SubState } from '../lib/presentSync';
 import { decorThemeFor, TOPIC_TITLES } from '../lib/topicWorksheets';
@@ -119,6 +120,9 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       // 저장 실패해도(프라이빗 모드 등) 진행에는 지장 없다 — 새로고침 복원만 안 될 뿐.
     }
   }, [runner]);
+
+  // Teacher-side presentation flow only; never a per-student learning result.
+  useLearningActivity(runner ? { source: 'group', credential: '', resource: runner.lessonId } : undefined, runner?.stepIndex ?? null);
 
   const [zoom, setZoom] = useState<PresentZoom>(PRESENT_ZOOM_IDENTITY);
   // 다음/이전 슬라이드로 가거나 수업을 새로 시작·마치면 확대는 풀고 100%로.

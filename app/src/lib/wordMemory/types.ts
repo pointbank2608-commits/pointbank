@@ -78,6 +78,7 @@ export interface WmItem {
 }
 
 export interface WmToday {
+  sensor_run_id?: string;
   ended?: boolean;
   session_id: string;
   day: string;

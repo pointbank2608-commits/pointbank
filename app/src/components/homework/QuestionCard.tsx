@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
+import type { SensorAction } from '../../lib/learningSensors/core';
 import type { HwQuestion } from '../../lib/homework/types';
 import { TextAnswer } from '../../pages/LiveJoinPage';
 
@@ -27,12 +28,14 @@ const CHOICE_COLORS =['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#1
  * 숙제 문제 한 개(학생 화면·선생님 미리보기 공용) — 보기 고르기 · 철자 입력 · 낱말/글자 순서(탭으로 놓기).
  * 답을 정하면 onAnswer(응답 글)를 부른다. 채점은 하지 않는다(서버 또는 미리보기가 한다).
  */
-export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
+export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor }: { onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
   const { t } = useTranslation();
+  const onSensorRef = useRef(onSensor);
+  onSensorRef.current = onSensor;
   const listen = q.style === 'listen' || q.style === 'whack' || q.style === 'dictation' || q.style === 'plane';
 
   useEffect(() => {
-    if (listen && q.speak) speak(q.speak);
+    if (listen && q.speak) { queueMicrotask(() => onSensorRef.current?.('audio')); speak(q.speak); }
   }, [q.id, listen, q.speak]);
 
   const memo = q.style === 'flash' || q.style === 'fade' || q.style === 'sfade';
@@ -41,7 +44,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated }: { q:
     q.speak ? (
       <button
         type="button"
-        onClick={() => speak(q.speak!)}
+        onClick={() => { onSensor?.('audio'); speak(q.speak!); }}
         aria-label={t('studentHw.listenAgain')}
         className={`flex items-center justify-center gap-2 rounded-full bg-warm-yellow font-bold text-deep-navy shadow-lg active:scale-95 ${big ? 'h-24 w-24' : 'min-h-11 px-4 text-base'}`}
       >

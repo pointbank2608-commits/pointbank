@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { learningBuildEnvironment as env } from './vercel-build.mjs';
+assert.equal(env({}).VITE_LEARNING_SENSORS_ENABLED, undefined);
+assert.equal(env({VERCEL_ENV:'preview'}).VITE_LEARNING_SENSORS_ENABLED, undefined);
+assert.equal(env({VERCEL_ENV:'production'}).VITE_LEARNING_SENSORS_ENABLED, 'true');
+assert.equal(env({VERCEL_ENV:'production',VITE_LEARNING_SENSORS_ENABLED:'false'}).VITE_LEARNING_SENSORS_ENABLED,'false');
+assert.equal(env({VERCEL_ENV:'production',VITE_LEARNING_SENSORS_ENABLED:''}).VITE_LEARNING_SENSORS_ENABLED,'');
+assert.equal(env({VERCEL_ENV:'preview',VITE_LEARNING_SENSORS_ENABLED:'true'}).VITE_LEARNING_SENSORS_ENABLED,'true');
+const source={VERCEL_ENV:'production'};env(source);assert.equal(source.VITE_LEARNING_SENSORS_ENABLED,undefined);
+console.log('Build collection: local/preview default off, authorized production opt-in, explicit kill switch and source isolation passed.');

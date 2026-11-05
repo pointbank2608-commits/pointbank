@@ -7,12 +7,13 @@ import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
 import { useAuth } from '../context/AuthContext';
 
-/** 관리자 메뉴(2026-10-18): 운영자가 하루에 보는 순서대로 8개. 하위 화면은 각 페이지 안의 탭으로 묶는다. */
+/** 관리자 메뉴(2026-10-18): 운영자가 하루에 보는 순서대로 9개. 하위 화면은 각 페이지 안의 탭으로 묶는다. */
 const ITEMS = [
   ['/admin', 'today', 'task_alt'],
   ['/admin/academies', 'academies', 'school'],
   ['/admin/support', 'support', 'support_agent'],
   ['/admin/billing', 'billing', 'payments'],
+  ['/admin/learning', 'learning', 'science'],
   ['/admin/system', 'system', 'monitor_heart'],
   ['/admin/notices', 'notices', 'campaign'],
   ['/admin/videos', 'content', 'video_library'],

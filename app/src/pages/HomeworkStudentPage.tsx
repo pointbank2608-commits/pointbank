@@ -376,10 +376,11 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
   const api = useMemo<RunnerApi>(
     () => ({
       cacheScope: token,
+      sensor: { source: 'homework', credential: token, runs: state.sensor_runs },
       uploadRecording: (itemId, blob, duration) => uploadRecording(token, itemId, blob, duration),
       submit: (itemId, qIndex, response, ms) =>
         run(async () => {
-          const r = await enqueue(token, { op: 'submit', clientId: newId(), itemId, qIndex, response, ms });
+          const r = await enqueue(token, { op: 'submit', runId: state.sensor_runs?.[itemId], clientId: newId(), itemId, qIndex, response, ms });
           if (r === 'queued' || !r) return { correct: null, answer: null };
           return { correct: r.correct, answer: r.answer };
         }),
@@ -409,7 +410,7 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
         }
       },
     }),
-    [token, run, onFatal],
+    [token, run, onFatal, state.sensor_runs],
   );
 
   return (

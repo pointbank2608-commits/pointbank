@@ -5473,6 +5473,7 @@ const en: Ko = {
   },
   adminV2: {
     nav: {
+      learning: "Learning research",
       today: "Today",
       academies: "Academies",
       support: "Support",

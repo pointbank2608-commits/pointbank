@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import LearningSensorsPanel from '../components/admin/LearningSensorsPanel';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { Badge, DataState, PageHead, ReasonDialog } from '../components/admin/AdminUi';
@@ -23,6 +24,7 @@ export default function AdminSystemPage() {
       <ErrorsSection />
       <JobsSection />
       <IntegrationsSection />
+      <LearningSensorsPanel />
     </div>
   );
 }

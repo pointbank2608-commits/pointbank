@@ -8,6 +8,7 @@ import {
   type YoutubePlayer,
 } from "../../lib/youtube";
 import { speak } from "../../lib/speech";
+import type { SensorAction } from "../../lib/learningSensors/core";
 import type { RunnerApi } from "./runnerTypes";
 
 const btn =
@@ -17,10 +18,12 @@ export default function BlockActivity({
   api,
   preview,
   onDone,
+  onSensor,
 }: {
   item: HwItem;
   api: RunnerApi;
   preview: boolean;
+  onSensor?: (action: SensorAction) => void;
   onDone: (meta: Record<string, unknown>) => Promise<void>;
 }) {
   const { i18n } = useTranslation();
@@ -323,6 +326,7 @@ export default function BlockActivity({
           <button
             className={btn}
             onClick={() => {
+              onSensor?.('audio');
               setListens((n) => n + 1);
               if (b.audioUrl) {
                 void new Audio(b.audioUrl)
@@ -344,6 +348,7 @@ export default function BlockActivity({
             <button
               className={btn}
               onClick={() => {
+                if (!showHint) onSensor?.('hint');
                 setHints((n) => n + 1);
                 setShowHint(!showHint);
               }}

@@ -130,6 +130,7 @@ export interface HwServerItemAttempt {
 }
 
 export interface HwStudentState {
+  sensor_runs?: Record<string, string>;
   title: string;
   name: string;
   due_at: string | null;

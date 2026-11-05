@@ -5,6 +5,7 @@ import QuestionCard from '../components/homework/QuestionCard';
 import WordMemoryCollection from '../components/wordMemory/WordMemoryCollection';
 import type { HwQuestion } from '../lib/homework/types';
 import { speak } from '../lib/speech';
+import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
 import { wmAck, wmAnswer, wmCollection, wmHint, wmOpen, wmToday, WmError, toWmError } from '../lib/wordMemory/api';
 import type { WmAnswerResult, WmCollectionWord, WmHint, WmItem, WmOpen, WmStageCounts, WmToday } from '../lib/wordMemory/types';
 
@@ -42,7 +43,7 @@ export default function WordMemoryStudentPage() {
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState(false);
   const [collection, setCollection] = useState<{ stages: WmStageCounts; words: WmCollectionWord[] } | null>(null);
-  const pending = useRef<{ q: number; response: string; clientId: string } | null>(null);
+  const pending = useRef<{ q: number; response: string; clientId: string; runId?: string } | null>(null);
 
   const fail = useCallback((e: unknown) => {
     const err = e instanceof WmError ? e : toWmError(e);
@@ -78,6 +79,7 @@ export default function WordMemoryStudentPage() {
 
   const items = today?.items ?? [];
   const current = items.find((i) => i.state === 'todo') ?? null;
+  const sensor = useLearningActivity(today?.session_id && view === 'run' ? { source: 'word_memory', credential: access, resource: today.session_id, runId: today.sensor_run_id } : undefined, current?.i ?? null);
   const doneCount = items.filter((i) => i.state === 'done').length;
   const asksLeft = items.filter((i) => i.state === 'todo' && i.kind === 'ask').length;
   const studyCount = items.filter((i) => i.kind === 'study').length;
@@ -96,14 +98,15 @@ export default function WordMemoryStudentPage() {
     }
   }, [refresh, settle, fail]);
 
-  async function send(q: number, response: string, clientId: string) {
+  async function send(q: number, response: string, clientId: string, runId?: string) {
     if (!today) return;
     setBusy(true);
     setSendError(false);
     try {
-      const r = await wmAnswer(access, today.session_id, q, response, clientId);
+      const r = await wmAnswer(access, today.session_id, q, response, clientId, runId);
       pending.current = null;
       setFeedback(r);
+      if (r.answer) sensor('revealed');
     } catch (e) {
       const err = toWmError(e);
       if (err.kind === 'network' || err.kind === 'unknown') {
@@ -120,8 +123,9 @@ export default function WordMemoryStudentPage() {
 
   function onAnswer(response: string) {
     if (!current || busy || feedback) return;
-    pending.current = { q: current.i, response, clientId: crypto.randomUUID() };
-    void send(current.i, response, pending.current.clientId);
+    sensor('submitted');
+    pending.current = { q: current.i, response, clientId: crypto.randomUUID(), runId: today?.sensor_run_id };
+    void send(current.i, response, pending.current.clientId, pending.current.runId);
   }
 
   async function onAck() {
@@ -143,6 +147,7 @@ export default function WordMemoryStudentPage() {
     if (!current || !today || busy) return;
     try {
       const h = await wmHint(access, today.session_id, current.i);
+      sensor('hint');
       setHint({ q: current.i, hint: h });
       await refresh();
     } catch (e) {
@@ -298,7 +303,7 @@ export default function WordMemoryStudentPage() {
           </div>
           <div className="text-3xl">{current.meaning}</div>
           {current.pos && <div className="text-base text-white/70">({current.pos})</div>}
-          <button type="button" onClick={() => speak(current.speak || current.word || '')} className="flex min-h-12 items-center gap-2 rounded-full bg-warm-yellow px-5 text-lg font-bold text-deep-navy">
+          <button type="button" onClick={() => { sensor('audio'); speak(current.speak || current.word || ''); }} className="flex min-h-12 items-center gap-2 rounded-full bg-warm-yellow px-5 text-lg font-bold text-deep-navy">
             <span className="material-symbols-outlined" aria-hidden>
               volume_up
             </span>
@@ -321,7 +326,7 @@ export default function WordMemoryStudentPage() {
       ) : (
         <div className="flex flex-1 flex-col">
           {current.retry && <div className="mx-4 mt-2 rounded-xl bg-white/10 px-3 py-1.5 text-center text-sm">{t('wordMemory.requeued')}</div>}
-          <QuestionCard key={`${today.session_id}:${current.i}`} q={toQuestion(today.session_id, current)} onAnswer={onAnswer} disabled={busy || !!feedback} eliminated={eliminated} />
+          <QuestionCard key={`${today.session_id}:${current.i}`} q={toQuestion(today.session_id, current)} onAnswer={onAnswer} onSensor={sensor} disabled={busy || !!feedback} eliminated={eliminated} />
           {hintText && !feedback && (
             <p className="px-5 text-center text-lg font-bold text-warm-yellow" aria-live="polite" data-wm-hint>
               {current.qtype === 'order' ? t('wordMemory.hintFirst', { text: hintText }) : t('wordMemory.hintLetters', { text: hintText })}
@@ -338,7 +343,7 @@ export default function WordMemoryStudentPage() {
           {sendError && (
             <div className="flex flex-col items-center gap-2 px-5 pb-4" role="alert">
               <p className="text-base text-warm-yellow">{t('wordMemory.saveFailedRetry')}</p>
-              <button type="button" className={big} onClick={() => pending.current && void send(pending.current.q, pending.current.response, pending.current.clientId)} data-wm-resend>
+              <button type="button" className={big} onClick={() => pending.current && void send(pending.current.q, pending.current.response, pending.current.clientId, pending.current.runId)} data-wm-resend>
                 {t('wordMemory.retry')}
               </button>
             </div>

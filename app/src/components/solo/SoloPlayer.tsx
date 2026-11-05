@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import SoloGameStep from './SoloGameStep';
+import type { SensorContext } from '../../lib/learningSensors/core';
+import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import type { GameCheckState, GameCheckAnswer, GameCheckSummary } from '../../lib/gameLearning';
 import { speak } from '../../lib/speech';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
@@ -24,6 +26,7 @@ import SoloTestRunner from './SoloTestRunner';
  *  - "모르겠어요": 정답을 알려 주고 넘어간다(선생님 현황에 막힌 단계로 보인다).
  */
 export interface SoloPlayerApi {
+  sensor?: SensorContext;
   /** 답 내기 → 맞았는지 */
   answer(step: number, value: string): Promise<boolean | { ok: boolean; model?: string | null }>;
   /** 단계를 끝냈다고 알리기(모르겠어요면 unsure) → 정답 글자(모르겠어요일 때) */
@@ -176,6 +179,7 @@ export default function SoloPlayer({
   const touchX = useRef<number | null>(null);
 
   const step = steps[idx];
+  const sensor = useLearningActivity(!preview ? api.sensor : undefined, !finished && result === null && breakNext === null && step ? idx : null);
   const zoom = useStageZoom();
 
   // 노래·영상 단계가 쓰는 유튜브 플레이어(수업 하나에 영상 하나) — 한 번만 만들고 구간만 바꿔 튼다
@@ -457,6 +461,7 @@ export default function SoloPlayer({
 
   /** 답을 서버에 내고 맞았는지에 따라 단계 상태를 바꾼다 */
   async function submit(value: string, onWrong?: () => void) {
+    sensor('submitted');
     const res = await guard(() => api.answer(idx, value));
     if (res === null) return;
     const ok = typeof res === 'boolean' ? res : res.ok;
@@ -471,12 +476,13 @@ export default function SoloPlayer({
     onWrong?.();
     markMissed(idx);
     if (attempts.current >= 2) await showAnswer();
-    else setPhase('wrong1');
+    else { sensor('hint'); setPhase('wrong1'); }
   }
 
   async function showAnswer() {
     const a = await guard(() => api.reveal(idx));
     if (a === null) return;
+    sensor('revealed');
     setShownAnswer(a);
     setPhase('shown');
   }
@@ -661,6 +667,7 @@ export default function SoloPlayer({
             onClick={async () => {
               if (helpSent) {
                 // 선생님이 와서 알려 줬다 → 버튼을 되돌리고 서버의 도움 요청도 닫는다(실패해도 화면은 되돌린다)
+                sensor('help_resolved');
                 setHelpSent(false);
                 try {
                   await onHelpDone?.();
@@ -672,6 +679,7 @@ export default function SoloPlayer({
               setHelpSent(true);
               try {
                 await onHelp(idx);
+                sensor('help_requested');
               } catch {
                 setHelpSent(false);
               }
@@ -770,7 +778,7 @@ export default function SoloPlayer({
             {step.ko && (showKo ? (
               <p className="text-xl text-white/85">{step.ko}</p>
             ) : (
-              <button type="button" onClick={() => setShowKo(true)} className="rounded-full border border-white/30 px-4 py-1.5 text-base text-white/85">
+              <button type="button" onClick={() => { sensor('hint'); setShowKo(true); }} className="rounded-full border border-white/30 px-4 py-1.5 text-base text-white/85">
                 {t('solo.showKo')}
               </button>
             ))}

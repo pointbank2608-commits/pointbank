@@ -22,6 +22,7 @@ const AdminTodayPage = lazyPage(() => import('./pages/AdminTodayPage'));
 const AdminAcademyDetailPage = lazyPage(() => import('./pages/AdminAcademyDetailPage'));
 const AdminSupportPage = lazyPage(() => import('./pages/AdminSupportPage'));
 const AdminBillingPage = lazyPage(() => import('./pages/AdminBillingPage'));
+const AdminLearningPage = lazyPage(() => import('./pages/AdminLearningPage'));
 const AdminSystemPage = lazyPage(() => import('./pages/AdminSystemPage'));
 const AdminSettingsPage = lazyPage(() => import('./pages/AdminSettingsPage'));
 const AdminNoticesPage = lazyPage(() => import('./pages/AdminNoticesPage'));
@@ -275,6 +276,7 @@ function AppRoutes() {
           <Route path="/admin/inbox" element={<Navigate to="/admin/support?view=review" replace />} />
           <Route path="/admin/billing" element={<AdminBillingPage />} />
           <Route path="/admin/system" element={<AdminSystemPage />} />
+          <Route path="/admin/learning" element={<AdminLearningPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/support" element={<AdminSupportPage />} />
           <Route path="/admin/notices" element={<AdminNoticesPage />} />

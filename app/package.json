@@ -9,7 +9,8 @@
     "prebuild": "node scripts/vocab/lineart-manifest.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:vercel": "node scripts/learning-sensors/vercel-build.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

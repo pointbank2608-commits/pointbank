@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { openDelivery, deliveryAction } from './learningSensors/delivery';
 import type { SoloPublicStep, SoloStep } from './soloLessons';
 import type { PoolWord } from './soloReview';
 import type { TestResult } from './soloTest';
@@ -130,6 +131,8 @@ export async function fetchSoloAssignmentCounts(lessonIds: string[]): Promise<Ma
 /* ---------------- 학생(기기 열쇠) ---------------- */
 
 export interface SoloOpenResult {
+  sensor_run_id?: string;
+  learning_path?: boolean;
   personal_review?: boolean;
   name: string;
   can_record?: boolean;
@@ -180,7 +183,7 @@ export interface SoloGameTemplate {
 }
 export const soloGameTemplate = (token: string, templateId: string) => rpc<SoloGameTemplate>('student_game_template', { p_token: token, p_template: templateId });
 
-export const soloOpen = (token: string, assignment: string) => rpc<SoloOpenResult>('solo_open', { p_token: token, p_assignment: assignment });
+export const soloOpen = (token: string, assignment: string) => openDelivery<SoloOpenResult>('solo', token, assignment, () => rpc<SoloOpenResult>('solo_open', { p_token: token, p_assignment: assignment })).catch(e => { throw toError(e); });
 
 export async function soloAnswer(token: string, assignment: string, step: number, value: string): Promise<boolean> {
   const r = await rpc<{ correct: boolean }>('solo_answer', { p_token: token, p_assignment: assignment, p_step: step, p_value: value });
@@ -188,8 +191,8 @@ export async function soloAnswer(token: string, assignment: string, step: number
 }
 
 /** soloAnswer + 조건 영작을 맞혔을 때 돌려주는 예시 답(065 전 서버면 model 이 없다) */
-export async function soloAnswerFull(token: string, assignment: string, step: number, value: string): Promise<{ ok: boolean; model: string | null }> {
-  const r = await rpc<{ correct: boolean; model?: string | null }>('solo_answer', { p_token: token, p_assignment: assignment, p_step: step, p_value: value });
+export async function soloAnswerFull(token: string, assignment: string, step: number, value: string, runId?: string): Promise<{ ok: boolean; model: string | null }> {
+  const r = await (runId ? deliveryAction<{ correct: boolean; model?: string | null }>(runId, token, step, 'answer', { value }).catch(e => { throw toError(e); }) : rpc<{ correct: boolean; model?: string | null }>('solo_answer', { p_token: token, p_assignment: assignment, p_step: step, p_value: value }));
   return { ok: !!r.correct, model: r.model ?? null };
 }
 
@@ -214,17 +217,18 @@ export async function fetchSoloWrittenAnswers(lessonId: string): Promise<SoloWri
   return (data ?? []) as SoloWrittenAnswer[];
 }
 
-export const soloAdvance = (token: string, assignment: string, step: number, unsure: boolean) =>
-  rpc<{ answer: string | null; done: boolean }>('solo_advance', { p_token: token, p_assignment: assignment, p_step: step, p_unsure: unsure });
+export const soloAdvance = (token: string, assignment: string, step: number, unsure: boolean, runId?: string) =>
+  runId ? deliveryAction<{ answer: string | null; done: boolean }>(runId, token, step, 'advance', { unsure }).catch(e => { throw toError(e); }) : rpc<{ answer: string | null; done: boolean }>('solo_advance', { p_token: token, p_assignment: assignment, p_step: step, p_unsure: unsure });
 
-export async function soloReveal(token: string, assignment: string, step: number): Promise<string | null> {
+export async function soloReveal(token: string, assignment: string, step: number, runId?: string): Promise<string | null> {
+  if (runId) return (await deliveryAction<{ answer: string | null }>(runId, token, step, 'reveal', {}).catch(e => { throw toError(e); })).answer;
   const r = await rpc<{ answer: string | null }>('solo_reveal', { p_token: token, p_assignment: assignment, p_step: step });
   return r.answer ?? null;
 }
 
 /** 시험 블록 답안을 한 번에 내고 채점 결과를 받는다(058). 이미 낸 시험이면 처음 결과를 그대로 돌려준다. */
-export const soloTestSubmit = (token: string, assignment: string, step: number, answers: (string | null)[]) =>
-  rpc<TestResult>('solo_test_submit', { p_token: token, p_assignment: assignment, p_step: step, p_answers: answers });
+export const soloTestSubmit = (token: string, assignment: string, step: number, answers: (string | null)[], runId?: string) =>
+  runId ? deliveryAction<TestResult>(runId, token, step, 'test', { answers }).catch(e => { throw toError(e); }) : rpc<TestResult>('solo_test_submit', { p_token: token, p_assignment: assignment, p_step: step, p_answers: answers });
 
 /** 시험에서 틀린 문제만으로 복습 수업을 만든다(059) → 새 복습의 assignment id. 틀린 문제가 없으면 empty. */
 export async function soloStartTestRetry(token: string, assignment: string, step: number, name: string, intro: string): Promise<{ id: string } | { empty: true }> {

@@ -1,3 +1,5 @@
+import type { SensorContext } from '../../lib/learningSensors/core';
+
 /** 숙제 진행 화면들이 같이 쓰는 모양 */
 
 /** 답 하나의 결과. correct=null 은 인터넷이 끊겨 아직 채점 전(이 기기에 저장해 둠) */
@@ -9,6 +11,7 @@ export interface AnswerResult {
 
 /** 진행 화면이 서버(또는 미리보기)를 부르는 방법 */
 export interface RunnerApi {
+  sensor?: Omit<SensorContext, 'resource' | 'runId'> & { runs?: Record<string, string> };
   cacheScope?: string;
   uploadRecording?: (itemId: string, blob: Blob, duration: number) => Promise<string>;
   submit: (itemId: string, qIndex: number, response: string, ms: number) => Promise<AnswerResult>;

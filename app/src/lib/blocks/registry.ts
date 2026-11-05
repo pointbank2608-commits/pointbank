@@ -1,3 +1,5 @@
+import { evidenceRolesFor } from './evidenceProfiles';
+export { EVIDENCE_PROFILES } from './evidenceProfiles';
 import { GAME_CATALOG } from '../gameCatalog';
 import { MATERIALS_CATALOG } from '../materialsCatalog';
 import { STEP_KINDS } from '../soloEdit';
@@ -125,6 +127,7 @@ const soloBlocks: BlockDef[] = STEP_KINDS.filter((k) => k.t !== 'intro').map((k)
   status: 'ready',
   nameKey: `soloEdit.stepType_${k.t}`,
   soloStep: k.t,
+  evidenceRoles: evidenceRolesFor(k.t),
   concept: SOLO_CONCEPT[k.t],
 }));
 

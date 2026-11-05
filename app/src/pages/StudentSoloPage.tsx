@@ -7,6 +7,8 @@ import {
   startPersonalGame,
 } from '../lib/gameLearning';
 import SoloChat from '../components/solo/SoloChat';
+import LearningPathPlayer from '../components/solo/LearningPathPlayer';
+import { isLearningPath } from '../lib/learningPaths';
 import { studentNotice } from '../lib/soloChat';
 import SoloPlayer, { type SoloPlayerApi } from '../components/solo/SoloPlayer';
 import { forgetStudentToken, savedToken } from '../lib/studentPortal';
@@ -70,12 +72,13 @@ export default function StudentSoloPage() {
   const api = useMemo<SoloPlayerApi | null>(() => {
     if (!token || !assignmentId) return null;
     return {
-      answer: (step, value) => soloAnswerFull(token, assignmentId, step, value),
+      sensor: { source: 'solo', credential: token, resource: assignmentId, runId: lesson?.sensor_run_id },
+      answer: (step, value) => soloAnswerFull(token, assignmentId, step, value, lesson?.sensor_run_id),
       advance: async (step, unsure) => {
-        const r = await soloAdvance(token, assignmentId, step, unsure);
+        const r = await soloAdvance(token, assignmentId, step, unsure, lesson?.sensor_run_id);
         return { answer: r.answer };
       },
-      reveal: (step) => soloReveal(token, assignmentId, step),
+      reveal: (step) => soloReveal(token, assignmentId, step, lesson?.sensor_run_id),
       gameTemplate: (templateId) =>
         soloGameTemplate(token, templateId).catch(() => null),
       gameCheckOpen: (step) => openGameCheck(token, assignmentId, step),
@@ -84,7 +87,7 @@ export default function StudentSoloPage() {
       record: (step, blob, seconds, sub) =>
         soloRecordSave(token, assignmentId, step, blob, seconds, sub ?? 0),
       submitTest: (step, answers) =>
-        soloTestSubmit(token, assignmentId, step, answers),
+        soloTestSubmit(token, assignmentId, step, answers, lesson?.sensor_run_id),
       retryTest: async (step, wrong) => {
         const r = await soloStartTestRetry(
           token,
@@ -96,7 +99,7 @@ export default function StudentSoloPage() {
         if ('id' in r) navigate(`/s/lesson/${r.id}`);
       },
     };
-  }, [token, assignmentId, navigate, t]);
+  }, [token, assignmentId, navigate, t, lesson?.sensor_run_id]);
 
   if (error) {
     return (
@@ -120,6 +123,7 @@ export default function StudentSoloPage() {
         {t('common.loading')}
       </div>
     );
+  if (lesson.learning_path || isLearningPath(lesson.steps)) return <LearningPathPlayer token={token as string} assignment={assignmentId as string} title={lesson.name} onExit={() => navigate('/s')} onHelp={async position => { await soloHelp(token as string, assignmentId as string, position); }}/>;
   return (
     <SoloPlayer
       key={assignmentId}

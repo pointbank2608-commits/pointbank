@@ -3,6 +3,7 @@
  * 답은 보낼 때마다 새 요청 번호(client_id)를 붙이고, 인터넷이 끊겨 다시 보낼 때는 같은 번호를 쓴다 — 서버가 한 번만 남긴다.
  */
 import { supabase } from '../supabase';
+import { openDelivery, deliveryAction } from '../learningSensors/delivery';
 import type {
   WmAnswerResult, WmAssignInput, WmAssignResult, WmBriefing, WmCardRow, WmCollectionWord, WmErrorKind, WmHint, WmOpen, WmPlanResults, WmPlanSummary, WmProgress, WmStageCounts, WmStepAction,
   WmStudentSteps, WmToday,
@@ -64,11 +65,11 @@ export const wmPlanWeakCards = (planId: string, limit = 100) => rpc<WmCardRow[]>
 /* ---------- 학생 ---------- */
 
 export const wmOpen = (access: string) => rpc<WmOpen>('wm_open', { p_access: access });
-export const wmToday = (access: string) => rpc<WmToday>('wm_today_state', { p_access: access });
+export const wmToday = (access: string) => openDelivery<WmToday>('word_memory', access, null, () => rpc<WmToday>('wm_today_state', { p_access: access })).catch(e => { throw toWmError(e); });
 export const wmAck = (access: string, session: string, q: number, clientId: string) => rpc<{ ok: boolean; done: boolean }>('wm_ack', { p_access: access, p_session: session, p_q: q, p_client: clientId });
 export const wmHint = (access: string, session: string, q: number) => rpc<WmHint>('wm_hint', { p_access: access, p_session: session, p_q: q });
-export const wmAnswer = (access: string, session: string, q: number, response: string, clientId: string) =>
-  rpc<WmAnswerResult>('wm_answer', { p_access: access, p_session: session, p_q: q, p_response: response, p_client: clientId });
+export const wmAnswer = (access: string, session: string, q: number, response: string, clientId: string, runId?: string) =>
+  runId ? deliveryAction<WmAnswerResult>(runId, access, q, 'answer', { response, client_id: clientId }).catch(e => { throw toWmError(e); }) : rpc<WmAnswerResult>('wm_answer', { p_access: access, p_session: session, p_q: q, p_response: response, p_client: clientId });
 export const wmCollection = (access: string) => rpc<{ stages: WmStageCounts; words: WmCollectionWord[] }>('wm_collection', { p_access: access });
 export const wmStudentLinks = (token: string) => rpc<{ title: string; access: string; phase: 'study' | 'review' }[]>('wm_student_links', { p_token: token });
 

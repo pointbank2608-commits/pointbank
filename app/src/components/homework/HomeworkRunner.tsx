@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { playSfx } from '../../lib/gameSfx';
 import type { HwItem } from '../../lib/homework/types';
 import FlipDeck from './FlipDeck';
+import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import MatchupGame from './MatchupGame';
 import QuestionCard from './QuestionCard';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
@@ -58,6 +59,12 @@ export default function HomeworkRunner({
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const shownAt = useRef(performance.now());
+  const sensorItem = phase.k === 'item' ? items[phase.i] : phase.k === 'retry' ? items.find(it => it.id === phase.keys[phase.pos]?.split(':')[0]) : undefined;
+  const rawQuestion = phase.k === 'retry' ? Number(phase.keys[phase.pos]?.split(':')[1])
+    : feedback ? Number(feedback.key.split(':')[1])
+    : phase.k === 'item' && phase.sub === 'questions' && !sensorItem?.config.game ? sensorItem?.content?.questions?.findIndex((_, qi) => !answers.has(answerKey(sensorItem.id, qi))) : undefined;
+  const sensorQuestion = rawQuestion !== undefined && Number.isInteger(rawQuestion) && rawQuestion >= 0 ? rawQuestion : null;
+  const sensor = useLearningActivity(!preview && api.sensor && sensorItem ? { ...api.sensor, resource: sensorItem.id, runId: api.sensor.runs?.[sensorItem.id] } : undefined, sensorItem ? 0 : null, sensorQuestion);
   // 유치원 친구용: 활동이 모두 쉐도잉이고 kids 표시가 있을 때
   const kids = items.length > 0 && items.every((it) => it.config.kids && it.kind === 'shadowing');
 
@@ -119,6 +126,7 @@ export default function HomeworkRunner({
   async function answer(itemId: string, qi: number, response: string) {
     if (busy) return;
     setBusy(true);
+    sensor('submitted');
     const ms = performance.now() - shownAt.current;
     try {
       const res = await api.submit(itemId, qi, response, ms);
@@ -126,6 +134,7 @@ export default function HomeworkRunner({
       if (phase.k !== 'retry') setAnswers((m) => new Map(m).set(key, m.get(key) ?? res));
       if (res.correct !== null) playSfx(res.correct ? SFX_CORRECT : SFX_WRONG);
       setFeedback({ ...res, key });
+      if (res.answer) sensor('revealed');
     } catch {
       /* 숙제가 닫혔거나 저장 실패 — 바깥 화면이 안내한다 */
     } finally {
@@ -331,14 +340,14 @@ export default function HomeworkRunner({
     const [id, qiStr] = phase.keys[phase.pos].split(':');
     const it = items.find((x) => x.id === id)!;
     const qi = Number(qiStr);
-    content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
+    content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
     // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
     if (it.config.block?.type === 'study' && it.config.block.method === 'flip') {
       content = <FlipDeck key={it.id} text={it.config.block.text} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
     } else if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
-      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onDone={(meta) => completeItem(phase.i, meta)} />;
+      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta)} />;
     } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;
     } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
@@ -365,6 +374,7 @@ export default function HomeworkRunner({
           item={it}
           answered={answered}
           onSubmit={async (qi, r) => {
+            sensor('submitted');
             const res = await api.submit(it.id, qi, r, performance.now() - shownAt.current).catch((): AnswerResult => ({ correct: false, answer: null }));
             const key = answerKey(it.id, qi);
             setAnswers((m) => new Map(m).set(key, m.get(key) ?? res));
@@ -386,7 +396,7 @@ export default function HomeworkRunner({
           </div>
         );
       } else {
-        content = <QuestionCard key={`${it.id}-${showQi}`} q={it.content.questions[showQi]} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} />;
+        content = <QuestionCard key={`${it.id}-${showQi}`} q={it.content.questions[showQi]} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} />;
       }
     }
   }

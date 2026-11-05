@@ -1,3 +1,4 @@
+import type { EvidenceRole } from './evidenceProfiles';
 import type { GameType, LessonSlide } from '../types';
 import type { SoloStep } from '../soloLessons';
 
@@ -49,6 +50,8 @@ export interface BlockSlideRef {
 }
 
 export interface BlockDef {
+  /** Learning role options; the execution must still attach the chosen role and its sensor contract. */
+  evidenceRoles?: EvidenceRole[];
   descriptionKey?:string;
   /** 'game.wheel' · 'practice.quiz' · 'learn.wordShow' · 'print.worksheet' · 'solo.pickMeaning' · 'helper.timer' */
   id: string;

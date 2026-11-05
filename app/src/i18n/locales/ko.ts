@@ -5470,6 +5470,7 @@ const ko = {
   },
   adminV2: {
     nav: {
+      learning: "학습 연구실",
       today: "오늘 할 일",
       academies: "학원·회원",
       support: "문의",

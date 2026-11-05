@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import MoreMenu from '../MoreMenu';
+import LearningPathStudio from './LearningPathStudio';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -62,7 +63,11 @@ function orderLessons(list: SoloLesson[]): SoloLesson[] {
   return out;
 }
 
-export default function SoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
+export default function SoloLessonsPanel(props: { academyId: string; classId: string | null }) {
+  const { i18n } = useTranslation();
+  return <div className="space-y-8"><LearningPathStudio {...props}/><details className="rounded-2xl border border-outline-variant p-4"><summary className="min-h-11 cursor-pointer font-bold">{i18n.language.startsWith('en') ? 'Previous lesson materials' : '기존 개별수업 자료'}</summary><div className="mt-4"><LegacySoloLessonsPanel {...props}/></div></details></div>;
+}
+function LegacySoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [lessons, setLessons] = useState<SoloLesson[]>([]);
@@ -84,7 +89,7 @@ export default function SoloLessonsPanel({ academyId, classId }: { academyId: st
     }
     setLoading(true);
     try {
-      const list = await fetchSoloLessons(academyId, classId);
+      const list = (await fetchSoloLessons(academyId, classId)).filter(l => l.source !== 'learning-path-v1');
       setLessons(list);
       setCounts(await fetchSoloAssignmentCounts(list.map((l) => l.id)));
     } catch (e) {

@@ -4,6 +4,7 @@
  * 학생 이름·id 는 URL·저장소에 남기지 않는다(열쇠만).
  */
 import { supabase } from '../supabase';
+import { openDelivery, deliveryAction } from '../learningSensors/delivery';
 import type { HwErrorKind, HwOpenInfo, HwStudentState, HwSubmitResult } from './types';
 
 const tokenKey = (code: string) => `classbank.hw.${code}`;
@@ -76,7 +77,7 @@ export async function hwOpenPersonal(access: string): Promise<{ token: string; c
   return r;
 }
 
-export const hwState = (token: string) => rpc<HwStudentState>('hw_state', { p_token: token });
+export const hwState = (token: string) => openDelivery<HwStudentState>('homework', token, null, () => rpc<HwStudentState>('hw_state', { p_token: token })).catch(e => { throw toError(e); });
 
 /** 영상 시청 기록(093) — 본 초를 서버에 알리고, 한 번 다 봤으면 completed */
 export interface WatchReport {
@@ -97,7 +98,7 @@ export const hwWatchState = (token: string) => rpc<WatchItemState[]>('hw_watch_s
 /* ---------- 대기열 ---------- */
 
 export type QueuedOp =
-  | { op: 'submit'; clientId: string; itemId: string; qIndex: number; response: string; ms: number }
+  | { op: 'submit'; runId?: string; clientId: string; itemId: string; qIndex: number; response: string; ms: number }
   | { op: 'progress'; clientId: string; itemId: string; event: 'shadow_line' | 'item_complete'; meta: Record<string, unknown> };
 
 function readQueue(token: string): QueuedOp[] {
@@ -117,6 +118,7 @@ function writeQueue(token: string, q: QueuedOp[]) {
 }
 
 async function send(token: string, op: QueuedOp): Promise<HwSubmitResult | null> {
+  if (op.op === 'submit' && op.runId) return deliveryAction<HwSubmitResult>(op.runId, token, op.qIndex, 'answer', { response: op.response, client_id: op.clientId, ms: Math.round(op.ms) }).catch(e => { throw toError(e); });
   if (op.op === 'submit')
     return rpc<HwSubmitResult>('hw_submit', { p_token: token, p_item_id: op.itemId, p_q_index: op.qIndex, p_response: op.response, p_client_id: op.clientId, p_ms: Math.round(op.ms) });
   await rpc('hw_progress', { p_token: token, p_item_id: op.itemId, p_event: op.event, p_meta: op.meta, p_client_id: op.clientId });

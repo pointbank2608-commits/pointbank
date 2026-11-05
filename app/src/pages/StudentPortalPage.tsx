@@ -190,7 +190,7 @@ function HomeView({
 
   const soloClosed = home.features?.solo === false;
   const hwClosed = home.features?.homework === false;
-  const firstOpenId = (home.lessons ?? []).find((l) => !l.done)?.id ?? null;
+  const firstOpenId = (home.lessons ?? []).find((l) => !l.done && !l.path_waiting)?.id ?? null;
   const open = home.homework.filter((h) => !h.done);
   const done = home.homework.filter((h) => h.done);
   return (
@@ -221,19 +221,19 @@ function HomeView({
               {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-warm-yellow">{t('studentPortal.todayPick')}</div>}
               <a
                 href={`/s/lesson/${l.id}`}
-                className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done ? 'bg-white/10 text-white/70' : 'bg-warm-yellow text-deep-navy'}`}
+                className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done || l.path_waiting ? 'bg-white/10 text-white/70' : 'bg-warm-yellow text-deep-navy'}`}
               >
-                <span className="material-symbols-outlined text-[28px]">{l.done ? 'task_alt' : 'play_circle'}</span>
+                <span className="material-symbols-outlined text-[28px]">{l.done ? 'task_alt' : l.path_waiting ? 'event' : 'play_circle'}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-xl font-bold">
                     {l.kind === 'homework' && <span className="mr-2 rounded-full bg-deep-navy/80 px-2 py-0.5 align-middle text-sm text-white">{t('studentPortal.homeworkTag')}</span>}
                     {l.name}
                   </span>
                   <span className="block text-sm opacity-75">
-                    {l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
+                    {l.path_waiting ? `${t('studentPortal.pathTodayComplete', { defaultValue: '오늘 학습 완료 · 다음 확인' })} ${l.path_due_at ? new Date(l.path_due_at).toLocaleDateString() : ''}` : l.learning_path && !l.done ? t('studentPortal.pathLearning', { defaultValue: '필요한 학습과 복습 확인을 이어가요' }) : l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
                   </span>
                 </span>
-                <span className="text-base font-bold">{l.done ? t('studentPortal.again') : l.progress > 0 ? t('studentPortal.continue') : t('studentPortal.start')}</span>
+                <span className="text-base font-bold">{l.path_waiting ? t('studentPortal.pathSchedule', { defaultValue: '일정 보기' }) : l.done ? t('studentPortal.again') : l.progress > 0 ? t('studentPortal.continue') : t('studentPortal.start')}</span>
               </a>
             </li>
           ))}
