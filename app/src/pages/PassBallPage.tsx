@@ -1,26 +1,18 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
-import GameMusicPicker from '../components/GameMusicPicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
 import PassTheBall from '../components/PassTheBall';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import SentenceSources from '../components/SentenceSources';
-import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import { resolveResultSound } from '../lib/gameMusic';
 import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, MusicSelection } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -42,7 +34,6 @@ export default function PassBallPage() {
   });
   const {
     isStaff,
-    academy,
     classes,
     staffClassId,
     selectClass,
@@ -50,11 +41,6 @@ export default function PassBallPage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -72,25 +58,13 @@ export default function PassBallPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
     reload,
   } = g;
   const { notify } = useToast();
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newParticipant, setNewParticipant] = useRecoverableField('game:passball:newParticipant');
   const range = selected?.config.ballRange ?? DEFAULT_RANGE;
-  const [minInput, setMinInput] = useState(String(range.min));
-  const [maxInput, setMaxInput] = useState(String(range.max));
-
-  useEffect(() => {
-    setMinInput(String(range.min));
-    setMaxInput(String(range.max));
-  }, [range.min, range.max]);
 
   async function persistItems(nextItems: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -103,25 +77,6 @@ export default function PassBallPage() {
       await reload();
       return false;
     }
-  }
-
-  async function addParticipant() {
-    const label = newParticipant.trim();
-    if (!label || !selected) return;
-    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
-    setNewParticipant('');
-  }
-
-  async function addParticipantsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
-      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
-    }
-  }
-
-  async function removeParticipant(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
   /** 공을 탭해서 바로 이름을 바꿀 때 쓴다. */
@@ -142,47 +97,6 @@ export default function PassBallPage() {
   async function removeLastItem(itemId?: string) {
     if (!selected || selected.items.length <= 1) return;
     await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
-  }
-
-  async function clearAllParticipants() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gamePassBall.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function commitRange(nextRange: { min: number; max: number }) {
-    if (!selected) return;
-    const min = Math.max(1, Math.round(nextRange.min) || 1);
-    const max = Math.max(min, Math.round(nextRange.max) || min);
-    const nextConfig = { ...selected.config, ballRange: { min, max } };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleMusicChange(music: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, music };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function handleResultSoundChange(resultSound: MusicSelection | null) {
-    if (!selected) return;
-    const nextConfig = { ...selected.config, resultSound };
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
   }
 
   if (g.noClasses) {
@@ -372,148 +286,6 @@ export default function PassBallPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gamePassBall.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <div className="pt-3">
-                      <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                        <div className="flex-1 [&>div]:my-0">
-                          <StudentRosterPicker
-                            roster={roster}
-                            existingLabels={selected.items.map((i) => i.label)}
-                            scope={rosterScope}
-                            onScopeChange={setRosterScope}
-                            loading={rosterLoading}
-                            onAdd={(labels) => void addParticipantsBulk(labels)}
-                          />
-                        </div>
-                        <WordListPicker
-                          variant="label"
-                          wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
-                          loading={wordListsLoading}
-                          onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                        />
-                        <SentenceSources mode="labels" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportLabels={(labels) => void addParticipantsBulk(labels)} />
-                        <DictionaryPicker
-                          variant="label"
-                          onImportLabels={(labels) => void addParticipantsBulk(labels)}
-                        />
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {selected.items.length === 0 ? (
-                          <span className="font-caption text-caption text-on-surface-variant">
-                            {t('gameAdmin.noParticipants')}
-                          </span>
-                        ) : (
-                          selected.items.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-surface-container-low font-label-md text-label-md text-on-surface"
-                            >
-                              {item.label}
-                              <button
-                                onClick={() => void removeParticipant(item.id)}
-                                className="text-on-surface-variant hover:text-error"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                      {selected.items.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => void clearAllParticipants()}
-                          className="mt-2 font-label-md text-label-md text-error hover:underline"
-                        >
-                          {t('gameAdmin.clearAll')}
-                        </button>
-                      )}
-                      <div className="flex gap-2 mt-3">
-                        <input
-                          type="text"
-                          placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                          value={newParticipant}
-                          onChange={(e) => setNewParticipant(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') void addParticipant();
-                          }}
-                          className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <button
-                          onClick={() => void addParticipant()}
-                          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                        >
-                          {t('gameAdmin.addParticipant')}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <div className="font-caption text-caption text-on-surface-variant mb-2">
-                        {t('gamePassBall.rangeLabel')}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={1}
-                          value={minInput}
-                          onChange={(e) => setMinInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <span className="font-body-md text-body-md text-on-surface-variant">~</span>
-                        <input
-                          type="number"
-                          min={1}
-                          value={maxInput}
-                          onChange={(e) => setMaxInput(e.target.value)}
-                          onBlur={() => void commitRange({ min: Number(minInput), max: Number(maxInput) })}
-                          className="w-[70px] bg-surface-container-low border border-outline-variant rounded-lg px-2 py-1.5 font-body-md text-sm text-on-surface text-center focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                        />
-                        <span className="font-body-md text-body-md text-on-surface-variant">{t('gamePassBall.seconds')}</span>
-                      </div>
-                    </div>
-
-                    {academy && (
-                      <div className="pt-3 divide-y divide-surface-container">
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          value={passBallMusic(selected.config.music)}
-                          presets={[{ music: PASS_BALL_MUSIC, label: t('gamePassBall.defaultMusic') }]}
-                          onChange={(m) => void handleMusicChange(m)}
-                        />
-                        <GameMusicPicker
-                          academyId={academy.id}
-                          isStaff={isStaff}
-                          label={t('gamePassBall.resultSoundLabel')}
-                          value={resolveResultSound(selected.config.resultSound)}
-                          onChange={(m) => void handleResultSoundChange(m)}
-                        />
-                      </div>
-                    )}
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="passball" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

@@ -26,6 +26,7 @@ import type { GameItem, MusicSelection, WordList } from '../lib/types';
 import { MAX_POP_CARDS, MAX_ROUND_CARDS, popcornCount } from '../lib/popcorn';
 import GameMusicPicker from './GameMusicPicker';
 import { resolveResultSound } from '../lib/gameMusic';
+import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -140,6 +141,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pPop, setPPop] = useState('1');
   const [pRound, setPRound] = useState('');
   const [pOpt, setPOpt] = useState<Record<string, string>>({});
+  const [pBallMin, setPBallMin] = useState('10');
+  const [pBallMax, setPBallMax] = useState('30');
   const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerSec, setPTimerSec] = useState('10');
@@ -210,6 +213,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
   const isPopcorn = type === 'popcorn';
+  const isPassBall = type === 'passball';
   const simpleOpts = SIMPLE_OPTS[type ?? ''] ?? [];
   // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
   function pickMode(next: Mode) {
@@ -267,6 +271,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPBombCaught(info?.selected?.config.bombStartFromCaught !== false);
     setPTimerShow(info?.selected?.config.timerShowClock ?? false);
     setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount, info?.selected?.config.popcornRoundCards)));
+    setPBallMin(String(info?.selected?.config.ballRange?.min ?? 10));
+    setPBallMax(String(info?.selected?.config.ballRange?.max ?? 30));
     setPRound(info?.selected?.config.popcornRoundCards ? String(info.selected.config.popcornRoundCards) : '');
     setPOpt(Object.fromEntries((SIMPLE_OPTS[type ?? ''] ?? []).map((o) => [o.key, (() => { const v = (info?.selected?.config as Record<string, unknown> | undefined)?.[o.key]; return v === null ? (o.nullAs ?? String(o.def)) : String(v ?? o.def); })()])));
     setPTimerMusic(info?.selected?.config.music);
@@ -420,6 +426,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ...patch } });
       return;
     }
+    if (info?.selected && isPassBall) {
+      const min = Math.round(Number(pBallMin));
+      const max = Math.round(Number(pBallMax));
+      if (!Number.isFinite(min) || !Number.isFinite(max) || min < 1 || max < min) throw new Error(text('시간은 1초 이상, 최소 ≤ 최대로 적어 주세요.', 'Use at least 1 sec, with min ≤ max.'));
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ballRange: { min, max }, music: pTimerMusic, resultSound: pTimerResult } });
+      return;
+    }
     if (info?.selected && isPopcorn) {
       const v = Number(pPop);
       if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`POP 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
@@ -534,7 +547,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -737,6 +750,25 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 )}
               </div>
             ))}
+          </div>
+        )}
+        {isPassBall && (
+          <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            <div className="space-y-1">
+              <p className="text-sm font-bold">{text('음악이 멈추는 시간 범위(초)', 'Music stops between (sec)')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input className={`${field} !mt-0 w-24`} type="number" min={1} value={pBallMin} onChange={(e) => setPBallMin(e.target.value)} aria-label={text('최소(초)', 'Min (sec)')} />
+                <span>~</span>
+                <input className={`${field} !mt-0 w-24`} type="number" min={1} value={pBallMax} onChange={(e) => setPBallMax(e.target.value)} aria-label={text('최대(초)', 'Max (sec)')} />
+                <span className="text-sm text-on-surface-variant">{text('이 사이 무작위 시각에 멈춰요', 'at a random moment')}</span>
+              </div>
+            </div>
+            {academy && (
+              <div className="divide-y divide-surface-container">
+                <GameMusicPicker academyId={academy.id} isStaff value={passBallMusic(pTimerMusic)} presets={[{ music: PASS_BALL_MUSIC, label: text('기본 음악', 'Default music') }]} onChange={setPTimerMusic} />
+                <GameMusicPicker academyId={academy.id} isStaff label={text('결과 소리', 'Result sound')} value={pTimerResult} onChange={setPTimerResult} />
+              </div>
+            )}
           </div>
         )}
         {isTimerMatch && (
