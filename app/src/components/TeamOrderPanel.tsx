@@ -93,6 +93,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
   const firstSave = useRef(true);
   const prevOrderKey = useRef(saved.order.join('|'));
   const explicitStart = useRef(false);
+  const startChosen = useRef(false);
 
   // 바뀔 때마다 저장(슬롯머신처럼 돌아가는 동안의 중간 결과는 저장하지 않는다). 순서가 바뀌면 차례는 처음부터.
   useEffect(() => {
@@ -212,7 +213,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => { onClose(); notify(i18n.language.startsWith('en') ? 'Your settings have been applied.' : '설정이 적용되었습니다.'); }}
+              onClick={() => { if (!startChosen.current && order.length > 0) { currentId.current = order[0]; setTurn(0); saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: 0, teamNames }, scope); } onClose(); notify(i18n.language.startsWith('en') ? 'Your settings have been applied.' : '설정이 적용되었습니다.'); }}
               className="min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary"
             >
               {i18n.language.startsWith('en') ? 'Apply' : '적용'}
@@ -357,7 +358,7 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
                       >
                         <span className="w-7 text-center font-title-md text-title-md text-primary tabular-nums">{i + 1}</span>
                         <span className="flex-1 font-label-md text-label-md text-on-surface">{label}</span>
-                        <button className="min-h-11 rounded-lg border px-3 text-primary" aria-pressed={turn===i} onClick={()=>{currentId.current=id;explicitStart.current=true;setTurn(i);}}>{t('flow.startHere')}</button>
+                        <button className="min-h-11 rounded-lg border px-3 text-primary" aria-pressed={turn===i} onClick={()=>{currentId.current=id;explicitStart.current=true;startChosen.current=true;setTurn(i);}}>{t('flow.startHere')}</button>
                         <button
                           type="button"
                           onClick={() => move(i, -1)}
