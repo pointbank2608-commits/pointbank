@@ -34,9 +34,24 @@ const util = 'min-h-10 rounded-lg border border-outline-variant bg-white px-3 te
 const field = 'mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2 font-normal';
 const ITEM_SETTINGS_GAMES = new Set<string>(['wheel', 'order']);
 /** 게임설정 패널에서 바로 고르는 간단한 옵션(옛 페이지 아래 편집 카드를 대신한다). */
-type SimpleOpt = { key: string; ko: string; en: string; kind: 'choice' | 'number'; def: string | number; min?: number; max?: number; choices?: { v: string; ko: string; en: string }[] };
+type SimpleOpt = { key: string; ko: string; en: string; kind: 'choice' | 'number'; def: string | number; min?: number; max?: number; choices?: { v: string; ko: string; en: string }[]; parse?: (v: string) => unknown; nullAs?: string };
 const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
   anagram: [{ key: 'anagramStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'rack', choices: [{ v: 'rack', ko: '나무 글자판', en: 'Wooden rack' }, { v: 'tags', ko: '나무 이름표', en: 'Wooden tags' }] }],
+  rankorder: [{ key: 'rankOrderStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'podium', choices: [{ v: 'podium', ko: '나무 단상', en: 'Wooden podium' }, { v: 'plates', ko: '점토 명패', en: 'Clay plates' }] }],
+  spellword: [
+    { key: 'spellwordStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'slate', choices: [{ v: 'slate', ko: '나무 슬레이트', en: 'Slate' }, { v: 'stamps', ko: '점토 스탬프', en: 'Stamps' }] },
+    { key: 'spellPreviewSeconds', ko: '단어를 보여주는 시간(초)', en: 'Preview (sec)', kind: 'number', def: 3, min: 1, max: 10 },
+  ],
+  hangman: [{ key: 'maxAttempts', ko: '기회 횟수 (오답 허용)', en: 'Wrong guesses allowed', kind: 'number', def: 6, min: 1, max: 10 }],
+  wordsearch: [{ key: 'wordSearchStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'board', choices: [{ v: 'board', ko: '나무 격자판', en: 'Wooden board' }, { v: 'tiles', ko: '점토 타일', en: 'Clay tiles' }] }],
+  crossword: [{ key: 'crosswordStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'board', choices: [{ v: 'board', ko: '나무 퍼즐판', en: 'Wooden board' }, { v: 'blocks', ko: '점토 블록', en: 'Clay blocks' }] }],
+  mazechase: [{ key: 'mazeChaseStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'wood', choices: [{ v: 'wood', ko: '나무 미로', en: 'Wooden maze' }, { v: 'garden', ko: '점토 정원', en: 'Clay garden' }] }],
+  airplane: [{ key: 'airplaneStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'wood', choices: [{ v: 'wood', ko: '나무 활주로', en: 'Wooden runway' }, { v: 'clay', ko: '점토 하늘', en: 'Clay sky' }] }],
+  findmissing: [
+    { key: 'revealCount', ko: '숨길 개수', en: 'Hidden cards', kind: 'choice', def: '1', parse: Number, choices: [{ v: '1', ko: '1개', en: '1' }, { v: '2', ko: '2개', en: '2' }, { v: '3', ko: '3개', en: '3' }] },
+    { key: 'memorizeSeconds', ko: '외우는 시간', en: 'Memorize time', kind: 'choice', def: '10', nullAs: 'manual', parse: (v) => (v === 'manual' ? null : Number(v)), choices: [{ v: '5', ko: '5초', en: '5s' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: 'manual', ko: '직접 진행(수동)', en: 'Manual' }] },
+    { key: 'shuffleCards', ko: '카드 섞기', en: 'Shuffle cards', kind: 'choice', def: 'false', parse: (v) => v === 'true', choices: [{ v: 'false', ko: '자리 그대로', en: 'Keep order' }, { v: 'true', ko: '섞기', en: 'Shuffle' }] },
+  ],
   baskin31: [{ key: 'targetCount', ko: '목표 숫자', en: 'Target number', kind: 'number', def: 31, min: 2, max: 500 }],
 };
 type ItemSource = 'list' | 'class' | 'type' | 'number';
@@ -243,7 +258,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPTimerShow(info?.selected?.config.timerShowClock ?? false);
     setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount, info?.selected?.config.popcornRoundCards)));
     setPRound(info?.selected?.config.popcornRoundCards ? String(info.selected.config.popcornRoundCards) : '');
-    setPOpt(Object.fromEntries((SIMPLE_OPTS[type ?? ''] ?? []).map((o) => [o.key, String((info?.selected?.config as Record<string, unknown> | undefined)?.[o.key] ?? o.def)])));
+    setPOpt(Object.fromEntries((SIMPLE_OPTS[type ?? ''] ?? []).map((o) => [o.key, (() => { const v = (info?.selected?.config as Record<string, unknown> | undefined)?.[o.key]; return v === null ? (o.nullAs ?? String(o.def)) : String(v ?? o.def); })()])));
     setPTimerMusic(info?.selected?.config.music);
     setPTimerResult(resolveResultSound(info?.selected?.config.resultSound));
     setPTimerSec(String(((info?.selected?.config.targetMs ?? 10000) / 1000).toFixed(2)).replace(/\.?0+$/, ''));
@@ -382,14 +397,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       return;
     }
     if (info?.selected && simpleOpts.length > 0) {
-      const patch: Record<string, string | number> = {};
+      const patch: Record<string, unknown> = {};
       for (const o of simpleOpts) {
         const raw = pOpt[o.key] ?? String(o.def);
         if (o.kind === 'number') {
           const n = Math.round(Number(raw));
           if (!Number.isFinite(n) || n < (o.min ?? 0) || n > (o.max ?? 9999)) throw new Error(text(`${o.ko}은(는) ${o.min ?? 0}~${o.max ?? 9999} 사이로 적어 주세요.`, `${o.en}: ${o.min ?? 0}-${o.max ?? 9999}.`));
           patch[o.key] = n;
-        } else patch[o.key] = raw;
+        } else patch[o.key] = (o.parse ? o.parse(raw) : raw) as string | number;
       }
       await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ...patch } });
       return;

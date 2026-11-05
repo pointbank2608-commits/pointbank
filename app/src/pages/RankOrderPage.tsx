@@ -1,4 +1,3 @@
-import { useRecoverableField } from '../lib/useRecoverableField';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -8,15 +7,10 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import RankOrder from '../components/RankOrder';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import OpenInOtherGame from '../components/OpenInOtherGame';
-import StudentRosterPicker from '../components/StudentRosterPicker';
-import WordListPicker from '../components/WordListPicker';
-import DictionaryPicker from '../components/DictionaryPicker';
 import { updateGameTemplate } from '../lib/api';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig } from '../lib/types';
+import type { GameItem } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -38,11 +32,6 @@ export default function RankOrderPage() {
     studentClassName,
     classId,
     roster,
-    rosterScope,
-    setRosterScope,
-    rosterLoading,
-    wordLists,
-    wordListsLoading,
     templates,
     setTemplates,
     selected,
@@ -60,17 +49,12 @@ export default function RankOrderPage() {
     handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    openInOtherGame,
-    importCandidates,
-    importFromClass,
     reload,
   } = g;
   const { notify } = useToast();
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
-  const [newItemLabel, setNewItemLabel] = useRecoverableField('game:rankorder:newItemLabel');
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -83,35 +67,6 @@ export default function RankOrderPage() {
       await reload();
       return false;
     }
-  }
-
-  async function persistConfig(nextConfig: GameTemplateConfig) {
-    if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function addItem() {
-    const label = newItemLabel.trim();
-    if (!label || !selected) return;
-    if (await persistItems([...selected.items, { id: uid(), label }])) notify(t('gameAdmin.itemAddedToast'));
-    setNewItemLabel('');
-  }
-
-  async function addItemsBulk(labels: string[]) {
-    if (!selected || labels.length === 0) return;
-    if (await persistItems([...selected.items, ...labels.map((label) => ({ id: uid(), label }))])) {
-      notify(t('gameAdmin.itemsAddedToast', { count: labels.length }));
-    }
-  }
-
-  async function removeItem(itemId: string) {
-    if (!selected) return;
-    await persistItems(selected.items.filter((i) => i.id !== itemId));
   }
 
   /** 순위 항목을 탭해서 바로 이름을 바꿀 때 쓴다. */
@@ -132,31 +87,6 @@ export default function RankOrderPage() {
   async function removeLastItem(itemId?: string) {
     if (!selected || selected.items.length <= 2) return;
     await persistItems(itemId ? selected.items.filter((i) => i.id !== itemId) : selected.items.slice(0, -1));
-  }
-
-  async function clearAllItems() {
-    if (!selected || selected.items.length === 0) return;
-    if (!confirm(t('gameRankOrder.clearAllConfirm'))) return;
-    await persistItems([]);
-  }
-
-  async function moveItemUp(index: number) {
-    if (!selected || index === 0) return;
-    const next = [...selected.items];
-    [next[index - 1], next[index]] = [next[index], next[index - 1]];
-    await persistItems(next);
-  }
-
-  async function moveItemDown(index: number) {
-    if (!selected || index === selected.items.length - 1) return;
-    const next = [...selected.items];
-    [next[index], next[index + 1]] = [next[index + 1], next[index]];
-    await persistItems(next);
-  }
-
-  async function handleStyleChange(style: 'podium' | 'plates') {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, rankOrderStyle: style });
   }
 
   if (g.noClasses) {
@@ -343,152 +273,6 @@ export default function RankOrderPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameRankOrder.settingsTitle')}</h4>
-                  <button
-                    onClick={() => setEditorOpen((v) => !v)}
-                    className="font-label-md text-label-md text-primary hover:underline"
-                  >
-                    {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                  </button>
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-1 divide-y divide-surface-container">
-                    <div className="pt-3">
-                    <div className="flex flex-wrap items-start gap-2 my-3 [&>*]:min-w-[180px] [&>*]:flex-none">
-                    <div className="flex-1 [&>div]:my-0">
-                      <StudentRosterPicker
-                        roster={roster}
-                        existingLabels={selected.items.map((i) => i.label)}
-                        scope={rosterScope}
-                        onScopeChange={setRosterScope}
-                        loading={rosterLoading}
-                        onAdd={(labels) => void addItemsBulk(labels)}
-                      />
-                    </div>
-                    <WordListPicker
-                      variant="label"
-                      wordLists={wordLists}
-                      loading={wordListsLoading}
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    <DictionaryPicker
-                      variant="label"
-                      onImportLabels={(labels) => void addItemsBulk(labels)}
-                    />
-                    </div>
-
-                    <div className="font-caption text-caption text-on-surface-variant mt-3 mb-1.5">
-                      {t('gameRankOrder.orderHint')}
-                    </div>
-                    <div className="space-y-1.5">
-                      {selected.items.length === 0 ? (
-                        <span className="font-caption text-caption text-on-surface-variant">
-                          {t('gameAdmin.noParticipants')}
-                        </span>
-                      ) : (
-                        selected.items.map((item, index) => (
-                          <div
-                            key={item.id}
-                            className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg bg-surface-container-low font-label-md text-label-md text-on-surface"
-                          >
-                            <span className="font-caption text-caption text-on-surface-variant w-5 text-center tabular-nums shrink-0">
-                              {index + 1}
-                            </span>
-                            <span className="flex-1">{item.label}</span>
-                            <button
-                              type="button"
-                              onClick={() => void moveItemUp(index)}
-                              disabled={index === 0}
-                              aria-label={t('gameRankOrder.moveUpLabel')}
-                              className="w-6 h-6 rounded-md hover:bg-surface-container text-on-surface-variant disabled:opacity-30 flex items-center justify-center text-xs shrink-0"
-                            >
-                              ▲
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => void moveItemDown(index)}
-                              disabled={index === selected.items.length - 1}
-                              aria-label={t('gameRankOrder.moveDownLabel')}
-                              className="w-6 h-6 rounded-md hover:bg-surface-container text-on-surface-variant disabled:opacity-30 flex items-center justify-center text-xs shrink-0"
-                            >
-                              ▼
-                            </button>
-                            <button
-                              onClick={() => void removeItem(item.id)}
-                              className="text-on-surface-variant hover:text-error shrink-0"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {selected.items.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => void clearAllItems()}
-                        className="mt-2 font-label-md text-label-md text-error hover:underline"
-                      >
-                        {t('gameAdmin.clearAll')}
-                      </button>
-                    )}
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text"
-                        placeholder={t('gameAdmin.newParticipantPlaceholder')}
-                        value={newItemLabel}
-                        onChange={(e) => setNewItemLabel(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') void addItem();
-                        }}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                      />
-                      <button
-                        onClick={() => void addItem()}
-                        className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors whitespace-nowrap"
-                      >
-                        {t('gameAdmin.addParticipant')}
-                      </button>
-                    </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
-                          {t('gameRankOrder.styleLabel')}
-                        </span>
-                        {(['podium', 'plates'] as const).map((style) => {
-                          const on = (selected.config.rankOrderStyle ?? 'podium') === style;
-                          return (
-                            <button
-                              key={style}
-                              type="button"
-                              onClick={() => void handleStyleChange(style)}
-                              className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
-                                on
-                                  ? 'bg-secondary text-on-secondary shadow-sm'
-                                  : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
-                              }`}
-                            >
-                              {style === 'podium' ? t('gameRankOrder.stylePodium') : t('gameRankOrder.stylePlates')}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="pt-3">
-                      <OpenInOtherGame currentType="rankorder" itemCount={selected.items.length} onOpen={openInOtherGame} />
-                      <ImportFromClass candidates={importCandidates} offerRosterSwap onImport={importFromClass} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}
