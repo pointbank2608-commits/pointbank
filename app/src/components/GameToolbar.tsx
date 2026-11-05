@@ -23,7 +23,7 @@ import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { ROUND_DONE_EVENT, TEAM_ORDER_EVENT, isAutoTurnOn, isShowOrderOn, loadTeamOrder, saveTeamOrder, setAutoTurnOn, setShowOrderOn } from '../lib/teamOrder';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import type { GameItem, MusicSelection, WordList } from '../lib/types';
-import { MAX_POP_CARDS, popcornCount } from '../lib/popcorn';
+import { MAX_POP_CARDS, MAX_ROUND_CARDS, popcornCount } from '../lib/popcorn';
 import GameMusicPicker from './GameMusicPicker';
 import { resolveResultSound } from '../lib/gameMusic';
 
@@ -107,6 +107,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pBombCaught, setPBombCaught] = useState(true);
   const [pTimerShow, setPTimerShow] = useState(false);
   const [pPop, setPPop] = useState('1');
+  const [pRound, setPRound] = useState('');
   const [pTimerMusic, setPTimerMusic] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerResult, setPTimerResult] = useState<MusicSelection | null | undefined>(undefined);
   const [pTimerSec, setPTimerSec] = useState('10');
@@ -217,7 +218,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPBombMode(info?.selected?.config.bombMode ?? 'pass');
     setPBombCaught(info?.selected?.config.bombStartFromCaught !== false);
     setPTimerShow(info?.selected?.config.timerShowClock ?? false);
-    setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount)));
+    setPPop(String(popcornCount(info?.selected?.items.length ?? 0, info?.selected?.config.popcornPopCount, info?.selected?.config.popcornRoundCards)));
+    setPRound(info?.selected?.config.popcornRoundCards ? String(info.selected.config.popcornRoundCards) : '');
     setPTimerMusic(info?.selected?.config.music);
     setPTimerResult(resolveResultSound(info?.selected?.config.resultSound));
     setPTimerSec(String(((info?.selected?.config.targetMs ?? 10000) / 1000).toFixed(2)).replace(/\.?0+$/, ''));
@@ -358,7 +360,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (info?.selected && isPopcorn) {
       const v = Number(pPop);
       if (!Number.isInteger(v) || v < 0 || v > MAX_POP_CARDS) throw new Error(text(`POP 카드는 0~${MAX_POP_CARDS}개로 적어 주세요.`, `Pop cards: 0-${MAX_POP_CARDS}.`));
-      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, popcornPopCount: v } });
+      const rcRaw = pRound.trim();
+      const rc = rcRaw === '' ? 0 : Number(rcRaw);
+      if (!Number.isInteger(rc) || rc < 0 || rc > MAX_ROUND_CARDS) throw new Error(text(`라운드당 카드 수는 1~${MAX_ROUND_CARDS}장(비우면 낱말 전부)으로 적어 주세요.`, `Cards per round: 1-${MAX_ROUND_CARDS} (blank = all words).`));
+      if (rc > 0 && v > rc) throw new Error(text('POP 카드 수는 라운드당 카드 수보다 많을 수 없어요.', 'Pop cards cannot exceed cards per round.'));
+      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, popcornPopCount: v, popcornRoundCards: rc > 0 ? rc : undefined } });
       return;
     }
     if (info?.selected && isTimerMatch) {
@@ -639,10 +645,17 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('팝콘 설정', 'Popcorn settings')}</p>
             <div className="space-y-1">
+              <p className="text-sm font-bold">{text('라운드당 카드 수', 'Cards per round')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <input className={`${field} !mt-0 w-28`} type="number" min={1} max={MAX_ROUND_CARDS} placeholder={text('전체', 'All')} value={pRound} onChange={(e) => setPRound(e.target.value)} aria-label={text('라운드당 카드 수', 'Cards per round')} />
+                <span className="text-sm text-on-surface-variant">{text(`낱말이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이 장수만 나와요 (비우면 낱말 전부)`, 'Each round uses exactly this many cards (blank = all words)')}</span>
+              </div>
+            </div>
+            <div className="space-y-1">
               <p className="text-sm font-bold">{text('POP 카드 수', 'Pop cards')}</p>
               <div className="flex flex-wrap items-center gap-2">
                 <input className={`${field} !mt-0 w-28`} type="number" min={0} max={MAX_POP_CARDS} value={pPop} onChange={(e) => setPPop(e.target.value)} aria-label={text('POP 카드 수', 'Pop cards')} />
-                <span className="text-sm text-on-surface-variant">{text(`낱말 ${info?.selected?.items.length ?? 0}개 중 뽑으면 점수가 0이 되는 POP 카드`, 'Cards that reset the score')}</span>
+                <span className="text-sm text-on-surface-variant">{text('라운드 카드 중 뽑으면 점수가 0이 되는 POP 카드', 'Cards that reset the score')}</span>
               </div>
             </div>
           </div>

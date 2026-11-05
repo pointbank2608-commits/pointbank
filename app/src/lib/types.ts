@@ -319,6 +319,8 @@ export type MusicSelection =
 
 export interface GameTemplateConfig {
   popcornPopCount?: number;
+  /** 라운드당 카드 수. 없으면 낱말 전부 + POP 카드. */
+  popcornRoundCards?: number;
   /** Current-session guided edit; save updates this existing game without changing its scope. */
   editingTemplateId?: string;
   setupKind?: 'word' | 'sentence' | 'names' | 'numbers';

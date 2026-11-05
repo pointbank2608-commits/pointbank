@@ -13,6 +13,7 @@ import { GAME_SFX, playSfx } from '../lib/gameSfx';
 interface Props {
   items: GameItem[];
   popCount?:number;
+  roundCards?:number;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -36,6 +37,7 @@ const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
 export default function Popcorn({
   items,
   popCount,
+  roundCards,
   editable,
   onEditItem,
   templateName,
@@ -45,7 +47,7 @@ export default function Popcorn({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount));
+  const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount,roundCards));
   const [deckIndex, setDeckIndex] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
   const sharedTurn = useGameWorkspace()?.turn ?? null;
@@ -101,7 +103,7 @@ export default function Popcorn({
     let currentDeck = deck;
     let index = deckIndex;
     if (index >= currentDeck.length) {
-      currentDeck = buildDeck(items,popCount);
+      currentDeck = buildDeck(items,popCount,roundCards);
       index = 0;
       setDeck(currentDeck);
     }

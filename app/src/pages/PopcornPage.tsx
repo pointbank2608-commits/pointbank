@@ -257,8 +257,9 @@ export default function PopcornPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Popcorn key={`${selected.id}:${roundKey}:${selected.config.popcornPopCount ?? "legacy"}`}
+            <Popcorn key={`${selected.id}:${roundKey}:${selected.config.popcornPopCount ?? "legacy"}:${selected.config.popcornRoundCards ?? "all"}`}
               popCount={selected.config.popcornPopCount}
+              roundCards={selected.config.popcornRoundCards}
               items={selected.items}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}
