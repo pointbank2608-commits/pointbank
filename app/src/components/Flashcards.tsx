@@ -4,6 +4,8 @@ import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
+import { loadWordBank } from '../lib/wordBankCache';
+import type { WordBankEntry } from '../lib/types';
 
 const AUTO_READ_KEY = 'classbank.flashcards.autoRead';
 function loadAutoRead(): boolean {
@@ -15,6 +17,9 @@ export type FlashcardsStyle = 'wood' | 'clay';
 interface Props {
   cards: MatchPair[];
   boardStyle?: FlashcardsStyle;
+  /** 뒷면에 사전의 품사·예문도 같이 보여 준다(사전에 있는 낱말만) */
+  showPos?: boolean;
+  showExample?: boolean;
 }
 
 const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
@@ -30,7 +35,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
+export default function Flashcards({ cards, boardStyle = 'wood', showPos = false, showExample = false }: Props) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<number[]>(() => shuffle(cards.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -45,6 +50,15 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
     setPos(0);
     setFlipped(false);
   }, [cardKey]);
+
+  const needsBank = showPos || showExample;
+  const [bank, setBank] = useState<WordBankEntry[] | null>(null);
+  useEffect(() => {
+    if (!needsBank) return;
+    let alive = true;
+    void loadWordBank().then((b) => alive && setBank(b));
+    return () => { alive = false; };
+  }, [needsBank]);
 
   // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
   useEffect(() => {
@@ -133,6 +147,13 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
   const current = cards[order[pos]];
   if (!current) return null;
   const clayTone = pos % 4;
+  let extra: { pos: string | null; example: string | null } | null = null;
+  if (needsBank && bank) {
+    const key = current.left.trim().toLowerCase();
+    const hits = bank.filter((e) => e.word.trim().toLowerCase() === key);
+    const hit = hits.find((e) => e.meaning.trim() === current.right.trim()) ?? hits[0];
+    if (hit) extra = { pos: showPos ? hit.part_of_speech || null : null, example: showExample ? hit.example_sentence || null : null };
+  }
 
   return (
     <div className="flex flex-col items-center pt-1.5 pb-2">
@@ -162,7 +183,37 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
           </span>
           <span className="fc-face is-back">
             <span className="fc-inset">
-              <GameFitText text={current.right} />
+              {extra && (extra.pos || extra.example) ? (
+                <span className="flex h-full w-full flex-col items-center gap-2">
+                  <span className="block min-h-0 w-full flex-1">
+                    <GameFitText text={current.right} />
+                  </span>
+                  {extra.pos && (
+                    <span className="rounded-full bg-secondary px-3 py-0.5 text-[15px] font-bold text-on-secondary">{extra.pos}</span>
+                  )}
+                  {extra.example && (
+                    <span className="flex max-w-full items-center justify-center gap-2">
+                      <span className="text-[17px] font-semibold leading-snug text-on-surface-variant">{extra.example}</span>
+                      {/* 카드 전체가 버튼이라 안쪽은 span 으로 만들고, 눌러도 카드가 뒤집히지 않게 막는다 */}
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={t('gameFlashcards.readExample')}
+                        title={t('gameFlashcards.readExample')}
+                        onClick={(e) => { e.stopPropagation(); speak(extra!.example!); }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); speak(extra!.example!); }
+                        }}
+                        className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white/80 text-[18px] shadow-sm hover:bg-white"
+                      >
+                        🔊
+                      </span>
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <GameFitText text={current.right} />
+              )}
             </span>
           </span>
         </button>

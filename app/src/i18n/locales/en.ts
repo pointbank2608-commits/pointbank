@@ -856,6 +856,7 @@ const en: Ko = {
   },
 
   gameFlashcards: {
+    readExample: 'Read the example aloud',
     readButton: 'Read aloud',
     autoReadOn: 'Auto-read on',
     autoReadOff: 'Auto-read off',

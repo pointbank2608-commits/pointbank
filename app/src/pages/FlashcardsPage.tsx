@@ -6,13 +6,8 @@ import ClassChipRow from '../components/ClassChipRow';
 import Flashcards from '../components/Flashcards';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import WordListPicker from '../components/WordListPicker';
-import SentenceSources from '../components/SentenceSources';
-import DictionaryPicker from '../components/DictionaryPicker';
-import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
-import type { GameItem, GameTemplateConfig, MatchPair } from '../lib/types';
+import type { GameItem, MatchPair } from '../lib/types';
 
 function uid(): string {
   return crypto.randomUUID();
@@ -20,10 +15,6 @@ function uid(): string {
 
 function defaultItems(): GameItem[] {
   return [];
-}
-
-function newCard(): MatchPair {
-  return { id: uid(), left: '', right: '' };
 }
 
 export default function FlashcardsPage() {
@@ -43,7 +34,6 @@ export default function FlashcardsPage() {
     studentClassName,
     classId,
     templates,
-    setTemplates,
     selected,
     selectedId,
     setSelectedId,
@@ -56,18 +46,11 @@ export default function FlashcardsPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    importCandidates,
-    importFromClass,
-    reload,
-    wordLists,
-    wordListsLoading,
     roster,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoPairs = useMemo(
     () => [
@@ -86,56 +69,6 @@ export default function FlashcardsPage() {
   }, [selected?.id]);
 
   const playableCards = draftCards.filter((c) => c.left.trim() && c.right.trim());
-
-  async function persistConfig(nextConfig: GameTemplateConfig) {
-    if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
-  }
-
-  async function persistCards(next: MatchPair[]) {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, flashcards: next });
-  }
-
-  function addCard() {
-    const next = [...draftCards, newCard()];
-    setDraftCards(next);
-    void persistCards(next);
-  }
-
-  function addCardsBulk(cards: MatchPair[]) {
-    const next = [...draftCards, ...cards];
-    setDraftCards(next);
-    void persistCards(next);
-  }
-
-  function removeCard(cid: string) {
-    const next = draftCards.filter((c) => c.id !== cid);
-    setDraftCards(next);
-    void persistCards(next);
-  }
-
-  function updateFrontLocal(cid: string, text: string) {
-    setDraftCards((prev) => prev.map((c) => (c.id === cid ? { ...c, left: text } : c)));
-  }
-
-  function updateBackLocal(cid: string, text: string) {
-    setDraftCards((prev) => prev.map((c) => (c.id === cid ? { ...c, right: text } : c)));
-  }
-
-  function commitOnBlur() {
-    void persistCards(draftCards);
-  }
-
-  async function handleStyleChange(style: 'wood' | 'clay') {
-    if (!selected) return;
-    await persistConfig({ ...selected.config, flashcardsStyle: style });
-  }
 
   if (g.noClasses) {
     return (
@@ -305,6 +238,8 @@ export default function FlashcardsPage() {
             <Flashcards key={roundKey}
               cards={playableCards}
               boardStyle={selected.config.flashcardsStyle === 'clay' ? 'clay' : 'wood'}
+              showPos={!!selected.config.flashcardsShowPos}
+              showExample={!!selected.config.flashcardsShowExample}
             />
           </GameThemeFrame>
 
@@ -313,110 +248,6 @@ export default function FlashcardsPage() {
             <EditOnly>{templateRow}</EditOnly>
             {createForm}
 
-            {isStaff && (
-              <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-title-md text-title-md text-on-surface">{t('gameFlashcards.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => void handleRename()}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button
-                      onClick={() => setEditorOpen((v) => !v)}
-                      className="font-label-md text-label-md text-primary hover:underline"
-                    >
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 py-2">
-                  <span className="font-label-md text-label-md text-on-surface-variant shrink-0">
-                    {t('gameFlashcards.styleLabel')}
-                  </span>
-                  {(['wood', 'clay'] as const).map((style) => {
-                    const on = (selected.config.flashcardsStyle ?? 'wood') === style;
-                    return (
-                      <button
-                        key={style}
-                        type="button"
-                        onClick={() => void handleStyleChange(style)}
-                        className={`px-3 py-1.5 rounded-full font-label-md text-label-md transition-all ${
-                          on
-                            ? 'bg-secondary text-on-secondary shadow-sm'
-                            : 'bg-surface-container-low text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container'
-                        }`}
-                      >
-                        {style === 'wood' ? t('gameFlashcards.styleWood') : t('gameFlashcards.styleClay')}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {editorOpen && (
-                  <div className="space-y-4">
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
-                    <div className="flex flex-wrap items-start gap-3 my-3">
-                    <WordListPicker
-                      variant="pairs"
-                      wordLists={wordLists.filter((l) => l.kind !== 'sentence')}
-                      loading={wordListsLoading}
-                      onImportPairs={(cards) => addCardsBulk(cards)}
-                    />
-                    <SentenceSources mode="pairs" wordLists={wordLists} loading={wordListsLoading} classId={staffClassId} onImportPairs={(cards) => addCardsBulk(cards)} />
-                    <DictionaryPicker
-                      variant="pairs"
-                      onImportPairs={(cards) => addCardsBulk(cards)}
-                    />
-                    </div>
-
-                    {draftCards.map((c, ci) => (
-                      <div key={c.id} className="bg-surface-container-low rounded-lg p-4 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="font-label-md text-label-md text-on-surface-variant">
-                            {t('gameFlashcards.cardLabel', { n: ci + 1 })}
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => removeCard(c.id)}
-                            className="font-caption text-caption text-error hover:underline"
-                          >
-                            {t('gameFlashcards.removeCardButton')}
-                          </button>
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            value={c.left}
-                            onChange={(e) => updateFrontLocal(c.id, e.target.value)}
-                            onBlur={commitOnBlur}
-                            placeholder={t('gameFlashcards.frontPlaceholder')}
-                            className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                          />
-                          <input
-                            value={c.right}
-                            onChange={(e) => updateBackLocal(c.id, e.target.value)}
-                            onBlur={commitOnBlur}
-                            placeholder={t('gameFlashcards.backPlaceholder')}
-                            className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={addCard}
-                      className="w-full px-4 py-2.5 rounded-lg font-label-md text-label-md bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-dashed border-outline-variant transition-colors"
-                    >
-                      {t('gameFlashcards.addCardButton')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

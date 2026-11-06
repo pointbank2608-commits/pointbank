@@ -852,6 +852,7 @@ const ko = {
   },
 
   gameFlashcards: {
+    readExample: '예문 읽어 주기',
     readButton: '읽어 주기',
     autoReadOn: '자동 읽기 켜짐',
     autoReadOff: '자동 읽기 꺼짐',

@@ -321,6 +321,9 @@ export interface GameTemplateConfig {
   popcornPopCount?: number;
   /** 공 돌리기: 한 라운드에 나오는 단어/문장 수 */
   passBallRoundWords?: number;
+  /** 플래시카드: 카드 뒷면에 품사·예문(사전에서 찾음)도 함께 보여 줄지 */
+  flashcardsShowPos?: boolean;
+  flashcardsShowExample?: boolean;
   /** 라운드당 카드 수. 없으면 낱말 전부 + POP 카드. */
   popcornRoundCards?: number;
   /** Current-session guided edit; save updates this existing game without changing its scope. */
