@@ -11,9 +11,10 @@ import { chromium } from '../../node_modules/homework-test-tools/node_modules/@p
 import { makeWmDb, setDay } from '../admin/wm-setup.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const shots = resolve(root, '../output/word-memory');
+const shots = resolve(process.env.WM_TEST_OUTPUT || resolve(root, '../output/word-memory'));
 mkdirSync(shots, { recursive: true });
 const db = await makeWmDb();
+await db.exec(readFileSync(new URL('../../../supabase/103_word_projects.sql', import.meta.url), 'utf8'));
 
 // ---------- 합성 학원 ----------
 const OWNER = '00000000-0000-4000-8000-000000000001';
@@ -85,7 +86,9 @@ await new Promise((r) => rpcServer.listen(0, '127.0.0.1', r));
 const RPC = `http://127.0.0.1:${rpcServer.address().port}`;
 const sqlq = async (sql, params = []) => {
   const r = await fetch(`${RPC}/__sql`, { method: 'POST', body: JSON.stringify({ sql, params }) });
-  return (await r.json()).rows;
+  const j = await r.json();
+  if (j.error) throw new Error('SQL 오류: ' + j.error);
+  return j.rows;
 };
 const goDay = (d) => fetch(`${RPC}/__day?d=${d}`);
 
@@ -137,7 +140,7 @@ const ok = (n) => {
   console.log('PASS', n);
 };
 async function newPage(viewport = { width: 1000, height: 1100 }, opts = {}) {
-  const ctx = await browser.newContext({ viewport, ...opts });
+  const ctx = await browser.newContext({ viewport, reducedMotion: 'reduce', ...opts });
   const page = await ctx.newPage();
   await page.addInitScript(`window.__rpc = ${JSON.stringify(RPC)}; window.__uid = ${JSON.stringify(OWNER)};`);
   page.on('pageerror', (e) => errors.push(e.message));
@@ -202,6 +205,9 @@ try {
   console.log('2. 학생 첫날(모바일)');
   const phone = { width: 390, height: 844 };
   const M = accessTokens['민수'];
+  const pickChoice = (page, q, index) => q.choices.join('|') === 'O|X'
+    ? page.getByRole('button', { name: q.choices[index], exact: true }).click()
+    : page.locator(`[data-choice="${index}"]`).click();
   const solve = async (page, access, { wrong = false, hint = false } = {}) => {
     const i = Number(await page.locator('[data-wm-view="run"]').getAttribute('data-wm-q'));
     const sid = await sessionIdOf(access);
@@ -212,7 +218,7 @@ try {
     }
     if (q.qtype === 'choice') {
       const idx = wrong ? (q.correct + 1) % q.choices.length : q.correct;
-      await page.locator(`[data-choice="${idx}"]`).click();
+      await pickChoice(page, q, idx);
     } else if (q.qtype === 'text') {
       await page.keyboard.type(wrong ? 'zzz' : String(q.correct));
       await page.keyboard.press('Enter');
@@ -257,10 +263,15 @@ try {
   await sp.goto(`${BASE}/wm/${M}`);
   await sp.waitForSelector('[data-wm-view="home"]');
   const home = await sp.locator('[data-wm-view="home"]').innerText();
-  assert.match(home, /민수 안녕하세요/);
-  assert.match(home, /새로 배울 단어/);
-  assert.match(home, /처음에는 모두 같은 단어로 시작해요/);
-  ok('첫날 시작 화면: 복습 0·어려운 0·새 단어 3, "처음에는 모두 같은 단어" 안내(근거 없는 개인화 주장 없음)');
+  assert.match(home, /민수/);
+  assert.match(home, /오늘 할 학습/);
+  assert.equal(await sp.locator('[data-wmp-tile]').count(), 1, '첫날은 새 단어 타일 하나');
+  assert.match(await sp.locator('[data-wmp-tile="새 단어"]').innerText(), /3/);
+  assert.equal(await sp.locator('[data-wm-start]').count(), 1, '시작 버튼은 하나');
+  assert.equal(await sp.locator('[data-wm-start]').innerText(), '오늘 할 학습 시작');
+  assert.match(home, /내가 익힌 단어[\s\S]*0 \/ 12개/);
+  assert.doesNotMatch(home, /점수|정답률|정확도/);
+  ok('첫날 시작 화면(새 프로젝트 화면): 새 단어 3 타일, 시작 버튼 하나, 익힌 단어 0/12, 내부 점수 없음');
   await sp.screenshot({ path: resolve(shots, 'student-home-mobile.png') });
   await sp.locator('[data-wm-start]').click();
   await sp.waitForSelector('[data-wm-study]');
@@ -269,7 +280,7 @@ try {
   // 새로고침해도 서버에 저장된 오늘 학습을 이어서 한다
   await sp.reload();
   await sp.waitForSelector('[data-wm-view="home"]');
-  assert.match(await sp.locator('[data-wm-view="home"]').innerText(), /남은 문제/);
+  assert.match(await sp.locator('[data-wm-view="home"]').innerText(), /남은 문항/);
   assert.match(await sp.locator('[data-wm-start]').innerText(), /이어서 하기/);
   ok('새로고침·재접속: "이어서 하기"와 남은 문제 수가 보이고 서버의 오늘 학습이 그대로다');
   await sp.locator('[data-wm-start]').click();
@@ -309,7 +320,7 @@ try {
           void route.abort('connectionfailed');
         } else void route.continue();
       });
-      await sp.locator(`[data-choice="${q.correct}"]`).click();
+      await pickChoice(sp, q, q.correct);
       await sp.waitForSelector('[data-wm-resend]');
       assert.equal(await count(), before, '전송 실패라 기록이 없다');
       assert.match(await sp.locator('[role=alert]').first().innerText(), /전송하지 못했어요/);
@@ -329,8 +340,8 @@ try {
   assert.equal(await viewOf(sp), 'done');
   await sp.screenshot({ path: resolve(shots, 'student-done-mobile.png') });
   const doneText = await sp.locator('[data-wm-view="done"]').innerText();
-  assert.match(doneText, /오늘은 여기까지/);
-  assert.match(doneText, /아직 만나지 않은 새 단어 9개/);
+  assert.match(doneText, /오늘 학습 끝!/);
+  assert.match(doneText, /아직 만나지 않은 단어가 9개/);
   ok('오늘 학습이 끝나면 종료 화면과 남은 분량(아직 안 만난 단어 9개)을 알려 준다');
   const d1 = await sqlq("select count(*) filter (where kind = 'retry')::int retries from public.wm_answers a where a.session_id = $1", [sidM]);
   assert.ok(d1[0].retries >= 1, '틀린 문제는 다시 묻기로 이어졌다');
@@ -360,7 +371,7 @@ try {
   const counts = await sqlq('select counts from public.wm_sessions s join public.wm_targets t on t.id = s.target_id where t.access_token = $1 and s.day = public.wm_today()', [M]);
   assert.equal(counts[0].counts.review + counts[0].counts.hard, 3);
   assert.ok(counts[0].counts.hard >= 1);
-  assert.doesNotMatch(home2, /처음에는 모두 같은 단어/);
+  assert.match(home2, /복습|다시 확인/);
   await sp.screenshot({ path: resolve(shots, 'student-home-day2-mobile.png') });
   ok('다음 날 시작 화면: 어제 만난 3개가 복습으로, 틀렸던 단어는 "아직 어려운 단어"로 나뉜다');
   await sp.locator('[data-wm-start]').click();
@@ -410,7 +421,7 @@ try {
   const j = await newPage(phone);
   await j.goto(`${BASE}/wm/${accessTokens['지아']}`);
   await j.waitForSelector('[data-wm-view="home"]');
-  assert.match(await j.locator('body').innerText(), /지아 안녕하세요/);
+  assert.match(await j.locator('body').innerText(), /지아/);
   assert.doesNotMatch(await j.locator('body').innerText(), /민수/);
   await j.close();
   ok('학생마다 개인 링크 하나로 자기 학습만 열린다');
@@ -433,7 +444,7 @@ try {
   const en = await newPage(phone);
   await en.goto(`${BASE}/wm/${accessTokens['지아']}?lang=en`);
   await en.waitForSelector('[data-wm-view="home"]');
-  assert.match(await en.locator('[data-wm-view="home"]').innerText(), /Start today’s word memory homework/);
+  assert.match(await en.locator('[data-wm-view="home"]').innerText(), /Today.s study/);
   ok('영어 문구');
   await en.close();
   await sqlq('update public.wm_plans set closed_at = now()');
@@ -454,6 +465,175 @@ try {
   await tm.screenshot({ path: resolve(shots, 'teacher-assign-mobile.png') });
   ok('선생님 배정 창이 모바일 폭에서도 화면 안에 들어온다');
   await tm.close();
+
+  const overdue = await newPage(phone);
+  await goDay('2027-03-15');
+  await overdue.goto(BASE + '/wm/' + accessTokens['지아']);
+  await overdue.waitForSelector('[data-wm-view="home"]');
+  assert.match(await overdue.locator('[data-wm-view="home"]').innerText(), /목표일.*지났어요.*이어서 배워요/);
+  assert.equal(await overdue.locator('[data-wm-start]').innerText(), '오늘 할 학습 시작');
+  await overdue.screenshot({ path: resolve(shots, 'student-project-overdue-mobile.png') });
+  ok('목표일이 지나도 학생은 오늘 할 학습을 시작할 수 있다');
+
+  await sqlq('update public.wm_words w set stage=3,relearning=false from public.wm_targets t where t.id=w.target_id and t.access_token=$1', [accessTokens['지아']]);
+  await goDay('2027-03-16');
+  await overdue.reload();
+  await overdue.waitForSelector('[data-wm-view="ended"]');
+  assert.match(await overdue.locator('[data-wm-view="ended"]').innerText(), /프로젝트 완료!/);
+  await overdue.screenshot({ path: resolve(shots, 'student-project-complete-mobile.png') });
+  ok('전체 단어 확인을 마친 학생에게 프로젝트 완료가 표시된다');
+  await overdue.close();
+
+  // ============ 8. 큰 프로젝트(3,520개): 교사 승인 → 학생 학습 → 교사 진행(실제 SQL 응답) ============
+  console.log('8. 큰 프로젝트');
+  const kst = (d = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  const addDay = (iso, n) => new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) + n * 86400000).toISOString().slice(0, 10);
+  const realToday = kst();
+  await goDay(realToday); // 서버 한국 날짜 = 화면의 배정 전 미리보기 날짜
+  const BIG = Array.from({ length: 3520 }, (_, i) => ({ id: 'b' + i, word: `bigword${i}`, meaning: `뜻${i}`, imageUrl: null, example: null }));
+  const bt = await newPage({ width: 1000, height: 1400 });
+  await bt.addInitScript((c) => sessionStorage.setItem('wm-cards', JSON.stringify(c)), BIG);
+  await bt.goto(`${BASE}/teacher`);
+  await bt.waitForSelector('[data-wm-assign]');
+  await bt.waitForFunction(() => document.querySelectorAll('[data-wm-student]').length === 3);
+  assert.match(await bt.locator('[data-wmp-total]').innerText(), /3,520/);
+  assert.match(await bt.locator('[data-wmp-range]').innerText(), /200개씩 18구간/);
+  await bt.locator('[data-wmp-range] summary').click();
+  assert.equal(await bt.locator('[data-wmp-sections] li').count(), 18);
+  assert.equal(await bt.locator('[data-wmp-fits]').getAttribute('data-wmp-fits'), 'true', '기본 목표일은 소개에 걸리는 날 + 여유로 맞춘다');
+  // 목표일을 당기면 경고만 하고, 하루 분량은 자동으로 바뀌지 않는다
+  const goalWanted = addDay(realToday, 400);
+  await bt.locator('[data-wmp-goal]').fill(goalWanted);
+  assert.equal(await bt.locator('[data-wmp-fits]').getAttribute('data-wmp-fits'), 'false');
+  await bt.waitForTimeout(400);
+  assert.equal(await bt.locator('[data-wm-mode="light"]').getAttribute('aria-pressed'), 'true', '자동으로 하루 분량이 바뀌지 않음');
+  const planCount0 = (await sqlq('select count(*)::int c from public.wm_plans'))[0].c;
+  await bt.screenshot({ path: resolve(shots, 'teacher-big-project-warn.png') });
+  await bt.locator('[data-wmp-raise]').click();
+  assert.equal(await bt.locator('[data-wm-mode="plus"]').getAttribute('aria-pressed'), 'true', '교사가 눌러야 분량이 바뀐다');
+  assert.equal(await bt.locator('[data-wmp-fits]').getAttribute('data-wmp-fits'), 'true');
+  assert.equal((await sqlq('select count(*)::int c from public.wm_plans'))[0].c, planCount0, '배정 전에는 만들어지지 않음');
+  // 하준만 배정
+  await bt.locator('[data-wm-student]').nth(0).uncheck();
+  await bt.locator('[data-wm-student]').nth(1).uncheck();
+  await bt.locator('[data-wm-assign-btn]').dblclick();
+  await bt.waitForSelector('[data-wm-result]');
+  await bt.screenshot({ path: resolve(shots, 'teacher-big-project-assigned.png') });
+  const bigPlan = await sqlq("select id, rule_version, daily_mode, start_date::text sd, (start_date + study_days + review_days)::text goal from public.wm_plans where jsonb_array_length(cards) = 3520");
+  assert.equal(bigPlan.length, 1, '연달아 눌러도 계획 1개');
+  assert.equal(bigPlan[0].rule_version, 'wm-v2');
+  assert.equal(bigPlan[0].daily_mode, 'plus');
+  assert.equal(bigPlan[0].sd, realToday);
+  assert.equal(bigPlan[0].goal, goalWanted, '서버의 목표일 = 교사가 고른 목표일');
+  ok('교사 승인(3,520개): 200개씩 18구간, 목표일 경고는 자동 변경 없이 교사가 눌러 반영, 서버 목표일이 고른 값과 같고 중복 배정 없음');
+  await bt.close();
+  const H = (await sqlq("select t.access_token a from public.wm_targets t join public.students s on s.id = t.student_id where s.name = '하준' and t.plan_id = $1", [bigPlan[0].id]))[0].a;
+
+  const bs = await newPage(phone, { isMobile: true, hasTouch: true });
+  await bs.goto(`${BASE}/wm/${H}`);
+  await bs.waitForSelector('[data-wm-view="home"]');
+  const bh = await bs.locator('[data-wm-view="home"]').innerText();
+  assert.match(bh, /0 \/ 3,520개/);
+  assert.match(bh, /목표일/);
+  assert.match(bh, /\(예상 일정이에요\)/);
+  assert.match(await bs.locator('[data-wmp-tile="새 단어"]').innerText(), /10/);
+  assert.doesNotMatch(bh, /점수|정확도|정답률/);
+  await bs.screenshot({ path: resolve(shots, 'student-big-project-home-mobile.png') });
+  await bs.locator('[data-wm-start]').click();
+  const bigEnd = await runToEnd(bs, H);
+  assert.equal(bigEnd, 'done');
+  assert.match(await bs.locator('[data-wm-view="done"]').innerText(), /오늘 학습 끝!/);
+  await bs.reload();
+  await bs.waitForSelector('[data-wm-view="done"]');
+  await bs.screenshot({ path: resolve(shots, 'student-big-project-done-mobile.png') });
+  ok('학생(3,520개 프로젝트): 새 단어 10개로 시작 → 풀고 오늘 끝 → 새로고침해도 서버의 오늘 끝이 유지');
+  await bs.close();
+
+  // 9일 뒤 돌아온 날: 서버 waiting_review 를 그대로 보여 준다(밀렸다고 하지 않는다)
+  await goDay(addDay(realToday, 9));
+  const back = await newPage(phone, { isMobile: true, hasTouch: true });
+  await back.goto(`${BASE}/wm/${H}`);
+  await back.waitForSelector('[data-wm-view="home"]');
+  const server = (await sqlq('select public.wm_today_state($1) r', [H]))[0].r;
+  const backText = await back.locator('[data-wm-view="home"]').innerText();
+  assert.doesNotMatch(backText, /밀렸|결석|늦었/);
+  if (server.waiting_review > 0) assert.match(await back.locator('[data-wmp-waiting]').innerText(), new RegExp(`남은 복습 ${server.waiting_review}개는 다음 날들에 나눠서 해요`));
+  else assert.equal(await back.locator('[data-wmp-waiting]').count(), 0);
+  assert.ok((await back.locator('[data-wmp-tile]').count()) >= 1);
+  await back.screenshot({ path: resolve(shots, 'student-big-project-return-mobile.png') });
+  ok(`학생 복귀: 오늘 분량(복습 ${server.counts.review}·다시 확인 ${server.counts.hard}·새 ${server.counts.new})과 서버 waiting_review ${server.waiting_review}개를 그대로 표시`);
+  await back.close();
+
+  // 교사 진행: 학생이 확인된 단어(며칠 뒤에도 혼자 맞힘)를 만들면 진행 화면에 그대로 나온다
+  await sqlq("update public.wm_words w set stage = 3, relearning = false from public.wm_targets t where t.id = w.target_id and t.access_token = $1 and w.introduced_day is not null", [H]);
+  const proj = (await sqlq('select public.wm_project_status(t.id, p.start_date + p.study_days + p.review_days) r from public.wm_targets t join public.wm_plans p on p.id = t.plan_id where t.access_token = $1', [H]))[0].r;
+  const rp2 = await newPage({ width: 1100, height: 1200 });
+  await rp2.goto(`${BASE}/results`);
+  await rp2.waitForSelector('[data-wm-results]');
+  await rp2.locator(`[data-wm-plan="${bigPlan[0].id}"] button`).first().click();
+  await rp2.getByRole('tab', { name: '진행·시험' }).click();
+  await rp2.waitForSelector('[data-wmp-progress]');
+  const prog = await rp2.locator('[data-wmp-progress]').innerText();
+  assert.match(prog, /3,520개 · 18구간|전체 3,520개 · 200개씩 18구간/);
+  assert.equal(await rp2.locator('[data-wmp-row]').count(), 1);
+  assert.equal(await rp2.locator('[data-wmp-verified]').innerText(), proj.verified.toLocaleString('ko-KR'), '확인됨 수가 서버 값과 같다');
+  assert.ok(proj.verified > 0);
+  assert.equal(await rp2.locator('[data-wmp-inconsistent]').count(), 0, '세 분류 합계가 전체와 같다');
+  assert.equal(proj.verified + proj.needs_review + proj.unconfirmed, proj.total);
+  assert.match(prog, /하루 분량 넉넉히/);
+  assert.match(prog, /목표일/);
+  assert.equal(await rp2.getByRole('button', { name: /늘리기/ }).count(), 0, 'pace 만으로 늘리기 버튼을 띄우지 않는다');
+  await rp2.locator('button', { hasText: '구간별로 보기' }).click();
+  assert.equal(await rp2.locator('[data-wmp-sections] li').count(), 18);
+  await rp2.screenshot({ path: resolve(shots, 'teacher-big-project-progress.png'), fullPage: true });
+  await rp2.locator('[data-wmp-next-steps]').click();
+  assert.equal(await rp2.getByRole('tab', { name: '다음 단계 카드' }).getAttribute('aria-selected'), 'true');
+  ok(`교사 진행: 확인됨 ${proj.verified}/3,520이 서버 값과 일치, 세 분류 합계 일치, 18구간, 늘리기 버튼 없이 '다음 단계 카드' 탭으로 안내`);
+  await rp2.close();
+
+  // 복습만 하는 날 + 복습이 하루 상한을 넘는 날: 새 단어를 모두 만난 상태에서 복습 차례 단어를 80개 만든다
+  await sqlq("update public.wm_words w set introduced_day = coalesce(w.introduced_day, $2::date), stage = greatest(w.stage, 1), due_day = $3::date from public.wm_targets t where t.id = w.target_id and t.access_token = $1 and w.stage < 3", [H, addDay(realToday, 11), addDay(realToday, 60)]);
+  await sqlq("update public.wm_words set due_day = $2::date where (target_id, key) in (select w.target_id, w.key from public.wm_words w join public.wm_targets t on t.id = w.target_id where t.access_token = $1 and w.stage < 3 order by w.key limit 80)", [H, addDay(realToday, 11)]);
+  await goDay(addDay(realToday, 11));
+  const heavy = await newPage(phone, { isMobile: true, hasTouch: true });
+  await heavy.goto(`${BASE}/wm/${H}`);
+  await heavy.waitForSelector('[data-wm-view]');
+  if ((await viewOf(heavy)) !== 'home') throw new Error('복습만 하는 날 화면이 home 이 아님: ' + (await viewOf(heavy)) + ' / ' + (await heavy.locator('body').innerText()).slice(0, 300) + ' / state=' + JSON.stringify((await sqlq('select public.wm_today_state($1) r', [H]))[0].r).slice(0, 400));
+  const hs = (await sqlq('select public.wm_today_state($1) r', [H]))[0].r;
+  assert.equal(hs.counts.new, 0, '새 단어는 모두 만난 상태');
+  assert.ok(hs.waiting_review > 0, `복습이 오늘 상한을 넘는다(${hs.waiting_review})`);
+  const ht = await heavy.locator('[data-wm-view="home"]').innerText();
+  assert.match(ht, /오늘은 복습만 해요/);
+  assert.equal(await heavy.locator('[data-wmp-tile="새 단어"]').count(), 0);
+  assert.match(await heavy.locator('[data-wmp-waiting]').innerText(), new RegExp(`남은 복습 ${hs.waiting_review}개는 다음 날들에 나눠서 해요`));
+  assert.doesNotMatch(ht, /밀렸|결석|늦었|한꺼번에/);
+  const shownAsks = hs.counts.asks;
+  assert.ok(shownAsks <= 30, `오늘 문제 수(${shownAsks})가 승인한 하루 상한(30)을 넘지 않는다`);
+  await heavy.screenshot({ path: resolve(shots, 'student-big-project-review-only-waiting-mobile.png') });
+  ok(`복습만 하는 날: 오늘 문제 ${shownAsks}개(상한 30 이하), 서버 waiting_review ${hs.waiting_review}개를 "다음 날들에 나눠서 해요"로 그대로 표시`);
+  await heavy.close();
+  await goDay(addDay(realToday, 12));
+
+  // 마지막 단어까지 확인 → 학생 완료, 교사 진행도 완료
+  await sqlq("update public.wm_words w set stage = 3, relearning = false from public.wm_targets t where t.id = w.target_id and t.access_token = $1", [H]);
+  await goDay(addDay(realToday, 13));
+  const fin = await newPage(phone, { isMobile: true, hasTouch: true });
+  await fin.goto(`${BASE}/wm/${H}`);
+  await fin.waitForSelector('[data-wm-view="ended"]');
+  assert.match(await fin.locator('[data-wm-view="ended"]').innerText(), /프로젝트 완료![\s\S]*3,520개/);
+  assert.equal(await fin.locator('[data-wm-start]').count(), 0);
+  await fin.screenshot({ path: resolve(shots, 'student-big-project-complete-mobile.png') });
+  await fin.close();
+  const rp3 = await newPage({ width: 1100, height: 900 });
+  await rp3.goto(`${BASE}/results`);
+  await rp3.waitForSelector('[data-wm-results]');
+  await rp3.locator(`[data-wm-plan="${bigPlan[0].id}"] button`).first().click();
+  await rp3.getByRole('tab', { name: '진행·시험' }).click();
+  await rp3.waitForSelector('[data-wmp-progress]');
+  assert.match(await rp3.locator('[data-wmp-row]').innerText(), /완료/);
+  assert.equal(await rp3.locator('[data-wmp-verified]').innerText(), '3,520');
+  await rp3.close();
+  ok('마지막 단어까지 확인: 학생 화면은 프로젝트 완료, 교사 진행도 완료(3,520/3,520)');
 
 } finally {
   await browser.close();

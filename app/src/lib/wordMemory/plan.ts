@@ -8,6 +8,7 @@ import type { WmCard, WmDailyMode } from './types';
 export const WM_RULE_VERSION = 'wm-v1';
 export const WM_MIN_WORDS = 4;
 export const WM_MAX_WORDS = 1000;
+export const WM_PROJECT_MAX_DAYS = 3650;
 
 export interface DailyBudget {
   asks: number;
@@ -62,7 +63,7 @@ export interface CardAnalysis {
   issues: ('too_few' | 'too_many')[];
 }
 
-export function analyzeCards(cards: readonly WmCard[]): CardAnalysis {
+export function analyzeCards(cards: readonly WmCard[], maxWords = WM_MAX_WORDS): CardAnalysis {
   const withImage = cards.filter((c) => (c.imageUrl ?? '').trim()).length;
   const withExample = cards.filter((c) => (c.example ?? '').trim()).length;
   const blankUsable = cards.filter(canMakeBlank).length;
@@ -72,15 +73,15 @@ export function analyzeCards(cards: readonly WmCard[]): CardAnalysis {
   const homographs = [...byWord.values()].filter((n) => n > 1).length;
   const issues: CardAnalysis['issues'] = [];
   if (cards.length < WM_MIN_WORDS) issues.push('too_few');
-  if (cards.length > WM_MAX_WORDS) issues.push('too_many');
+  if (cards.length > maxWords) issues.push('too_many');
   return { total: cards.length, withImage, withExample, exampleUnusable: withExample - blankUsable, blankUsable, lettersUsable, homographs, issues };
 }
 
 /** 낱말을 모두 소개하는 데 걸리는 날 수(새 낱말 상한 기준) */
 export const introDays = (words: number, mode: WmDailyMode) => Math.max(1, Math.ceil(words / dailyBudget(mode).newMax));
 
-/** 공부 기간 기본값: 소개에 걸리는 날 + 여유, 7~240일 */
-export const defaultStudyDays = (words: number, mode: WmDailyMode) => Math.min(240, Math.max(7, introDays(words, mode) + 3));
+/** 소개에 걸리는 최소 일수에 여유를 더한다. 실제 일정은 복습량에 따라 달라진다. */
+export const defaultStudyDays = (words: number, mode: WmDailyMode, maxDays = 240) => Math.min(maxDays, Math.max(7, introDays(words, mode) + 3));
 
 /** 하루 문항 한 개에 15~30초쯤 걸린다고 어림한 분(학생마다 다르다 — 정확한 시간이 아니다) */
 export function estimateMinutes(mode: WmDailyMode): { min: number; max: number } {

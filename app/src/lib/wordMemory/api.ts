@@ -39,7 +39,7 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
 /* ---------- 선생님 ---------- */
 
 export const wmAssign = (input: WmAssignInput) =>
-  rpc<WmAssignResult>('wm_assign', {
+  rpc<WmAssignResult>('wm_project_assign', {
     p_request_id: input.requestId,
     p_class_id: input.classId,
     p_title: input.title,

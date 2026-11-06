@@ -6,9 +6,11 @@ import { fetchClasses, fetchStudentsOfClass } from '../../lib/api';
 import { useFeature } from '../../lib/features';
 import type { ClassRow, FullCardItem, Student } from '../../lib/types';
 import { toWmError, wmAssign, wmPlanLinks, wmStudentUrl } from '../../lib/wordMemory/api';
-import { analyzeCards, dailyBudget, defaultStudyDays, estimateMinutes, introDays, toWmCards, WM_MAX_WORDS, WM_MIN_WORDS } from '../../lib/wordMemory/plan';
+import { analyzeCards, dailyBudget, defaultStudyDays, estimateMinutes, toWmCards, WM_MIN_WORDS, WM_PROJECT_MAX_DAYS } from '../../lib/wordMemory/plan';
 import type { WmAssignResult, WmDailyMode } from '../../lib/wordMemory/types';
 import AccessibleDialog from '../AccessibleDialog';
+import { GoalSchedule, RangeSummary } from '../wordMemoryProject/ProjectPlan';
+import { addDays, kstToday, projectSchedule } from '../wordMemoryProject/model';
 
 export interface WmSource {
   type: 'wordlist' | 'elementary800' | 'custom';
@@ -26,15 +28,17 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const navigate = useNavigate();
   const homeworkOpen = useFeature('homework');
   const wmCards = useMemo(() => toWmCards(cards), [cards]);
-  const analysis = useMemo(() => analyzeCards(wmCards), [wmCards]);
-  const requestId = useRef(crypto.randomUUID());
+  const analysis = useMemo(() => analyzeCards(wmCards, Infinity), [wmCards]);
+  const lastRequest = useRef<{ key: string; id: string; cards: typeof wmCards } | null>(null);
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [classId, setClassId] = useState(defaultClassId ?? '');
   const [students, setStudents] = useState<Student[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<WmDailyMode>('light');
   const [title, setTitle] = useState(source.name);
-  const [studyDays, setStudyDays] = useState<number | null>(null);
+  // 목표일(예상). 비워 두면 소개에 걸리는 일수 + 여유로 정한 기본값. 서버의 목표일 = 시작일 + 공부 기간 + 복습 기간
+  const [goal, setGoal] = useState<string | null>(null);
+  const today = useMemo(() => kstToday(), []); // 서버 wm_today()와 같은 한국 날짜(배정 전 미리보기용). 실제 시작일은 서버가 정한다
   const [reviewDays, setReviewDays] = useState(14);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +46,9 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const [links, setLinks] = useState<{ student_id: string; name: string; access: string }[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const study = studyDays ?? defaultStudyDays(wmCards.length, mode);
+  const goalDate = goal ?? addDays(today, defaultStudyDays(wmCards.length, mode, WM_PROJECT_MAX_DAYS) + reviewDays);
+  const schedule = useMemo(() => projectSchedule({ total: wmCards.length, mode, start: today, goal: goalDate, reviewDays }), [wmCards.length, mode, today, goalDate, reviewDays]);
+  const study = schedule.studyDays;
 
   useEffect(() => {
     if (!academy?.id) return;
@@ -76,20 +82,26 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
 
   const budget = dailyBudget(mode);
   const minutes = estimateMinutes(mode);
-  const canAssign = homeworkOpen && !busy && !result && classId && picked.size > 0 && analysis.issues.length === 0;
+  const canAssign = homeworkOpen && !busy && !result && classId && picked.size > 0 && analysis.issues.length === 0 && schedule.valid;
 
   async function assign() {
     if (!canAssign) return;
     setBusy(true);
     setError(null);
     try {
+      const studentIds = [...picked].sort();
+      const approvedTitle = title.trim() || source.name;
+      const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays]);
+      if (lastRequest.current?.key !== key || lastRequest.current.cards !== wmCards) {
+        lastRequest.current = { key, id: crypto.randomUUID(), cards: wmCards };
+      }
       const r = await wmAssign({
-        requestId: requestId.current,
+        requestId: lastRequest.current.id,
         classId,
-        title: title.trim() || source.name,
+        title: approvedTitle,
         cards: wmCards,
         source: { type: source.type, id: source.id, name: source.name },
-        studentIds: [...picked],
+        studentIds,
         mode,
         studyDays: study,
         reviewDays,
@@ -243,10 +255,13 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
               <p className="text-sm text-on-surface-variant">{t('wordMemory.dailyNote')}</p>
             </section>
 
+            <RangeSummary name={source.name} total={wmCards.length} />
+            <GoalSchedule total={wmCards.length} mode={mode} today={today} goal={goalDate} reviewDays={reviewDays} onGoal={setGoal} onMode={setMode} onReviewDays={setReviewDays} />
+
             <section className="space-y-1 rounded-xl border border-outline-variant p-4" data-wm-preview>
               <h3 className="font-bold text-deep-navy">{t('wordMemory.previewTitle')}</h3>
               <p>
-                {t('wordMemory.previewWords', { count: analysis.total })} · {t('wordMemory.previewDays', { days: introDays(analysis.total, mode) })}
+                {t('wordMemory.previewWords', { count: analysis.total })}
               </p>
               <p className="pt-1 text-sm font-bold text-on-surface-variant">{t('wordMemory.previewActivities')}</p>
               <ul className="list-disc space-y-0.5 pl-5 text-sm">
@@ -263,39 +278,15 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                   {t('wordMemory.tooFew', { min: WM_MIN_WORDS })}
                 </p>
               )}
-              {analysis.issues.includes('too_many') && (
-                <p role="alert" className="font-bold text-error">
-                  {t('wordMemory.tooMany', { max: WM_MAX_WORDS })}
-                </p>
-              )}
             </section>
 
             <details className="rounded-xl border border-outline-variant p-4">
               <summary className="cursor-pointer font-bold text-primary">{t('wordMemory.optional')}</summary>
+              <p className="mt-2 text-sm text-on-surface-variant">{t('wordMemory.projectGoalNote')}</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <label className="block text-sm font-bold text-on-surface-variant sm:col-span-3">
                   {t('wordMemory.planTitle')}
                   <input className={`${field} mt-1 w-full text-deep-navy`} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} />
-                </label>
-                <label className="block text-sm font-bold text-on-surface-variant">
-                  {t('wordMemory.studyDays')}
-                  <select className={`${field} mt-1 w-full text-deep-navy`} value={study} onChange={(e) => setStudyDays(Number(e.target.value))} data-wm-study-days>
-                    {[...new Set([7, 10, 14, 21, 30, 45, 60, 90, 120, 180, 240, study])].sort((a, b) => a - b).map((d) => (
-                      <option key={d} value={d}>
-                        {t('wordMemory.days', { count: d })}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="block text-sm font-bold text-on-surface-variant">
-                  {t('wordMemory.reviewDays')}
-                  <select className={`${field} mt-1 w-full text-deep-navy`} value={reviewDays} onChange={(e) => setReviewDays(Number(e.target.value))}>
-                    {[0, 7, 14, 21, 30, 45, 60, 90].map((d) => (
-                      <option key={d} value={d}>
-                        {t('wordMemory.days', { count: d })}
-                      </option>
-                    ))}
-                  </select>
                 </label>
               </div>
             </details>

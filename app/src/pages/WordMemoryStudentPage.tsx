@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import QuestionCard from '../components/homework/QuestionCard';
 import WordMemoryCollection from '../components/wordMemory/WordMemoryCollection';
+import StudentToday from '../components/wordMemoryProject/StudentToday';
 import type { HwQuestion } from '../lib/homework/types';
 import { speak } from '../lib/speech';
 import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
@@ -210,6 +211,14 @@ export default function WordMemoryStudentPage() {
       </div>
     );
   }
+  // 프로젝트(wm-v2, 응답에 project 가 있는 새 계획): 오늘 할 학습·이어서 하기·오늘 끝·완료는 새 화면. 문제 풀이(run)와 채점은 아래 기존 흐름 그대로
+  if (today?.project && info && (view === 'home' || view === 'done' || view === 'ended')) {
+    return (
+      <div className="flex min-h-dvh flex-col bg-[#f8f1e3] text-[#1c2742]" data-wm-view={view}>
+        <StudentToday today={today} studentName={info.student_name} title={info.title || t('wordMemory.title')} onStart={() => setView('run')} onCollection={() => void openCollection()} />
+      </div>
+    );
+  }
   if (view === 'ended') {
     return (
       <div className={shell} data-wm-view="ended">
@@ -217,8 +226,8 @@ export default function WordMemoryStudentPage() {
           <span className="material-symbols-outlined text-[64px] text-warm-yellow" aria-hidden>
             emoji_events
           </span>
-          <h1 className="text-2xl font-bold">{t('wordMemory.endedTitle')}</h1>
-          <p className="text-lg text-white/80">{t('wordMemory.endedBody')}</p>
+          <h1 className="text-2xl font-bold">{t(today?.project?.completed ? 'wordMemory.projectComplete' : 'wordMemory.endedTitle')}</h1>
+          <p className="text-lg text-white/80">{t(today?.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.endedBody')}</p>
           <button type="button" className={big} onClick={() => void openCollection()}>
             {t('wordMemory.collection')}
           </button>
@@ -244,11 +253,12 @@ export default function WordMemoryStudentPage() {
               </li>
             ))}
           </ul>
+          {today.project?.goal_passed && <p className="text-center text-base text-white/80">{t('wordMemory.projectContinue')}</p>}
           <p className="text-center text-base text-white/80">{t('wordMemory.startNote', { asks: today.counts.asks, study: studyCount })}</p>
           {c.review + c.hard === 0 && info.stages.seen + info.stages.practicing + info.stages.alone + info.stages.kept === 0 && <p className="rounded-2xl bg-white/10 p-3 text-center text-base">{t('wordMemory.firstDays')}</p>}
           {started && <p className="text-center text-base text-emerald-200">{t('wordMemory.remaining', { count: asksLeft })}</p>}
           <button type="button" className={`${big} mt-auto`} onClick={() => setView('run')} data-wm-start>
-            {started ? t('wordMemory.resume') : t('wordMemory.start')}
+            {t(started ? 'wordMemory.resume' : today.project ? 'wordMemory.projectStart' : 'wordMemory.start')}
           </button>
           <button type="button" className="min-h-12 rounded-full bg-white/15 text-base font-bold" onClick={() => void openCollection()}>
             {t('wordMemory.collection')}
@@ -265,8 +275,8 @@ export default function WordMemoryStudentPage() {
           <span className="material-symbols-outlined text-[64px] text-warm-yellow" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>
             {empty ? 'bedtime' : 'celebration'}
           </span>
-          <h1 className="text-2xl font-bold">{empty ? t('wordMemory.nothingToday') : t('wordMemory.doneTitle')}</h1>
-          {!empty && <p className="text-lg text-white/80">{t('wordMemory.doneBody')}</p>}
+          <h1 className="text-2xl font-bold">{t(today.project?.completed ? 'wordMemory.projectComplete' : empty ? 'wordMemory.nothingToday' : 'wordMemory.doneTitle')}</h1>
+          {!empty && <p className="text-lg text-white/80">{t(today.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.doneBody')}</p>}
           <ul className="flex flex-col gap-1 text-base text-white/85">
             {today.waiting_review > 0 && <li>{t('wordMemory.waitingReview', { count: today.waiting_review })}</li>}
             {today.unseen > 0 && <li>{t('wordMemory.unseenLeft', { count: today.unseen })}</li>}

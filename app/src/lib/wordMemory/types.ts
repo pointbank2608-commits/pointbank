@@ -77,7 +77,19 @@ export interface WmItem {
   hint?: string;
 }
 
+export interface WmProjectStatus {
+  goal_date: string;
+  goal_passed: boolean;
+  verified: number;
+  needs_review: number;
+  unconfirmed: number;
+  review_due: number;
+  total: number;
+  completed: boolean;
+}
+
 export interface WmToday {
+  project?: WmProjectStatus;
   sensor_run_id?: string;
   ended?: boolean;
   session_id: string;
@@ -93,6 +105,7 @@ export interface WmToday {
 }
 
 export interface WmOpen {
+  project?: WmProjectStatus;
   title: string;
   student_name: string;
   daily_mode: WmDailyMode;
@@ -132,6 +145,7 @@ export interface WmCollectionWord {
 }
 
 export interface WmPlanSummary {
+  rule_version?: string;
   id: string;
   title: string;
   source: { type?: string; name?: string };
@@ -232,6 +246,9 @@ export interface WmSection {
 }
 
 export interface WmProgressStudent {
+  project?: WmProjectStatus;
+  /** 이 학생에게 지금 적용 중인 하루 분량(선생님이 다음 단계 카드로 바꾼 값 포함) */
+  current_mode?: WmDailyMode;
   student_id: string;
   name: string;
   met: number;
@@ -242,6 +259,12 @@ export interface WmProgressStudent {
 }
 
 export interface WmProgress {
+  daily_mode?: WmDailyMode;
+  start_date?: string;
+  today?: string;
+  study_days?: number;
+  review_days?: number;
+  goal_date?: string;
   words: number;
   section_size: number;
   need_to_graduate: number;

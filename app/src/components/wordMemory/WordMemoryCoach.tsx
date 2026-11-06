@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { toWmError, wmApplyStep, wmPlanBriefing, wmPlanCards, wmPlanProgress, wmPlanSteps, wmPlanWeakCards } from '../../lib/wordMemory/api';
+import TeacherProgress from '../wordMemoryProject/TeacherProgress';
+import { kstToday } from '../wordMemoryProject/model';
 import { createCheckTest, fmtDate, parentSummary, pickFinalCards, SECTION_SIZE, sectionCount } from '../../lib/wordMemory/coach';
 import type { WmBriefing, WmDailyMode, WmProgress, WmStepAction, WmStepReason, WmStudentSteps } from '../../lib/wordMemory/types';
 
@@ -257,6 +259,22 @@ export default function WordMemoryCoach({ planId, classId, planTitle, words, clo
             <p className="text-sm text-on-surface-variant">{l('불러오는 중…', 'Loading…')}</p>
           ) : (
             <>
+              {progress.students.some((s) => s.project) ? (
+                <TeacherProgress
+                  rows={progress.students}
+                  words={progress.words}
+                  sectionSize={progress.section_size}
+                  today={progress.today ?? kstToday()}
+                  planMode={progress.daily_mode}
+                  onOpenNextSteps={() => setTab('steps')}
+                  rowExtra={(s) => (
+                    <button type="button" className="min-h-11 rounded-full border border-outline-variant px-3 text-xs font-bold" onClick={() => void copy(parentSummary({ en, student: s.name, planTitle: planTitle || l('단어 암기', 'Word project'), words: progress.words, progress: s, streak: brief?.students.find((b) => b.student_id === s.student_id)?.streak_days }), l('학부모용 요약을 복사했어요.', 'Parent summary copied.'))}>
+                      {l('학부모 요약 복사', 'Copy parent summary')}
+                    </button>
+                  )}
+                />
+              ) : (
+                <>
               <p className="text-sm">
                 {l(`전체 ${progress.words}개 중 `, `Of ${progress.words} words, `)}<b>{progress.need_to_graduate}{l('개(95%)', ' (95%)')}</b>
                 {l('를 "며칠 뒤에도 기억함"까지 졸업시키면 완성이에요. 목표 마감 ', ' must be graduated. Target end ')}<b>{fmtDate(progress.final_deadline, en)}</b>
@@ -293,6 +311,8 @@ export default function WordMemoryCoach({ planId, classId, planTitle, words, clo
                 })}
               </ul>
               <p className="text-xs text-on-surface-variant">{l('초록 = 졸업(며칠 뒤에도 기억함), 파랑 = 만난 낱말', 'Green = graduated, blue = met')}</p>
+                </>
+              )}
               <div className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3">
                 <label className="text-sm font-bold">
                   {l('구간 시험', 'Section test')}{' '}
