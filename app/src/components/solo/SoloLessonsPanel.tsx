@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import MoreMenu from '../MoreMenu';
 import LearningPathStudio from './LearningPathStudio';
+import GrammarTeacherPanel from '../grammar/GrammarTeacherPanel';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -65,7 +66,7 @@ function orderLessons(list: SoloLesson[]): SoloLesson[] {
 
 export default function SoloLessonsPanel(props: { academyId: string; classId: string | null }) {
   const { i18n } = useTranslation();
-  return <div className="space-y-8"><LearningPathStudio {...props}/><details className="rounded-2xl border border-outline-variant p-4"><summary className="min-h-11 cursor-pointer font-bold">{i18n.language.startsWith('en') ? 'Previous lesson materials' : '기존 개별수업 자료'}</summary><div className="mt-4"><LegacySoloLessonsPanel {...props}/></div></details></div>;
+  return <div className="space-y-8">{props.classId && <GrammarTeacherPanel classId={props.classId} mode="individual" />}<LearningPathStudio {...props}/><details className="rounded-2xl border border-outline-variant p-4"><summary className="min-h-11 cursor-pointer font-bold">{i18n.language.startsWith('en') ? 'Previous lesson materials' : '기존 개별수업 자료'}</summary><div className="mt-4"><LegacySoloLessonsPanel {...props}/></div></details></div>;
 }
 function LegacySoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
   const { t } = useTranslation();

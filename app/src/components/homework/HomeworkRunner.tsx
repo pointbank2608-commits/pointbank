@@ -5,7 +5,8 @@ import type { HwItem } from '../../lib/homework/types';
 import FlipDeck from './FlipDeck';
 import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import MatchupGame from './MatchupGame';
-import QuestionCard from './QuestionCard';
+import QuestionCard, { isStudioQuestion } from './QuestionCard';
+import { StudioShell, StudioTopBar } from '../studio/StudioKit';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
 import BlockActivity from './BlockActivity';
@@ -59,6 +60,7 @@ export default function HomeworkRunner({
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const shownAt = useRef(performance.now());
+  const autoNextMs = useRef(900);
   const sensorItem = phase.k === 'item' ? items[phase.i] : phase.k === 'retry' ? items.find(it => it.id === phase.keys[phase.pos]?.split(':')[0]) : undefined;
   const rawQuestion = phase.k === 'retry' ? Number(phase.keys[phase.pos]?.split(':')[1])
     : feedback ? Number(feedback.key.split(':')[1])
@@ -158,8 +160,8 @@ export default function HomeworkRunner({
 
   // 맞히면 잠깐 뒤 저절로 다음
   useEffect(() => {
-    if (feedback?.correct !== true) return;
-    const id = window.setTimeout(afterFeedback, 900);
+    if (feedback?.correct !== true || autoNextMs.current <= 0) return;
+    const id = window.setTimeout(afterFeedback, autoNextMs.current);
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feedback]);
@@ -336,11 +338,14 @@ export default function HomeworkRunner({
 
   // 문제 화면(활동 안 · 다시 풀기)
   let content: React.ReactNode = null;
+  let studioActive = false;
   if (phase.k === 'retry') {
     const [id, qiStr] = phase.keys[phase.pos].split(':');
     const it = items.find((x) => x.id === id)!;
     const qi = Number(qiStr);
-    content = <QuestionCard key={`r-${phase.pos}`} q={it.content.questions[qi]} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} />;
+    const rq = it.content.questions[qi];
+    studioActive = isStudioQuestion(rq);
+    content = <QuestionCard key={`r-${phase.pos}`} q={rq} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
     // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
@@ -396,11 +401,28 @@ export default function HomeworkRunner({
           </div>
         );
       } else {
-        content = <QuestionCard key={`${it.id}-${showQi}`} q={it.content.questions[showQi]} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} />;
+        const cq = it.content.questions[showQi];
+        studioActive = isStudioQuestion(cq);
+        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
       }
     }
   }
 
+  autoNextMs.current = studioActive ? 0 : 900; // 스튜디오 문제는 자동으로 넘어가지 않고 "다음"을 누른다
+  if (studioActive) {
+    const rp = phase.k === 'retry' ? phase : null;
+    return (
+      <StudioShell>
+        <StudioTopBar
+          title={rp ? t('studentHw.retryWrong') : phase.k === 'item' ? itemLabel(items[phase.i]) : title}
+          progressText={rp ? `${rp.pos + 1} / ${rp.keys.length}` : `${progressCount} / ${progressTotal}`}
+          progress={rp ? (rp.pos + 1) / rp.keys.length : progressTotal ? progressCount / progressTotal : 0}
+          right={<SaveBadge state={preview ? 'saved' : saveState} preview={preview} light />}
+        />
+        {content}
+      </StudioShell>
+    );
+  }
   return (
     <div className="flex flex-1 flex-col">
       {!kids && header}
@@ -410,10 +432,15 @@ export default function HomeworkRunner({
   );
 }
 
-function SaveBadge({ state, preview }: { state: SaveState; preview: boolean }) {
+function SaveBadge({ state, preview, light = false }: { state: SaveState; preview: boolean; light?: boolean }) {
   const { t } = useTranslation();
-  if (preview) return <span className="rounded-full bg-white/15 px-2 py-0.5">{t('studentHw.previewBadge')}</span>;
-  const map: Record<SaveState, { icon: string; cls: string }> = {
+  if (preview) return <span className={`rounded-full px-2 py-0.5 ${light ? 'bg-[#e6dcc4]' : 'bg-white/15'}`}>{t('studentHw.previewBadge')}</span>;
+  const map: Record<SaveState, { icon: string; cls: string }> = light ? {
+    saved: { icon: 'cloud_done', cls: 'text-emerald-700' },
+    saving: { icon: 'cloud_sync', cls: 'text-[#5b6580]' },
+    offline: { icon: 'cloud_off', cls: 'text-amber-700' },
+    error: { icon: 'error', cls: 'text-rose-700' },
+  } : {
     saved: { icon: 'cloud_done', cls: 'text-emerald-300' },
     saving: { icon: 'cloud_sync', cls: 'text-white/70' },
     offline: { icon: 'cloud_off', cls: 'text-warm-yellow' },

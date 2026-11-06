@@ -34,6 +34,7 @@ const HomeworkStudentPage = lazyPage(() => import('./pages/HomeworkStudentPage')
 const WordMemoryStudentPage = lazyPage(() => import('./pages/WordMemoryStudentPage'));
 const StudentPortalPage = lazyPage(() => import('./pages/StudentPortalPage'));
 const StudentSoloPage = lazyPage(() => import('./pages/StudentSoloPage'));
+const StudentGrammarPage = lazyPage(() => import('./pages/StudentGrammarPage'));
 const SharedRecordingPage = lazyPage(() => import('./pages/SharedRecordingPage'));
 const HelpPage = lazyPage(() => import('./pages/HelpPage'));
 const LessonWatchPage = lazyPage(() => import('./pages/LessonWatchPage'));
@@ -181,6 +182,7 @@ function AppRoutes() {
         <Route path="/s" element={<StudentPortalPage />} />
         <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
         <Route path="/s/homework/:assignmentId" element={<StudentSoloPage homework />} />
+        <Route path="/s/grammar/:assignmentId" element={<StudentGrammarPage />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
       </>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import LearningRunCoverage from './LearningRunCoverage';
+import GrammarResultsPanel from './GrammarResultsPanel';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { sensorsEnabled, sensorHealth } from '../../lib/learningSensors/api';
@@ -44,6 +45,7 @@ export default function LearningSensorsPanel() {
       </tr></thead><tbody>{data.evidence.map(s => <tr key={s.source}><td className="p-2">{s.source}</td><td className="p-2">{s.first_responses}</td><td className="p-2">{s.first_correct}</td><td className="p-2">{s.help_unknown}</td></tr>)}</tbody></table>
     </div>}
     <LearningRunCoverage/>
+    <GrammarResultsPanel/>
     {!!local.length && <p className="text-sm">{l('이 브라우저의 수집기', 'Collectors in this browser')}: {local.map((h,i) => `${i+1}: ${h.state}, pending=${h.pending}, dropped=${h.dropped}`).join(' / ')}</p>}
   </section>;
 }

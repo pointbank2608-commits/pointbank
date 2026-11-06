@@ -10,6 +10,7 @@ import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEdi
 import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
 import AdaptiveHomeworkComposer from '../components/homework/teacher/AdaptiveHomeworkComposer';
 import AdaptiveHomeworkResults from '../components/homework/teacher/AdaptiveHomeworkResults';
+import GrammarTeacherPanel from '../components/grammar/GrammarTeacherPanel';
 import { useFeature } from '../lib/features';
 import type { HwItemDraft } from '../lib/homework/types';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
@@ -177,6 +178,7 @@ export default function HomeworkPage() {
 
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
+      {panel.k === 'none' && classId && soloOpen && homeworkOpen && <GrammarTeacherPanel classId={classId} mode="homework" />}
 
       {panel.k==='none'&&classId&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
         <div><h2 className="text-lg font-bold text-deep-navy">{en?'Adaptive vocabulary homework':'필요한 만큼 배우는 단어 숙제'}</h2><p className="mt-1 text-sm text-on-surface-variant">{en?'Choose words, preview the plan and send. Students practise what they need and check their memory later.':'단어를 고르고 계획을 확인하면, 학생마다 필요한 연습과 이후 복습 확인이 이어져요.'}</p>{!soloOpen&&<p className="mt-2 text-sm">{en?'This homework uses the academy’s individual learning feature.':'이 숙제는 학원의 개별수업 기능이 열려 있어야 만들 수 있어요.'}</p>}</div>

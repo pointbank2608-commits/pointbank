@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
 import type { SensorAction } from '../../lib/learningSensors/core';
 import type { HwQuestion } from '../../lib/homework/types';
+import phonicsWords from '../../data/phonics/words.json';
 import { TextAnswer } from '../../pages/LiveJoinPage';
+import { StudioCard, StudioFeedback, StudioOptions, StudioPrompt, type StudioOption, type StudioOptionState } from '../studio/StudioKit';
 
 /** 게임 모양 문제의 머리 그림 */
 const SKIN_ICON: Record<string, string> = { monster: '👾', claw: '🧸', maze: '🧭', plane: '✈️', group: '🗂️', cross: '🧩', detective: '🔍', train: '🚂', rocket: '🚀', tower: '🏰', bridge: '🌉', splash: '🌊', whack: '🐹', fish: '🐟', balloon: '🎈', hangman: '🔤' };
@@ -28,7 +30,19 @@ const CHOICE_COLORS =['#e5484d', '#2f6fdb', '#d99a00', '#2e9e5b', '#8e4ec6', '#1
  * 숙제 문제 한 개(학생 화면·선생님 미리보기 공용) — 보기 고르기 · 철자 입력 · 낱말/글자 순서(탭으로 놓기).
  * 답을 정하면 onAnswer(응답 글)를 부른다. 채점은 하지 않는다(서버 또는 미리보기가 한다).
  */
-export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor }: { onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[] }) {
+/** 학습 스튜디오 화면으로 그리는 문제: 게임 장면·듣기·O/X 모양이 아닌 보통 고르기 문제 */
+const STUDIO_STYLES = new Set<string | undefined>([undefined, 'meaning', 'reverse', 'picture', 'blank', 'sentence', 'content', 'confuse']);
+export function isStudioQuestion(q: HwQuestion | undefined): boolean {
+  if (!q || q.qtype !== 'choice' || !STUDIO_STYLES.has(q.style)) return false;
+  const c = q.choices ?? [];
+  return c.length >= 2 && !(c.length === 2 && c[0] === 'O' && c[1] === 'X');
+}
+
+const norm = (s: string) => s.replace(/[()（）.,!?]/g, '').replace(/\s+/g, '').toLowerCase();
+/** 서버가 알려 준 채점 결과(문항에 없는 해설은 만들지 않는다) */
+export interface StudioResult { correct: boolean | null; answer: string | null }
+
+export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, result, onNext, nextBusy }: { onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; /** 학습 스튜디오 모양(보통 고르기 문제에만 적용) */ studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
   const { t } = useTranslation();
   const onSensorRef = useRef(onSensor);
   onSensorRef.current = onSensor;
@@ -55,6 +69,9 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       </button>
     ) : null;
 
+  if (studio && isStudioQuestion(q)) {
+    return <StudioChoice key={q.id} q={q} guide={guide} disabled={disabled} eliminated={eliminated} result={result ?? null} onAnswer={onAnswer} onNext={onNext} nextBusy={nextBusy} speakBtn={speakBtn(false)} />;
+  }
   const stage = q.style ? STAGE[q.style] : undefined;
   return (
     <div className="relative isolate flex flex-1 flex-col bg-cover bg-center" style={stage ? { backgroundImage: `url(${stage.bg})` } : undefined}>
@@ -85,6 +102,69 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
     </div>
+  );
+}
+
+const normalizePictureKey = (text: string) => text.normalize('NFC').trim().toLowerCase();
+
+function wordFeedbackPicture(q: HwQuestion, result: StudioResult | null): string | null {
+  if (result?.correct !== true && result?.correct !== false) return null;
+  const provided = q.imageUrl?.trim() || q.card?.imageUrl?.trim();
+  if (provided) return provided;
+  if (q.style !== 'meaning' && q.style !== 'reverse' && q.skill !== 'vocab.meaning') return null;
+  const word = normalizePictureKey(q.style === 'reverse' ? result.answer ?? '' : q.word || q.prompt);
+  const meaning = normalizePictureKey(q.style === 'reverse' ? q.prompt : result.answer ?? '');
+  if (!word || !meaning) return null;
+  const matches = new Set(Object.values(phonicsWords).filter(entry =>
+    normalizePictureKey(entry.word) === word && normalizePictureKey(entry.meaning) === meaning
+  ).map(entry => entry.imageUrl).filter(Boolean));
+  return matches.size === 1 ? [...matches][0] ?? null : null;
+}
+
+function StudioChoice({ q, guide, disabled, eliminated = [], result, onAnswer, onNext, nextBusy, speakBtn }: { q: HwQuestion; guide: string; disabled: boolean; eliminated?: number[]; result: StudioResult | null; onAnswer: (r: string) => void; onNext?: () => void; nextBusy?: boolean; speakBtn: React.ReactNode }) {
+  const { t } = useTranslation();
+  const [picked, setPicked] = useState<number | null>(null);
+  const choices = q.choices ?? [];
+  const answered = result !== null;
+  const correctIdx = answered && result.answer ? choices.findIndex((c) => c === result.answer) : -1;
+  const options: StudioOption[] = choices.map((text, i) => {
+    let state: StudioOptionState = 'idle';
+    if (picked === i && !answered) state = 'selected';
+    else if (answered) {
+      if (result.correct === true && picked === i) state = 'correct';
+      else if (result.correct === false && picked === i) state = 'wrong';
+      else if (result.correct === false && i === correctIdx) state = 'correct';
+      else state = 'dim';
+    }
+    return { id: String(i), text, state, disabled: eliminated.includes(i) };
+  });
+  const hint = q.sub && norm(guide) !== '' && (norm(guide).includes(norm(q.sub)) || norm(q.sub).includes(norm(guide))) ? undefined : q.sub;
+  // 뜻 고르기에서는 사전 그림이 답을 알려 줄 수 있으니 채점 뒤에만 보여 준다(그림이 문제인 'picture' 모양은 처음부터)
+  const pictureGivesAnswer = q.style === 'meaning' || q.style === 'reverse' || q.style === undefined;
+  const imageUrl = pictureGivesAnswer ? wordFeedbackPicture(q, result) : q.imageUrl;
+  const image = imageUrl ? <img src={imageUrl} alt="" className="mx-auto h-28 w-28 rounded-2xl bg-[#f8f1e3] object-contain p-2 sm:h-36 sm:w-36" /> : null;
+  return (
+    <StudioCard label={guide} barSpace={answered}>
+      {!pictureGivesAnswer && image && <div className="mb-3">{image}</div>}
+      <StudioPrompt guide={guide} text={q.prompt} sub={hint ? `(${hint})` : undefined} lang={q.style === 'reverse' ? undefined : 'en'}
+        extra={q.speak ? <div className="flex justify-center pt-1">{speakBtn}</div> : undefined} />
+      <StudioOptions
+        options={options}
+        disabled={disabled || picked !== null}
+        onPick={(id, i) => { setPicked(i); onAnswer(id); }}
+      />
+      {answered && (
+        <StudioFeedback
+          correct={result.correct}
+          title={result.correct === null ? t('studentHw.savedForLater') : result.correct ? t('studentHw.correct') : t('studentHw.wrong')}
+          answerLine={result.correct === false && result.answer ? <>{t('studentHw.answerIs')} <b>{result.answer}</b></> : undefined}
+          media={pictureGivesAnswer ? image : null}
+          onNext={() => onNext?.()}
+          nextLabel={t('studentHw.next')}
+          busy={nextBusy}
+        />
+      )}
+    </StudioCard>
   );
 }
 

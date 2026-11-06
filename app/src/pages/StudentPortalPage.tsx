@@ -5,6 +5,8 @@ import ReviewSection from '../components/solo/ReviewSection';
 import WordMemoryPortalLinks from '../components/wordMemory/WordMemoryPortalLinks';
 import StudentStampCalendar from '../components/homework/StudentStampCalendar';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
+import GrammarPortalLinks from '../components/grammar/GrammarPortalLinks';
+import { useGrammarPortalAssignments } from '../lib/useGrammarPortalAssignments';
 import { studentNotice } from '../lib/soloChat';
 import {
   codeFromUrl,
@@ -175,6 +177,7 @@ function HomeView({
   onLogout: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const grammar = useGrammarPortalAssignments(home && !error ? savedToken() : null);
   if (error) {
     return (
       <div className={`${shell} items-center justify-center gap-4 p-6 text-center`}>
@@ -190,6 +193,8 @@ function HomeView({
 
   const soloClosed = home.features?.solo === false;
   const hwClosed = home.features?.homework === false;
+  const grammarSolo = soloClosed ? [] : grammar.rows.filter(row => row.mode === 'individual');
+  const grammarHomework = soloClosed || hwClosed ? [] : grammar.rows.filter(row => row.mode === 'homework');
   const isAdaptiveHomework = (lesson: PortalHome['lessons'][number]) => lesson.kind==='homework' && lesson.learning_path;
   const lessons = (home.lessons ?? []).filter(l=>!isAdaptiveHomework(l));
   const adaptive = hwClosed||soloClosed?[]:(home.lessons ?? []).filter(isAdaptiveHomework);
@@ -211,6 +216,9 @@ function HomeView({
       </header>
 
       {savedToken() && <ClassNoticeBanner load={() => studentNotice(savedToken() as string)} />}
+      {grammar.error && <div role="status" className="mx-auto w-full max-w-xl">
+        문법 목록을 불러오지 못했어요. <button type="button" onClick={grammar.retry} className="underline">다시 시도</button>
+      </div>}
 
       <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
         <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
@@ -218,8 +226,9 @@ function HomeView({
           {t('studentPortal.todayLesson')}
         </h2>
         {soloClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!soloClosed && lessons.length === 0 && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
+        {!soloClosed && lessons.length === 0 && !grammarSolo.length && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
         <ul className="mt-3 flex flex-col gap-3">
+          <GrammarPortalLinks rows={grammarSolo} />
           {lessons.map((l) => (
             <li key={l.id}>
               {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-warm-yellow">{t('studentPortal.todayPick')}</div>}
@@ -256,8 +265,9 @@ function HomeView({
           {t('studentPortal.homework')}
         </h2>
         {hwClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
+        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
         <ul className="flex flex-col gap-3">
+          <GrammarPortalLinks rows={grammarHomework} />
           {adaptive.map(h=><li key={h.id}>
             <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white/10 text-white/70':'bg-warm-yellow text-deep-navy'}`}>
               <span className="material-symbols-outlined text-[26px]" aria-hidden="true">{h.done?'task_alt':h.path_waiting?'event':'play_circle'}</span>

@@ -1,6 +1,6 @@
 /** Internal measurement contract. Behaviour is client-reported; correctness stays server-owned. */
 export const SENSOR_VERSION = 'sensor-v1';
-export type SensorSource = 'homework' | 'solo' | 'word_memory' | 'group';
+export type SensorSource = 'homework' | 'solo' | 'word_memory' | 'group' | 'grammar';
 export type SensorAction = 'shown' | 'interval' | 'left' | 'hidden' | 'resumed' | 'submitted' | 'hint' | 'revealed' | 'audio' | 'help_requested' | 'help_resolved';
 export interface SensorContext {
   source: SensorSource;
