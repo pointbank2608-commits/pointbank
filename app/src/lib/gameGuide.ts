@@ -176,7 +176,8 @@ export function guideProblem(template:GameTemplate): string | null {
     const slots=getSentencePattern(c.watermelonPatternId||'svo').slots;
     if(slots.some(slot=>!template.items.some(i=>i.slot===slot&&i.label.trim())))return 'incomplete';
   }
-  if(type==='labeleddiagram'&&(!c.diagramImageUrl||!c.diagramPins?.length||c.diagramPins.some(p=>!p.label.trim()||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>1||p.y<0||p.y>1)))return 'incomplete';
+  // 사진·핀이 아직 없으면 샘플 그림으로 바로 시작한다(LabeledDiagramPage). 핀 값이 잘못된 경우만 막는다.
+  if(type==='labeleddiagram'&&c.diagramPins?.some(p=>!p.label.trim()||!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.x>1||p.y<0||p.y>1))return 'incomplete';
   if(type==='wordsearch'||type==='crossword'){
     if(template.items.some(i=>i.label.replace(/\s/g,'').length<2||(type==='wordsearch'&&i.label.replace(/\s/g,'').length>14)))return 'letters';
     if(new Set(template.items.map(i=>i.label.replace(/\s/g,'').toLowerCase())).size!==template.items.length)return 'duplicate';

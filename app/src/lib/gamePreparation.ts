@@ -37,7 +37,8 @@ export function isNativeGameReady(template: GameTemplate): boolean {
   const { game_type: type, config: c, items } = template;
   if ((ADVENTURE_TYPES as readonly string[]).includes(type)) return !!c.adventure && adventureErrors(type as AdventureType,c.adventure).length===0;
   if (type === 'feedmonster' || type === 'sentencebridge' || type === 'sentencetower') return !!c.storybook && storyErrors(type, c.storybook).length === 0;
-  if (type === 'labeleddiagram') return !!c.diagramImageUrl && !!c.diagramPins?.some(pin => pin.label.trim());
+  // 사진·핀이 없으면 샘플 그림으로 시작하므로 항상 시작할 수 있다.
+  if (type === 'labeleddiagram') return true;
   if (type === 'mathgen') return c.mathOperations === undefined || c.mathOperations.length > 0;
   if (type === 'watermelon') {
     const slots = getSentencePattern(c.watermelonPatternId || DEFAULT_WATERMELON_PATTERN_ID).slots;
