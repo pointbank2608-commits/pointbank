@@ -13,9 +13,6 @@ interface Props {
 }
 
 const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
-const pill =
-  'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
-
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -24,6 +21,15 @@ function shuffle<T>(arr: T[]): T[] {
   }
   return a;
 }
+
+/** 사진·핀을 아직 안 만든 선생님이 바로 해 볼 수 있는 샘플(시장 그림 위의 채소·과일 4개) */
+export const SAMPLE_DIAGRAM_IMAGE = '/skins/shop-market.webp';
+export const SAMPLE_DIAGRAM_PINS: DiagramPin[] = [
+  { id: 'sample-onion', label: 'onion', x: 0.128, y: 0.388 },
+  { id: 'sample-carrot', label: 'carrot', x: 0.423, y: 0.277 },
+  { id: 'sample-banana', label: 'banana', x: 0.424, y: 0.503 },
+  { id: 'sample-grapes', label: 'grapes', x: 0.273, y: 0.5 },
+];
 
 export function LabeledDiagramEmptyMotif() {
   return (
@@ -101,31 +107,37 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
   }
 
   if (finished) {
+    // 전체화면에서는 내용 크기에 맞춰 화면을 꽉 채우도록 확대되므로, 결과 상자가 너무 커 보이지 않게
+    // 투명한 큰 틀(span)을 깔아 확대 비율을 낮춘다. 상자와 버튼은 작게 만들어 가운데에 둔다.
     return (
-      <div className="flex flex-col items-center pt-3 pb-2">
+      <div className="relative flex w-full min-h-[420px] flex-col items-center justify-center pt-3 pb-2">
+        <span aria-hidden className="pointer-events-none absolute left-0 top-0 block h-[420px] w-[760px] max-w-full" />
         <div
-          className="mb-6 w-[min(360px,92%)] px-2 py-2 text-center"
+          className="mb-4 w-[min(260px,92%)] px-2 py-2 text-center"
           style={{
-            borderRadius: 22,
+            borderRadius: 18,
             background: 'var(--game-wood, linear-gradient(115deg, #f3e3c8, #e9d0ac))',
             boxShadow: woodShadow,
           }}
         >
           <div
-            className="px-4 py-5"
+            className="px-3 py-3"
             style={{
-              borderRadius: 16,
+              borderRadius: 14,
               background: 'var(--game-paper, #fffdf6)',
               boxShadow: 'var(--game-paper-shadow, inset 0 1px 0 #fff)',
             }}
           >
-            <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameLabeledDiagram.finishedTitle')}</div>
-            <div className="font-title-md text-[22px] font-bold tabular-nums text-deep-navy">
+            <div className="mb-1 font-title-md text-[18px] font-bold text-deep-navy">{t('gameLabeledDiagram.finishedTitle')}</div>
+            <div className="font-title-md text-[15px] font-bold tabular-nums text-deep-navy">
               {t('gameLabeledDiagram.foundLabel', { found: pins.length, total: pins.length })}
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
+        <button
+          onClick={restart}
+          className="game-clay-action rounded-full bg-secondary px-7 py-2 font-title-md text-[16px] text-on-secondary shadow-sm transition-colors hover:bg-on-secondary-container"
+        >
           {t('gameLabeledDiagram.restartButton')}
         </button>
       </div>

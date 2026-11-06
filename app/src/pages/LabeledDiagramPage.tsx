@@ -6,8 +6,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
-import ImportFromClass from '../components/ImportFromClass';
-import LabeledDiagram, { LabeledDiagramEmptyMotif } from '../components/LabeledDiagram';
+import LabeledDiagram, { SAMPLE_DIAGRAM_IMAGE, SAMPLE_DIAGRAM_PINS } from '../components/LabeledDiagram';
 import { updateGameTemplate } from '../lib/api';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { DiagramPin, GameItem, GameTemplateConfig } from '../lib/types';
@@ -50,18 +49,18 @@ export default function LabeledDiagramPage() {
     newScope,
     setNewScope,
     handleCreate,
-    handleRename,
     handleDeleteTemplate,
     scopeLabel,
-    importCandidates,
-    importFromClass,
     reload,
     roster,
   } = g;
 
-  const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const [draftPins, setDraftPins] = useState<DiagramPin[]>(selected?.config.diagramPins ?? []);
+  // 사진을 누르면 핀 자리를 먼저 찍고, 화면 안 입력칸에서 정답 이름을 받는다(브라우저 prompt 창은 막히는 경우가 있다).
+  const hasSetup = !!selected?.config.diagramImageUrl && (selected.config.diagramPins?.length ?? 0) > 0;
+  const [pending, setPending] = useState<{ x: number; y: number } | null>(null);
+  const [pendingLabel, setPendingLabel] = useState('');
 
   useEffect(() => {
     setDraftPins(selected?.config.diagramPins ?? []);
@@ -88,11 +87,24 @@ export default function LabeledDiagramPage() {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const y = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
-    const label = prompt(t('gameLabeledDiagram.newPinPrompt'));
-    if (!label?.trim()) return;
-    const next = [...draftPins, { id: uid(), label: label.trim(), x, y }];
+    setPending({ x, y });
+    setPendingLabel('');
+  }
+
+  function confirmPendingPin() {
+    if (!selected || !pending) return;
+    const label = pendingLabel.trim();
+    if (!label) return;
+    const next = [...draftPins, { id: uid(), label, x: pending.x, y: pending.y }];
     setDraftPins(next);
+    setPending(null);
+    setPendingLabel('');
     void persistConfig({ ...selected.config, diagramPins: next });
+  }
+
+  function cancelPendingPin() {
+    setPending(null);
+    setPendingLabel('');
   }
 
   function removePin(pinId: string) {
@@ -249,14 +261,12 @@ export default function LabeledDiagramPage() {
       ) : !selected ? (
         <div className="space-y-6">
           <EditOnly>{classPicker}</EditOnly>
-          <div className="text-center py-16 bg-[#fffdf8] rounded-[28px] shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-            <div className="mb-3">
-              <LabeledDiagramEmptyMotif />
-            </div>
-            <div className="font-body-md text-body-md text-on-surface-variant">
-              {isStaff ? t('gameLabeledDiagram.emptyStaff') : t('gameLabeledDiagram.emptyStudent')}
-            </div>
-          </div>
+          <GameThemeFrame gameType="labeleddiagram" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <LabeledDiagram imageUrl={SAMPLE_DIAGRAM_IMAGE} pins={SAMPLE_DIAGRAM_PINS} />
+          </GameThemeFrame>
+          {isStaff && (
+            <div className="text-center font-body-md text-body-md text-on-surface-variant">{t('gameLabeledDiagram.sampleHint')}</div>
+          )}
           <EditOnly>{templateRow}</EditOnly>
           {createForm}
         </div>
@@ -273,11 +283,14 @@ export default function LabeledDiagramPage() {
           >
             <LabeledDiagram
               key={roundKey}
-              imageUrl={selected.config.diagramImageUrl ?? null}
-              pins={selected.config.diagramPins ?? []}
+              imageUrl={hasSetup ? selected.config.diagramImageUrl ?? null : SAMPLE_DIAGRAM_IMAGE}
+              pins={hasSetup ? selected.config.diagramPins ?? [] : SAMPLE_DIAGRAM_PINS}
               boardStyle={selected.config.labeledDiagramStyle === 'clay' ? 'clay' : 'wood'}
             />
           </GameThemeFrame>
+          {isStaff && !hasSetup && (
+            <div className="text-center font-body-md text-body-md text-on-surface-variant">{t('gameLabeledDiagram.sampleHint')}</div>
+          )}
 
           <div className="space-y-4">
             <EditOnly>{classPicker}</EditOnly>
@@ -288,14 +301,6 @@ export default function LabeledDiagramPage() {
               <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-title-md text-title-md text-on-surface">{t('gameLabeledDiagram.settingsTitle')}</h4>
-                  <div className="flex gap-3">
-                    <button onClick={() => void handleRename()} className="font-label-md text-label-md text-primary hover:underline">
-                      {t('gameAdmin.rename')}
-                    </button>
-                    <button onClick={() => setEditorOpen((v) => !v)} className="font-label-md text-label-md text-primary hover:underline">
-                      {editorOpen ? t('gameAdmin.collapse') : t('gameAdmin.expand')}
-                    </button>
-                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 py-2">
@@ -321,10 +326,8 @@ export default function LabeledDiagramPage() {
                   })}
                 </div>
 
-                {editorOpen && academy && (
+                {academy && (
                   <div className="space-y-4">
-                    <ImportFromClass candidates={importCandidates} offerRosterSwap={false} onImport={importFromClass} />
-
                     <div>
                       <div className="font-label-md text-label-md text-on-surface-variant mb-1.5">
                         {t('gameLabeledDiagram.backgroundImageLabel')}
@@ -359,8 +362,40 @@ export default function LabeledDiagramPage() {
                               {i + 1}
                             </span>
                           ))}
+                          {pending && (
+                            <span
+                              className="ld-pin animate-pulse"
+                              style={{ left: `${pending.x * 100}%`, top: `${pending.y * 100}%`, opacity: 0.85 }}
+                            >
+                              {draftPins.length + 1}
+                            </span>
+                          )}
                           </div>
                         </div>
+                        {pending && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-primary bg-primary-fixed p-2">
+                            <span className="font-label-md text-label-md text-on-surface">
+                              {draftPins.length + 1}{t('gameLabeledDiagram.newPinPromptShort')}
+                            </span>
+                            <input
+                              autoFocus
+                              value={pendingLabel}
+                              onChange={(e) => setPendingLabel(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') confirmPendingPin();
+                                if (e.key === 'Escape') cancelPendingPin();
+                              }}
+                              placeholder={t('gameLabeledDiagram.newPinPrompt')}
+                              className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-white px-3 py-2 font-body-md text-sm outline-none focus:border-primary"
+                            />
+                            <button type="button" onClick={confirmPendingPin} disabled={!pendingLabel.trim()} className="rounded-lg bg-primary px-4 py-2 font-label-md text-label-md text-on-primary disabled:opacity-50">
+                              {t('gameLabeledDiagram.addPinButton')}
+                            </button>
+                            <button type="button" onClick={cancelPendingPin} className="rounded-lg px-3 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low">
+                              {t('gameAdmin.cancel')}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 

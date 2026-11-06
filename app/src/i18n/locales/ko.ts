@@ -1295,6 +1295,9 @@ const ko = {
   },
 
   gameLabeledDiagram: {
+    sampleHint: '지금은 샘플 그림이에요. 게임설정에서 사진을 올리고 핀을 찍으면 우리 반 그림으로 할 수 있어요.',
+    newPinPromptShort: '번 핀의 정답 이름',
+    addPinButton: '핀 추가',
     studentClassTitle: '{{className}} 그림 속 이름 맞히기',
     newButton: '+ 새 다이어그램',
     namePlaceholder: '예: 인체 기관 이름 맞히기',

@@ -1299,6 +1299,9 @@ const en: Ko = {
   },
 
   gameLabeledDiagram: {
+    sampleHint: 'This is a sample picture. Upload a photo and add pins in Game settings to use your own.',
+    newPinPromptShort: ' - answer name for this pin',
+    addPinButton: 'Add pin',
     studentClassTitle: '{{className}} Labeled Diagram',
     newButton: '+ New Diagram',
     namePlaceholder: 'e.g. Name the Body Parts',
