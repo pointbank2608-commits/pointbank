@@ -125,7 +125,7 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
         <button
           type="button"
           onClick={() => {
-            playSfx(GAME_SFX.flashcards.flip, 0.7);
+            playSfx(GAME_SFX.flashcards.flip, 0.22);
             setFlipped((f) => !f);
           }}
           data-skin-object="card"
