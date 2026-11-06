@@ -46,6 +46,15 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
     setFlipped(false);
   }, [cardKey]);
 
+  // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
+  useEffect(() => {
+    if (firstRead.current) { firstRead.current = false; return; }
+    if (!autoRead) return;
+    const text = cards[order[pos]]?.left;
+    if (text) speak(text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos]);
+
   if (cards.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -65,15 +74,6 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
   }
 
   const finished = pos >= order.length;
-
-  // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
-  useEffect(() => {
-    if (firstRead.current) { firstRead.current = false; return; }
-    if (!autoRead) return;
-    const text = cards[order[pos]]?.left;
-    if (text) speak(text);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos]);
 
   function toggleAutoRead() {
     setAutoRead((on) => {
