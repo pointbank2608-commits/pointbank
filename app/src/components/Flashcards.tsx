@@ -1,8 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
+import { speak } from '../lib/speech';
+
+const AUTO_READ_KEY = 'classbank.flashcards.autoRead';
+function loadAutoRead(): boolean {
+  try { return localStorage.getItem(AUTO_READ_KEY) === '1'; } catch { return false; }
+}
 
 export type FlashcardsStyle = 'wood' | 'clay';
 
@@ -28,6 +34,8 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<number[]>(() => shuffle(cards.map((_, i) => i)));
   const [pos, setPos] = useState(0);
+  const [autoRead, setAutoRead] = useState(loadAutoRead);
+  const firstRead = useRef(true);
   const [flipped, setFlipped] = useState(false);
   const cardKey = cards.map((c) => c.id).join(',');
   const clay = boardStyle === 'clay';
@@ -57,6 +65,22 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
   }
 
   const finished = pos >= order.length;
+
+  // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
+  useEffect(() => {
+    if (firstRead.current) { firstRead.current = false; return; }
+    if (!autoRead) return;
+    const text = cards[order[pos]]?.left;
+    if (text) speak(text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pos]);
+
+  function toggleAutoRead() {
+    setAutoRead((on) => {
+      try { localStorage.setItem(AUTO_READ_KEY, on ? '0' : '1'); } catch { /* 저장 못 해도 동작은 한다 */ }
+      return !on;
+    });
+  }
 
   function restart() {
     playSfx(GAME_SFX.flashcards.shuffle);
@@ -159,6 +183,24 @@ export default function Flashcards({ cards, boardStyle = 'wood' }: Props) {
         </button>
         <button type="button" onClick={next} className={pill}>
           {t('gameFlashcards.nextButton')}
+        </button>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => speak(current.left)}
+          className="px-5 py-2 rounded-full font-label-md text-label-md bg-[#fff4e0] text-deep-navy hover:bg-[#ffe8c4] transition-colors shadow-sm"
+        >
+          🔊 {t('gameFlashcards.readButton')}
+        </button>
+        <button
+          type="button"
+          onClick={toggleAutoRead}
+          aria-pressed={autoRead}
+          className={`px-5 py-2 rounded-full font-label-md text-label-md transition-colors shadow-sm ${autoRead ? 'bg-secondary text-on-secondary' : 'bg-[#fff4e0] text-deep-navy hover:bg-[#ffe8c4]'}`}
+        >
+          {autoRead ? t('gameFlashcards.autoReadOn') : t('gameFlashcards.autoReadOff')}
         </button>
       </div>
     </div>

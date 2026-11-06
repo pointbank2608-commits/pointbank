@@ -852,6 +852,9 @@ const ko = {
   },
 
   gameFlashcards: {
+    readButton: '읽어 주기',
+    autoReadOn: '자동 읽기 켜짐',
+    autoReadOff: '자동 읽기 꺼짐',
     studentClassTitle: '{{className}} 플래시카드',
     newButton: '+ 새 플래시카드',
     namePlaceholder: '예: 3학년 동물 영단어 플래시카드',

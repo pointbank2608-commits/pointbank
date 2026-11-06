@@ -856,6 +856,9 @@ const en: Ko = {
   },
 
   gameFlashcards: {
+    readButton: 'Read aloud',
+    autoReadOn: 'Auto-read on',
+    autoReadOff: 'Auto-read off',
     studentClassTitle: "{{className}}'s Flashcards",
     newButton: '+ New flashcards',
     namePlaceholder: 'e.g. 3rd grade animal words flashcards',
