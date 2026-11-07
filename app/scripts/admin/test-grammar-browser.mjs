@@ -5,7 +5,7 @@ import { chromium } from '../../node_modules/homework-test-tools/node_modules/@p
 import { buildAdaptiveFixture } from './adaptive-homework-fixture.mjs';
 
 const f = await buildAdaptiveFixture();
-for (const name of ['102_grammar_learning.sql','102b_grammar_pilot_content.sql','102c_grammar_results.sql','105_grammar_foundation_content.sql','106_grammar_curriculum_content.sql','107_grammar_adaptive_flow.sql','108_grammar_adaptive_content.sql','108_grammar_adaptive_content.sql']) await f.db.exec(f.read(name));
+for (const name of ['102_grammar_learning.sql','102b_grammar_pilot_content.sql','102c_grammar_results.sql','105_grammar_foundation_content.sql','106_grammar_curriculum_content.sql','107_grammar_adaptive_flow.sql','108_grammar_adaptive_content.sql','108_grammar_adaptive_content.sql','109_grammar_teacher_feedback.sql']) await f.db.exec(f.read(name));
 const root = fileURLToPath(new URL('../../',import.meta.url));
 const student = { id: f.ST, name: '검증 학생' };
 const entry = `import React from 'react'; import { createRoot } from 'react-dom/client';
@@ -154,6 +154,9 @@ try {
       if (state.kind === 'waiting') {
         assert.equal(dateAdvanced,false);
         await assert.rejects(action('continue'),/not_due/);
+        const waiting = (await f.call('grammar_teacher_summary',f.HW,'homework')).find(row => row.assignmentId === id);
+        assert.equal(waiting.evidence.reviewed,0);
+        assert.ok(waiting.reviewExamples.every(example => example.phase === 'transfer'));
         await f.db.query("update grammar_assignments set review_due_at=now()-interval '1 minute' where id=$1",[id]);
         dateAdvanced = true;
         progress = await f.call('grammar_open',f.TK,id);
@@ -194,7 +197,13 @@ try {
     assert.equal(progress.state.kind,'finished');
     assert.deepEqual([initial,delayed,supported],needsSupport ? [16,6,9] : [12,4,5]);
     assert.ok(written>=3);
-    const evidence = (await f.call('grammar_teacher_summary',f.HW,'homework')).find(row => row.assignmentId === id).evidence;
+    const summary = (await f.call('grammar_teacher_summary',f.HW,'homework')).find(row => row.assignmentId === id);
+    const { evidence, independentEvidence, reviewExamples } = summary;
+    assert.equal(independentEvidence.choiceAnswered + independentEvidence.writtenAnswered,4 + delayed);
+    assert.equal(independentEvidence.choiceCorrect + independentEvidence.writtenCorrect,needsSupport ? delayed : 4 + delayed);
+    assert.equal(reviewExamples.length,needsSupport ? 2 : 0);
+    assert.ok(reviewExamples.every(example => example.phase === 'transfer' && example.sentence && example.explanation));
+    assert.doesNotMatch(JSON.stringify(reviewExamples),/correctOptionId|answerText|incorrect/);
     assert.equal(evidence.practiced_ok,needsSupport ? 7 : 5);
     assert.equal(evidence.transferred,4);
     assert.equal(evidence.transferred_ok,needsSupport ? 0 : 4);
@@ -205,6 +214,12 @@ try {
   const longPlan = await f.call('grammar_assign',crypto.randomUUID(),f.HW,[f.ST],'homework','curriculum-this-is',2,null);
   const longId = (await f.db.query('select id from grammar_assignments where plan_id=$1',[longPlan.planId])).rows[0].id;
   await finishAdaptive(longId,true);
+  await page.goto(origin + 'teacher');
+  await button('문법 학습 결과 보기').click();
+  await page.getByText(/다음 날에도 새 문장 4개를 모두 혼자 풀었어요/).waitFor();
+  await page.getByText(/첫날 어려웠던 부분을 복습 때 다시 적용했어요/).waitFor();
+  await page.getByText('다시 볼 문항 2개',{exact:true}).click();
+  await page.getByText(/직후 · 직접 쓰기/).first().waitFor();
   assert.deepEqual(errors,[]);
   console.log('PASS: grammar browser, teacher approval → student portal → resume feedback → waiting → teacher/admin results.');
 } finally {

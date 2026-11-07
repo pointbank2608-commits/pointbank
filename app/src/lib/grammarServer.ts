@@ -29,6 +29,16 @@ export interface GrammarOutcome {
   practice: boolean | null;
   transfer: boolean | null;
   review: string;
+  independentEvidence?: {
+    choiceAnswered: number; choiceCorrect: number;
+    writtenAnswered: number; writtenCorrect: number;
+  } | null;
+  reviewExamples?: {
+    phase: 'transfer' | 'delayed';
+    sentence: string;
+    written: boolean;
+    explanation: string | null;
+  }[] | null;
   evidence?: {
     diagnosed: number; diagnosed_ok: number;
     practiced: number; practiced_ok: number;

@@ -7,6 +7,7 @@ import { grammarAssign, grammarCatalog, grammarNotReady, grammarPreview, grammar
   type GrammarCatalogItem, type GrammarMode, type GrammarOutcome } from '../../lib/grammarServer';
 import type { GrammarLesson } from '../../lib/grammarLearningContent';
 import GrammarLearningPreview from './GrammarLearningPreview';
+import GrammarTeacherFeedback from './GrammarTeacherFeedback';
 
 const button = 'min-h-11 rounded-xl border border-outline-variant px-4 py-2 font-bold disabled:opacity-50';
 const mark = (result: boolean | null) => result === null ? '—' : result ? '정답' : '오답';
@@ -141,12 +142,13 @@ function ClassPanel({ classId, mode }: { classId: string; mode: GrammarMode }) {
       onClick={() => void submit()}>{pending.current ? '같은 요청으로 다시 확인' : '이 계획으로 배정'}</button>}
     <p role="status">{busy ? '처리 중…' : message}</p>
     {outcomes && (outcomes.length ? <div className="overflow-x-auto"><table className="w-full text-left text-sm">
-      <thead><tr>{['학생','목표','첫 확인','연습','직후 확인','지연 확인'].map(title => <th key={title} className="p-2">{title}</th>)}</tr></thead>
+      <thead><tr>{['학생','목표','첫 확인','연습','직후 확인','지연 확인','학습 피드백'].map(title => <th key={title} className="p-2">{title}</th>)}</tr></thead>
       <tbody>{outcomes.map(row => <tr key={row.assignmentId}><td className="p-2">{row.student}</td><td className="p-2">{row.title}</td>
         <td className="p-2">{row.evidence ? score(row.evidence.diagnosed_ok, row.evidence.diagnosed) : mark(row.reasoning)}</td>
         <td className="p-2">{row.evidence ? score(row.evidence.practiced_ok, row.evidence.practiced) : mark(row.practice)}</td>
         <td className="p-2">{row.evidence ? score(row.evidence.transferred_ok, row.evidence.transferred) : mark(row.transfer)}</td>
-        <td className="p-2">{reviews[row.review]}{row.evidence?.reviewed ? ' · ' + score(row.evidence.reviewed_ok, row.evidence.reviewed) : ''}</td></tr>)}</tbody>
+        <td className="p-2">{reviews[row.review]}{row.evidence?.reviewed ? ' · ' + score(row.evidence.reviewed_ok, row.evidence.reviewed) : ''}</td>
+        <td className="p-2 align-top"><GrammarTeacherFeedback row={row} /></td></tr>)}</tbody>
     </table></div> : <p>최근 문법 배정이 없어요.</p>)}
   </section>;
 }
