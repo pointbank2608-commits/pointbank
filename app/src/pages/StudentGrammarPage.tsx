@@ -43,7 +43,7 @@ function Player({ token, assignment }: { token: string; assignment: string }) {
         emit('submitted');
         if (result.state.kind === 'step' && result.state.step.phase !== 'explain' && result.state.step.phase !== 'repair') {
           const { item, phase } = result.state.step;
-          setPicked({ sentence: item.sentence, prompt: item.prompt, phase, text: item.options.find(o => o.id === action.optionId)?.text ?? '' });
+          setPicked({ sentence: item.sentence, prompt: item.prompt, phase, text: item.written ? action.optionId : item.options.find(o => o.id === action.optionId)?.text ?? '' });
         }
       }
       pending.current = { id: crypto.randomUUID(), revision: result.revision, action };
@@ -66,12 +66,16 @@ function Player({ token, assignment }: { token: string; assignment: string }) {
   }
 
   const position = state && (state.kind === 'step' || state.kind === 'feedback') ? state.position : null;
+  const dayNumber = position !== null && position >= 40 ? 2 : 1;
+  const progressText = result?.adaptive
+    ? state?.kind === 'finished' ? '학습 완료' : dayNumber === 2 ? '다음 날 확인' : '첫날 학습'
+    : position !== null ? `${Math.min(position + 1, 6)} / 6` : undefined;
   const home = <Link to="/s" className="flex min-h-10 items-center gap-1 rounded-full border border-[#d9d3c3] bg-white px-3 text-sm font-bold text-[#1c2742]"><span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_back</span>학생 홈</Link>;
   const waitingDue = state?.kind === 'waiting' ? new Date(state.dueAt) : null;
   return <div lang="ko" className="flex min-h-dvh flex-col bg-[#f8f1e3] text-[#1c2742]">
     <StudioTopBar title="문법 학습" right={home}
-      progressText={position !== null ? `${Math.min(position + 1, 6)} / 6` : undefined}
-      progress={state?.kind === 'finished' ? 1 : position !== null ? (position + 1) / 6 : state?.kind === 'waiting' ? 5 / 6 : undefined} />
+      progressText={progressText}
+      progress={state?.kind === 'finished' ? 1 : result?.adaptive ? undefined : position !== null ? (position + 1) / 6 : state?.kind === 'waiting' ? 5 / 6 : undefined} />
     <StudioShell>
       {error ? <StudioCard label="오류"><div role="alert" className="space-y-3"><p>{error}</p><button type="button" disabled={busy} onClick={() => void update()} className="min-h-12 rounded-full bg-[#3b5bdb] px-8 text-lg font-bold text-white disabled:opacity-50">다시 시도</button></div></StudioCard>
         : !state ? <StudioCard><p role="status">학습을 불러오는 중이에요.</p></StudioCard>

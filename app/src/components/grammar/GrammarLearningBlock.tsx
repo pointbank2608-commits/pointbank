@@ -38,7 +38,7 @@ export function GrammarAnswerFeedback({ feedback, picked, onContinue, busy = fal
   return <StudioCard label="답변 설명" barSpace>
     {picked && <StudioPrompt guide={picked.phase ? phaseTitle[picked.phase] : undefined} text={picked.sentence} lang="en" />}
     {options && <>
-      <p className="mt-5 text-sm font-bold text-[#5b6580]">내가 고른 이유</p>
+      <p className="mt-5 text-sm font-bold text-[#5b6580]">내가 고른 답</p>
       <StudioOptions options={options} disabled onPick={() => undefined} label="내가 고른 답" className="mt-2" />
     </>}
     <StudioFeedback
@@ -58,6 +58,7 @@ export default function GrammarLearningBlock({ step, busy = false, onAction }: {
   onAction: (action: GrammarBlockAction) => void;
 }) {
   const [pickedId, setPickedId] = useState<string | null>(null);
+  const [written, setWritten] = useState('');
   if (step.phase === 'explain' || step.phase === 'repair') {
     const isExplain = step.phase === 'explain';
     const examples = isExplain ? step.examples : [step.example];
@@ -79,6 +80,23 @@ export default function GrammarLearningBlock({ step, busy = false, onAction }: {
 
   const { item, phase } = step;
   const options: StudioOption[] = item.options.map(option => ({ id: option.id, text: option.text, state: pickedId === option.id ? 'selected' : 'idle' }));
+  if (item.written) return <StudioCard label={phaseTitle[phase]}>
+    <StudioPrompt guide={phaseTitle[phase]} text={item.sentence} sub={item.prompt} lang="en" />
+    <form className="mt-5 flex flex-wrap gap-3" onSubmit={event => {
+      event.preventDefault();
+      if (busy || pickedId !== null || !written.trim()) return;
+      setPickedId(written.trim());
+      onAction({ type: 'answer', itemId: item.id, optionId: written.trim() });
+    }}>
+      <label className="flex min-w-0 flex-1 flex-col gap-1 font-bold">
+        빈칸에 들어갈 영어
+        <input className="min-h-12 rounded-xl border px-3" value={written} maxLength={120}
+          lang="en" autoComplete="off" spellCheck={false} disabled={busy || pickedId !== null}
+          onChange={event => setWritten(event.target.value)} />
+      </label>
+      <button className={primary + ' self-end'} disabled={busy || pickedId !== null || !written.trim()} type="submit">답 확인</button>
+    </form>
+  </StudioCard>;
   return <StudioCard label={phaseTitle[phase]}>
     <StudioPrompt guide={phaseTitle[phase]} text={item.sentence} sub={item.prompt} lang="en" />
     <StudioOptions

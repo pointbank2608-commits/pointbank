@@ -10,12 +10,15 @@ export interface GrammarItem {
   sentence: string;
   prompt: string;
   options: { id: string; text: string }[];
+  written?: boolean;
 }
 
 interface AuthoredItem extends GrammarItem {
   options: { id: string; text: string; feedback: string }[];
   correctOptionId: string;
 }
+
+export type GrammarAdaptiveItem = AuthoredItem | (GrammarItem & { answerText: string; feedback: string });
 
 export interface GrammarLesson {
   goalId: string;
@@ -30,6 +33,7 @@ export interface GrammarLesson {
   repair: { explanation: string; example: GrammarExample; practice: AuthoredItem };
   transfer: AuthoredItem;
   delayed: AuthoredItem;
+  adaptive?: Record<GrammarQuestionPhase, GrammarAdaptiveItem[]>;
 }
 
 export type GrammarQuestionPhase = 'reasoning' | 'practice' | 'transfer' | 'delayed';
@@ -60,8 +64,21 @@ export function grammarBlockStep(lesson: GrammarLesson, phase: GrammarBlockStep[
     const { explanation, example } = lesson.repair;
     return { phase, explanation, example };
   }
-  const { id, sentence, prompt, options } = itemAt(lesson, phase);
-  return { phase, item: { id, sentence, prompt, options: options.map(({ id, text }) => ({ id, text })) } };
+  return grammarQuestionStep(phase, itemAt(lesson, phase));
+}
+
+export function grammarQuestionStep(phase: GrammarQuestionPhase, item: GrammarAdaptiveItem): GrammarBlockStep {
+  const { id, sentence, prompt, options } = item;
+  return { phase, item: { id, sentence, prompt, written: 'answerText' in item, options: options.map(({ id, text }) => ({ id, text })) } };
+}
+
+export function gradeGrammarPreview(item: GrammarAdaptiveItem, response: string): GrammarBlockFeedback | undefined {
+  if ('answerText' in item) {
+    const normalize = (value: string) => value.replace(/[‘’]/g, "'").trim().replace(/\s+/g, ' ').toLowerCase();
+    return { correct: normalize(response) === normalize(item.answerText), explanation: item.feedback };
+  }
+  const option = item.options.find(({ id }) => id === response);
+  return option && { correct: option.id === item.correctOptionId, explanation: option.feedback };
 }
 
 export type GrammarPreviewPhase = GrammarBlockStep['phase'] | 'waiting' | 'finished';
@@ -76,14 +93,14 @@ export function advanceGrammarPreview(lesson: GrammarLesson, phase: GrammarPrevi
   }
   if (action.type !== 'answer') return null;
   const item = itemAt(lesson, phase);
-  const option = item.options.find(({ id }) => id === action.optionId);
-  if (action.itemId !== item.id || !option) return null;
-  const correct = option.id === item.correctOptionId;
+  const feedback = gradeGrammarPreview(item, action.optionId);
+  if (action.itemId !== item.id || !feedback) return null;
+  const { correct } = feedback;
   const next = {
     reasoning: correct ? 'transfer' : 'repair',
     practice: 'transfer',
     transfer: 'waiting',
     delayed: 'finished',
   } as const;
-  return { phase: next[phase], feedback: { correct, explanation: option.feedback } };
+  return { phase: next[phase], feedback };
 }

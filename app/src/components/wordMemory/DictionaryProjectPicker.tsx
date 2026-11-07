@@ -10,7 +10,7 @@ export interface DictionaryProjectRange {
   entries: readonly WordBankEntry[];
 }
 
-export default function DictionaryProjectPicker({ current, whole }: { current: DictionaryProjectRange; whole: DictionaryProjectRange }) {
+export default function DictionaryProjectPicker({ current, whole, defaultClassId }: { current: DictionaryProjectRange; whole: DictionaryProjectRange; defaultClassId?: string }) {
   const { t } = useTranslation();
   const [ranges, setRanges] = useState<DictionaryProjectRange[]>([]);
   const [assigning, setAssigning] = useState(false);
@@ -46,7 +46,7 @@ export default function DictionaryProjectPicker({ current, whole }: { current: D
 
   const secondary = 'min-h-11 rounded-full border border-primary/40 bg-surface-container-lowest px-4 py-2 text-sm font-bold text-primary disabled:opacity-45';
   return (
-    <details className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/15 p-4">
+    <details open={defaultClassId ? true : undefined} className="space-y-3 rounded-xl border border-primary/30 bg-primary-fixed/15 p-4">
       <summary className="cursor-pointer font-bold text-primary">{t('dictionary.projectTitle')}</summary>
       <p className="text-sm text-on-surface-variant">{t('dictionary.projectHint')}</p>
       <div className="flex flex-wrap gap-2">
@@ -83,6 +83,7 @@ export default function DictionaryProjectPicker({ current, whole }: { current: D
       {assigning && (
         <WordMemoryAssignModal
           cards={cards}
+          defaultClassId={defaultClassId}
           source={{ type: 'dictionary', name: ranges.length === 1 ? ranges[0].label : t('dictionary.projectTitle') }}
           onClose={() => setAssigning(false)}
         />

@@ -5,7 +5,7 @@ import { chromium } from '../../node_modules/homework-test-tools/node_modules/@p
 import { buildAdaptiveFixture } from './adaptive-homework-fixture.mjs';
 
 const f = await buildAdaptiveFixture();
-for (const name of ['102_grammar_learning.sql','102b_grammar_pilot_content.sql','102c_grammar_results.sql']) await f.db.exec(f.read(name));
+for (const name of ['102_grammar_learning.sql','102b_grammar_pilot_content.sql','102c_grammar_results.sql','105_grammar_foundation_content.sql','106_grammar_curriculum_content.sql','107_grammar_adaptive_flow.sql','108_grammar_adaptive_content.sql','108_grammar_adaptive_content.sql']) await f.db.exec(f.read(name));
 const root = fileURLToPath(new URL('../../',import.meta.url));
 const student = { id: f.ST, name: '검증 학생' };
 const entry = `import React from 'react'; import { createRoot } from 'react-dom/client';
@@ -75,7 +75,21 @@ try {
   const button = name => page.getByRole('button',{name,exact:true});
   await page.goto(origin+'teacher');
   await button('문법 목표 고르기').click();
-  await page.getByRole('combobox').selectOption('past-question-base-verb');
+  const goals = page.getByRole('combobox', { name: '학습 목표' });
+  await goals.locator('option[value="because-reason-clause"]').waitFor({ state: 'attached' });
+  assert.equal(await goals.locator('option[value^="curriculum-"]').count(), 169);
+  assert.equal(await goals.locator('option').count(), 177);
+  await page.getByRole('combobox', { name: '학교급' }).selectOption('high');
+  await page.getByRole('searchbox', { name: '문법 검색' }).fill('가정법');
+  assert.ok(await goals.locator('option[value^="curriculum-"]').count() > 0);
+  assert.equal(await goals.locator('option[value="curriculum-this-is"]').count(), 0);
+  await page.getByRole('searchbox', { name: '문법 검색' }).clear();
+  await page.getByRole('combobox', { name: '학교급' }).selectOption('all');
+  await goals.selectOption('because-reason-clause');
+  await page.getByRole('checkbox',{name:'검증 학생'}).check();
+  await button('학생 화면 미리보기').click();
+  await page.getByText('We went inside because it rained.', { exact: true }).first().waitFor();
+  await goals.selectOption('past-question-base-verb');
   await page.getByRole('checkbox',{name:'검증 학생'}).check();
   await button('학생 화면 미리보기').click();
   await page.getByText('교사 미리보기',{exact:true}).waitFor();
@@ -114,6 +128,83 @@ try {
   await page.goto(origin+'admin');
   await button('문법 결과 조회').click();
   await page.getByRole('cell',{name:/정답 1 · 오답 0/}).waitFor();
+  await page.goto(origin+'teacher');
+  await button('문법 목표 고르기').click();
+  await page.getByRole('combobox', { name: '학습 목표' }).selectOption('curriculum-this-is');
+  await page.getByRole('checkbox', {name:'검증 학생'}).check();
+  await button('학생 화면 미리보기').click();
+  await page.getByText('This is a pen.', { exact: true }).waitFor();
+  await page.getByRole('checkbox', {name:'내용과 학생을 확인했어요'}).check();
+  await button('이 계획으로 배정').click();
+  await page.getByText('배정했어요. 학생 홈에서 시작할 수 있어요.').waitFor();
+  await page.goto(origin+'s');
+  await page.getByRole('link',{name:/This is \/ That is.*문법 학습 시작/}).click();
+  await page.getByText('This is a pen.', { exact: true }).waitFor();
+  const adaptiveAssignment = new URL(page.url()).pathname.split('/').at(-1);
+  const lesson = await f.call('grammar_preview','curriculum-this-is',2);
+  async function finishAdaptive(id, needsSupport) {
+    let progress = await f.call('grammar_open',f.TK,id);
+    assert.equal(progress.adaptive,true);
+    const action = (type,itemId=null,response=null,request=crypto.randomUUID()) =>
+      f.call('grammar_act',f.TK,id,request,progress.revision,type,itemId,response);
+    let initial = 0, delayed = 0, supported = 0, written = 0;
+    let dateAdvanced = false;
+    for (let step=0; step<55 && progress.state.kind !== 'finished'; step++) {
+      const { state } = progress;
+      if (state.kind === 'waiting') {
+        assert.equal(dateAdvanced,false);
+        await assert.rejects(action('continue'),/not_due/);
+        await f.db.query("update grammar_assignments set review_due_at=now()-interval '1 minute' where id=$1",[id]);
+        dateAdvanced = true;
+        progress = await f.call('grammar_open',f.TK,id);
+        continue;
+      }
+      if (state.kind === 'feedback' || state.step.phase === 'explain' || state.step.phase === 'repair') {
+        progress = await action('continue');
+        continue;
+      }
+      const { phase, item } = state.step;
+      const authored = lesson.adaptive[phase].find(question => question.id === item.id);
+      assert.ok(authored);
+      assert.equal(Object.hasOwn(item,'answerText'),false);
+      assert.equal(Object.hasOwn(item,'correctOptionId'),false);
+      if (phase === 'delayed') delayed++; else initial++;
+      if (phase === 'practice') supported++;
+      if (item.written) written++;
+      const wrong = needsSupport && (phase === 'reasoning' || phase === 'transfer' || (phase === 'practice' && supported <= 2));
+      const response = item.written
+        ? wrong ? 'incorrect' : ' ' + authored.answerText.toUpperCase().replaceAll("'", '’') + ' '
+        : wrong ? authored.options.find(option => option.id !== authored.correctOptionId).id : authored.correctOptionId;
+      if (item.written && !needsSupport && written === 1) {
+        await page.reload();
+        await page.getByRole('textbox', { name: '빈칸에 들어갈 영어' }).fill(response);
+        await button('답 확인').click();
+        await button('계속하기').waitFor();
+        progress = await f.call('grammar_open',f.TK,id);
+        assert.equal(progress.state.feedback.correct,true);
+        continue;
+      }
+      const request = crypto.randomUUID();
+      const result = await action('answer',item.id,response,request);
+      const replay = await action('answer',item.id,response,request);
+      assert.equal(replay.duplicate,true);
+      assert.equal(result.state.feedback.correct,!wrong);
+      progress = result;
+    }
+    assert.equal(progress.state.kind,'finished');
+    assert.deepEqual([initial,delayed,supported],needsSupport ? [16,6,9] : [12,4,5]);
+    assert.ok(written>=3);
+    const evidence = (await f.call('grammar_teacher_summary',f.HW,'homework')).find(row => row.assignmentId === id).evidence;
+    assert.equal(evidence.practiced_ok,needsSupport ? 7 : 5);
+    assert.equal(evidence.transferred,4);
+    assert.equal(evidence.transferred_ok,needsSupport ? 0 : 4);
+    assert.equal(evidence.reviewed,delayed);
+    assert.equal(evidence.reviewed_ok,delayed);
+  }
+  await finishAdaptive(adaptiveAssignment,false);
+  const longPlan = await f.call('grammar_assign',crypto.randomUUID(),f.HW,[f.ST],'homework','curriculum-this-is',2,null);
+  const longId = (await f.db.query('select id from grammar_assignments where plan_id=$1',[longPlan.planId])).rows[0].id;
+  await finishAdaptive(longId,true);
   assert.deepEqual(errors,[]);
   console.log('PASS: grammar browser, teacher approval → student portal → resume feedback → waiting → teacher/admin results.');
 } finally {

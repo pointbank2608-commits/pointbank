@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
@@ -161,6 +162,8 @@ function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () =
 }
 
 export default function DictionaryPage() {
+  const { state } = useLocation();
+  const projectClassId = (state as { wordProjectClassId?: string } | null)?.wordProjectClassId;
   const { t } = useTranslation();
   const { isStaff } = useAuth();
   const homeworkOpen = useFeature('homework');
@@ -585,7 +588,7 @@ export default function DictionaryPage() {
           </div>
           {isStaff && homeworkOpen && (
             <div hidden={tab !== 'word'}>
-              <DictionaryProjectPicker current={projectRange} whole={wholeProjectRange} />
+              <DictionaryProjectPicker current={projectRange} whole={wholeProjectRange} defaultClassId={projectClassId} />
             </div>
           )}
           {filtered.length > 0 && selectedList.length === 0 && (

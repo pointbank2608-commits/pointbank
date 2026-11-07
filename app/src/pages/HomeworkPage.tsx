@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import WordMemoryResults from '../components/wordMemory/WordMemoryResults';
+import WordProjectHomework from '../components/wordMemory/WordProjectHomework';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
@@ -26,6 +27,7 @@ import { useClasses } from '../lib/useClasses';
 type Panel =
   | { k: 'none' }
   | { k: 'adaptive' }
+  | { k: 'wordProject' }
   | { k: 'compose'; mode?:'lesson'|'list'; cards?:FullCardItem[]; title?:string; lessonId?:string }
   | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
   | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
@@ -54,6 +56,12 @@ export default function HomeworkPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [panel, setPanel] = useState<Panel>({ k: 'none' });
+  const [wordProjectRevision, setWordProjectRevision] = useState(0);
+  const projectLocation = location.state as { wmPlanId?: string; fromClassId?: string } | null;
+  const openPlanId = !projectLocation?.fromClassId || projectLocation.fromClassId === classId ? projectLocation?.wmPlanId : undefined;
+  useEffect(() => {
+    if (openPlanId) setPanel({ k: 'none' });
+  }, [openPlanId, location.key]);
   const [shareId, setShareId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [cardStudent, setCardStudent] = useState<string | null>(null);
@@ -185,6 +193,27 @@ export default function HomeworkPage() {
         <button type="button" className={`${headerBtn} bg-primary text-white disabled:opacity-40`} disabled={!soloOpen} onClick={()=>setPanel({k:'adaptive'})}>{en?'Create adaptive homework':'맞춤 단어 숙제 만들기'}</button>
       </section>}
       {panel.k==='adaptive'&&classId&&academy?.id&&<AdaptiveHomeworkComposer key={classId} academyId={academy.id} classId={classId} onClose={()=>setPanel({k:'none'})} onCreated={()=>{setPanel({k:'none'});setAdaptiveRevision(n=>n+1);notify(en?'Homework assigned. Students can start from their portal.':'숙제를 배정했어요. 학생 홈의 숙제에서 시작할 수 있어요.');}}/>}
+      {panel.k === 'none' && classId && homeworkOpen && (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
+          <div>
+            <h2 className="text-lg font-bold text-deep-navy">{t('wordMemory.homeworkProjectTitle')}</h2>
+            <p className="mt-1 text-sm text-on-surface-variant">{t('wordMemory.homeworkProjectHint')}</p>
+          </div>
+          <button type="button" className={headerBtn + ' bg-primary text-white'} onClick={() => setPanel({ k: 'wordProject' })}>
+            {t('wordMemory.homeworkProjectCreate')}
+          </button>
+        </section>
+      )}
+      {panel.k === 'wordProject' && classId && academy?.id && homeworkOpen && (
+        <WordProjectHomework
+          key={classId}
+          academyId={academy.id}
+          classId={classId}
+          onClose={() => setPanel({ k: 'none' })}
+          onAssigned={() => setWordProjectRevision((revision) => revision + 1)}
+        />
+      )}
+
       {panel.k==='none'&&classId&&<div className="hw-source-choices rounded-2xl border border-outline-variant bg-white p-5">
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
@@ -250,7 +279,7 @@ export default function HomeworkPage() {
       )}
 
       {classId && <AdaptiveHomeworkResults key={`adaptive-${classId}`} classId={classId} revision={adaptiveRevision}/> }
-      {classId && <WordMemoryResults key={classId} classId={classId} initialPlanId={(location.state as { wmPlanId?: string } | null)?.wmPlanId} />}
+      {classId && <WordMemoryResults key={JSON.stringify([classId, wordProjectRevision, openPlanId ? location.key : null])} classId={classId} initialPlanId={openPlanId} />}
 
       {list === null ? (
         <div className="text-base text-on-surface-variant">{t('common.loading')}</div>

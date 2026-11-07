@@ -22,7 +22,7 @@ export interface WmSource {
  * 단어암기숙제 배정 창: 자료(단어장·초등 800) → 반·학생 → 하루 학습량 → 미리보기 → 명시적으로 "배정하기".
  * 배정 전에는 아무것도 만들지 않는다. 요청 번호(requestId)는 창을 열 때 한 번 정해 두 번 눌러도 한 번만 배정된다.
  */
-export default function WordMemoryAssignModal({ source, cards, defaultClassId, onClose }: { source: WmSource; cards: FullCardItem[]; defaultClassId?: string | null; onClose: () => void }) {
+export default function WordMemoryAssignModal({ source, cards, defaultClassId, onClose, onAssigned }: { source: WmSource; cards: FullCardItem[]; defaultClassId?: string | null; onClose: () => void; onAssigned?: () => void }) {
   const { t } = useTranslation();
   const { academy } = useAuth();
   const navigate = useNavigate();
@@ -115,7 +115,10 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
         reviewDays,
       });
       setResult(r);
-      if (r.plan_id) setLinks(await wmPlanLinks(r.plan_id));
+      if (r.plan_id) {
+        onAssigned?.();
+        setLinks(await wmPlanLinks(r.plan_id));
+      }
     } catch (e) {
       const err = toWmError(e);
       setError(err.kind === 'feature_closed' ? 'errFeatureClosed' : err.kind === 'bad_student' || err.kind === 'no_students' ? 'errBadStudent' : err.kind === 'network' ? 'errNetwork' : 'errUnknown');
@@ -178,7 +181,10 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
             )}
             <div className="flex flex-wrap gap-2">
               {result.plan_id && (
-                <button type="button" className={`${field} border-primary bg-primary font-bold text-white`} onClick={() => navigate('/homework', { state: { wmPlanId: result.plan_id } })}>
+                <button type="button" className={`${field} border-primary bg-primary font-bold text-white`} onClick={() => {
+                  onClose();
+                  navigate('/homework', { state: { wmPlanId: result.plan_id, fromClassId: classId } });
+                }}>
                   {t('wordMemory.openResults')}
                 </button>
               )}

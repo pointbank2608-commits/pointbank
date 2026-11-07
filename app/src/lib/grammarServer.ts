@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import type { GrammarBlockAction, GrammarBlockFeedback, GrammarBlockStep, GrammarLesson } from './grammarLearningContent';
 
 export type GrammarMode = 'homework' | 'individual';
-export type GrammarCatalogItem = Pick<GrammarLesson, 'goalId' | 'version' | 'title' | 'objective'>;
+export type GrammarCatalogItem = Pick<GrammarLesson, 'goalId' | 'version' | 'title' | 'objective' | 'grammarIds'> & { adaptive?: boolean };
 export interface GrammarAssignment {
   assignmentId: string;
   title: string;
@@ -15,6 +15,7 @@ export type GrammarState = {
   assignmentId: string;
   runId: string;
   revision: number;
+  adaptive?: boolean;
   state: { kind: 'step'; position: number; step: GrammarBlockStep }
     | { kind: 'feedback'; position: number; feedback: GrammarBlockFeedback }
     | { kind: 'waiting'; dueAt: string }
@@ -28,6 +29,12 @@ export interface GrammarOutcome {
   practice: boolean | null;
   transfer: boolean | null;
   review: string;
+  evidence?: {
+    diagnosed: number; diagnosed_ok: number;
+    practiced: number; practiced_ok: number;
+    transferred: number; transferred_ok: number;
+    reviewed: number; reviewed_ok: number;
+  } | null;
 }
 export interface GrammarAggregate {
   goalId: string; version: number; mode: GrammarMode; title: string;

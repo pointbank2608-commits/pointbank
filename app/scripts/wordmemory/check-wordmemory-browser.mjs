@@ -103,7 +103,9 @@ const dictionaryEntries = Array.from({ length: 3520 }, (_, i) => ({
   image_url: i === 0 ? '/phonics-images/cat.webp' : null, example_sentence: i === 0 ? 'This is word0.' : null,
 }));
 dictionaryEntries.push({ ...dictionaryEntries[0], id: 'dictionary-duplicate' });
-const fn = { fetchWordBank: async () => dictionaryEntries, fetchClasses: async () => get('/q/classes'), fetchStudentsOfClass: async (id) => get('/q/students?class=' + id) };
+const projectList = { id:'saved-project', name:'프로젝트용 단어장', kind:'word',
+  items:Array.from({length:64}, (_, i) => ({id:'saved-'+i,word:'savedword'+i,meaning:'저장 뜻'+i,image_url:null})) };
+const fn = { fetchWordLists: async () => [projectList], fetchWordBank: async () => dictionaryEntries, fetchClasses: async () => get('/q/classes'), fetchStudentsOfClass: async (id) => get('/q/students?class=' + id) };
 ${names.map((n) => `export const ${n}=(...a)=>(fn.${n}||(async()=>[]))(...a);`).join('\n')}`;
 const supabaseStub = `export const supabase = { rpc: async (name, args) => {
   const r = await fetch(window.__rpc + '/rpc/' + name, { method: 'POST', headers: { 'content-type': 'application/json', 'x-uid': window.__uid || '' }, body: JSON.stringify(args || {}) });
@@ -121,7 +123,7 @@ const server = await createServer({
       enforce: 'pre',
       configureServer(s) {
         s.middlewares.use((req, _res, next) => {
-          if (/^\/(wm\/|teacher|results|portal|dictionary)/.test(req.url || '')) req.url = '/scripts/wordmemory/harness.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+          if (/^\/(wm\/|teacher|results|portal|dictionary|homework)/.test(req.url || '')) req.url = '/scripts/wordmemory/harness.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
           next();
         });
       },
@@ -667,6 +669,25 @@ try {
   assert.deepEqual(assigned, { n: 3520, initial_new_words: 60, senses: 2, picture: '/phonics-images/cat.webp' });
   ok('사전 전체와 겹치는 범위를 모아도 중복 없이 3,520개가 배정되고 새 단어 상한 60개와 다른 뜻, 기존 그림이 저장된다');
   await dictionary.close();
+
+  const homework = await newPage(phone);
+  await homework.goto(BASE + '/homework');
+  await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
+  await homework.getByRole('combobox', { name: '저장한 단어장에서 고르기' }).selectOption('saved-project');
+  await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
+  await homework.waitForSelector('[data-wm-student]');
+  await homework.locator('[data-wm-student]').nth(1).uncheck();
+  await homework.locator('[data-wm-student]').nth(2).uncheck();
+  await homework.locator('[data-wm-new-limit]').fill('50');
+  await homework.locator('[data-wm-assign-btn]').click();
+  await homework.getByRole('button', { name: '현황 보기', exact: true }).click();
+  await homework.getByText('프로젝트용 단어장', { exact: true }).first().waitFor();
+  assert.equal(await homework.locator('[data-wm-assign]').count(), 0);
+  await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
+  await homework.getByRole('link', { name: '단어 사전에서 범위 고르기' }).click();
+  await homework.getByRole('button', { name: /현재 결과 .*개 담기/ }).waitFor();
+  ok('숙제에서 단어장 프로젝트를 배정하고 현황을 열며, 사전 범위 선택도 바로 시작한다');
+  await homework.close();
 } finally {
   await browser.close();
   await server.close();
