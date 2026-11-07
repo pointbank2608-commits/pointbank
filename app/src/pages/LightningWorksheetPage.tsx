@@ -25,17 +25,17 @@ function shuffled<T>(a: T[], seed: number): T[] {
   return r;
 }
 
-export default function LightningWorksheetPage() {
+export default function LightningWorksheetPage({ printOnly = false, previewItems }: { printOnly?: boolean; previewItems?: string[] } = {}) {
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
   const initial = ((location.state as { materialsTab?: string } | null)?.materialsTab as Tab | undefined) ?? 'cards';
-  const [tab, setTab] = useState<Tab>(TABS.includes(initial) ? initial : 'cards');
+  const [tab, setTab] = useState<Tab>(!printOnly && TABS.includes(initial) ? initial : 'cards');
   const [seed, setSeed] = useState(1);
   const [ko, setKo] = useState(true);
   const [answers, setAnswers] = useState(false);
   // 게임에서 넘어왔다면 그 게임에 넣은 문장으로 인쇄한다(없으면 기본 문장 12개)
-  const passed = (location.state as { lightningItems?: string[] } | null)?.lightningItems;
+  const passed = printOnly ? previewItems : (location.state as { lightningItems?: string[] } | null)?.lightningItems;
   const samples = useMemo(() => {
     const own = passed ? samplesFromLabels(passed) : [];
     return own.length > 0 ? own : LIGHTNING_SAMPLES;
@@ -163,6 +163,14 @@ export default function LightningWorksheetPage() {
 
   const reshuffle = tab === 'fill' ? () => setSeed((s) => s + 1) : undefined;
 
+  const sheets = <>
+      {tab === 'cards' && cardsPage}
+      {tab === 'score' && scorePage}
+      {tab === 'fill' && fillPage}
+      {tab === 'draw' && drawPage}
+  </>;
+  if (printOnly) return sheets;
+
   return (
     <div className="space-y-6">
       {!presenting && (
@@ -210,10 +218,7 @@ export default function LightningWorksheetPage() {
         </div>
       )}
 
-      {tab === 'cards' && cardsPage}
-      {tab === 'score' && scorePage}
-      {tab === 'fill' && fillPage}
-      {tab === 'draw' && drawPage}
+      {sheets}
     </div>
   );
 }

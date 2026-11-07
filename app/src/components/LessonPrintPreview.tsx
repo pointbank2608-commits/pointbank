@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buildWorksheet, DEFAULT_COLORING_OPTIONS, isWorksheetEmpty, NEW_WORKSHEET_KINDS, type NewWorksheetKind } from '../lib/worksheetGenerators';
 import { buildPhonicsWorkbook, workbookPrintable } from '../data/phonicsWorkbook';
@@ -12,6 +12,11 @@ import MemoryCardsPrintSheets, { buildDeck } from './worksheets/MemoryCardsPrint
 import WorksheetSheets from './worksheets/WorksheetSheets';
 
 export const wordPrintMaterials = ['flashcards', 'memorycards', 'bingo'];
+export const dedicatedPrintMaterials = [
+  'airport', 'doctor', 'icecream', 'restaurant', 'lightning', 'mysterybox',
+  'elementary800-original', 'elementary800-workbook', 'grammarworkbook',
+];
+const DedicatedLessonPrintSheets = lazy(() => import('./worksheets/DedicatedLessonPrintSheets'));
 const NO_PHONICS_ENTRIES: PhonicsBankEntry[] = [];
 
 export function workbookStep(id: string) {
@@ -43,7 +48,7 @@ function PaperViewport({ children, large }: { children: ReactNode; large: boolea
       const zoom = bounds.width / paperWidth;
       if (!zoom) return;
       const top = bounds.top;
-      const explicit = [...inner.querySelectorAll<HTMLElement>('.print-board')];
+      const explicit = [...inner.querySelectorAll<HTMLElement>('.print-board, .e800-sheet')];
       const cards = [...inner.querySelectorAll<HTMLElement>('.print-card')];
       const breaks = [0];
       if (explicit.length) {
@@ -97,6 +102,16 @@ export default function LessonPrintPreview({ slide, cards, entries = NO_PHONICS_
   const tab = slide.worksheetTab ?? 'list';
   const pages = useMemo(() => {
     const options = slide.worksheetOptions ?? {};
+    if (slide.materialId === 'elementary800-original') {
+      return <div className="print-board bg-white">
+        <img className="mx-auto block w-full" src="/workbooks/elementary800/verbs-first-activity.webp" alt={t('elementary800.preview')} />
+      </div>;
+    }
+    if (dedicatedPrintMaterials.includes(slide.materialId)) {
+      return <Suspense fallback={<p className="p-3 text-sm">{t('common.loading')}</p>}>
+        <DedicatedLessonPrintSheets materialId={slide.materialId} />
+      </Suspense>;
+    }
     if (book) {
       const selection = resolveWorkbookSelection(book.id, slide);
       return (selection.requested ? selection.units : book.units.slice(0, 1))
@@ -132,7 +147,10 @@ export default function LessonPrintPreview({ slide, cards, entries = NO_PHONICS_
     }
     if (!words.length) return null;
     return <BasicWorksheetSheets tab={tab} words={words} options={options} quiz={tab === 'quiz' ? worksheetQuiz(words) : []} />;
-  }, [book, step, entries, slide, tab, words]);
+  }, [book, step, entries, slide, tab, words, t]);
   if (!pages || (Array.isArray(pages) && !pages.length)) return <p className="p-3 text-sm">{t('lessonUx.previewUnavailable')}</p>;
-  return <PaperViewport large={large}>{pages}</PaperViewport>;
+  return <>
+    {large && slide.materialId === 'elementary800-original' && <a className="block p-3 text-center font-bold text-primary underline" href="/workbooks/elementary800/verbs-level1-4.pdf#page=2" target="_blank" rel="noopener">{t('elementary800.open')} ↗</a>}
+    <PaperViewport large={large}>{pages}</PaperViewport>
+  </>;
 }

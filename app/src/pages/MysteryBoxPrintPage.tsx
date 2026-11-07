@@ -45,38 +45,7 @@ export default function MysteryBoxPrintPage() {
   const [showAnswer, setShowAnswer] = useState(true);
   const [seed, setSeed] = useState(0);
 
-  const rewards = useMemo(
-    () => shuffled(rewardDeck()).slice(0, count),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [count, seed],
-  );
-
-  const questionCards = useMemo(() => {
-    if (words.length === 0) return [];
-    const pool: FullCardItem[] = [];
-    while (pool.length < count) pool.push(...shuffled(words));
-    return pool.slice(0, count);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [words, count, seed]);
-
-  const rewardLabel = (r: Reward): string => {
-    switch (r.kind) {
-      case 'add':
-        return t('gameMysteryBox.r_add', { n: r.pts });
-      case 'sub':
-        return t('gameMysteryBox.r_sub', { n: r.pts });
-      case 'steal':
-        return t('gameMysteryBox.r_steal', { n: r.pts });
-      default:
-        return t(`gameMysteryBox.r_${r.kind}`);
-    }
-  };
-  const rewardImg = (r: Reward) =>
-    r.kind === 'sub' || r.kind === 'lose' || r.kind === 'half' ? 'bomb' : r.kind === 'steal' ? 'mask' : r.kind === 'add' && r.pts >= 1000 ? 'star' : r.kind === 'double' || r.kind === 'add' ? 'coins' : 'star';
-
-  const recordRows = Array.from({ length: count }, (_, i) => i);
-  const pages = tab === 'records' ? [] : tab === 'rewards' ? chunk(rewards.map((r, i) => ({ r, i })), PER_PAGE) : chunk(questionCards.map((w, i) => ({ w, i })), PER_PAGE);
-  const canPrint = tab !== 'questions' || questionCards.length > 0;
+  const canPrint = tab !== 'questions' || words.length > 0;
 
   return (
     <div className="space-y-6">
@@ -151,12 +120,52 @@ export default function MysteryBoxPrintPage() {
               {t('materials.printButton')}
             </button>
             <span className="font-caption text-caption text-on-surface-variant">
-              {tab === 'questions' && questionCards.length === 0 ? t('materials.mysteryBox.needWords') : t('materials.mysteryBox.hint')}
+              {tab === 'questions' && words.length === 0 ? t('materials.mysteryBox.needWords') : t('materials.mysteryBox.hint')}
             </span>
           </div>
         </div>
       </div>
 
+      <MysteryBoxSheets tab={tab} words={words} count={count} showAnswer={showAnswer} seed={seed} />
+    </div>
+  );
+}
+
+export function MysteryBoxSheets({ tab = 'records', words = [], count = 28, showAnswer = true, seed = 0 }: { tab?: Tab; words?: FullCardItem[]; count?: 20 | 28; showAnswer?: boolean; seed?: number }) {
+  const { t } = useTranslation();
+  const rewards = useMemo(
+    () => shuffled(rewardDeck()).slice(0, count),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [count, seed],
+  );
+
+  const questionCards = useMemo(() => {
+    if (words.length === 0) return [];
+    const pool: FullCardItem[] = [];
+    while (pool.length < count) pool.push(...shuffled(words));
+    return pool.slice(0, count);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words, count, seed]);
+
+  const rewardLabel = (r: Reward): string => {
+    switch (r.kind) {
+      case 'add':
+        return t('gameMysteryBox.r_add', { n: r.pts });
+      case 'sub':
+        return t('gameMysteryBox.r_sub', { n: r.pts });
+      case 'steal':
+        return t('gameMysteryBox.r_steal', { n: r.pts });
+      default:
+        return t(`gameMysteryBox.r_${r.kind}`);
+    }
+  };
+  const rewardImg = (r: Reward) =>
+    r.kind === 'sub' || r.kind === 'lose' || r.kind === 'half' ? 'bomb' : r.kind === 'steal' ? 'mask' : r.kind === 'add' && r.pts >= 1000 ? 'star' : r.kind === 'double' || r.kind === 'add' ? 'coins' : 'star';
+
+  const recordRows = Array.from({ length: count }, (_, i) => i);
+  const pages = tab === 'records' ? [] : tab === 'rewards' ? chunk(rewards.map((r, i) => ({ r, i })), PER_PAGE) : chunk(questionCards.map((w, i) => ({ w, i })), PER_PAGE);
+
+  return <>
       {tab === 'records' && (
         <div className="print-sheet print-board mx-auto">
           <div className="mx-auto w-full max-w-[186mm]">
@@ -198,8 +207,7 @@ export default function MysteryBoxPrintPage() {
         </div>
       )}
 
-      {canPrint &&
-        pages.map((page, pi) => (
+      {pages.map((page, pi) => (
           <div key={pi} className="print-sheet print-board mx-auto">
             <div className="no-print mb-1 text-center font-caption text-caption text-on-surface-variant">
               {pi + 1} / {pages.length}
@@ -238,6 +246,5 @@ export default function MysteryBoxPrintPage() {
             </div>
           </div>
         ))}
-    </div>
-  );
+  </>;
 }

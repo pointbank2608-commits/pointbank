@@ -28,12 +28,12 @@ function shuffled<T>(a: T[], seed: number): T[] {
   return r;
 }
 
-export default function DoctorWorksheetPage() {
+export default function DoctorWorksheetPage({ printOnly = false }: { printOnly?: boolean } = {}) {
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
   const initial = ((location.state as { materialsTab?: string } | null)?.materialsTab as Tab | undefined) ?? 'words';
-  const [tab, setTab] = useState<Tab>(TABS.includes(initial) ? initial : 'words');
+  const [tab, setTab] = useState<Tab>(!printOnly && TABS.includes(initial) ? initial : 'words');
   const [seed, setSeed] = useState(1);
   const [ko, setKo] = useState(true);
   const [answers, setAnswers] = useState(false);
@@ -166,6 +166,14 @@ export default function DoctorWorksheetPage() {
 
   const reshuffle = tab === 'match' ? () => setSeed((s) => s + 1) : undefined;
 
+  const sheets = <>
+      {tab === 'words' && wordsPage}
+      {tab === 'match' && matchPages.map(matchPage)}
+      {tab === 'problem' && problemPage}
+      {tab === 'cards' && cardsPage}
+  </>;
+  if (printOnly) return sheets;
+
   return (
     <div className="space-y-6">
       {!presenting && (
@@ -213,10 +221,7 @@ export default function DoctorWorksheetPage() {
         </div>
       )}
 
-      {tab === 'words' && wordsPage}
-      {tab === 'match' && matchPages.map(matchPage)}
-      {tab === 'problem' && problemPage}
-      {tab === 'cards' && cardsPage}
+      {sheets}
     </div>
   );
 }

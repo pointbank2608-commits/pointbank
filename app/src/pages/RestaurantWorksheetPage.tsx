@@ -24,12 +24,12 @@ function rng(seed: number) {
   };
 }
 
-export default function RestaurantWorksheetPage() {
+export default function RestaurantWorksheetPage({ printOnly = false }: { printOnly?: boolean } = {}) {
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
   const initial = ((location.state as { materialsTab?: string } | null)?.materialsTab as Tab | undefined) ?? 'menu';
-  const [tab, setTab] = useState<Tab>(TABS.includes(initial) ? initial : 'menu');
+  const [tab, setTab] = useState<Tab>(!printOnly && TABS.includes(initial) ? initial : 'menu');
   const [seed, setSeed] = useState(1);
   const [ko, setKo] = useState(true);
 
@@ -238,6 +238,14 @@ export default function RestaurantWorksheetPage() {
 
   const reshuffle = tab === 'cards' ? () => setSeed((s) => s + 1) : undefined;
 
+  const sheets = <>
+      {tab === 'menu' && RESTAURANTS.map(menuPage)}
+      {tab === 'dialogue' && RESTAURANTS.map(dialoguePage)}
+      {tab === 'pad' && RESTAURANTS.map(padPage)}
+      {tab === 'cards' && cardsPages()}
+  </>;
+  if (printOnly) return sheets;
+
   return (
     <div className="space-y-6">
       {!presenting && (
@@ -296,10 +304,7 @@ export default function RestaurantWorksheetPage() {
         </div>
       )}
 
-      {tab === 'menu' && RESTAURANTS.map(menuPage)}
-      {tab === 'dialogue' && RESTAURANTS.map(dialoguePage)}
-      {tab === 'pad' && RESTAURANTS.map(padPage)}
-      {tab === 'cards' && cardsPages()}
+      {sheets}
     </div>
   );
 }

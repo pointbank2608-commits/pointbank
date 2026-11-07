@@ -1,5 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { GAME_CATALOG } from '../lib/gameCatalog';
+import { ADVENTURE_TYPES, sampleAdventure, type AdventureType } from '../lib/adventureGames';
+import { sampleActivityCards } from '../lib/quickActivity';
+import { storySample } from '../lib/storybook';
+import { dedicatedGameSample } from '../lib/lessonGameSample';
 import type { GameContent } from '../lib/gameFromWords';
 import { classroomGameRequirement, prepareClassroomGame } from '../lib/gameWorkspace';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
@@ -9,8 +13,9 @@ import type { BlockDef } from '../lib/blocks/types';
 import type { FullCardItem, LessonSlide, MaterialSlide, PhonicsBankEntry } from '../lib/types';
 import { newCanvasSlide, newTextElement, themeTextDefaults } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
-import LessonPrintPreview, { wordPrintMaterials, workbookStep } from './LessonPrintPreview';
+import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbookStep } from './LessonPrintPreview';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
+import { SAMPLE_DIAGRAM_IMAGE, SAMPLE_DIAGRAM_PINS } from './LabeledDiagram';
 
 export type CanvasExample = 'title' | 'word' | 'blank';
 export const LESSON_SAMPLE_WORDS: FullCardItem[] = [
@@ -81,7 +86,7 @@ export function LessonActivityExample({ block, cards, sourceKind, selected, entr
       (worksheet || phonics || wordPrint) && wordCount >= (material.materialId === 'bingo' ? 8 : 1);
     next = (unit || phonics) && !actual ? 'needUnit' : (worksheet || wordPrint) && !actual ? 'needWords' : undefined;
     const bingoSample = material.materialId === 'bingo' && !actual;
-    picture = unit || worksheet || wordPrint
+    picture = unit || worksheet || wordPrint || dedicatedPrintMaterials.includes(material.materialId)
       ? <LessonPrintPreview slide={bingoSample ? { ...material, words: undefined } : material} cards={bingoSample ? LESSON_BINGO_SAMPLE_WORDS : words} entries={entries} large={large} />
       : phonics ? <PhonicsSlidePreview tab={material.phonicsTab ?? 'phonicsBlank'} words={material.words ?? words} options={material.phonicsOptions ?? {}} />
         : <img src={MATERIALS_CATALOG.find(m => m.id === material.materialId)?.cover ?? '/covers/material-phonics.jpg'} alt="" />;
@@ -118,22 +123,43 @@ export function LessonActivityExample({ block, cards, sourceKind, selected, entr
     </div>;
   } else if (game) {
     const prepared = prepareClassroomGame(game.type, cards, sourceKind);
-    const source: GameContent | null = prepared ?? prepareClassroomGame(game.type, LESSON_BINGO_SAMPLE_WORDS, 'word');
+    const type = game.type;
+    const source: GameContent | null = prepared ?? prepareClassroomGame(type, LESSON_BINGO_SAMPLE_WORDS, 'word') ??
+      prepareClassroomGame(type, sampleActivityCards('sentence'), 'sentence');
     const question = source?.config?.questions?.[0];
-    const adventure = source?.config?.adventure;
+    const adventure = source?.config?.adventure ?? ((ADVENTURE_TYPES as readonly string[]).includes(type) ? sampleAdventure(type as AdventureType) : undefined);
+    const detective = type === 'grammardetective' ? adventure?.cases[0] : undefined;
+    const sentence = type === 'wordtrain' || type === 'sentencerocket' ? adventure?.sentences[0] : undefined;
+    const clue = type === 'treasurehunt' ? adventure?.clues[0] : undefined;
+    const mission = type === 'wordclaw' ? adventure?.missions[0] : undefined;
     const pair = source?.config?.pairs?.[0] ?? source?.config?.flashcards?.[0];
-    const story = source?.config?.storybook?.questions[0];
+    const story = source?.config?.storybook?.questions[0] ?? (type === 'sentencebridge' ? storySample(type).questions[0] : undefined);
+    const tower = type === 'sentencetower' ? storySample(type) : undefined;
     const statement = source?.config?.statements?.[0];
-    if (source && (question || pair || story || statement || adventure?.words.length || adventure?.sentences.length || source.items.length)) {
-      actual = source === prepared;
+    if (type === 'labeleddiagram') {
+      picture = <div className="relative h-full w-full overflow-hidden">
+        <img src={SAMPLE_DIAGRAM_IMAGE} alt="" />
+        {SAMPLE_DIAGRAM_PINS.map((pin, index) => <span key={pin.id} className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary px-1.5 text-xs font-bold text-white" style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%` }}>{index + 1}</span>)}
+      </div>;
+    } else if (question || pair || story || statement || adventure || tower || source?.items.length) {
+      actual = !!prepared && source === prepared;
+      const choices = question?.choices ?? (pair ? [pair.right] : story ? [story.answer, ...story.wrong] :
+        detective?.errors[0]?.choices ?? sentence?.tokens ?? tower?.steps.map(step => step.phrase) ??
+        (clue ? adventure?.places.slice(0, 3).map(place => place.name) : adventure?.words.slice(0, 3).map(word => word.word))) ??
+        source?.items.slice(1, 4).map(item => item.label) ?? [];
       picture = <div className={`activity-game-example activity-game-${game.type}`}>
-        <b>{question?.question ?? pair?.left ?? story?.prompt ?? statement?.text ?? adventure?.words[0]?.meaning ?? adventure?.sentences[0]?.text ?? source.items[0]?.label}</b>
+        <b>{question?.question ?? pair?.left ?? story?.prompt ?? statement?.text ?? detective?.incorrect ??
+          sentence?.text ?? clue?.text ?? mission?.text ?? tower?.start ?? adventure?.words[0]?.meaning ?? source?.items[0]?.label}</b>
         <div className="activity-game-choices">
-          {(question?.choices ?? (pair ? [pair.right] : story ? [story.answer, ...story.wrong] : adventure?.words.slice(0, 3).map(w => w.word)) ?? source.items.slice(1, 4).map(item => item.label)).map((choice, i) => <span key={i}>{choice}</span>)}
+          {choices.map((choice, i) => <span key={i}>{choice}</span>)}
         </div>
       </div>;
     } else {
-      picture = game.cover ? <img src={game.cover} alt="" /> : <span className="material-symbols-outlined">{game.icon}</span>;
+      const sample = dedicatedGameSample(type);
+      picture = sample ? <div className={`activity-game-example activity-game-${type}`}>
+        <b>{sample.prompt}</b>
+        <div className="activity-game-choices">{sample.choices?.map((choice, index) => <span key={index}>{choice}</span>)}</div>
+      </div> : game.cover ? <img src={game.cover} alt="" /> : <span className="material-symbols-outlined">{game.icon}</span>;
     }
     if (!actual) {
       if (!cards.length) next = 'needWords';

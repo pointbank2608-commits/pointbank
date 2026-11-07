@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import GameImagePicker from '../components/GameImagePicker';
 import GameThemeFrame from '../components/GameThemeFrame';
 import LabeledDiagram, { SAMPLE_DIAGRAM_IMAGE, SAMPLE_DIAGRAM_PINS } from '../components/LabeledDiagram';
-import { updateGameTemplate } from '../lib/api';
+import { useToast } from '../context/ToastContext';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { DiagramPin, GameItem, GameTemplateConfig } from '../lib/types';
 
@@ -17,6 +17,7 @@ function defaultItems(): GameItem[] {
 
 export default function LabeledDiagramPage() {
   const { t } = useTranslation();
+  const { run } = useToast();
   const g = useGameTemplates({
     gameType: 'labeleddiagram',
     defaultItems,
@@ -26,10 +27,8 @@ export default function LabeledDiagramPage() {
     isStaff,
     academy,
     classId,
-    setTemplates,
     selected,
     loading,
-    reload,
     roster,
   } = g;
 
@@ -47,12 +46,7 @@ export default function LabeledDiagramPage() {
 
   async function persistConfig(nextConfig: GameTemplateConfig) {
     if (!selected) return;
-    setTemplates((prev) => prev.map((tpl) => (tpl.id === selected.id ? { ...tpl, config: nextConfig } : tpl)));
-    try {
-      await updateGameTemplate(selected.id, { config: nextConfig });
-    } catch {
-      await reload();
-    }
+    await run(async () => { await g.persistConfig(nextConfig); });
   }
 
   function handleImageChange(url: string | null) {
@@ -98,6 +92,7 @@ export default function LabeledDiagramPage() {
 
   function commitPinsOnBlur() {
     if (!selected) return;
+    if (draftPins.every((pin, index) => pin.label === selected.config.diagramPins?.[index]?.label)) return;
     void persistConfig({ ...selected.config, diagramPins: draftPins });
   }
 

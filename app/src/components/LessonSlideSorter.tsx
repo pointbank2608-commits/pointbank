@@ -84,7 +84,7 @@ import { GAME_PAGES } from '../lib/gamePages';
 import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
 import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
-import LessonPrintPreview, { wordPrintMaterials, workbookStep } from './LessonPrintPreview';
+import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbookStep } from './LessonPrintPreview';
 import { activityMaterial, canvasExample, LESSON_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
 import { loadPhonicsBank } from '../lib/phonicsFill';
 import { buildPhonicsWorkbook, workbookPrintable } from '../data/phonicsWorkbook';
@@ -1241,7 +1241,7 @@ function SlideDetail({
             <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
           </div>
         </div>
-      ) : wordPrintMaterials.includes(slide.materialId) ? (
+      ) : wordPrintMaterials.includes(slide.materialId) || dedicatedPrintMaterials.includes(slide.materialId) ? (
         <LessonPrintPreview slide={slide} cards={wsWords} large />
       ) : (
         <PreviewFrame title={material ? t(material.nameKey) : slide.materialId}>

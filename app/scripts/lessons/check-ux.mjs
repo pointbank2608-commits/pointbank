@@ -7,9 +7,41 @@ const out=resolve('output/lesson-ux');mkdirSync(out,{recursive:true});
 const before=process.argv.includes('--before'),port=before?5417:5416;
 const server=await createLessonUxServer(port,before);let browser,page;const checks=[],errors=[];
 const pass=s=>{checks.push(s);console.log('PASS',s);};
+async function verifyGameControls(){
+  await page.goto(`http://127.0.0.1:${port}/games/labeleddiagram`);
+  await page.getByRole('button',{name:'게임설정',exact:true}).click();
+  const settings = page.getByRole('dialog');
+  await settings.getByRole('button',{name:'기존 그림에서 고르기',exact:true}).click();
+  await settings.getByRole('button',{name:'apple 그림 사용',exact:true}).click();
+  const photo = settings.locator('.ld-photo img');
+  await photo.click();
+  await settings.getByPlaceholder('이 핀의 정답 이름을 입력하세요').fill('apple');
+  await settings.getByPlaceholder('이 핀의 정답 이름을 입력하세요').press('Enter');
+  await settings.getByRole('button',{name:'적용',exact:true}).click();
+  await page.locator('[data-skin-object="word-chip"]').getByText('apple',{exact:true}).click();
+  await page.locator('[data-skin-object="pin"]').click();
+  await page.getByRole('button',{name:'다시 플레이',exact:true}).click();
+  await page.locator('[data-skin-object="word-chip"]').getByText('apple',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'다시하기',exact:true}).click();
+  const restart = page.getByRole('dialog',{name:'처음부터 다시 시작할까요?'});
+  await restart.getByRole('button',{name:'다시하기',exact:true}).click();
+  await restart.waitFor({state:'hidden'});
+  pass('Labeled diagram uses a library image and a teacher-entered pin; result replay and in-play restart remain distinct');
+  await page.getByRole('button',{name:'게임설정',exact:true}).click();
+  await settings.locator('input[type=file]').setInputFiles('app/public/phonics-images/ant.webp');
+  await settings.locator('.ld-photo img[src="/phonics-images/ant.webp"]').waitFor();
+  assert.equal(await page.evaluate(()=>window.__lessonQA.calls.filter(call=>call.name==='updateGameTemplate'&&call.args[0].startsWith('activity-draft:')).length),0);
+  pass('Uploaded images enter the activity draft without a server update for the draft ID');
+  await page.goto(`http://127.0.0.1:${port}/games/feedmonster`);
+  await page.locator('[data-game-guide]').getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();
+  await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();
+  await page.locator('[data-frame-restart]').getByText('다시하기',{exact:true}).waitFor();
+  pass('The common overlay says Game Start before play and the toolbar says Restart during play');
+}
 try{
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.addInitScript(()=>localStorage.setItem('classbank.selectedClassId','a'));
+ if(process.argv.includes('--game-controls')) {await verifyGameControls();} else {
  const go=()=>page.goto(`http://127.0.0.1:${port}/curriculum`);await go();
  await page.getByRole('heading',{name:'기존 리딩 수업',exact:true}).waitFor({state:'attached'});
  await page.screenshot({path:out+(before?'/before-home.png':'/after-home-desktop.png'),fullPage:true});
@@ -219,6 +251,19 @@ try{
   pass('A direct saved slide link and reload render the lesson instead of a blank preview');
   await go();
   await page.getByRole('button',{name:'직접 구성하기',exact:false}).click();
+  await openPicker();
+  await category('활동지');
+  for (const id of ['airport', 'doctor', 'icecream', 'restaurant', 'lightning', 'mysterybox', 'elementary800-original', 'elementary800-workbook', 'grammarworkbook']) {
+    const material = picker().locator(`[data-activity-id="print.${id}"]`);
+    await material.locator('.lesson-paper-preview').locator('.print-board, .e800-sheet').first().waitFor({state:'attached'});
+    assert.equal(await material.locator('.activity-example > img').count(),0,id);
+  }
+  const grammarPreview = picker().locator('.activity-card').filter({has:page.locator('[data-activity-id="print.grammarworkbook"]')});
+  await grammarPreview.locator('.activity-preview-button').click();
+  await picker().locator('.activity-expanded').getByRole('button',{name:'다음 쪽',exact:true}).click();
+  assert.match(await picker().locator('.activity-expanded .lesson-paper-preview').innerText(),/2 \/ 7/);
+  await picker().getByRole('button',{name:'닫기',exact:true}).click();
+  pass('Nine dedicated materials display their print content, and grammar preview pages advance');
   for (const id of ['phonicsstage1', 'cvcworkbook', 'longvowelworkbook', 'phonicsstage4workbook', 'phonicsstage5workbook']) {
     await openPicker();
     await category('활동지');
@@ -267,6 +312,8 @@ try{
   await page.locator('[data-phonics-games]').waitFor();
   assert.equal(await page.getByRole('alert').count(),0);
   pass('Game tabs are ordered, shared game types are deduplicated, and phonics opens a real unit');
+  await verifyGameControls();
+ }
  }
  if(errors.length)throw Error(errors.join('\n'));
-}catch(e){if(page)await page.screenshot({path:out+'/failure.png',fullPage:true});throw e;}finally{writeFileSync(out+(before?'/before-checks.json':'/checks.json'),JSON.stringify({checks,errors},null,2));await browser?.close();await server.close();}
+}catch(e){if(page)await page.screenshot({path:out+'/failure.png',fullPage:true});throw e;}finally{writeFileSync(out+(before?'/before-checks.json':process.argv.includes('--game-controls')?'/game-controls-checks.json':'/checks.json'),JSON.stringify({checks,errors},null,2));await browser?.close();await server.close();}

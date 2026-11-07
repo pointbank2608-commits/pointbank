@@ -38,12 +38,12 @@ function shuffled<T>(a: T[], seed: number): T[] {
 
 const LETTERS = 'ABCDEFGHIJ';
 
-export default function AirportWorksheetPage() {
+export default function AirportWorksheetPage({ printOnly = false }: { printOnly?: boolean } = {}) {
   const { t } = useTranslation();
   const location = useLocation();
   const presenting = usePresenting();
   const initialTab = ((location.state as { materialsTab?: string } | null)?.materialsTab as Tab | undefined) ?? 'cloze';
-  const [tab, setTab] = useState<Tab>(TABS.includes(initialTab) ? initialTab : 'cloze');
+  const [tab, setTab] = useState<Tab>(!printOnly && TABS.includes(initialTab) ? initialTab : 'cloze');
   const [seed, setSeed] = useState(1);
   const [answers, setAnswers] = useState(false);
   const [ko, setKo] = useState(true);
@@ -243,6 +243,29 @@ export default function AirportWorksheetPage() {
 
   const reshuffle = tab === 'order' ? () => setSeed((s) => s + 1) : undefined;
 
+  const sheets = <>
+      {tab === 'cloze' && (
+        <>
+          {AIRPORT_PLACES.map((p) => clozePage(p, false))}
+          {answers && AIRPORT_PLACES.map((p) => clozePage(p, true))}
+        </>
+      )}
+      {tab === 'order' && (
+        <>
+          {orderPages.map(({ p, mixed }) => orderPage(p, mixed, false))}
+          {answers && orderPages.map(({ p, mixed }) => orderPage(p, mixed, true))}
+        </>
+      )}
+      {tab === 'board' && (
+        <>
+          {boardPage(false)}
+          {answers && boardPage(true)}
+        </>
+      )}
+      {tab === 'cards' && cardsPage()}
+  </>;
+  if (printOnly) return sheets;
+
   return (
     <div className="space-y-6">
       {!presenting && (
@@ -310,25 +333,7 @@ export default function AirportWorksheetPage() {
         </div>
       )}
 
-      {tab === 'cloze' && (
-        <>
-          {AIRPORT_PLACES.map((p) => clozePage(p, false))}
-          {answers && AIRPORT_PLACES.map((p) => clozePage(p, true))}
-        </>
-      )}
-      {tab === 'order' && (
-        <>
-          {orderPages.map(({ p, mixed }) => orderPage(p, mixed, false))}
-          {answers && orderPages.map(({ p, mixed }) => orderPage(p, mixed, true))}
-        </>
-      )}
-      {tab === 'board' && (
-        <>
-          {boardPage(false)}
-          {answers && boardPage(true)}
-        </>
-      )}
-      {tab === 'cards' && cardsPage()}
+      {sheets}
     </div>
   );
 }
