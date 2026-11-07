@@ -256,6 +256,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   </div>;
   const saveOptions=<details data-game-save-options><summary className="cursor-pointer py-2 font-bold">{i18n.resolvedLanguage?.startsWith('en')?'Save options':'저장 옵션'}</summary><p>{info?.saveTarget?`${i18n.resolvedLanguage?.startsWith('en')?'Update saved game':'갱신할 저장 게임'}: ${info.saveTarget.name}`:t('settingsSave.temporaryHint')}</p><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveCopy} onChange={e=>setSaveCopy(e.target.checked)}/>{i18n.resolvedLanguage?.startsWith('en')?'Save as a new game':'새 이름으로 저장'}</label><label className="block">{t('quick.activityName')}<input className={btn} value={activityName} placeholder={info?.saveTarget?.name||defaultGameName} onChange={e=>setActivityName(e.target.value)}/></label></details>;
   // 새 도구줄을 쓰는 게임은 들어오면 바로 시작하므로 "게임 준비" 안내 창을 보이지 않는다(시작할 수 없을 때만 보여 준다).
+  // 도구줄을 쓰는 게임의 설정 창은 안내 문구·이름 변경·저장 범위를 숨기고 꼭 필요한 입력만 보여 준다.
+  const simpleSettings = !!info && instantStart(info.gameType);
   const showPrepHeader = !playing && !presenting && (info ? !instantStart(info.gameType) : false);
   // 도구줄 "반 설정"에서 참여 방식(개인/팀)을 이미 정했으면 팀·순서 창도 그 방식으로만 정한다
   const participationFixed = teams && info && instantStart(info.gameType) && isShowOrderOn() && roster.length > 0
@@ -312,18 +314,18 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
         {info && info.gameType !== 'quizshow' && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} complete={completePreparation} editRevision={editRevision} nativeVisible={setGuideNative} />}
         <div hidden={(panel !== 'settings' && !(panel==='guide'&&(guideNative||info?.gameType==='quizshow'))) || !!info?.sharedView} className="p-4" data-game-existing-settings>
-          {info?.selected && info.gameType !== 'quizshow' && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
+          {info?.selected && info.gameType !== 'quizshow' && !simpleSettings && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
-          {info?.gameType !== 'quizshow' && <><p className="mb-3 text-sm text-on-surface-variant">{t(info?.selected&&!isActivityDraft(info.selected.id)?'settingsSave.existingEditorHint':'flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
+          {info?.gameType !== 'quizshow' && !simpleSettings && <><p className="mb-3 text-sm text-on-surface-variant">{t(info?.selected&&!isActivityDraft(info.selected.id)?'settingsSave.existingEditorHint':'flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
           {children}
 
         </div>
         </div>
           <div hidden={panel!=='settings'||info?.gameType==='quizshow'||!info?.selected||!!info?.sharedView} className="game-settings-footer z-20 shrink-0 space-y-3 border-t bg-white p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!source?.cards.length && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
-            <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>
-            <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>
+            {!simpleSettings && <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>}
+            {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}
             <div className="flex flex-col gap-2 sm:flex-row">
               <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'launchUx.saveGame')}</button>
               <button className={btn} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
