@@ -33,7 +33,7 @@ export default function AdventureGame({type,config:c,onRestart}:{type:AdventureT
       {e.phase==='ready'&&!workspace&&<div className="ad-overlay"><h2>{ADVENTURE_NAMES[type][1]}</h2><p>클릭·터치·키보드로 함께 배워요.</p><button className="ad-primary" onClick={e.start}>게임 시작</button></div>}
       {e.phase==='review'&&<div className="ad-overlay ad-review" role="status"><span className="ad-medal">★</span><h2>{type==='grammardetective'?'사건 해결!':'잘했어요!'}</h2><p className="ad-learned">{e.records.at(-1)?.answer}</p>{e.current.kind==='case'&&<p>{e.current.item.explanation}</p>}<Voice text={e.records.at(-1)?.answer||''}/><button className="ad-primary" onClick={e.next}>{e.index+1===e.total?(type==='sentencerocket'?'로켓 발사':'결과 보기'):'다음 문제 →'}</button></div>}
       {e.phase==='finale'&&<RocketFinale finish={e.finish} sound={e.sound}/>}
-      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p><ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onRestart}>다시 시작</button></div>}
+      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p><ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onRestart}>다시 플레이</button></div>}
       {e.expired&&<div className="ad-overlay"><h2>잠깐 쉬었다 다시 도전해요!</h2><p>아직 같은 문제예요. 단어를 다시 살펴봐요.</p><button className="ad-primary" onClick={e.retry}>같은 문제 다시 도전</button></div>}
       {e.phase==='playing'&&<p className={`ad-notice ${e.reaction}`} role="status" aria-live="polite">{e.notice||'천천히 살펴보고 도전해요.'}</p>}
     </>}

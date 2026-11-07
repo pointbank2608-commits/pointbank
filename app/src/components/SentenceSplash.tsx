@@ -409,7 +409,7 @@ export default function SentenceSplash({
                     : round.phase === "failed"
                       ? text("다시 도전하기", "Try again")
                       : round.phase === "finished"
-                        ? text("다시 플레이하기", "Play again")
+                        ? text("다시 플레이", "Play again")
                         : text("게임 시작!", "Start game!")}
                 </button>
                 {round.phase === "finished" && onExit && (

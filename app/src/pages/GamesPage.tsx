@@ -1,5 +1,5 @@
 import GameCreateButton from '../components/GameCreateButton';
-import { GAME_BROWSE_GROUPS, gameBrowseGroup, type GameBrowseGroup } from '../lib/gameBrowse';
+import { GAME_BROWSE_GROUPS, gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { ownedQuickSource, type QuickActivitySource } from '../lib/quickActivity';
 import { GAME_META } from '../lib/gameMeta';
@@ -11,23 +11,19 @@ import { useAuth } from '../context/AuthContext';
 import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import { GAME_CATALOG, isFreeTierGame, type GameCatalogEntry } from '../lib/gameCatalog';
+import { PHONICS_GAMES, gameAvailability, gameName, phonicsGameUnits } from '../lib/phonicsGames';
+import { gameVisual, worldBackground } from '../lib/phonicsGameVisuals';
 
 type ViewMode = 'library' | 'all';
 
-/** 칸 소제목 앞 색 점(Tailwind 가 찾을 수 있게 전부 적어 둔다) */
-const MOMENT_DOT: Record<GameBrowseGroup, string> = {
-  sentence: 'bg-clay-sky',
-  warmup: 'bg-clay-yellow',
-  learn: 'bg-clay-sky',
-  practice: 'bg-clay-mint',
-  speak: 'bg-clay-coral',
-  team: 'bg-tag-library-ink',
-  wrapup: 'bg-deep-navy',
-  other: 'bg-outline',
-};
+const phonicsUnits = phonicsGameUnits();
+const phonicsCards = PHONICS_GAMES.map(game => ({
+  game,
+  unit: phonicsUnits.find(unit => !gameAvailability(game, unit)) ?? phonicsUnits.find(unit => game.stages.includes(unit.step)),
+}));
 
 export default function GamesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { academy, isStaff, session, hasFullAccess } = useAuth();
   const [activeCategory, setActiveCategory] = useState<GameBrowseGroup | 'all'>('all');
@@ -66,14 +62,19 @@ export default function GamesPage() {
   const showLibrary = !isStaff || viewMode === 'library';
   const librarySet = new Set(libraryTypes ?? []);
 
+  const search = query.trim().toLocaleLowerCase();
+  const en = i18n.resolvedLanguage?.startsWith('en') ?? false;
   const byCategory = GAME_CATALOG.filter((g) =>
-    (activeCategory === 'all' || gameBrowseGroup(g) === activeCategory) &&
-    `${t(g.nameKey)} ${t(g.descKey)}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+    (activeCategory === 'all' || gameBrowseGroups(g).includes(activeCategory)) &&
+    `${t(g.nameKey)} ${t(g.descKey)}`.toLocaleLowerCase().includes(search));
   const games = showLibrary ? byCategory.filter((g) => librarySet.has(g.type)) : byCategory;
+  const phonics = !showLibrary && (activeCategory === 'all' || activeCategory === 'phonics')
+    ? phonicsCards.filter(({game}) => `${game.ko} ${game.en} ${game.goal.join(' ')}`.toLocaleLowerCase().includes(search))
+    : [];
   const pool = showLibrary ? GAME_CATALOG.filter((g) => librarySet.has(g.type)) : GAME_CATALOG;
-  const usedCategories = GAME_BROWSE_GROUPS.filter((m) => pool.some((g) => gameBrowseGroup(g) === m));
-  const momentCount = (m: GameBrowseGroup) => pool.filter((g) => gameBrowseGroup(g) === m).length;
-  const grouped = activeCategory === 'all' && !query.trim();
+  const categoryCount = (category: GameBrowseGroup) => category === 'phonics'
+    ? showLibrary ? 0 : phonicsCards.length
+    : pool.filter(game => gameBrowseGroups(game).includes(category)).length;
 
   const libraryEmpty = showLibrary && libraryLoaded && (libraryTypes?.length ?? 0) === 0;
 
@@ -147,10 +148,11 @@ export default function GamesPage() {
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('gameBrowse.categories')}>
             <button
               type="button"
               onClick={() => setActiveCategory('all')}
+              aria-pressed={activeCategory === 'all'}
               className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                 activeCategory === 'all'
                   ? 'bg-warm-yellow text-deep-navy shadow-sm'
@@ -159,48 +161,40 @@ export default function GamesPage() {
             >
               {t('gameCategory.all')}
             </button>
-            {usedCategories.map((cat) => (
+            {GAME_BROWSE_GROUPS.filter(cat => !showLibrary || categoryCount(cat) > 0).map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setActiveCategory(cat)}
+                aria-pressed={activeCategory === cat}
                 className={`px-4 min-h-11 rounded-full font-label-md text-label-md transition-all ${
                   activeCategory === cat
                     ? 'bg-warm-yellow text-deep-navy shadow-sm'
                     : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant/40 hover:bg-surface-container-low'
                 }`}
               >
-                {t(`gameMoment.${cat}`)} {momentCount(cat)}
+                {t(`gameBrowse.${cat}`)} {categoryCount(cat)}
               </button>
             ))}
           </div>
 
-          {games.length === 0 && <div className="rounded-xl bg-surface-container-lowest p-8 text-center">
+          {games.length === 0 && phonics.length === 0 && <div className="rounded-xl bg-surface-container-lowest p-8 text-center">
             <p>{t('classroomUx.noGames')}</p>
             <button type="button" onClick={() => { setQuery(''); setActiveCategory('all'); }} className="mt-3 min-h-11 rounded-lg px-4 text-primary underline">{t('classroomUx.clearFilters')}</button>
           </div>}
-          {grouped ? (
-            GAME_BROWSE_GROUPS.map((m) => {
-              const list = games.filter((g) => gameBrowseGroup(g) === m);
-              if (list.length === 0) return null;
-              return (
-                <section key={m} className="space-y-3">
-                  <h3 className="flex items-center gap-2 font-title-md text-title-md text-deep-navy">
-                    <span className={`h-3 w-3 rounded-full ${MOMENT_DOT[m]}`} aria-hidden />
-                    {t(`gameMoment.${m}`)} <span className="text-on-surface-variant">{list.length}</span>
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {list.map((g) => (
-                      <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
-                    ))}
-                  </div>
-                </section>
-              );
-            })
-          ) : (
+          {(games.length > 0 || phonics.length > 0) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {games.map((g) => (
                 <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
+              ))}
+              {phonics.map(({game, unit}) => (
+                <Link key={game.id} to={`/phonics-games/${game.id}${unit ? `?unit=${encodeURIComponent(unit.id)}` : ''}`} className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition hover:-translate-y-1 hover:shadow-lg">
+                  <img className="h-36 w-full object-cover" loading="lazy" src={worldBackground(gameVisual(game).world)} alt="" />
+                  <div className="p-5">
+                    <h3 className="font-title-md text-title-md text-on-surface">{gameName(game, en)}</h3>
+                    <p className="font-body-md text-body-md text-on-surface-variant">{game.goal[en ? 1 : 0]}</p>
+                  </div>
+                </Link>
               ))}
             </div>
           )}
@@ -262,6 +256,8 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
           )}
         </div>
         <p className="font-body-md text-body-md text-on-surface-variant">{t(g.descKey)}</p>
+        {(['team', 'warmup', 'wrapup'] as const).some(moment => moment === g.moment) &&
+          <span className="mt-2 inline-block rounded-full bg-surface-container px-2 py-0.5 text-sm text-on-surface-variant">{t(`gameMoment.${g.moment}`)}</span>}
         {meta && (
           <div className="mt-3 flex flex-wrap gap-1.5 font-caption text-caption">
             <span className="rounded-full bg-surface-container px-2 py-0.5 text-on-surface-variant">{t('gameMeta.minutes', { n: meta.minutes })}</span>

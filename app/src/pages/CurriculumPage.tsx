@@ -190,6 +190,18 @@ export default function CurriculumPage() {
   const formClassId = formTarget ? formTarget.id : staffClassId ?? null;
   const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const saveLock = useRef(false);
+  const [highlightedLesson, setHighlightedLesson] = useState<string | null>(null);
+  useEffect(() => {
+    if (!highlightedLesson || showForm) return;
+    const frame = requestAnimationFrame(() => {
+      const card = document.getElementById(`lesson-card-${highlightedLesson}`);
+      card?.scrollIntoView({ block: 'nearest' });
+      card?.focus({ preventScroll: true });
+    });
+    const timer = window.setTimeout(() => setHighlightedLesson(null), 3500);
+    return () => { cancelAnimationFrame(frame); window.clearTimeout(timer); };
+  }, [highlightedLesson, showForm]);
   const [extracting, setExtracting] = useState(false);
   // 편집을 연 순간의 내용 — 취소할 때 바뀐 게 있으면 한 번 묻는다.
   const [savedSnapshot, setSavedSnapshot] = useState('');
@@ -512,11 +524,12 @@ export default function CurriculumPage() {
 
   /** 저장만 하고 폼은 그대로 둔다 — 저장된 레슨을 돌려준다(실패하면 null). */
   async function saveLesson(): Promise<CurriculumLesson | null> {
-    if (!academy?.id || !profile) return null;
+    if (!academy?.id || !profile || saveLock.current) return null;
     if (!name.trim()) {
       notify(t('curriculum.nameRequiredError'), 'error');
       return null;
     }
+    saveLock.current = true;
     setSubmitting(true);
     let saved: CurriculumLesson | null = null;
     const ok = await run(async () => {
@@ -538,7 +551,7 @@ export default function CurriculumPage() {
       } else {
         const lesson = await createCurriculumLesson({
           academyId: academy.id,
-          classId: staffClassId,
+          classId: formClassId,
           name: name.trim(),
           wordListId: wordListId || null,
           // video_url 은 옛 컬럼 — 영상은 이제 playlist 안 슬라이드로 들어간다. 새 레슨은 항상 null.
@@ -554,14 +567,19 @@ export default function CurriculumPage() {
       }
       setSavedSnapshot(JSON.stringify({ name, wordListId, level, playlist: finalPlaylist }));
       clearDraft(); // 서버에 저장했으니 임시저장 초안은 필요 없다
-    }, editingId ? t('curriculum.updatedToast') : t('curriculum.createdToast'));
+    }, t('lessonUx.saved'));
+    saveLock.current = false;
     setSubmitting(false);
     return ok ? saved : null;
   }
 
   async function handleSave() {
     const saved = await saveLesson();
-    if (saved) resetForm();
+    if (!saved) return;
+    setLessonQuery('');
+    editReturn.current = null;
+    setHighlightedLesson(saved.id);
+    resetForm();
   }
 
   /** 편집 화면의 "이 슬라이드부터 발표" — 저장하고 그 슬라이드부터 수업을 시작한다. 수업을 마치면
@@ -790,7 +808,7 @@ export default function CurriculumPage() {
       </div>
 
       <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={id=>{
-        if(id===staffClassId)return;
+        if(id===staffClassId || saveLock.current)return;
         if(showForm){if(dirty&&!confirm(t('curriculum.discardConfirm')))return;resetForm();}
         selectClass(id);
       }} onReorder={reorderClasses} />
@@ -895,7 +913,7 @@ export default function CurriculumPage() {
       )}
 
       {!showForm ? null : (
-        <div ref={editForm} data-lesson-edit-form className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
+        <div ref={editForm} data-lesson-edit-form inert={submitting} className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
           <BackButton onClick={handleCancel} to={t('curriculum.backToList')} />
           {homeworkOpen && <button type="button" className="min-h-11 rounded-xl bg-warm-yellow px-4 font-bold text-deep-navy" onClick={async () => { const saved = await saveLesson(); if (saved) navigate('/homework', { state: { fromLessonId: saved.id, fromClassId: saved.class_id ?? staffClassId } }); }}>{t('studentHw.importLesson', { defaultValue: '저장하고 숙제로 가져오기' })}</button>}
           <h3 className="font-title-md text-title-md text-on-surface">
@@ -1125,6 +1143,7 @@ export default function CurriculumPage() {
             )}
           </div>
 
+          {dirty && <p role="status" className="text-sm font-bold text-primary">{t('lessonUx.unsaved')}</p>}
           <div className="flex gap-2">
             <button
               type="button"
@@ -1132,9 +1151,7 @@ export default function CurriculumPage() {
               onClick={handleSave}
               className="px-5 py-2.5 rounded-full bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors disabled:opacity-50"
             >
-              {submitting
-                ? t(editingId ? 'curriculum.saving' : 'curriculum.creating')
-                : t(editingId ? 'curriculum.saveSubmit' : 'curriculum.createSubmit')}
+              {submitting ? t('curriculum.saving') : t('curriculum.saveSubmit')}
             </button>
             <button
               type="button"
@@ -1286,7 +1303,9 @@ export default function CurriculumPage() {
           return (
             <div
               key={lesson.id}
-              className="flex flex-col overflow-hidden rounded-[20px] border border-outline-variant bg-white shadow-card"
+              id={`lesson-card-${lesson.id}`}
+              tabIndex={highlightedLesson === lesson.id ? -1 : undefined}
+              className={`flex flex-col overflow-hidden rounded-[20px] border border-outline-variant bg-white shadow-card ${highlightedLesson === lesson.id ? 'lesson-card-highlight' : ''}`}
             >
               {(() => {
                 const cover = lessonCover(lesson);

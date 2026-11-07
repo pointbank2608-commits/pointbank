@@ -8,3 +8,47 @@
 .lesson-card-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))}.lesson-create-actions{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}@media(max-width:700px){.activity-body nav{width:124px}.activity-body nav button{word-break:keep-all}}
 @media(max-height:560px){.lesson-activity-picker header{padding:8px 12px}.lesson-activity-picker header>div{margin-bottom:4px}.lesson-activity-picker h2{font-size:20px}.activity-body{flex-direction:column;gap:6px;padding:0 12px 8px}.activity-body nav{width:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:0;padding:0;gap:2px}.activity-body nav button{min-height:32px;padding:4px;font-size:12px;gap:4px}.activity-body nav .material-symbols-outlined{font-size:18px}.lesson-activity-picker footer{padding:8px 12px;flex-wrap:nowrap}.lesson-activity-picker footer>div{flex-basis:auto}.lesson-activity-picker footer small{display:none}.activity-caption{margin:2px 0 6px}}
 .lesson-create-actions{container-type:inline-size}@container(max-width:520px){.lesson-create-actions button>img{display:none}.lesson-create-actions button>span:last-of-type{max-width:none}}
+
+.lesson-activity-picker > header { padding-bottom: 12px; }
+.activity-source { display:flex; align-items:center; gap:8px; margin-top:9px; padding:8px 12px; border-radius:8px; background:#e7efff; font-size:14px; font-weight:700; }
+.activity-source .material-symbols-outlined { font-size:18px; color:#165ceb; }
+.activity-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.activity-card { min-width:0; overflow:hidden; border:1px solid #cbd9ef; border-radius:10px; background:#fff; }
+.activity-card:hover, .activity-card:focus-within { border-color:#0865ff; }
+.activity-card-main { display:block; width:100%; text-align:left; padding:10px; }
+.activity-card-main:disabled { color:#627088; cursor:default; }
+.activity-card-label { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.activity-card-label .activity-icon { font-size:21px; }
+.activity-example { position:relative; display:grid; place-items:center; min-height:118px; height:clamp(118px,15vw,166px); overflow:hidden; border-radius:7px; background:#edf4ff; }
+.activity-example > img { width:100%; height:100%; object-fit:contain; }
+.activity-example-print { display:block; height:120px; }
+.activity-example-large { height:auto; min-height:260px; }
+.activity-example-large > img { max-height:440px; }
+.activity-expanded { display:grid; gap:10px; padding-bottom:12px; }
+.activity-preview-button { display:block; margin:0 auto; min-height:36px; padding:5px 12px; color:#1457d8; font-size:14px; font-weight:700; }
+.activity-expanded > button { margin:0; justify-self:start; }
+.activity-example-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:7px; font-size:11px; font-weight:700; }
+.activity-example-tags span { border-radius:999px; padding:2px 8px; background:#eef1f6; }
+.activity-example-tags .is-linked { background:#dff7ea; color:#126240; }
+.activity-example-tags .is-needed { background:#fff1cd; color:#754300; }
+.activity-description { display:-webkit-box !important; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.activity-word-example { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; height:100%; padding:10px; background:#fef4db; overflow:hidden; }
+.activity-word-example img { width:42%; max-height:90%; object-fit:contain; border-radius:10px; }
+.activity-word-example b, .activity-game-example b { overflow-wrap:anywhere; }
+.activity-game-example,.activity-generic-example { width:100%; height:100%; display:grid; align-content:center; justify-items:center; gap:9px; padding:10px; text-align:center; }
+.activity-game-example { color:#163871; background:linear-gradient(#c4e7ff,#e8f4ff); }
+.activity-game-choices { display:flex; flex-wrap:wrap; justify-content:center; gap:5px; }
+.activity-game-choices > span { padding:4px 8px; border-radius:8px; border:1px solid #93b7f1; background:white; font-size:13px; }
+.activity-game-balloonpop .activity-game-choices > span { display:grid; place-items:center; min-height:42px; border-radius:50%; padding:8px; background:#ffe2a3; }
+.activity-game-balloonpop .activity-game-choices > span:nth-child(2) { background:#ffd2e7; }
+.activity-game-balloonpop .activity-game-choices > span:nth-child(3) { background:#e6dcff; }
+.activity-media-title { position:absolute; inset:auto 0 0; padding:5px 8px; background:#142f53e8; color:white; font-size:13px; }
+.lesson-paper-preview { min-width:0; width:100%; background:#e9eff8; padding:6px; border-radius:8px; }
+.lesson-paper-viewport { overflow:hidden; width:100%; background:#e9eff8; }
+.lesson-paper-viewport .print-sheet, .lesson-paper-viewport .print-board { box-sizing:border-box; background:white; }
+.lesson-activity-picker .lesson-paper-viewport header { display:block; padding:0; }
+.lesson-activity-picker .lesson-paper-viewport header > div { margin-bottom:0; }
+.lesson-paper-preview button { min-height:40px; border:1px solid #b4c8f0; border-radius:8px; padding:4px 10px; background:white; color:#1457d8; }
+.lesson-paper-preview button:disabled { opacity:.45; }
+.lesson-card-highlight { outline:3px solid #2563eb; outline-offset:3px; }
+@media(max-width:550px) { .activity-grid { grid-template-columns:1fr; } }

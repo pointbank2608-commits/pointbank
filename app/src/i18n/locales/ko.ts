@@ -453,7 +453,7 @@ const ko = {
     turnLabel: '{{team}} 차례예요',
     winMessage: '{{team}} 승리!',
     drawMessage: '무승부예요!',
-    playAgainButton: '다시 하기',
+    playAgainButton: '다시 플레이',
     needParticipants: '항목을 1개 이상 등록해야 틱택토를 시작할 수 있어요.',
     boardHint: '칸을 눌러 그 팀의 표시를 남기세요.',
     infoDescription: '등록한 단어 9개를 3×3 판에 채우고, 두 팀이 번갈아 정답을 맞히며 O/X를 놓는 게임이에요.',
@@ -537,7 +537,7 @@ const ko = {
     missingPrompt: '무엇이 사라졌을까요?',
     tapToRevealHint: '학생이 답을 말하면, 그 칸을 눌러 정답을 확인하세요.',
     allFoundMessage: '모두 찾았어요!',
-    playAgainButton: '다시 하기',
+    playAgainButton: '다시 플레이',
     infoDescription: '항목들을 잠깐 보여준 뒤 몇 개를 숨기고, 무엇이 사라졌는지 맞히는 기억력 게임이에요. 난이도에서 카드 섞기를 켜면 숨긴 뒤에 자리가 바뀌어요.',
     infoSteps: [
       '설정에서 항목을 5~8개 정도 등록하세요.',
@@ -563,7 +563,7 @@ const ko = {
     countLabel: '지금까지 {{count}} / {{target}}',
     pickButton: '{{n}}개 읽기',
     loseMessage: '{{team}}이 {{target}}을(를) 말했어요! 패배!',
-    playAgainButton: '다시 하기',
+    playAgainButton: '다시 플레이',
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
     infoDescription: '1~3개씩 번갈아 세다가 목표 숫자(기본 31)를 부르는 팀이 지는 게임이에요.',
     infoSteps: [
@@ -588,7 +588,7 @@ const ko = {
     turnLabel: '{{team}} 차례예요',
     winMessage: '{{team}} 승리!',
     drawMessage: '무승부예요!',
-    playAgainButton: '다시 하기',
+    playAgainButton: '다시 플레이',
     needParticipants: '항목을 1개 이상 등록해야 시작할 수 있어요.',
     columnHint: '화살표나 구멍을 눌러 그 줄에 원판을 떨어뜨리세요.',
     infoDescription: '열 아래에 단어를 두고, 원판을 아래부터 쌓아 가로·세로·대각선으로 4개를 먼저 연결하는 팀이 이겨요.',
@@ -679,7 +679,7 @@ const ko = {
     teamRed: '홍팀',
     turnLabel: '{{team}} 차례',
     bingoMessage: '🎉 {{team}} 빙고! 승리!',
-    playAgainButton: '다시 시작',
+    playAgainButton: '다시 플레이',
     infoDescription: '주사위 2개를 굴려 나온 칸을 팀 색으로 표시하고, 가로·세로·대각선 한 줄을 먼저 완성하는 팀이 이기는 빙고 게임이에요.',
     infoSteps: [
       '설정에서 6×6 칸에 들어갈 단어를 등록하세요.',
@@ -1649,7 +1649,7 @@ const ko = {
     nextRound: "다음 판",
     seeResult: "결과 보기",
     resultTitle: "게임 끝!",
-    playAgain: "다시 하기",
+    playAgain: "다시 플레이",
     scoreboard: "점수판",
     teamLabel: "{{n}}팀",
     points: "{{n}}점",
@@ -1700,7 +1700,7 @@ const ko = {
     resultTitle: "게임 끝!",
     soloResult: "{{total}}판 중 {{n}}번 찾았어요!",
     soloScore: "찾은 횟수 {{n}} / {{total}}",
-    playAgain: "다시 하기",
+    playAgain: "다시 플레이",
     scoreboard: "점수판",
     teamLabel: "{{n}}팀",
     points: "{{n}}점",
@@ -2311,6 +2311,8 @@ const ko = {
     speaking: '스피킹',
     roleplay: '롤플레이',
   },
+
+  gameBrowse: { categories: '게임 분류', word: '단어', sentence: '문장', grammar: '문법', phonics: '파닉스', speaking: '말하기·역할극', tools: '수업 도구' },
 
   gameMoment: {
     sentence: '문장',

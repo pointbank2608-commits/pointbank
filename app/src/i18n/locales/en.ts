@@ -2315,6 +2315,8 @@ const en: Ko = {
     roleplay: 'Role play',
   },
 
+  gameBrowse: { categories: 'Game categories', word: 'Words', sentence: 'Sentences', grammar: 'Grammar', phonics: 'Phonics', speaking: 'Speaking & roleplay', tools: 'Classroom tools' },
+
   gameMoment: {
     sentence: 'Sentences',
     warmup: 'Warm-up',

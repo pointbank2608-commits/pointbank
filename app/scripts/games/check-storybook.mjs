@@ -67,7 +67,7 @@ try{
      const roof=await page.locator('.sb-roof').boundingBox();const floor=await page.locator('.sb-floor').last().boundingBox();
      assert.ok(roof.y < floor.y,'The completed roof belongs above the sentence floors');
    }
-   await page.getByRole('button',{name:'다시 놀기'}).click();await page.getByRole('button',{name:'게임 시작',exact:false}).click();
+   await page.getByRole('button',{name:'다시 플레이',exact:false}).click();await page.getByRole('button',{name:'게임 시작',exact:false}).click();
    assert.equal(await page.locator('.sb-progress').getAttribute('aria-label'),`진행 0 / ${answers[game].length}`);
    await page.getByRole('button',{name:'전체 화면',exact:true}).click();assert.ok(await page.evaluate(()=>!!document.fullscreenElement));
    await page.getByRole('button',{name:'전체 화면 종료',exact:true}).click();assert.ok(await page.evaluate(()=>!document.fullscreenElement));

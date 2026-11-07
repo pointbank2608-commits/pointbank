@@ -143,7 +143,7 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
       <Scores scores={scores} turn={null} unit={unit} />
       {play.teams > 0 && play.showScore && scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? label(i) : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
       <div className="flex justify-center gap-2">
-        <button className={primary} onClick={onAgain}>{text('다시 하기', 'Play again')}</button>
+        <button className={primary} onClick={onAgain}>{text('다시 플레이', 'Play again')}</button>
         {onExit && <button className={btn} onClick={onExit}>{text('나가기', 'Exit')}</button>}
       </div>
     </section></Stage>

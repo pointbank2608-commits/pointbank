@@ -5,6 +5,14 @@ export const lessonUxKo = {
   shadow:'따라 말하기(쉐도잉)', helpers:'현재 슬라이드·수업 도구', chooseActivity:'활동을 선택하세요', allSearch:'검색은 모든 카테고리에서 찾아요.', needSlide:'먼저 슬라이드를 선택하세요.',
   loading:'단어장을 불러오는 중이에요.', failed:'단어장을 불러오지 못했어요.', retry:'다시 시도', target:'저장 대상 반: {{name}}', shared:'모든 반 공용', change:'다른 활동 선택',
   bundleNeed:'활동 4개를 만들 수 있도록 단어장의 단어와 뜻을 확인해 주세요.',
+  language: 'ko', linked: '내 자료 적용', sample: '샘플', sampleTitle: '오늘의 영어 수업', sampleVideo: '알파벳 영상 예시',
+  preview: '미리보기', previewActivity: '{{name}} 미리보기', backToActivities: '활동 목록으로',
+  needUnit: '유닛 선택 필요', unit: '워크북 유닛', needVideo: '영상 선택 필요', needImage: '이미지 선택 필요',
+  needWords: '단어장 선택 필요', needGame: '게임 내용 설정 필요', needScript: '대본 입력 필요', needLink: '주소 입력 필요', needDetails: '내용 설정 필요',
+  videoTitle: '영상 제목', videoLink: '유튜브 주소', useVideo: '이 영상 사용',
+  sampleWeb: '웹페이지 예시', sentenceCount: '{{count}}문장',
+  previewUnavailable: '미리볼 자료를 선택해 주세요.', previousPage: '이전 쪽', nextPage: '다음 쪽',
+  unsaved: '저장 전 변경사항이 있어요', saved: '수업을 저장했어요',
 };
 export const lessonUxEn = {
   create:'Create a new lesson', edit:'Edit', homework:'Set homework', more:'More', add:'Add activity', search:'Find an activity', close:'Close',
@@ -13,4 +21,12 @@ export const lessonUxEn = {
   shadow:'Repeat and speak (shadowing)', helpers:'Current slide and lesson tools', chooseActivity:'Choose an activity', allSearch:'Search covers all categories.', needSlide:'Select a slide first.',
   loading:'Loading collections…', failed:'Could not load collections.', retry:'Try again', target:'Save to: {{name}}', shared:'Shared with all classes', change:'Choose another activity',
   bundleNeed:'Check the words and meanings so all four activities can be created.',
+  language: 'en', linked: 'Your materials', sample: 'Sample', sampleTitle: 'Today’s English lesson', sampleVideo: 'Alphabet video example',
+  preview: 'Preview', previewActivity: 'Preview {{name}}', backToActivities: 'Back to activities',
+  needUnit: 'Choose a unit', unit: 'Workbook unit', needVideo: 'Choose a video', needImage: 'Choose an image',
+  needWords: 'Choose a word list', needGame: 'Set up game content', needScript: 'Enter a script', needLink: 'Enter a URL', needDetails: 'Set up content',
+  videoTitle: 'Video title', videoLink: 'YouTube URL', useVideo: 'Use this video',
+  sampleWeb: 'Web page example', sentenceCount: '{{count}} sentences',
+  previewUnavailable: 'Choose material to preview.', previousPage: 'Previous page', nextPage: 'Next page',
+  unsaved: 'You have unsaved changes', saved: 'Lesson saved',
 };
