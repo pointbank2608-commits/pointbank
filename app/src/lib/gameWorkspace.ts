@@ -84,7 +84,7 @@ export function classroomGameRequirement(type: GameType, kind: 'word' | 'sentenc
   if (BUILTIN.has(type)) return { key: 'quick.builtin', count: 0 };
   if (kind === 'sentence' && !SENTENCE_GAMES.has(type)) return { key: 'quick.wordsOnly', count: 0 };
   if (type === 'unscramble' || type === 'sentencesplash') return { key: 'quick.needSentence', count: 0 };
-  if (type === 'matchup') return { key: 'quick.needPairs', count: 2 };
+  if (type === 'matchup' || type === 'wordhoops') return { key: 'quick.needPairs', count: 2 };
   if (type === 'labeleddiagram') return { key: 'quick.needDiagram', count: 0 };
   if (type === 'imagequiz') return { key: 'quick.needImages', count: 0 };
   if (type === 'groupsort') return { key: 'quick.needGroups', count: 2 };

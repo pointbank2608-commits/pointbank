@@ -224,6 +224,7 @@ export type GameType =
   | 'grammarshop'
   | 'shufflefind'
   | 'telepathy'
+  | 'wordhoops'
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
@@ -449,6 +450,10 @@ export interface GameTemplateConfig {
   telepathyChoices?: number;
   telepathyRounds?: number;
   telepathySeconds?: number;
+  /** 단어 농구 대결 전용: 팀 수(1=혼자 연습·2=두 팀 대결)·문제 수(3~30)·문제 방식(meaning 뜻 고르기·word 영어 고르기·mixed 섞기). 낱말은 pairs(영어·뜻)를 쓴다. */
+  hoopsTeams?: number;
+  hoopsShots?: number;
+  hoopsMode?: 'meaning' | 'word' | 'mixed';
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;

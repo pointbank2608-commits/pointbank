@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-label="Word Hoops">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7d8bf"/><stop offset="1" stop-color="#8fbd9c"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eacb90"/><stop offset="1" stop-color="#d6a65c"/></linearGradient>
+    <radialGradient id="ball" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#ffb24d"/><stop offset=".6" stop-color="#ee7f1f"/><stop offset="1" stop-color="#bb4f0e"/></radialGradient>
+  </defs>
+  <rect width="640" height="400" fill="url(#wall)"/>
+  <rect y="240" width="640" height="160" fill="url(#floor)"/>
+  <rect y="238" width="640" height="6" fill="#fff7e6"/>
+  <rect x="215" y="40" width="210" height="130" rx="12" fill="#fff" stroke="#8a97a8" stroke-width="6"/>
+  <rect x="283" y="84" width="74" height="52" fill="none" stroke="#e0533d" stroke-width="7"/>
+  <rect x="308" y="170" width="24" height="30" fill="#9aa5b4"/>
+  <path d="M262 200 L276 262 M292 200 L304 262 M320 200 L320 262 M348 200 L336 262 M378 200 L364 262 M266 220 H374 M272 241 H368" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="320" cy="198" rx="62" ry="14" fill="none" stroke="#e8542c" stroke-width="10"/>
+  <g transform="translate(70 250)"><circle cx="60" cy="60" r="58" fill="url(#ball)" stroke="#7a3510" stroke-width="5"/><path d="M60 2V118M2 60H118M20 16C48 40 48 80 20 104M100 16C72 40 72 80 100 104" fill="none" stroke="#7a3510" stroke-width="5" stroke-linecap="round"/><rect x="28" y="44" width="64" height="32" rx="8" fill="#fff" opacity=".95"/><text x="60" y="68" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="24" fill="#102B50">cat</text></g>
+  <g transform="translate(450 250)"><circle cx="60" cy="60" r="58" fill="url(#ball)" stroke="#7a3510" stroke-width="5"/><path d="M60 2V118M2 60H118M20 16C48 40 48 80 20 104M100 16C72 40 72 80 100 104" fill="none" stroke="#7a3510" stroke-width="5" stroke-linecap="round"/><rect x="28" y="44" width="64" height="32" rx="8" fill="#fff" opacity=".95"/><text x="60" y="68" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="22" fill="#102B50">고양이</text></g>
+  <rect x="0" y="0" width="640" height="46" fill="#102B50"/>
+  <rect x="16" y="9" width="150" height="28" rx="14" fill="#d64545"/><rect x="474" y="9" width="150" height="28" rx="14" fill="#2f62d1"/>
+  <text x="91" y="29" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="17" fill="#fff">RED</text><text x="549" y="29" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="17" fill="#fff">BLUE</text>
+</svg>

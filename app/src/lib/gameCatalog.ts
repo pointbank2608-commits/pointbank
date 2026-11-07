@@ -302,6 +302,13 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     descKey: 'gamesList.matchupDesc',
   },
   {
+    // 단어 농구 대결(2026-11-07, 인스타그램 수업 영상 "Math Hoops"의 두 팀 동시 풀이 방식 참고): 정답 공을 눌러 슛하는 단어 게임.
+    type: 'wordhoops', number: 75, moment: 'team', category: 'vocabulary',
+    minItems: 999, icon: 'sports_basketball', path: '/games/wordhoops',
+    cover: '/covers/game-wordhoops.svg',
+    nameKey: 'gamesList.wordhoopsName', descKey: 'gamesList.wordhoopsDesc',
+  },
+  {
     type: 'whackamole',
     number: 18,
     moment: 'practice',

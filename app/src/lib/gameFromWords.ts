@@ -145,6 +145,7 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
     }
     case 'matchup':
     case 'whackamole':
+    case 'wordhoops':
       return { items: labelItems, config: { pairs: pairs() } };
     case 'flashcards':
       return { items: labelItems, config: { flashcards: pairs() } };

@@ -23,11 +23,11 @@ export function gamePreparation(type: GameType) {
 export function gameReadyDetails(template: GameTemplate) {
   const { game_type: type, config: c, items } = template;
   const questions = ['quiz','gameshowquiz','winlosequiz'].includes(type) ? c.questions : type==='truefalse' ? c.statements : type==='quizshow' ? c.liveQuestions : type==='typeanswer' ? c.typeAnswerEntries : type==='imagequiz' ? c.imageQuizItems : undefined;
-  const pairs = ['matchup','whackamole'].includes(type) ? c.pairs : type==='flashcards' ? c.flashcards : undefined;
+  const pairs = ['matchup','whackamole','wordhoops'].includes(type) ? c.pairs : type==='flashcards' ? c.flashcards : undefined;
   const intrinsic = [...ADVENTURE_TYPES,'timer','airport','restaurant','doctor','icecream','shopping','mathgen','feedmonster','sentencebridge','sentencetower'].includes(type);
   const count = intrinsic ? null : questions ? questions.length : pairs ? pairs.length : type==='labeleddiagram' ? c.diagramPins?.length || 0 : type==='groupsort' ? c.groups?.reduce((n,g)=>n+g.items.length,0) || 0 : items.length;
   const kind = questions ? 'questions' : type === 'timer' ? 'participants' : SENTENCES.has(type) || c.classroomSource?.kind === 'sentence' ? 'sentences' : 'items';
-  const configuredTeams = ({catchsentence:c.catchTeams,treasuredig:c.digTeams,fourclues:c.clueTeams,lastbox:c.boxTeams,mysterybox:c.boxTeams,shufflefind:c.shuffleTeams,telepathy:c.telepathyTeams} as Partial<Record<GameType,number>>)[type];
+  const configuredTeams = ({catchsentence:c.catchTeams,treasuredig:c.digTeams,fourclues:c.clueTeams,lastbox:c.boxTeams,mysterybox:c.boxTeams,shufflefind:c.shuffleTeams,telepathy:c.telepathyTeams,wordhoops:c.hoopsTeams ?? 2} as Partial<Record<GameType,number>>)[type];
   const teams = configuredTeams || (['tictactoe','connect4','baskin31','gameshowquiz','winlosequiz'].includes(type) ? 2 : type === 'saveorgive' && c.saveOrGiveMode !== 'individual' ? c.saveOrGiveTeamCount || 2 : null);
   return { count, kind, teams };
 }
@@ -46,7 +46,7 @@ export function isNativeGameReady(template: GameTemplate): boolean {
   }
   if (type === 'shopping') return c.shopScene !== 'words' || !!c.shopItems?.some(item => item.imageUrl && item.answer.trim());
   if (['timer','airport','restaurant','icecream','doctor'].includes(type)) return true;
-  if (['matchup','whackamole'].includes(type)) return !!c.pairs && c.pairs.length >= 2 && c.pairs.every(p => p.left.trim() && p.right.trim());
+  if (['matchup','whackamole','wordhoops'].includes(type)) return !!c.pairs && c.pairs.length >= 2 && c.pairs.every(p => p.left.trim() && p.right.trim());
   if (type === 'flashcards') return !!c.flashcards?.length && c.flashcards.every(p => p.left.trim() && p.right.trim());
   if (type === 'typeanswer') return !!c.typeAnswerEntries?.length && c.typeAnswerEntries.every(p => p.prompt.trim() && p.answer.trim());
   if (['quiz','gameshowquiz','winlosequiz'].includes(type)) return !!c.questions?.length && c.questions.every(q => q.question.trim() && q.choices.filter(v => v.trim()).length >= 2 && q.choices[q.correctIndex]?.trim());

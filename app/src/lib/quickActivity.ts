@@ -56,7 +56,7 @@ export function patchActivityDraft(id: string, patch: { items?: GameTemplate['it
   const next = { ...draft, ...patch, updated_at: new Date().toISOString() };
   const source = next.config.classroomSource;
   if (source) {
-    const pairs = ['matchup','whackamole'].includes(next.game_type) ? next.config.pairs : next.game_type === 'flashcards' ? next.config.flashcards : undefined;
+    const pairs = ['matchup','whackamole','wordhoops'].includes(next.game_type) ? next.config.pairs : next.game_type === 'flashcards' ? next.config.flashcards : undefined;
     let cards = source.cards;
     const card = (id: string, word: string, meaning: string) => ({ ...source.cards.find(c => c.word === word), id, word, meaning, imageUrl: source.cards.find(c => c.word === word)?.imageUrl || null });
     if (next.game_type === 'typeanswer' && next.config.typeAnswerEntries) cards = next.config.typeAnswerEntries.filter(p => p.answer.trim()).map(p => card(p.id, p.answer, p.prompt));
