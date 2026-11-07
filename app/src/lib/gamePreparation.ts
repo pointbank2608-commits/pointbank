@@ -22,13 +22,13 @@ export function gamePreparation(type: GameType) {
 /** Counts describe the native configuration, not unfiltered source rows. */
 export function gameReadyDetails(template: GameTemplate) {
   const { game_type: type, config: c, items } = template;
-  const questions = ['quiz','gameshowquiz','winlosequiz'].includes(type) ? c.questions : type==='truefalse' ? c.statements : type==='quizshow' ? c.liveQuestions : type==='typeanswer' ? c.typeAnswerEntries : type==='imagequiz' ? c.imageQuizItems : undefined;
+  const questions = ['quiz','gameshowquiz','winlosequiz','tugofwar'].includes(type) ? c.questions : type==='truefalse' ? c.statements : type==='quizshow' ? c.liveQuestions : type==='typeanswer' ? c.typeAnswerEntries : type==='imagequiz' ? c.imageQuizItems : undefined;
   const pairs = ['matchup','whackamole','wordhoops'].includes(type) ? c.pairs : type==='flashcards' ? c.flashcards : undefined;
   const intrinsic = [...ADVENTURE_TYPES,'timer','airport','restaurant','doctor','icecream','shopping','mathgen','feedmonster','sentencebridge','sentencetower'].includes(type);
   const count = intrinsic ? null : questions ? questions.length : pairs ? pairs.length : type==='labeleddiagram' ? c.diagramPins?.length || 0 : type==='groupsort' ? c.groups?.reduce((n,g)=>n+g.items.length,0) || 0 : items.length;
   const kind = questions ? 'questions' : type === 'timer' ? 'participants' : SENTENCES.has(type) || c.classroomSource?.kind === 'sentence' ? 'sentences' : 'items';
   const configuredTeams = ({catchsentence:c.catchTeams,treasuredig:c.digTeams,fourclues:c.clueTeams,lastbox:c.boxTeams,mysterybox:c.boxTeams,shufflefind:c.shuffleTeams,telepathy:c.telepathyTeams,wordhoops:c.hoopsTeams ?? 2} as Partial<Record<GameType,number>>)[type];
-  const teams = configuredTeams || (['tictactoe','connect4','baskin31','gameshowquiz','winlosequiz'].includes(type) ? 2 : type === 'saveorgive' && c.saveOrGiveMode !== 'individual' ? c.saveOrGiveTeamCount || 2 : null);
+  const teams = configuredTeams || (['tictactoe','connect4','baskin31','gameshowquiz','winlosequiz','tugofwar'].includes(type) ? 2 : type === 'saveorgive' && c.saveOrGiveMode !== 'individual' ? c.saveOrGiveTeamCount || 2 : null);
   return { count, kind, teams };
 }
 
@@ -49,7 +49,7 @@ export function isNativeGameReady(template: GameTemplate): boolean {
   if (['matchup','whackamole','wordhoops'].includes(type)) return !!c.pairs && c.pairs.length >= 2 && c.pairs.every(p => p.left.trim() && p.right.trim());
   if (type === 'flashcards') return !!c.flashcards?.length && c.flashcards.every(p => p.left.trim() && p.right.trim());
   if (type === 'typeanswer') return !!c.typeAnswerEntries?.length && c.typeAnswerEntries.every(p => p.prompt.trim() && p.answer.trim());
-  if (['quiz','gameshowquiz','winlosequiz'].includes(type)) return !!c.questions?.length && c.questions.every(q => q.question.trim() && q.choices.filter(v => v.trim()).length >= 2 && q.choices[q.correctIndex]?.trim());
+  if (['quiz','gameshowquiz','winlosequiz','tugofwar'].includes(type)) return !!c.questions?.length && c.questions.every(q => q.question.trim() && q.choices.filter(v => v.trim()).length >= 2 && q.choices[q.correctIndex]?.trim());
   if (type === 'truefalse') return !!c.statements?.length && c.statements.every(s => s.text.trim());
   if (type === 'quizshow') return !!c.liveQuestions?.length && c.liveQuestions.every(isLiveQuestionReady);
   if (type === 'groupsort') return (c.groups?.filter(g => g.name.trim() && g.items.some(i => i.text.trim())).length || 0) >= 2;
@@ -63,7 +63,7 @@ export function isNativeGameReady(template: GameTemplate): boolean {
  * 들어오면 샘플로 바로 시작하고 위쪽 도구줄(내 단어/문장·반 설정·게임설정·저장/불러오기)을 쓰는 게임.
  * 전용 편집기가 큰 어드벤처·스토리 게임과 학생 폰 참여형 대회 퀴즈쇼는 예전 준비 흐름을 그대로 쓴다(C단계).
  */
-const KEEP_OLD_FLOW = new Set<string>([...ADVENTURE_TYPES, 'feedmonster', 'sentencebridge', 'sentencetower', 'quizshow']);
+const KEEP_OLD_FLOW = new Set<string>(['quizshow']);
 /** 항목 목록을 늘 숨기는 게임(시한폭탄: 누가 걸릴지·읽을 내용이 미리 보이면 재미가 없다). 도구줄의 "항목 숨기기"도 잠긴다. */
 /** 게임 안에 "지금 누구 차례" 표시가 따로 있는 경우(시한폭탄 참가자 순서대로) — 도구줄 차례 바를 숨겨 두 번 보이지 않게 한다. */
 export const hasOwnTurnDisplay = (type: GameType, config?: { bombMode?: 'pass' | 'timer' }): boolean => type === 'timer' || type === 'popcorn' || (type === 'bomb' && (config?.bombMode ?? 'pass') === 'pass');
