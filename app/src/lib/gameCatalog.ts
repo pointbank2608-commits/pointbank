@@ -309,6 +309,13 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     nameKey: 'gamesList.wordhoopsName', descKey: 'gamesList.wordhoopsDesc',
   },
   {
+    // 줄다리기 대결(2026-11-08, 인스타그램 수업 영상 "Tug of War Interactive game"의 방식 참고): 두 팀이 각자 문제를 풀어 줄을 당긴다.
+    type: 'tugofwar', number: 76, moment: 'team', category: 'vocabulary',
+    minItems: 999, icon: 'sports_kabaddi', path: '/games/tugofwar',
+    cover: '/covers/game-tugofwar.jpg',
+    nameKey: 'gamesList.tugofwarName', descKey: 'gamesList.tugofwarDesc',
+  },
+  {
     type: 'whackamole',
     number: 18,
     moment: 'practice',

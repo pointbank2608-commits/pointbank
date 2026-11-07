@@ -47,6 +47,7 @@ import LightningLuckPage from '../pages/LightningLuckPage';
 import ShuffleFindPage from '../pages/ShuffleFindPage';
 import TelepathyPage from '../pages/TelepathyPage';
 import WordHoopsPage from '../pages/WordHoopsPage';
+import TugOfWarPage from '../pages/TugOfWarPage';
 import LastBoxPage from '../pages/LastBoxPage';
 import AirportPage from '../pages/AirportPage';
 import RestaurantPage from '../pages/RestaurantPage';
@@ -133,5 +134,6 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   '/games/shufflefind': ShuffleFindPage,
   '/games/telepathy': TelepathyPage,
   '/games/wordhoops': WordHoopsPage,
+  '/games/tugofwar': TugOfWarPage,
   '/games/mysterybox': MysteryBoxPage,
 };

@@ -37,6 +37,7 @@ export const GAME_SFX = {
   lightning: { clouds: 2020, go: 6001, pass: 1013, strike: 4025, win: 5037 },
   telepathy: { show: 4041, shake: 1013, pop: 5037, timeUp: 8105, finish: 5037 },
   wordhoops: { correct: 4015, wrong: 4025, finish: 5037 },
+  tugofwar: { pull: 3096, wrong: 4025, finish: 5037 },
   sentencesplash: { start: 4041, pick: 4015, wrong: 4025, splash: 3091, done: 5037 },
   grammarlab: { ok: 4015, wrong: 4025, done: 5037 },
   grammarverb: { ok: 4015, wrong: 4025, done: 5037 },

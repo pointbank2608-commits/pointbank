@@ -136,6 +136,7 @@ const LightningLuckPage = lazyPage(() => import('./pages/LightningLuckPage'));
 const ShuffleFindPage = lazyPage(() => import('./pages/ShuffleFindPage'));
 const TelepathyPage = lazyPage(() => import('./pages/TelepathyPage'));
 const WordHoopsPage = lazyPage(() => import('./pages/WordHoopsPage'));
+const TugOfWarPage = lazyPage(() => import('./pages/TugOfWarPage'));
 const LastBoxPage = lazyPage(() => import('./pages/LastBoxPage'));
 const RemotePage = lazyPage(() => import('./pages/RemotePage'));
 const AirportPage = lazyPage(() => import('./pages/AirportPage'));
@@ -432,6 +433,7 @@ function AppRoutes() {
             <Route path="/games/shufflefind" element={<GameWorkspace><ShuffleFindPage /></GameWorkspace>} />
             <Route path="/games/telepathy" element={<GameWorkspace><TelepathyPage /></GameWorkspace>} />
             <Route path="/games/wordhoops" element={<GameWorkspace><WordHoopsPage /></GameWorkspace>} />
+            <Route path="/games/tugofwar" element={<GameWorkspace><TugOfWarPage /></GameWorkspace>} />
             <Route path="/games/mysterybox" element={<GameWorkspace><MysteryBoxPage /></GameWorkspace>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </>
@@ -514,6 +516,7 @@ function AppRoutes() {
             <Route path="/games/shufflefind" element={<ShuffleFindPage />} />
             <Route path="/games/telepathy" element={<TelepathyPage />} />
             <Route path="/games/wordhoops" element={<WordHoopsPage />} />
+            <Route path="/games/tugofwar" element={<TugOfWarPage />} />
             <Route path="/games/mysterybox" element={<MysteryBoxPage />} />
             <Route path="*" element={<Navigate to="/me" replace />} />
           </>

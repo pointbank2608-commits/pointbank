@@ -135,7 +135,8 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
   switch (gameType) {
     case 'quiz':
     case 'gameshowquiz':
-    case 'winlosequiz': {
+    case 'winlosequiz':
+    case 'tugofwar': {
       const questions = buildQuizQuestions({ items: cardsToWordListItems(words) }, 'wordToMeaning');
       return questions.length > 0 ? { items: labelItems, config: { questions } } : null;
     }

@@ -225,6 +225,7 @@ export type GameType =
   | 'shufflefind'
   | 'telepathy'
   | 'wordhoops'
+  | 'tugofwar'
   | 'typeanswer'
   | 'spellword'
   | 'rankorder'
@@ -457,6 +458,10 @@ export interface GameTemplateConfig {
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
   hoopsRule?: 'race' | 'timed';
   hoopsSeconds?: number;
+  /** 줄다리기 대결 전용: 이기는 데 필요한 칸 수·틀렸을 때 얼음 시간(초)·제한 시간(초, 0=제한 없음). 문제는 questions(퀴즈 문제)를 쓴다. */
+  tugPull?: number;
+  tugFreeze?: number;
+  tugSeconds?: number;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;

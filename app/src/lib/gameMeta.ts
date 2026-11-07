@@ -43,6 +43,7 @@ export const GAME_META: Record<string, GameMeta> = {
   shufflefind: { minutes: 8, play: 'team' },
   telepathy: { minutes: 10, play: 'team', paper: true },
   wordhoops: { minutes: 8, play: 'team' },
+  tugofwar: { minutes: 8, play: 'team' },
   wheel: { minutes: 3, play: 'whole' },
   ladder: { minutes: 5, play: 'whole' },
   order: { minutes: 3, play: 'whole' },
