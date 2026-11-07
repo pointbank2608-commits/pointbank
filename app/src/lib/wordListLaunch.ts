@@ -1,4 +1,5 @@
 import { buildQuizQuestions } from './quizFromWordList';
+import { buildPhonicsQuestions } from './phonicsQuiz';
 import type { GameItem, GameTemplateConfig, WordListItem } from './types';
 
 export const WORD_LIST_GAMES = ['wheel', 'flashcards', 'matchup', 'quiz', 'gameshowquiz'] as const;
@@ -36,7 +37,9 @@ export function prepareWordListGame(source: WordListItem[], game: WordListGame):
     return { items, config: {}, count: items.length, ready: items.length > 0 };
   }
   if (game === 'quiz' || game === 'gameshowquiz') {
-    const questions = buildQuizQuestions({ items: words }, 'wordToMeaning');
+    // 파닉스에서 담은 단어 목록이면 소리 규칙 문제를, 아니면 뜻 문제를 만든다
+    const phonics = buildPhonicsQuestions(words);
+    const questions = phonics.length >= 3 ? phonics : buildQuizQuestions({ items: words }, 'wordToMeaning');
     return { items: [], config: { questions }, count: questions.length, ready: questions.length > 0 };
   }
   const left = new Set<string>();

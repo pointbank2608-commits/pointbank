@@ -4,6 +4,7 @@ import { storySample, vocabularyQuestions, storyErrors } from './storybook';
 import i18n from '../i18n';
 import { buildContestQuestions, contestRoundNames } from './liveQuiz';
 import { buildGroupSortGroups, buildQuizQuestions, buildTrueFalseStatements } from './quizFromWordList';
+import { buildPhonicsQuestions } from './phonicsQuiz';
 import type { FullCardItem, GameItem, GameTemplateConfig, GameType, LessonSlide, WordList, WordListItem } from './types';
 
 /** word_lists 저장 모양(WordListItem)을 자료실·게임 변환이 받는 모양(FullCardItem)으로 바꾼다. */
@@ -137,7 +138,9 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
     case 'gameshowquiz':
     case 'winlosequiz':
     case 'tugofwar': {
-      const questions = buildQuizQuestions({ items: cardsToWordListItems(words) }, 'wordToMeaning');
+      // 파닉스에서 담은 단어 목록이면 소리 규칙 문제(빈칸·같은 규칙·라임·다른 하나)를 만든다. 3문제 미만이면 뜻 문제로.
+      const phonics = buildPhonicsQuestions(words);
+      const questions = phonics.length >= 3 ? phonics : buildQuizQuestions({ items: cardsToWordListItems(words) }, 'wordToMeaning');
       return questions.length > 0 ? { items: labelItems, config: { questions } } : null;
     }
     case 'truefalse': {

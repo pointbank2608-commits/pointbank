@@ -11,7 +11,6 @@ import { gamePreparation } from '../lib/gamePreparation';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
-import { useGamePlay } from '../context/GamePlayContext';
 import { wordListToCards } from '../lib/gameFromWords';
 import BombSoundPicker from './BombSoundPicker';
 import { hasOwnTurnDisplay } from '../lib/gamePreparation';
@@ -123,7 +122,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const { notify } = useToast();
   const info = workspace.info;
   const soundOn = useGameSoundOn();
-  const { itemsHidden, toggleItems, itemsLocked } = useGamePlay();
   const [open, setOpen] = useState<Open>(null);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
@@ -572,7 +570,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
-          <button className={`${util} disabled:cursor-not-allowed disabled:opacity-40`} aria-pressed={itemsHidden} disabled={itemsLocked} title={itemsLocked ? text('이 게임은 항목을 늘 숨겨요', 'Items are always hidden in this game') : undefined} onClick={toggleItems}>{itemsLocked ? text('항목 숨김', 'Items hidden') : itemsHidden ? text('항목 보기', 'Show items') : text('항목 숨기기', 'Hide items')}</button>
           {onRestart && <button className={util} onClick={onRestart} data-frame-restart>{text('다시하기', 'Restart')}</button>}
           <button className={util} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{text(fullscreen ? '전체화면 끄기' : '전체화면', fullscreen ? 'Exit fullscreen' : 'Fullscreen')}</button>
           <button className={`${util} text-error`} onClick={() => navigate('/games')}>{text('나가기', 'Exit')}</button>

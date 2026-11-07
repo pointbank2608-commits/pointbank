@@ -562,7 +562,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
               className="absolute flex items-center justify-center bg-white text-center"
               style={{ left: '1.6cqw', right: '1.6cqw', top: '3.6cqw', height: '9.4cqw', borderRadius: '1.4cqw', padding: '0 1.6cqw', boxShadow: '0 .45cqw 0 rgba(0,0,0,.18), 0 .7cqw 1.2cqw rgba(0,0,0,.18)' }}
             >
-              <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all' }}>
+              <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
                 {q.question}
               </span>
             </div>
