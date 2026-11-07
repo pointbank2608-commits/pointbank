@@ -7,12 +7,15 @@ import { COMMON_SFX, playSfx, useGameSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
 import {
   HOOPS_MAX_MISSES,
+  HOOPS_TIMED_POOL,
   buildHoopsQuestions,
+  formatHoopsCountdown,
   formatHoopsTime,
   isHoopsTie,
   pointsForTry,
   rankHoops,
   type HoopsMode,
+  type HoopsRule,
   type HoopsResult,
 } from '../lib/wordHoops';
 import type { MatchPair } from '../lib/types';
@@ -28,6 +31,8 @@ interface Props {
   teams: number;
   shots: number;
   mode: HoopsMode;
+  rule: HoopsRule;
+  seconds: number;
 }
 
 type Phase = 'ready' | 'playing' | 'done';
@@ -45,6 +50,7 @@ interface TeamState {
   removed: number[];
   points: number;
   firstTry: number;
+  made: number;
   doneMs: number | null;
   busy: boolean;
   flash: Flash | null;
@@ -83,7 +89,7 @@ const STYLE = `
 `;
 
 function blank(): TeamState {
-  return { idx: 0, misses: 0, removed: [], points: 0, firstTry: 0, doneMs: null, busy: false, flash: null, shot: null };
+  return { idx: 0, misses: 0, removed: [], points: 0, firstTry: 0, made: 0, doneMs: null, busy: false, flash: null, shot: null };
 }
 
 /** u 단위(코트 폭 1/100)를 키프레임 문자열 안에서도 쓰기 위해 치환한다 */
@@ -203,13 +209,15 @@ function HoopFront({ hit, k }: { hit: 'good' | 'miss' | null; k: number }) {
   );
 }
 
-export default function WordHoops({ pairs, teams, shots, mode }: Props) {
+export default function WordHoops({ pairs, teams, shots, mode, rule, seconds }: Props) {
+  const timed = rule === 'timed';
+  const limitMs = seconds * 1000;
   const { t } = useTranslation();
   const sfx = useGameSfx('wordhoops');
   const [seed, setSeed] = useState(0);
   const pairsKey = pairs.map((p) => `${p.id}:${p.left}:${p.right}`).join('|');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const questions = useMemo(() => buildHoopsQuestions(pairs, shots, mode), [pairsKey, shots, mode, seed]);
+  const questions = useMemo(() => buildHoopsQuestions(pairs, timed ? HOOPS_TIMED_POOL : shots, mode), [pairsKey, shots, mode, timed, seed]);
   const total = questions.length;
 
   const [phase, setPhase] = useState<Phase>('ready');
@@ -256,7 +264,7 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
   useEffect(() => {
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pairsKey, teams, shots, mode]);
+  }, [pairsKey, teams, shots, mode, rule, seconds]);
 
   function start() {
     if (phaseRef.current !== 'ready' || total === 0) return;
@@ -264,7 +272,18 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
     startAt.current = gameClock.now();
     setMs(0);
     setPhaseBoth('playing');
-    ticker.current = gameClock.setInterval(() => setMs(Math.round(gameClock.now() - startAt.current)), 100);
+    ticker.current = gameClock.setInterval(() => {
+      const elapsed = Math.round(gameClock.now() - startAt.current);
+      if (timed && elapsed >= limitMs) {
+        // 제한 시간이 끝나면 모든 팀이 한꺼번에 멈춘다(이미 들어간 슛은 점수에 남는다)
+        if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+        ticker.current = null;
+        setMs(limitMs);
+        commit(tsRef.current.map((x) => (x.doneMs === null ? { ...x, doneMs: limitMs, busy: true } : x)));
+        return;
+      }
+      setMs(elapsed);
+    }, 100);
   }
 
   function advance(team: number) {
@@ -290,6 +309,7 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
       patch(team, {
         busy: true,
         points: st.points + pts,
+        made: st.made + 1,
         firstTry: st.firstTry + (st.misses === 0 ? 1 : 0),
         shot: { choice: ci, hit: true, key },
         flash: { kind: 'good', text: pts >= 2 ? t('gameWordHoops.nice', { n: pts }) : t('gameWordHoops.goodRetry', { n: pts }), sub: q.explain, key },
@@ -357,9 +377,9 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
 
   const teamName = (i: number) => (teams === 1 ? t('gameWordHoops.solo') : i === 0 ? t('gameWordHoops.teamRed') : t('gameWordHoops.teamBlue'));
 
-  const results: HoopsResult[] = ts.map((s, i) => ({ team: i, points: s.points, firstTry: s.firstTry, shots: total, ms: s.doneMs ?? ms }));
-  const ranked = rankHoops(results);
-  const tie = isHoopsTie(results);
+  const results: HoopsResult[] = ts.map((s, i) => ({ team: i, points: s.points, firstTry: s.firstTry, made: s.made, shots: total, ms: s.doneMs ?? ms }));
+  const ranked = rankHoops(results, rule);
+  const tie = isHoopsTie(results, rule);
 
   if (total === 0) {
     return (
@@ -395,10 +415,10 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
                 <span className="flex items-center" style={{ gap: U(2) }}>
                   {[
                     `${s.points}${t('gameWordHoops.pointsUnit')}`,
-                    formatHoopsTime(elapsed),
-                    t('gameWordHoops.shotOf', { n: Math.min(s.idx + 1, total), total }),
+                    timed ? formatHoopsCountdown(limitMs - elapsed) : formatHoopsTime(elapsed),
+                    timed ? t('gameWordHoops.madeChip', { n: s.made }) : t('gameWordHoops.shotOf', { n: Math.min(s.idx + 1, total), total }),
                   ].map((chip, ci) => (
-                    <span key={ci} className="rounded-full bg-white/92 font-bold tabular-nums text-deep-navy" style={{ fontSize: U(3.8), padding: `${U(0.7)} ${U(2)}` }}>
+                    <span key={ci} className={`rounded-full font-bold tabular-nums ${timed && ci === 1 && limitMs - elapsed <= 10000 ? 'bg-warm-yellow text-[#b3261e]' : 'bg-white/92 text-deep-navy'}`} style={{ fontSize: U(3.8), padding: `${U(0.7)} ${U(2)}` }}>
                       {chip}
                     </span>
                   ))}
@@ -484,8 +504,8 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
               {finished && (
                 <div className="absolute inset-0 z-[8] flex flex-col items-center justify-center bg-white/55 text-center font-extrabold text-deep-navy" style={{ paddingTop: U(11) }}>
                   <span style={{ fontSize: U(9) }}>🏀</span>
-                  <span style={{ fontSize: U(6.4) }}>{t('gameWordHoops.teamDone')}</span>
-                  <span className="font-semibold" style={{ fontSize: U(4) }}>{s.points}{t('gameWordHoops.pointsUnit')} · {formatHoopsTime(s.doneMs ?? 0)}</span>
+                  <span style={{ fontSize: U(6.4) }}>{timed ? t('gameWordHoops.timeUp') : t('gameWordHoops.teamDone')}</span>
+                  <span className="font-semibold" style={{ fontSize: U(4) }}>{s.points}{t('gameWordHoops.pointsUnit')} · {timed ? t('gameWordHoops.madeChip', { n: s.made }) : formatHoopsTime(s.doneMs ?? 0)}</span>
                 </div>
               )}
             </section>
@@ -497,7 +517,7 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-deep-navy/55 text-center text-white" style={{ gap: '1.4cqw' }}>
           <span style={{ fontSize: '7cqw' }}>🏀</span>
           <span className="font-extrabold" style={{ fontSize: '3.8cqw' }}>{t('gameWordHoops.readyTitle')}</span>
-          <span className="max-w-[70%] font-semibold opacity-95" style={{ fontSize: '1.9cqw' }}>{teams > 1 ? t('gameWordHoops.readyHintTeams') : t('gameWordHoops.readyHintSolo')}</span>
+          <span className="max-w-[70%] font-semibold opacity-95" style={{ fontSize: '1.9cqw' }}>{timed ? t('gameWordHoops.readyHintTimed', { time: formatHoopsCountdown(limitMs) }) : teams > 1 ? t('gameWordHoops.readyHintTeams') : t('gameWordHoops.readyHintSolo')}</span>
           <button
             type="button"
             onClick={start}
@@ -543,11 +563,20 @@ export default function WordHoops({ pairs, teams, shots, mode }: Props) {
                   </div>
                   <div className="font-extrabold tabular-nums text-deep-navy" style={{ fontSize: '4.2cqw', padding: '.6cqw 1.6cqw 0' }}>
                     {r.points}
-                    <span className="font-semibold text-on-surface-variant" style={{ fontSize: '1.8cqw' }}> / {total * pointsForTry(1)}{t('gameWordHoops.pointsUnit')}</span>
+                    <span className="font-semibold text-on-surface-variant" style={{ fontSize: '1.8cqw' }}>{timed ? t('gameWordHoops.pointsUnit') : ` / ${total * pointsForTry(1)}${t('gameWordHoops.pointsUnit')}`}</span>
                   </div>
                   <div className="text-on-surface-variant" style={{ fontSize: '1.55cqw', padding: '.4cqw 1.6cqw 1.2cqw' }}>
-                    <div>{t('gameWordHoops.accuracy')}: <b className="text-deep-navy">{Math.round((r.firstTry / total) * 100)}%</b> ({r.firstTry}/{total})</div>
-                    <div>{t('gameWordHoops.time')}: <b className="text-deep-navy tabular-nums">{formatHoopsTime(r.ms)}</b></div>
+                    {timed ? (
+                      <>
+                        <div>{t('gameWordHoops.madeLabel')}: <b className="text-deep-navy">{t('gameWordHoops.madeCount', { n: r.made })}</b></div>
+                        <div>{t('gameWordHoops.firstTryLabel')}: <b className="text-deep-navy">{r.firstTry}{t('gameWordHoops.countUnit')}</b></div>
+                      </>
+                    ) : (
+                      <>
+                        <div>{t('gameWordHoops.accuracy')}: <b className="text-deep-navy">{Math.round((r.firstTry / total) * 100)}%</b> ({r.firstTry}/{total})</div>
+                        <div>{t('gameWordHoops.time')}: <b className="text-deep-navy tabular-nums">{formatHoopsTime(r.ms)}</b></div>
+                      </>
+                    )}
                   </div>
                 </div>
               );

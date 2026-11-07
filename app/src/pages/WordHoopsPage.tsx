@@ -1,8 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import ClassChipRow from '../components/ClassChipRow';
-import EditOnly from '../components/EditOnly';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import WordHoops from '../components/WordHoops';
@@ -33,9 +30,9 @@ export default function WordHoopsPage() {
   const g = useGameTemplates({
     gameType: 'wordhoops',
     defaultItems,
-    defaultConfig: () => ({ pairs: [], hoopsTeams: HOOPS_DEFAULTS.teams, hoopsShots: HOOPS_DEFAULTS.shots, hoopsMode: HOOPS_DEFAULTS.mode }),
+    defaultConfig: () => ({ pairs: [], hoopsTeams: HOOPS_DEFAULTS.teams, hoopsShots: HOOPS_DEFAULTS.shots, hoopsMode: HOOPS_DEFAULTS.mode, hoopsRule: HOOPS_DEFAULTS.rule, hoopsSeconds: HOOPS_DEFAULTS.seconds }),
   });
-  const { isStaff, classes, staffClassId, selectClass, reorderClasses, studentClassName, classId, roster, templates, selected, selectedId, setSelectedId, loading, scopeLabel } = g;
+  const { isStaff, studentClassName, classId, roster, templates, selected, selectedId, setSelectedId, loading, scopeLabel } = g;
   const [roundKey, setRoundKey] = useState(0);
   const demo = useMemo(demoPairs, []);
   const cfg = normalizeHoopsConfig(selected?.config);
@@ -50,11 +47,7 @@ export default function WordHoopsPage() {
     return <div className="py-16 text-center font-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
 
-  const classPicker = isStaff ? (
-    <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={selectClass} onReorder={reorderClasses} />
-  ) : (
-    <h2 className="font-title-md text-title-md text-on-surface">{t('gameWordHoops.studentClassTitle', { className: studentClassName })}</h2>
-  );
+  const classPicker = <h2 className="font-title-md text-title-md text-on-surface">{t('gameWordHoops.studentClassTitle', { className: studentClassName })}</h2>;
 
   const templateRow = templates.length > 0 && (
     <div className="flex flex-wrap gap-2">
@@ -76,16 +69,13 @@ export default function WordHoopsPage() {
 
   return (
     <div className="space-y-6">
-      <EditOnly>
-        <Link to="/games" className="inline-flex items-center gap-1 font-label-md text-label-md text-on-surface-variant transition-colors hover:text-primary">
-          {t('gameAdmin.backToList')}
-        </Link>
-      </EditOnly>
-
-      <GameInfoPanel
-        description={t('gameWordHoops.infoDescription')}
-        steps={t('gameWordHoops.infoSteps', { returnObjects: true }) as string[]}
-      />
+      {/* 선생님은 도구줄(반 설정·저장/불러오기)을 쓰므로 반 칩·게임 목록 링크·소개·저장된 게임 칩을 따로 두지 않는다 */}
+      {!isStaff && (
+        <GameInfoPanel
+          description={t('gameWordHoops.infoDescription')}
+          steps={t('gameWordHoops.infoSteps', { returnObjects: true }) as string[]}
+        />
+      )}
 
       {loading ? (
         <div className="py-16 text-center font-body-md text-on-surface-variant">{t('common.loading')}</div>
@@ -96,7 +86,7 @@ export default function WordHoopsPage() {
           )}
 
           <GameThemeFrame gameType="wordhoops" roster={roster} onRestart={() => setRoundKey((k) => k + 1)} className="rounded-[28px] bg-[#fffdf8] p-4 shadow-[0_8px_28px_rgba(0,107,93,0.08)] md:p-6">
-            <WordHoops key={roundKey} pairs={pairs} teams={cfg.teams} shots={cfg.shots} mode={cfg.mode} />
+            <WordHoops key={roundKey} pairs={pairs} teams={cfg.teams} shots={cfg.shots} mode={cfg.mode} rule={cfg.rule} seconds={cfg.seconds} />
           </GameThemeFrame>
 
           {usingSample && (
@@ -105,8 +95,8 @@ export default function WordHoopsPage() {
             </div>
           )}
 
-          <EditOnly>{classPicker}</EditOnly>
-          <EditOnly>{templateRow}</EditOnly>
+          {!isStaff && classPicker}
+          {!isStaff && templateRow}
         </div>
       )}
     </div>

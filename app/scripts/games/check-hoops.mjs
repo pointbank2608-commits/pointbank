@@ -16,8 +16,10 @@ try {
     return { id: `p${i}`, left, right };
   });
 
-  assert.deepEqual(H.normalizeHoopsConfig(undefined), { teams: 2, shots: 10, mode: "meaning" });
-  assert.deepEqual(H.normalizeHoopsConfig({ hoopsTeams: 9, hoopsShots: 1, hoopsMode: "x" }), { teams: 2, shots: 3, mode: "meaning" });
+  assert.deepEqual(H.normalizeHoopsConfig(undefined), { teams: 2, shots: 10, mode: "meaning", rule: "race", seconds: 60 });
+  assert.deepEqual(H.normalizeHoopsConfig({ hoopsTeams: 9, hoopsShots: 1, hoopsMode: "x", hoopsRule: "y", hoopsSeconds: 7 }), { teams: 2, shots: 3, mode: "meaning", rule: "race", seconds: 60 });
+  assert.deepEqual(H.normalizeHoopsConfig({ hoopsRule: "timed", hoopsSeconds: 90 }).rule, "timed");
+  assert.equal(H.normalizeHoopsConfig({ hoopsRule: "timed", hoopsSeconds: 90 }).seconds, 90);
   assert.equal(H.normalizeHoopsConfig({ hoopsTeams: 1, hoopsShots: 99, hoopsMode: "mixed" }).shots, 30);
   ok("설정 정규화(팀 1~2·문제 수 3~30·방식 3종만)");
 
@@ -62,14 +64,25 @@ try {
   assert.deepEqual([1, 2, 3, 4].map(H.pointsForTry), [2, 1, 0, 0]);
   ok("점수: 첫 시도 2·두 번째 1·그 뒤 0");
 
-  const r = (team, firstTry, points, ms) => ({ team, firstTry, points, shots: 10, ms });
+  const r = (team, firstTry, points, ms) => ({ team, firstTry, points, made: points >> 1, shots: 10, ms });
   assert.deepEqual(H.rankHoops([r(0, 8, 18, 50000), r(1, 9, 18, 70000)]).map((x) => x.team), [1, 0]);
   assert.deepEqual(H.rankHoops([r(0, 9, 18, 70000), r(1, 9, 19, 90000)]).map((x) => x.team), [1, 0]);
   assert.deepEqual(H.rankHoops([r(0, 9, 19, 70000), r(1, 9, 19, 60000)]).map((x) => x.team), [1, 0]);
   assert.equal(H.isHoopsTie([r(0, 9, 19, 60000), r(1, 9, 19, 60000)]), true);
   assert.equal(H.isHoopsTie([r(0, 9, 19, 60000), r(1, 9, 19, 60100)]), false);
   assert.equal(H.isHoopsTie([r(0, 9, 19, 60000)]), false);
-  ok("승부: 첫 시도 정답 → 점수 → 시간 순, 완전히 같을 때만 무승부");
+  ok("승부(정해진 슛): 첫 시도 정답 → 점수 → 시간 순, 완전히 같을 때만 무승부");
+
+  // 제한 시간제: 점수 → 첫 시도 정답 수 (시간은 모두 같다)
+  assert.deepEqual(H.rankHoops([r(0, 5, 14, 60000), r(1, 9, 12, 60000)], "timed").map((x) => x.team), [0, 1]);
+  assert.deepEqual(H.rankHoops([r(0, 5, 14, 60000), r(1, 7, 14, 60000)], "timed").map((x) => x.team), [1, 0]);
+  assert.equal(H.isHoopsTie([r(0, 7, 14, 60000), r(1, 7, 14, 59000)], "timed"), true);
+  assert.equal(H.isHoopsTie([r(0, 7, 14, 60000), r(1, 7, 14, 59000)], "race"), false);
+  assert.equal(H.HOOPS_TIMED_POOL, 300);
+  assert.equal(H.buildHoopsQuestions(pairs, H.HOOPS_TIMED_POOL, "mixed").length, 300);
+  ok("승부(제한 시간): 점수 → 첫 시도 정답 수, 시간은 보지 않음·300문제 미리 준비");
+  assert.deepEqual([61000, 59100, 0, -5, 1].map(H.formatHoopsCountdown), ["1:01", "1:00", "0:00", "0:00", "0:01"]);
+  ok("남은 시간 표기 m:ss(올림)");
 
   assert.equal(H.formatHoopsTime(0), "0:00.0");
   assert.equal(H.formatHoopsTime(70723), "1:10.7");

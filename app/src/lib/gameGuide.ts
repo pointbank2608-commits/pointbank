@@ -183,7 +183,7 @@ export function guideProblem(template:GameTemplate): string | null {
     if(new Set(template.items.map(i=>i.label.replace(/\s/g,'').toLowerCase())).size!==template.items.length)return 'duplicate';
   }
   if(['hangman','spellword','anagram'].includes(type)&&template.items.some(i=>!/[a-z]/i.test(i.label)||/[^a-z '-]/i.test(i.label)))return 'alphabet';
-  if(['matchup','whackamole','wordhoops'].includes(type)){
+  if(['matchup','whackamole'].includes(type)){
     const pairs=c.pairs||[];if(new Set(pairs.map(p=>p.left.toLowerCase().trim())).size!==pairs.length||new Set(pairs.map(p=>p.right.toLowerCase().trim())).size!==pairs.length)return 'duplicate';
   }
   return isNativeGameReady(template)?null:'incomplete';

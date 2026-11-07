@@ -4,20 +4,28 @@
  *
  * - 두 팀(또는 혼자 연습)이 같은 문제 세트를 각자 속도로 푼다. 문제는 단어장 짝(`config.pairs`: 영어 left · 뜻 right)에서 만든다.
  * - 첫 시도에 맞히면 2점, 한 번 틀리고 다시 맞히면 1점, 두 번 틀리면 정답을 보여 주고 0점으로 넘어간다.
- * - 승부는 첫 시도 정확도 → 점수 → 걸린 시간 순이다.
+ * - 승부 방식(규칙)은 둘 중 고른다. race: 정해진 슛을 먼저·정확히 끝내기(첫 시도 정확도 → 점수 → 걸린 시간 순),
+ *   timed: 제한 시간 안에 더 많이 넣기(점수 → 첫 시도 정답 수 순).
  * 순수 로직만 이 파일에 둔다(화면은 components/WordHoops.tsx).
  */
 import type { MatchPair } from './types';
 
 export type HoopsMode = 'meaning' | 'word' | 'mixed';
+export type HoopsRule = 'race' | 'timed';
 
-export const HOOPS_DEFAULTS = { teams: 2, shots: 10, mode: 'meaning' as HoopsMode };
+export const HOOPS_DEFAULTS = { teams: 2, shots: 10, mode: 'meaning' as HoopsMode, rule: 'race' as HoopsRule, seconds: 60 };
+export const HOOPS_RULES: readonly HoopsRule[] = ['race', 'timed'];
+export const HOOPS_SECONDS = [30, 45, 60, 90, 120, 180] as const;
+/** 제한 시간제에서 미리 만들어 두는 문제 수(시간 안에 다 풀 수 없는 양) */
+export const HOOPS_TIMED_POOL = 300;
 export const HOOPS_MODES: readonly HoopsMode[] = ['meaning', 'word', 'mixed'];
 
 export interface HoopsConfig {
   teams: number;
   shots: number;
   mode: HoopsMode;
+  rule: HoopsRule;
+  seconds: number;
 }
 
 function clampInt(v: unknown, lo: number, hi: number, fallback: number): number {
@@ -27,13 +35,15 @@ function clampInt(v: unknown, lo: number, hi: number, fallback: number): number 
 
 /** 저장된 설정(없거나 이상한 값 포함)을 안전한 범위로 맞춘다 */
 export function normalizeHoopsConfig(
-  c: { hoopsTeams?: number; hoopsShots?: number; hoopsMode?: string } | undefined,
+  c: { hoopsTeams?: number; hoopsShots?: number; hoopsMode?: string; hoopsRule?: string; hoopsSeconds?: number } | undefined,
 ): HoopsConfig {
   const mode = (HOOPS_MODES as readonly string[]).includes(c?.hoopsMode ?? '') ? (c?.hoopsMode as HoopsMode) : HOOPS_DEFAULTS.mode;
   return {
     teams: clampInt(c?.hoopsTeams, 1, 2, HOOPS_DEFAULTS.teams),
     shots: clampInt(c?.hoopsShots, 3, 30, HOOPS_DEFAULTS.shots),
     mode,
+    rule: (HOOPS_RULES as readonly string[]).includes(c?.hoopsRule ?? '') ? (c?.hoopsRule as HoopsRule) : HOOPS_DEFAULTS.rule,
+    seconds: (HOOPS_SECONDS as readonly number[]).includes(c?.hoopsSeconds ?? -1) ? (c?.hoopsSeconds as number) : HOOPS_DEFAULTS.seconds,
   };
 }
 
@@ -135,20 +145,33 @@ export interface HoopsResult {
   points: number;
   /** 첫 시도에 맞힌 문제 수 */
   firstTry: number;
+  /** 넣은 슛(맞힌 문제) 수 */
+  made: number;
   shots: number;
   ms: number;
 }
 
-/** 승부 순서(앞이 1등): 첫 시도 정답 수 → 점수 → 걸린 시간 */
-export function rankHoops(results: readonly HoopsResult[]): HoopsResult[] {
-  return [...results].sort((a, b) => b.firstTry - a.firstTry || b.points - a.points || a.ms - b.ms);
+/**
+ * 승부 순서(앞이 1등).
+ * race: 첫 시도 정답 수 → 점수 → 걸린 시간 / timed: 점수 → 첫 시도 정답 수(시간은 모두 같으므로 보지 않는다)
+ */
+export function rankHoops(results: readonly HoopsResult[], rule: HoopsRule = 'race'): HoopsResult[] {
+  return [...results].sort((a, b) =>
+    rule === 'timed' ? b.points - a.points || b.firstTry - a.firstTry : b.firstTry - a.firstTry || b.points - a.points || a.ms - b.ms,
+  );
 }
 
 /** 1등이 둘 이상 같은 기록이면 무승부 */
-export function isHoopsTie(results: readonly HoopsResult[]): boolean {
+export function isHoopsTie(results: readonly HoopsResult[], rule: HoopsRule = 'race'): boolean {
   if (results.length < 2) return false;
-  const [a, b] = rankHoops(results);
-  return a.firstTry === b.firstTry && a.points === b.points && a.ms === b.ms;
+  const [a, b] = rankHoops(results, rule);
+  return a.firstTry === b.firstTry && a.points === b.points && (rule === 'timed' || a.ms === b.ms);
+}
+
+/** 제한 시간 표기 m:ss (올림, 0초 아래로 내려가지 않음) */
+export function formatHoopsCountdown(remainingMs: number): string {
+  const sec = Math.max(0, Math.ceil(remainingMs / 1000));
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 }
 
 /** 걸린 시간을 m:ss.s 로 */

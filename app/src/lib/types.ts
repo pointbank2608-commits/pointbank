@@ -454,6 +454,9 @@ export interface GameTemplateConfig {
   hoopsTeams?: number;
   hoopsShots?: number;
   hoopsMode?: 'meaning' | 'word' | 'mixed';
+  /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
+  hoopsRule?: 'race' | 'timed';
+  hoopsSeconds?: number;
   /** 마지막 박스 챌린지 전용: 학생 번호 수(팀, 2~8)와 박스 수(15·21·31). */
   boxTeams?: number;
   boxCount?: number;
