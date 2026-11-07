@@ -37,12 +37,12 @@ export function RangeSummary({ name, total }: { name: string; total: number }) {
  * 목표일(예상) + 예상 일정. 서버의 목표일은 "시작일 + 공부 기간 + 복습 기간"이라, 교사가 고른 목표일에서 복습 기간을 뺀 값을 공부 기간으로 넘긴다.
  * 목표일에 못 맞는 경우에도 하루 분량·목표일을 자동으로 바꾸지 않는다 — 교사가 단추를 눌러야 바뀐다.
  */
-export function GoalSchedule({ total, mode, today, goal, reviewDays, onGoal, onMode, onReviewDays, reviewOptions = [0, 7, 14, 21, 30, 45, 60, 90] }: {
-  total: number; mode: WmDailyMode; today: string; goal: string; reviewDays: number;
+export function GoalSchedule({ total, mode, today, goal, reviewDays, onGoal, onMode, onReviewDays, newWordLimit, reviewOptions = [0, 7, 14, 21, 30, 45, 60, 90] }: {
+  total: number; mode: WmDailyMode; today: string; goal: string; reviewDays: number; newWordLimit?: number;
   onGoal: (iso: string) => void; onMode: (m: WmDailyMode) => void; onReviewDays: (d: number) => void; reviewOptions?: number[];
 }) {
   const { l, en } = useL();
-  const sch = useMemo(() => projectSchedule({ total, mode, start: today, goal, reviewDays }), [total, mode, today, goal, reviewDays]);
+  const sch = useMemo(() => projectSchedule({ total, mode, start: today, goal, reviewDays, newWordLimit }), [total, mode, today, goal, reviewDays, newWordLimit]);
   const d = (iso: string) => (en ? iso : dateKoSmart(iso, today));
   const modeName = (m: WmDailyMode) => (en ? MODE_EN : MODE_KO)[m];
   const field = 'min-h-11 rounded-xl border border-outline-variant bg-white px-3 text-base text-deep-navy';
@@ -66,7 +66,9 @@ export function GoalSchedule({ total, mode, today, goal, reviewDays, onGoal, onM
         </p>
       ) : (
         <div className="space-y-2" data-wmp-schedule>
-          <p>{l(`하루 새 단어 ${sch.newPerDay}개 · 모든 단어를 처음 만나기까지 약 `, `${sch.newPerDay} new words a day · about `)}<b>{l(`${fmt(sch.introDays)}일`, `${fmt(sch.introDays)} days`)}</b>{l(`(${d(sch.introEnd)}쯤)`, ` to meet them all (around ${d(sch.introEnd)})`)}</p>
+          <p>{newWordLimit === undefined
+            ? l(`하루 새 단어 ${sch.newPerDay}개 · 모든 단어를 처음 만나기까지 약 `, `${sch.newPerDay} new words a day · about `)
+            : l(`매일 상한 ${sch.newPerDay}개씩 학습한다면 모든 단어를 처음 만나기까지 약 `, `At the limit of ${sch.newPerDay} new words a day, about `)}<b>{l(`${fmt(sch.introDays)}일`, `${fmt(sch.introDays)} days`)}</b>{l(`(${d(sch.introEnd)}쯤)`, ` to meet them all (around ${d(sch.introEnd)})`)}</p>
           <p>{l('확인 복습까지 마치는 예상일 ', 'Estimated finish with review ')}<b>{en ? doneBy : dateKoLong(doneBy)}</b></p>
           {sch.fits ? (
             <p className="rounded-xl bg-emerald-50 p-3 text-emerald-900" data-wmp-fit-ok>{l('목표일 안에 모든 단어를 만날 수 있어요(예상).', 'You can meet every word by the target date (estimate).')}</p>
@@ -74,7 +76,7 @@ export function GoalSchedule({ total, mode, today, goal, reviewDays, onGoal, onM
             <div className="space-y-2 rounded-xl bg-amber-50 p-3 text-amber-950" data-wmp-fit-warn>
               <p>{l(`이 분량으로는 목표일(${d(goal)})까지 모든 단어를 처음 만나기 어려워요. 목표일 안에 하려면 하루 새 단어가 약 ${sch.requiredPerDay}개 필요해요.`, `At this load you may not meet every word by ${d(goal)}. You would need about ${sch.requiredPerDay} new words a day.`)}</p>
               <div className="flex flex-wrap gap-2">
-                {sch.neededMode && sch.neededMode !== mode && (
+                {newWordLimit === undefined && sch.neededMode && sch.neededMode !== mode && (
                   <button type="button" data-wmp-raise onClick={() => onMode(sch.neededMode!)} className="min-h-11 rounded-full border-2 border-amber-700 px-4 font-bold">
                     {l(`하루 분량을 ‘${modeName(sch.neededMode)}’(새 단어 ${dailyBudget(sch.neededMode).newMax}개)로 바꾸기`, `Switch to “${modeName(sch.neededMode)}” (${dailyBudget(sch.neededMode).newMax} new words)`)}
                   </button>

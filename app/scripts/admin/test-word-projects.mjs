@@ -23,6 +23,7 @@ const cards = Array.from({ length: 3500 }, (_, i) => ({ word: 'word' + i, meanin
 try {
   await db.exec(sql);
   await db.exec(sql);
+  await db.exec(readFileSync(new URL('../../../supabase/104_word_project_adaptive_pace.sql', import.meta.url), 'utf8'));
   await query('insert into auth.users(id,email) values ($1,$2),($3,$4)', [teacher, 'qa@test.invalid', outsider, 'other@test.invalid']);
   await query("insert into public.academies(id,name,features) values ($1,'QA A','{\"homework\":true}'),($2,'QA B','{\"homework\":true}')", [academy, otherAcademy]);
   await query("insert into public.profiles(id,academy_id,role,display_name) values ($1,$2,'owner','QA teacher'),($3,$4,'owner','Other teacher')", [teacher, academy, outsider, otherAcademy]);
@@ -154,13 +155,65 @@ try {
   assert.equal(backlog.project.verified + backlog.project.needs_review + backlog.project.unconfirmed, 3500);
 
 
+  const customRequest = randomUUID();
+  const customCards = cards.slice(0, 140).map(card => ({ ...card, word: 'custom-' + card.word }));
+  const assignCustom = (limit, id = customRequest) =>
+    call('wm_project_assign_adaptive', id, classId, 'Custom ceiling', customCards, {}, [studentB], 'normal', 14, 7, limit);
+  await setDay(db, '2026-12-01');
+  await assert.rejects(assignCustom(141), /bad_new_word_limit/);
+  const custom = await assignCustom(120);
+  assert.equal((await assignCustom(120)).duplicate, true);
+  await assert.rejects(assignCustom(119), /request_conflict/);
+  await assert.rejects(call('wm_apply_step', custom.plan_id, studentB, 'heavier'), /automatic_pace/);
+  const customTarget = await one('select id,access_token from public.wm_targets where plan_id=$1', [custom.plan_id]);
+  const customState = () => call('wm_today_state', customTarget.access_token);
+  const customFirst = await customState();
+  assert.equal(customFirst.counts.new, 120);
+  assert.equal((await customState()).session_id, customFirst.session_id);
+  const customProgress = await call('wm_plan_progress', custom.plan_id);
+  assert.equal(customProgress.initial_new_words, 120);
+  assert.equal(customProgress.students[0].today_new_words, 120);
+
+  await setDay(db, '2026-12-02');
+  const interrupted = await customState();
+  assert.equal(interrupted.counts.new, 60);
+  const finishWithRecall = async (session, attempts, correct) => {
+    await query('update public.wm_sessions set done_at=now() where id=$1', [session.session_id]);
+    await query(`insert into public.wm_answers(session_id, q_index, key, kind, correct, client_id, project_evidence)
+      select $1, i, 'test-evidence', 'answer', $3, gen_random_uuid(), true from generate_series(0, $2::int - 1) i`,
+      [session.session_id, attempts, correct]);
+  };
+  await finishWithRecall(interrupted, 4, false);
+  await setDay(db, '2026-12-03');
+  const lowRecall = await customState();
+  assert.equal(lowRecall.counts.new, 30);
+  await finishWithRecall(lowRecall, 20, true);
+  await setDay(db, '2026-12-04');
+  const mixedRecall = await customState();
+  assert.equal(mixedRecall.counts.new, 30);
+  await finishWithRecall(mixedRecall, 20, true);
+  await setDay(db, '2026-12-05');
+  const recovered = await customState();
+  assert.equal(recovered.counts.new, 38);
+  const steps = await call('wm_plan_steps', custom.plan_id);
+  assert.equal(steps[0].initial_new_words, 120);
+  assert.ok(steps[0].steps.every(step => !['lighter', 'heavier'].includes(step.action)));
+
+  const fullRange = cards.map(card => ({ ...card, word: 'full-' + card.word }));
+  const full = await call('wm_project_assign_adaptive', randomUUID(), classId, 'Full ceiling', fullRange,
+    {}, [studentB], 'normal', 14, 7, fullRange.length);
+  assert.equal((await call('wm_plan_progress', full.plan_id)).initial_new_words, 3500);
+  const fullTarget = await one('select access_token from public.wm_targets where plan_id=$1', [full.plan_id]);
+  assert.equal((await call('wm_today_state', fullTarget.access_token)).counts.new, 3500);
+
   await as(db, outsider);
   await assert.rejects(call('wm_plan_progress', project.plan_id), /not_found/);
   await assert.rejects(assign(randomUUID(), 'Outside class', cards.slice(0, 4)), /bad_class/);
   await db.exec('set role anon');
   await assert.rejects(call('wm_project_assign', randomUUID(), classId, 'anon', cards.slice(0, 4), {}, [student], 'normal', 3, 0), /permission denied/);
+  await assert.rejects(assignCustom(120, randomUUID()), /permission denied/);
   await assert.rejects(call('wm_project_status', smallTarget.id, '2026-11-08'), /permission denied/);
-  console.log('PASS: 3,500 words, approval replay, daily resume, catch-up after target date, independent evidence, completion, access boundaries.');
+  console.log('PASS: 3,500 words, approval replay, daily resume, catch-up after target date, independent evidence, completion, adaptive pacing, custom ceilings, access boundaries.');
 } finally {
   await db.close();
 }

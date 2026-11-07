@@ -3,7 +3,7 @@
  * 점수·정확도 같은 내부 값은 만들지도, 내보내지도 않는다. 기존 wm-v1 응답(project 없음)도 같은 함수로 읽는다.
  */
 import type { WmDailyMode, WmProgressStudent, WmProjectStatus, WmSection, WmToday } from '../../lib/wordMemory/types';
-import { dailyBudget } from '../../lib/wordMemory/plan';
+import { dailyBudget, initialProjectBudget } from '../../lib/wordMemory/plan';
 
 /** 한국 날짜(YYYY-MM-DD). 서버 값이 없는 배정 전 미리보기에서만 쓴다 — 서버의 wm_today()와 같은 Asia/Seoul 기준 */
 export const kstToday = (now = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
@@ -80,6 +80,7 @@ export const DAILY_MODES: WmDailyMode[] = ['light', 'normal', 'plus'];
 export const MODE_LABEL: Record<WmDailyMode, string> = { light: '가볍게', normal: '보통', plus: '넉넉히' };
 
 export interface ScheduleInput {
+  newWordLimit?: number;
   total: number;
   mode: WmDailyMode;
   start: string;
@@ -108,7 +109,7 @@ export interface Schedule {
 }
 
 export function projectSchedule(i: ScheduleInput): Schedule {
-  const b = dailyBudget(i.mode);
+  const b = i.newWordLimit === undefined ? dailyBudget(i.mode) : initialProjectBudget(i.newWordLimit);
   const introDays = Math.max(1, Math.ceil(i.total / b.newMax));
   const span = diffDays(i.start, i.goal);
   const studyDays = span - i.reviewDays;

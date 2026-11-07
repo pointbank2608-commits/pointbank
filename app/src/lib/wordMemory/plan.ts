@@ -18,6 +18,13 @@ export interface DailyBudget {
 
 export const dailyBudget = (mode: WmDailyMode): DailyBudget => (mode === 'light' ? { asks: 12, newMax: 3, retryReserve: 2 } : mode === 'plus' ? { asks: 30, newMax: 10, retryReserve: 5 } : { asks: 20, newMax: 5, retryReserve: 4 });
 
+/** The first day starts at the approved ceiling. Reviews can take part of this budget. */
+export function initialProjectBudget(newMax: number): DailyBudget {
+  const main = Math.max(10, newMax * 2);
+  const retryReserve = Math.max(2, Math.ceil(main / 5));
+  return { newMax, asks: main + retryReserve, retryReserve };
+}
+
 /** 서버 wm_key 와 같은 열쇠(낱말|뜻, 소문자·공백 정리) */
 export const cardKey = (word: string, meaning: string) => `${word.trim().replace(/\s+/g, ' ').toLowerCase()}|${meaning.trim().replace(/\s+/g, ' ').toLowerCase()}`;
 

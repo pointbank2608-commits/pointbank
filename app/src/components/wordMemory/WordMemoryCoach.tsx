@@ -234,7 +234,7 @@ export default function WordMemoryCoach({ planId, classId, planTitle, words, clo
                   <li key={s.student_id} className="rounded-xl border border-outline-variant bg-white p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <b>{s.name}</b>
-                      <span className={`${chip} bg-slate-100`}>{modeName(s.mode)}</span>
+                      <span className={`${chip} bg-slate-100`}>{s.initial_new_words == null ? modeName(s.mode) : l(`새 단어 상한 ${s.initial_new_words}개 · 자동`, `Up to ${s.initial_new_words} new words · Auto`)}</span>
                       {s.focus && <span className={`${chip} bg-sky-100 text-sky-900`}>{l(`${skillName(s.focus)} 집중 중`, `Focus: ${skillName(s.focus)}`)}</span>}
                       <span className="text-xs text-on-surface-variant">{s.accuracy_7d === null ? l('최근 7일 기록 없음', 'No answers in 7 days') : l(`최근 7일 ${s.answers_7d}문제 · 정답률 ${s.accuracy_7d}%`, `7 days: ${s.answers_7d} Qs · ${s.accuracy_7d}%`)}</span>
                     </div>
@@ -266,6 +266,7 @@ export default function WordMemoryCoach({ planId, classId, planTitle, words, clo
                   sectionSize={progress.section_size}
                   today={progress.today ?? kstToday()}
                   planMode={progress.daily_mode}
+                  initialNewWords={progress.initial_new_words}
                   onOpenNextSteps={() => setTab('steps')}
                   rowExtra={(s) => (
                     <button type="button" className="min-h-11 rounded-full border border-outline-variant px-3 text-xs font-bold" onClick={() => void copy(parentSummary({ en, student: s.name, planTitle: planTitle || l('단어 암기', 'Word project'), words: progress.words, progress: s, streak: brief?.students.find((b) => b.student_id === s.student_id)?.streak_days }), l('학부모용 요약을 복사했어요.', 'Parent summary copied.'))}>

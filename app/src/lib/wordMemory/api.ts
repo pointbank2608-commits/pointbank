@@ -39,7 +39,7 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
 /* ---------- 선생님 ---------- */
 
 export const wmAssign = (input: WmAssignInput) =>
-  rpc<WmAssignResult>('wm_project_assign', {
+  rpc<WmAssignResult>(input.newWordLimit === undefined ? 'wm_project_assign' : 'wm_project_assign_adaptive', {
     p_request_id: input.requestId,
     p_class_id: input.classId,
     p_title: input.title,
@@ -49,6 +49,7 @@ export const wmAssign = (input: WmAssignInput) =>
     p_daily_mode: input.mode,
     p_study_days: input.studyDays,
     p_review_days: input.reviewDays,
+    ...(input.newWordLimit === undefined ? {} : { p_new_word_limit: input.newWordLimit }),
   });
 export const wmPlanList = (classId: string | null) => rpc<WmPlanSummary[]>('wm_plan_list', { p_class_id: classId });
 export const wmPlanResults = (planId: string) => rpc<WmPlanResults>('wm_plan_results', { p_plan: planId });

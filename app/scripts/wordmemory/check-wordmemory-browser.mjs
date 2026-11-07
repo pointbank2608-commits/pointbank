@@ -15,6 +15,7 @@ const shots = resolve(process.env.WM_TEST_OUTPUT || resolve(root, '../output/wor
 mkdirSync(shots, { recursive: true });
 const db = await makeWmDb();
 await db.exec(readFileSync(new URL('../../../supabase/103_word_projects.sql', import.meta.url), 'utf8'));
+await db.exec(readFileSync(new URL('../../../supabase/104_word_project_adaptive_pace.sql', import.meta.url), 'utf8'));
 
 // ---------- 합성 학원 ----------
 const OWNER = '00000000-0000-4000-8000-000000000001';
@@ -96,7 +97,13 @@ const goDay = (d) => fetch(`${RPC}/__day?d=${d}`);
 const names = [...readFileSync(resolve(root, 'src/lib/api.ts'), 'utf8').matchAll(/export (?:async )?function (\w+)|export const (\w+)/g)].map((m) => m[1] || m[2]);
 const api = `
 const get = async (p) => (await fetch(window.__rpc + p)).json();
-const fn = { fetchClasses: async () => get('/q/classes'), fetchStudentsOfClass: async (id) => get('/q/students?class=' + id) };
+const dictionaryEntries = Array.from({ length: 3520 }, (_, i) => ({
+  id: 'dictionary-' + i, word: 'word' + (i === 1 ? 0 : i), meaning: '뜻' + i,
+  category: i < 5 ? '동물' : '음식', level: i < 5 ? 1 : 5, sense_number: i === 1 ? 2 : 1,
+  image_url: i === 0 ? '/phonics-images/cat.webp' : null, example_sentence: i === 0 ? 'This is word0.' : null,
+}));
+dictionaryEntries.push({ ...dictionaryEntries[0], id: 'dictionary-duplicate' });
+const fn = { fetchWordBank: async () => dictionaryEntries, fetchClasses: async () => get('/q/classes'), fetchStudentsOfClass: async (id) => get('/q/students?class=' + id) };
 ${names.map((n) => `export const ${n}=(...a)=>(fn.${n}||(async()=>[]))(...a);`).join('\n')}`;
 const supabaseStub = `export const supabase = { rpc: async (name, args) => {
   const r = await fetch(window.__rpc + '/rpc/' + name, { method: 'POST', headers: { 'content-type': 'application/json', 'x-uid': window.__uid || '' }, body: JSON.stringify(args || {}) });
@@ -114,7 +121,7 @@ const server = await createServer({
       enforce: 'pre',
       configureServer(s) {
         s.middlewares.use((req, _res, next) => {
-          if (/^\/(wm\/|teacher|results|portal)/.test(req.url || '')) req.url = '/scripts/wordmemory/harness.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+          if (/^\/(wm\/|teacher|results|portal|dictionary)/.test(req.url || '')) req.url = '/scripts/wordmemory/harness.html' + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
           next();
         });
       },
@@ -635,6 +642,31 @@ try {
   await rp3.close();
   ok('마지막 단어까지 확인: 학생 화면은 프로젝트 완료, 교사 진행도 완료(3,520/3,520)');
 
+  const dictionary = await newPage(phone);
+  await dictionary.goto(BASE + '/dictionary');
+  await dictionary.getByText('사전 단어 프로젝트', { exact: true }).click();
+  await dictionary.getByRole('button', { name: /동물/ }).first().click();
+  await dictionary.getByRole('button', { name: '현재 결과 6개 담기' }).click();
+  await dictionary.getByRole('button', { name: '사전 단어 전체 담기' }).click();
+  await dictionary.getByRole('status').filter({ hasText: /배정 범위 3520개.*겹친 항목 7개/ }).waitFor();
+  await dictionary.getByRole('button', { name: '동물 범위 빼기' }).click();
+  await dictionary.getByRole('status').filter({ hasText: /배정 범위 3520개.*겹친 항목 1개/ }).waitFor();
+  await dictionary.getByRole('button', { name: '이 범위로 프로젝트 만들기' }).click();
+  await dictionary.waitForFunction(() => document.querySelectorAll('[data-wm-student]').length === 3);
+  await dictionary.locator('[data-wm-student]').nth(1).uncheck();
+  await dictionary.locator('[data-wm-student]').nth(2).uncheck();
+  await dictionary.locator('[data-wm-new-limit]').fill('3521');
+  assert.equal(await dictionary.locator('[data-wm-assign-btn]').isEnabled(), false);
+  await dictionary.locator('[data-wm-new-limit]').fill('60');
+  await dictionary.locator('[data-wm-assign-btn]').click();
+  await dictionary.waitForSelector('[data-wm-result]');
+  const [assigned] = await sqlq(`select jsonb_array_length(cards)::int n, initial_new_words,
+    (select count(*)::int from jsonb_array_elements(cards) c where c->>'word'='word0') senses,
+    (select c->>'imageUrl' from jsonb_array_elements(cards) c where c->>'meaning'='뜻0') picture
+    from public.wm_plans where source->>'type'='dictionary'`);
+  assert.deepEqual(assigned, { n: 3520, initial_new_words: 60, senses: 2, picture: '/phonics-images/cat.webp' });
+  ok('사전 전체와 겹치는 범위를 모아도 중복 없이 3,520개가 배정되고 새 단어 상한 60개와 다른 뜻, 기존 그림이 저장된다');
+  await dictionary.close();
 } finally {
   await browser.close();
   await server.close();

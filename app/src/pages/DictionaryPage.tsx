@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next';
 import CardSelectToggle from '../components/CardSelectToggle';
 import FlashcardStudy from '../components/FlashcardStudy';
 import WordSelectionBar from '../components/WordSelectionBar';
+import DictionaryProjectPicker from '../components/wordMemory/DictionaryProjectPicker';
+import { useAuth } from '../context/AuthContext';
+import { useFeature } from '../lib/features';
 import { fetchWordBank } from '../lib/api';
 import { buildCurriculumWords, chunkWords, type WordSchoolId } from '../lib/curriculumWords';
 import { speak } from '../lib/speech';
@@ -159,6 +162,8 @@ function ImageLightbox({ entry, onClose }: { entry: WordBankEntry; onClose: () =
 
 export default function DictionaryPage() {
   const { t } = useTranslation();
+  const { isStaff } = useAuth();
+  const homeworkOpen = useFeature('homework');
   const [entries, setEntries] = useState<WordBankEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -275,6 +280,20 @@ export default function DictionaryPage() {
 
   // 필터가 바뀌면 "더 보기"로 늘려둔 개수는 처음(PAGE_SIZE)으로 돌아간다.
   const filterKey = `${tab}|${category}|${subcategory}|${level}|${partOfSpeech}|${query}|${moe800}|${moeDay}|${useCurr}|${band?.id}|${currUnit}|${currSet}|${currSort}`;
+  const isWholeWordBank = !useCurr && !moe800 && !query.trim() && category === 'all' && level === 'all' && partOfSpeech === 'all';
+  const wholeProjectRange = { key: 'all-words', label: t('dictionary.projectAllLabel'), entries: tabEntries };
+  const projectRange = isWholeWordBank ? wholeProjectRange : {
+    key: filterKey,
+    label: [
+      useCurr ? currTitle : moe800 ? [t('dictionary.moe800'), moeDay !== 'all' ? t('dictionary.moeDay', { n: moeDay }) : ''].filter(Boolean).join(' · ') : '',
+      !useCurr && level !== 'all' ? WORD_LEVELS.find((item) => item.level === level)?.label : '',
+      !useCurr && category !== 'all' ? category : '',
+      !useCurr && subcategory !== 'all' ? subcategory : '',
+      !useCurr && partOfSpeech !== 'all' ? partOfSpeech : '',
+      query.trim(),
+    ].filter(Boolean).join(' · ') || t('dictionary.projectCurrentLabel'),
+    entries: filtered,
+  };
   const visibleCount = limit.key === filterKey ? limit.count : PAGE_SIZE;
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
@@ -356,16 +375,18 @@ export default function DictionaryPage() {
 
       {entries && (
         <div className="space-y-3">
-          {hasMoe800 && (
+          {(hasMoe800 || (tab === 'word' && tabEntries.length > 0)) && (
             <div>
               <div className="mb-1.5 font-caption text-caption text-on-surface-variant">{t('dictionary.listLabel')}</div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={() => { setMoe800(false); setMoeDay('all'); setCurr(false); }} className={chipClass(!moe800 && !curr, 'tertiary')}>
                   {t('dictionary.allCategory')}
                 </button>
-                <button type="button" onClick={() => { setMoe800(true); setCurr(false); }} className={chipClass(moe800, 'tertiary')}>
-                  {t('dictionary.moe800')}
-                </button>
+                {hasMoe800 && (
+                  <button type="button" onClick={() => { setMoe800(true); setCurr(false); }} className={chipClass(moe800, 'tertiary')}>
+                    {t('dictionary.moe800')}
+                  </button>
+                )}
                 {tab === 'word' && (
                   <button type="button" onClick={() => { setCurr(true); setMoe800(false); setMoeDay('all'); }} className={chipClass(curr, 'tertiary')}>
                     {t('dictionary.curriculum')}
@@ -562,6 +583,11 @@ export default function DictionaryPage() {
               </div>
             )}
           </div>
+          {isStaff && homeworkOpen && (
+            <div hidden={tab !== 'word'}>
+              <DictionaryProjectPicker current={projectRange} whole={wholeProjectRange} />
+            </div>
+          )}
           {filtered.length > 0 && selectedList.length === 0 && (
             <p className="font-caption text-caption text-on-surface-variant">{t('selectionBar.hint')}</p>
           )}

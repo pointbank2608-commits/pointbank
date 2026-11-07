@@ -6,14 +6,14 @@ import { fetchClasses, fetchStudentsOfClass } from '../../lib/api';
 import { useFeature } from '../../lib/features';
 import type { ClassRow, FullCardItem, Student } from '../../lib/types';
 import { toWmError, wmAssign, wmPlanLinks, wmStudentUrl } from '../../lib/wordMemory/api';
-import { analyzeCards, dailyBudget, defaultStudyDays, estimateMinutes, toWmCards, WM_MIN_WORDS, WM_PROJECT_MAX_DAYS } from '../../lib/wordMemory/plan';
+import { analyzeCards, dailyBudget, defaultStudyDays, estimateMinutes, initialProjectBudget, toWmCards, WM_MIN_WORDS, WM_PROJECT_MAX_DAYS } from '../../lib/wordMemory/plan';
 import type { WmAssignResult, WmDailyMode } from '../../lib/wordMemory/types';
 import AccessibleDialog from '../AccessibleDialog';
 import { GoalSchedule, RangeSummary } from '../wordMemoryProject/ProjectPlan';
 import { addDays, kstToday, projectSchedule } from '../wordMemoryProject/model';
 
 export interface WmSource {
-  type: 'wordlist' | 'elementary800' | 'custom';
+  type: 'wordlist' | 'elementary800' | 'custom' | 'dictionary';
   id?: string;
   name: string;
 }
@@ -35,6 +35,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const [students, setStudents] = useState<Student[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [mode, setMode] = useState<WmDailyMode>('light');
+  const [customLimit, setCustomLimit] = useState('');
   const [title, setTitle] = useState(source.name);
   // 목표일(예상). 비워 두면 소개에 걸리는 일수 + 여유로 정한 기본값. 서버의 목표일 = 시작일 + 공부 기간 + 복습 기간
   const [goal, setGoal] = useState<string | null>(null);
@@ -46,8 +47,15 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const [links, setLinks] = useState<{ student_id: string; name: string; access: string }[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const goalDate = goal ?? addDays(today, defaultStudyDays(wmCards.length, mode, WM_PROJECT_MAX_DAYS) + reviewDays);
-  const schedule = useMemo(() => projectSchedule({ total: wmCards.length, mode, start: today, goal: goalDate, reviewDays }), [wmCards.length, mode, today, goalDate, reviewDays]);
+  const parsedLimit = Number(customLimit);
+  const validLimit = customLimit === '' || (Number.isInteger(parsedLimit) && parsedLimit >= 1 && parsedLimit <= wmCards.length);
+  const newWordLimit = customLimit && validLimit ? parsedLimit : undefined;
+  const budget = newWordLimit === undefined ? dailyBudget(mode) : initialProjectBudget(newWordLimit);
+  const defaultDays = newWordLimit === undefined
+    ? defaultStudyDays(wmCards.length, mode, WM_PROJECT_MAX_DAYS)
+    : Math.min(WM_PROJECT_MAX_DAYS, Math.max(7, Math.ceil(wmCards.length / budget.newMax) + 3));
+  const goalDate = goal ?? addDays(today, defaultDays + reviewDays);
+  const schedule = useMemo(() => projectSchedule({ total: wmCards.length, mode, start: today, goal: goalDate, reviewDays, newWordLimit }), [wmCards.length, mode, today, goalDate, reviewDays, newWordLimit]);
   const study = schedule.studyDays;
 
   useEffect(() => {
@@ -80,9 +88,8 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
     };
   }, [classId]);
 
-  const budget = dailyBudget(mode);
   const minutes = estimateMinutes(mode);
-  const canAssign = homeworkOpen && !busy && !result && classId && picked.size > 0 && analysis.issues.length === 0 && schedule.valid;
+  const canAssign = homeworkOpen && !busy && !result && classId && picked.size > 0 && analysis.issues.length === 0 && schedule.valid && validLimit;
 
   async function assign() {
     if (!canAssign) return;
@@ -91,7 +98,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
     try {
       const studentIds = [...picked].sort();
       const approvedTitle = title.trim() || source.name;
-      const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays]);
+      const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays, newWordLimit]);
       if (lastRequest.current?.key !== key || lastRequest.current.cards !== wmCards) {
         lastRequest.current = { key, id: crypto.randomUUID(), cards: wmCards };
       }
@@ -103,6 +110,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
         source: { type: source.type, id: source.id, name: source.name },
         studentIds,
         mode,
+        newWordLimit,
         studyDays: study,
         reviewDays,
       });
@@ -244,19 +252,25 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
               <div className="mb-2 text-sm font-bold text-on-surface-variant">{t('wordMemory.daily')}</div>
               <div className="flex flex-wrap gap-2" role="group" aria-label={t('wordMemory.daily')}>
                 {(['light', 'normal', 'plus'] as const).map((m) => (
-                  <button key={m} type="button" aria-pressed={mode === m} className={chip(mode === m)} onClick={() => setMode(m)} data-wm-mode={m}>
+                  <button key={m} type="button" aria-pressed={!customLimit && mode === m} className={chip(!customLimit && mode === m)} onClick={() => { setMode(m); setCustomLimit(''); }} data-wm-mode={m}>
                     {t(m === 'light' ? 'wordMemory.dailyLight' : m === 'plus' ? 'wordMemory.dailyPlus' : 'wordMemory.dailyNormal')}
                   </button>
                 ))}
               </div>
+              <label className="mt-3 block text-sm font-bold text-on-surface-variant">
+                {t('wordMemory.customNewLimit')}
+                <input type="number" min={1} max={wmCards.length} step={1} value={customLimit} placeholder={String(dailyBudget(mode).newMax)}
+                  onChange={(event) => setCustomLimit(event.target.value)} className={`${field} ml-2 w-28`} data-wm-new-limit />
+              </label>
+              {!validLimit && <p role="alert" className="mt-1 text-sm text-error">{t('wordMemory.customNewLimitInvalid', { max: wmCards.length })}</p>}
               <p className="mt-2" data-wm-daily-desc>
-                {t('wordMemory.dailyDesc', { asks: budget.asks, newMax: budget.newMax, min: minutes.min, max: minutes.max })}
+                {newWordLimit === undefined ? t('wordMemory.dailyDesc', { asks: budget.asks, newMax: budget.newMax, min: minutes.min, max: minutes.max }) : t('wordMemory.customNewLimitPreview', { limit: newWordLimit, initial: budget.newMax })}
               </p>
-              <p className="text-sm text-on-surface-variant">{t('wordMemory.dailyNote')}</p>
+              <p className="text-sm text-on-surface-variant">{t('wordMemory.adaptivePaceNote')}</p>
             </section>
 
             <RangeSummary name={source.name} total={wmCards.length} />
-            <GoalSchedule total={wmCards.length} mode={mode} today={today} goal={goalDate} reviewDays={reviewDays} onGoal={setGoal} onMode={setMode} onReviewDays={setReviewDays} />
+            <GoalSchedule total={wmCards.length} mode={mode} newWordLimit={newWordLimit} today={today} goal={goalDate} reviewDays={reviewDays} onGoal={setGoal} onMode={setMode} onReviewDays={setReviewDays} />
 
             <section className="space-y-1 rounded-xl border border-outline-variant p-4" data-wm-preview>
               <h3 className="font-bold text-deep-navy">{t('wordMemory.previewTitle')}</h3>

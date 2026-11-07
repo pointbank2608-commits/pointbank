@@ -29,6 +29,7 @@ export interface WmStageCounts {
 }
 
 export interface WmAssignInput {
+  newWordLimit?: number;
   requestId: string;
   classId: string;
   title: string;
@@ -227,6 +228,7 @@ export interface WmStepReason {
 }
 
 export interface WmStudentSteps {
+  initial_new_words?: number | null;
   student_id: string;
   name: string;
   mode: WmDailyMode;
@@ -246,6 +248,7 @@ export interface WmSection {
 }
 
 export interface WmProgressStudent {
+  today_new_words?: number | null;
   project?: WmProjectStatus;
   /** 이 학생에게 지금 적용 중인 하루 분량(선생님이 다음 단계 카드로 바꾼 값 포함) */
   current_mode?: WmDailyMode;
@@ -259,6 +262,7 @@ export interface WmProgressStudent {
 }
 
 export interface WmProgress {
+  initial_new_words?: number | null;
   daily_mode?: WmDailyMode;
   start_date?: string;
   today?: string;

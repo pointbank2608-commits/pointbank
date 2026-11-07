@@ -16,11 +16,11 @@ const dateText = (iso: string, today: string, en: boolean) => (en ? new Date(`${
  * 단어 프로젝트(wm-v2) 교사 진행 화면. 학생마다 전체 · 확인됨 · 아직 확인 부족 · 오답 후 다시 확인 · 오늘 복습 대기를 보여 준다.
  *  - "확인됨"은 며칠 간격을 두고 도움 없이 맞힌 근거가 있는 단어다. 오늘 복습 대기는 다른 분류와 겹칠 수 있어 막대에 더하지 않는다.
  *  - 목표일은 예상 일정이라 지나도 학습은 이어진다(표시만 하고 재촉하지 않는다). 날짜는 서버(한국 날짜) 값 `today`를 쓴다.
- *  - 하루 분량 조정은 이 화면에서 하지 않는다. 기존 "다음 단계 카드" 탭으로 안내하고, pace.on_track 만으로 버튼을 띄우지 않는다.
+ *  - 사용자 지정 상한 안에서 자동으로 조절된 오늘 분량을 보여 준다.
  *  - 서버 구간(50개)은 화면에서 묶어 20구간 이하로 보여 준다.
  */
-export default function TeacherProgress({ rows, words, sectionSize, today, planMode, onOpenNextSteps, rowExtra }: {
-  rows: ProgressRow[]; words: number; sectionSize: number; today: string; planMode?: WmDailyMode; onOpenNextSteps?: () => void;
+export default function TeacherProgress({ rows, words, sectionSize, today, planMode, initialNewWords, onOpenNextSteps, rowExtra }: {
+  rows: ProgressRow[]; words: number; sectionSize: number; today: string; planMode?: WmDailyMode; initialNewWords?: number | null; onOpenNextSteps?: () => void;
   /** 학생 줄 아래에 붙일 단추(예: 학부모 요약 복사) */
   rowExtra?: (r: ProgressRow) => ReactNode;
 }) {
@@ -34,7 +34,7 @@ export default function TeacherProgress({ rows, words, sectionSize, today, planM
       <header className="space-y-1">
         <h3 className="text-lg font-extrabold">{l(`전체 ${fmt(words)}개 · ${shown}개씩 ${Math.ceil(words / shown)}구간`, `${fmt(words)} words · ${Math.ceil(words / shown)} groups of ${shown}`)}</h3>
         <p className="text-sm text-on-surface-variant" data-wmp-adjust-note>
-          {l('하루 분량은 ‘다음 단계 카드’에서 선생님이 승인해야 바뀌어요.', 'Daily load only changes when you approve it in “Next steps”.')}{' '}
+          {l('최근 학습과 복습 기록에 따라 학생별 새 단어 분량을 자동 조절해요.', 'New word loads adjust automatically for each student based on recent practice and reviews.')}{' '}
           {onOpenNextSteps && <button type="button" onClick={onOpenNextSteps} data-wmp-next-steps className="min-h-11 font-bold text-primary underline">{l('다음 단계 카드 보기', 'Open Next steps')}</button>}
         </p>
       </header>
@@ -47,7 +47,7 @@ export default function TeacherProgress({ rows, words, sectionSize, today, planM
       <ul className="space-y-3">
         {rows.map((r) => (
           <li key={r.student_id} className="rounded-xl border border-outline-variant bg-white p-4" data-wmp-row={r.student_id} data-wmp-kind={r.project ? 'project' : 'legacy'}>
-            {r.project ? <ProjectRow l={l} date={date} r={r} modeName={modeName} planMode={planMode} /> : <LegacyRow l={l} r={r} words={words} />}
+            {r.project ? <ProjectRow l={l} date={date} r={r} modeName={modeName} planMode={planMode} initialNewWords={initialNewWords} /> : <LegacyRow l={l} r={r} words={words} />}
             <div className="mt-3 flex flex-wrap items-center gap-2">
             <button type="button" aria-expanded={open === r.student_id} onClick={() => setOpen(open === r.student_id ? null : r.student_id)} className="min-h-11 rounded-full border border-outline-variant px-4 text-sm font-bold">
               {open === r.student_id ? l('구간 접기', 'Hide groups') : l('구간별로 보기', 'Show by group')}
@@ -68,7 +68,7 @@ function Legend({ color, term, desc }: { color: string; term: string; desc: stri
 
 const Badge = ({ children, tone = 'bg-[#f3ecd7]' }: { children: ReactNode; tone?: string }) => <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${tone}`}>{children}</span>;
 
-function ProjectRow({ l, date, r, modeName, planMode }: { l: L; date: (iso: string) => string; r: ProgressRow; modeName: (m: WmDailyMode) => string; planMode?: WmDailyMode }) {
+function ProjectRow({ l, date, r, modeName, planMode, initialNewWords }: { l: L; date: (iso: string) => string; r: ProgressRow; modeName: (m: WmDailyMode) => string; planMode?: WmDailyMode; initialNewWords?: number | null }) {
   const p = r.project!;
   const b = progressBuckets(p);
   const adjusted = r.current_mode && planMode && r.current_mode !== planMode;
@@ -79,7 +79,9 @@ function ProjectRow({ l, date, r, modeName, planMode }: { l: L; date: (iso: stri
         {p.completed && <Badge tone="bg-emerald-100 text-emerald-900">{l('완료', 'Done')}</Badge>}
         {!p.completed && p.goal_passed && <Badge tone="bg-[#e8edff] text-[#2b3f9e]">{l(`목표일(${date(p.goal_date)}) 지남 · 학습은 이어져요`, `Target date (${date(p.goal_date)}) passed · learning continues`)}</Badge>}
         {!p.completed && !p.goal_passed && <Badge>{l(`목표일 ${date(p.goal_date)}(예상)`, `Target ${date(p.goal_date)} (estimate)`)}</Badge>}
-        {r.current_mode && <Badge tone={adjusted ? 'bg-amber-100 text-amber-900' : undefined}>{l(`하루 분량 ${modeName(r.current_mode)}${adjusted ? '(조정됨)' : ''}`, `Daily load ${modeName(r.current_mode)}${adjusted ? ' (adjusted)' : ''}`)}</Badge>}
+        {initialNewWords != null && <Badge>{l(`새 단어 상한 ${fmt(initialNewWords)}개`, `Up to ${fmt(initialNewWords)} new words`)}</Badge>}
+        {r.today_new_words != null && <Badge tone="bg-sky-100 text-sky-900">{l(`오늘 새 단어 ${fmt(r.today_new_words)}개`, `${fmt(r.today_new_words)} new today`)}</Badge>}
+        {initialNewWords == null && r.current_mode && <Badge tone={adjusted ? 'bg-amber-100 text-amber-900' : undefined}>{l(`하루 분량 ${modeName(r.current_mode)}${adjusted ? '(조정됨)' : ''}`, `Daily load ${modeName(r.current_mode)}${adjusted ? ' (adjusted)' : ''}`)}</Badge>}
         {r.note && <Badge>{r.note}</Badge>}
       </div>
       <p className="mt-2 text-sm"><span className="text-2xl font-extrabold tabular-nums" data-wmp-verified>{fmt(b.verified)}</span> <span className="text-on-surface-variant">{l(`/ 전체 ${fmt(b.total)}개 확인됨 (${Math.round(b.pct.verified)}%)`, `/ ${fmt(b.total)} confirmed (${Math.round(b.pct.verified)}%)`)}</span></p>

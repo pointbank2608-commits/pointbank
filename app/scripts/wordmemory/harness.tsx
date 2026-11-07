@@ -6,6 +6,7 @@ import WordMemoryAssignModal from '../../src/components/wordMemory/WordMemoryAss
 import WordMemoryResults from '../../src/components/wordMemory/WordMemoryResults';
 import WordMemoryPortalLinks from '../../src/components/wordMemory/WordMemoryPortalLinks';
 import WordMemoryStudentPage from '../../src/pages/WordMemoryStudentPage';
+import DictionaryPage from '../../src/pages/DictionaryPage';
 import i18n from '../../src/i18n';
 import '../../src/tailwind.css';
 
@@ -53,6 +54,7 @@ createRoot(document.getElementById('root')!).render(
       <Route path="/teacher" element={<Teacher />} />
       <Route path="/results" element={<Results />} />
       <Route path="/portal" element={<Portal />} />
+      <Route path="/dictionary" element={<DictionaryPage />} />
     </Routes>
   </BrowserRouter>,
 );
