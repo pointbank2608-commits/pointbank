@@ -6,6 +6,8 @@ import type { FullCardItem } from '../../../lib/types';
 import { cardFromSnapshot } from '../../../lib/homework/teacherHelpers';
 import HomeworkRewardPanel from './HomeworkRewardPanel';
 import { ClassMethods, StudentStrip, useBlockRows } from './BlockResults';
+import GuidedHomeworkFeedback from './GuidedHomeworkFeedback';
+import type { CheckType } from '../../../lib/homework/guided';
 import WatchResults from './WatchResults';
 
 const POLL_MS = 15000;
@@ -19,6 +21,7 @@ export default function HomeworkResults({
   hw,
   onChanged,
   onMakeHomework,
+  onPrepareGuided,
   onRecommend,
   onCard,
 }: {
@@ -27,6 +30,7 @@ export default function HomeworkResults({
   /** 오답으로 숙제 만들기(학생 한 명 또는 반 전체) */
   onMakeHomework: (args: { studentIds?: string[]; cards: FullCardItem[]; title: string }) => void;
   onRecommend: (studentIds: string[]) => void;
+  onPrepareGuided: (studentId: string, cards: FullCardItem[], type: CheckType) => void;
   onCard: (studentId: string) => void;
 }) {
   const { t } = useTranslation();
@@ -198,6 +202,7 @@ export default function HomeworkResults({
               </span>
             </div>
 
+            <GuidedHomeworkFeedback rows={block.rows.filter(row => row.student_id === s.student_id)} done={s.status === 'done'} onPrepare={(cards,type) => onPrepareGuided(s.student_id,cards,type)} />
             <StudentStrip rows={block.rows} name={s.name} onReviewed={() => void block.load()} onError={(m) => notify(m, 'error')} />
 
             {(s.wrong_words.length > 0 || s.retries > 0) && (

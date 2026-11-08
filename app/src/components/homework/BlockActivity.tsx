@@ -260,8 +260,9 @@ export default function BlockActivity({
         )}
       </p>
     );
+  const finalSpeaking = b.type === "speak" && b.method === "guided-final:speak";
   const currentStage = b.stages[stage];
-  const speakingReady = b.type !== "speak" || stage >= b.stages.length;
+  const speakingReady = finalSpeaking || b.type !== "speak" || stage >= b.stages.length;
   const allowed =
     (b.type !== "video" || watched) &&
     speakingReady &&
@@ -305,7 +306,7 @@ export default function BlockActivity({
           )}
         </p>
       )}
-      {(b.type !== "speak" ||
+      {(finalSpeaking || b.type !== "speak" ||
         (currentStage !== "picture" && !speakingReady) ||
         showHint) && (
         <p className="text-center text-2xl leading-relaxed">
@@ -318,10 +319,10 @@ export default function BlockActivity({
         </p>
       )}
       {b.translation &&
-        (b.type !== "speak" || currentStage === "model" || showHint) && (
+        (finalSpeaking || b.type !== "speak" || currentStage === "model" || showHint) && (
           <p className="text-center text-lg">{b.translation}</p>
         )}
-      {b.type !== "video" && (
+      {b.type !== "video" && !finalSpeaking && (
         <div className="flex flex-wrap gap-2">
           <button
             className={btn}

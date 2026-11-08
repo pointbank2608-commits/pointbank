@@ -4,11 +4,35 @@ import { effectiveSlides } from '../lessonSlides';
 import {extractYoutubeId} from '../youtube';
 import {parseShadowText} from '../shadowLines';
 import { lessonCandidates, newBlock, validateItems } from './blocks';
-import { GEN_VERSION, SKILL, meaningQ, sentenceOrderQ, spellQ } from './build';
+import { blankQ, GEN_VERSION, hintQ, lettersQ, listenQ, pictureQ, reverseQ, SKILL, meaningQ, sentenceOrderQ, shuffleWith, spellQ } from './build';
 import { isMeaning } from './quality';
 import type { HwItemDraft, HwQuestion } from './types';
 
 export type PracticeGoal = 'review' | 'memory' | 'speaking';
+export const CHECK_TYPES = {
+ choice: ['그림이나 뜻을 보고 단어 고르기','Choose the word from a picture or meaning'],
+ listen: ['음성을 듣고 단어 고르기','Listen and choose the word'],
+ lettersMissing: ['빠진 알파벳 채우기','Fill in missing letters'],
+ lettersOrder: ['알파벳을 배열해 단어 만들기','Arrange letters to make a word'],
+ spelling: ['뜻을 보고 철자 직접 쓰기','Spell the word from its meaning'],
+ sentenceOrder: ['단어를 배열해 문장 만들기','Arrange words into a sentence'],
+ sentenceBlank: ['문장 빈칸에 맞는 단어 고르기','Choose a word for the sentence gap'],
+ speak: ['단어·문장 혼자 말하기','Record the word or sentence from a cue'],
+} as const;
+export type CheckType = keyof typeof CHECK_TYPES;
+export type FinalCheck = { types: CheckType[]; count: 5 | 10 | 15 | 0 };
+
+export const GUIDED_FINAL = 'guided-final:';
+
+export function suggestedCheck(goals: PracticeGoal[], contents: LearningContent[]): CheckType[] {
+ const words=contents.some(c=>c.kind==='word'), sentences=contents.some(c=>c.kind==='sentence');
+ const types:CheckType[]=[];
+ if(words&&goals.includes('memory'))types.push('spelling');
+ if(sentences&&goals.some(goal=>goal!=='speaking'))types.push('sentenceOrder');
+ if(goals.includes('speaking'))types.push('speak');
+ if(!types.length&&words)types.push('choice');
+ return types;
+}
 export type LearningContent = { id:string; kind:'word'|'sentence'; card:FullCardItem; origins:string[] };
 export type LearningVideo = { id:string; title:string; item:HwItemDraft };
 export type LearningSource = { contents:LearningContent[]; videos:LearningVideo[]; excluded:number };
@@ -69,7 +93,8 @@ function listeningWrite(card:FullCardItem,en:boolean):HwQuestion{
  return {id:crypto.randomUUID(),qtype:'text',style:'dictation',prompt:'',speak:card.word,correct:card.word,word:card.word,skill:SKILL.dictation,gen:GEN_VERSION,card:{word:card.word,meaning:card.meaning,imageUrl:card.imageUrl,example:card.example},sub:en?'Listen and type.':'듣고 써 보세요.'};
 }
 /** Existing student activities, grouped into a few packs instead of 1 block per word. */
-export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal,en=false){
+export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal | PracticeGoal[],en=false,final:FinalCheck|null=null){
+ const goals=Array.isArray(goal)?goal:[goal];
  const items:HwItemDraft[]=[],issues:string[]=[];
  if(contents.some(c=>c.card.word.length>300))issues.push(en?'An entry exceeds 300 characters. Edit it or use detailed editing.':'300자를 넘는 내용이 있습니다. 내용을 수정하거나 세부 편집을 사용해 주세요.');
  if(contents.some(c=>c.card.word.includes('/')))issues.push(en?'Split expressions containing / into separate entries; / is reserved for answer alternatives.':'‘/’가 들어간 표현은 각각 나눠 주세요. 이 기호는 정답 구분에 사용됩니다.');
@@ -82,14 +107,69 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
   const choice=isMeaning(card.meaning)&&sameWordMeanings.size===1?meaningQ(card,pool,Math.random):null;
   const order=kind==='sentence'&&card.meaning.trim()?sentenceOrderQ({...card,example:card.word},Math.random):null;
   // Never leave an ambiguous multiple-choice prompt or omit an unsupported phrase.
-  recall.push(goal==='memory'?(choice||order||listeningWrite(card,en)):(order||choice||listeningWrite(card,en)));
+  recall.push(goals.includes('memory')?(choice||order||listeningWrite(card,en)):(order||choice||listeningWrite(card,en)));
   writing.push(kind==='word'&&card.meaning&&sameWordMeanings.size===1?(spellQ(card)||listeningWrite(card,en)):listeningWrite(card,en));
  }
  const pack=(qs:HwQuestion[],title:string)=>{for(let i=0;i<qs.length;i+=100){const it=newBlock('recall');it.title=title;it.content.questions=qs.slice(i,i+100);items.push(it);}};
  if(recall.length)pack(recall,en?'Check what you remember':'기억 확인하기');
- if(goal==='memory'&&writing.length)pack(writing,en?'Write from memory':'가리고 써 보기');
- if(goal==='speaking')for(let i=0;i<contents.length;i+=5){const group=contents.slice(i,i+5),it=newBlock('speak');it.title=en?'Read, hide and speak':'읽고 가리고 말하기';Object.assign(it.config.block!,{text:group.map(c=>c.card.word).join('\n'),translation:group.map(c=>c.card.meaning).join('\n'),stages:['model','hidden'],repeats:1});items.push(it);}
+ if(goals.includes('memory')&&writing.length)pack(writing,en?'Write from memory':'가리고 써 보기');
+ if(goals.includes('speaking'))for(let i=0;i<contents.length;i+=5){const group=contents.slice(i,i+5),it=newBlock('speak');it.title=en?'Read, hide and speak':'읽고 가리고 말하기';Object.assign(it.config.block!,{text:group.map(c=>c.card.word).join('\n'),translation:group.map(c=>c.card.meaning).join('\n'),stages:['model','hidden'],hiddenWords:group.flatMap(c=>c.card.word.trim().split(/\s+/)).map((_,index)=>index),repeats:1});items.push(it);}
  items.push(...videos.map(v=>structuredClone(v.item)));
+ for(const item of items)if(item.config.block)item.config.block.guidedPractice=true;
+ let finalQuestions=0;
+ if(final){
+  const candidates=final.types.map(type=>({type,items:shuffleWith(contents.flatMap<{id:string;card:FullCardItem;question:HwQuestion|null}>(({card,kind,id})=>{
+   const word=kind==='word';
+   const uniqueMeaning=isMeaning(card.meaning)&&!pool.some(other=>normalize(other.meaning)===normalize(card.meaning)&&normalize(other.word)!==normalize(card.word));
+   const uniqueImage=!!card.imageUrl&&!pool.some(other=>other.imageUrl===card.imageUrl&&normalize(other.word)!==normalize(card.word));
+   let question:HwQuestion|null=null;
+   switch(type){
+    case 'choice': if(word)question=(uniqueImage?pictureQ(card,pool,Math.random):null)??(uniqueMeaning?reverseQ(card,pool,Math.random):null);break;
+    case 'listen': if(word)question=listenQ(card,pool,Math.random);break;
+    case 'lettersMissing': if(word&&uniqueMeaning)question=hintQ(card);break;
+    case 'lettersOrder': if(word&&uniqueMeaning)question=lettersQ(card,Math.random);break;
+    case 'spelling': if(word&&uniqueMeaning)question=spellQ(card);break;
+    case 'sentenceOrder': if(!word&&uniqueMeaning)question=sentenceOrderQ({...card,example:card.word},Math.random);break;
+    case 'sentenceBlank': if(word)question=blankQ(card,pool,Math.random);break;
+    case 'speak': return uniqueMeaning||uniqueImage?[{id,card:{...card,meaning:uniqueMeaning?card.meaning:"",imageUrl:uniqueImage?card.imageUrl:null},question:null}]:[];
+   }
+   if(!question)return [];
+   if(type==='lettersMissing'||type==='spelling')delete question.speak;
+   return [{id,card,question}];
+  }),Math.random)}));
+  for(const {type,items:available} of candidates)if(!available.length)
+   issues.push(en?'No suitable material for '+CHECK_TYPES[type][1]+'.':CHECK_TYPES[type][0]+'에 쓸 수 있는 자료가 없어요.');
+  const capacity=candidates.reduce((sum,c)=>sum+c.items.length,0);
+  const target=final.count||capacity;
+  if(!candidates.length||target<candidates.length||target>capacity)
+   issues.push(en?'Adjust the check types or total count to fit the available material.':'자료에 맞게 확인 유형이나 총 문제 수를 조정해 주세요.');
+  if(candidates.length&&target>=candidates.length&&target<=capacity&&candidates.every(c=>c.items.length)){
+   const picks=candidates.map(()=>[] as (typeof candidates)[number]['items']);
+   const seen=new Set<string>();
+   while(finalQuestions<target){
+    for(const [index,candidate] of candidates.entries()){
+     if(finalQuestions===target)break;
+     if(!candidate.items.length)continue;
+     const fresh=candidate.items.findIndex(item=>!seen.has(item.id));
+     const [item]=candidate.items.splice(fresh<0?0:fresh,1);
+     picks[index].push(item);seen.add(item.id);finalQuestions++;
+    }
+   }
+   for(const [index,{type}] of candidates.entries()){
+    const title=(en?'Final check · ':'마무리 확인 · ')+CHECK_TYPES[type][en?1:0];
+    const qs=picks[index].flatMap(pick=>pick.question?[pick.question]:[]);
+    const start=items.length;
+    if(type==='speak'){
+     for(const {card} of picks[index]){
+      const item=newBlock('speak');item.title=title;
+      Object.assign(item.config.block!,{text:en?'Record your answer.':'답을 말하고 녹음하세요.',translation:card.meaning,imageUrl:card.imageUrl||'',stages:['picture']});
+      items.push(item);
+     }
+    }else pack(qs,title);
+    for(const item of items.slice(start))item.config.block!.method=GUIDED_FINAL+type;
+   }
+  }
+ }
  issues.push(...validateItems(items));
- return {items,issues:[...new Set(issues)],questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
+ return {items,issues:[...new Set(issues)],finalQuestions,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
 }

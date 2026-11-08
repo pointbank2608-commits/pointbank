@@ -123,6 +123,7 @@ try {
   await db.exec(
     `insert into academies(id) values('${a}'),('${otherA}');insert into classes values('${c}','${a}'),('${otherC}','${otherA}');insert into auth.users values('${owner}');insert into students(id,academy_id,class_id,name) values('${student}','${a}','${c}','Synthetic A'),('${otherStudent}','${otherA}','${otherC}','Synthetic B');set "test.user"='${owner}';set test.academy='${a}';`,
   );
+  await db.exec(readFileSync(resolve(sqlRoot, "110_guided_homework_feedback.sql"), "utf8"));
   const blocks = await vite.ssrLoadModule("/src/lib/homework/blocks.ts");
   const cards = [
     { id: "cat", word: "cat", meaning: "고양이", example: "I like cats." },
@@ -142,6 +143,8 @@ try {
     start: 3,
     end: 9,
   });
+  items[0].config.block.guidedPractice = true;
+  items[1].config.block.method = "guided-final:choice";
   const draft = { ...blocks.newDraft(), title: "Synthetic five blocks", items };
   await test("server migration compiles; five block definitions validate", async () => {
     assert.deepEqual(blocks.validateItems(items), []);
@@ -309,6 +312,13 @@ try {
       await value(`select hw_block_results('${assignment.id}') v`)
     ).find((r) => r.item_id === itemRows[1].id);
     assert.equal(r.first_correct, 0);
+    assert.equal(r.student_id,student);
+    assert.equal(r.check_type,"choice");
+    assert.ok(r.check_misses.some(card=>card.word==="cat"));
+    assert.ok(!Object.hasOwn(r.check_misses[0],"response"));
+    const practice = (await value("select hw_block_results('"+assignment.id+"') v")).find(row=>row.item_id===itemRows[0].id);
+    assert.equal(practice.guided_practice,true);
+    assert.equal(practice.check_type,null);
     assert(Number(r.final_correct) > 0);
   });
   await test("representative audio requires private storage ownership; review unscored", async () => {

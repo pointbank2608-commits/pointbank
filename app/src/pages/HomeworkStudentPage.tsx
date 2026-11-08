@@ -1,3 +1,4 @@
+import { formatHomeworkDeadline } from '../lib/homework/deadline';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -228,7 +229,7 @@ function LoginStep({ info, onLogin }: { info: HwOpenInfo; onLogin: (name: string
       <div className="text-center">
         <div className="text-2xl font-bold">{info.title || t('studentHw.defaultTitle')}</div>
         <div className="mt-1 text-base text-white/70">
-          {[info.class_name, info.due_at ? t('studentHw.dueAt', { date: new Date(info.due_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) }) : null]
+          {[info.class_name, info.due_at ? t('studentHw.dueAt', { date: formatHomeworkDeadline(info.due_at) }) : null]
             .filter(Boolean)
             .join(' · ')}
         </div>

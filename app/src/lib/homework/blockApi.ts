@@ -1,5 +1,6 @@
 import { supabase } from "../supabase";
 import type { HomeworkDraft } from "./blocks";
+import type { HwCard } from "./types";
 
 async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.rpc(name, args);
@@ -29,6 +30,10 @@ export interface BlockResult {
   answered: number;
   attempt_id: string;
   item_id: string;
+  student_id?: string;
+  guided_practice?: boolean | null;
+  check_type?: string | null;
+  check_misses?: HwCard[] | null;
   name: string;
   title: string;
   meta: {

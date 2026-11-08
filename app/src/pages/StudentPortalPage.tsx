@@ -1,3 +1,4 @@
+import { formatHomeworkDeadline } from '../lib/homework/deadline';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
@@ -287,7 +288,7 @@ function HomeView({
                   <span className="block truncate text-lg font-bold">{h.title || t('studentHw.defaultTitle')}</span>
                   {h.due_at && (
                     <span className="block text-sm opacity-70">
-                      {t('studentHw.dueAt', { date: new Date(h.due_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) })}
+                      {t('studentHw.dueAt', { date: formatHomeworkDeadline(h.due_at) })}
                     </span>
                   )}
                 </span>

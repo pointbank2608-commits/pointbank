@@ -15,5 +15,20 @@ try{
  const homonyms=g.mergeLearningContent([{id:'1',kind:'word',card:{id:'1',word:'bat',meaning:'박쥐'},origins:['A']},{id:'2',kind:'word',card:{id:'2',word:'bat',meaning:'방망이'},origins:['B']},{id:'3',kind:'word',card:{id:'3',word:' BAT ',meaning:'박쥐'},origins:['C']}]);assert.equal(homonyms.length,2);const hp=g.buildGuidedPractice(homonyms,[],'memory');assert.deepEqual(hp.issues,[]);assert.ok(hp.items.flatMap(it=>it.content.questions).every(q=>q.qtype!=='choice'));console.log('PASS same word/different meaning is preserved, ambiguous choice questions avoided');
  const sent=g.contentFromList({id:'s',name:'Sentences',kind:'sentence',items:[{id:'x',word:'I can cook.',meaning:'나는 요리할 수 있어요.'},{id:'y',word:'Good morning!',meaning:'좋은 아침이에요.'}]});for(const goal of ['review','memory','speaking']){const p=g.buildGuidedPractice(sent.contents,[],goal);assert.deepEqual(p.issues,[]);assert.equal(p.items.flatMap(it=>it.content.questions).length,goal==='memory'?4:2);}const speak=g.buildGuidedPractice(sent.contents,[],'speaking');assert.equal(speak.recordings,1);assert.deepEqual(speak.items.at(-1).config.block.stages,['model','hidden']);console.log('PASS sentence patterns and short expressions use existing student activities, recording clearly separated');
  const lessons={...lesson,playlist:[{id:'shadow',kind:'shadow',title:'Story',source:'[0:10-0:15] A: I can cook. | 나는 요리할 수 있어요.',videoUrl:'https://youtu.be/abcdefghijk'},{id:'reading',kind:'reading',source:'[0:10-0:15] A: I can cook. | 나는 요리할 수 있어요.',videoUrl:'https://youtu.be/abcdefghijk'}]};const mixed=g.contentFromLesson(lessons,[]);assert.equal(mixed.contents.length,1);assert.equal(mixed.videos.length,1);assert.equal(mixed.videos[0].item.config.block.start,10);assert.equal(mixed.videos[0].item.config.block.end,15);console.log('PASS repeated video/script sources are consolidated with exact segment preserved');
+ const combined=g.buildGuidedPractice(parts[0],[],['review','memory'],false,{types:['choice','spelling'],count:5});
+ assert.deepEqual(combined.issues,[]);
+ assert.equal(combined.items.filter(i=>i.config.block.method==='flip').length,1);
+ const final=combined.items.filter(i=>i.config.block.method?.startsWith(g.GUIDED_FINAL));
+ assert.deepEqual(final.map(i=>i.content.questions.length),[3,2]);
+ assert.equal(new Set(final.flatMap(i=>i.content.questions.map(q=>q.word))).size,5);
+ assert.ok(final[1].content.questions.every(q=>q.style==='spell'&&!q.speak));
+ assert.ok(combined.items.slice(0,-2).every(i=>i.config.block.guidedPractice));
+ assert.ok(g.buildGuidedPractice(parts[0],[],['memory'],false,{types:['sentenceOrder'],count:5}).issues.length);
+ const oral=g.buildGuidedPractice(sent.contents,[],['speaking'],false,{types:['speak'],count:0});
+ assert.deepEqual(oral.issues,[]);assert.equal(oral.finalQuestions,2);
+ assert.equal(oral.items.at(-1).config.block.method,'guided-final:speak');
+ assert.ok(oral.items.at(-1).config.block.translation);
+ assert.ok(!sent.contents.some(c=>oral.items.at(-1).config.block.text===c.card.word));
+ console.log('PASS combined activities share study, final questions balance across types, and short/unsupported materials validate');
  const huge=g.buildGuidedPractice(Array.from({length:400},(_,i)=>({...content.contents[i%100],id:String(i)})),[],'speaking');assert.ok(huge.issues.length>0);assert.equal(huge.contents,400);console.log('PASS oversized recording plan reports limit, never silently drops selected content');
 }finally{await server.close();}

@@ -1,3 +1,4 @@
+import { formatHomeworkDeadline } from '../../../lib/homework/deadline';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -83,7 +84,7 @@ export default function HomeworkSharePanel({ hw }: { hw: Pick<HomeworkOverviewRo
         notify(t('studentHw.popupBlocked'), 'error');
         return;
       }
-      const due = hw.due_at ? t('studentHw.dueShort', { date: new Date(hw.due_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) }) : '';
+      const due = hw.due_at ? t('studentHw.dueShort', { date: formatHomeworkDeadline(hw.due_at) }) : '';
       w.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
 <style>
 @page{size:A4;margin:10mm}
