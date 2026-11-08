@@ -124,6 +124,7 @@ try {
     `insert into academies(id) values('${a}'),('${otherA}');insert into classes values('${c}','${a}'),('${otherC}','${otherA}');insert into auth.users values('${owner}');insert into students(id,academy_id,class_id,name) values('${student}','${a}','${c}','Synthetic A'),('${otherStudent}','${otherA}','${otherC}','Synthetic B');set "test.user"='${owner}';set test.academy='${a}';`,
   );
   await db.exec(readFileSync(resolve(sqlRoot, "110_guided_homework_feedback.sql"), "utf8"));
+  await db.exec(readFileSync(resolve(sqlRoot, "112_guided_homework_spelling_hints.sql"), "utf8"));
   const blocks = await vite.ssrLoadModule("/src/lib/homework/blocks.ts");
   const cards = [
     { id: "cat", word: "cat", meaning: "고양이", example: "I like cats." },
@@ -224,6 +225,7 @@ try {
   });
   let token;
   let attempt;
+  const hintItem = crypto.randomUUID();
   await db.exec(
     `insert into homework_attempts(assignment_id,student_id) values('${assignment.id}','${student}')`,
   );
@@ -278,6 +280,27 @@ try {
       ),
       1,
     );
+  });
+  await test("spelling hints: allowed level enforced, mask by level, used level recorded for teacher results, not shown without setting", async () => {
+    const q = { id: "road", qtype: "text", prompt: "도로", word: "", correct: "road", guidedSpelling: true, skill: "x", gen: "t" };
+    const cfg = (policy) => ({ block: { schemaVersion: 1, type: "recall", completion: "answers", guidedPractice: true, ...(policy ? { spellingHints: policy } : {}) } });
+    await db.exec('alter table homework_items disable trigger user');
+    await db.exec(`insert into homework_items(id,assignment_id,position,kind,title,config,content) values('${hintItem}','${assignment.id}',-1,'quiz','hint',${json(cfg({ defaultLevel: 1, overrides: {} }))},${json({ questions: [q] })})`);
+    const hint = async (level) => JSON.parse(JSON.stringify(await value(`select hw_spelling_hint('${token}','${hintItem}',0,${level}) v`)));
+    assert.equal((await hint(0)).mask, "");
+    await rejects(`select hw_spelling_hint('${token}','${hintItem}',0,2)`, /hint_not_allowed/);
+    const first = await hint(1);
+    assert.equal(first.mask, "r _ _ _"); assert.equal(first.used, 1); assert.equal(first.allowed, 1);
+    assert.equal((await hint(0)).mask, "r _ _ _");
+    const pub = JSON.stringify(await value(`select hw_public_item(i) v from homework_items i where id='${hintItem}'`));
+    assert.ok(!pub.includes('"correct"') && !pub.includes('spellingHints'));
+    await db.exec(`update homework_items set config=${json(cfg({ defaultLevel: 1, overrides: { [student]: 2 } }))} where id='${hintItem}'`);
+    const second = await hint(2);
+    assert.equal(second.mask, "r _ a _"); assert.equal(second.used, 2);
+    await db.exec(`update homework_items set config=${json(cfg({ defaultLevel: 0, overrides: {} }))} where id='${hintItem}'`);
+    await rejects(`select hw_spelling_hint('${token}','${hintItem}',0,1)`, /hint_not_allowed/);
+    await db.exec(`delete from homework_items where id='${hintItem}'`);
+    await db.exec('alter table homework_items enable trigger user');
   });
   await test("recall first and retry results kept separately; cross-token client id reuse denied", async () => {
     const sameClassPeer = crypto.randomUUID();

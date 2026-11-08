@@ -203,7 +203,7 @@ export default function HomeworkResults({
             </div>
 
             <GuidedHomeworkFeedback rows={block.rows.filter(row => row.student_id === s.student_id)} done={s.status === 'done'} onPrepare={(cards,type) => onPrepareGuided(s.student_id,cards,type)} />
-            <StudentStrip rows={block.rows} name={s.name} onReviewed={() => void block.load()} onError={(m) => notify(m, 'error')} />
+            <StudentStrip rows={block.rows} name={s.name} studentId={s.student_id} onReviewed={() => void block.load()} onError={(m) => notify(m, 'error')} />
 
             {(s.wrong_words.length > 0 || s.retries > 0) && (
               <div className="text-base text-on-surface-variant">

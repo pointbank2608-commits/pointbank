@@ -45,6 +45,10 @@ export interface HwQuestion {
   round?: string;
   /** flash 문제: 낱말을 보여 주는 시간(밀리초). 지나면 가려지고 떠올려 쓴다 */
   flashMs?: number;
+  /** 안내형 숙제의 철자 문제(힌트 설정 적용 대상) */
+  guidedSpelling?: boolean;
+  /** 빠진 알파벳 채우기: 정답은 빠진 글자 하나 */
+  missingLetter?: boolean;
 }
 
 export type HwItemKind = 'quiz' | 'worksheet' | 'game' | 'shadowing';

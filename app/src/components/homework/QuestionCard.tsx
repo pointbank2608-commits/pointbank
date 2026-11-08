@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
 import type { SensorAction } from '../../lib/learningSensors/core';
 import type { HwQuestion } from '../../lib/homework/types';
+import type { HintLevel, SpellingHint } from '../../lib/homework/spellingHints';
 import phonicsWords from '../../data/phonics/words.json';
 import { TextAnswer } from '../../pages/LiveJoinPage';
 import { StudioCard, StudioFeedback, StudioOptions, StudioPrompt, type StudioOption, type StudioOptionState } from '../studio/StudioKit';
@@ -42,7 +43,7 @@ const norm = (s: string) => s.replace(/[()（）.,!?]/g, '').replace(/\s+/g, '')
 /** 서버가 알려 준 채점 결과(문항에 없는 해설은 만들지 않는다) */
 export interface StudioResult { correct: boolean | null; answer: string | null }
 
-export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, result, onNext, nextBusy }: { onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; /** 학습 스튜디오 모양(보통 고르기 문제에만 적용) */ studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
+export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, result, onNext, nextBusy, spellingHint }: { spellingHint?: (level: HintLevel) => Promise<SpellingHint>; onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; /** 학습 스튜디오 모양(보통 고르기 문제에만 적용) */ studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
   const { t } = useTranslation();
   const onSensorRef = useRef(onSensor);
   onSensorRef.current = onSensor;
@@ -69,6 +70,9 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       </button>
     ) : null;
 
+  if(q.guidedSpelling||q.missingLetter){
+    return <SpellingCard q={q} disabled={disabled} onAnswer={onAnswer} requestHint={spellingHint} onSensor={onSensor}/>;
+  }
   if (studio && isStudioQuestion(q)) {
     return <StudioChoice key={q.id} q={q} guide={guide} disabled={disabled} eliminated={eliminated} result={result ?? null} onAnswer={onAnswer} onNext={onNext} nextBusy={nextBusy} speakBtn={speakBtn(false)} />;
   }
@@ -334,6 +338,44 @@ function MoleBoard({ choices, onAnswer, disabled, eliminated = [] }: { choices: 
       })}
     </div>
   );
+}
+
+function SpellingCard({q,disabled,onAnswer,requestHint,onSensor}:{
+  q:HwQuestion; disabled:boolean; onAnswer:(value:string)=>void;
+  requestHint?: (level:HintLevel)=>Promise<SpellingHint>; onSensor?:(action:SensorAction)=>void;
+}){
+  const {i18n}=useTranslation();
+  const en=i18n.language.startsWith('en');
+  const [hint,setHint]=useState<SpellingHint|null>(null);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState(false);
+  useEffect(()=>{
+    if(requestHint)void requestHint(0).then(setHint,()=>undefined);
+    // QuestionCard remounts on question changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
+  async function reveal(level:HintLevel){
+    if(!requestHint||loading)return;
+    setLoading(true);setError(false);
+    try{setHint(await requestHint(level));onSensor?.('hint');}
+    catch{setError(true);}
+    finally{setLoading(false);}
+  }
+  const next=hint?.used===1?2:1;
+  return <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
+    <section className="flex min-h-64 flex-1 flex-col justify-center gap-4 rounded-3xl bg-white p-5 text-center text-deep-navy shadow-xl">
+      {q.imageUrl&&<img src={q.imageUrl} alt="" className="mx-auto h-28 max-w-full object-contain"/>}
+      <h2 className="break-words text-3xl font-extrabold">{q.prompt}</h2>
+      {q.missingLetter&&q.sub&&<p>{q.sub}</p>}
+      <p>{q.missingLetter?(en?'Type the missing letter.':'빠진 글자 하나를 입력하세요.'):(en?'Type the English word.':'영어 단어를 입력하세요.')}</p>
+      {hint?.mask&&<p className="text-xl font-bold tracking-widest" aria-live="polite">{hint.mask}</p>}
+      <div className="rounded-2xl bg-deep-navy p-2 text-white"><TextInput onAnswer={onAnswer} disabled={disabled||loading}/></div>
+    </section>
+    {hint&&hint.allowed>=next&&hint.used<next&&<button type="button" disabled={disabled||loading} onClick={()=>void reveal(next)} className="min-h-12 rounded-xl bg-white/15 px-4 font-bold">
+      {next===1?(en?'Show first letter':'첫 글자 보기'):(en?'Show more letters':'글자 더 보기')}
+    </button>}
+    {error&&<p role="alert">{en?'Could not load the hint. Try again.':'힌트를 불러오지 못했어요. 다시 눌러 주세요.'}</p>}
+  </div>;
 }
 
 function TextInput({ onAnswer, disabled }: { onAnswer: (r: string) => void; disabled: boolean }) {

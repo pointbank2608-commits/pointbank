@@ -77,6 +77,9 @@ export async function hwOpenPersonal(access: string): Promise<{ token: string; c
   return r;
 }
 
+export const hwSpellingHint = (token:string,itemId:string,index:number,level:import('./spellingHints').HintLevel) =>
+  rpc<import('./spellingHints').SpellingHint>('hw_spelling_hint',{p_token:token,p_item:itemId,p_index:index,p_level:level});
+
 export const hwState = (token: string) => openDelivery<HwStudentState>('homework', token, null, () => rpc<HwStudentState>('hw_state', { p_token: token })).catch(e => { throw toError(e); });
 
 /** 영상 시청 기록(093) — 본 초를 서버에 알리고, 한 번 다 봤으면 completed */

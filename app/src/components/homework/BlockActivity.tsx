@@ -17,12 +17,14 @@ export default function BlockActivity({
   item,
   api,
   preview,
+  previewHidden = false,
   onDone,
   onSensor,
 }: {
   item: HwItem;
   api: RunnerApi;
   preview: boolean;
+  previewHidden?: boolean;
   onSensor?: (action: SensorAction) => void;
   onDone: (meta: Record<string, unknown>) => Promise<void>;
 }) {
@@ -49,7 +51,7 @@ export default function BlockActivity({
   const [hints, setHints] = useState<number>(Number(recovery.hints) || 0);
   const [listens, setListens] = useState<number>(Number(recovery.listens) || 0);
   const [stage, setStage] = useState<number>(
-    Math.min(Number(recovery.stage) || 0, b.stages.length),
+    preview&&previewHidden&&b.stages.includes("hidden") ? b.stages.indexOf("hidden") : Math.min(Number(recovery.stage) || 0, b.stages.length),
   );
   const [repeated, setRepeated] = useState<number>(
     Number(recovery.repeated) || 0,
@@ -263,9 +265,12 @@ export default function BlockActivity({
   const finalSpeaking = b.type === "speak" && b.method === "guided-final:speak";
   const currentStage = b.stages[stage];
   const speakingReady = finalSpeaking || b.type !== "speak" || stage >= b.stages.length;
+  const guidedSpeaking = b.type === "speak" && b.guidedPractice === true;
+  // 안내형 말하기: 문장을 가린 단계에서 바로 녹음할 수 있다(힌트로 문장을 열 수 있음)
+  const recordReady = speakingReady || (guidedSpeaking && currentStage === "hidden");
   const allowed =
     (b.type !== "video" || watched) &&
-    speakingReady &&
+    recordReady &&
     (b.completion !== "review" || !!response.trim()) &&
     (b.completion !== "recording" || !!blob);
   return (
@@ -289,7 +294,7 @@ export default function BlockActivity({
           }
         />
       )}
-      {b.type === "speak" && !speakingReady && (
+      {b.type === "speak" && !recordReady && (
         <p className="text-lg text-warm-yellow">
           {stage + 1} / {b.stages.length} ·{" "}
           {l(
@@ -319,12 +324,12 @@ export default function BlockActivity({
         </p>
       )}
       {b.translation &&
-        (finalSpeaking || b.type !== "speak" || currentStage === "model" || showHint) && (
+        (finalSpeaking || guidedSpeaking || b.type !== "speak" || currentStage === "model" || showHint) && (
           <p className="text-center text-lg">{b.translation}</p>
         )}
       {b.type !== "video" && !finalSpeaking && (
         <div className="flex flex-wrap gap-2">
-          <button
+          {(!guidedSpeaking || currentStage==="model" || showHint) && <button
             className={btn}
             onClick={() => {
               onSensor?.('audio');
@@ -344,7 +349,7 @@ export default function BlockActivity({
             }}
           >
             {l("다시 듣기", "Listen again")}
-          </button>
+          </button>}
           {b.type === "speak" && (
             <button
               className={btn}
@@ -354,12 +359,12 @@ export default function BlockActivity({
                 setShowHint(!showHint);
               }}
             >
-              {l("힌트 보기/숨기기", "Show / hide hint")}
+              {l("힌트 보기", "Show hint")}
             </button>
           )}
         </div>
       )}
-      {b.type === "speak" && !speakingReady && (
+      {b.type === "speak" && !recordReady && (
         <button
           className={btn}
           onClick={() => {
@@ -402,7 +407,7 @@ export default function BlockActivity({
           />
         </label>
       )}
-      {b.completion === "recording" && speakingReady && (
+      {b.completion === "recording" && recordReady && (
         <div className="space-y-3 rounded-xl bg-white/10 p-4">
           <p>
             {l(
@@ -431,7 +436,7 @@ export default function BlockActivity({
           {error}
         </p>
       )}
-      {speakingReady && (
+      {recordReady && (
         <button
           className={`${btn} mt-auto`}
           disabled={!allowed || busy || recording}

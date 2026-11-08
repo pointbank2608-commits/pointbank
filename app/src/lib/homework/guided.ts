@@ -4,9 +4,11 @@ import { effectiveSlides } from '../lessonSlides';
 import {extractYoutubeId} from '../youtube';
 import {parseShadowText} from '../shadowLines';
 import { lessonCandidates, newBlock, validateItems } from './blocks';
-import { blankQ, GEN_VERSION, hintQ, lettersQ, listenQ, pictureQ, reverseQ, SKILL, meaningQ, sentenceOrderQ, shuffleWith, spellQ } from './build';
+import { blankQ, GEN_VERSION, lettersQ, listenQ, pictureQ, reverseQ, SKILL, meaningQ, sentenceOrderQ, shuffleWith, spellQ } from './build';
 import { isMeaning } from './quality';
 import type { HwItemDraft, HwQuestion } from './types';
+
+import type { SpellingHintPolicy } from './spellingHints';
 
 export type PracticeGoal = 'review' | 'memory' | 'speaking';
 export const CHECK_TYPES = {
@@ -93,10 +95,10 @@ function listeningWrite(card:FullCardItem,en:boolean):HwQuestion{
  return {id:crypto.randomUUID(),qtype:'text',style:'dictation',prompt:'',speak:card.word,correct:card.word,word:card.word,skill:SKILL.dictation,gen:GEN_VERSION,card:{word:card.word,meaning:card.meaning,imageUrl:card.imageUrl,example:card.example},sub:en?'Listen and type.':'듣고 써 보세요.'};
 }
 /** Existing student activities, grouped into a few packs instead of 1 block per word. */
-export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal | PracticeGoal[],en=false,final:FinalCheck|null=null){
+export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal | PracticeGoal[],en=false,final:FinalCheck|null=null,spellingHints?:SpellingHintPolicy){
  const goals=Array.isArray(goal)?goal:[goal];
  const items:HwItemDraft[]=[],issues:string[]=[];
- if(contents.some(c=>c.card.word.length>300))issues.push(en?'An entry exceeds 300 characters. Edit it or use detailed editing.':'300자를 넘는 내용이 있습니다. 내용을 수정하거나 세부 편집을 사용해 주세요.');
+ if(contents.some(c=>c.card.word.length>300))issues.push(en?'An entry exceeds 300 characters. Shorten it before sending.':'300자를 넘는 내용이 있습니다. 내용을 줄여 주세요.');
  if(contents.some(c=>c.card.word.includes('/')))issues.push(en?'Split expressions containing / into separate entries; / is reserved for answer alternatives.':'‘/’가 들어간 표현은 각각 나눠 주세요. 이 기호는 정답 구분에 사용됩니다.');
  let lines:string[]=[];let length=0;
  const flush=()=>{if(!lines.length)return;const it=newBlock('study');it.title=en?'Look and listen':'보고 듣기';Object.assign(it.config.block!,{method:'flip',count:lines.length,text:lines.join('\n')});items.push(it);lines=[];length=0;};
@@ -108,14 +110,29 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
   const order=kind==='sentence'&&card.meaning.trim()?sentenceOrderQ({...card,example:card.word},Math.random):null;
   // Never leave an ambiguous multiple-choice prompt or omit an unsupported phrase.
   recall.push(goals.includes('memory')?(choice||order||listeningWrite(card,en)):(order||choice||listeningWrite(card,en)));
-  writing.push(kind==='word'&&card.meaning&&sameWordMeanings.size===1?(spellQ(card)||listeningWrite(card,en)):listeningWrite(card,en));
+  const spelling=kind==='word'&&isMeaning(card.meaning)?spellQ(card):null;
+  if(spelling&&spellingHints){
+   spelling.guidedSpelling=true;
+   delete spelling.speak;
+  }
+  writing.push(spelling||listeningWrite(card,en));
  }
  const pack=(qs:HwQuestion[],title:string)=>{for(let i=0;i<qs.length;i+=100){const it=newBlock('recall');it.title=title;it.content.questions=qs.slice(i,i+100);items.push(it);}};
  if(recall.length)pack(recall,en?'Check what you remember':'기억 확인하기');
- if(goals.includes('memory')&&writing.length)pack(writing,en?'Write from memory':'가리고 써 보기');
- if(goals.includes('speaking'))for(let i=0;i<contents.length;i+=5){const group=contents.slice(i,i+5),it=newBlock('speak');it.title=en?'Read, hide and speak':'읽고 가리고 말하기';Object.assign(it.config.block!,{text:group.map(c=>c.card.word).join('\n'),translation:group.map(c=>c.card.meaning).join('\n'),stages:['model','hidden'],hiddenWords:group.flatMap(c=>c.card.word.trim().split(/\s+/)).map((_,index)=>index),repeats:1});items.push(it);}
+  if(goals.includes('memory')&&writing.length){
+  const start=items.length;
+  pack(writing,en?'Write from memory':'가리고 쓰기');
+  for(const item of items.slice(start))if(spellingHints&&item.content.questions.some(q=>q.guidedSpelling))item.config.block!.spellingHints=spellingHints;
+ }
+ if(goals.includes('speaking'))for(let i=0;i<contents.length;i+=5){const group=contents.slice(i,i+5),it=newBlock('speak');it.title=en?'Read, hide and speak':'읽고 가리고 말하기';Object.assign(it.config.block!,{text:group.map(c=>c.card.word).join('\n'),translation:group.map(c=>c.card.meaning).join(' · '),imageUrl:group.length===1?group[0].card.imageUrl||'':'',stages:['model','hidden'],hiddenWords:group.flatMap(c=>c.card.word.trim().split(/\s+/)).map((_,index)=>index),repeats:1});items.push(it);}
  items.push(...videos.map(v=>structuredClone(v.item)));
  for(const item of items)if(item.config.block)item.config.block.guidedPractice=true;
+ const examples:Partial<Record<CheckType,HwItemDraft>>={};
+ const finalSpeech=(card:FullCardItem,title:string)=>{
+  const item=newBlock('speak');item.title=title;
+  Object.assign(item.config.block!,{text:en?'Record your answer.':'답을 말하고 녹음하세요.',translation:card.meaning,imageUrl:card.imageUrl||'',stages:['picture'],method:GUIDED_FINAL+'speak'});
+  return item;
+ };
  let finalQuestions=0;
  if(final){
   const candidates=final.types.map(type=>({type,items:shuffleWith(contents.flatMap<{id:string;card:FullCardItem;question:HwQuestion|null}>(({card,kind,id})=>{
@@ -126,7 +143,13 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
    switch(type){
     case 'choice': if(word)question=(uniqueImage?pictureQ(card,pool,Math.random):null)??(uniqueMeaning?reverseQ(card,pool,Math.random):null);break;
     case 'listen': if(word)question=listenQ(card,pool,Math.random);break;
-    case 'lettersMissing': if(word&&uniqueMeaning)question=hintQ(card);break;
+        case 'lettersMissing':
+     if(word&&uniqueMeaning&&/^[a-z]{3,21}$/i.test(card.word.trim())){
+      const text=card.word.trim(), index=Math.min(1,text.length-2);
+      const base=spellQ(card);
+      if(base)question={...base,style:'hint',prompt:[...text].map((letter,i)=>i===index?'□':letter).join(' '),sub:card.meaning,correct:text[index],missingLetter:true};
+     }
+     break;
     case 'lettersOrder': if(word&&uniqueMeaning)question=lettersQ(card,Math.random);break;
     case 'spelling': if(word&&uniqueMeaning)question=spellQ(card);break;
     case 'sentenceOrder': if(!word&&uniqueMeaning)question=sentenceOrderQ({...card,example:card.word},Math.random);break;
@@ -137,6 +160,15 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
    if(type==='lettersMissing'||type==='spelling')delete question.speak;
    return [{id,card,question}];
   }),Math.random)}));
+  for(const {type,items:available} of candidates){
+   const pick=available[0];
+   if(!pick)continue;
+   const title=CHECK_TYPES[type][en?1:0];
+   const item=pick.question?newBlock('recall'):finalSpeech(pick.card,title);
+   item.title=title;
+   if(pick.question)item.content.questions=[pick.question];
+   examples[type]=item;
+  }
   for(const {type,items:available} of candidates)if(!available.length)
    issues.push(en?'No suitable material for '+CHECK_TYPES[type][1]+'.':CHECK_TYPES[type][0]+'에 쓸 수 있는 자료가 없어요.');
   const capacity=candidates.reduce((sum,c)=>sum+c.items.length,0);
@@ -160,16 +192,12 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
     const qs=picks[index].flatMap(pick=>pick.question?[pick.question]:[]);
     const start=items.length;
     if(type==='speak'){
-     for(const {card} of picks[index]){
-      const item=newBlock('speak');item.title=title;
-      Object.assign(item.config.block!,{text:en?'Record your answer.':'답을 말하고 녹음하세요.',translation:card.meaning,imageUrl:card.imageUrl||'',stages:['picture']});
-      items.push(item);
-     }
+     for(const {card} of picks[index])items.push(finalSpeech(card,title));
     }else pack(qs,title);
     for(const item of items.slice(start))item.config.block!.method=GUIDED_FINAL+type;
    }
   }
  }
  issues.push(...validateItems(items));
- return {items,issues:[...new Set(issues)],finalQuestions,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
+ return {items,examples,issues:[...new Set(issues)],finalQuestions,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
 }

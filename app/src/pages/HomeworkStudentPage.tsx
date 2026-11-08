@@ -1,4 +1,4 @@
-import { formatHomeworkDeadline } from '../lib/homework/deadline';
+import { hwSpellingHint } from '../lib/homework/studentApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,8 +14,6 @@ import {
   forgetToken,
   HwError,
   hwFinish,
-  hwLoginName,
-  hwOpen,
   hwOpenPersonal,
   hwState,
   hwWatchReport,
@@ -24,12 +22,10 @@ import {
   pendingOps,
   readToken,
 } from '../lib/homework/studentApi';
-import type { HwErrorKind, HwOpenInfo, HwStudentState } from '../lib/homework/types';
+import type { HwErrorKind, HwStudentState } from '../lib/homework/types';
 
 type Screen =
-  | { k: 'code' }
   | { k: 'loading' }
-  | { k: 'login'; info: HwOpenInfo }
   | { k: 'play'; token: string; state: HwStudentState }
   | { k: 'error'; kind: HwErrorKind; retry?: () => void };
 
@@ -43,9 +39,8 @@ const newId = () =>
 const kindOf = (e: unknown): HwErrorKind => (e instanceof HwError ? e.kind : 'unknown');
 
 /**
- * 학생 숙제(Classbank Student, 2026-10-05 v2) — 가입 없이:
- * ① 반 숙제 번호(/hw/:code) → 내 이름 + PIN 4자리 (명단은 보여 주지 않는다), 또는
- * ② 개인 QR·링크(/hw/p/:access) → 바로 시작.
+ * 학생 숙제(Classbank Student) — 학생 포털(/s)에서 숙제 목록의 개인 링크(/hw/p/:access)로 열린다.
+ * 이름 + PIN 으로 들어가는 반 숙제 번호·QR 입구는 없앴다(번호 주소는 이 기기에 열쇠가 있을 때만 이어서 열린다).
  * 채점은 서버가 하고, 답은 이 기기에 먼저 적어 둔 뒤 보낸다(인터넷이 끊겨도 이어서, 다시 연결되면 자동 전송).
  * 학생 이름·id 는 URL 에 넣지 않는다.
  */
@@ -53,8 +48,7 @@ export default function HomeworkStudentPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { code = '', access = '' } = useParams();
-  const [screen, setScreen] = useState<Screen>(code || access ? { k: 'loading' } : { k: 'code' });
-  const [codeError, setCodeError] = useState<HwErrorKind | null>(null);
+  const [screen, setScreen] = useState<Screen>({ k: 'loading' });
 
   const enter = useCallback(async (tok: string) => {
     const s = await hwState(tok);
@@ -75,7 +69,7 @@ export default function HomeworkStudentPage() {
       return;
     }
     if (!code) {
-      setScreen({ k: 'code' });
+      navigate('/s', { replace: true });
       return;
     }
     const saved = readToken(code);
@@ -92,47 +86,16 @@ export default function HomeworkStudentPage() {
         forgetToken(code);
       }
     }
-    try {
-      const info = await hwOpen(code);
-      if (info.closed) setScreen({ k: 'error', kind: 'closed' });
-      else if (info.past_due) setScreen({ k: 'error', kind: 'past_due' });
-      else setScreen({ k: 'login', info });
-    } catch (e) {
-      const k = kindOf(e);
-      if (k === 'not_found') {
-        setCodeError('not_found');
-        navigate('/hw', { replace: true });
-        setScreen({ k: 'code' });
-      } else setScreen({ k: 'error', kind: k, retry: () => void start() });
-    }
+    // 이 기기에 열쇠가 없으면 학생 포털에서 다시 들어오게 한다
+    navigate('/s', { replace: true });
   }, [access, code, enter, navigate]);
 
   useEffect(() => {
     void start();
   }, [start]);
 
-  if (screen.k === 'code')
-    return (
-      <CodeStep
-        error={codeError}
-        onGo={(c) => {
-          setCodeError(null);
-          navigate(`/hw/${c}`);
-        }}
-      />
-    );
   if (screen.k === 'loading') return <div className={`${shell} items-center justify-center text-lg text-white/75`}>{t('studentHw.loading')}</div>;
   if (screen.k === 'error') return <ErrorScreen kind={screen.kind} onRetry={screen.retry} onHome={() => navigate('/hw')} />;
-  if (screen.k === 'login')
-    return (
-      <LoginStep
-        info={screen.info}
-        onLogin={async (name, pin) => {
-          const tok = await hwLoginName(code, name, pin);
-          await enter(tok);
-        }}
-      />
-    );
   return (
     <PlayScreen
       key={screen.token}
@@ -141,146 +104,6 @@ export default function HomeworkStudentPage() {
       onFatal={(kind) => setScreen({ k: 'error', kind, retry: kind === 'network' ? () => void start() : undefined })}
       onHome={savedToken() ? () => navigate('/s') : undefined}
     />
-  );
-}
-
-/* ---------- 숙제 번호 ---------- */
-
-function CodeStep({ error, onGo }: { error: HwErrorKind | null; onGo: (code: string) => void }) {
-  const { t } = useTranslation();
-  const [value, setValue] = useState('');
-  return (
-    <form
-      className={`${shell} items-center justify-center gap-5 p-6`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (value.length === 6) onGo(value);
-      }}
-    >
-      <Brand />
-      <label htmlFor="hw-code" className="text-center text-2xl font-bold">
-        {t('studentHw.enterCodeTitle')}
-      </label>
-      <input
-        id="hw-code"
-        value={value}
-        onChange={(e) => setValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
-        inputMode="numeric"
-        autoComplete="off"
-        placeholder="000000"
-        className="w-64 max-w-full rounded-2xl bg-white px-4 py-4 text-center text-4xl font-bold tracking-[0.3em] text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
-      />
-      {error && (
-        <p className="text-center text-lg text-warm-yellow" role="alert">
-          {t(`studentHw.err_${error}`)}
-        </p>
-      )}
-      <button type="submit" disabled={value.length !== 6} className="min-h-14 rounded-full bg-warm-yellow px-10 text-xl font-bold text-deep-navy disabled:opacity-40">
-        {t('studentHw.start')}
-      </button>
-    </form>
-  );
-}
-
-function Brand() {
-  return (
-    <div className="flex items-center justify-center gap-2 text-base text-white/60">
-      <span className="material-symbols-outlined text-[20px]">edit_note</span>
-      Classbank
-    </div>
-  );
-}
-
-/* ---------- 이름 + PIN ---------- */
-
-function LoginStep({ info, onLogin }: { info: HwOpenInfo; onLogin: (name: string, pin: string) => Promise<void> }) {
-  const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [pin, setPin] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<HwErrorKind | null>(null);
-  const ready = name.trim().length > 0 && pin.length === 4;
-
-  async function submit() {
-    if (!ready || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await onLogin(name.trim(), pin);
-    } catch (e) {
-      setError(kindOf(e));
-      setPin('');
-      setBusy(false);
-    }
-  }
-
-  const press = (d: string) => setPin((p) => (p.length < 4 ? p + d : p));
-  const key =
-    'flex min-h-14 items-center justify-center rounded-2xl bg-white text-3xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none disabled:opacity-50 [touch-action:manipulation]';
-  return (
-    <form
-      className={`${shell} items-center gap-4 p-5`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submit();
-      }}
-    >
-      <Brand />
-      <div className="text-center">
-        <div className="text-2xl font-bold">{info.title || t('studentHw.defaultTitle')}</div>
-        <div className="mt-1 text-base text-white/70">
-          {[info.class_name, info.due_at ? t('studentHw.dueAt', { date: formatHomeworkDeadline(info.due_at) }) : null]
-            .filter(Boolean)
-            .join(' · ')}
-        </div>
-      </div>
-      <label className="flex w-full max-w-xs flex-col gap-1">
-        <span className="text-base font-bold">{t('studentHw.myName')}</span>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoComplete="off"
-          className="min-h-12 rounded-xl bg-white px-4 text-xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
-        />
-      </label>
-      <div className="flex w-full max-w-xs flex-col gap-2">
-        <span className="text-base font-bold">{t('studentHw.enterPin')}</span>
-        {/* 실물 키보드로도 칠 수 있게 숨은 입력칸을 둔다 */}
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-          inputMode="numeric"
-          autoComplete="off"
-          aria-label={t('studentHw.enterPin')}
-          className="min-h-12 rounded-xl bg-white/10 px-4 text-center text-3xl tracking-[0.6em] text-white outline-none focus:ring-4 focus:ring-warm-yellow"
-          type="password"
-        />
-        <div className="grid grid-cols-3 gap-2">
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
-            <button key={d} type="button" className={key} onClick={() => press(d)} disabled={busy}>
-              {d}
-            </button>
-          ))}
-          <span />
-          <button type="button" className={key} onClick={() => press('0')} disabled={busy}>
-            0
-          </button>
-          <button type="button" className={`${key} flex-col gap-0 text-base`} onClick={() => setPin((p) => p.slice(0, -1))} disabled={busy}>
-            <span className="material-symbols-outlined">backspace</span>
-            {t('studentHw.erase')}
-          </button>
-        </div>
-      </div>
-      {error && (
-        <p className="max-w-xs text-center text-lg text-warm-yellow" role="alert">
-          {t(`studentHw.err_${error}`)}
-        </p>
-      )}
-      <button type="submit" disabled={!ready || busy} className="min-h-14 w-full max-w-xs rounded-full bg-warm-yellow text-xl font-bold text-deep-navy disabled:opacity-40">
-        {busy ? t('studentHw.loading') : t('studentHw.start')}
-      </button>
-      <p className="max-w-xs text-center text-sm text-white/60">{t('studentHw.pinHelp')}</p>
-    </form>
   );
 }
 
@@ -377,6 +200,7 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
   const api = useMemo<RunnerApi>(
     () => ({
       cacheScope: token,
+      spellingHint: (item,index,level) => hwSpellingHint(token,item,index,level),
       sensor: { source: 'homework', credential: token, runs: state.sensor_runs },
       uploadRecording: (itemId, blob, duration) => uploadRecording(token, itemId, blob, duration),
       submit: (itemId, qIndex, response, ms) =>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { HINT_NAMES } from "../../../lib/homework/spellingHints";
 import {
   blockResults,
   recordingUrl,
@@ -101,17 +102,19 @@ export function ClassMethods({ rows }: { rows: BlockResult[] }) {
 export function StudentStrip({
   rows,
   name,
+  studentId,
   onReviewed,
   onError,
 }: {
   rows: BlockResult[];
   name: string;
+  studentId?: string;
   onReviewed: () => void;
   onError: (msg: string) => void;
 }) {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith("en");
-  const mine = useMemo(() => rows.filter((r) => r.name === name), [rows, name]);
+  const mine = useMemo(() => rows.filter(r => r.student_id&&studentId ? r.student_id===studentId : r.name===name), [rows,name,studentId]);
   const [open, setOpen] = useState<string | null>(null);
   const [audio, setAudio] = useState<Record<string, string>>({});
   if (!mine.length) return null;
@@ -152,6 +155,23 @@ export function StudentStrip({
           <p className="font-bold">
             {detail.title} · {statusText(detail)}
           </p>
+          {detail.spelling_hints && <details className="rounded-lg border bg-white p-3">
+            <summary className="cursor-pointer font-bold">
+              {en?'Spelling hints allowed':'허용한 철자 힌트'} · {HINT_NAMES[detail.spelling_hints.allowed][en?1:0]}
+            </summary>
+            <ul className="mt-2 space-y-1 text-sm">
+              {detail.spelling_hints.questions.map(q=><li key={q.index}>
+                <b>{q.index}. {q.prompt}</b>{q.word&&<span> · {q.word}</span>}
+                <span className="block">
+                  {q.correct===null?(en?'Unanswered':'미응답'):!q.correct?(en?'Incorrect':'오답'):
+                    (en?['Correct without hint','Correct after first-letter hint','Correct after partial-letter hint']:
+                        ['힌트 없이 맞힘','첫 글자 힌트 후 맞힘','일부 글자 힌트 후 맞힘'])[q.used]}
+                  {' · '}{en?'Allowed':'허용'} {HINT_NAMES[q.allowed][en?1:0]}
+                  {' · '}{en?'Used':'실제 사용'} {HINT_NAMES[q.used][en?1:0]}
+                </span>
+              </li>)}
+            </ul>
+          </details>}
           {detail.total > 0 && detail.answered > 0 && (
             <p>
               {en ? "First / final correct" : "첫 시도 / 최종 정답"}: {detail.first_correct}/{detail.total} → {detail.final_correct}/{detail.total} · {en ? "Retries" : "재시도"} {detail.retries}

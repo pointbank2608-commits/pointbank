@@ -1,67 +1,43 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { speak } from '../../lib/speech';
+import { speakSequence } from '../../lib/speech';
 
-/** 플립 카드: 낱말을 보고 카드를 눌러 뒤집어 뜻·예문을 확인한다. 모든 카드를 한 번씩 뒤집어야 끝낼 수 있다(정답·채점 없음) */
-export default function FlipDeck({ text, busy, onDone }: { text: string; busy: boolean; onDone: () => void }) {
-  const { t } = useTranslation();
-  const cards = text
-    .split('\n')
-    .map((l) => l.split('|').map((p) => p.trim()))
-    .filter((p) => p[0]);
-  const [i, setI] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [seen, setSeen] = useState<Set<number>>(new Set());
-  if (cards.length === 0) return null;
-  const [word, meaning, example] = cards[i];
-  const flip = () => {
-    setFlipped((f) => !f);
-    setSeen((s) => new Set(s).add(i));
-  };
-  const go = (n: number) => {
-    setI(n);
-    setFlipped(false);
-  };
-  const all = seen.size >= cards.length;
-  const btn = 'min-h-12 rounded-full px-6 text-lg font-bold disabled:opacity-40 active:scale-95';
-  return (
-    <div className="flex flex-1 flex-col items-center gap-4 p-4">
-      <div className="text-base text-white/75">{t('studentHw.flipGuide')} · {i + 1} / {cards.length}</div>
-      <button
-        type="button"
-        onClick={flip}
-        aria-label={flipped ? t('studentHw.flipBack') : t('studentHw.flipFront')}
-        className={`flex min-h-56 w-full max-w-md flex-col items-center justify-center gap-3 rounded-3xl p-6 text-center shadow-xl transition active:scale-[0.98] ${flipped ? 'bg-warm-yellow text-deep-navy' : 'bg-white text-deep-navy'}`}
-      >
-        {!flipped ? (
-          <>
-            <span className="text-5xl font-extrabold">{word}</span>
-            <span className="text-sm text-on-surface-variant">{t('studentHw.flipTap')}</span>
-          </>
-        ) : (
-          <>
-            <span className="text-3xl font-extrabold">{meaning}</span>
-            {example && <span className="text-lg">{example}</span>}
-          </>
-        )}
-      </button>
-      <button type="button" onClick={() => speak(example && flipped ? example : word)} className={`${btn} bg-white/15 text-white`}>
-        {t('studentHw.listen')}
-      </button>
-      <div className="mt-auto flex w-full max-w-md items-center justify-between gap-2">
-        <button type="button" disabled={i === 0} onClick={() => go(i - 1)} className={`${btn} border border-white/30 text-white`}>
-          {t('studentHw.back')}
-        </button>
-        {i < cards.length - 1 ? (
-          <button type="button" onClick={() => go(i + 1)} className={`${btn} bg-warm-yellow text-deep-navy`}>
-            {t('studentHw.nextStep')}
-          </button>
-        ) : (
-          <button type="button" disabled={!all || busy} onClick={onDone} className={`${btn} bg-warm-yellow text-deep-navy`}>
-            {all ? t('studentHw.flipDone') : t('studentHw.flipAll')}
-          </button>
-        )}
-      </div>
+export default function FlipDeck({ text, busy, onDone, onListen }: { text:string; busy:boolean; onDone:()=>void; onListen?:()=>void }) {
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
+  const cards = text.split('\n').map(line=>line.split('|').map(part=>part.trim())).filter(parts=>parts[0]);
+  const [index,setIndex] = useState(0);
+  const [flipped,setFlipped] = useState(false);
+  const [seen,setSeen] = useState<Set<number>>(new Set());
+  if (!cards.length) return null;
+  const [word,meaning,example] = cards[index];
+  const all = seen.size === cards.length;
+  const button = 'flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl px-3 font-bold disabled:opacity-45';
+  function go(next:number) {setIndex(next);setFlipped(false);}
+  function listen(count:number) {
+    onListen?.();
+    speakSequence(Array<string>(count).fill(flipped&&example?example:word));
+  }
+  return <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
+    <div className="flex items-center gap-3 text-sm font-bold">
+      <span>{en?'Look and listen':'보고 듣기'}</span>
+      <progress value={index+1} max={cards.length} className="h-2 min-w-0 flex-1 overflow-hidden rounded-full accent-blue-400" aria-label={en?'Card progress':'카드 진행률'}/>
+      <span>{index+1} / {cards.length}</span>
     </div>
-  );
+    <button type="button" onClick={()=>{setFlipped(v=>!v);setSeen(old=>new Set(old).add(index));}} aria-label={flipped?t('studentHw.flipBack'):t('studentHw.flipFront')}
+      className="flex min-h-56 flex-1 flex-col items-center justify-center gap-4 rounded-3xl bg-white p-6 text-center text-deep-navy shadow-xl">
+      <span lang="en" className="max-w-full break-words text-4xl font-extrabold">{word}</span>
+      {flipped?<><span className="text-2xl font-bold">{meaning}</span>{example&&<span lang="en" className="border-t pt-3 text-lg">{example}</span>}</>:<span>{t('studentHw.flipTap')}</span>}
+    </button>
+    <div className="flex gap-2">
+      <button type="button" className={button+' bg-blue-600 text-white'} onClick={()=>listen(1)}><span className="material-symbols-outlined" aria-hidden>volume_up</span>{t('studentHw.listen')}</button>
+      <button type="button" className={button+' bg-slate-100 text-deep-navy'} onClick={()=>listen(3)}><span className="material-symbols-outlined" aria-hidden>repeat</span>{en?'Listen 3 times':'반복 듣기'}</button>
+    </div>
+    <div className="mt-auto flex gap-2 pb-[env(safe-area-inset-bottom)]">
+      <button type="button" className={button+' bg-white/15 text-white'} disabled={index===0||busy} onClick={()=>go(index-1)}><span className="material-symbols-outlined" aria-hidden>chevron_left</span>{t('studentHw.back')}</button>
+      <button type="button" className={button+' bg-blue-600 text-white'} disabled={busy||(index===cards.length-1&&!all)} onClick={()=>index<cards.length-1?go(index+1):onDone()}>
+        {index<cards.length-1?t('studentHw.nextStep'):all?t('studentHw.flipDone'):t('studentHw.flipAll')}<span className="material-symbols-outlined" aria-hidden>chevron_right</span>
+      </button>
+    </div>
+  </div>;
 }

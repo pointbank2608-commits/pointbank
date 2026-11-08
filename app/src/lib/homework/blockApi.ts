@@ -31,6 +31,10 @@ export interface BlockResult {
   attempt_id: string;
   item_id: string;
   student_id?: string;
+  spelling_hints?: {
+    allowed: import('./spellingHints').HintLevel;
+    questions: { index:number; prompt:string; word:string|null; allowed:import('./spellingHints').HintLevel; used:import('./spellingHints').HintLevel; correct:boolean|null }[];
+  } | null;
   guided_practice?: boolean | null;
   check_type?: string | null;
   check_misses?: HwCard[] | null;

@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
 import HomeworkResults from '../components/homework/teacher/HomeworkResults';
 import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
-import HomeworkWizard from '../components/homework/teacher/HomeworkWizard';
 import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEditor';
 import type { CheckType } from '../lib/homework/guided';
 import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
@@ -17,7 +16,6 @@ import GrammarTeacherPanel from '../components/grammar/GrammarTeacherPanel';
 import { useFeature } from '../lib/features';
 import type { HwItemDraft } from '../lib/homework/types';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
-import PinManager from '../components/homework/teacher/PinManager';
 import RecommendReview from '../components/homework/teacher/RecommendReview';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -30,10 +28,8 @@ type Panel =
   | { k: 'none' }
   | { k: 'adaptive' }
   | { k: 'wordProject' }
-  | { k: 'pick' | 'grammar' }
-  | { k: 'compose'; mode?:'lesson'|'list'; cards?:FullCardItem[]; title?:string; lessonId?:string; followUp?:{studentId:string;type:CheckType} }
+  | { k: 'compose'; mode?:'lesson'|'list'; studentIds?:string[]; cards?:FullCardItem[]; title?:string; lessonId?:string; followUp?:{studentId:string;type:CheckType} }
   | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
-  | { k: 'wizard'; studentIds?: string[]; cards?: FullCardItem[]; title?: string; lessonId?: string; pickedCards?: FullCardItem[] }
   | { k: 'recommend'; studentIds: string[]; gamesOnly?: boolean; source?:{cards:FullCardItem[];name:string} };
 
 /**
@@ -68,7 +64,6 @@ export default function HomeworkPage() {
   const [shareId, setShareId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [cardStudent, setCardStudent] = useState<string | null>(null);
-  const [pinsOpen, setPinsOpen] = useState(false);
   const [usage, setUsage] = useState<number | null>(null);
 
   const reload = useCallback(async () => {
@@ -169,18 +164,12 @@ export default function HomeworkPage() {
         <div className="flex flex-wrap gap-2">
           <details className="relative"><summary className={`${headerBtn} cursor-pointer border border-outline-variant bg-white`}>{i18n.language.startsWith('en')?'More':'더보기'}</summary><div className="absolute right-0 top-full z-20 mt-2 grid w-72 max-w-[85vw] gap-2 rounded-2xl border border-outline-variant bg-white p-3 shadow-xl">
           <button type="button" disabled={!classId||!students.length} onClick={()=>setPanel({k:'recommend',studentIds:students.map(s=>s.id),gamesOnly:true})} className={`${headerBtn} bg-deep-navy text-white`}>{i18n.language.startsWith('en')?'Personal game practice':'학생별 맞춤 게임'}</button>
-          <button type="button" onClick={() => setPanel({ k: 'editor' })} disabled={!classId} className={`${headerBtn} bg-warm-yellow text-deep-navy disabled:opacity-40`}>{i18n.language.startsWith('en') ? 'Detailed editing' : '직접 세부 편집'}</button>
-          <button type="button" onClick={() => setPinsOpen(true)} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
-            <span className="material-symbols-outlined text-[18px]">key</span>
-            {t('studentHw.pinsButton')}
-          </button>
           <button type="button" onClick={() => startRecommend([])} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
             {t('studentHw.checkRecommend')}
           </button>
-          <button type="button" onClick={() => setPanel({k:'wizard'})} disabled={!classId} className={`${headerBtn} border border-outline-variant`}>{i18n.language.startsWith('en')?'Use the previous wizard':'기존 방식으로 만들기'}</button>
           </div></details>
-          <button type="button" onClick={() => setPanel({ k: 'pick' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-white shadow-sm hover:bg-primary-container disabled:opacity-40`}>
+          <button type="button" onClick={() => setPanel({ k: 'compose' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-white shadow-sm hover:bg-primary-container disabled:opacity-40`}>
             <span className="material-symbols-outlined text-[18px]">add</span>
             {t('studentHw.newButton')}
           </button>
@@ -189,23 +178,7 @@ export default function HomeworkPage() {
 
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
-      {panel.k === 'pick' && classId && <section className="space-y-4 rounded-2xl border border-outline-variant bg-white p-5" aria-label={en?'Choose a homework type':'숙제 유형 고르기'}>
-        <header className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-bold">{en?'What would you like to assign?':'어떤 숙제를 내시겠어요?'}</h2>
-          <button type="button" className={headerBtn} onClick={()=>setPanel({k:'none'})}>{en?'Close':'닫기'}</button>
-        </header>
-        <div className="hw-source-choices">
-          <button type="button" onClick={()=>setPanel({k:'compose'})}><strong>{en?'General homework':'일반 숙제'}</strong><span>{en?'Combine review, spelling and speaking from a lesson or collection.':'수업이나 단어·문장 모음으로 복습, 철자, 말하기를 조합해요.'}</span></button>
-          {soloOpen&&homeworkOpen&&<button type="button" onClick={()=>setPanel({k:'grammar'})}><strong>{en?'Grammar homework':'문법 숙제'}</strong><span>{en?'Explain a rule, apply it in new sentences and check again later.':'이유를 이해하고 새 문장에 적용한 뒤 다시 확인해요.'}</span></button>}
-          {soloOpen&&homeworkOpen&&<button type="button" onClick={()=>setPanel({k:'adaptive'})}><strong>{en?'Adaptive vocabulary':'맞춤 단어 숙제'}</strong><span>{en?'Practise the words each student needs and check later.':'학생에게 필요한 연습과 이후 복습을 이어가요.'}</span></button>}
-          {homeworkOpen&&<button type="button" onClick={()=>setPanel({k:'wordProject'})}><strong>{en?'Long-term vocabulary project':'장기 단어 프로젝트'}</strong><span>{en?'Spread a large collection across days based on progress.':'많은 단어를 학생 진행에 맞춰 여러 날에 나눠요.'}</span></button>}
-        </div>
-      </section>}
-      {(panel.k === 'none' || panel.k === 'grammar') && classId && soloOpen && homeworkOpen && <>
-        {panel.k==='grammar'&&<button type="button" className={headerBtn} onClick={()=>setPanel({k:'pick'})}>{en?'Back to homework types':'숙제 유형으로 돌아가기'}</button>}
-        <GrammarTeacherPanel classId={classId} mode="homework" />
-      </>}
-
+      {panel.k === 'none' && classId && soloOpen && homeworkOpen && <GrammarTeacherPanel classId={classId} mode="homework" />}
       {panel.k==='none'&&classId&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
         <div><h2 className="text-lg font-bold text-deep-navy">{en?'Adaptive vocabulary homework':'필요한 만큼 배우는 단어 숙제'}</h2><p className="mt-1 text-sm text-on-surface-variant">{en?'Choose words, preview the plan and send. Students practise what they need and check their memory later.':'단어를 고르고 계획을 확인하면, 학생마다 필요한 연습과 이후 복습 확인이 이어져요.'}</p>{!soloOpen&&<p className="mt-2 text-sm">{en?'This homework uses the academy’s individual learning feature.':'이 숙제는 학원의 개별수업 기능이 열려 있어야 만들 수 있어요.'}</p>}</div>
         <button type="button" className={`${headerBtn} bg-primary text-white disabled:opacity-40`} disabled={!soloOpen} onClick={()=>setPanel({k:'adaptive'})}>{en?'Create adaptive homework':'맞춤 단어 숙제 만들기'}</button>
@@ -239,10 +212,8 @@ export default function HomeworkPage() {
       {panel.k==='compose'&&classId&&academy?.id&&profile&&<HomeworkComposer
         key={`${classId}:${panel.lessonId||panel.mode||'new'}:${panel.cards?.length||0}`}
         academyId={academy.id} ownerId={profile.id} classId={classId} className={className}
-        initialLessonId={panel.lessonId} initialMode={panel.mode} followUp={panel.followUp} initialCards={panel.cards} initialTitle={panel.title}
+        initialLessonId={panel.lessonId} initialMode={panel.mode} initialStudents={panel.studentIds} followUp={panel.followUp} initialCards={panel.cards} initialTitle={panel.title}
         onClose={()=>setPanel({k:'none'})}
-        onLegacy={()=>setPanel({k:'wizard',lessonId:panel.lessonId,pickedCards:panel.cards,title:panel.title})}
-        onEdit={(items,title,studentIds,due)=>setPanel({k:'editor',items,title,studentIds,due})}
         onCreated={async hw=>{setPanel({k:'none'});notify(t('studentHw.created'));await reload();setShareId(hw.id);}}
       />}
 
@@ -255,28 +226,6 @@ export default function HomeworkPage() {
         onClose={() => setPanel({ k: 'none' })}
         onCreated={async (hw) => { setPanel({ k: 'none' }); await reload(); setShareId(hw.id); }}
       />}
-
-      {panel.k === 'wizard' && classId && academy?.id && (
-        <HomeworkWizard
-          key={`${panel.title ?? ''}-${panel.studentIds?.join(',') ?? ''}-${panel.lessonId ?? ''}-${panel.pickedCards?.length ?? 0}`}
-          initialLessonId={panel.lessonId}
-          pickedCards={panel.pickedCards}
-          academyId={academy.id}
-          classId={classId}
-          className={className}
-          initialStudentIds={panel.studentIds}
-          initialCards={panel.cards}
-          initialTitle={panel.title}
-          onCancel={() => setPanel({ k: 'none' })}
-          onEdit={(items, title, studentIds, due) => setPanel({ k: 'editor', items, title, studentIds, due })}
-          onCreated={async (hw) => {
-            setPanel({ k: 'none' });
-            notify(t('studentHw.created'));
-            await reload();
-            setShareId(hw.id);
-          }}
-        />
-      )}
 
       {panel.k === 'recommend' && classId && academy?.id && (
         <RecommendReview
@@ -320,7 +269,6 @@ export default function HomeworkPage() {
       {usage !== null && <p className="text-sm text-on-surface-variant">{t('studentHw.usageNote', { count: usage })}</p>}
 
       {cardStudent && <LearningCardModal studentId={cardStudent} onClose={() => setCardStudent(null)} onRecommend={(id) => startRecommend([id])} />}
-      {pinsOpen && classId && <PinManager classId={classId} className={className} onClose={() => setPinsOpen(false)} />}
     </div>
   );
 
@@ -340,7 +288,7 @@ export default function HomeworkPage() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onMakeHomework={({ studentIds, cards, title }) => {
-              setPanel({ k: 'wizard', studentIds, cards, title });
+              setPanel({ k: 'compose', studentIds, cards, title });
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           />

@@ -32,6 +32,7 @@ import {
 } from "./build";
 import type { HwItemDraft, HwQuestion } from "./types";
 import { isMeaning } from "./quality";
+import type { SpellingHintPolicy } from "./spellingHints";
 export { isMeaning } from "./quality";
 
 export type BlockType = "study" | "recall" | "speak" | "sentence" | "video" | "watch";
@@ -46,6 +47,8 @@ export interface HomeworkBlock {
   count?: number;
   /** Guided composer practice, separate from a scored final check. */
   guidedPractice?: boolean;
+  /** 철자 숙제의 힌트 허용 단계(반 기본값 + 학생별 조정) */
+  spellingHints?: SpellingHintPolicy;
   text: string;
   translation: string;
   imageUrl: string;

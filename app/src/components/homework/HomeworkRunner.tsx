@@ -36,6 +36,8 @@ export default function HomeworkRunner({
   saveState,
   preview = false,
   startImmediately = false,
+  previewStart = 0,
+  previewHidden = false,
   onHome,
 }: {
   title: string;
@@ -49,6 +51,10 @@ export default function HomeworkRunner({
   saveState: SaveState;
   preview?: boolean;
   startImmediately?: boolean;
+  /** 미리보기에서 처음 열 활동 번호(교사용 예시) */
+  previewStart?: number;
+  /** 미리보기에서 말하기 활동을 가리고 말하기 단계부터 열기 */
+  previewHidden?: boolean;
   /** 끝 화면의 "홈으로" 버튼(없으면 버튼을 숨긴다) */
   onHome?: () => void;
 }) {
@@ -56,7 +62,8 @@ export default function HomeworkRunner({
   const [showWrong, setShowWrong] = useState(false);
   const [answers, setAnswers] = useState(initialAnswers);
   const [doneItems, setDoneItems] = useState(finishedItems);
-  const [phase, setPhase] = useState<Phase>(() => alreadyFinished ? { k: 'finishing' } : startImmediately && items.length ? { k: 'item', i: 0, sub: items[0].kind === 'shadowing' && items[0].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
+  const first = preview ? Math.max(0,Math.min(previewStart,items.length-1)) : 0;
+  const [phase, setPhase] = useState<Phase>(() => alreadyFinished ? { k: 'finishing' } : startImmediately && items.length ? { k: 'item', i: first, sub: items[first].kind === 'shadowing' && items[first].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const shownAt = useRef(performance.now());
@@ -350,9 +357,9 @@ export default function HomeworkRunner({
     const it = items[phase.i];
     // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
     if (it.config.block?.type === 'study' && it.config.block.method === 'flip') {
-      content = <FlipDeck key={it.id} text={it.config.block.text} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
+      content = <FlipDeck key={it.id} text={it.config.block.text} onListen={()=>sensor('audio')} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
     } else if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
-      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta)} />;
+      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} previewHidden={previewHidden&&phase.i===first} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta)} />;
     } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;
     } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
@@ -403,7 +410,7 @@ export default function HomeworkRunner({
       } else {
         const cq = it.content.questions[showQi];
         studioActive = isStudioQuestion(cq);
-        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
+        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} spellingHint={cq.guidedSpelling&&api.spellingHint?(level)=>api.spellingHint!(it.id,showQi,level):undefined} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
       }
     }
   }
