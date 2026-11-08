@@ -34,7 +34,7 @@ export default function FlipDeck({ text, busy, onDone, onListen }: { text:string
       <button type="button" className={button+' bg-slate-100 text-deep-navy'} onClick={()=>listen(3)}><span className="material-symbols-outlined" aria-hidden>repeat</span>{en?'Listen 3 times':'반복 듣기'}</button>
     </div>
     <div className="mt-auto flex gap-2 pb-[env(safe-area-inset-bottom)]">
-      <button type="button" className={button+' bg-white/15 text-white'} disabled={index===0||busy} onClick={()=>go(index-1)}><span className="material-symbols-outlined" aria-hidden>chevron_left</span>{t('studentHw.back')}</button>
+      <button type="button" className={button+' bg-[#efe8d4] text-[#1c2742]'} disabled={index===0||busy} onClick={()=>go(index-1)}><span className="material-symbols-outlined" aria-hidden>chevron_left</span>{t('studentHw.back')}</button>
       <button type="button" className={button+' bg-blue-600 text-white'} disabled={busy||(index===cards.length-1&&!all)} onClick={()=>index<cards.length-1?go(index+1):onDone()}>
         {index<cards.length-1?t('studentHw.nextStep'):all?t('studentHw.flipDone'):t('studentHw.flipAll')}<span className="material-symbols-outlined" aria-hidden>chevron_right</span>
       </button>

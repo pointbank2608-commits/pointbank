@@ -62,10 +62,10 @@ export function StampCelebration({ kids = false }: { kids?: boolean }) {
         <span className="hw-stamp-ring" aria-hidden="true" />
         <HomeworkStamp size={168} className="hw-stamp-drop drop-shadow-lg" />
       </div>
-      <div className={`hw-goodjob font-bold ${kids ? 'text-5xl text-[#e5484d]' : 'text-4xl text-warm-yellow'}`} style={{ fontFamily: "'Fredoka','Quicksand','Noto Sans KR',sans-serif" }}>
+      <div className={`hw-goodjob font-bold ${kids ? 'text-5xl text-[#e5484d]' : 'text-4xl text-[#3b5bdb]'}`} style={{ fontFamily: "'Fredoka','Quicksand','Noto Sans KR',sans-serif" }}>
         Good job!
       </div>
-      <div className={`text-lg ${kids ? 'text-deep-navy/80' : 'text-white/80'}`}>{t('studentHw.stampGot')}</div>
+      <div className={`text-lg ${kids ? 'text-deep-navy/80' : 'text-[#5b6580]'}`}>{t('studentHw.stampGot')}</div>
     </div>
   );
 }

@@ -179,22 +179,7 @@ export default function HomeworkPage() {
       {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
       {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
       {panel.k === 'none' && classId && soloOpen && homeworkOpen && <GrammarTeacherPanel classId={classId} mode="homework" />}
-      {panel.k==='none'&&classId&&<section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
-        <div><h2 className="text-lg font-bold text-deep-navy">{en?'Adaptive vocabulary homework':'필요한 만큼 배우는 단어 숙제'}</h2><p className="mt-1 text-sm text-on-surface-variant">{en?'Choose words, preview the plan and send. Students practise what they need and check their memory later.':'단어를 고르고 계획을 확인하면, 학생마다 필요한 연습과 이후 복습 확인이 이어져요.'}</p>{!soloOpen&&<p className="mt-2 text-sm">{en?'This homework uses the academy’s individual learning feature.':'이 숙제는 학원의 개별수업 기능이 열려 있어야 만들 수 있어요.'}</p>}</div>
-        <button type="button" className={`${headerBtn} bg-primary text-white disabled:opacity-40`} disabled={!soloOpen} onClick={()=>setPanel({k:'adaptive'})}>{en?'Create adaptive homework':'맞춤 단어 숙제 만들기'}</button>
-      </section>}
       {panel.k==='adaptive'&&classId&&academy?.id&&<AdaptiveHomeworkComposer key={classId} academyId={academy.id} classId={classId} onClose={()=>setPanel({k:'none'})} onCreated={()=>{setPanel({k:'none'});setAdaptiveRevision(n=>n+1);notify(en?'Homework assigned. Students can start from their portal.':'숙제를 배정했어요. 학생 홈의 숙제에서 시작할 수 있어요.');}}/>}
-      {panel.k === 'none' && classId && homeworkOpen && (
-        <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-fixed/25 p-5">
-          <div>
-            <h2 className="text-lg font-bold text-deep-navy">{t('wordMemory.homeworkProjectTitle')}</h2>
-            <p className="mt-1 text-sm text-on-surface-variant">{t('wordMemory.homeworkProjectHint')}</p>
-          </div>
-          <button type="button" className={headerBtn + ' bg-primary text-white'} onClick={() => setPanel({ k: 'wordProject' })}>
-            {t('wordMemory.homeworkProjectCreate')}
-          </button>
-        </section>
-      )}
       {panel.k === 'wordProject' && classId && academy?.id && homeworkOpen && (
         <WordProjectHomework
           key={classId}
@@ -213,6 +198,7 @@ export default function HomeworkPage() {
         key={`${classId}:${panel.lessonId||panel.mode||'new'}:${panel.cards?.length||0}`}
         academyId={academy.id} ownerId={profile.id} classId={classId} className={className}
         initialLessonId={panel.lessonId} initialMode={panel.mode} initialStudents={panel.studentIds} followUp={panel.followUp} initialCards={panel.cards} initialTitle={panel.title}
+        onSwitch={!panel.lessonId&&!panel.cards&&!panel.followUp&&!panel.studentIds?kind=>setPanel({k:kind}):undefined} adaptiveEnabled={soloOpen}
         onClose={()=>setPanel({k:'none'})}
         onCreated={async hw=>{setPanel({k:'none'});notify(t('studentHw.created'));await reload();setShareId(hw.id);}}
       />}

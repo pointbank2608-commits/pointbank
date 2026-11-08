@@ -57,7 +57,7 @@ function highlightWord(sentence: string, word: string) {
   return (
     <>
       {sentence.slice(0, m.index)}
-      <span className="rounded-lg bg-warm-yellow px-2 text-deep-navy">{m[0]}</span>
+      <span className="rounded-lg bg-[#3b5bdb] px-2 text-white">{m[0]}</span>
       {sentence.slice(m.index + m[0].length)}
     </>
   );
@@ -75,7 +75,7 @@ function PosBadge({ pos }: { pos: string }) {
       >
         {pos}
       </span>
-      {hint && <span className="text-base text-white/70">{hint}</span>}
+      {hint && <span className="text-base text-[#5b6580]">{hint}</span>}
     </div>
   );
 }
@@ -552,22 +552,22 @@ export default function SoloPlayer({
     const passed = sc.pct >= pass.pct;
     const title = String((steps[result.start] as { title: string }).title).replace(/^\d+\.\s*/, '');
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#f8f1e3] p-6 text-center text-[#1c2742]">
         <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
         <div className="solo-pop text-7xl">{passed ? '🎉' : '💪'}</div>
         <h1 className="text-3xl font-bold">{t('solo.groupResult', { title })}</h1>
-        <p className="text-5xl font-bold tabular-nums text-warm-yellow">{sc.pct}%</p>
-        <p className="text-xl text-white/85">{t('solo.groupScore', { right: sc.right, total: sc.total, pct: sc.pct })}</p>
-        <p className="text-lg text-white/70">{t('solo.passLineText', { pct: pass.pct })}</p>
+        <p className="text-5xl font-bold tabular-nums text-[#3b5bdb]">{sc.pct}%</p>
+        <p className="text-xl text-[#5b6580]">{t('solo.groupScore', { right: sc.right, total: sc.total, pct: sc.pct })}</p>
+        <p className="text-lg text-[#5b6580]">{t('solo.passLineText', { pct: pass.pct })}</p>
         <p className="max-w-sm text-xl font-bold">{passed ? t('solo.passedMsg') : pass.gate ? t('solo.notPassedGate') : t('solo.notPassedRef')}</p>
         <div className="flex flex-wrap justify-center gap-3">
           {sc.missed.length > 0 && (
-            <button type="button" onClick={() => startRetry(sc.missed, result)} className={`${btn} ${passed || !pass.gate ? 'bg-white/15 text-white' : 'bg-warm-yellow text-deep-navy'}`}>
+            <button type="button" onClick={() => startRetry(sc.missed, result)} className={`${btn} ${passed || !pass.gate ? 'bg-[#efe8d4] text-[#1c2742]' : 'bg-[#3b5bdb] text-white'}`}>
               {t('solo.retryMissed', { count: sc.missed.length })}
             </button>
           )}
           {(passed || !pass.gate) && (
-            <button type="button" onClick={() => leaveGroup(result)} className={`${btn} bg-warm-yellow px-8 text-deep-navy`}>
+            <button type="button" onClick={() => leaveGroup(result)} className={`${btn} bg-[#3b5bdb] px-8 text-white`}>
               {t('solo.continueNext')}
             </button>
           )}
@@ -581,12 +581,12 @@ export default function SoloPlayer({
     const nextTitle = String((steps[breakNext] as { title: string }).title).replace(/^\d+\.\s*/, '');
     const mins = Math.max(1, Math.round((Date.now() - lastBreakAt.current) / 60000));
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#f8f1e3] p-6 text-center text-[#1c2742]">
         <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
           <div className="solo-pop text-7xl">☕</div>
           <h1 className="text-3xl font-bold">{t('solo.breakTitle')}</h1>
-          <p className="max-w-sm text-xl text-white/85">{t('solo.breakText', { min: mins })}</p>
-          <p className="text-lg text-warm-yellow">{t('solo.breakNext', { title: nextTitle })}</p>
+          <p className="max-w-sm text-xl text-[#5b6580]">{t('solo.breakText', { min: mins })}</p>
+          <p className="text-lg text-[#3b5bdb]">{t('solo.breakNext', { title: nextTitle })}</p>
           <button
             type="button"
             onClick={() => {
@@ -595,7 +595,7 @@ export default function SoloPlayer({
               setBreakNext(null);
               jumpTo(i);
             }}
-            className={`${btn} bg-warm-yellow px-10 text-deep-navy`}
+            className={`${btn} bg-[#3b5bdb] px-10 text-white`}
           >
             {t('solo.breakGo')}
           </button>
@@ -607,22 +607,22 @@ export default function SoloPlayer({
   if (finished) {
     const missedAll = Object.keys(credit).map(Number).filter((i) => !credit[i]).sort((a, b) => a - b);
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#16213e] p-6 text-center text-white">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-[#f8f1e3] p-6 text-center text-[#1c2742]">
         <div className="flex w-full flex-col items-center gap-5" style={{ zoom }}>
         <div className="solo-pop text-7xl">🎉</div>
         <h1 className="text-4xl font-bold">{t('solo.finishTitle')}</h1>
-        {learned > 0 && <p className="text-2xl font-bold text-warm-yellow">{t('solo.finishLearned', { count: learned })}</p>}
-        <p className="text-xl text-white/80">{t('solo.finishStats', { right: stats.right+Object.values(gameResults).reduce((n,r)=>n+r.right,0), unsure: stats.unsure })}</p>
+        {learned > 0 && <p className="text-2xl font-bold text-[#3b5bdb]">{t('solo.finishLearned', { count: learned })}</p>}
+        <p className="text-xl text-[#5b6580]">{t('solo.finishStats', { right: stats.right+Object.values(gameResults).reduce((n,r)=>n+r.right,0), unsure: stats.unsure })}</p>
         {review.length > 0 && (
-          <div className="w-full max-w-md rounded-2xl bg-white/10 px-4 py-3 text-left">
-            <div className="mb-2 text-base font-bold text-white/80">{t('solo.finishReview')}</div>
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-3 text-left">
+            <div className="mb-2 text-base font-bold text-[#5b6580]">{t('solo.finishReview')}</div>
             <div className="flex flex-wrap gap-2">
               {review.map((w) => (
                 <button
                   key={w}
                   type="button"
                   onClick={() => speak(w)}
-                  className="rounded-full bg-white/15 px-3 py-1.5 text-lg font-bold hover:bg-white/25"
+                  className="rounded-full bg-[#efe8d4] px-3 py-1.5 text-lg font-bold hover:bg-[#d9d3c3]"
                 >
                   {w}
                 </button>
@@ -631,12 +631,12 @@ export default function SoloPlayer({
           </div>
         )}
         {missedAll.length > 0 && (
-          <button type="button" onClick={() => startRetry(missedAll, null)} className={`${btn} bg-white/15 text-white`}>
+          <button type="button" onClick={() => startRetry(missedAll, null)} className={`${btn} bg-[#efe8d4] text-[#1c2742]`}>
             {t('solo.retryAllMissed', { count: missedAll.length })}
           </button>
         )}
         {finishExtra}
-        <button type="button" onClick={onExit} className={`${btn} bg-warm-yellow text-deep-navy`}>
+        <button type="button" onClick={onExit} className={`${btn} bg-[#3b5bdb] text-white`}>
           {preview ? t('solo.closePreview') : t('solo.backHome')}
         </button>
         </div>
@@ -650,15 +650,15 @@ export default function SoloPlayer({
   const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType');
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-[#16213e] text-white">
+    <div className="flex min-h-[100dvh] flex-col bg-[#f8f1e3] text-[#1c2742]">
       <header className="flex items-center gap-3 px-4 py-3">
-        <button type="button" onClick={onExit} aria-label={t('solo.exit')} className="rounded-full p-2 text-white/70 hover:bg-white/10">
+        <button type="button" onClick={onExit} aria-label={t('solo.exit')} className="rounded-full p-2 text-[#5b6580] hover:bg-[#efe8d4]">
           <span className="material-symbols-outlined">close</span>
         </button>
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15">
-          <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${percent}%` }} />
+        <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]">
+          <div className="h-full rounded-full bg-[#3b5bdb] transition-all" style={{ width: `${percent}%` }} />
         </div>
-        <span className="text-sm tabular-nums text-white/70">
+        <span className="text-sm tabular-nums text-[#5b6580]">
           {idx + 1}/{steps.length}
         </span>
         {onHelp && (
@@ -684,8 +684,8 @@ export default function SoloPlayer({
                 setHelpSent(false);
               }
             }}
-            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold hover:bg-white/10 ${
-              helpSent ? 'border-warm-yellow bg-warm-yellow/15 text-warm-yellow' : 'border-white/30 text-white/90'
+            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold hover:bg-[#efe8d4] ${
+              helpSent ? 'border-warm-yellow bg-warm-yellow/15 text-[#3b5bdb]' : 'border-[#d9d3c3] text-[#5b6580]'
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">{helpSent ? 'check_circle' : 'back_hand'}</span>
@@ -702,12 +702,12 @@ export default function SoloPlayer({
       )}
       {retry && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
-          <span className="rounded-full bg-warm-yellow px-4 py-1 text-base font-bold text-deep-navy">{t('solo.retryChip', { n: retry.pos + 1, of: retry.queue.length })}</span>
+          <span className="rounded-full bg-[#3b5bdb] px-4 py-1 text-base font-bold text-white">{t('solo.retryChip', { n: retry.pos + 1, of: retry.queue.length })}</span>
         </div>
       )}
       {activity && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
-          <span className="rounded-full bg-white/10 px-4 py-1 text-base font-bold text-white/80">
+          <span className="rounded-full bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-1 text-base font-bold text-[#5b6580]">
             {t(`soloEdit.stepType_${step.t}`)}
             {activity.of > 1 ? ` · ${activity.n}/${activity.of}` : ''}
           </span>
@@ -743,16 +743,16 @@ export default function SoloPlayer({
             <div id={yt.elementId} className="absolute inset-0 h-full w-full" />
           </div>
         )}
-        {clip && yt.failed && <p className="rounded-xl bg-white/10 p-3 text-center text-sm text-white/80">{t('solo.videoFallback')}</p>}
+        {clip && yt.failed && <p className="rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-center text-sm text-[#5b6580]">{t('solo.videoFallback')}</p>}
 
         {step.t === 'watch' && (
           <>
             <p className="text-xl font-bold">{step.mode === 'listen' ? t('solo.watchListen') : t('solo.watchSing')}</p>
-            <h2 className="text-center text-2xl font-bold text-warm-yellow">{step.title}</h2>
-            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip)} className={`${btn} w-full bg-white/15 text-white`}>
+            <h2 className="text-center text-2xl font-bold text-[#3b5bdb]">{step.title}</h2>
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
               {clipPlaying ? t('solo.playing') : t('solo.play')}
             </button>
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {step.mode === 'listen' ? t('solo.heardAll') : t('solo.sangAll')}
             </button>
           </>
@@ -761,62 +761,62 @@ export default function SoloPlayer({
         {step.t === 'lyricBlank' && (
           <>
             <p className="text-xl font-bold">{t('solo.lyricQ')}</p>
-            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy disabled:opacity-60">
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white disabled:opacity-60">
               <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
               {t('solo.listenLine')}
             </button>
-            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
-            {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
+            <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            {step.ko && <p className="text-lg text-[#5b6580]">{step.ko}</p>}
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
           </>
         )}
 
         {step.t === 'lineSing' && (
           <>
-            <p className="text-lg text-white/70">{t('solo.singPrompt')}</p>
-            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-3xl font-bold leading-snug">{step.en}</p>
+            <p className="text-lg text-[#5b6580]">{t('solo.singPrompt')}</p>
+            <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-3xl font-bold leading-snug">{step.en}</p>
             {step.ko && (showKo ? (
-              <p className="text-xl text-white/85">{step.ko}</p>
+              <p className="text-xl text-[#5b6580]">{step.ko}</p>
             ) : (
-              <button type="button" onClick={() => { sensor('hint'); setShowKo(true); }} className="rounded-full border border-white/30 px-4 py-1.5 text-base text-white/85">
+              <button type="button" onClick={() => { sensor('hint'); setShowKo(true); }} className="rounded-full border border-[#d9d3c3] px-4 py-1.5 text-base text-[#5b6580]">
                 {t('solo.showKo')}
               </button>
             ))}
-            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.en)} className={`${btn} w-full bg-white/15 text-white`}>
+            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.en)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
               {clipPlaying ? t('solo.playing') : t('solo.listenLine')}
             </button>
             {mic === 'unknown' && (
-              <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+              <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
                 <p>{t('solo.micExplain')}</p>
                 <div className="mt-2 flex gap-2">
                   <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
                     {t('solo.micOn')}
                   </button>
-                  <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                  <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-[#efe8d4] text-[#1c2742]`}>
                     {t('solo.micSkip')}
                   </button>
                 </div>
               </div>
             )}
-            {mic === 'denied' && <p className="text-center text-base text-white/70">{t('solo.micDenied')}</p>}
+            {mic === 'denied' && <p className="text-center text-base text-[#5b6580]">{t('solo.micDenied')}</p>}
             {mic === 'ready' && (
-              <button type="button" onClick={() => toggleRecord(step.clip.end - step.clip.start)} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+              <button type="button" onClick={() => toggleRecord(step.clip.end - step.clip.start)} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
                 <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
               </button>
             )}
             {clipUrl && (
               <div className="flex w-full flex-col items-center gap-1">
-                <span className="text-sm text-white/70">{t('solo.myVoice')}</span>
+                <span className="text-sm text-[#5b6580]">{t('solo.myVoice')}</span>
                 <audio src={clipUrl} controls className="w-full" />
               </div>
             )}
-            {uploaded === 'fail' && <p className="text-center text-sm text-warm-yellow">{t('solo.uploadFail')}</p>}
-            {canRecord && mic === 'ready' && <p className="text-center text-xs text-white/50">{t('solo.recordSavedNote')}</p>}
+            {uploaded === 'fail' && <p className="text-center text-sm text-[#3b5bdb]">{t('solo.uploadFail')}</p>}
+            {canRecord && mic === 'ready' && <p className="text-center text-xs text-[#5b6580]">{t('solo.recordSavedNote')}</p>}
             <button
               type="button"
               disabled={busy || recording || (mic === 'ready' && !clipUrl)}
               onClick={() => void finishSing()}
-              className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+              className={`${btn} w-full bg-[#3b5bdb] text-white`}
             >
               {t('solo.sangIt')}
             </button>
@@ -825,14 +825,14 @@ export default function SoloPlayer({
 
         {step.t === 'fadeRead' && (
           <>
-            <p className="text-lg text-white/70">{round === fadeHidden.length - 1 ? t('solo.fadeLast') : round === 0 ? t('solo.fadeFirst') : t('solo.fadeMid')}</p>
+            <p className="text-lg text-[#5b6580]">{round === fadeHidden.length - 1 ? t('solo.fadeLast') : round === 0 ? t('solo.fadeFirst') : t('solo.fadeMid')}</p>
             <Picture url={step.imageUrl ?? null} />
             {step.ko && <p className="text-center text-2xl font-bold leading-snug">{step.ko}</p>}
-            <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-4" aria-live="polite">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-3 py-4" aria-live="polite">
               {fadeWords.map((w, i) => {
                 const hidden = i >= fadeWords.length - fadeHidden[round] && !peek;
                 return hidden ? (
-                  <span key={i} className="inline-block h-9 rounded-lg border-b-4 border-warm-yellow/70 bg-white/5" style={{ width: `${Math.max(2.2, w.length * 0.95)}rem` }} />
+                  <span key={i} className="inline-block h-9 rounded-lg border-b-4 border-warm-yellow/70 bg-white ring-1 ring-[#eadfc5]" style={{ width: `${Math.max(2.2, w.length * 0.95)}rem` }} />
                 ) : (
                   <span key={i} className="text-3xl font-bold">
                     {w}
@@ -841,43 +841,43 @@ export default function SoloPlayer({
               })}
             </div>
             <div className="flex w-full flex-wrap justify-center gap-2">
-              <button type="button" onClick={() => speak(step.sentence)} className="flex items-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+              <button type="button" onClick={() => speak(step.sentence)} className="flex items-center gap-2 rounded-full bg-[#efe8d4] px-5 py-2 text-lg font-bold">
                 <span className="material-symbols-outlined">volume_up</span>
                 {t('solo.listenAgain')}
               </button>
               {round > 0 && (
-                <button type="button" onMouseDown={() => setPeek(true)} onMouseUp={() => setPeek(false)} onMouseLeave={() => setPeek(false)} onTouchStart={() => setPeek(true)} onTouchEnd={() => setPeek(false)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                <button type="button" onMouseDown={() => setPeek(true)} onMouseUp={() => setPeek(false)} onMouseLeave={() => setPeek(false)} onTouchStart={() => setPeek(true)} onTouchEnd={() => setPeek(false)} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-lg text-[#5b6580]">
                   {t('solo.peek')}
                 </button>
               )}
             </div>
             <div className="flex gap-1.5" aria-hidden>
               {fadeHidden.map((_, i) => (
-                <span key={i} className={`h-2.5 w-2.5 rounded-full ${i <= round ? 'bg-warm-yellow' : 'bg-white/20'}`} />
+                <span key={i} className={`h-2.5 w-2.5 rounded-full ${i <= round ? 'bg-warm-yellow' : 'bg-[#efe8d4]'}`} />
               ))}
             </div>
             {round === fadeHidden.length - 1 && (
               <>
                 {mic === 'unknown' && (
-                  <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+                  <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
                     <p>{t('solo.micExplain')}</p>
                     <div className="mt-2 flex gap-2">
                       <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
                         {t('solo.micOn')}
                       </button>
-                      <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                      <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-[#efe8d4] text-[#1c2742]`}>
                         {t('solo.micSkip')}
                       </button>
                     </div>
                   </div>
                 )}
                 {mic === 'ready' && (
-                  <button type="button" onClick={() => toggleRecord(Math.max(4, fadeWords.length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+                  <button type="button" onClick={() => toggleRecord(Math.max(4, fadeWords.length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
                     <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
                   </button>
                 )}
                 {clipUrl && <audio src={clipUrl} controls className="w-full" />}
-                {uploaded === 'fail' && <p className="text-center text-sm text-warm-yellow">{t('solo.uploadFail')}</p>}
+                {uploaded === 'fail' && <p className="text-center text-sm text-[#3b5bdb]">{t('solo.uploadFail')}</p>}
               </>
             )}
             <button
@@ -892,7 +892,7 @@ export default function SoloPlayer({
                 await uploadRecording(0);
                 await next();
               }}
-              className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+              className={`${btn} w-full bg-[#3b5bdb] text-white`}
             >
               {round < fadeHidden.length - 1 ? t('solo.saidNext') : t('solo.saidIt')}
             </button>
@@ -903,7 +903,7 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.sayPickQ')}</p>
             <Picture url={step.imageUrl ?? null} />
-            <p className="rounded-2xl bg-white/10 px-4 py-3 text-center text-2xl font-bold leading-snug">{step.situation}</p>
+            <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-3 text-center text-2xl font-bold leading-snug">{step.situation}</p>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
           </>
         )}
@@ -913,7 +913,7 @@ export default function SoloPlayer({
           const st = step.t === 'rainbowStructure' ? STRUCTURE_ITEMS.find((i) => i.id === step.itemId) : null;
           if (!sp && !st) {
             return (
-              <button type="button" onClick={() => void next()} className={`${btn} bg-warm-yellow text-deep-navy`}>
+              <button type="button" onClick={() => void next()} className={`${btn} bg-[#3b5bdb] text-white`}>
                 {t('solo.next')}
               </button>
             );
@@ -953,14 +953,14 @@ export default function SoloPlayer({
           return (
             <>
               <Picture url={step.imageUrl ?? null} />
-              <p className="text-lg text-white/70">{rpPass === 1 ? t('solo.rpPass1') : t('solo.rpPass2')}</p>
+              <p className="text-lg text-[#5b6580]">{rpPass === 1 ? t('solo.rpPass1') : t('solo.rpPass2')}</p>
               <div className="flex w-full flex-col gap-2">
                 {lines.slice(0, rpTurn + 1).map((l, i) => {
                   const isCur = i === rpTurn;
                   const hide = rpPass === 2 && l.who === 'me' && (!isCur || !rpPeek);
                   return (
                     <div key={i} className={`flex ${l.who === 'me' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${l.who === 'me' ? 'bg-warm-yellow text-deep-navy' : 'bg-white/15'} ${isCur ? 'ring-2 ring-white/60' : 'opacity-80'}`}>
+                      <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${l.who === 'me' ? 'bg-warm-yellow text-deep-navy' : 'bg-[#efe8d4]'} ${isCur ? 'ring-2 ring-[#3b5bdb]' : 'opacity-80'}`}>
                         <div className="text-xs opacity-70">{l.speaker}</div>
                         <div className="text-xl font-bold leading-snug">{hide ? <span className="opacity-60">{l.ko}</span> : l.en}</div>
                         {!hide && l.ko && <div className="mt-0.5 text-sm opacity-70">{l.ko}</div>}
@@ -972,7 +972,7 @@ export default function SoloPlayer({
               {line && (
                 <div className="flex w-full flex-col gap-2">
                   {!mine && (
-                    <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+                    <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-[#efe8d4] px-5 py-2 text-lg font-bold">
                       <span className="material-symbols-outlined">volume_up</span>
                       {t('solo.listenAgain')}
                     </button>
@@ -980,31 +980,31 @@ export default function SoloPlayer({
                   {mine && (
                     <>
                       {rpPass === 1 && (
-                        <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-white/15 px-5 py-2 text-lg font-bold">
+                        <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-[#efe8d4] px-5 py-2 text-lg font-bold">
                           <span className="material-symbols-outlined">volume_up</span>
                           {t('solo.listenAgain')}
                         </button>
                       )}
                       {rpPass === 2 && hideMine && (
-                        <button type="button" onClick={() => setRpPeek(true)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                        <button type="button" onClick={() => setRpPeek(true)} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-lg text-[#5b6580]">
                           {t('solo.showAnswer')}
                         </button>
                       )}
                       {rpPass === 2 && mic === 'unknown' && (
-                        <div className="w-full rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+                        <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
                           <p>{t('solo.micExplain')}</p>
                           <div className="mt-2 flex gap-2">
                             <button type="button" onClick={() => void enableMic()} className={`${btn} flex-1 bg-white text-deep-navy`}>
                               {t('solo.micOn')}
                             </button>
-                            <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-white/15 text-white`}>
+                            <button type="button" onClick={() => setMic('unsupported')} className={`${btn} flex-1 bg-[#efe8d4] text-[#1c2742]`}>
                               {t('solo.micSkip')}
                             </button>
                           </div>
                         </div>
                       )}
                       {rpPass === 2 && mic === 'ready' && (
-                        <button type="button" onClick={() => toggleRecord(Math.max(4, line.en.split(/\s+/).length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+                        <button type="button" onClick={() => toggleRecord(Math.max(4, line.en.split(/\s+/).length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
                           <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
                         </button>
                       )}
@@ -1019,11 +1019,11 @@ export default function SoloPlayer({
                       if (mine && rpPass === 1) speak(line.en);
                       await advanceTurn();
                     }}
-                    className={`${btn} w-full bg-warm-yellow text-deep-navy`}
+                    className={`${btn} w-full bg-[#3b5bdb] text-white`}
                   >
                     {mine ? t('solo.saidIt') : t('solo.next')}
                   </button>
-                  {mic === 'ready' && canRecord && rpPass === 2 && mine && <p className="text-center text-xs text-white/50">{t('solo.recordSavedNote')}</p>}
+                  {mic === 'ready' && canRecord && rpPass === 2 && mine && <p className="text-center text-xs text-[#5b6580]">{t('solo.recordSavedNote')}</p>}
                 </div>
               )}
             </>
@@ -1051,8 +1051,8 @@ export default function SoloPlayer({
           <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
             {step.imageUrl ? <Picture url={step.imageUrl} wide /> : <div className="text-6xl">{/^\d+\.\s/.test(step.title) ? '⏱️' : '📚'}</div>}
             <h1 className="text-3xl font-bold">{step.title}</h1>
-            <p className="max-w-sm text-xl text-white/85">{/^\d+$/.test(step.text) ? t('solo.introText', { count: Number(step.text) || 0 }) : step.text}</p>
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} bg-warm-yellow px-10 text-deep-navy`}>
+            <p className="max-w-sm text-xl text-[#5b6580]">{/^\d+$/.test(step.text) ? t('solo.introText', { count: Number(step.text) || 0 }) : step.text}</p>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} bg-[#3b5bdb] px-10 text-white`}>
               {t(/^\d+\.\s/.test(step.title) ? 'solo.startStage' : 'solo.start')}
             </button>
           </div>
@@ -1064,21 +1064,21 @@ export default function SoloPlayer({
 
         {step.t === 'meet' && (
           <>
-            <p className="text-lg text-white/70">{t('solo.meetPrompt')}</p>
+            <p className="text-lg text-[#5b6580]">{t('solo.meetPrompt')}</p>
             <Picture url={step.imageUrl} />
-            <button type="button" onClick={() => { speak(step.word); setHeard(true); }} className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-3 text-5xl font-bold">
-              <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
+            <button type="button" onClick={() => { speak(step.word); setHeard(true); }} className="flex items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-6 py-3 text-5xl font-bold">
+              <span className="material-symbols-outlined text-[40px] text-[#3b5bdb]">volume_up</span>
               {step.word}
             </button>
             {step.pos && <PosBadge pos={step.pos} />}
-            <p className="text-2xl text-white/85">{step.meaning}</p>
+            <p className="text-2xl text-[#5b6580]">{step.meaning}</p>
             {step.example && (
-              <button type="button" onClick={() => speak(step.example ?? '')} className="rounded-xl bg-white/5 px-4 py-2 text-lg text-white/75">
+              <button type="button" onClick={() => speak(step.example ?? '')} className="rounded-xl bg-white ring-1 ring-[#eadfc5] px-4 py-2 text-lg text-[#5b6580]">
                 🔊 {step.example}
               </button>
             )}
-            <p className="mt-1 text-center text-lg text-warm-yellow">{t('solo.sayIt')}</p>
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            <p className="mt-1 text-center text-lg text-[#3b5bdb]">{t('solo.sayIt')}</p>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {heard ? t('solo.saidIt') : t('solo.saidItFirst')}
             </button>
           </>
@@ -1086,19 +1086,19 @@ export default function SoloPlayer({
 
         {step.t === 'rule' && (
           <>
-            <p className="text-lg text-white/70">{t('solo.rulePrompt')}</p>
+            <p className="text-lg text-[#5b6580]">{t('solo.rulePrompt')}</p>
             <h2 className="text-center text-2xl font-bold">{step.title}</h2>
-            <div className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold text-warm-yellow">{step.pattern}</div>
-            <p className="text-center text-lg text-white/85">{step.explain}</p>
+            <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold text-[#3b5bdb]">{step.pattern}</div>
+            <p className="text-center text-lg text-[#5b6580]">{step.explain}</p>
             {step.lines.length > 0 && (
-              <ul className="w-full list-disc space-y-1.5 rounded-2xl bg-white/5 py-3 pl-8 pr-4 text-left text-lg text-white/85">
+              <ul className="w-full list-disc space-y-1.5 rounded-2xl bg-white ring-1 ring-[#eadfc5] py-3 pl-8 pr-4 text-left text-lg text-[#5b6580]">
                 {step.lines.map((l, i) => (
                   <li key={i}>{l}</li>
                 ))}
               </ul>
             )}
-            {step.tip && <p className="text-center text-xl font-bold text-emerald-200">💡 {step.tip}</p>}
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            {step.tip && <p className="text-center text-xl font-bold text-emerald-600">💡 {step.tip}</p>}
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {t('solo.readIt')}
             </button>
           </>
@@ -1106,21 +1106,21 @@ export default function SoloPlayer({
 
         {step.t === 'example' && (
           <>
-            <p className="text-lg text-white/70">{t('solo.examplePrompt')}</p>
-            <button type="button" onClick={() => { speak(step.sentence); setHeard(true); }} className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-5 py-5 text-left text-3xl font-bold leading-snug">
-              <span className="material-symbols-outlined shrink-0 text-[36px] text-warm-yellow">volume_up</span>
+            <p className="text-lg text-[#5b6580]">{t('solo.examplePrompt')}</p>
+            <button type="button" onClick={() => { speak(step.sentence); setHeard(true); }} className="flex w-full items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-5 py-5 text-left text-3xl font-bold leading-snug">
+              <span className="material-symbols-outlined shrink-0 text-[36px] text-[#3b5bdb]">volume_up</span>
               {step.sentence}
             </button>
             {step.ko &&
               (showKo ? (
-                <p className="text-2xl text-white/90">{step.ko}</p>
+                <p className="text-2xl text-[#5b6580]">{step.ko}</p>
               ) : (
-                <button type="button" onClick={() => setShowKo(true)} className="rounded-full border border-white/30 px-5 py-2 text-lg text-white/85">
+                <button type="button" onClick={() => setShowKo(true)} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-lg text-[#5b6580]">
                   {t('solo.showKo')}
                 </button>
               ))}
-            <p className="text-center text-lg text-warm-yellow">{t('solo.readAloud')}</p>
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+            <p className="text-center text-lg text-[#3b5bdb]">{t('solo.readAloud')}</p>
+            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {t('solo.readIt')}
             </button>
           </>
@@ -1139,8 +1139,8 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.pickMeaningQ')}</p>
             <Picture url={step.imageUrl} />
-            <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-3 text-5xl font-bold">
-              <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
+            <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-6 py-3 text-5xl font-bold">
+              <span className="material-symbols-outlined text-[40px] text-[#3b5bdb]">volume_up</span>
               {step.word}
             </button>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
@@ -1151,12 +1151,12 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{step.sentence ? t('solo.pickPosSentenceQ') : t('solo.pickPosQ')}</p>
             {step.sentence ? (
-              <button type="button" onClick={() => speak(step.sentence ?? '')} className="rounded-2xl bg-white/10 px-5 py-4 text-center text-3xl font-bold leading-snug">
+              <button type="button" onClick={() => speak(step.sentence ?? '')} className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-5 py-4 text-center text-3xl font-bold leading-snug">
                 {highlightWord(step.sentence, step.word)}
               </button>
             ) : (
-              <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white/10 px-6 py-3 text-5xl font-bold">
-                <span className="material-symbols-outlined text-[40px] text-warm-yellow">volume_up</span>
+              <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-6 py-3 text-5xl font-bold">
+                <span className="material-symbols-outlined text-[40px] text-[#3b5bdb]">volume_up</span>
                 {step.word}
               </button>
             )}
@@ -1167,7 +1167,7 @@ export default function SoloPlayer({
         {step.t === 'listenPick' && (
           <>
             <p className="text-xl font-bold">{t('solo.listenQ')}</p>
-            <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy">
+            <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white">
               <span className="material-symbols-outlined">volume_up</span>
               {t('solo.listenAgain')}
             </button>
@@ -1178,7 +1178,7 @@ export default function SoloPlayer({
                   type="button"
                   disabled={wrong.includes(i) || answered}
                   onClick={() => void choose(i)}
-                  className={`flex min-h-32 flex-col items-center justify-center gap-1 rounded-2xl p-2 ${wrong.includes(i) ? 'bg-white/10 opacity-40' : 'bg-white text-deep-navy'} [touch-action:manipulation]`}
+                  className={`flex min-h-32 flex-col items-center justify-center gap-1 rounded-2xl p-2 ${wrong.includes(i) ? 'bg-white shadow-sm ring-1 ring-[#eadfc5] opacity-40' : 'bg-white text-deep-navy'} [touch-action:manipulation]`}
                 >
                   {step.images[i] ? <img src={step.images[i] ?? ''} alt="" className="h-24 w-24 object-contain" /> : <span className="text-2xl font-bold">{o}</span>}
                   {answered && step.images[i] && <span className="text-base font-bold">{o}</span>}
@@ -1192,10 +1192,10 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.spellQ')}</p>
             <Picture url={step.imageUrl} />
-            <p className="text-2xl text-white/85">{step.meaning}</p>
+            <p className="text-2xl text-[#5b6580]">{step.meaning}</p>
             <div className="flex min-h-16 flex-wrap items-center justify-center gap-2" aria-live="polite">
               {step.letters.map((_, slot) => (
-                <span key={slot} className="flex h-14 w-12 items-center justify-center rounded-xl border-2 border-white/40 bg-white/10 text-3xl font-bold">
+                <span key={slot} className="flex h-14 w-12 items-center justify-center rounded-xl border-2 border-[#d9d3c3] bg-white shadow-sm ring-1 ring-[#eadfc5] text-3xl font-bold">
                   {typed[slot] !== undefined ? step.letters[typed[slot]] : ''}
                 </span>
               ))}
@@ -1215,10 +1215,10 @@ export default function SoloPlayer({
             </div>
             {!answered && (
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-white/15`}>
+                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-[#efe8d4]`}>
                   {t('solo.erase')}
                 </button>
-                <button type="button" onClick={() => void checkSpell()} disabled={typed.length !== step.letters.length || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                <button type="button" onClick={() => void checkSpell()} disabled={typed.length !== step.letters.length || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </div>
@@ -1237,13 +1237,13 @@ export default function SoloPlayer({
             ) : (
               <>
                 <p className="text-xl font-bold">{t('solo.dictationQ')}</p>
-                <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy">
+                <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white">
                   <span className="material-symbols-outlined">volume_up</span>
                   {t('solo.listenAgain')}
                 </button>
               </>
             )}
-            <p className="font-mono text-2xl tracking-[0.3em] text-white/60" aria-label={t('solo.lettersHint', { n: step.length })}>
+            <p className="font-mono text-2xl tracking-[0.3em] text-[#5b6580]" aria-label={t('solo.lettersHint', { n: step.length })}>
               {hintFirst && step.t === 'typeWord' ? `${step.first}${'_'.repeat(Math.max(0, step.length - 1))}` : '_'.repeat(step.length)}
             </p>
             {!answered && (
@@ -1263,9 +1263,9 @@ export default function SoloPlayer({
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                  className="min-h-14 w-full rounded-2xl border border-[#d9d3c3] bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
                 />
-                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </form>
@@ -1276,8 +1276,8 @@ export default function SoloPlayer({
         {step.t === 'fillBlank' && (
           <>
             <p className="text-xl font-bold">{t('solo.fillQ')}</p>
-            <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
-            <p className="text-lg text-white/70">{step.meaning}</p>
+            <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            <p className="text-lg text-[#5b6580]">{step.meaning}</p>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
           </>
         )}
@@ -1285,8 +1285,8 @@ export default function SoloPlayer({
         {step.t === 'translatePick' && (
           <>
             <p className="text-xl font-bold">{t('solo.translateQ')}</p>
-            <button type="button" onClick={() => speak(step.sentence)} className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-5 py-4 text-left text-2xl font-bold leading-snug">
-              <span className="material-symbols-outlined shrink-0 text-[32px] text-warm-yellow">volume_up</span>
+            <button type="button" onClick={() => speak(step.sentence)} className="flex w-full items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-5 py-4 text-left text-2xl font-bold leading-snug">
+              <span className="material-symbols-outlined shrink-0 text-[32px] text-[#3b5bdb]">volume_up</span>
               {step.sentence}
             </button>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
@@ -1297,7 +1297,7 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.correctQ')}</p>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
-            {answered && step.why && <p className="text-center text-lg text-white/80">💡 {step.why}</p>}
+            {answered && step.why && <p className="text-center text-lg text-[#5b6580]">💡 {step.why}</p>}
           </>
         )}
 
@@ -1305,14 +1305,14 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.gapQ')}</p>
             {step.clip && (
-              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-5 py-2 text-lg font-bold text-white disabled:opacity-60">
                 <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
                 {t('solo.listenLine')}
               </button>
             )}
-            <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
-            {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
-            <p className="font-mono text-2xl tracking-[0.3em] text-white/60" aria-label={t('solo.lettersHint', { n: step.length })}>
+            <p className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
+            {step.ko && <p className="text-lg text-[#5b6580]">{step.ko}</p>}
+            <p className="font-mono text-2xl tracking-[0.3em] text-[#5b6580]" aria-label={t('solo.lettersHint', { n: step.length })}>
               {hintFirst ? `${step.first}${'_'.repeat(Math.max(0, step.length - 1))}` : '_'.repeat(step.length)}
             </p>
             {!answered && (
@@ -1332,9 +1332,9 @@ export default function SoloPlayer({
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck={false}
-                  className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                  className="min-h-14 w-full rounded-2xl border border-[#d9d3c3] bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
                 />
-                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </form>
@@ -1349,8 +1349,8 @@ export default function SoloPlayer({
           return (
             <>
               <p className="text-xl font-bold">{t('solo.writeQ')}</p>
-              <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
-              <p className="text-center text-base text-white/70">{t('solo.writeBank')}</p>
+              <p className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
+              <p className="text-center text-base text-[#5b6580]">{t('solo.writeBank')}</p>
               <div className="flex w-full flex-wrap justify-center gap-2">
                 {step.words.map((w, n) => {
                   const key = looseNorm(w);
@@ -1364,7 +1364,7 @@ export default function SoloPlayer({
                       type="button"
                       disabled={answered || busy}
                       onClick={() => setText((cur) => `${cur.trim() ? `${cur.trim()} ` : ''}${w}`)}
-                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${used ? 'bg-white/20 text-white/40' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5]'}`}
+                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${used ? 'bg-[#efe8d4] text-[#5b6580]' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5]'}`}
                     >
                       {w}
                     </button>
@@ -1388,13 +1388,13 @@ export default function SoloPlayer({
                     autoCorrect="off"
                     spellCheck={false}
                     placeholder={t('solo.writePlaceholder')}
-                    className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                    className="min-h-14 w-full rounded-2xl border border-[#d9d3c3] bg-white px-4 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
                   />
                   <div className="flex w-full gap-3">
-                    <button type="button" onClick={() => setText((cur) => cur.trim().split(/\s+/).slice(0, -1).join(' '))} disabled={!text.trim()} className={`${btn} flex-1 bg-white/15`}>
+                    <button type="button" onClick={() => setText((cur) => cur.trim().split(/\s+/).slice(0, -1).join(' '))} disabled={!text.trim()} className={`${btn} flex-1 bg-[#efe8d4]`}>
                       {t('solo.erase')}
                     </button>
-                    <button type="submit" disabled={!text.trim() || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                    <button type="submit" disabled={!text.trim() || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                       {t('solo.check')}
                     </button>
                   </div>
@@ -1407,17 +1407,17 @@ export default function SoloPlayer({
         {step.t === 'condWrite' && (
           <>
             <p className="text-xl font-bold">{t('solo.condQ')}</p>
-            <p className="w-full rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
-            <ul className="w-full space-y-1.5 rounded-2xl bg-white/5 px-4 py-3 text-left text-lg" aria-label={t('solo.condTitle')}>
-              <li className="text-base font-bold text-white/70">{t('solo.condTitle')}</li>
+            <p className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.ko}</p>
+            <ul className="w-full space-y-1.5 rounded-2xl bg-white ring-1 ring-[#eadfc5] px-4 py-3 text-left text-lg" aria-label={t('solo.condTitle')}>
+              <li className="text-base font-bold text-[#5b6580]">{t('solo.condTitle')}</li>
               {step.conditions.map((c, i) => {
                 const r = text.trim() ? checkCondition(c, text) : null;
                 return (
                   <li key={i} className="flex items-start gap-2">
-                    <span className={`material-symbols-outlined mt-0.5 shrink-0 text-[20px] ${r === true ? 'text-emerald-300' : r === false ? 'text-warm-yellow' : 'text-white/40'}`}>
+                    <span className={`material-symbols-outlined mt-0.5 shrink-0 text-[20px] ${r === true ? 'text-emerald-600' : r === false ? 'text-[#3b5bdb]' : 'text-[#5b6580]'}`}>
                       {r === true ? 'check_circle' : r === false ? 'radio_button_unchecked' : 'circle'}
                     </span>
-                    <span className={r === true ? 'text-white' : 'text-white/85'}>{c.text}</span>
+                    <span className={r === true ? 'text-[#1c2742]' : 'text-[#5b6580]'}>{c.text}</span>
                   </li>
                 );
               })}
@@ -1439,24 +1439,24 @@ export default function SoloPlayer({
                   autoCorrect="off"
                   spellCheck={false}
                   placeholder={t('solo.writePlaceholder')}
-                  className="w-full rounded-2xl bg-white px-4 py-3 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+                  className="w-full rounded-2xl border border-[#d9d3c3] bg-white px-4 py-3 text-center text-2xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
                 />
-                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-warm-yellow text-deep-navy`}>
+                <button type="submit" disabled={!text.trim() || busy} className={`${btn} bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </form>
             )}
             {phase === 'right' && (
-              <div className="w-full rounded-2xl bg-white/10 px-4 py-3 text-center">
-                <p className="text-base text-white/70">{t('solo.condYours')}</p>
+              <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-3 text-center">
+                <p className="text-base text-[#5b6580]">{t('solo.condYours')}</p>
                 <p className="text-xl font-bold">{text}</p>
                 {modelNote && (
                   <>
-                    <p className="mt-2 text-base text-white/70">{t('solo.condModel')}</p>
-                    <p className="text-xl font-bold text-emerald-200">{modelNote}</p>
+                    <p className="mt-2 text-base text-[#5b6580]">{t('solo.condModel')}</p>
+                    <p className="text-xl font-bold text-emerald-600">{modelNote}</p>
                   </>
                 )}
-                <p className="mt-2 text-sm text-white/60">{t('solo.condTeacher')}</p>
+                <p className="mt-2 text-sm text-[#5b6580]">{t('solo.condTeacher')}</p>
               </div>
             )}
           </>
@@ -1468,8 +1468,8 @@ export default function SoloPlayer({
           return (
             <>
               <p className="text-xl font-bold">{t('solo.fixQ')}</p>
-              <p className="text-center text-base text-white/70">{t('solo.fixHow')}</p>
-              <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white/10 px-3 py-4" aria-live="polite">
+              <p className="text-center text-base text-[#5b6580]">{t('solo.fixHow')}</p>
+              <div className="flex w-full flex-wrap items-center justify-center gap-2 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-3 py-4" aria-live="polite">
                 {tokens.map((w, i) => {
                   const changed = i in fixEdits;
                   if (fixOpen === i && !answered) {
@@ -1507,26 +1507,26 @@ export default function SoloPlayer({
                       type="button"
                       disabled={answered || busy}
                       onClick={() => setFixOpen(i)}
-                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${changed ? 'bg-warm-yellow text-deep-navy' : 'bg-white/90 text-deep-navy shadow-[0_4px_0_#9aa3b5]'}`}
+                      className={`min-h-12 rounded-xl px-3 text-2xl font-bold [touch-action:manipulation] ${changed ? 'bg-[#3b5bdb] text-white' : 'bg-white ring-1 ring-[#eadfc5] text-white shadow-[0_4px_0_#9aa3b5]'}`}
                     >
                       {shown || '∅'}
                     </button>
                   );
                 })}
               </div>
-              {edited && !answered && <p className="text-center text-lg text-white/85">{t('solo.fixResult')} <span className="font-bold text-warm-yellow">{applyFixEdits(step.wrong, fixEdits) || '…'}</span></p>}
-              {step.ko && <p className="text-lg text-white/70">{step.ko}</p>}
+              {edited && !answered && <p className="text-center text-lg text-[#5b6580]">{t('solo.fixResult')} <span className="font-bold text-[#3b5bdb]">{applyFixEdits(step.wrong, fixEdits) || '…'}</span></p>}
+              {step.ko && <p className="text-lg text-[#5b6580]">{step.ko}</p>}
               {!answered && (
                 <div className="flex w-full gap-3">
-                  <button type="button" onClick={() => { setFixEdits({}); setFixOpen(null); }} disabled={!edited} className={`${btn} flex-1 bg-white/15`}>
+                  <button type="button" onClick={() => { setFixEdits({}); setFixOpen(null); }} disabled={!edited} className={`${btn} flex-1 bg-[#efe8d4]`}>
                     {t('solo.fixReset')}
                   </button>
-                  <button type="button" onClick={() => void checkFixError()} disabled={!edited || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                  <button type="button" onClick={() => void checkFixError()} disabled={!edited || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                     {t('solo.check')}
                   </button>
                 </div>
               )}
-              {answered && step.why && <p className="text-center text-lg text-white/80">💡 {step.why}</p>}
+              {answered && step.why && <p className="text-center text-lg text-[#5b6580]">💡 {step.why}</p>}
             </>
           );
         })()}
@@ -1535,13 +1535,13 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.lineOrderQ')}</p>
             {step.clip && (
-              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-5 py-2 text-lg font-bold text-white disabled:opacity-60">
                 <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
                 {t('solo.listenLine')}
               </button>
             )}
-            <ol className="flex min-h-20 w-full flex-col gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
-              {typed.length === 0 && <li className="text-center text-base text-white/50">{t('solo.lineOrderEmpty')}</li>}
+            <ol className="flex min-h-20 w-full flex-col gap-2 rounded-2xl border-2 border-dashed border-[#d9d3c3] p-3" aria-live="polite">
+              {typed.length === 0 && <li className="text-center text-base text-[#5b6580]">{t('solo.lineOrderEmpty')}</li>}
               {typed.map((n, k) => (
                 <li key={k}>
                   <button type="button" disabled={answered} onClick={() => setTyped((a) => a.filter((_, j) => j !== k))} className="flex w-full items-center gap-2 rounded-xl bg-white px-3 py-2 text-left text-xl font-bold text-deep-navy">
@@ -1558,7 +1558,7 @@ export default function SoloPlayer({
                   type="button"
                   disabled={typed.includes(n) || answered || busy}
                   onClick={() => setTyped((a) => [...a, n])}
-                  className="rounded-xl bg-white/90 px-4 py-3 text-left text-xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
+                  className="rounded-xl bg-white ring-1 ring-[#eadfc5] px-4 py-3 text-left text-xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
                 >
                   {p}
                 </button>
@@ -1566,10 +1566,10 @@ export default function SoloPlayer({
             </div>
             {!answered && (
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-white/15`}>
+                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-[#efe8d4]`}>
                   {t('solo.erase')}
                 </button>
-                <button type="button" onClick={() => void checkLineOrder()} disabled={typed.length !== step.pieces.length || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                <button type="button" onClick={() => void checkLineOrder()} disabled={typed.length !== step.pieces.length || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </div>
@@ -1581,12 +1581,12 @@ export default function SoloPlayer({
           <>
             <p className="text-xl font-bold">{t('solo.unscrambleQ')}</p>
             {step.clip && (
-              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-warm-yellow px-5 py-2 text-lg font-bold text-deep-navy disabled:opacity-60">
+              <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip!)} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-5 py-2 text-lg font-bold text-white disabled:opacity-60">
                 <span className="material-symbols-outlined">{clipPlaying ? 'graphic_eq' : 'play_arrow'}</span>
                 {t('solo.listenLine')}
               </button>
             )}
-            <div className="flex min-h-20 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
+            <div className="flex min-h-20 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d9d3c3] p-3" aria-live="polite">
               {typed.map((n, k) => (
                 <button key={k} type="button" disabled={answered} onClick={() => setTyped((a) => a.filter((_, j) => j !== k))} className="rounded-xl bg-white px-3 py-2 text-2xl font-bold text-deep-navy">
                   {step.words[n]}
@@ -1600,7 +1600,7 @@ export default function SoloPlayer({
                   type="button"
                   disabled={typed.includes(n) || answered || busy}
                   onClick={() => setTyped((a) => [...a, n])}
-                  className="rounded-xl bg-white/90 px-3 py-2 text-2xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
+                  className="rounded-xl bg-white ring-1 ring-[#eadfc5] px-3 py-2 text-2xl font-bold text-deep-navy shadow-[0_4px_0_#9aa3b5] [touch-action:manipulation] disabled:opacity-30"
                 >
                   {w}
                 </button>
@@ -1608,10 +1608,10 @@ export default function SoloPlayer({
             </div>
             {!answered && (
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-white/15`}>
+                <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-[#efe8d4]`}>
                   {t('solo.erase')}
                 </button>
-                <button type="button" onClick={() => void checkUnscramble()} disabled={typed.length !== step.words.length || busy} className={`${btn} flex-1 bg-warm-yellow text-deep-navy`}>
+                <button type="button" onClick={() => void checkUnscramble()} disabled={typed.length !== step.words.length || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
                 </button>
               </div>
@@ -1628,15 +1628,15 @@ export default function SoloPlayer({
           </Banner>
         )}
         {isQuestion && (phase === 'shown' || (phase === 'wrong1' && wrong.length >= 2)) && (step as { tip?: string }).tip && (
-          <div className="w-full rounded-2xl bg-white/10 px-4 py-3 text-center text-lg text-white/90">
-            <span className="mr-2 font-bold text-warm-yellow">{t('solo.whyTip')}</span>
+          <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-3 text-center text-lg text-[#5b6580]">
+            <span className="mr-2 font-bold text-[#3b5bdb]">{t('solo.whyTip')}</span>
             {(step as { tip?: string }).tip}
           </div>
         )}
-        {error && <p className="text-center text-lg text-warm-yellow" role="alert">{t('solo.error')}</p>}
+        {error && <p className="text-center text-lg text-[#3b5bdb]" role="alert">{t('solo.error')}</p>}
 
         {isQuestion && answered && (
-          <button type="button" disabled={busy} onClick={() => (phase === 'right' || !advanced ? void next() : goOn())} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+          <button type="button" disabled={busy} onClick={() => (phase === 'right' || !advanced ? void next() : goOn())} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
             {t('solo.next')}
           </button>
         )}
@@ -1646,17 +1646,17 @@ export default function SoloPlayer({
             type="button"
             disabled={busy}
             onClick={() => void next(true)}
-            className="mt-auto rounded-full border border-white/30 px-5 py-2 text-base text-white/80 hover:bg-white/10"
+            className="mt-auto rounded-full border border-[#d9d3c3] px-5 py-2 text-base text-[#5b6580] hover:bg-[#efe8d4]"
           >
             {t('solo.dontKnow')}
           </button>
         )}
         {!isQuestion && phase === 'shown' && (
-          <button type="button" onClick={goOn} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+          <button type="button" onClick={goOn} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
             {t('solo.next')}
           </button>
         )}
-        {preview && <p className="text-sm text-white/50">{t('solo.previewNote')}</p>}
+        {preview && <p className="text-sm text-[#5b6580]">{t('solo.previewNote')}</p>}
         {CARD_TYPES.includes(step.t) && (() => {
           let a = idx;
           while (a > 0 && CARD_TYPES.includes(steps[a - 1].t)) a--;
@@ -1665,13 +1665,13 @@ export default function SoloPlayer({
           const total = b - a + 1;
           if (total < 2) return null;
           return (
-            <div className="flex w-full items-center justify-center gap-3 text-white/70">
+            <div className="flex w-full items-center justify-center gap-3 text-[#5b6580]">
               <button
                 type="button"
                 onClick={goBackCard}
                 disabled={idx === a}
                 aria-label={t('solo.cardPrev')}
-                className="flex min-h-11 items-center gap-1 rounded-full border border-white/25 px-4 text-base font-bold disabled:opacity-30"
+                className="flex min-h-11 items-center gap-1 rounded-full border border-[#d9d3c3] px-4 text-base font-bold disabled:opacity-30"
               >
                 <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                 {t('solo.cardPrev')}
@@ -1679,7 +1679,7 @@ export default function SoloPlayer({
               <span className="text-base tabular-nums" aria-label={t('solo.cardPos', { n: idx - a + 1, of: total })}>
                 {total <= 12
                   ? Array.from({ length: total }, (_, i) => (
-                      <span key={i} className={`mx-0.5 inline-block h-2.5 w-2.5 rounded-full ${i === idx - a ? 'bg-warm-yellow' : 'bg-white/25'}`} />
+                      <span key={i} className={`mx-0.5 inline-block h-2.5 w-2.5 rounded-full ${i === idx - a ? 'bg-[#3b5bdb]' : 'bg-[#d9d3c3]'}`} />
                     ))
                   : t('solo.cardPos', { n: idx - a + 1, of: total })}
               </span>
@@ -1713,7 +1713,7 @@ function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: 
           type="button"
           disabled={wrong.includes(i) || phase === 'right' || phase === 'shown'}
           onClick={() => onPick(i)}
-          className={`min-h-16 rounded-2xl px-4 py-2 text-xl font-bold leading-snug [touch-action:manipulation] sm:text-2xl ${wrong.includes(i) ? 'bg-white/10 text-white/40 line-through' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none'}`}
+          className={`min-h-16 rounded-2xl px-4 py-2 text-xl font-bold leading-snug [touch-action:manipulation] sm:text-2xl ${wrong.includes(i) ? 'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580] line-through' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none'}`}
         >
           {o}
         </button>
@@ -1723,7 +1723,7 @@ function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: 
 }
 
 function Banner({ tone, children }: { tone: 'ok' | 'try' | 'show'; children: React.ReactNode }) {
-  const cls = tone === 'ok' ? 'bg-emerald-500/25 text-emerald-100' : tone === 'try' ? 'bg-warm-yellow/25 text-warm-yellow' : 'bg-sky-400/25 text-sky-100';
+  const cls = tone === 'ok' ? 'bg-emerald-100 text-emerald-800' : tone === 'try' ? 'bg-[#dbe4ff] text-[#3b5bdb]' : 'bg-sky-100 text-sky-800';
   const anim = tone === 'ok' ? 'solo-pop' : tone === 'try' ? 'solo-shake' : '';
   return <div className={`w-full rounded-2xl px-4 py-3 text-center text-xl ${cls} ${anim}`}>{children}</div>;
 }

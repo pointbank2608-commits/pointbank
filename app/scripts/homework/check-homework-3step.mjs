@@ -24,6 +24,9 @@ try{
  assert.ok((await text(composer())).includes('어떤 자료로 숙제를 낼까요?'));
  await composer().getByRole('button',{name:/수업에서 가져오기/}).waitFor();
  await composer().getByRole('button',{name:/내 단어장·문장 모음에서 가져오기/}).waitFor();
+ await composer().getByRole('button',{name:/맞춤 단어 숙제/}).waitFor();
+ await composer().getByRole('button',{name:/장기 단어 프로젝트/}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'맞춤 단어 숙제 만들기'}).count(),0,'숙제 페이지 위쪽 별도 진입 카드는 없다');
  pass('새 숙제 내기 → 1단계 자료 선택 (수업/단어장 두 입구, 옛 4단계·세부 편집 진입 없음)');
 
  await composer().getByRole('button',{name:/수업에서 가져오기/}).click();

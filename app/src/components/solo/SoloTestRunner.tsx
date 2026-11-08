@@ -72,13 +72,13 @@ export default function SoloTestRunner({
       <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
         <div className="text-6xl">📝</div>
         <h1 className="text-3xl font-bold">{step.title || t('soloTest.defaultTitle')}</h1>
-        <p className="text-xl text-white/85">{t('soloTest.startInfo', { count: items.length, minutes })}</p>
-        <ul className="w-full max-w-sm list-disc space-y-1.5 rounded-2xl bg-white/10 py-3 pl-8 pr-4 text-left text-lg text-white/85">
+        <p className="text-xl text-[#5b6580]">{t('soloTest.startInfo', { count: items.length, minutes })}</p>
+        <ul className="w-full max-w-sm list-disc space-y-1.5 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] py-3 pl-8 pr-4 text-left text-lg text-[#5b6580]">
           {step.timed && <li>{t('soloTest.ruleTimed')}</li>}
           {items.some((it) => LISTEN.includes(it.t)) && <li>{t('soloTest.ruleListen')}</li>}
           <li>{t('soloTest.ruleEnd')}</li>
         </ul>
-        <button type="button" onClick={() => setPhase('run')} className={`${btn} bg-warm-yellow px-10 text-deep-navy`}>
+        <button type="button" onClick={() => setPhase('run')} className={`${btn} bg-[#3b5bdb] px-10 text-white`}>
           {t('soloTest.start')}
         </button>
       </div>
@@ -192,20 +192,20 @@ function TestItemView({
   return (
     <div className="flex w-full flex-1 flex-col items-center gap-4">
       <div className="flex w-full items-center gap-3">
-        <span className="rounded-full bg-white/10 px-3 py-1 text-base font-bold text-white/80">{t(`soloTest.area_${item.area}`)}</span>
-        <span className="text-base tabular-nums text-white/70">
+        <span className="rounded-full bg-white shadow-sm ring-1 ring-[#eadfc5] px-3 py-1 text-base font-bold text-[#5b6580]">{t(`soloTest.area_${item.area}`)}</span>
+        <span className="text-base tabular-nums text-[#5b6580]">
           {index + 1} / {count}
         </span>
         {timed && (
-          <span className={`ml-auto flex items-center gap-1 text-lg font-bold tabular-nums ${left <= 5 ? 'text-warm-yellow' : 'text-white/85'}`}>
+          <span className={`ml-auto flex items-center gap-1 text-lg font-bold tabular-nums ${left <= 5 ? 'text-[#3b5bdb]' : 'text-[#5b6580]'}`}>
             <span className="material-symbols-outlined text-[20px]">{playing ? 'pause_circle' : 'timer'}</span>
             {t('soloTest.secondsLeft', { n: Math.max(0, left) })}
           </span>
         )}
       </div>
       {timed && (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-white/15">
-          <div className={`h-full rounded-full transition-all duration-1000 ease-linear ${left <= 5 ? 'bg-warm-yellow' : 'bg-emerald-300'}`} style={{ width: `${pct}%` }} />
+        <div className="h-2 w-full overflow-hidden rounded-full bg-[#efe8d4]">
+          <div className={`h-full rounded-full transition-all duration-1000 ease-linear ${left <= 5 ? 'bg-warm-yellow' : 'bg-emerald-500'}`} style={{ width: `${pct}%` }} />
         </div>
       )}
 
@@ -225,14 +225,14 @@ function TestItemView({
       {item.t === 'pickPos' && (
         <>
           <p className="text-xl font-bold">{item.sentence ? t('solo.pickPosSentenceQ') : t('solo.pickPosQ')}</p>
-          <p className="rounded-2xl bg-white/10 px-5 py-4 text-center text-3xl font-bold">{item.sentence ?? item.word}</p>
-          {item.sentence && <p className="text-lg text-warm-yellow">{item.word}</p>}
+          <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-5 py-4 text-center text-3xl font-bold">{item.sentence ?? item.word}</p>
+          {item.sentence && <p className="text-lg text-[#3b5bdb]">{item.word}</p>}
         </>
       )}
       {isListen && (
         <>
           <p className="text-xl font-bold">{item.t === 'listenPick' ? t('solo.listenQ') : t('solo.dictationQ')}</p>
-          <button type="button" disabled={playing || played} onClick={() => void play()} className="flex items-center gap-2 rounded-full bg-warm-yellow px-6 py-3 text-xl font-bold text-deep-navy disabled:opacity-60">
+          <button type="button" disabled={playing || played} onClick={() => void play()} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white disabled:opacity-60">
             <span className="material-symbols-outlined">{playing ? 'graphic_eq' : 'volume_up'}</span>
             {playing ? t('soloTest.listening') : played ? t('soloTest.playedOnce') : t('soloTest.listenOnce')}
           </button>
@@ -249,20 +249,20 @@ function TestItemView({
         <>
           <p className="text-xl font-bold">{t('solo.spellQ')}</p>
           {item.imageUrl && <img src={item.imageUrl} alt="" className="max-h-44 w-full max-w-xs rounded-3xl bg-white object-contain p-2" />}
-          <p className="text-2xl text-white/85">{item.meaning}</p>
+          <p className="text-2xl text-[#5b6580]">{item.meaning}</p>
         </>
       )}
       {item.t === 'fillBlank' && (
         <>
           <p className="text-xl font-bold">{t('solo.fillQ')}</p>
-          <p className="rounded-2xl bg-white/10 px-4 py-4 text-center text-2xl font-bold leading-snug">{item.sentence}</p>
-          <p className="text-lg text-white/70">{item.meaning}</p>
+          <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{item.sentence}</p>
+          <p className="text-lg text-[#5b6580]">{item.meaning}</p>
         </>
       )}
       {item.t === 'translatePick' && (
         <>
           <p className="text-xl font-bold">{t('solo.translateQ')}</p>
-          <p className="w-full rounded-2xl bg-white/10 px-5 py-4 text-center text-2xl font-bold leading-snug">{item.sentence}</p>
+          <p className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-5 py-4 text-center text-2xl font-bold leading-snug">{item.sentence}</p>
         </>
       )}
       {item.t === 'pickCorrect' && <p className="text-xl font-bold">{t('solo.correctQ')}</p>}
@@ -309,8 +309,8 @@ function TestItemView({
         const sep = item.t === 'spell' ? '' : ' ';
         return (
           <>
-            <div className="flex min-h-16 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
-              {typed.length === 0 ? <span className="text-white/40">{t('soloTest.tapPieces')}</span> : <span className="text-3xl font-bold">{typed.map((n) => parts[n]).join(sep)}</span>}
+            <div className="flex min-h-16 w-full flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#d9d3c3] p-3" aria-live="polite">
+              {typed.length === 0 ? <span className="text-[#5b6580]">{t('soloTest.tapPieces')}</span> : <span className="text-3xl font-bold">{typed.map((n) => parts[n]).join(sep)}</span>}
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {parts.map((p, n) => (
@@ -325,7 +325,7 @@ function TestItemView({
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className="rounded-full border border-white/30 px-5 py-2 text-base text-white/80 disabled:opacity-30">
+            <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-base text-[#5b6580] disabled:opacity-30">
               {t('solo.erase')}
             </button>
           </>
@@ -339,7 +339,7 @@ function TestItemView({
             if (text.trim()) confirm();
           }}
         >
-          <p className="text-center font-mono text-2xl tracking-[0.3em] text-white/60">{'_'.repeat(item.length)}</p>
+          <p className="text-center font-mono text-2xl tracking-[0.3em] text-[#5b6580]">{'_'.repeat(item.length)}</p>
           <input
             autoFocus
             value={text}
@@ -348,13 +348,13 @@ function TestItemView({
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="min-h-14 w-full rounded-2xl bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
+            className="min-h-14 w-full rounded-2xl border border-[#d9d3c3] bg-white px-4 text-center text-3xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow"
           />
         </form>
       )}
 
-      {error && <p className="text-center text-lg text-warm-yellow" role="alert">{t('solo.error')}</p>}
-      <button type="button" disabled={!ready || sending} onClick={confirm} className={`${btn} mt-auto w-full bg-warm-yellow text-deep-navy`}>
+      {error && <p className="text-center text-lg text-[#3b5bdb]" role="alert">{t('solo.error')}</p>}
+      <button type="button" disabled={!ready || sending} onClick={confirm} className={`${btn} mt-auto w-full bg-[#3b5bdb] text-white`}>
         {sending ? t('soloTest.sending') : index + 1 >= count ? t('soloTest.submit') : t('soloTest.next')}
       </button>
     </div>
@@ -430,20 +430,20 @@ function TestResultView({
     <div className="flex w-full flex-1 flex-col items-center gap-4">
       <div className="solo-pop text-6xl">{pct >= 80 ? '🏆' : pct >= 50 ? '👏' : '💪'}</div>
       <h1 className="text-3xl font-bold">{t('soloTest.resultTitle')}</h1>
-      <p className="text-5xl font-bold text-warm-yellow tabular-nums">{pct}%</p>
-      <p className="text-xl text-white/80">{t('soloTest.resultScore', { score: result.score, total: result.total })}</p>
+      <p className="text-5xl font-bold text-[#3b5bdb] tabular-nums">{pct}%</p>
+      <p className="text-xl text-[#5b6580]">{t('soloTest.resultScore', { score: result.score, total: result.total })}</p>
 
-      <div className="w-full space-y-2 rounded-2xl bg-white/10 p-4">
+      <div className="w-full space-y-2 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4">
         {areas.map((a: TestArea) => {
           const r = result.by_area[a] ?? { right: 0, total: 0 };
           const p = r.total ? Math.round((r.right / r.total) * 100) : 0;
           return (
             <div key={a} className="flex items-center gap-3">
               <span className="w-16 shrink-0 text-base font-bold">{t(`soloTest.area_${a}`)}</span>
-              <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15">
-                <div className={`h-full rounded-full ${p >= 80 ? 'bg-emerald-300' : p >= 50 ? 'bg-sky-300' : 'bg-warm-yellow'}`} style={{ width: `${p}%` }} />
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]">
+                <div className={`h-full rounded-full ${p >= 80 ? 'bg-emerald-500' : p >= 50 ? 'bg-sky-500' : 'bg-warm-yellow'}`} style={{ width: `${p}%` }} />
               </div>
-              <span className="w-14 shrink-0 text-right text-base tabular-nums text-white/85">
+              <span className="w-14 shrink-0 text-right text-base tabular-nums text-[#5b6580]">
                 {r.right}/{r.total}
               </span>
             </div>
@@ -452,12 +452,12 @@ function TestResultView({
       </div>
 
       {onRetry && wrong.length > 0 && (
-        <div className="w-full rounded-2xl bg-white/10 p-4 text-center">
+        <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4 text-center">
           <p className="mb-2 text-lg font-bold">{t('soloTest.retryTitle', { count: wrong.length })}</p>
-          <button type="button" disabled={retrying} onClick={() => void retry()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+          <button type="button" disabled={retrying} onClick={() => void retry()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
             {retrying ? t('common.loading') : t('soloTest.retryButton', { count: wrong.length })}
           </button>
-          {retryError && <p className="mt-2 text-base text-warm-yellow">{t('soloTest.retryError')}</p>}
+          {retryError && <p className="mt-2 text-base text-[#3b5bdb]">{t('soloTest.retryError')}</p>}
         </div>
       )}
 
@@ -465,24 +465,24 @@ function TestResultView({
         {items.map((it, i) => {
           const r = result.items[i];
           return (
-            <li key={i} className={`rounded-2xl px-4 py-3 text-left ${r?.correct ? 'bg-emerald-500/15' : 'bg-white/10'}`}>
+            <li key={i} className={`rounded-2xl px-4 py-3 text-left ${r?.correct ? 'bg-emerald-100' : 'bg-white shadow-sm ring-1 ring-[#eadfc5]'}`}>
               <div className="flex items-start gap-2">
-                <span className={`material-symbols-outlined shrink-0 ${r?.correct ? 'text-emerald-300' : 'text-warm-yellow'}`}>{r?.correct ? 'check_circle' : 'cancel'}</span>
+                <span className={`material-symbols-outlined shrink-0 ${r?.correct ? 'text-emerald-600' : 'text-[#3b5bdb]'}`}>{r?.correct ? 'check_circle' : 'cancel'}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-base text-white/70">
+                  <div className="text-base text-[#5b6580]">
                     {i + 1}. {prompt(it)}
                   </div>
                   {!r?.correct && (
                     <div className="mt-1 text-lg">
-                      <span className="text-white/60">{t('soloTest.yourAnswer')} </span>
+                      <span className="text-[#5b6580]">{t('soloTest.yourAnswer')} </span>
                       <span className="line-through decoration-white/40">{givenText(it, answers[i])}</span>
                     </div>
                   )}
                   <div className="text-lg font-bold">
-                    <span className="font-normal text-white/60">{t('soloTest.correctAnswer')} </span>
+                    <span className="font-normal text-[#5b6580]">{t('soloTest.correctAnswer')} </span>
                     {r?.answer ?? ''}
                   </div>
-                  {it.t === 'pickCorrect' && it.why && !r?.correct && <div className="mt-1 text-base text-white/75">💡 {it.why}</div>}
+                  {it.t === 'pickCorrect' && it.why && !r?.correct && <div className="mt-1 text-base text-[#5b6580]">💡 {it.why}</div>}
                 </div>
               </div>
             </li>
@@ -490,7 +490,7 @@ function TestResultView({
         })}
       </ol>
 
-      <button type="button" onClick={onDone} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+      <button type="button" onClick={onDone} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
         {t('solo.next')}
       </button>
     </div>

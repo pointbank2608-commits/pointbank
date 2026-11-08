@@ -8,6 +8,8 @@ import { grammarAssign, grammarCatalog, grammarNotReady, grammarPreview, grammar
 import type { GrammarLesson } from '../../lib/grammarLearningContent';
 import GrammarLearningPreview from './GrammarLearningPreview';
 import GrammarTeacherFeedback from './GrammarTeacherFeedback';
+import HomeworkDeadlinePicker from '../homework/teacher/HomeworkDeadlinePicker';
+import '../../styles/homework-composer.css';
 
 const button = 'min-h-11 rounded-xl border border-outline-variant px-4 py-2 font-bold disabled:opacity-50';
 const mark = (result: boolean | null) => result === null ? '—' : result ? '정답' : '오답';
@@ -95,8 +97,8 @@ function ClassPanel({ classId, mode }: { classId: string; mode: GrammarMode }) {
     setOutcomes(undefined);
   });
 
-  return <section lang="ko" className="space-y-3 rounded-2xl border border-outline-variant p-4">
-    <h2 className="text-lg font-bold">{mode === 'homework' ? '문법 숙제' : '문법 개별수업'}</h2>
+  return <section lang="ko" className="hw-composer space-y-3">
+    <h2 className="text-xl font-bold">{mode === 'homework' ? '문법 숙제' : '문법 개별수업'}</h2>
     <div className="flex flex-wrap gap-2">
       {!catalog.length && <button type="button" className={button} disabled={busy} onClick={() => void load()}>문법 목표 고르기</button>}
       <button type="button" className={button} disabled={busy} onClick={() => void results()}>문법 학습 결과 보기</button>
@@ -127,12 +129,12 @@ function ClassPanel({ classId, mode }: { classId: string; mode: GrammarMode }) {
       {goal && <><p>{goal.objective}</p><button type="button" className={button} onClick={() => void perform(async () => {
         setLesson(await grammarPreview(goal)); setApproved(false);
       })}>학생 화면 미리보기</button></>}
-      <fieldset className="flex flex-wrap gap-3"><legend>배정할 학생</legend>
+      <fieldset className="hw-targets"><legend>배정할 학생</legend><div>
         {students.map(student => <label key={student.id}><input type="checkbox" checked={picked.includes(student.id)} onChange={e => {
           setPicked(e.target.checked ? [...picked, student.id] : picked.filter(id => id !== student.id)); change();
-        }} /> {student.name}</label>)}
+        }} /> {student.name}</label>)}</div>
       </fieldset>
-      <label className="block">첫 학습 기한 (선택) <input type="datetime-local" value={due} onChange={e => { setDue(e.target.value); change(); }} /></label>
+      <HomeworkDeadlinePicker value={due} onChange={value => { setDue(value); change(); }} en={false} />
       {lesson && <><GrammarLearningPreview lesson={lesson} />
         <p>첫 학습이 끝나면 24시간 뒤에 새 문장이 열려요.</p>
         <label className="block"><input type="checkbox" checked={approved} onChange={e => setApproved(e.target.checked)} /> 내용과 학생을 확인했어요</label>

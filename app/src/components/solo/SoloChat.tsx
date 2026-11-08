@@ -127,17 +127,17 @@ export default function SoloChat({ token, assignment, homework = false }: { toke
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t('solo.chat_open')}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-white/90 hover:bg-white/10"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#d9d3c3] text-[#5b6580] hover:bg-[#efe8d4]"
       >
         <span className="material-symbols-outlined text-[20px]">chat</span>
-        {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#16213e] bg-rose-500" aria-hidden="true" />}
+        {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#f8f1e3] bg-rose-500" aria-hidden="true" />}
       </button>
 
       {toast && !open && (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed left-1/2 top-16 z-[60] -translate-x-1/2 rounded-full bg-warm-yellow px-5 py-2 text-base font-bold text-deep-navy shadow-lg"
+          className="fixed left-1/2 top-16 z-[60] -translate-x-1/2 rounded-full bg-[#3b5bdb] px-5 py-2 text-base font-bold text-white shadow-lg"
         >
           {t('solo.chat_new')}
         </button>

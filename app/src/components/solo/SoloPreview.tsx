@@ -44,7 +44,7 @@ export default function SoloPreview({ steps: lessonSteps, onClose, startAt = 0 }
   );
   const pub = useMemo(() => steps.map(toPublicStep), [steps]);
   return (
-    <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#16213e]">
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-[#f8f1e3]">
       <SoloPlayer key={retry?.key ?? 0} steps={pub} startAt={retry ? 0 : startAt} api={api} onExit={onClose} preview />
     </div>
   );

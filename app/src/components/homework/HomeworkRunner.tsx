@@ -6,7 +6,8 @@ import FlipDeck from './FlipDeck';
 import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import MatchupGame from './MatchupGame';
 import QuestionCard, { isStudioQuestion } from './QuestionCard';
-import { StudioShell, StudioTopBar } from '../studio/StudioKit';
+import { StudioCard, StudioShell, StudioTopBar } from '../studio/StudioKit';
+import { GUIDED_FINAL } from '../../lib/homework/guided';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
 import BlockActivity from './BlockActivity';
@@ -174,16 +175,16 @@ export default function HomeworkRunner({
   }, [feedback]);
 
   const header = (
-    <div className="sticky top-0 z-10 bg-[#16213e]/95 px-4 pb-2 pt-3 backdrop-blur">
+    <div className="sticky top-0 z-10 bg-[#f8f1e3]/95 px-4 pb-2 pt-3 backdrop-blur">
       <div className="flex items-center gap-3">
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuenow={progressCount} aria-valuemin={0} aria-valuemax={progressTotal}>
+        <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]" role="progressbar" aria-valuenow={progressCount} aria-valuemin={0} aria-valuemax={progressTotal}>
           <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${progressTotal ? (progressCount / progressTotal) * 100 : 0}%` }} />
         </div>
         <span className="text-base font-bold tabular-nums">
           {progressCount} / {progressTotal}
         </span>
       </div>
-      <div className="mt-1 flex items-center justify-between text-sm text-white/70">
+      <div className="mt-1 flex items-center justify-between text-sm text-[#5b6580]">
         <span className="truncate">{phase.k === 'item' ? itemLabel(items[phase.i]) : title}</span>
         <SaveBadge state={preview ? 'saved' : saveState} preview={preview} />
       </div>
@@ -214,22 +215,22 @@ export default function HomeworkRunner({
     return (
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="text-center">
-          {studentName && <div className="text-lg text-white/80">{t('studentHw.hello', { name: studentName })}</div>}
+          {studentName && <div className="text-lg text-[#5b6580]">{t('studentHw.hello', { name: studentName })}</div>}
           <div className="mt-1 text-2xl font-bold">{title || t('studentHw.defaultTitle')}</div>
           {started && <div className="mt-2 rounded-full bg-emerald-600/80 px-4 py-1.5 text-base">{t('studentHw.resumeNote')}</div>}
         </div>
         <ol className="flex flex-col gap-2">
           {items.map((it, i) => (
-            <li key={it.id} className="flex min-h-14 items-center gap-3 rounded-2xl bg-white/10 px-4">
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${doneItems.has(it.id) ? 'bg-emerald-500' : 'bg-white/20'}`}>
+            <li key={it.id} className="flex min-h-14 items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4">
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${doneItems.has(it.id) ? 'bg-emerald-500' : 'bg-[#efe8d4]'}`}>
                 {doneItems.has(it.id) ? '✓' : i + 1}
               </span>
               <span className="flex-1 text-lg">{itemLabel(it)}</span>
-              <span className="text-sm text-white/60">{it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : t('studentHw.questionCount', { count: it.content.questions.length })}</span>
+              <span className="text-sm text-[#5b6580]">{it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : t('studentHw.questionCount', { count: it.content.questions.length })}</span>
             </li>
           ))}
         </ol>
-        <button type="button" onClick={() => openItem(firstOpenItem())} className="mt-auto min-h-14 rounded-full bg-warm-yellow text-xl font-bold text-deep-navy shadow-lg">
+        <button type="button" onClick={() => openItem(firstOpenItem())} className="mt-auto min-h-14 rounded-full bg-[#3b5bdb] text-xl font-bold text-white shadow-lg">
           {started ? t('studentHw.continue') : t('studentHw.start')}
         </button>
       </div>
@@ -252,14 +253,14 @@ export default function HomeworkRunner({
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
         {phase.error ? (
           <>
-            <span className="material-symbols-outlined text-[56px] text-warm-yellow">wifi_off</span>
+            <span className="material-symbols-outlined text-[56px] text-[#3b5bdb]">wifi_off</span>
             <p className="text-xl font-bold">{t('studentHw.finishOffline')}</p>
-            <button type="button" onClick={() => void doFinish()} className="min-h-14 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy">
+            <button type="button" onClick={() => void doFinish()} className="min-h-14 rounded-full bg-[#3b5bdb] px-8 text-lg font-bold text-white">
               {t('studentHw.tryAgain')}
             </button>
           </>
         ) : (
-          <p className="text-lg text-white/80">{t('studentHw.finishing')}</p>
+          <p className="text-lg text-[#5b6580]">{t('studentHw.finishing')}</p>
         )}
       </div>
     );
@@ -300,14 +301,14 @@ export default function HomeworkRunner({
         <div className="text-2xl font-bold">{t('studentHw.doneTitle')}</div>
         {phase.total > 0 && (
           <div className="text-5xl font-bold tabular-nums">
-            {phase.score} <span className="text-2xl text-white/60">/ {phase.total}</span>
+            {phase.score} <span className="text-2xl text-[#5b6580]">/ {phase.total}</span>
           </div>
         )}
         {wrongKeys.length > 0 && (
-          <div className="w-full max-w-md space-y-2 rounded-2xl bg-white/10 p-4 text-left">
+          <div className="w-full max-w-md space-y-2 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4 text-left">
             <div className="flex items-center justify-between gap-2">
               <div className="text-lg font-bold">{t('studentHw.wrongCount', { count: wrongKeys.length })}</div>
-              <button type="button" onClick={() => setShowWrong((v) => !v)} aria-expanded={showWrong} className="min-h-10 rounded-full bg-white/15 px-4 text-sm font-bold">
+              <button type="button" onClick={() => setShowWrong((v) => !v)} aria-expanded={showWrong} className="min-h-10 rounded-full bg-[#efe8d4] px-4 text-sm font-bold">
                 {showWrong ? t('studentHw.hideDetails') : t('studentHw.showDetails')}
               </button>
             </div>
@@ -320,22 +321,22 @@ export default function HomeworkRunner({
                   // 정답이 낱말 그대로면(듣기·철자·글자 순서) 뜻을 대신 보여 준다
                   const right = ans.trim().toLowerCase() === left.trim().toLowerCase() ? (q?.card?.meaning ?? '') : ans;
                   return (
-                    <div key={k} className="flex items-center justify-between gap-2 border-t border-white/10 pt-2 text-base">
+                    <div key={k} className="flex items-center justify-between gap-2 border-t border-[#d9d3c3] pt-2 text-base">
                       <span className="truncate">{left}</span>
-                      <span className="min-w-0 truncate text-right font-bold text-warm-yellow">{right}</span>
+                      <span className="min-w-0 truncate text-right font-bold text-[#3b5bdb]">{right}</span>
                     </div>
                   );
                 })}
               </div>
             )}
-            <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-1 min-h-12 w-full rounded-full bg-warm-yellow text-lg font-bold text-deep-navy">
+            <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-1 min-h-12 w-full rounded-full bg-[#3b5bdb] text-lg font-bold text-white">
               {t('studentHw.retryWrong')}
             </button>
-            <p className="text-sm text-white/60">{t('studentHw.retryNote')}</p>
+            <p className="text-sm text-[#5b6580]">{t('studentHw.retryNote')}</p>
           </div>
         )}
         {onHome && (
-          <button type="button" onClick={onHome} className="min-h-12 w-full max-w-md rounded-full border border-white/30 text-lg font-bold text-white hover:bg-white/10">
+          <button type="button" onClick={onHome} className="min-h-12 w-full max-w-md rounded-full border border-[#d9d3c3] text-lg font-bold text-[#1c2742] hover:bg-[#efe8d4]">
             {t('studentHw.goHome')}
           </button>
         )}
@@ -346,20 +347,25 @@ export default function HomeworkRunner({
   // 문제 화면(활동 안 · 다시 풀기)
   let content: React.ReactNode = null;
   let studioActive = false;
+  let finalCheck = false;
   if (phase.k === 'retry') {
     const [id, qiStr] = phase.keys[phase.pos].split(':');
     const it = items.find((x) => x.id === id)!;
     const qi = Number(qiStr);
     const rq = it.content.questions[qi];
-    studioActive = isStudioQuestion(rq);
-    content = <QuestionCard key={`r-${phase.pos}`} q={rq} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
+    finalCheck = !!it.config.block?.method?.startsWith(GUIDED_FINAL);
+    studioActive = finalCheck || isStudioQuestion(rq);
+    content = <QuestionCard key={`r-${phase.pos}`} q={rq} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, qi, r)} studio={studioActive} finalCheck={finalCheck} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
   } else if (phase.k === 'item') {
     const it = items[phase.i];
+    finalCheck = !!it.config.block?.method?.startsWith(GUIDED_FINAL);
+    studioActive = finalCheck;
     // 영상 반복 보기 블록(watch)은 블록 화면이 아니라 시청 기록을 남기는 KidsWatch 가 맡는다
     if (it.config.block?.type === 'study' && it.config.block.method === 'flip') {
       content = <FlipDeck key={it.id} text={it.config.block.text} onListen={()=>sensor('audio')} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
     } else if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
       content = <BlockActivity key={it.id} item={it} api={api} preview={preview} previewHidden={previewHidden&&phase.i===first} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta)} />;
+      if (finalCheck) content = <StudioCard label={it.title}>{content}</StudioCard>;
     } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;
     } else if (it.kind === 'shadowing' && phase.sub === 'lines') {
@@ -402,15 +408,15 @@ export default function HomeworkRunner({
       if (showQi < 0) {
         content = (
           <div className="flex flex-1 items-center justify-center">
-            <button type="button" onClick={() => void completeItem(phase.i)} className="min-h-14 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy">
+            <button type="button" onClick={() => void completeItem(phase.i)} className="min-h-14 rounded-full bg-[#3b5bdb] px-8 text-lg font-bold text-white">
               {t('studentHw.next')}
             </button>
           </div>
         );
       } else {
         const cq = it.content.questions[showQi];
-        studioActive = isStudioQuestion(cq);
-        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} spellingHint={cq.guidedSpelling&&api.spellingHint?(level)=>api.spellingHint!(it.id,showQi,level):undefined} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
+        studioActive = finalCheck || isStudioQuestion(cq);
+        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} spellingHint={cq.guidedSpelling&&api.spellingHint?(level)=>api.spellingHint!(it.id,showQi,level):undefined} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} finalCheck={finalCheck} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
       }
     }
   }
@@ -419,7 +425,7 @@ export default function HomeworkRunner({
   if (studioActive) {
     const rp = phase.k === 'retry' ? phase : null;
     return (
-      <StudioShell>
+      <StudioShell className={finalCheck && !preview ? 'border-x-4 border-[#0e1530] sm:border-x-0' : ''}>
         <StudioTopBar
           title={rp ? t('studentHw.retryWrong') : phase.k === 'item' ? itemLabel(items[phase.i]) : title}
           progressText={rp ? `${rp.pos + 1} / ${rp.keys.length}` : `${progressCount} / ${progressTotal}`}
@@ -441,7 +447,7 @@ export default function HomeworkRunner({
 
 function SaveBadge({ state, preview, light = false }: { state: SaveState; preview: boolean; light?: boolean }) {
   const { t } = useTranslation();
-  if (preview) return <span className={`rounded-full px-2 py-0.5 ${light ? 'bg-[#e6dcc4]' : 'bg-white/15'}`}>{t('studentHw.previewBadge')}</span>;
+  if (preview) return <span className={`rounded-full px-2 py-0.5 ${light ? 'bg-[#e6dcc4]' : 'bg-[#efe8d4]'}`}>{t('studentHw.previewBadge')}</span>;
   const map: Record<SaveState, { icon: string; cls: string }> = light ? {
     saved: { icon: 'cloud_done', cls: 'text-emerald-700' },
     saving: { icon: 'cloud_sync', cls: 'text-[#5b6580]' },
@@ -449,8 +455,8 @@ function SaveBadge({ state, preview, light = false }: { state: SaveState; previe
     error: { icon: 'error', cls: 'text-rose-700' },
   } : {
     saved: { icon: 'cloud_done', cls: 'text-emerald-300' },
-    saving: { icon: 'cloud_sync', cls: 'text-white/70' },
-    offline: { icon: 'cloud_off', cls: 'text-warm-yellow' },
+    saving: { icon: 'cloud_sync', cls: 'text-[#5b6580]' },
+    offline: { icon: 'cloud_off', cls: 'text-[#3b5bdb]' },
     error: { icon: 'error', cls: 'text-rose-300' },
   };
   return (

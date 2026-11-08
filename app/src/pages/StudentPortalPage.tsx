@@ -1,6 +1,7 @@
 import { formatHomeworkDeadline } from '../lib/homework/deadline';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Navigate } from 'react-router-dom';
 import BrandMark from '../components/BrandMark';
 import ReviewSection from '../components/solo/ReviewSection';
 import WordMemoryPortalLinks from '../components/wordMemory/WordMemoryPortalLinks';
@@ -12,6 +13,7 @@ import { studentNotice } from '../lib/soloChat';
 import {
   codeFromUrl,
   formatPhone,
+  homeworkCodeFromUrl,
   forgetStudentToken,
   PortalError,
   savedCode,
@@ -23,12 +25,12 @@ import {
   type PortalHome,
 } from '../lib/studentPortal';
 
-const shell = 'flex min-h-[100dvh] flex-col bg-[#16213e] text-white';
+const shell = 'flex min-h-[100dvh] flex-col bg-[#f8f1e3] text-[#1c2742]';
 const field =
-  'min-h-12 w-full rounded-xl bg-white px-4 text-xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-warm-yellow';
+  'min-h-12 w-full rounded-xl border border-[#d9d3c3] bg-white px-4 text-xl font-bold text-deep-navy outline-none focus:ring-4 focus:ring-[#3b5bdb]/30';
 
 /**
- * 학생용 페이지(/s) — 선생님 화면과 따로. 로그인(학원 코드 + 이름 + 학부모 전화번호) 후, 이 기기를 기억한다.
+ * 학생용 페이지(/s) — 선생님 화면과 따로. 로그인(이름 + 보호자 전화번호) 후, 이 기기를 기억한다.
  * 오늘의 수업(새로 배우기)이 들어올 자리와 숙제 목록이 있다.
  */
 export default function StudentPortalPage() {
@@ -52,10 +54,12 @@ export default function StudentPortalPage() {
   }, []);
 
   useEffect(() => {
-    if (token) void load(token);
+    if (token && !homeworkCodeFromUrl()) void load(token);
   }, [token, load]);
 
-  if (!token) return <LoginView onDone={(tk) => setToken(tk)} />;
+  const homeworkCode = homeworkCodeFromUrl();
+  if (!token) return <LoginView homeworkCode={homeworkCode} onDone={setToken} />;
+  if (homeworkCode) return <Navigate to={`/hw/${homeworkCode}`} replace />;
   return (
     <HomeView
       home={home}
@@ -72,31 +76,29 @@ export default function StudentPortalPage() {
 
 function Brand() {
   return (
-    <div className="flex items-center justify-center gap-2 text-base text-white/70">
+    <div className="flex items-center justify-center gap-2 text-base text-[#5b6580]">
       <BrandMark className="h-7 w-7" />
       Classbank
     </div>
   );
 }
 
-function LoginView({ onDone }: { onDone: (token: string) => void }) {
+function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (token: string) => void }) {
   const { t } = useTranslation();
-  // 선생님이 준 주소(?c=코드)로 들어오면 코드가 이미 적혀 있다 — 따로 치지 않는다
-  const fromLink = useState(() => codeFromUrl())[0];
-  const [code, setCode] = useState(() => fromLink || savedCode());
-  const [editCode, setEditCode] = useState(false);
+  const code = codeFromUrl() || savedCode();
+  const hasContext = !!homeworkCode || !!code;
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<PortalErrorKind | null>(null);
-  const ready = code.trim().length === 6 && name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
+  const ready = hasContext && name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
 
   async function submit() {
     if (!ready || busy) return;
     setBusy(true);
     setError(null);
     try {
-      onDone(await studentLogin(code, name, phone));
+      onDone(await studentLogin(code, name, phone, homeworkCode));
     } catch (e) {
       setError(e instanceof PortalError ? e.kind : 'unknown');
       setBusy(false);
@@ -113,30 +115,8 @@ function LoginView({ onDone }: { onDone: (token: string) => void }) {
     >
       <Brand />
       <h1 className="text-center text-3xl font-bold">{t('studentPortal.loginTitle')}</h1>
-      <p className="max-w-xs text-center text-base text-white/70">{t('studentPortal.loginHint')}</p>
-      {code.length === 6 && !editCode ? (
-        <div className="flex w-full max-w-xs items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5">
-          <span className="material-symbols-outlined text-[22px] text-warm-yellow">check_circle</span>
-          <span className="flex-1 text-base">
-            {t('studentPortal.code')} <span className="font-bold tracking-[0.15em]">{code}</span>
-          </span>
-          <button type="button" onClick={() => setEditCode(true)} className="text-sm text-white/70 underline">
-            {t('studentPortal.changeCode')}
-          </button>
-        </div>
-      ) : (
-      <label className="flex w-full max-w-xs flex-col gap-1">
-        <span className="text-base font-bold">{t('studentPortal.code')}</span>
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6))}
-          autoComplete="off"
-          autoCapitalize="characters"
-          placeholder="ABC123"
-          className={`${field} text-center tracking-[0.25em]`}
-        />
-      </label>
-      )}
+      <p className="max-w-xs text-center text-base text-[#5b6580]">{t('studentPortal.loginHint')}</p>
+      {!hasContext && <p className="max-w-xs text-center text-base text-[#5b6580]">{t('studentPortal.loginLinkNeeded')}</p>}
       <label className="flex w-full max-w-xs flex-col gap-1">
         <span className="text-base font-bold">{t('studentPortal.name')}</span>
         <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className={field} />
@@ -152,14 +132,14 @@ function LoginView({ onDone }: { onDone: (token: string) => void }) {
           placeholder="010-0000-0000"
           className={field}
         />
-        <span className="text-sm text-white/60">{t('studentPortal.phoneHint')}</span>
+        <span className="text-sm text-[#5b6580]">{t('studentPortal.phoneHint')}</span>
       </label>
       {error && (
-        <p className="max-w-xs text-center text-lg text-warm-yellow" role="alert">
+        <p className="max-w-xs text-center text-lg text-[#3b5bdb]" role="alert">
           {t(`studentPortal.err_${error}`)}
         </p>
       )}
-      <button type="submit" disabled={!ready || busy} className="min-h-14 rounded-full bg-warm-yellow px-10 text-xl font-bold text-deep-navy disabled:opacity-40">
+      <button type="submit" disabled={!ready || busy} className="min-h-14 rounded-full bg-[#3b5bdb] px-10 text-xl font-bold text-white disabled:opacity-40">
         {busy ? t('common.loading') : t('studentPortal.login')}
       </button>
     </form>
@@ -184,13 +164,13 @@ function HomeView({
       <div className={`${shell} items-center justify-center gap-4 p-6 text-center`}>
         <Brand />
         <p className="text-xl font-bold">{t(`studentPortal.err_${error}`)}</p>
-        <button type="button" onClick={onRetry} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy">
+        <button type="button" onClick={onRetry} className="min-h-12 rounded-full bg-[#3b5bdb] px-8 text-lg font-bold text-white">
           {t('studentPortal.retry')}
         </button>
       </div>
     );
   }
-  if (!home) return <div className={`${shell} items-center justify-center text-lg text-white/70`}>{t('common.loading')}</div>;
+  if (!home) return <div className={`${shell} items-center justify-center text-lg text-[#5b6580]`}>{t('common.loading')}</div>;
 
   const soloClosed = home.features?.solo === false;
   const hwClosed = home.features?.homework === false;
@@ -209,9 +189,9 @@ function HomeView({
         <BrandMark className="h-9 w-9" />
         <div className="min-w-0 flex-1">
           <div className="truncate text-2xl font-bold">{t('studentPortal.hello', { name: home.name })}</div>
-          <div className="truncate text-sm text-white/60">{[home.academy, home.class_name].filter(Boolean).join(' · ')}</div>
+          <div className="truncate text-sm text-[#5b6580]">{[home.academy, home.class_name].filter(Boolean).join(' · ')}</div>
         </div>
-        <button type="button" onClick={onLogout} className="rounded-full border border-white/30 px-4 py-2 text-sm font-bold text-white/80 hover:bg-white/10">
+        <button type="button" onClick={onLogout} className="rounded-full border border-[#d9d3c3] px-4 py-2 text-sm font-bold text-[#5b6580] hover:bg-[#efe8d4]">
           {t('studentPortal.logout')}
         </button>
       </header>
@@ -221,21 +201,21 @@ function HomeView({
         문법 목록을 불러오지 못했어요. <button type="button" onClick={grammar.retry} className="underline">다시 시도</button>
       </div>}
 
-      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
+      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
         <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
-          <span className="material-symbols-outlined text-[24px] text-warm-yellow">school</span>
+          <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]">school</span>
           {t('studentPortal.todayLesson')}
         </h2>
-        {soloClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!soloClosed && lessons.length === 0 && !grammarSolo.length && <p className="text-base text-white/70">{t('studentPortal.todayLessonEmpty')}</p>}
+        {soloClosed && <p className="text-base text-[#5b6580]">{t('studentPortal.featureClosed')}</p>}
+        {!soloClosed && lessons.length === 0 && !grammarSolo.length && <p className="text-base text-[#5b6580]">{t('studentPortal.todayLessonEmpty')}</p>}
         <ul className="mt-3 flex flex-col gap-3">
           <GrammarPortalLinks rows={grammarSolo} />
           {lessons.map((l) => (
             <li key={l.id}>
-              {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-warm-yellow">{t('studentPortal.todayPick')}</div>}
+              {l.id === firstOpenId && <div className="mb-1 text-base font-bold text-[#3b5bdb]">{t('studentPortal.todayPick')}</div>}
               <a
                 href={`/s/lesson/${l.id}`}
-                className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done || l.path_waiting ? 'bg-white/10 text-white/70' : 'bg-warm-yellow text-deep-navy'}`}
+                className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${l.done || l.path_waiting ? 'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580]' : 'bg-[#3b5bdb] text-white'}`}
               >
                 <span className="material-symbols-outlined text-[28px]">{l.done ? 'task_alt' : l.path_waiting ? 'event' : 'play_circle'}</span>
                 <span className="min-w-0 flex-1">
@@ -260,17 +240,17 @@ function HomeView({
 
       {savedToken() && <StudentStampCalendar token={savedToken() as string} />}
 
-      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
+      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
         <h2 className="mb-3 flex items-center gap-2 text-xl font-bold">
-          <span className="material-symbols-outlined text-[24px] text-warm-yellow">edit_note</span>
+          <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]">edit_note</span>
           {t('studentPortal.homework')}
         </h2>
-        {hwClosed && <p className="text-base text-white/70">{t('studentPortal.featureClosed')}</p>}
-        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && <p className="text-base text-white/70">{t('studentPortal.homeworkEmpty')}</p>}
+        {hwClosed && <p className="text-base text-[#5b6580]">{t('studentPortal.featureClosed')}</p>}
+        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && <p className="text-base text-[#5b6580]">{t('studentPortal.homeworkEmpty')}</p>}
         <ul className="flex flex-col gap-3">
           <GrammarPortalLinks rows={grammarHomework} />
           {adaptive.map(h=><li key={h.id}>
-            <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white/10 text-white/70':'bg-warm-yellow text-deep-navy'}`}>
+            <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580]':'bg-[#3b5bdb] text-white'}`}>
               <span className="material-symbols-outlined text-[26px]" aria-hidden="true">{h.done?'task_alt':h.path_waiting?'event':'play_circle'}</span>
               <span className="min-w-0 flex-1"><span className="block break-words text-lg font-bold">{h.name}</span><span className="block text-sm opacity-80">{h.done?(en?'Planned reviews complete':'계획한 복습 확인 완료'):h.path_waiting?(en?'Today’s homework complete · Next check ':'오늘 숙제 완료 · 다음 확인 ')+(h.path_due_at?new Date(h.path_due_at).toLocaleDateString():''):h.path_first_completed?(en?'Review available':'복습 확인할 차례예요'):(en?'Learn and practise the words you need':'필요한 단어를 배우고 연습해요')}</span>
               {!h.path_first_completed&&h.due_at&&<span className="block text-sm opacity-80">{en?'Initial deadline: ':'첫 학습 기한: '}{new Date(h.due_at).toLocaleString(undefined,{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>}</span>
@@ -281,7 +261,7 @@ function HomeView({
             <li key={h.access}>
               <a
                 href={`/hw/p/${h.access}`}
-                className={`flex min-h-14 items-center gap-3 rounded-2xl px-4 py-3 ${h.done ? 'bg-white/10 text-white/70' : 'bg-white text-deep-navy'}`}
+                className={`flex min-h-14 items-center gap-3 rounded-2xl px-4 py-3 ${h.done ? 'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580]' : 'bg-white text-deep-navy'}`}
               >
                 <span className="material-symbols-outlined text-[26px]">{h.done ? 'task_alt' : 'play_circle'}</span>
                 <span className="min-w-0 flex-1">

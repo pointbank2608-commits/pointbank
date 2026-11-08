@@ -8,6 +8,8 @@ import phonicsWords from '../../data/phonics/words.json';
 import { TextAnswer } from '../../pages/LiveJoinPage';
 import { StudioCard, StudioFeedback, StudioOptions, StudioPrompt, type StudioOption, type StudioOptionState } from '../studio/StudioKit';
 
+const SCENE_INK = { '--hw-ink': '#fff', '--hw-mute': 'rgba(255,255,255,.75)', '--hw-soft': 'rgba(255,255,255,.15)', '--hw-line': 'rgba(255,255,255,.3)' };
+const PAPER_INK = { '--hw-ink': '#1c2742', '--hw-mute': '#5b6580', '--hw-soft': '#efe8d4', '--hw-line': '#d9d3c3' };
 /** 게임 모양 문제의 머리 그림 */
 const SKIN_ICON: Record<string, string> = { monster: '👾', claw: '🧸', maze: '🧭', plane: '✈️', group: '🗂️', cross: '🧩', detective: '🔍', train: '🚂', rocket: '🚀', tower: '🏰', bridge: '🌉', splash: '🌊', whack: '🐹', fish: '🐟', balloon: '🎈', hangman: '🔤' };
 /** 교실 게임과 같은 장면 그림(배경)과 보기에 붙는 캐릭터. 그림이 없는 모양은 예전 이모지 머리 그림을 쓴다 */
@@ -43,7 +45,7 @@ const norm = (s: string) => s.replace(/[()（）.,!?]/g, '').replace(/\s+/g, '')
 /** 서버가 알려 준 채점 결과(문항에 없는 해설은 만들지 않는다) */
 export interface StudioResult { correct: boolean | null; answer: string | null }
 
-export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, result, onNext, nextBusy, spellingHint }: { spellingHint?: (level: HintLevel) => Promise<SpellingHint>; onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; /** 학습 스튜디오 모양(보통 고르기 문제에만 적용) */ studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
+export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, finalCheck, result, onNext, nextBusy, spellingHint }: { finalCheck?: boolean; spellingHint?: (level: HintLevel) => Promise<SpellingHint>; onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
   const { t } = useTranslation();
   const onSensorRef = useRef(onSensor);
   onSensorRef.current = onSensor;
@@ -61,7 +63,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
         type="button"
         onClick={() => { onSensor?.('audio'); speak(q.speak!); }}
         aria-label={t('studentHw.listenAgain')}
-        className={`flex items-center justify-center gap-2 rounded-full bg-warm-yellow font-bold text-deep-navy shadow-lg active:scale-95 ${big ? 'h-24 w-24' : 'min-h-11 px-4 text-base'}`}
+        className={`flex items-center justify-center gap-2 rounded-full font-bold active:scale-95 ${finalCheck ? 'border border-[#d9d3c3] bg-[#fffdf8] text-deep-navy' : 'bg-warm-yellow text-deep-navy shadow-lg'} ${big ? 'h-24 w-24' : 'min-h-11 px-4 text-base'}`}
       >
         <span className="material-symbols-outlined" style={{ fontSize: big ? 52 : 22 }}>
           volume_up
@@ -70,19 +72,24 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       </button>
     ) : null;
 
+  const wrapFinal = (body: React.ReactNode) => finalCheck ? <StudioCard label={guide} barSpace={!!result}>
+    {body}
+    {result && <StudioFeedback correct={result.correct} title={result.correct === null ? t('studentHw.savedForLater') : result.correct ? t('studentHw.correct') : t('studentHw.wrong')}
+      answerLine={result.correct === false && result.answer ? <>{t('studentHw.answerIs')} <b>{result.answer}</b></> : undefined} onNext={() => onNext?.()} nextLabel={t('studentHw.next')} busy={nextBusy} />}
+  </StudioCard> : body;
   if(q.guidedSpelling||q.missingLetter){
-    return <SpellingCard q={q} disabled={disabled} onAnswer={onAnswer} requestHint={spellingHint} onSensor={onSensor}/>;
+    return wrapFinal(<SpellingCard q={q} disabled={disabled} onAnswer={onAnswer} requestHint={spellingHint} onSensor={onSensor}/>);
   }
-  if (studio && isStudioQuestion(q)) {
-    return <StudioChoice key={q.id} q={q} guide={guide} disabled={disabled} eliminated={eliminated} result={result ?? null} onAnswer={onAnswer} onNext={onNext} nextBusy={nextBusy} speakBtn={speakBtn(false)} />;
+  if ((studio && isStudioQuestion(q)) || (finalCheck && q.qtype === 'choice')) {
+    return <StudioChoice key={q.id} q={q} guide={guide} listenOnly={finalCheck && listen} disabled={disabled} eliminated={eliminated} result={result ?? null} onAnswer={onAnswer} onNext={onNext} nextBusy={nextBusy} speakBtn={speakBtn(finalCheck === true && listen)} />;
   }
-  const stage = q.style ? STAGE[q.style] : undefined;
-  return (
-    <div className="relative isolate flex flex-1 flex-col bg-cover bg-center" style={stage ? { backgroundImage: `url(${stage.bg})` } : undefined}>
+  const stage = !finalCheck && q.style ? STAGE[q.style] : undefined;
+  return wrapFinal(
+    <div className="relative isolate flex flex-1 flex-col bg-cover bg-center text-(color:--hw-ink)" style={{ ...(stage ? { backgroundImage: `url(${stage.bg})` } : {}), ...(stage ? SCENE_INK : PAPER_INK) } as React.CSSProperties}>
       {stage && <div className={`pointer-events-none absolute inset-0 -z-10 ${stage.veil}`} aria-hidden="true" />}
       <div className="flex flex-col items-center gap-3 px-5 py-4 text-center">
         {q.style && !stage && SKIN_ICON[q.style] && <div className="text-4xl" aria-hidden="true">{SKIN_ICON[q.style]}</div>}
-        <div className="text-base text-white/75">{guide}</div>
+        <div className="text-base text-(color:--hw-mute)">{guide}</div>
         {q.imageUrl && <img src={q.imageUrl} alt="" className="h-36 w-36 rounded-2xl bg-white object-contain p-2 sm:h-44 sm:w-44" />}
         {memo ? null : listen ? (
           speakBtn(true)
@@ -91,7 +98,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
             {q.prompt && (
               <div className={`font-bold leading-snug ${q.prompt.length > 50 ? 'text-xl' : q.prompt.length > 20 ? 'text-2xl' : 'text-3xl'}`}>{q.prompt}</div>
             )}
-            {q.sub && <div className="text-base text-white/70">({q.sub})</div>}
+            {q.sub && <div className="text-base text-(color:--hw-mute)">({q.sub})</div>}
             {q.style !== 'meaning' && q.speak && q.qtype === 'text' && speakBtn(false)}
             {q.style === 'meaning' && speakBtn(false)}
           </>
@@ -103,7 +110,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       {q.style === 'sfade' && <SentenceFadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'hangman' && <HangmanInput key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
-      {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} />}
+      {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} light={!stage} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
     </div>
   );
@@ -125,7 +132,7 @@ function wordFeedbackPicture(q: HwQuestion, result: StudioResult | null): string
   return matches.size === 1 ? [...matches][0] ?? null : null;
 }
 
-function StudioChoice({ q, guide, disabled, eliminated = [], result, onAnswer, onNext, nextBusy, speakBtn }: { q: HwQuestion; guide: string; disabled: boolean; eliminated?: number[]; result: StudioResult | null; onAnswer: (r: string) => void; onNext?: () => void; nextBusy?: boolean; speakBtn: React.ReactNode }) {
+function StudioChoice({ q, guide, listenOnly, disabled, eliminated = [], result, onAnswer, onNext, nextBusy, speakBtn }: { q: HwQuestion; guide: string; listenOnly?: boolean; disabled: boolean; eliminated?: number[]; result: StudioResult | null; onAnswer: (r: string) => void; onNext?: () => void; nextBusy?: boolean; speakBtn: React.ReactNode }) {
   const { t } = useTranslation();
   const [picked, setPicked] = useState<number | null>(null);
   const choices = q.choices ?? [];
@@ -145,12 +152,12 @@ function StudioChoice({ q, guide, disabled, eliminated = [], result, onAnswer, o
   const hint = q.sub && norm(guide) !== '' && (norm(guide).includes(norm(q.sub)) || norm(q.sub).includes(norm(guide))) ? undefined : q.sub;
   // 뜻 고르기에서는 사전 그림이 답을 알려 줄 수 있으니 채점 뒤에만 보여 준다(그림이 문제인 'picture' 모양은 처음부터)
   const pictureGivesAnswer = q.style === 'meaning' || q.style === 'reverse' || q.style === undefined;
-  const imageUrl = pictureGivesAnswer ? wordFeedbackPicture(q, result) : q.imageUrl;
+  const imageUrl = listenOnly ? null : pictureGivesAnswer ? wordFeedbackPicture(q, result) : q.imageUrl;
   const image = imageUrl ? <img src={imageUrl} alt="" className="mx-auto h-28 w-28 rounded-2xl bg-[#f8f1e3] object-contain p-2 sm:h-36 sm:w-36" /> : null;
   return (
     <StudioCard label={guide} barSpace={answered}>
       {!pictureGivesAnswer && image && <div className="mb-3">{image}</div>}
-      <StudioPrompt guide={guide} text={q.prompt} sub={hint ? `(${hint})` : undefined} lang={q.style === 'reverse' ? undefined : 'en'}
+      <StudioPrompt guide={guide} text={listenOnly ? '' : q.prompt} sub={!listenOnly && hint ? `(${hint})` : undefined} lang={q.style === 'reverse' ? undefined : 'en'}
         extra={q.speak ? <div className="flex justify-center pt-1">{speakBtn}</div> : undefined} />
       <StudioOptions
         options={options}
@@ -369,18 +376,18 @@ function SpellingCard({q,disabled,onAnswer,requestHint,onSensor}:{
       {q.missingLetter&&q.sub&&<p>{q.sub}</p>}
       <p>{q.missingLetter?(en?'Type the missing letter.':'빠진 글자 하나를 입력하세요.'):(en?'Type the English word.':'영어 단어를 입력하세요.')}</p>
       {hint?.mask&&<p className="text-xl font-bold tracking-widest" aria-live="polite">{hint.mask}</p>}
-      <div className="rounded-2xl bg-deep-navy p-2 text-white"><TextInput onAnswer={onAnswer} disabled={disabled||loading}/></div>
+      <div className="rounded-2xl border border-[#eadfc5] bg-white p-2 text-[#1c2742]"><TextInput onAnswer={onAnswer} disabled={disabled||loading} light/></div>
     </section>
-    {hint&&hint.allowed>=next&&hint.used<next&&<button type="button" disabled={disabled||loading} onClick={()=>void reveal(next)} className="min-h-12 rounded-xl bg-white/15 px-4 font-bold">
+    {hint&&hint.allowed>=next&&hint.used<next&&<button type="button" disabled={disabled||loading} onClick={()=>void reveal(next)} className="min-h-12 rounded-xl bg-(--hw-soft) px-4 font-bold">
       {next===1?(en?'Show first letter':'첫 글자 보기'):(en?'Show more letters':'글자 더 보기')}
     </button>}
     {error&&<p role="alert">{en?'Could not load the hint. Try again.':'힌트를 불러오지 못했어요. 다시 눌러 주세요.'}</p>}
   </div>;
 }
 
-function TextInput({ onAnswer, disabled }: { onAnswer: (r: string) => void; disabled: boolean }) {
+function TextInput({ onAnswer, disabled, light = false }: { onAnswer: (r: string) => void; disabled: boolean; light?: boolean }) {
   const [text, setText] = useState('');
-  return <TextAnswer text={text} setText={setText} disabled={disabled} onSubmit={() => text.trim() && !disabled && onAnswer(text.trim())} />;
+  return <TextAnswer light={light||undefined} text={text} setText={setText} disabled={disabled} onSubmit={() => text.trim() && !disabled && onAnswer(text.trim())} />;
 }
 
 /** 조각을 눌러 차례로 놓고, 놓은 조각을 누르면 되돌린다(끌기 없이도 풀 수 있게) */
@@ -393,8 +400,8 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
   const tile = `min-h-12 rounded-xl px-3 font-bold shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none ${letters ? 'min-w-12 text-2xl' : 'text-lg'}`;
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/30 p-3" aria-live="polite">
-        {placed.length === 0 && <span className="text-base text-white/50">{t('studentHw.orderHint')}</span>}
+      <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-(color:--hw-line) p-3" aria-live="polite">
+        {placed.length === 0 && <span className="text-base text-(color:--hw-mute)">{t('studentHw.orderHint')}</span>}
         {placed.map((ti, k) => (
           <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} bg-warm-yellow text-deep-navy`}>
             {tokens[ti]}
@@ -415,7 +422,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
         )}
       </div>
       <div className="flex gap-3">
-        <button type="button" disabled={disabled || placed.length === 0} onClick={() => setPlaced([])} className="min-h-12 flex-1 rounded-full bg-white/15 text-base font-bold text-white disabled:opacity-40">
+        <button type="button" disabled={disabled || placed.length === 0} onClick={() => setPlaced([])} className="min-h-12 flex-1 rounded-full bg-(--hw-soft) text-base font-bold text-(color:--hw-ink) disabled:opacity-40">
           {t('studentHw.clearOrder')}
         </button>
         <button
@@ -449,16 +456,16 @@ function FlashThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r:
         </button>
       )}
       {phase === 'show' && (
-        <div className="mt-4 flex flex-col items-center gap-3 rounded-3xl bg-white/10 px-8 py-6">
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-3xl bg-(--hw-soft) px-8 py-6">
           {q.imageUrl && <img src={q.imageUrl} alt="" className="h-32 w-32 rounded-2xl bg-white object-contain p-2" />}
           <div className="text-5xl font-bold">{q.prompt}</div>
-          {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+          {q.sub && <div className="text-lg text-(color:--hw-mute)">{q.sub}</div>}
         </div>
       )}
       {phase === 'hide' && (
         <>
           <div className="mt-2 text-2xl font-bold">{t('studentHw.flashRecall')}</div>
-          {q.sub && <div className="text-base text-white/70">({q.sub})</div>}
+          {q.sub && <div className="text-base text-(color:--hw-mute)">({q.sub})</div>}
           <div className="w-full"><TextInput onAnswer={onAnswer} disabled={disabled} /></div>
         </>
       )}
@@ -484,14 +491,14 @@ function FadeThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
   return (
     <div className="flex flex-1 flex-col items-center gap-4 px-5 pb-4">
       {q.imageUrl && <img src={q.imageUrl} alt="" className="h-28 w-28 rounded-2xl bg-white object-contain p-2" />}
-      {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+      {q.sub && <div className="text-lg text-(color:--hw-mute)">{q.sub}</div>}
       {!typing ? (
         <>
           <div className="font-mono text-5xl font-bold tracking-widest" aria-live="polite">{fadeMask(word, round, rounds)}</div>
-          <div className="text-base text-white/70">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
+          <div className="text-base text-(color:--hw-mute)">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
           <div className="flex gap-3">
             {q.speak && (
-              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-white/15 px-5 text-base font-bold text-white">{t('studentHw.listen')}</button>
+              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-(--hw-soft) px-5 text-base font-bold text-(color:--hw-ink)">{t('studentHw.listen')}</button>
             )}
             <button type="button" onClick={() => setRound((r) => r + 1)} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy active:scale-95">{t('studentHw.fadeRead')}</button>
           </div>
@@ -530,7 +537,7 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
   }, [solved, dead, disabled, word, onAnswer]);
   return (
     <div className="flex flex-col items-center gap-4 px-4 pb-4">
-      <div className="text-lg text-white/80" aria-live="polite">
+      <div className="text-lg text-(color:--hw-mute)" aria-live="polite">
         {t('studentHw.hangmanLives', { n: Math.max(MAX - wrong, 0) })}{' '}
         {Array.from({ length: MAX }, (_, i) => (
           <img key={i} src={i < MAX - wrong ? '/skins/hangman-heart.png' : '/skins/hangman-heart-empty.png'} alt="" className="mx-0.5 inline-block h-7 w-7 align-middle" />
@@ -538,7 +545,7 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
       </div>
       <div className="flex flex-wrap justify-center gap-2 font-mono text-4xl font-bold tracking-widest" aria-label={t('studentHw.hangmanWord')}>
         {[...word].map((ch, i) => (
-          <span key={i} className="min-w-8 border-b-4 border-white/60 text-center">
+          <span key={i} className="min-w-8 border-b-4 border-(color:--hw-line) text-center">
             {shown(ch) || dead ? ch : ' '}
           </span>
         ))}
@@ -552,7 +559,7 @@ function HangmanInput({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
                 type="button"
                 disabled={disabled || solved || dead || picked.includes(l)}
                 onClick={() => setPicked((p) => [...p, l])}
-                className={`h-12 min-w-0 flex-1 rounded-lg text-lg font-bold uppercase shadow active:scale-95 ${picked.includes(l) ? (word.toLowerCase().includes(l) ? 'bg-emerald-300 text-deep-navy' : 'bg-white/20 text-white/50 line-through') : 'bg-white text-deep-navy'}`}
+                className={`h-12 min-w-0 flex-1 rounded-lg text-lg font-bold uppercase shadow active:scale-95 ${picked.includes(l) ? (word.toLowerCase().includes(l) ? 'bg-emerald-300 text-deep-navy' : 'bg-(--hw-soft) text-(color:--hw-mute) line-through') : 'bg-white text-deep-navy'}`}
               >
                 {l}
               </button>
@@ -574,20 +581,20 @@ function SentenceFadeThenType({ q, onAnswer, disabled }: { q: HwQuestion; onAnsw
   const typing = round >= rounds;
   return (
     <div className="flex flex-1 flex-col items-center gap-4 px-5 pb-4">
-      {q.sub && <div className="text-lg text-white/75">{q.sub}</div>}
+      {q.sub && <div className="text-lg text-(color:--hw-mute)">{q.sub}</div>}
       {!typing ? (
         <>
           <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 text-3xl font-bold leading-snug" aria-live="polite">
             {words.map((w, i) => (
-              <span key={i} className={i >= words.length - hide ? 'border-b-4 border-white/60 text-transparent' : ''}>
+              <span key={i} className={i >= words.length - hide ? 'border-b-4 border-(color:--hw-line) text-transparent' : ''}>
                 {w}
               </span>
             ))}
           </div>
-          <div className="text-base text-white/70">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
+          <div className="text-base text-(color:--hw-mute)">{t('studentHw.fadeRound', { n: round + 1, total: rounds })}</div>
           <div className="flex gap-3">
             {q.speak && (
-              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-white/15 px-5 text-base font-bold text-white">{t('studentHw.listen')}</button>
+              <button type="button" onClick={() => speak(q.speak!)} className="min-h-12 rounded-full bg-(--hw-soft) px-5 text-base font-bold text-(color:--hw-ink)">{t('studentHw.listen')}</button>
             )}
             <button type="button" onClick={() => setRound((r) => r + 1)} className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy active:scale-95">{t('studentHw.sfadeRead')}</button>
           </div>

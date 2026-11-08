@@ -6,7 +6,7 @@ import HomeworkRunner from '../components/homework/HomeworkRunner';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
-import { savedToken } from '../lib/studentPortal';
+import { forgetStudentToken, PortalError, savedToken } from '../lib/studentPortal';
 import { uploadRecording } from '../lib/homework/blockApi';
 import {
   enqueue,
@@ -15,6 +15,7 @@ import {
   HwError,
   hwFinish,
   hwOpenPersonal,
+  hwOpenFromPortal,
   hwState,
   hwWatchReport,
   hwWatchState,
@@ -29,7 +30,7 @@ type Screen =
   | { k: 'play'; token: string; state: HwStudentState }
   | { k: 'error'; kind: HwErrorKind; retry?: () => void };
 
-const shell = 'flex min-h-[100dvh] flex-col bg-[#16213e] text-white';
+const shell = 'flex min-h-[100dvh] flex-col bg-[#f8f1e3] text-[#1c2742]';
 
 const newId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -40,7 +41,7 @@ const kindOf = (e: unknown): HwErrorKind => (e instanceof HwError ? e.kind : 'un
 
 /**
  * 학생 숙제(Classbank Student) — 학생 포털(/s)에서 숙제 목록의 개인 링크(/hw/p/:access)로 열린다.
- * 이름 + PIN 으로 들어가는 반 숙제 번호·QR 입구는 없앴다(번호 주소는 이 기기에 열쇠가 있을 때만 이어서 열린다).
+ * 공유 숙제 번호는 학생 포털 세션을 통해 확인하고, 필요하면 같은 숙제로 돌아오는 로그인 링크로 연결한다.
  * 채점은 서버가 하고, 답은 이 기기에 먼저 적어 둔 뒤 보낸다(인터넷이 끊겨도 이어서, 다시 연결되면 자동 전송).
  * 학생 이름·id 는 URL 에 넣지 않는다.
  */
@@ -86,15 +87,33 @@ export default function HomeworkStudentPage() {
         forgetToken(code);
       }
     }
-    // 이 기기에 열쇠가 없으면 학생 포털에서 다시 들어오게 한다
-    navigate('/s', { replace: true });
+    if (!/^\d{6}$/.test(code)) {
+      setScreen({ k: 'error', kind: 'not_found' });
+      return;
+    }
+    const portalToken = savedToken();
+    if (portalToken) {
+      try {
+        await enter(await hwOpenFromPortal(portalToken, code));
+        return;
+      } catch (e) {
+        if (e instanceof PortalError && e.kind === 'expired') {
+          forgetStudentToken();
+        } else {
+          const kind = kindOf(e);
+          setScreen({ k: 'error', kind, retry: kind === 'network' ? () => void start() : undefined });
+          return;
+        }
+      }
+    }
+    navigate(`/s?hw=${encodeURIComponent(code)}`, { replace: true });
   }, [access, code, enter, navigate]);
 
   useEffect(() => {
     void start();
   }, [start]);
 
-  if (screen.k === 'loading') return <div className={`${shell} items-center justify-center text-lg text-white/75`}>{t('studentHw.loading')}</div>;
+  if (screen.k === 'loading') return <div className={`${shell} items-center justify-center text-lg text-[#5b6580]`}>{t('studentHw.loading')}</div>;
   if (screen.k === 'error') return <ErrorScreen kind={screen.kind} onRetry={screen.retry} onHome={() => navigate('/hw')} />;
   return (
     <PlayScreen
@@ -125,15 +144,15 @@ function ErrorScreen({ kind, onRetry, onHome }: { kind: HwErrorKind; onRetry?: (
   const { t } = useTranslation();
   return (
     <div className={`${shell} items-center justify-center gap-4 p-6 text-center`} role="alert">
-      <span className="material-symbols-outlined text-[64px] text-warm-yellow">{ERROR_ICON[kind]}</span>
+      <span className="material-symbols-outlined text-[64px] text-[#3b5bdb]">{ERROR_ICON[kind]}</span>
       <p className="max-w-sm text-2xl font-bold">{t(`studentHw.err_${kind}`)}</p>
-      <p className="max-w-sm text-base text-white/70">{t(`studentHw.errHelp_${kind}`)}</p>
+      <p className="max-w-sm text-base text-[#5b6580]">{t(`studentHw.errHelp_${kind}`)}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="min-h-14 rounded-full bg-warm-yellow px-10 text-lg font-bold text-deep-navy">
+        <button type="button" onClick={onRetry} className="min-h-14 rounded-full bg-[#3b5bdb] px-10 text-lg font-bold text-white">
           {t('studentHw.tryAgain')}
         </button>
       )}
-      <button type="button" onClick={onHome} className="min-h-12 rounded-full bg-white/15 px-8 text-base font-bold">
+      <button type="button" onClick={onHome} className="min-h-12 rounded-full bg-[#efe8d4] px-8 text-base font-bold">
         {t('studentHw.otherCode')}
       </button>
     </div>

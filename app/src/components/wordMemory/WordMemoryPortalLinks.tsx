@@ -21,7 +21,7 @@ export default function WordMemoryPortalLinks({ token }: { token: string }) {
   if (!result || result.token !== token || result.attempt !== attempt) return null;
   const { links } = result;
   if (links === null) return (
-    <div role="status" className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5" data-wm-portal-error>
+    <div role="status" className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5" data-wm-portal-error>
       {t('wordMemory.portalLoadError')}{' '}
       <button type="button" onClick={() => setAttempt(n => n + 1)} className="min-h-11 font-bold underline">
         {t('studentPortal.retry')}
@@ -30,9 +30,9 @@ export default function WordMemoryPortalLinks({ token }: { token: string }) {
   );
   if (links.length === 0) return null;
   return (
-    <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5" data-wm-portal>
+    <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5" data-wm-portal>
       <h2 className="mb-3 flex items-center gap-2 text-xl font-bold">
-        <span className="material-symbols-outlined text-[24px] text-warm-yellow" aria-hidden>
+        <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]" aria-hidden>
           event_repeat
         </span>
         {t('wordMemory.title')}

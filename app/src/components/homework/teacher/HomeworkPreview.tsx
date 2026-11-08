@@ -59,7 +59,7 @@ export default function HomeworkPreview({ title, items, studentName, startImmedi
           </select>
         </label>
       )}
-      <div className="relative w-full max-w-[380px] overflow-hidden rounded-[2rem] border-[10px] border-[#0e1530] bg-[#16213e] text-white shadow-xl" style={{ height: 640 }}>
+      <div className="hw-student-screen relative w-full max-w-[380px] overflow-hidden rounded-[2rem] border-[10px] border-[#0e1530] bg-[#f8f1e3] text-[#1c2742] shadow-xl" style={{ height: 640 }}>
         <div className="flex h-full flex-col overflow-y-auto">
           <HomeworkRunner
             key={`${round}-${itemIndex}`}

@@ -105,39 +105,39 @@ export default function ShadowingActivity({
   const big = 'flex min-h-12 items-center justify-center gap-2 rounded-full px-4 text-base font-bold';
   return (
     <div className="flex flex-1 flex-col gap-3 p-4">
-      <div className="text-center text-sm text-white/70">{t('studentHw.shadowLineN', { n: idx + 1, total: lines.length })}</div>
+      <div className="text-center text-sm text-[#5b6580]">{t('studentHw.shadowLineN', { n: idx + 1, total: lines.length })}</div>
       {item.content.videoId && !yt.failed && (
         <div className="relative mx-auto aspect-video w-full max-w-xl overflow-hidden rounded-2xl bg-black">
           <div id={yt.elementId} className="absolute inset-0 h-full w-full" />
         </div>
       )}
-      {yt.failed && <p className="rounded-xl bg-white/10 p-3 text-center text-sm text-white/80">{t('studentHw.videoFallback')}</p>}
+      {yt.failed && <p className="rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-center text-sm text-[#5b6580]">{t('studentHw.videoFallback')}</p>}
 
-      <div className="rounded-2xl bg-white/10 p-4 text-center">
+      <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4 text-center">
         {showText ? (
           <>
-            {line.speaker && <div className="mb-1 text-sm text-warm-yellow">{line.speaker}</div>}
+            {line.speaker && <div className="mb-1 text-sm text-[#3b5bdb]">{line.speaker}</div>}
             <div className="text-2xl font-bold leading-snug">{line.en}</div>
-            {showKo && line.ko && <div className="mt-2 text-base text-white/75">{line.ko}</div>}
+            {showKo && line.ko && <div className="mt-2 text-base text-[#5b6580]">{line.ko}</div>}
           </>
         ) : (
-          <div className="text-lg text-white/70">{t('studentHw.shadowListenFirst')}</div>
+          <div className="text-lg text-[#5b6580]">{t('studentHw.shadowListenFirst')}</div>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <button type="button" onClick={() => void play()} disabled={yt.playing} className={`${big} col-span-2 bg-warm-yellow text-deep-navy disabled:opacity-60`}>
+        <button type="button" onClick={() => void play()} disabled={yt.playing} className={`${big} col-span-2 bg-[#3b5bdb] text-white disabled:opacity-60`}>
           <span className="material-symbols-outlined">{listens ? 'replay' : 'play_arrow'}</span>
           {listens ? t('studentHw.listenAgainN', { n: listens }) : t('studentHw.listen')}
         </button>
         {showText && line.ko && (
-          <button type="button" onClick={() => setShowKo((k) => !k)} className={`${big} bg-white/15 text-white`}>
+          <button type="button" onClick={() => setShowKo((k) => !k)} className={`${big} bg-[#efe8d4] text-[#1c2742]`}>
             <span className="material-symbols-outlined">translate</span>
             {showKo ? t('studentHw.hideKorean') : t('studentHw.showKorean')}
           </button>
         )}
         {showText && micState === 'ready' && (
-          <button type="button" onClick={toggleRecord} className={`${big} ${recording ? 'bg-rose-600' : 'bg-white/15'} text-white`}>
+          <button type="button" onClick={toggleRecord} className={`${big} ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
             <span className="material-symbols-outlined">{recording ? 'stop_circle' : 'mic'}</span>
             {recording ? t('studentHw.stopRecording') : t('studentHw.recordMe')}
           </button>
@@ -145,22 +145,22 @@ export default function ShadowingActivity({
       </div>
 
       {showText && micState === 'unknown' && (
-        <div className="rounded-2xl bg-white/10 p-3 text-sm text-white/85">
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
           <p>{t('studentHw.micExplain')}</p>
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={() => void enableMic()} className={`${big} flex-1 bg-white text-deep-navy`}>
               {t('studentHw.micOn')}
             </button>
-            <button type="button" onClick={() => setMicState('unsupported')} className={`${big} flex-1 bg-white/15 text-white`}>
+            <button type="button" onClick={() => setMicState('unsupported')} className={`${big} flex-1 bg-[#efe8d4] text-[#1c2742]`}>
               {t('studentHw.micSkip')}
             </button>
           </div>
         </div>
       )}
-      {micState === 'denied' && <p className="text-center text-sm text-white/70">{t('studentHw.micDenied')}</p>}
+      {micState === 'denied' && <p className="text-center text-sm text-[#5b6580]">{t('studentHw.micDenied')}</p>}
       {clipUrl && (
         <div className="flex flex-col items-center gap-1">
-          <span className="text-sm text-white/70">{t('studentHw.myVoice')}</span>
+          <span className="text-sm text-[#5b6580]">{t('studentHw.myVoice')}</span>
           <audio src={clipUrl} controls className="w-full max-w-sm" />
         </div>
       )}

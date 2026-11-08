@@ -53,42 +53,42 @@ export default function FinishPanel({ token, assignment, onStarted }: { token: s
   return (
     <div className="w-full max-w-md space-y-3 text-left">
       {missed !== null && missed > 0 && (
-        <div className="rounded-2xl bg-white/10 p-4">
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4">
           <p className="mb-2 text-lg font-bold">{t('solo.finishRelearnTitle', { count: missed })}</p>
           <button
             type="button"
             disabled={busy}
             onClick={() => void relearn()}
-            className="min-h-14 w-full rounded-2xl bg-warm-yellow px-5 text-xl font-bold text-deep-navy disabled:opacity-50"
+            className="min-h-14 w-full rounded-2xl bg-[#3b5bdb] px-5 text-xl font-bold text-white disabled:opacity-50"
           >
             {busy ? t('common.loading') : t('solo.finishRelearn')}
           </button>
-          {message && <p className="mt-2 text-base text-warm-yellow">{message}</p>}
+          {message && <p className="mt-2 text-base text-[#3b5bdb]">{message}</p>}
         </div>
       )}
 
       {(todo.length > 0 || homework.length > 0) && (
-        <div className="rounded-2xl bg-white/10 p-4">
+        <div className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4">
           <p className="mb-2 text-lg font-bold">{t('solo.finishHomeworkTitle')}</p>
           <ul className="space-y-1.5 text-base">
             {todo.map((l) => (
               <li key={l.id} className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-warm-yellow">{l.kind === 'homework' ? 'edit_note' : 'school'}</span>
+                <span className="material-symbols-outlined text-[20px] text-[#3b5bdb]">{l.kind === 'homework' ? 'edit_note' : 'school'}</span>
                 <span className="min-w-0 flex-1 truncate">{l.name}</span>
-                {l.due_at && <span className="shrink-0 text-sm text-white/70">{t('studentHw.dueAt', { date: fmt(l.due_at) })}</span>}
+                {l.due_at && <span className="shrink-0 text-sm text-[#5b6580]">{t('studentHw.dueAt', { date: fmt(l.due_at) })}</span>}
               </li>
             ))}
             {homework.map((h) => (
               <li key={h.access} className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-warm-yellow">edit_note</span>
+                <span className="material-symbols-outlined text-[20px] text-[#3b5bdb]">edit_note</span>
                 <span className="min-w-0 flex-1 truncate">{h.title || t('studentHw.defaultTitle')}</span>
-                {h.due_at && <span className="shrink-0 text-sm text-white/70">{t('studentHw.dueAt', { date: fmt(h.due_at) })}</span>}
+                {h.due_at && <span className="shrink-0 text-sm text-[#5b6580]">{t('studentHw.dueAt', { date: fmt(h.due_at) })}</span>}
               </li>
             ))}
           </ul>
         </div>
       )}
-      <p className="text-center text-base text-white/70">{t('solo.finishWorksheetNote')}</p>
+      <p className="text-center text-base text-[#5b6580]">{t('solo.finishWorksheetNote')}</p>
     </div>
   );
 }

@@ -175,19 +175,19 @@ export default function GameLearningCheck({
   const q = state?.questions[question];
   return (
     <section
-      className="space-y-4 rounded-3xl bg-white/10 p-5"
+      className="space-y-4 rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5"
       aria-label={en ? 'Learning check' : '혼자 확인하기'}
     >
       <h3 className="text-center text-2xl font-bold">
         {en ? 'One more challenge!' : '마지막, 혼자 확인하기!'}
       </h3>
-      <p className="text-center text-white/80">
+      <p className="text-center text-[#5b6580]">
         {en
           ? 'Game points and speed do not affect your learning score.'
           : '게임 점수·속도 대신, 지금 혼자 풀 수 있는 것을 확인해요.'}
       </p>
       {error && (
-        <p role="alert" className="text-warm-yellow">
+        <p role="alert" className="text-[#3b5bdb]">
           {error}
         </p>
       )}

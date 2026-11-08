@@ -174,8 +174,8 @@ export default function WordMemoryStudentPage() {
   const hintText = current ? (hint && hint.q === current.i && hint.hint.text ? hint.hint.text : current.hint) : undefined;
   const canHint = !!current && current.kind === 'ask' && !feedback && !(current.qtype === 'choice' && eliminated.length >= (current.choices?.length ?? 0) - 2);
 
-  const shell = 'mx-auto flex min-h-dvh w-full max-w-xl flex-col break-keep bg-[#16213e] text-white';
-  const big = 'min-h-14 rounded-full bg-warm-yellow px-8 text-xl font-bold text-deep-navy shadow-lg disabled:opacity-60';
+  const shell = 'mx-auto flex min-h-dvh w-full max-w-xl flex-col break-keep bg-[#f8f1e3] text-[#1c2742]';
+  const big = 'min-h-14 rounded-full bg-[#3b5bdb] px-8 text-xl font-bold text-white shadow-lg disabled:opacity-60';
 
   if (view === 'loading') {
     return (
@@ -189,7 +189,7 @@ export default function WordMemoryStudentPage() {
     return (
       <div className={shell} data-wm-view="error">
         <div className="m-auto flex flex-col items-center gap-4 p-6 text-center">
-          <span className="material-symbols-outlined text-[56px] text-warm-yellow" aria-hidden>
+          <span className="material-symbols-outlined text-[56px] text-[#3b5bdb]" aria-hidden>
             info
           </span>
           <p role="alert" className="text-xl font-bold">
@@ -223,11 +223,11 @@ export default function WordMemoryStudentPage() {
     return (
       <div className={shell} data-wm-view="ended">
         <div className="m-auto flex flex-col items-center gap-4 p-6 text-center">
-          <span className="material-symbols-outlined text-[64px] text-warm-yellow" aria-hidden>
+          <span className="material-symbols-outlined text-[64px] text-[#3b5bdb]" aria-hidden>
             emoji_events
           </span>
           <h1 className="text-2xl font-bold">{t(today?.project?.completed ? 'wordMemory.projectComplete' : 'wordMemory.endedTitle')}</h1>
-          <p className="text-lg text-white/80">{t(today?.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.endedBody')}</p>
+          <p className="text-lg text-[#5b6580]">{t(today?.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.endedBody')}</p>
           <button type="button" className={big} onClick={() => void openCollection()}>
             {t('wordMemory.collection')}
           </button>
@@ -242,25 +242,25 @@ export default function WordMemoryStudentPage() {
       <div className={shell} data-wm-view="home">
         <div className="flex flex-1 flex-col gap-5 p-5">
           <div className="text-center">
-            <div className="text-lg text-white/80">{t('wordMemory.hello', { name: info.student_name })}</div>
+            <div className="text-lg text-[#5b6580]">{t('wordMemory.hello', { name: info.student_name })}</div>
             <h1 className="mt-1 text-2xl font-bold">{info.title || t('wordMemory.title')}</h1>
           </div>
           <ul className="grid grid-cols-3 gap-2 text-center" aria-label={t('wordMemory.title')}>
             {([['todayReview', c.review], ['todayHard', c.hard], ['todayNew', c.new]] as const).map(([k, n]) => (
-              <li key={k} className="rounded-2xl bg-white/10 p-3">
+              <li key={k} className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3">
                 <div className="text-3xl font-bold tabular-nums">{n}</div>
-                <div className="break-keep text-sm text-white/80">{t(`wordMemory.${k}`)}</div>
+                <div className="break-keep text-sm text-[#5b6580]">{t(`wordMemory.${k}`)}</div>
               </li>
             ))}
           </ul>
-          {today.project?.goal_passed && <p className="text-center text-base text-white/80">{t('wordMemory.projectContinue')}</p>}
-          <p className="text-center text-base text-white/80">{t('wordMemory.startNote', { asks: today.counts.asks, study: studyCount })}</p>
-          {c.review + c.hard === 0 && info.stages.seen + info.stages.practicing + info.stages.alone + info.stages.kept === 0 && <p className="rounded-2xl bg-white/10 p-3 text-center text-base">{t('wordMemory.firstDays')}</p>}
+          {today.project?.goal_passed && <p className="text-center text-base text-[#5b6580]">{t('wordMemory.projectContinue')}</p>}
+          <p className="text-center text-base text-[#5b6580]">{t('wordMemory.startNote', { asks: today.counts.asks, study: studyCount })}</p>
+          {c.review + c.hard === 0 && info.stages.seen + info.stages.practicing + info.stages.alone + info.stages.kept === 0 && <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-center text-base">{t('wordMemory.firstDays')}</p>}
           {started && <p className="text-center text-base text-emerald-200">{t('wordMemory.remaining', { count: asksLeft })}</p>}
           <button type="button" className={`${big} mt-auto`} onClick={() => setView('run')} data-wm-start>
             {t(started ? 'wordMemory.resume' : today.project ? 'wordMemory.projectStart' : 'wordMemory.start')}
           </button>
-          <button type="button" className="min-h-12 rounded-full bg-white/15 text-base font-bold" onClick={() => void openCollection()}>
+          <button type="button" className="min-h-12 rounded-full bg-[#efe8d4] text-base font-bold" onClick={() => void openCollection()}>
             {t('wordMemory.collection')}
           </button>
         </div>
@@ -272,12 +272,12 @@ export default function WordMemoryStudentPage() {
     return (
       <div className={shell} data-wm-view="done">
         <div className="m-auto flex w-full flex-col items-center gap-4 p-6 text-center">
-          <span className="material-symbols-outlined text-[64px] text-warm-yellow" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>
+          <span className="material-symbols-outlined text-[64px] text-[#3b5bdb]" aria-hidden style={{ fontVariationSettings: "'FILL' 1" }}>
             {empty ? 'bedtime' : 'celebration'}
           </span>
           <h1 className="text-2xl font-bold">{t(today.project?.completed ? 'wordMemory.projectComplete' : empty ? 'wordMemory.nothingToday' : 'wordMemory.doneTitle')}</h1>
-          {!empty && <p className="text-lg text-white/80">{t(today.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.doneBody')}</p>}
-          <ul className="flex flex-col gap-1 text-base text-white/85">
+          {!empty && <p className="text-lg text-[#5b6580]">{t(today.project?.completed ? 'wordMemory.projectCompleteBody' : 'wordMemory.doneBody')}</p>}
+          <ul className="flex flex-col gap-1 text-base text-[#5b6580]">
             {today.waiting_review > 0 && <li>{t('wordMemory.waitingReview', { count: today.waiting_review })}</li>}
             {today.unseen > 0 && <li>{t('wordMemory.unseenLeft', { count: today.unseen })}</li>}
             {today.next_due && <li>{t('wordMemory.nextDue', { date: today.next_due.slice(5).replace('-', '/') })}</li>}
@@ -295,9 +295,9 @@ export default function WordMemoryStudentPage() {
   const total = items.length;
   return (
     <div className={shell} data-wm-view="run" data-wm-kind={current.kind} data-wm-q={current.i}>
-      <div className="sticky top-0 z-10 bg-[#16213e]/95 px-4 pb-2 pt-3 backdrop-blur">
+      <div className="sticky top-0 z-10 bg-[#f8f1e3]/95 px-4 pb-2 pt-3 backdrop-blur">
         <div className="flex items-center gap-3">
-          <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/15" role="progressbar" aria-valuenow={doneCount} aria-valuemin={0} aria-valuemax={total}>
+          <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]" role="progressbar" aria-valuenow={doneCount} aria-valuemin={0} aria-valuemax={total}>
             <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${total ? (doneCount / total) * 100 : 0}%` }} />
           </div>
           <span className="text-base font-bold tabular-nums">{t('wordMemory.progress', { done: doneCount, total })}</span>
@@ -312,20 +312,20 @@ export default function WordMemoryStudentPage() {
             {current.word}
           </div>
           <div className="text-3xl">{current.meaning}</div>
-          {current.pos && <div className="text-base text-white/70">({current.pos})</div>}
-          <button type="button" onClick={() => { sensor('audio'); speak(current.speak || current.word || ''); }} className="flex min-h-12 items-center gap-2 rounded-full bg-warm-yellow px-5 text-lg font-bold text-deep-navy">
+          {current.pos && <div className="text-base text-[#5b6580]">({current.pos})</div>}
+          <button type="button" onClick={() => { sensor('audio'); speak(current.speak || current.word || ''); }} className="flex min-h-12 items-center gap-2 rounded-full bg-[#3b5bdb] px-5 text-lg font-bold text-white">
             <span className="material-symbols-outlined" aria-hidden>
               volume_up
             </span>
             {t('wordMemory.listen')}
           </button>
           {current.example && (
-            <p lang="en" className="max-w-sm text-xl text-white/90">
+            <p lang="en" className="max-w-sm text-xl text-[#5b6580]">
               {current.example}
             </p>
           )}
           {sendError && (
-            <p role="alert" className="text-base text-warm-yellow">
+            <p role="alert" className="text-base text-[#3b5bdb]">
               {t('wordMemory.saveFailedRetry')}
             </p>
           )}
@@ -335,24 +335,24 @@ export default function WordMemoryStudentPage() {
         </div>
       ) : (
         <div className="flex flex-1 flex-col">
-          {current.retry && <div className="mx-4 mt-2 rounded-xl bg-white/10 px-3 py-1.5 text-center text-sm">{t('wordMemory.requeued')}</div>}
+          {current.retry && <div className="mx-4 mt-2 rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-3 py-1.5 text-center text-sm">{t('wordMemory.requeued')}</div>}
           <QuestionCard key={`${today.session_id}:${current.i}`} q={toQuestion(today.session_id, current)} onAnswer={onAnswer} onSensor={sensor} disabled={busy || !!feedback} eliminated={eliminated} />
           {hintText && !feedback && (
-            <p className="px-5 text-center text-lg font-bold text-warm-yellow" aria-live="polite" data-wm-hint>
+            <p className="px-5 text-center text-lg font-bold text-[#3b5bdb]" aria-live="polite" data-wm-hint>
               {current.qtype === 'order' ? t('wordMemory.hintFirst', { text: hintText }) : t('wordMemory.hintLetters', { text: hintText })}
             </p>
           )}
           {canHint && (
             <div className="flex flex-col items-center gap-1 px-5 pb-3">
-              <button type="button" className="min-h-11 rounded-full bg-white/15 px-5 text-base font-bold" onClick={() => void onHint()} disabled={busy} data-wm-hint-btn>
+              <button type="button" className="min-h-11 rounded-full bg-[#efe8d4] px-5 text-base font-bold" onClick={() => void onHint()} disabled={busy} data-wm-hint-btn>
                 {t('wordMemory.hint')}
               </button>
-              <span className="text-xs text-white/60">{t('wordMemory.hintUsed')}</span>
+              <span className="text-xs text-[#5b6580]">{t('wordMemory.hintUsed')}</span>
             </div>
           )}
           {sendError && (
             <div className="flex flex-col items-center gap-2 px-5 pb-4" role="alert">
-              <p className="text-base text-warm-yellow">{t('wordMemory.saveFailedRetry')}</p>
+              <p className="text-base text-[#3b5bdb]">{t('wordMemory.saveFailedRetry')}</p>
               <button type="button" className={big} onClick={() => pending.current && void send(pending.current.q, pending.current.response, pending.current.clientId, pending.current.runId)} data-wm-resend>
                 {t('wordMemory.retry')}
               </button>

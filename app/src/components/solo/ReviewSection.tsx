@@ -50,14 +50,14 @@ export default function ReviewSection({ token }: { token: string }) {
     }
   }
 
-  const card = 'flex min-h-16 flex-1 items-center gap-3 rounded-2xl bg-white px-4 py-3 text-left text-deep-navy disabled:opacity-60';
+  const card = 'flex min-h-16 flex-1 items-center gap-3 rounded-2xl border border-[#d9d3c3] bg-white px-4 py-3 text-left text-deep-navy disabled:opacity-60';
   return (
-    <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5">
+    <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
       <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
-        <span className="material-symbols-outlined text-[24px] text-warm-yellow">history_edu</span>
+        <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]">history_edu</span>
         {t('studentPortal.reviewTitle')}
       </h2>
-      <p className="mb-3 text-sm text-white/70">{t('studentPortal.reviewHint')}</p>
+      <p className="mb-3 text-sm text-[#5b6580]">{t('studentPortal.reviewHint')}</p>
       <button type="button" disabled={personalBusy||!!busy} onClick={()=>void personal()} className={`${card} mb-3 w-full`}><span className="text-2xl">🎯</span><span><b className="block text-lg">{en?'Today’s personal warm-up':'오늘의 맞춤 시작 연습'}</b><span className="text-sm">{personalBusy?t('common.loading'):(en?'About 3 minutes · based on homework and lesson history':'약 3분 · 지난 숙제와 수업에서 필요한 연습')}</span></span></button>
       <div className="flex flex-col gap-3 sm:flex-row">
         {(['daily', 'cumulative'] as const).map((m) => (
@@ -71,7 +71,7 @@ export default function ReviewSection({ token }: { token: string }) {
         ))}
       </div>
       {message && (
-        <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-base text-warm-yellow" role="status">
+        <p className="mt-3 rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-3 py-2 text-base text-[#3b5bdb]" role="status">
           {message}
         </p>
       )}

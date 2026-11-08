@@ -441,11 +441,13 @@ export function TextAnswer({
   setText,
   disabled,
   onSubmit,
+  light = false,
 }: {
   text: string;
   setText: (v: string | ((prev: string) => string)) => void;
   disabled: boolean;
   onSubmit: () => void;
+  light?: boolean;
 }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<'screen' | 'device'>(readKbdPref);
@@ -479,7 +481,7 @@ export function TextAnswer({
     if (next === 'device') inputRef.current?.focus();
   }
 
-  const key = 'flex h-14 min-w-0 flex-1 items-center justify-center rounded-xl bg-white text-2xl font-bold text-deep-navy shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none disabled:opacity-50 [touch-action:manipulation]';
+  const key = `flex h-14 min-w-0 flex-1 items-center justify-center rounded-xl ${light ? 'bg-[#f3ecd9] ring-1 ring-[#d9d3c3]' : 'bg-white'} text-2xl font-bold text-deep-navy shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none disabled:opacity-50 [touch-action:manipulation]`;
 
   if (mode === 'device') {
     return (
@@ -501,7 +503,7 @@ export function TextAnswer({
           autoComplete="off"
           enterKeyHint="send"
           placeholder={t('liveQuiz.typeHere')}
-          className="w-full rounded-2xl border-2 border-white/30 bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow"
+          className={`w-full rounded-2xl border-2 ${light ? 'border-[#d9d3c3]' : 'border-white/30'} bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow`}
         />
         <button
           type="submit"
@@ -510,7 +512,7 @@ export function TextAnswer({
         >
           {t('liveQuiz.submit')}
         </button>
-        <button type="button" onClick={() => switchMode('screen')} className="mx-auto text-sm text-white/70 underline">
+        <button type="button" onClick={() => switchMode('screen')} className={`mx-auto text-sm ${light ? 'text-[#5b6580]' : 'text-white/70'} underline`}>
           {t('liveQuiz.useScreenKeyboard')}
         </button>
       </form>
@@ -520,7 +522,7 @@ export function TextAnswer({
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-3 p-3">
       <div
-        className={`flex min-h-[64px] items-center justify-center break-all rounded-2xl border-2 bg-white px-4 py-3 text-center text-3xl font-bold text-deep-navy ${text ? 'border-warm-yellow' : 'border-white/30'}`}
+        className={`flex min-h-[64px] items-center justify-center break-all rounded-2xl border-2 bg-white px-4 py-3 text-center text-3xl font-bold text-deep-navy ${text ? 'border-warm-yellow' : light ? 'border-[#d9d3c3]' : 'border-white/30'}`}
         aria-live="polite"
       >
         {text ? (
@@ -569,7 +571,7 @@ export function TextAnswer({
           </button>
         </div>
       </div>
-      <button type="button" onClick={() => switchMode('device')} className="mx-auto mt-1 text-sm text-white/70 underline">
+      <button type="button" onClick={() => switchMode('device')} className={`mx-auto mt-1 text-sm ${light ? 'text-[#5b6580]' : 'text-white/70'} underline`}>
         {t('liveQuiz.useDeviceKeyboard')}
       </button>
     </div>

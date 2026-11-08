@@ -12,7 +12,7 @@ import type { SensorAction } from "../../lib/learningSensors/core";
 import type { RunnerApi } from "./runnerTypes";
 
 const btn =
-  "min-h-14 rounded-2xl bg-warm-yellow px-5 py-3 text-lg font-bold text-deep-navy disabled:opacity-40 focus-visible:outline-4 focus-visible:outline-white";
+  "min-h-14 rounded-2xl bg-[#3b5bdb] px-5 py-3 text-lg font-bold text-white disabled:opacity-40 focus-visible:outline-4 focus-visible:outline-white";
 export default function BlockActivity({
   item,
   api,
@@ -277,7 +277,7 @@ export default function BlockActivity({
     <div className="flex flex-1 flex-col gap-4 p-5">
       <h2 className="text-2xl font-bold">{item.title}</h2>
       {preview && (
-        <p className="rounded-xl bg-white/10 p-2">
+        <p className="rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-2">
           {l(
             "미리보기 · 기록·포인트·알림 없음",
             "Preview · No records, points or notifications",
@@ -295,7 +295,7 @@ export default function BlockActivity({
         />
       )}
       {b.type === "speak" && !recordReady && (
-        <p className="text-lg text-warm-yellow">
+        <p className="text-lg text-[#3b5bdb]">
           {stage + 1} / {b.stages.length} ·{" "}
           {l(
             currentStage === "model"
@@ -408,7 +408,7 @@ export default function BlockActivity({
         </label>
       )}
       {b.completion === "recording" && recordReady && (
-        <div className="space-y-3 rounded-xl bg-white/10 p-4">
+        <div className="space-y-3 rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4">
           <p>
             {l(
               "대표 녹음 1개 제출 · 최대 2분 · 8MB. 녹음은 선생님이 확인합니다.",

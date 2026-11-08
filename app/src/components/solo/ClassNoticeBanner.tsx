@@ -32,7 +32,7 @@ export default function ClassNoticeBanner({ load }: { load: () => Promise<ClassN
 
   if (!notice || !notice.text || dismissed === `${notice.text}|${notice.until}`) return null;
   return (
-    <div className="mx-auto flex w-full max-w-xl items-start gap-3 rounded-2xl bg-warm-yellow px-4 py-3 text-deep-navy shadow-lg" role="status">
+    <div className="mx-auto flex w-full max-w-xl items-start gap-3 rounded-2xl bg-[#3b5bdb] px-4 py-3 text-white shadow-lg" role="status">
       <span className="text-2xl" aria-hidden="true">📢</span>
       <p className="min-w-0 flex-1 text-lg font-bold leading-snug">{notice.text}</p>
       <button

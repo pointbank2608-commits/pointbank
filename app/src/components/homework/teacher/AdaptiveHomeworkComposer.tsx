@@ -4,6 +4,9 @@ import {fetchCurriculumLessons,fetchStudentsOfClass,fetchWordLists} from '../../
 import type {CurriculumLesson,Student,WordList} from '../../../lib/types';
 import {contentFromLesson,contentFromList} from '../../../lib/homework/guided';
 import {parsePathCards,type PathCard} from '../../../lib/learningPaths';
+import HomeworkDeadlinePicker from './HomeworkDeadlinePicker';
+import {formatHomeworkDeadline} from '../../../lib/homework/deadline';
+import '../../../styles/homework-composer.css';
 import {adaptiveCards,assignAdaptiveHomework,AdaptiveHomeworkError,homeworkParts,type AdaptiveHomeworkInput,type HomeworkPortion} from '../../../lib/homework/adaptive';
 
 const field='min-h-12 w-full rounded-xl border border-outline-variant bg-white px-3 py-3 text-on-surface';
@@ -59,7 +62,7 @@ export default function AdaptiveHomeworkComposer({academyId,classId,onClose,onCr
    {parts.length>1&&<label className="block space-y-2"><span>{l(`전체 ${parsed.cards.length}단어 중 이번에 보낼 묶음`, `Choose a part from ${parsed.cards.length} words`)}</span><select aria-label={l('이번에 보낼 묶음','Part to assign')} className={field} value={part} onChange={e=>{setPart(Number(e.target.value));resetReview();}}>{parts.map((p,i)=><option key={i} value={i}>{i+1}/{parts.length} · {p.map(c=>c.word).join(', ')}</option>)}</select><p className="text-sm">{l('이번에는 선택한 묶음만 배정합니다. 나머지 묶음은 다음 숙제에서 선택할 수 있어요.','Assign the selected part now. Choose the remaining parts for a later assignment.')}</p></label>}
    <details><summary className="min-h-11 cursor-pointer font-bold">{l('학생·기한·연습 방식 조정','Adjust students, deadline and practice')}</summary><div className="mt-3 space-y-4">
     <label className="block">{l('숙제 이름 · 선택','Homework title · optional')}<input className={field} value={title} maxLength={100} onChange={e=>setTitle(e.target.value)}/></label>
-    <label className="block">{l('첫 학습 기한 · 선택','Initial-learning deadline · optional')}<input className={field} type="datetime-local" value={due} onChange={e=>setDue(e.target.value)}/></label><p className="text-sm">{l('기한은 첫 학습 안내용입니다. 이후 복습 확인은 첫 학습 완료 시점부터 이어집니다.','The deadline guides initial learning. Later reviews are scheduled from initial completion.')}</p>
+    <HomeworkDeadlinePicker value={due} onChange={v=>{setDue(v);resetReview();}} en={en}/><p className="text-sm">{l('마감일은 첫 학습 안내용입니다. 이후 복습 확인은 첫 학습 완료 시점부터 이어집니다.','The deadline guides initial learning. Later reviews are scheduled from initial completion.')}</p>
     <label className="block">{l('도움받아 연습하는 방식','Supported practice')}<select aria-label={l('도움받아 연습하는 방식','Supported practice')} className={field} value={practice} onChange={e=>setPractice(e.target.value as 'letters'|'recall')}><option value="letters">{l('글자 조합','Arrange letters')}</option><option value="recall">{l('뜻을 보고 직접 쓰기','Type from meaning')}</option></select></label>
     <div className="flex flex-wrap gap-2">{students.map(s=><label key={s.id} className="flex min-h-11 items-center gap-2 rounded-full border px-3"><input type="checkbox" checked={selected.includes(s.id)} onChange={e=>setSelected(ids=>e.target.checked?[...ids,s.id]:ids.filter(id=>id!==s.id))}/>{s.name}</label>)}</div>
    </div></details>
@@ -68,7 +71,7 @@ export default function AdaptiveHomeworkComposer({academyId,classId,onClose,onCr
   </>:<>
    <h3 className="text-xl font-bold">{title||`${sourceName} · ${l('단어 회상 숙제','Recall homework')}`}</h3><p>{current.map(c=>`${c.word} (${c.meaning})`).join(' · ')}</p>
    <p>{l(`${selected.length}명 · ${current.length}단어 · 뜻을 보고 혼자 쓰기`,`${selected.length} students · ${current.length} words · Write from meaning`)}</p>
-   <p className="text-sm">{l('도움받아 연습: ','Supported practice: ')}{practice==='letters'?l('글자 조합','Arrange letters'):l('뜻을 보고 직접 쓰기','Type from meaning')}{due?` · ${l('첫 학습 기한','Initial deadline')}: ${new Date(due).toLocaleString()}`:''}</p>
+   <p className="text-sm">{l('도움받아 연습: ','Supported practice: ')}{practice==='letters'?l('글자 조합','Arrange letters'):l('뜻을 보고 직접 쓰기','Type from meaning')}{due?` · ${l('첫 학습 마감일','Initial deadline')}: ${formatHomeworkDeadline(due,en?'en':'ko')}`:''}</p>
    <ol aria-label={l('숙제 블록 구성','Homework blocks')} className="grid gap-3 sm:grid-cols-2">{[
     [l('먼저 확인','Try first'),l('혼자 떠올려 봅니다. 맞힌 단어는 설명과 연습을 줄입니다.','Try recalling. Known words skip repeated explanation and practice.')],
     [l('배우고 연습','Learn and practise'),l('필요한 단어만 설명·예시·짧은 연습으로 이어집니다.','Words needing support get explanation, examples and brief practice.')],

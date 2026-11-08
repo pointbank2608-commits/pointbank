@@ -29,7 +29,7 @@ import {
 } from '../lib/soloApi';
 
 const shell =
-  'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#16213e] p-6 text-center text-white';
+  'flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#f8f1e3] p-6 text-center text-[#1c2742]';
 
 /** 학생이 "오늘의 수업" 하나를 혼자 하는 화면(/s/lesson/:id). 로그인 열쇠가 없거나 끝났으면 학생 홈으로 돌려보낸다. */
 export default function StudentSoloPage({homework=false}:{homework?:boolean}={}) {
@@ -110,7 +110,7 @@ export default function StudentSoloPage({homework=false}:{homework?:boolean}={})
         <button
           type="button"
           onClick={() => navigate('/s')}
-          className="min-h-12 rounded-full bg-warm-yellow px-8 text-lg font-bold text-deep-navy"
+          className="min-h-12 rounded-full bg-[#3b5bdb] px-8 text-lg font-bold text-white"
         >
           {t('solo.backHome')}
         </button>
@@ -119,7 +119,7 @@ export default function StudentSoloPage({homework=false}:{homework?:boolean}={})
   }
   if (!lesson || !api)
     return (
-      <div className={`${shell} text-lg text-white/70`}>
+      <div className={`${shell} text-lg text-[#5b6580]`}>
         {t('common.loading')}
       </div>
     );
@@ -148,7 +148,7 @@ export default function StudentSoloPage({homework=false}:{homework?:boolean}={})
           {!lesson.done && lesson.progress === 0 && !lesson.personal_review && (
             <button
               disabled={warmupBusy}
-              className="min-h-11 rounded-full bg-white/15 px-3 text-sm text-white"
+              className="min-h-11 rounded-full bg-[#efe8d4] px-3 text-sm text-[#1c2742]"
               onClick={async () => {
                 if (warmupBusy) return;
                 setWarmupBusy(true);
@@ -185,7 +185,7 @@ export default function StudentSoloPage({homework=false}:{homework?:boolean}={})
             </button>
           )}
           {warmupMessage && (
-            <span role="status" className="text-sm text-warm-yellow">
+            <span role="status" className="text-sm text-[#3b5bdb]">
               {warmupMessage}
             </span>
           )}

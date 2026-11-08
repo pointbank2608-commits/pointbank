@@ -81,12 +81,12 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
 
   const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
   if (checking) return <GameLearningCheck api={api} step={stepIndex} onDone={onDone} preview={preview} />;
-  if (state === 'loading') return <p className="text-lg text-white/70">{t('common.loading')}</p>;
+  if (state === 'loading') return <p className="text-lg text-[#5b6580]">{t('common.loading')}</p>;
   if (state === 'failed') {
     return (
       <>
-        <p className="text-center text-lg text-white/85">{t('solo.gameFailed')}</p>
-        <button type="button" disabled={busy} onClick={()=>onDone()} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+        <p className="text-center text-lg text-[#5b6580]">{t('solo.gameFailed')}</p>
+        <button type="button" disabled={busy} onClick={()=>onDone()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
           {t('solo.gameSkip')}
         </button>
       </>
@@ -110,7 +110,7 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
       </div>
       {result !== null && (
         <>
-          <p className="text-center text-xl font-bold text-emerald-200">
+          <p className="text-center text-xl font-bold text-emerald-600">
             {result.text
               ? result.text
               : result.hits !== undefined
@@ -119,7 +119,7 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
                   ? t(step.gameType === 'hangman' ? 'solo.gameDoneHangman' : 'solo.gameDoneScore', { score: result.score, total: result.total })
                   : t('solo.gameDone', { count: result.wrong ?? 0 })}
           </p>
-          <button type="button" disabled={busy} onClick={() => step.measure === false ? onDone() : setChecking(true)} className={`${btn} w-full bg-warm-yellow text-deep-navy`}>
+          <button type="button" disabled={busy} onClick={() => step.measure === false ? onDone() : setChecking(true)} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
             {step.measure === false ? t('solo.next') : t('solo.gameCheckStart', {defaultValue:'혼자 확인하고 마치기'})}
           </button>
         </>
