@@ -4,6 +4,7 @@
  * 학생 이름·id 는 URL·저장소에 남기지 않는다(열쇠만).
  */
 import { supabase } from '../supabase';
+import { PortalError } from '../studentPortal';
 import { openDelivery, deliveryAction } from '../learningSensors/delivery';
 import type { HwErrorKind, HwOpenInfo, HwStudentState, HwSubmitResult } from './types';
 
@@ -75,6 +76,19 @@ export async function hwOpenPersonal(access: string): Promise<{ token: string; c
   const r = await rpc<{ token: string; code: string }>('hw_open_personal', { p_access: access });
   saveToken(r.code, r.token);
   return r;
+}
+
+export async function hwOpenFromPortal(portalToken: string, code: string): Promise<string> {
+  try {
+    const { data, error } = await supabase.rpc('student_open_homework', { p_token: portalToken, p_code: code });
+    if (error?.message === 'expired') throw new PortalError('expired');
+    if (error || data?.error) throw error ?? data.error;
+    saveToken(code, data.token);
+    return data.token;
+  } catch (error) {
+    if (error instanceof PortalError) throw error;
+    throw toError(error);
+  }
 }
 
 export const hwSpellingHint = (token:string,itemId:string,index:number,level:import('./spellingHints').HintLevel) =>

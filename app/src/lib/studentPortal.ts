@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 /**
- * 학생 포털(Classbank Student) — 학원 코드 + 이름 + 학부모 전화번호로 로그인하고, 이 기기에 열쇠를 기억한다.
+ * 학생 포털 — 이름과 보호자 전화번호로 로그인한다. 학원 범위는 공유 링크에서 가져온다.
  * 이메일 계정(Supabase Auth)을 쓰지 않는다. 서버 함수는 supabase/045_student_portal.sql.
  */
 const TOKEN_KEY = 'classbank.studentToken';
@@ -102,15 +102,23 @@ export function codeFromUrl(): string {
 export const savedToken = () => read(TOKEN_KEY);
 export const savedCode = () => read(CODE_KEY) ?? '';
 
-export async function studentLogin(code: string, name: string, phone: string): Promise<string> {
-  const r = await rpc<{ token: string }>('student_login', {
-    p_code: code.trim().toUpperCase(),
+export function homeworkCodeFromUrl(): string {
+  const code = new URLSearchParams(window.location.search).get('hw') ?? '';
+  return /^\d{6}$/.test(code) ? code : '';
+}
+
+export async function studentLogin(code: string, name: string, phone: string, homeworkCode = ''): Promise<string> {
+  const credentials = {
     p_name: name.trim(),
     p_phone: phone,
     p_device: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 100) : null,
-  });
+  };
+  const academyCode = code.trim().toUpperCase();
+  const r = homeworkCode
+    ? await rpc<{ token: string }>('student_login_for_homework', { ...credentials, p_homework_code: homeworkCode })
+    : await rpc<{ token: string }>('student_login', { ...credentials, p_code: academyCode });
   write(TOKEN_KEY, r.token);
-  write(CODE_KEY, code.trim().toUpperCase());
+  if (!homeworkCode) write(CODE_KEY, academyCode);
   return r.token;
 }
 
