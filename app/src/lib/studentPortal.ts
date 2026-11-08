@@ -1,13 +1,12 @@
 import { supabase } from './supabase';
 
 /**
- * 학생 포털 — 이름과 보호자 전화번호로 로그인한다. 학원 범위는 공유 링크에서 가져온다.
+ * 학생 포털 — 이름과 보호자 전화번호로 로그인한다.
  * 이메일 계정(Supabase Auth)을 쓰지 않는다. 서버 함수는 supabase/045_student_portal.sql.
  */
 const TOKEN_KEY = 'classbank.studentToken';
-const CODE_KEY = 'classbank.studentCode';
 
-export type PortalErrorKind = 'bad_login' | 'locked' | 'expired' | 'network' | 'unknown';
+export type PortalErrorKind = 'bad_login' | 'ambiguous_login' | 'locked' | 'expired' | 'network' | 'unknown';
 
 export class PortalError extends Error {
   kind: PortalErrorKind;
@@ -54,7 +53,7 @@ function toError(err: unknown): PortalError {
   const msg = String((err as { message?: string })?.message ?? err ?? '');
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return new PortalError('network');
   if (/Failed to fetch|NetworkError|Load failed|network/i.test(msg)) return new PortalError('network');
-  for (const k of ['bad_login', 'locked', 'expired'] as const) if (msg.includes(k)) return new PortalError(k);
+  for (const k of ['bad_login', 'ambiguous_login', 'locked', 'expired'] as const) if (msg.includes(k)) return new PortalError(k);
   return new PortalError('unknown');
 }
 
@@ -100,7 +99,6 @@ export function codeFromUrl(): string {
 }
 
 export const savedToken = () => read(TOKEN_KEY);
-export const savedCode = () => read(CODE_KEY) ?? '';
 
 export function homeworkCodeFromUrl(): string {
   const code = new URLSearchParams(window.location.search).get('hw') ?? '';
@@ -116,9 +114,10 @@ export async function studentLogin(code: string, name: string, phone: string, ho
   const academyCode = code.trim().toUpperCase();
   const r = homeworkCode
     ? await rpc<{ token: string }>('student_login_for_homework', { ...credentials, p_homework_code: homeworkCode })
-    : await rpc<{ token: string }>('student_login', { ...credentials, p_code: academyCode });
+    : academyCode
+      ? await rpc<{ token: string }>('student_login', { ...credentials, p_code: academyCode })
+      : await rpc<{ token: string }>('student_login_by_phone', credentials);
   write(TOKEN_KEY, r.token);
-  if (!homeworkCode) write(CODE_KEY, academyCode);
   return r.token;
 }
 

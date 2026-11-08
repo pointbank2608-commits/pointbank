@@ -20,7 +20,7 @@ try {
     'create schema extensions; create extension pgcrypto with schema extensions;',
     'create table academies(id uuid primary key, student_code text);',
     'create table students(id uuid primary key, academy_id uuid, name text, archived_at timestamptz);',
-    'create table student_guardian(student_id uuid, phone_hash text);',
+    'create table student_guardian(student_id uuid, phone_hash text, phone_last4 text);',
     "create table student_sessions(token uuid default gen_random_uuid(), student_id uuid, device text, expires_at timestamptz default now()+interval '1 hour', last_seen_at timestamptz default now());",
     'create table student_login_failures(fail_key text, failed_at timestamptz default now());',
     'create table homework_assignments(id uuid primary key, code text, academy_id uuid, created_at timestamptz default now(), closed_at timestamptz, due_at timestamptz);',
@@ -33,10 +33,11 @@ try {
   await db.exec(definition(read('046_student_login_duplicates.sql'),'student_login'));
   await db.exec(definition(read('041_homework_v2.sql'),'hw_open_personal'));
   await db.exec(read('113_student_portal_homework_links.sql'));
+  await db.exec(read('114_student_portal_login_by_phone.sql'));
   const [a,b,student,other,assignment] = Array.from({length:5},()=>crypto.randomUUID());
   await db.query("insert into academies values ($1,'ABC123'),($2,'XYZ789')",[a,b]);
   await db.query("insert into students values ($1,$2,'민서',null),($3,$4,'민서',null)",[student,a,other,b]);
-  await db.query("insert into student_guardian select id,extensions.crypt('01012345678',extensions.gen_salt('bf',4)) from students");
+  await db.query("insert into student_guardian select id,extensions.crypt('01012345678',extensions.gen_salt('bf',4)),'5678' from students");
   await db.query("insert into homework_assignments(id,code,academy_id) values ($1,'100001',$2)",[assignment,a]);
   await db.query("insert into homework_assignment_targets values ($1,$2,'synthetic-access',null)",[assignment,student]);
   const value = async (sql, args) => (await db.query(sql,args)).rows[0].value;
@@ -54,6 +55,15 @@ try {
   assert.deepEqual(await open(token),first);
   assert.deepEqual(await open(otherSession),{error:'not_found'});
   await assert.rejects(open(crypto.randomUUID()),/expired/);
+  const direct = (name,phone) => value('select student_login_by_phone($1,$2) value',[name,phone]);
+  assert.deepEqual(await direct('민서','01012345678'),{error:'ambiguous_login'});
+  await db.exec('reset role');
+  await db.query('update students set archived_at=now() where id=$1',[other]);
+  await db.exec('set role anon');
+  const directSession = await direct(' 민서 ','010-1234-5678');
+  assert.deepEqual(await open(directSession.token),first);
+  for(let i=0;i<8;i++)assert.deepEqual(await direct('없는 학생','01099999999'),{error:'bad_login'});
+  assert.deepEqual(await direct('없는 학생','01099999999'),{error:'locked'});
   await db.exec('reset role');
   const rows = await db.query('select student_id from homework_attempts');
   assert.deepEqual(rows.rows,[{student_id:student}]);
@@ -82,13 +92,21 @@ try {
   await page.reload();
   await page.getByText('테스트 숙제 이어서',{exact:true}).waitFor();
   await page.evaluate(()=>localStorage.clear());
+  await page.goto(base+encodeURIComponent('/s'));
+  await page.getByLabel('내 이름',{exact:true}).fill('민서');
+  await page.getByLabel(/보호자 전화번호/).fill('01012345678');
+  assert.equal(await page.locator('form input').count(),2);
+  await page.getByRole('button',{name:'들어가기'}).click();
+  await page.getByText('민서, 안녕!',{exact:true}).waitFor();
+  assert.ok(await page.evaluate(()=>window.__guided.calls.some(call=>call.name==='student_login_by_phone')));
+  await page.evaluate(()=>localStorage.clear());
   await page.goto(base+encodeURIComponent('/s?c=ABC123'));
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
   await page.getByLabel(/보호자 전화번호/).fill('01012345678');
   assert.equal(await page.locator('form input').count(),2);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.getByText('민서, 안녕!',{exact:true}).waitFor();
-  console.log('PASS browser: shared homework link → two-field portal login → original homework → reload; academy portal link uses the same two fields.');
+  console.log('PASS browser: shared homework link → two-field portal login → original homework → reload; direct /s and academy portal link use the same two fields.');
 } finally {
   await browser?.close();
   await server.close();

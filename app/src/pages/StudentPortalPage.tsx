@@ -16,7 +16,6 @@ import {
   homeworkCodeFromUrl,
   forgetStudentToken,
   PortalError,
-  savedCode,
   savedToken,
   studentHome,
   studentLogin,
@@ -85,13 +84,12 @@ function Brand() {
 
 function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (token: string) => void }) {
   const { t } = useTranslation();
-  const code = codeFromUrl() || savedCode();
-  const hasContext = !!homeworkCode || !!code;
+  const code = codeFromUrl();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<PortalErrorKind | null>(null);
-  const ready = hasContext && name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
+  const ready = name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
 
   async function submit() {
     if (!ready || busy) return;
@@ -116,7 +114,6 @@ function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (to
       <Brand />
       <h1 className="text-center text-3xl font-bold">{t('studentPortal.loginTitle')}</h1>
       <p className="max-w-xs text-center text-base text-[#5b6580]">{t('studentPortal.loginHint')}</p>
-      {!hasContext && <p className="max-w-xs text-center text-base text-[#5b6580]">{t('studentPortal.loginLinkNeeded')}</p>}
       <label className="flex w-full max-w-xs flex-col gap-1">
         <span className="text-base font-bold">{t('studentPortal.name')}</span>
         <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" className={field} />
