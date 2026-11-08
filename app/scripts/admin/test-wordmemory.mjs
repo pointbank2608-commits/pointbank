@@ -1,6 +1,6 @@
 // 단어암기숙제(090) SQL 검증 — 임시 Postgres(PGlite, WASM)에서만, 운영 DB 와 무관한 합성 데이터.
 // 시간은 app.wm_now 로 움직인다(실제로 기다리지 않는다). 실행: node test-wordmemory.mjs
-import { makeWmDb, setDay } from './wm-setup.mjs';
+import { applyWmPortalFix, makeWmDb, setDay } from './wm-setup.mjs';
 import { as, check, summary } from './lib.mjs';
 
 const db = await makeWmDb();
@@ -356,10 +356,30 @@ console.log('14. 권한 설정');
 const privs = await one("select has_table_privilege('anon', 'public.wm_words', 'select') a, has_table_privilege('authenticated', 'public.wm_sessions', 'select') b, has_function_privilege('anon', 'public.wm_assign(uuid,uuid,text,jsonb,jsonb,uuid[],text,int,int)', 'execute') c, has_function_privilege('anon', 'public.wm_open(text)', 'execute') d, has_function_privilege('anon', 'public.wm_build_session(uuid)', 'execute') e");
 check('학생·로그인 사용자가 단어 상태·세션 표를 직접 읽을 수 없다', privs.a === false && privs.b === false);
 check('배정·세션 생성 함수는 익명이 못 부른다 / 학생 입장은 부른다', privs.c === false && privs.e === false && privs.d === true);
-await db.exec(`insert into public.student_sessions (token, student_id) values ('11111111-1111-4111-8111-111111111111', '${S2}')`);
-const portal = await call('wm_student_links', '11111111-1111-4111-8111-111111111111');
-check('학생 포털 열쇠로 내 단어암기숙제 링크 목록', Array.isArray(portal));
-check('만료된 포털 열쇠는 빈 목록', (await call('wm_student_links', '22222222-2222-4222-8222-222222222222')).length === 0);
+const portalToken = uuid();
+const portalPlan = await assign({ title: 'Portal v1', students: [S2], cards: plain.slice(0, 4).map(c => ({ ...c, word: `portal-${c.word}` })) });
+const portalAccess = await tokenOf(portalPlan.plan_id, S2);
+await q('insert into public.student_sessions (token, student_id) values ($1, $2)', [portalToken, S2]);
+async function portalReadOnly(fn, ...args) {
+  await db.exec('begin read only; set local role anon');
+  try { return await call(fn, ...args); } finally { await db.exec('rollback'); }
+}
+check('090l: 쓰기 가능 트랜잭션에서는 링크가 보인다', (await call('wm_student_links', portalToken)).some(l => l.access === portalAccess));
+check('090l: 읽기 전용에서는 링크가 숨겨진다', (await portalReadOnly('wm_student_links', portalToken)).length === 0);
+try {
+  await db.exec('begin read only');
+  await call('student_session_student', portalToken);
+  check('세션 UPDATE는 SQLSTATE 25006', false);
+} catch (err) {
+  check('세션 UPDATE는 SQLSTATE 25006', err.code === '25006');
+} finally { await db.exec('rollback'); }
+await applyWmPortalFix(db);
+const portal = await portalReadOnly('wm_student_links', portalToken);
+check('103c: 읽기 전용에서도 내 wm-v1 링크가 보인다', portal.some(l => l.access === portalAccess));
+check('링크 열기와 낱말 모음도 익명 읽기 전용에서 동작', (await portalReadOnly('wm_open', portalAccess)).title === 'Portal v1' && (await portalReadOnly('wm_collection', portalAccess)).words.length === 4);
+check('없는 포털 열쇠는 빈 목록', (await portalReadOnly('wm_student_links', uuid())).length === 0);
+await q("update public.student_sessions set expires_at=now()-interval '1 minute' where token=$1", [portalToken]);
+check('만료된 포털 열쇠는 빈 목록', (await portalReadOnly('wm_student_links', portalToken)).length === 0);
 
 
 // ========== 15. 능력별 어려움·반복 실패 ==========

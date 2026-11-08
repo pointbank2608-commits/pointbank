@@ -8,7 +8,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
-import { makeWmDb, setDay } from '../admin/wm-setup.mjs';
+import { applyWmPortalFix, makeWmDb, setDay } from '../admin/wm-setup.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const shots = resolve(process.env.WM_TEST_OUTPUT || resolve(root, '../output/word-memory'));
@@ -16,6 +16,9 @@ mkdirSync(shots, { recursive: true });
 const db = await makeWmDb();
 await db.exec(readFileSync(new URL('../../../supabase/103_word_projects.sql', import.meta.url), 'utf8'));
 await db.exec(readFileSync(new URL('../../../supabase/104_word_project_adaptive_pace.sql', import.meta.url), 'utf8'));
+await applyWmPortalFix(db);
+const anonRpcModes = new Map((await db.query(`select proname, provolatile from pg_proc
+  where pronamespace='public'::regnamespace and proname in ('wm_student_links','wm_open','wm_today_state','wm_collection')`)).rows.map(row => [row.proname, row.provolatile]));
 
 // ---------- 합성 학원 ----------
 const OWNER = '00000000-0000-4000-8000-000000000001';
@@ -74,8 +77,18 @@ const rpcServer = http.createServer((req, res) => {
         const args = JSON.parse(body || '{}');
         const names = Object.keys(args);
         const sql = `select public.${m[1]}(${names.map((n, i) => `${n} => $${i + 1}`).join(', ')}) as r`;
-        await db.exec(`select set_config('test.uid', '${req.headers['x-uid'] || ''}', false)`);
-        const r = await db.query(sql, names.map((n) => args[n]));
+        const uid = req.headers['x-uid'] || '';
+        await db.query("select set_config('test.uid', $1, false)", [uid]);
+        const volatility = !uid && anonRpcModes.get(m[1]);
+        if (volatility) await db.exec(`begin ${volatility === 'v' ? 'read write' : 'read only'}; set local role anon`);
+        let r;
+        try {
+          r = await db.query(sql, names.map((n) => args[n]));
+          if (volatility) await db.exec('commit');
+        } catch (error) {
+          if (volatility) await db.exec('rollback');
+          throw error;
+        }
         return send(200, { data: r.rows[0].r });
       } catch (e) {
         return send(200, { error: String(e.message) });
@@ -148,10 +161,10 @@ const ok = (n) => {
   pass += 1;
   console.log('PASS', n);
 };
-async function newPage(viewport = { width: 1000, height: 1100 }, opts = {}) {
+async function newPage(viewport = { width: 1000, height: 1100 }, opts = {}, uid = OWNER) {
   const ctx = await browser.newContext({ viewport, reducedMotion: 'reduce', ...opts });
   const page = await ctx.newPage();
-  await page.addInitScript(`window.__rpc = ${JSON.stringify(RPC)}; window.__uid = ${JSON.stringify(OWNER)};`);
+  await page.addInitScript(`window.__rpc = ${JSON.stringify(RPC)}; window.__uid = ${JSON.stringify(uid)};`);
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && !/Failed to load resource|ERR_/.test(m.text()) && errors.push(m.text()));
   return page;
@@ -414,11 +427,28 @@ try {
 
   // ============ 5. 학생 포털 링크·잘못된 링크 ============
   console.log('5. 포털·오류');
-  const pp = await newPage({ width: 420, height: 800 });
+  await sqlq("select set_config('test.uid', $1, false)", [OWNER]);
+  const [{ plan }] = await sqlq(`select public.wm_assign(gen_random_uuid(), $1, '포털 v1 확인', $2::jsonb,
+    '{}'::jsonb, array[$3::uuid], 'light', 14, 14) as plan`, [CLASS, JSON.stringify(cards.slice(0, 4).map(c => ({ ...c, word: `legacy-${c.word}` }))), S[1]]);
+  const [{ access_token: legacyAccess }] = await sqlq('select access_token from public.wm_targets where plan_id=$1', [plan.plan_id]);
+  const pp = await newPage({ width: 420, height: 800 }, {}, '');
   await pp.goto(`${BASE}/portal`);
+  for (const access of [legacyAccess, accessTokens['지아']]) {
+    const link = pp.locator(`[data-wm-portal] a[href="/wm/${access}"]`);
+    await link.click();
+    await pp.waitForSelector('[data-wm-view="home"]');
+    await pp.goto(`${BASE}/portal`);
+  }
+  ok('교사 세션 없이 읽기 전용 포털 조회로 wm-v1·wm-v2 링크 표시 및 오늘 학습 열기');
+  await pp.route('**/rpc/wm_student_links', route => route.fulfill({ json: { error: 'synthetic RPC failure' } }));
+  await pp.reload();
+  const portalError = pp.locator('[data-wm-portal-error]');
+  await portalError.waitFor();
+  await pp.unroute('**/rpc/wm_student_links');
+  await portalError.getByRole('button').click();
   await pp.waitForSelector('[data-wm-portal] a');
-  assert.equal(await pp.locator('[data-wm-portal] a').getAttribute('href'), `/wm/${accessTokens['지아']}`);
-  ok('학생 포털 홈에 내 단어암기숙제 링크가 보인다');
+  assert.equal(await portalError.count(), 0);
+  ok('포털 RPC 실패는 빈 배정 목록과 구별하고 다시 시도하면 복구한다');
   await pp.close();
   const bad = await newPage(phone);
   await bad.goto(`${BASE}/wm/not-a-real-key`);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
-import { makeWmDb, setDay } from './wm-setup.mjs';
+import { applyWmPortalFix, makeWmDb, setDay } from './wm-setup.mjs';
 import { as } from './lib.mjs';
 import { buildFixture } from './learning-fixture.mjs';
 
@@ -82,13 +82,8 @@ try {
   await call('wm_answer', target.access_token, recovery.session_id, review.i, delayedAnswer, delayedRequest);
   assert.equal((await one('select project_evidence from public.wm_answers where client_id=$1', [delayedRequest])).project_evidence, true);
   // The hosted helper writes last_seen_at, which PostgREST rejects for a STABLE RPC.
-  await db.exec('alter table public.student_sessions add column last_seen_at timestamptz not null default now()');
-  const portalSchema = readFileSync(new URL('../../../supabase/045_student_portal.sql', import.meta.url), 'utf8');
-  const helper = portalSchema.match(/create or replace function public\.student_session_student\(p_token uuid\)[\s\S]+?end \$\$;/)?.[0];
-  assert.ok(helper);
-  await db.exec(helper);
-  const portalLinksReadOnly = async (token) => {
-    await db.exec('begin read only; set local role anon');
+  const portalLinksReadOnly = async (token, role = 'anon') => {
+    await db.exec(`begin read only; set local role ${role}`);
     try {
       return await call('wm_student_links', token);
     } finally {
@@ -96,12 +91,14 @@ try {
     }
   };
   assert.deepEqual(await portalLinksReadOnly(portal), []);
-  const portalFix = readFileSync(new URL('../../../supabase/103c_word_project_portal_links.sql', import.meta.url), 'utf8');
-  await db.exec(portalFix);
-  await db.exec(portalFix);
+  assert.deepEqual(await portalLinksReadOnly(portal, 'authenticated'), []);
+  assert.ok((await call('wm_student_links', portal)).some(row => row.access === target.access_token));
+  await applyWmPortalFix(db);
+  await applyWmPortalFix(db);
   const portalLinks = await portalLinksReadOnly(portal);
   assert.deepEqual(portalLinks.map(row => row.title), ['Entire saved list']);
   assert.equal(portalLinks[0].access, target.access_token);
+  assert.deepEqual(await portalLinksReadOnly(portal, 'authenticated'), portalLinks);
   assert.deepEqual(await portalLinksReadOnly(randomUUID()), []);
   await query("update public.student_sessions set expires_at=now()-interval '1 minute' where token=$1", [portal]);
   assert.deepEqual(await portalLinksReadOnly(portal), []);

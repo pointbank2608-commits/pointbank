@@ -156,6 +156,7 @@ export const wordMemoryKo = {
   errStale: '날짜가 바뀌었어요. 새로 불러올게요.',
   stErrUnknown: '문제가 생겼어요. 잠시 뒤 다시 해 보세요.',
   portalLink: '단어암기숙제 · {{title}}',
+  portalLoadError: '단어암기숙제 목록을 불러오지 못했어요.',
   // 진입 단추
   assignButton: '단어암기숙제',
   assignHintList: '이 단어장으로 여러 날 복습하는 숙제 만들기',
@@ -316,6 +317,7 @@ export const wordMemoryEn = {
   errStale: 'The date changed. Reloading.',
   stErrUnknown: 'Something went wrong. Please try again shortly.',
   portalLink: 'Word memory · {{title}}',
+  portalLoadError: 'Could not load your word memory assignments.',
   assignButton: 'Word memory homework',
   assignHintList: 'Make multi-day review homework from this list',
   assignHintElementary: 'Make word memory homework from these words',

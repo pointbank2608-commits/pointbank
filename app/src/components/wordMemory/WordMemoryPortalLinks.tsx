@@ -2,19 +2,32 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { wmStudentLinks } from '../../lib/wordMemory/api';
 
-/** 학생 포털(/s) 홈: 내가 받은 단어암기숙제 링크. 서버에 기능이 없거나 목록이 비면 아무것도 그리지 않는다. */
+type PortalLink = Awaited<ReturnType<typeof wmStudentLinks>>[number];
+
+/** 성공한 빈 목록은 숨기고, 호출 실패는 학생이 다시 시도할 수 있게 한다. */
 export default function WordMemoryPortalLinks({ token }: { token: string }) {
   const { t } = useTranslation();
-  const [links, setLinks] = useState<{ title: string; access: string; phase: 'study' | 'review' }[]>([]);
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<{ token: string; attempt: number; links: PortalLink[] | null }>();
   useEffect(() => {
     let alive = true;
     wmStudentLinks(token)
-      .then((rows) => alive && setLinks(Array.isArray(rows) ? rows : []))
-      .catch(() => alive && setLinks([]));
+      .then((rows) => alive && setResult({ token, attempt, links: Array.isArray(rows) ? rows : null }))
+      .catch(() => alive && setResult({ token, attempt, links: null }));
     return () => {
       alive = false;
     };
-  }, [token]);
+  }, [token, attempt]);
+  if (!result || result.token !== token || result.attempt !== attempt) return null;
+  const { links } = result;
+  if (links === null) return (
+    <div role="status" className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5" data-wm-portal-error>
+      {t('wordMemory.portalLoadError')}{' '}
+      <button type="button" onClick={() => setAttempt(n => n + 1)} className="min-h-11 font-bold underline">
+        {t('studentPortal.retry')}
+      </button>
+    </div>
+  );
   if (links.length === 0) return null;
   return (
     <section className="mx-auto w-full max-w-xl rounded-3xl bg-white/10 p-5" data-wm-portal>
