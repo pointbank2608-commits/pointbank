@@ -72,13 +72,13 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       </button>
     ) : null;
 
-  const wrapFinal = (body: React.ReactNode) => finalCheck ? <StudioCard label={guide} barSpace={!!result}>
+  const wrapFinal = (body: React.ReactNode) => finalCheck ? <StudioCard label={guide} barSpace={!!result} className="[&_button[type=submit]]:bg-primary [&_button[type=submit]]:text-white">
     {body}
     {result && <StudioFeedback correct={result.correct} title={result.correct === null ? t('studentHw.savedForLater') : result.correct ? t('studentHw.correct') : t('studentHw.wrong')}
       answerLine={result.correct === false && result.answer ? <>{t('studentHw.answerIs')} <b>{result.answer}</b></> : undefined} onNext={() => onNext?.()} nextLabel={t('studentHw.next')} busy={nextBusy} />}
   </StudioCard> : body;
   if(q.guidedSpelling||q.missingLetter){
-    return wrapFinal(<SpellingCard q={q} disabled={disabled} onAnswer={onAnswer} requestHint={spellingHint} onSensor={onSensor}/>);
+    return wrapFinal(<SpellingCard q={q} disabled={disabled} onAnswer={onAnswer} requestHint={spellingHint} onSensor={onSensor} finalCheck={finalCheck}/>);
   }
   if ((studio && isStudioQuestion(q)) || (finalCheck && q.qtype === 'choice')) {
     return <StudioChoice key={q.id} q={q} guide={guide} listenOnly={finalCheck && listen} disabled={disabled} eliminated={eliminated} result={result ?? null} onAnswer={onAnswer} onNext={onNext} nextBusy={nextBusy} speakBtn={speakBtn(finalCheck === true && listen)} />;
@@ -111,7 +111,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'hangman' && <HangmanInput key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} light={!stage} />}
-      {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
+      {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} finalCheck={finalCheck} />}
     </div>
   );
 }
@@ -347,7 +347,8 @@ function MoleBoard({ choices, onAnswer, disabled, eliminated = [] }: { choices: 
   );
 }
 
-function SpellingCard({q,disabled,onAnswer,requestHint,onSensor}:{
+function SpellingCard({q,disabled,onAnswer,requestHint,onSensor,finalCheck}:{
+  finalCheck?:boolean;
   q:HwQuestion; disabled:boolean; onAnswer:(value:string)=>void;
   requestHint?: (level:HintLevel)=>Promise<SpellingHint>; onSensor?:(action:SensorAction)=>void;
 }){
@@ -370,7 +371,7 @@ function SpellingCard({q,disabled,onAnswer,requestHint,onSensor}:{
   }
   const next=hint?.used===1?2:1;
   return <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
-    <section className="flex min-h-64 flex-1 flex-col justify-center gap-4 rounded-3xl bg-white p-5 text-center text-deep-navy shadow-xl">
+    <section className={`flex min-h-64 flex-1 flex-col justify-center gap-4 text-center text-deep-navy ${finalCheck ? '' : 'rounded-3xl bg-white p-5 shadow-xl'}`}>
       {q.imageUrl&&<img src={q.imageUrl} alt="" className="mx-auto h-28 max-w-full object-contain"/>}
       <h2 className="break-words text-3xl font-extrabold">{q.prompt}</h2>
       {q.missingLetter&&q.sub&&<p>{q.sub}</p>}
@@ -391,7 +392,7 @@ function TextInput({ onAnswer, disabled, light = false }: { onAnswer: (r: string
 }
 
 /** 조각을 눌러 차례로 놓고, 놓은 조각을 누르면 되돌린다(끌기 없이도 풀 수 있게) */
-function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean }) {
+function OrderBuilder({ q, onAnswer, disabled, finalCheck }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; finalCheck?: boolean }) {
   const { t } = useTranslation();
   const tokens = q.tokens ?? [];
   const [placed, setPlaced] = useState<number[]>([]);
@@ -403,7 +404,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
       <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-(color:--hw-line) p-3" aria-live="polite">
         {placed.length === 0 && <span className="text-base text-(color:--hw-mute)">{t('studentHw.orderHint')}</span>}
         {placed.map((ti, k) => (
-          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} bg-warm-yellow text-deep-navy`}>
+          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} ${finalCheck ? 'border border-[#c3cff3] bg-[#e8edff]' : 'bg-warm-yellow'} text-deep-navy`}>
             {tokens[ti]}
           </button>
         ))}
@@ -415,7 +416,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
               {tok}
             </span>
           ) : (
-            <button key={i} type="button" disabled={disabled} data-tile={i} onClick={() => setPlaced((p) => [...p, i])} className={`${tile} bg-white text-deep-navy`}>
+            <button key={i} type="button" disabled={disabled} data-tile={i} onClick={() => setPlaced((p) => [...p, i])} className={`${tile} ${finalCheck ? 'border border-[#d9d3c3] bg-[#fffdf8]' : 'bg-white'} text-deep-navy`}>
               {tok}
             </button>
           ),
@@ -430,7 +431,7 @@ function OrderBuilder({ q, onAnswer, disabled }: { q: HwQuestion; onAnswer: (r: 
           disabled={disabled || !done}
           data-order-submit
           onClick={() => onAnswer(JSON.stringify(placed.map((i) => tokens[i])))}
-          className="min-h-12 flex-[2] rounded-full bg-warm-yellow text-lg font-bold text-deep-navy disabled:opacity-40"
+          className={`min-h-12 flex-[2] rounded-full text-lg font-bold disabled:opacity-40 ${finalCheck ? 'bg-primary text-on-primary' : 'bg-warm-yellow text-deep-navy'}`}
         >
           {t('studentHw.check')}
         </button>

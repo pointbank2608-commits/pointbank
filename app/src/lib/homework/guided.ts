@@ -166,6 +166,7 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
    const title=CHECK_TYPES[type][en?1:0];
    const item=pick.question?newBlock('recall'):finalSpeech(pick.card,title);
    item.title=title;
+   item.config.block!.method=GUIDED_FINAL+type;
    if(pick.question)item.content.questions=[pick.question];
    examples[type]=item;
   }

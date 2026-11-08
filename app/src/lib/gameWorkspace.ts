@@ -1,6 +1,8 @@
 import { buildGameContent, wordListToCards } from "./gameFromWords";
 import type { FullCardItem, GameType, WordList } from "./types";
 import { GAME_CATALOG } from './gameCatalog';
+import { sampleAdventure } from './adventureGames';
+import { caseFromCorrect } from './detectiveSuggestion';
 import {
   prepareWordListGame,
   WORD_LIST_GAMES,
@@ -10,6 +12,7 @@ import {
 
 const SENTENCE_GAMES = new Set<GameType>([
   "wordtrain",
+  "grammardetective",
   "unscramble",
   "sentencesplash",
   "catchsentence",
@@ -46,6 +49,11 @@ export function prepareClassroomGame(
   if (!usable.length || (minimum !== 999 && usable.length < minimum)) return null;
   if (sourceKind === "sentence" && !SENTENCE_GAMES.has(type)) return null;
   if (BUILTIN.has(type)) return null; // built-in roleplay scripts do not pretend to use a selected vocabulary list.
+  if (type === 'grammardetective') {
+    if (sourceKind !== 'sentence') return null;
+    const cases = cards.map(c => caseFromCorrect(c.word));
+    return cases.every(c => c.errors.length) ? { items: [], config: { adventure: { ...sampleAdventure(type), cases } } } : null;
+  }
   if (
     (
       [...WORD_LIST_GAMES, ...SENTENCE_LIST_GAMES] as readonly string[]

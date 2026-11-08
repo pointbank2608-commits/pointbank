@@ -4078,7 +4078,7 @@ const en: Ko = {
     continue: 'Continue',
     loginTitle: 'Log in',
     loginHint: 'Enter your name and your guardian\'s phone number.',
-    loginLinkNeeded: 'Open the student portal link or homework link shared by your teacher.',
+    err_ambiguous_login: 'More than one student has this name and phone number. Use the student portal or homework link from your teacher.',
     code: 'Academy code',
     changeCode: 'Change',
     name: 'My name',

@@ -382,7 +382,8 @@ export default function SentenceSplash({
                 <button
                   ref={action}
                   type="button"
-                  className="splash-primary"
+                  data-initial-game-start={round.phase === 'ready' ? true : undefined}
+                  className={round.phase === 'ready' ? 'splash-primary min-h-20 !bg-primary !bg-none !text-2xl' : 'splash-primary'}
                   onClick={() => {
                     if (round.phase === "success") {
                       if (round.index + 1 < playable.length)
@@ -410,7 +411,7 @@ export default function SentenceSplash({
                       ? text("다시 도전하기", "Try again")
                       : round.phase === "finished"
                         ? text("다시 플레이", "Play again")
-                        : text("게임 시작!", "Start game!")}
+                        : text("게임 시작", "Start game")}
                 </button>
                 {round.phase === "finished" && onExit && (
                   <button

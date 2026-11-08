@@ -436,8 +436,8 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
           🔊
         </button>
         {phase === 'ready' && (
-          <button type="button" onClick={sendClouds} className={btn} style={{ background: '#4f46e5' }}>
-            ⛈ {t('gameLightning.sendClouds')}
+          <button data-initial-game-start type="button" onClick={sendClouds} className={`${btn} min-h-20 bg-primary text-2xl`}>
+            {t('flow.start')}
           </button>
         )}
         {phase === 'clouds' && (

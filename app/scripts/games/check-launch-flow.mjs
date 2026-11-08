@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
 import { chromium } from "../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const port = Number(process.env.CLASSBANK_LAUNCH_TEST_PORT || 5198);
 const names = [
   ...readFileSync(resolve(root, "src/lib/api.ts"), "utf8").matchAll(
     /export (?:async )?function (\w+)|export const (\w+)/g,
@@ -57,16 +58,71 @@ const server = await createServer({
       },
     },
   ],
-  server: { hmr: false, host: "127.0.0.1", port: 5198, strictPort: true },
+  server: { hmr: false, host: "127.0.0.1", port, strictPort: true },
 });
 let browser,page;
 try {
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',error=>errors.push(error.message));await page.route('https://**/*',route=>route.abort());
- const fixture='http://127.0.0.1:5198/scripts/games/focus.html';
+ const fixture=`http://127.0.0.1:${port}/scripts/games/focus.html`;
  const menu=()=>page.getByRole('button',{name:'☰ 메뉴',exact:true});
  const centralStart=()=>page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true});
  const fullFrame=()=>page.locator('[data-game-fullscreen="true"]');
+ if(process.env.CLASSBANK_AUDIT_STARTS==='1'){
+  const {GAME_CATALOG}=await server.ssrLoadModule('/src/lib/gameCatalog.ts');
+  const catalog=process.env.CLASSBANK_AUDIT_DETAILS==='1'?[]:GAME_CATALOG;
+  const failures=[];
+  for(const {type,path} of catalog){
+   try {
+    await page.goto(fixture+'?start='+encodeURIComponent(path),{waitUntil:'domcontentloaded'});
+    await page.locator(`[data-game="${type}"]`).waitFor({timeout:8000});
+    const close=page.locator('.game-workspace-dialog[open] header').getByRole('button',{name:'닫기',exact:true});
+    if(await close.isVisible()) await close.click();
+    const start=centralStart();
+    await start.waitFor({timeout:5000});
+    assert.equal(await page.getByRole('button',{name:'게임 시작',exact:true}).count(),1);
+    const box=await start.boundingBox();const frame=await page.locator('[data-game-preview]').first().boundingBox();
+    assert.ok(box && frame && box.height>=64 && Math.abs(box.x+box.width/2-frame.x-frame.width/2)<5,'large centered start');
+    await start.click({timeout:5000});
+    await page.locator('[data-play-mode="play"]').waitFor({timeout:5000});
+    assert.equal(await start.count(),0);
+    console.log('PASS',type);
+   }catch(error){failures.push(type);console.log('FAIL',type,String(error.message).split('\n')[0]);}
+  }
+  if(catalog.length)console.log(`${catalog.length-failures.length}/${catalog.length} catalog starts verified`);
+  assert.deepEqual(failures,[]);
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(fixture+'?start=/games/shufflefind');await centralStart().waitFor();
+  await page.getByRole('button',{name:'전체화면',exact:true}).click();await fullFrame().waitFor();
+  await centralStart().click();await page.locator('[data-play-mode="play"]').waitFor();
+  assert.equal(await page.locator('[data-initial-game-start]').count(),0);
+  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  console.log('PASS mobile fullscreen start and native transition');
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(fixture+'?start=/games/grammarlab');await centralStart().click();
+  await page.getByText('주어를 She로 바꾸고 동사도 알맞게 바꾸세요.',{exact:true}).waitFor();
+  const labFrom=await page.locator('[data-game="grammarlab"] p[lang="en"]').filter({hasText:/^They /}).innerText();
+  const third={'They have':'She has','They play':'She plays','They study':'She studies','They watch':'She watches','They go':'She goes'};
+  const subjectVerb=labFrom.split(' ').slice(0,2).join(' ');assert.ok(third[subjectVerb]);
+  const target=labFrom.replace(subjectVerb,third[subjectVerb]).replace(/\.$/,'').split(' ');
+  for(const word of target)await page.locator('[data-game="grammarlab"] button[lang="en"]:not(:disabled)').filter({hasText:new RegExp(`^${word}$`)}).last().click();
+  await page.getByRole('button',{name:'확인',exact:true}).click();
+  await page.getByText('정답! +1점',{exact:true}).waitFor();
+  console.log('PASS Sentence Lab builds and scores a third-person agreement sentence');
+  await page.goto(fixture+'?start=/games/grammardetective');await centralStart().waitFor();
+  await page.getByRole('button',{name:'게임설정',exact:true}).click();
+  const entry=page.locator('[data-detective-case-editor]:visible').first();
+  await entry.getByRole('textbox',{name:'올바른 문장',exact:true}).fill('He has a bike.');
+  await entry.getByText('He have a bike.',{exact:true}).waitFor();
+  await entry.getByRole('textbox',{name:'올바른 문장',exact:true}).fill('She goes to school every day.');
+  await entry.getByText('She go to school every day.',{exact:true}).waitFor();
+  await entry.getByRole('button',{name:'다른 오류 만들기',exact:true}).click();
+  await entry.getByText('She going to school every day.',{exact:true}).waitFor();
+  await entry.getByRole('button',{name:'직접 수정',exact:true}).click();
+  assert.equal(await entry.locator('textarea:visible').first().inputValue(),'She going to school every day.');
+  console.log('PASS detective single input, alternative and manual editor');
+  assert.deepEqual(errors,[]);
+ }else{
  await page.goto(fixture+'?start=/games/matchup&empty=1');await centralStart().waitFor();
  assert.equal(await page.locator('[data-game-preparation]').getByRole('button',{name:'게임 시작',exact:true}).count(),0);
  assert.equal(await page.getByRole('button',{name:'게임 시작',exact:true}).count(),1);
@@ -150,5 +206,6 @@ try {
  await page.getByRole('button',{name:'돌리기',exact:true}).last().click();assert.equal(await page.evaluate(()=>window.__workspace.writes.length),0);
  console.log('ok existing read-only student game remains playable without teacher preparation or creation controls');
  assert.deepEqual(errors,[]);
+ }
 }catch(error){console.error(error);if(page){console.error((await page.locator('body').innerText()).slice(-7000));await page.screenshot({path:resolve(root,'../output/game-launch-failure.png'),fullPage:true});}process.exitCode=1;}
 finally{await browser?.close();await server.close();}

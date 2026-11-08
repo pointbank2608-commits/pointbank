@@ -7,7 +7,7 @@ import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { useRemoteActions } from '../lib/remote';
 import { speak } from '../lib/speech';
 import {
-  SHUFFLE_CUPS, SHUFFLE_SPEED, buildRound, cupWidth, drawLabels, parseShuffleLabel, rankTeams, scoreRound, shuffled, slotCenters, usableCups,
+  SHUFFLE_SPEED, buildRound, cupWidth, drawLabels, parseShuffleLabel, rankTeams, scoreRound, shuffled, slotCenters, usableCups,
   type ShuffleRound, type ShuffleScore, type ShuffleSpeed,
 } from '../lib/shuffleFind';
 import type { GameItem } from '../lib/types';
@@ -311,7 +311,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
                 filter: 'drop-shadow(0 .6cqw .5cqw rgba(0,0,0,.28))',
               }}
             >
-              <img src={`${IMG}cup-${SHUFFLE_CUPS[cup % SHUFFLE_CUPS.length]}.webp`} alt="" draggable={false} className="block h-auto w-full" />
+              <img src={`${IMG}cup-blue.webp`} alt="" draggable={false} className="block h-auto w-full" />
             </button>
           );
         })}
@@ -402,7 +402,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
       {/* 진행 버튼 */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
         {phase === 'ready' && (
-          <button type="button" onClick={startRound} className={`${btn} bg-primary`}>{t('gameShuffle.start')}</button>
+          <button data-initial-game-start type="button" onClick={startRound} className={`${btn} min-h-20 bg-primary px-8 text-2xl`}>{t('flow.start')}</button>
         )}
         {phase === 'reveal' && (
           <button type="button" onClick={advance} className={`${btn} bg-primary`}>{round >= rounds ? t('gameShuffle.seeResult') : t('gameShuffle.nextRound')}</button>

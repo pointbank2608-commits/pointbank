@@ -131,6 +131,7 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
               <p className="text-sm text-on-surface-variant">{text('문법 항목을 고르면 예문·틀리기 쉬운 것·워크북 문제로 문제가 자동으로 만들어져요.', 'Pick a grammar point and the questions are built from its examples, common mistakes and workbook items.')}</p>
               <label className="block">{text('문법 항목', 'Grammar point')}
                 <select className={input} value={grammarId} disabled={busy} onChange={(e) => void choose(e.target.value)}>
+                  {!options.some(p => p.id === grammarId) && <option value={grammarId} disabled>{grammarPoint(grammarId)?.name || grammarId} · {text('이 게임에서 지원하지 않음', 'Unavailable in this game')}</option>}
                   {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
                 </select>
               </label>

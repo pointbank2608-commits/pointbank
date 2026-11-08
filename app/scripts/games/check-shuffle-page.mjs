@@ -65,10 +65,10 @@ await page.goto(url + "?mode=teacher");
 await page.locator('[data-game="shufflefind"]').waitFor();
 await page.getByRole("button", { name: "게임 시작", exact: true }).click();
 await page.waitForSelector('[data-testid="shuffle-find"]');
-assert.match(await page.locator("[role=status]").first().innerText(), /준비됐나요/);
+assert.equal(await page.locator('[data-initial-game-start]').count(),0);
 ok("선생님 작업 화면: 샘플로 게임 시작");
 
-// 3) 저장된 게임(설정: 컵 4·팀 3·빠르게·1판)을 수업 안 화면으로 열기, 설정 단추가 저장을 바꾼다
+// 3) 저장된 게임을 수업에서 연 뒤, 게임센터에서 같은 템플릿의 설정을 편집하고 저장한다.
 await page.evaluate(() => sessionStorage.setItem("shuffle-test-rows", JSON.stringify([{
   id: "t1", academy_id: "academy-a", class_id: "class-a", game_type: "shufflefind", name: "합성 컵",
   items: ["cat | 고양이", "dog | 강아지", "mouse | 쥐", "bird | 새", "fish | 물고기"].map((label, i) => ({ id: "i" + i, label })),
@@ -78,15 +78,24 @@ await page.goto(url + "?mode=embed&template=t1");
 await page.waitForSelector('[data-testid="shuffle-find"]');
 assert.equal(await page.locator("button[aria-label$='번 컵']").count(), 4, "저장한 컵 수(4)로 열린다");
 assert.match(await page.locator("body").innerText(), /3팀/);
-await page.getByRole("button", { name: "시작하기", exact: true }).first().click().catch(() => {});
+await page.getByRole("button", { name: "게임 시작", exact: true }).first().click();
 ok("저장된 템플릿 설정(컵 4·팀 3)대로 열림");
 
-const stepperPlus = (label) => page.locator("div", { hasText: new RegExp("^" + label + "$") }).locator("xpath=..").getByRole("button", { name: "+" });
-await stepperPlus("팀 수").click();
-await stepperPlus("컵 수").click();
+await page.goto(url + "?mode=teacher");
+await page.getByRole("button", { name: "저장/불러오기", exact: true }).click();
+await page.getByRole("button", { name: "합성 컵", exact: true }).click();
+await page.getByRole("button", { name: "게임설정", exact: true }).click();
+await page.getByRole("spinbutton", { name: "팀 수" }).fill("4");
+await page.getByRole("spinbutton", { name: "컵 수" }).fill("5");
 await page.getByRole("button", { name: "느리게", exact: true }).click();
-await sleep(400);
-const row = await page.evaluate(() => JSON.parse(sessionStorage.getItem("shuffle-test-rows"))[0].config);
+await page.getByRole("button", { name: "적용", exact: true }).click();
+await page.getByRole("button", { name: "저장/불러오기", exact: true }).click();
+await page.getByRole("textbox", { name: "저장할 이름" }).fill("합성 컵 수정본");
+await page.getByRole("button", { name: "저장하기", exact: true }).click();
+await page.waitForFunction(() => JSON.parse(sessionStorage.getItem("shuffle-test-rows")).length === 2);
+const [original, updated] = await page.evaluate(() => JSON.parse(sessionStorage.getItem("shuffle-test-rows")));
+assert.equal(original.config.shuffleCups, 4);
+const row = updated.config;
 assert.equal(row.shuffleTeams, 4);
 assert.equal(row.shuffleCups, 5);
 assert.equal(row.shuffleSpeed, "slow");

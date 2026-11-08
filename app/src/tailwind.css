@@ -19,6 +19,9 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
 .game-workspace-dialog input:focus-visible, .game-workspace-dialog textarea:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 @media (max-width: 600px) { .game-fs-stage { padding: 8px; } [data-current-next] button { padding-inline: 10px; } }
 
+/* The common preparation action starts the native round. Keep its layout but show only one start button. */
+[data-game-fit][inert] [data-initial-game-start] { visibility: hidden; }
+
 
 @theme {
   /* ---- 색상 (스티치 원본 그대로) ---- */

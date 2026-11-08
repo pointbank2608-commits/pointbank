@@ -4075,7 +4075,7 @@ const ko = {
     continue: '이어서 하기',
     loginTitle: '로그인',
     loginHint: '내 이름과 보호자 전화번호를 써 주세요.',
-    loginLinkNeeded: '선생님이 공유한 학생 포털 링크나 숙제 링크를 열어 주세요.',
+    err_ambiguous_login: '같은 이름과 전화번호로 등록된 학생이 여러 명이에요. 선생님이 공유한 학생 포털 링크나 숙제 링크로 로그인해 주세요.',
     code: '학원 코드',
     changeCode: '바꾸기',
     name: '내 이름',

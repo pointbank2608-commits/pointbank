@@ -13,9 +13,10 @@ const names = [
 const api = `
 const classes=[{id:'class-a',academy_id:'academy-a',name:'합성 반'}];
 const lists=[{id:'sentences',kind:'sentence',name:'합성 문장',items:[{id:'custom',word:'We play together.',meaning:'함께 놀아요',image_url:null}]}];
-const rows=JSON.parse(sessionStorage.getItem('splash-test-rows')||'[]');
-const flush=()=>sessionStorage.setItem('splash-test-rows',JSON.stringify(rows));
-window.__splashWrites=[];
+const storage=globalThis.sessionStorage;
+const rows=JSON.parse(storage?.getItem('splash-test-rows')||'[]');
+const flush=()=>storage?.setItem('splash-test-rows',JSON.stringify(rows));
+if(typeof window!=='undefined')window.__splashWrites=[];
 const fn={fetchClasses:async()=>classes,fetchStudentsOfClass:async()=>[],fetchAllWordLists:async()=>lists,fetchWordLists:async()=>lists,
 fetchGameTemplates:async()=>structuredClone(rows),fetchGameTemplateById:async id=>structuredClone(rows.find(r=>r.id===id)),
 createGameTemplate:async p=>{const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,game_type:p.gameType,name:p.name,items:p.items,config:p.config,updated_at:'test'};rows.push(row);flush();window.__splashWrites.push(row);return row},
@@ -183,7 +184,7 @@ try {
     };
   });
   await page.goto(url);
-  await page.getByRole("button", { name: "게임 시작!", exact: true }).click();
+  await page.getByRole("button", { name: "게임 시작", exact: true }).click();
   await page.getByRole("button", { name: "them?", exact: true }).click();
   assert.match(await page.getByRole("status").innerText(), /아직/);
   for (const word of ["He'd", "like", "to", "like", "them?"])
@@ -207,7 +208,7 @@ try {
     .click();
   assert.match(await page.locator(".splash-modal").innerText(), /1 \/ 1/);
   await page
-    .getByRole("button", { name: "다시 플레이하기", exact: true })
+    .getByRole("button", { name: "다시 플레이", exact: true })
     .click();
   await page.evaluate(() => window.__splash.shift(31000));
   await page.getByText("다시 도전해요!", { exact: true }).waitFor();
@@ -229,7 +230,7 @@ try {
     await page.goto(url);
     await page.evaluate(() => window.__splash.sample());
     await page.waitForTimeout(120);
-    await page.getByRole("button", { name: "게임 시작!", exact: true }).click();
+    await page.getByRole("button", { name: "게임 시작", exact: true }).click();
     const bounds = await page.locator(".splash-stage").boundingBox();
     const buttons = await page.locator(".splash-brick").all();
     for (const b of buttons) {
@@ -263,7 +264,7 @@ try {
   );
   await page.goto(url);
   await page.evaluate(() => window.__splash.sample());
-  await page.getByRole("button", { name: "게임 시작!", exact: true }).click();
+  await page.getByRole("button", { name: "게임 시작", exact: true }).click();
   for (let round = 0; round < logic.SPLASH_SAMPLES.length; round++) {
     for (const word of logic.sentenceWords(logic.SPLASH_SAMPLES[round])) {
       const target = page
@@ -365,7 +366,7 @@ try {
     await page.getByLabel("문장 1", { exact: true }).inputValue(),
     "I like it like this.",
   );
-  await page.getByRole("button", { name: "게임 시작!", exact: true }).click();
+  await page.getByRole("button", { name: "게임 시작", exact: true }).click();
   await page.getByRole("button", { name: "I", exact: true }).click();
   assert.equal(await page.locator(".splash-filled").count(), 1);
   console.log(

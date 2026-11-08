@@ -202,8 +202,8 @@ export default function PassTheBall({
           />
 
           {phase === 'idle' && (
-            <button type="button" onClick={start} className={pill}>
-              {t('gamePassBall.startButton')}
+            <button data-initial-game-start type="button" onClick={start} className={`${pill} min-h-20 !bg-primary !text-2xl`}>
+              {t('flow.start')}
             </button>
           )}
 

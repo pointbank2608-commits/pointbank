@@ -343,8 +343,8 @@ export default function TimeBomb({
               </div>
 
               {phase === 'idle' && (
-                <button onClick={start} className={pill}>
-                  {t('gameBomb.startButton')}
+                <button data-initial-game-start onClick={start} className={`${pill} min-h-20 !bg-primary !text-2xl`}>
+                  {t('flow.start')}
                 </button>
               )}
 

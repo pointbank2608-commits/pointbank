@@ -634,11 +634,11 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
           </span>
           <button
             type="button"
-            onClick={start}
+            data-initial-game-start onClick={start}
             className="rounded-full bg-warm-yellow font-extrabold text-deep-navy shadow-xl transition-transform hover:scale-105 active:scale-95"
             style={{ fontSize: '3cqw', padding: '1cqw 5cqw' }}
           >
-            {t('gameTugOfWar.start')}
+            {t('flow.start')}
           </button>
           <span className="font-medium opacity-80" style={{ fontSize: '1.4cqw' }}>{t('gameTugOfWar.keys')}</span>
         </div>

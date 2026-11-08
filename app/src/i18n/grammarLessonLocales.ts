@@ -24,6 +24,7 @@ const ko = {
     question: '의문문으로 바꿔요',
     subjectThey: '주어를 They 로 바꿔요',
     subjectHe: '주어를 He 로 바꿔요',
+    subjectShe: '주어를 She로 바꾸고 동사도 알맞게 바꾸세요.',
   },
 };
 const en = {
@@ -49,6 +50,7 @@ const en = {
     question: 'Make it a question',
     subjectThey: 'Change the subject to They',
     subjectHe: 'Change the subject to He',
+    subjectShe: 'Change the subject to She and adjust the verb.',
   },
 };
 i18n.addResourceBundle('ko', 'translation', { grammarLesson: ko }, true, true);

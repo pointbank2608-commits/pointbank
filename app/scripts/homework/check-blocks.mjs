@@ -124,7 +124,8 @@ try {
     `insert into academies(id) values('${a}'),('${otherA}');insert into classes values('${c}','${a}'),('${otherC}','${otherA}');insert into auth.users values('${owner}');insert into students(id,academy_id,class_id,name) values('${student}','${a}','${c}','Synthetic A'),('${otherStudent}','${otherA}','${otherC}','Synthetic B');set "test.user"='${owner}';set test.academy='${a}';`,
   );
   await db.exec(readFileSync(resolve(sqlRoot, "110_guided_homework_feedback.sql"), "utf8"));
-  await db.exec(readFileSync(resolve(sqlRoot, "112_guided_homework_spelling_hints.sql"), "utf8"));
+  for (const part of ["112a_spelling_hints_tables","112b_spelling_hints_hint_rpc","112c_spelling_hints_public_item","112d_spelling_hints_summary","112e_spelling_hints_results"])
+    await db.exec(readFileSync(resolve(sqlRoot, part + ".sql"), "utf8"));
   const blocks = await vite.ssrLoadModule("/src/lib/homework/blocks.ts");
   const cards = [
     { id: "cat", word: "cat", meaning: "고양이", example: "I like cats." },

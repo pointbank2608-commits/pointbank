@@ -105,12 +105,16 @@ try {
   {
     const { ctx, page } = await open(1440, "?speed=fast&rounds=2&teams=2&cups=3");
     assert.match(await status(page), /준비됐나요/);
-    assert.equal(await page.locator("button:has-text('시작하기')").count(), 1);
+    assert.equal(await page.getByRole('button',{name:'게임 시작',exact:true}).count(),1);
+    const cupImages=()=>page.locator('img[src*="/cup-"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('src')));
+    const readyCups=await cupImages();assert.equal(readyCups.length,3);assert.equal(new Set(readyCups).size,1);assert.match(readyCups[0],/cup-blue\.webp$/);
     if (shotDir) await page.screenshot({ path: `${shotDir}/shuffle-ready-1440.png` });
     await page.keyboard.press("Space");
+    assert.deepEqual(await cupImages(),readyCups);
     await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes("잘 보세요"));
     if (shotDir) await page.screenshot({ path: `${shotDir}/shuffle-show-1440.png` });
     await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes("섞여요"), null, { timeout: 10000 });
+    assert.deepEqual(await cupImages(),readyCups);
     if (shotDir) await page.screenshot({ path: `${shotDir}/shuffle-shuffling-1440.png` });
     // 섞는 동안에는 컵을 눌러도 고를 수 없다
     assert.equal(await page.locator("button[disabled][aria-label*='컵']").count() >= 3, true);
@@ -140,7 +144,7 @@ try {
     assert.match(body, /1팀[\s\S]*1점/);
     assert.match(body, /2팀[\s\S]*0점/);
     if (shotDir) await page.screenshot({ path: `${shotDir}/shuffle-done-1440.png` });
-    await page.getByRole("button", { name: "다시 하기" }).click();
+    await page.getByRole("button", { name: "다시 플레이", exact: true }).click();
     assert.match(await status(page), /준비됐나요/);
     await ctx.close();
     ok("전체 흐름: 시작→보기→섞기→고르기(정답/오답)→결과→다시 하기");

@@ -8,7 +8,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const stub = { name: 's', enforce: 'pre', load(id) { if (id.split('\\').join('/').endsWith('/src/lib/supabase.ts')) return 'export const supabase = {};'; } };
 const server = await createServer({ root, logLevel: 'error', plugins: [stub], server: { middlewareMode: true, hmr: false }, appType: 'custom' });
 let failed = 0;
-const MIN_COUNT = { grammarverb: 40, grammarcompare: 4, grammarlink: 4, grammarhabit: 1, grammarpos: 60, grammarframe: 40, grammarpassive: 3, grammarcond: 2, grammarrelative: 4, grammarask: 3, grammarshop: 3 };
+const MIN_COUNT = { grammarlab: 18, grammarverb: 40, grammarcompare: 4, grammarlink: 4, grammarhabit: 1, grammarpos: 60, grammarframe: 40, grammarpassive: 3, grammarcond: 2, grammarrelative: 4, grammarask: 3, grammarshop: 3 };
 const test = async (n, f) => { try { await f(); console.log('ok  ', n); } catch (e) { failed++; console.log('FAIL', n, '\n     ', e.message); } };
 try {
   const gg = await server.ssrLoadModule('/src/lib/grammarGames.ts');
@@ -26,9 +26,25 @@ try {
   await test('문장 변신: 칩을 순서대로 놓으면 정답이 된다', () => {
     for (const id of ids) for (const r of gg.labRounds(id)) {
       const words = r.to.replace(/[.?]$/, '').split(/\s+/);
-      for (const w of words) assert.ok(r.chips.includes(w), `${id}: ${w} missing in chips`);
-      assert.ok(r.chips.length >= words.length + 1);
+      assert.deepEqual([...r.chips].sort(), [...words].sort(), id);
     }
+    const agreement=gg.labRounds('third-s');
+    assert.ok(agreement.some(r=>r.from==='They have a bike.' && r.to==='She has a bike.'));
+    assert.ok(agreement.every(r=>r.kind==='subjectShe' && !r.chips.some(w=>['will','do'].includes(w))));
+    for (const [id,kind] of [['past-regular','past'],['past-irregular','past'],['future','future'],['i-dont','negative'],['is-it','question'],['did-you','question']]) {
+      const rounds=gg.labRounds(id);
+      assert.ok(rounds.length>=4 && rounds.every(r=>r.kind===kind),id);
+    }
+    assert.deepEqual(gg.labRounds('comparative'),[]);
+  });
+  await test('문법 탐정: 교사 원문에서 한 곳만 고치면 정확히 복원된다', async () => {
+    const {detectiveVariants}=await server.ssrLoadModule('/src/lib/detectiveSuggestion.ts');
+    const correct='She goes to school every day.';
+    const variants=detectiveVariants(correct);
+    assert.equal(variants[0]?.incorrect,'She go to school every day.');
+    assert.ok(variants.length>=2);
+    for(const {incorrect,error} of variants)assert.equal(incorrect.slice(0,error.start)+error.replacement+incorrect.slice(error.end),correct);
+    for(const s of ['She go to school.','Is she happy?','She likes cats and he likes dogs.'])assert.deepEqual(detectiveVariants(s),[]);
   });
   await test('주어·동사 짝꿍: 정답이 보기에 있고 문장이 복원된다', () => {
     for (const id of ids) for (const r of gg.verbRounds(id)) {

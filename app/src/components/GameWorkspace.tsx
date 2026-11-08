@@ -195,15 +195,6 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     if (!canStart) { setPanel('settings'); return; }
     setPanel(null); setPlaying(true); setRunning(true);
   }
-  // 수업 발표 중에는 이미 준비된 게임이면 시작 화면을 한 번 더 거치지 않고 바로 시작한다.
-  // 선생님이 메뉴에서 "게임 준비로 돌아가기"를 눌러 멈춘 뒤에는 다시 자동으로 시작하지 않는다.
-  const autoStarted=useRef('');
-  useEffect(()=>{
-    if((!presenting&&!isGrammar)||!canStart||panel||teams||running||playing)return;
-    const key=`${identity}:${info?.selected?.id}:${location.key}`;
-    if(autoStarted.current===key)return;
-    autoStarted.current=key;setPlaying(true);setRunning(true);
-  },[presenting,isGrammar,canStart,panel,teams,running,playing,identity,info?.selected?.id,location.key]);
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
   function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
   async function startFromEditor() {
@@ -363,7 +354,7 @@ export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen,
 }
 export function GameWorkspaceStartOverlay() {
   const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace || workspace.running || workspace.panel)return null;
-  return <div className="game-start-overlay absolute inset-0 z-20 flex items-center justify-center bg-white/35 p-4" data-game-ready-overlay>
+  return <div className={workspace.playing ? 'game-start-overlay absolute inset-0 z-20 flex items-center justify-center bg-white/35 p-4' : 'game-start-overlay relative z-20 flex shrink-0 justify-center px-3 py-3'} data-game-ready-overlay>
     <div className="w-full max-w-lg rounded-3xl border border-white/80 bg-white/95 p-5 text-center shadow-xl sm:p-8">
       <button aria-label={t(workspace.playing?'flow.resume':'flow.start')} className="min-h-20 rounded-2xl bg-primary px-8 py-4 text-2xl font-black !text-white shadow-lg focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 sm:text-3xl" disabled={!workspace.canStart} onClick={workspace.start}>
         <span aria-hidden>▶ </span>{t(workspace.playing?'flow.resume':'flow.start')}

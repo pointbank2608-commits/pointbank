@@ -639,6 +639,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         ) : isGrammar ? (
           <label className="block font-bold">{text('문법 항목', 'Grammar point')}
             <select className={field} value={pGrammar} onChange={(e) => setPGrammar(e.target.value)}>
+              {pGrammar && !options.some(p => p.id === pGrammar) && <option value={pGrammar} disabled>{grammarPoint(pGrammar)?.name || pGrammar} · {text('이 게임에서 지원하지 않음', 'Unavailable in this game')}</option>}
               {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
             </select>
           </label>

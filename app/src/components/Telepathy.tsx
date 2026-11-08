@@ -305,7 +305,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
           </div>
         )}
         <div className="flex flex-wrap items-center justify-center gap-3">
-          {phase === 'ready' && <button type="button" onClick={startRound} className={`${btn} bg-primary`}>{t('gameTelepathy.start')}</button>}
+          {phase === 'ready' && <button data-initial-game-start type="button" onClick={startRound} className={`${btn} min-h-20 bg-primary px-8 text-2xl`}>{t('flow.start')}</button>}
           {phase === 'predict' && (
             <button type="button" onClick={reveal} className={`${btn} bg-primary ${left === 0 && seconds > 0 ? 'tp-anim' : ''}`} style={left === 0 && seconds > 0 ? { animation: 'tp-pulse 1.2s ease-in-out infinite' } : undefined}>
               {t('gameTelepathy.reveal')}

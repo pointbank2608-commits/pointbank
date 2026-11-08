@@ -4,6 +4,7 @@ import { grammarPoint, ingForm, plainText } from './grammar';
 import { baseOf, buildFactoryItems, type FactoryKind } from './sentenceFactory';
 import { detectiveSuggestion } from './detectiveSuggestion';
 import type { DetectiveCase } from './adventureGames';
+import { grammarLabTasks, LAB_RULE_VERSION } from './grammarLabGoals';
 
 /**
  * 문법별 게임(2026-11-03): 문법 항목 하나(grammarId)에서 규칙으로 문제를 만든다. 게임 템플릿에는 `config.grammarId` 만 저장한다.
@@ -45,18 +46,15 @@ export function factorySources(grammarId: string): string[] {
 }
 
 /* ---------- 문장 변신 연구소 ---------- */
-export interface LabRound { id: string; from: string; kind: FactoryKind; to: string; chips: string[] }
+export interface LabRound { id: string; from: string; kind: FactoryKind | 'subjectShe'; to: string; chips: string[] }
 const tokensOf = (s: string) => s.replace(/[.?]$/, '').split(/\s+/).filter(Boolean);
 export const punctOf = (s: string) => (s.endsWith('?') ? '?' : '.');
 
 export function labRounds(grammarId: string, seed = 1, max = 10): LabRound[] {
-  const items = buildFactoryItems(factorySources(grammarId), { perSentence: 2, max: max * 2 });
+  const items = grammarLabTasks(grammarId);
   const rounds = items.map((it, i): LabRound => {
     const target = tokensOf(it.to);
-    const have = new Set(target.map((x) => x.toLowerCase()));
-    const decoys = tokensOf(it.from).filter((w) => !have.has(w.toLowerCase())).slice(0, 2);
-    if (decoys.length < 2) for (const w of ['do', 'does', 'did', 'will', 'is', 'are']) { if (!have.has(w) && decoys.length < 2 && !decoys.includes(w)) decoys.push(w); }
-    return { id: `lab-${i}`, from: it.from, kind: it.kind, to: it.to, chips: shuffleSeeded([...target, ...decoys], seed + i) };
+    return { id: `lab-${LAB_RULE_VERSION}-${grammarId}-${i}`, from: it.from, kind: it.kind, to: it.to, chips: shuffleSeeded(target, seed + i) };
   });
   return shuffleSeeded(rounds, seed).slice(0, max);
 }

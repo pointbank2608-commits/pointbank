@@ -419,8 +419,8 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
         {/* 조작 줄 */}
         <div className="absolute inset-x-0 bottom-[3%] z-10 flex flex-wrap items-center justify-center gap-[1cqw]">
           {phase === 'ready' && (
-            <button type="button" onClick={startShow} className={btn} style={{ ...bf, background: '#6366f1' }}>
-              ▶ {t('gameCatchSentence.show')}
+            <button data-initial-game-start type="button" onClick={startShow} className={`${btn} min-h-16 !bg-primary px-8 !text-xl`}>
+              {t('flow.start')}
             </button>
           )}
           {phase === 'hidden' && (
