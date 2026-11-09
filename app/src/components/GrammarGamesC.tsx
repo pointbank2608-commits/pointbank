@@ -6,7 +6,7 @@ import {
 import type { GrammarGameType } from '../lib/grammarGames';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { initialTeams } from '../lib/grammarPlay';
-import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useSolo, useTeamLabel, useText, type CommonProps } from './GrammarGames';
+import { Empty, Finish, Frame, GameScene, Scores, TeamSetup, btn, primary, useSolo, useTeamLabel, useText, type CommonProps } from './GrammarGames';
 import { Choice } from './GrammarGamesB';
 
 /** 문법별 게임 3차 묶음 화면 5종. 팀 점수는 이 화면 안의 놀이 점수다(칭찬 통장과 무관). */
@@ -26,8 +26,8 @@ function Passive({ grammarId, seed = 1, onExit }: CommonProps) {
       stem={(r, chosen) => (
         <>
           <p className="text-lg font-bold text-primary">{text('카메라가 비추는 것이 주어가 돼요. 문장을 카메라가 비추는 쪽에서 말해 봐요!', 'The camera points at the subject. Tell it from the camera’s view!')}</p>
-          <div className="flex items-center justify-center gap-4 text-5xl" aria-hidden>
-            <span title="actor">{r.actorE}</span><span className="text-3xl">➡️</span><span title="object">{r.objE}</span><span className="text-4xl">🎥</span>
+          <div className="gg-viewfinder" aria-hidden="true">
+            <span>{r.actorE}</span><span className="gg-camera-arrow">⟶</span><span className="gg-camera-focus">{r.objE}</span>
           </div>
           <p className="text-xl text-on-surface-variant" lang="en">{r.active}</p>
           <p className="text-3xl font-extrabold" lang="en">{r.before} {blank(chosen)} {r.after}</p>
@@ -47,9 +47,11 @@ function Cond({ grammarId, seed = 1, onExit }: CommonProps) {
       make={(s) => condRounds(grammarId, s)}
       stem={(r, chosen) => (
         <>
-          <p className="text-6xl" aria-hidden>{r.scene}</p>
-          <p className="text-lg font-bold text-primary">{text('이야기가 이어지게 알맞은 말을 골라요!', 'Pick the words that keep the story going!')}</p>
-          <p className="text-3xl font-extrabold" lang="en">{r.before} {blank(chosen)} {r.after}</p>
+          <div className="gg-adventure-scene" aria-hidden="true">{r.scene}</div>
+          <div className="gg-story">
+            <p className="text-lg font-bold text-primary">{text('이야기가 이어지게 알맞은 말을 골라요!', 'Pick the words that keep the story going!')}</p>
+            <p className="gg-sentence" lang="en">{r.before} {blank(chosen)} {r.after}</p>
+          </div>
         </>
       )}
       explain={(r) => `${r.full}  ·  ${text('if 절에서는 미래도 현재형을 쓰고, 결과에는 will + 동사원형을 써요.', 'After "if" use the present tense; the result uses will + base verb.')}`}
@@ -67,7 +69,10 @@ function Relative({ grammarId, seed = 1, onExit }: CommonProps) {
       stem={(r) => (
         <>
           <p className="text-lg font-bold text-primary">{text('단서 문장을 읽고 알맞은 카드를 눌러요!', 'Read the clue and tap the matching card!')}</p>
-          <p className="text-3xl font-extrabold" lang="en">{r.clue}</p>
+          <div className="gg-clue">
+            <p className="gg-kicker">{text('단서 카드', 'Clue card')}</p>
+            <p className="gg-sentence" lang="en">{r.clue}</p>
+          </div>
         </>
       )}
       explain={(r) => text(r.explain[0], r.explain[1])}
@@ -84,9 +89,11 @@ function Shop({ grammarId, seed = 1, onExit }: CommonProps) {
       make={(s) => shopRounds(grammarId, s)}
       stem={(r, chosen) => (
         <>
-          <p className="text-7xl" aria-hidden>{r.e}</p>
-          <p className="text-lg font-bold text-primary">{text('장바구니 문장을 완성해요!', 'Complete the shopping sentence!')}</p>
-          <p className="text-3xl font-extrabold" lang="en">{r.before} {blank(chosen)} {r.after}</p>
+          <div className="gg-produce" aria-hidden="true">{r.e}</div>
+          <div className="gg-receipt">
+            <p className="gg-kicker">{text('장바구니 문장을 완성해요!', 'Complete the shopping sentence!')}</p>
+            <p className="gg-sentence" lang="en">{r.before} {blank(chosen)} {r.after}</p>
+          </div>
         </>
       )}
       explain={(r) => text(r.explain[0], r.explain[1])}
@@ -145,7 +152,7 @@ function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${r + 1}/${rounds.length}`}>
       <TeamSetup teams={teams} setTeams={reset} />
       <Scores scores={scores} turn={found === null ? turn : null} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
         <p className="text-lg font-bold text-primary">
           {found === null
             ? solo
@@ -153,7 +160,7 @@ function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
               : text(`${label(turn)} 차례! 질문을 하나 고르거나, 누구인지 맞혀 봐요. (남은 친구 ${left}명)`, `${label(turn)}'s turn! Ask a question or guess who it is. (${left} left)`)
             : text(`정답! ${secret.n} 이에요! +${Math.max(1, 5 - asked.length)}점`, `Correct! It's ${secret.n}! +${Math.max(1, 5 - asked.length)}`)}
         </p>
-        <ul className="grid grid-cols-4 gap-2" aria-label={text('친구들', 'Friends')}>
+        <ul className="gg-friends" aria-label={text('친구들', 'Friends')}>
           {round.chars.map((c, i) => {
             const gone = out(i);
             const isSecret = found === i;
@@ -161,6 +168,7 @@ function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
               <li key={c.n}>
                 <button
                   className={`w-full rounded-xl border p-2 text-center shadow-card ${isSecret ? 'bg-emerald-100 ring-4 ring-emerald-500' : gone ? 'bg-surface-container-low opacity-40' : guessing ? 'bg-primary-fixed ring-2 ring-primary' : 'bg-white'}`}
+                  data-eliminated={gone}
                   disabled={!guessing || gone || found !== null} onClick={() => guess(i)} aria-label={c.n}
                 >
                   <span className="block text-4xl">{c.e}</span>
@@ -171,7 +179,7 @@ function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
             );
           })}
         </ul>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="gg-questions">
           {round.questions.map((q) => {
             const done = asked.find((a) => a.q === q.id);
             return (
@@ -200,9 +208,12 @@ const ASK_ICON: Record<'does' | 'is' | 'can', string[]> = {
 };
 
 export default function GrammarGameC({ type, ...rest }: CommonProps & { type: CGameType }) {
-  if (type === 'grammarpassive') return <Passive {...rest} />;
-  if (type === 'grammarcond') return <Cond {...rest} />;
-  if (type === 'grammarrelative') return <Relative {...rest} />;
-  if (type === 'grammarshop') return <Shop {...rest} />;
-  return <Ask {...rest} />;
+  const Game = {
+    grammarpassive: Passive,
+    grammarcond: Cond,
+    grammarrelative: Relative,
+    grammarshop: Shop,
+    grammarask: Ask,
+  }[type];
+  return <GameScene game={type}><Game {...rest} /></GameScene>;
 }

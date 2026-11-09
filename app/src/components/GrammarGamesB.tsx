@@ -7,7 +7,7 @@ import type { GrammarGameType } from '../lib/grammarGames';
 import { useRemoteActions } from '../lib/remote';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { initialTeams } from '../lib/grammarPlay';
-import { Empty, Finish, Frame, Scores, TeamSetup, btn, primary, useText, type CommonProps } from './GrammarGames';
+import { Empty, Finish, Frame, GameScene, Scores, TeamSetup, btn, primary, useText, type CommonProps } from './GrammarGames';
 
 /** 문법별 게임 2차 묶음 화면 5종. 팀 점수는 이 화면 안의 놀이 점수다(칭찬 통장과 무관). */
 type BGameType = Extract<GrammarGameType, 'grammarpos' | 'grammarframe' | 'grammarcompare' | 'grammarlink' | 'grammarhabit'>;
@@ -63,10 +63,10 @@ function Pos({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${r.i + 1}/${r.total}`}>
       <TeamSetup teams={r.teams} setTeams={(n) => { r.setTeamCount(n); setChosen(null); }} />
       <Scores scores={r.scores} turn={r.turn} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
         <p className="text-xl font-bold text-primary">{text(`문장에서 ${name[0]}를 찾아 눌러요!`, `Tap the ${name[1]} in the sentence!`)}</p>
         <p className="text-on-surface-variant">{text(POS_HINT[round.cat][0], POS_HINT[round.cat][1])}</p>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="gg-word-strip">
           {round.tokens.map((w, k) => {
             const ok = round.correct.includes(k);
             const st = chosen === null ? '' : ok ? 'bg-emerald-100 ring-2 ring-emerald-600 disabled:opacity-100' : k === chosen ? 'bg-rose-100 ring-2 ring-rose-600 disabled:opacity-100' : 'opacity-60';
@@ -113,9 +113,9 @@ function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${r.i + 1}/${r.total}`}>
       <TeamSetup teams={r.teams} setTeams={(n) => { r.setTeamCount(n); reset(); }} />
       <Scores scores={r.scores} turn={r.turn} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
         <p className="text-lg font-bold text-primary">{text('조각을 눌러 고른 다음, 알맞은 칸을 눌러 놓아요.', 'Tap a piece, then tap the right box.')}</p>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="gg-assembly">
           {SLOTS.map((s) => {
             const piece = placed[s];
             const st = !done ? '' : placed[s] === s ? 'ring-4 ring-emerald-500' : 'ring-4 ring-rose-500';
@@ -128,7 +128,7 @@ function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
             );
           })}
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="gg-tray">
           {round.order.map((p) => (
             <button key={p} className={`${btn} text-2xl ${held === p ? 'ring-4 ring-primary' : ''} ${used.has(p) ? 'opacity-30' : ''}`} disabled={used.has(p) || done} onClick={() => setHeld(p)} lang="en">{round[p]}</button>
           ))}
@@ -168,14 +168,14 @@ export function Choice<T extends { id: string; options: string[]; answer: string
     <Frame grammarId={props.grammarId} title={`${props.title} · ${r.i + 1}/${r.total}`}>
       <TeamSetup teams={r.teams} setTeams={(n) => { r.setTeamCount(n); setChosen(null); }} />
       <Scores scores={r.scores} turn={r.turn} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
-        {props.stem(round, chosen)}
-        <div className="flex flex-wrap justify-center gap-3">
+      <div className="gg-board">
+        <div className="gg-stem">{props.stem(round, chosen)}</div>
+        <div className="gg-options">
           {round.options.map((o) => (
             <button key={o} className={`${btn} min-w-28 text-2xl ${stateOf(chosen, o, round.answer)}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{props.label ? props.label(o) : o}</button>
           ))}
         </div>
-        <div role="status" aria-hidden={!chosen} className={`space-y-2 ${chosen ? '' : 'invisible'}`}>
+        <div className="gg-choice-review" hidden={!chosen} role="status">
           <p className={`rounded-xl p-3 text-lg font-bold ${chosen === round.answer ? 'bg-emerald-100' : 'bg-rose-100'}`}>{!chosen || chosen === round.answer ? text('정답! +1점', 'Correct! +1') : text(`정답은 ${props.label ? props.label(round.answer) : round.answer}`, `Answer: ${props.label ? props.label(round.answer) : round.answer}`)}</p>
           {props.explain && <p className="text-on-surface-variant">{props.explain(round)}</p>}
           <button className={primary} tabIndex={chosen ? 0 : -1} onClick={next}>{text('다음', 'Next')}</button>
@@ -192,12 +192,12 @@ function Compare({ grammarId, seed = 1, onExit }: CommonProps) {
       grammarId={grammarId} seed={seed} onExit={onExit} game="grammarcompare" title={text('비교급 챔피언', 'Comparison Champion')} make={(s) => compareRounds(grammarId, s)}
       stem={(r, chosen) => (
         <>
-          <ul className="space-y-2" aria-label={text('비교', 'Compare')}>
+          <ul className="gg-track" aria-label={text('비교', 'Compare')}>
             {r.things.map((t) => (
-              <li key={t.n} className="grid grid-cols-[9rem_1fr_5.5rem] items-center gap-3 text-left">
-                <span className="text-xl font-bold" lang="en">{t.e} {t.n}</span>
-                <span className="h-6 rounded-full bg-primary" style={{ width: `${t.pct}%` }} />
-                <span className="text-sm text-on-surface-variant">{t.v} {t.unit}</span>
+              <li key={t.n}>
+                <span className="font-bold" lang="en">{t.e} {t.n}</span>
+                <span className="gg-lane" aria-hidden="true"><span style={{ width: `${t.pct}%` }} /></span>
+                <span className="text-sm font-bold">{t.v} {t.unit}</span>
               </li>
             ))}
           </ul>
@@ -219,7 +219,11 @@ function Link({ grammarId, seed = 1, onExit }: CommonProps) {
       stem={(r, chosen) => (
         <>
           <p className="text-lg font-bold text-primary">{text('두 말을 알맞게 이어 줄 낱말을 골라요.', 'Pick the word that joins the two parts.')}</p>
-          <p className="text-3xl font-extrabold" lang="en">{r.a} <span className="inline-block min-w-28 border-b-4 border-primary text-center text-primary">{chosen ?? ' '}</span> {r.b}.</p>
+          <p className="gg-bridge" lang="en">
+            <span>{r.a}</span>
+            <span className="gg-bridge-deck" data-joined={Boolean(chosen)}>{chosen ?? '___'}</span>
+            <span>{r.b}.</span>
+          </p>
         </>
       )}
       explain={(r) => {
@@ -245,9 +249,9 @@ function Habit({ grammarId, seed = 1, onExit }: CommonProps) {
       stem={(r, chosen) => (r.kind === 'calendar' ? (
         <>
           <p className="text-lg font-bold text-primary">{text('일주일 달력에서 ✓ 가 몇 번인지 보고 알맞은 말을 골라요.', 'Count the ✓ marks in the week and pick the right word.')}</p>
-          <ol className="grid grid-cols-7 gap-1 text-center" aria-label={text('일주일 달력', 'Week calendar')}>
+          <ol className="gg-calendar" aria-label={text('일주일 달력', 'Week calendar')}>
             {r.days.map((d, k) => (
-              <li key={k} className={`rounded-lg p-2 ${d ? 'bg-emerald-100' : 'bg-surface-container-low'}`}>
+              <li key={k} data-checked={d}>
                 <span className="block text-xs">{text(DAYS_KO[k], DAYS_EN[k])}</span>
                 <span className="text-xl font-extrabold">{d ? '✓' : '·'}</span>
               </li>
@@ -266,9 +270,12 @@ function Habit({ grammarId, seed = 1, onExit }: CommonProps) {
 }
 
 export default function GrammarGameB({ type, ...rest }: CommonProps & { type: BGameType }) {
-  if (type === 'grammarpos') return <Pos {...rest} />;
-  if (type === 'grammarframe') return <FramePlay {...rest} />;
-  if (type === 'grammarcompare') return <Compare {...rest} />;
-  if (type === 'grammarlink') return <Link {...rest} />;
-  return <Habit {...rest} />;
+  const Game = {
+    grammarpos: Pos,
+    grammarframe: FramePlay,
+    grammarcompare: Compare,
+    grammarlink: Link,
+    grammarhabit: Habit,
+  }[type];
+  return <GameScene game={type}><Game {...rest} /></GameScene>;
 }

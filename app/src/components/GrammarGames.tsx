@@ -10,6 +10,7 @@ import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { initialTeams, setGrammarPlay, useGrammarPlay } from '../lib/grammarPlay';
 import '../i18n/grammarLessonLocales';
+import '../styles/grammar-games.css';
 
 /**
  * 문법별 게임 4종(문장 변신 연구소·주어·동사 짝꿍·문법 경매·조건 영작 대결).
@@ -17,7 +18,7 @@ import '../i18n/grammarLessonLocales';
  */
 export const TEAM_COLORS = ['bg-primary text-white', 'bg-warm-yellow text-deep-navy', 'bg-emerald-600 text-white', 'bg-rose-600 text-white'];
 export const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 font-semibold shadow-card disabled:opacity-40';
-export const primary = 'min-h-11 rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-card disabled:opacity-40';
+export const primary = 'gg-action min-h-11 rounded-xl bg-primary px-5 py-2 font-bold text-white shadow-card disabled:opacity-40';
 
 export interface CommonProps { grammarId: string; seed?: number; onExit?: () => void }
 
@@ -123,12 +124,13 @@ export function Scores({ scores, turn, unit }: { scores: number[]; turn: number 
   );
 }
 
-/**
- * 게임 판(section)은 폭 900px 안에서 가운데에 놓는다. 전체화면에서 화면에 맞춰 키우는 일은 GameThemeFrame 이 한다
- * (판이 가로로 끝까지 늘어나 있으면 키울 여지가 없어 작고 왼쪽에 붙어 보였다). 여기서 따로 키우면 두 확대가 서로 흔든다.
- */
-export function Stage({ children }: { children: React.ReactNode }) {
-  return <div>{children}</div>;
+export function GameScene({ game, children }: { game: GrammarGameType; children: React.ReactNode }) {
+  return (
+    <div className="gg-scene" data-grammar-game={game}>
+      <img className="gg-backdrop" src={`/skins/grammar/${game}.webp`} alt="" />
+      {children}
+    </div>
+  );
 }
 
 export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; onAgain: () => void; onExit?: () => void; unit?: string }) {
@@ -138,7 +140,7 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
   useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
   const top = Math.max(...scores);
   return (
-    <Stage><section className="mx-auto max-w-[900px] space-y-4 rounded-2xl bg-white p-6 text-center shadow-card" role="status">
+    <section className="gg-finish" role="status">
       <h2 className="text-3xl font-extrabold">{play.teams === 0 ? text('수고했어요!', 'Well done!') : text('게임 끝!', 'Game over!')}</h2>
       <Scores scores={scores} turn={null} unit={unit} />
       {play.teams > 0 && play.showScore && scores.length > 1 && <p className="text-xl">{scores.map((s, i) => (s === top ? label(i) : null)).filter(Boolean).join(', ')} {text('우승!', 'win!')}</p>}
@@ -146,21 +148,21 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
         <button className={primary} onClick={onAgain}>{text('다시 플레이', 'Play again')}</button>
         {onExit && <button className={btn} onClick={onExit}>{text('나가기', 'Exit')}</button>}
       </div>
-    </section></Stage>
+    </section>
   );
 }
 
 export function Frame({ grammarId, title, children }: { grammarId: string; title: string; children: React.ReactNode }) {
   const point = grammarPoint(grammarId);
   return (
-    <Stage><section className="mx-auto max-w-[900px] space-y-4 rounded-2xl bg-surface-container-lowest p-4 text-center sm:p-6">
-      <header>
-        <p className="text-sm font-semibold text-primary">{title}</p>
-        <h2 className="text-2xl font-extrabold">{point?.name ?? grammarId}</h2>
-        {point && <p className="font-mono text-lg text-on-surface-variant">{point.pattern.replace(/\*\*/g, '')}</p>}
+    <section className="gg-stage">
+      <header className="gg-header">
+        <h2 className="gg-title">{title}</h2>
+        <p className="gg-topic">{point?.name ?? grammarId}</p>
+        {point && <p className="gg-pattern">{point.pattern.replace(/\*\*/g, '')}</p>}
       </header>
       {children}
-    </section></Stage>
+    </section>
   );
 }
 
@@ -205,17 +207,25 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${i + 1}/${rounds.length}`}>
       <TeamSetup teams={teams} setTeams={setTeamCount} />
       <Scores scores={scores} turn={turn} />
-      <div className="space-y-3 rounded-2xl bg-white p-4 shadow-card">
-        <p className="text-lg font-bold text-primary">{t(`grammarLesson.factory.${round.kind}`)}</p>
-        <p className="text-3xl font-extrabold" lang="en">{round.from}</p>
-        <div className="flex min-h-24 flex-wrap items-center justify-center gap-2 rounded-xl border-2 border-dashed border-outline-variant p-3" aria-label={text('만든 문장', 'Your sentence')}>
-          {answerWords.length === 0 && <span className="text-on-surface-variant">{text('아래 낱말을 눌러 문장을 만들어요', 'Tap the words below')}</span>}
-          {answerWords.map((w, k) => (
-            <button key={k} className={`${btn} text-xl`} disabled={Boolean(result)} onClick={() => setPicked((p) => p.filter((_, n) => n !== k))} lang="en">{w}</button>
-          ))}
-          {answerWords.length > 0 && <span className="text-2xl font-bold">{punctOf(round.to)}</span>}
+      <div className="gg-board">
+        <div className="gg-lab-flow">
+          <div className="gg-lab-source">
+            <p className="gg-kicker">{text('변신 전', 'Before')}</p>
+            <p className="gg-sentence" lang="en">{round.from}</p>
+          </div>
+          <p className="gg-lab-task"><span aria-hidden="true">⟶</span> {t(`grammarLesson.factory.${round.kind}`)}</p>
+          <div className="gg-lab-target">
+            <p className="gg-kicker">{text('변신 후', 'After')}</p>
+            <div className="gg-lab-answer" aria-label={text('만든 문장', 'Your sentence')}>
+              {answerWords.length === 0 && <span className="text-on-surface-variant">{text('아래 낱말을 눌러 문장을 만들어요', 'Tap the words below')}</span>}
+              {answerWords.map((w, k) => (
+                <button key={k} className={`${btn} text-xl`} disabled={Boolean(result)} onClick={() => setPicked((p) => p.filter((_, n) => n !== k))} lang="en">{w}</button>
+              ))}
+              {answerWords.length > 0 && <span className="text-2xl font-bold">{punctOf(round.to)}</span>}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="gg-tray">
           {round.chips.map((c, k) => (
             <button key={k} className={`${btn} text-xl ${picked.includes(k) ? 'opacity-30' : ''}`} disabled={picked.includes(k) || Boolean(result)} onClick={() => setPicked((p) => [...p, k])} lang="en">{c}</button>
           ))}
@@ -259,13 +269,13 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${i + 1}/${rounds.length}`}>
       <TeamSetup teams={teams} setTeams={setTeamCount} />
       <Scores scores={scores} turn={turn} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
         <p className="text-lg font-bold text-primary">{text(`주어가 ${round.subject}로 바뀌었어요. 동사를 알맞게 고쳐요!`, `The subject changed to ${round.subject}. Fix the verb!`)}</p>
-        <p className="text-xl text-on-surface-variant" lang="en">{round.from}</p>
-        <p className="text-3xl font-extrabold" lang="en">
+        <p className="gg-verb-source" lang="en">{round.from}</p>
+        <p className="gg-verb-match gg-sentence" lang="en">
           {round.before} <span className="inline-block min-w-24 border-b-4 border-primary text-center text-primary">{chosen ?? ' '}</span> {round.after}
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="gg-verb-choices">
           {round.options.map((o) => {
             const state = !chosen ? '' : o === round.answer ? 'bg-emerald-100 ring-2 ring-emerald-600 disabled:opacity-100' : o === chosen ? 'bg-rose-100 ring-2 ring-rose-600 disabled:opacity-100' : 'opacity-50';
             return <button key={o} className={`${btn} min-w-28 text-2xl ${state}`} disabled={Boolean(chosen)} onClick={() => pick(o)} lang="en">{o}</button>;
@@ -318,12 +328,15 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
   return (
     <Frame grammarId={grammarId} title={`${title} · ${i + 1}/${lots.length}`}>
       <TeamSetup teams={teams} setTeams={reset} />
-      <p className="text-sm text-on-surface-variant">{text('게임용 코인이에요. 칭찬 통장 포인트와 관계없어요. 가장 많이 건 쪽이 사요.', 'Game coins only — not your real praise points. The highest bid buys it.')}</p>
       <Scores scores={coins} turn={null} unit="🪙" />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
+        <p className="text-sm text-on-surface-variant">{text('게임용 코인이에요. 칭찬 통장 포인트와 관계없어요. 가장 많이 건 쪽이 사요.', 'Game coins only — not your real praise points. The highest bid buys it.')}</p>
         <p className="text-lg font-bold text-primary">{text('이 문장이 맞을 것 같으면 코인을 걸어 사요! 틀린 문장을 사면 코인을 잃어요.', 'Bid if you think the sentence is correct. Buying a wrong one loses coins!')}</p>
-        <p className="text-3xl font-extrabold" lang="en">“{lot.sentence}”</p>
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <div className="gg-lot">
+          <p className="gg-kicker">{text('출품 문장', 'Auction lot')} #{i + 1}</p>
+          <p className="gg-sentence" lang="en">“{lot.sentence}”</p>
+        </div>
+        <ul className="gg-bids">
           {bids.map((b, k) => (
             <li key={k} className={`flex items-center justify-between gap-2 rounded-xl p-3 ${TEAM_COLORS[k]}`}>
               <span className="font-extrabold">{label(k)}</span>
@@ -335,8 +348,8 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
             </li>
           ))}
         </ul>
-        <button className={`${primary} ${reveal ? 'invisible' : ''}`} tabIndex={reveal ? -1 : 0} aria-hidden={Boolean(reveal)} onClick={close}>{text('경매 마감!', 'Close bidding')}</button>
-        <div className={`space-y-2 ${reveal ? '' : 'invisible'}`} role="status" aria-hidden={!reveal}>
+        <button className={primary} hidden={Boolean(reveal)} onClick={close}>{text('경매 마감!', 'Close bidding')}</button>
+        <div className="space-y-2" hidden={!reveal} role="status">
             <p className={`rounded-xl p-3 text-xl font-extrabold ${lot.ok ? 'bg-emerald-100' : 'bg-rose-100'}`}>{lot.ok ? text('✅ 맞는 문장이에요!', '✅ A correct sentence!') : text('❌ 틀린 문장이에요!', '❌ A wrong sentence!')}</p>
             <p>{rv.winner === null ? text(solo ? '아무도 사지 않았어요.' : '낙찰한 팀이 없어요.', 'No one bought it.') : `${solo ? text('내가', 'I') : `${label(rv.winner)}${text('이', '')}`} ${rv.bid}🪙 ${text(lot.ok ? '낙찰! +' + rv.bid : '낙찰… −' + rv.bid, lot.ok ? 'won +' + rv.bid : 'won, −' + rv.bid)}`}</p>
             {!lot.ok && lot.fix && <p className="text-xl" lang="en">✏️ <b>{lot.fix}</b></p>}
@@ -379,12 +392,14 @@ function Write({ grammarId, seed = 1, onExit }: CommonProps) {
     <Frame grammarId={grammarId} title={`${title} · ${i + 1}/${rounds.length}`}>
       <TeamSetup teams={teams} setTeams={reset} />
       <Scores scores={scores} turn={null} />
-      <div className="space-y-4 rounded-2xl bg-white p-4 shadow-card">
+      <div className="gg-board">
         <p className="text-sm font-semibold text-primary">{solo ? text('공책에 영어 문장을 써요.', 'Write the sentence on paper.') : text('팀마다 공책에 영어 문장을 써요.', 'Each team writes the sentence on paper.')}</p>
-        <p className="text-3xl font-extrabold">{round.ko}</p>
-        <p className="rounded-xl bg-warm-yellow/40 p-3 text-xl font-bold">📌 {round.cond}</p>
-        <button className={`${primary} ${shown ? 'invisible' : ''}`} tabIndex={shown ? -1 : 0} aria-hidden={shown} onClick={() => setShown(true)}>{text('모범 답 보기', 'Show answer')}</button>
-        <div className={`space-y-3 ${shown ? '' : 'invisible'}`} role="status" aria-hidden={!shown}>
+        <div className="gg-notebook">
+          <p className="gg-sentence">{round.ko}</p>
+          <p className="gg-writing-condition">📌 {round.cond}</p>
+        </div>
+        <button className={primary} hidden={shown} onClick={() => setShown(true)}>{text('모범 답 보기', 'Show answer')}</button>
+        <div className="space-y-3" hidden={!shown} role="status">
             <p className="rounded-xl bg-emerald-100 p-3 text-2xl font-extrabold" lang="en">{round.model}</p>
             <p className="text-sm text-on-surface-variant">{solo ? text('모범 답과 비교해 조건을 모두 지켰고 문법이 맞으면 "맞았어요"를 눌러요. 뜻이 다른 표현도 조건에 맞으면 괜찮아요.', 'Compare with the model. If you met every condition, tap "Got it".') : text('조건을 모두 지키고 문법이 맞은 팀을 눌러 점수를 줘요. 뜻이 다른 표현도 조건에 맞으면 인정해도 좋아요.', 'Tap teams whose sentence meets every condition. Other valid wordings are fine.')}</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -398,8 +413,11 @@ function Write({ grammarId, seed = 1, onExit }: CommonProps) {
 }
 
 export default function GrammarGame({ type, ...rest }: CommonProps & { type: GrammarGameType }) {
-  if (type === 'grammarlab') return <Lab {...rest} />;
-  if (type === 'grammarverb') return <Verb {...rest} />;
-  if (type === 'grammarauction') return <Auction {...rest} />;
-  return <Write {...rest} />;
+  const Game = {
+    grammarlab: Lab,
+    grammarverb: Verb,
+    grammarauction: Auction,
+    grammarwrite: Write,
+  }[type as Extract<GrammarGameType, 'grammarlab' | 'grammarverb' | 'grammarauction' | 'grammarwrite'>] ?? Write;
+  return <GameScene game={type}><Game {...rest} /></GameScene>;
 }
