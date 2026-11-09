@@ -141,7 +141,8 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
       // 파닉스에서 담은 단어 목록이면 소리 규칙 문제(빈칸·같은 규칙·라임·다른 하나)를 만든다. 3문제 미만이면 뜻 문제로.
       const phonics = buildPhonicsQuestions(words);
       const questions = phonics.length >= 3 ? phonics : buildQuizQuestions({ items: cardsToWordListItems(words) }, 'wordToMeaning');
-      return questions.length > 0 ? { items: labelItems, config: { questions } } : null;
+      const pictureWords = gameType === 'tugofwar' ? words.map(({ id, word, imageUrl }) => ({ id, word, imageUrl })) : undefined;
+      return questions.length > 0 ? { items: labelItems, config: { questions, ...(pictureWords ? { pictureWords } : {}) } } : null;
     }
     case 'truefalse': {
       const statements = buildTrueFalseStatements({ items: cardsToWordListItems(words) }, 'wordToMeaning');
@@ -149,8 +150,9 @@ export function buildGameContent(gameType: GameType, words: FullCardItem[]): Gam
     }
     case 'matchup':
     case 'whackamole':
-    case 'wordhoops':
       return { items: labelItems, config: { pairs: pairs() } };
+    case 'wordhoops':
+      return { items: labelItems, config: { pairs: pairs(), pictureWords: words.map(({ id, word, imageUrl }) => ({ id, word, imageUrl })) } };
     case 'flashcards':
       return { items: labelItems, config: { flashcards: pairs() } };
     case 'typeanswer':

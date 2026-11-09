@@ -8,6 +8,9 @@
  * 순수 로직만 이 파일에 둔다(화면은 components/TugOfWar.tsx).
  */
 import type { QuizQuestion } from './types';
+import type { PictureWordQuestion } from './pictureWordQuestions';
+
+export type TugQuestion = QuizQuestion & Partial<Pick<PictureWordQuestion, 'imageUrl'>>;
 
 export const TUG_DEFAULTS = { pull: 5, freeze: 3, seconds: 180 };
 export const TUG_PULLS = [3, 4, 5, 6, 8, 10] as const;
@@ -57,19 +60,20 @@ export function isTugQuestion(q: QuizQuestion): boolean {
   return !!q.question.trim() && filled.length >= 2 && !!q.choices[q.correctIndex]?.trim();
 }
 
-export function playableTugQuestions(questions: readonly QuizQuestion[] | undefined): QuizQuestion[] {
+export function playableTugQuestions(questions: readonly TugQuestion[] | undefined): TugQuestion[] {
   return (questions ?? []).filter(isTugQuestion);
 }
 
 export interface TugShown {
   id: string;
   question: string;
+  imageUrl?: string;
   choices: string[];
   correctIndex: number;
 }
 
 /** 보기를 최대 4개로 줄이고(정답은 항상 포함) 순서를 섞는다. 같은 글자 보기는 하나만 둔다. */
-export function presentTugQuestion(q: QuizQuestion, rng: Rng = Math.random): TugShown {
+export function presentTugQuestion(q: TugQuestion, rng: Rng = Math.random): TugShown {
   const answer = q.choices[q.correctIndex].trim();
   const seen = new Set([answer.toLowerCase()]);
   const wrong: string[] = [];
@@ -80,24 +84,24 @@ export function presentTugQuestion(q: QuizQuestion, rng: Rng = Math.random): Tug
     if (wrong.length >= TUG_MAX_CHOICES - 1) break;
   }
   const choices = shuffle([answer, ...wrong], rng);
-  return { id: q.id, question: q.question.trim(), choices, correctIndex: choices.indexOf(answer) };
+  return { id: q.id, question: q.question.trim(), ...(q.imageUrl ? { imageUrl: q.imageUrl } : {}), choices, correctIndex: choices.indexOf(answer) };
 }
 
 /**
  * 한 팀이 풀 문제 순서를 미리 만든다. 문제를 한 바퀴 다 풀기 전에는 같은 문제가 나오지 않고,
  * 한 바퀴가 끝나 다시 섞을 때 바로 앞 문제가 이어서 나오지 않는다. 팀마다 따로 부르면 순서·보기 배치가 서로 달라진다.
  */
-export function buildTugDeck(questions: readonly QuizQuestion[] | undefined, count = TUG_DECK, rng: Rng = Math.random): TugShown[] {
+export function buildTugDeck(questions: readonly TugQuestion[] | undefined, count = TUG_DECK, rng: Rng = Math.random): TugShown[] {
   const pool = playableTugQuestions(questions);
   if (pool.length === 0) return [];
   const out: TugShown[] = [];
-  let bag: QuizQuestion[] = [];
+  let bag: TugQuestion[] = [];
   let last: string | null = null;
   while (out.length < count) {
     if (bag.length === 0) bag = shuffle(pool, rng);
-    let next = bag.shift() as QuizQuestion;
+    let next = bag.shift() as TugQuestion;
     if (next.id === last && bag.length > 0) {
-      const alt = bag.shift() as QuizQuestion;
+      const alt = bag.shift() as TugQuestion;
       bag.push(next);
       next = alt;
     }

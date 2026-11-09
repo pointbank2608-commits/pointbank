@@ -32,6 +32,9 @@ async function verifyGameControls(){
   await settings.getByPlaceholder('이 핀의 정답 이름을 입력하세요').fill('apple');
   await settings.getByPlaceholder('이 핀의 정답 이름을 입력하세요').press('Enter');
   await settings.getByRole('button',{name:'적용',exact:true}).click();
+  await settings.waitFor({state:'hidden'});
+  await page.locator('[data-play-mode="play"] [data-game-fit]:not([inert])').first().waitFor();
+  assert.equal(await page.locator('[data-game-ready-overlay]').count(),0);
   await page.locator('[data-skin-object="word-chip"]').getByText('apple',{exact:true}).click();
   await page.locator('[data-skin-object="pin"]').click();
   await page.getByRole('button',{name:'다시 플레이',exact:true}).click();
@@ -47,8 +50,6 @@ async function verifyGameControls(){
   assert.equal(await page.evaluate(()=>window.__lessonQA.calls.filter(call=>call.name==='updateGameTemplate'&&call.args[0].startsWith('activity-draft:')).length),0);
   pass('Uploaded images enter the activity draft without a server update for the draft ID');
   await page.goto(`http://127.0.0.1:${port}/games/feedmonster`);
-  await page.locator('[data-game-guide]').getByRole('button',{name:'샘플로 먼저 해보기',exact:false}).click();
-  await page.locator('[data-game-ready-overlay]').getByRole('button',{name:'게임 시작',exact:true}).click();
   await page.locator('[data-frame-restart]').getByText('다시하기',{exact:true}).waitFor();
   pass('The common overlay says Game Start before play and the toolbar says Restart during play');
 }

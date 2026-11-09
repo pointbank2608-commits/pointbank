@@ -1666,6 +1666,8 @@ const ko = {
     shotOf: "슛 {{n}}/{{total}}",
     askMeaning: "뜻을 골라요",
     askWord: "영어 낱말을 골라요",
+    pictureHint: "그림이 있는 단어가 문제로 나오고, 보기는 영어로 표시돼요.",
+    pictureNeedsList: "그림이 있는 단어가 1개 이상이고, 서로 다른 영어 단어가 2개 이상인 단어장을 골라 주세요.",
     listen: "발음 듣기",
     nice: "나이스 슛! +{{n}}",
     goodRetry: "좋아요! +{{n}}",

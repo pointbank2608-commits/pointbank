@@ -5,6 +5,7 @@ import { GAME_CATALOG } from './gameCatalog';
 import { isLiveQuestionReady } from './liveQuiz';
 import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } from './sentencePatterns';
 
+import { pictureWordQuestions } from './pictureWordQuestions';
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['sentencerocket','grammardetective','treasurehunt','wordclaw','sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['wordtrain','unscramble','sentencesplash']);
@@ -33,9 +34,12 @@ export function gameReadyDetails(template: GameTemplate) {
 }
 
 /** Validate the native config as well as converted sources before entering focus mode. */
-export function isNativeGameReady(template: GameTemplate): boolean {
+export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'config' | 'items'>): boolean {
   const { game_type: type, config: c, items } = template;
   if ((ADVENTURE_TYPES as readonly string[]).includes(type)) return !!c.adventure && adventureErrors(type as AdventureType,c.adventure).length===0;
+  if ((type === 'wordhoops' && c.hoopsMode === 'picture') || (type === 'tugofwar' && c.tugMode === 'picture')) {
+    return pictureWordQuestions(c).length > 0;
+  }
   if (type === 'feedmonster' || type === 'sentencebridge' || type === 'sentencetower') return !!c.storybook && storyErrors(type, c.storybook).length === 0;
   // 사진·핀이 없으면 샘플 그림으로 시작하므로 항상 시작할 수 있다.
   if (type === 'labeleddiagram') return true;

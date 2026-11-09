@@ -4,6 +4,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import TugOfWar from '../components/TugOfWar';
 import { useGameTemplates } from '../lib/useGameTemplates';
+import { pictureWordQuestions } from '../lib/pictureWordQuestions';
 import { TUG_DEFAULTS, normalizeTugConfig, playableTugQuestions } from '../lib/tugOfWar';
 import type { GameItem, QuizQuestion } from '../lib/types';
 
@@ -38,8 +39,10 @@ export default function TugOfWarPage() {
   const demo = useMemo(demoQuestions, []);
   const cfg = normalizeTugConfig(selected?.config);
   const own = playableTugQuestions(selected?.config.questions);
+  const pictures = useMemo(() => pictureWordQuestions(selected?.config), [selected?.config]);
+  const pictureMode = selected?.config.tugMode === 'picture';
   const usingSample = own.length < 2;
-  const questions = usingSample ? demo : own;
+  const questions = pictureMode ? pictures : usingSample ? demo : own;
 
   if (g.noClasses) {
     return <div className="py-16 text-center font-body-md text-on-surface-variant">{t('gameAdmin.noClasses')}</div>;
@@ -86,11 +89,11 @@ export default function TugOfWarPage() {
             <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{selected.name}</h2>
           )}
 
-          <GameThemeFrame gameType="tugofwar" roster={roster} onRestart={() => setRoundKey((k) => k + 1)} className="rounded-[28px] bg-[#fffdf8] p-4 shadow-[0_8px_28px_rgba(0,107,93,0.08)] md:p-6">
+          <GameThemeFrame gameType="tugofwar" autoStartForSelection roster={roster} onRestart={() => setRoundKey((k) => k + 1)} className="rounded-[28px] bg-[#fffdf8] p-4 shadow-[0_8px_28px_rgba(0,107,93,0.08)] md:p-6">
             <TugOfWar key={roundKey} questions={questions} pull={cfg.pull} freeze={cfg.freeze} seconds={cfg.seconds} />
           </GameThemeFrame>
 
-          {usingSample && (
+          {usingSample && !pictureMode && (
             <div className="text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameTugOfWar.emptyStaff') : t('gameTugOfWar.emptyStudent')}
             </div>

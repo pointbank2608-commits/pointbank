@@ -9,6 +9,7 @@ import {
   HOOPS_MAX_MISSES,
   HOOPS_TIMED_POOL,
   buildHoopsQuestions,
+  buildHoopsPictureQuestions,
   formatHoopsCountdown,
   formatHoopsTime,
   isHoopsTie,
@@ -19,6 +20,7 @@ import {
   type HoopsResult,
 } from '../lib/wordHoops';
 import type { MatchPair } from '../lib/types';
+import type { PictureWordQuestion } from '../lib/pictureWordQuestions';
 
 /**
  * 단어 농구 대결(2026-11-07) — 두 팀이 같은 문제를 동시에 풀며 정답 공을 눌러 슛하는 단어 게임.
@@ -28,6 +30,7 @@ import type { MatchPair } from '../lib/types';
 
 interface Props {
   pairs: MatchPair[];
+  pictureQuestions?: PictureWordQuestion[];
   teams: number;
   shots: number;
   mode: HoopsMode;
@@ -209,15 +212,16 @@ function HoopFront({ hit, k }: { hit: 'good' | 'miss' | null; k: number }) {
   );
 }
 
-export default function WordHoops({ pairs, teams, shots, mode, rule, seconds }: Props) {
+export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode, rule, seconds }: Props) {
   const timed = rule === 'timed';
   const limitMs = seconds * 1000;
   const { t } = useTranslation();
   const sfx = useGameSfx('wordhoops');
   const [seed, setSeed] = useState(0);
-  const pairsKey = pairs.map((p) => `${p.id}:${p.left}:${p.right}`).join('|');
+  const pairsKey = mode === 'picture' ? JSON.stringify(pictureQuestions) : pairs.map((p) => `${p.id}:${p.left}:${p.right}`).join('|');
+  const count = timed ? HOOPS_TIMED_POOL : shots;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const questions = useMemo(() => buildHoopsQuestions(pairs, timed ? HOOPS_TIMED_POOL : shots, mode), [pairsKey, shots, mode, timed, seed]);
+  const questions = useMemo(() => mode === 'picture' ? buildHoopsPictureQuestions(pictureQuestions ?? [], count) : buildHoopsQuestions(pairs, count, mode), [pairsKey, count, mode, seed]);
   const total = questions.length;
 
   const [phase, setPhase] = useState<Phase>('ready');
@@ -444,7 +448,9 @@ export default function WordHoops({ pairs, teams, shots, mode, rule, seconds }: 
                   <span className="font-semibold text-on-surface-variant" style={{ fontSize: U(3.2) }}>
                     {q.dir === 'toMeaning' ? t('gameWordHoops.askMeaning') : t('gameWordHoops.askWord')}
                   </span>
-                  <span className="flex items-center justify-center" style={{ gap: U(2) }}>
+                  {q.imageUrl ? (
+                    <img data-picture-word src={q.imageUrl} alt={t('gameWordHoops.askWord')} draggable={false} className="object-contain" style={{ width: '88%', height: U(16) }} />
+                  ) : <span className="flex items-center justify-center" style={{ gap: U(2) }}>
                     <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: U(promptSize), wordBreak: 'keep-all' }}>{q.prompt}</span>
                     <button
                       type="button"
@@ -455,7 +461,7 @@ export default function WordHoops({ pairs, teams, shots, mode, rule, seconds }: 
                     >
                       🔊
                     </button>
-                  </span>
+                  </span>}
                 </div>
               )}
 

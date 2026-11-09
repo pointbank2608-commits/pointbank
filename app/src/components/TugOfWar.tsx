@@ -11,9 +11,9 @@ import {
   tugKnotPercent,
   tugSuddenWinner,
   tugWinner,
+  type TugQuestion,
   type TugShown,
 } from '../lib/tugOfWar';
-import type { QuizQuestion } from '../lib/types';
 
 /**
  * 줄다리기 대결(2026-11-08) — 두 팀이 같은 문제 묶음을 각자 따로 풀고, 맞히면 줄이 우리 쪽으로 한 칸 당겨지며
@@ -23,7 +23,7 @@ import type { QuizQuestion } from '../lib/types';
  */
 
 interface Props {
-  questions: QuizQuestion[];
+  questions: TugQuestion[];
   pull: number;
   freeze: number;
   seconds: number;
@@ -174,7 +174,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
   const timed = seconds > 0;
   const limitMs = seconds * 1000;
   const [seed, setSeed] = useState(0);
-  const qKey = questions.map((q) => `${q.id}:${q.question}:${q.choices.join('/')}:${q.correctIndex}`).join('|');
+  const qKey = questions.map((q) => `${q.id}:${q.question}:${q.choices.join('/')}:${q.correctIndex}:${q.imageUrl ?? ''}`).join('|');
   // 팀마다 따로 만든 문제 순서·보기 배치
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const decks = useMemo<TugShown[][]>(() => [buildTugDeck(questions), buildTugDeck(questions)], [qKey, seed]);
@@ -562,9 +562,11 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
               className="absolute flex items-center justify-center bg-white text-center"
               style={{ left: '1.6cqw', right: '1.6cqw', top: '3.6cqw', height: '9.4cqw', borderRadius: '1.4cqw', padding: '0 1.6cqw', boxShadow: '0 .45cqw 0 rgba(0,0,0,.18), 0 .7cqw 1.2cqw rgba(0,0,0,.18)' }}
             >
-              <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
+              {q.imageUrl ? (
+                <img data-picture-word src={q.imageUrl} alt={t('gameWordHoops.askWord')} draggable={false} className="h-full object-contain" style={{ maxWidth: '100%' }} />
+              ) : <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
                 {q.question}
-              </span>
+              </span>}
             </div>
             <div className="absolute grid grid-cols-2" style={{ left: '1.6cqw', right: '1.6cqw', top: '13.9cqw', bottom: '1.3cqw', gap: '.9cqw' }}>
               {q.choices.map((c, ci) => {

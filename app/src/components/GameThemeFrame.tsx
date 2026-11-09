@@ -41,6 +41,7 @@ interface Props {
    * 안 넘기면 다시하기 버튼 자체가 안 보인다.
    */
   onRestart?: () => void;
+  autoStartForSelection?: boolean;
   /**
    * "되돌리기" 버튼을 누르면 호출된다. 게임마다 되돌릴 수 있는 "한 수"의 의미가 달라서
    * (예: 틱택토는 마지막 칸 표시, 게임쇼 퀴즈는 마지막 정답 판정) 게임 컴포넌트 안에서
@@ -101,15 +102,22 @@ export function GameManagement({ children }: { children: ReactNode }) {
  * 모든 게임에 동시 적용된다.
  */
 export default function GameThemeFrame(props: Props) { return <GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider>; }
-function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster }: Props) {
+function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster, autoStartForSelection }: Props) {
   const nativeTurn = useContext(GameTurnContext)?.turn;
-  const started=useRef(false);
+  const started = useRef<string | null>(null);
 
   const workspace = useGameWorkspace();
   const roster = workspace?.roster ?? suppliedRoster;
-  useEffect(()=>{if(!workspace?.running){if(!workspace?.playing)started.current=false;return;}if(started.current)return;started.current=true;
+  const selection = autoStartForSelection ? workspace?.info?.selected?.id ?? '' : '';
+  useEffect(() => {
+    if (!workspace?.running) {
+      if (!workspace?.playing) started.current = null;
+      return;
+    }
+    if (started.current === selection) return;
+    started.current = selection;
     containerRef.current?.querySelector<HTMLButtonElement>('[data-initial-game-start]:not(:disabled),[data-initial-game-start-container] button:not(:disabled)')?.click();
-  },[workspace?.running,workspace?.playing]);
+  }, [workspace?.running, workspace?.playing, selection]);
 
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);

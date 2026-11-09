@@ -1,5 +1,5 @@
 import i18n from '../i18n';
-import type { LiveQuestion, FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType } from './types';
+import type { LiveQuestion, FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType, WordList } from './types';
 import { GAME_CATALOG } from './gameCatalog';
 import { prepareClassroomGame } from './gameWorkspace';
 import { bombParticipants } from './gameFromWords';
@@ -168,7 +168,7 @@ export function guideKindProblem(type:GameType,rows:string[][],kind:GuideKind):{
   }
   return null;
 }
-export function guideProblem(template:GameTemplate): string | null {
+export function guideProblem(template:Pick<GameTemplate, 'game_type' | 'config' | 'items'>): string | null {
   const type=template.game_type,c=template.config;
   if(type==='ladder'&&c.results&&(c.results.length!==template.items.length||c.results.some(r=>!r.label.trim())))return 'ladderIncomplete';
   if(['feedmonster','sentencebridge','sentencetower'].includes(type)&&c.storybook){if(storyErrors(type as 'feedmonster',c.storybook).length)return 'story';}
@@ -187,6 +187,12 @@ export function guideProblem(template:GameTemplate): string | null {
     const pairs=c.pairs||[];if(new Set(pairs.map(p=>p.left.toLowerCase().trim())).size!==pairs.length||new Set(pairs.map(p=>p.right.toLowerCase().trim())).size!==pairs.length)return 'duplicate';
   }
   return isNativeGameReady(template)?null:'incomplete';
+}
+
+export function preparePlayableList(type: GameType, list: WordList) {
+  const content = prepareClassroomGame(type, list);
+  if (!content || guideProblem({ game_type: type, items: content.items, config: content.config ?? {} })) return null;
+  return content;
 }
 export function guideSample(type:GameType, template:GameTemplate):{items:GameItem[];config:GameTemplateConfig} {
   if((ADVENTURE_TYPES as readonly string[]).includes(type))return {items:[],config:{...template.config,adventure:sampleAdventure(type as AdventureType)}};

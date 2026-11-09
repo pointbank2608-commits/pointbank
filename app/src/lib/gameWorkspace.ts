@@ -34,6 +34,19 @@ const BUILTIN = new Set<GameType>([
   "restaurant",
   "icecream",
 ]);
+/** 저장 유형(kind)이 문장이거나, 모든 항목이 마침표·물음표·느낌표로 끝나는 3낱말 이상 문장이면 문장 모음으로 본다. */
+export function isSentenceList(list: Pick<WordList, "kind" | "items">): boolean {
+  if (list.kind === "sentence") return true;
+  if (list.kind && list.kind !== "word") return false;
+  const rows = (list.items ?? []).map(item => (item.word ?? "").trim()).filter(Boolean);
+  return rows.length > 0 && rows.every(text => /[.!?]["”')\]]*$/.test(text) && text.split(/\s+/).length >= 3);
+}
+
+/** 문장 게임(문장만 받는 게임)에서는 문장 모음만 보여 주고, 단어와 문장을 모두 받는 게임에서는 모두 보여 준다. */
+export function listsForGame(kinds: readonly string[], lists: readonly WordList[]): WordList[] {
+  return kinds.includes("sentence") && !kinds.includes("word") ? lists.filter(isSentenceList) : [...lists];
+}
+
 export function prepareClassroomGame(
   type: GameType,
   source: Pick<WordList, "kind" | "items"> | FullCardItem[],
@@ -43,7 +56,7 @@ export function prepareClassroomGame(
     ? source
     : wordListToCards(source as WordList);
   const cards = rawCards.filter(c => c.word.trim()).map(c => ({ ...c, word: c.word.trim() }));
-  const sourceKind = Array.isArray(source) ? kind : source.kind || "word";
+  const sourceKind = Array.isArray(source) ? kind : isSentenceList(source) ? "sentence" : source.kind || "word";
   const minimum = GAME_CATALOG.find(g => g.type === type)?.minItems || 1;
   const usable = cards.filter(c => c.word.trim());
   if (!usable.length || (minimum !== 999 && usable.length < minimum)) return null;

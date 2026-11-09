@@ -9,7 +9,7 @@ import type {
 } from "../lib/types";
 
 export interface GameWorkspaceBridge {
-  applyGuide: (content: { items: GameItem[]; config: GameTemplate['config'] }) => Promise<void>;
+  applyGuide: (content: { items: GameItem[]; config: GameTemplate['config'] }) => Promise<string>;
   sampleGuide: () => Promise<void>;
   renameActivity: () => Promise<void>;
   beginMaterial: (kind: 'word' | 'sentence') => Promise<void>;
@@ -36,7 +36,7 @@ export interface GameWorkspaceBridge {
   selectTemplate: (id: string) => void;
   /** 저장한 게임을 바로 지운다(확인은 부르는 쪽 화면에서 한다). */
   removeTemplate: (id: string) => Promise<void>;
-  useList: (list: WordList) => Promise<void>;
+  useList: (list: WordList) => Promise<string | undefined>;
   switchGame: (type: GameType) => Promise<void>;
   sourceCards: FullCardItem[] | null;
 }
@@ -63,6 +63,8 @@ export interface WorkspaceContextValue {
   publish: (bridge: GameWorkspaceBridge) => void;
   open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null) => void;
   start: () => void;
+  applyListAndPlay: (list: WordList) => Promise<void>;
+  applyGuideAndPlay: (content: Parameters<GameWorkspaceBridge['applyGuide']>[0]) => Promise<void>;
 }
 export const GameWorkspaceContext = createContext<WorkspaceContextValue | null>(
   null,

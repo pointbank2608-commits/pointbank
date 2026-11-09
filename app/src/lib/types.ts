@@ -454,7 +454,9 @@ export interface GameTemplateConfig {
   /** 단어 농구 대결 전용: 팀 수(1=혼자 연습·2=두 팀 대결)·문제 수(3~30)·문제 방식(meaning 뜻 고르기·word 영어 고르기·mixed 섞기). 낱말은 pairs(영어·뜻)를 쓴다. */
   hoopsTeams?: number;
   hoopsShots?: number;
-  hoopsMode?: 'meaning' | 'word' | 'mixed';
+  hoopsMode?: 'meaning' | 'word' | 'mixed' | 'picture';
+  tugMode?: 'text' | 'picture';
+  pictureWords?: Pick<FullCardItem, 'id' | 'word' | 'imageUrl'>[];
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
   hoopsRule?: 'race' | 'timed';
   hoopsSeconds?: number;

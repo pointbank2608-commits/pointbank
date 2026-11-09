@@ -8,7 +8,9 @@ import { GRAMMAR_GAME_TYPES, type GrammarGameType } from '../lib/grammarGames';
 import { grammarGameSupport, MIN_ROUNDS } from '../lib/grammarGamesB';
 import { isActivityDraft } from '../lib/quickActivity';
 import { gamePreparation } from '../lib/gamePreparation';
-import { prepareClassroomGame } from '../lib/gameWorkspace';
+import { isSentenceList, listsForGame } from '../lib/gameWorkspace';
+import { preparePlayableList } from '../lib/gameGuide';
+import { pictureWordQuestions } from '../lib/pictureWordQuestions';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { wordListToCards } from '../lib/gameFromWords';
@@ -35,6 +37,7 @@ const field = 'mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-
 const ITEM_SETTINGS_GAMES = new Set<string>(['wheel', 'order']);
 /** 게임설정 패널에서 바로 고르는 간단한 옵션(옛 페이지 아래 편집 카드를 대신한다). */
 type SimpleOpt = { key: string; ko: string; en: string; kind: 'choice' | 'number'; def: string | number; min?: number; max?: number; choices?: { v: string; ko: string; en: string }[]; parse?: (v: string) => unknown; nullAs?: string };
+const PICTURE_WORD_OPTION = { v: 'picture', ko: '그림 보고 영어 단어 고르기', en: 'Pick the English word from a picture' };
 const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
   anagram: [{ key: 'anagramStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'rack', choices: [{ v: 'rack', ko: '나무 글자판', en: 'Wooden rack' }, { v: 'tags', ko: '나무 이름표', en: 'Wooden tags' }] }],
   rankorder: [{ key: 'rankOrderStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'podium', choices: [{ v: 'podium', ko: '나무 단상', en: 'Wooden podium' }, { v: 'plates', ko: '점토 명패', en: 'Clay plates' }] }],
@@ -59,6 +62,7 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
   mysterybox: [{ key: 'mysteryMode', ko: '진행 방식', en: 'Mode', kind: 'choice', def: 'mushroom', choices: [{ v: 'mushroom', ko: '버섯 3택 1', en: 'Mushrooms' }, { v: 'quiz', ko: '문제 맞히기', en: 'Questions' }] }, { key: 'boxTeams', ko: '팀 수', en: 'Teams', kind: 'number', def: 3, min: 2, max: 8 }, { key: 'mysteryBlocks', ko: '상자 수', en: 'Boxes', kind: 'choice', def: '28', parse: Number, choices: [{ v: '20', ko: '20칸', en: '20' }, { v: '28', ko: '28칸', en: '28' }] }],
   shufflefind: [{ key: 'shuffleTeams', ko: '팀 수', en: 'Teams', kind: 'number', def: 2, min: 1, max: 4 }, { key: 'shuffleCups', ko: '컵 수', en: 'Cups', kind: 'number', def: 3, min: 3, max: 5 }, { key: 'shuffleRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 6, min: 1, max: 30 }, { key: 'shuffleSpeed', ko: '섞는 속도', en: 'Speed', kind: 'choice', def: 'normal', choices: [{ v: 'slow', ko: '느리게', en: 'Slow' }, { v: 'normal', ko: '보통', en: 'Normal' }, { v: 'fast', ko: '빠르게', en: 'Fast' }] }],
   tugofwar: [
+    { key: 'tugMode', ko: '문제 방식', en: 'Question type', kind: 'choice', def: 'text', choices: [{ v: 'text', ko: '기존 글 문제', en: 'Text questions' }, PICTURE_WORD_OPTION] },
     { key: 'tugPull', ko: '이기는 데 필요한 칸 수', en: 'Pulls to win', kind: 'choice', def: '5', parse: Number, choices: [{ v: '3', ko: '3칸 (짧게)', en: '3' }, { v: '4', ko: '4칸', en: '4' }, { v: '5', ko: '5칸', en: '5' }, { v: '6', ko: '6칸', en: '6' }, { v: '8', ko: '8칸', en: '8' }, { v: '10', ko: '10칸 (길게)', en: '10' }] },
     { key: 'tugFreeze', ko: '틀렸을 때 얼음 시간', en: 'Freeze time', kind: 'choice', def: '3', parse: Number, choices: [{ v: '2', ko: '2초', en: '2s' }, { v: '3', ko: '3초', en: '3s' }, { v: '5', ko: '5초', en: '5s' }] },
     { key: 'tugSeconds', ko: '제한 시간', en: 'Time limit', kind: 'choice', def: '180', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'None' }, { v: '60', ko: '1분', en: '1 min' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }, { v: '300', ko: '5분', en: '5 min' }] },
@@ -67,7 +71,7 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
     { key: 'hoopsTeams', ko: '참여', en: 'Players', kind: 'choice', def: '2', parse: Number, choices: [{ v: '2', ko: '두 팀 대결', en: 'Two teams' }, { v: '1', ko: '혼자 연습', en: 'Solo practice' }] },
     { key: 'hoopsRule', ko: '승부 방식', en: 'Game rule', kind: 'choice', def: 'race', choices: [{ v: 'race', ko: '정해진 슛을 빨리·정확히', en: 'Fixed shots, fastest' }, { v: 'timed', ko: '제한 시간 안에 많이', en: 'Most baskets in time' }] },
     { key: 'hoopsSeconds', ko: '제한 시간(시간제일 때)', en: 'Time limit (timed)', kind: 'choice', def: '60', parse: Number, choices: [{ v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '1분', en: '1 min' }, { v: '90', ko: '1분 30초', en: '1:30' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }] },
-    { key: 'hoopsMode', ko: '문제 방식', en: 'Question type', kind: 'choice', def: 'meaning', choices: [{ v: 'meaning', ko: '영어 보고 뜻 고르기', en: 'Pick the meaning' }, { v: 'word', ko: '뜻 보고 영어 고르기', en: 'Pick the word' }, { v: 'mixed', ko: '섞어서', en: 'Mixed' }] },
+    { key: 'hoopsMode', ko: '문제 방식', en: 'Question type', kind: 'choice', def: 'meaning', choices: [{ v: 'meaning', ko: '영어 보고 뜻 고르기', en: 'Pick the meaning' }, { v: 'word', ko: '뜻 보고 영어 고르기', en: 'Pick the word' }, { v: 'mixed', ko: '섞어서', en: 'Mixed' }, PICTURE_WORD_OPTION] },
     { key: 'hoopsShots', ko: '슛 수(정해진 슛일 때)', en: 'Shots', kind: 'number', def: 10, min: 3, max: 30 },
   ],
   telepathy: [{ key: 'telepathyTeams', ko: '팀 수', en: 'Teams', kind: 'number', def: 3, min: 2, max: 6 }, { key: 'telepathyChoices', ko: '후보 수', en: 'Choices', kind: 'number', def: 3, min: 3, max: 4 }, { key: 'telepathyRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 8, min: 1, max: 30 }, { key: 'telepathySeconds', ko: '적는 시간', en: 'Time', kind: 'choice', def: '20', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'No limit' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '60초', en: '60s' }] }],
@@ -186,6 +190,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isGrammar = !!type && (GRAMMAR_GAME_TYPES as readonly string[]).includes(type);
   const caps = gamePreparation(type || 'wheel');
   const kinds = caps.kinds as readonly string[];
+  const shownLists = useMemo(() => listsForGame(kinds, info?.lists ?? []), [kinds, info?.lists]);
   const nativeTeams = info?.teamCount !== undefined;
   const sample = !info?.selected || isActivityDraft(info.selected.id);
   const saved = (info?.templates ?? []).filter((row) => !isActivityDraft(row.id));
@@ -252,7 +257,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     () => (isGrammar ? GRAMMAR_POINTS.filter((p) => grammarGameSupport(p.id)[type as GrammarGameType] >= MIN_ROUNDS[type as GrammarGameType]) : []),
     [isGrammar, type],
   );
-  const usable = (list: WordList) => !!info && !!prepareClassroomGame(info.gameType, list);
+  const usable = (list: WordList) => !!info && !!preparePlayableList(info.gameType, list);
 
   // 패널을 열 때마다 지금 상태로 초기화
   useEffect(() => {
@@ -353,11 +358,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       else if (pBombSrc === 'list') {
         const list = info.lists.find((row) => row.id === pList);
         if (!list) throw new Error(text('읽을 내용으로 쓸 단어장을 골라 주세요.', 'Pick a list.'));
-        labels = wordListToCards(list).map((card) => card.word);
+        labels = wordListToCards(list).map((card) => card.word.trim()).filter(Boolean);
+        if (!labels.length) throw new Error(text('읽을 내용이 있는 단어장을 골라 주세요.', 'Pick a list with words or sentences.'));
       }
       const oldWords = info.selected.config.words ?? [];
       const words = labels.map((label, i) => (oldWords[i]?.label === label ? oldWords[i] : { id: crypto.randomUUID(), label }));
-      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, words, classroomSource: undefined } });
+      await workspace.applyGuideAndPlay({ items: info.selected.items, config: { ...info.selected.config, words, classroomSource: undefined } });
       return;
     }
     if (isGrammar) {
@@ -368,8 +374,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     }
     if (pList && pList !== currentSourceId) {
       const list = info.lists.find((row) => row.id === pList);
-      if (list) await info.useList(list);
+      if (list) await workspace.applyListAndPlay(list);
     } else if (pSaved) info.selectTemplate(pSaved);
+    else if (pList && workspace.canStart && !workspace.running) workspace.start();
   });
   const applyClass = () => run(async () => {
     if (!info) return;
@@ -440,7 +447,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         } else patch[o.key] = (o.parse ? o.parse(raw) : raw) as string | number;
       }
       if (typeof patch.lightningMin === 'number' && typeof patch.lightningMax === 'number' && patch.lightningMin >= patch.lightningMax) throw new Error(text('번개 최소 시간은 최대 시간보다 작아야 해요.', 'Min must be less than max.'));
-      await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, ...patch } });
+      const content = { items: info.selected.items, config: { ...info.selected.config, ...patch } };
+      if (type === 'wordhoops' || type === 'tugofwar') {
+        if ((patch.hoopsMode === 'picture' || patch.tugMode === 'picture') && !pictureWordQuestions(content.config).length) {
+          throw new Error(t('gameWordHoops.pictureNeedsList'));
+        }
+        await workspace.applyGuideAndPlay(content);
+      } else await info.applyGuide(content);
       return;
     }
     if (info?.selected && isPassBall) {
@@ -489,9 +502,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     const base = isWheel ? { ...info.selected.config, wheelEliminate: pEliminate } : type === 'order' ? { ...info.selected.config, music: pTimerMusic, resultSound: pTimerResult } : { ...info.selected.config };
     if (pItemSource === 'list' && pList) {
       const list = info.lists.find((row) => row.id === pList);
-      const content = list ? prepareClassroomGame(info.gameType, list) : null;
+      const content = list ? preparePlayableList(info.gameType, list) : null;
       if (!list || !content) throw new Error(text('이 게임에 쓸 수 없는 단어장이에요.', 'This list cannot be used here.'));
-      await info.applyGuide({ items: content.items, config: { ...base, ...content.config, ...(isWheel ? { wheelEliminate: pEliminate } : {}), classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } } });
+      await workspace.applyGuideAndPlay({ items: content.items, config: { ...base, ...content.config, classroomSource: { id: list.id, name: list.name, kind: isSentenceList(list) ? 'sentence' : 'word', version: list.updated_at, cards: wordListToCards(list) } } });
     } else if (pItemSource === 'class') {
       if (!pItemClass) throw new Error(text('반을 먼저 골라 주세요.', 'Pick a class first.'));
       // 반을 바꾸는 데 시간이 걸리므로 학생 명단은 여기서 직접 불러온다
@@ -607,7 +620,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         {!isGrammar && (
           <p className="rounded-xl bg-sky-50 p-3 text-sm font-bold">
             {currentSource
-              ? text(`지금 쓰는 자료: ${currentSource.name} (${info?.selected?.items.length ?? 0}개)`, `Current: ${currentSource.name} (${info?.selected?.items.length ?? 0})`)
+              ? text(`지금 쓰는 자료: ${currentSource.name} (${currentSource.cards.length}개)`, `Current: ${currentSource.name} (${currentSource.cards.length})`)
               : sample
                 ? text('지금은 샘플 자료예요. 고르고 "적용"을 누르면 바뀌어요.', 'This is a sample. Pick one and press Apply.')
                 : text(`지금 쓰는 자료: 직접 입력한 항목 ${info?.selected?.items.length ?? 0}개`, `Current: ${info?.selected?.items.length ?? 0} typed items`)}
@@ -648,11 +661,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <label className="block font-bold">{kinds.includes('sentence') && !kinds.includes('word') ? text('내 문장 모음', 'My sentence lists') : text('내 단어장 · 문장 모음', 'My word / sentence lists')}
               <select className={field} value={pList} onChange={(e) => { setPList(e.target.value); setPSaved(''); }}>
                 <option value="">{text('선택하세요', 'Choose')}</option>
-                {(info?.lists ?? []).map((list) => <option key={list.id} value={list.id} disabled={!usable(list)}>{list.name}{usable(list) ? '' : text(' (이 게임에는 쓸 수 없어요)', ' (not usable here)')}</option>)}
+                {shownLists.map((list) => <option key={list.id} value={list.id} disabled={!usable(list)}>{list.name}{usable(list) ? '' : text(' (이 게임에는 쓸 수 없어요)', ' (not usable here)')}</option>)}
               </select>
             </label>
-            {(info?.lists.length ?? 0) === 0 && <p className="text-sm text-on-surface-variant">{text('만든 단어장이 없어요. 아래 "직접 입력하기"로 바로 넣을 수 있어요.', 'No lists yet. Use "Type it in" below.')}</p>}
-            <details className="rounded-xl border border-outline-variant p-3" open={(info?.lists.length ?? 0) === 0}>
+            {shownLists.length === 0 && <p className="text-sm text-on-surface-variant">{kinds.includes('sentence') && !kinds.includes('word') ? text('저장한 문장 모음이 없어요. 아래 "직접 입력하기"로 바로 넣을 수 있어요.', 'No sentence lists saved yet. Use "Type it in" below.') : text('만든 단어장이 없어요. 아래 "직접 입력하기"로 바로 넣을 수 있어요.', 'No lists yet. Use "Type it in" below.')}</p>}
+            <details className="rounded-xl border border-outline-variant p-3" open={shownLists.length === 0}>
               <summary className="cursor-pointer font-bold">{text('직접 입력하기', 'Type it in')}</summary>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button className={btn} onClick={() => { close(); workspace.open('guide'); }}>{text('직접 입력 화면 열기', 'Open the input screen')}</button>
@@ -769,6 +782,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 )}
               </div>
             ))}
+            {(pOpt.hoopsMode === 'picture' || pOpt.tugMode === 'picture') && <p className="text-sm text-on-surface-variant">{t(pictureWordQuestions(info?.selected?.config).length ? 'gameWordHoops.pictureHint' : 'gameWordHoops.pictureNeedsList')}</p>}
           </div>
         )}
         {isPassBall && (
@@ -934,7 +948,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <label className="block text-sm font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
                 <select className={field} value={pList} onChange={(e) => setPList(e.target.value)}>
                   <option value="">{text('지금 항목 그대로', 'Keep current items')}</option>
-                  {(info?.lists ?? []).map((list) => <option key={list.id} value={list.id} disabled={!usable(list)}>{list.name}{usable(list) ? '' : text(' (이 게임에는 쓸 수 없어요)', ' (not usable)')}</option>)}
+                  {shownLists.map((list) => <option key={list.id} value={list.id} disabled={!usable(list)}>{list.name}{usable(list) ? '' : text(' (이 게임에는 쓸 수 없어요)', ' (not usable)')}</option>)}
                 </select>
               </label>
             )}

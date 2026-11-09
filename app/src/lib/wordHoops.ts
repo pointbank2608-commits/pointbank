@@ -9,8 +9,9 @@
  * 순수 로직만 이 파일에 둔다(화면은 components/WordHoops.tsx).
  */
 import type { MatchPair } from './types';
+import type { PictureWordQuestion } from './pictureWordQuestions';
 
-export type HoopsMode = 'meaning' | 'word' | 'mixed';
+export type HoopsMode = 'meaning' | 'word' | 'mixed' | 'picture';
 export type HoopsRule = 'race' | 'timed';
 
 export const HOOPS_DEFAULTS = { teams: 2, shots: 10, mode: 'meaning' as HoopsMode, rule: 'race' as HoopsRule, seconds: 60 };
@@ -18,7 +19,7 @@ export const HOOPS_RULES: readonly HoopsRule[] = ['race', 'timed'];
 export const HOOPS_SECONDS = [30, 45, 60, 90, 120, 180] as const;
 /** 제한 시간제에서 미리 만들어 두는 문제 수(시간 안에 다 풀 수 없는 양) */
 export const HOOPS_TIMED_POOL = 300;
-export const HOOPS_MODES: readonly HoopsMode[] = ['meaning', 'word', 'mixed'];
+export const HOOPS_MODES: readonly HoopsMode[] = ['meaning', 'word', 'mixed', 'picture'];
 
 export interface HoopsConfig {
   teams: number;
@@ -54,7 +55,8 @@ export interface HoopsQuestion {
   /** 읽어 줄 영어(영어 낱말이 문제이거나 정답일 때) */
   speak: string;
   /** 'toMeaning' = 영어를 보고 뜻 고르기, 'toWord' = 뜻을 보고 영어 고르기 */
-  dir: 'toMeaning' | 'toWord';
+  dir: 'toMeaning' | 'toWord' | 'fromPicture';
+  imageUrl?: string;
   choices: string[];
   correctIndex: number;
   /** 정답 뒤에 보여 주는 한 줄("apple = 사과") */
@@ -130,6 +132,18 @@ export function buildHoopsQuestions(
     });
   }
   return out;
+}
+
+export function buildHoopsPictureQuestions(questions: readonly PictureWordQuestion[], shots: number): HoopsQuestion[] {
+  const deck = shuffle(questions);
+  if (!deck.length) return [];
+  return Array.from({ length: shots }, (_, index) => {
+    const row = deck[index % deck.length];
+    const answer = row.choices[row.correctIndex];
+    const choices = shuffle(row.choices);
+    return { id: `${index}-${row.id}`, prompt: '', speak: answer, dir: 'fromPicture', imageUrl: row.imageUrl,
+      choices, correctIndex: choices.indexOf(answer), explain: answer };
+  });
 }
 
 /** n번째 시도(1부터)에서 맞혔을 때 점수: 첫 시도 2점, 두 번째 1점 */

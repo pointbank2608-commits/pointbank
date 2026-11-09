@@ -27,7 +27,7 @@ interface Props {
   /** 설정 화면의 "숫자로 만들기" 단추처럼, 열자마자 이 방식을 고른다 */
   presetKind?:GuideKind|null;onPresetUsed?:()=>void;
   info:GameWorkspaceBridge;active:boolean;canStart:boolean;busy:boolean;
-  run:(fn:()=>Promise<void>)=>Promise<boolean>;
+  run:(fn:()=>Promise<unknown>)=>Promise<boolean>;
   complete:()=>void;editRevision:number;
   nativeVisible:(visible:boolean)=>void;
 

@@ -1669,6 +1669,8 @@ const en: Ko = {
     shotOf: "Shot {{n}}/{{total}}",
     askMeaning: "Pick the meaning",
     askWord: "Pick the English word",
+    pictureHint: "Words with pictures become questions. The choices are in English.",
+    pictureNeedsList: "Choose a word list with at least one picture and two different English words.",
     listen: "Listen",
     nice: "Nice shot! +{{n}}",
     goodRetry: "Good! +{{n}}",

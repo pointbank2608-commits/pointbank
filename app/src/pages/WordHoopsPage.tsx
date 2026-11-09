@@ -4,6 +4,7 @@ import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import WordHoops from '../components/WordHoops';
 import { useGameTemplates } from '../lib/useGameTemplates';
+import { pictureWordQuestions } from '../lib/pictureWordQuestions';
 import { HOOPS_DEFAULTS, normalizeHoopsConfig, usablePairs } from '../lib/wordHoops';
 import type { GameItem, MatchPair } from '../lib/types';
 
@@ -36,8 +37,9 @@ export default function WordHoopsPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demo = useMemo(demoPairs, []);
   const cfg = normalizeHoopsConfig(selected?.config);
+  const pictures = useMemo(() => pictureWordQuestions(selected?.config, 3), [selected?.config]);
   const own = usablePairs(selected?.config.pairs);
-  const usingSample = own.length < 2;
+  const usingSample = cfg.mode !== 'picture' && own.length < 2;
   const pairs = usingSample ? demo : own;
 
   if (g.noClasses) {
@@ -85,8 +87,8 @@ export default function WordHoopsPage() {
             <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{selected.name}</h2>
           )}
 
-          <GameThemeFrame gameType="wordhoops" roster={roster} onRestart={() => setRoundKey((k) => k + 1)} className="rounded-[28px] bg-[#fffdf8] p-4 shadow-[0_8px_28px_rgba(0,107,93,0.08)] md:p-6">
-            <WordHoops key={roundKey} pairs={pairs} teams={cfg.teams} shots={cfg.shots} mode={cfg.mode} rule={cfg.rule} seconds={cfg.seconds} />
+          <GameThemeFrame gameType="wordhoops" autoStartForSelection roster={roster} onRestart={() => setRoundKey((k) => k + 1)} className="rounded-[28px] bg-[#fffdf8] p-4 shadow-[0_8px_28px_rgba(0,107,93,0.08)] md:p-6">
+            <WordHoops key={roundKey} pairs={pairs} pictureQuestions={pictures} teams={cfg.teams} shots={cfg.shots} mode={cfg.mode} rule={cfg.rule} seconds={cfg.seconds} />
           </GameThemeFrame>
 
           {usingSample && (

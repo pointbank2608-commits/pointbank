@@ -2,7 +2,7 @@ import {flushGameTemplateWrites} from './gameTemplateWrites';
 import { activityName } from './activityNames';
 import { GAME_CATALOG } from './gameCatalog';
 import { gamePreparation, isNativeGameReady } from './gamePreparation';
-import { guideSample, guideProblem } from './gameGuide';
+import { guideSample, guideProblem, preparePlayableList } from './gameGuide';
 import { DRAFT_EVENT, draftId, isActivityDraft, readActivityDraft, writeActivityDraft, sampleActivityCards, readComposition, legacyActivityInput, rememberSourceUse, ownedQuickSource, type QuickActivitySource } from './quickActivity';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
-import { prepareClassroomGame } from './gameWorkspace';
+import { isSentenceList, prepareClassroomGame } from './gameWorkspace';
 import { wordListToCards } from './gameFromWords';
 import { useLessonRunner, usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
@@ -454,17 +454,28 @@ export function useGameTemplates(params: {
 
   async function useClassroomList(list: WordList) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
-    if (temporary) { chooseDraft(makeDraft({ cards: wordListToCards(list), kind: list.kind || 'word', name: list.name, id: list.id })); return; }
-    if (!academy?.id || !profile || !classId) throw new Error('no_class');
-    const content = prepareClassroomGame(gameType, list);
+    const content = preparePlayableList(gameType, list);
     if (!content) throw new Error('incompatible_content');
+    const kind = isSentenceList(list) ? 'sentence' : 'word';
+    if (temporary) {
+      const draft = makeDraft({ cards: wordListToCards(list), kind, name: list.name, id: list.id });
+      if (gameType === 'wordhoops') draft.config.hoopsMode = selected?.config.hoopsMode ?? draft.config.hoopsMode;
+      if (gameType === 'tugofwar') draft.config.tugMode = selected?.config.tugMode ?? draft.config.tugMode;
+      if ((draft.config.hoopsMode === 'picture' || draft.config.tugMode === 'picture') && !isNativeGameReady(draft)) {
+        throw new Error(t('gameWordHoops.pictureNeedsList'));
+      }
+      chooseDraft(draft);
+      return draft.id;
+    }
+    if (!academy?.id || !profile || !classId) throw new Error('no_class');
     const existing = templates.find((tpl) => tpl.class_id === classId && tpl.config.classroomSource?.id === list.id && tpl.config.classroomSource.version === list.updated_at);
-    if (existing) { setSelectedId(existing.id); return; }
+    if (existing) { setSelectedId(existing.id); return existing.id; }
     const tpl = await createGameTemplate({ academyId: academy.id, classId, gameType, name: list.name, teacherId: profile.id,
-      items: content.items, config: { ...defaultConfig?.(), ...content.config, classroomSource: { id: list.id, name: list.name, kind: list.kind || 'word', version: list.updated_at, cards: wordListToCards(list) } } });
+      items: content.items, config: { ...defaultConfig?.(), ...content.config, classroomSource: { id: list.id, name: list.name, kind, version: list.updated_at, cards: wordListToCards(list) } } });
     // A late response from a previously selected class must not replace the current class's screen.
     if (workspaceClass.current !== classId) return;
     setTemplates((prev) => [...prev, tpl]); setSelectedId(tpl.id);
+    return tpl.id;
   }
   const workspaceClass = useRef(classId); workspaceClass.current = classId;
   const lessonCards = (location.state as OpenState | null)?.materialsWords;
@@ -549,7 +560,9 @@ export function useGameTemplates(params: {
         const draft = isActivityDraft(selected.id) ? readActivityDraft(selected.id)||selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};
         // Native editors synchronize their local question state on selection changes.
         // A fresh revision ID applies guided content without remounting the workspace.
-        chooseDraft({ ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: {...structuredClone(content.config),editingTemplateId:!isActivityDraft(selected.id)?selected.id:savedTargets.current.get(selected.id)||selected.config.editingTemplateId} });
+        const next = { ...draft, id:`${temporaryId}:${crypto.randomUUID()}`, items: structuredClone(content.items), config: {...structuredClone(content.config),editingTemplateId:!isActivityDraft(selected.id)?selected.id:savedTargets.current.get(selected.id)||selected.config.editingTemplateId} };
+        chooseDraft(next);
+        return next.id;
       },
       sampleGuide: async () => {
         if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
