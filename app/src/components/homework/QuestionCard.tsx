@@ -56,7 +56,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
   }, [q.id, listen, q.speak]);
 
   const memo = q.style === 'flash' || q.style === 'fade' || q.style === 'sfade';
-  const guide = t(`studentHw.guide_${q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
+  const guide = t(`studentHw.guide_${q.gen === 'vocab-spelling-train-v1' ? 'letters' : q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
   const speakBtn = (big: boolean) =>
     q.speak ? (
       <button
@@ -205,14 +205,14 @@ function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion;
             disabled={disabled || eliminated.includes(i)}
             data-choice={i}
             onClick={() => onAnswer(String(i))}
-            className={`flex min-h-28 flex-col items-center justify-center gap-1 px-3 py-3 text-center text-xl font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 ${look.btn} ${eliminated.includes(i) ? 'line-through opacity-40!' : ''}`}
+            className={`flex min-h-28 min-w-0 flex-col items-center justify-center gap-1 px-3 py-3 text-center text-xl font-bold text-white shadow-lg active:scale-95 disabled:opacity-60 ${look.btn} ${eliminated.includes(i) ? 'line-through opacity-40!' : ''}`}
           >
             {sprite ? (
               <img src={sprite} alt="" className="h-14 w-14 object-contain drop-shadow" />
             ) : (
               <span className="text-4xl" aria-hidden="true">{look.icon}</span>
             )}
-            {c}
+            <span className="max-w-full [overflow-wrap:anywhere]">{c}</span>
           </button>
         ))}
       </div>
@@ -397,14 +397,16 @@ function OrderBuilder({ q, onAnswer, disabled, finalCheck }: { q: HwQuestion; on
   const tokens = q.tokens ?? [];
   const [placed, setPlaced] = useState<number[]>([]);
   const letters = q.joiner === '';
+  const spellingTrain = q.gen === 'vocab-spelling-train-v1';
   const done = placed.length === tokens.length && tokens.length > 0;
   const tile = `min-h-12 rounded-xl px-3 font-bold shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none ${letters ? 'min-w-12 text-2xl' : 'text-lg'}`;
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-(color:--hw-line) p-3" aria-live="polite">
+      <div className={`flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl p-3 ${spellingTrain ? 'border-b-4 border-double border-white/80 bg-[#102041]/85 pb-5' : 'border-2 border-dashed border-(color:--hw-line)'}`} aria-live="polite">
+        {spellingTrain && <span className="text-3xl" aria-hidden="true">🚂</span>}
         {placed.length === 0 && <span className="text-base text-(color:--hw-mute)">{t('studentHw.orderHint')}</span>}
         {placed.map((ti, k) => (
-          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} ${finalCheck ? 'border border-[#c3cff3] bg-[#e8edff]' : 'bg-warm-yellow'} text-deep-navy`}>
+          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} ${spellingTrain ? 'relative bg-[#ffc65a] after:absolute after:inset-x-2 after:-bottom-2 after:h-2 after:border-x-[6px] after:border-[#1e293b] after:content-[""]' : finalCheck ? 'border border-[#c3cff3] bg-[#e8edff]' : 'bg-warm-yellow'} text-deep-navy`}>
             {tokens[ti]}
           </button>
         ))}

@@ -221,7 +221,7 @@ function HomeView({
                     {l.name}
                   </span>
                   <span className="block text-sm opacity-75">
-                    {l.path_waiting ? `${t('studentPortal.pathTodayComplete', { defaultValue: '오늘 학습 완료 · 다음 확인' })} ${l.path_due_at ? new Date(l.path_due_at).toLocaleDateString() : ''}` : l.learning_path && !l.done ? t('studentPortal.pathLearning', { defaultValue: '필요한 학습과 복습 확인을 이어가요' }) : l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
+                    {l.path_waiting ? `${l.path_starts_at ? (en ? 'Opens' : '시작 예정') : t('studentPortal.pathTodayComplete', { defaultValue: '오늘 학습 완료 · 다음 확인' })} ${l.path_due_at ? new Date(l.path_due_at).toLocaleDateString(undefined,{timeZone:'Asia/Seoul'}) : ''}` : l.learning_path && !l.done ? t('studentPortal.pathLearning', { defaultValue: '필요한 학습과 복습 확인을 이어가요' }) : l.done ? t('studentPortal.lessonDone') : l.progress > 0 ? t('studentPortal.lessonProgress', { progress: l.progress, total: l.total }) : t('studentPortal.lessonMinutes', { n: l.minutes })}
                   </span>
                 </span>
                 <span className="text-base font-bold">{l.path_waiting ? t('studentPortal.pathSchedule', { defaultValue: '일정 보기' }) : l.done ? t('studentPortal.again') : l.progress > 0 ? t('studentPortal.continue') : t('studentPortal.start')}</span>
@@ -249,7 +249,7 @@ function HomeView({
           {adaptive.map(h=><li key={h.id}>
             <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580]':'bg-[#3b5bdb] text-white'}`}>
               <span className="material-symbols-outlined text-[26px]" aria-hidden="true">{h.done?'task_alt':h.path_waiting?'event':'play_circle'}</span>
-              <span className="min-w-0 flex-1"><span className="block break-words text-lg font-bold">{h.name}</span><span className="block text-sm opacity-80">{h.done?(en?'Planned reviews complete':'계획한 복습 확인 완료'):h.path_waiting?(en?'Today’s homework complete · Next check ':'오늘 숙제 완료 · 다음 확인 ')+(h.path_due_at?new Date(h.path_due_at).toLocaleDateString():''):h.path_first_completed?(en?'Review available':'복습 확인할 차례예요'):(en?'Learn and practise the words you need':'필요한 단어를 배우고 연습해요')}</span>
+              <span className="min-w-0 flex-1"><span className="block break-words text-lg font-bold">{h.name}</span><span className="block text-sm opacity-80">{h.done?(en?'Planned reviews complete':'계획한 복습 확인 완료'):h.path_waiting?(h.path_starts_at?(en?'Opens ':'시작 예정 '):(en?'Today’s homework complete · Next check ':'오늘 숙제 완료 · 다음 확인 '))+(h.path_due_at?new Date(h.path_due_at).toLocaleDateString(undefined,{timeZone:'Asia/Seoul'}):''):h.path_first_completed?(en?'Review available':'복습 확인할 차례예요'):(en?'Learn and practise the words you need':'필요한 단어를 배우고 연습해요')}</span>
               {!h.path_first_completed&&h.due_at&&<span className="block text-sm opacity-80">{en?'Initial deadline: ':'첫 학습 기한: '}{new Date(h.due_at).toLocaleString(undefined,{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>}</span>
               <span className="shrink-0 font-bold">{h.done?(en?'View':'보기'):h.path_waiting?t('studentPortal.pathSchedule',{defaultValue:'일정 보기'}):h.path_first_completed?(en?'Review':'복습하기'):t('studentPortal.start')}</span>
             </a>

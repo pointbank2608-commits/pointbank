@@ -27,6 +27,7 @@ export interface PortalLesson {
   learning_path?: boolean;
   path_waiting?: boolean;
   path_due_at?: string | null;
+  path_starts_at?: string | null;
   path_first_completed?: boolean;
   path_round?: number;
   id: string;
@@ -57,13 +58,15 @@ function toError(err: unknown): PortalError {
   return new PortalError('unknown');
 }
 
-async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
+async function rpc<T>(fn: string, args: Record<string, unknown>, fallback?: string): Promise<T> {
   let res;
   try {
     res = await supabase.rpc(fn, args);
   } catch (e) {
     throw toError(e);
   }
+  if (fallback && (res.error?.code === 'PGRST202' || res.error?.code === '42883' ||
+    (!res.error && (!res.data || Array.isArray(res.data))))) return rpc<T>(fallback, args);
   if (res.error) throw toError(res.error);
   const data = res.data as T & { error?: string };
   if (data && typeof data === 'object' && 'error' in data && data.error) throw toError(data.error);
@@ -122,7 +125,7 @@ export async function studentLogin(code: string, name: string, phone: string, ho
 }
 
 export async function studentHome(token: string): Promise<PortalHome> {
-  return rpc<PortalHome>('student_home', { p_token: token });
+  return rpc<PortalHome>('student_home_with_vocab_schedule', { p_token: token }, 'student_home');
 }
 
 /** 학생이 끝낸 숙제(날짜별 도장) — 068 student_stamps */

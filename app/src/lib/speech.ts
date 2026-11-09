@@ -50,9 +50,29 @@ function start(utters: SpeechSynthesisUtterance[]) {
  * 영어 단어/문장을 브라우저 내장 음성으로 읽어준다(Web Speech API, 별도 서버·API 비용 없음).
  * 유치~초등 저학년 대상이라 기본보다 살짝 느리게(rate 0.85) 읽는다.
  */
-export function speak(text: string) {
+export function speak(text: string, rate = 0.85) {
   if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-  start([makeUtter(text)]);
+  const utter = makeUtter(text);
+  utter.rate = rate;
+  start([utter]);
+}
+
+/** For assessed listening, errors and timeouts cannot stand in for playback. */
+export function speakVerified(text: string): Promise<boolean> {
+  if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return Promise.resolve(false);
+  return new Promise(resolve => {
+    try {
+      const utterance = makeUtter(text);
+      const finish = (played: boolean) => {
+        window.clearTimeout(timer);
+        resolve(played);
+      };
+      const timer = window.setTimeout(() => finish(false), 8000);
+      utterance.addEventListener('end', () => finish(true), { once: true });
+      utterance.addEventListener('error', () => finish(false), { once: true });
+      start([utterance]);
+    } catch { resolve(false); }
+  });
 }
 
 /**
