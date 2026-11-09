@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +31,7 @@ function shuffle<T>(arr: T[]): T[] {
  * 어디에든 쓸 수 있다.
  */
 export default function OrderPicker({ pool, music, resultSound }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
   const [order, setOrder] = useState<GameItem[] | null>(null);
@@ -87,7 +89,7 @@ export default function OrderPicker({ pool, music, resultSound }: Props) {
       <LotteryMachine pool={pool} drawnList={drawnList} active={phase === 'mixing'} />
 
       <button
-        onClick={drawReady ? drawOne : mix}
+        onClick={() => drawReady ? pictureTurn(drawOne) : mix()}
         disabled={flying}
         className="mt-1 px-12 py-3.5 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-title-md text-title-md shadow-sm transition-colors"
       >

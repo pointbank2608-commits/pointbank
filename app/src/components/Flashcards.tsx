@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { usePictureWordDeck } from './PictureWordTurn';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
@@ -35,8 +36,15 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function Flashcards({ cards, boardStyle = 'wood', showPos = false, showExample = false }: Props) {
+export default function Flashcards({ cards: sourceCards, boardStyle = 'wood', showPos = false, showExample = false }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const cards = useMemo(() => deck.length ? deck.map(row => {
+    const word = row.choices[row.correctIndex];
+    const match = sourceCards.find(card => card.left.trim().toLowerCase() === word.toLowerCase());
+    return { id: row.id, left: word, right: match?.right ?? word };
+  }) : sourceCards, [deck, sourceCards]);
+  const [wrongChoice, setWrongChoice] = useState('');
   const [order, setOrder] = useState<number[]>(() => shuffle(cards.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [autoRead, setAutoRead] = useState(loadAutoRead);
@@ -63,7 +71,7 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
   // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
   useEffect(() => {
     if (firstRead.current) { firstRead.current = false; return; }
-    if (!autoRead) return;
+    if (!autoRead || deck.length) return;
     const text = cards[order[pos]]?.left;
     if (text) speak(text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,6 +153,7 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
   }
 
   const current = cards[order[pos]];
+  const picture = deck[order[pos]];
   if (!current) return null;
   const clayTone = pos % 4;
   let extra: { pos: string | null; example: string | null } | null = null;
@@ -160,7 +169,6 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
       <div className="mb-4 rounded-full bg-secondary px-4 py-1 font-title-md text-[14px] font-bold tabular-nums text-on-secondary">
         {pos + 1} / {order.length}
       </div>
-
       <div
         className={`fc-stack ${clay ? `fc-clay fc-clay-${clayTone}` : 'fc-wood'}`}
         data-skin-stage="board"
@@ -170,15 +178,17 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
         <button
           type="button"
           onClick={() => {
+            if (picture && !flipped) return;
             playSfx(GAME_SFX.flashcards.flip, 0.22);
             setFlipped((f) => !f);
           }}
+          aria-disabled={Boolean(picture && !flipped)}
           data-skin-object="card"
           className={`fc-card ${flipped ? 'is-flipped' : ''}`}
         >
           <span className="fc-face">
             <span className="fc-inset">
-              <GameFitText text={current.left} />
+              {picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="h-full w-full object-contain" /> : <GameFitText text={current.left} />}
             </span>
           </span>
           <span className="fc-face is-back">
@@ -220,8 +230,13 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
       </div>
 
       <div className="mb-6 font-caption text-caption text-on-surface-variant">
-        {flipped ? t('gameFlashcards.backHint') : t('gameFlashcards.frontHint')}
+        {t(flipped ? 'gameFlashcards.backHint' : picture ? 'gameWordHoops.askWord' : 'gameFlashcards.frontHint')}
       </div>
+      {picture && !flipped && <div className="mb-3 flex flex-wrap justify-center gap-2">{picture.choices.map((choice, i) => <button key={choice} type="button" className={pill} onClick={() => {
+        if (i !== picture.correctIndex) { setWrongChoice(picture.id + choice); return; }
+        setWrongChoice(''); playSfx(GAME_SFX.flashcards.flip, 0.22); setFlipped(true);
+      }} aria-invalid={wrongChoice === picture.id + choice}>{choice}</button>)}</div>}
+      {picture && !flipped && wrongChoice.startsWith(picture.id) && <p role="status">{t('picturePractice.retry')}</p>}
 
       <div className="flex gap-3">
         <button
@@ -240,19 +255,20 @@ export default function Flashcards({ cards, boardStyle = 'wood', showPos = false
       <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
+          disabled={Boolean(picture && !flipped)}
           onClick={() => speak(current.left)}
           className="px-5 py-2 rounded-full font-label-md text-label-md bg-[#fff4e0] text-deep-navy hover:bg-[#ffe8c4] transition-colors shadow-sm"
         >
           🔊 {t('gameFlashcards.readButton')}
         </button>
-        <button
+        {!picture && <button
           type="button"
           onClick={toggleAutoRead}
           aria-pressed={autoRead}
           className={`px-5 py-2 rounded-full font-label-md text-label-md transition-colors shadow-sm ${autoRead ? 'bg-secondary text-on-secondary' : 'bg-[#fff4e0] text-deep-navy hover:bg-[#ffe8c4]'}`}
         >
           {autoRead ? t('gameFlashcards.autoReadOn') : t('gameFlashcards.autoReadOff')}
-        </button>
+        </button>}
       </div>
     </div>
   );

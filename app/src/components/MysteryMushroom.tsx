@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -67,6 +68,7 @@ const STYLE = `
 `;
 
 const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({ items, teams, blocks }, ref) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const blockCount = blocks <= 20 ? 20 : 28;
@@ -370,7 +372,7 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-[1cqw]">
-                  <button type="button" onClick={reveal} className={btn} style={{ ...bf, background: '#f59e0b' }}>
+                  <button type="button" onClick={() => pictureTurn(reveal)} className={btn} style={{ ...bf, background: '#f59e0b' }}>
                     🍄 {t('gameMysteryBox.mushReveal')}
                   </button>
                   {pending > 0 && <span className="rounded-full bg-black/40 px-[1.2cqw] text-white" style={{ fontSize: 'clamp(11px,1.5cqw,20px)' }}>{t('gameMysteryBox.mushPending', { n: pending })}</span>}

@@ -1,3 +1,4 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -117,7 +118,9 @@ const STYLE = `
 
 const FOUR = [0, 1, 2, 3];
 
-const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, teams, info }, ref) {
+const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items: sourceItems, teams, info }, ref) {
+  const deck = usePictureWordDeck();
+  const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const itemKey = items.map((i) => i.id).join(',');
@@ -170,6 +173,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
   }, [teamCount, itemKey]);
 
   const word = items.length > 0 && order.length > 0 ? (items[order[pos % order.length]]?.label ?? '') : '';
+  const picture = order.length ? deck[order[pos % order.length]] : undefined;
   const wordInfo = info[word.trim().toLowerCase()];
   const clues = useMemo(() => (word ? buildClues(word, wordInfo, t as never) : []), [word, wordInfo, t]);
   useEffect(() => setPeek(false), [pos, round, phase]);
@@ -390,7 +394,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
                     <img src={IMG('card-back')} alt="" draggable={false} className="h-full w-full object-contain drop-shadow-lg" />
                   </div>
                   <div className="fcl-face fcl-front flex flex-col items-center justify-center overflow-hidden rounded-[1.2cqw] border-[0.4cqw] border-amber-400 bg-[#fffaf0] p-[0.6cqw] text-center shadow-lg">
-                    {clue && (
+                    {i === 0 && picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="h-full w-full object-contain" /> : clue && (
                       <>
                         <div className="mb-[0.3cqw] rounded-full bg-indigo-100 px-[0.8cqw] font-bold text-indigo-700" style={{ fontSize: 'clamp(8px, 1.1cqw, 15px)' }}>
                           {t(`gameFourClues.kind_${clue.kind}`)}
@@ -425,12 +429,13 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items, team
         {/* 조작 줄 — 책상 위 */}
         {phase === 'play' && (
           <div className="absolute inset-x-0 bottom-[3%] z-10 flex flex-wrap items-center justify-center gap-[1cqw]">
+            {picture ? picture.choices.map((choice, i) => <button type="button" key={choice} disabled={!firstShown} className={btn} style={{ ...fs, background: '#0369a1' }} onClick={i === picture.correctIndex ? judgeRight : judgeWrong}>{choice}</button>) : <>
             <button type="button" onClick={judgeRight} className={btn} style={{ ...fs, background: '#10b981' }}>
               ✓ {t('gameFourClues.judgeRight', { n: pointsFor(openCount) })}
             </button>
             <button type="button" onClick={judgeWrong} className={btn} style={{ ...fs, background: '#f43f5e' }}>
               ✗ {t('gameFourClues.judgeWrong')}
-            </button>
+            </button></>}
             <button type="button" onClick={peekAnswer} className={btn} style={{ ...fs, background: '#64748b' }}>
               👀 {t('gameFourClues.peek')}
             </button>

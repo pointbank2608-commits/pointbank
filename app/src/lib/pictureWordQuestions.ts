@@ -4,15 +4,19 @@ import { gameBrowseGroups } from './gameBrowse';
 
 export type PictureWordQuestion = QuizQuestion & { imageUrl: string };
 
-const NATIVE = new Set<GameType>(['balloonpop', 'wordfishing', 'feedmonster', 'quiz', 'gameshowquiz', 'winlosequiz']);
+const NATIVE = new Set<GameType>([
+  'balloonpop', 'wordfishing', 'feedmonster', 'quiz', 'gameshowquiz', 'winlosequiz',
+  'typeanswer', 'imagequiz', 'airplane', 'mazechase', 'whackamole', 'truefalse',
+  'flashcards', 'wordclaw', 'treasuredig', 'fourclues',
+]);
 const SEPARATE = new Set<GameType>(['wordhoops', 'tugofwar', 'quizshow']);
 const EXTRA_WORD_GAMES = new Set<GameType>(['shopping', 'watermelon', 'twodice', 'order', 'ladder']);
 
-export function pictureWordModeKind(type?: GameType): 'native' | 'practice' | null {
+export function pictureWordModeKind(type?: GameType): 'native' | 'turn' | null {
   if (!type || SEPARATE.has(type)) return null;
   if (NATIVE.has(type)) return 'native';
   const game = GAME_CATALOG.find(game => game.type === type);
-  return game && (EXTRA_WORD_GAMES.has(type) || gameBrowseGroups(game).includes('word')) ? 'practice' : null;
+  return game && (EXTRA_WORD_GAMES.has(type) || gameBrowseGroups(game).includes('word')) ? 'turn' : null;
 }
 
 export function pictureQuizDeck(config: GameTemplateConfig | undefined, questions: QuizQuestion[]): QuizQuestion[] {

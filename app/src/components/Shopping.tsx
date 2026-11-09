@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -104,6 +105,7 @@ function layoutShelves(shelf: ImageQuizItem[]) {
  * list: 목록을 잠깐 보고 외운 뒤 그대로 담기 · dish/event: 상황 카드를 보고 필요한 것을 자유롭게 담기.
  */
 export default function Shopping({ items, mode, listSize, memorizeSeconds, scene = null }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const sfx = useGameSfx('shopping');
   const soundOn = useGameSoundOn();
@@ -679,7 +681,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
               {t(`gameShopping.modeHint_${mode}`)}
             </div>
             {missionCard(true)}
-            <div>{bigButton(t('gameShopping.startButton'), () => startRound())}</div>
+            <div>{bigButton(t('gameShopping.startButton'), () => pictureTurn(() => startRound()))}</div>
           </>,
         )}
 
@@ -739,7 +741,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
                 </ul>
               </>
             )}
-            {bigButton(mode === 'list' ? t('gameShopping.newListButton') : t('gameShopping.nextMissionButton'), () => startRound(mode === 'list' ? missionIndex : missionIndex + 1))}
+            {bigButton(mode === 'list' ? t('gameShopping.newListButton') : t('gameShopping.nextMissionButton'), () => pictureTurn(() => startRound(mode === 'list' ? missionIndex : missionIndex + 1)))}
           </>,
         )}
     </div>

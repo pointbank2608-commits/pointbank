@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -73,6 +74,7 @@ const STYLE = `
 `;
 
 const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge({ items, boxes, teams }, ref) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const boxCount = Math.max(6, boxes);
@@ -625,7 +627,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
 
                   {!resolved && (
                     <div className="flex flex-wrap items-center justify-center gap-[1cqw]">
-                      <button type="button" onClick={() => finish('win')} className={btn} style={{ ...bf, background: '#10b981' }}>
+                      <button type="button" onClick={() => pictureTurn(() => finish('win'))} className={btn} style={{ ...bf, background: '#10b981' }}>
                         ✓ {t('gameLastBox.success', { n: teamNo(turn) })}
                       </button>
                       <button type="button" onClick={() => finish('lose')} className={btn} style={{ ...bf, background: '#f43f5e' }}>

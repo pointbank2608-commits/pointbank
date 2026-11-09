@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -149,6 +150,7 @@ export default function WordSearch({
   onRemoveItem,
   onComplete,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const tiles = boardStyle === 'tiles';
@@ -276,15 +278,17 @@ export default function WordSearch({
           return clean === text || clean === reversed;
         }));
     if (match) {
-      setFoundIds((prev) => new Set(prev).add(match.id));
-      setFoundLines((prev) => ({ ...prev, [match.id]: line }));
-      setWrongCells(null);
-      setAlreadyFound(null);
-      // 마지막 단어면 끝 소리만(겹치지 않게)
-      if (foundIds.size + 1 < placements.length) playSfx(sfx.found);
-      setJustFound(match.id);
-      if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
-      justFoundTimer.current = gameClock.setTimeout(() => setJustFound(null), 1200);
+      pictureTurn(() => {
+        setFoundIds((prev) => new Set(prev).add(match.id));
+        setFoundLines((prev) => ({ ...prev, [match.id]: line }));
+        setWrongCells(null);
+        setAlreadyFound(null);
+        // 마지막 단어면 끝 소리만(겹치지 않게)
+        if (foundIds.size + 1 < placements.length) playSfx(sfx.found);
+        setJustFound(match.id);
+        if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
+        justFoundTimer.current = gameClock.setTimeout(() => setJustFound(null), 1200);
+      }, match.word);
     } else if (
       line &&
       placements.some((p) => {

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { usePictureWordDeck } from './PictureWordTurn';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { TrueFalseStatement } from '../lib/types';
@@ -21,8 +22,11 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function TrueFalse({ statements }: Props) {
+export default function TrueFalse({ statements: sourceStatements }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const questions = useMemo(() => deck.map(row => ({ ...row, decoy: (row.correctIndex + 1) % row.choices.length })), [deck]);
+  const statements = useMemo(() => questions.length ? questions.map((row, index) => ({ id: row.id, text: '', isTrue: index % 2 === 0, explanation: row.choices[row.correctIndex] })) : sourceStatements, [questions, sourceStatements]);
   const [order, setOrder] = useState<number[]>(() => shuffle(statements.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [selected, setSelected] = useState<boolean | null>(null);
@@ -111,6 +115,9 @@ export default function TrueFalse({ statements }: Props) {
   // 편집 화면에서 문장을 지운 직후 한 프레임 동안은 order 가 아직 옛 길이 기준이라
   // 범위를 벗어날 수 있다 — 위 useEffect 가 재동기화하기 전까지 이 프레임만 건너뛴다.
   if (!current) return null;
+  const picture = questions[order[pos]];
+  const correctWord = picture?.choices[picture.correctIndex];
+  const decoy = picture?.choices[picture.decoy];
   const revealed = selected !== null;
   const gotItRight = selected === current.isTrue;
 
@@ -147,7 +154,7 @@ export default function TrueFalse({ statements }: Props) {
           }}
         >
           <div className="w-full min-h-[3em]">
-            <GameFitText text={current.text} fit="block" />
+            {picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto max-h-44 max-w-full object-contain" /> : <GameFitText text={current.text} fit="block" />}
           </div>
         </div>
       </div>
@@ -160,8 +167,8 @@ export default function TrueFalse({ statements }: Props) {
           data-skin-object="choice"
           className={`tf-token ${tokenState(true)}`}
         >
-          <span className="tf-mark tf-mark-o" />
-          <span className="tf-chip">{t('gameTrueFalse.trueLabel')}</span>
+          {!picture && <span className="tf-mark tf-mark-o" />}
+          <span className="tf-chip">{picture ? (current.isTrue ? correctWord : decoy) : t('gameTrueFalse.trueLabel')}</span>
         </button>
         <button
           type="button"
@@ -170,8 +177,8 @@ export default function TrueFalse({ statements }: Props) {
           data-skin-object="choice"
           className={`tf-token ${tokenState(false)}`}
         >
-          <span className="tf-mark tf-mark-x" />
-          <span className="tf-chip">{t('gameTrueFalse.falseLabel')}</span>
+          {!picture && <span className="tf-mark tf-mark-x" />}
+          <span className="tf-chip">{picture ? (current.isTrue ? decoy : correctWord) : t('gameTrueFalse.falseLabel')}</span>
         </button>
       </div>
 

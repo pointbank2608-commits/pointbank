@@ -1653,13 +1653,8 @@ const en: Ko = {
   },
   picturePractice: {
     title: "Pick the English word from a picture",
-    results: "{{count}} correct on the first try · {{total}} answered",
-    skipped: "{{count}} skipped because the pictures did not load",
-    imageMissing: "The picture could not load. You can skip to the next question.",
-    correct: "That's right!",
+    turnImageMissing: "The picture did not load. Close and try again.",
     retry: "Look at the picture and try another word.",
-    next: "Next question",
-    showResults: "See results",
   },
   gameWordHoops: {
     studentClassTitle: "{{className}} Word Hoops",

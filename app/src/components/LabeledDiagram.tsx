@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +48,7 @@ export function LabeledDiagramEmptyMotif() {
 }
 
 export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const clay = boardStyle === 'clay';
   const [wordBank, setWordBank] = useState<DiagramPin[]>(() => shuffle(pins));
@@ -160,7 +162,7 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
               <button
                 key={pin.id}
                 type="button"
-                onClick={() => clickPin(pin)}
+                onClick={() => pictureTurn(() => clickPin(pin))}
                 disabled={isFilled}
                 data-skin-object="pin"
                 className={`ld-pin ${isFilled ? 'is-filled' : ''} ${isWrong ? 'is-wrong' : ''} ${clay ? `ld-clay-${i % 4}` : ''}`}

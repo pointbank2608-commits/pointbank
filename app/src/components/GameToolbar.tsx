@@ -779,7 +779,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               </select>
             </label>
             <p className="text-sm text-on-surface-variant">{pictureCount ? text(`그림 문제 ${pictureCount}개`, `${pictureCount} picture questions`) : t('gameWordHoops.pictureNeedsList')}</p>
-            {pictureKind === 'practice' && <p className="text-sm text-on-surface-variant">{text('이 모드에서는 그림을 보고 영어 단어를 고르는 공통 연습 화면이 열려요.', 'This mode opens the shared picture-word practice board.')}</p>}
+            {pictureKind === 'turn' && <p className="text-sm text-on-surface-variant">{text('게임을 진행하는 중에 그림 문제가 나와요. 영어 단어를 고르면 이어서 진행돼요.', 'Picture questions appear during the game. Pick the English word to continue the move.')}</p>}
           </>}
           {!pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings'); }}>{text('자세히 설정', 'More settings')}</button>}
         </fieldset>}

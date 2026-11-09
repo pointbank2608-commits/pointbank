@@ -1,6 +1,7 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
-import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import { useMemo, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
@@ -233,9 +234,9 @@ function isEditorTarget(target: EventTarget | null): boolean {
 }
 
 export default function Airplane({
-  items,
+  items: sourceItems,
   boardStyle = 'wood',
-  editable,
+  editable: allowEditing,
   templateName,
   onRenameTemplate,
   onEditItem,
@@ -243,6 +244,10 @@ export default function Airplane({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
+  const editable = allowEditing && !deck.length;
+  const enoughItems = items.length >= (deck.length ? 1 : 2);
   const { itemsHidden } = useGamePlay();
   const clay = boardStyle === 'clay';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
@@ -309,7 +314,9 @@ export default function Airplane({
       return;
     }
     playerYRef.current = 50;
-    flyersRef.current = spawnFlyers(items[nextOrder[nextPos]], items, playerYRef.current);
+    const picture = deck.find(row => row.id === items[nextOrder[nextPos]].id);
+    const choices = picture ? picture.choices.filter((_, i) => i !== picture.correctIndex).map((label, i) => ({ id: `${picture.id}:decoy:${i}`, label })) : items;
+    flyersRef.current = spawnFlyers(items[nextOrder[nextPos]], choices, playerYRef.current);
     missilesRef.current = [];
     burstsRef.current = [];
     cooldownRef.current = 0;
@@ -384,7 +391,7 @@ export default function Airplane({
   }, []);
 
   useEffect(() => {
-    if (items.length < 2) return;
+    if (!enoughItems) return;
     let raf = 0;
     let lastTime = gameClock.now();
 
@@ -485,11 +492,11 @@ export default function Airplane({
 
     raf = gameClock.requestAnimationFrame(loop);
     return () => gameClock.cancelAnimationFrame(raf);
-  }, [items.length]);
+  }, [enoughItems]);
 
-  useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.airplane.finish);
+  useStepSounds(0, enoughItems && order.length > 0 && pos >= order.length, undefined, GAME_SFX.airplane.finish);
 
-  if (items.length < 2) {
+  if (!enoughItems) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
         <div className="mx-auto mb-3 flex justify-center">
@@ -612,7 +619,7 @@ export default function Airplane({
           {pos + 1} / {order.length}
         </div>
         <div className="font-title-md text-title-md text-deep-navy">
-          {t('gameAirplane.targetLabel', { word: target.label })}
+          {deck[order[pos]] ? <img data-picture-word src={deck[order[pos]].imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto h-16 max-w-full object-contain" /> : t('gameAirplane.targetLabel', { word: target.label })}
         </div>
       </div>
 

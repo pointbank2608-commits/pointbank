@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,6 +62,7 @@ export default function SpellTheWord({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const stamps = boardStyle === 'stamps';
@@ -390,7 +392,7 @@ export default function SpellTheWord({
               ? t('gameSpellWord.correctFeedback')
               : t('gameSpellWord.wrongFeedback', { word: target })}
           </div>
-          <button onClick={next} className={pill}>
+          <button onClick={() => pictureTurn(next)} className={pill}>
             {t('gameSpellWord.nextButton')}
           </button>
         </div>

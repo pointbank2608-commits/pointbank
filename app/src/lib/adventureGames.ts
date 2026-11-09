@@ -156,7 +156,7 @@ export type AdventureRound =
  | {kind:'sentence';id:string;sentence:AdventureSentence}
  | {kind:'case';id:string;item:DetectiveCase}
  | {kind:'clue';id:string;clue:IslandClue}
- | {kind:'mission';id:string;mission:ClawMission};
+ | {kind:'mission';id:string;mission:ClawMission; picture?: { imageUrl: string; answer: string; words: AdventureWord[] }};
 export function adventureRounds(type: AdventureType,c: AdventureConfig): AdventureRound[] {
   let rows:AdventureRound[];
   if(type==='balloonpop'||type==='wordfishing'){

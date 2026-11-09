@@ -1,5 +1,6 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { ImageQuizItem } from '../lib/types';
@@ -34,13 +35,16 @@ export function ImageQuizEmptyMotif() {
   );
 }
 
-export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }: Props) {
+export default function ImageQuiz({ items: sourceItems, revealSeconds, boardStyle = 'wood' }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, imageUrl: row.imageUrl!, answer: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const clay = boardStyle === 'clay';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [phase, setPhase] = useState<'revealing' | 'revealed'>('revealing');
   const [score, setScore] = useState(0);
+  const [pictureResult, setPictureResult] = useState<boolean | null>(null);
   const [blurred, setBlurred] = useState(true);
 
   const itemIdsKey = items.map((it) => it.id).join('|');
@@ -48,6 +52,7 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
     setScore(0);
+    setPictureResult(null);
     setPhase('revealing');
     setBlurred(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,6 +63,7 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
   // 겹쳐, 두 번째 사진부터는 흐림이 거의 안 보였다(2026-09-25 사용자 제보). 이제 문제마다 <img>를
   // key 로 새로 만들고, 사진이 실제로 다 불러와진 뒤에 선명해지기 시작한다.
   function goToPos(nextPos: number) {
+    setPictureResult(null);
     setPhase('revealing');
     setBlurred(true);
     setPos(nextPos);
@@ -132,6 +138,8 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
   const current = items[order[pos]];
   if (!current) return null;
 
+  const picture = deck[order[pos]];
+
   function reveal() {
     setPhase('revealed');
     setBlurred(false);
@@ -155,7 +163,8 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
             key={`${pos}:${current.id}`}
             src={current.imageUrl}
             onLoad={() => startUnblur(pos)}
-            alt=""
+            alt={picture ? t('gameWordHoops.askWord') : ''}
+            data-picture-word={picture ? '' : undefined}
             data-skin-object="photo"
             className="h-full w-full object-cover"
             style={{
@@ -166,7 +175,17 @@ export default function ImageQuiz({ items, revealSeconds, boardStyle = 'wood' }:
         </div>
       </div>
 
-      {phase === 'revealing' ? (
+      {picture ? (
+        <div className="flex flex-wrap justify-center gap-2">
+          {pictureResult === null ? picture.choices.map((choice, i) => <button type="button" className="iq-btn iq-reveal" key={choice} onClick={() => {
+            setPictureResult(i === picture.correctIndex);
+            reveal();
+          }}>{choice}</button>) : <>
+            <div className="iq-answer" role="status">{pictureResult ? '✓' : '✗'} {current.answer}</div>
+            <button type="button" className="iq-btn iq-reveal" onClick={() => next(pictureResult)}>{t('gameTypeAnswer.nextButton')}</button>
+          </>}
+        </div>
+      ) : phase === 'revealing' ? (
         <button type="button" onClick={reveal} className="iq-btn iq-reveal">
           {t('gameImageQuiz.revealButton')}
         </button>

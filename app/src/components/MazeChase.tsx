@@ -1,3 +1,4 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
@@ -433,9 +434,9 @@ function escapeChip(pos: Vec, bubble: Bubble, wall: WallGrid) {
 }
 
 export default function MazeChase({
-  items,
+  items: sourceItems,
   boardStyle = 'wood',
-  editable,
+  editable: allowEditing,
   onEditItem,
   templateName,
   onRenameTemplate,
@@ -443,6 +444,10 @@ export default function MazeChase({
   onRemoveItem,
 }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
+  const editable = allowEditing && !deck.length;
+  const enoughItems = items.length >= (deck.length ? 1 : 2);
   const { itemsHidden } = useGamePlay();
   const garden = boardStyle === 'garden';
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
@@ -497,10 +502,12 @@ export default function MazeChase({
   const flashTimers = useRef<number[]>([]);
 
   const layout = useMemo(() => {
-    if (items.length < 2 || pos >= order.length) return null;
+    if (!enoughItems || pos >= order.length) return null;
     const target = items[order[pos]];
     if (!target) return null;
-    return buildRound(target, items);
+    const picture = deck.find(row => row.id === target.id);
+    const choices = picture ? picture.choices.filter((_, i) => i !== picture.correctIndex).map((label, i) => ({ id: `${picture.id}:decoy:${i}`, label })) : items;
+    return buildRound(target, choices);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemKey, pos, order]);
 
@@ -581,7 +588,7 @@ export default function MazeChase({
   }, []);
 
   useEffect(() => {
-    if (items.length < 2) return;
+    if (!enoughItems) return;
     let raf = 0;
     let lastTime = gameClock.now();
 
@@ -673,11 +680,11 @@ export default function MazeChase({
 
     raf = gameClock.requestAnimationFrame(loop);
     return () => gameClock.cancelAnimationFrame(raf);
-  }, [items.length]);
+  }, [enoughItems]);
 
-  useStepSounds(0, items.length >= 2 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.mazechase.finish);
+  useStepSounds(0, enoughItems && order.length > 0 && pos >= order.length, undefined, GAME_SFX.mazechase.finish);
 
-  if (items.length < 2) {
+  if (!enoughItems) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
         <div className="mx-auto mb-3 flex justify-center">
@@ -851,7 +858,7 @@ export default function MazeChase({
           {pos + 1} / {order.length}
         </div>
         <div className="font-title-md text-title-md text-deep-navy">
-          {t('gameMazeChase.targetLabel', { word: target.label })}
+          {deck[order[pos]] ? <img data-picture-word src={deck[order[pos]].imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto h-16 max-w-full object-contain" /> : t('gameMazeChase.targetLabel', { word: target.label })}
         </div>
       </div>
 

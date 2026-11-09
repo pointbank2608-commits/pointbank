@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -74,6 +75,7 @@ export default function Anagram({
   onRemoveItem,
   onComplete,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const hang = boardStyle === 'tags';
@@ -412,7 +414,7 @@ export default function Anagram({
           </button>
         )}
         {status === 'correct' && (
-          <button onClick={next} className={pill}>
+          <button onClick={() => pictureTurn(next)} className={pill}>
             {t('gameAnagram.nextButton')}
           </button>
         )}

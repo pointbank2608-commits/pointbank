@@ -1,5 +1,6 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair, UndoHandle } from '../lib/types';
@@ -53,12 +54,16 @@ interface Snapshot {
   holes: (MatchPair | null)[];
 }
 
-const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mode = 'wordToMeaning', timeLimit = 0, onComplete }, ref) {
+const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: sourcePairs, mode = 'wordToMeaning', timeLimit = 0, onComplete }, ref) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const pairs = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, left: row.choices[row.correctIndex], right: '' })) : sourcePairs, [deck, sourcePairs]);
+  const pictureHoles = useMemo(() => new Map(deck.map(row => [row.id, row.choices.map((left, i) => ({ id: i === row.correctIndex ? row.id : row.id + ':' + i, left, right: '' }))])), [deck]);
+  function makeHoles(target: MatchPair) { return dealHoles(target, pictureHoles.get(target.id) ?? pairs); }
   const [order, setOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [pos, setPos] = useState(0);
   const [holes, setHoles] = useState<(MatchPair | null)[]>(() =>
-    pairs[0] ? dealHoles(pairs[0], pairs) : Array(HOLE_COUNT).fill(null),
+    pairs[0] ? makeHoles(pairs[0]) : Array(HOLE_COUNT).fill(null),
   );
   const [hits, setHits] = useState(0);
   const [misses, setMisses] = useState(0);
@@ -115,7 +120,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     setLocked(false);
     setHitHole(null);
     setHitKind(null);
-    setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
+    setHoles(next[0] ? makeHoles(next[0]) : Array(HOLE_COUNT).fill(null));
     setPrevSnapshot(null);
     resetTimer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,6 +196,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
   const prompt = target ? (mode === 'wordToMeaning' ? target.left : target.right) : '';
 
   function choiceLabel(p: MatchPair) {
+    if (deck.length) return p.left;
     return mode === 'wordToMeaning' ? p.right : p.left;
   }
 
@@ -204,7 +210,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
     setLocked(false);
     setHitHole(null);
     setHitKind(null);
-    setHoles(next[0] ? dealHoles(next[0], pairs) : Array(HOLE_COUNT).fill(null));
+    setHoles(next[0] ? makeHoles(next[0]) : Array(HOLE_COUNT).fill(null));
     setPrevSnapshot(null);
     resetTimer();
   }
@@ -222,7 +228,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
       setOrder(nextOrder);
     }
     const nextTarget = nextOrder[nextPos];
-    setHoles(nextTarget ? dealHoles(nextTarget, pairs) : Array(HOLE_COUNT).fill(null));
+    setHoles(nextTarget ? makeHoles(nextTarget) : Array(HOLE_COUNT).fill(null));
     setPos(nextPos);
   }
 
@@ -311,7 +317,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs, mo
 
       <div className="wm-prompt mb-4 w-full max-w-[420px]">
         <div className="wm-prompt-inner">
-          <GameFitText text={prompt} fit="block" />
+          {target && deck.length ? <img data-picture-word src={deck.find(row => row.id === target.id)?.imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto h-16 max-w-full object-contain" /> : <GameFitText text={prompt} fit="block" />}
         </div>
       </div>
 

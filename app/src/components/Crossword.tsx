@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -169,6 +170,7 @@ export default function Crossword({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const blocks = boardStyle === 'blocks';
@@ -367,7 +369,7 @@ export default function Crossword({
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => selectWord(p.id)}
+                  onClick={() => pictureTurn(() => selectWord(p.id))}
                   data-skin-object="word-chip"
                   className={`cw-chip ${on ? 'is-on' : blocks ? `is-clay-${i % 4}` : ''}`}
                 >

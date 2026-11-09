@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +25,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays', onComplete }, ref) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const [leftOrder, setLeftOrder] = useState<MatchPair[]>(() => shuffle(pairs));
   const [rightOrder, setRightOrder] = useState<MatchPair[]>(() => shuffle(pairs));
@@ -232,7 +234,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
       </div>
       <div className="matchup-clay__footer">
         <span role="status">{feedback}</span>
-        {roundComplete && <button type="button" className="matchup-clay__action" onClick={nextRound}>
+        {roundComplete && <button type="button" className="matchup-clay__action" onClick={() => pictureTurn(nextRound)}>
           {t('classroomUx.nextRound')} <span aria-hidden>→</span>
         </button>}
       </div>

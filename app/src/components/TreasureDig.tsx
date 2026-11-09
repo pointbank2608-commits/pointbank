@@ -1,3 +1,4 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -105,7 +106,9 @@ const STYLE = `
 }
 `;
 
-const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, teams, mounds }, ref) {
+const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: sourceItems, teams, mounds }, ref) {
+  const deck = usePictureWordDeck();
+  const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const moundCount = Math.max(6, mounds);
@@ -163,6 +166,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
     const cut = raw.indexOf(' | ');
     return cut >= 0 ? { word: raw.slice(0, cut).trim(), ko: raw.slice(cut + 3).trim() } : { word: raw.trim(), ko: '' };
   }, [items, order, cardPos]);
+  const picture = order.length ? deck[order[cardPos % order.length]] : undefined;
   const [showKo, setShowKo] = useState(false);
   useEffect(() => setShowKo(false), [cardPos, selected]);
 
@@ -175,7 +179,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
     playSfx(GAME_SFX.treasuredig.pick);
     setSelected(idx);
     setPhase('question');
-    if (word) speak(word);
+    if (word && !picture) speak(word);
   }
 
   function cancelPick() {
@@ -526,9 +530,9 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
                           : 'clamp(28px,6cqw,80px)',
                 }}
               >
-                {word || t('gameTreasureDig.noWordCard')}
+                {picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto max-h-[22cqh] max-w-full object-contain" /> : word || t('gameTreasureDig.noWordCard')}
               </div>
-              {ko && (
+              {!picture && ko && (
                 <div className="mb-3">
                   {showKo ? (
                     <div className="font-body-md text-body-md text-on-surface-variant">{ko}</div>
@@ -543,7 +547,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
                   )}
                 </div>
               )}
-              {word && (
+              {!picture && word && (
                 <button
                   type="button"
                   onClick={() => speak(word)}
@@ -553,6 +557,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
                 </button>
               )}
               <div className="flex flex-wrap items-center justify-center gap-3">
+                {picture ? picture.choices.map((choice, i) => <button type="button" key={choice} onClick={i === picture.correctIndex ? judgeRight : judgeWrong} className="rounded-full bg-sky-100 px-5 py-2 font-bold text-deep-navy hover:bg-sky-200">{choice}</button>) : <>
                 <button
                   type="button"
                   onClick={judgeRight}
@@ -566,7 +571,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items, 
                   className="rounded-full bg-rose-500 px-8 py-3 font-title-md text-title-md text-white shadow hover:bg-rose-600"
                 >
                   ✗ {t('gameTreasureDig.judgeWrong')}
-                </button>
+                </button></>}
               </div>
               <button
                 type="button"

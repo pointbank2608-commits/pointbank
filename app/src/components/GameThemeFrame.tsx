@@ -13,7 +13,7 @@ import { clearBoardReturn, hasBoardReturn } from '../lib/boardMaterial';
 import { usePresenting } from '../context/LessonRunnerContext';
 import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
-import PictureWordPractice from './PictureWordPractice';
+import { PictureWordTurnProvider } from './PictureWordTurn';
 import { pictureWordModeKind } from '../lib/pictureWordQuestions';
 import '../gameSkins.css';
 import type { GameType, GameItem } from '../lib/types';
@@ -111,9 +111,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const workspace = useGameWorkspace();
   const pictureTemplate = workspace?.info?.selected;
   const frameGame = gameType ?? bg;
-  const picturePractice = pictureTemplate?.config.pictureWordMode && pictureTemplate.game_type === frameGame && pictureWordModeKind(frameGame) === 'practice' ? pictureTemplate : null;
-  const [pictureRevision, setPictureRevision] = useState(0);
-  const restartPicturePractice = () => setPictureRevision(value => value + 1);
+  const pictureModeTemplate = pictureTemplate?.config.pictureWordMode && pictureTemplate.game_type === frameGame && pictureWordModeKind(frameGame) !== null ? pictureTemplate : null;
   const roster = workspace?.roster ?? suppliedRoster;
   const selection = autoStartForSelection ? workspace?.info?.selected?.id ?? '' : '';
   useEffect(() => {
@@ -564,7 +562,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             {t('whiteboard.returnPill')}
           </button>
         )}
-        {workspace && <GameWorkspaceFrameControls participants={!!gameType && GRAMMAR_GAME_TYPES.includes(gameType as never)} onRestart={onRestart || picturePractice ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
+        {workspace && <GameWorkspaceFrameControls participants={!!gameType && GRAMMAR_GAME_TYPES.includes(gameType as never)} onRestart={onRestart ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
         {bgUrl && (
           <div
             aria-hidden
@@ -645,9 +643,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
                 transformOrigin: fill && !scrollContent ? 'center center' : 'top left',
               }}
             >
-              {picturePractice
-                ? <PictureWordPractice key={`${picturePractice.id}:${pictureRevision}`} config={picturePractice.config} restart={restartPicturePractice} />
-                : children}
+              <PictureWordTurnProvider key={pictureModeTemplate?.id ?? 'standard'} config={pictureModeTemplate?.config}>{children}</PictureWordTurnProvider>
             </div>
           </div>
         </div>
@@ -659,7 +655,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               <p className="mt-3 text-on-surface-variant">{t('classroomUx.restartHint')}</p>
               <div className="mt-6 flex flex-wrap justify-end gap-3">
                 <button autoFocus type="button" className="min-h-11 rounded-xl border border-outline-variant px-5" onClick={() => setRestartOpen(false)}>{t('classroomUx.keepPlaying')}</button>
-                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); if (picturePractice) restartPicturePractice(); else onRestart?.(); playSfx(COMMON_SFX.start); }}>{t('gamePlay.restart')}</button>
+                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); onRestart?.(); playSfx(COMMON_SFX.start); }}>{t('gamePlay.restart')}</button>
               </div>
             </div>
           </AccessibleDialog>

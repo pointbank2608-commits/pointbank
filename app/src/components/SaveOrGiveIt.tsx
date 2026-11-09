@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
@@ -218,6 +219,7 @@ export default function SaveOrGiveIt({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('grid');
@@ -551,7 +553,7 @@ export default function SaveOrGiveIt({
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <button
                     type="button"
-                    onClick={markCorrect}
+                    onClick={() => pictureTurn(markCorrect)}
                     className="rounded-full bg-primary px-8 py-3 font-title-md text-title-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
                   >
                     {t('gameSaveOrGive.correctButton')}

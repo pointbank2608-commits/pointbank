@@ -101,21 +101,64 @@ try {
   await page.getByRole('combobox',{name:/그림 문제에 쓸 단어장/}).selectOption('words');
   await apply.click();
   await expectPlay(page);
-  if(type==='winlosequiz') {
-   await stage.getByRole('button',{name:/올인/}).click();
+  assert.equal(await stage.locator('[data-picture-practice]').count(),0);
+  assert.equal(await stage.locator('[data-picture-turn]').count(),0);
+  if(type==='winlosequiz') await stage.getByRole('button',{name:/올인/}).click();
+  if(type==='treasuredig') await stage.getByRole('button',{name:'1번 언덕',exact:true}).click();
+  if(type==='mysterybox') await stage.locator('.mm-block').first().press('Enter');
+  if(['tictactoe','connect4','mysterybox'].includes(type)) {
+   const target=type==='tictactoe'?stage.locator('[data-skin-object="cell"]').first():
+    type==='connect4'?stage.getByRole('button',{name:/원판을 떨어뜨리세요/}).first():
+    stage.getByRole('button',{name:/버섯 공개/});
+   await target.press('Enter');
+   const turn=stage.locator('[data-picture-turn]');
+   const answer=(await turn.locator('img').getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
+   assert.ok(answer);
+   await turn.getByRole('button',{name:answer,exact:true}).click();
+   await turn.waitFor({state:'hidden'});
+   if(type==='tictactoe') assert.equal(await target.isDisabled(),true);
+  }
+  if(type==='wheel'){
+   const spin=stage.getByRole('button',{name:'돌리기',exact:true}).last();
+   await spin.click();
+   const turn=stage.locator('[data-picture-turn]');
+   await turn.waitFor();
+   const answer=(await turn.locator('img').getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
+   assert.ok(answer);
+   assert.equal(await stage.locator('[data-wheel-result]').count(),0);
+   await turn.getByRole('button',{name:answer==='dog'?'cat':'dog',exact:true}).click();
+   await turn.getByRole('status').waitFor();
+   assert.equal(await stage.locator('[data-wheel-result]').count(),0);
+   await page.keyboard.press('Escape');
+   await turn.waitFor({state:'hidden'});
+   await spin.click();
+   const nextAnswer=(await turn.locator('img').getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
+   await turn.getByRole('button',{name:nextAnswer,exact:true}).click();
+   await stage.locator('[data-wheel-result]').waitFor({timeout:10000});
   }
   const picture=stage.locator('[data-picture-word]').first();
-  await picture.waitFor({timeout:7000});
-  assert.equal(await stage.locator('[data-picture-practice]').count(),kind==='practice'?1:0);
-  await page.waitForFunction(()=>Array.from(document.querySelectorAll('[data-picture-word]')).some(img=>img.complete && img.naturalWidth>0));
-  const answer=(await picture.getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
-  assert.ok(answer);
-  if(kind==='practice') {
-   await stage.getByRole('button',{name:answer,exact:true}).click();
-   await stage.getByText('맞았어요!',{exact:true}).waitFor();
-  } else if(type==='wordfishing' || type==='balloonpop') {
-   await stage.locator(`[data-word="${answer}"]`).press('Enter');
-   await stage.locator(type==='wordfishing'?'.ad-fish-correct':'.ad-balloon.correct').waitFor();
+  if(kind==='native'){
+   await picture.waitFor({timeout:7000});
+   await page.waitForFunction(()=>Array.from(document.querySelectorAll('[data-picture-word]')).some(img=>img.complete && img.naturalWidth>0));
+   const answer=(await picture.getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
+   assert.ok(answer);
+   if(type==='wordfishing' || type==='balloonpop' || type==='wordclaw') {
+    await stage.locator(`[data-word="${answer}"]`).press('Enter');
+    if(type==='wordclaw') await stage.getByRole('button',{name:'집게 내리기',exact:true}).click();
+    await stage.locator(type==='wordfishing'?'.ad-fish-correct':type==='wordclaw'?'.ad-capsule.is-lifting':'.ad-balloon.correct').waitFor();
+   }
+   if(type==='treasuredig'){
+    await stage.getByRole('button',{name:answer,exact:true}).click();
+    await picture.waitFor({state:'hidden'});
+   }
+   if(type==='typeanswer' || type==='imagequiz' || type==='truefalse'){
+    await stage.getByRole('button',{name:answer,exact:true}).click();
+    await stage.locator('.result-pop,[role=status].iq-answer').first().waitFor();
+   }
+   if(type==='whackamole') {
+    await stage.getByRole('button',{name:answer,exact:true}).press('Enter');
+    await stage.locator('.wm-hole.is-ok').waitFor();
+   }
   }
   if(type==='wordfishing' || type==='wheel'){
    if(type==='wheel'){
@@ -257,7 +300,7 @@ try {
   console.log(type,'applied lists:',choices.join(',') || 'none');
  }
  async function verify(type){
-  const ctx=await browser.newContext({viewport:{width:1280,height:900}});await ctx.route('https://**/*',r=>r.abort());const page=await ctx.newPage();
+  const ctx=await browser.newContext({viewport:args.includes('--mobile')?{width:390,height:844}:{width:1280,height:900}});await ctx.route('https://**/*',r=>r.abort());const page=await ctx.newPage();
   const errs=[];page.on('pageerror',e=>errs.push(String(e)));
   await page.goto(fixture+`?start=/games/${type}${audit?'&applyAudit':''}${pictureAudit?'&pictureAudit':''}`);await page.locator('[data-play-mode="play"] [data-game]').first().waitFor({timeout:20000}).catch(()=>{});
   if(type==='wordfishing')await page.locator('.ad-wordfishing .ad-fish').first().waitFor({timeout:5000});

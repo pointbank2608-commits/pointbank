@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -71,6 +72,7 @@ const STYLE = `
 `;
 
 const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ items, players, minSec, maxSec, char = 'sheep', onChar }, ref) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const n = Math.min(40, Math.max(2, players));
   const lo = Math.max(2, Math.min(minSec, maxSec));
@@ -441,7 +443,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
           </button>
         )}
         {phase === 'clouds' && (
-          <button type="button" onClick={nextReader} className={btn} style={{ background: '#0ea5a4' }}>
+          <button type="button" onClick={() => pictureTurn(nextReader) } className={btn} style={{ background: '#0ea5a4' }}>
             ▶ {t('gameLightning.nextReader')}
           </button>
         )}

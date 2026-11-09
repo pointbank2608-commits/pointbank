@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {popcornDeck as buildDeck} from '../lib/popcorn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
@@ -45,6 +46,7 @@ export default function Popcorn({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount,roundCards));
@@ -269,7 +271,7 @@ export default function Popcorn({
 
       <button
         type="button"
-        onClick={draw}
+        onClick={() => pictureTurn(draw)}
         data-skin-object="popcorn"
         aria-label={t('gamePopcorn.drawButton')}
         className="relative mb-4 max-w-[min(440px,92%)] overflow-visible transition-transform hover:scale-[1.03] active:scale-[0.98]"
@@ -324,7 +326,7 @@ export default function Popcorn({
         </div>
       )}
 
-      <button type="button" onClick={draw} className={pill}>
+      <button type="button" onClick={() => pictureTurn(draw)} className={pill}>
         {t('gamePopcorn.drawButton')}
       </button>
 

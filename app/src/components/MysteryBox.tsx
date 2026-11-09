@@ -1,3 +1,4 @@
+import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
@@ -63,7 +64,9 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) { .mb-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
 
-const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, teams, blocks }, ref) {
+const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items: sourceItems, teams, blocks }, ref) {
+  const pictures = usePictureWordDeck();
+  const items = useMemo(() => pictures.length ? pictures.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [pictures, sourceItems]);
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const blockCount = blocks <= 20 ? 20 : 28;
@@ -114,6 +117,7 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
     if (items.length === 0 || order.length === 0) return { text: '', sub: '' };
     return parseItem(items[order[cardPos % order.length]]?.label ?? '');
   }, [items, order, cardPos]);
+  const picture = order.length ? pictures[order[cardPos % order.length]] : undefined;
   useEffect(() => setShowSub(false), [cardPos, sel]);
 
   const teamName = (i: number) => t('gameMysteryBox.teamName', { name: TEAM_NAMES[i] });
@@ -128,7 +132,7 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
     playSfx(GAME_SFX.mysterybox.pick);
     setSel(i);
     setPhase('question');
-    if (card.text) speak(card.text);
+    if (card.text && !picture) speak(card.text);
   }
 
   function judge(ok: boolean) {
@@ -365,9 +369,9 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
                 className="mb-3 break-words font-bold text-deep-navy"
                 style={{ fontSize: card.text.length > 50 ? 'clamp(16px,2.8cqw,36px)' : card.text.length > 20 ? 'clamp(20px,3.8cqw,50px)' : 'clamp(28px,6cqw,80px)' }}
               >
-                {card.text || t('gameMysteryBox.noCard')}
+                {picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto max-h-[22cqh] max-w-full object-contain" /> : card.text || t('gameMysteryBox.noCard')}
               </div>
-              {card.sub && (
+              {!picture && card.sub && (
                 <div className="mb-3">
                   {showSub ? (
                     <div className="font-body-md text-body-md text-on-surface-variant">{card.sub}</div>
@@ -378,18 +382,19 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items, te
                   )}
                 </div>
               )}
-              {card.text && (
+              {!picture && card.text && (
                 <button type="button" onClick={() => speak(card.text)} className="mb-4 rounded-full bg-surface-container-low px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-surface-container">
                   🔊 {t('gameMysteryBox.listen')}
                 </button>
               )}
               <div className="flex flex-wrap items-center justify-center gap-3">
+                {picture ? picture.choices.map((choice, i) => <button type="button" key={choice} onClick={() => judge(i === picture.correctIndex)} className="rounded-full bg-sky-100 px-5 py-2 font-bold text-deep-navy hover:bg-sky-200">{choice}</button>) : <>
                 <button type="button" onClick={() => judge(true)} className="rounded-full bg-emerald-500 px-8 py-3 font-title-md text-title-md text-white shadow hover:bg-emerald-600">
                   ✓ {t('gameMysteryBox.right')}
                 </button>
                 <button type="button" onClick={() => judge(false)} className="rounded-full bg-rose-500 px-8 py-3 font-title-md text-title-md text-white shadow hover:bg-rose-600">
                   ✗ {t('gameMysteryBox.wrong')}
-                </button>
+                </button></>}
               </div>
               <button type="button" onClick={() => { setSel(null); setPhase('board'); }} className="mt-3 font-label-md text-label-md text-on-surface-variant hover:underline">
                 {t('gameMysteryBox.another')}

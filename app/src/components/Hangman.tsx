@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -53,6 +54,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
   { items, maxAttempts, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, onComplete },
   ref,
 ) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
@@ -471,7 +473,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
           >
             {status === 'won' ? t('gameHangman.wonFeedback') : t('gameHangman.lostFeedback', { word })}
           </div>
-          <button onClick={next} className={pill}>
+          <button onClick={() => pictureTurn(next)} className={pill}>
             {t('gameHangman.nextButton')}
           </button>
         </div>

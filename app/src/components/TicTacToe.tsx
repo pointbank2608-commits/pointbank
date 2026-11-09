@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -78,6 +79,7 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
   { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, placeSound },
   ref,
 ) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
@@ -238,7 +240,7 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
             <button
               key={item.id + String(i)}
               type="button"
-              onClick={() => claim(i)}
+              onClick={() => pictureTurn(() => claim(i))}
               disabled={!!mark || !!winner || isDraw}
               data-skin-object="cell"
               className={`absolute flex flex-col items-center justify-center px-1.5 text-center transition-transform ${

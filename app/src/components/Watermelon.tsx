@@ -1,3 +1,5 @@
+import { usePictureWordTurn } from './PictureWordTurn';
+import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -212,6 +214,9 @@ function FruitBall({
 }
 
 export default function Watermelon({ items, patternId }: Props) {
+  const pictureTurn = usePictureWordTurn();
+  const pictureTurnRef = useRef(pictureTurn);
+  pictureTurnRef.current = pictureTurn;
   const { t } = useTranslation();
   const pattern = useMemo(() => getSentencePattern(patternId), [patternId]);
   const pool = useMemo(() => poolForPattern(items, patternId), [items, patternId]);
@@ -383,6 +388,12 @@ export default function Watermelon({ items, patternId }: Props) {
   }
 
   function drop() {
+    const item = nextRef.current;
+    if (!worldRef.current || !item || overRef.current || dropLock.current || !poolRef.current.length || !asSentenceSlot(item.slot)) return;
+    pictureTurnRef.current(performDrop, item.label);
+  }
+
+  function performDrop() {
     const world = worldRef.current;
     const item = nextRef.current;
     if (!world || !item || overRef.current || dropLock.current || poolRef.current.length === 0) return;
@@ -403,8 +414,7 @@ export default function Watermelon({ items, patternId }: Props) {
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      const target = event.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (!gameKeyboardAllowed(event)) return;
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
         nudgeBy(-1);

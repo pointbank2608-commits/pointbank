@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import BombRangePicker from './BombRangePicker';
 import {useGameSoundOn} from '../lib/gameSfx';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
@@ -72,6 +73,7 @@ export default function TimeBomb({
   startFromCaught = true,
   timerWords = 'none',
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t, i18n } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const workspace=useGameWorkspace();
@@ -198,6 +200,11 @@ export default function TimeBomb({
   }
 
   function pass() {
+    if (phase !== 'active') return;
+    pictureTurn(passBomb);
+  }
+
+  function passBomb() {
     if (phase !== 'active' || n === 0) return;
     const now=Date.now();if(now-lastPass.current<250)return;
     if(sharedTurn){if(!sharedTurn.advance())return;}else setHolderIndex((prev)=>(prev+1)%n);
@@ -360,7 +367,7 @@ export default function TimeBomb({
               )}
 
               {phase === 'active' && mode === 'timer' && timerWords === 'during' && words.length > 1 && (
-                <button onClick={pickWord} className={`${pill} mb-2`}>다음 단어</button>
+                <button onClick={() => pictureTurn(pickWord)} className={`${pill} mb-2`}>다음 단어</button>
               )}
               {phase === 'active' && mode === 'timer' && (
                 <div className="mb-1 text-center font-title-md text-[22px] text-deep-navy md:text-[24px]">

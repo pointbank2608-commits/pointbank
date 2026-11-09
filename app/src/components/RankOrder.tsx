@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -56,6 +57,7 @@ export default function RankOrder({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const plates = boardStyle === 'plates';
@@ -304,7 +306,7 @@ export default function RankOrder({
                   <div className="ro-arrows">
                     <button
                       type="button"
-                      onClick={() => moveUp(i)}
+                      onClick={() => pictureTurn(() => moveUp(i))}
                       disabled={i === 0}
                       aria-label={t('gameRankOrder.moveUpLabel')}
                       className={`ro-chev ${plates ? 'wood' : 'up'}`}
@@ -313,7 +315,7 @@ export default function RankOrder({
                     </button>
                     <button
                       type="button"
-                      onClick={() => moveDown(i)}
+                      onClick={() => pictureTurn(() => moveDown(i))}
                       disabled={i === order.length - 1}
                       aria-label={t('gameRankOrder.moveDownLabel')}
                       className={`ro-chev ${plates ? 'wood' : 'down'}`}

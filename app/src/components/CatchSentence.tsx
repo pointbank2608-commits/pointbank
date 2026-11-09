@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import CatchSentenceSettings, {type CatchLevel} from './CatchSentenceSettings';
 export {CATCH_DEFAULT_SECONDS, type CatchLevel} from './CatchSentenceSettings';
 import { gameClock } from '../lib/gameClock';
@@ -80,6 +81,7 @@ const STYLE = `
 `;
 
 const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level: levelProp, seconds: secondsProp, onChange: onChangeProp }, ref) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   // 저장할 곳이 없는 시범 화면(템플릿 만들기 전)에서도 단계·시간 칩이 보이고, 그 자리에서만 바뀐다
   const [demo, setDemo] = useState<{ level?: CatchLevel; seconds?: number }>({});
@@ -436,7 +438,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
           {phase === 'reveal' && (
             <>
               {scores.map((_, i) => (
-                <button key={i} type="button" onClick={() => giveTeam(i)} className={btn} style={{ ...bf, background: TEAM_COLORS[i] }}>
+                <button key={i} type="button" onClick={() => pictureTurn(() => giveTeam(i))} className={btn} style={{ ...bf, background: TEAM_COLORS[i] }}>
                   {teamName(i)} +1
                 </button>
               ))}

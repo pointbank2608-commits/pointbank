@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
@@ -114,6 +115,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
   ref,
 ) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { fullscreen, itemsHidden } = useGamePlay();
   const labelH = fullscreen ? 96 : 58;
@@ -303,7 +305,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
               key={`col-${c}`}
               type="button"
               disabled={disabled}
-              onClick={() => dropInColumn(c)}
+              onClick={() => pictureTurn(() => dropInColumn(c))}
               data-skin-object="drop-button"
               aria-label={t('gameConnect4.columnHint')}
               className="absolute top-0 z-20 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full disabled:opacity-30"
@@ -416,7 +418,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
               key={`hit-${c}`}
               type="button"
               disabled={disabled}
-              onClick={() => dropInColumn(c)}
+              onClick={() => pictureTurn(() => dropInColumn(c))}
               aria-label={t('gameConnect4.columnHint')}
               className="absolute z-[3] cursor-pointer bg-transparent disabled:cursor-default"
               style={{

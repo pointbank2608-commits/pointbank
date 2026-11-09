@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -89,6 +90,7 @@ export default function FindMissing({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -474,7 +476,7 @@ export default function FindMissing({
               key={item.id}
               type="button"
               disabled={!clickable}
-              onClick={() => openBig(item.id)}
+              onClick={() => pictureTurn(() => openBig(item.id), item.label)}
               data-skin-object="card"
               ref={(el) => {
                 if (el) cardEls.current.set(item.id, el);

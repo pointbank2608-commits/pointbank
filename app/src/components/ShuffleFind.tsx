@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +41,7 @@ const STYLE = `
 const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b'];
 
 export default function ShuffleFind({ items, teams, cups: wantCups, speed, rounds }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const cups = usableCups(items.length, wantCups);
   const itemKey = items.map((i) => i.id).join(',');
@@ -299,7 +301,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
               type="button"
               disabled={!canPick}
               aria-label={t('gameShuffle.cupN', { n: slot + 1 })}
-              onClick={() => pick(slot)}
+              onClick={() => pictureTurn(() => pick(slot))}
               className={`sf-move absolute z-[3] border-0 bg-transparent p-0 ${canPick ? 'cursor-pointer hover:brightness-110' : 'cursor-default'}`}
               style={{
                 left: `${centers[slot]}%`,
@@ -373,7 +375,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
               <button
                 type="button"
                 disabled={!canPick || !label}
-                onClick={() => pick(slot)}
+                onClick={() => pictureTurn(() => pick(slot))}
                 className="w-full disabled:cursor-default"
                 aria-label={label ? t('gameShuffle.pickLabel', { n: slot + 1, text: label.text }) : t('gameShuffle.slotN', { n: slot + 1 })}
               >

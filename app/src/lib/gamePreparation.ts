@@ -37,7 +37,12 @@ export function gameReadyDetails(template: GameTemplate) {
 /** Validate the native config as well as converted sources before entering focus mode. */
 export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'config' | 'items'>): boolean {
   const { game_type: type, config: c, items } = template;
-  if (c.pictureWordMode && pictureWordModeKind(type)) return pictureWordQuestions(c).length > 0;
+  const pictureMode = c.pictureWordMode ? pictureWordModeKind(type) : null;
+  if (pictureMode) {
+    if (!pictureWordQuestions(c).length) return false;
+    // A question between moves does not supply the pieces, teams or other data for the original board.
+    if (pictureMode === 'native' || (type === 'mysterybox' && c.mysteryMode === 'quiz')) return true;
+  }
   if ((ADVENTURE_TYPES as readonly string[]).includes(type)) return !!c.adventure && adventureErrors(type as AdventureType,c.adventure).length===0;
   if ((type === 'wordhoops' && c.hoopsMode === 'picture') || (type === 'tugofwar' && c.tugMode === 'picture')) {
     return pictureWordQuestions(c).length > 0;

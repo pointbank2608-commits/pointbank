@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { usePictureWordDeck } from './PictureWordTurn';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TypeAnswerEntry } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
@@ -28,8 +29,10 @@ function normalize(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: Props) {
+export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'notebook' }: Props) {
   const { t } = useTranslation();
+  const deck = usePictureWordDeck();
+  const entries = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, prompt: '', answer: row.choices[row.correctIndex] })) : textEntries, [deck, textEntries]);
   const bubble = boardStyle === 'bubble';
   const [order, setOrder] = useState<number[]>(() => shuffle(entries.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -124,9 +127,11 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
   const mark = status === 'correct' ? 'is-ok' : status === 'wrong' ? 'is-no' : '';
   const tone = pos % 4;
 
-  function submit() {
+  const picture = deck[order[pos]];
+
+  function submit(value = inputValue) {
     if (revealed) return;
-    const ok = normalize(inputValue) === normalize(current.answer);
+    const ok = normalize(value) === normalize(current.answer);
     setStatus(ok ? 'correct' : 'wrong');
     playSfx(ok ? sfx.correct : sfx.wrong);
     if (ok) setScore((s) => s + 1);
@@ -154,7 +159,7 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
   const clozeParts = mode === 'cloze' ? current.prompt.split('___') : null;
   const useCloze = Boolean(clozeParts && clozeParts.length >= 2);
 
-  const promptBody = useCloze ? (
+  const promptBody = picture ? <img data-picture-word src={picture.imageUrl} alt={t('gameWordHoops.askWord')} className="mx-auto max-h-44 max-w-full object-contain" /> : useCloze ? (
     <>
       {clozeParts![0]}
       {blankInput}
@@ -183,7 +188,7 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
         </div>
       )}
 
-      {!useCloze && (
+      {!picture && !useCloze && (
         <div data-skin-stage="answer-well" className="ta-tray mb-5">
           {blankInput}
         </div>
@@ -191,7 +196,7 @@ export default function TypeAnswer({ entries, mode, boardStyle = 'notebook' }: P
       {useCloze && bubble && <div className="mb-4" />}
 
       {!revealed ? (
-        <button onClick={submit} className={pill}>
+        picture ? <div className="flex flex-wrap justify-center gap-2">{picture.choices.map(choice => <button type="button" key={choice} className={pill} onClick={() => submit(choice)}>{choice}</button>)}</div> : <button onClick={() => submit()} className={pill}>
           {t('gameTypeAnswer.submitButton')}
         </button>
       ) : (

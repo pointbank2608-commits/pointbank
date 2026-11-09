@@ -1,3 +1,4 @@
+import { usePictureWordDeck, usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +61,8 @@ export default function SpinWheel({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
+  const pictureMode = usePictureWordDeck().length > 0;
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [rotation, setRotation] = useState(0);
@@ -272,6 +275,14 @@ export default function SpinWheel({
       const dt = (last.t - first.t) / 1000;
       if (dt > 0.005) v0 = (last.angle - first.angle) / dt;
     }
+    if (pictureMode && (Math.abs(v0) > MIN_RELEASE_VELOCITY || didDragRef.current)) {
+      setSpinning(false);
+      pictureTurn(() => {
+        if (Math.abs(v0) > MIN_RELEASE_VELOCITY) { setSpinning(true); startMomentum(v0); }
+        else finalizeSpin();
+      });
+      return;
+    }
     if (Math.abs(v0) > MIN_RELEASE_VELOCITY) {
       startMomentum(v0);
     } else if (didDragRef.current) {
@@ -293,6 +304,11 @@ export default function SpinWheel({
   }
 
   function spin() {
+    if (spinning || items.length === 0) return;
+    pictureTurn(performSpin);
+  }
+
+  function performSpin() {
     if (spinning || count === 0) return;
     if (timerRef.current) gameClock.clearTimeout(timerRef.current);
     stopMomentum();

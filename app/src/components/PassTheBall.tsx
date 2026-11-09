@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -49,6 +50,7 @@ export default function PassTheBall({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -243,7 +245,7 @@ export default function PassTheBall({
               </div>
               <div className="mb-2 font-caption text-caption tabular-nums text-on-surface-variant">{t('gamePassBall.progressLabel', { n: shown, total: deck.length })}</div>
               {shown >= deck.length && <div className="mb-2 font-title-md text-title-md font-bold text-secondary">{t('gamePassBall.roundDoneLabel')}</div>}
-              <button type="button" onClick={resume} className={pill}>
+              <button type="button" onClick={() => pictureTurn(resume)} className={pill}>
                 {shown >= deck.length ? t('gamePassBall.newRoundButton') : t('gamePassBall.continueButton')}
               </button>
             </>

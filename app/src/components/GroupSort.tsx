@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,6 +49,7 @@ function emptyBuckets(groups: GroupSortGroup[]): Record<string, FlatItem[]> {
 }
 
 export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const baskets = boardStyle === 'baskets';
   const [pool, setPool] = useState<FlatItem[]>(() => shuffle(flatten(groups)));
@@ -113,6 +115,10 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     if (!selectedId || locked) return;
     const item = pool.find((it) => it.id === selectedId);
     if (!item) return;
+    pictureTurn(() => placeItem(groupId, item), item.text);
+  }
+
+  function placeItem(groupId: string, item: FlatItem) {
     if (item.groupId === groupId) {
       playSfx(sfx.drop, 0.7);
       gameClock.setTimeout(() => playSfx(sfx.correct), 120);

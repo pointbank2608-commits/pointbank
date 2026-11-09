@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import { shuffledResultIds, type LadderResultOrder } from '../lib/ladderSetup';
 import { gameClock } from '../lib/gameClock';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
@@ -66,6 +67,7 @@ export default function LadderBoard({
   templateName,
   onRenameTemplate,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden, fullscreen } = useGamePlay();
   const n = participants.length;
@@ -365,7 +367,7 @@ export default function LadderBoard({
       <div className="flex w-full min-w-0 max-w-full flex-col items-center">
       <div className="flex flex-wrap justify-center gap-2.5 mb-6">
         <button
-          onClick={startRevealAll}
+          onClick={() => pictureTurn(startRevealAll)}
           disabled={busy}
           className="px-5 py-2.5 rounded-full bg-secondary hover:bg-on-secondary-container disabled:opacity-60 text-on-secondary font-label-md text-label-md shadow-sm transition-colors"
         >
@@ -415,7 +417,7 @@ export default function LadderBoard({
                 key={p.id}
                 type="button"
                 disabled={revealed.has(i) || runningSet.has(i)}
-                onClick={() => revealOne(i)}
+                onClick={() => pictureTurn(() => revealOne(i))}
                 style={{ width: COL_W }}
                 className={`flex-none flex items-center justify-center px-1 py-0.5 rounded-full bg-transparent disabled:cursor-default ${
                   runningSet.has(i) ? 'ladder-pulse' : 'cursor-pointer hover:brightness-105'

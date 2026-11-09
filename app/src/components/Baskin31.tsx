@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -88,6 +89,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   { items, targetCount, editable, templateName, onRenameTemplate, onEditItem, onAddItem, onRemoveItem },
   ref,
 ) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [count, setCount] = useState(0);
@@ -382,7 +384,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
           {!loser ? (
             <div className="flex flex-wrap justify-center gap-2.5">
               {PICK_OPTIONS.map((n) => (
-                <button key={n} onClick={() => requestPick(n)} disabled={busy} className={`${pill} disabled:opacity-50`}>
+                <button key={n} onClick={() => pictureTurn(() => requestPick(n))} disabled={busy} className={`${pill} disabled:opacity-50`}>
                   {t('gameBaskin31.pickButton', { n })}
                 </button>
               ))}

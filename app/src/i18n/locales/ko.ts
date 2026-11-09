@@ -1650,13 +1650,8 @@ const ko = {
   },
   picturePractice: {
     title: "그림 보고 영어 단어 고르기",
-    results: "첫 시도 정답 {{count}}개 · 응답한 문제 {{total}}개",
-    skipped: "그림을 불러오지 못해 건너뛴 문제 {{count}}개",
-    imageMissing: "그림을 불러오지 못했어요. 다음 문제로 넘어갈 수 있어요.",
-    correct: "맞았어요!",
+    turnImageMissing: "그림을 불러오지 못했어요. 닫고 다시 시도해 주세요.",
     retry: "그림을 다시 보고 다른 단어를 골라 보세요.",
-    next: "다음 문제",
-    showResults: "결과 보기",
   },
   gameWordHoops: {
     studentClassTitle: "{{className}} 단어 농구 대결",

@@ -1,3 +1,4 @@
+import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -72,6 +73,7 @@ export default function TwoDice({
   onAddItem,
   onRemoveItem,
 }: Props) {
+  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
@@ -288,7 +290,7 @@ export default function TwoDice({
         </div>
       </div>
 
-      <button onClick={roll} disabled={rolling || !!winner} className={`mb-5 ${pill} disabled:opacity-60`}>
+      <button onClick={() => pictureTurn(roll)} disabled={rolling || !!winner} className={`mb-5 ${pill} disabled:opacity-60`}>
         {rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rollButton')}
       </button>
 
