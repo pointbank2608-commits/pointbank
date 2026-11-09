@@ -181,7 +181,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
             )}
             <div className="flex flex-wrap gap-2">
               {result.plan_id && (
-                <button type="button" className={`${field} border-primary bg-primary font-bold text-white`} onClick={() => {
+                <button type="button" className="min-h-11 rounded-xl border border-primary bg-primary px-3 text-base font-bold text-on-primary" onClick={() => {
                   onClose();
                   navigate('/homework', { state: { wmPlanId: result.plan_id, fromClassId: classId } });
                 }}>

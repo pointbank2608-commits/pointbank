@@ -211,6 +211,15 @@ try {
   ok('배정하기를 연달아 눌러도 계획 1개·학생 2명만 만들어진다(중복 배정 방지)');
   const accessTokens = Object.fromEntries((await sqlq('select s.name, t.access_token a from public.wm_targets t join public.students s on s.id = t.student_id')).map((r) => [r.name, r.a]));
   assert.equal(await tp.locator('[data-wm-copy]').count(), 2);
+  const viewProgress = tp.locator('[data-wm-result]').getByRole('button', { name: '현황 보기', exact: true });
+  const progressColors = await viewProgress.evaluate((button) => {
+    const { backgroundColor, color } = getComputedStyle(button);
+    return { backgroundColor, color };
+  });
+  assert.deepEqual(progressColors, { backgroundColor: 'rgb(8, 102, 255)', color: 'rgb(255, 255, 255)' });
+  await viewProgress.click();
+  await tp.waitForURL(`${BASE}/homework`);
+  ok('배정 완료: 현황 보기 글씨가 파란 배경에 보이고 숙제 현황으로 이동한다');
   await tp.close();
 
   // 같은 단어를 같은 학생에게 새로 배정하면 건너뛴다
@@ -702,7 +711,11 @@ try {
 
   const homework = await newPage(phone);
   await homework.goto(BASE + '/homework');
-  await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
+  const openProjectComposer = async () => {
+    await homework.getByRole('button', { name: '새 숙제 내기' }).click();
+    await homework.getByRole('button', { name: /^장기 단어 프로젝트 / }).click();
+  };
+  await openProjectComposer();
   await homework.getByRole('combobox', { name: '저장한 단어장에서 고르기' }).selectOption('saved-project');
   await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
   await homework.waitForSelector('[data-wm-student]');
@@ -713,7 +726,7 @@ try {
   await homework.getByRole('button', { name: '현황 보기', exact: true }).click();
   await homework.getByText('프로젝트용 단어장', { exact: true }).first().waitFor();
   assert.equal(await homework.locator('[data-wm-assign]').count(), 0);
-  await homework.getByRole('button', { name: '장기 단어 프로젝트 만들기' }).click();
+  await openProjectComposer();
   await homework.getByRole('link', { name: '단어 사전에서 범위 고르기' }).click();
   await homework.getByRole('button', { name: /현재 결과 .*개 담기/ }).waitFor();
   ok('숙제에서 단어장 프로젝트를 배정하고 현황을 열며, 사전 범위 선택도 바로 시작한다');
