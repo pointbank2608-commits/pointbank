@@ -7,6 +7,20 @@ const out=resolve('output/lesson-ux');mkdirSync(out,{recursive:true});
 const before=process.argv.includes('--before'),port=before?5417:5416;
 const server=await createLessonUxServer(port,before);let browser,page;const checks=[],errors=[];
 const pass=s=>{checks.push(s);console.log('PASS',s);};
+async function verifyWordFishingRefresh(){
+  await page.setViewportSize({width:1080,height:1050});
+  await page.goto(`http://127.0.0.1:${port}/games/wordfishing`);
+  const fish=page.locator('.ad-wordfishing .ad-fish').first();
+  for(let visit=0;visit<3;visit++){
+    if(visit)await page.reload();
+    await fish.waitFor();
+    assert.equal(await fish.isEnabled(),true);
+    assert.equal(await page.locator('[data-play-mode]').getAttribute('data-play-mode'),'play');
+    assert.equal(await page.locator('[data-game-ready-overlay]').count(),0);
+    assert.equal(await page.locator('.ad-wordfishing .ad-buddy').count(),0);
+  }
+  pass('Word Fishing opens an interactive sample on the first visit and two reloads in the same session');
+}
 async function verifyGameControls(){
   await page.goto(`http://127.0.0.1:${port}/games/labeleddiagram`);
   await page.getByRole('button',{name:'게임설정',exact:true}).click();
@@ -41,7 +55,8 @@ async function verifyGameControls(){
 try{
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.addInitScript(()=>localStorage.setItem('classbank.selectedClassId','a'));
- if(process.argv.includes('--game-controls')) {await verifyGameControls();} else {
+ if(process.argv.includes('--wordfishing-refresh')) {await verifyWordFishingRefresh();}
+ else if(process.argv.includes('--game-controls')) {await verifyGameControls();} else {
  const go=()=>page.goto(`http://127.0.0.1:${port}/curriculum`);await go();
  await page.getByRole('heading',{name:'기존 리딩 수업',exact:true}).waitFor({state:'attached'});
  await page.screenshot({path:out+(before?'/before-home.png':'/after-home-desktop.png'),fullPage:true});

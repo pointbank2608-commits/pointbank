@@ -31,5 +31,56 @@ try{
  const clawSession=await open('wordclaw');page=clawSession.page;const buttons=page.locator('[data-capsule]'),texts=await buttons.evaluateAll(nodes=>nodes.map(n=>n.dataset.word)),index=texts.indexOf('eat');await page.locator('.ad-machine').focus();for(let i=0;i<index;i++)await page.keyboard.press('ArrowRight');await page.keyboard.press('Space');await page.keyboard.press('Space');await page.waitForTimeout(2300);assert.match(await page.locator('.ad-collected').innerText(),/eat/);assert.match(await page.locator('.ad-prompt').innerText(),/1 \/ 3/);await clawSession.ctx.close();pass('Claw keyboard movement/drop and duplicate-submission lock');
  const easy=await open('wordclaw',{width:390,height:844},true,'&simple');await easy.page.locator('[data-word="run"]').tap();await easy.page.waitForTimeout(1750);assert.match(await easy.page.locator('.ad-collected').innerText(),/run/);await easy.ctx.close();pass('Claw easy mode directly collects matching word by touch');
  const voice=await open('wordfishing',{width:390,height:844},true,'&listening');await voice.page.evaluate(()=>Object.defineProperty(window.speechSynthesis,'getVoices',{configurable:true,value:()=>[]}));await voice.page.getByRole('button',{name:'영어 듣기'}).click();await voice.page.locator('.ad-fallback').waitFor();assert.match(await voice.page.locator('.ad-prompt').innerText(),/사과/);await voice.ctx.close();pass('Listening falls back to explicit meaning when English voice is unavailable');
+
+ const fishing=await open('wordfishing',{width:390,height:844},true);
+ page=fishing.page;
+ const rightFish=page.locator('[data-word="apple"]');
+ const wrongFish=page.locator('.ad-fish:not([data-word="apple"])').first();
+ const tackle=page.locator('.ad-fishing-tackle');
+ assert.equal(await page.locator('.ad-fishing-rod').count(),0);
+ assert.equal(await tackle.isVisible(),false);
+ const wrongStart=await wrongFish.boundingBox();
+ await wrongFish.tap({force:true});
+ assert.equal(await tackle.getAttribute('data-fishing-cast'),'miss');
+ await page.waitForFunction(()=>{
+   const fish=document.querySelector('.ad-fish-wrong');
+   return fish?.style.transform && new DOMMatrix(getComputedStyle(fish).transform).m41>24;
+ });
+ assert.ok((await wrongFish.boundingBox()).x>wrongStart.x+20);
+ const line=await tackle.locator('line').first().evaluate(node=>({from:Number(node.getAttribute('y1')),to:Number(node.getAttribute('y2'))}));
+ assert.ok(line.to>line.from+18);
+ await page.waitForFunction(()=>{
+   const fish=document.querySelector('.ad-fish-wrong');
+   return fish && fish.getBoundingClientRect().left>fish.closest('.ad-game').getBoundingClientRect().right;
+ });
+ await page.waitForFunction(()=>document.querySelector('.ad-fishing-tackle').dataset.fishingCast==='idle');
+ assert.match(await page.locator('.ad-header').innerText(),/1 \/ 5/);
+ assert.equal(await wrongFish.isEnabled(),true);
+ await rightFish.focus();
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>{
+   const fish=document.querySelector('.ad-fish-correct');
+   return fish?.style.transform && new DOMMatrix(getComputedStyle(fish).transform).m42 < -30;
+ });
+ const attachment=await page.evaluate(()=>{
+   const mouth=document.querySelector('.ad-fish-correct [data-fish-mouth]').getBoundingClientRect();
+   const lure=document.querySelector('.ad-fishing-lure').getBoundingClientRect();
+   return Math.hypot(mouth.left+mouth.width/2-lure.left-lure.width/2,mouth.top+mouth.height/2-lure.top-lure.height*43/49);
+ });
+ assert.ok(attachment<5,`The lifted mouth should stay at the hook: ${attachment}px`);
+ await page.locator('.ad-review').waitFor();
+ assert.equal(await rightFish.isVisible(),false);
+ await page.getByRole('button',{name:/다음 문제/}).click();
+ assert.match(await page.locator('.ad-header').innerText(),/2 \/ 5/);
+ await fishing.ctx.close();
+ pass('Word Fishing: a tap sends the line down and the wrong fish dodges; Enter catches and reels the right fish to the rod');
+
+ const reduced=await open('wordfishing');
+ await reduced.page.emulateMedia({reducedMotion:'reduce'});
+ await reduced.page.locator('[data-word="apple"]').click();
+ assert.equal(await reduced.page.locator('.ad-fish-correct').evaluate(node=>getComputedStyle(node).transform),'none');
+ await reduced.page.locator('.ad-review').waitFor();
+ await reduced.ctx.close();
+ pass('Word Fishing keeps the answer feedback and review with reduced motion');
  assert.deepEqual(errors,[]);writeFileSync(resolve(out,'edge-results.json'),JSON.stringify({results,errors},null,2));
 }finally{await browser?.close();await server.close();}

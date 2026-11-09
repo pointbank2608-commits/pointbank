@@ -188,7 +188,7 @@ export default function GamesPage() {
                 <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
               ))}
               {phonics.map(({game, unit}) => (
-                <Link key={game.id} to={`/phonics-games/${game.id}${unit ? `?unit=${encodeURIComponent(unit.id)}` : ''}`} className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition hover:-translate-y-1 hover:shadow-lg">
+                <Link key={game.id} to={`/phonics-games/${game.id}${unit ? `?unit=${encodeURIComponent(unit.id)}` : ''}`} state={{phonicsQuickPlay:true}} className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition hover:-translate-y-1 hover:shadow-lg">
                   <img className="h-36 w-full object-cover" loading="lazy" src={worldBackground(gameVisual(game).world)} alt="" />
                   <div className="p-5">
                     <h3 className="font-title-md text-title-md text-on-surface">{gameName(game, en)}</h3>

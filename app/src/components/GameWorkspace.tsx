@@ -23,7 +23,7 @@ import AddActivityToLesson from './AddActivityToLesson';
 import { PlaySettings } from './GrammarGames';
 import GameToolbar from './GameToolbar';
 import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
-import { instantStart } from '../lib/gamePreparation';
+import { instantStart, isDirectGameEntry } from '../lib/gamePreparation';
 
 type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | 'guide' | null;
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
@@ -122,12 +122,22 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const sourceReady = !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
   const canStart = !!info && info.academyId===academy?.id && !info.loading && !info.settingsPending && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
+  const automaticEntry = !presenting && !!info?.temporary && isDirectGameEntry(location.state)
+    && GAME_CATALOG.some(game => game.type === info.gameType && game.path === location.pathname);
+  const entryKey = `${academy?.id}:${location.pathname}:${location.key}`;
+  const startedEntry = useRef('');
   const publish = useCallback((next: GameWorkspaceBridge) => {
     bridge.current = next;
     setInfo(old => old && old.gameType === next.gameType && old.settingsPending === next.settingsPending && old.sharedView === next.sharedView && old.classId === next.classId && old.selected === next.selected && old.roster === next.roster && old.lists === next.lists && old.templates === next.templates && old.loading === next.loading && old.classes === next.classes ? old : next);
   }, []);
   useEffect(() => { setRunning(false); setPlaying(false); setPanel(null); setSampleRequested(false); setSettingsSaved(false); }, [identity]);
   useEffect(() => { setRunning(false); setPlaying(false); }, [info?.selected?.id]);
+  useEffect(() => {
+    if (!automaticEntry || !canStart || panel || teams || startedEntry.current === entryKey) return;
+    startedEntry.current = entryKey;
+    setPlaying(true);
+    setRunning(true);
+  }, [automaticEntry, canStart, entryKey, panel, teams]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(()=>{
     const entry=`${identity}:${location.key}`;
@@ -138,8 +148,9 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     const ready=incoming?.ownerId===session?.user.id&&incoming?.academyId===academy?.id&&incoming?.id===supplied?.id&&!!supplied
       &&!['sample','temporary'].includes(supplied.id)&&!!prepareClassroomGame(info.gameType,supplied.cards,supplied.kind)
       &&isNativeGameReady(info.selected)&&!guideProblem(info.selected);
-    setPanel(ready||isGrammar?null:info.gameType==='quizshow'?'settings':'guide');
-  },[info,identity,presenting,location.key,location.state,session?.user.id,academy?.id]);
+    const localContestSample = automaticEntry && info.gameType === 'quizshow' && isNativeGameReady(info.selected);
+    setPanel(ready||isGrammar||localContestSample?null:info.gameType==='quizshow'?'settings':'guide');
+  },[info,identity,presenting,location.key,location.state,session?.user.id,academy?.id,isGrammar,automaticEntry]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
     setOrdered(false);
@@ -193,6 +204,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   }
   function start() {
     if (!canStart) { setPanel('settings'); return; }
+    startedEntry.current = entryKey;
     setPanel(null); setPlaying(true); setRunning(true);
   }
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);

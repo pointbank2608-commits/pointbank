@@ -5,7 +5,7 @@ import { shuffled } from '../../lib/storybook';
 import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveSentence, sentenceOrderCorrect, targetKey, targetPoint, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../../lib/adventureGames';
 import { useAdventureEngine, type AdventureEngine } from '../../lib/useAdventureEngine';
 import ArrangePieces from './ArrangePieces';
-import { FishArt, FishingTackle } from './FishingArt';
+import { FishArt, FishingTackle, type FishingCast } from './FishingArt';
 import './adventure.css';
 
 const worlds:Record<AdventureType,string>={balloonpop:'balloon',wordtrain:'train',wordfishing:'fishing',sentencerocket:'rocket',grammardetective:'detective',treasurehunt:'island',wordclaw:'arcade'};
@@ -23,7 +23,7 @@ export default function AdventureGame({type,config:c,onRestart}:{type:AdventureT
   useEffect(()=>{if(workspace?.running&&phase==='ready'&&!errors.length)start();},[workspace?.running,phase,start,errors.length]);
   return <section className={`ad-game ad-${type} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
     <span className="ad-ambient ad-ambient-one" aria-hidden="true">✦</span><span className="ad-ambient ad-ambient-two" aria-hidden="true">✧</span>
-    {(['balloonpop','wordfishing','wordclaw'] as string[]).includes(type)&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':type==='wordfishing'?'fisher':'kitten'}.webp`} alt=""/>}
+    {(type==='balloonpop'||type==='wordclaw')&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':'kitten'}.webp`} alt=""/>}
     <img className="ad-world" src={`/skins/adventure/${worlds[type]}.webp`} alt=""/>
     <header className="ad-header"><div><small>CLASSBANK · ENGLISH ADVENTURE</small><h1>{ADVENTURE_NAMES[type][0]}</h1></div><span>{Math.min(e.index+1,e.total)} / {e.total} {e.remaining>0&&c.seconds>0&&<b> · {Math.ceil(e.remaining)}초</b>}</span></header>
     <div className="ad-progress"><i style={{width:`${e.total?e.records.length/e.total*100:0}%`}}/></div>
@@ -51,26 +51,27 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
   const fishing=type==='wordfishing';
   const streak=e.records.length>=2&&e.records.slice(-2).every(row=>row.mistakes===0)&&e.mistakes===e.records.reduce((sum,row)=>sum+row.mistakes,0);
   const [picked,setPicked]=useState('');
-  const [hook,setHook]=useState<{ x:number; y:number } | null>(null);
-  const [fallback,setFallback]=useState(false);const board=useRef<HTMLDivElement>(null);
+  const [cast,setCast]=useState<FishingCast | null>(null);
+  const [fallback,setFallback]=useState(false);
   const listening=fishing&&c.listening&&!fallback;
   useEffect(()=>{if(!listening)return;const id=gameClock.setTimeout(()=>{englishSpeak(r.word.word,()=>setFallback(true));},300);return()=>{gameClock.clearTimeout(id);if('speechSynthesis' in window)speechSynthesis.cancel();};},[listening,r.word.word]);
   function choose(id:string,node:HTMLButtonElement) {
     const word=r.choices.find(w=>w.id===id)!;
     const correct=r.accepted.includes(wordKey(word.word));
-    if(!e.judge(correct,r.word.meaning,`${word.word} · ${word.meaning}`,{duration:fishing?2100:1400}))return;
+    const reducedMotion=fishing&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration=fishing?(reducedMotion?800:correct?1650:1280):1400;
+    if(!e.judge(correct,r.word.meaning,`${word.word} · ${word.meaning}`,{duration}))return;
     setPicked(id);
-    const mouth=node.querySelector('[data-fish-mouth]');
-    if(mouth && board.current) {
-      const b=board.current.getBoundingClientRect();
-      const p=mouth.getBoundingClientRect();
-      setHook({x:(p.x+p.width/2-b.x)/b.width*100,y:(p.y+p.height/2-b.y)/b.height*100});
-    }
+    if(fishing)setCast({fish:node,correct,duration,reducedMotion});
   }
   return <><div className="ad-prompt"><span>{listening?'소리를 듣고 물고기를 찾아요':`${r.word.meaning} — 영어로 무엇일까요?`}</span>{fishing&&<Voice text={r.word.word} onFallback={()=>setFallback(true)}/>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
-    <div ref={board} className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s',gridTemplateColumns:r.choices.length===4?'repeat(2,minmax(0,1fr))':undefined} as CSSProperties}>
-      {fishing&&<FishingTackle target={e.busy?hook:null}/>}
-      {r.choices.map((w,i)=><div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':'ad-balloon'} ${picked===w.id&&e.busy?e.reaction:''}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing&&<FishArt index={i}/>}<span>{w.word}</span>{!fishing&&<i className="ad-string"/>}</button>{picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>)}
+    <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s',gridTemplateColumns:r.choices.length===4?'repeat(2,minmax(0,1fr))':undefined} as CSSProperties}>
+      {fishing&&<FishingTackle cast={e.busy?cast:null}/>}
+      {r.choices.map((w,i)=>{
+        const reacting = picked === w.id && (e.busy || (fishing && e.phase === 'review'));
+        const feedback = reacting ? (fishing ? `ad-fish-${e.reaction}` : e.reaction) : '';
+        return <div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':'ad-balloon'} ${feedback}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing&&<FishArt index={i}/>}<span>{w.word}</span>{!fishing&&<i className="ad-string"/>}</button>{!fishing&&picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>;
+      })}
     </div>{streak&&<span className="ad-gold">{fishing?<><img src="/skins/adventure/goldfish.webp" alt=""/> 황금 물고기 보너스!</>:'★ 연속 정답! 반짝반짝 별 보너스!'}</span>}<p className="ad-control-help">정답을 누르세요. Tab으로 선택하고 Enter로도 답할 수 있어요.</p></>;
 }
 function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<AdventureRound,{kind:'sentence'}>}){

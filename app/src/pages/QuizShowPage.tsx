@@ -1,7 +1,7 @@
 import { isActivityDraft } from '../lib/quickActivity';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ContestSetup from '../components/ContestSetup';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +30,7 @@ import {
 import { speak } from '../lib/speech';
 import { useWordBankEnriched } from '../lib/wordBankCache';
 import { useGameTemplates } from '../lib/useGameTemplates';
+import { isDirectGameEntry } from '../lib/gamePreparation';
 import type { ContestRoundSetting, ContestRoundType, GameItem, GameTemplateConfig, LiveQuestion, LiveQuestionKind } from '../lib/types';
 
 function defaultItems(): GameItem[] {
@@ -56,6 +57,7 @@ export default function QuizShowPage() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const workspace = useGameWorkspace();
+  const directEntry = isDirectGameEntry(useLocation().state);
   const g = useGameTemplates({ gameType: 'quizshow', listKind: 'all', defaultItems, defaultConfig: () => ({ liveQuestions: [] }) });
   const {
     isStaff,
@@ -102,8 +104,8 @@ export default function QuizShowPage() {
   }, [selected?.id]);
 
   useEffect(() => {
-    if (selected && isActivityDraft(selected.id)) setShowCreateForm(true);
-  }, [selected?.id, setShowCreateForm]);
+    if (!directEntry && selected && isActivityDraft(selected.id)) setShowCreateForm(true);
+  }, [directEntry, selected?.id, setShowCreateForm]);
   useEffect(() => {
     if (workspace?.panel === 'guide') setShowCreateForm(true);
   }, [workspace?.panel, setShowCreateForm]);
@@ -311,6 +313,7 @@ export default function QuizShowPage() {
                 classId={hostClassId}
                 templateId={isActivityDraft(selected.id) ? null : selected.id}
                 preview={isActivityDraft(selected.id)}
+                autoPreview={directEntry && !!workspace?.running && isActivityDraft(selected.id) && !selected.config.editingTemplateId}
                 speedBonus={speedBonus}
               />
             </GameThemeFrame>

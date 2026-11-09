@@ -69,3 +69,8 @@ const KEEP_OLD_FLOW = new Set<string>(['quizshow']);
 export const hasOwnTurnDisplay = (type: GameType, config?: { bombMode?: 'pass' | 'timer' }): boolean => type === 'timer' || type === 'popcorn' || (type === 'bomb' && (config?.bombMode ?? 'pass') === 'pass');
 export const itemsAlwaysHidden = (type: GameType): boolean => type === 'bomb';
 export const instantStart = (type: GameType): boolean => !KEEP_OLD_FLOW.has(type);
+
+/** Navigation that supplies content or asks to edit it keeps the preparation step. */
+export function isDirectGameEntry(state: unknown): boolean {
+  return state == null || (typeof state === 'object' && Object.keys(state).length === 0);
+}

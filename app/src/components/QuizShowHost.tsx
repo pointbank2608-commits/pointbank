@@ -51,11 +51,12 @@ interface Props {
    * 옆의 학생 휴대폰 모형에서 직접 답도 내 본다. 참가자는 "나(미리보기)" 한 명.
    */
   preview?: boolean;
+  autoPreview?: boolean;
 }
 
 const PREVIEW_ME = 'preview-me';
 
-export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false }: Props) {
+export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false, autoPreview = false }: Props) {
   const { t } = useTranslation();
   const [session, setSession] = useState<LiveSession | null>(null);
   const [players, setPlayers] = useState<LivePlayer[]>([]);
@@ -71,6 +72,16 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const [startLocal, setStartLocal] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const previewStarted = useRef(false);
+  useEffect(() => {
+    if (!preview || !autoPreview || !questions.length || previewStarted.current) return;
+    previewStarted.current = true;
+    const now = Date.now();
+    const time = new Date(now).toISOString();
+    setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'question', q_index: 0, q_started_at: time, created_at: time, ended_at: null });
+    setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: time }]);
+    setStartLocal(now);
+  }, [preview, autoPreview, questions, title, speedBonus, t]);
 
   const phase: LivePhase | null = session?.phase ?? null;
   const qIndex = session?.q_index ?? -1;

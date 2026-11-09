@@ -56,7 +56,7 @@ const server = await createServer({
         if (p.endsWith("/src/context/AuthContext.tsx")) return auth;
         if (p.endsWith("/src/context/ToastContext.tsx")) return toast;
         if (p.endsWith("/src/lib/supabase.ts"))
-          return "export const supabase={rpc:async(name)=>({data:name==='my_deletion_request'?null:[],error:null}),channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}})};";
+          return "export const supabase={rpc:async(name)=>{if(name==='live_host_create')window.__liveCreated=true;return {data:name==='my_deletion_request'?null:[],error:null}},channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}})};";
       },
     },
   ],
@@ -67,19 +67,25 @@ let browser;
 try {
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
  const fixture='http://127.0.0.1:5263/scripts/games/focus.html';
- const types=process.argv.slice(2).length?process.argv.slice(2):['balloonpop','feedmonster','sentencebridge','sentencetower'];
+ const args=process.argv.slice(2);
+ const types=args.includes('--all')?[...readFileSync(resolve(root,'src/lib/gameCatalog.ts'),'utf8').matchAll(/path:\s*'\/games\/([^']+)'/g)].map(match=>match[1]):args.length?args:['wordfishing','balloonpop','feedmonster','sentencebridge','sentencetower','quizshow'];
  const bad=[];
- for(const type of types){
+ async function verify(type){
   const ctx=await browser.newContext({viewport:{width:1280,height:900}});await ctx.route('https://**/*',r=>r.abort());const page=await ctx.newPage();
   const errs=[];page.on('pageerror',e=>errs.push(String(e)));
-  await page.goto(fixture+`?start=/games/${type}`);await page.waitForTimeout(2500);
+  await page.goto(fixture+`?start=/games/${type}`);await page.locator('[data-play-mode="play"] [data-game]').first().waitFor({timeout:5000}).catch(()=>{});
+  if(type==='wordfishing')await page.locator('.ad-wordfishing .ad-fish').first().waitFor({timeout:5000});
+  if(type==='quizshow'){
+   await page.getByText('학생 휴대폰 화면(미리보기)',{exact:true}).waitFor({timeout:5000});
+   assert.equal(await page.evaluate(()=>window.__liveCreated===true),false);
+  }
   const r=await page.evaluate(()=>({dialog:!!document.querySelector('dialog[open]'),toolbar:!!document.querySelector('[data-game-toolbar]'),mode:document.querySelector('[data-play-mode]')?.getAttribute('data-play-mode'),overlay:!!document.querySelector('[data-game-ready-overlay]'),board:!!document.querySelector('[data-game]')}));
   console.log(type,JSON.stringify(r),errs.slice(0,2).join('|'));
-  await page.screenshot({path:resolve(root,'../output/instant-'+type+'.png')});
-  if(r.dialog||r.overlay||!r.board||r.mode!=='play'||errs.length)bad.push(type);
+  if(r.dialog||r.overlay||!r.board||r.mode!=='play'||errs.length){bad.push(type);await page.screenshot({path:resolve(root,'../output/instant-'+type+'.png')});}
   if(process.env.PANELS){for(const label of ['내 단어/문장','게임설정','저장/불러오기']){await page.getByRole('button',{name:label,exact:true}).click();await page.waitForTimeout(600);const txt=await page.evaluate(()=>{const d=document.querySelector('dialog[open]');return (d?d.innerText:document.body.innerText).replace(/\s+/g,' ').slice(0,300)});console.log('  ['+label+']',txt);await page.screenshot({path:resolve(root,'../output/instant-'+type+'-'+label.replace(/\W/g,'')+'.png')});await page.keyboard.press('Escape');await page.waitForTimeout(200);}}
   await ctx.close();
  }
+ for(let i=0;i<types.length;i+=6)await Promise.all(types.slice(i,i+6).map(verify));
  assert.equal(bad.length,0,'not instant: '+bad);console.log('PASS');
 }catch(e){console.error(e);process.exitCode=1;}
 finally{await browser?.close();await server.close();}
