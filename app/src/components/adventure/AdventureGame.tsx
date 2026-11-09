@@ -5,6 +5,7 @@ import { shuffled } from '../../lib/storybook';
 import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveSentence, sentenceOrderCorrect, targetKey, targetPoint, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../../lib/adventureGames';
 import { useAdventureEngine, type AdventureEngine } from '../../lib/useAdventureEngine';
 import ArrangePieces from './ArrangePieces';
+import { FishArt, FishingTackle } from './FishingArt';
 import './adventure.css';
 
 const worlds:Record<AdventureType,string>={balloonpop:'balloon',wordtrain:'train',wordfishing:'fishing',sentencerocket:'rocket',grammardetective:'detective',treasurehunt:'island',wordclaw:'arcade'};
@@ -49,15 +50,27 @@ function Round({type,c,e,round:r}:{type:AdventureType;c:AdventureConfig;e:Advent
 function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'vocab'}>}){
   const fishing=type==='wordfishing';
   const streak=e.records.length>=2&&e.records.slice(-2).every(row=>row.mistakes===0)&&e.mistakes===e.records.reduce((sum,row)=>sum+row.mistakes,0);
-  const [picked,setPicked]=useState('');const [hook,setHook]=useState({x:50,y:50});
+  const [picked,setPicked]=useState('');
+  const [hook,setHook]=useState<{ x:number; y:number } | null>(null);
   const [fallback,setFallback]=useState(false);const board=useRef<HTMLDivElement>(null);
   const listening=fishing&&c.listening&&!fallback;
   useEffect(()=>{if(!listening)return;const id=gameClock.setTimeout(()=>{englishSpeak(r.word.word,()=>setFallback(true));},300);return()=>{gameClock.clearTimeout(id);if('speechSynthesis' in window)speechSynthesis.cancel();};},[listening,r.word.word]);
-  function choose(id:string,node:HTMLButtonElement){const word=r.choices.find(w=>w.id===id)!;const correct=r.accepted.includes(wordKey(word.word));if(!e.judge(correct,r.word.meaning,`${word.word} · ${word.meaning}`,{duration:fishing?2100:1400}))return;setPicked(id);if(board.current){const b=board.current.getBoundingClientRect(),p=node.getBoundingClientRect();setHook({x:(p.x+p.width/2-b.x)/b.width*100,y:(p.y+p.height/2-b.y)/b.height*100});}}
+  function choose(id:string,node:HTMLButtonElement) {
+    const word=r.choices.find(w=>w.id===id)!;
+    const correct=r.accepted.includes(wordKey(word.word));
+    if(!e.judge(correct,r.word.meaning,`${word.word} · ${word.meaning}`,{duration:fishing?2100:1400}))return;
+    setPicked(id);
+    const mouth=node.querySelector('[data-fish-mouth]');
+    if(mouth && board.current) {
+      const b=board.current.getBoundingClientRect();
+      const p=mouth.getBoundingClientRect();
+      setHook({x:(p.x+p.width/2-b.x)/b.width*100,y:(p.y+p.height/2-b.y)/b.height*100});
+    }
+  }
   return <><div className="ad-prompt"><span>{listening?'소리를 듣고 물고기를 찾아요':`${r.word.meaning} — 영어로 무엇일까요?`}</span>{fishing&&<Voice text={r.word.word} onFallback={()=>setFallback(true)}/>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
     <div ref={board} className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s',gridTemplateColumns:r.choices.length===4?'repeat(2,minmax(0,1fr))':undefined} as CSSProperties}>
-      {fishing&&<svg className={`ad-hook ${e.busy?'is-dropping':''}`} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d={`M 8 0 Q ${hook.x} 0 ${hook.x} ${e.busy?hook.y:12}`} fill="none" stroke="#f9f6df" strokeWidth=".4"/><text x={hook.x} y={e.busy?hook.y:12} fontSize="5">♧</text></svg>}
-      {r.choices.map((w,i)=><div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':'ad-balloon'} ${picked===w.id&&e.busy?e.reaction:''}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing&&<><span className="ad-fish-tail"/><span className="ad-fish-eye"/></>}<span>{w.word}</span>{!fishing&&<i className="ad-string"/>}</button>{picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>)}
+      {fishing&&<FishingTackle target={e.busy?hook:null}/>}
+      {r.choices.map((w,i)=><div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':'ad-balloon'} ${picked===w.id&&e.busy?e.reaction:''}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing&&<FishArt index={i}/>}<span>{w.word}</span>{!fishing&&<i className="ad-string"/>}</button>{picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>)}
     </div>{streak&&<span className="ad-gold">{fishing?<><img src="/skins/adventure/goldfish.webp" alt=""/> 황금 물고기 보너스!</>:'★ 연속 정답! 반짝반짝 별 보너스!'}</span>}<p className="ad-control-help">정답을 누르세요. Tab으로 선택하고 Enter로도 답할 수 있어요.</p></>;
 }
 function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<AdventureRound,{kind:'sentence'}>}){
