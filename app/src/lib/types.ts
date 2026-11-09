@@ -897,6 +897,8 @@ export interface CanvasTextElement extends CanvasElementBase {
   text: string;
   /** 무대 높이 대비 % */
   fontSize: number;
+  /** 자동 생성한 글상자는 이 크기를 상한으로 두고 칸 안에 맞춘다. */
+  fitText?: boolean;
   color: string;
   bold: boolean;
   italic?: boolean;

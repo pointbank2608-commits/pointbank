@@ -1,4 +1,4 @@
-import { newCanvasSlide, newTextElement, themeTextDefaults } from '../components/CanvasSlideEditor';
+import { lessonBoard, lessonTitleSlide } from './lessonCanvas';
 import { createGameTemplate } from './api';
 import { grammarPoint, sentencesForUnscramble } from './grammar';
 import { loadWordBank } from './wordBankCache';
@@ -61,16 +61,6 @@ const game = (gameType: Extract<LessonSlide, { kind: 'game' }>['gameType'], temp
   templateId ? { id: uid(), kind: 'game', gameType, templateId } : { id: uid(), kind: 'game', gameType };
 const worksheet = (tab: string): LessonSlide => ({ id: uid(), kind: 'material', materialId: 'worksheet', worksheetTab: tab, boardTheme: 'whiteboard' });
 
-/** 제목 슬라이드(칠판) — 큰 제목 + 작은 부제 */
-function titleSlide(title: string, subtitle: string): LessonSlide {
-  const slide = newCanvasSlide('green');
-  slide.elements = [
-    newTextElement({ x: 8, y: 30, w: 84, h: 26, ...themeTextDefaults('green', 'title'), text: title }),
-    { ...newTextElement({ x: 15, y: 60, w: 70, h: 14, ...themeTextDefaults('green'), bold: false }), text: subtitle },
-  ];
-  return slide;
-}
-
 export const LESSON_RECIPES: LessonRecipe[] = [
   {
     id: 'vocab',
@@ -103,22 +93,10 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: false,
     preview: ['flight', 'forum', 'sports_esports', 'description', 'print'],
     build: async (ctx) => {
-      const green = (title: string, lines: string[], size = 5) => {
-        const slide = newCanvasSlide('green');
-        slide.elements = [
-          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-          ...lines.map((text, i) => ({
-            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-            text,
-            fontSize: size,
-          })),
-        ];
-        return slide;
-      };
       return [
-        titleSlide('Airport Role Play', ctx.t('recipes.airportSubtitle')),
+        lessonTitleSlide('Airport Role Play', ctx.t('recipes.airportSubtitle')),
         {
-          ...green('Warm Up Questions', [
+          ...lessonBoard('Warm Up Questions', [
             '1. Have you travelled on a plane before?',
             '2. Do you prefer travelling by plane, train, or car? Why?',
             '3. Would you like to be a pilot?',
@@ -131,7 +109,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cloze', boardTheme: 'whiteboard', helpers: [timerHelper(300)] },
         { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'board', boardTheme: 'whiteboard', helpers: [{ ...newHelper('timer'), seconds: 180 }] },
         { id: uid(), kind: 'material', materialId: 'airport', worksheetTab: 'cards', boardTheme: 'whiteboard' },
-        green('Exit Ticket', [
+        lessonBoard('Exit Ticket', [
           'Can I check in please?',
           'Please put your bags into the tray.',
           'Can I see your boarding pass and passport please?',
@@ -147,18 +125,6 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: false,
     preview: ['restaurant', 'forum', 'sports_esports', 'description', 'print'],
     build: async (ctx) => {
-      const green = (title: string, lines: string[], size = 5) => {
-        const slide = newCanvasSlide('green');
-        slide.elements = [
-          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-          ...lines.map((text, i) => ({
-            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-            text,
-            fontSize: size,
-          })),
-        ];
-        return slide;
-      };
       const sheet = (tab: string, seconds?: number): LessonSlide => ({
         id: uid(),
         kind: 'material',
@@ -168,9 +134,9 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
       });
       return [
-        titleSlide('Ordering Food', ctx.t('recipes.restaurantSubtitle')),
+        lessonTitleSlide('Ordering Food', ctx.t('recipes.restaurantSubtitle')),
         {
-          ...green('Warm Up Questions', [
+          ...lessonBoard('Warm Up Questions', [
             '1. Have you ever eaten at a restaurant?',
             '2. What is your favorite food?',
             '3. What do you like to drink?',
@@ -183,7 +149,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         sheet('dialogue', 300),
         sheet('pad'),
         sheet('cards'),
-        green('Exit Ticket', ['Are you ready to order?', 'I would like a salad, please.', 'What would you like to drink?'], 5.6),
+        lessonBoard('Exit Ticket', ['Are you ready to order?', 'I would like a salad, please.', 'What would you like to drink?'], 5.6),
       ];
     },
   },
@@ -195,18 +161,6 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: false,
     preview: ['icecream', 'forum', 'sports_esports', 'description', 'print'],
     build: async (ctx) => {
-      const green = (title: string, lines: string[], size = 5) => {
-        const slide = newCanvasSlide('green');
-        slide.elements = [
-          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-          ...lines.map((text, i) => ({
-            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-            text,
-            fontSize: size,
-          })),
-        ];
-        return slide;
-      };
       const sheet = (tab: string, seconds?: number): LessonSlide => ({
         id: uid(),
         kind: 'material',
@@ -216,9 +170,9 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
       });
       return [
-        titleSlide('Ice Cream Shop', ctx.t('recipes.icecreamSubtitle')),
+        lessonTitleSlide('Ice Cream Shop', ctx.t('recipes.icecreamSubtitle')),
         {
-          ...green('Warm Up Questions', [
+          ...lessonBoard('Warm Up Questions', [
             '1. What flavours of ice cream do you like?',
             '2. Do you prefer a cone or a tub?',
             '3. What is your favorite topping?',
@@ -231,7 +185,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         sheet('dialogue', 300),
         sheet('order'),
         sheet('cards'),
-        green('Exit Ticket', ['What can I get for you?', 'Can I get a large ice cream in a cone, please?', 'Blueberry, raspberry and lemon, please.'], 5.2),
+        lessonBoard('Exit Ticket', ['What can I get for you?', 'Can I get a large ice cream in a cone, please?', 'Blueberry, raspberry and lemon, please.'], 5.2),
       ];
     },
   },
@@ -243,18 +197,6 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: false,
     preview: ['medical_services', 'forum', 'sports_esports', 'description', 'print'],
     build: async (ctx) => {
-      const green = (title: string, lines: string[], size = 5) => {
-        const slide = newCanvasSlide('green');
-        slide.elements = [
-          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-          ...lines.map((text, i) => ({
-            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-            text,
-            fontSize: size,
-          })),
-        ];
-        return slide;
-      };
       const sheet = (tab: string, seconds?: number): LessonSlide => ({
         id: uid(),
         kind: 'material',
@@ -264,9 +206,9 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
       });
       return [
-        titleSlide("Let's Go to the Doctor", ctx.t('recipes.doctorSubtitle')),
+        lessonTitleSlide("Let's Go to the Doctor", ctx.t('recipes.doctorSubtitle')),
         {
-          ...green('Warm Up Questions', [
+          ...lessonBoard('Warm Up Questions', [
             '1. Have you ever been to the doctor?',
             '2. How do you feel today?',
             '3. What do you do when you have a cold?',
@@ -279,7 +221,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         sheet('match', 300),
         sheet('problem'),
         sheet('cards'),
-        green('Exit Ticket', ['What’s the problem?', 'I have a headache.', 'Take some medicine and rest.'], 5.6),
+        lessonBoard('Exit Ticket', ['What’s the problem?', 'I have a headache.', 'Take some medicine and rest.'], 5.6),
       ];
     },
   },
@@ -291,18 +233,6 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: false,
     preview: ['thunderstorm', 'forum', 'sports_esports', 'description', 'print'],
     build: async (ctx) => {
-      const green = (title: string, lines: string[], size = 5) => {
-        const slide = newCanvasSlide('green');
-        slide.elements = [
-          newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-          ...lines.map((text, i) => ({
-            ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-            text,
-            fontSize: size,
-          })),
-        ];
-        return slide;
-      };
       const sheet = (tab: string, seconds?: number): LessonSlide => ({
         id: uid(),
         kind: 'material',
@@ -312,9 +242,9 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         ...(seconds ? { helpers: [timerHelper(seconds)] } : {}),
       });
       return [
-        titleSlide('Lightning Luck', ctx.t('recipes.lightningSubtitle')),
+        lessonTitleSlide('Lightning Luck', ctx.t('recipes.lightningSubtitle')),
         {
-          ...green('Warm Up Questions', [
+          ...lessonBoard('Warm Up Questions', [
             '1. What is the weather like today?',
             '2. Do you like rainy days?',
             '3. Are you afraid of thunder?',
@@ -327,7 +257,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
         sheet('fill', 300),
         sheet('draw', 300),
         sheet('score'),
-        green('Exit Ticket', ['It is raining.', 'Take an umbrella.', 'The storm is over.'], 5.6),
+        lessonBoard('Exit Ticket', ['It is raining.', 'Take an umbrella.', 'The storm is over.'], 5.6),
       ];
     },
   },
@@ -406,7 +336,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     minutes: 40,
     needsWords: true,
     preview: ['dashboard_customize', 'menu_book', 'style', 'emoji_events'],
-    build: async (ctx) => [titleSlide(ctx.t('recipes.contestTitle'), ctx.t('recipes.contestSubtitle')), wordshow(), study(), game('quizshow')],
+    build: async (ctx) => [lessonTitleSlide(ctx.t('recipes.contestTitle'), ctx.t('recipes.contestSubtitle')), wordshow(), study(), game('quizshow')],
   },
   {
     id: 'online',
@@ -415,7 +345,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
     needsWords: true,
     preview: ['dashboard_customize', 'how_to_reg', 'menu_book', 'style', 'emoji_events'],
     build: async (ctx) => [
-      titleSlide(ctx.t('recipes.onlineTitle'), ctx.t('recipes.onlineSubtitle')),
+      lessonTitleSlide(ctx.t('recipes.onlineTitle'), ctx.t('recipes.onlineSubtitle')),
       attendance(),
       wordshow(),
       study(),

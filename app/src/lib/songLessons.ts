@@ -395,25 +395,10 @@ const uid = () => crypto.randomUUID();
 const game = (gameType: Extract<LessonSlide, { kind: 'game' }>['gameType'], templateId?: string): LessonSlide =>
   templateId ? { id: uid(), kind: 'game', gameType, templateId } : { id: uid(), kind: 'game', gameType };
 
-/** 칠판 글자 크기(cqh = 무대 높이 %)를 칸 크기에 맞춰 가장 크게 — 글이 길면 줄어들어 겹치지 않는다 */
-function fitFont(text: string, wBox: number, hBox: number, maxFs: number, minFs = 4): number {
-  const wCqh = wBox * (16 / 9); // 가로 칸 폭을 cqh 로
-  for (let fs = maxFs; fs > minFs; fs -= 0.5) {
-    let lines = 0;
-    for (const para of text.split(String.fromCharCode(10))) {
-      let em = 0;
-      for (const ch of para) em += /[ㄱ-힣]/.test(ch) ? 1 : ch === ' ' ? 0.35 : 0.62;
-      lines += Math.max(1, Math.ceil((em * fs) / wCqh));
-    }
-    if (lines * fs * 1.4 <= hBox) return fs;
-  }
-  return minFs;
-}
-
 function textBox(text: string, x: number, y: number, w: number, h: number, maxFs: number, opts: { title?: boolean; bold?: boolean; color?: string } = {}) {
   const base = themeTextDefaults('green', opts.title ? 'title' : 'body');
   return {
-    ...newTextElement({ x, y, w, h, ...base, bold: opts.bold ?? base.bold, fontSize: fitFont(text, w, h, maxFs), ...(opts.color ? { color: opts.color } : {}) }),
+    ...newTextElement({ x, y, w, h, ...base, bold: opts.bold ?? base.bold, fontSize: maxFs, fitText: true, ...(opts.color ? { color: opts.color } : {}) }),
     text,
   };
 }

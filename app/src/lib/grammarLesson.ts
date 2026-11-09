@@ -1,9 +1,9 @@
-import { newCanvasSlide, newTextElement, themeTextDefaults } from '../components/CanvasSlideEditor';
+import { lessonBoard } from './lessonCanvas';
 import { createGameTemplate } from './api';
 import { recommendGrammarGames } from './grammarGamesB';
 import { GRAMMAR_SHEET_BANK } from '../data/grammarSheets';
 import type { ChooseItem, GrammarSheetContent } from '../data/grammarSheets/types';
-import { grammarPoint, plainText, sentencesForUnscramble } from './grammar';
+import { grammarPoint, parseMarked, plainText, sentencesForUnscramble } from './grammar';
 import { newHelper } from './slideHelpers';
 import { buildFactoryItems } from './sentenceFactory';
 import type { GameType, LessonSlide, QuizQuestion, SlideHelper } from './types';
@@ -36,15 +36,17 @@ export function hasGrammarLessonBank(grammarId: string): boolean {
 }
 
 function board(title: string, lines: string[], size = 5): LessonSlide {
-  const slide = newCanvasSlide('green');
-  slide.elements = [
-    newTextElement({ x: 6, y: 6, w: 88, h: 16, ...themeTextDefaults('green', 'title'), text: title }),
-    ...lines.map((text, i) => ({
-      ...newTextElement({ x: 8, y: 28 + i * 16, w: 84, h: 12, ...themeTextDefaults('green'), bold: false }),
-      text,
-      fontSize: size,
-    })),
-  ];
+  const slide = lessonBoard(title, lines.map(plainText), size);
+  lines.forEach((line, index) => {
+    const el = slide.elements[index + 1];
+    if (el.type !== 'text' || line === el.text) return;
+    let offset = 0;
+    el.runs = parseMarked(line).flatMap(({ text, strong }) => {
+      const start = offset;
+      offset += text.length;
+      return strong ? [{ start, end: offset, bold: true, color: '#fde68a' }] : [];
+    });
+  });
   return slide;
 }
 

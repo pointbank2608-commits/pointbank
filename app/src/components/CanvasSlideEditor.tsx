@@ -18,6 +18,7 @@ import {
   MotionLayer,
   canvasElementBoxStyle,
   canvasTextStyle,
+  fitCanvasText,
 } from './CanvasSlideView';
 
 /**
@@ -847,7 +848,7 @@ export default function CanvasSlideEditor({
     const stageH = stage.clientHeight;
     if (!stageH) return;
     for (const el of slide.elements) {
-      if (el.type !== 'text') continue;
+      if (el.type !== 'text' || el.fitText) continue;
       const box = stage.querySelector<HTMLElement>(`[data-el-id="${el.id}"]`);
       const content = box?.firstElementChild as HTMLElement | null;
       if (!box || !content) continue;
@@ -1570,16 +1571,20 @@ function TextEditBox({
     // 보기 화면처럼 글을 세로 가운데에 — 입력을 마칠 때 글이 아래로 "뛰는" 것처럼 보이지 않게.
     ta.style.paddingTop = '';
     ta.style.paddingBottom = '';
+    if (el.fitText) {
+      fitCanvasText(ta, el.fontSize, () => ta.scrollHeight <= ta.clientHeight && ta.scrollWidth <= ta.clientWidth);
+    }
     const syncMirror = () => {
       const m = mirrorRef.current;
       if (m) {
+        m.style.fontSize = ta.style.fontSize;
         m.style.paddingTop = ta.style.paddingTop;
         m.style.paddingBottom = ta.style.paddingBottom;
       }
     };
     if (ta.scrollHeight > ta.clientHeight + 2) {
       syncMirror();
-      onGrow(ta.scrollHeight);
+      if (!el.fitText) onGrow(ta.scrollHeight);
       return;
     }
     const cs = getComputedStyle(ta);

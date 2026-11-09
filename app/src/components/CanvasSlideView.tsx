@@ -60,6 +60,60 @@ export function canvasTextStyle(el: CanvasTextElement): CSSProperties {
   };
 }
 
+/** 실제 글꼴과 줄바꿈으로 재서 글상자 안에 들어가는 크기를 찾는다. */
+export function fitCanvasText(node: HTMLElement, maxSize: number, fits: () => boolean) {
+  node.style.fontSize = `${maxSize}cqh`;
+  if (!node.clientWidth || !node.clientHeight || fits()) return;
+  let low = 0;
+  let high = maxSize;
+  for (let i = 0; i < 8; i++) {
+    const size = (low + high) / 2;
+    node.style.fontSize = `${size}cqh`;
+    if (fits()) low = size;
+    else high = size;
+  }
+  node.style.fontSize = `${low}cqh`;
+}
+
+function CanvasTextContent({ el, placeholder }: { el: CanvasTextElement; placeholder?: string }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const body = bodyRef.current;
+    if (!el.fitText || !box || !body) return;
+    const fit = () => {
+      const style = getComputedStyle(box);
+      const height = box.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      fitCanvasText(box, el.fontSize, () => body.scrollHeight <= height && body.scrollWidth <= body.clientWidth);
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(box);
+    document.fonts?.addEventListener('loadingdone', fit);
+    return () => {
+      observer.disconnect();
+      document.fonts?.removeEventListener('loadingdone', fit);
+      box.style.fontSize = `${el.fontSize}cqh`;
+    };
+  }, [el, placeholder]);
+
+  const empty = !el.text.trim();
+  return (
+    <div
+      ref={boxRef}
+      className={`flex h-full w-full flex-col justify-center ${el.fitText ? 'overflow-hidden' : ''}`}
+      style={{ ...canvasTextStyle(el), ...(empty && placeholder ? { color: '#9ca3af' } : {}) }}
+    >
+      <div ref={bodyRef} data-text-body className={el.fitText ? 'shrink-0' : undefined}>
+        {empty
+          ? placeholder ?? ''
+          : runSegments(el.text, el.runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
+      </div>
+    </div>
+  );
+}
+
 /** 화면에 보이는 선 길이(px) — 상자에 맞춰 가로세로가 다르게 늘어나므로 점을 따라가며 잰다 */
 function screenLength(path: SVGPathElement): number {
   const total = path.getTotalLength();
@@ -225,18 +279,7 @@ export function CanvasElementContent({ el, placeholder }: { el: CanvasElement; p
   else if (el.type === 'shape') body = <CanvasShapeContent el={el} />;
   else if (el.type === 'image') {
     body = <img src={el.url} alt="" draggable={false} className="pointer-events-none h-full w-full select-none" style={{ objectFit: el.fit, ...imageEffectStyle(el) }} />;
-  } else {
-    const empty = !el.text.trim();
-    body = (
-      <div className="flex h-full w-full flex-col justify-center" style={{ ...canvasTextStyle(el), ...(empty && placeholder ? { color: '#9ca3af' } : {}) }}>
-        <div data-text-body>
-          {empty
-            ? placeholder ?? ''
-            : runSegments(el.text, el.runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
-        </div>
-      </div>
-    );
-  }
+  } else body = <CanvasTextContent el={el} placeholder={placeholder} />;
   // 글상자 자동 늘리기가 첫 자식에서 [data-text-body]를 찾으므로, 투명도가 있을 때만 한 겹 더 싼다.
   return opacity === undefined ? <>{body}</> : <div className="h-full w-full" style={{ opacity }}>{body}</div>;
 }
