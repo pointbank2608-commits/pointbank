@@ -461,7 +461,11 @@ export function useGameTemplates(params: {
       const draft = makeDraft({ cards: wordListToCards(list), kind, name: list.name, id: list.id });
       if (gameType === 'wordhoops') draft.config.hoopsMode = selected?.config.hoopsMode ?? draft.config.hoopsMode;
       if (gameType === 'tugofwar') draft.config.tugMode = selected?.config.tugMode ?? draft.config.tugMode;
-      if ((draft.config.hoopsMode === 'picture' || draft.config.tugMode === 'picture') && !isNativeGameReady(draft)) {
+      if (selected?.config.pictureWordMode) {
+        draft.config.pictureWordMode = true;
+        draft.config.pictureWordListId = list.id;
+      }
+      if ((draft.config.pictureWordMode || draft.config.hoopsMode === 'picture' || draft.config.tugMode === 'picture') && !isNativeGameReady(draft)) {
         throw new Error(t('gameWordHoops.pictureNeedsList'));
       }
       chooseDraft(draft);

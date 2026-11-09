@@ -210,7 +210,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
         {isBonus && <div className="gsq-bonus">{t('gameGameShowQuiz.bonusBadge')}</div>}
 
         <div className="gsq-prompt">
-          <GameFitText text={current.question} fit="block" />
+          {current.imageUrl ? <img data-picture-word src={current.imageUrl} alt={t('gameWordHoops.askWord')} draggable={false} className="mx-auto h-[min(25vh,180px)] w-full object-contain" /> : <GameFitText text={current.question} fit="block" />}
         </div>
 
         <button

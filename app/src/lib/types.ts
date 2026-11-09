@@ -457,6 +457,8 @@ export interface GameTemplateConfig {
   hoopsMode?: 'meaning' | 'word' | 'mixed' | 'picture';
   tugMode?: 'text' | 'picture';
   pictureWords?: Pick<FullCardItem, 'id' | 'word' | 'imageUrl'>[];
+  pictureWordMode?: boolean;
+  pictureWordListId?: string;
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
   hoopsRule?: 'race' | 'timed';
   hoopsSeconds?: number;
@@ -570,6 +572,7 @@ export interface QuizQuestion {
   question: string;
   choices: string[];
   correctIndex: number;
+  imageUrl?: string;
 }
 
 export interface TrueFalseStatement {

@@ -1,3 +1,4 @@
+import { pictureQuizDeck } from '../lib/pictureWordQuestions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -341,7 +342,7 @@ export default function GameShowQuizPage() {
             >
               <GameShowQuiz
                 key={roundKey} ref={gameRef}
-                questions={playableQuestions}
+                questions={pictureQuizDeck(selected?.config, playableQuestions)}
                 bonusEvery={bonusEvery}
                 lifelines={lifelines}
                 boardStyle={selected.config.gameShowStyle === 'clay' ? 'clay' : 'wood'}

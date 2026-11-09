@@ -1,3 +1,4 @@
+import { pictureQuizDeck } from '../lib/pictureWordQuestions';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -331,7 +332,7 @@ export default function QuizPage() {
               onRestart={() => setRoundKey((k) => k + 1)}
               className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
             >
-              <Quiz key={roundKey} questions={playableQuestions} />
+              <Quiz key={roundKey} questions={pictureQuizDeck(selected?.config, playableQuestions)} />
             </GameThemeFrame>
           )}
 

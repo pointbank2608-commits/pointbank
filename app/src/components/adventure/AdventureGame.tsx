@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGameWorkspace } from '../../context/GameWorkspaceContext';
 import { gameClock } from '../../lib/gameClock';
 import { shuffled } from '../../lib/storybook';
@@ -15,10 +16,10 @@ function englishSpeak(text:string,fallback?:()=>void){
  const utter=new SpeechSynthesisUtterance(text);utter.lang='en-US';utter.voice=voice;utter.rate=.85;utter.onerror=()=>fallback?.();speechSynthesis.cancel();speechSynthesis.speak(utter);
 }
 function Voice({text,onFallback}:{text:string;onFallback?:()=>void}){return <button className="ad-voice" aria-label="영어 듣기" onClick={()=>{englishSpeak(text,onFallback);}}>🔊</button>;}
-export default function AdventureGame({type,config:c,onRestart}:{type:AdventureType;config:AdventureConfig;onRestart:()=>void}){
+export default function AdventureGame({type,config:c,onRestart,preparedRounds}:{type:AdventureType;config:AdventureConfig;onRestart:()=>void;preparedRounds?: AdventureRound[]}){
   const workspace=useGameWorkspace();
-  const e=useAdventureEngine(type,c,!!workspace&&(!workspace.running||!!workspace.panel));
-  const errors=adventureErrors(type,c);
+  const e=useAdventureEngine(type,c,!!workspace&&(!workspace.running||!!workspace.panel),preparedRounds);
+  const errors=preparedRounds ? (preparedRounds.length ? [] : ['그림 문제를 준비해 주세요.']) : adventureErrors(type,c);
   const {phase,start}=e;
   useEffect(()=>{if(workspace?.running&&phase==='ready'&&!errors.length)start();},[workspace?.running,phase,start,errors.length]);
   return <section className={`ad-game ad-${type} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
@@ -48,12 +49,13 @@ function Round({type,c,e,round:r}:{type:AdventureType;c:AdventureConfig;e:Advent
   return <Claw c={c} e={e} r={r}/>;
 }
 function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'vocab'}>}){
+  const {t}=useTranslation();
   const fishing=type==='wordfishing';
   const streak=e.records.length>=2&&e.records.slice(-2).every(row=>row.mistakes===0)&&e.mistakes===e.records.reduce((sum,row)=>sum+row.mistakes,0);
   const [picked,setPicked]=useState('');
   const [cast,setCast]=useState<FishingCast | null>(null);
   const [fallback,setFallback]=useState(false);
-  const listening=fishing&&c.listening&&!fallback;
+  const listening=fishing&&c.listening&&!fallback&&!r.imageUrl;
   useEffect(()=>{if(!listening)return;const id=gameClock.setTimeout(()=>{englishSpeak(r.word.word,()=>setFallback(true));},300);return()=>{gameClock.clearTimeout(id);if('speechSynthesis' in window)speechSynthesis.cancel();};},[listening,r.word.word]);
   function choose(id:string,node:HTMLButtonElement) {
     const word=r.choices.find(w=>w.id===id)!;
@@ -64,7 +66,9 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
     setPicked(id);
     if(fishing)setCast({fish:node,correct,duration,reducedMotion});
   }
-  return <><div className="ad-prompt"><span>{listening?'소리를 듣고 물고기를 찾아요':`${r.word.meaning} — 영어로 무엇일까요?`}</span>{fishing&&<Voice text={r.word.word} onFallback={()=>setFallback(true)}/>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
+  return <><div className="ad-prompt">{r.imageUrl
+    ? <img data-picture-word src={r.imageUrl} alt={t('gameWordHoops.askWord')} className="h-[min(14vh,132px)] object-contain" draggable={false}/>
+    : <><span>{listening?'소리를 듣고 물고기를 찾아요':`${r.word.meaning} — 영어로 무엇일까요?`}</span>{fishing&&<Voice text={r.word.word} onFallback={()=>setFallback(true)}/>}</>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
     <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s',gridTemplateColumns:r.choices.length===4?'repeat(2,minmax(0,1fr))':undefined} as CSSProperties}>
       {fishing&&<FishingTackle cast={e.busy?cast:null}/>}
       {r.choices.map((w,i)=>{

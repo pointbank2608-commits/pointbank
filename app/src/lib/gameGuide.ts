@@ -170,6 +170,7 @@ export function guideKindProblem(type:GameType,rows:string[][],kind:GuideKind):{
 }
 export function guideProblem(template:Pick<GameTemplate, 'game_type' | 'config' | 'items'>): string | null {
   const type=template.game_type,c=template.config;
+  if (c.pictureWordMode) return isNativeGameReady(template) ? null : 'incomplete';
   if(type==='ladder'&&c.results&&(c.results.length!==template.items.length||c.results.some(r=>!r.label.trim())))return 'ladderIncomplete';
   if(['feedmonster','sentencebridge','sentencetower'].includes(type)&&c.storybook){if(storyErrors(type as 'feedmonster',c.storybook).length)return 'story';}
   if(type==='watermelon'){

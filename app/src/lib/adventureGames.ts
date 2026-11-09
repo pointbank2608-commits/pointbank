@@ -152,7 +152,7 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
   return [...new Set(out)];
 }
 export type AdventureRound =
- | {kind:'vocab';id:string;word:AdventureWord;choices:AdventureWord[];accepted:string[]}
+ | {kind:'vocab';id:string;word:AdventureWord;choices:AdventureWord[];accepted:string[];imageUrl?:string}
  | {kind:'sentence';id:string;sentence:AdventureSentence}
  | {kind:'case';id:string;item:DetectiveCase}
  | {kind:'clue';id:string;clue:IslandClue}

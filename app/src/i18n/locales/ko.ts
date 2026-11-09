@@ -1648,6 +1648,16 @@ const ko = {
     playAgain: "다시 하기",
     notEnough: "문제를 2개 이상 넣으면 시작할 수 있어요.",
   },
+  picturePractice: {
+    title: "그림 보고 영어 단어 고르기",
+    results: "첫 시도 정답 {{count}}개 · 응답한 문제 {{total}}개",
+    skipped: "그림을 불러오지 못해 건너뛴 문제 {{count}}개",
+    imageMissing: "그림을 불러오지 못했어요. 다음 문제로 넘어갈 수 있어요.",
+    correct: "맞았어요!",
+    retry: "그림을 다시 보고 다른 단어를 골라 보세요.",
+    next: "다음 문제",
+    showResults: "결과 보기",
+  },
   gameWordHoops: {
     studentClassTitle: "{{className}} 단어 농구 대결",
     emptyStaff: "지금은 샘플 낱말이에요. 위의 \"내 단어/문장\"에서 우리 반 단어장을 불러오면 그 단어로 게임해요.",

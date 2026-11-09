@@ -10,7 +10,7 @@ import { isActivityDraft } from '../lib/quickActivity';
 import { gamePreparation } from '../lib/gamePreparation';
 import { isSentenceList, listsForGame } from '../lib/gameWorkspace';
 import { preparePlayableList } from '../lib/gameGuide';
-import { pictureWordQuestions } from '../lib/pictureWordQuestions';
+import { pictureWordModeKind, pictureWordQuestions } from '../lib/pictureWordQuestions';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { wordListToCards } from '../lib/gameFromWords';
@@ -133,6 +133,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   // 적용을 누르기 전까지 고른 값
   const [pGrammar, setPGrammar] = useState('');
   const [pList, setPList] = useState('');
+  const [pPictureMode, setPPictureMode] = useState(false);
+  const [pPictureList, setPPictureList] = useState('');
   const [pSaved, setPSaved] = useState('');
   const [pClass, setPClass] = useState('');
   const [pMode, setPMode] = useState<Mode>('none');
@@ -187,6 +189,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const pictureKind = pictureWordModeKind(type);
+  const currentPictureMode = !!info?.selected?.config.pictureWordMode;
+  const pictureLists = pictureKind ? (info?.lists ?? []).filter(list => !isSentenceList(list)) : [];
+  const pictureList = pictureLists.find(list => list.id === pPictureList);
+  const pictureCards = pictureList ? wordListToCards(pictureList).map(({id, word, imageUrl}) => ({id, word, imageUrl})) : undefined;
+  const pictureConfig = { ...info?.selected?.config, ...(pictureCards ? { pictureWords: pictureCards, pictureWordListId: pictureList?.id } : {}) };
+  const pictureCount = pPictureMode ? pictureWordQuestions(pictureConfig).length : 0;
   const isGrammar = !!type && (GRAMMAR_GAME_TYPES as readonly string[]).includes(type);
   const caps = gamePreparation(type || 'wheel');
   const kinds = caps.kinds as readonly string[];
@@ -265,6 +274,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     const play = getGrammarPlay();
     setPGrammar(current);
     setPList(currentSourceId);
+    setPPictureMode(currentPictureMode);
+    setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
     const teamCap = isGrammar ? 4 : nativeTeams ? 8 : 6;
@@ -426,6 +437,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   });
   const applySettings = () => run(async () => {
     setGameSoundOn(pSound);
+    if (pictureKind && info?.selected && (pPictureMode || currentPictureMode)) {
+      if (pPictureMode && !pictureCount) throw new Error(t('gameWordHoops.pictureNeedsList'));
+      await workspace.applyGuideAndPlay({ items: info.selected.items, config: { ...pictureConfig, pictureWordMode: pPictureMode } });
+      return;
+    }
     if (info?.selected && isBomb) {
       const parts = nonEmpty(pPartText);
       if (pBombMode === 'pass' && parts.length < 2) throw new Error(text('참가자 순서대로 하려면 참가자가 2명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 2 players.'));
@@ -579,7 +595,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open === 'content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -749,6 +765,25 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        {pictureKind && <fieldset className="space-y-3 rounded-xl bg-surface-container-low p-3">
+          <legend className="px-1 font-bold">{text('문제 방식', 'Question type')}</legend>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={chip(!pPictureMode)} aria-pressed={!pPictureMode} onClick={() => setPPictureMode(false)}>{text('기존 게임 방식', 'Original game')}</button>
+            <button type="button" className={chip(pPictureMode)} aria-pressed={pPictureMode} onClick={() => setPPictureMode(true)}>{text(PICTURE_WORD_OPTION.ko, PICTURE_WORD_OPTION.en)}</button>
+          </div>
+          {pPictureMode && <>
+            <label className="block text-sm font-bold">{text('그림 문제에 쓸 단어장', 'Word list for picture questions')}
+              <select className={field} value={pPictureList} onChange={event => setPPictureList(event.target.value)}>
+                <option value="">{pictureLists.find(list => list.id === info?.selected?.config.pictureWordListId)?.name ?? text('지금 게임 자료 사용', 'Use current game material')}</option>
+                {pictureLists.map(list => <option key={list.id} value={list.id}>{list.name}</option>)}
+              </select>
+            </label>
+            <p className="text-sm text-on-surface-variant">{pictureCount ? text(`그림 문제 ${pictureCount}개`, `${pictureCount} picture questions`) : t('gameWordHoops.pictureNeedsList')}</p>
+            {pictureKind === 'practice' && <p className="text-sm text-on-surface-variant">{text('이 모드에서는 그림을 보고 영어 단어를 고르는 공통 연습 화면이 열려요.', 'This mode opens the shared picture-word practice board.')}</p>}
+          </>}
+          {!pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings'); }}>{text('자세히 설정', 'More settings')}</button>}
+        </fieldset>}
+        {!(pictureKind && (pPictureMode || currentPictureMode)) && <>
         {isPopcorn && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('팝콘 설정', 'Popcorn settings')}</p>
@@ -994,6 +1029,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             )}
           </div>
         )}
+        </>}
         <label className="flex min-h-11 items-center gap-2 font-bold">
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}

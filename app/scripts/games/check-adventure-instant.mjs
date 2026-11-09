@@ -81,12 +81,60 @@ try {
  const args=process.argv.slice(2);
  const audit=args.includes('--apply-audit');
  const pictureAudit=args.includes('--picture-audit');
+ const expandedPictureAudit=args.includes('--expanded-picture-audit');
  const requested=args.filter(arg=>!arg.startsWith('--'));
- const types=args.includes('--all') || (audit && !requested.length)?[...readFileSync(resolve(root,'src/lib/gameCatalog.ts'),'utf8').matchAll(/path:\s*'\/games\/([^']+)'/g)].map(match=>match[1]):requested.length?requested:['wordfishing','balloonpop','feedmonster','sentencebridge','sentencetower','quizshow'];
+ const {pictureWordModeKind}=expandedPictureAudit?await server.ssrLoadModule('/src/lib/pictureWordQuestions.ts'):{};
+ const types=args.includes('--all') || ((audit || expandedPictureAudit) && !requested.length)?[...readFileSync(resolve(root,'src/lib/gameCatalog.ts'),'utf8').matchAll(/path:\s*'\/games\/([^']+)'/g)].map(match=>match[1]).filter(type=>!expandedPictureAudit || pictureWordModeKind(type)):requested.length?requested:['wordfishing','balloonpop','feedmonster','sentencebridge','sentencetower','quizshow'];
  const bad=[];
  const applied=new Set();
  async function expectPlay(page) {
   await page.waitForFunction(()=>document.querySelector('[data-play-mode="play"] [data-game-fit]:not([inert])') && !document.querySelector('[data-game-ready-overlay]'),null,{timeout:5000});
+ }
+ async function auditExpandedPictures(page,type) {
+  const kind=pictureWordModeKind(type);
+  assert.ok(kind, type);
+  const settings=page.getByRole('button',{name:'게임설정',exact:true});
+  const apply=page.getByRole('button',{name:'적용',exact:true});
+  const stage=page.locator('[data-game-fit]:visible').first();
+  await settings.click();
+  await page.getByRole('button',{name:'그림 보고 영어 단어 고르기',exact:true}).click();
+  await page.getByRole('combobox',{name:/그림 문제에 쓸 단어장/}).selectOption('words');
+  await apply.click();
+  await expectPlay(page);
+  if(type==='winlosequiz') {
+   await stage.getByRole('button',{name:/올인/}).click();
+  }
+  const picture=stage.locator('[data-picture-word]').first();
+  await picture.waitFor({timeout:7000});
+  assert.equal(await stage.locator('[data-picture-practice]').count(),kind==='practice'?1:0);
+  await page.waitForFunction(()=>Array.from(document.querySelectorAll('[data-picture-word]')).some(img=>img.complete && img.naturalWidth>0));
+  const answer=(await picture.getAttribute('src')).match(/\/(apple|banana|cat)\.webp$/)?.[1];
+  assert.ok(answer);
+  if(kind==='practice') {
+   await stage.getByRole('button',{name:answer,exact:true}).click();
+   await stage.getByText('맞았어요!',{exact:true}).waitFor();
+  } else if(type==='wordfishing' || type==='balloonpop') {
+   await stage.locator(`[data-word="${answer}"]`).press('Enter');
+   await stage.locator(type==='wordfishing'?'.ad-fish-correct':'.ad-balloon.correct').waitFor();
+  }
+  if(type==='wordfishing' || type==='wheel'){
+   if(type==='wheel'){
+    await page.getByRole('button',{name:'저장/불러오기',exact:true}).click();
+    await page.getByRole('textbox',{name:'저장할 이름'}).fill('그림 복습');
+    await page.getByRole('button',{name:'저장하기',exact:true}).click();
+    await page.getByRole('button',{name:'그림 복습',exact:true}).waitFor();
+    const saved=await page.evaluate(()=>window.__workspace.writes.at(-1).config);
+    assert.equal(saved.pictureWordMode,true);
+    assert.equal(saved.pictureWordListId,'words');
+    await page.getByRole('button',{name:'닫기',exact:true}).click();
+   }
+   await settings.click();
+   await page.getByRole('button',{name:'기존 게임 방식',exact:true}).click();
+   await apply.click();
+   await expectPlay(page);
+   await picture.waitFor({state:'hidden'});
+  }
+  console.log(type,kind,'picture mode PASS');
  }
  async function auditPictureMode(page,type) {
   const settings=page.getByRole('button',{name:'게임설정',exact:true});
@@ -145,6 +193,8 @@ try {
   const list=page.getByRole('combobox',{name:/내 단어장 · 문장 모음|내 문장 모음/});
   if(['shopping','sentencerocket','watermelon','wordclaw'].includes(type)){
    await page.getByRole('button',{name:'게임설정',exact:true}).click();
+   const more=page.getByRole('button',{name:'자세히 설정',exact:true});
+   if(await more.count()) await more.click();
    const dialog=page.locator('dialog[open]');
    const isSentence=type==='sentencerocket';
    if(type==='shopping') await dialog.getByRole('button',{name:'내 단어장 가게',exact:true}).click();
@@ -218,7 +268,10 @@ try {
   const r=await page.evaluate(()=>({dialog:!!document.querySelector('dialog[open]'),toolbar:!!document.querySelector('[data-game-toolbar]'),mode:document.querySelector('[data-play-mode]')?.getAttribute('data-play-mode'),overlay:!!document.querySelector('[data-game-ready-overlay]'),board:!!document.querySelector('[data-game]')}));
   console.log(type,JSON.stringify(r),errs.slice(0,2).join('|'));
   if(r.dialog||r.overlay||!r.board||r.mode!=='play'||errs.length){bad.push(type);await page.screenshot({path:resolve(root,'../output/instant-'+type+'.png')});}
-  if(pictureAudit) {
+  if(expandedPictureAudit) {
+   try { await auditExpandedPictures(page,type); assert.deepEqual(errs,[]); }
+   catch(error){ bad.push(type); console.error(type,error.message); }
+  } else if(pictureAudit) {
    await auditPictureMode(page,type);
    assert.deepEqual(errs,[]);
   } else if(audit) {

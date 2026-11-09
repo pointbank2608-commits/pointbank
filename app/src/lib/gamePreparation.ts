@@ -5,7 +5,7 @@ import { GAME_CATALOG } from './gameCatalog';
 import { isLiveQuestionReady } from './liveQuiz';
 import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } from './sentencePatterns';
 
-import { pictureWordQuestions } from './pictureWordQuestions';
+import { pictureWordModeKind, pictureWordQuestions } from './pictureWordQuestions';
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['sentencerocket','grammardetective','treasurehunt','wordclaw','sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['wordtrain','unscramble','sentencesplash']);
@@ -23,6 +23,7 @@ export function gamePreparation(type: GameType) {
 /** Counts describe the native configuration, not unfiltered source rows. */
 export function gameReadyDetails(template: GameTemplate) {
   const { game_type: type, config: c, items } = template;
+  if (c.pictureWordMode && pictureWordModeKind(type)) return { count: pictureWordQuestions(c).length, kind: 'questions', teams: null };
   const questions = ['quiz','gameshowquiz','winlosequiz','tugofwar'].includes(type) ? c.questions : type==='truefalse' ? c.statements : type==='quizshow' ? c.liveQuestions : type==='typeanswer' ? c.typeAnswerEntries : type==='imagequiz' ? c.imageQuizItems : undefined;
   const pairs = ['matchup','whackamole','wordhoops'].includes(type) ? c.pairs : type==='flashcards' ? c.flashcards : undefined;
   const intrinsic = [...ADVENTURE_TYPES,'timer','airport','restaurant','doctor','icecream','shopping','mathgen','feedmonster','sentencebridge','sentencetower'].includes(type);
@@ -36,6 +37,7 @@ export function gameReadyDetails(template: GameTemplate) {
 /** Validate the native config as well as converted sources before entering focus mode. */
 export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'config' | 'items'>): boolean {
   const { game_type: type, config: c, items } = template;
+  if (c.pictureWordMode && pictureWordModeKind(type)) return pictureWordQuestions(c).length > 0;
   if ((ADVENTURE_TYPES as readonly string[]).includes(type)) return !!c.adventure && adventureErrors(type as AdventureType,c.adventure).length===0;
   if ((type === 'wordhoops' && c.hoopsMode === 'picture') || (type === 'tugofwar' && c.tugMode === 'picture')) {
     return pictureWordQuestions(c).length > 0;

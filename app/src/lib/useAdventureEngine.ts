@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { gameClock, pauseGameClock } from './gameClock';
 import { useMiniGameSfx } from './miniGameSfx';
-import { adventureRounds, adventureSeconds, type AdventureConfig, type AdventureType } from './adventureGames';
+import { adventureRounds, adventureSeconds, type AdventureConfig, type AdventureRound, type AdventureType } from './adventureGames';
 
 export type AdventurePhase = 'ready' | 'playing' | 'review' | 'finale' | 'finished';
 export interface LearningRecord { prompt: string; answer: string; mistakes: number }
-export function useAdventureEngine(type: AdventureType,c:AdventureConfig,externalPaused:boolean) {
-  const [rounds]=useState(()=>adventureRounds(type,c));
+export function useAdventureEngine(type: AdventureType,c:AdventureConfig,externalPaused:boolean,preparedRounds?: AdventureRound[]) {
+  const [rounds]=useState(()=>preparedRounds ?? adventureRounds(type,c));
   const [phase,setPhase]=useState<AdventurePhase>('ready');
   const [index,setIndex]=useState(0);
   const [busy,setBusy]=useState(false);

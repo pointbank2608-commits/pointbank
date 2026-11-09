@@ -249,7 +249,7 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
             </div>
 
             <div className="wlq-prompt">
-              <GameFitText text={current.question} fit="block" />
+              {current.imageUrl ? <img data-picture-word src={current.imageUrl} alt={t('gameWordHoops.askWord')} draggable={false} className="mx-auto h-[min(25vh,180px)] w-full object-contain" /> : <GameFitText text={current.question} fit="block" />}
             </div>
 
             <div className="mt-1 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
