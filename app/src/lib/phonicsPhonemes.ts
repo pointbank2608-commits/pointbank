@@ -25,5 +25,13 @@ export async function playPhoneme(ruleId: string): Promise<boolean> {
   try { window.speechSynthesis?.cancel(); } catch { /* 음성 없음 */ }
   const el = new Audio(phonemeUrl(ruleId));
   current = el;
-  try { await el.play(); return true; } catch { current = null; return false; }
+  try {
+    await el.play();
+    return true;
+  } catch {
+    // A later playback or an explicit stop can cancel an in-flight play request.
+    if (current !== el) return true;
+    current = null;
+    return false;
+  }
 }

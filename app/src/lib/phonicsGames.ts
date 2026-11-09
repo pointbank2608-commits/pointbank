@@ -59,13 +59,27 @@ export function gamePool(g:PhonicsGame,u:CourseUnit){
  // OW comparison explicitly combines the two confirmed OW groups; no other later words are added.
  const base=g.id==='ow-crossroads'?phonicsGameUnits().filter(x=>x.step===5).flatMap(x=>x.entries):u.entries;
  const allowed=g.rules?base.filter(e=>g.rules!.includes(e.ruleId!)):base;
- return [...new Map(allowed.map(e=>[e.id,e])).values()];
+ const entries=[...new Map(allowed.map(e=>[e.id,e])).values()];
+ if(g.mechanic!=='change')return entries;
+
+ // This game replaces exactly one initial letter. A bare rime such as "ox" has none.
+ const replaceable=entries.filter(entry=>{
+  const family=groupLabel(u,entry).replace(/^-/,'').toLowerCase();
+  const word=entry.word.toLowerCase();
+  return word.length===family.length+1&&word.endsWith(family);
+ });
+ return replaceable.filter(entry=>replaceable.some(other=>
+  other.word.toLowerCase()!==entry.word.toLowerCase()&&patternKey(u,other)===patternKey(u,entry)));
 }
 export function gameAvailability(g:PhonicsGame,u:CourseUnit,en=false):string|null{
  if(!g.stages.includes(u.step))return en?'Choose a matching level.':'이 게임에 맞는 단계를 선택해 주세요.';
  if(g.id==='ow-crossroads'&&u.number<6)return en?'Review in Level 5 Unit 6, after learning both OW sounds.':'두 ow 발음을 배운 5단계 Unit 6부터 복습해요.';
  if(['read-and-move','sentence-bridge','our-storybook'].includes(g.id)&&u.reading.status!=='approved')return en?'Reading sentences are awaiting review.':'이 유닛의 읽기 문장은 검토 중이에요.';
- const pool=gamePool(g,u);if(!pool.length)return en?'Choose a unit with this spelling pattern.':'해당 규칙이 있는 유닛을 선택해 주세요.';
+ const pool=gamePool(g,u);
+ if(!pool.length){
+  if(g.mechanic==='change')return en?'Choose a unit with two words that differ only in their first letter.':'첫 글자만 다른 단어가 두 개 이상 있는 유닛을 선택해 주세요.';
+  return en?'Choose a unit with this spelling pattern.':'해당 규칙이 있는 유닛을 선택해 주세요.';
+ }
  if(['sound-fishing','monster-diner','word-treasure','picture-puzzle','memory-cards'].includes(g.id)&&pool.filter(pictureEligible).length<2)return en?'This game needs two words with clear pictures.':'명확한 그림이 있는 단어가 2개 이상 필요해요.';
  const distinct=new Set(pool.map(e=>e.word.toLowerCase())).size;
  if(['choice','read','memory','missing','puzzle','bingo'].includes(g.mechanic)&&distinct<2)return en?'This game needs two different words.':'서로 다른 단어가 2개 이상 필요해요.';
@@ -104,8 +118,7 @@ export function makeRound(g:PhonicsGame,u:CourseUnit,index:number,seed:number):G
  if(['choice','read','memory','puzzle'].includes(g.mechanic)&&g.id!=='sound-balloons'&&picturePool.length>=2)entry=shuffled(picturePool,seed)[index%picturePool.length];
  let source:PhonicsBankEntry|undefined;
  if(g.mechanic==='change'){
-  const candidates=pool.filter(e=>pool.some(x=>x.id!==e.id&&patternKey(u,x)===patternKey(u,e)));
-  entry=shuffled(candidates,seed)[index%candidates.length];source=pool.find(e=>e.id!==entry.id&&patternKey(u,e)===patternKey(u,entry));
+  source=pool.find(e=>e.word.toLowerCase()!==entry.word.toLowerCase()&&patternKey(u,e)===patternKey(u,entry));
  }
  const optionPool=['sound-fishing','monster-diner','word-treasure','picture-puzzle'].includes(g.id)?picturePool:pool;
  const unique=[...new Map(optionPool.filter(e=>e.word!==entry.word).map(e=>[e.word,e])).values()];

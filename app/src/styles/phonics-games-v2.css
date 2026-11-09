@@ -205,7 +205,7 @@
 .pg-dock-word,.pg-dock-text .pg-word{font-family:'Andika',sans-serif;font-size:36px;font-weight:800;color:#24483f;letter-spacing:.02em}
 .pg-dock-card .pg-next{margin:0;min-height:58px;min-width:190px;font-size:21px;margin-left:auto}.pg-dock-card .pg-next:disabled{opacity:.55}
 .pg-dock-card .pg-button{min-height:46px}
-.pg-dock-wrong{border-color:#e69b87;justify-content:center;width:min(520px,92%);padding:10px 18px;background:#fff5ef}.pg-dock-wrong strong{font-size:20px;color:#9a4630}
+.pg-dock-wrong{border-color:#e69b87;justify-content:center;width:min(520px,92%);padding:10px 18px;background:#fff5ef;pointer-events:none}.pg-dock-wrong strong{font-size:20px;color:#9a4630}
 @keyframes pg-dock-in{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 @media(max-width:640px){.pg-dock{bottom:8px}.pg-dock-card{padding:10px 12px;border-radius:22px}.pg-dock-text strong{font-size:18px}.pg-dock-word,.pg-dock-text .pg-word{font-size:28px}.pg-dock-card .pg-next{width:100%;margin-left:0}}
 @media(prefers-reduced-motion:reduce){.pg-dock-card{animation:none}}

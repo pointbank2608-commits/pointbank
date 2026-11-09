@@ -2,6 +2,7 @@ import {createContext,useContext,useEffect,useMemo,useRef,useState} from 'react'
 import {isGameSoundOn,setGameSoundOn,useGameSoundOn} from './gameSfx';
 import type {PhonicsGame} from './phonicsGames';
 import {gameVisual} from './phonicsGameVisuals';
+import {stopPhoneme} from './phonicsPhonemes';
 
 export type PhonicsCue='start'|'pick'|'place'|'retry'|'scene'|'success'|'next'|'finish';
 /** Original ClassBank WAVs, produced by scripts/sfx/build-minigame-sfx.py.
@@ -64,15 +65,15 @@ export function usePhonicsGameSound(game:PhonicsGame,active:boolean){
   function after(cue:PhonicsCue,delay:number){if(!allowed())return;const ticket=generation;const id=window.setTimeout(()=>{timers.delete(id);if(ticket===generation)play(cue);},delay);timers.add(id);}
   function answer(){play('scene');after('success',profile.scene==='rocket-launch'?2350:profile.scene==='train-depart'?1500:650);}
   function speechStart(text:string){
-   stop();endSpeech();speaking=true;const ticket=speechGeneration;
+   stop();stopPhoneme();endSpeech();speaking=true;const ticket=speechGeneration;
    const end=()=>{if(ticket===speechGeneration)endSpeech();};
    // A missing browser end/error callback cannot leave effects muted forever.
    speechTimer=window.setTimeout(end,Math.min(30000,2500+text.length*180));return end;
   }
   function pause(value:boolean){paused=value;if(value){stop();endSpeech();}}
   function sync(){if(master&&context)master.gain.setValueAtTime(settings.current.volume,context.currentTime);if(!isGameSoundOn()||!settings.current.active||!settings.current.volume)stop();}
-  function dispose(){stop();endSpeech();master?.disconnect();master=null;}
-  const cancelSpeech=()=>{endSpeech();window.speechSynthesis?.cancel();};
+  const cancelSpeech=()=>{endSpeech();stopPhoneme();window.speechSynthesis?.cancel();};
+  function dispose(){stop();cancelSpeech();master?.disconnect();master=null;}
   return {play,after,answer,stop,warm,speechStart,cancelSpeech,pause,sync,dispose};
  },[game]);
  useEffect(()=>{player.sync();},[player,active,on,volume]);

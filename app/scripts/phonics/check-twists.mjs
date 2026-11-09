@@ -230,6 +230,38 @@ try {
     console.log('PASS boss: last round is a boss round with double stars');
   }
 
+  // 나가기 확인 중에는 라운드 타이머가 멈추고, 취소하면 같은 라운드를 이어 간다.
+  for (const fullscreen of ['none', 'native', 'fallback']) {
+    await open('sound-balloons', 'course-1-1');
+    if (fullscreen === 'fallback') {
+      await page.evaluate(() => {
+        Element.prototype.requestFullscreen = () => Promise.reject(new Error('Fullscreen unavailable'));
+      });
+    }
+    if (fullscreen !== 'none') {
+      await page.getByRole('button', { name: '전체화면', exact: true }).click();
+      await page.locator('.pg-session.pg-fullscreen').waitFor();
+      assert.equal(await page.evaluate(() => Boolean(document.fullscreenElement)), fullscreen === 'native');
+    }
+    const leaveGame = page.getByRole('button', { name: '게임 나가기', exact: true });
+    const confirm = page.getByRole('dialog', { name: '게임 나가기' });
+    const timer = page.locator('.pg-clock');
+    await leaveGame.click();
+    await confirm.waitFor();
+    const remaining = await timer.textContent();
+    await page.waitForTimeout(1200);
+    assert.equal(await timer.textContent(), remaining);
+    await confirm.getByRole('button', { name: '계속할게요' }).click();
+    await confirm.waitFor({ state: 'hidden' });
+    assert.equal(await page.locator('[data-phonics-session] .pg-progress progress').getAttribute('value'), '0');
+    await leaveGame.click();
+    await confirm.getByRole('button', { name: '나가기', exact: true }).click();
+    await page.waitForURL(`${root}/phonics-games?unit=course-1-1`);
+    await page.locator('[data-phonics-session]').waitFor({ state: 'detached' });
+    await page.waitForFunction(() => document.fullscreenElement === null && document.body.style.overflow !== 'hidden');
+    console.log(`PASS leave: ${fullscreen} exits to the selected unit and restores scrolling`);
+  }
+
   assert.deepEqual(errors, []);
   assert.deepEqual(writes, []);
   console.log('ALL PASS: per-game rules (no database writes)');

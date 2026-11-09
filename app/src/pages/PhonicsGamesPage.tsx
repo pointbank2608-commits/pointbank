@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PHONICS_STAGES } from '../data/phonicsCurriculum';
 import { type CourseUnit } from '../data/phonicsLessons';
@@ -11,6 +11,7 @@ import {ClaySprite,ClassroomVillage,LearningStage,PhonicsGameCover,PlayWorld} fr
 import {PHONICS_WORLDS,addVillageReward,gameVisual,readVillageRewards,type PhonicsWorld,type VillageReward} from '../lib/phonicsGameVisuals';
 import {PhonicsSoundContext,usePhonicsGameSound,usePhonicsSound} from '../lib/phonicsGameSound';
 import {PhonicsSoundControls} from '../components/PhonicsSoundControls';
+import AccessibleDialog from '../components/AccessibleDialog';
 import {DragBox,DragButton} from '../components/PhonicsDrag';
 import {hasPhoneme,playPhoneme} from '../lib/phonicsPhonemes';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
@@ -32,9 +33,16 @@ function BlankWord({text,filled,answer,label}:{text:string;filled:boolean;answer
 }
 /** 목표 소리(음가)를 들려 준다. 녹음 파일이 있는 규칙에만 보인다. */
 function PhonemeButton({ruleId,label,en}:{ruleId:string;label:string;en:boolean}){
+ const {player}=usePhonicsSound();
  const [failed,setFailed]=useState(false);
  if(!hasPhoneme(ruleId))return null;
- return <button className="pg-button pg-phoneme" type="button" data-learning-audio onClick={()=>{void playPhoneme(ruleId).then(ok=>setFailed(!ok));}}>{icon('graphic_eq')}{l(en,'소리 듣기','Hear the sound')} <b lang="en">{label}</b>{failed&&<small role="status">{l(en,'소리를 재생할 수 없어요.','Could not play the sound.')}</small>}</button>;
+ const play = () => {
+  player.stop();
+  player.cancelSpeech();
+  setFailed(false);
+  void playPhoneme(ruleId).then(ok=>setFailed(!ok));
+ };
+ return <button className="pg-button pg-phoneme" type="button" data-learning-audio onClick={play}>{icon('graphic_eq')}{l(en,'소리 듣기','Hear the sound')} <b lang="en">{label}</b>{failed&&<small role="status">{l(en,'소리를 재생할 수 없어요.','Could not play the sound.')}</small>}</button>;
 }
 function WordPicture({entry,en}:{entry:PhonicsBankEntry;en:boolean}){
  const [broken,setBroken]=useState(false);
@@ -50,6 +58,7 @@ export default function PhonicsGamesPage(){
  const {i18n}=useTranslation();const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const {gameId}=useParams();const [params,setParams]=useSearchParams();
  const location=useLocation();
+ const navigate=useNavigate();
  const [units,setUnits]=useState(phonicsGameUnits);
  useEffect(()=>{let active=true;void fetchPhonicsBank().then(rows=>{if(active)setUnits(courseUnits(rows));}).catch(()=>{});return()=>{active=false;};},[]);
  const rawUnit=params.get('unit');const requested=units.find(u=>u.id===rawUnit);
@@ -69,6 +78,10 @@ export default function PhonicsGamesPage(){
  const reason=game?gameAvailability(game,unit,en):null;
  const candidates=PHONICS_GAMES.filter(g=>(!query||`${g.ko} ${g.en} ${g.goal.join(' ')}`.toLowerCase().includes(query.toLowerCase()))&&g.stages.includes(unit.step)&&(world==='all'||gameVisual(g).world===world));
  const start=()=>{setSeed(crypto.getRandomValues(new Uint32Array(1))[0]);setPlaying(true);};
+ function leaveGame() {
+  setPlaying(false);
+  navigate(`/phonics-games?unit=${encodeURIComponent(unit.id)}`, { replace: true });
+ }
  const directEntry=useRef('');
  const entryKey=`${location.pathname}:${location.key}`;
  const quickPlay=!rawUnit||location.state?.phonicsQuickPlay===true;
@@ -91,7 +104,7 @@ export default function PhonicsGamesPage(){
     <div className="pg-grid">{candidates.map(g=>{const blocked=gameAvailability(g,unit,en);return <article className={'pg-game-card '+(blocked?'pg-unavailable':'')} key={g.id} data-game-card={g.id}><PhonicsGameCover game={g}/><div><p className="pg-eyebrow">{g.number>=36?l(en,'모험 게임','Adventure'):l(en,'학습 게임','Learning game')}</p><h3>{gameName(g,en)}</h3><p>{g.goal[en?1:0]}</p>{blocked?<p className="pg-reason">{blocked}</p>:<span className="pg-ready">{l(en,'이 유닛으로 바로 시작','Ready for this unit')}</span>}<Link className="pg-button" to={`/phonics-games/${g.id}?unit=${unit.id}`} state={blocked?undefined:{phonicsQuickPlay:true}}>{blocked?l(en,'게임·유닛 안내','View requirements'):l(en,'게임 열기','Open game')}{icon('arrow_forward')}</Link></div></article>;})}</div>
     {!candidates.length&&<p role="status">{l(en,'검색 결과가 없어요. 다른 이름으로 찾아보세요.','No games found. Try another search.')}</p>}
     <p className="pg-footnote">{l(en,'전체 40종 중 선택한 단계의 게임을 보여 줍니다. 문장 게임은 검토가 끝난 수업에서 열립니다.','Showing this level’s games from the 40-game library. Sentence games use approved lessons only.')}</p>
-   </>:playing?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={()=>setPlaying(false)}/>:<section className="pg-panel pg-launch">
+   </>:playing?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={leaveGame}/>:<section className="pg-panel pg-launch">
     <h2>{l(en,'이 유닛으로 놀아요','Play with this unit')}</h2><p>Level {unit.step} · Unit {unit.number} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     {game.id==='ow-crossroads'&&<p className="pg-note">{l(en,'5단계 Unit 3의 ow /oʊ/와 Unit 6의 ow /aʊ/를 함께 복습합니다.','Reviews ow /oʊ/ from Level 5 Unit 3 and ow /aʊ/ from Unit 6.')}</p>}
     {reason?<p className="pg-reason" role="status">{reason}</p>:<><label>{l(en,'문제 수','Rounds')}<select aria-label={l(en,'문제 수','Rounds')} value={rounds} onChange={e=>setRounds(Number(e.target.value))}>{[3,6,10].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
@@ -140,13 +153,21 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  }
  const panel=useRef<HTMLDivElement>(null);
  const pseudoFull=useRef(false);
+ function exitSession() {
+  if (panel.current && document.fullscreenElement === panel.current) {
+   void document.exitFullscreen().catch(() => {
+    // Removing the game panel also releases fullscreen if the browser rejects the request.
+   });
+  }
+  onExit();
+ }
  async function toggleFullscreen(){
    if(large){if(document.fullscreenElement===panel.current)await document.exitFullscreen();pseudoFull.current=false;setLarge(false);return;}
    try{if(!panel.current?.requestFullscreen)throw Error('unsupported');await panel.current.requestFullscreen();setLarge(true);}catch{pseudoFull.current=true;setLarge(true);}
  }
  useEffect(()=>{const changed=()=>{if(!pseudoFull.current)setLarge(document.fullscreenElement===panel.current);};document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed);},[]);
 
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){pseudoFull.current=false;setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>{window.removeEventListener('keydown',key);window.speechSynthesis?.cancel();};},[]);
+ useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!leaving){pseudoFull.current=false;setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[leaving]);
  useEffect(()=>{if(!large)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[large]);
  useEffect(()=>{if(paused||leaving)player.cancelSpeech();},[player,paused,leaving]);
  const finish=index>=rounds;
@@ -154,7 +175,13 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  const totalStars=stars+(finish?heartBonus:0);
  const rating=totalStars>=starGoal*.85?3:totalStars>=starGoal*.55?2:1;
  useEffect(()=>{player.pause(paused||leaving);return()=>player.pause(false);},[player,paused,leaving]);
- useEffect(()=>{player.stop();player.cancelSpeech();player.play(finish?'finish':index===0?'start':'next');return()=>player.stop();},[player,index,finish]);
+ useEffect(()=>{
+  player.play(finish?'finish':index===0?'start':'next');
+  return ()=>{
+   player.stop();
+   player.cancelSpeech();
+  };
+ },[player,index,finish]);
  const rewardAdded=useRef(false);
  useEffect(()=>{if(!finish){rewardAdded.current=false;return;}if(rewardAdded.current)return;rewardAdded.current=true;onReward({world:gameVisual(game).world,gameId:game.id,unitId:unit.id,label:gameName(game,en)});},[finish,game,unit.id,en,onReward]);
  const activity=useMemo(()=>{
@@ -166,7 +193,15 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
  return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
   <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button></div>
-  {leaving&&<div className="pg-note" role="alert"><p>{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p><button className="pg-button" onClick={onExit}>{l(en,'나가기','Leave')}</button><button className="pg-button" onClick={()=>setLeaving(false)}>{l(en,'계속할게요','Keep playing')}</button></div>}
+  {leaving&&<AccessibleDialog label={l(en,'게임 나가기','Leave game')} onClose={()=>setLeaving(false)}>
+   <div className="p-5">
+    <p>{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p>
+    <div className="mt-4 flex flex-wrap gap-2">
+     <button type="button" className="pg-button" autoFocus onClick={()=>setLeaving(false)}>{l(en,'계속할게요','Keep playing')}</button>
+     <button type="button" className="pg-primary" onClick={exitSession}>{l(en,'나가기','Leave')}</button>
+    </div>
+   </div>
+  </AccessibleDialog>}
   <PhonicsSoundControls en={en}/>
   <div className="pg-progress"><span>{Math.min(index+1,rounds)} / {rounds}</span><progress value={index} max={rounds} aria-label={l(en,'게임 진행','Game progress')}/>{lives>0&&<span className="pg-hearts" aria-label={l(en,`하트 ${hearts}개`,`${hearts} hearts`)}>{Array.from({length:lives},(_,i)=><b key={i} className={i<hearts?'on':''}>{icon('favorite')}</b>)}</span>}<span className="pg-hud-stars" key={'s'+stars} aria-label={l(en,`모은 별 ${stars}개`,`${stars} stars`)}>{icon('star')}{stars} / {starGoal}</span>{combo>=2&&<span className="pg-hud-combo" key={'c'+combo}>{icon('local_fire_department')}{combo}</span>}<span className="pg-first">{l(en,'첫 시도 정답','First try')}: {results.filter(Boolean).length}</span></div>
   {teams>1&&<div className="pg-teams" aria-label={l(en,'팀 점수','Team scores')}>{teamStars.map((v,i)=><span key={i} className={i===teamNow&&!finish?'pg-team-on':''} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{TEAM_NAMES[en?1:0][i]} {icon('star')}{v}</span>)}{!finish&&<strong>{l(en,`${TEAM_NAMES[0][teamNow]} 차례예요!`,`${TEAM_NAMES[1][teamNow]} team's turn!`)}</strong>}</div>}
@@ -174,11 +209,11 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   {paused&&<section className="pg-panel pg-pause" role="status"><h2>{l(en,'잠깐 쉬어가요','Take a break')}</h2><button className="pg-primary" onClick={()=>setPaused(false)}>{l(en,'이어서 하기','Resume')}</button></section>}
   {finish?<section hidden={paused} className="pg-panel pg-results" aria-live="polite"><ClaySprite kind={gameVisual(game).prop} className="pg-result-friend"/><h2>{l(en,'오늘도 잘했어요!','Great work today!')}</h2><p>{rounds}{l(en,'문제를 끝냈어요.',' rounds completed.')}</p><p>{l(en,'첫 시도에 혼자 맞힘','Correct on the first try')}: {results.filter(Boolean).length} · {l(en,'다시 도전·도움 후 완성','Completed after retry / help')}: {results.filter(x=>!x).length}</p><div className="pg-rating" aria-label={l(en,'별 등급','Star rating')}>{[1,2,3].map(n=><span key={n} className={n<=rating?'pg-rating-on':''} style={{animationDelay:`${n*0.25}s`}}>{icon('star')}</span>)}</div><p className="pg-result-stars">{l(en,`모은 별 ${totalStars}개 · 가장 길게 이어 맞힌 콤보 ${bestCombo}`,`${totalStars} stars · best streak ${bestCombo}`)}{heartBonus>0&&<> · {l(en,`하트 보너스 +${heartBonus}`,`Heart bonus +${heartBonus}`)}</>}</p>
    {teams>1&&<ol className="pg-team-ranking">{teamStars.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v).map(({v,i},r)=><li key={i} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{r===0&&icon('emoji_events')}{TEAM_NAMES[en?1:0][i]} · {v}</li>)}</ol>}
-   <p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><ClassroomVillage rewards={rewards} en={en}/><button className="pg-primary" onClick={()=>{setIndex(0);setResults([]);setDone(false);setStars(0);setHearts(lives);setMercyAt(-1);setHeartNote('');setCombos(Array(teams).fill(0));setBestCombo(0);setBurst(null);setTeamStars(Array(teams).fill(0));}}>{l(en,'다시 플레이','Play again')}</button><button className="pg-button" onClick={onExit}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
+   <p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><ClassroomVillage rewards={rewards} en={en}/><button className="pg-primary" onClick={()=>{setIndex(0);setResults([]);setDone(false);setStars(0);setHearts(lives);setMercyAt(-1);setHeartNote('');setCombos(Array(teams).fill(0));setBestCombo(0);setBurst(null);setTeamStars(Array(teams).fill(0));}}>{l(en,'다시 플레이','Play again')}</button><button className="pg-button" onClick={exitSession}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
    {game.mechanic==='adventure'&&<p className="pg-mission">{l(en,'이번 미션','Mission')}: {gameName(activity,en)}</p>}
    {isBoss&&<p className="pg-boss" role="status">{icon('swords')}{l(en,'보스 문제! 그림 없이 풀어요. 첫 시도로 맞히면 별이 2배예요.','Boss round! No pictures. Win on the first try for double stars.')}</p>}
    {heartNote&&<p className="pg-heart-note" role="status">{icon('favorite')}{heartNote}</p>}
-   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={paused} onNext={()=>{window.speechSynthesis?.cancel();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
+   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={paused||leaving} onNext={()=>{window.speechSynthesis?.cancel();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
    {done&&burst&&<div className="pg-burst" key={burst.key} aria-hidden="true"><b className="pg-burst-praise">{burst.praise}</b><span className="pg-burst-gain">+{burst.gain}{icon('star')}</span>{Array.from({length:12},(_,i)=><span key={i} className="pg-burst-star" style={{'--a':`${i*30}deg`} as React.CSSProperties}>{icon('star')}</span>)}</div>}
   </div>}
  </div></PlayWorld>;
@@ -276,7 +311,15 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
   const found=contentRef.current?.querySelector('p:not(.pg-note):not(.pg-display)')?.textContent?.trim();
   speakText(found||RULE_FALLBACK[game.mechanic]?.[en?1:0]||l(en,'문제를 풀어 봐요.','Give it a try.'),en?'en-US':'ko-KR');
  };
- useEffect(()=>{if(!autoSpeak)return;const id=window.setTimeout(speakRule,450);return()=>window.clearTimeout(id);},[]);// eslint-disable-line react-hooks/exhaustive-deps -- 문제가 바뀔 때마다 새로 만들어지므로 한 번만 읽는다.
+ const autoSpoken=useRef(false);
+ useEffect(()=>{
+  if(!autoSpeak||paused||autoSpoken.current)return;
+  const id=window.setTimeout(()=>{
+   autoSpoken.current=true;
+   speakRule();
+  },450);
+  return()=>window.clearTimeout(id);
+ },[autoSpeak,paused]);// eslint-disable-line react-hooks/exhaustive-deps -- speakRule reads the mounted round's instructions.
  let content;
  if(game.mechanic==='pairs'||game.mechanic==='memory')content=<><p>{l(en,game.mechanic==='pairs'?'대문자와 소문자를 연결하세요.':'카드 두 장을 열어 그림과 단어를 연결하세요.',game.mechanic==='pairs'?'Match uppercase and lowercase letters.':'Turn two cards to pair a picture and a word.')}</p><div className="pg-memory-grid">{pairCards.map((c,i)=>{const revealed=game.mechanic==='pairs'||opened.includes(i)||matched.includes(i)||hintLevel>=2;return <button type="button" className={'pg-memory-card '+(matched.includes(i)?'pg-matched':'')} key={i} disabled={solved||matched.includes(i)} aria-label={revealed?c.text:l(en,`${i+1}번 카드`, `Card ${i+1}`)} aria-pressed={opened.includes(i)} onClick={()=>pairClick(i)}>{revealed?game.mechanic==='memory'&&c.kind===0?<WordPicture entry={memoryEntries[c.id]} en={en}/>:<span lang="en">{c.text}</span>:'?'}</button>;})}</div></>;
  else if(game.mechanic==='sort'){
@@ -287,9 +330,8 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  else if(game.mechanic==='trace')content=<><p>{l(en,'글자를 따라 쓰세요. 쓰기 평가는 선생님이 확인해요.','Trace the letter. Your teacher checks the writing.')}</p>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={huntTarget} en={en}/>}<svg className="pg-trace" viewBox="0 0 600 300" aria-label={l(en,'글자 따라 쓰기 판','Letter tracing board')} onPointerDown={e=>{if(solved)return;player.play('pick');drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();setTracePoints(a=>[...a,`M ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerMove={e=>{if(!drawing.current||solved)return;const r=e.currentTarget.getBoundingClientRect();setDrawn(true);setTracePoints(a=>[...a,`L ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerUp={()=>{drawing.current=false;}} onPointerCancel={()=>{drawing.current=false;}}><text x="300" y="225" textAnchor="middle">{huntTarget.toUpperCase()} {huntTarget}</text><path d={tracePoints.join(' ')} fill="none" stroke="#136bce" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"/></svg><div className="pg-actions"><button className="pg-button" disabled={solved} onClick={()=>{setTracePoints([]);setDrawn(false);}}>{l(en,'지우기','Clear')}</button><button className="pg-primary" disabled={solved||!drawn} onClick={()=>{player.answer();setHelp(true);setSolved(true);onComplete(false,0);}}>{l(en,'선생님 확인 · 완료','Teacher checked · Done')}</button></div></>;
  else if(game.mechanic==='build'||game.mechanic==='sentence')content=<>{game.mechanic==='sentence'?<><p>{l(en,'읽은 문장을 기억하고 단어를 순서대로 놓아요.','Remember the sentence and arrange its words.')}</p>{preview?<><p className="pg-display pg-sentence" lang="en">{round.sentence}</p><button className="pg-button" onClick={()=>setPreview(false)}>{l(en,'문장 가리고 시작','Hide sentence and begin')}</button></>:<WordPicture entry={round.entry} en={en}/>}</>:cue()}{(game.mechanic!=='sentence'||!preview)&&<><div className={'pg-build-track '+(game.id==='sound-steps'?'pg-steps':'')} aria-label={l(en,'조립한 단어','Built word')} lang="en">{buildTokens.map((_,i)=><span key={i} className={tiles[i]!==undefined?'pg-filled':''}>{tiles[i]!==undefined?tokenChoices.find(x=>x.id===tiles[i])?.text:'·'}</span>)}</div><div className="pg-options pg-token-bank">{tokenChoices.map(c=><button type="button" key={c.id} {...glow(tokenChoices.find(x=>!tiles.includes(x.id)&&x.text===buildTokens[tiles.length])?.id===c.id)} disabled={solved||tiles.includes(c.id)} onClick={()=>{const built=[...tiles,c.id];if(c.text!==buildTokens[tiles.length]){good(false);return;}setTiles(built);if(built.length===buildTokens.length)good(true);}}>{c.text}</button>)}</div><button type="button" className="pg-button" disabled={solved||!tiles.length} onClick={()=>setTiles(a=>a.slice(0,-1))}>{l(en,'한 칸 되돌리기','Undo one tile')}</button>{game.id==='blend-launch'&&<p>{l(en,'자음군의 두 소리를 각각 말한 뒤 연결하세요.','Say both consonant sounds, then blend.')}</p>}</>}</>;
  else if(game.mechanic==='fill'||game.mechanic==='change'){
-  const onset=round.source?round.entry.word.slice(0,round.entry.word.length-(unit.groups.find(g=>g.entries.some(e=>e.id===round.entry.id))!.label.length-1)):'';
   const opts=game.mechanic==='change'?[...new Set(gamePool(game,unit).map(e=>e.word[0]))]:fillChoices;
-  const blankAnswer=game.mechanic==='change'?onset:blank.answer;
+  const blankAnswer=game.mechanic==='change'?round.entry.word[0]:blank.answer;
   const fillGo=(ok:boolean)=>{if(solved)return;if(!ok){good(false);return;}if(step+1<cards.length){player.answer();setWrong(false);setStep(step+1);return;}good(true);};
   content=<>{cue(false,cur)}<p className="pg-display" lang="en" key={step}>{game.mechanic==='change'?<>{round.source?.word} → <BlankWord text={'_'+round.entry.word.slice(1)} filled={solved} answer={blankAnswer} label={l(en,'빈칸','blank')}/></>:<BlankWord text={blank.masked} filled={solved||false} answer={blankAnswer} label={l(en,'빈칸','blank')}/>}</p><p className="pg-note pg-drag-tip">{l(en,'글자 조각을 끌어서 빈칸에 놓아요. 눌러서 고를 수도 있어요.','Drag a letter piece into the blank, or tap one.')}</p><div className="pg-options pg-token-bank">{shuffled(opts,seed+index).map(c=><DragButton type="button" key={c} {...glow(c===blankAnswer)} disabled={solved} onDropOn={zone=>{if(zone==='blank')fillGo(c===blankAnswer);}} onClick={()=>fillGo(c===blankAnswer)}>{c}</DragButton>)}</div></>;
  }
