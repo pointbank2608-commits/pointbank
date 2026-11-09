@@ -22,7 +22,14 @@ export interface SoloPass {
   gate: boolean;
 }
 
-export type SoloQuestionStep = SoloQuestionBase & { tip?: string };
+interface SoloQuestionPresentation {
+  tip?: string;
+  prompt?: string;
+  /** Reuse the question's ordinary grading while presenting it as solo practice. */
+  practiceGame?: 'balloon' | 'whack' | 'train';
+}
+
+export type SoloQuestionStep = SoloQuestionBase & SoloQuestionPresentation;
 type SoloQuestionBase =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[]; answer: number }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[]; answer: number }
@@ -71,7 +78,7 @@ export type SoloStep =
   | { t: 'fixError'; wrong: string; right: string; why: string; ko: string }
   /** 줄 순서 맞추기 — lines 는 정답 순서, pieces 는 학생에게 보이는 섞인 순서 */
   | { t: 'lineOrder'; lines: string[]; pieces: string[]; clip?: SoloClip }
-  | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloTestItem[] };
+  | { t: 'test'; title: string; scope: TestScope; timed: boolean; verifiedListening?: boolean; items: SoloTestItem[] };
 
 /**
  * 조건 영작의 조건 하나. text 는 학생에게 보이는 말. words(어느 하나 포함)·min/max(단어 수)가 있으면 자동 검사하고,
@@ -107,7 +114,7 @@ export type SoloGameType = 'matchup' | 'anagram' | 'whackamole' | 'wordsearch' |
 export const SOLO_GAME_TYPES: SoloGameType[] = ['matchup', 'anagram', 'whackamole', 'wordsearch', 'hangman'];
 
 /** 학생에게 가는 문제 모양(정답 없음) */
-export type SoloPublicQuestion = SoloPublicQuestionBase & { tip?: string };
+export type SoloPublicQuestion = SoloPublicQuestionBase & SoloQuestionPresentation;
 type SoloPublicQuestionBase =
   | { t: 'pickWord'; imageUrl: string | null; meaning: string; options: string[] }
   | { t: 'pickMeaning'; word: string; imageUrl: string | null; options: string[] }
@@ -144,7 +151,7 @@ export type SoloPublicStep =
   | { t: 'fixError'; wrong: string; why: string; ko: string }
   | { t: 'orderWrite'; ko: string; words: string[] }
   | { t: 'condWrite'; ko: string; conditions: WriteCondition[] }
-  | { t: 'test'; title: string; scope: TestScope; timed: boolean; items: SoloPublicTestItem[] };
+  | { t: 'test'; title: string; scope: TestScope; timed: boolean; verifiedListening?: boolean; items: SoloPublicTestItem[] };
 
 /** 보기에서 번호로 고르는 단계 */
 export const SOLO_CHOICE_TYPES = ['pickWord', 'pickMeaning', 'listenPick', 'fillBlank', 'translatePick', 'pickCorrect', 'lyricBlank', 'sayPick', 'pickPos'] as const;
@@ -694,6 +701,10 @@ export function soloCorrectText(step: SoloStep): string | null {
 
 export function toPublicStep(step: SoloStep): SoloPublicStep {
   const pub = toPublicStepBase(step);
+  if ('practiceGame' in step || 'prompt' in step) {
+    const { practiceGame, prompt, tip } = step;
+    return { ...pub, practiceGame, prompt, tip } as SoloPublicQuestion;
+  }
   const tip = (step as { tip?: string }).tip;
   return tip && step.t !== 'test' ? ({ ...pub, tip } as SoloPublicStep) : pub;
 }
@@ -706,6 +717,7 @@ function toPublicStepBase(step: SoloStep): SoloPublicStep {
         title: step.title,
         scope: step.scope,
         timed: step.timed,
+        verifiedListening: step.verifiedListening,
         items: step.items.map((it) => ({ ...(toPublicStep(it) as SoloPublicQuestion), area: it.area, sec: it.sec })),
       };
     case 'lyricBlank':

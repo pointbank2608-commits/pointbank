@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import MoreMenu from '../MoreMenu';
 import LearningPathStudio from './LearningPathStudio';
 import GrammarTeacherPanel from '../grammar/GrammarTeacherPanel';
@@ -30,6 +30,7 @@ import SoloCatalogModal from './SoloCatalogModal';
 import SoloLessonEditor from './SoloLessonEditor';
 import SoloPreview from './SoloPreview';
 import WatchPanel from './WatchPanel';
+import SoloStarterLibrary from './SoloStarterLibrary';
 
 /**
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
@@ -66,9 +67,24 @@ function orderLessons(list: SoloLesson[]): SoloLesson[] {
 
 export default function SoloLessonsPanel(props: { academyId: string; classId: string | null }) {
   const { i18n } = useTranslation();
-  return <div className="space-y-8">{props.classId && <GrammarTeacherPanel classId={props.classId} mode="individual" />}<LearningPathStudio key={props.classId} {...props}/><details className="rounded-2xl border border-outline-variant p-4"><summary className="min-h-11 cursor-pointer font-bold">{i18n.language.startsWith('en') ? 'Previous lesson materials' : '기존 개별수업 자료'}</summary><div className="mt-4"><LegacySoloLessonsPanel {...props}/></div></details></div>;
+  const details = useRef<HTMLDetailsElement>(null);
+  const [revision, setRevision] = useState(0);
+  return (
+    <div className="space-y-8">
+      <SoloStarterLibrary key={props.classId} {...props} onSaved={() => {
+        if (details.current) details.current.open = true;
+        setRevision((current) => current + 1);
+      }} />
+      {props.classId && <GrammarTeacherPanel classId={props.classId} mode="individual" />}
+      <LearningPathStudio key={props.classId} {...props} />
+      <details ref={details} className="rounded-2xl border border-outline-variant p-4">
+        <summary className="min-h-11 cursor-pointer font-bold">{i18n.language.startsWith('en') ? 'Saved individual lessons' : '저장한 개별수업'}</summary>
+        <div className="mt-4"><LegacySoloLessonsPanel {...props} revision={revision} /></div>
+      </details>
+    </div>
+  );
 }
-function LegacySoloLessonsPanel({ academyId, classId }: { academyId: string; classId: string | null }) {
+function LegacySoloLessonsPanel({ academyId, classId, revision }: { academyId: string; classId: string | null; revision: number }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [lessons, setLessons] = useState<SoloLesson[]>([]);
@@ -102,7 +118,7 @@ function LegacySoloLessonsPanel({ academyId, classId }: { academyId: string; cla
 
   useEffect(() => {
     void reload();
-  }, [reload]);
+  }, [reload, revision]);
 
   async function rename(l: SoloLesson) {
     const next = window.prompt(t('solo.renamePrompt'), l.name);

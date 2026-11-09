@@ -45,7 +45,7 @@ const norm = (s: string) => s.replace(/[()（）.,!?]/g, '').replace(/\s+/g, '')
 /** 서버가 알려 준 채점 결과(문항에 없는 해설은 만들지 않는다) */
 export interface StudioResult { correct: boolean | null; answer: string | null }
 
-export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, finalCheck, result, onNext, nextBusy, spellingHint }: { finalCheck?: boolean; spellingHint?: (level: HintLevel) => Promise<SpellingHint>; onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean }) {
+export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSensor, studio, finalCheck, result, onNext, nextBusy, spellingHint, guideText, compact }: { finalCheck?: boolean; spellingHint?: (level: HintLevel) => Promise<SpellingHint>; onSensor?: (action: SensorAction) => void; q: HwQuestion; onAnswer: (response: string) => void; disabled: boolean; /** 도움말로 지운 보기 번호(단어암기숙제) */ eliminated?: number[]; studio?: boolean; result?: StudioResult | null; onNext?: () => void; nextBusy?: boolean; guideText?: string; compact?: boolean }) {
   const { t } = useTranslation();
   const onSensorRef = useRef(onSensor);
   onSensorRef.current = onSensor;
@@ -56,7 +56,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
   }, [q.id, listen, q.speak]);
 
   const memo = q.style === 'flash' || q.style === 'fade' || q.style === 'sfade';
-  const guide = t(`studentHw.guide_${q.gen === 'vocab-spelling-train-v1' ? 'letters' : q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
+  const guide = guideText ?? t(`studentHw.guide_${q.gen === 'vocab-spelling-train-v1' ? 'letters' : q.style ?? (q.qtype === 'text' ? 'spell' : q.qtype === 'order' ? 'letters' : 'any')}`);
   const speakBtn = (big: boolean) =>
     q.speak ? (
       <button
@@ -105,7 +105,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
         )}
       </div>
 
-      {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />}
+      {q.qtype === 'choice' && <ChoiceList q={q} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} compact={compact} />}
       {q.style === 'flash' && <FlashThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'sfade' && <SentenceFadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
@@ -179,10 +179,10 @@ function StudioChoice({ q, guide, listenOnly, disabled, eliminated = [], result,
   );
 }
 
-function ChoiceList({ q, onAnswer, disabled, eliminated = [] }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
+function ChoiceList({ q, onAnswer, disabled, eliminated = [], compact }: { q: HwQuestion; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[]; compact?: boolean }) {
   const choices = q.choices ?? [];
   const ox = choices.length === 2 && choices[0] === 'O' && choices[1] === 'X';
-  if (q.style === 'whack') return <MoleBoard choices={choices} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />;
+  if (q.style === 'whack') return <MoleBoard choices={choices} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} compact={compact} />;
   if (q.style === 'fish') return <FishPond choices={choices} onAnswer={onAnswer} disabled={disabled} eliminated={eliminated} />;
   if (q.style === 'balloon' || q.style === 'monster' || q.style === 'claw' || q.style === 'maze' || q.style === 'plane' || q.style === 'group') {
     const look = {
@@ -307,12 +307,12 @@ const MOLE_CSS = `
 `;
 
 /** 두더지 밭: 두더지가 구멍에서 나왔다 들어갔다 하고, 낱말 팻말을 든 두더지 중 알맞은 뜻을 눌러 잡는다. 채점은 처음 누른 두더지(보기 번호) 그대로 */
-function MoleBoard({ choices, onAnswer, disabled, eliminated = [] }: { choices: string[]; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[] }) {
+function MoleBoard({ choices, onAnswer, disabled, eliminated = [], compact }: { choices: string[]; onAnswer: (r: string) => void; disabled: boolean; eliminated?: number[]; compact?: boolean }) {
   const [picked, setPicked] = useState<number | null>(null);
   const n = Math.max(choices.length, 1);
   const period = 4.6;
   return (
-    <div className="grid flex-1 grid-cols-2 content-end gap-x-4 gap-y-2 px-4 pb-6 pt-[34vh]">
+    <div className={`grid flex-1 grid-cols-2 content-end gap-x-4 gap-y-2 px-4 pb-6 ${compact ? 'pt-2 sm:grid-cols-3' : 'pt-[34vh]'}`}>
       <style>{MOLE_CSS}</style>
       {choices.map((c, i) => {
         const gone = eliminated.includes(i);
@@ -397,16 +397,16 @@ function OrderBuilder({ q, onAnswer, disabled, finalCheck }: { q: HwQuestion; on
   const tokens = q.tokens ?? [];
   const [placed, setPlaced] = useState<number[]>([]);
   const letters = q.joiner === '';
-  const spellingTrain = q.gen === 'vocab-spelling-train-v1';
+  const hasTrain = q.gen === 'vocab-spelling-train-v1' || q.gen === 'solo-sentence-train-v1';
   const done = placed.length === tokens.length && tokens.length > 0;
   const tile = `min-h-12 rounded-xl px-3 font-bold shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none ${letters ? 'min-w-12 text-2xl' : 'text-lg'}`;
   return (
     <div className="flex flex-col gap-4 p-4">
-      <div className={`flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl p-3 ${spellingTrain ? 'border-b-4 border-double border-white/80 bg-[#102041]/85 pb-5' : 'border-2 border-dashed border-(color:--hw-line)'}`} aria-live="polite">
-        {spellingTrain && <span className="text-3xl" aria-hidden="true">🚂</span>}
+      <div className={`flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl p-3 ${hasTrain ? 'border-b-4 border-double border-white/80 bg-[#102041]/85 pb-5 text-white' : 'border-2 border-dashed border-(color:--hw-line)'}`} aria-live="polite">
+        {hasTrain && <span className="text-3xl" aria-hidden="true">🚂</span>}
         {placed.length === 0 && <span className="text-base text-(color:--hw-mute)">{t('studentHw.orderHint')}</span>}
         {placed.map((ti, k) => (
-          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} ${spellingTrain ? 'relative bg-[#ffc65a] after:absolute after:inset-x-2 after:-bottom-2 after:h-2 after:border-x-[6px] after:border-[#1e293b] after:content-[""]' : finalCheck ? 'border border-[#c3cff3] bg-[#e8edff]' : 'bg-warm-yellow'} text-deep-navy`}>
+          <button key={k} type="button" disabled={disabled} onClick={() => setPlaced((p) => p.filter((_, j) => j !== k))} className={`${tile} ${hasTrain ? 'relative bg-[#ffc65a] after:absolute after:inset-x-2 after:-bottom-2 after:h-2 after:border-x-[6px] after:border-[#1e293b] after:content-[""]' : finalCheck ? 'border border-[#c3cff3] bg-[#e8edff]' : 'bg-warm-yellow'} text-deep-navy`}>
             {tokens[ti]}
           </button>
         ))}

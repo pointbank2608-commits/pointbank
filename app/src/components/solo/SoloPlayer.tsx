@@ -17,6 +17,7 @@ import type { TestResult } from '../../lib/soloTest';
 import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
 import { checkCondition, looseNorm } from '../../lib/soloLessons';
 import SoloTestRunner from './SoloTestRunner';
+import SoloPracticeGame from './SoloPracticeGame';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -330,7 +331,7 @@ export default function SoloPlayer({
     attempts.current = 0;
     if (!step) return;
     if (step.t === 'fadeRead') speak(step.sentence);
-    if (step.t === 'meet' || step.t === 'listenPick' || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
+    if (step.t === 'meet' || (step.t === 'listenPick' && !step.practiceGame) || step.t === 'pickMeaning' || step.t === 'dictation') speak(step.word);
     if (step.t === 'example') speak(step.sentence);
     if (step.t === 'pickPos') speak(step.sentence ?? step.word);
     if (step.t === 'translatePick') speak(step.sentence);
@@ -647,6 +648,7 @@ export default function SoloPlayer({
 
   const isQuestion = QUESTION.includes(step.t);
   const answered = phase === 'right' || phase === 'shown';
+  const practiceGame = 'practiceGame' in step ? step.practiceGame : undefined;
   const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType');
 
   return (
@@ -1034,6 +1036,7 @@ export default function SoloPlayer({
           <SoloTestRunner
             key={idx}
             step={step}
+            onAudio={() => sensor('audio')}
             onSubmit={async (answers) => {
               const r = await api.submitTest(idx, answers);
               setStats((st) => ({ ...st, right: st.right + r.score }));
@@ -1126,7 +1129,20 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'pickWord' && (
+        {practiceGame && 'practiceGame' in step && (
+          <SoloPracticeGame
+            key={`${idx}-${practiceGame === 'train' && phase === 'wrong1'}`}
+            step={step}
+            disabled={busy || answered}
+            wrong={wrong}
+            retryAfterError={error}
+            onPick={(i) => void choose(i)}
+            onOrder={(value) => void submit(value)}
+            onAudio={() => sensor('audio')}
+          />
+        )}
+
+        {step.t === 'pickWord' && !practiceGame && (
           <>
             <p className="text-xl font-bold">{t('solo.pickWordQ')}</p>
             <Picture url={step.imageUrl} />
@@ -1164,9 +1180,9 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'listenPick' && (
+        {step.t === 'listenPick' && !practiceGame && (
           <>
-            <p className="text-xl font-bold">{t('solo.listenQ')}</p>
+            <p className="text-xl font-bold">{step.prompt ?? t('solo.listenQ')}</p>
             <button type="button" onClick={() => speak(step.word)} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white">
               <span className="material-symbols-outlined">volume_up</span>
               {t('solo.listenAgain')}
@@ -1188,7 +1204,7 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'spell' && (
+        {step.t === 'spell' && !practiceGame && (
           <>
             <p className="text-xl font-bold">{t('solo.spellQ')}</p>
             <Picture url={step.imageUrl} />
@@ -1273,7 +1289,7 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'fillBlank' && (
+        {step.t === 'fillBlank' && !practiceGame && (
           <>
             <p className="text-xl font-bold">{t('solo.fillQ')}</p>
             <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold leading-snug">{step.sentence}</p>
@@ -1293,7 +1309,7 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'pickCorrect' && (
+        {step.t === 'pickCorrect' && !practiceGame && (
           <>
             <p className="text-xl font-bold">{t('solo.correctQ')}</p>
             <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
@@ -1577,7 +1593,7 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'unscramble' && (
+        {step.t === 'unscramble' && !practiceGame && (
           <>
             <p className="text-xl font-bold">{t('solo.unscrambleQ')}</p>
             {step.clip && (
@@ -1627,7 +1643,7 @@ export default function SoloPlayer({
             {t('solo.answerIs')} <span className="font-bold">{shownAnswer ?? ''}</span>
           </Banner>
         )}
-        {isQuestion && (phase === 'shown' || (phase === 'wrong1' && wrong.length >= 2)) && (step as { tip?: string }).tip && (
+        {isQuestion && (phase === 'shown' || (phase === 'wrong1' && (practiceGame || wrong.length >= 2))) && (step as { tip?: string }).tip && (
           <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-3 text-center text-lg text-[#5b6580]">
             <span className="mr-2 font-bold text-[#3b5bdb]">{t('solo.whyTip')}</span>
             {(step as { tip?: string }).tip}

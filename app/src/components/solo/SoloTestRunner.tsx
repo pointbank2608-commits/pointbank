@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playSfx } from '../../lib/gameSfx';
-import { speakAsync } from '../../lib/speech';
+import { speakAsync, speakVerified } from '../../lib/speech';
 import type { SoloPublicStep, SoloPublicTestItem, TestArea } from '../../lib/soloLessons';
 import { TEST_AREAS, testSeconds, type TestResult } from '../../lib/soloTest';
 
@@ -23,6 +23,7 @@ export default function SoloTestRunner({
   onSubmit,
   onDone,
   onRetry,
+  onAudio,
 }: {
   step: TestStep;
   /** 답안 내기 → 채점 결과(이미 낸 시험이면 처음 결과) */
@@ -31,6 +32,7 @@ export default function SoloTestRunner({
   onDone: () => void;
   /** 틀린 문제(번호)만 다시 풀기 */
   onRetry?: (wrong: number[]) => Promise<void>;
+  onAudio?: () => void;
 }) {
   const { t } = useTranslation();
   const items = step.items;
@@ -98,6 +100,8 @@ export default function SoloTestRunner({
       index={pos}
       count={items.length}
       timed={step.timed}
+      verifiedListening={step.verifiedListening}
+      onAudio={onAudio}
       value={answers[pos]}
       sending={phase === 'sending'}
       error={error}
@@ -114,6 +118,8 @@ function TestItemView({
   index,
   count,
   timed,
+  verifiedListening,
+  onAudio,
   value,
   sending,
   error,
@@ -124,6 +130,8 @@ function TestItemView({
   index: number;
   count: number;
   timed: boolean;
+  verifiedListening?: boolean;
+  onAudio?: () => void;
   value: string | null;
   sending: boolean;
   error: boolean;
@@ -135,6 +143,7 @@ function TestItemView({
   const [left, setLeft] = useState(item.sec);
   const [playing, setPlaying] = useState(false);
   const [played, setPlayed] = useState(false);
+  const [audioFailed, setAudioFailed] = useState(false);
   const [typed, setTyped] = useState<number[]>([]);
   const [text, setText] = useState('');
   const nextRef = useRef(onNext);
@@ -150,15 +159,23 @@ function TestItemView({
 
   async function play() {
     if (playing || played || !('word' in item)) return;
+    setAudioFailed(false);
     setPlaying(true);
-    await speakAsync(item.word);
+    if (verifiedListening) {
+      const ok = await speakVerified(item.word);
+      setAudioFailed(!ok);
+      setPlayed(ok);
+      if (ok) onAudio?.();
+    } else {
+      await speakAsync(item.word);
+      setPlayed(true);
+    }
     setPlaying(false);
-    setPlayed(true);
   }
 
   // 듣기 문제는 처음에 저절로 한 번 들려준다
   useEffect(() => {
-    if (isListen) void play();
+    if (isListen && !verifiedListening) void play();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -176,17 +193,19 @@ function TestItemView({
   }, [timed, playing, sending, left]);
 
   function confirm() {
+    if (verifiedListening && isListen && !played) return;
     commitRef.current();
     window.setTimeout(() => nextRef.current(), 0);
   }
 
-  const ready = CHOICE.includes(item.t)
+  const audioReady = !verifiedListening || !isListen || played;
+  const ready = audioReady && (CHOICE.includes(item.t)
     ? value !== null
     : item.t === 'spell'
       ? typed.length === item.letters.length
       : item.t === 'unscramble'
         ? typed.length === item.words.length
-        : text.trim().length > 0;
+        : text.trim().length > 0);
   const pct = timed ? Math.max(0, Math.min(100, (left / item.sec) * 100)) : 100;
 
   return (
@@ -231,11 +250,12 @@ function TestItemView({
       )}
       {isListen && (
         <>
-          <p className="text-xl font-bold">{item.t === 'listenPick' ? t('solo.listenQ') : t('solo.dictationQ')}</p>
+          <p className="text-xl font-bold">{item.prompt ?? (item.t === 'listenPick' ? t('solo.listenQ') : t('solo.dictationQ'))}</p>
           <button type="button" disabled={playing || played} onClick={() => void play()} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white disabled:opacity-60">
-            <span className="material-symbols-outlined">{playing ? 'graphic_eq' : 'volume_up'}</span>
+            <span className="material-symbols-outlined" aria-hidden="true">{playing ? 'graphic_eq' : 'volume_up'}</span>
             {playing ? t('soloTest.listening') : played ? t('soloTest.playedOnce') : t('soloTest.listenOnce')}
           </button>
+          {audioFailed && <p role="status">{t('solo.audioPlaybackFailed')}</p>}
         </>
       )}
       {item.t === 'typeWord' && (
@@ -282,8 +302,9 @@ function TestItemView({
             <button
               key={i}
               type="button"
+              disabled={!audioReady}
               onClick={() => onChange(String(i))}
-              className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-2xl p-2 [touch-action:manipulation] ${value === String(i) ? 'bg-warm-yellow text-deep-navy ring-4 ring-white' : 'bg-white text-deep-navy'}`}
+              className={`flex min-h-28 flex-col items-center justify-center gap-1 rounded-2xl p-2 [touch-action:manipulation] disabled:opacity-50 ${value === String(i) ? 'bg-warm-yellow text-deep-navy ring-4 ring-white' : 'bg-white text-deep-navy'}`}
             >
               {item.images[i] ? <img src={item.images[i] ?? ''} alt="" className="h-20 w-20 object-contain" /> : <span className="text-2xl font-bold">{o}</span>}
             </button>
@@ -341,7 +362,8 @@ function TestItemView({
         >
           <p className="text-center font-mono text-2xl tracking-[0.3em] text-[#5b6580]">{'_'.repeat(item.length)}</p>
           <input
-            autoFocus
+            autoFocus={audioReady}
+            disabled={!audioReady}
             value={text}
             onChange={(e) => setText(e.target.value)}
             autoComplete="off"
