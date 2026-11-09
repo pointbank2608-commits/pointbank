@@ -53,11 +53,21 @@ export type SoloTestItem = SoloQuestionStep & { area: TestArea; sec: number };
 /** 시험 범위 — 1단계는 "이 수업에서 배운 것"만 */
 export type TestScope = 'lesson';
 
+interface SoloRuleStep {
+  t: 'rule';
+  title: string;
+  pattern: string;
+  explain: string;
+  lines: string[];
+  tip: string;
+  phonemes?: { ruleId: string; letter: string }[];
+}
+
 export type SoloStep =
   | SoloQuestionStep
   | { t: 'intro'; title: string; text: string; imageUrl?: string; pass?: SoloPass }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
-  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
+  | SoloRuleStep
   | { t: 'example'; sentence: string; ko: string }
   /** 게임 점수 대신 게임 뒤 서버 확인 문제를 스탯에 반영한다. measure=false면 완료만 기록. */
   | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
@@ -136,7 +146,7 @@ export type SoloPublicStep =
   | SoloPublicQuestion
   | { t: 'intro'; title: string; text: string; imageUrl?: string; pass?: SoloPass }
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
-  | { t: 'rule'; title: string; pattern: string; explain: string; lines: string[]; tip: string }
+  | SoloRuleStep
   | { t: 'example'; sentence: string; ko: string }
   | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }

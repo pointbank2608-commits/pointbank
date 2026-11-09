@@ -4550,6 +4550,7 @@ const en: Ko = {
     listenQ: 'Find the word you hear',
     listenAgain: 'Listen again',
     audioPlaybackFailed: 'Audio could not play. Check your device settings and try again.',
+    listenPhoneme: 'Hear the {{letter}} sound',
     whackPractice: 'Tap the mole with the right answer.',
     balloonPractice: 'Pop the balloon with the right answer.',
     spellQ: 'Tap the letters to spell the word',

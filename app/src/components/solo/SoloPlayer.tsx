@@ -5,6 +5,7 @@ import type { SensorContext } from '../../lib/learningSensors/core';
 import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import type { GameCheckState, GameCheckAnswer, GameCheckSummary } from '../../lib/gameLearning';
 import { speak } from '../../lib/speech';
+import { hasPhoneme, playPhoneme, stopPhoneme } from '../../lib/phonicsPhonemes';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 import RainbowSpeaking from '../rainbow/RainbowSpeaking';
 import RainbowStructure from '../rainbow/RainbowStructure';
@@ -1093,6 +1094,7 @@ export default function SoloPlayer({
             <h2 className="text-center text-2xl font-bold">{step.title}</h2>
             <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold text-[#3b5bdb]">{step.pattern}</div>
             <p className="text-center text-lg text-[#5b6580]">{step.explain}</p>
+            {!!step.phonemes?.length && <RulePhonemes key={idx} sounds={step.phonemes} onAudio={() => sensor('audio')} />}
             {step.lines.length > 0 && (
               <ul className="w-full list-disc space-y-1.5 rounded-2xl bg-white ring-1 ring-[#eadfc5] py-3 pl-8 pr-4 text-left text-lg text-[#5b6580]">
                 {step.lines.map((l, i) => (
@@ -1703,6 +1705,47 @@ export default function SoloPlayer({
           );
         })()}
       </main>
+    </div>
+  );
+}
+
+function RulePhonemes({ sounds, onAudio }: {
+  sounds: { ruleId: string; letter: string }[];
+  onAudio: () => void;
+}) {
+  const { t } = useTranslation();
+  const active = useRef(false);
+  const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      stopPhoneme();
+    };
+  }, []);
+
+  async function play(ruleId: string) {
+    setPlaying(true);
+    setFailed(false);
+    const ok = await playPhoneme(ruleId);
+    if (!active.current) return;
+    setPlaying(false);
+    setFailed(!ok);
+    if (ok) onAudio();
+  }
+
+  return (
+    <div className="space-y-2 text-center">
+      <div className="flex flex-wrap justify-center gap-2">
+        {sounds.filter(({ ruleId }) => hasPhoneme(ruleId)).map(({ ruleId, letter }) => (
+          <button key={ruleId} type="button" disabled={playing} onClick={() => void play(ruleId)}
+            className="min-h-12 rounded-full bg-[#3b5bdb] px-5 font-bold text-white disabled:opacity-60">
+            {t('solo.listenPhoneme', { letter })}
+          </button>
+        ))}
+      </div>
+      {failed && <p role="status">{t('solo.audioPlaybackFailed')}</p>}
     </div>
   );
 }

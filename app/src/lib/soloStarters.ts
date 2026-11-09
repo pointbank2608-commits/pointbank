@@ -47,7 +47,7 @@ function meet(word: string, meaning: string, example: string | null = null): Sol
   return { t: 'meet', word, meaning, example, imageUrl: null };
 }
 
-function rule(title: string, pattern: string, explain: string, lines: string[], tip: string): SoloStep {
+function rule(title: string, pattern: string, explain: string, lines: string[], tip: string): Extract<SoloStep, { t: 'rule' }> {
   return { t: 'rule', title, pattern, explain, lines, tip };
 }
 
@@ -81,9 +81,63 @@ const BE_TIP = '한 사람이나 물건에는 is, 여러 사람이나 물건에�
 const DID_TIP = 'Did가 과거를 나타내므로 뒤의 동사는 기본형을 써요.';
 const LEND_TIP = '받아서 쓰면 borrow, 남에게 주면 lend를 써요.';
 
+function firstSoundModel(letters: string[]): SoloStep {
+  return {
+    t: 'rule',
+    title: '첫소리 들어 보기',
+    pattern: letters.join(' · '),
+    explain: '버튼을 눌러 글자마다 나는 소리를 들어요.',
+    lines: [],
+    tip: '낱말을 들을 때 맨 앞 소리에 귀를 기울여요.',
+    phonemes: letters.map((letter) => ({ ruleId: `letter-${letter}`, letter })),
+  };
+}
+
+type ListeningWord = [word: string, options: string[]];
+
+function shortVowelLesson({ vowel, examples, listening, spelling, transfer, dictation }: {
+  vowel: 'e' | 'i' | 'o' | 'u';
+  examples: [word: string, meaning: string][];
+  listening: ListeningWord[];
+  spelling: [word: string, meaning: string, tiles: string][];
+  transfer: ListeningWord[];
+  dictation: string;
+}): SoloStarter {
+  const words = examples.map(([word]) => word);
+  const [first] = words;
+  const segments = [...first].join(' – ');
+  return lesson(
+    'elementaryPhonics',
+    `짧은 ${vowel} 소리로 낱말 읽기`,
+    `${first}처럼 가운데 ${vowel} 소리가 나는 낱말을 읽고 철자를 맞춰요.`,
+    9,
+    [
+      {
+        ...rule('세 소리를 이어 읽어요', `${segments} → ${first}`,
+          `가운데 ${vowel} 소리를 들은 뒤, 앞뒤 글자의 소리를 붙여 낱말을 읽어요.`, words,
+          '낱말을 먼저 읽어 보고, 버튼을 눌러 소리를 확인해요.'),
+        phonemes: [{ ruleId: `short-${vowel}`, letter: vowel }],
+      },
+      ...examples.map(([word, meaning]) => meet(word, `${meaning} · ${[...word].join(' – ')}`)),
+    ],
+    [
+      ...listening.map(([word, options]): SoloQuestionStep => ({
+        ...hear(word, options, options.indexOf(word), HEAR_WORD),
+        practiceGame: 'balloon',
+      })),
+      ...spelling.map(([word, meaning, tiles]) => spell(word, meaning, [...tiles])),
+    ],
+    [
+      ...transfer.map(([word, options]) => check('listening', hear(word, options, options.indexOf(word), HEAR_WORD))),
+      check('spelling', { t: 'dictation', word: dictation, length: dictation.length }),
+    ],
+  );
+}
+
 export const SOLO_STARTERS: SoloStarter[] = [
   lesson('preschoolPhonics', '첫소리 탐정 m · s · t', '낱말을 듣고 맨 처음 소리를 m, s, t 글자와 연결해요.', 7,
     [
+      firstSoundModel(['m', 's', 't']),
       meet('moon', '🌙 달 · 첫 글자 m'),
       meet('sun', '☀️ 해 · 첫 글자 s'),
       meet('top', '🌀 팽이 · 첫 글자 t'),
@@ -100,11 +154,30 @@ export const SOLO_STARTERS: SoloStarter[] = [
       check('listening', hear('tub', ['s', 'm', 't'], 2, FIRST_SOUND)),
     ],
   ),
+  lesson('preschoolPhonics', '첫소리 탐정 b · p · d', '낱말을 듣고 맨 처음 소리를 b, p, d 글자와 연결해요.', 7,
+    [
+      firstSoundModel(['b', 'p', 'd']),
+      meet('ball', '⚽ 공 · 첫 글자 b'),
+      meet('pig', '🐷 돼지 · 첫 글자 p'),
+      meet('dog', '🐶 개 · 첫 글자 d'),
+    ],
+    [
+      { ...hear('book', ['p', 'b', 'd'], 1, FIRST_SOUND), practiceGame: 'balloon', tip: 'ball의 첫소리와 같아요.' },
+      { ...hear('pen', ['d', 'b', 'p'], 2, FIRST_SOUND), practiceGame: 'balloon', tip: 'pig의 첫소리와 같아요.' },
+      { ...hear('duck', ['d', 'p', 'b'], 0, FIRST_SOUND), practiceGame: 'whack', tip: 'dog의 첫소리와 같아요.' },
+      { ...hear('bat', ['p', 'd', 'b'], 2, FIRST_SOUND), practiceGame: 'whack', tip: 'ball의 첫소리와 같아요.' },
+    ],
+    [
+      check('listening', hear('bell', ['d', 'b', 'p'], 1, FIRST_SOUND)),
+      check('listening', hear('pan', ['p', 'b', 'd'], 0, FIRST_SOUND)),
+      check('listening', hear('desk', ['b', 'p', 'd'], 2, FIRST_SOUND)),
+    ],
+  ),
   lesson('elementaryPhonics', '짧은 a 소리로 낱말 읽기', 'map, cat처럼 가운데 a 소리가 나는 낱말을 읽고 글자를 순서대로 놓아요.', 9,
     [
-      rule('세 소리를 이어 읽어요', 'm – a – p → map',
+      { ...rule('세 소리를 이어 읽어요', 'm – a – p → map',
         '앞 글자, 가운데 a, 끝 글자의 소리를 끊지 말고 이어서 읽어요.', ['map', 'cat', 'bag'],
-        '글자 이름 대신 낱말 안에서 나는 소리를 이어 봐요.'),
+        '글자 이름 대신 낱말 안에서 나는 소리를 이어 봐요.'), phonemes: [{ ruleId: 'short-a', letter: 'a' }] },
       meet('map', '지도 · m – a – p'),
       meet('cat', '고양이 · c – a – t'),
       meet('bag', '가방 · b – a – g'),
@@ -121,6 +194,38 @@ export const SOLO_STARTERS: SoloStarter[] = [
       check('spelling', { t: 'dictation', word: 'van', length: 3 }),
     ],
   ),
+  shortVowelLesson({
+    vowel: 'e',
+    examples: [['bed', '침대'], ['pen', '펜'], ['red', '빨간색']],
+    listening: [['bed', ['bad', 'bed', 'bid']], ['pen', ['pen', 'pan', 'pin']]],
+    spelling: [['red', '빨간색', 'dre'], ['bed', '침대', 'edb']],
+    transfer: [['met', ['mat', 'mitt', 'met']], ['pet', ['pat', 'pet', 'pit']]],
+    dictation: 'net',
+  }),
+  shortVowelLesson({
+    vowel: 'i',
+    examples: [['pig', '돼지'], ['fin', '지느러미'], ['sit', '앉다']],
+    listening: [['pig', ['pig', 'pug', 'peg']], ['sit', ['set', 'sat', 'sit']]],
+    spelling: [['fin', '지느러미', 'nfi'], ['sit', '앉다', 'its']],
+    transfer: [['bit', ['bet', 'bit', 'bat']], ['lip', ['lip', 'lap', 'lop']]],
+    dictation: 'pin',
+  }),
+  shortVowelLesson({
+    vowel: 'o',
+    examples: [['hot', '뜨거운'], ['pot', '냄비'], ['dog', '개']],
+    listening: [['hot', ['hat', 'hit', 'hot']], ['pot', ['pat', 'pot', 'pet']]],
+    spelling: [['hot', '뜨거운', 'toh'], ['pot', '냄비', 'tpo']],
+    transfer: [['cot', ['cot', 'cat', 'cut']], ['log', ['leg', 'lug', 'log']]],
+    dictation: 'mop',
+  }),
+  shortVowelLesson({
+    vowel: 'u',
+    examples: [['cup', '컵'], ['bug', '벌레'], ['sun', '해']],
+    listening: [['cup', ['cap', 'cup', 'cop']], ['bug', ['bug', 'bag', 'big']]],
+    spelling: [['sun', '해', 'nsu'], ['cup', '컵', 'puc']],
+    transfer: [['hut', ['hat', 'hit', 'hut']], ['rub', ['rob', 'rub', 'rib']]],
+    dictation: 'mud',
+  }),
   lesson('elementaryGrammar', '주어에 맞는 am · is · are', '문장의 주어를 보고 am, is, are를 골라 문장을 만들어요.', 9,
     [rule('주어를 먼저 봐요', 'I am · She is · They are', BE_TIP,
       ['I am happy.', 'She is happy.', 'They are happy.'], 'you에는 한 명에게 말할 때도 are를 써요.')],

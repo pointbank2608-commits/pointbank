@@ -49,7 +49,7 @@ export default function SoloStarterLibrary({ academyId, classId, onSaved }: {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {SOLO_STARTERS.map((starter) => (
-          <article key={starter.category} className="flex flex-col gap-2 rounded-xl border border-outline-variant p-4">
+          <article key={starter.name} className="flex flex-col gap-2 rounded-xl border border-outline-variant p-4">
             <p className="text-sm font-bold text-primary">
               {SOLO_STARTER_LABELS[starter.category][english ? 1 : 0]} · {starter.minutes}{english ? ' min' : '분'}
             </p>

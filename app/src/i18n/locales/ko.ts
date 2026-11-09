@@ -4547,6 +4547,7 @@ const ko = {
     listenQ: '들려주는 단어를 찾아 보세요',
     listenAgain: '다시 듣기',
     audioPlaybackFailed: '소리를 재생하지 못했어요. 기기의 소리 설정을 확인한 뒤 다시 눌러 주세요.',
+    listenPhoneme: '{{letter}} 소리 듣기',
     whackPractice: '정답을 가진 두더지를 눌러요.',
     balloonPractice: '정답이 적힌 풍선을 터뜨려요.',
     spellQ: '글자를 눌러 단어를 완성해요',
