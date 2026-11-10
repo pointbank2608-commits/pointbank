@@ -183,6 +183,30 @@
 /* Retain the existing board dimensions and hit areas while replacing the orange finish. */
 .classroom-play[data-game="connect4"] [data-skin-stage="board"] > img:not(.invisible) { filter: saturate(.36) brightness(1.13); }
 .classroom-play[data-game="popcorn"] [data-skin-object="popcorn"] > img:first-child { filter: saturate(.6) brightness(1.07) drop-shadow(0 8px 10px #72512d22) !important; }
+
+/* Classroom display: give the ready screen room without making short screens scroll. */
+@media (min-width: 1024px) and (min-height: 720px) {
+  .classroom-play[data-game="popcorn"]:not(.game-fs) .pc-stage {
+    min-height: min(61dvh, 800px);
+  }
+
+  .classroom-play[data-game="popcorn"] .pc-kettle {
+    width: min(92%, clamp(440px, 51dvh, 640px));
+  }
+
+  .classroom-play[data-game="popcorn"] .pc-result {
+    width: min(720px, 92%);
+  }
+
+  .classroom-play[data-game="popcorn"] :is(.pc-round, [data-game-start-card] button) {
+    font-size: 1.25rem;
+  }
+
+  .classroom-play[data-game="popcorn"] [data-game-start-card] {
+    max-width: 480px;
+    padding: 32px;
+  }
+}
 .classroom-play .fc-stack { margin-bottom: 30px; }
 .classroom-play .wm-hole { background: linear-gradient(180deg, #7d7256, #574c35); box-shadow: inset 0 5px 9px #2f2c2730; }
 .classroom-play :is(.ap-pad, .mz-pad, .melon-pad) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); }

@@ -7,6 +7,7 @@ import { TEAM_ORDER_EVENT, isShowOrderOn } from '../lib/teamOrder';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
+import AccessibleDialog from './AccessibleDialog';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
@@ -52,6 +53,7 @@ export default function Popcorn({
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount,roundCards));
   const [deckIndex, setDeckIndex] = useState(0);
   const [round, setRound] = useState(1);
+  const [resultsDismissed, setResultsDismissed] = useState(false);
   const roundComplete = deckIndex >= deck.length;
   const [turn, setTurn] = useState<Team>('blue');
   const sharedTurn = useGameWorkspace()?.turn ?? null;
@@ -135,6 +137,7 @@ export default function Popcorn({
     setDeck(buildDeck(items, popCount, roundCards));
     setDeckIndex(0);
     setRound(previous => previous + 1);
+    setResultsDismissed(false);
     setLastCard(null);
     setLastScored(null);
     setPoppedTeam(null);
@@ -145,6 +148,10 @@ export default function Popcorn({
   }
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gamePopcorn.teamBlue') : t('gamePopcorn.teamRed'));
+  const results = !teamsOn ? [] : players
+    ? players.map((name, index) => ({ name, score: playerScores[index] ?? 0 }))
+    : [{ name: teamLabel('blue'), score: scores.blue }, { name: teamLabel('red'), score: scores.red }];
+  results.sort((a, b) => b.score - a.score);
   const pill =
     'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
@@ -190,7 +197,7 @@ export default function Popcorn({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-          <div className="relative flex flex-col items-center">
+          <div className="pc-stage relative flex w-full max-w-[960px] flex-col items-center justify-center">
       {lastCard === 'pop' && (
         <button
           type="button"
@@ -284,7 +291,7 @@ export default function Popcorn({
         disabled={roundComplete || lastCard === 'pop'}
         data-skin-object="popcorn"
         aria-label={t('gamePopcorn.drawButton')}
-        className="relative mb-4 max-w-[min(440px,92%)] overflow-visible transition-transform enabled:hover:scale-[1.03] enabled:active:scale-[0.98]"
+        className="pc-kettle relative mb-4 w-[min(440px,92%)] overflow-visible transition-transform enabled:hover:scale-[1.03] enabled:active:scale-[0.98]"
       >
         <img
           key={`kettle-${hop}`}
@@ -311,7 +318,7 @@ export default function Popcorn({
       </button>
 
       {lastCard && lastCard !== 'pop' && (
-        <div key={hop} className="result-pop mb-5 w-[min(420px,92%)] text-center">
+        <div key={hop} className="pc-result result-pop mb-5 w-[min(420px,92%)] text-center">
           <div
             className="flex items-center justify-center px-2 py-2"
             style={{
@@ -336,7 +343,7 @@ export default function Popcorn({
         </div>
       )}
 
-      <div className="flex flex-col items-center gap-2 text-center">
+      <div className="pc-round flex flex-col items-center gap-2 text-center">
         <p className="font-bold tabular-nums" aria-live="polite">
           {t('gamePopcorn.roundProgress', { round, drawn: deckIndex, total: deck.length })}
         </p>
@@ -344,7 +351,7 @@ export default function Popcorn({
           lastCard !== 'pop' && (
             <>
               <p className="font-bold text-deep-navy" role="status">{t('gamePopcorn.roundComplete', { round })}</p>
-              <button type="button" onClick={startNextRound} className={pill}>{t('gamePopcorn.nextRound')}</button>
+              <button type="button" onClick={() => setResultsDismissed(false)} className={pill}>{t('gamePopcorn.showResults')}</button>
             </>
           )
         ) : (
@@ -353,6 +360,32 @@ export default function Popcorn({
           </button>
         )}
       </div>
+
+      {roundComplete && lastCard !== 'pop' && !resultsDismissed && (
+        <AccessibleDialog label={t('gamePopcorn.roundResults', { round })} onClose={() => setResultsDismissed(true)}>
+          <div className="flex max-h-[85dvh] flex-col gap-4 p-5 text-deep-navy sm:p-8">
+            <header className="text-center">
+              <h2 className="text-2xl font-black sm:text-3xl">{t('gamePopcorn.roundResults', { round })}</h2>
+              <p className="mt-2 font-semibold">{t('gamePopcorn.roundProgress', { round, drawn: deckIndex, total: deck.length })}</p>
+              {lastCard && <p className="mt-2 break-words">{t('gamePopcorn.lastWord', { word: lastCard.label })}</p>}
+            </header>
+            {results.length > 0 && (
+              <ul className="min-h-0 space-y-2 overflow-y-auto px-1" aria-label={t('gamePopcorn.scoreLabel')}>
+                {results.map(({ name, score }, index) => (
+                  <li key={index} className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-low px-4 py-3">
+                    <span className="min-w-0 break-words text-lg font-bold">{name}</span>
+                    <span className="shrink-0 text-xl font-black tabular-nums">{t('gamePopcorn.points', { count: score })}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <footer className="flex flex-wrap justify-center gap-2">
+              <button type="button" autoFocus className="min-h-11 rounded-xl border border-outline-variant px-4 font-bold" onClick={() => setResultsDismissed(true)}>{t('common.close')}</button>
+              <button type="button" className="min-h-11 rounded-xl bg-primary px-5 font-bold !text-white" onClick={startNextRound}>{t('gamePopcorn.nextRound')}</button>
+            </footer>
+          </div>
+        </AccessibleDialog>
+      )}
 
           </div>
         </div>

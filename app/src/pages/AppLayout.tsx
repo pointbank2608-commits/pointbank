@@ -261,7 +261,7 @@ function AppLayoutInner() {
             {(profile?.display_name ?? t('common.avatarInitialFallback')).slice(0, 1)}
           </Link>
         </header>
-        <div data-app-content className="p-margin-mobile md:p-margin-desktop max-w-[1280px] mx-auto w-full print:max-w-none print:p-0">
+        <div data-app-content className={`p-margin-mobile md:p-margin-desktop mx-auto w-full print:max-w-none print:p-0 ${/^\/games\/popcorn\/?$/.test(pathname) ? 'max-w-[1920px]' : 'max-w-[1280px]'}`}>
           <div data-app-chrome>
           {isStaff && <NoticeOverlays />}
           <PlanRouteGuard />
