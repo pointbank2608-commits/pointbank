@@ -47,7 +47,6 @@ export interface WorkspaceContextValue {
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;
   canStart: boolean;
-  readiness: string;
   validation: string;
   playing: boolean;
   teacherToolsTarget: HTMLElement | null;

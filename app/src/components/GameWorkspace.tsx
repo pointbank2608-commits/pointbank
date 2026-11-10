@@ -12,7 +12,7 @@ import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
 import { activityName as defaultActivityName } from '../lib/activityNames';
 import { demoForGame } from '../lib/gameDemos';
 import { GameMethodVideo } from './GameInfoPanel';
-import { gamePreparation, gameReadyDetails, isNativeGameReady } from '../lib/gamePreparation';
+import { gamePreparation, isNativeGameReady } from '../lib/gamePreparation';
 import { prepareClassroomGame, classroomGameRequirement, listsForGame } from '../lib/gameWorkspace';
 import { isActivityDraft, sampleActivityCards } from '../lib/quickActivity';
 import { pauseGameClock } from '../lib/gameClock';
@@ -128,7 +128,6 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const entryKey = `${academy?.id}:${location.pathname}:${location.key}`;
   const playScope = `${identity}:${entryKey}`;
   const [pendingPlay, setPendingPlay] = useState<{ scope: string; templateId: string } | null>(null);
-  const startedEntry = useRef('');
   const playAppliedTemplate = useCallback((templateId?: string) => {
     if (!presenting && templateId) setPendingPlay({ scope: playScope, templateId });
   }, [playScope, presenting]);
@@ -150,15 +149,18 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       return;
     }
     if (!canStart || panel || teams) return;
+    const edit = location.state as { editGame?: boolean; openTemplateId?: string } | null;
+    if (edit?.editGame && edit.openTemplateId && editHandled.current !== location.key) return;
+    if (info?.gameType === 'quizshow' && info.temporary && !presenting && !automaticEntry
+      && info.selected && isActivityDraft(info.selected.id) && guideOpened.current !== `${identity}:${location.key}`) return;
     if (pendingPlay) {
       // The applied list publishes its new template after the toolbar action.
       if (info?.selected?.id !== pendingPlay.templateId) return;
       setPendingPlay(null);
-    } else if (!automaticEntry || startedEntry.current === entryKey) return;
-    startedEntry.current = entryKey;
+    } else if (playing) return;
     setPlaying(true);
     setRunning(true);
-  }, [automaticEntry, canStart, entryKey, info?.selected?.id, panel, pendingPlay, playScope, teams]);
+  }, [automaticEntry, canStart, identity, info, location.key, location.state, panel, pendingPlay, playing, playScope, presenting, teams]);
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(()=>{
     const entry=`${identity}:${location.key}`;
@@ -225,11 +227,13 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   }
   function start() {
     if (!canStart) { setPanel('settings'); return; }
-    startedEntry.current = entryKey;
     setPanel(null); setPlaying(true); setRunning(true);
   }
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
-  function exitPlay() { window.dispatchEvent(new Event('classbank:exit-game-fullscreen')); setPlaying(false); setRunning(false); setPanel(null); }
+  function exitPlay() {
+    window.dispatchEvent(new Event('classbank:exit-game-fullscreen'));
+    navigate('/games');
+  }
   async function startFromEditor() {
     if(!await commitPreparation())return;
     if (saveOriginal) {
@@ -258,16 +262,12 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
   }
   useEffect(()=>{const state=location.state as {editGame?:boolean;openTemplateId?:string}|null;if(state?.editGame&&(info?.selected?.id===state.openTemplateId||info?.selected?.config.editingTemplateId===state.openTemplateId)&&editHandled.current!==location.key){editHandled.current=location.key;editContent();}},[location.key,location.state,info?.selected]);
-  const details = info?.selected ? gameReadyDetails(info.selected) : null;
-  const readiness = [details?.count !== null && details?.count !== undefined ? t(`flow.count_${details.kind}`,{count:details.count}) : null,
-    ordered && capabilities.manualTurns ? order.mode==='team' ? t('flow.count_teams',{count:order.teamCount}) : t('flow.count_participants',{count:roster.length}) : details?.teams ? t('flow.count_teams',{count:details.teams}) : null,
-    canStart ? t('flow.readyComplete') : null].filter(Boolean).join(' · ');
   const validation = info?.loading ? t('common.loading') : info?.settingsPending ? t('settingsSave.pendingHint') : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
   const game = GAME_CATALOG.find(row => row.type === info?.gameType);
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, readiness, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, readiness, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
@@ -320,8 +320,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           {panel==='teacher'&&saveOptions}
           <button className={btn} disabled={busy||!!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t('launchUx.saveGame')}</button>
           {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
-          <button className={btn} onClick={exitPlay}>{t('flow.backToPreparation')}</button>
-          <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>
+          {!presenting && <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>}
           <p className="text-base">{t('teacherGame.navigationHint')}</p>
           <details className="game-optional-actions"><summary>{t('teacherGame.tools')}</summary><div ref={setTeacherToolsTarget} className="mt-3 space-y-2" data-teacher-game-tools /></details>
           <details className="game-optional-actions"><summary>{t(reuseLabel)}</summary><div className="mt-3">{reuse}</div></details>
@@ -378,23 +377,20 @@ export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen,
     <div className="teacher-game-actions">
       <button className={btn} onClick={()=>workspace.open('teacher')}>{t('flow.teacherMenu')}</button>
       {participants && !presenting && <button className={btn} aria-expanded={playersOpen} onClick={()=>setPlayersOpen(o=>!o)}>{t('flow.participation')}</button>}
-      {workspace.playing && workspace.running && <button className={`${btn} teacher-game-primary`} onClick={workspace.pause}>{t('teacherGame.pause')}</button>}
+      {workspace.playing && <button className={`${btn} teacher-game-primary`} disabled={!workspace.running && !workspace.canStart} onClick={workspace.running ? workspace.pause : workspace.start}>{t(workspace.running ? 'teacherGame.pause' : 'flow.resume')}</button>}
       {workspace.playing && onRestart && <button className={btn} onClick={onRestart} data-frame-restart>{t('gamePlay.restart')}</button>}
-      {workspace.playing && !presenting && <button className={btn} onClick={workspace.exitPlay}>{t('flow.backToPreparation')}</button>}
+      {!presenting && <button className={`${btn} text-error`} onClick={workspace.exitPlay}>{t('teacherGame.leave')}</button>}
       {!presenting && <button className={btn} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{t(fullscreen ? 'gamePlay.exitFullscreen' : 'gamePlay.fullscreen')}</button>}
     </div>
     {participants && playersOpen && <div className="absolute right-2 top-full z-40 mt-1 w-[min(28rem,92vw)] rounded-2xl border border-outline-variant bg-white p-4 text-left shadow-xl"><PlaySettings /></div>}
   </div>;
 }
-export function GameWorkspaceStartOverlay() {
-  const workspace=useGameWorkspace();const {t}=useTranslation();if(!workspace || workspace.running || workspace.panel)return null;
-  return <div className={workspace.playing ? 'game-start-overlay absolute inset-0 z-20 flex items-center justify-center bg-white/35 p-4' : 'game-start-overlay relative z-20 flex shrink-0 justify-center px-3 py-3'} data-game-ready-overlay>
-    <div className="w-full max-w-lg rounded-3xl border border-white/80 bg-white/95 p-5 text-center shadow-xl sm:p-8">
-      <button aria-label={t(workspace.playing?'flow.resume':'flow.start')} className="min-h-20 rounded-2xl bg-primary px-8 py-4 text-2xl font-black !text-white shadow-lg focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:opacity-50 sm:text-3xl" disabled={!workspace.canStart} onClick={workspace.start}>
-        <span aria-hidden>▶ </span>{t(workspace.playing?'flow.resume':'flow.start')}
-      </button>
-      <p className="mt-4 text-lg font-bold text-deep-navy" role="status">{workspace.readiness}</p>
-      {!!workspace.validation && <><p className="mt-3 text-error">{workspace.validation}</p><button className={`${btn} mt-3`} onClick={()=>workspace.open('settings')}>{t('flow.nativeEditor')}</button></>}
-    </div>
+export function GameWorkspaceValidation() {
+  const workspace = useGameWorkspace();
+  const { t } = useTranslation();
+  if (!workspace?.validation || workspace.panel) return null;
+  return <div className="relative z-20 flex flex-wrap items-center gap-3 p-3">
+    <p className="text-error" role="status">{workspace.validation}</p>
+    {!workspace.info?.loading && <button className={btn} onClick={() => workspace.open('settings')}>{t('flow.nativeEditor')}</button>}
   </div>;
 }

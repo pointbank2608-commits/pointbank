@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import type { WorkspaceContextValue } from '../context/GameWorkspaceContext';
@@ -122,7 +121,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 }) {
   const { i18n, t } = useTranslation();
   const text = (ko: string, en: string) => (i18n.language.startsWith('en') ? en : ko);
-  const navigate = useNavigate();
   const { notify } = useToast();
   const info = workspace.info;
   const soundOn = useGameSoundOn();
@@ -601,7 +599,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
           {onRestart && <button className={util} onClick={onRestart} data-frame-restart>{text('다시하기', 'Restart')}</button>}
           <button className={util} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{text(fullscreen ? '전체화면 끄기' : '전체화면', fullscreen ? 'Exit fullscreen' : 'Fullscreen')}</button>
-          <button className={`${util} text-error`} onClick={() => navigate('/games')}>{text('나가기', 'Exit')}</button>
+          <button className={`${util} text-error`} onClick={() => { close(); workspace.exitPlay(); }}>{text('나가기', 'Exit')}</button>
         </div>
       </div>
       {showTurn && !hasOwnTurnDisplay(info?.gameType ?? 'wheel', info?.selected?.config) && turnState && turnState.order.length > 0 && (() => {

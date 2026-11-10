@@ -6,7 +6,7 @@ import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
 import { instantStart, itemsAlwaysHidden } from '../lib/gamePreparation';
 import { GamePlayContext, useGamePlay } from '../context/GamePlayContext';
-import { GameWorkspaceFrameControls, GameWorkspaceStartOverlay } from './GameWorkspace';
+import { GameWorkspaceFrameControls, GameWorkspaceValidation } from './GameWorkspace';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { clearBoardReturn, hasBoardReturn } from '../lib/boardMaterial';
@@ -626,7 +626,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>
-        <GameWorkspaceStartOverlay />
+        <GameWorkspaceValidation />
         <div ref={stageRef} data-game-fit={scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
