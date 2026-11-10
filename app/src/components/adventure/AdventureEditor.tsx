@@ -48,7 +48,10 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       {c.sentences.map((s,i)=><div className="ad-edit-card" key={s.id}><strong>{i+1}. {s.text}</strong><label>{type==='sentencerocket'?'구 블록 경계 ( | 로 구분, 교사 직접 지정)':'단어 블록 ( | 로 구분)'}<input value={s.tokens.join(' | ')} onChange={e=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:e.target.value.split('|').map(t=>t.trim())}:x))}/></label><button onClick={()=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:wordTokens(s.text)}:x))}>단어 단위로 나누기</button>{type==='sentencerocket'&&<p>권장 예: The monkey | is eating | a banana. 의미 단위는 교사가 확인해 주세요.</p>}</div>)}
     </>}
     {type==='grammardetective'&&<>
-      {!preparing&&<GrammarCasePicker existing={c.cases} onAdd={cs=>set('cases',[...c.cases,...cs])}/>}
+      {!preparing&&<GrammarCasePicker onSelect={cases=>{
+        setActiveCaseId(cases[0]?.id);
+        set('cases',cases);
+      }}/>}
       {!preparing&&<details><summary>{t('launchUx.advanced')}</summary><div className="ad-edit-row"><label>{t('launchUx.detectiveMode')}<select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}><option value="choice">{t('launchUx.choiceMode')}</option><option value="type">{t('launchUx.typeMode')}</option></select></label><label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label><label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label></div></details>}
       <details ref={detectiveAuthoring} className="ad-detective-authoring">
         <summary>{t('launchUx.detectiveAuthoring', {count:c.cases.length})}</summary>

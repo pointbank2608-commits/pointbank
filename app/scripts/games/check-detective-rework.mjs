@@ -111,6 +111,25 @@ try {
   await editors.getByRole('button',{name:'수정 부분 자동 제안',exact:true}).click();
   assert.equal(await editors.getByRole('status').count(),0);
   console.log('PASS collapsed authoring, one active editor, and new questions kept when switching');
+  await page.goto(base+'?game=grammardetective&mode=teacher');
+  await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+  await page.getByRole('button',{name:/^게임\s*설정$/}).click();
+  const topicCases=await page.evaluate(async()=>{
+    const {detectiveCases}=await import('/src/lib/grammarGames.ts');
+    return detectiveCases('it-is');
+  });
+  const settings=page.locator('[data-game-existing-settings]');
+  await settings.getByLabel('문법 항목',{exact:true}).selectOption('it-is');
+  await settings.getByText(`이 문법의 문제 ${topicCases.length}개를 가져왔어요.`,{exact:false}).waitFor();
+  await settings.locator('.ad-detective-authoring summary').first().click();
+  assert.deepEqual(await questionPicker.locator('option').allTextContents(),topicCases.map((item,index)=>`${index+1}. ${item.correct}`));
+  await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
+  await settings.waitFor({state:'hidden'});
+  const topicEvidence=scene.locator('.ad-evidence');
+  await topicEvidence.waitFor();
+  const playedSentence=await topicEvidence.locator('.ad-detective-token').allTextContents();
+  assert.equal(playedSentence.map(token=>token.replace(/^·/,'')).join(' '),topicCases[0].incorrect);
+  console.log('PASS selected grammar replaces sample cases and plays after one Apply');
   await page.goto(base+'?game=grammardetective&mode=embed');
   await openAuthoring();
   await page.getByLabel('올바른 영어 문장 (한 줄에 하나)',{exact:true}).fill('She eats an apple every morning.\nShe can swim.\nShe stopped talking.');
