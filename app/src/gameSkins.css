@@ -162,7 +162,7 @@
   .classroom-play :is(.qz-block, .gsq-choice, .wlq-choice) { min-height: 64px; padding: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .classroom-play :is(.result-pop, .pc-hop, .pc-flash, .pc-star, .pc-pop-word span, .pc-pop-caption, .td-cell-win) { animation: none; }
+  .classroom-play :is(.result-pop, .pc-hop, .pc-flash, .pc-star, .pc-pop-word span, .pc-pop-caption) { animation: none; }
   .classroom-play .game-clay-action { transition: none; }
 }
 
@@ -183,14 +183,6 @@
 /* Retain the existing board dimensions and hit areas while replacing the orange finish. */
 .classroom-play[data-game="connect4"] [data-skin-stage="board"] > img:not(.invisible) { filter: saturate(.36) brightness(1.13); }
 .classroom-play[data-game="popcorn"] [data-skin-object="popcorn"] > img:first-child { filter: saturate(.6) brightness(1.07) drop-shadow(0 8px 10px #72512d22) !important; }
-.classroom-play .td-board { background: var(--game-wood); border-radius: 8%; box-shadow: var(--game-wood-shadow); }
-.classroom-play .td-board-img { visibility: hidden; }
-.classroom-play .td-board::before { content: ''; position: absolute; inset: 4%; border: 1px solid #c9b08a; border-radius: 6%; box-shadow: inset 0 2px 5px #805b2820; pointer-events: none; }
-.classroom-play .td-cell { background: var(--game-paper); color: var(--game-ink); box-shadow: inset 0 1px 0 #fff, 0 2px 0 #c9b593; }
-.classroom-play .td-bead { background: #fff6df; color: #3b4b40; }
-.classroom-play .td-bead-col, .classroom-play .td-cell-blue { background: #b9dccf; color: #284d41; }
-.classroom-play .td-bead-row, .classroom-play .td-cell-red { background: #f0c2b2; color: #663d32; }
-.classroom-play .td-hit { outline: 3px solid #6e6a39; outline-offset: 1px; }
 .classroom-play .fc-stack { margin-bottom: 30px; }
 .classroom-play .wm-hole { background: linear-gradient(180deg, #7d7256, #574c35); box-shadow: inset 0 5px 9px #2f2c2730; }
 .classroom-play :is(.ap-pad, .mz-pad, .melon-pad) { background: var(--game-wood); box-shadow: var(--game-wood-shadow); }
@@ -202,14 +194,10 @@
 .classroom-play :is(.ta-input, .mg-well, .ro-plate, .ro-step).is-ok { background: #d6e8cd; color: #294d30; outline: 2px solid #5c8556; }
 .classroom-play :is(.ta-input, .mg-well, .gs-crate, .gs-basket).is-no { background: #f2d5c9; color: #743c34; outline: 3px solid #b36a5c; }
 .classroom-play :is(.gs-crate, .gs-basket).is-ready { outline: 2px dashed #397e6e; outline-offset: 3px; }
-.classroom-play .td-turn { color: #fff; }
 .classroom-play[data-game="watermelon"] .melon-tank {
   box-shadow: inset 0 0 0 4px #fff8eacc, inset 0 -18px 28px #2d6a4f14, var(--game-wood-shadow);
 }
 @media(max-width:540px) {
-  .classroom-play .td-scoreboard { display:grid; grid-template-columns:1fr 1.25fr 1fr; width:100%; gap:8px; }
-  .classroom-play .td-scoreboard > * { min-width:0; padding:10px 6px; }
-  .classroom-play .td-turn { font-size:14px; }
   .classroom-play .game-play-toolbar { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .classroom-play .game-play-toolbar button { padding-left:6px; padding-right:6px; font-size:12px; }
 }

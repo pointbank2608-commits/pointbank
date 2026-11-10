@@ -1,12 +1,12 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { DICE_FACES, nextDiceRotation } from '../lib/diceMotion';
+import { DICE_FACES, DICE_ROLL_MS, nextDiceRotation } from '../lib/diceMotion';
 import './clay-dice.css';
 
 const pips = [[], [4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
 const faces = [[1, 'front'], [6, 'back'], [3, 'right'], [4, 'left'], [2, 'top'], [5, 'bottom']] as const;
 
 export default function ClayDie({ tint, value, rolling, spin, tossKey, label }: {
-  tint: 'teal' | 'coral'; value: number; rolling: boolean; spin: 'a' | 'b'; tossKey: number; label: string;
+  tint: 'blue' | 'red'; value: number; rolling: boolean; spin: 'a' | 'b'; tossKey: number; label: string;
 }) {
   const previous = useRef(DICE_FACES[value]);
   const lastRoll = useRef(0);
@@ -28,16 +28,18 @@ export default function ClayDie({ tint, value, rolling, spin, tossKey, label }: 
   const style = {
     '--td-from-rx': `${motion.from.rx}deg`, '--td-from-ry': `${motion.from.ry}deg`,
     '--td-rx': `${motion.to.rx}deg`, '--td-ry': `${motion.to.ry}deg`,
-    '--td-drift': spin === 'a' ? '-10px' : '10px',
+    '--td-duration': `${DICE_ROLL_MS}ms`,
+    '--td-drift': spin === 'a' ? '14px' : '-14px',
+    '--td-tilt': spin === 'a' ? '14deg' : '-14deg',
   } as CSSProperties;
   return <div role="img" aria-label={label} data-value={rolling ? undefined : value}
     data-skin-object="die" className={`clay-die td-die-scene ${rolling ? 'is-rolling' : ''}`} style={style}>
     <div className="td-die-shadow" />
-    <div className="td-toss"><div className="td-camera"><div className="td-cube">
+    <div className="td-toss"><div className="td-cube">
       {faces.map(([n, pos]) => <div key={n} className={`td-face td-face-${pos} td-face-${tint}`}>
         <div className="td-pips" aria-hidden="true">{Array.from({ length: 9 }, (_, i) =>
           <span key={i} className={pips[n].includes(i) ? 'td-pip' : undefined} />)}</div>
       </div>)}
-    </div></div></div>
+    </div></div>
   </div>;
 }

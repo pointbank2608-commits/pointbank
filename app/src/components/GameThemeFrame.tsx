@@ -191,7 +191,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   useEffect(() => { if (playHides) setItemsHidden(true); }, [playHides]);
   const lockHidden = !!workspace?.info && itemsAlwaysHidden(workspace.info.gameType);
   const [restartOpen, setRestartOpen] = useState(false);
-  const bgType = bg ?? gameType;
+  const bgType = bg ?? (gameType === 'twodice' ? undefined : gameType);
   const bgUrl = useGameBackground(bgType);
   const veil = (bgType && BG_VEIL[bgType]) ?? 0.2;
   const [fullscreenError, setFullscreenError] = useState(false);
@@ -640,7 +640,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             </button>
           </div>
         )}
-        <GameTurnDisplay />
+        {gameType !== 'twodice' && <GameTurnDisplay />}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>

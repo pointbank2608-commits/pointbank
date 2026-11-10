@@ -12,13 +12,15 @@ interface Props {
   align?: 'center' | 'left';
   /** 단어 최대 글자 크기(px). 문장은 이 값의 절반 근처로 맞춘다. */
   maxSize?: number;
+  /** 최소 글자 크기에서도 칸에 들어가지 않는 단어만 줄바꿈한다. */
+  wrapLongWord?: boolean;
 }
 
 /**
  * 단어면 칸이 허락하는 한 크게, 문장이면 줄바꿈해서 잘리지 않게.
  * 부모에 크기가 있어야 box 모드가 동작한다.
  */
-export default function GameFitText({ text, className, fit = 'box', align = 'center', maxSize }: Props) {
+export default function GameFitText({ text, className, fit = 'box', align = 'center', maxSize, wrapLongWord }: Props) {
   const wrapRef = useRef<HTMLSpanElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const kind = useMemo(() => classifyPlayText(text), [text]);
@@ -49,6 +51,13 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
       el.style.whiteSpace = kind === 'word' ? 'nowrap' : 'pre-wrap';
       el.style.overflowWrap = kind === 'word' ? 'normal' : 'break-word';
       el.style.wordBreak = 'keep-all';
+      if (kind === 'word' && wrapLongWord) {
+        el.style.fontSize = `${min}px`;
+        if (el.scrollWidth > maxW + 1) {
+          el.style.whiteSpace = 'normal';
+          el.style.overflowWrap = 'anywhere';
+        }
+      }
 
       let lo = min;
       let hi = max;
@@ -73,7 +82,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
     const ro = new ResizeObserver(() => { if (!frame) frame=window.requestAnimationFrame(() => { frame=0; apply(); }); });
     ro.observe(wrap);
     return () => { ro.disconnect(); if (frame) window.cancelAnimationFrame(frame); };
-  }, [text, kind, fit, maxSize]);
+  }, [text, kind, fit, maxSize, wrapLongWord]);
 
   return (
     <span

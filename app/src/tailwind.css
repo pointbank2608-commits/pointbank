@@ -1048,7 +1048,6 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
 }
 
 /* Shared geometry for the six-face clay dice. Motion lives in clay-dice.css. */
-.td-dice-row { padding-top: 36px; }
 .td-die-scene { position:relative; width:var(--td-size); height:var(--td-size); }
 .td-cube { position:relative; width:100%; height:100%; transform-style:preserve-3d; transform:rotateX(var(--td-rx,0deg)) rotateY(var(--td-ry,0deg)); }
 .td-face { position:absolute; inset:0; overflow:hidden; backface-visibility:hidden; }
@@ -1061,131 +1060,6 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
 .td-pips { position:absolute; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); place-items:center; pointer-events:none; }
 .td-pip { aspect-ratio:1; }
 .td-die-shadow { position:absolute; border-radius:50%; pointer-events:none; }
-.td-board {
-  position: relative;
-  width: min(540px, 100%);
-}
-.td-board-img {
-  display: block;
-  width: 100%;
-  user-select: none;
-  filter: drop-shadow(0 10px 14px rgba(90, 50, 18, 0.22));
-}
-.td-board-grid {
-  position: absolute;
-  inset: 11.2% 10.4% 10.6% 11%;
-  display: grid;
-  grid-template-columns: 0.92fr repeat(6, 1fr);
-  grid-template-rows: 0.92fr repeat(6, 1fr);
-  gap: 3px;
-}
-@media (min-width: 640px) {
-  .td-board-grid {
-    gap: 5px;
-  }
-}
-.td-bead {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff8e8 0%, #f3e0b8 100%);
-  color: #1a2744;
-  font-weight: 800;
-  font-size: 11px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(110, 62, 18, 0.18);
-}
-@media (min-width: 640px) {
-  .td-bead {
-    font-size: 13px;
-  }
-}
-.td-bead-col {
-  background: linear-gradient(180deg, #6ed4c2 0%, #3dbea8 100%);
-  color: #fff;
-}
-.td-bead-row {
-  background: linear-gradient(180deg, #f7b09d 0%, #f28b73 100%);
-  color: #fff;
-}
-.td-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 1px 2px;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #fffef9 0%, #fff4e0 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -2px 3px rgba(166, 112, 48, 0.16);
-  color: #1a2744;
-  font-weight: 700;
-  font-size: 9px;
-  line-height: 1.15;
-  word-break: keep-all;
-  overflow: hidden;
-}
-@media (min-width: 640px) {
-  .td-cell {
-    border-radius: 10px;
-    font-size: 12px;
-  }
-}
-@keyframes td-hit {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1.05);
-  }
-}
-.td-hit {
-  z-index: 1;
-  background: linear-gradient(180deg, #ffe9a8 0%, #ffd56a 100%);
-  box-shadow:
-    0 0 0 3px #f28b73,
-    inset 0 2px 0 rgba(255, 255, 255, 0.7);
-  font-weight: 800;
-  animation: td-hit 0.45s cubic-bezier(0.22, 0.9, 0.28, 1.12) both;
-}
-
-/* 두 주사위(빙고): 팀이 칸을 차지하면 팀 색으로 계속 남는다 */
-.td-cell-blue {
-  background: linear-gradient(180deg, #d9f5ee 0%, #9fe0d0 100%);
-  box-shadow:
-    0 0 0 2px #3dbea8,
-    inset 0 2px 0 rgba(255, 255, 255, 0.75);
-  color: #0f4a41;
-}
-.td-cell-red {
-  background: linear-gradient(180deg, #fbe2da 0%, #f3b6a2 100%);
-  box-shadow:
-    0 0 0 2px #f28b73,
-    inset 0 2px 0 rgba(255, 255, 255, 0.75);
-  color: #7a2c17;
-}
-@keyframes td-win-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.08);
-    filter: brightness(1.12);
-  }
-}
-.td-cell-win {
-  z-index: 2;
-  animation: td-win-pulse 0.9s ease-in-out infinite;
-}
-
 /* 구멍 안에 보이는 점토 원판: 가장자리 하이라이트·그늘로 두께를 살린다 */
 .c4-disc {
   position: relative;

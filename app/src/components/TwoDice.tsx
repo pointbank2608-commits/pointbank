@@ -11,6 +11,7 @@ import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
 import type { GameItem } from '../lib/types';
 import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
+import './two-dice.css';
 
 interface Props {
   items: GameItem[];
@@ -28,11 +29,6 @@ interface Props {
 type Team = 'blue' | 'red';
 
 const SIZE = 6;
-const TEAL_DIE = '/skins/twodice-teal.png?v=3';
-const BOARD_SRC = '/skins/twodice-board.png';
-
-const woodShadow = 'var(--game-wood-shadow, 0 4px 0 #c6a982)';
-
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -199,15 +195,12 @@ export default function TwoDice({
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : DICE_ROLL_MS);
   }
 
-  const pill =
-    'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
-
   useStepSounds(0, !!winner, undefined, GAME_SFX.twodice.bingo);
 
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
-        <img src={TEAL_DIE} alt="" className="mx-auto mb-3 h-16 w-auto" />
+        <span aria-hidden="true" className="material-symbols-outlined mb-3 text-4xl text-primary">casino</span>
         <div className="font-body-md text-body-md">{t('gameTwoDice.needParticipants')}</div>
       </div>
     );
@@ -220,11 +213,7 @@ export default function TwoDice({
   const redCount = Object.values(claimed).filter((v) => v === 'red').length;
 
   return (
-    <div className="flex w-full flex-col items-center pt-1.5 pb-2">
-      <div
-        className={`flex w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}
-      >
-        <div className="flex w-full max-w-[560px] flex-col items-center">
+    <div className="td-game">
           {editable && !itemsHidden && (editingTemplateName ? (
               <input
                 autoFocus
@@ -252,92 +241,89 @@ export default function TwoDice({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <div className="td-scoreboard mb-4 flex flex-wrap items-center justify-center gap-2.5">
-        <div
-          data-skin-object="score-card"
-          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-on-secondary"
-          style={{ backgroundColor: '#3dbea8', boxShadow: woodShadow }}
-        >
-          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('blue')}</div>
-          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{blueCount}</div>
-        </div>
-        <div
-          className={`td-turn rounded-full px-7 py-2.5 text-center font-title-md text-[16px] font-bold shadow-sm ${
-            turn === 'blue' && !winner ? 'bg-secondary text-on-secondary' : 'text-white'
-          }`}
-          style={turn === 'red' || winner === 'red' ? { backgroundColor: '#f28b73' } : undefined}
-        >
+      <section className="td-scoreboard" data-turn-display aria-label={t('turnDisplay.region')}>
+        <div className="td-score td-score-blue"><span>{teamLabel('blue')}</span><b>{blueCount}</b></div>
+        <span data-turn-current hidden>{teamLabel(winner ?? turn)}</span>
+        <span data-turn-next hidden>{teamLabel(turn === 'blue' ? 'red' : 'blue')}</span>
+        <div className={`td-turn td-turn-${winner ?? turn}`} role="status">
           {winner ? t('gameTwoDice.bingoMessage', { team: teamLabel(winner) }) : t('gameTwoDice.turnLabel', { team: teamLabel(turn) })}
         </div>
-        <div
-          data-skin-object="score-card"
-          className="min-w-[92px] rounded-2xl px-5 py-2.5 text-center text-white"
-          style={{ backgroundColor: '#f28b73', boxShadow: woodShadow }}
-        >
-          <div className="font-caption text-[13px] font-bold opacity-90">{teamLabel('red')}</div>
-          <div className="font-title-md text-[26px] font-bold tabular-nums leading-none">{redCount}</div>
-        </div>
-      </div>
+        <div className="td-score td-score-red"><span>{teamLabel('red')}</span><b>{redCount}</b></div>
+      </section>
 
-      <div className="td-dice-row mb-4 flex items-end justify-center gap-10 sm:gap-14">
-        <div className="flex flex-col items-center gap-2">
-          <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.colLabel', { n: col })} tint="teal" value={rolling ? target2 : col} rolling={rolling} spin="a" tossKey={tossKey} />
-          <div className="font-title-md text-[15px] font-bold text-deep-navy">{rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.colLabel', { n: col })}</div>
+      <div className="td-layout">
+        <div className="td-board" data-skin-stage="board">
+          <table aria-label={t('gameTwoDice.boardLabel')}>
+            <colgroup><col className="td-axis-col" /><col span={SIZE} /></colgroup>
+            <thead>
+              <tr>
+                <td />
+                {Array.from({ length: SIZE }, (_, c) => (
+                  <th key={c} scope="col" className={!rolling && die2 === c + 1 ? 'td-active-col' : undefined}>{c + 1}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: SIZE }, (_, r) => (
+                <tr key={r} className={!rolling && die1 === r + 1 ? 'td-active-row' : undefined}>
+                  <th scope="row">{r + 1}</th>
+                  {board.slice(r * SIZE, (r + 1) * SIZE).map((item, c) => {
+                    const i = r * SIZE + c;
+                    const owner = claimed[i];
+                    return (
+                      <td key={c} data-skin-object="cell" title={item.label}
+                        className={`td-cell ${!rolling && die2 === c + 1 ? 'td-active-col' : ''} ${owner ? `td-cell-${owner}` : ''} ${i === highlightIndex ? 'td-hit' : ''} ${winLine?.includes(i) ? 'td-cell-win' : ''}`}>
+                        <div className="td-cell-text"><GameFitText text={item.label} maxSize={42} wrapLongWord /></div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="flex flex-col items-center gap-2">
-          <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rowLabel', { n: row })} tint="coral" value={rolling ? target1 : row} rolling={rolling} spin="b" tossKey={tossKey} />
-          <div className="font-title-md text-[15px] font-bold text-deep-navy">{rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rowLabel', { n: row })}</div>
-        </div>
-      </div>
 
-      <button onClick={() => pictureTurn(roll)} disabled={rolling || !!winner} className={`mb-5 ${pill} disabled:opacity-60`}>
-        {rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rollButton')}
-      </button>
-
-      <div data-skin-stage="board" className="td-board mb-3">
-        <img src={BOARD_SRC} alt="" draggable={false} className="td-board-img" />
-        <div className="td-board-grid">
-          <div />
-          {Array.from({ length: SIZE }, (_, n) => (
-            <div
-              key={`col-${n}`}
-              className={`td-bead ${!rolling && die2 === n + 1 ? 'td-bead-col' : ''}`}
-            >
-              {n + 1}
-            </div>
-          ))}
-          {board.map((item, i) => {
-            const r = Math.floor(i / SIZE);
-            const showRowBead = i % SIZE === 0;
-            const hit = i === highlightIndex;
-            const owner = claimed[i];
-            const inWinLine = winLine?.includes(i) ?? false;
-            return (
-              <div key={`row-${r}-${i}`} className="contents">
-                {showRowBead && (
-                  <div className={`td-bead ${!rolling && die1 === r + 1 ? 'td-bead-row' : ''}`}>
-                    {r + 1}
-                  </div>
-                )}
-                <div
-                  data-skin-object="cell"
-                  className={`td-cell ${owner ? `td-cell-${owner}` : ''} ${hit ? 'td-hit' : ''} ${inWinLine ? 'td-cell-win' : ''}`}
-                >
-                  <GameFitText text={item.label} />
-                </div>
+        <div className="td-side">
+          <div className="td-controls">
+            <div className="td-dice-row">
+              <div className="td-die-slot td-col-die">
+                <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.colLabel', { n: col })} tint="blue" value={rolling ? target2 : col} rolling={rolling} spin="a" tossKey={tossKey} />
+                <span className="td-die-label">{rolling || die2 === null ? t('gameTwoDice.colAxis') : t('gameTwoDice.colLabel', { n: col })}</span>
               </div>
-            );
-          })}
+              <div className="td-die-slot td-row-die">
+                <ClayDie label={rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rowLabel', { n: row })} tint="red" value={rolling ? target1 : row} rolling={rolling} spin="b" tossKey={tossKey} />
+                <span className="td-die-label">{rolling || die1 === null ? t('gameTwoDice.rowAxis') : t('gameTwoDice.rowLabel', { n: row })}</span>
+              </div>
+            </div>
+            <button type="button" onClick={() => pictureTurn(roll)} disabled={rolling || !!winner} className="td-roll">
+              {rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rollButton')}
+            </button>
+          </div>
+
+          <div className="td-reading">
+            <h3>{t('gameTwoDice.readWord')}</h3>
+            <div className="td-reading-word" aria-live="polite">
+              {highlightIndex === null
+                ? <span className="td-reading-placeholder">—</span>
+                : <GameFitText text={board[highlightIndex]?.label ?? ''} maxSize={76} wrapLongWord />}
+            </div>
+          </div>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setReshuffleOpen(true)}
-        className="mb-4 min-h-11 px-4 font-label-md text-label-md text-secondary hover:underline"
-      >
-        {winner ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
-      </button>
+      <div className="td-footer">
+        <button type="button" onClick={() => setReshuffleOpen(true)} className="td-reset">
+          {winner ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
+        </button>
+        {history.length > 0 && (
+          <details className="td-history">
+            <summary>{t('gameTwoDice.recentResults')}</summary>
+            <ul>
+              {history.map((h) => <li key={h.key} className={`td-score-${h.team}`}>{h.label}</li>)}
+            </ul>
+          </details>
+        )}
+      </div>
 
       {reshuffleOpen && <AccessibleDialog label={t('classroomUx.restartTitle')} onClose={() => setReshuffleOpen(false)}>
         <div className="p-6">
@@ -345,35 +331,10 @@ export default function TwoDice({
           <p className="mt-3">{t('classroomUx.restartHint')}</p>
           <div className="mt-6 flex flex-wrap justify-end gap-3">
             <button autoFocus className="min-h-11 rounded-xl border px-5" onClick={() => setReshuffleOpen(false)}>{t('classroomUx.keepPlaying')}</button>
-            <button className="game-clay-action" onClick={() => { setReshuffleOpen(false); reshuffleBoard(); }}>{t('gameTwoDice.reshuffleButton')}</button>
+            <button className="td-roll td-confirm-reset" onClick={() => { setReshuffleOpen(false); reshuffleBoard(); }}>{t('gameTwoDice.reshuffleButton')}</button>
           </div>
         </div>
       </AccessibleDialog>}
-
-      {history.length > 0 && (
-        <div className="w-full max-w-[420px]">
-          <div className="mb-2 font-caption text-caption text-on-surface-variant">{t('gameTwoDice.recentResults')}</div>
-          <div className="flex flex-wrap gap-1.5">
-            {history.map((h, i) => (
-              <span
-                key={h.key}
-                className="rounded-full px-3 py-1 font-label-md text-label-md text-deep-navy"
-                style={{
-                  background:
-                    h.team === 'blue'
-                      ? 'linear-gradient(180deg, #eafaf6 0%, #bfeee3 100%)'
-                      : 'linear-gradient(180deg, #fdeee9 0%, #f7c9ba 100%)',
-                  border: i === 0 ? '2px solid #f28b73' : '2px solid #f0d7a8',
-                  boxShadow: i === 0 ? woodShadow : '0 2px 0 #e8c48a',
-                }}
-              >
-                {h.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-        </div>
 
         {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
@@ -418,7 +379,6 @@ export default function TwoDice({
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }
