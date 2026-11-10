@@ -17,11 +17,19 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
   const [sentenceText,setSentenceText]=useState(()=>value.sentences.map(s=>s.text).join('\n'));const [place,setPlace]=useState(value.places[0]?.id||'');
   const [draftDirty,setDraftDirty]=useState(false);
+  const detectiveAuthoring=useRef<HTMLDetailsElement>(null);
+  const [activeCaseId,setActiveCaseId]=useState<string>();
+  const activeCase=c.cases.find(item=>item.id===activeCaseId)??c.cases[0];
   function edit(next:AdventureConfig){setC(next);onDirty(true);}
   function updateDraft(dirty:boolean){setDraftDirty(dirty);onDirty(dirty||JSON.stringify(c)!==JSON.stringify(value));}
   const prepared=type==='grammardetective'?{...c,cases:c.cases.map(item=>{if(item.errors.length)return item;const suggestion=detectiveSuggestion(item.incorrect,item.correct);return suggestion?{...item,errors:[{id:'suggestion-'+item.id,...suggestion}]}:item;})}:c;
   async function commit(){
-    if(draftDirty||adventureErrors(type,prepared).length){root.current?.querySelector<HTMLElement>('[role=alert]')?.scrollIntoView({block:'nearest'});root.current?.querySelector<HTMLInputElement>('textarea,input')?.focus();return false;}
+    if(draftDirty||adventureErrors(type,prepared).length){
+      if(detectiveAuthoring.current)detectiveAuthoring.current.open=true;
+      root.current?.querySelector<HTMLElement>('[role=alert]')?.scrollIntoView({block:'nearest'});
+      root.current?.querySelector<HTMLInputElement>('textarea,input')?.focus({preventScroll:true});
+      return false;
+    }
     if(JSON.stringify(prepared)!==JSON.stringify(value))await onApply(prepared);
     onDirty(false);
     return true;
@@ -39,15 +47,41 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
     {sentence&&<><h3>영어 문장과 블록 경계</h3><p>한 줄에 문장 하나. 문장 불러오기 후 블록을 확인하세요. 축약형·대소문자·마침표를 그대로 보존합니다.</p><WordListPicker variant="label" kind="sentence" wordLists={lists.filter(l=>l.kind==='sentence')} loading={loading} onImportLabels={rows=>{setSentenceText(rows.join('\n'));set('sentences',rows.map(text=>({id:adventureId(),text,tokens:wordTokens(text)})));}}/><SentenceBankPicker withKo={false} onImportLabels={rows=>{setSentenceText(rows.join('\n'));set('sentences',rows.map(text=>({id:adventureId(),text,tokens:wordTokens(text)})));}}/><textarea aria-label="문장 입력" rows={5} value={sentenceText} onChange={e=>{setSentenceText(e.target.value);set('sentences',e.target.value.split('\n').filter(x=>x.trim()).map(text=>({id:adventureId(),text:text.trim(),tokens:wordTokens(text)})));}}/>
       {c.sentences.map((s,i)=><div className="ad-edit-card" key={s.id}><strong>{i+1}. {s.text}</strong><label>{type==='sentencerocket'?'구 블록 경계 ( | 로 구분, 교사 직접 지정)':'단어 블록 ( | 로 구분)'}<input value={s.tokens.join(' | ')} onChange={e=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:e.target.value.split('|').map(t=>t.trim())}:x))}/></label><button onClick={()=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:wordTokens(s.text)}:x))}>단어 단위로 나누기</button>{type==='sentencerocket'&&<p>권장 예: The monkey | is eating | a banana. 의미 단위는 교사가 확인해 주세요.</p>}</div>)}
     </>}
-    {type==='grammardetective'&&<><DetectiveGenerator draft={c.detectiveDraft} count={c.count} lists={lists.filter(isSentenceList)} loading={loading} onDraftChange={updateDraft} onGenerate={(detectiveDraft,cases)=>{setDraftDirty(false);edit({...c,detectiveDraft,cases});}}
-      onReview={(correct,context,detectiveDraft)=>{
-        if(c.cases.some(item=>item.correct===correct&&!item.incorrect))return;
-        const id=adventureId();
-        setDraftDirty(false);
-        edit({...c,detectiveDraft,cases:[...c.cases,{id,correct,context,incorrect:'',errors:[],accepted:[],explanation:''}]});
-        requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>(`[data-detective-case-editor="${id}"] textarea`)?.focus());
-      }}/>{!preparing&&<GrammarCasePicker existing={c.cases} onAdd={cs=>set('cases',[...c.cases,...cs])}/>}{!preparing&&<details><summary>{t('launchUx.advanced')}</summary><div className="ad-edit-row"><label>{t('launchUx.detectiveMode')}<select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}><option value="choice">{t('launchUx.choiceMode')}</option><option value="type">{t('launchUx.typeMode')}</option></select></label><label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label><label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label></div></details>}
- {c.cases.map(item=><DetectiveCaseEditor key={item.id} item={item} rules={c.detectiveDraft?.rules} onChange={value=>set('cases',c.cases.map(x=>x.id===item.id?value:x))} onRemove={()=>set('cases',c.cases.filter(x=>x.id!==item.id))}/>)}<button onClick={()=>set('cases',[...c.cases,{id:adventureId(),incorrect:'',correct:'',errors:[],accepted:[],explanation:''}])}>{t('launchUx.addCase')}</button></>}
+    {type==='grammardetective'&&<>
+      {!preparing&&<GrammarCasePicker existing={c.cases} onAdd={cs=>set('cases',[...c.cases,...cs])}/>}
+      {!preparing&&<details><summary>{t('launchUx.advanced')}</summary><div className="ad-edit-row"><label>{t('launchUx.detectiveMode')}<select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}><option value="choice">{t('launchUx.choiceMode')}</option><option value="type">{t('launchUx.typeMode')}</option></select></label><label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label><label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label></div></details>}
+      <details ref={detectiveAuthoring} className="ad-detective-authoring">
+        <summary>{t('launchUx.detectiveAuthoring', {count:c.cases.length})}</summary>
+        <div className="ad-detective-authoring-body">
+          <DetectiveGenerator draft={c.detectiveDraft} count={c.count} lists={lists.filter(isSentenceList)} loading={loading}
+            onDraftChange={updateDraft} onGenerate={(detectiveDraft,cases)=>{setDraftDirty(false);setActiveCaseId(cases[0]?.id);edit({...c,detectiveDraft,cases});}}
+            onReview={(correct,context,detectiveDraft)=>{
+              const existing=c.cases.find(item=>item.correct===correct&&!item.incorrect);
+              const id=existing?.id??adventureId();
+              setDraftDirty(false);
+              setActiveCaseId(id);
+              edit({...c,detectiveDraft,cases:existing?c.cases:[...c.cases,{id,correct,context,incorrect:'',errors:[],accepted:[],explanation:''}]});
+              requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>(`[data-detective-case-editor="${id}"] textarea`)?.focus());
+            }}/>
+          <div className="ad-edit-row">
+            {activeCase&&<label>{t('launchUx.detectiveEditCase')}
+              <select aria-label={t('launchUx.detectiveEditCase')} value={activeCase.id} onChange={event=>setActiveCaseId(event.target.value)}>
+                {c.cases.map((item,index)=><option key={item.id} value={item.id}>{index+1}. {item.correct||t('launchUx.addCase')}</option>)}
+              </select>
+            </label>}
+            <button type="button" onClick={()=>{
+              const id=adventureId();
+              setActiveCaseId(id);
+              set('cases',[...c.cases,{id,incorrect:'',correct:'',errors:[],accepted:[],explanation:''}]);
+              requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>(`[data-detective-case-editor="${id}"] input`)?.focus());
+            }}>{t('launchUx.addCase')}</button>
+          </div>
+          {activeCase&&<DetectiveCaseEditor key={activeCase.id} item={activeCase} rules={c.detectiveDraft?.rules}
+            onChange={value=>set('cases',c.cases.map(item=>item.id===value.id?value:item))}
+            onRemove={()=>set('cases',c.cases.filter(item=>item.id!==activeCase.id))}/>}
+        </div>
+      </details>
+    </>}
     {type==='treasurehunt'&&<><h3>지도 장소 배치</h3><p>장소를 선택하고 지도 영역을 누르면 위치가 바뀝니다. 지점은 실제 장소의 상대 위치에 표시됩니다.</p><div className="ad-map-editor" onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();set('places',c.places.map(p=>p.id===place?{...p,x:Math.round(Math.max(14,Math.min(86,(e.clientX-rect.left)/rect.width*100))),y:Math.round(Math.max(18,Math.min(78,(e.clientY-rect.top)/rect.height*100)))}:p));}}>{c.places.map(p=><button key={p.id} className={place===p.id?'is-selected':''} style={{left:`${p.x}%`,top:`${p.y}%`}} onClick={e=>{e.stopPropagation();setPlace(p.id);}}>{p.name}</button>)}</div>{c.places.map(p=><div className="ad-edit-row" key={p.id}><input aria-label="장소 이름" value={p.name} onFocus={()=>setPlace(p.id)} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,name:e.target.value}:x))}/><select value={p.icon} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,icon:e.target.value as typeof p.icon}:x))}>{PLACE_ICONS.map(icon=><option key={icon}>{icon}</option>)}</select><span>{p.x}%, {p.y}%</span><button onClick={()=>set('places',c.places.filter(x=>x.id!==p.id))}>삭제</button></div>)}<button onClick={()=>{const id=adventureId();set('places',[...c.places,{id,name:'new place',icon:'tree',x:50,y:50}]);setPlace(id);}}>+ 장소 추가</button>
       {c.clues.map((clue,i)=><div className="ad-edit-card" key={clue.id}><h3>힌트 {i+1}</h3><label>영어 힌트<input value={clue.text} onChange={e=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,text:e.target.value}:x))}/></label><label>정답 지점{targetSelect(clue.answer,answer=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,answer}:x)))}</label><p>오답 지점 (직접 지정)</p>{clue.wrong.map((t,j)=><div className="ad-edit-row" key={j}>{targetSelect(t,next=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:x.wrong.map((a,k)=>k===j?next:a)}:x)))}<button onClick={()=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:x.wrong.filter((_,k)=>j!==k)}:x))}>삭제</button></div>)}<button onClick={()=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:[...x.wrong,{placeId:c.places[0]?.id||'',relation:'left'}]}:x))}>+ 오답 지점</button><button onClick={()=>set('clues',c.clues.filter(x=>x.id!==clue.id))}>힌트 삭제</button>{i>0&&<button onClick={()=>{const next=[...c.clues];[next[i-1],next[i]]=[next[i],next[i-1]];set('clues',next);}}>위로 이동</button>}</div>)}<button onClick={()=>set('clues',[...c.clues,{id:adventureId(),text:'',answer:{placeId:c.places[0]?.id||'',relation:'under'},wrong:[]}])}>+ 힌트 추가</button></>}
     {type==='wordclaw'&&<>{!preparing&&<label><input type="checkbox" checked={c.simpleClaw} onChange={e=>set('simpleClaw',e.target.checked)}/> 쉬운 모드: 단어를 바로 눌러 뽑기</label>}<h3>분류 미션</h3><p>아래 정답 미리보기가 수업 의도와 맞는지 확인하세요. 태그가 일치하는 모든 단어를 모으면 완료됩니다.</p>{c.missions.map(m=><div className="ad-edit-card" key={m.id}><label>미션 문장<input value={m.text} onChange={e=>set('missions',c.missions.map(x=>x.id===m.id?{...x,text:e.target.value}:x))}/></label><label>정답 태그<input value={m.tag} onChange={e=>set('missions',c.missions.map(x=>x.id===m.id?{...x,tag:e.target.value}:x))}/></label><p>정답: {c.words.filter(w=>w.tags.some(t=>t.trim().toLowerCase()===m.tag.trim().toLowerCase())).map(w=>w.word).join(', ')||'없음'}</p><button onClick={()=>set('missions',c.missions.filter(x=>x.id!==m.id))}>미션 삭제</button></div>)}<button onClick={()=>set('missions',[...c.missions,{id:adventureId(),text:'',tag:''}])}>+ 미션 추가</button></>}

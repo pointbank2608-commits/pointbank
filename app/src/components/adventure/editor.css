@@ -12,3 +12,8 @@
 .ad-detective-counts small { display: block; }
 .ad-detective-review-list { max-height: 18rem; overflow-y: auto; padding-left: 1.5rem; overflow-wrap: anywhere; }
 .ad-detective-review-list li + li { margin-top: .45rem; }
+.ad-detective-authoring { min-width: 0; border: 1px solid #d9e4ed; border-radius: .75rem; }
+.ad-detective-authoring > summary { cursor: pointer; padding: .75rem; font-weight: 750; }
+.ad-detective-authoring-body { display: grid; gap: .75rem; padding: 0 .75rem .75rem; }
+.ad-detective-authoring-body > .ad-edit-row > label { min-width: 0; }
+.ad-detective-authoring-body > .ad-edit-row select { overflow: hidden; text-overflow: ellipsis; }
