@@ -22,6 +22,7 @@ import TeamOrderPanel from './TeamOrderPanel';
 import AddActivityToLesson from './AddActivityToLesson';
 import { PlaySettings } from './GrammarGames';
 import GameToolbar from './GameToolbar';
+import { useGamePanelAnchor } from './useGamePanelAnchor';
 import GameReportButton from './GameReportButton';
 import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { instantStart, isDirectGameEntry } from '../lib/gamePreparation';
@@ -69,17 +70,22 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     }catch(error){setError(error instanceof Error?error.message:t('flow.actionFailed'));return false;}
     finally{commitLock.current=false;}
   },[t]);
-  const [panel, setPanel] = useState<Panel>(null);
+  const [panel, setPanelName] = useState<Panel>(null);
+  const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
+  const setPanel = useCallback((name: Panel, anchor?: HTMLElement) => {
+    setPanelAnchor(anchor ?? null);
+    setPanelName(name);
+  }, []);
   const detectiveListImporter = useRef<((list: WordList) => boolean) | null>(null);
   const registerDetectiveListImporter = useCallback((importList: (list: WordList) => boolean) => {
     detectiveListImporter.current = importList;
     return () => { if (detectiveListImporter.current === importList) detectiveListImporter.current = null; };
   }, []);
-  const openDetectiveList = useCallback((list: WordList) => {
+  const openDetectiveList = useCallback((list: WordList, anchor?: HTMLElement) => {
     if (!detectiveListImporter.current?.(list)) return false;
-    setPanel('settings');
+    setPanel('settings', anchor);
     return true;
-  }, []);
+  }, [setPanel]);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
@@ -120,6 +126,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const [sampleRequested,setSampleRequested]=useState(false);
   const sampleFromId=useRef<string|null|undefined>(null);
   const dialog = useRef<HTMLDialogElement>(null);
+  useGamePanelAnchor(dialog, panelAnchor, 640);
   const owner = useRef(crypto.randomUUID());
   const identity = `${session?.user.id}:${info?.academyId}:${info?.classId}:${info?.gameType}`;
   const participantKey = `classbank:participants:${session?.user.id}:${academy?.id}`;

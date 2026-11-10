@@ -86,7 +86,29 @@ try {
   const card=await desk.boundingBox();
   assert.ok(Math.abs(bounds.width/bounds.height-16/9)<0.08,JSON.stringify(bounds));
   assert.ok(Math.abs((bounds.x+bounds.width/2)-(card.x+card.width/2))<3,JSON.stringify({bounds,card}));
+  for(const [name,target] of [
+    ['내 단어/문장','[data-game-toolbar-panel="content"]'],
+    ['반 설정','[data-game-toolbar-panel="class"]'],
+    ['게임설정','dialog.game-workspace-dialog[open]'],
+    ['저장/불러오기','[data-game-toolbar-panel="saves"]'],
+  ]){
+    const button=page.getByRole('button',{name,exact:true});
+    const trigger=await button.boundingBox();
+    await button.click();
+    const panel=page.locator(target);
+    await panel.waitFor();
+    const popup=await panel.boundingBox();
+    assert.ok(Math.abs(popup.x-trigger.x)<2,JSON.stringify({name,popup,trigger}));
+    assert.ok(Math.abs(popup.y-trigger.y-trigger.height-6)<2,JSON.stringify({name,popup,trigger}));
+    await panel.getByRole('button',{name:'닫기',exact:true}).click();
+  }
   await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'저장/불러오기',exact:true}).click();
+  const mobilePanel=page.locator('[data-game-toolbar-panel="saves"]');
+  const mobilePopup=await mobilePanel.boundingBox();
+  assert.ok(mobilePopup.x>=0&&mobilePopup.x+mobilePopup.width<=390);
+  await mobilePanel.getByRole('button',{name:'닫기',exact:true}).click();
+  console.log('PASS all four settings panels align with their trigger and fit a narrow viewport');
   await scene.locator('.ad-evidence').getByRole('button',{name:'go',exact:true}).click();
   await scene.locator('.ad-choices').getByRole('button',{name:'goes',exact:true}).waitFor();
   const mobileCard=await desk.boundingBox();

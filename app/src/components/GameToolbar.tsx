@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
+import { useGamePanelAnchor } from './useGamePanelAnchor';
 import type { WorkspaceContextValue } from '../context/GameWorkspaceContext';
 import { GRAMMAR_POINTS, grammarLevelTag, grammarPoint } from '../lib/grammar';
 import { GRAMMAR_GAME_TYPES, type GrammarGameType } from '../lib/grammarGames';
@@ -130,6 +131,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const info = workspace.info;
   const soundOn = useGameSoundOn();
   const [open, setOpen] = useState<Open>(null);
+  const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const settingsButton = useRef<HTMLButtonElement>(null);
+  useGamePanelAnchor(panelRef, open ? panelAnchor : null, 512, toolbarRef);
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState('');
   const [savedMsg, setSavedMsg] = useState('');
@@ -353,7 +359,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, [open, pClass]);
 
   const teamCapOf = () => (isGrammar ? 4 : nativeTeams ? 8 : 6);
-  const toggle = (next: Exclude<Open, null>) => setOpen((o) => (o === next ? null : next));
+  const toggle = (next: Exclude<Open, null>, anchor: HTMLButtonElement) => {
+    setPanelAnchor(anchor);
+    setOpen((o) => (o === next ? null : next));
+  };
   const done = () => { notify(text('설정이 적용되었습니다.', 'Your settings have been applied.')); setOpen(null); };
   async function run(fn: () => Promise<void> | void) {
     if (busy) return;
@@ -601,19 +610,19 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     ? (grammarPoint(current)?.name ?? '')
     : (info?.selected && !isActivityDraft(info.selected.id) ? info.selected.name : gameName);
   const panel = (children: ReactNode) => (
-    <div className="absolute right-2 top-full z-40 mt-1 max-h-[75vh] w-[min(32rem,94vw)] space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 pt-0 text-left shadow-xl">{children}</div>
+    <div ref={panelRef} data-game-toolbar-panel={open} className="absolute z-40 space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 pt-0 text-left shadow-xl">{children}</div>
   );
 
   return (
-    <div className="relative z-30 shrink-0 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm backdrop-blur" data-frame-controls data-play-controls data-game-toolbar>
+    <div ref={toolbarRef} className="relative z-30 shrink-0 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm backdrop-blur" data-frame-controls data-play-controls data-game-toolbar>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open==='content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
-          <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
-          <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
-          <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
+          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
+          <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
+          <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
           {workspace.playing && <button type="button" className={`${util} ${workspace.running ? '' : 'bg-primary! text-white!'}`} disabled={!workspace.running && !workspace.canStart} onClick={workspace.running ? workspace.pause : workspace.start}>
@@ -665,7 +674,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         </label>
         <button type="button" className={primaryBtn} disabled={!pList || !!info?.loading || !!info?.sharedView} onClick={()=>{
           const list=info?.lists.find(row=>row.id===pList);
-          if(list&&workspace.openDetectiveList?.(list))close();
+          if(list&&workspace.openDetectiveList?.(list,settingsButton.current??undefined))close();
           else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
         }}>{text('게임설정으로 가져오기','Import into Game settings')}</button>
       </>)}
@@ -722,7 +731,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <details className="rounded-xl border border-outline-variant p-3" open={shownLists.length === 0}>
               <summary className="cursor-pointer font-bold">{text('직접 입력하기', 'Type it in')}</summary>
               <div className="mt-2 flex flex-wrap gap-2">
-                <button className={btn} onClick={() => { close(); workspace.open('guide'); }}>{text('직접 입력 화면 열기', 'Open the input screen')}</button>
+                <button className={btn} onClick={() => { close(); workspace.open('guide',panelAnchor??undefined); }}>{text('직접 입력 화면 열기', 'Open the input screen')}</button>
               </div>
             </details>
           </>
@@ -831,7 +840,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <p className="text-sm text-on-surface-variant">{pictureCount ? text(`그림 문제 ${pictureCount}개`, `${pictureCount} picture questions`) : t('gameWordHoops.pictureNeedsList')}</p>
             {pictureKind === 'turn' && <p className="text-sm text-on-surface-variant">{text('게임을 진행하는 중에 그림 문제가 나와요. 영어 단어를 고르면 이어서 진행돼요.', 'Picture questions appear during the game. Pick the English word to continue the move.')}</p>}
           </>}
-          {!pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings'); }}>{text('자세히 설정', 'More settings')}</button>}
+          {!pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings',settingsButton.current??undefined); }}>{text('자세히 설정', 'More settings')}</button>}
         </fieldset>}
         {!(pictureKind && (pPictureMode || currentPictureMode)) && <>
         {isPopcorn && (

@@ -44,7 +44,7 @@ export interface WorkspaceContextValue {
   info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
   registerDetectiveListImporter?: (importList: (list: WordList) => boolean) => () => void;
-  openDetectiveList?: (list: WordList) => boolean;
+  openDetectiveList?: (list: WordList, anchor?: HTMLElement) => boolean;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;
@@ -65,7 +65,7 @@ export interface WorkspaceContextValue {
   running: boolean;
   panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null;
   publish: (bridge: GameWorkspaceBridge) => void;
-  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null) => void;
+  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null, anchor?: HTMLElement) => void;
   start: () => void;
   applyListAndPlay: (list: WordList) => Promise<void>;
   applyGuideAndPlay: (content: Parameters<GameWorkspaceBridge['applyGuide']>[0]) => Promise<void>;
