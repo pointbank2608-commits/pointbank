@@ -51,6 +51,8 @@ export default function Popcorn({
   const { itemsHidden } = useGamePlay();
   const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount,roundCards));
   const [deckIndex, setDeckIndex] = useState(0);
+  const [round, setRound] = useState(1);
+  const roundComplete = deckIndex >= deck.length;
   const [turn, setTurn] = useState<Team>('blue');
   const sharedTurn = useGameWorkspace()?.turn ?? null;
   const players = sharedTurn?.all?.length ? sharedTurn.all : null;
@@ -101,16 +103,9 @@ export default function Popcorn({
   }
 
   function draw() {
-    if (items.length === 0) return;
-    let currentDeck = deck;
-    let index = deckIndex;
-    if (index >= currentDeck.length) {
-      currentDeck = buildDeck(items,popCount,roundCards);
-      index = 0;
-      setDeck(currentDeck);
-    }
-    const card = currentDeck[index];
-    setDeckIndex(index + 1);
+    if (items.length === 0 || roundComplete || lastCard === 'pop') return;
+    const card = deck[deckIndex];
+    setDeckIndex(deckIndex + 1);
     setLastCard(card);
     setHop((n) => n + 1);
 
@@ -133,6 +128,20 @@ export default function Popcorn({
       setScores((prev) => ({ ...prev, [turn]: prev[turn] + 1 }));
     }
     setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
+  }
+
+  function startNextRound() {
+    if (!roundComplete || lastCard === 'pop') return;
+    setDeck(buildDeck(items, popCount, roundCards));
+    setDeckIndex(0);
+    setRound(previous => previous + 1);
+    setLastCard(null);
+    setLastScored(null);
+    setPoppedTeam(null);
+    setPoppedName(null);
+    setHop(0);
+    setScores({ blue: 0, red: 0 });
+    setPlayerScores({});
   }
 
   const teamLabel = (team: Team) => (team === 'blue' ? t('gamePopcorn.teamBlue') : t('gamePopcorn.teamRed'));
@@ -272,9 +281,10 @@ export default function Popcorn({
       <button
         type="button"
         onClick={() => pictureTurn(draw)}
+        disabled={roundComplete || lastCard === 'pop'}
         data-skin-object="popcorn"
         aria-label={t('gamePopcorn.drawButton')}
-        className="relative mb-4 max-w-[min(440px,92%)] overflow-visible transition-transform hover:scale-[1.03] active:scale-[0.98]"
+        className="relative mb-4 max-w-[min(440px,92%)] overflow-visible transition-transform enabled:hover:scale-[1.03] enabled:active:scale-[0.98]"
       >
         <img
           key={`kettle-${hop}`}
@@ -326,9 +336,23 @@ export default function Popcorn({
         </div>
       )}
 
-      <button type="button" onClick={() => pictureTurn(draw)} className={pill}>
-        {t('gamePopcorn.drawButton')}
-      </button>
+      <div className="flex flex-col items-center gap-2 text-center">
+        <p className="font-bold tabular-nums" aria-live="polite">
+          {t('gamePopcorn.roundProgress', { round, drawn: deckIndex, total: deck.length })}
+        </p>
+        {roundComplete ? (
+          lastCard !== 'pop' && (
+            <>
+              <p className="font-bold text-deep-navy" role="status">{t('gamePopcorn.roundComplete', { round })}</p>
+              <button type="button" onClick={startNextRound} className={pill}>{t('gamePopcorn.nextRound')}</button>
+            </>
+          )
+        ) : (
+          <button type="button" disabled={lastCard === 'pop'} onClick={() => pictureTurn(draw)} className={pill}>
+            {t('gamePopcorn.drawButton')}
+          </button>
+        )}
+      </div>
 
           </div>
         </div>

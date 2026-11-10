@@ -823,7 +823,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <p className="text-sm font-bold">{text('라운드당 카드 수', 'Cards per round')}</p>
               <div className="flex flex-wrap items-center gap-2">
                 <input className={`${field} !mt-0 !w-28`} type="number" min={1} max={MAX_ROUND_CARDS} placeholder={text('전체', 'All')} value={pRound} onChange={(e) => setPRound(e.target.value)} aria-label={text('라운드당 카드 수', 'Cards per round')} />
-                <span className="text-sm text-on-surface-variant">{text(`낱말이 ${info?.selected?.items.length ?? 0}개여도 한 라운드에 이 장수만 나와요 (비우면 낱말 전부)`, 'Each round uses exactly this many cards (blank = all words)')}</span>
+                <span className="text-sm text-on-surface-variant">{text('POP을 포함한 총 카드 수예요. 비우면 낱말 전부와 POP 카드로 한 라운드를 진행해요.', 'Total cards including POP. Leave blank to use all words plus POP cards in each round.')}</span>
               </div>
             </div>
             <div className="space-y-1">
