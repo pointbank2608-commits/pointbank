@@ -13,21 +13,28 @@ import SentenceBankPicker from '../SentenceBankPicker';
 import './editor.css';
 
 export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
-  const {t}=useTranslation();const root=useRef<HTMLElement>(null);
+  const {t,i18n}=useTranslation();const root=useRef<HTMLElement>(null);
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
   const [sentenceText,setSentenceText]=useState(()=>value.sentences.map(s=>s.text).join('\n'));const [place,setPlace]=useState(value.places[0]?.id||'');
-  const [draftDirty,setDraftDirty]=useState(false);
+  const [sentenceDraftDirty,setSentenceDraftDirty]=useState(false);
+  const [wordDraftDirty,setWordDraftDirty]=useState(false);
+  const draftDirty=sentenceDraftDirty||wordDraftDirty;
   const detectiveAuthoring=useRef<HTMLDetailsElement>(null);
+  const detectiveWordAuthoring=useRef<HTMLDetailsElement>(null);
   const [activeCaseId,setActiveCaseId]=useState<string>();
   const activeCase=c.cases.find(item=>item.id===activeCaseId)??c.cases[0];
   function edit(next:AdventureConfig){setC(next);onDirty(true);}
-  function updateDraft(dirty:boolean){setDraftDirty(dirty);onDirty(dirty||JSON.stringify(c)!==JSON.stringify(value));}
+  function updateDraft(source:'words'|'sentences',dirty:boolean){
+    if(source==='words')setWordDraftDirty(dirty);else setSentenceDraftDirty(dirty);
+    onDirty(dirty||(source==='words'?sentenceDraftDirty:wordDraftDirty)||JSON.stringify(c)!==JSON.stringify(value));
+  }
   const prepared=type==='grammardetective'?{...c,cases:c.cases.map(item=>{if(item.errors.length)return item;const suggestion=detectiveSuggestion(item.incorrect,item.correct);return suggestion?{...item,errors:[{id:'suggestion-'+item.id,...suggestion}]}:item;})}:c;
   async function commit(){
     if(draftDirty||adventureErrors(type,prepared).length){
-      if(detectiveAuthoring.current)detectiveAuthoring.current.open=true;
+      const authoring=wordDraftDirty?detectiveWordAuthoring.current:detectiveAuthoring.current;
+      if(authoring)authoring.open=true;
       root.current?.querySelector<HTMLElement>('[role=alert]')?.scrollIntoView({block:'nearest'});
-      root.current?.querySelector<HTMLInputElement>('textarea,input')?.focus({preventScroll:true});
+      (authoring?.querySelector('textarea')??root.current?.querySelector('input'))?.focus({preventScroll:true});
       return false;
     }
     if(JSON.stringify(prepared)!==JSON.stringify(value))await onApply(prepared);
@@ -39,7 +46,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   function set<K extends keyof AdventureConfig>(key:K,v:AdventureConfig[K]){edit({...c,[key]:v});}
   function targetSelect(v:IslandTarget,onChange:(v:IslandTarget)=>void){return <select value={targetKey(v)} onChange={e=>{const [placeId,relation]=e.target.value.split(':');onChange({placeId,relation:relation as IslandTarget['relation']});}}>{c.places.flatMap(p=>RELATIONS.map(relation=><option key={`${p.id}:${relation}`} value={`${p.id}:${relation}`}>{p.name} · {RELATION_NAMES[relation]}</option>))}</select>;}
   return <section ref={root} className="ad-editor"><h2>{ADVENTURE_NAMES[type][1]} · 교사 설정</h2><p>‘적용’을 누르면 입력한 내용으로 준비해요. 다시 쓸 게임은 상단 ‘저장/불러오기’에서 저장할 수 있어요. 플레이 중에는 등록한 정답만 사용해요.</p>
-    {!preparing&&<div className="ad-edit-row"><label>최대 문제 개수<input type="number" min={1} max={50} value={c.count} onChange={e=>set('count',Number(e.target.value))}/></label><label>제한 시간<select aria-label="제한 시간" value={c.seconds} onChange={e=>set('seconds',Number(e.target.value))}>{[0,20,30,45,60,90].map(n=><option key={n} value={n}>{n?`${n}초`:'시간 제한 없음'}</option>)}</select></label><label><input type="checkbox" checked={c.sound} onChange={e=>set('sound',e.target.checked)}/> 효과음</label><label><input type="checkbox" checked={c.shuffle} onChange={e=>set('shuffle',e.target.checked)}/> 문제 순서 섞기</label></div>}
+    {!preparing&&<div className="ad-edit-row">{type!=='grammardetective'&&<label>최대 문제 개수<input type="number" min={1} max={50} value={c.count} onChange={e=>set('count',Number(e.target.value))}/></label>}<label>제한 시간<select aria-label="제한 시간" value={c.seconds} onChange={e=>set('seconds',Number(e.target.value))}>{[0,20,30,45,60,90].map(n=><option key={n} value={n}>{n?`${n}초`:'시간 제한 없음'}</option>)}</select></label><label><input type="checkbox" checked={c.sound} onChange={e=>set('sound',e.target.checked)}/> 효과음</label><label><input type="checkbox" checked={c.shuffle} onChange={e=>set('shuffle',e.target.checked)}/> 문제 순서 섞기</label></div>}
     {vocab&&<><h3>단어와 뜻{type==='wordclaw'?' · 태그 직접 확인':''}</h3><p>한 줄에 영어 / 뜻 / 태그, 태그 형식으로 입력하세요. 분류 태그는 교사가 확인하며 자동 추정하지 않습니다.</p><WordListPicker variant="full" wordLists={lists} loading={loading} onImportFull={cards=>{const words=importedAdventureWords(cards);set('words',words);setWordText(words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));}}/><textarea aria-label="단어 입력" rows={8} value={wordText} onChange={e=>{setWordText(e.target.value);set('words',e.target.value.split('\n').filter(x=>x.trim()).map(line=>{const [word='',meaning='',tags='']=line.split('/').map(x=>x.trim());return{id:adventureId(),word,meaning,tags:tags.split(',').map(x=>x.trim()).filter(Boolean)};}));}}/>
       {!preparing&&type!=='wordclaw'&&<div className="ad-edit-row"><label>보기 개수<select value={c.choices} onChange={e=>set('choices',Number(e.target.value) as AdventureConfig['choices'])}>{[3,4,5,6].map(n=><option key={n}>{n}</option>)}</select></label><label>움직임 속도<select value={c.speed} onChange={e=>set('speed',e.target.value as AdventureConfig['speed'])}><option value="slow">천천히</option><option value="normal">보통</option><option value="fast">빠르게</option></select></label>{type==='wordfishing'&&<label><input type="checkbox" checked={c.listening} onChange={e=>set('listening',e.target.checked)}/> 영어 듣기 모드 (음성이 없으면 뜻 표시)</label>}</div>}
       {!preparing&&type==='balloonpop'&&<p>풍선 제한 시간은 속도에 따라 45 / 30 / 20초입니다. 시간 종료 후 같은 문제를 다시 풀 수 있어요.</p>}
@@ -48,15 +55,31 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       {c.sentences.map((s,i)=><div className="ad-edit-card" key={s.id}><strong>{i+1}. {s.text}</strong><label>{type==='sentencerocket'?'구 블록 경계 ( | 로 구분, 교사 직접 지정)':'단어 블록 ( | 로 구분)'}<input value={s.tokens.join(' | ')} onChange={e=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:e.target.value.split('|').map(t=>t.trim())}:x))}/></label><button onClick={()=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:wordTokens(s.text)}:x))}>단어 단위로 나누기</button>{type==='sentencerocket'&&<p>권장 예: The monkey | is eating | a banana. 의미 단위는 교사가 확인해 주세요.</p>}</div>)}
     </>}
     {type==='grammardetective'&&<>
-      <details ref={detectiveAuthoring} className="ad-detective-authoring">
+      <details ref={detectiveWordAuthoring} className="ad-detective-authoring" data-detective-word-authoring>
+        <summary>{i18n.resolvedLanguage?.startsWith('en')?'Make questions from my words':'내 단어로 문제 만들기'}</summary>
+        <div className="ad-detective-authoring-body">
+          <DetectiveGenerator source="words" initialText={c.detectiveWordDraft?.words} initialRules={c.detectiveWordDraft?.rules}
+            lists={lists.filter(list=>!isSentenceList(list))} loading={loading} onDraftChange={dirty=>updateDraft('words',dirty)}
+            onGenerate={({text:words,rules},cases)=>{
+              setWordDraftDirty(false);
+              setActiveCaseId(cases[0]?.id);
+              edit({...c,detectiveWordDraft:{words,rules},cases});
+            }}/>
+        </div>
+      </details>
+      <details ref={detectiveAuthoring} className="ad-detective-authoring" data-detective-sentence-authoring>
         <summary>{t('launchUx.detectiveAuthoring', {count:c.cases.length})}</summary>
         <div className="ad-detective-authoring-body">
-          <DetectiveGenerator draft={c.detectiveDraft} count={c.count} lists={lists.filter(isSentenceList)} loading={loading}
-            onDraftChange={updateDraft} onGenerate={(detectiveDraft,cases)=>{setDraftDirty(false);setActiveCaseId(cases[0]?.id);edit({...c,detectiveDraft,cases});}}
+          <DetectiveGenerator initialText={c.detectiveDraft?.sentences} initialRules={c.detectiveDraft?.rules} lists={lists.filter(isSentenceList)} loading={loading}
+            onDraftChange={dirty=>updateDraft('sentences',dirty)} onGenerate={({text:sentences,rules},cases)=>{
+              setSentenceDraftDirty(false);
+              setActiveCaseId(cases[0]?.id);
+              edit({...c,detectiveDraft:{sentences,rules},cases});
+            }}
             onReview={(correct,context,detectiveDraft)=>{
               const existing=c.cases.find(item=>item.correct===correct&&!item.incorrect);
               const id=existing?.id??adventureId();
-              setDraftDirty(false);
+              setSentenceDraftDirty(false);
               setActiveCaseId(id);
               edit({...c,detectiveDraft,cases:existing?c.cases:[...c.cases,{id,correct,context,incorrect:'',errors:[],accepted:[],explanation:''}]});
               requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>(`[data-detective-case-editor="${id}"] textarea`)?.focus());
@@ -74,7 +97,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
               requestAnimationFrame(()=>root.current?.querySelector<HTMLElement>(`[data-detective-case-editor="${id}"] input`)?.focus());
             }}>{t('launchUx.addCase')}</button>
           </div>
-          {activeCase&&<DetectiveCaseEditor key={activeCase.id} item={activeCase} rules={c.detectiveDraft?.rules}
+          {activeCase&&<DetectiveCaseEditor key={activeCase.id} item={activeCase} rules={activeCase.rule&&!c.detectiveDraft?.rules.includes(activeCase.rule)?[activeCase.rule]:c.detectiveDraft?.rules}
             onChange={value=>set('cases',c.cases.map(item=>item.id===value.id?value:item))}
             onRemove={()=>set('cases',c.cases.filter(item=>item.id!==activeCase.id))}/>}
         </div>

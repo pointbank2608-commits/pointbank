@@ -38,6 +38,7 @@ export interface AdventureConfig {
   listening: boolean;
   detectiveMode: 'choice' | 'type';
   detectiveDraft?: { sentences: string; rules: string[] };
+  detectiveWordDraft?: { words: string; rules: string[] };
   caseSensitive: boolean;
   punctuationSensitive: boolean;
   simpleClaw: boolean;
@@ -106,7 +107,7 @@ export function adventureSeconds(type: AdventureType,c: AdventureConfig): number
 }
 export function adventureErrors(type: AdventureType,c: AdventureConfig): string[] {
   const out:string[]=[];
-  if(!Number.isInteger(c.count)||c.count<1||c.count>50)out.push('문제 개수는 1~50개로 입력해 주세요.');
+  if(type!=='grammardetective'&&(!Number.isInteger(c.count)||c.count<1||c.count>50))out.push('문제 개수는 1~50개로 입력해 주세요.');
   if(![0,20,30,45,60,90].includes(c.seconds))out.push('제한 시간을 다시 선택해 주세요.');
   if(type==='balloonpop'||type==='wordfishing'||type==='wordclaw'){
     const unique=new Set(c.words.map(w=>wordKey(w.word)));
@@ -170,10 +171,7 @@ export function adventureRounds(type: AdventureType,c: AdventureConfig): Adventu
   else if(type==='grammardetective')rows=c.cases.map(item=>({kind:'case',id:item.id,item}));
   else if(type==='treasurehunt')rows=c.clues.map(clue=>({kind:'clue',id:clue.id,clue}));
   else rows=c.missions.map(mission=>({kind:'mission',id:mission.id,mission}));
-  if(type==='grammardetective'&&c.detectiveDraft){
-    const deck=rows.slice(0,c.count);
-    return c.shuffle?shuffled(deck):deck;
-  }
+  if(type==='grammardetective')return c.shuffle?shuffled(rows):rows;
   return (c.shuffle?shuffled(rows):rows).slice(0,c.count);
 }
 export function sentencePieces(sentence: AdventureSentence) { return sentence.tokens.map((text,index)=>({id:`${sentence.id}:${index}`,text,index})); }

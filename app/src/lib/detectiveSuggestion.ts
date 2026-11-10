@@ -43,6 +43,11 @@ export function detectiveSuggestion(incorrect:string,correct:string):Omit<Detect
 
 const singularNouns = 'apple|orange|egg|umbrella|ant|elephant|owl|banana|book|dog|cat|pencil|car|cup|box|chair|desk|kite|bag|bus|sandwich';
 const pluralNouns: Record<string,string> = {apples:'apple',bananas:'banana',pencils:'pencil',cats:'cat',dogs:'dog',books:'book',boxes:'box',buses:'bus',chairs:'chair',cars:'car',bags:'bag',children:'child',teeth:'tooth',feet:'foot'};
+const pluralBySingular = new Map(Object.entries(pluralNouns).map(([plural, singular]) => [singular, plural]));
+const countableNouns = new Set(singularNouns.split('|'));
+const actionVerbs = new Set('go come run swim walk talk write sing sleep sit stand jump climb dance smile laugh work study read cook cry wait play listen travel fly'.split(' '));
+const comparativeByAdjective: Record<string,string> = {big:'bigger',small:'smaller',tall:'taller',short:'shorter',fast:'faster',slow:'slower',old:'older',young:'younger',strong:'stronger',weak:'weaker',good:'better',bad:'worse'};
+const prepositionModels: Record<string,string> = {listen:'She listens to her teacher.',look:'She looks at the picture.',depend:'She depends on her team.',rely:'She relies on her team.'};
 const objectToSubject: Record<string,string> = {me:'I',us:'we',him:'he',her:'she',them:'they'};
 const finiteVerbs = /^(I|You|He|She|It|We|They) ([a-z]+)(?=\s|[.!?]|$)/;
 const complexTail = /\b(and|or|but|if|that|not|either|neither|who|which)\b|[,;:]/i;
@@ -127,11 +132,29 @@ export function caseFromCorrect(correct:string,id:string=adventureId(),rules:rea
  return variant?detectiveCaseFromVariant(variant,id):{id,correct,incorrect:'',errors:[],accepted:[],explanation:''};
 }
 
-export function previewDetectiveDraft(text:string, rules:readonly string[]){
+function wordVariants(input:string, rules:readonly string[]):Variant[] {
+ const word=input.toLowerCase();
+ const models:string[]=[];
+ if(countableNouns.has(word))models.push(`I see ${/^[aeiou]/.test(word)?'an':'a'} ${word}.`);
+ const plural=pluralBySingular.get(word)??(Object.hasOwn(pluralNouns,word)?word:undefined);
+ if(plural)models.push(`I see two ${plural}.`);
+ if(Object.hasOwn(objectToSubject,word))models.push(`Dad called ${word}.`);
+ if(Object.hasOwn(prepositionModels,word))models.push(prepositionModels[word]);
+ const comparative=Object.hasOwn(comparativeByAdjective,word)?comparativeByAdjective[word]:undefined;
+ if(comparative)models.push(`This one is ${comparative} than that one.`);
+ const verb=baseOf(word);
+ if(verb&&actionVerbs.has(verb.base)){
+   models.push(`She ${third(verb.base)} every day.`, `Does she ${verb.base}?`, `She can ${verb.base}.`);
+   if(verb.tense==='past')models.push(`Yesterday, she ${word}.`);
+ }
+ return models.flatMap(model=>detectiveVariants(model,rules));
+}
+
+export function previewDetectiveDraft(text:string, rules:readonly string[], source:'words'|'sentences'='sentences'){
  const rows=text.split(/\r?\n/).flatMap((line,index)=>{
    const [sentence,...context]=line.split('|');
    const correct=sentence.trim();
-   return correct?[{index,correct,context:context.join('|').trim(),variants:detectiveVariants(correct,rules)}]:[];
+   return correct?[{index,correct,context:context.join('|').trim(),variants:source==='words'?wordVariants(correct,rules):detectiveVariants(correct,rules)}]:[];
  });
  const byRule=new Map(rules.map(rule=>[rule,[] as {variant:Variant;context:string;index:number}[]]));
  // Assign sentences with fewer eligible rules first, then balance the rule totals.

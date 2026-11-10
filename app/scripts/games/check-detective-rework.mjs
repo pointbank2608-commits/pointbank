@@ -47,9 +47,14 @@ try {
   assert.deepEqual(mixed.review.map(r=>r.correct),['She stopped talking.']);
   assert.equal(mixed.counts.get('comparison').length,0);
   const deck=grammar.previewDetectiveDraft('She eats an apple.\nShe needs a pencil.\nShe can swim.', ['articles','verb-form']);
-  const limited={...config,count:2,shuffle:true,detectiveDraft:{sentences:'',rules:['articles','verb-form']},
-    cases:deck.ready.map(({variant})=>grammar.detectiveCaseFromVariant(variant))};
-  assert.deepEqual(adventure.adventureRounds('grammardetective',limited).map(round=>round.item.rule).sort(),['articles','verb-form']);
+  const manySentences=grammar.previewDetectiveDraft(Array.from({length:60},()=> 'She eats an apple.').join('\n'),['articles']);
+  const manyWords=grammar.previewDetectiveDraft(Array.from({length:60},()=> 'apple').join('\n')+'\nunknownword',['articles'],'words');
+  assert.equal(deck.ready.length,3);
+  assert.equal(manyWords.review[0]?.correct,'unknownword');
+  for(const preview of [manySentences,manyWords]){
+    const cases=preview.ready.map(({variant})=>grammar.detectiveCaseFromVariant(variant));
+    assert.equal(adventure.adventureRounds('grammardetective',{...config,count:5,cases,shuffle:true}).length,60);
+  }
   console.log('PASS nine rules, exact corrections, review queue and selection');
   browser=await chromium.launch({channel:'chrome',headless:true});
   page=await browser.newPage({viewport:{width:1350,height:950}});
@@ -90,7 +95,7 @@ try {
   console.log('PASS centered 16:9 board on a wide display and visible answer controls on mobile');
   await page.setViewportSize({width:1350,height:950});
   await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
-  const authoring=page.locator('.ad-detective-authoring');
+  const authoring=page.locator('[data-detective-sentence-authoring]');
   const openAuthoring=()=>authoring.locator('summary').first().click();
   await authoring.waitFor();
   assert.equal(await authoring.evaluate(element=>element.open),false);
@@ -114,6 +119,23 @@ try {
   await page.goto(base+'?game=grammardetective&mode=teacher');
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   await page.getByRole('button',{name:/^게임\s*설정$/}).click();
+  await page.locator('[data-detective-word-authoring] summary').click();
+  const wordGenerator=page.locator('[data-detective-generator="words"]');
+  await wordGenerator.getByRole('button',{name:/단어장에서 불러오기/}).click();
+  await wordGenerator.getByRole('button',{name:/검증 단어장/}).click();
+  const wordInput=wordGenerator.getByRole('textbox');
+  assert.equal(await wordInput.inputValue(),'apple\nbanana\nmilk');
+  await wordGenerator.getByRole('button',{name:'선택 지우기'}).click();
+  await wordGenerator.getByRole('checkbox',{name:'관사 a/an',exact:true}).check();
+  await wordGenerator.getByText('출제 가능 2문제 · 이번 게임 2문제 · 확인 필요 1단어').waitFor();
+  await wordGenerator.getByRole('button',{name:'이 문제들로 바꾸기'}).click();
+  await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
+  const wordEvidence=scene.locator('.ad-evidence');
+  await wordEvidence.getByRole('button',{name:'apple',exact:true}).waitFor();
+  console.log('PASS word-list import, selected grammar, unsupported word review and actual play');
+  await page.goto(base+'?game=grammardetective&mode=teacher');
+  await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+  await page.getByRole('button',{name:/^게임\s*설정$/}).click();
   const topicCases=await page.evaluate(async()=>{
     const {detectiveCases}=await import('/src/lib/grammarGames.ts');
     return detectiveCases('it-is');
@@ -121,7 +143,7 @@ try {
   const settings=page.locator('[data-game-existing-settings]');
   await settings.getByLabel('문법 항목',{exact:true}).selectOption('it-is');
   await settings.getByText(`이 문법의 문제 ${topicCases.length}개를 가져왔어요.`,{exact:false}).waitFor();
-  await settings.locator('.ad-detective-authoring summary').first().click();
+  await openAuthoring();
   assert.deepEqual(await questionPicker.locator('option').allTextContents(),topicCases.map((item,index)=>`${index+1}. ${item.correct}`));
   await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
   await settings.waitFor({state:'hidden'});
@@ -132,7 +154,7 @@ try {
   console.log('PASS selected grammar replaces sample cases and plays after one Apply');
   await page.getByRole('button',{name:/^게임\s*설정$/}).click();
   await openAuthoring();
-  const generator=page.locator('[data-detective-generator]');
+  const generator=page.locator('[data-detective-generator="sentences"]');
   await generator.getByRole('button',{name:/문장 목록에서 불러오기/}).click();
   await generator.getByRole('button',{name:/검증 문장/}).click();
   const sentenceInput=generator.getByLabel('올바른 영어 문장 (한 줄에 하나)',{exact:true});
