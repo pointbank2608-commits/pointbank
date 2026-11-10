@@ -358,14 +358,9 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
             {info?.temporary && !!source?.cards.length && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             {!simpleSettings && <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>}
             {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <button className={`${btn} bg-primary! text-white! flex-1`} disabled={busy || !!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t(busy?'settingsSave.saving':'launchUx.saveGame')}</button>
-              <button className={btn} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
-            </div>
+            <button className={`${btn} w-full bg-primary! text-white!`} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
             {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
             {error&&<p role="alert" className="text-error">{error}</p>}
-            {panel==='settings'&&saveOptions}
-
           </div>
       </dialog>
       {addLesson && info?.selected && <AddActivityToLesson activity={info.selected} onClose={()=>setAddLesson(false)} />}
