@@ -1,18 +1,23 @@
-import {useMemo, useState} from 'react';
+import {useImperativeHandle, useMemo, useState, type Ref} from 'react';
 import {useTranslation} from 'react-i18next';
 import {defaultDetectiveRules, DETECTIVE_RULES, detectiveCaseFromVariant, previewDetectiveDraft} from '../../lib/detectiveSuggestion';
 import type {DetectiveCase} from '../../lib/adventureGames';
 import type {WordList} from '../../lib/types';
 import WordListPicker from '../WordListPicker';
 
-export default function DetectiveGenerator({source='sentences', initialText='', initialRules=defaultDetectiveRules, lists, loading, onGenerate, onDraftChange, onReview}: {
+export type DetectiveInput = {text:string; rules:string[]};
+export type DetectiveGeneratorHandle = {importWords: (rows: string[]) => void};
+
+export default function DetectiveGenerator({ref, source='sentences', initialText='', initialRules=defaultDetectiveRules, selectedForGame=false, lists, loading, onGenerate, onDraftChange, onReview}: {
+  ref?: Ref<DetectiveGeneratorHandle>;
   source?: 'words' | 'sentences';
   initialText?: string;
   initialRules?: readonly string[];
+  selectedForGame?: boolean;
   lists: WordList[];
   loading: boolean;
-  onGenerate: (input: {text:string; rules:string[]}, cases: DetectiveCase[]) => void;
-  onDraftChange: (dirty: boolean) => void;
+  onGenerate: (input: DetectiveInput, cases: DetectiveCase[]) => void;
+  onDraftChange: (draft: DetectiveInput | null) => void;
   onReview?: (correct: string, context: string, draft: {sentences:string; rules:string[]}) => void;
 }){
   const {i18n}=useTranslation();
@@ -21,32 +26,34 @@ export default function DetectiveGenerator({source='sentences', initialText='', 
   const words=source==='words';
   const [sentences,setSentences]=useState(initialText);
   const [rules,setRules]=useState<string[]>(()=>[...initialRules]);
-  const [notice,setNotice]=useState('');
+  const changed=sentences!==initialText||rules.join()!==initialRules.join();
   const preview=useMemo(()=>previewDetectiveDraft(words?sentences.replaceAll(',', '\n'):sentences,rules,source),[sentences,rules,source,words]);
   const cases=preview.ready;
   function revise(value:string){
     setSentences(value);
-    setNotice('');
-    onDraftChange(value !== initialText || rules.join() !== initialRules.join());
+    onDraftChange(value !== initialText || rules.join() !== initialRules.join()?{text:value,rules}:null);
   }
+  function importWords(rows:string[]){
+    revise([sentences.trim(),...rows.map(row=>row.trim())].filter(Boolean).join('\n'));
+  }
+  useImperativeHandle(ref,()=>({importWords}));
   function selectRules(value:string[]){
     setRules(value);
-    setNotice('');
-    onDraftChange(sentences !== initialText || value.join() !== initialRules.join());
+    onDraftChange(sentences !== initialText || value.join() !== initialRules.join()?{text:sentences,rules:value}:null);
   }
   const inputLabel=words?l('영어 단어 (한 줄에 하나 또는 쉼표로 구분)','English words (one per line or comma separated)'):l('올바른 영어 문장 (한 줄에 하나)','Correct English sentences (one per line)');
   return <div className="ad-edit-card" data-detective-generator={source}>
     <h3>{words?l('내 단어로 문제 만들기','Make questions from my words'):l('내 문장으로 문제 만들기','Make questions from my sentences')}</h3>
     <p>{words?l('단어장을 불러오거나 영어 단어를 입력하세요. 예를 들어 apple로 관사 a/an 문제를 만들 수 있어요.', 'Load a word list or enter English words. For example, apple can make an a/an question.'):l('저장한 문장을 불러오거나 직접 입력하고, 출제할 문법을 골라 미리보기를 확인하세요.', 'Load saved sentences or enter your own, then choose grammar rules and check the preview.')}</p>
     <WordListPicker variant="full" kind={words?'word':'sentence'} wordLists={lists} loading={loading}
-      onImportFull={rows=>revise([sentences.trim(),...rows.map(row=>row.word.trim())].filter(Boolean).join('\n'))}/>
+      onImportFull={rows=>importWords(rows.map(row=>row.word))}/>
     <label>{inputLabel}
       <textarea aria-label={inputLabel}
         rows={5} value={sentences} placeholder={words?'apple, book, swim':'She can swim.\nShe needs a pencil.\nThis bag is bigger than mine.'} onChange={event=>revise(event.target.value)}/>
     </label>
     {!words&&<p>{l('뜻이나 상황을 보여주고 싶으면 문장 뒤에 | 를 쓰고 단서를 입력하세요. 영어 문장만으로도 만들 수 있어요.', 'To show a clue, add | after the sentence and enter the meaning or situation. English sentences alone work too.')}</p>}
     <fieldset className="ad-detective-rule-set">
-      <legend>{l('출제할 문법 (여러 개 선택)','Grammar to include (select any)')}</legend>
+      <legend>{words?l('내 단어에 적용할 문법 (여러 개 선택)','Grammar for my words (select any)'):l('내 문장에 적용할 문법 (여러 개 선택)','Grammar for my sentences (select any)')}</legend>
       <div className="ad-detective-rule-actions">
         <button type="button" onClick={()=>selectRules(defaultDetectiveRules)}>{l('전체 선택','Select all')}</button>
         <button type="button" onClick={()=>selectRules([])}>{l('선택 지우기','Clear selection')}</button>
@@ -79,14 +86,13 @@ export default function DetectiveGenerator({source='sentences', initialText='', 
           </li>)}</ol>
         </details>}
       </>}
-      <button type="button" className="ad-apply" disabled={!cases.length||!!notice} onClick={()=>{
+      <button type="button" className="ad-apply" disabled={!cases.length} onClick={()=>{
         onGenerate({text:sentences,rules},cases.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined)));
-        setNotice(l('아래 게임 문제를 교체했어요. 적용을 누르면 이 문제로 게임을 열어요.', 'Game questions replaced below. Apply to open the game with these questions.'));
       }}>{l('이 문제들로 바꾸기','Replace with these questions')}</button>
-      {notice&&<p role="status">{notice}</p>}
+      {selectedForGame&&!changed&&<p role="status">{l('이 문제들을 선택했어요. 적용을 눌러 게임에 반영하세요.', 'These questions are selected. Press Apply to use them in the game.')}</p>}
     </section>}
-    {(sentences!==initialText||rules.join()!==initialRules.join())&&
-      <button type="button" onClick={()=>{setSentences(initialText);setRules([...initialRules]);setNotice('');onDraftChange(false);}}>
+    {changed&&
+      <button type="button" onClick={()=>{setSentences(initialText);setRules([...initialRules]);onDraftChange(null);}}>
         {l('미리보기 변경 취소','Discard preview changes')}
       </button>}
   </div>;

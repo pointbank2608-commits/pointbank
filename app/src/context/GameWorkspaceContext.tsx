@@ -43,6 +43,8 @@ export interface GameWorkspaceBridge {
 export interface WorkspaceContextValue {
   info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
+  registerDetectiveListImporter?: (importList: (list: WordList) => boolean) => () => void;
+  openDetectiveList?: (list: WordList) => boolean;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;

@@ -70,6 +70,16 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     finally{commitLock.current=false;}
   },[t]);
   const [panel, setPanel] = useState<Panel>(null);
+  const detectiveListImporter = useRef<((list: WordList) => boolean) | null>(null);
+  const registerDetectiveListImporter = useCallback((importList: (list: WordList) => boolean) => {
+    detectiveListImporter.current = importList;
+    return () => { if (detectiveListImporter.current === importList) detectiveListImporter.current = null; };
+  }, []);
+  const openDetectiveList = useCallback((list: WordList) => {
+    if (!detectiveListImporter.current?.(list)) return false;
+    setPanel('settings');
+    return true;
+  }, []);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
@@ -275,7 +285,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}

@@ -5,7 +5,7 @@ import { MIN_ROUNDS } from '../../lib/grammarGamesB';
 import { adventureId, type DetectiveCase } from '../../lib/adventureGames';
 
 /** Prepares a deck from the selected grammar point for the settings Apply action. */
-export default function GrammarCasePicker({ onSelect }: { onSelect: (cases: DetectiveCase[]) => void }) {
+export default function GrammarCasePicker({ onSelect, selectedForGame }: { onSelect: (cases: DetectiveCase[]) => void; selectedForGame: boolean }) {
   const options = useMemo(() => GRAMMAR_POINTS.filter((p) => detectiveCases(p.id).length >= MIN_ROUNDS.detective), []);
   const [id, setId] = useState('');
   const [msg, setMsg] = useState('');
@@ -21,18 +21,18 @@ export default function GrammarCasePicker({ onSelect }: { onSelect: (cases: Dete
     setMsg(`이 문법의 문제 ${cases.length}개를 가져왔어요. ‘적용’을 눌러 게임에 반영하세요.`);
   }
   return (
-    <div className="ad-edit-card">
-      <strong>준비된 문법 문제 가져오기</strong>
-      <div className="ad-edit-row">
-        <label>문법 항목
-          <select aria-label="문법 항목" value={id} onChange={(e) => select(e.target.value)}>
+    <details className="ad-detective-authoring">
+      <summary>클래스뱅크 기본 문제로 바꾸기</summary>
+      <div className="ad-detective-authoring-body">
+        <p>주제를 고르면 클래스뱅크가 미리 만든 문제로 이번 게임의 문제 목록을 교체해요.</p>
+        <label>기본 문제 주제
+          <select aria-label="기본 문제 주제" value={selectedForGame?id:''} onChange={(e) => select(e.target.value)}>
             <option value="" disabled>선택하세요</option>
             {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
           </select>
         </label>
+        {msg && selectedForGame && <p role="status">{msg}</p>}
       </div>
-      <p>문법 항목을 고르면 이번 게임의 문제 목록을 해당 문법 문제로 바꿔요.</p>
-      {msg && <p role="status">{msg}</p>}
-    </div>
+    </details>
   );
 }

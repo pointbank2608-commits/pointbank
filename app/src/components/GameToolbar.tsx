@@ -193,6 +193,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const isDetective = type === 'grammardetective';
   const pictureKind = pictureWordModeKind(type);
   const currentPictureMode = !!info?.selected?.config.pictureWordMode;
   const pictureLists = pictureKind ? (info?.lists ?? []).filter(list => !isSentenceList(list)) : [];
@@ -609,10 +610,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={type==='grammardetective' ? workspace.panel==='settings' : open==='content'} onClick={() => {
-            if(type==='grammardetective'){close();workspace.open('settings');}
-            else toggle('content');
-          }}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open==='content'} onClick={() => toggle('content')}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={() => toggle('class')}>{text('반 설정', 'Class')}</button>
           <button className={tab(open === 'settings')} aria-expanded={open === 'settings'} onClick={() => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings') : (close(), workspace.open('settings')))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
@@ -654,7 +652,24 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         );
       })()}
 
-      {open === 'content' && panel(<>
+      {open === 'content' && isDetective && panel(<>
+        <PanelHead title={text('내 단어/문장', 'My words / sentences')} busy={busy} onClose={close} text={text} />
+        <p className="text-sm text-on-surface-variant">{text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
+        <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
+          <select className={field} value={pList} onChange={event=>setPList(event.target.value)}>
+            <option value="">{text('선택하세요', 'Choose')}</option>
+            {(info?.lists ?? []).filter(list=>list.items.some(item=>item.word.trim())).map(list=>(
+              <option key={list.id} value={list.id}>{isSentenceList(list)?text('문장 모음','Sentences'):text('단어장','Words')} · {list.name}</option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className={primaryBtn} disabled={!pList || !!info?.loading || !!info?.sharedView} onClick={()=>{
+          const list=info?.lists.find(row=>row.id===pList);
+          if(list&&workspace.openDetectiveList?.(list))close();
+          else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
+        }}>{text('게임설정으로 가져오기','Import into Game settings')}</button>
+      </>)}
+      {open === 'content' && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onApply={() => void applyContent()} busy={busy} onClose={close} text={text} />
         {!isGrammar && (
           <p className="rounded-xl bg-sky-50 p-3 text-sm font-bold">
