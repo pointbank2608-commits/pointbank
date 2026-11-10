@@ -75,6 +75,34 @@ try {
   await star.click();
   assert.equal(await page.locator('a[href="/games/grammardetective"]').count(),0);
   console.log('PASS favorite ordinary and phonics cards, no navigation, reload, filter and remove');
+  const toolbar = page.locator('[data-game-toolbar]');
+  const contentPanel = page.locator('[data-game-toolbar-panel="content"]');
+  for (const [game, label, listId, otherId] of [
+    ['balloonpop', '내 단어장', 'words-test', 'sentences-test'],
+    ['wordtrain', '내 문장 모음', 'sentences-test', 'words-test'],
+  ]) {
+    await page.goto(base+`?game=${game}&mode=teacher`);
+    await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+    await toolbar.getByRole('button',{name:'내 단어/문장',exact:true}).click();
+    const picker = contentPanel.getByRole('combobox',{name:label,exact:true});
+    await picker.locator(`option[value="${listId}"]`).waitFor({state:'attached'});
+    assert.equal(await picker.locator(`option[value="${otherId}"]:enabled`).count(),0);
+    const apply = contentPanel.getByRole('button',{name:'적용',exact:true});
+    assert.ok((await apply.boundingBox()).y > (await picker.boundingBox()).y);
+    await picker.selectOption(listId);
+    await apply.click();
+    await contentPanel.waitFor({state:'hidden'});
+    if(game==='balloonpop'){
+      await toolbar.getByRole('button',{name:'게임설정',exact:true}).click();
+      await page.getByRole('group',{name:'문제 방식',exact:true}).waitFor();
+      await page.getByRole('button',{name:'게임별 설정',exact:true}).click();
+      const settings = page.locator('dialog.game-workspace-dialog[open]');
+      await settings.getByLabel('보기 개수').waitFor();
+      await settings.getByLabel('움직임 속도').waitFor();
+      await settings.getByRole('button',{name:'닫기',exact:true}).click();
+    }
+  }
+  console.log('PASS word and sentence list labels, apply footer and Balloon Pop controls');
   await page.goto(base+'?game=grammardetective&mode=teacher');
   await page.setViewportSize({width:2560,height:1000});
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();

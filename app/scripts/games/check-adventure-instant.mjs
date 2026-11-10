@@ -198,7 +198,7 @@ try {
   const apply=page.getByRole('button',{name:'적용',exact:true});
   const stage=page.locator('[data-game-fit]:visible').first();
   const source=page.getByRole('button',{name:'내 단어/문장',exact:true});
-  const list=page.getByRole('combobox',{name:/내 단어장 · 문장 모음/});
+  const list=page.locator('[data-game-toolbar-panel="content"]').getByRole('combobox',{name:/^내 단어장/});
   const pictureOption=page.getByRole('button',{name:'그림 보고 영어 단어 고르기',exact:true});
   await source.click();
   await list.selectOption('text-only');
@@ -247,10 +247,10 @@ try {
  async function auditApply(page,type) {
   const openSource=page.getByRole('button',{name:'내 단어/문장',exact:true});
   const apply=page.getByRole('button',{name:'적용',exact:true});
-  const list=page.getByRole('combobox',{name:/내 단어장 · 문장 모음|내 문장 모음/});
+  const list=page.locator('[data-game-toolbar-panel="content"]').getByRole('combobox',{name:/^내 (단어장|문장 모음)/});
   if(['shopping','sentencerocket','watermelon','wordclaw'].includes(type)){
    await page.getByRole('button',{name:'게임설정',exact:true}).click();
-   const more=page.getByRole('button',{name:'자세히 설정',exact:true});
+   const more=page.getByRole('button',{name:'게임별 설정',exact:true});
    if(await more.count()) await more.click();
    const dialog=page.locator('dialog[open]');
    const isSentence=type==='sentencerocket';
@@ -305,7 +305,7 @@ try {
   if(type==='wheel' || type==='order'){
    await page.getByRole('button',{name:'게임설정',exact:true}).click();
    await page.getByRole('button',{name:'내 단어장/문장',exact:true}).click();
-   await list.selectOption('words');
+   await page.locator('[data-game-toolbar-panel="settings"]').getByRole('combobox',{name:/^내 단어장/}).selectOption('words');
    await apply.click();
    await apply.waitFor({state:'hidden',timeout:5000});
    await expectPlay(page);
@@ -451,7 +451,7 @@ try {
    catch (error) { bad.push(type); console.error(type, error.message); }
   } else if(type==='wordfishing' || type==='balloonpop'){
    const openSource=page.getByRole('button',{name:'내 단어/문장',exact:true});
-   const list=page.getByLabel('내 단어장 · 문장 모음');
+   const list=page.getByLabel('내 단어장',{exact:true});
    const apply=page.getByRole('button',{name:'적용',exact:true});
    await openSource.click();
    await list.selectOption('words');

@@ -73,10 +73,10 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
     { key: 'twoDiceRounds', ko: '팀당 굴리는 횟수', en: 'Rolls per team', kind: 'choice', def: 9, parse: Number, choices: [6, 9, 12].map(n => ({ v: String(n), ko: `${n}회`, en: String(n) })) },
   ],
   wordhoops: [
+    { key: 'hoopsMode', ko: '문제 방식', en: 'Question type', kind: 'choice', def: 'meaning', choices: [{ v: 'meaning', ko: '영어 보고 뜻 고르기', en: 'Pick the meaning' }, { v: 'word', ko: '뜻 보고 영어 고르기', en: 'Pick the word' }, { v: 'mixed', ko: '섞어서', en: 'Mixed' }, PICTURE_WORD_OPTION] },
     { key: 'hoopsTeams', ko: '참여', en: 'Players', kind: 'choice', def: '2', parse: Number, choices: [{ v: '2', ko: '두 팀 대결', en: 'Two teams' }, { v: '1', ko: '혼자 연습', en: 'Solo practice' }] },
     { key: 'hoopsRule', ko: '승부 방식', en: 'Game rule', kind: 'choice', def: 'race', choices: [{ v: 'race', ko: '정해진 슛을 빨리·정확히', en: 'Fixed shots, fastest' }, { v: 'timed', ko: '제한 시간 안에 많이', en: 'Most baskets in time' }] },
     { key: 'hoopsSeconds', ko: '제한 시간(시간제일 때)', en: 'Time limit (timed)', kind: 'choice', def: '60', parse: Number, choices: [{ v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '1분', en: '1 min' }, { v: '90', ko: '1분 30초', en: '1:30' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }] },
-    { key: 'hoopsMode', ko: '문제 방식', en: 'Question type', kind: 'choice', def: 'meaning', choices: [{ v: 'meaning', ko: '영어 보고 뜻 고르기', en: 'Pick the meaning' }, { v: 'word', ko: '뜻 보고 영어 고르기', en: 'Pick the word' }, { v: 'mixed', ko: '섞어서', en: 'Mixed' }, PICTURE_WORD_OPTION] },
     { key: 'hoopsShots', ko: '슛 수(정해진 슛일 때)', en: 'Shots', kind: 'number', def: 10, min: 3, max: 30 },
   ],
   telepathy: [{ key: 'telepathyTeams', ko: '팀 수', en: 'Teams', kind: 'number', def: 3, min: 2, max: 6 }, { key: 'telepathyChoices', ko: '후보 수', en: 'Choices', kind: 'number', def: 3, min: 3, max: 4 }, { key: 'telepathyRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 8, min: 1, max: 30 }, { key: 'telepathySeconds', ko: '적는 시간', en: 'Time', kind: 'choice', def: '20', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'No limit' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '60초', en: '60s' }] }],
@@ -94,17 +94,13 @@ type ItemSource = 'list' | 'class' | 'type' | 'number';
 type Open = 'content' | 'class' | 'settings' | 'saves' | null;
 type Mode = 'none' | 'solo' | 'team';
 
-/** 패널 맨 위: 제목 + 적용 + 닫기. 적용을 누르면 "설정이 적용되었습니다."가 잠깐 떴다 사라진다. */
-function PanelHead({ title, onApply, busy, onClose, text }: {
-  title: string; onApply?: () => void; busy: boolean; onClose: () => void; text: (ko: string, en: string) => string;
+function PanelHead({ title, onClose, text }: {
+  title: string; onClose: () => void; text: (ko: string, en: string) => string;
 }) {
   return (
     <div className="sticky top-0 z-10 -mx-4 mb-1 flex items-center justify-between gap-2 rounded-t-2xl border-b border-outline-variant bg-white px-4 py-3">
       <p className="text-lg font-extrabold">{title}</p>
-      <div className="flex items-center gap-2">
-        {onApply && <button type="button" className={primaryBtn} disabled={busy} onClick={onApply}>{text('적용', 'Apply')}</button>}
-        <button type="button" className={btn} onClick={onClose}>{text('닫기', 'Close')}</button>
-      </div>
+      <button type="button" className={btn} onClick={onClose}>{text('닫기', 'Close')}</button>
     </div>
   );
 }
@@ -211,6 +207,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const caps = gamePreparation(type || 'wheel');
   const kinds = caps.kinds as readonly string[];
   const shownLists = useMemo(() => listsForGame(kinds, info?.lists ?? []), [kinds, info?.lists]);
+  const listLabel = kinds.includes('sentence')
+    ? kinds.includes('word') ? text('내 단어장 · 문장 모음', 'My word / sentence lists') : text('내 문장 모음', 'My sentence lists')
+    : text('내 단어장', 'My word lists');
   const nativeTeams = info?.teamCount !== undefined;
   const sample = !info?.selected || isActivityDraft(info.selected.id);
   const saved = (info?.templates ?? []).filter((row) => !isActivityDraft(row.id));
@@ -612,6 +611,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const panel = (children: ReactNode) => (
     <div ref={panelRef} data-game-toolbar-panel={open} className="absolute z-40 space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 pt-0 text-left shadow-xl">{children}</div>
   );
+  const panelAction = (onClick: () => void, label = text('적용', 'Apply'), disabled = false) => (
+    <div className="sticky bottom-0 z-10 -mx-4 -mb-4 rounded-b-2xl border-t border-outline-variant bg-white px-4 py-3">
+      <button type="button" className={`${primaryBtn} w-full`} disabled={busy || disabled} onClick={onClick}>{label}</button>
+    </div>
+  );
 
   return (
     <div ref={toolbarRef} className="relative z-30 shrink-0 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm backdrop-blur" data-frame-controls data-play-controls data-game-toolbar>
@@ -662,7 +666,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       })()}
 
       {open === 'content' && isDetective && panel(<>
-        <PanelHead title={text('내 단어/문장', 'My words / sentences')} busy={busy} onClose={close} text={text} />
+        <PanelHead title={text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
         <p className="text-sm text-on-surface-variant">{text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
         <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
           <select className={field} value={pList} onChange={event=>setPList(event.target.value)}>
@@ -672,14 +676,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             ))}
           </select>
         </label>
-        <button type="button" className={primaryBtn} disabled={!pList || !!info?.loading || !!info?.sharedView} onClick={()=>{
+        {panelAction(()=>{
           const list=info?.lists.find(row=>row.id===pList);
           if(list&&workspace.openDetectiveList?.(list,settingsButton.current??undefined))close();
           else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
-        }}>{text('게임설정으로 가져오기','Import into Game settings')}</button>
+        }, text('게임설정으로 가져오기','Import into Game settings'), !pList || !!info?.loading || !!info?.sharedView)}
       </>)}
       {open === 'content' && !isDetective && panel(<>
-        <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onApply={() => void applyContent()} busy={busy} onClose={close} text={text} />
+        <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
         {!isGrammar && (
           <p className="rounded-xl bg-sky-50 p-3 text-sm font-bold">
             {currentSource
@@ -721,13 +725,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           </label>
         ) : (
           <>
-            <label className="block font-bold">{kinds.includes('sentence') && !kinds.includes('word') ? text('내 문장 모음', 'My sentence lists') : text('내 단어장 · 문장 모음', 'My word / sentence lists')}
+            <label className="block font-bold">{listLabel}
               <select className={field} value={pList} onChange={(e) => { setPList(e.target.value); setPSaved(''); }}>
                 <option value="">{text('선택하세요', 'Choose')}</option>
                 {shownLists.map((list) => <option key={list.id} value={list.id} disabled={!usable(list)}>{list.name}{usable(list) ? '' : text(' (이 게임에는 쓸 수 없어요)', ' (not usable here)')}</option>)}
               </select>
             </label>
-            {shownLists.length === 0 && <p className="text-sm text-on-surface-variant">{kinds.includes('sentence') && !kinds.includes('word') ? text('저장한 문장 모음이 없어요. 아래 "직접 입력하기"로 바로 넣을 수 있어요.', 'No sentence lists saved yet. Use "Type it in" below.') : text('만든 단어장이 없어요. 아래 "직접 입력하기"로 바로 넣을 수 있어요.', 'No lists yet. Use "Type it in" below.')}</p>}
+            {info?.loading && <p className="text-sm text-on-surface-variant">{text('자료를 불러오는 중이에요.', 'Loading your lists…')}</p>}
+            {!info?.loading && shownLists.length === 0 && <p className="text-sm text-on-surface-variant">{text('저장한 자료가 없으면 아래에서 직접 입력할 수 있어요.', 'You can enter material below if you have no saved lists.')}</p>}
             <details className="rounded-xl border border-outline-variant p-3" open={shownLists.length === 0}>
               <summary className="cursor-pointer font-bold">{text('직접 입력하기', 'Type it in')}</summary>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -736,10 +741,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </details>
           </>
         )}
+        {panelAction(() => void applyContent())}
       </>)}
 
       {open === 'class' && panel(<>
-        <PanelHead title={text('반 설정', 'Class settings')} onApply={() => void applyClass()} busy={busy} onClose={close} text={text} />
+        <PanelHead title={text('반 설정', 'Class settings')} onClose={close} text={text} />
         {info && info.classes.length > 0 && (
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">{text('반', 'Class')}
@@ -820,10 +826,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         {!isTwoDice && pEff.length > 0 && pMode !== 'none' && (
           <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
         )}
+        {panelAction(() => void applyClass())}
       </>)}
 
       {open === 'settings' && panel(<>
-        <PanelHead title={text('게임설정', 'Game settings')} onApply={() => void applySettings()} busy={busy} onClose={close} text={text} />
+        <PanelHead title={text('게임설정', 'Game settings')} onClose={close} text={text} />
         {pictureKind && <fieldset className="space-y-3 rounded-xl bg-surface-container-low p-3">
           <legend className="px-1 font-bold">{text('문제 방식', 'Question type')}</legend>
           <div className="flex flex-wrap gap-2">
@@ -840,8 +847,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <p className="text-sm text-on-surface-variant">{pictureCount ? text(`그림 문제 ${pictureCount}개`, `${pictureCount} picture questions`) : t('gameWordHoops.pictureNeedsList')}</p>
             {pictureKind === 'turn' && <p className="text-sm text-on-surface-variant">{text('게임을 진행하는 중에 그림 문제가 나와요. 영어 단어를 고르면 이어서 진행돼요.', 'Picture questions appear during the game. Pick the English word to continue the move.')}</p>}
           </>}
-          {!pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings',settingsButton.current??undefined); }}>{text('자세히 설정', 'More settings')}</button>}
         </fieldset>}
+        {pictureKind && !pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings',settingsButton.current??undefined); }}>{text('게임별 설정', 'Game-specific settings')}</button>}
         {!(pictureKind && (pPictureMode || currentPictureMode)) && <>
         {isPopcorn && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
@@ -1096,10 +1103,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}
         </label>
+        {panelAction(() => void applySettings())}
       </>)}
 
       {open === 'saves' && panel(<>
-        <PanelHead title={text('저장/불러오기', 'Save / Load')} busy={busy} onClose={close} text={text} />
+        <PanelHead title={text('저장/불러오기', 'Save / Load')} onClose={close} text={text} />
         <div className="space-y-2">
           <p className="font-bold">{text('저장하기', 'Save')}</p>
           <p className="text-xs text-on-surface-variant">{isGrammar ? text('지금 문법과 참여 방식이 함께 저장돼요.', 'The grammar point and play mode are saved together.') : text('지금 자료와 설정이 "내 게임"으로 저장돼요.', 'Your current content and settings are saved as "My games".')}</p>

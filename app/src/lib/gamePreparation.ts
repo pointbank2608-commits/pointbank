@@ -9,7 +9,7 @@ import { pictureWordModeKind, pictureWordQuestions } from './pictureWordQuestion
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['sentencerocket','grammardetective','treasurehunt','wordclaw','sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['wordtrain','unscramble','sentencesplash']);
-const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy','catchsentence','lightning']);
+const BOTH = new Set<GameType>(['wheel','flashcards','typeanswer','lastbox','mysterybox','treasuredig','shufflefind','telepathy','catchsentence','lightning','passball','bomb']);
 const MANUAL_TURNS = new Set<GameType>(['wheel','ladder','order','bomb','timer','popcorn','findmissing','passball','flashcards','anagram','groupsort','unscramble','spellword','rankorder','labeleddiagram','imagequiz','quiz','truefalse']);
 export function gamePreparation(type: GameType) {
   return {
