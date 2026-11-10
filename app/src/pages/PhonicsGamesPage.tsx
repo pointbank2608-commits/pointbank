@@ -14,6 +14,7 @@ import {PhonicsSoundControls} from '../components/PhonicsSoundControls';
 import AccessibleDialog from '../components/AccessibleDialog';
 import GameStartCard from '../components/GameStartCard';
 import GameReportButton from '../components/GameReportButton';
+import GameCatalogNav from '../components/GameCatalogNav';
 import {DragBox,DragButton} from '../components/PhonicsDrag';
 import {hasPhoneme,playPhoneme} from '../lib/phonicsPhonemes';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
@@ -27,6 +28,7 @@ const PRAISE:[string[],string[]]=[['잘했어요!','멋져요!','대단해요!',
 const RULE_FALLBACK:Record<string,[string,string]>={build:['글자를 순서대로 눌러서 단어를 만들어요.','Tap the letters in order to build the word.'],fill:['빠진 글자를 끌어서 빈칸에 놓아요.','Drag the missing letters into the blank.'],change:['첫 글자를 끌어서 빈칸에 놓아 새 단어를 만들어요.','Drag a first letter into the blank to make a new word.']};
 const l=(en:boolean,ko:string,english:string)=>en?english:ko;
 const icon=(name:string)=><span className="material-symbols-outlined" aria-hidden="true">{name}</span>;
+const catalogChip = 'min-h-12 rounded-full border border-outline-variant/60 bg-white px-4 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low aria-pressed:border-warm-yellow aria-pressed:bg-warm-yellow aria-pressed:text-deep-navy aria-pressed:shadow-sm';
 function MarkedWord({entry}:{entry:PhonicsBankEntry}){return <span className="pg-word" lang="en">{[...entry.word].map((c,i)=><span key={i} className={entry.targets?.includes(i)?'pg-mark':''}>{c}</span>)}</span>;}
 /** 단어 속 빈칸(_)을 끌어다 놓을 수 있는 칸으로 보여 준다. 맞히면 칸에 정답이 들어간다. */
 function BlankWord({text,filled,answer,label}:{text:string;filled:boolean;answer:string;label:string}){
@@ -57,7 +59,7 @@ function Audio({text,en,onHelp}:{text:string;en:boolean;onHelp?:()=>void}){
 }
 
 export default function PhonicsGamesPage(){
- const {i18n}=useTranslation();const en=i18n.resolvedLanguage?.startsWith('en')??false;
+ const {t,i18n}=useTranslation();const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const {gameId}=useParams();const [params,setParams]=useSearchParams();
  const location=useLocation();
  const navigate=useNavigate();
@@ -81,13 +83,18 @@ export default function PhonicsGamesPage(){
  const pick=(id:string)=>{setStartedEntry(null);setParams({unit:id},{replace:true});};
  const invalid=Boolean(rawUnit&&!requested)||Boolean(gameId&&!game);
  const reason=game?gameAvailability(game,unit,en):null;
- const candidates=PHONICS_GAMES.filter(g=>(!query||`${g.ko} ${g.en} ${g.goal.join(' ')}`.toLowerCase().includes(query.toLowerCase()))&&g.stages.includes(unit.step)&&(world==='all'||gameVisual(g).world===world));
+ const search = query.trim().toLocaleLowerCase();
+ const candidates = PHONICS_GAMES.filter(candidate =>
+   candidate.stages.includes(unit.step) &&
+   (world === 'all' || gameVisual(candidate).world === world) &&
+   `${candidate.ko} ${candidate.en} ${candidate.goal.join(' ')}`.toLocaleLowerCase().includes(search)
+ );
  const start=()=>{setSeed(crypto.getRandomValues(new Uint32Array(1))[0]);setStartedEntry(entryKey);};
  function leaveGame() {
   setStartedEntry(null);
   navigate(`/phonics-games?unit=${encodeURIComponent(unit.id)}`, { replace: true });
  }
- const gameSettings=<form className="pg-panel grid gap-3" onSubmit={event=>{
+ const gameSettings=<form id="phonics-game-settings" className="grid gap-3" onSubmit={event=>{
    event.preventDefault();
    const values=new FormData(event.currentTarget);
    setRounds(Number(values.get('rounds')));
@@ -102,23 +109,85 @@ export default function PhonicsGamesPage(){
       <label>{l(en,'난이도','Difficulty')}<select aria-label={l(en,'난이도','Difficulty')} name="level" defaultValue={level}><option value="easy">{l(en,'쉬움 · 그림과 글자를 함께 보여 줘요','Easy · picture and word')}</option><option value="normal">{l(en,'보통','Normal')}</option><option value="hard">{l(en,'도전 · 그림 없이 소리로 풀어요','Challenge · listen, no picture')}</option></select></label>
       <label className="pg-check"><input type="checkbox" name="autoSpeak" defaultChecked={autoSpeak}/>{l(en,'문제마다 설명을 소리로 읽어 줘요 (글을 못 읽는 친구용)','Read each instruction aloud (for pre-readers)')}</label>
      </fieldset>
-    <button type="submit" className="pg-primary">{l(en,'적용','Apply')}</button>
    </form>;
- return <PhonicsSoundContext.Provider value={sound}><main className={'phonics-games pg-v2 '+(playing?'pg-is-playing':'')} data-phonics-games>
-  <nav className="pg-tabs" aria-label={l(en,'게임 카테고리','Game categories')}><Link to="/games">{l(en,'기존 게임','Classroom games')}</Link><Link to="/phonics-games" aria-current="page">{l(en,'파닉스 게임','Phonics Games')}</Link></nav>
-  <header className="pg-hero"><div><p className="pg-eyebrow">CLASSBANK · CLAY PLAY</p><h1>{game?gameName(game,en):l(en,'파닉스 게임','Phonics Games')}</h1><p>{game?gameVisual(game)[en?'en':'ko']:l(en,'글자를 만지고, 소리를 잇고, 우리 마을을 만들어요.','Touch the letters. Connect the sounds. Build our village.')}</p></div><PhonicsGameCover game={game??PHONICS_GAMES[5]} large/></header>
+ return <PhonicsSoundContext.Provider value={sound}><main className={`phonics-games pg-v2 space-y-6 ${playing ? 'pg-is-playing' : 'pg-browse'}`} data-phonics-games>
+  <GameCatalogNav current="/phonics-games" />
+  {!playing && <header>
+    <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">
+      {game ? gameName(game, en) : t('phonicsGamesTitle')}
+    </h1>
+    <p className="mt-2 text-on-surface-variant">
+      {game ? game.goal[en ? 1 : 0] : l(en, '오늘 배울 단계와 유닛을 고르고 게임을 열어 보세요.', 'Choose today’s level and unit, then open a game.')}
+    </p>
+  </header>}
   {invalid?<div className="pg-panel" role="alert"><p>{l(en,'찾을 수 없는 게임 또는 수업 유닛이에요.','This game or unit could not be found.')}</p><Link to="/phonics-games">{l(en,'파닉스 게임 목록','Phonics Games catalogue')}</Link></div>:<>
-   {!playing&&<section className="pg-panel pg-setup" aria-label={l(en,'수업 선택','Choose lesson')}>
-    <div className="pg-levels">{PHONICS_STAGES.map(s=><button key={s.number} type="button" aria-pressed={unit.step===s.number} onClick={()=>pick(units.find(u=>u.step===s.number)!.id)}>{l(en,`${s.number}단계`,`Level ${s.number}`)}</button>)}</div>
+   {!playing&&<section className="pg-setup rounded-xl border border-outline-variant bg-surface-container-lowest p-4 sm:p-5" aria-label={l(en,'수업 선택','Choose lesson')}>
+    <div className="flex w-full flex-wrap gap-2" role="group" aria-label={l(en, '단계', 'Level')}>
+      {PHONICS_STAGES.map(s => <button key={s.number} className={catalogChip} type="button" aria-pressed={unit.step === s.number}
+        onClick={() => pick(units.find(u => u.step === s.number)!.id)}>{l(en, `${s.number}단계`, `Level ${s.number}`)}</button>)}
+    </div>
     <label>{l(en,'오늘 수업 유닛','Today’s unit')}<select value={unit.id} onChange={e=>pick(e.target.value)}>{units.filter(u=>u.step===unit.step).map(u=><option key={u.id} value={u.id}>Unit {u.number} · {u.groups.map(g=>g.label).join(' / ')}</option>)}</select></label>
     <p className="pg-unit-summary">{unit.entries.length}{l(en,'개 학습 항목',' learning entries')} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     <details><summary>{l(en,'이번 유닛 단어 보기','View this unit’s words')}</summary><p lang="en">{unit.entries.map(e=>e.word).join(' · ')}</p></details>
    </section>}
-   {!game?<><ClassroomVillage rewards={rewards} en={en} onClear={()=>{try{sessionStorage.removeItem('classbank.phonics.village.v2');}catch{/* The in-memory village can still be cleared. */}setRewards([]);}}/><div className="pg-world-filter" aria-label={l(en,'놀이 세계','Play worlds')}><button type="button" aria-pressed={world==='all'} onClick={()=>setWorld('all')}>{l(en,'모든 세계','All worlds')}</button>{(Object.keys(PHONICS_WORLDS) as PhonicsWorld[]).map(id=><button type="button" key={id} aria-pressed={world===id} onClick={()=>setWorld(id)}><ClaySprite kind={PHONICS_WORLDS[id].prop}/>{PHONICS_WORLDS[id][en?'en':'ko']}</button>)}</div><div className="pg-catalog-heading"><h2>{l(en,`${unit.step}단계에서 고르기`,`Choose a Level ${unit.step} game`)}</h2><label>{l(en,'게임 검색','Search games')}<input type="search" value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
-    <div className="pg-grid">{candidates.map(g=>{const blocked=gameAvailability(g,unit,en);return <article className={'pg-game-card '+(blocked?'pg-unavailable':'')} key={g.id} data-game-card={g.id}><PhonicsGameCover game={g}/><div><p className="pg-eyebrow">{g.number>=36?l(en,'모험 게임','Adventure'):l(en,'학습 게임','Learning game')}</p><h3>{gameName(g,en)}</h3><p>{g.goal[en?1:0]}</p>{blocked?<p className="pg-reason">{blocked}</p>:<span className="pg-ready">{l(en,'이 유닛으로 플레이 가능','Ready for this unit')}</span>}<Link className="pg-button" to={`/phonics-games/${g.id}?unit=${unit.id}`}>{blocked?l(en,'게임·유닛 안내','View requirements'):l(en,'게임 열기','Open game')}{icon('arrow_forward')}</Link></div></article>;})}</div>
-    {!candidates.length&&<p role="status">{l(en,'검색 결과가 없어요. 다른 이름으로 찾아보세요.','No games found. Try another search.')}</p>}
-    <p className="pg-footnote">{l(en,'전체 40종 중 선택한 단계의 게임을 보여 줍니다. 문장 게임은 검토가 끝난 수업에서 열립니다.','Showing this level’s games from the 40-game library. Sentence games use approved lessons only.')}</p>
-   </>:playing&&!reason?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={leaveGame} settings={gameSettings}/>:<section className="pg-panel pg-launch">
+   {!game ? <section className="space-y-5" aria-labelledby="phonics-catalog-heading">
+    <h2 id="phonics-catalog-heading" className="sr-only">
+      {l(en, `${unit.step}단계 게임`, `Level ${unit.step} games`)}
+    </h2>
+    <label className="max-w-xl">
+      {t('classroomUx.searchGames')}
+      <input type="search" value={query} onChange={e => setQuery(e.target.value)} className="w-full px-4" />
+    </label>
+    <div className="flex flex-wrap gap-2" role="group" aria-label={l(en, '놀이 세계', 'Play worlds')}>
+      <button className={catalogChip} type="button" aria-pressed={world === 'all'} onClick={() => setWorld('all')}>
+        {l(en, '모든 세계', 'All worlds')}
+      </button>
+      {(Object.keys(PHONICS_WORLDS) as PhonicsWorld[]).map(id => (
+        <button key={id} className={catalogChip} type="button" aria-pressed={world === id} onClick={() => setWorld(id)}>
+          {PHONICS_WORLDS[id][en ? 'en' : 'ko']}
+        </button>
+      ))}
+    </div>
+    {candidates.length > 0 ? (
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {candidates.map(candidate => {
+          const blocked = gameAvailability(candidate, unit, en);
+          const visual = gameVisual(candidate);
+          return (
+            <Link key={candidate.id} data-game-card={candidate.id} to={`/phonics-games/${candidate.id}?unit=${encodeURIComponent(unit.id)}`}
+              className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition motion-safe:hover:-translate-y-1 hover:shadow-lg">
+              <div className="pg-catalog-cover relative h-36 overflow-hidden">
+                <PhonicsGameCover game={candidate} />
+                <span className="absolute left-3 top-3 flex size-10 items-center justify-center rounded-full bg-surface-container-lowest/90 text-primary shadow-sm">
+                  {icon(candidate.icon)}
+                </span>
+              </div>
+              <div className="p-5">
+                <h3 className="font-title-md text-title-md text-on-surface">{gameName(candidate, en)}</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant">{candidate.goal[en ? 1 : 0]}</p>
+                <span className="mt-3 inline-block rounded-full bg-surface-container px-2 py-0.5 text-sm text-on-surface-variant">
+                  {PHONICS_WORLDS[visual.world][en ? 'en' : 'ko']}
+                </span>
+                {blocked && <p className="pg-reason mt-2">{blocked}</p>}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="rounded-xl bg-surface-container-lowest p-8 text-center">
+        <p role="status">{t('classroomUx.noGames')}</p>
+        <button type="button" onClick={() => { setQuery(''); setWorld('all'); }} className="mt-3 min-h-11 px-4 text-primary underline">
+          {t('classroomUx.clearFilters')}
+        </button>
+      </div>
+    )}
+    <p className="text-sm text-on-surface-variant">{l(en,'문장 게임은 검토가 끝난 수업에서 열립니다.','Sentence games use approved lessons only.')}</p>
+    <ClassroomVillage rewards={rewards} en={en} onClear={() => {
+      try { sessionStorage.removeItem('classbank.phonics.village.v2'); } catch { /* In-memory village can still be cleared. */ }
+      setRewards([]);
+    }} />
+   </section>:playing&&!reason?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={leaveGame} settings={gameSettings}/>:<section className="pg-panel pg-launch">
     <h2>{l(en,'이 유닛으로 놀아요','Play with this unit')}</h2><p>Level {unit.step} · Unit {unit.number} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     {game.id==='ow-crossroads'&&<p className="pg-note">{l(en,'5단계 Unit 3의 ow /oʊ/와 Unit 6의 ow /aʊ/를 함께 복습합니다.','Reviews ow /oʊ/ from Level 5 Unit 3 and ow /aʊ/ from Unit 6.')}</p>}
     {reason&&<p className="pg-reason" role="status">{reason}</p>}
@@ -209,17 +278,24 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
  return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
-  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button><button type="button" className="pg-button" onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
+  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button><button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
     <GameReportButton gameName={`${gameName(game,en)} · Level ${unit.step} · Unit ${unit.number}`} className="pg-button" onOpenChange={setReportOpen} />
   </div>
   {settingsOpen&&<AccessibleDialog label={l(en,'게임 설정','Game settings')} onClose={()=>setSettingsOpen(false)}>
-   {settings}
-   <button type="button" className="pg-button m-4" onClick={()=>setSettingsOpen(false)}>{l(en,'닫기','Close')}</button>
+   <div className="p-4 sm:p-6">
+    <h2 className="mb-4 text-xl font-bold text-deep-navy">{l(en,'게임 설정','Game settings')}</h2>
+    {settings}
+    <div className="mt-5 flex flex-wrap justify-end gap-3">
+     <button type="button" className="pg-button" onClick={()=>setSettingsOpen(false)}>{l(en,'닫기','Close')}</button>
+     <button type="submit" form="phonics-game-settings" className="pg-primary">{l(en,'적용','Apply')}</button>
+    </div>
+   </div>
   </AccessibleDialog>}
   {leaving&&<AccessibleDialog label={l(en,'게임 나가기','Leave game')} onClose={()=>setLeaving(false)}>
-   <div className="p-5">
-    <p>{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p>
-    <div className="mt-4 flex flex-wrap gap-2">
+   <div className="p-4 sm:p-6">
+    <h2 className="text-xl font-bold text-deep-navy">{l(en,'게임 나가기','Leave game')}</h2>
+    <p className="mt-3 text-on-surface-variant">{l(en,'게임을 나가면 이번 진행이 초기화돼요.','Leaving resets this session.')}</p>
+    <div className="mt-6 flex flex-wrap justify-end gap-3">
      <button type="button" className="pg-button" autoFocus onClick={()=>setLeaving(false)}>{l(en,'계속할게요','Keep playing')}</button>
      <button type="button" className="pg-primary" onClick={exitSession}>{l(en,'나가기','Leave')}</button>
     </div>

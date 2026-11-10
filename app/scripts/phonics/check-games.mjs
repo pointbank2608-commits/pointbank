@@ -274,7 +274,8 @@ try {
      }
      await page.getByRole('button',{name:'게임 선택으로',exact:true}).click();
      await page.waitForURL(`${root}/phonics-games?unit=${u.id}`,{waitUntil:'commit'});
-     await page.locator(`[data-game-card="${g.id}"]`).getByRole('link',{name:'게임 열기'}).click();
+     await page.locator(`a[data-game-card="${g.id}"]`).click();
+     await startButton().click();
      await page.locator(`[data-phonics-session="${g.id}"]`).waitFor();
     }
     await openLeave();
